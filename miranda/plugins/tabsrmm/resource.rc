@@ -407,17 +407,17 @@ BEGIN
     EDITTEXT        IDC_CUT_TITLEMAX,148,9,30,12,ES_AUTOHSCROLL
     LTEXT           "characters",IDC_STATIC,190,11,88,9
     CONTROL         "Show full name as a tooltip over tabs",IDC_SHOWTABTIP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,23,213,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,23,290,10
     CONTROL         "Show status text on tabs",IDC_SHOWSTATUSONTAB,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,33,136,12
     CONTROL         "Warn on close message tab",IDC_WARNONCLOSE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,46,139,10
-    LTEXT           "Vertical tab padding",IDC_STATIC,148,34,71,10
-    EDITTEXT        IDC_TABPADDING,226,31,28,13,ES_AUTOHSCROLL
+    LTEXT           "Vertical tab padding",IDC_STATIC,148,35,71,10
+    EDITTEXT        IDC_TABPADDING,226,32,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,33,11,
                     13
-    LTEXT           "pixel",IDC_STATIC,267,33,28,11
+    LTEXT           "pixel",IDC_STATIC,267,34,28,11
     GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,64
     CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,81,127,11
@@ -431,12 +431,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,138,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,149,145,11
-    LTEXT           "Tab control border",IDC_STATIC,148,46,74,12
-    EDITTEXT        IDC_TABBORDER,226,43,28,13,ES_AUTOHSCROLL
+    LTEXT           "Tab control border",IDC_STATIC,148,47,74,11
+    EDITTEXT        IDC_TABBORDER,226,44,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,248,33,11,
                     13
-    LTEXT           "pixel",IDC_STATIC,262,46,31,10
+    LTEXT           "pixel",IDC_STATIC,262,47,31,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,303,60
     CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,174,141,12
@@ -499,17 +499,17 @@ BEGIN
                     IDC_CONTAINERGROUPMODE,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,6,40,296,10
     CONTROL         "Maximum number of tabs per container",IDC_LIMITTABS,
-                    "Button",BS_AUTORADIOBUTTON,6,52,148,9
-    EDITTEXT        IDC_TABLIMIT,169,50,33,12,ES_AUTOHSCROLL | ES_NUMBER
+                    "Button",BS_AUTORADIOBUTTON,6,52,192,9
+    EDITTEXT        IDC_TABLIMIT,208,50,33,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_TABLIMITSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,202,54,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,241,54,9,
                     10
     CONTROL         "Use single window mode (one container per session)",
                     IDC_SINGLEWINDOWMODE,"Button",BS_AUTORADIOBUTTON,6,63,
                     290,11
     CONTROL         "Use default container mode (manual contact assignments)",
                     IDC_DEFAULTCONTAINERMODE,"Button",BS_AUTORADIOBUTTON,6,
-                    75,295,12
+                    75,293,12
     GROUPBOX        "Set display name for the default container (instead of just ""default"")",
                     IDC_STATIC,0,186,303,30
     EDITTEXT        IDC_DEFAULTDISPLAYNAME,7,198,142,12,ES_AUTOHSCROLL

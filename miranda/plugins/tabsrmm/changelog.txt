@@ -21,6 +21,14 @@ Version 0.9.9.6 - 2005/03/01
 
         ! fixed send on shift enter.
         
+        ! "Flat message log" now tries to remove static edges from ieview and message input 
+          area aswell.
+
+        ! detecting IEView didn't work with some configurations. 
+        
+        ! When "send formatting info" was active in the non-unicode version, additional
+          linefeeds were sent at the end of each message.
+
 Version 0.9.9.6 - 2005/02/23
 
         ! flicker-free formatting button update

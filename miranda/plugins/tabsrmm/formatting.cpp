@@ -518,7 +518,7 @@ extern "C" const char *FormatRaw(const char *msg, int bWordsOnly)
     unsigned beginmark = 0, endmark = 0, index;
     char endmarker;
     message.assign(msg);
-    
+
     if(message.find("://") != message.npos)
        return(message.c_str());
 

@@ -679,6 +679,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     int protoCount, i;
     DBVARIANT dbv;
     
+    ReloadGlobals();
+
     //LoadMsgLogIcons();
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
@@ -870,7 +872,6 @@ int LoadSendRecvMessageModule(void)
     OleInitialize(NULL);
     InitREOleCallback();
     ZeroMemory((void *)&myGlobals, sizeof(myGlobals));
-    ReloadGlobals();
     hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
     InitOptions();
     hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
