@@ -1,3 +1,11 @@
+The units and header files ported to Delphi by Christian are no longer
+being maintained by me (Sam K) aka egoDust.
+
+You may find an update port of all of Miranda's C headers including nearly
+everything from 0.3a in the CVS 'inc' module with two example plugins.
+
+---------------------------------------------------------------------
+
 This folder contains some units nesseary or at least very useful
 for Miranda plugins written in Object Pascal (Delphi).
 
