@@ -59,7 +59,7 @@ __declspec(dllexport)
 #ifdef UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
 #define SRMMMOD_OLD "SRMsg"
 #define SRMMMOD_SETTINGS_NAM "Settings"
-#define SRMMMOD_SETTINGS_VER 2
+#define SRMMMOD_SETTINGS_VER 3
 static int old_db_setting_exists(char *s, int type) {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING cgs;
@@ -106,7 +106,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
         convert_old_byte_setting(SRMSGSET_STATUSICON);
         convert_old_byte_setting(SRMSGSET_SENDBUTTON);
         convert_old_byte_setting(SRMSGSET_CHARCOUNT);
-        convert_old_byte_setting(SRMSGSET_MSGTIMEOUT);
         convert_old_byte_setting(SRMSGSET_LOADHISTORY);
         convert_old_byte_setting(SRMSGSET_HIDENAMES);
         convert_old_byte_setting(SRMSGSET_SHOWTIME);
@@ -131,6 +130,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
         db_unset(NULL, SRMMMOD_OLD, "multisplit");
         db_unset(NULL, SRMMMOD_OLD, "CloseOnReply");
         db_unset(NULL, SRMMMOD_OLD, "ShowLogIcons");
+        db_unset(NULL, SRMMMOD_OLD, "MessageTimeout");
+        db_dword_set(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
         db_word_set(NULL, SRMMMOD, SRMMMOD_SETTINGS_NAM, SRMMMOD_SETTINGS_VER);
     }
     #endif
