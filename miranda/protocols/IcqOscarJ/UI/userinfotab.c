@@ -244,8 +244,8 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         pData->hEventHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_REBIND_AVATAR);
       else
       { // Temporarily disabled - avatar not working
-   //     ShowWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), SW_SHOW);
-   //     ShowWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), SW_SHOW);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), SW_SHOW);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), SW_SHOW);
       }
       SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)pData);
 
@@ -407,14 +407,17 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       }
       break;
     }
+    break;
 
   case WM_DESTROY:
     {
       AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
       if (pData->hContact)
         UnhookEvent(pData->hEventHook);
+      SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)0);
       SAFE_FREE(&pData);
     }
+    break;
   }
 
   return FALSE;
