@@ -164,12 +164,12 @@ END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,42,248,
                     131,WS_EX_CLIENTEDGE
-    LTEXT           "Send typing notifications to the following users when you are typing a message to the them:",
+    LTEXT           "Send typing notifications to the following users when you are typing a message to them:",
                     IDC_STATIC,19,18,245,19
     CONTROL         "Show typing notifications when a user is typing a message",
                     IDC_SHOWNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,
