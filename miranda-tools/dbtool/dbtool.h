@@ -1,6 +1,6 @@
 /*
 Miranda Database Tool
-Copyright (C) 2001-2  Richard Hughes
+Copyright (C) 2001-3  Richard Hughes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,7 +18,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include <windows.h>
 #include <commctrl.h>
-#include "../../miranda-im/database/database.h"
+#include "../../SDK/headers_c/newpluginapi.h" // Only needed to keep m_database.h happy
+#include "../../SDK/headers_c/m_database.h"
+#include "database.h" // Note: This is a copy of database.h from the Miranda IM v0.3 tree.
+                      //       Remember to update this when releasing new dbtool versions.
 #include "resource.h"
 
 #define WZM_GOTOPAGE   (WM_USER+1)

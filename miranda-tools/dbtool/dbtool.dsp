@@ -180,15 +180,7 @@ SOURCE=.\worker.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\miranda32\database\database.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\dbtool.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\miranda32\database\m_database.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -223,9 +215,5 @@ SOURCE=.\res\profiley.ico
 SOURCE=.\resource.rc
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\readme.txt
-# End Source File
 # End Target
 # End Project

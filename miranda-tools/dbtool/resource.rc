@@ -54,7 +54,7 @@ END
 
 IDD_WELCOME DIALOGEX 0, 0, 262, 143
 STYLE WS_CHILD | WS_DISABLED
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_WATERMARK,"Static",SS_ENHMETAFILE,0,0,63,143
     LTEXT           "whiterect",IDC_STATIC,63,0,199,143
@@ -73,7 +73,7 @@ STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER |
     WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Miranda Database Tool"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "< &Back",IDC_BACK,96,153,50,14
     DEFPUSHBUTTON   "&Next >",IDOK,146,153,50,14
@@ -84,7 +84,7 @@ END
 IDD_SELECTDB DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,30
     LTEXT           "Select Miranda Profile",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -106,7 +106,7 @@ END
 IDD_OPENERROR DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,30
     LTEXT           "Error Opening Database",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -125,7 +125,7 @@ END
 IDD_FILEACCESS DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,30
     LTEXT           "File Access Options",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -152,7 +152,7 @@ END
 IDD_CLEANING DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,30
     LTEXT           "Cleaning Options",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -175,7 +175,7 @@ END
 IDD_PROGRESS DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",-1,0,0,262,30
     LTEXT           "Working...",-1,11,6,206,8,WS_BORDER
@@ -194,7 +194,7 @@ END
 IDD_FINISHED DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,30
     LTEXT           "Finished!",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -309,12 +309,9 @@ IDE_HDRLOGO             EMF     DISCARDABLE     "res\\dbthdr.emf"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_DBTOOL              ICON    DISCARDABLE     "res\\dbtool.ico"
-IDI_PROFILEGREEN        ICON    FIXED IMPURE    "res\\profileg.ico"
-
-IDI_PROFILEYELLOW       ICON    FIXED IMPURE    "res\\profiley.ico"
-
-IDI_PROFILERED          ICON    FIXED IMPURE    "res\\profiler.ico"
-
+IDI_PROFILEGREEN        ICON    DISCARDABLE     "res\\profileg.ico"
+IDI_PROFILEYELLOW       ICON    DISCARDABLE     "res\\profiley.ico"
+IDI_PROFILERED          ICON    DISCARDABLE     "res\\profiler.ico"
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -323,8 +320,8 @@ IDI_PROFILERED          ICON    FIXED IMPURE    "res\\profiler.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,1,0
- PRODUCTVERSION 0,1,1,0
+ FILEVERSION 0,3,0,0
+ PRODUCTVERSION 0,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -341,15 +338,15 @@ BEGIN
         BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "Miranda Database Tool\0"
-            VALUE "FileVersion", "0.1.1.0\0"
+            VALUE "FileDescription", "Miranda IM Database Tool\0"
+            VALUE "FileVersion", "0.3\0"
             VALUE "InternalName", "dbtool\0"
-            VALUE "LegalCopyright", "Copyright © 2001-2 Richard Hughes\0"
+            VALUE "LegalCopyright", "Copyright © 2001-3 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "dbtool.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Miranda Database Tool\0"
-            VALUE "ProductVersion", "0.1.1.0\0"
+            VALUE "ProductVersion", "0.3\0"
             VALUE "SpecialBuild", "\0"
         END
     END
