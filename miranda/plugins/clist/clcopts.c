@@ -720,13 +720,13 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
 		{	int i;
-			int minHeight=GetSystemMetrics(SM_CYSMICON) + 1;
+			int minHeight=1;//GetSystemMetrics(SM_CYSMICON) + 1;
 			for(i=0;i<=FONTID_MAX;i++)
 				if(fontSettings[i].size>minHeight) minHeight=fontSettings[i].size;
 			i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
 			//if(i<minHeight) 
 				SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
-			SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETRANGE,0,MAKELONG(255,minHeight));
+			//SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETRANGE,0,MAKELONG(255,minHeight));
 			break;
 		}
 		case M_LOADFONT:	//load font wParam into the controls
