@@ -1337,7 +1337,7 @@ static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
 		msn.szProto = IRCPROTONAME;
-		msn.szInfoTitle = Translate("IRC error");
+		msn.szInfoTitle = Translate("Information");
 		msn.szInfo = Translate("This protocol is dependent on another plugin named \'Chat\'\nPlease download it from the Miranda IM website!");
 		msn.dwInfoFlags = NIIF_ERROR;
 		msn.uTimeout = 15000;
@@ -1615,7 +1615,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	}
 	else
 	{
-		if(IDYES == MessageBoxA(0,Translate("The IRC protocol depends on another plugin called \'Chat\'\n\nDo you want to download it from the Miranda IM web site now?"),Translate("IRC Error"),MB_YESNO|MB_ICONERROR))
+		if(IDYES == MessageBoxA(0,Translate("The IRC protocol depends on another plugin called \'Chat\'\n\nDo you want to download it from the Miranda IM web site now?"),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/details.php?action=viewfile&id=1309");
 	}
 	

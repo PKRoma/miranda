@@ -28,11 +28,11 @@ char *				pszServerFile = NULL;
 char *				pszPerformFile = NULL;
 char *				pszIgnoreFile = NULL;
 char				mirandapath[MAX_PATH];
+DWORD				mirVersion = NULL;
 CRITICAL_SECTION	cs;
 PLUGINLINK *		pluginLink;
 HINSTANCE			g_hInstance = NULL;	
 PREFERENCES			* prefs;	
-long				lWrongVersion;
 
 //static HMODULE	m_libeay32;
 HMODULE				m_ssleay32 = NULL;
@@ -65,15 +65,7 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if( mirandaVersion<PLUGIN_MAKE_VERSION( 0, 3, 4 ,3 ) ) 
-	{
-		if(IDYES == MessageBoxA(0,Translate("The IRC protocol could not be loaded as it is dependant on features in newer versions of Miranda IM.\n\nDo you want to download an update of Miranda IM now?."),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
-			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
-		return NULL;
-	}
-
-	lWrongVersion = 20041010;
-
+	mirVersion = mirandaVersion;
 	return &pluginInfo;
 }
 
@@ -127,26 +119,18 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 	pluginLink=link;
 
-	if (ServiceExists(MS_SYSTEM_GETBUILDSTRING))
+	if( !mirVersion || mirVersion<PLUGIN_MAKE_VERSION( 0, 4, 0 ,0 ) ) 
 	{
-// should be reenabled later when this service works
-/*
-		extern long lWrongVersion;
-		char szTemp[40];
-		CallService(MS_SYSTEM_GETBUILDSTRING, 39, (LPARAM)szTemp);
-		char * stuff = strdup (szTemp);
-		MessageBox(NULL, szTemp, "version", 0);
-		long date = atoi(szTemp);
-		if (date < lWrongVersion * 1000000)
-*/
-	}
-	else
-	{
-
-		if(IDYES == MessageBoxA(0,Translate("The IRC protocol requires features found in newer versions of Miranda IM.\n\nDo you want to download it from the Miranda IM web site now?"),Translate("IRC Error"),MB_YESNO|MB_ICONERROR))
-			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/");
+		char szVersion[] = "0.4"; // minimum required version
+		char szText[] = "The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?";
+		char * szTemp = new char[lstrlen (szVersion) + lstrlen(szText) + 10];
+		_snprintf(szTemp, lstrlen (szVersion) + lstrlen(szText) + 10, szText, szVersion);
+		if(IDYES == MessageBoxA(0,Translate(szTemp),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
+			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
+		delete[] szTemp;
 		return 1;
 	}
+
 
 	InitializeCriticalSection(&cs);
 
