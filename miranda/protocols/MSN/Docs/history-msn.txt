@@ -6,8 +6,13 @@ Legend:
 
 Version 0.1.7.10
 ================
-[!] Bug #000580 fixed: the large messages disappear being sent.
 [!] Multiple bugfixes for gateways & P2P file transfers
+[*] Login rules were changed a bit: now Miranda assigns its own
+proxy address to SSL connection when the 'Use IE proxy settings'
+option is turned off. If you don't use a proxy, nothing gets
+changed.
+[!] Bug #000580 fixed: the large messages disappear being sent.
+[*] Translation file modification.
 
 Version 0.1.7.9a
 ================
