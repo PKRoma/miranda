@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -290,7 +291,7 @@ int utf8_encode(const char *from, char **to)
 			strlen(from), unicode, wchars);
 	if(err != wchars)
 	{
-		SAFE_FREE(unicode);
+		SAFE_FREE(&unicode);
 		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
 		return -1;
 	}
@@ -300,7 +301,7 @@ int utf8_encode(const char *from, char **to)
 	 */
 	*to = make_utf8_string(unicode);
 
-	SAFE_FREE(unicode);
+	SAFE_FREE(&unicode);
 	return 0;
 }
 
@@ -342,11 +343,11 @@ int utf8_decode(const char *from, char **to)
 			}
 			else
 			{
-				SAFE_FREE(*to);
+				SAFE_FREE(&(*to));
 			}
 		}
 
-		SAFE_FREE(wszTemp);
+		SAFE_FREE(&wszTemp);
 
  	}
 	else
@@ -370,7 +371,7 @@ int utf8_decode(const char *from, char **to)
 		if(chars == 0)
 		{
 			fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-			SAFE_FREE(unicode);
+			SAFE_FREE(&unicode);
 			return 0;
 		}
 
@@ -378,7 +379,7 @@ int utf8_decode(const char *from, char **to)
 		if(*to == NULL)
 		{
 			fprintf(stderr, "Out of memory processing string to local charset\n");
-			SAFE_FREE(unicode);
+			SAFE_FREE(&unicode);
 			return 0;
 		}
 
@@ -387,13 +388,13 @@ int utf8_decode(const char *from, char **to)
 		if (err != chars)
 		{
 			fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-			SAFE_FREE(unicode);
-			SAFE_FREE(*to);
+			SAFE_FREE(&unicode);
+			SAFE_FREE(&(*to));
 			*to = NULL;
 			return 0;
 		}
 
-		SAFE_FREE(unicode);
+		SAFE_FREE(&unicode);
 
 		nResult = 1;
 	}

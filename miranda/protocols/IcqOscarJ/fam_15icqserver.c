@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -304,7 +305,7 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 	// This will delete the messages stored on server
 	packet.wLen = 6 + 10 + 10;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, CLI_META_REQ);
+	packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, CLI_META_REQ<<0x10);
 	packWord(&packet, 1);             // TLV Type
 	packWord(&packet, 10);            // TLV Length
 	packLEWord(&packet, 8);           // Data length
@@ -387,7 +388,7 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 				
 				ProtoBroadcastAck(gpszICQProtoName, NULL,
 					ICQACKTYPE_SMS, ACKRESULT_FAILED, (HANDLE)wCookie, (LPARAM)pszInfo);
-				SAFE_FREE(pszInfo);
+				SAFE_FREE(&pszInfo);
 				FreeCookie(wCookie);
 				break;
 			}
@@ -423,7 +424,7 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 						
 						ProtoBroadcastAck(gpszICQProtoName, NULL,
 							ICQACKTYPE_SMS, ACKRESULT_SENTREQUEST, (HANDLE)wCookie, (LPARAM)pszInfo);
-						SAFE_FREE(pszInfo);
+						SAFE_FREE(&pszInfo);
 						FreeCookie(wCookie);
 						
 						// Parsing success
@@ -957,7 +958,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 	// Free cookie
 	if (!bMoreDataFollows || bResultCode != 0x0A)
 	{
-		SAFE_FREE(pCookieData);
+		SAFE_FREE(&pCookieData);
 		FreeCookie(wCookie);
 	}
 
