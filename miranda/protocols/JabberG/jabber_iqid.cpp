@@ -172,7 +172,7 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 								// Add the jid ( with empty resource ) to Miranda contact list.
 								hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
 							}
-							DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+							DBWriteContactSettingString( hContact, "CList", "Nick", nick );
 							if ( item->group ) 
 								free( item->group );
 
