@@ -325,7 +325,7 @@ static void FreePartiallyInitedConnection(struct NetlibConnection *nlc)
 static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLIBOPENCONNECTION * nloc)
 {
 	int rc=0;
-	unsigned int dwTimeout=( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) ) ? nloc->timeout : 0;
+	unsigned int dwTimeout=( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) && nloc->flags&NLOCF_V2 ) ? nloc->timeout : 0;
 	u_long notblocking=1;	
 	TIMEVAL tv;
 	DWORD lasterr = 0;	
@@ -376,7 +376,7 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 			rc=SOCKET_ERROR;
 			lasterr=ERROR_TIMEOUT;
 			goto unblock;
-		} else if ( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) && nloc->waitcallback != NULL 
+		} else if ( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) && nloc->flags&NLOCF_V2 && nloc->waitcallback != NULL 
 			&& nloc->waitcallback(&dwTimeout) == 0) {
 			rc=SOCKET_ERROR;
 			lasterr=ERROR_TIMEOUT;
