@@ -195,7 +195,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
         case EVENTTYPE_MESSAGE:
             return 1;
         case EVENTTYPE_STATUSCHANGE:
-            if (dbei->flags&DBEF_READ)
+            if (dbei->flags & DBEF_READ)
                 return 0;
             return 1;
     }
@@ -237,9 +237,9 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     if (dat->showIcons) {
         int i;
 
-        switch(dbei.eventType) {
+        switch (dbei.eventType) {
             case EVENTTYPE_MESSAGE:
-                if (dbei.flags&DBEF_SENT) {
+                if (dbei.flags & DBEF_SENT) {
                     i = LOGICON_MSG_OUT;
                 }
                 else {
@@ -268,7 +268,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYTIME : MSGFONTID_YOURTIME));
         AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", str);
     }
-    if (!dat->hideNames&&dbei.eventType!=EVENTTYPE_STATUSCHANGE) {
+    if (!dat->hideNames && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
         char *szName;
         CONTACTINFO ci;
         ZeroMemory(&ci, sizeof(ci));
@@ -424,9 +424,9 @@ void LoadMsgLogIcons(void)
     HBRUSH hBkgBrush;
     int rtfHeaderSize;
     PBYTE pBmpBits;
-    
-    g_hImageList = ImageList_Create(10, 10, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]), 0);
-    hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
+
+    g_hImageList = ImageList_Create(10, 10, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]), 0);
+    hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
     bih.biSize = sizeof(bih);
     bih.biBitCount = 24;
     bih.biCompression = BI_RGB;
@@ -441,8 +441,8 @@ void LoadMsgLogIcons(void)
     hBmp = CreateCompatibleBitmap(hdc, bih.biWidth, bih.biHeight);
     hdcMem = CreateCompatibleDC(hdc);
     pBmpBits = (PBYTE) malloc(widthBytes * bih.biHeight);
-    for (i=0; i<sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++) {
-        switch(i) {
+    for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++) {
+        switch (i) {
             case LOGICON_MSG_IN:
                 hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_INCOMING));
                 ImageList_AddIcon(g_hImageList, hIcon);
@@ -487,7 +487,7 @@ void LoadMsgLogIcons(void)
 void FreeMsgLogIcons(void)
 {
     int i;
-    for (i=0; i<sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++)
+    for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++)
         free(pLogIconBmpBits[i]);
     ImageList_RemoveAll(g_hImageList);
     ImageList_Destroy(g_hImageList);

@@ -72,12 +72,12 @@ static void SetDialogToType(HWND hwndDlg)
     else {
         ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), SW_HIDE);
     }
-    ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]),  SW_SHOW);
+    ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
     if (!dat->hwndStatus) {
         dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
         SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
     }
-    if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT)) {
+    if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT)) {
         RECT rc;
         int statwidths[2];
 
@@ -193,11 +193,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 break;
             //for saved msg queue the keyup/keydowns generate wm_chars themselves
             if (wParam == '\n' || wParam == '\r') {
-                if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER))) {
+                if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER))) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
                 }
-                if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER)) {
+                if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER)) {
                     if (dat->lastEnterTime + ENTERCLICKTIME < GetTickCount())
                         dat->lastEnterTime = GetTickCount();
                     else {
@@ -421,7 +421,7 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
     // Don't send to protocols that are offline
     // Don't send to users who are not visible and
     // Don't send to users who are not on the visible list when you are in invisible mode.
-    if (!DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
+    if (!DBGetContactSettingByte(dat->hContact, SRMMMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
         return;
     if (!dat->szProto)
         return;
@@ -438,7 +438,7 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
     if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
         return;
     if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)
-        && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGUNKNOWN, SRMSGDEFSET_TYPINGUNKNOWN))
+        && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGUNKNOWN, SRMSGDEFSET_TYPINGUNKNOWN))
         return;
     // End user check
     dat->nTypeMode = mode;
@@ -466,33 +466,32 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
                 }
             }
-            SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
             dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-            if(dat->hContact && dat->szProto != NULL)
+            if (dat->hContact && dat->szProto != NULL)
                 dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
             else
                 dat->wStatus = ID_STATUS_OFFLINE;
             dat->wOldStatus = dat->wStatus;
             dat->hAckEvent = NULL;
             dat->sendInfo = NULL;
-            dat->showInfo = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE);
-            dat->showButton = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE);
-            dat->showSend = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON);
+            dat->showInfo = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE);
+            dat->showButton = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE);
+            dat->showSend = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON);
             dat->hNewEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
             dat->hBkgBrush = NULL;
             dat->hDbEventFirst = NULL;
             dat->sendBuffer = NULL;
-            dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) - 1);
+            dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitsplity", (DWORD) - 1);
             dat->windowWasCascaded = 0;
             dat->nFlash = 0;
             dat->nTypeSecs = 0;
             dat->nLastTyping = 0;
             dat->showTyping = 0;
-            dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
+            dat->showTypingWin = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
             dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
             SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
             dat->lastMessage = 0;
-            dat->nFlashMax = DBGetContactSettingByte(NULL, SRMSGMOD, "FlashMax", 4);
+            dat->nFlashMax = DBGetContactSettingByte(NULL, SRMMMOD, "FlashMax", 4);
             {
                 RECT rc, rc2;
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_USERMENU), &rc);
@@ -570,7 +569,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SUBCLASSED, 0, 0);
             OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
             if (dat->hContact) {
-                int historyMode = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
+                int historyMode = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
                 // This finds the first message to display, it works like shit
                 dat->hDbEventFirst = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) dat->hContact, 0);
                 switch (historyMode) {
@@ -580,7 +579,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         HANDLE hPrevEvent;
                         DBEVENTINFO dbei = { 0 };
                         dbei.cbSize = sizeof(dbei);
-                        for (i = DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT); i > 0; i--) {
+                        for (i = DBGetContactSettingWord(NULL, SRMMMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT); i > 0; i--) {
                             if (dat->hDbEventFirst == NULL)
                                 hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
                             else
@@ -606,7 +605,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dbei.timestamp = time(NULL);
                         else
                             CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
-                        firstTime = dbei.timestamp - 60 * DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME);
+                        firstTime = dbei.timestamp - 60 * DBGetContactSettingWord(NULL, SRMMMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME);
                         for (;;) {
                             if (dat->hDbEventFirst == NULL)
                                 hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
@@ -627,16 +626,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
 
             {
-                int savePerContact = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
-                if (Utils_RestoreWindowPosition(hwndDlg, savePerContact ? dat->hContact : NULL, SRMSGMOD, "split")) {
+                int savePerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
+                if (Utils_RestoreWindowPosition(hwndDlg, savePerContact ? dat->hContact : NULL, SRMMMOD, "split")) {
                     if (savePerContact) {
-                        if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD, "split"))
+                        if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMMMOD, "split"))
                             SetWindowPos(hwndDlg, 0, 0, 0, 450, 300, SWP_NOZORDER | SWP_NOMOVE);
                     }
                     else
                         SetWindowPos(hwndDlg, 0, 0, 0, 450, 300, SWP_NOZORDER | SWP_NOMOVE);
                 }
-                if (!savePerContact && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CASCADE, SRMSGDEFSET_CASCADE))
+                if (!savePerContact && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CASCADE, SRMSGDEFSET_CASCADE))
                     WindowList_Broadcast(hMessageWindowList, DM_CASCADENEWWINDOW, (WPARAM) hwndDlg, (LPARAM) & dat->windowWasCascaded);
             }
             {
@@ -682,7 +681,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         }
         case DM_UPDATEWINICON:
         {
-            if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON)) {
+            if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON)) {
                 WORD wStatus;
 
                 if (dat->szProto) {
@@ -721,22 +720,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         }
         case DM_OPTIONSAPPLIED:
-            dat->showInfo = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE);
-            dat->showButton = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE);
-            dat->showSend = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON);
-            dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
+            dat->showInfo = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE);
+            dat->showButton = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE);
+            dat->showSend = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON);
+            dat->showTypingWin = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
             SetDialogToType(hwndDlg);
             if (dat->hBkgBrush)
                 DeleteObject(dat->hBkgBrush);
             {
-                COLORREF colour = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+                COLORREF colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
                 dat->hBkgBrush = CreateSolidBrush(colour);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
             }
-            dat->showTime = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTIME, SRMSGDEFSET_SHOWTIME);
-            dat->showIcons = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWLOGICONS, SRMSGDEFSET_SHOWLOGICONS);
-            dat->showDate = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE);
-            dat->hideNames = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_HIDENAMES, SRMSGDEFSET_HIDENAMES);
+            dat->showTime = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTIME, SRMSGDEFSET_SHOWTIME);
+            dat->showIcons = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWLOGICONS, SRMSGDEFSET_SHOWLOGICONS);
+            dat->showDate = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE);
+            dat->hideNames = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDENAMES, SRMSGDEFSET_HIDENAMES);
             SendDlgItemMessage(hwndDlg, IDC_TIME, BUTTONSETASPUSHBTN, 0, 0);
             CheckDlgButton(hwndDlg, IDC_TIME, dat->showTime ? BST_CHECKED : BST_UNCHECKED);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
@@ -765,8 +764,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CONTACTINFO ci;
                     int hasName = 0;
                     char buf[128];
-                    int statusIcon = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
-                    
+                    int statusIcon = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
+
                     dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
                     contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
                     ZeroMemory(&ci, sizeof(ci));
@@ -801,26 +800,27 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
 
                     // log
-                    if (dat->wStatus!=dat->wOldStatus || lParam != 0) {
+                    if ((dat->wStatus != dat->wOldStatus || lParam != 0)
+                        && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH)) {
                         DBEVENTINFO dbei;
                         char buffer[450];
                         HANDLE hNewEvent;
                         int iLen;
 
-                        char *szOldStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wOldStatus, 0);
-                        char *szNewStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, 0);
-                        
-                        if(dat->wStatus == ID_STATUS_OFFLINE) {
+                        char *szOldStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wOldStatus, 0);
+                        char *szNewStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wStatus, 0);
+
+                        if (dat->wStatus == ID_STATUS_OFFLINE) {
                             _snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
-                        } 
-                        else if(dat->wOldStatus == ID_STATUS_OFFLINE) {
+                        }
+                        else if (dat->wOldStatus == ID_STATUS_OFFLINE) {
                             _snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
-                        } 
+                        }
                         else {
                             _snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
                         }
                         iLen = strlen(buffer) + 1;
-                        MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], iLen);
+                        MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR) & buffer[iLen], iLen);
                         dbei.cbSize = sizeof(dbei);
                         dbei.pBlob = (PBYTE) buffer;
                         dbei.cbBlob = (strlen(buffer) + 1) * (sizeof(TCHAR) + 1);
@@ -982,7 +982,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
                     else
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                    if ((GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg) && !(dbei.flags & DBEF_SENT) && dbei.eventType!=EVENTTYPE_STATUSCHANGE) {
+                    if ((GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg) && !(dbei.flags & DBEF_SENT)
+                        && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                     }           //if
                 }
@@ -1058,7 +1059,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->hContact, PSS_MESSAGE, 0, (LPARAM) dat->sendBuffer);
                     }
                 }
-                    SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
+                    SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
                     break;
             }
             break;
@@ -1069,7 +1070,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, NULL, &colour);
             SetTextColor((HDC) wParam, colour);
-            SetBkColor((HDC) wParam, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
+            SetBkColor((HDC) wParam, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
             return (BOOL) dat->hBkgBrush;
         }
         case WM_MEASUREITEM:
@@ -1116,7 +1117,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                         dat->hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_EVENTSENT);
                         if (dat->hContact == NULL)
-                            break;  //never happens
+                            break;      //never happens
                         dat->sendCount = 1;
                         dat->sendInfo = (struct MessageSendInfo *) realloc(dat->sendInfo, sizeof(struct MessageSendInfo) * dat->sendCount);
                         dat->sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, PSS_MESSAGE, flags, (LPARAM) dat->sendBuffer);
@@ -1124,8 +1125,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 
                         //create a timeout timer
-                        SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
-                        if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
+                        SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
+                        if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
                             ShowWindow(hwndDlg, SW_MINIMIZE);
                     }
                     return TRUE;
@@ -1149,7 +1150,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 case IDC_TIME:
                     dat->showTime ^= 1;
-                    DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTIME, (BYTE) dat->showTime);
+                    DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTIME, (BYTE) dat->showTime);
                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
                     break;
                 case IDC_ADD:
@@ -1266,7 +1267,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                         break;
                                     tr.chrg = ((ENLINK *) lParam)->chrg;
                                     tr.lpstrText = malloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
-									SendDlgItemMessageA(hwndDlg, IDC_LOG, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+                                    SendDlgItemMessageA(hwndDlg, IDC_LOG, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
                                     if (strchr(tr.lpstrText, '@') != NULL && strchr(tr.lpstrText, ':') == NULL && strchr(tr.lpstrText, '/') == NULL) {
                                         MoveMemory(tr.lpstrText + 7, tr.lpstrText, tr.chrg.cpMax - tr.chrg.cpMin + 1);
                                         CopyMemory(tr.lpstrText, "mailto:", 7);
@@ -1359,7 +1360,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->hDbEventFirst = hNewEvent;
                 SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             }
-            
+
             dat->sendInfo[i].hSendId = NULL;
             for (i = 0; i < dat->sendCount; i++)
                 if (dat->sendInfo[i].hSendId)
@@ -1384,7 +1385,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     UnhookEvent(dat->hAckEvent);
                     dat->hAckEvent = NULL;
                 }
-                if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
+                if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
                     DestroyWindow(hwndDlg);
             }
             break;
@@ -1411,7 +1412,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     DestroyIcon(dat->hIcons[i]);
             }
             WindowList_Remove(hMessageWindowList, hwndDlg);
-            DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
+            DBWriteContactSettingDword(NULL, SRMMMOD, "splitsplity", dat->splitterY);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
@@ -1425,18 +1426,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 WINDOWPLACEMENT wp = { 0 };
                 HANDLE hContact;
 
-                if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT))
+                if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT))
                     hContact = dat->hContact;
                 else
                     hContact = NULL;
                 wp.length = sizeof(wp);
                 GetWindowPlacement(hwndDlg, &wp);
                 if (!dat->windowWasCascaded) {
-                    DBWriteContactSettingDword(hContact, SRMSGMOD, "splitx", wp.rcNormalPosition.left);
-                    DBWriteContactSettingDword(hContact, SRMSGMOD, "splity", wp.rcNormalPosition.top);
+                    DBWriteContactSettingDword(hContact, SRMMMOD, "splitx", wp.rcNormalPosition.left);
+                    DBWriteContactSettingDword(hContact, SRMMMOD, "splity", wp.rcNormalPosition.top);
                 }
-                DBWriteContactSettingDword(hContact, SRMSGMOD, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-                DBWriteContactSettingDword(hContact, SRMSGMOD, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+                DBWriteContactSettingDword(hContact, SRMMMOD, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+                DBWriteContactSettingDword(hContact, SRMMMOD, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
             }
             free(dat);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);

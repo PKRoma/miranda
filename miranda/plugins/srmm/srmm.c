@@ -56,9 +56,13 @@ __declspec(dllexport)
     return &pluginInfo;
 }
 
+#define UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
     pluginLink = link;
+    #ifdef UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
+
+    #endif
     return LoadSendRecvMessageModule();
 }
 

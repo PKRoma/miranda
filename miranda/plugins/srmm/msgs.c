@@ -61,8 +61,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 
     if (dbei.flags & (DBEF_SENT | DBEF_READ) || dbei.eventType != EVENTTYPE_MESSAGE)
         return 0;
-	
-	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+
+    CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
     /* does a window for the contact exist? */
     hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
     if (hwnd) {
@@ -72,7 +72,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     /* new message */
     SkinPlaySound("AlertMsg");
 
-    if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP)) {
+    if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP)) {
         struct NewMessageWindowLParam newData = { 0 };
         newData.hContact = (HANDLE) wParam;
         CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
@@ -153,17 +153,17 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
     HWND hwnd;
     int foundWin = 0;
 
-    if (!DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
+    if (!DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
         return 0;
     if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
         SendMessage(hwnd, DM_TYPING, 0, lParam);
         foundWin = 1;
     }
-    if ((int) lParam && !foundWin && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, SRMSGDEFSET_SHOWTYPINGNOWIN)) {
+    if ((int) lParam && !foundWin && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGNOWIN, SRMSGDEFSET_SHOWTYPINGNOWIN)) {
         char szTip[256];
 
         _snprintf(szTip, sizeof(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
-        if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
+        if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
             MIRANDASYSTRAYNOTIFY tn;
             tn.szProto = NULL;
             tn.cbSize = sizeof(tn);
@@ -179,7 +179,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
             ZeroMemory(&cle, sizeof(cle));
             cle.cbSize = sizeof(cle);
             cle.hContact = (HANDLE) wParam;
-			cle.hDbEvent = (HANDLE) 1;
+            cle.hDbEvent = (HANDLE) 1;
             cle.flags = CLEF_ONLYAFEW;
             cle.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IsWinVerXPPlus()? IDI_TYPING32 : IDI_TYPING));
             cle.pszService = "SRMsg/TypingMessage";
@@ -219,7 +219,7 @@ static void RestoreUnreadMessageAlerts(void)
     DBEVENTINFO dbei = { 0 };
     char toolTip[256];
     int windowAlreadyExists;
-    int autoPopup = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
+    int autoPopup = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
     HANDLE hDbEvent, hContact;
 
     dbei.cbSize = sizeof(dbei);
@@ -359,7 +359,7 @@ int LoadSendRecvMessageModule(void)
     CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
     CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
     CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
-    SkinAddNewSoundEx("RecvMsg", Translate("Messages") ,Translate("Queued Incoming"));
+    SkinAddNewSoundEx("RecvMsg", Translate("Messages"), Translate("Queued Incoming"));
     SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming"));
     SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
     hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);

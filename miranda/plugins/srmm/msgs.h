@@ -25,43 +25,46 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSGERROR_CANCEL	0
 #define MSGERROR_RETRY	    1
 
-struct NewMessageWindowLParam {
-	HANDLE hContact;
-	const char *szInitialText;
+struct NewMessageWindowLParam
+{
+    HANDLE hContact;
+    const char *szInitialText;
 };
 
-struct MessageSendInfo {
-	HANDLE hSendId;
+struct MessageSendInfo
+{
+    HANDLE hSendId;
 };
 
-struct MessageWindowData {
-	HANDLE hContact;
-	HANDLE hDbEventFirst,hDbEventLast;
-	struct MessageSendInfo *sendInfo;
-	int sendCount;
-	HANDLE hAckEvent;
-	HANDLE hNewEvent;
-	int showTime;
-	HBRUSH hBkgBrush;
-	int splitterY,originalSplitterY;
-	char *sendBuffer;
-	HICON hIcons[6];
-	SIZE minEditBoxSize;
-	int showInfo;
-	int showButton;
-	int lineHeight;
-	int windowWasCascaded;
-	int nFlash;
-	int nFlashMax;
-	int nLabelRight;
-	int nTypeSecs;
-	int nTypeMode;
-	int showSend;
-	DWORD nLastTyping;
-	int showTyping;
-	int showTypingWin;
-	HWND hwndStatus;
-	DWORD lastMessage;
+struct MessageWindowData
+{
+    HANDLE hContact;
+    HANDLE hDbEventFirst, hDbEventLast;
+    struct MessageSendInfo *sendInfo;
+    int sendCount;
+    HANDLE hAckEvent;
+    HANDLE hNewEvent;
+    int showTime;
+    HBRUSH hBkgBrush;
+    int splitterY, originalSplitterY;
+    char *sendBuffer;
+    HICON hIcons[6];
+    SIZE minEditBoxSize;
+    int showInfo;
+    int showButton;
+    int lineHeight;
+    int windowWasCascaded;
+    int nFlash;
+    int nFlashMax;
+    int nLabelRight;
+    int nTypeSecs;
+    int nTypeMode;
+    int showSend;
+    DWORD nLastTyping;
+    int showTyping;
+    int showTypingWin;
+    HWND hwndStatus;
+    DWORD lastMessage;
     int showIcons;
     int showDate;
     int hideNames;
@@ -86,18 +89,19 @@ struct MessageWindowData {
 
 #define EVENTTYPE_STATUSCHANGE 25368
 
-struct CREOleCallback {
-	IRichEditOleCallbackVtbl *lpVtbl;
-	unsigned refCount;
-	IStorage *pictStg;
-	int nextStgId;
+struct CREOleCallback
+{
+    IRichEditOleCallbackVtbl *lpVtbl;
+    unsigned refCount;
+    IStorage *pictStg;
+    int nextStgId;
 };
 
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int DbEventIsShown(DBEVENTINFO *dbei, struct MessageWindowData *dat);
-void StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend);
+int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat);
+void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend);
 void LoadMsgLogIcons(void);
 void FreeMsgLogIcons(void);
 
@@ -112,14 +116,14 @@ void FreeMsgLogIcons(void);
 #define MSGFONTID_MESSAGEAREA 8
 #define MSGFONTID_NOTICE      9
 
-void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
+void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour);
 extern const int msgDlgFontCount;
 
 #define LOADHISTORY_UNREAD    0
 #define LOADHISTORY_COUNT     1
 #define LOADHISTORY_TIME      2
 
-#define SRMSGMOD                   "SRMM"
+#define SRMMMOD                    "SRMM"
 
 #define SRMSGSET_SHOWBUTTONLINE    "ShowButtonLine"
 #define SRMSGDEFSET_SHOWBUTTONLINE 1
@@ -164,6 +168,8 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_SHOWTIME       0
 #define SRMSGSET_SHOWDATE          "ShowDate"
 #define SRMSGDEFSET_SHOWDATE       0
+#define SRMSGSET_SHOWSTATUSCH      "ShowStatusChanges"
+#define SRMSGDEFSET_SHOWSTATUSCH   1
 #define SRMSGSET_BKGCOLOUR         "BkgColour"
 #define SRMSGDEFSET_BKGCOLOUR      GetSysColor(COLOR_WINDOW)
 
