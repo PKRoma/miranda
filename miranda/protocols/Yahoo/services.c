@@ -231,6 +231,12 @@ static void __cdecl yahoo_im_sendackfail(HANDLE hContact)
     ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 0);
 }
 
+static void __cdecl yahoo_im_sendackfail_longmsg(HANDLE hContact)
+{
+    SleepEx(1000, TRUE);
+    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 
+						Translate("Message is too long: Yahoo messages are limited by 800 UTF8 chars"));
+}
 
 //=======================================================
 //Send a message
@@ -247,6 +253,11 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
         return 1;
     }
         
+    if (lstrlen(msg) > 800) {/* don't send message if we not connected! */
+        pthread_create(	yahoo_im_sendackfail_longmsg, ccs->hContact);
+        return 1;
+    }
+
 	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
         yahoo_send_msg(dbv.pszVal, msg, 0);
         DBFreeVariant(&dbv);
@@ -268,17 +279,22 @@ int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
         pthread_create(yahoo_im_sendackfail, ccs->hContact);
         return 1;
     }
-        
+
+
 	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		char* p = ( char* )ccs->lParam;
 		char* msg = Utf8EncodeUcs2(( wchar_t* )&p[ strlen(p)+1 ] );
 
-        yahoo_send_msg(dbv.pszVal, msg, 1);
+		if (lstrlen(msg) > 800) {/* don't send message if we not connected! */
+			pthread_create(yahoo_im_sendackfail_longmsg, ccs->hContact);
+		} else {
+			yahoo_send_msg(dbv.pszVal, msg, 1);
+		    pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
+		}
+
         DBFreeVariant(&dbv);
 		free(msg);
 		
-        pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
-    
         return 1;
     }
     
