@@ -95,7 +95,6 @@ capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize)
 }
 
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
-const capstr capTrilNew   = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
 const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
 const capstr capSimOld    = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x00};
@@ -103,6 +102,7 @@ const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', '
 const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
 const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
 const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
+const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capRichText  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
@@ -119,6 +119,8 @@ char* cliLicqVerL  = "Licq %u.%u.%u";
 char* cliCentericq = "Centericq";
 char* cliIcyJuice  = "IcyJuice";
 char* cliTrillian  = "Trillian";
+char* cliQip       = "QIP 200%c%c";
+char* cliIM2       = "IM2";
 
 
 // TLV(1) Unknown (x50)
@@ -140,7 +142,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	DWORD dwIP;
 	DWORD dwUIN;
 	DWORD dwDirectConnCookie;
-//	DWORD dwMirVer = 0;
 	DWORD dwFT1, dwFT2, dwFT3;
 	LPSTR szClient = 0;
 	char szClientBuf[64];
@@ -327,6 +328,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       {
         szClient = "mobicq/JIMM";
       }
+      else if (dwFT1 == 0x3FF19BEB && dwFT3 == 0x3FF19BEB)
+      {
+        szClient = cliIM2;
+      }
 		}
 		else
 		{
@@ -426,10 +431,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               { // the file exists, so try to update photo setting
                 if (dwPaFormat == PA_FORMAT_JPEG)
                 {
-                  DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
-                  DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
-                  if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szAvatar))
-                    Netlib_Logf(ghServerNetlibUser, "Avatar file could not be linked to mToolTip.");
+                  LinkContactPhotoToFile(hContact, szAvatar);
                 }
               }
               else
@@ -466,11 +468,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             if (GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar)) 
             { // avatar request sent or added to queue
               if (dwPaFormat == PA_FORMAT_JPEG)
-              { // TODO: move to separate function for linking avatar file to mToolTip and others
-                DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
-                DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
-                if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szAvatar))
-                  Netlib_Logf(ghServerNetlibUser, "Avatar file could not be linked to mToolTip.");
+              {
+                LinkContactPhotoToFile(hContact, szAvatar);
               }
             } 
           }
@@ -542,7 +541,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           // check capabilities for client identification
           if (MatchCap(pTLV->pData, pTLV->wLen, &capTrillian, 0x10) || MatchCap(pTLV->pData, pTLV->wLen, &capTrilCrypt, 0x10))
           { // this is Trillian, check for new version
-            if (MatchCap(pTLV->pData, pTLV->wLen, &capTrilNew, 0x10))
+            if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
               szClient = "Trillian v3";
             else
               szClient = cliTrillian;
@@ -617,7 +616,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capIm2, 0x10))
           {
-            szClient = "IM2";
+            szClient = cliIM2;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capAndRQ, 9))
           {
@@ -631,6 +630,13 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
             else
               _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
+            szClient = szClientBuf;
+          }
+          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capQip, 0xE))
+          {
+            char v1 = (*capId)[0xE];
+            char v2 = (*capId)[0xF];
+            _snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
             szClient = szClientBuf;
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))
@@ -680,6 +686,13 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
                 szClient = "Icq2Go! (Java)";
               else 
                 szClient = "Icq2Go!";
+            else if (wVersion == 0xA)
+              if (!MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10) && !CheckContactCapabilities(hContact, CAPF_UTF))
+              { // this is bad, but we must do it - try to detect QNext
+                ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
+                Netlib_Logf(ghServerNetlibUser, "Forcing simple messages (QNext client).");
+                szClient = "QNext";
+              }
           }
 				}
 				else

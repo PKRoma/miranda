@@ -109,4 +109,8 @@ static void __inline SAFE_FREE(void** p)
 	}
 }
 
+void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
+void ContactPhotoSettingChanged(HANDLE hContact);
+
+
 #endif /* __UTILITIES_H */

@@ -277,7 +277,7 @@ DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
 
   EnterCriticalSection(&cookieMutex);
 
-  dwThisSeq = wCookieSeq++;
+  dwThisSeq = wCookieSeq++ && 0x7FFF;
   dwThisSeq |= wIdent<<0x10;
 
   cookie = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * (cookieCount + 1));
@@ -297,7 +297,7 @@ DWORD GenerateCookie(WORD wIdent)
   DWORD dwThisSeq;
 
   EnterCriticalSection(&cookieMutex);
-  dwThisSeq = wCookieSeq++;
+  dwThisSeq = wCookieSeq++ && 0x7FFF;
   dwThisSeq |= wIdent<<0x10;
   LeaveCriticalSection(&cookieMutex);
 
@@ -927,4 +927,73 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 	// All OK!
 	return TRUE;
 
+}
+
+
+static int bPhotoLock = 0;
+
+void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
+{ // set contact photo if linked if no photo set link
+  if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
+  {
+    bPhotoLock = 1;
+    __try
+    {
+      if (DBGetContactSettingByte(hContact, "ContactPhoto", "ICQLink", 0))
+      { // we are linked update DB
+        if (szFile)
+          DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
+          DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
+          if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szFile))
+            Netlib_Logf(ghServerNetlibUser, "Avatar file could not be linked to ContactPhoto.");
+        else
+        { // no file, unlink
+          DBDeleteContactSetting(hContact, "ContactPhoto", "File");
+          DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
+        }
+      }
+      else if (szFile) 
+      { // link only if file valid
+        DBVARIANT dbv;
+        if (DBGetContactSetting(hContact, "ContactPhoto", "File", &dbv))
+        {
+          if (DBGetContactSetting(hContact, "ContactPhoto", "Link", &dbv))
+          { // no photo defined
+            DBWriteContactSettingString(hContact, "ContactPhoto", "File", szFile);
+            DBWriteContactSettingByte(hContact, "ContactPhoto", "ICQLink", 1);
+          }
+          DBFreeVariant(&dbv);
+        }
+        else
+        { // some file already defined, check if it is not the same, if yes, set link
+          if (!strcmp(dbv.pszVal, szFile))
+          {
+            DBWriteContactSettingByte(hContact, "ContactPhoto", "ICQLink", 1);
+          }
+          DBFreeVariant(&dbv);
+        }
+      }
+    }
+    __finally
+    {
+      bPhotoLock = 0;
+    }
+  }
+}
+
+static int bNoChanging = 0;
+
+void ContactPhotoSettingChanged(HANDLE hContact)
+{ // the setting was changed - if it is done externaly unlink...
+  if (bNoChanging) return;
+  bNoChanging = 1;
+  __try
+  {
+    if (!bPhotoLock && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
+      DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
+  }
+  __finally
+  {
+    bNoChanging = 0;
+  }
 }
