@@ -941,7 +941,7 @@ void handleServUINSettings(int nPort, int nIP)
 		packDWord(&packet, WEBFRONTPORT);   // Web front port
 		packDWord(&packet, CLIENTFEATURES); // Client features
 		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x80030500);     // Abused timestamp
+		packDWord(&packet, 0x00030500);     // Abused timestamp
 		packDWord(&packet, 0x00000000);     // Timestamp
 		packWord(&packet, 0x0000);          // Unknown
 
