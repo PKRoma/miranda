@@ -187,6 +187,9 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			int maxx,maxy;
 			int destw,desth;
 
+			// XXX: Halftone isnt supported on 9x, however the scretch problems dont happen on 98.
+			SetStretchBltMode(hdcMem, HALFTONE);
+
 			GetObject(dat->hBmpBackground,sizeof(bmp),&bmp);
 			hdcBmp=CreateCompatibleDC(hdcMem);
 			SelectObject(hdcBmp,dat->hBmpBackground);
