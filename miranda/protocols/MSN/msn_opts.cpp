@@ -473,9 +473,12 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	static bool bEnabled;
+
 	switch( msg ) {
 	case WM_INITDIALOG: {
 		TranslateDialogDefault(hwndDlg);
+		bEnabled = false;
 
 		//Colours. First step is configuring the colours.
 		SendDlgItemMessage( hwndDlg, IDC_BGCOLOUR, CPM_SETCOLOUR, 0, MyOptions.BGColour );
@@ -504,6 +507,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 			EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT2 ), FALSE );
 		}
+		bEnabled = true;
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -528,7 +532,8 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 		case IDC_POPUP_TIMEOUT2:
 		case IDC_NOTIFY_FIRSTMSG:
 		case IDC_ERRORS_USING_POPUPS:
-			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			if ( bEnabled )
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
 
 		case IDC_BGCOLOUR: //Fall through
