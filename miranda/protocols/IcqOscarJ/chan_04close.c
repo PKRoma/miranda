@@ -163,7 +163,12 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	nloc.flags = 0;
 	nloc.szHost = servip;
 	nloc.wPort = (WORD)atoi(&newServer[i]);
-	hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+  hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+  if (!hServerConn && (GetLastError() == 87))
+  { // this ensures that an old Miranda can also connect
+    nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+    hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+  }
 	if (hServerConn == NULL)
 	{
 		SAFE_FREE(&cookie);
@@ -242,6 +247,11 @@ static void handleMigration()
 
 	// Open connection to new server
 	hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+  if (!hServerConn && (GetLastError() == 87))
+  { // this ensures that an old Miranda can also connect
+    nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+    hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+  }
 	if (hServerConn == NULL)
 	{
 		icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to migrated ICQ communication server");

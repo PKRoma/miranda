@@ -372,7 +372,12 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       nloc.wPort = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "OscarPort", DEFAULT_SERVER_PORT);
 
       hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-
+      if (!hConnection && (GetLastError() == 87))
+      { // this ensures, an old Miranda will be able to connect also
+        nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+        hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+      }
+      
       if (hConnection == NULL)
       {
         Netlib_Logf(ghServerNetlibUser, "Unable to connect to ICQ new family server.");

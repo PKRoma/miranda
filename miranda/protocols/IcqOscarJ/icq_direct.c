@@ -459,6 +459,11 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 		Netlib_Logf(hDirectNetlibUser, "Direct: connecting to %s:%u", nloc.szHost, nloc.wPort);
 
 		dc.hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hDirectNetlibUser, (LPARAM)&nloc);
+    if (!dc.hConnection && (GetLastError() == 87))
+    { // this ensures that an old Miranda can also connect
+      nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+      dc.hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hDirectNetlibUser, (LPARAM)&nloc);
+    }
 
 		if (dc.hConnection == NULL)
 		{
