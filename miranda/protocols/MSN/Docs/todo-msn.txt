@@ -2,8 +2,6 @@ There're most important problems and known bugs:
 
 1. File transfers:
 - problems with the multihomed machines.
-- active/passive transfers.
-- MSN P2P file transfers.
 - better diagnostics.
 
 If you know a problem that is not listed here, report it via e-mail.
