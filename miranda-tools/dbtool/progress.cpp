@@ -1,6 +1,6 @@
 /*
 Miranda Database Tool
-Copyright (C) 2001-3  Richard Hughes
+Copyright (C) 2001-2005  Richard Hughes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

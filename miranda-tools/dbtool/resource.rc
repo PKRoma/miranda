@@ -360,7 +360,7 @@ BEGIN
             VALUE "FileDescription", "Miranda IM Database Tool\0"
             VALUE "FileVersion", "0.3.4\0"
             VALUE "InternalName", "dbtool\0"
-            VALUE "LegalCopyright", "Copyright © 2001-3 Richard Hughes\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2005 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "dbtool.exe\0"
             VALUE "PrivateBuild", "\0"
