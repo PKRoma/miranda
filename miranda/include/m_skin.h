@@ -128,7 +128,7 @@ __inline static int SkinPlaySound(const char *name) {return CallService(MS_SKIN_
 
 
 /*
-	wParam: 0
+	wParam: 0 when playing sound (1 when sound is being previewed)
 	lParam: (char*) pszSoundFile
 	Affect: This hook is fired when the sound module needs to play a sound
 	Note  : This event has default processing, if no one HookEvent()'s this event then it will

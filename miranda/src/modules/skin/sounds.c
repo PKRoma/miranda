@@ -55,7 +55,7 @@ static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
 static int SkinPlaySoundDefault(WPARAM wParam, LPARAM lParam)
 {
 	char * pszFile = (char *) lParam;
-	if ( pszFile && DBGetContactSettingByte(NULL,"Skin","UseSound",1) ) {
+	if ( pszFile && (DBGetContactSettingByte(NULL,"Skin","UseSound",1) || (int)wParam==1)) {
 		PlaySound(pszFile, NULL, SND_ASYNC | SND_FILENAME | SND_NOWAIT);
 	}
 	return 0;
@@ -201,14 +201,14 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if (TreeView_GetItem(hwndTree, &tvi)==FALSE) break;
                 if (tvi.lParam==-1) break;
                 if (soundList[tvi.lParam].tempFile) 
-                    NotifyEventHooks(hPlayEvent, 0, (LPARAM)soundList[tvi.lParam].tempFile);
+                    NotifyEventHooks(hPlayEvent, 1, (LPARAM)soundList[tvi.lParam].tempFile);
                 else {
                     DBVARIANT dbv;
                     if(!DBGetContactSetting(NULL,"SkinSounds",soundList[tvi.lParam].name,&dbv)) {
                         char szPathFull[MAX_PATH];
                         
                         CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPathFull);
-                        NotifyEventHooks(hPlayEvent, 0, (LPARAM)szPathFull);
+                        NotifyEventHooks(hPlayEvent, 1, (LPARAM)szPathFull);
                         DBFreeVariant(&dbv);
                     }
                 }
