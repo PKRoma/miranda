@@ -334,6 +334,30 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             }
                             break;
                         }
+                        case TVN_KEYDOWN:
+                        {
+                            NMTVKEYDOWN* ptkd = (NMTVKEYDOWN*)lParam;
+                            TVHITTESTINFO hti;
+
+                            if (ptkd) {
+                                if (ptkd->wVKey == 0x0020) {
+                                    hti.pt.x=(short)LOWORD(GetMessagePos());
+						            hti.pt.y=(short)HIWORD(GetMessagePos());
+						            ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
+                                    if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti)) {
+                                        if (hti.flags&TVHT_ONITEM) {
+                                            if (TreeView_GetParent(hwndTree, hti.hItem)!=TreeView_GetRoot(hwndTree)) {
+                                                // the stupid checkbox gets enabled here.
+                                            }
+                                            else {
+                                                SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
 						case NM_CLICK:
 						{
                             TVHITTESTINFO hti;
@@ -342,8 +366,10 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						    ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
 						    if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti)) {
                                 if (hti.flags&TVHT_ONITEM) {
-                                    if(hti.flags&TVHT_ONITEMSTATEICON)
-                                        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                                    if(hti.flags&TVHT_ONITEMSTATEICON) {
+                                        if (TreeView_GetParent(hwndTree, hti.hItem)!=TreeView_GetRoot(hwndTree))
+                                            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                                    }
                                 }
                             }
                             break;
