@@ -143,7 +143,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #endif
       packet.wLen = 16;
       write_flap(&packet, ICQ_DATA_CHAN);
-      packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, (0x00010000|ICQ_LISTS_CLI_CHECK));
+      // TODO: allocate cookie to pair this with reply
+      packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, (ICQ_LISTS_CLI_CHECK<<0x10|0x01));
       // Sending 0 here forces the server to send the complete roster
       // everytime. This makes sure that we always receive the visibility
       // ID.  // TODO: do not use this, why it is neccessary ?
@@ -245,7 +246,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 			pBuffer += 4;      /* warning level & user class */
 			wBufferLength -= 5 + bUinLen;
 
-			if (pSnacHeader->dwRef == 0x0e) // This is during the login sequence
+			if (pSnacHeader->dwRef == 0x0e0000) // This is during the login sequence
 			{
 
 				// TLV(x01) User type?
@@ -280,7 +281,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 				/* Get Offline Messages Reqeust */
 				packet.wLen = 24;
 				write_flap(&packet, 2);
-				packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, 0x00020001);
+				packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, 0x00010002);
 				packDWord(&packet, 0x0001000a);	  /* TLV */
 				packLEWord(&packet, 8);		      /* bytes remaining */
 				packLEDWord(&packet, dwLocalUIN);
