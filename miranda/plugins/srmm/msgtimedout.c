@@ -27,48 +27,51 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 
-	char *pszError = NULL;
+    char *pszError = NULL;
 
-	pszError = (char *) GetWindowLong(hwndDlg, GWL_USERDATA);
-	switch (msg) {
-		case WM_INITDIALOG:
-		{
-			RECT rc, rcParent;
+    pszError = (char *) GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pszError);
 
-			TranslateDialogDefault(hwndDlg);
+    switch (msg) {
+        case WM_INITDIALOG:
+        {
+            RECT rc, rcParent;
 
-			if (lParam) {
-				pszError = (char *) lParam;
-				if (!pszError||!strlen(pszError))
-					pszError = strdup(Translate("An unknown error has occured."));
-				SetDlgItemTextA(hwndDlg, IDC_ERRORTEXT, pszError);
-			}
+            SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pszError);
 
-			GetWindowRect(hwndDlg, &rc);
-			GetWindowRect(GetParent(hwndDlg), &rcParent);
-			SetWindowPos(hwndDlg, 0, (rcParent.left + rcParent.right - (rc.right - rc.left)) / 2, (rcParent.top + rcParent.bottom - (rc.bottom - rc.top)) / 2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-		}
-			return TRUE;
+            TranslateDialogDefault(hwndDlg);
 
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDOK:
-					if (pszError)
-						free(pszError);
-					SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_RETRY, 0);
-					DestroyWindow(hwndDlg);
-					break;
-				case IDCANCEL:
-					if (pszError)
-						free(pszError);
-					SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
-					DestroyWindow(hwndDlg);
-					break;
-			}
-			break;
-	}
-	return FALSE;
+            if (lParam) {
+                pszError = (char *) lParam;
+                if (!pszError||!strlen(pszError))
+                    pszError = strdup(Translate("An unknown error has occured."));
+                SetDlgItemTextA(hwndDlg, IDC_ERRORTEXT, pszError);
+            }
+
+            GetWindowRect(hwndDlg, &rc);
+            GetWindowRect(GetParent(hwndDlg), &rcParent);
+            SetWindowPos(hwndDlg, 0, (rcParent.left + rcParent.right - (rc.right - rc.left)) / 2, (rcParent.top + rcParent.bottom - (rc.bottom - rc.top)) / 2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+        }
+            return TRUE;
+
+        case WM_COMMAND:
+            switch (LOWORD(wParam)) {
+                case IDOK:
+                    if (pszError)
+                        free(pszError);
+                    SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_RETRY, 0);
+                    DestroyWindow(hwndDlg);
+                    break;
+                case IDCANCEL:
+                    if (pszError)
+                        free(pszError);
+                    SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
+                    DestroyWindow(hwndDlg);
+                    break;
+            }
+            break;
+    }
+
+    return FALSE;
 
 }

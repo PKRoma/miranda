@@ -12,7 +12,7 @@
 #define IDC_HYPERLINKHAND               214
 #define IDC_DROPUSER                    215
 #define IDD_OPT_MSGDLG                  243
-#define IDD_MSG                         244
+#define IDD_MSGSPLIT                    244
 #define IDD_OPT_MSGLOG                  245
 #define IDI_DOWNARROW                   264
 #define IDI_TYPING                      268
@@ -30,6 +30,7 @@
 #define IDC_AUTOPOPUP                   1003
 #define IDC_AUTOCLOSE                   1004
 #define IDC_AUTOMIN                     1005
+#define IDC_TIME                        1006
 #define IDC_NAME                        1009
 #define IDC_SPLITTER                    1017
 #define IDC_SHOWNAMES                   1024
@@ -75,10 +76,6 @@
 #define IDC_NOTIFYBALLOON               1607
 #define IDC_CTRLSUPPORT                 1608
 #define IDC_DELTEMP                     1609
-#define IDC_AVATAR                      1610
-#define IDC_AVATARSUPPORT               1611
-#define IDC_LIMITAVATARH                1612
-#define IDC_AVATARHEIGHT                1613
 #define IDM_COPY                        40001
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
@@ -91,9 +88,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        285
+#define _APS_NEXT_RESOURCE_VALUE        283
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1614
+#define _APS_NEXT_CONTROL_VALUE         1610
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -16,11 +16,8 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
-2.1.0.0
- - Show avatars for protocols that support them (bmp support)
- - Show user menu by clicking user name
- - Copy user name by shift clicking username
- - Log window is drawn using XP theme if possible
+2.0.0.1
+ - Log control now styled using uxtheme when available
 
 2.0.0.0
  - Remove send to multiple "feature"
