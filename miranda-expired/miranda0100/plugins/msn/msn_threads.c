@@ -30,9 +30,6 @@ extern int msnStatusMode,msnDesiredStatus;
 
 void __cdecl MSNServerThread(struct ThreadData *info)
 {
-	char data[1024];
-	int bytesInData;
-
 	MSN_DebugLog(MSN_LOG_DEBUG,"Thread started: server='%s', type=%d",info->server,info->type);
 
 	{	SOCKADDR_IN sockaddr;
@@ -80,26 +77,26 @@ void __cdecl MSNServerThread(struct ThreadData *info)
 	}
 
 	MSN_DebugLog(MSN_LOG_DEBUG,"Entering main recv loop");
-	bytesInData=0;
+	info->bytesInData=0;
 	for(;;) {
 		int recvResult;
-		recvResult=MSN_WS_Recv(info->s,data+bytesInData,sizeof(data)-bytesInData);
+		recvResult=MSN_WS_Recv(info->s,info->data+info->bytesInData,sizeof(info->data)-info->bytesInData);
 		if(!recvResult) break;
-		bytesInData+=recvResult;
+		info->bytesInData+=recvResult;
 		//pull off each line for parsing
 		for(;;) {
 			char *peol;
-			char msg[sizeof(data)];
+			char msg[sizeof(info->data)];
 			int handlerResult;
 
-			peol=strchr(data,'\r');
+			peol=strchr(info->data,'\r');
 			if(peol==NULL) break;
-			if(bytesInData<peol-data+2) break;  //wait for full line end
-			memcpy(msg,data,peol-data); msg[peol-data]=0;
+			if(info->bytesInData<peol-info->data+2) break;  //wait for full line end
+			memcpy(msg,info->data,peol-info->data); msg[peol-info->data]=0;
 			if(peol[1]!='\n')
 				MSN_DebugLog(MSN_LOG_WARNING,"Dodgy line ending to command: ignoring");
-			bytesInData-=(peol-data)+1+(peol[1]=='\n');
-			memmove(data,peol+1+(peol[1]=='\n'),bytesInData);
+			info->bytesInData-=(peol-info->data)+1+(peol[1]=='\n');
+			memmove(info->data,peol+1+(peol[1]=='\n'),info->bytesInData);
 
 			MSN_DebugLog(MSN_LOG_PACKETS,"RECV:%s",msg);
 			if(!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
@@ -112,7 +109,7 @@ void __cdecl MSNServerThread(struct ThreadData *info)
 				handlerResult=MSN_HandleCommands(info,msg);
 			if(handlerResult) break;
 		}
-		if(bytesInData==sizeof(data)) {
+		if(info->bytesInData==sizeof(info->data)) {
 			MSN_DebugLog(MSN_LOG_FATAL,"sizeof(data) is too small: longest line won't fit");
 			break;
 		}
