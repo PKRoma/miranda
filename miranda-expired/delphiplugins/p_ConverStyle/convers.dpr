@@ -125,6 +125,8 @@ begin
 
   msgwindow.Show;
   msgwindow.BringWindowToFront;
+  msgwindow.SetFocus;
+  setfocus(msgwindow.Handle);
 
   Result:=0;
 end;
@@ -138,6 +140,7 @@ begin
 
   msgwindow.Show;
   msgwindow.BringWindowToFront;
+  msgwindow.SetFocus;
 
   Result:=0;
 end;
