@@ -121,13 +121,16 @@ void icq_UDPQueueDelSeq(icq_Link *icqlink, WORD seq)
 void icq_UDPQueueItemResend(icq_UDPQueueItem *p)
 {
   p->attempts++;
+  icq_FmtLog(p->icqlink,ICQ_LOG_MESSAGE,"UDP timeout, attempt %d\n",p->attempts);
   if (p->attempts > 6)
   {
+    icq_Link *link;
+    icq_FmtLog(p->icqlink,ICQ_LOG_ERROR,"Disconnect due to no reply within 90 secs\n");
+	link=p->icqlink;    /* p is freed by icq_Disconnect(), so need to save link */
     icq_Disconnect(p->icqlink);
-    invoke_callback(p->icqlink, icq_Disconnected)(p->icqlink);
+    invoke_callback(link, icq_Disconnected)(link);
     return;
   }
-
   icq_UDPSockWriteDirect(p->icqlink, p->pack);
 }
 

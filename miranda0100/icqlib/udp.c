@@ -214,8 +214,9 @@ WORD icq_KeepAlive(icq_Link *icqlink) /* V5 */
 {
   icq_Packet *p = icq_UDPCreateStdSeqPacket(icqlink, UDP_CMD_KEEP_ALIVE, icqlink->d->icq_UDPSeqNum1++);
   icq_PacketAppend32(p, rand());
-  icq_UDPSockWriteDirect(icqlink, p); /* don't queue keep alive packets! */
-  icq_PacketDelete(p);
+  //icq_UDPSockWriteDirect(icqlink, p); /* don't queue keep alive packets! */
+  icq_UDPSockWrite(icqlink, p); /* do queue keep alive packets, because otherwise we don't know when they failed */
+  //icq_PacketDelete(p);
 
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Send Keep Alive packet to the server\n");
 
