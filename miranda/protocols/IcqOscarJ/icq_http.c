@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -114,7 +115,7 @@ int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
 	packBuffer(&packet, nloc->szHost, (WORD)serverNameLen);
 	packWord(&packet, nloc->wPort);
 	Netlib_Send(hConn, packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
-	SAFE_FREE(packet.pData);
+	SAFE_FREE(&packet.pData);
 
 	return 1;
 
@@ -133,7 +134,7 @@ int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDA
 	write_httphdr(&packet, HTTP_PACKETTYPE_FLAP);
 	packBuffer(&packet, buf, (WORD)len);
 	sendResult = Netlib_Send(hConn, packet.pData, packet.wLen, flags);
-	SAFE_FREE(packet.pData);
+	SAFE_FREE(&packet.pData);
 
 	if(sendResult <= 0)
 		return sendResult;

@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -320,7 +321,7 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 
 		case FILERESUME_RENAME:
 			openFlags = _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY;
-			SAFE_FREE(ft->szThisFile);
+			SAFE_FREE(&ft->szThisFile);
 			ft->szThisFile = _strdup(szFilename);
 			ft->dwFileBytesDone = 0;
 			break;
@@ -436,7 +437,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				unpackLEWord(&buf, &wThisFilenameLen);
 				if (wLen < 19 + wThisFilenameLen)
 					return;
-				SAFE_FREE(dc->ft->szThisFile);
+				SAFE_FREE(&dc->ft->szThisFile);
 				dc->ft->szThisFile = (char *)malloc(wThisFilenameLen + 1);
 				memcpy(dc->ft->szThisFile, buf, wThisFilenameLen);
 				dc->ft->szThisFile[wThisFilenameLen] = '\0';
@@ -445,7 +446,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				unpackLEWord(&buf, &wSubdirLen);
 				if (wLen < 18 + wThisFilenameLen + wSubdirLen)
 					return;
-				SAFE_FREE(dc->ft->szThisSubdir);
+				SAFE_FREE(&dc->ft->szThisSubdir);
 				dc->ft->szThisSubdir = (char *)malloc(wSubdirLen + 1);
 				memcpy(dc->ft->szThisSubdir, buf, wSubdirLen);
 				dc->ft->szThisSubdir[wSubdirLen] = '\0';
@@ -471,7 +472,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				szFullPath[0] = '\0';
 				if (_fullpath(szFullPath, dc->ft->szThisFile, MAX_PATH))
 				{
-					SAFE_FREE(dc->ft->szThisFile);
+					SAFE_FREE(&dc->ft->szThisFile);
 					dc->ft->szThisFile = szFullPath;
 				}
 

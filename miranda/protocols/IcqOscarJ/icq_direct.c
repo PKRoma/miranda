@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -127,7 +128,7 @@ void UninitDirectConns(void)
 	DeleteCriticalSection(&directConnListMutex);
 	DeleteCriticalSection(&expectedFileRecvMutex);
 
-	SAFE_FREE(directConnList);
+	SAFE_FREE(&(void*)directConnList);
 
 }
 
@@ -240,7 +241,7 @@ int sendDirectPacket(HANDLE hConnection, icq_packet* pkt)
 		Netlib_CloseHandle(hConnection);
 	}
 	
-	SAFE_FREE(pkt->pData);
+	SAFE_FREE(&pkt->pData);
 
 	return nResult;
 
@@ -434,7 +435,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 	}
 
 
-	SAFE_FREE(dtsi);
+	SAFE_FREE(&dtsi);
 	dc.initialised = 0;
 	dc.wantIdleTime = 0;
 
@@ -582,19 +583,19 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 		}
 		else if(dc.ft->hConnection)
 			ProtoBroadcastAck(gpszICQProtoName, dc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, dc.ft, 0);
-		SAFE_FREE(dc.ft->szFilename);
-		SAFE_FREE(dc.ft->szDescription);
-		SAFE_FREE(dc.ft->szSavePath);
-		SAFE_FREE(dc.ft->szThisFile);
-		SAFE_FREE(dc.ft->szThisSubdir);
+		SAFE_FREE(&dc.ft->szFilename);
+		SAFE_FREE(&dc.ft->szDescription);
+		SAFE_FREE(&dc.ft->szSavePath);
+		SAFE_FREE(&dc.ft->szThisFile);
+		SAFE_FREE(&dc.ft->szThisSubdir);
 		if (dc.ft->files)
 		{
 			int i;
 			for (i = 0; i < (int)dc.ft->dwFileCount; i++)
-				SAFE_FREE(dc.ft->files[i]);
-			SAFE_FREE(dc.ft->files);
+				SAFE_FREE(&dc.ft->files[i]);
+			SAFE_FREE(&(char*)dc.ft->files);
 		}
-		SAFE_FREE(dc.ft);
+		SAFE_FREE(&dc.ft);
 		_chdir("\\");		/* so we don't leave a subdir handle open so it can't be deleted */
 	}
 
@@ -828,7 +829,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 						if (dc->packetToSend->pData[2] == 2)
 							EncryptDirectPacket(dc, dc->packetToSend);
 						sendDirectPacket(dc->hConnection, dc->packetToSend);
-						SAFE_FREE(dc->packetToSend);
+						SAFE_FREE(&dc->packetToSend);
 						dc->packetToSend = NULL;
 					}
 				}
@@ -1062,7 +1063,7 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
 	  Netlib_Logf(hDirectNetlibUser, szBuf);
 
-	  SAFE_FREE(szBuf);
+	  SAFE_FREE(&szBuf);
 
   }
 

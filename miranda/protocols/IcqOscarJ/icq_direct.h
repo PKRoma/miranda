@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,7 +44,7 @@ typedef struct {
 	int sending;
 	int iCurrentFile;
 	int currentIsDir;
-	WORD wCookie;
+	DWORD dwCookie;
 	DWORD dwUin;
 	DWORD dwRemotePort;
 	HANDLE hContact;
@@ -107,17 +108,17 @@ void handleFileTransferPacket(directconnect *dc, PBYTE buf, WORD wLen);
 void handleFileTransferIdle(directconnect *dc);
 void icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize);
 void icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize);
-void buildDirectPacketHeader(icq_packet *packet, WORD wDataLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1);
+void buildDirectPacketHeader(icq_packet *packet, WORD wDataLen, WORD wCommand, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1);
 
 void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer *ft);
 
-void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText);
+void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText);
 
 // Handles all types of file transfer replies
-void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, WORD wStatus, char* pszText);
+void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStatus, char* pszText);
 
 // Handle a received file transfer request (direct & server)
-void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion);
+void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion);
 
 
 #endif /* __ICQ_DIRECT_H */

@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,7 +44,7 @@ extern char gpszICQProtoName[MAX_PATH];
 
 
 
-void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, WORD wStatus, char* pszText)
+void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStatus, char* pszText)
 {
 
 	char* pszFileName = NULL;
@@ -55,13 +56,13 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, WORD wStatus
 
 	
 	// Find the filetransfer that belongs to this response
-	if (!FindCookie(wCookie, &dwCookieUin, &ft))
+	if (!FindCookie(dwCookie, &dwCookieUin, &ft))
 	{
 		Netlib_Logf(hDirectNetlibUser, "Error: Received unexpected file transfer request response");
 		return;
 	}
 
-	FreeCookie(wCookie);
+	FreeCookie(dwCookie);
 	
 	if (dwCookieUin != dwUin)
 	{
@@ -76,7 +77,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, WORD wStatus
 		Netlib_Logf(hDirectNetlibUser, "File transfer denied by %u,", dwUin);
 		ProtoBroadcastAck(gpszICQProtoName, HContactFromUIN(dwUin, 1), ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)ft, 0);
 
-		FreeCookie(wCookie);
+		FreeCookie(dwCookie);
 
 		return;
 	}
@@ -108,7 +109,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, WORD wStatus
 	
 	OpenDirectConnection(ft->hContact, DIRECTCONN_FILE, ft);
 
-	SAFE_FREE(pszFileName);
+	SAFE_FREE(&pszFileName);
 
 }
 
@@ -116,7 +117,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, WORD wStatus
 
 // pszDescription points to a string with the reason
 // buf points to the first data after the string
-void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion)
+void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion)
 {
 
 	char* pszFileName = NULL;
@@ -164,7 +165,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, DWORD dw
 		ft = (filetransfer*)malloc(sizeof(filetransfer));
 		memset(ft, 0, sizeof(filetransfer));
 		ft->status = 0;
-		ft->wCookie = wCookie;
+		ft->dwCookie = dwCookie;
 		ft->szFilename = _strdup(pszFileName);
 		ft->szDescription = _strdup(pszDescription);
 		ft->dwUin = dwUin;
@@ -191,18 +192,18 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, WORD wCookie, DWORD dw
 
 		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
-		SAFE_FREE(szBlob);
+		SAFE_FREE(&szBlob);
 
 	}
 	
 
-	SAFE_FREE(pszFileName);
+	SAFE_FREE(&pszFileName);
 	
 }
 
 
 
-void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)
+void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)
 {
 
 	Netlib_Logf(hDirectNetlibUser, "handleDirectCancel: Unhandled cancel");
@@ -221,7 +222,7 @@ void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
 	icq_packet packet;
 
 	
-	buildDirectPacketHeader(&packet, 20, DIRECT_ACK, ft->wCookie, MTYPE_FILEREQ, 0, 0);
+	buildDirectPacketHeader(&packet, 20, DIRECT_ACK, ft->dwCookie, MTYPE_FILEREQ, 0, 0);
 	packLEWord(&packet, 0);	   // modifier 
 	packLEWord(&packet, 1);	  // description
 	packByte(&packet, 0);
@@ -243,10 +244,10 @@ void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
 void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
 {
 
-	WORD wCookie;
+	DWORD dwCookie;
 
-	if (FindCookieByData(ft, &wCookie, NULL))
-		FreeCookie(wCookie);      /* this bit stops a send that's waiting for acceptance */
+	if (FindCookieByData(ft, &dwCookie, NULL))
+		FreeCookie(dwCookie);      /* this bit stops a send that's waiting for acceptance */
 
 	if (ft->hConnection)
 	{

@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -49,7 +50,7 @@ void handleDirectNormalMessage(directconnect *dc, PBYTE buf, WORD wLen, WORD wCo
 
 
 
-void buildDirectPacketHeader(icq_packet* packet, WORD wDataLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1)
+void buildDirectPacketHeader(icq_packet* packet, WORD wDataLen, WORD wCommand, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1)
 {
 
 	directPacketInit(packet, 27 + wDataLen);
@@ -57,7 +58,7 @@ void buildDirectPacketHeader(icq_packet* packet, WORD wDataLen, WORD wCommand, W
 	packLEDWord(packet, 0);   /* space for crypto */
 	packLEWord(packet, wCommand);
 	packLEWord(packet, 14);		/* unknown */
-	packLEWord(packet, wCookie);
+	packLEWord(packet, (WORD)dwCookie);
 	packLEDWord(packet, 0);	  /* unknown */
 	packLEDWord(packet, 0);	  /* unknown */
 	packLEDWord(packet, 0);	  /* unknown */
@@ -202,7 +203,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 	}
 
 	// Clean up allocated memory
-	SAFE_FREE(pszText);
+	SAFE_FREE(&pszText);
 	
 }
 
@@ -356,7 +357,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 		wLen = wLen - (WORD)dwDataLength;
 
 		handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, szMsg, 8);
-		SAFE_FREE(szMsg);
+		SAFE_FREE(&szMsg);
 	}
 	else if (typeId == MTYPE_FILEREQ && wPacketCommand == 0x0032)
 	{
@@ -372,7 +373,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 
 		// 50 - file request granted/refused
 		handleFileAck(buf, wLen, dc->dwRemoteUin, wCookie, wStatus, szMsg);
-		SAFE_FREE(szMsg);
+		SAFE_FREE(&szMsg);
 	}
 	else if (typeId)
 	{
@@ -387,7 +388,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 		Netlib_Logf(hDirectNetlibUser, "Unsupported plugin message type '%s'", szMsgType);
 	}
 
-	SAFE_FREE(szMsgType);
+	SAFE_FREE(&szMsgType);
 	
 }
 
