@@ -217,6 +217,7 @@ void get_fd(int id, int fd, int error, void *data)
 			
 			LOG(("Sending file: %s", sf->filename));
 			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
+			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
 			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
 			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sf, 0);
 			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, sf, 0);
@@ -261,9 +262,7 @@ void get_fd(int id, int fd, int error, void *data)
 			} while ( dw == 1024);
 	    CloseHandle(myhFile);
 		}
-    }
-
-	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
+    }	
 
 	//sf->state = FR_STATE_DONE;
     LOG(("File send complete!"));
