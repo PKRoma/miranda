@@ -679,7 +679,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			if(ack->type!=ACKTYPE_SEARCH) break;
 			for(i=0;i<dat->searchCount;i++)
-				if(dat->search[i].hProcess==ack->hProcess && !lstrcmp(dat->search[i].szProto,ack->szModule)) break;
+				if(dat->search[i].hProcess==ack->hProcess && dat->search[i].hProcess != NULL && !lstrcmp(dat->search[i].szProto,ack->szModule)) break;
 			if(i==dat->searchCount) break;
 			if(ack->result==ACKRESULT_SUCCESS) {
 				dat->searchCount--;

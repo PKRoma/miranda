@@ -141,6 +141,7 @@ int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 	
 	sortMultiplier=dat->bSortAscending?1:-1;
 	sortCol=dat->iLastColumnSortIndex;
+	if ( lsr1 == NULL || lsr2 == NULL ) return 0;
 	switch(sortCol)
 	{
 	case COLUMNID_PROTO:
@@ -195,7 +196,8 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 		DWORD caps;
 
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
-		dat->search=(struct ProtoSearchInfo*)malloc(sizeof(struct ProtoSearchInfo)*protoCount);
+		dat->searchCount=0;
+		dat->search=(struct ProtoSearchInfo*)calloc(sizeof(struct ProtoSearchInfo),protoCount);
 		for(i=0;i<protoCount;i++) {
 			if(protos[i]->type!=PROTOTYPE_PROTOCOL) continue;
 			caps=(DWORD)CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_1,0);
