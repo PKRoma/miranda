@@ -176,7 +176,7 @@ static int validguess_db_name(char * name)
 	// this is ONLY SAFE because name -> ffd.cFileName == MAX_PATH
 	char x = name[4];
 	name[4]=0;
-	rc=lstrcmp(name,"dbx_") == 0;
+	rc=lstrcmpi(name,"dbx_") == 0;
 	name[4]=x;
 	return rc;
 }
@@ -188,7 +188,7 @@ static int validguess_clist_name(char * name)
 	// argh evil
 	char x = name[6];
 	name[6]=0;
-	rc=lstrcmp(name,"clist_") == 0;
+	rc=lstrcmpi(name,"clist_") == 0;
 	name[6]=x;
 	return rc;
 }
