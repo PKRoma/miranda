@@ -265,7 +265,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					else {
 						RECT rc;
 						int i,limit;
-						char *pszFilename;
+						char *pszFilename,*pszNewFileName;
 						HMENU hMenu = CreatePopupMenu();
 						
 						if (dat->send)
@@ -280,7 +280,23 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 								pszFilename = files[i];
 							else
 								pszFilename++;
-							AppendMenu(hMenu, MF_STRING, i+1, pszFilename);
+                            {
+                                if (pszFilename) {
+                                    int pszlen;
+                                    char *p;
+                                    
+                                    pszNewFileName = (char*)malloc(strlen(pszFilename)*2);
+                                    p = pszNewFileName;
+                                    for (pszlen=0; pszlen<(int)strlen(pszFilename); pszlen++) {
+                                        *p++ = pszFilename[pszlen];
+                                        if (pszFilename[pszlen]=='&')
+                                            *p++ = '&';
+                                    }
+                                    *p = '\0';
+                                    AppendMenu(hMenu, MF_STRING, i+1, pszNewFileName);
+                                    free(pszNewFileName);
+                                }
+                            }
 						}
 
 						GetWindowRect((HWND)lParam, &rc);
