@@ -339,8 +339,8 @@ IDI_PROFILERED          ICON    DISCARDABLE     "res\\profiler.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,3,0
- PRODUCTVERSION 0,3,3,0
+ FILEVERSION 0,3,4,0
+ PRODUCTVERSION 0,3,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -358,14 +358,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", " \0"
             VALUE "FileDescription", "Miranda IM Database Tool\0"
-            VALUE "FileVersion", "0.3.3\0"
+            VALUE "FileVersion", "0.3.4\0"
             VALUE "InternalName", "dbtool\0"
             VALUE "LegalCopyright", "Copyright © 2001-3 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "dbtool.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Miranda Database Tool\0"
-            VALUE "ProductVersion", "0.3.3\0"
+            VALUE "ProductVersion", "0.3.4\0"
             VALUE "SpecialBuild", "\0"
         END
     END
