@@ -291,7 +291,7 @@ int LoadDatabaseModule(void)
 	if ( getProfile(szProfile, sizeof(szProfile)) ) {
 		PLUGIN_DB_ENUM dbe;
 		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
-		dbe.pfnEnumCallback=FindDbPluginForProfile;
+		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
 		dbe.lParam=(LPARAM)szProfile;
 		// find a driver to support the given profile
 		if ( CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe) != 0 ) {
