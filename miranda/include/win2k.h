@@ -237,6 +237,3 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #endif /* SDK check */
 #endif // WIN2K_H__
 
-
-
-	

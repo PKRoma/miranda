@@ -481,3 +481,4 @@ int LoadSystemModule(void)
 	CreateServiceFunction(MS_SYSTEM_GET_MMI,GetMemoryManagerInterface);
 	return 0;
 }
+
