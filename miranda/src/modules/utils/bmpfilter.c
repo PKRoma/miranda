@@ -28,6 +28,7 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 {
 	IPicture *pic;
 	HBITMAP hBmp,hBmpCopy;
+	HBITMAP hOldBitmap, hOldBitmap2;
 	BITMAP bmpInfo;
 	WCHAR pszwFilename[MAX_PATH];
 	HDC hdc,hdcMem1,hdcMem2;
@@ -64,10 +65,12 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 	hdc=GetDC(NULL);
 	hdcMem1=CreateCompatibleDC(hdc);
 	hdcMem2=CreateCompatibleDC(hdc);
-	SelectObject(hdcMem1,hBmp);
+	hOldBitmap=SelectObject(hdcMem1,hBmp);
 	hBmpCopy=CreateCompatibleBitmap(hdcMem1,bmpInfo.bmWidth,bmpInfo.bmHeight);
-	SelectObject(hdcMem2,hBmpCopy);
+	hOldBitmap2=SelectObject(hdcMem2,hBmpCopy);
 	BitBlt(hdcMem2,0,0,bmpInfo.bmWidth,bmpInfo.bmHeight,hdcMem1,0,0,SRCCOPY);
+	SelectObject(hdcMem1,hOldBitmap);
+	SelectObject(hdcMem2,hOldBitmap2);
 	DeleteDC(hdcMem2);
 	DeleteDC(hdcMem1);
 	ReleaseDC(NULL,hdc);
