@@ -13,6 +13,28 @@ instant messenger network and communicate with other ICQ users.
 Changes
 _______
 
+0.3.5
+
+Bugfixes:
+  Server-list operations is now scheduled correctly
+  Newly added contact with privacy setting is not hidden anymore
+  Fixed unicode message receiving from Icq2Go! (messages were corrupted)
+  Fixed Grant authorisation - not showed correctly and crashing randomly
+  Move to group was not working properly
+  On accept/decline filetransfer miranda was sometimes disconnected
+  Group with subgroups was deleted if empty, that messed up subgroups
+
+New features:
+  Added avatar tab to user-details dialog to show avatar even without mToolTip
+  Linking avatar to mToolTip is now optional
+  My user-details now show more informations & added idle since to ICQ tab
+
+Improvements:
+  Added partial support for subgroups (supported: rename, move, parial: add)
+  Added optional linking to mToolTip, link only if no image set
+  Added workaround for QNext client (it is not capable of type2 msgs)
+
+
 0.3.4.2
 
 Bugfixes:
@@ -42,7 +64,7 @@ Improvements:
   Basic search now automatically removes garbage from text, e.g. it can search by 123-456-789
 
 
-0.3.4.0
+0.3.4
 
 Bugfixes:
   Fixed authorisation reply
