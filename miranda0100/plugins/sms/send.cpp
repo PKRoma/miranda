@@ -36,6 +36,7 @@ extern HWND hwndStatus;
 #define STATUS_BADACK      6
 #define STATUS_RCPTFAILED  7
 #define STATUS_BADRCPT     8
+#define STATUS_NOSMTP      9
 static char *statusToText[]={
 	"Initialising send",
 	"Request sent",
@@ -45,7 +46,8 @@ static char *statusToText[]={
 	"Undeliverable",
 	"Invalid ack data",
 	"Receipt failed",
-	"Invalid receipt data"};
+	"Invalid receipt data",
+	"Redirect via e-mail not supported"};
 
 struct SmsSendEntry {
 	char *number;
@@ -144,19 +146,24 @@ static int ProtoAckHook(WPARAM wParam,LPARAM lParam)
 			if(smsSend[i].hProcess==ack->hProcess) break;
 		if(i>=smsSendCount) return 0;
 		smsSend[i].ack=_strdup((char*)ack->lParam);
-		szId=GetXMLField(smsSend[i].ack,"sms_response","message_id",NULL);
-		if(szId==NULL)
-			smsSend[i].status=STATUS_BADACK;
+		szDeliverable=GetXMLField(smsSend[i].ack,"sms_response","deliverable",NULL);
+		if(!lstrcmpi(szDeliverable,"SMTP"))
+			smsSend[i].status=STATUS_NOSMTP;
 		else {
-			free(szId);
-			szDeliverable=GetXMLField(smsSend[i].ack,"sms_response","deliverable",NULL);
-			if(szDeliverable==NULL)
+			szId=GetXMLField(smsSend[i].ack,"sms_response","message_id",NULL);
+			if(szId==NULL)
 				smsSend[i].status=STATUS_BADACK;
 			else {
-				smsSend[i].status=lstrcmpi(szDeliverable,"Yes")?STATUS_UNDELIVERABLE:STATUS_ACKED;
-				free(szDeliverable);
+				free(szId);
+				if(szDeliverable==NULL)
+					smsSend[i].status=STATUS_BADACK;
+				else {
+					smsSend[i].status=lstrcmpi(szDeliverable,"Yes")?STATUS_UNDELIVERABLE:STATUS_ACKED;
+				}
 			}
 		}
+		if(szDeliverable)
+			free(szDeliverable);
 		UpdateStatusColumn(i);
 		{	DBEVENTINFO dbei={0};
 			dbei.cbSize = sizeof(dbei);
