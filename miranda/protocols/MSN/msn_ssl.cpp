@@ -105,7 +105,8 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 
 	int tUsesProxy = MSN_GetByte( "NLUseProxy", 0 );
 	if ( tUsesProxy ) {
-		if ( !MSN_GetByte( "UseIeProxy", 0 )) {
+		BYTE ptype = MSN_GetByte( "NLProxyType", 0 );
+		if ( !MSN_GetByte( "UseIeProxy", 0 ) && ( ptype == PROXYTYPE_HTTP || ptype == PROXYTYPE_HTTPS )) {
 			char szProxy[ 100 ];
 			if ( MSN_GetStaticString( "NLProxyServer", NULL, szProxy, sizeof szProxy )) {
 				MSN_DebugLog( "Proxy server name should be set if proxy is used" );
