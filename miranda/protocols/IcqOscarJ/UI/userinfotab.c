@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Code for User details ICQ specific pages
 //
 // -----------------------------------------------------------------------------
 
@@ -238,9 +239,8 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
 			{
 				if (dbv.wVal != 0)
 				{
-					static char *szVersionDescr[] = {"", "ICQ 1.x", "ICQ 2.x", "Unknown", "ICQ98", "Unknown", "ICQ99 / licq", "Icq2Go or ICQ2000", "ICQ2001-2003a, Miranda or Trillian", "ICQ Lite", "ICQ 2003b"};
 					pstr = str;
-					_snprintf(str, 80, "%d: %s", dbv.wVal, dbv.wVal > 10 ? Translate("Unknown") : Translate(szVersionDescr[dbv.wVal]));
+					_snprintf(str, 80, "%d", dbv.wVal);
 				}
 				else
 					unspecified = 1;

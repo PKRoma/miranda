@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -48,70 +49,65 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 void RequestPassword()
 {
 
-    DialogBox(hInst, MAKEINTRESOURCE(IDD_LOGINPW), NULL, LoginPasswdDlgProc);
+  DialogBox(hInst, MAKEINTRESOURCE(IDD_LOGINPW), NULL, LoginPasswdDlgProc);
 
 }
- 
 
 
 BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 
-    switch (msg)
-	{
+  switch (msg)
+  {
 
-	case WM_INITDIALOG:
-        {
+    case WM_INITDIALOG:
+      {
 
-			char pszUIN[128];
-			DWORD dwUin;
+        char pszUIN[128];
+        DWORD dwUin;
 
-			
-            TranslateDialogDefault(hwndDlg);
-            SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
-            dwUin = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);
-			_snprintf(pszUIN, 128, Translate("Enter a password for UIN %u:"), dwUin);
-			SetDlgItemText(hwndDlg, IDC_INSTRUCTION, pszUIN);
-        }
-		break;
+        TranslateDialogDefault(hwndDlg);
+        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
+        dwUin = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);
+        _snprintf(pszUIN, 128, Translate("Enter a password for UIN %u:"), dwUin);
+        SetDlgItemText(hwndDlg, IDC_INSTRUCTION, pszUIN);
+      }
+		  break;
 
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+    case WM_CLOSE:
+
+      EndDialog(hwndDlg, 0);
+      break;
 		
-	case WM_COMMAND:
-		{
+    case WM_COMMAND:
+      {
 			
-			switch (LOWORD(wParam))
-			{
+        switch (LOWORD(wParam))
+        {
 				
-			case IDOK:
-				{
-					
-					char str[128];
-					
-					
-					GetDlgItemText(hwndDlg, IDC_LOGINPW, str, sizeof(str));
-					icq_login(str);
-					EndDialog(hwndDlg, IDOK);
-					
-				}
-				break;
-				
-			case IDCANCEL:
-				gnCurrentStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-					(HANDLE)ID_STATUS_OFFLINE, ID_STATUS_OFFLINE);
-				EndDialog(hwndDlg, IDCANCEL);
-				break;
+          case IDOK:
+            {
+              char str[128];
+
+              GetDlgItemText(hwndDlg, IDC_LOGINPW, str, sizeof(str));
+					    icq_login(str);
+					    EndDialog(hwndDlg, IDOK);
 
             }
+				    break;
+
+          case IDCANCEL:
+            gnCurrentStatus = ID_STATUS_OFFLINE;
+            ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
+              (HANDLE)ID_STATUS_OFFLINE, ID_STATUS_OFFLINE);
+            EndDialog(hwndDlg, IDCANCEL);
+            break;
+
         }
-		break;
+      }
+      break;
 
-    }
+  }
 
-
-    return FALSE;
-
+  return FALSE;
 }
