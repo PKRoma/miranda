@@ -352,7 +352,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 
     atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 8192);
     packetRecv.cbSize = sizeof(packetRecv);
-    packetRecv.dwTimeout = 1000; // timeout every second - for stopThread to work
+    packetRecv.dwTimeout = 60000; // timeout every minute - for stopThread to work
     while(!atsi->stopThread)
     {
       recvResult = CallService(MS_NETLIB_GETMOREPACKETS,(WPARAM)atsi->hAvatarPacketRecver, (LPARAM)&packetRecv);
