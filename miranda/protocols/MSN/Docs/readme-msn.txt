@@ -47,6 +47,8 @@ Useful plugins which can help you to work with the MSN protocol
 
 Popup 1.0.1.9
 (http://miranda-im.org/download/details.php?action=viewfile&id=299)
+Popup Plus 2.0.3.8
+(http://miranda-im.org/download/details.php?action=viewfile&id=1170)
 ----------------------
 
 All notifications in the MSN plugin are made using the Popup
