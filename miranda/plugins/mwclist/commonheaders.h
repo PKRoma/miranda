@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #ifndef _COMMON_HEADERS_H_
-#define _COMMON_HEADERS_H_
+#define _COMMON_HEADERS_H_ 1
 
 #include <malloc.h>
 
@@ -83,6 +83,8 @@ extern HINSTANCE g_hInst;
 
 extern struct MM_INTERFACE memoryManagerInterface;
 
+#define strcmp(a,b) MyStrCmp(a,b)
+
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
@@ -91,6 +93,37 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define CS_DROPSHADOW 0x00020000	
 #endif
 
+#ifndef MYCMP
+#define MYCMP
+int __cdecl MyStrCmp (const char *a, const char *b)
+{
+
+	/*
+	{
+		char buf[1024];
+		sprintf(buf,"MyStrCmp call with: a:%x %s  b: %x %s\r\n",(void *)a,(a?a:""),(void *)b,(b?b:""));
+		OutputDebugStr(buf);
+	};
+	*/
+	
+	if (a==NULL&&b==NULL) return 0;
+	if (a==NULL||b==NULL||IsBadCodePtr(a)||IsBadCodePtr(b)||(int)a<1000||(int)b<1000) 
+	{
+	{
+		char buf[1024];
+		sprintf(buf,"BAD CALL MyStrCmp call with: a:%x b: %x \r\n",(void *)a,(void *)b);
+		OutputDebugStr(buf);
+	};
+
+		return 1;
+	}
+	
+	return (strncmp(a,b,strlen(a)));
+
+};
+#endif
+
+//
 
 __inline void *mir_calloc( size_t num, size_t size )
 {
