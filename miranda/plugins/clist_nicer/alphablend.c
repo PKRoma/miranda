@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#define SEGMENTS 70
 #define REVCOLREF(colref) ( RGB(GetBValue(colref),GetGValue(colref),GetRValue(colref)) )
 #define ARGB_FROM_COLA(col,alpha)( (BYTE)((float)(((float)alpha)/100)*255) <<24| col)
+#define PERCENT_TO_BYTE(percent) (BYTE)((float)(((float)alpha)/percent)*255)
 
 void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, 
 			   BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER)
@@ -140,7 +141,17 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 				fAlphaFactor = (float)ubAlpha / (float)0xff;
 				((UINT32 *)pvBits)[x + y * ulBitmapWidth] =	 (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16)	
 					| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
-			} else ((UINT32 *)pvBits)[x + y * ulBitmapWidth] = basecolor; 
+			} else 
+			{
+				ubAlpha = PERCENT_TO_BYTE(alpha);
+				ubRedFinal = ubRed;
+				ubGreenFinal = ubGreen;
+				ubBlueFinal = ubBlue;
+				fAlphaFactor = (float)ubAlpha / (float)0xff;
+				
+				((UINT32 *)pvBits)[x + y * ulBitmapWidth] =	 (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16)	
+					| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
+			}
 		}
 	}
 	bf.BlendOp = AC_SRC_OVER;
@@ -153,9 +164,12 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 	SelectObject(hdc,holdbitmap);
 	DeleteObject(hbitmap);
 	
+	
 	// corners
 	BrMask = CreateSolidBrush(RGB(0xFF,0x00,0xFF));
 	{
+		// realHeightHalf is 7
+
 		bmi.bmiHeader.biWidth = ulBitmapWidth = realHeightHalf;
 		bmi.bmiHeader.biHeight = ulBitmapHeight = realHeight;
 		bmi.bmiHeader.biSizeImage = ulBitmapWidth * ulBitmapHeight * 4;
@@ -192,14 +206,23 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 						((UINT32 *)pvBits)[x + y * ulBitmapWidth] =	 (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16)	
 							| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 
-					} else ((UINT32 *)pvBits)[x + y * ulBitmapWidth] = basecolor;
+					} else {
+						ubAlpha = PERCENT_TO_BYTE(alpha);
+						ubRedFinal = ubRed;
+						ubGreenFinal = ubGreen;
+						ubBlueFinal = ubBlue;
+						fAlphaFactor = (float)ubAlpha / (float)0xff;
+				
+						((UINT32 *)pvBits)[x + y * ulBitmapWidth] =	 (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16)	
+							| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
+					}
 				}
 			}
 		}			
 		AlphaBlend(	hdcwnd, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 		SelectObject(hdc,holdbitmap);
 		DeleteObject(hbitmap);
-				
+
 		// TR+BR CORNER
 		hbitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0x0);
 
@@ -229,8 +252,17 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 						fAlphaFactor = (float)ubAlpha / (float)0xff;
 						((UINT32 *)pvBits)[x + y * ulBitmapWidth] =	 (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16)	
 							| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
-					} 
-					else ((UINT32 *)pvBits)[x + y * ulBitmapWidth] = basecolor;
+					}
+					else {
+						ubAlpha = PERCENT_TO_BYTE(alpha);
+						ubRedFinal = ubRed;
+						ubGreenFinal = ubGreen;
+						ubBlueFinal = ubBlue;
+						fAlphaFactor = (float)ubAlpha / (float)0xff;
+				
+						((UINT32 *)pvBits)[x + y * ulBitmapWidth] =	 (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16)	
+							| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
+					}
 				}
 			}
 		}			

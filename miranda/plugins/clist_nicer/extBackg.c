@@ -721,30 +721,33 @@ void export(char *file)
 	char buffer[255];	
 	for (n=0;n<sizeof(StatusItems)/sizeof(StatusItems[0]);n++)
 	{	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_ALPHA");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].ALPHA),sizeof(StatusItems[n].ALPHA),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR),sizeof(StatusItems[n].COLOR),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2),sizeof(StatusItems[n].COLOR2),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2_TRANSPARENT");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2_TRANSPARENT),sizeof(StatusItems[n].COLOR2_TRANSPARENT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_TEXTCOLOR");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].TEXTCOLOR),sizeof(StatusItems[n].TEXTCOLOR),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_CORNER");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].CORNER),sizeof(StatusItems[n].CORNER),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_GRADIENT");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].GRADIENT),sizeof(StatusItems[n].GRADIENT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_IGNORED");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].IGNORED),sizeof(StatusItems[n].IGNORED),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_BOTTOM");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_BOTTOM),sizeof(StatusItems[n].MARGIN_BOTTOM),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_LEFT");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_LEFT),sizeof(StatusItems[n].MARGIN_LEFT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_RIGHT");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_RIGHT),sizeof(StatusItems[n].MARGIN_RIGHT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_TOP");
-		WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_TOP),sizeof(StatusItems[n].MARGIN_TOP),file);	
+		if (StatusItems[n].statusID!=ID_EXTBKSEPARATOR)
+		{		
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_ALPHA");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].ALPHA),sizeof(StatusItems[n].ALPHA),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR),sizeof(StatusItems[n].COLOR),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2),sizeof(StatusItems[n].COLOR2),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2_TRANSPARENT");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2_TRANSPARENT),sizeof(StatusItems[n].COLOR2_TRANSPARENT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_TEXTCOLOR");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].TEXTCOLOR),sizeof(StatusItems[n].TEXTCOLOR),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_CORNER");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].CORNER),sizeof(StatusItems[n].CORNER),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_GRADIENT");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].GRADIENT),sizeof(StatusItems[n].GRADIENT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_IGNORED");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].IGNORED),sizeof(StatusItems[n].IGNORED),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_BOTTOM");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_BOTTOM),sizeof(StatusItems[n].MARGIN_BOTTOM),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_LEFT");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_LEFT),sizeof(StatusItems[n].MARGIN_LEFT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_RIGHT");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_RIGHT),sizeof(StatusItems[n].MARGIN_RIGHT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_TOP");
+			WritePrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_TOP),sizeof(StatusItems[n].MARGIN_TOP),file);	
+		}
 	}	
 }
 
@@ -754,30 +757,33 @@ void import(char *file, HWND hwndDlg)
 	char buffer[255];	
 	for (n=0;n<sizeof(StatusItems)/sizeof(StatusItems[0]);n++)
 	{	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_ALPHA");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].ALPHA),sizeof(StatusItems[n].ALPHA),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR),sizeof(StatusItems[n].COLOR),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2),sizeof(StatusItems[n].COLOR2),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2_TRANSPARENT");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2_TRANSPARENT),sizeof(StatusItems[n].COLOR2_TRANSPARENT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_TEXTCOLOR");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].TEXTCOLOR),sizeof(StatusItems[n].TEXTCOLOR),file);
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_CORNER");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].CORNER),sizeof(StatusItems[n].CORNER),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_GRADIENT");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].GRADIENT),sizeof(StatusItems[n].GRADIENT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_IGNORED");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].IGNORED),sizeof(StatusItems[n].IGNORED),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_BOTTOM");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_BOTTOM),sizeof(StatusItems[n].MARGIN_BOTTOM),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_LEFT");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_LEFT),sizeof(StatusItems[n].MARGIN_LEFT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_RIGHT");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_RIGHT),sizeof(StatusItems[n].MARGIN_RIGHT),file);	
-		lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_TOP");
-		GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_TOP),sizeof(StatusItems[n].MARGIN_TOP),file);
+		if (StatusItems[n].statusID!=ID_EXTBKSEPARATOR)
+		{		
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_ALPHA");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].ALPHA),sizeof(StatusItems[n].ALPHA),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR),sizeof(StatusItems[n].COLOR),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2),sizeof(StatusItems[n].COLOR2),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_COLOR2_TRANSPARENT");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].COLOR2_TRANSPARENT),sizeof(StatusItems[n].COLOR2_TRANSPARENT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_TEXTCOLOR");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].TEXTCOLOR),sizeof(StatusItems[n].TEXTCOLOR),file);
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_CORNER");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].CORNER),sizeof(StatusItems[n].CORNER),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_GRADIENT");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].GRADIENT),sizeof(StatusItems[n].GRADIENT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_IGNORED");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].IGNORED),sizeof(StatusItems[n].IGNORED),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_BOTTOM");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_BOTTOM),sizeof(StatusItems[n].MARGIN_BOTTOM),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_LEFT");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_LEFT),sizeof(StatusItems[n].MARGIN_LEFT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_RIGHT");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_RIGHT),sizeof(StatusItems[n].MARGIN_RIGHT),file);	
+			lstrcpy(buffer,StatusItems[n].szDBname); lstrcat(buffer,"_MARGIN_TOP");
+			GetPrivateProfileStruct("ExtBKSettings",buffer,&(StatusItems[n].MARGIN_TOP),sizeof(StatusItems[n].MARGIN_TOP),file);
+		}
 	}
 
 	// refresh

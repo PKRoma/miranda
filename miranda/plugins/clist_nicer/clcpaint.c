@@ -383,96 +383,53 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					
 					// check for special cases (first item, single item, last item)
 					// this will only change the shape for this status. Color will be blended over with ALPHA value										
-					if (group->scanIndex==0 && group->contactCount==1 && !ssingleitem.IGNORED)
+					if (group->scanIndex==0 && group->contactCount==1 && !ssingleitem.IGNORED && group->parent!=NULL)
 					{
-						if (group->parent!=NULL)
-						{						
 							rc.left = ssingleitem.MARGIN_LEFT;
 							rc.top = y  + ssingleitem.MARGIN_TOP;
 							rc.right = clRect.right - ssingleitem.MARGIN_RIGHT;
 							rc.bottom = y+dat->rowHeight - ssingleitem.MARGIN_BOTTOM;				
 							if (!sitem.IGNORED)
 							{	
-								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 									DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT, sitem.GRADIENT,ssingleitem.CORNER);
 								savedCORNER = ssingleitem.CORNER;
 							}
-							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 								DrawAlpha(hwnd,hdcMem,&rc,ssingleitem.COLOR,ssingleitem.ALPHA, ssingleitem.COLOR2, ssingleitem.COLOR2_TRANSPARENT,ssingleitem.GRADIENT,ssingleitem.CORNER);
-						} 
-					}
-					else if (group->scanIndex==0 && group->contactCount>1 && !sfirstitem.IGNORED)
+					} else if (group->scanIndex==0 && group->contactCount>1 && !sfirstitem.IGNORED && group->parent!=NULL)
 					{
-						if (group->parent!=NULL)
-						{
 							rc.left = sfirstitem.MARGIN_LEFT;
 							rc.top = y  + sfirstitem.MARGIN_TOP;
 							rc.right = clRect.right - sfirstitem.MARGIN_RIGHT;
 							rc.bottom = y+dat->rowHeight - sfirstitem.MARGIN_BOTTOM;
 							if (!sitem.IGNORED)
 							{
-								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 									DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,sfirstitem.CORNER);
 								savedCORNER = sfirstitem.CORNER;
 							}
-							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 								DrawAlpha(hwnd,hdcMem,&rc,sfirstitem.COLOR,sfirstitem.ALPHA, sfirstitem.COLOR2, sfirstitem.COLOR2_TRANSPARENT,sfirstitem.GRADIENT,sfirstitem.CORNER);
-						} 
-
-					} else if (group->scanIndex==group->contactCount-1) // last item of group
-																		// or list
+					} else if (group->scanIndex==group->contactCount-1 && !slastitem.IGNORED && group->parent!=NULL) // last item of group																		
 					{
-						if (group->parent!=NULL && !slastitem.IGNORED) // last item of group
-						{											
 							rc.left = slastitem.MARGIN_LEFT;
 							rc.top = y  + slastitem.MARGIN_TOP;
 							rc.right = clRect.right - slastitem.MARGIN_RIGHT;
 							rc.bottom = y+dat->rowHeight - slastitem.MARGIN_BOTTOM;
 							if (!sitem.IGNORED)
 							{
-								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 									DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,slastitem.CORNER);
 								savedCORNER = slastitem.CORNER;
 							}
-							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 								DrawAlpha(hwnd,hdcMem,&rc,slastitem.COLOR,slastitem.ALPHA, slastitem.COLOR2, slastitem.COLOR2_TRANSPARENT,slastitem.GRADIENT,slastitem.CORNER);
-
-						} else if (group->parent==NULL && !slastitem_NG.IGNORED && bFirstNGdrawn) // last item of list (NON-group)
-						{							
-							rc.left = slastitem_NG.MARGIN_LEFT;
-							rc.top = y  + slastitem_NG.MARGIN_TOP;
-							rc.right = clRect.right - slastitem_NG.MARGIN_RIGHT;
-							rc.bottom = y+dat->rowHeight - slastitem_NG.MARGIN_BOTTOM;
-							if (!sitem.IGNORED)
-							{
-								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
-									DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,slastitem_NG.CORNER);
-								savedCORNER = slastitem_NG.CORNER;
-							}
-							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
-								DrawAlpha(hwnd,hdcMem,&rc,slastitem_NG.COLOR,slastitem_NG.ALPHA, slastitem_NG.COLOR2, slastitem_NG.COLOR2_TRANSPARENT,slastitem_NG.GRADIENT,slastitem_NG.CORNER);
-						}
-						else if (group->parent==NULL && !slastitem_NG.IGNORED && !bFirstNGdrawn) // single item of NON-group
-						{							
-							rc.left = ssingleitem_NG.MARGIN_LEFT;
-							rc.top = y  + ssingleitem_NG.MARGIN_TOP;
-							rc.right = clRect.right - ssingleitem_NG.MARGIN_RIGHT;
-							rc.bottom = y+dat->rowHeight - ssingleitem_NG.MARGIN_BOTTOM;
-							if (!sitem.IGNORED)
-							{
-								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
-									DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,ssingleitem_NG.CORNER);
-								savedCORNER = ssingleitem_NG.CORNER;
-							}
-							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
-								DrawAlpha(hwnd,hdcMem,&rc,ssingleitem_NG.COLOR,ssingleitem_NG.ALPHA, ssingleitem_NG.COLOR2, ssingleitem_NG.COLOR2_TRANSPARENT,ssingleitem_NG.GRADIENT,ssingleitem_NG.CORNER);
-						}
-
 					} else 					
-					// Non-grouped items
-					// we've already handled the case of last NON-grouped item above
+					// - - - Non-grouped items - - - 					
 					if (	group->contact[group->scanIndex].type!=CLCIT_GROUP // not a group
 						&& group->parent==NULL // not grouped
+						&& !sfirstitem_NG.IGNORED
 						&& !bFirstNGdrawn
 						)
 					{
@@ -484,30 +441,57 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						rc.bottom = y+dat->rowHeight - sfirstitem_NG.MARGIN_BOTTOM;
 						if (!sitem.IGNORED)
 						{
-							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 								DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,sfirstitem_NG.CORNER);
 							savedCORNER = sfirstitem_NG.CORNER;
 						}
-						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 							DrawAlpha(hwnd,hdcMem,&rc,sfirstitem_NG.COLOR,sfirstitem_NG.ALPHA, sfirstitem_NG.COLOR2, sfirstitem_NG.COLOR2_TRANSPARENT,sfirstitem_NG.GRADIENT,sfirstitem_NG.CORNER);
-					} 
-					else if (	group->contact[group->scanIndex].type!=CLCIT_GROUP // not a group
-						&& group->parent == NULL // not grouped
-						&& group->scanIndex!=group->contactCount-1 // not last item
-						&& bFirstNGdrawn
-					)
-					{
-						if (!sitem.IGNORED) // draw default
-						{					
-							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
-								DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,sitem.CORNER);
-							savedCORNER = sitem.CORNER;
+
+					} else if (	group->contact[group->scanIndex].type!=CLCIT_GROUP // not a group
+								&&	group->parent==NULL 
+								&& !slastitem_NG.IGNORED 
+								&& group->scanIndex==group->contactCount-1
+								&& bFirstNGdrawn) // last item of list (NON-group)
+					{							
+						// last NON-grouped
+						rc.left = slastitem_NG.MARGIN_LEFT;
+						rc.top = y  + slastitem_NG.MARGIN_TOP;
+						rc.right = clRect.right - slastitem_NG.MARGIN_RIGHT;
+						rc.bottom = y+dat->rowHeight - slastitem_NG.MARGIN_BOTTOM;
+						if (!sitem.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,slastitem_NG.CORNER);
+							savedCORNER = slastitem_NG.CORNER;
 						}
-					}
-					else if (!sitem.IGNORED) // draw default
+						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+							DrawAlpha(hwnd,hdcMem,&rc,slastitem_NG.COLOR,slastitem_NG.ALPHA, slastitem_NG.COLOR2, slastitem_NG.COLOR2_TRANSPARENT,slastitem_NG.GRADIENT,slastitem_NG.CORNER);
+
+					} else if (	group->contact[group->scanIndex].type!=CLCIT_GROUP // not a group
+								&&	group->parent==NULL 
+								&& !slastitem_NG.IGNORED 
+								&& !bFirstNGdrawn) // single item of NON-group
+					{
+						// single NON-grouped
+						rc.left = ssingleitem_NG.MARGIN_LEFT;
+						rc.top = y  + ssingleitem_NG.MARGIN_TOP;
+						rc.right = clRect.right - ssingleitem_NG.MARGIN_RIGHT;
+						rc.bottom = y+dat->rowHeight - ssingleitem_NG.MARGIN_BOTTOM;
+						if (!sitem.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,ssingleitem_NG.CORNER);
+							savedCORNER = ssingleitem_NG.CORNER;
+						}
+						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))								
+							DrawAlpha(hwnd,hdcMem,&rc,ssingleitem_NG.COLOR,ssingleitem_NG.ALPHA, ssingleitem_NG.COLOR2, ssingleitem_NG.COLOR2_TRANSPARENT,ssingleitem_NG.GRADIENT,ssingleitem_NG.CORNER);
+
+					} else if (!sitem.IGNORED) // draw default grouped
 					{						
-						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","SelBlend",1))
+						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 							DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,sitem.CORNER);
+						if (selected) DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1);
 						savedCORNER = sitem.CORNER;
 					}
 				}
@@ -533,7 +517,8 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						rc.top = y  + sempty.MARGIN_TOP;
 						rc.right = clRect.right - sempty.MARGIN_RIGHT;
 						rc.bottom = y+dat->rowHeight - sempty.MARGIN_BOTTOM;
-						DrawAlpha(hwnd,hdcMem,&rc,sempty.COLOR,sempty.ALPHA, sempty.COLOR2, sempty.COLOR2_TRANSPARENT,sempty.GRADIENT,sempty.CORNER);						
+						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+							DrawAlpha(hwnd,hdcMem,&rc,sempty.COLOR,sempty.ALPHA, sempty.COLOR2, sempty.COLOR2_TRANSPARENT,sempty.GRADIENT,sempty.CORNER);						
 						savedCORNER = sempty.CORNER;
 					}
 					
@@ -545,7 +530,8 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						rc.top = y  + sexpanded.MARGIN_TOP;
 						rc.right = clRect.right - sexpanded.MARGIN_RIGHT;
 						rc.bottom = y+dat->rowHeight - sexpanded.MARGIN_BOTTOM;
-						DrawAlpha(hwnd,hdcMem,&rc,sexpanded.COLOR,sexpanded.ALPHA, sexpanded.COLOR2, sexpanded.COLOR2_TRANSPARENT,sexpanded.GRADIENT,sexpanded.CORNER);						
+						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+							DrawAlpha(hwnd,hdcMem,&rc,sexpanded.COLOR,sexpanded.ALPHA, sexpanded.COLOR2, sexpanded.COLOR2_TRANSPARENT,sexpanded.GRADIENT,sexpanded.CORNER);						
 						savedCORNER = sexpanded.CORNER;
 					}
 					
@@ -557,7 +543,8 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						rc.top = y  + scollapsed.MARGIN_TOP;
 						rc.right = clRect.right - scollapsed.MARGIN_RIGHT;
 						rc.bottom = y+dat->rowHeight - scollapsed.MARGIN_BOTTOM;
-						DrawAlpha(hwnd,hdcMem,&rc,scollapsed.COLOR,scollapsed.ALPHA, scollapsed.COLOR2, scollapsed.COLOR2_TRANSPARENT,scollapsed.GRADIENT,scollapsed.CORNER);
+						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+							DrawAlpha(hwnd,hdcMem,&rc,scollapsed.COLOR,scollapsed.ALPHA, scollapsed.COLOR2, scollapsed.COLOR2_TRANSPARENT,scollapsed.GRADIENT,scollapsed.CORNER);
 						savedCORNER = scollapsed.CORNER;
 					} 						
 				}
@@ -570,7 +557,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				if (!sselected.IGNORED)
 				{					
 					if (DBGetContactSettingByte(NULL,"CLCExt","EXBK_EqualSelection",0)==1 && savedCORNER!=-1)
-					{						
+					{							
 						DrawAlpha(hwnd,hdcMem,&rc,sselected.COLOR,sselected.ALPHA, sselected.COLOR2, sselected.COLOR2_TRANSPARENT,sselected.GRADIENT,savedCORNER);
 					} else 
 					{
