@@ -151,23 +151,25 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 	if ( strcmpi( Invcommand,"ACCEPT" ))
 		return;
 
-	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
 	bool bHasError = false;
 	NETLIBBINDOLD nlb = {0};
-
 	char ipaddr[256];
-	if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
-		bHasError = true;
-	else {
-		nlb.cbSize = sizeof nlb;
-		nlb.pfnNewConnection = MSN_ConnectionProc;
-		nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-		if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb)) == NULL ) {
-			MSN_DebugLog( "Unable to bind the port for incoming transfers" );
+
+	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
+	if ( ft != NULL ) {
+		if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
 			bHasError = true;
-		}
-		else ft->mIncomingPort = nlb.wPort;
-	}
+		else {
+			nlb.cbSize = sizeof nlb;
+			nlb.pfnNewConnection = MSN_ConnectionProc;
+			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
+			if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb)) == NULL ) {
+				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
+				bHasError = true;
+			}
+			else ft->mIncomingPort = nlb.wPort;
+	}	}
+	else bHasError = true;
 
 	char command[ 1024 ];
 	int  nBytes = _snprintf( command, sizeof( command ),
