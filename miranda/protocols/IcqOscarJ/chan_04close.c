@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -139,8 +140,8 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
 		icq_LogMessage(LOG_FATAL, Translate("You could not sign on because the server returned invalid data. Try again."));
 
-		SAFE_FREE(newServer);
-		SAFE_FREE(cookie);
+		SAFE_FREE(&newServer);
+		SAFE_FREE(&cookie);
 
 		return;
 
@@ -165,7 +166,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
 	if (hServerConn == NULL)
 	{
-		SAFE_FREE(cookie);
+		SAFE_FREE(&cookie);
 		icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to ICQ communication server");
 	}
 	else
@@ -185,7 +186,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
 	// Free allocated memory
 	// NOTE: "cookie" will get freed when we have connected to the communication server.
-	SAFE_FREE(newServer);
+	SAFE_FREE(&newServer);
 
 }
 
@@ -208,8 +209,8 @@ static void handleMigration()
 	{
 		icq_LogMessage(LOG_FATAL, Translate("You have been disconnected from the ICQ network because the current server shut down."));
 
-		SAFE_FREE(migratedServer);
-		SAFE_FREE(cookieData);
+		SAFE_FREE(&migratedServer);
+		SAFE_FREE(&cookieData);
 
 		return;
 	}
@@ -244,7 +245,7 @@ static void handleMigration()
 	if (hServerConn == NULL)
 	{
 		icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to migrated ICQ communication server");
-		SAFE_FREE(cookieData);
+		SAFE_FREE(&cookieData);
 	}
 	else
 	{
@@ -256,7 +257,7 @@ static void handleMigration()
 	}
 
 	// Clean up an exit
-	SAFE_FREE(migratedServer);
+	SAFE_FREE(&migratedServer);
 	isMigrating = 0;
 
 }
