@@ -810,6 +810,12 @@ static void sttInitFileTransfer(
 
 	if ( dwAppID == 2 && !strcmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) {
 		WCHAR* wszFileName = ( WCHAR* )&szContext[ 20 ];
+		{	for ( WCHAR* p = wszFileName; *p != 0; p++ ) 
+			{	switch( *p ) {
+				case ':': case '?': case '/': case '\\': case '*':
+					*p = '_';
+		}	}	}
+
 		char szFileName[ MAX_PATH ];
 		WideCharToMultiByte( CP_ACP, 0, wszFileName, -1, szFileName, MAX_PATH, 0, 0 );
 		MSN_DebugLog( "File name: '%s'", szFileName );

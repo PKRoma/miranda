@@ -12,6 +12,8 @@ proxy address to SSL connection when the 'Use IE proxy settings'
 option is turned off. If you don't use a proxy, nothing gets
 changed.
 [!] Bug #0000580 fixed: the large messages disappear being sent.
+[!] Bug #0000601 fixed: files  with  incorrect  file  names  aren't
+saved during P2P file transfers.
 [!] Bug #0000437 fixed: expert must have an option  to  choose  the
 needed status translation schema for Away, BRB & N/A statuses.
 [*] Translation file modification.
