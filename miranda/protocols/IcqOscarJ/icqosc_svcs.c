@@ -177,6 +177,8 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
   DBVARIANT dbv, dbvSaved;
   int dwPaFormat;
 
+  if (!gbAvatarsEnabled) return GAIR_NOAVATAR;
+
   if (DBGetContactSetting(pai->hContact, gpszICQProtoName, "AvatarHash", &dbv))
     return GAIR_NOAVATAR; // we did not found avatar hash - no avatar available
 
