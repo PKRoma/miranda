@@ -1200,7 +1200,11 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 			return;
 		}
 
-		::_write( ft->fileId, msgbody, hdrdata->mPacketLen );
+		if ( ft->inmemTransfer ) {
+			memcpy( ft->fileBuffer + hdrdata->mOffset, msgbody, hdrdata->mPacketLen );
+			ft->std.totalBytes = ( long )hdrdata->mTotalSize;
+		}				
+		else ::_write( ft->fileId, msgbody, hdrdata->mPacketLen );
 
 		if ( ft->p2p_appID == 2 ) {
 			ft->std.totalProgress += hdrdata->mPacketLen;
