@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "resource.h"
 #include "../../miranda32/core/m_system.h"
 #include "../../miranda32/protocols/protocols/m_protomod.h"
-#include "../../miranda32/database/m_database.h"
 #include "../../miranda32/ui/contactlist/m_clist.h"
 
 HINSTANCE hInst;
@@ -39,9 +38,14 @@ PLUGININFO pluginInfo={
 	DEFMOD_PROTOCOLMSN
 };
 
+VOID CALLBACK MSNMainTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 int LoadMsnServices(void);
-SOCKET msnSock;
-int msnLoggedIn;
+void CmdQueue_Init(void);
+void CmdQueue_Uninit(void);
+
+volatile LONG msnLoggedIn;
+int msnStatusMode,msnDesiredStatus;
+SOCKET msnNSSocket;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
@@ -51,18 +55,15 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 int __declspec(dllexport) Unload(void)
 {
-	if(msnLoggedIn) MSN_Logout();
+	if(msnLoggedIn) MSN_SendPacket(msnNSSocket,"OUT",NULL);
 	MSN_WS_CleanUp();
+	CmdQueue_Uninit();
 	return 0;
-}
-
-static VOID CALLBACK MsnCheckDataTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
-{
-	MSN_main();
 }
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
+	if(mirandaVersion<PLUGIN_MAKE_VERSION(0,1,1,0)) return NULL;
 	return &pluginInfo;
 }
 
@@ -77,7 +78,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	 CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(pw),(LPARAM)pw);
 	DBWriteContactSettingString(NULL,MSNPROTONAME,"Password",pw);
 	}*/
-	
+		
 	ZeroMemory(&pd,sizeof(pd));
 	pd.cbSize=sizeof(pd);
 	pd.szName=MSNPROTONAME;
@@ -90,17 +91,17 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		while(hContact!=NULL) {
 			if(!lstrcmp(MSNPROTONAME,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0))) {
 				DBWriteContactSettingWord(hContact,MSNPROTONAME,"Status",ID_STATUS_OFFLINE);
-				//icq_ContactAdd(plink,uin);
 			}
 			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 		}
 	}
 
-	msnSock=0;
+	msnStatusMode=msnDesiredStatus=ID_STATUS_OFFLINE;
 	msnLoggedIn=0;
 	MSN_WS_Init();
 	LoadMsnServices();
-	SetTimer(NULL,0,250,MsnCheckDataTimer);
+	CmdQueue_Init();
+	SetTimer(NULL,0,250,MSNMainTimerProc);
 	return 0;
 }
 

@@ -96,15 +96,19 @@ SOURCE=.\msn.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_commands.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_contact.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_global.c
+SOURCE=.\msn_coord.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_login.c
+SOURCE=.\msn_errors.c
 # End Source File
 # Begin Source File
 
@@ -120,15 +124,15 @@ SOURCE=.\msn_misc.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_packet.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\msn_ss.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\msn_svcs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_threads.c
 # End Source File
 # Begin Source File
 
