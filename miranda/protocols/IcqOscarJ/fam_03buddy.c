@@ -530,7 +530,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capLicq, 0xC))
           {
             unsigned ver1 = (*capId)[0xC];
-            unsigned ver2 = (*capId)[0xD];
+            unsigned ver2 = (*capId)[0xD] % 100;
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
               _snprintf(szClientBuf, sizeof(szClientBuf), "Licq %u.%u.%u", ver1, ver2, ver3);
