@@ -952,21 +952,19 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 	YAHOO_DebugLog("Gathering Data");
 	
 	ccs = ( CCSDATA* )lParam;
-	if ( YAHOO_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
-		return 0;
+	//if ( YAHOO_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
+	//	return 0;
 
 	YAHOO_DebugLog("Getting Files");
 	
 	files = ( char** )ccs->lParam;
-	if ( files[1] != NULL )
-	{
-		//YAHOO_ShowError( "MSN protocol allows only one file to be sent at a time" );
+	if ( files[1] != NULL ){
 		MessageBox(NULL, "YAHOO protocol allows only one file to be sent at a time", "Yahoo", MB_OK | MB_ICONINFORMATION);
 		return 0;
  	}
 	
 	YAHOO_DebugLog("Getting Yahoo ID");
-	//To send a file, call yahoo_send_file(id, who, msg, name, size).
+	
 	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 
 		sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
