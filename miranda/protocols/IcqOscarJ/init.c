@@ -45,7 +45,8 @@ HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
 HANDLE hHookIdleEvent = NULL;
-static HANDLE hUserMenu = NULL;
+static HANDLE hUserMenuAuth = NULL;
+static HANDLE hUserMenuGrant = NULL;
 
 extern HANDLE hServerConn;
 extern int gnCurrentStatus;
@@ -262,10 +263,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	hHookUserMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, icq_PrebuildContactMenu);
 
 	{
-
 		CLISTMENUITEM mi;
 		char pszServiceName[MAX_PATH+30];
-
 
 		strcpy(pszServiceName, gpszICQProtoName);
 		strcat(pszServiceName, MS_REQ_AUTH);
@@ -279,7 +278,17 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		mi.pszContactOwner = gpszICQProtoName;
 		mi.pszName = Translate("Request authorization");
 		mi.pszService = pszServiceName;
-		hUserMenu = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+    hUserMenuAuth = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
+		strcpy(pszServiceName, gpszICQProtoName);
+		strcat(pszServiceName, MS_GRANT_AUTH);
+		CreateServiceFunction(pszServiceName, IcqGrantAuthorization);
+
+		ZeroMemory(&mi, sizeof(mi));
+		mi.position = 1000029999;
+		mi.pszName = Translate("Grant authorization");
+		mi.pszService = pszServiceName;
+		hUserMenuGrant = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	}
 
 	return 0;
@@ -345,7 +354,6 @@ int __declspec(dllexport) Unload(void)
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-
 	NETLIBUSER nlu = {0};
 	char pszP2PName[MAX_PATH+3];
 
@@ -377,29 +385,33 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 	hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
 
 	return 0;
-
 }
 
 
 
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
+  CLISTMENUITEM mi;
 
-    CLISTMENUITEM mi;
+  ZeroMemory(&mi, sizeof(mi));
+  mi.cbSize = sizeof(mi);
+  if (!DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "Auth", 0))
+    mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
+  else
+    mi.flags = CMIM_FLAGS | CMIM_NAME;
+  mi.pszName = Translate("Request authorization");
 
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hUserMenuAuth, (LPARAM) & mi);
 
-    ZeroMemory(&mi, sizeof(mi));
-    mi.cbSize = sizeof(mi);
-    if (!DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "Auth", 0))
-        mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
-    else
-        mi.flags = CMIM_FLAGS | CMIM_NAME;
-    mi.pszName = Translate("Request authorization");
+  if (!DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "Grant", 0))
+    mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
+  else
+    mi.flags = CMIM_FLAGS | CMIM_NAME;
+  mi.pszName = Translate("Grant authorization");
 
-    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hUserMenu, (LPARAM) & mi);
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hUserMenuGrant, (LPARAM) & mi);
 
-    return 0;
-
+  return 0;
 }
 
 
