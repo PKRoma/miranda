@@ -1085,7 +1085,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	}
 
 	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
-		if (YAHOO_GetWord(AI->hContact, "PictCK", 0) != 0) {
+		if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
 			GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
 			DeleteFile(AI->filename);
 		}
@@ -1093,7 +1093,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 	}
 	
-	if (YAHOO_GetWord(AI->hContact, "PictCK", 0) != 0) {
+	if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
 		
 		GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
 		//if ( access( AI->filename, 0 ) == 0 ) {
