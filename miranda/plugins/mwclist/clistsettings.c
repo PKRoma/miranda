@@ -196,11 +196,12 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 				}
 			}
 
-			{
+/*			{
 				char buf[256];
 				sprintf(buf,"LoadCacheDispEntry_Proto %x %s ProtoIsLoaded: %s\r\n",pdnce,(pdnce->szProto?pdnce->szProto:"NoProtocol"),(pdnce->protoNotExists)?"NO":"FALSE/UNKNOWN");
 				OutputDebugString(buf);
 			}
+*/
 			
 		}
 
@@ -232,11 +233,11 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 				{
 					pdnce->protoNotExists=FALSE;						
 	
-						{
+						/*{
 							char buf[256];
 							sprintf(buf,"LoadCacheDispEntry_Proto %x %s Now Loaded !!! \r\n",pdnce,(pdnce->szProto?pdnce->szProto:"NoProtocol"));
 							OutputDebugString(buf);
-						}
+						}*/
 
 					pdnce->name=(char *)GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
 					getedname=TRUE;
@@ -247,12 +248,13 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 		}
 
 			{
-				if (getedname)
+				/*if (getedname)
 				{				
 				char buf[256];
 				sprintf(buf,"LoadCacheDispEntry_GetedName %x %s isUnknown: %x\r\n",pdnce,(pdnce->name?pdnce->name:""),pdnce->isUnknown);
 				OutputDebugString(buf);
 				}
+				*/
 			}		
 
 
@@ -337,9 +339,9 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 		if (pdnce)
 		{
 			{
-				char buf[256];
-				sprintf(buf,"InvDisNmCaEn %x %s SettingType: %x\r\n",pdnce,(pdnce->name?pdnce->name:""),SettingType);
-				OutputDebugString(buf);
+//				char buf[256];
+				//sprintf(buf,"InvDisNmCaEn %x %s SettingType: %x\r\n",pdnce,(pdnce->name?pdnce->name:""),SettingType);
+				//OutputDebugString(buf);
 			}
 			if (SettingType==-1||SettingType==DBVT_DELETED)
 			{		
@@ -441,13 +443,13 @@ int GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)
 	ci.hContact = (HANDLE)hContact;
 	if (ci.hContact==NULL) ci.szProto = "ICQ";
 				
-				{
+/*				{
 				
 				char buf[256];
 				sprintf(buf,"GetNameForContactutf hcont:%x isunk:%x \r\n",ci.hContact,isUnknown);
 				OutputDebugString(buf);
 				}
-
+*/
 	if (TRUE)
 	{
 	
@@ -559,7 +561,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
 	DBVARIANT dbv;
 	pdisplayNameCacheEntry pdnce;
-	char buf[256];
+//	char buf[256];
 
 	// Early exit
 	if ((HANDLE)wParam == NULL)
@@ -580,8 +582,8 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 		if (!strcmp(cws->szModule,pdnce->szProto))
 		{
 			{				
-				sprintf(buf,"CHANGE: inproto setting:%s\r\n",cws->szSetting);
-				OutputDebugString(buf);
+				//sprintf(buf,"CHANGE: inproto setting:%s\r\n",cws->szSetting);
+				//OutputDebugString(buf);
 			}			
 				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
 

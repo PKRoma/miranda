@@ -71,7 +71,7 @@ int LoadCluiServices(void);
 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int CheckProtocolOrder();
 
-extern void SetAllExtraIcons(HWND hwndList);
+extern void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 extern void ReloadExtraIcons();
 extern void LoadExtraImageFunc();
 extern int CreateStatusBarhWnd(HWND parent);
@@ -83,6 +83,7 @@ extern void TrayIconUpdateBase(const char *szChangedProto);
 void InvalidateDisplayNameCacheEntry(HANDLE hContact);
 
 #define M_CREATECLC  (WM_USER+1)
+#define M_SETALLEXTRAICONS (WM_USER+2)
 
 static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
@@ -285,27 +286,27 @@ DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
 	{		
 		if (dbcws==NULL){return(0);};
 		
-		if (!strcmp(dbcws->szSetting,"e-mail"))
+		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szSetting,"e-mail"))
 		{
-			SetAllExtraIcons(hwndContactTree);
+			SetAllExtraIcons(hwndContactTree,(HANDLE)wParam);
 			return(0);
 		};
-		if (!strcmp(dbcws->szSetting,"Cellular"))
+		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szSetting,"Cellular"))
 		{		
-			SetAllExtraIcons(hwndContactTree);
+			SetAllExtraIcons(hwndContactTree,(HANDLE)wParam);
 			return(0);
 		};
 		
-		if (!strcmp(dbcws->szModule,"UserInfo"))
+		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szModule,"UserInfo"))
 		{
-			if (!strcmp(dbcws->szSetting,"MyPhone0"))
+			if (!strcmp(dbcws->szSetting,(HANDLE)"MyPhone0"))
 			{		
-				SetAllExtraIcons(hwndContactTree);
+				SetAllExtraIcons(hwndContactTree,(HANDLE)wParam);
 				return(0);
 			};
-			if (!strcmp(dbcws->szSetting,"Mye-mail0"))
+			if (!strcmp(dbcws->szSetting,(HANDLE)"Mye-mail0"))
 			{	
-				SetAllExtraIcons(hwndContactTree);	
+				SetAllExtraIcons(hwndContactTree,(HANDLE)wParam);	
 				return(0);
 			};
 		};
@@ -537,6 +538,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 		return FALSE;
 
+	case M_SETALLEXTRAICONS:
+		
+		break;
 	case M_CREATECLC:
 			CreateCLC(hwnd);
 		break;
@@ -850,9 +854,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					switch (((LPNMHDR)lParam)->code)
 					{
 					case CLN_NEWCONTACT:
+						{
+							NMCLISTCONTROL *nm=(NMCLISTCONTROL *)lParam;
+							if (nm!=NULL) SetAllExtraIcons(hwndContactTree,nm->hItem );
+							break;
+						};
 					case CLN_LISTREBUILT:
 						{
-							SetAllExtraIcons(hwndContactTree);
+							SetAllExtraIcons(hwndContactTree,0);
 							return(FALSE);
 						}								
 					case CLN_EXPANDED:
@@ -1262,7 +1271,7 @@ static int CluiIconsChanged(WPARAM wParam,LPARAM lParam)
 	ImageList_ReplaceIcon(himlMirandaIcon,0,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	DrawMenuBar(hwndContactList);
 	ReloadExtraIcons();
-	SetAllExtraIcons(hwndContactTree);
+	SetAllExtraIcons(hwndContactTree,0);
 
 	return 0;
 }

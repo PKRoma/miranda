@@ -762,5 +762,5 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 	OutputDebugString(buf);
 	}	
 	ClearRowByIndexCache();
-	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
+	PostMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }

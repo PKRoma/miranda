@@ -514,7 +514,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			//SortCLC(hwnd,dat,1); 
 			//SortContacts();
 			KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-			SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,50,NULL);
+			SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",200),NULL);
 			InvalidateRect(hwnd,NULL,FALSE);
 			if(recalcScrollBar) RecalcScrollBar(hwnd,dat);			
 			break;

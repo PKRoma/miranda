@@ -26,9 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <malloc.h>
 
 #ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
+//#	define _CRTDBG_MAP_ALLOC
+//#	include <stdlib.h>
+//#	include <crtdbg.h>
 #endif
 
 #define _WIN32_WINNT 0x0501
@@ -44,7 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clist.h"
 #include "resource.h"
 #include "forkthread.h"
-#include <win2k.h>
+
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_database.h>
@@ -66,6 +66,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_userinfo.h>
 #include ".\CLUIFrames\cluiframes.h"
 #include ".\CLUIFrames\m_cluiframes.h"
+#include <win2k.h>
 #define CLS_CONTACTLIST 1
 
 // shared vars
@@ -83,7 +84,6 @@ extern HINSTANCE g_hInst;
 
 extern struct MM_INTERFACE memoryManagerInterface;
 
-#define strcmp(a,b) MyStrCmp(a,b)
 
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
@@ -94,36 +94,26 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #endif
 
 #ifndef MYCMP
-#define MYCMP
-int __cdecl MyStrCmp (const char *a, const char *b)
-{
+#define MYCMP 1
 
-	/*
-	{
-		char buf[1024];
-		sprintf(buf,"MyStrCmp call with: a:%x %s  b: %x %s\r\n",(void *)a,(a?a:""),(void *)b,(b?b:""));
-		OutputDebugStr(buf);
-	};
-	*/
+
+static int __cdecl MyStrCmp (const char *a, const char *b)
+{
 	
 	if (a==NULL&&b==NULL) return 0;
-	if (a==NULL||b==NULL||IsBadCodePtr(a)||IsBadCodePtr(b)||(int)a<1000||(int)b<1000) 
+	if ((int)a<1000||(int)b<1000||IsBadCodePtr((FARPROC)a)||IsBadCodePtr((FARPROC)b)) 
 	{
-	{
-		char buf[1024];
-		sprintf(buf,"BAD CALL MyStrCmp call with: a:%x b: %x \r\n",(void *)a,(void *)b);
-		OutputDebugStr(buf);
-	};
-
 		return 1;
 	}
-	
-	return (strncmp(a,b,strlen(a)));
-
+	//OutputDebugStr("MY\r\n");
+	//undef();
+	return (strcmp(a,b));
 };
+
+#define strcmp(a,b) MyStrCmp(a,b)
 #endif
 
-//
+
 
 __inline void *mir_calloc( size_t num, size_t size )
 {
