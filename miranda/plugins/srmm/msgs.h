@@ -33,16 +33,11 @@ struct NewMessageWindowLParam
 	const char *szInitialText;
 };
 
-struct MessageSendInfo
-{
-	HANDLE hSendId;
-};
-
 struct MessageWindowData
 {
 	HANDLE hContact;
 	HANDLE hDbEventFirst, hDbEventLast;
-	struct MessageSendInfo *sendInfo;
+	HANDLE hSendId;
 	int sendCount;
 	HBRUSH hBkgBrush;
 	int splitterPos, originalSplitterPos;

@@ -326,7 +326,7 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
-	return PLUGIN_MAKE_VERSION(0,0,0,1);
+	return PLUGIN_MAKE_VERSION(0,0,0,2);
 }
 
 int LoadSendRecvMessageModule(void)

@@ -26,8 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_FLASHWND     1
 #define TIMERID_TYPE         2
 #define TIMEOUT_FLASHWND     900
-#define TIMEOUT_ANTIBOMB     4000       //multiple-send bombproofing: send max 3 messages every 4 seconds
-#define ANTIBOMB_COUNT       3
 #define TIMEOUT_TYPEOFF      10000      //send type off after 10 seconds of inactivity
 #define SB_CHAR_WIDTH        45;
 #define VALID_AVATAR(x)      (x==PA_FORMAT_PNG||x==PA_FORMAT_JPEG||x==PA_FORMAT_ICON||x==PA_FORMAT_BMP||x==PA_FORMAT_GIF)
@@ -59,7 +57,7 @@ static void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
 	mwe.hwndWindow = hwnd;
 	mwe.szModule = SRMMMOD;
 	mwe.uType = type;
-	mwe.uFlags = 0;
+	mwe.uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
 	NotifyEventHooks(hHookWinEvt, 0, (LPARAM)&mwe);
 }
 
@@ -493,7 +491,7 @@ static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	DBVARIANT dbv;
-
+	
 	if (dat->avatarPic) {
 		DeleteObject(dat->avatarPic);
         dat->avatarPic=0;
@@ -505,7 +503,7 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	else {
 		HANDLE hFile;
 
-		if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
+		if(strlen(dbv.pszVal)&&(hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
 			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
 		}
@@ -584,7 +582,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dat->avatarPic = 0;
 				dat->avatarWidth = 0;
 				dat->avatarHeight = 0;
-				dat->limitAvatarH = 0;
 				dat->limitAvatarH = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT)?DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT):0;
 			}
 			if (dat->hContact && dat->szProto != NULL)
@@ -592,7 +589,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			else
 				dat->wStatus = ID_STATUS_OFFLINE;
 			dat->wOldStatus = dat->wStatus;
-			dat->sendInfo = NULL;
+			dat->hSendId = NULL;
 			dat->hBkgBrush = NULL;
 			dat->hDbEventFirst = NULL;
 			dat->sendBuffer = NULL;
@@ -783,6 +780,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return 0;
 		if (pAck->type != ACKTYPE_AVATAR)
 			return 0;
+		if (pai==NULL)
+			return 0;
 		if (pAck->result == ACKRESULT_SUCCESS) {
 			if (pai->filename&&strlen(pai->filename)&&VALID_AVATAR(pai->format)) {
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
@@ -793,8 +792,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 		}
 		else if (pAck->result == ACKRESULT_FAILED) {
-			DBDeleteContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR);
-			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
+			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
+			ShowAvatar(hwndDlg, dat);
 		}
 		break;
 	}
@@ -868,11 +867,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (result==GAIR_SUCCESS) {
 			if (VALID_AVATAR(pai.format))
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
-			else DBDeleteContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR);
-			ShowAvatar(hwndDlg, dat);
-		}
-		else if (result==GAIR_NOAVATAR) {
-			DBDeleteContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR);
+			else DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
 			ShowAvatar(hwndDlg, dat);
 		}
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
@@ -1287,12 +1282,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		case MSGERROR_RETRY:
 			{
-				int i;
-				for (i = 0; i < dat->sendCount; i++) {
-					if (dat->sendInfo[i].hSendId == NULL && dat->hContact == NULL)
-						continue;
-					dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) dat->sendBuffer);
-				}
+				if (dat->hSendId == NULL && dat->hContact == NULL)
+					return 0;
+				dat->hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) dat->sendBuffer);
 			}
 			SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
 			break;
@@ -1393,8 +1385,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (dat->hContact == NULL)
 						break;      //never happens
 					dat->sendCount = 1;
-					dat->sendInfo = (struct MessageSendInfo *) realloc(dat->sendInfo, sizeof(struct MessageSendInfo) * dat->sendCount);
-					dat->sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) dat->sendBuffer);
+					dat->hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) dat->sendBuffer);
 					EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 
@@ -1602,7 +1593,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ACKDATA *ack = (ACKDATA *) lParam;
 			DBEVENTINFO dbei = { 0 };
 			HANDLE hNewEvent;
-			int i;
 
 			if (ack->type != ACKTYPE_MESSAGE)
 				break;
@@ -1616,11 +1606,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup((char *) ack->lParam));
 					return 0;
 			}
-			for (i = 0; i < dat->sendCount; i++)
-				if (ack->hProcess == dat->sendInfo[i].hSendId && ack->hContact == dat->hContact)
-					break;
-			if (i == dat->sendCount)
-				break;
+			if (dat->sendBuffer==NULL) return 0;
 			dbei.cbSize = sizeof(dbei);
 			dbei.eventType = EVENTTYPE_MESSAGE;
 			dbei.flags = DBEF_SENT;
@@ -1638,16 +1624,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 			}
 
-			dat->sendInfo[i].hSendId = NULL;
-			for (i = 0; i < dat->sendCount; i++)
-				if (dat->sendInfo[i].hSendId)
-					break;
-			if (i == dat->sendCount) {
+			dat->hSendId = NULL;
+			{
 				int len;
 				//all messages sent
 				dat->sendCount = 0;
-				free(dat->sendInfo);
-				dat->sendInfo = NULL;
 				KillTimer(hwndDlg, TIMERID_MSGSEND);
 				SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
 				EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
@@ -1668,8 +1649,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
 			NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 		}
-		if (dat->sendInfo)
-			free(dat->sendInfo);
 		if (dat->hBkgBrush)
 			DeleteObject(dat->hBkgBrush);
 		if (dat->sendBuffer != NULL)

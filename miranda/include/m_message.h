@@ -41,11 +41,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //wparam=0
 //lparam=(WPARAM)(MessageWindowEventData*)hWindowEvent;
 //Event types
-#define MSG_WINDOW_EVT_OPENING 1 //window is about to be opened (uFlags is not used)
-#define MSG_WINDOW_EVT_OPEN    2 //window has been opened (uFlags is not used)
-#define MSG_WINDOW_EVT_CLOSING 3 //window is about to be closed (uFlags is not used)
-#define MSG_WINDOW_EVT_CLOSE   4 //window has been closed (uFlags is not used)
-#define MSG_WINDOW_EVT_CUSTOM  5 //custom event for message plugins to use (uFlags may be used)
+#define MSG_WINDOW_EVT_OPENING 1 //window is about to be opened
+#define MSG_WINDOW_EVT_OPEN    2 //window has been opened
+#define MSG_WINDOW_EVT_CLOSING 3 //window is about to be closed
+#define MSG_WINDOW_EVT_CLOSE   4 //window has been closed
+#define MSG_WINDOW_EVT_CUSTOM  5 //custom event for message plugins to use (custom uFlags may be used)
+
+#define MSG_WINDOW_UFLAG_MSG_FROM 0x00000001
+#define MSG_WINDOW_UFLAG_MSG_TO   0x00000002
+#define MSG_WINDOW_UFLAG_MSG_BOTH 0x00000004
 
 typedef struct {
    int cbSize;
@@ -53,7 +57,7 @@ typedef struct {
    HWND hwndWindow; // top level window for the contact
    const char* szModule; // used to get plugin type (which means you could use local if needed)
    unsigned int uType; // see event types above
-   unsigned int uFlags; // might be needed for some event types
+   unsigned int uFlags; // used to indicate message direction for all event types except custom
    void *local; // used to store pointer to custom data
 } MessageWindowEventData;
 
@@ -61,7 +65,7 @@ typedef struct {
 //wparam=0
 //lparam=0
 //Returns a dword with the current message api version 
-//Current version is 0,0,0,1
+//Current version is 0,0,0,2
 
 #endif // M_MESSAGE_H__
 
