@@ -817,26 +817,34 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", wGroupId);
 					ReserveServerID(wItemId);
 
+          // TODO: this will be enabled when Manage Serv-list dialog is finished
+          if (/*DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) ||*/ bAdded)
+          { // if we should load server details or contact was just added, update its group
+            char* szGroup;
+
+            if (szGroup = makeGroupPath(wGroupId))
+            { // try to get Miranda Group path from groupid, if succeeded save to db
+              DBWriteContactSettingString(hContact, "CList", "Group", szGroup);
+
+              SAFE_FREE(&szGroup);
+            }
+          }
+
 					if (pChain)
-					{
-						// Look for nickname TLV and copy it to the db if necessary
+					{ // Look for nickname TLV and copy it to the db if necessary
 						if (pTLV = getTLV(pChain, 0x0131, 1))
 						{
 							if (pTLV->pData && (pTLV->wLen > 0))
 							{
-
 								char* pszNick;
 								WORD wNickLength;
-
 
 								wNickLength = pTLV->wLen;
 
 								pszNick = (char*)malloc(wNickLength + 1);
 								if (pszNick)
 								{
-
 									char* pszTempNick = NULL; // Used for UTF-8 conversion
-
 
 									// Copy buffer to utf-8 buffer
 									memcpy(pszNick, pTLV->pData, wNickLength);
