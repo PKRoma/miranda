@@ -23,142 +23,120 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../../core/commonheaders.h"
 
-#define IDLEMODULE "Idle"
-
-// globals
-static BOOL (WINAPI * MyGetLastInputInfo)(PLASTINPUTINFO);
-static UINT hIdleTimer = 0;
-static HANDLE hIdleSettingsChanged = NULL;
-static HANDLE hIdleEvent = NULL;
-
-// live settings
-static int idleCheck = 0;
-static int idleMethod = 0;
-static int idleTimeFirst = 5; // this is in mins
-static int idleTimeSecond = 10; // 
-static int idleTimeFirstOn = 0;
-static int idleTimeSecondOn = 0;
-static int idleOnSaver = 0;
-static int idleOnLock = 0;
-static int idleGLI = 1;
-static int idlePrivate = 0;
-
-// db settings keys
-#define IDL_IDLECHECK "IdleCheck"
+#define IDLEMOD "Idle"
+#define IDL_USERIDLECHECK "UserIdleCheck"
 #define IDL_IDLEMETHOD "IdleMethod"
-#define IDL_IDLEGLI		"IdleGLI"
 #define IDL_IDLETIME1ST "IdleTime1st"
-#define IDL_IDLETIME2ND "IdleTime2nd"
-#define IDL_IDLEONSAVER "IdleOnSaver"
-#define IDL_IDLEONLOCK "IdleOnLock"
-#define IDL_IDLETIME1STON "IdleTime1stOn"
-#define IDL_IDLETIME2NDON "IdleTime2ndOn"
-#define IDL_IDLEPRIVATE "IdlePrivate"
+#define IDL_IDLEONSAVER "IdleOnSaver" // IDC_SCREENSAVER
+#define IDL_IDLEONLOCK "IdleOnLock" // IDC_LOCKED
+#define IDL_IDLEPRIVATE "IdlePrivate" // IDC_IDLEPRIVATE
 
+#define IdleObject_IsIdle(obj) (obj->state&0x1)
+#define IdleObject_SetIdle(obj) (obj->state|=0x1)
+#define IdleObject_ClearIdle(obj) (obj->state&=~0x1) 
 
-static BOOL CALLBACK DlgProcIdleOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+// either use meth 0,1 or figure out which one
+#define IdleObject_UseMethod0(obj) (obj->state&=~0x2)
+#define IdleObject_UseMethod1(obj) (obj->state|=0x2)
+#define IdleObject_GetMethod(obj) (obj->state&0x2)
+
+#define IdleObject_IdleCheckSaver(obj) (obj->state&0x4)
+#define IdleObject_SetSaverCheck(obj) (obj->state|=0x4)
+
+#define IdleObject_IdleCheckWorkstation(obj) (obj->state&0x8)
+#define IdleObject_SetWorkstationCheck(obj) (obj->state|=0x8)
+
+#define IdleObject_IsPrivacy(obj) (obj->state&0x10)
+#define IdleObject_SetPrivacy(obj) (obj->state|=0x10)
+
+typedef struct {
+	UINT hTimer;
+	unsigned int state; 
+	unsigned int minutes;	// user setting, number of minutes of inactivity to wait for
+	POINT mousepos;
+	unsigned int mouseidle;
+} IdleObject;
+
+static IdleObject gIdleObject;
+static HANDLE hIdleEvent;
+static BOOL (WINAPI * MyGetLastInputInfo)(PLASTINPUTINFO);
+
+void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime);
+static BOOL IsWorkstationLocked(void);
+static BOOL IsScreenSaverRunning(void);
+
+static void IdleObject_ReadSettings(IdleObject * obj)
 {
-	switch (msg) {
-		case WM_INITDIALOG: 
-		{
-			TranslateDialogDefault(hwndDlg);
-			CheckDlgButton(hwndDlg, IDC_IDLECHECK, idleCheck ? BST_CHECKED : BST_UNCHECKED);			
-			// check/uncheck options
-			CheckDlgButton(hwndDlg, IDC_IDLEONWINDOWS, idleMethod == 0 ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_IDLEONMIRANDA, idleMethod == 1 ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_IDLEUSEGLI, idleGLI ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_SCREENSAVER, idleOnSaver ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_LOCKED, idleOnLock ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_IDLESHORT, idleTimeFirstOn ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_IDLELONG, idleTimeSecondOn ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_IDLEPRIVATE, idlePrivate ? BST_CHECKED : BST_UNCHECKED);
-			// set times
-			SetDlgItemInt(hwndDlg, IDC_IDLE1STTIME, idleTimeFirst, FALSE);
-			SetDlgItemInt(hwndDlg, IDC_IDLE2NDTIME, idleTimeSecond, FALSE);
-			// enable options
-			SendMessage(hwndDlg, WM_USER+1, (WPARAM)idleCheck, 0);
-			return TRUE;
-		}
-		case WM_COMMAND:
-		{
-            if ((LOWORD(wParam)==IDC_IDLE1STTIME||LOWORD(wParam)==IDC_IDLE2NDTIME) && (HIWORD(wParam)!=EN_CHANGE || (HWND) lParam!=GetFocus()))
-                return 0;
-			switch ( LOWORD(wParam) )
-			{
-				case IDC_IDLECHECK:
-				case IDC_IDLEONWINDOWS:
-				case IDC_IDLEONMIRANDA:
-				case IDC_IDLESHORT:
-				case IDC_IDLELONG:
-				{
-					SendMessage(hwndDlg, WM_USER+1, (WPARAM)IsDlgButtonChecked(hwndDlg, IDC_IDLECHECK) == BST_CHECKED, 0);
-					break;
-				}
-			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
-		}
-		case WM_USER+1: 
-		{
-			DWORD nID[] = { IDC_IDLEONWINDOWS, IDC_IDLEUSEGLI, IDC_IDLEONMIRANDA, IDC_SCREENSAVER, IDC_LOCKED, IDC_IDLESHORT, IDC_IDLE1STTIME, IDC_IDLELONG, IDC_IDLE2NDTIME, IDC_IDLEPRIVATE};
-			int j;
-			// enable/disable all sub controls,
-			for (j = 0; j < sizeof(nID) / sizeof(nID[0]); j++) {
-				int nEnable = wParam;
-				switch ( nID[j] ) {
-					case IDC_IDLEUSEGLI: nEnable &= IsDlgButtonChecked(hwndDlg, IDC_IDLEONWINDOWS) == BST_CHECKED ? 1 : 0; break;
-					case IDC_IDLE1STTIME: nEnable &= IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED ? 1 : 0; break;
-					case IDC_IDLE2NDTIME: nEnable &= IsDlgButtonChecked(hwndDlg, IDC_IDLELONG) == BST_CHECKED ? 1 : 0; break;
-				}
-				EnableWindow(GetDlgItem(hwndDlg, nID[j]), nEnable);				
-			}			
-			break;
-		}
-		case WM_NOTIFY:
-		{
-			if ( lParam && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
-				// these writes will cause ME_DB_CONTACT_SETTINGCHANGED and that will set new live vars
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLECHECK, IsDlgButtonChecked(hwndDlg, IDC_IDLECHECK) == BST_CHECKED ? 1 : 0);
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLEMETHOD, IsDlgButtonChecked(hwndDlg, IDC_IDLEONWINDOWS) == BST_CHECKED ? 0 : 1);
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLEMETHOD, IsDlgButtonChecked(hwndDlg, IDC_IDLEONMIRANDA) == BST_CHECKED ? 1 : 0);
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLEGLI, IsDlgButtonChecked(hwndDlg, IDC_IDLEUSEGLI) == BST_CHECKED ? 1 : 0);
-				// options about instant idle
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLEONSAVER, IsDlgButtonChecked(hwndDlg, IDC_SCREENSAVER));
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLEONLOCK, IsDlgButtonChecked(hwndDlg, IDC_LOCKED));
-				// options if short/long idle are enabled
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLETIME1STON, IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED ? 1 : 0 );
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLETIME2NDON, IsDlgButtonChecked(hwndDlg, IDC_IDLELONG) == BST_CHECKED ? 1 : 0);
-				// write out the time info
-				{
-					int num = 0;
-					num = GetDlgItemInt(hwndDlg, IDC_IDLE1STTIME, NULL, FALSE);
-					DBWriteContactSettingWord(NULL, IDLEMODULE, IDL_IDLETIME1ST, num ? num : 5);
-					num = GetDlgItemInt(hwndDlg, IDC_IDLE2NDTIME, NULL, FALSE);
-					DBWriteContactSettingWord(NULL, IDLEMODULE, IDL_IDLETIME2ND, num ? num : 5);
-				}
-				// private
-				DBWriteContactSettingByte(NULL, IDLEMODULE, IDL_IDLEPRIVATE, IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED ? 1 : 0);
-			}
-			break;
-		}
-	}
-	return FALSE;
+	obj->minutes = DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLETIME1ST, 10);
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, 0) ) IdleObject_UseMethod1(obj);
+	else IdleObject_UseMethod0(obj);
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, 0) ) IdleObject_SetSaverCheck(obj);
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, 0 ) ) IdleObject_SetWorkstationCheck(obj);
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, 0) ) IdleObject_SetPrivacy(obj);
 }
 
-static int IdleOptInit(WPARAM wParam, LPARAM lPAram)
+static void IdleObject_Create(IdleObject * obj)
 {
-	OPTIONSDIALOGPAGE odp;
-	memset(&odp, 0, sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=100000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_IDLE);
-	odp.pszGroup=Translate("Events");
-	odp.pszTitle=Translate("Idle");
-	odp.pfnDlgProc=DlgProcIdleOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-	return 0;
+	ZeroMemory(obj, sizeof(IdleObject));	
+	obj->hTimer=SetTimer(NULL, 0, 1000, IdleTimer);
+	IdleObject_ReadSettings(obj);
+}
+
+static void IdleObject_Destroy(IdleObject * obj)
+{
+	if (IdleObject_IsIdle(obj)) NotifyEventHooks(hIdleEvent, 0, 0);
+	IdleObject_ClearIdle(obj);
+	KillTimer(NULL, obj->hTimer);
+}
+
+static int IdleObject_IsUserIdle(IdleObject * obj)
+{
+	DWORD dwTick;
+	if ( IdleObject_GetMethod(obj) ) {
+		CallService(MS_SYSTEM_GETIDLE, 0, (DWORD)&dwTick);
+		return GetTickCount() - dwTick > (obj->minutes * 60 * 1000);
+	} else {
+		if ( MyGetLastInputInfo != NULL ) {
+			LASTINPUTINFO ii;
+			ZeroMemory(&ii,sizeof(ii));
+			ii.cbSize=sizeof(ii);
+			if ( MyGetLastInputInfo(&ii) ) return GetTickCount() - ii.dwTime > (obj->minutes * 60 * 1000);
+		} else {
+			POINT pt;			
+			GetCursorPos(&pt);
+			if ( pt.x != obj->mousepos.x || pt.y != obj->mousepos.y ) {
+				obj->mousepos=pt;
+				obj->mouseidle=0;
+			} else obj->mouseidle += 1;	
+			if ( obj->mouseidle ) return obj->mouseidle * 1000 >= (obj->minutes * 60 * 1000);
+		}
+		return FALSE;
+	}
+}
+
+static void IdleObject_Tick(IdleObject * obj)
+{
+	BOOL idle = IdleObject_IsUserIdle(obj) 
+		|| ( IdleObject_IdleCheckSaver(obj) ? IsScreenSaverRunning() : FALSE  ) 
+			|| ( IdleObject_IdleCheckWorkstation(obj) ? IsWorkstationLocked() : FALSE );
+
+	unsigned int flags = IDF_SHORT | IdleObject_IsPrivacy(obj) ? IDF_PRIVACY : 0;
+
+	if ( !IdleObject_IsIdle(obj) && idle ) {
+		IdleObject_SetIdle(obj);
+		NotifyEventHooks(hIdleEvent, 0, IDF_ISIDLE | flags);
+	}
+	if ( IdleObject_IsIdle(obj) && !idle ) {
+		IdleObject_ClearIdle(obj);
+		NotifyEventHooks(hIdleEvent, 0, flags);
+	}
+}
+
+void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime)
+{
+	if ( gIdleObject.hTimer == idEvent ) {
+		IdleObject_Tick(&gIdleObject);
+	}
 }
 
 // delphi code here http://www.swissdelphicenter.ch/torry/printcode.php?id=2048
@@ -173,173 +151,116 @@ static BOOL IsWorkstationLocked(void)
 	return rc;
 }
 
-// ticks every 2 seconds
-static VOID CALLBACK IdleTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+static BOOL IsScreenSaverRunning()
 {
-	DWORD dwTick = GetTickCount();
-	int isIdle[3] = {0};
-	static int isEventFired[3] = {0};
-	int j;
+	BOOL rc = FALSE;
+	SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &rc, FALSE);
+	return rc;
+}
 
-	if ( idleCheck == 0 ) return;
-
-	if ( idleMethod == 0 ) {
-		// use windows idle time
-		if ( idleGLI && MyGetLastInputInfo != 0 ) {
-			LASTINPUTINFO ii;
-			memset(&ii,0,sizeof(ii));
-			ii.cbSize=sizeof(ii);	
-			if ( MyGetLastInputInfo(&ii) ) 	dwTick = ii.dwTime;			
-		} else {
-			// mouse check
-			static int mouseIdle = 0;
-			static POINT lastMousePos = {0};
-			POINT pt;
-			GetCursorPos(&pt);
-			if ( pt.x != lastMousePos.x || pt.y != lastMousePos.y ) 
+static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch ( msg ) {
+		case WM_INITDIALOG:
+		{
+			int method = DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEMETHOD, 0);
+			CheckDlgButton(hwndDlg, IDC_IDLESHORT, DBGetContactSettingByte(NULL,IDLEMOD,IDL_USERIDLECHECK,0) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_IDLEONWINDOWS, method == 0 ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_IDLEONMIRANDA, method ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SCREENSAVER, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONSAVER,0) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_LOCKED, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_IDLEPRIVATE, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEPRIVATE,0) ? BST_CHECKED : BST_UNCHECKED);
+			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETBUDDY, (WPARAM)GetDlgItem(hwndDlg, IDC_IDLE1STTIME), 0);			
+			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETRANGE32, 1, 60);
+			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETPOS, 0, MAKELONG((short) DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLETIME1ST, 10), 0));
+			SendDlgItemMessage(hwndDlg, IDC_IDLE1STTIME, EM_LIMITTEXT, (WPARAM)2, 0);
+			SendMessage(hwndDlg, WM_USER+1, 0, 0);
+			return TRUE;
+		}
+		case WM_USER+1:
+		{
+			BOOL checked = IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED;
+			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONWINDOWS), checked);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONMIRANDA), checked);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLE1STTIME), checked);			
+			break;
+		}
+		case WM_COMMAND:
+		{
+			switch ( LOWORD(wParam) )
 			{
-				mouseIdle=0;
-				lastMousePos=pt;
+				case IDC_IDLE1STTIME:
+				{								
+					int min;			
+					if ( (HWND)lParam != GetFocus() || HIWORD(wParam) != EN_CHANGE ) return FALSE;
+					min=GetDlgItemInt(hwndDlg, IDC_IDLE1STTIME, NULL, FALSE);
+					if ( min == 0 && GetWindowTextLength(GetDlgItem(hwndDlg, IDC_IDLE1STTIME)) ) 
+						SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETPOS, 0, MAKELONG((short) 1, 0));
+					break;
+				}
+				case IDC_IDLESHORT:
+				{
+					SendMessage(hwndDlg, WM_USER+1, 0, 0);
+					break;
+				}
 			}
-			else mouseIdle += 2; // interval of timer
-			if ( mouseIdle ) dwTick = GetTickCount() - (mouseIdle * 1000);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
 		}
-	} else {
-		// use miranda idle time
-		CallService(MS_SYSTEM_GETIDLE, 0, (LPARAM)&dwTick);
+		case WM_NOTIFY: 
+		{
+			NMHDR * hdr = (NMHDR *)lParam;
+			if ( hdr && hdr->code == PSN_APPLY ) {
+				int method = IsDlgButtonChecked(hwndDlg, IDC_IDLEONWINDOWS) == BST_CHECKED;
+				int mins = SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_GETPOS, 0, 0);
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLETIME1ST, HIWORD(mins) == 0 ? LOWORD(mins) : 10 );
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_USERIDLECHECK, IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED);
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, method ? 0 : 1);
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, IsDlgButtonChecked(hwndDlg, IDC_SCREENSAVER) == BST_CHECKED);
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED);
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED);
+				// destroy any current idle and reset settings.
+				IdleObject_Destroy(&gIdleObject);
+				IdleObject_Create(&gIdleObject);
+			}
+			break;
+		}
 	}
-
-	// has the first idle elapsed?
-	isIdle[0] = GetTickCount() - dwTick >= (DWORD)( idleTimeFirst * 60 * 1000 );
-	// and the second?
-	isIdle[1] = GetTickCount() - dwTick >= (DWORD)( idleTimeSecond * 60 * 1000 );
-
-	if ( idleOnSaver ) { // check saver
-		BOOL isScreenSaverRunning = FALSE;
-		SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &isScreenSaverRunning, FALSE);
-		isIdle[2] = isScreenSaverRunning;
-	}
-
-	// check workstation?
-	if ( idleOnLock ) { // check station locked?
-		isIdle[2] = IsWorkstationLocked();
-	}
-
-	for ( j = 0; j<3; j++ )
-	{
-		int flags = ( idlePrivate ? IDF_PRIVACY:0 );
-		switch (j) {
-			case 0: flags |= IDF_SHORT; break;
-			case 1: flags |= IDF_LONG; break;
-			case 2: flags |= IDF_ONFORCE; break;
-		}
-		if ( isIdle[j]==1  && isEventFired[j] == 0 ) { // idle and no one knows					
-			isEventFired[j]=1;
-			NotifyEventHooks( hIdleEvent, 0, IDF_ISIDLE | flags );			
-		}
-		if ( isIdle[j]==0 && isEventFired[j] == 1 ) { // not idle, no one knows
-			isEventFired[j]=0;
-			NotifyEventHooks( hIdleEvent, 0, flags );			
-		}
-	}//for	
-
+	return FALSE;
 }
 
-static int IdleSettingsChanged(WPARAM wParam, LPARAM lParam)
+static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 {
-	HANDLE hContact = (HANDLE)wParam;
-	DBCONTACTWRITESETTING * dbw = (DBCONTACTWRITESETTING *) lParam;
-	if ( wParam == 0 && dbw && dbw->szSetting && strcmp(IDLEMODULE, dbw->szModule)==0 ) 
-	{
-		if ( strcmp(IDL_IDLECHECK, dbw->szSetting) == 0 ) 
-		{
-			idleCheck = dbw->value.bVal;
-
-		} else if ( strcmp(IDL_IDLEMETHOD, dbw->szSetting) == 0 ) 
-		{
-
-			idleMethod = dbw->value.bVal;
-
-		} else if ( strcmp(IDL_IDLEGLI, dbw->szSetting) == 0 ) {
-
-			idleGLI = dbw->value.bVal;
-
-		} else if ( strcmp(IDL_IDLETIME1ST, dbw->szSetting) == 0 ) 
-		{
-
-			idleTimeFirst = dbw->value.wVal;
-
-		} else if ( strcmp(IDL_IDLETIME2ND, dbw->szSetting) == 0 ) 
-		{
-
-			idleTimeSecond = dbw->value.wVal;
-
-		} else if ( strcmp(IDL_IDLEONSAVER, dbw->szSetting) == 0 ) {
-
-			idleOnSaver = dbw->value.bVal;
-
-		} else if ( strcmp(IDL_IDLEONLOCK, dbw->szSetting) == 0 ) {
-
-			idleOnLock = dbw->value.bVal;
-
-		} else if ( strcmp(IDL_IDLETIME1STON, dbw->szSetting) == 0 ) {
-
-			idleTimeFirstOn = dbw->value.bVal;
-
-		} else if ( strcmp(IDL_IDLETIME2NDON, dbw->szSetting) == 0 ) {
-
-			idleTimeSecondOn = dbw->value.bVal;
-
-		} else if ( strcmp(IDL_IDLEPRIVATE, dbw->szSetting) == 0 ) {
-
-			idlePrivate = dbw->value.bVal;
-
-		}
-
-	}
+	OPTIONSDIALOGPAGE odp;
+	ZeroMemory(&odp, sizeof(odp));
+	odp.cbSize=sizeof(odp);
+	odp.position=100000000;
+	odp.hInstance=GetModuleHandle(NULL);
+	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_IDLE);
+	odp.pszGroup=Translate("Status");
+	odp.pszTitle=Translate("Idle");
+	odp.pfnDlgProc=IdleOptsDlgProc;
+	odp.flags=ODPF_BOLDGROUPS;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 	return 0;
-}
-
-static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
-{
-	MIRANDA_IDLE_INFO * mii = (MIRANDA_IDLE_INFO *) lParam;
-	if (mii && mii->cbSize == sizeof(MIRANDA_IDLE_INFO)) {
-		mii->enabled = idleCheck;
-		mii->idleShortTime = idleTimeFirstOn ? idleTimeFirst : 0;
-		mii->idleLongTime = idleTimeSecondOn ? idleTimeSecond : 0;
-		mii->privacy = idlePrivate;
-		return 0;
-	}
-	return 1;
 }
 
 static int UnloadIdleModule(WPARAM wParam, LPARAM lParam)
 {
-	KillTimer(NULL, hIdleTimer);
-	if ( hIdleSettingsChanged != 0 ) UnhookEvent(hIdleSettingsChanged);
-	DestroyHookableEvent(ME_IDLE_CHANGED);
+	IdleObject_Destroy(&gIdleObject);
+	DestroyHookableEvent(hIdleEvent);
+	hIdleEvent=NULL;
 	return 0;
 }
 
 int LoadIdleModule(void)
 {
-	hIdleEvent = CreateHookableEvent(ME_IDLE_CHANGED);
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadIdleModule);	
-	MyGetLastInputInfo=(BOOL (WINAPI *)(PLASTINPUTINFO)) GetProcAddress( GetModuleHandle("user32"),"GetLastInputInfo" );
-	// load settings into live ones
-	idleCheck = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLECHECK, 0);
-	idleMethod = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLEMETHOD, 0);
-	idleGLI = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLEGLI, 1);
-	idleTimeFirst = DBGetContactSettingWord(NULL, IDLEMODULE, IDL_IDLETIME1ST, 5);
-	idleTimeSecond = DBGetContactSettingWord(NULL, IDLEMODULE, IDL_IDLETIME2ND, 10);
-	idleTimeFirstOn = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLETIME1STON, 0);
-	idleTimeSecondOn = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLETIME2NDON, 0);
-	idleOnSaver = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLEONSAVER, 0);
-	idleOnLock = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLEONLOCK, 0);	
-	idlePrivate = DBGetContactSettingByte(NULL, IDLEMODULE, IDL_IDLEPRIVATE, 0);
-	CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);
-	hIdleSettingsChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, IdleSettingsChanged);
-	hIdleTimer=SetTimer(NULL, 0, 2000, IdleTimer);
+	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandle("user32"), "GetLastInputInfo");
+	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
+	IdleObject_Create(&gIdleObject);
+	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadIdleModule);
 	HookEvent(ME_OPT_INITIALISE, IdleOptInit);
 	return 0;
 }
+
+
