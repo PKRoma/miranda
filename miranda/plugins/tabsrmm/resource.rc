@@ -332,6 +332,9 @@ BEGIN
                     UDS_ARROWKEYS,161,110,11,11
     LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,179,111,
                     122,11
+    CONTROL         "Flash contact list and tray icons for new events in unfocused windows",
+                    IDC_FLASHCLIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
+                    137,263,9
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -567,6 +570,19 @@ BEGIN
     GROUPBOX        "Set display name for the default container (instead of just ""default"")",
                     IDC_STATIC,1,186,310,30
     EDITTEXT        IDC_DEFAULTDISPLAYNAME,7,198,142,12,ES_AUTOHSCROLL
+    GROUPBOX        "Container flashing",IDC_STATIC,0,107,312,57
+    LTEXT           "Flash containers",IDC_STATIC,6,118,102,11
+    EDITTEXT        IDC_NRFLASH,111,116,34,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_NRFLASHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,143,117,
+                    14,11
+    LTEXT           "times",IDC_STATIC,166,118,83,11
+    LTEXT           "Flash interval",IDC_STATIC,6,133,99,11
+    EDITTEXT        IDC_FLASHINTERVAL,111,131,34,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_FLASHINTERVALSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,149,134,10,10
+    LTEXT           "milliseconds",IDC_STATIC,166,132,81,12
 END
 
 IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 312, 227

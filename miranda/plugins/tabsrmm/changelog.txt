@@ -31,16 +31,62 @@ This list is imcomplete, but contains a few important things left.
         
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
+
+Version 0.9.9.4 - 2005/01/20
+
+        + added support for the snapping windows plugin.
+        
+        * changed window flashing code. Its now using FlashWindowEx() which means that
+          tabSRMM won't work on Windows 95 anymore, but I don't think thats a problem :)
+          The advantage is a code which is less complex and saves resources as well (the
+          old code had to deal with timers for flashing the windows, the new code doesn't
+          need to do this anymore).
+          
+          Another advantage is that you can now set the number of flashes (only applies to
+          containers which are using the "default" value and are NOT set to flash forever)
+          and the flashing interval. You can find both options under Options->Message sessions->
+          Container options.
           
 Version 0.9.9.3 - 2005/01/20
 
         + new "per container option": "Use static icon" - if checked, the 
           container will use a static icon instead of showing the contacts
           status icon. The icon will be obtained from the tabsrmm_icons.dll
-          using ordinal #18.
+          using ordinal #18 (IDI_CONTAINER). If you're using a modified
+          tabsrmm_icons.dll, you'll have to reshack it and supply a valid
+          icon.
+          
           The message icon will still be visible when the container has unread
-          events in one of its tabs.
-
+          events in one of its tabs, but the status icon(s) will be replaced by
+          the static container icon.
+        
+        * the tabsrmm_icons.dll will now be recognized in both the .\plugins and
+          .\icons subdirectories.
+          Order of search is:
+          a) .\plugins
+          b) .\icons
+          
+        ! just another focus fix - in some cases, containers didn't gain the focus
+          when they actually should. Opening sessions using hokeys (HotContact plugin)
+          should now work again.
+          
+        ! metacontacts support - don't force a protocol when the MetaContacts protocol
+          returns an error.
+          
+        ! metacontacts support - check for forced protocol at tab creation.
+          PLEASE UPDATE your MetaContacts plugin -> at least 0.8.0.8 is now required
+          by tabsrmm.
+          
+        + new option: "Flash contact list and tray icons for new events in unfocused windows".
+          This is some kind of "icq style" event notification - the contact list and
+          the tray icon will flash when you receive a message in a window which is not
+          focused. Only the first event for each contact will trigger the flashing and
+          it will go away when the tab receives the focus. You may also click the tray icon
+          or double click the contact in the clist to activate the tab.
+          
+          You can find this option under "Options->Message sessions->Messaging"
+          Note that, this MAY cause problems with other events like incoming file transfers.
+        
 Version 0.9.9.2 - 2005/01/18
 
         ! fixed - status icon on the container did not appear when the title bar

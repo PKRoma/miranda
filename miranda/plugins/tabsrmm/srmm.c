@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "m_popup.h"
+#include "m_tabsrmm.h"
 
 int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
@@ -46,7 +47,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 2),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 3),
     "Send and receive instant messages, using a split mode interface and tab containers.",
     "SRMM by Miranda Team, tab UI by Nightwish",
     "silvercircle@gmail.com",

@@ -55,6 +55,7 @@ $Id$
 #include "m_message.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
+#include "m_snapping_windows.h"
 
 #define SB_CHAR_WIDTH        45
 
@@ -85,8 +86,8 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int GetProtoIconFromList(const char *szProto, int iStatus);
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 HMENU BuildContainerMenu();
-void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type);
 void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode);
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
@@ -229,6 +230,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     TCITEM item;
     HWND  hwndTab;
 
+    CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
+    
     pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
     hwndTab = GetDlgItem(hwndDlg, IDC_MSGTABS);
 
@@ -656,17 +659,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 break;
             }               
         case WM_TIMER:
-            if (wParam == TIMERID_FLASHWND) {
-                if (pContainer->nFlash++ <= pContainer->nFlashMax)
-                    FlashWindow(hwndDlg, TRUE);
-                else {
-                    FlashWindow(hwndDlg, FALSE);
-                    pContainer->nFlash = 0;
-                    KillTimer(hwndDlg, TIMERID_FLASHWND);
-                    pContainer->isFlashing = FALSE;
-                }
-            }
-            else if(wParam == TIMERID_HEARTBEAT) {
+            if(wParam == TIMERID_HEARTBEAT) {
                 int i;
                 TCITEM item = {0};
                 DWORD dwTimeout;
@@ -814,9 +807,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
                             SetFocus(pContainer->hwndActive);
-                            dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
-                            if(dat)
-                                TABSRMM_FireEvent(dat->hContact, pContainer->hwndActive, MSG_WINDOW_EVT_CUSTOM);
                         }
                         break;
                         /*
@@ -1001,6 +991,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_MOUSEACTIVATE: {
                 TCITEM item;
 
+                FlashContainer(pContainer, 0);
                 if(pContainer->dwFlags & CNT_DEFERREDTABSELECT) {
                     NMHDR nmhdr;
 
@@ -1047,12 +1038,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
                 SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
-            // handle flashing
-                if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
-                    pContainer->isFlashing = FALSE;
-                    pContainer->nFlash = 0;
-                    FlashWindow(hwndDlg, FALSE);
-                }
                 if(GetMenu(hwndDlg) != 0)
                     DrawMenuBar(hwndDlg);
                 break;
@@ -1188,7 +1173,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			if (HIWORD(pContainer->dwTransparency) < 50)
 				pContainer->dwTransparency = MAKELONG((WORD)LOWORD(pContainer->dwTransparency), 50);
 			
-            pContainer->nFlashMax = pContainer->dwFlags & CNT_FLASHALWAYS ? 0xffffffff : DBGetContactSettingByte(NULL, SRMSGMOD, "FlashMax", 4);
+            //pContainer->nFlashMax = pContainer->dwFlags & CNT_FLASHALWAYS ? 0xffffffff : DBGetContactSettingByte(NULL, SRMSGMOD, "FlashMax", 4);
             break;
 		}
         case DM_STATUSBARCHANGED:
@@ -1400,16 +1385,21 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             HMENU hMC;
                             hMC = BuildMCProtocolMenu(pContainer->hwndActive);
                             if(hMC) {
+                                struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                                 int iSelection = 0;
                                 iSelection = TrackPopupMenu(hMC, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                                 if(iSelection < 1000 && iSelection >= 100) {         // the "force" submenu...
                                     if(iSelection == 999) {                           // un-force
-                                        CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)hContact, 0);
-                                        DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", -1);
+                                        if(CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)hContact, 0) == 0)
+                                            DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", -1);
+                                        else
+                                            _DebugMessage(pContainer->hwndActive, dat, Translate("Unforce failed"));
                                     }
                                     else {
-                                        CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)hContact,  (LPARAM)(iSelection - 100));
-                                        DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", (DWORD)(iSelection - 100));
+                                        if(CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)hContact,  (LPARAM)(iSelection - 100)) == 0)
+                                            DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", (DWORD)(iSelection - 100));
+                                        else
+                                            _DebugMessage(pContainer->hwndActive, dat, Translate("The selected protocol cannot be forced at this time"));
                                     }
                                 }
                                 else if(iSelection >= 1000) {                        // the "default" menu...
@@ -2233,3 +2223,34 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
     return hMenu;
 }
 
+/*
+ * flashes the container
+ * iMode != 0: turn on flashing
+ * iMode == 0: turn off flashing
+ */
+ 
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode)
+{
+    FLASHWINFO fwi;
+    
+    if(pContainer->dwFlags & CNT_NOFLASH)                   // container should never flash
+        return;
+
+    fwi.cbSize = sizeof(fwi);
+    fwi.uCount = 0;
+
+    if(iMode) {
+        fwi.dwFlags = FLASHW_ALL;
+        if(pContainer->dwFlags & CNT_FLASHALWAYS)
+            fwi.dwFlags |= FLASHW_TIMERNOFG;
+        else
+            fwi.uCount = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nrflash", 4);
+    }
+    else
+        fwi.dwFlags = FLASHW_STOP;
+
+    fwi.dwTimeout = DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000);
+    fwi.hwnd = pContainer->hwnd;
+
+    FlashWindowEx(&fwi);
+}

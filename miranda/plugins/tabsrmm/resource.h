@@ -206,6 +206,7 @@
 #define IDC_TABBORDER                   1663
 #define IDC_SPIN2                       1664
 #define IDC_TABBORDERSPIN               1664
+#define IDC_FLASHINTERVALSPIN           1664
 #define IDC_HIDESBAR                    1665
 #define IDC_CLISTMODE                   1666
 #define IDC_ALWAYSPOPUPSINACTIVE        1667
@@ -257,6 +258,11 @@
 #define IDC_CHECK7                      1700
 #define IDC_DELETETEMP                  1700
 #define IDC_CHECK8                      1701
+#define IDC_FLASHCLIST                  1701
+#define IDC_NRFLASH                     1702
+#define IDC_NRFLASHSPIN                 1703
+#define IDC_EDIT3                       1704
+#define IDC_FLASHINTERVAL               1704
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -388,7 +394,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        311
 #define _APS_NEXT_COMMAND_VALUE         40175
-#define _APS_NEXT_CONTROL_VALUE         1702
+#define _APS_NEXT_CONTROL_VALUE         1705
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -82,6 +82,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 int GetProtoIconFromList(const char *szProto, int iStatus);
 void CreateImageList(BOOL bInitial);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode);
 
 // the cached message log icons
 void CacheMsgLogIcons();
@@ -1063,16 +1064,10 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
             SetFocus(pContainer->hwndActive);
         }
         else {
-            if(pContainer->isFlashing)
-                pContainer->nFlash = 0;
-            else {
-                if(pContainer->dwFlags & CNT_NOFLASH)
-                    SendMessage(pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-                else {
-                    SetTimer(pContainer->hwnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
-                    pContainer->isFlashing = TRUE;
-                }
-            }
+            if(pContainer->dwFlags & CNT_NOFLASH)
+                SendMessage(pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+            else
+                FlashContainer(pContainer, 1);
         }
     }
     if (bActivateTab) {
@@ -1145,15 +1140,17 @@ void CreateImageList(BOOL bInitial)
         
         g_hIconDLL = LoadLibraryA("plugins/tabsrmm_icons.dll");
         if(g_hIconDLL == NULL)
+            g_hIconDLL = LoadLibraryA("icons/tabsrmm_icons.dll");
+        if(g_hIconDLL == NULL)
             MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
         else {
             g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
-            
+
             g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
             g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
             g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);
             g_iconContainer = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTAINER), IMAGE_ICON, 0, 0, 0);
-            
+
             g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_nrProtos + 1) * 12 + 8, 0);
             CacheMsgLogIcons();
 

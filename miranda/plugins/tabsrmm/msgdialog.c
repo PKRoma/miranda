@@ -83,7 +83,8 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 
 char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
-void FlashTab(HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, int flashImage, int origImage);
+static void FlashTab(HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, int flashImage, int origImage);
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode);
 
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList;
@@ -812,11 +813,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 dat->hContact = newData->hContact;
                 dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
+                dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
                 if(dat->hContact && dat->szProto != NULL) {
                     dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-                    if(!IsMetaContact(hwndDlg, dat))
+                    if(!dat->bIsMeta)
                         dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(dat->szProto, ID_STATUS_ONLINE);
                     else {
+                        DWORD dwForcedContactNum = 0;
+                        CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
+                        DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", dwForcedContactNum);
                         dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
                     }
                 }
@@ -1195,9 +1200,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;
                     SetActiveWindow(hwndDlg);
+                    SetForegroundWindow(hwndDlg);
                     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 }
                 else {
+                    DBEVENTINFO dbei = {0};
+
+                    dbei.flags = 0;
+                    dbei.eventType = EVENTTYPE_MESSAGE;
                     dat->dwFlags |= (MWF_WASBACKGROUNDCREATE | MWF_NEEDCHECKSIZE);
                     dat->iFlashIcon = g_IconMsgEvent;
                     SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
@@ -1205,6 +1215,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwTickLastEvent = GetTickCount();
                     dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                     SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+                    FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
                     //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                 }
                 SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
@@ -1401,7 +1412,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         char buf[128];
 
                         ZeroMemory(&ci, sizeof(ci));
-                        if(IsMetaContact(hwndDlg, dat)) {
+                        if(dat->bIsMeta) {
                             ci.hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
                             ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ci.hContact, 0);
                         }
@@ -1530,7 +1541,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
-                if(IsMetaContact(hwndDlg, dat))
+                if(dat->bIsMeta)
                     PostMessage(hwndDlg, DM_UPDATEMETACONTACTINFO, 0, 0);
 
                 break;
@@ -1553,6 +1564,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
                     FlashTab(hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, 0, dat->iTabImage);
                     dat->mayFlashTab = FALSE;
+                }
+                if(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST) {
+                    dat->dwEventIsShown &= ~MWF_SHOW_FLASHCLIST;
+                    if(dat->hFlashingEvent !=0)
+                        CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)dat->hFlashingEvent);
+                    dat->hFlashingEvent = 0;
                 }
                 if (dat->dwFlags & MWF_DEFERREDREMAKELOG) {
                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -1591,6 +1608,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
                     FlashTab(hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, 0, dat->iTabImage);
                     dat->mayFlashTab = FALSE;
+                }
+                if(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST) {
+                    dat->dwEventIsShown &= ~MWF_SHOW_FLASHCLIST;
+                    if(dat->hFlashingEvent !=0)
+                        CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)dat->hFlashingEvent);
+                    dat->hFlashingEvent = 0;
                 }
                 if (dat->dwFlags & MWF_DEFERREDREMAKELOG) {
                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -1903,13 +1926,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dat->stats.iReceived++;
                             dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
                         }
-                        
                     }
                     else
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                    if (dat->iTabID == -1) {
+                    
+                    if (dat->iTabID == -1)
                         MessageBoxA(0, "DBEVENTADDED Critical: iTabID == -1", "Error", MB_OK);
-                    }
+                    
                     dat->dwLastActivity = GetTickCount();
                     dat->pContainer->dwLastActivity = dat->dwLastActivity;
                     // tab flashing
@@ -1932,6 +1955,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->mayFlashTab = TRUE;
                     }
                     /*
+                     * try to flash the contact list...
+                     */
+
+                    FlashOnClist(hwndDlg, dat, (HANDLE)lParam, &dbei);
+                    /*
                      * autoswitch tab if option is set AND container is minimized (otherwise, we never autoswitch)
                      * never switch for status changes...
                      */
@@ -1952,12 +1980,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      */
                     if ((GetActiveWindow() != dat->pContainer->hwnd || GetForegroundWindow() != dat->pContainer->hwnd) && !(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         if (!(dat->pContainer->dwFlags & CNT_NOFLASH)) {
+                            FlashContainer(dat->pContainer, 1);
+                            /*
                             if (dat->pContainer->isFlashing)
                                 dat->pContainer->nFlash = 0;
                             else {
                                 SetTimer(dat->pContainer->hwnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                                 dat->pContainer->isFlashing = TRUE;
-                            }
+                            } */
                         }
                         // XXX set the message icon in the container
                         SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
@@ -1999,7 +2029,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         HandleIconFeedback(hwndDlg, dat, -1);
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, 0, 0);
                         if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin) {
-                            isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE) || dat->pContainer->isFlashing;
+                            isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE);
                             if(isFlashed);
                             FlashWindow(dat->pContainer->hwnd, TRUE);       // SetWindowText may clear the flashing state
                         }
@@ -2021,7 +2051,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SetWindowTextA(dat->pContainer->hwnd, szBuf);
                             dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                             if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin) {
-                                isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE) || dat->pContainer->isFlashing;
+                                isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE);
                                 if(isFlashed);
                                 FlashWindow(dat->pContainer->hwnd, TRUE);       // SetWindowText may clear the flashing state
                             }
@@ -3766,6 +3796,9 @@ verify:
                     }
                     free(dat->history);
                 }
+                /*
+                 * search the sendqueue for unfinished send jobs and free them...
+                 */
                 for(i = 0; i < NR_SENDJOBS; i++) {
                     if(sendJobs[i].hOwner == dat->hContact && sendJobs[i].iStatus != 0) {
                         _DebugPopup(dat->hContact, "SendQueue: Clearing orphaned send job (%d)", i);
@@ -3801,7 +3834,7 @@ verify:
 
             // metacontacts support
 
-            if(IsMetaContact(hwndDlg, dat)) {
+            if(dat->bIsMeta) {
                 DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
                 CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
             }
@@ -3851,7 +3884,7 @@ verify:
  * store flashing state into bState
  */
 
-void FlashTab(HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, int flashImage, int origImage)
+static void FlashTab(HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, int flashImage, int origImage)
 {
     TCITEM item;
 

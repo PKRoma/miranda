@@ -353,7 +353,7 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat)
         char szTipText[256], *szProto = NULL;
         CONTACTINFO ci;
 
-        if(IsMetaContact(hwndDlg, dat))
+        if(dat->bIsMeta)
             szProto = GetCurrentMetaContactProto(hwndDlg, dat);
         else
             szProto = dat->szProto;
@@ -364,7 +364,7 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat)
         ci.szProto = szProto;
         ci.dwFlag = CNF_DISPLAY;
         if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-            if(IsMetaContact(hwndDlg, dat))
+            if(dat->bIsMeta)
                 _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s (MetaContact)"), ci.pszVal, szProto);
             else
                 _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s"), ci.pszVal, szProto); 
@@ -778,3 +778,29 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
 }
 // END MOD#33
 
+void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
+{
+    CLISTEVENT cle;
+    char toolTip[256], *contactName;
+
+    if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0))
+        return;
+
+    if(hEvent == 0)
+        return;
+    
+    if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType != EVENTTYPE_STATUSCHANGE && !(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST)) {
+        ZeroMemory(&cle, sizeof(cle));
+        cle.cbSize = sizeof(cle);
+        cle.hContact = (HANDLE) dat->hContact;
+        cle.hDbEvent = hEvent;
+        cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+        cle.pszService = "SRMsg/ReadMessage";
+        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
+        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+        cle.pszTooltip = toolTip;
+        CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
+        dat->dwEventIsShown |= MWF_SHOW_FLASHCLIST;
+        dat->hFlashingEvent = hEvent;
+    }
+}

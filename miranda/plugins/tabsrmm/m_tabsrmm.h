@@ -47,6 +47,7 @@
 #define MWF_SHOW_EMPTYLINEFIX 8
 #define MWF_SHOW_MICROLF 16
 #define MWF_SHOW_MARKFOLLOWUPTS 32
+#define MWF_SHOW_FLASHCLIST 64
 
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
@@ -57,8 +58,6 @@ struct ContainerWindowData {
 	int	 iChilds;
 	HMENU hMenuContext;
 	HWND  hwndTip;			// tab - tooltips...
-	BOOL  isFlashing;
-	UINT  nFlash, nFlashMax;
     BOOL  bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
     UINT  iLastClick;
     POINT pLastPos;
@@ -174,6 +173,8 @@ struct MessageWindowData {
     int iOpenJobs;
     int iCurrentQueueError;
     HANDLE hMultiSendThread;
+    BOOL bIsMeta;
+    HANDLE hFlashingEvent;
 };
 
 typedef struct _recentinfo {
@@ -238,6 +239,6 @@ struct TABSRMM_SessionInfo {
     struct ContainerWindowData *pContainer;
 };
 
-#define ME_MSG_BEFORESEND "MSG/Session/Beforesend"      // fired, when a message is about to be sent, but BEFORE the contents of the 
+// fired, when a message is about to be sent, but BEFORE the contents of the 
                                                         // input area is examined. A plugin can therefore use this event to modify
                                                         // the contents of the input box before it is actually sent.
