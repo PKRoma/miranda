@@ -723,7 +723,7 @@ void ext_yahoo_got_im(int id, char *who, char *msg, long tm, int stat, int utf8)
 			// strip the fade tag
 			!strnicmp(c, "<FADE ",6) || !strnicmp(c,"</FADE>",7) ||
 			// strip the alternate colors tag
-			!strnicmp(umsg ,"<ALT ",5) || !strnicmp(umsg ,"</ALT>",6)){ 
+			!strnicmp(c, "<ALT ",5) || !strnicmp(c, "</ALT>",6)){ 
                 while ((*c++ != '>') && (*c != '\0')); 
 		} else
         // strip ANSI color combination
