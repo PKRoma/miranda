@@ -244,7 +244,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 {
 	MSN_DebugLog( "Thread started: server='%s', type=%d", info->mServer, info->mType );
 
-	NETLIBOPENCONNECTION tConn;
+	NETLIBOPENCONNECTION tConn = {0};
 	tConn.cbSize = sizeof( tConn );
 	tConn.flags = 0;
 
