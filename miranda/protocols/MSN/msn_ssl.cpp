@@ -177,7 +177,7 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 			bool  bProxyParamsSubstituted = false;
 
 			if ( tUsesProxy )
-				sttApplyProxy( tRequest ); 
+				sttApplyProxy( tRequest );
 
 			if ( parChallenge != NULL ) {
 				char tPassword[ 100 ];
@@ -201,7 +201,7 @@ LBL_Restart:
 				TWinErrorCode errCode;
 				MSN_DebugLog( "HttpSendRequest() failed with error %ld", errCode.mErrorCode );
 
-				if ( tErrorCode == 2 )
+				if ( errCode.mErrorCode == 2 )
 					MSN_ShowError( "Internet Explorer is in the 'Offline' mode. Switch IE to the 'Online' mode and then try to relogin" );
 				else
 					MSN_ShowError( "MSN Passport verification failed with error %d: %s",
@@ -223,7 +223,7 @@ LBL_Restart:
 				case HTTP_STATUS_PROXY_AUTH_REQ:
 					if ( tUsesProxy && !bProxyParamsSubstituted ) {
 						bProxyParamsSubstituted = true;
-						sttApplyProxy( tUrlHandle ); 
+						sttApplyProxy( tUrlHandle );
 						sttSuckMethan( tRequest );
 						goto LBL_Restart;
 					}
