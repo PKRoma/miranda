@@ -876,12 +876,14 @@ static void sttInitFileTransfer(
 					*p = '_';
 		}	}	}
 
-		char szFileName[ MAX_PATH ];
-		WideCharToMultiByte( CP_ACP, 0, wszFileName, -1, szFileName, MAX_PATH, 0, 0 );
-		MSN_DebugLog( "File name: '%s'", szFileName );
-
 		if ( msnRunningUnderNT )
 			ft->wszFileName = _wcsdup( wszFileName );
+
+		char szFileName[ MAX_PATH ];
+      TCHAR cDefaultChar = '_';
+		WideCharToMultiByte( CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR, 
+			wszFileName, -1, szFileName, MAX_PATH, &cDefaultChar, 0 );
+		MSN_DebugLog( "File name: '%s'", szFileName );
 
 		ft->std.hContact = info->mJoinedContacts[0];
 		ft->std.currentFile = strdup( szFileName );

@@ -10,6 +10,8 @@ Version 0.1.7.11
 [+] Wish #0000142 fixed: a popup for session disconnection
 [+] Wish #0000149 fixed: CHAT.DLL support was added for groupchats (thanks noname)
 [!] Bug #0000458 fixed: Messages disappear when sending to MSN.
+[!] Bug #0000684 fixed: a file with the Unicode name fails to open after
+the successful transfer.
 [!] Bug #0000761 fixed: apply button in options->popups->msn enabled on
 first showing of page
 
@@ -46,6 +48,8 @@ Version 0.1.7.9
 [!] Option 'File Transfers -> If a file already exists  ->  Rename'
 doesn't work for MSN P2P transfers.
 [!] Bug #0000092 fixed: 'User Is Typing' event delay is too slow.
+[!] Bug #0000423 fixed: Send Message To Offline User Return Message Time
+Out Message
 [!] Bug #0000444 fixed: the passive P2P transfer fails if MSN Messenger
 returns bad IP address
 [!] Bug #0000554 fixed: fake Hotmail notifications are shown, even

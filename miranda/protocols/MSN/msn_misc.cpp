@@ -45,9 +45,8 @@ static CRITICAL_SECTION csInterlocked95;
 extern HANDLE msnMainThread;
 extern bool msnUseExtendedPopups;
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MirandaStatusToMSN - status helper functions
-//=======================================================================================
 
 char* __stdcall MirandaStatusToMSN( int status )
 {
@@ -79,9 +78,8 @@ int __stdcall MSNStatusToMiranda(const char *status)
 		default: return ID_STATUS_OFFLINE;
 }	}
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddUser - adds a e-mail address to one of the MSN server lists
-//=======================================================================================
 
 int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 {
@@ -129,9 +127,8 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 	return msgid;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddAuthRequest - adds the authorization event to the database
-//=======================================================================================
 
 void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick )
 {
@@ -156,9 +153,8 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 	MSN_CallService( MS_DB_EVENT_ADD, NULL,( LPARAM )&dbei );
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_DebugLog - writes a line of comments to the network log
-//=======================================================================================
 
 void __stdcall	MSN_DebugLog( const char *fmt, ... )
 {
@@ -174,9 +170,8 @@ void __stdcall	MSN_DebugLog( const char *fmt, ... )
 	va_end( vararg );
 }
 
-//=======================================================================================
-// MSN_GetAvatarFileName - gets a file name for an contact's avatar
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_DumpMemory - dumps a memory block to the network log
 
 void __stdcall MSN_DumpMemory( const char* buffer, int bufSize )
 {
@@ -203,9 +198,8 @@ void __stdcall MSN_DumpMemory( const char* buffer, int bufSize )
 		MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )TmpBuffer );
 }	}
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
-//=======================================================================================
 
 void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen, bool bOldFormat  )
 {
@@ -245,9 +239,8 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen,
 			_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", msnProtocolName );
 }	}
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GoOffline - performs several actions when a server goes offline
-//=======================================================================================
 
 void __stdcall	MSN_GoOffline()
 {
@@ -273,9 +266,8 @@ void __stdcall	MSN_GoOffline()
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 }	}
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendMessage - formats and sends a MSG packet through the server
-//=======================================================================================
 
 char sttHeaderStart[] = "MIME-Version: 1.0\r\n";
 
@@ -329,9 +321,8 @@ LONG ThreadData::sendMessage( const char* parMsg, int parFlags )
 		strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendRawPacket - sends a packet accordingly to the MSN protocol
-//=======================================================================================
 
 LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 {
@@ -352,9 +343,8 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 	return thisTrid;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendNickname - update our own nickname on the server
-//=======================================================================================
 
 int __stdcall MSN_SendNickname(char *email, char *nickname)
 {
@@ -368,9 +358,8 @@ int __stdcall MSN_SendNickname(char *email, char *nickname)
 	return 0;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendPacket - sends a packet accordingly to the MSN protocol
-//=======================================================================================
 
 LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 {
@@ -401,9 +390,8 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	return thisTrid;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SetServerStatus - changes plugins status at the server
-//=======================================================================================
 
 void __stdcall MSN_SetServerStatus( int newStatus )
 {
@@ -422,9 +410,8 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 	else msnNsThread->sendPacket( "CHG", szStatusName );
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_ShowError - shows an error
-//=======================================================================================
 
 void __cdecl MSN_ShowError( const char* msgtext, ... )
 {
@@ -441,9 +428,8 @@ void __cdecl MSN_ShowError( const char* msgtext, ... )
 		MessageBox( NULL, tBuffer, msnProtocolName, MB_OK );
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_ShowPopup - popup plugin support
-//=======================================================================================
 
 void CALLBACK sttMainThreadCallback( ULONG dwParam )
 {
@@ -497,9 +483,8 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( ULONG )ppd );
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_StoreLen - stores a message's length in a buffer
-//=======================================================================================
 
 char* __stdcall MSN_StoreLen( char* dest, char* last )
 {
@@ -511,9 +496,8 @@ char* __stdcall MSN_StoreLen( char* dest, char* last )
 	return last - ( 5 - cbDigits );
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // UrlDecode - converts URL chars like %20 into printable characters
-//=======================================================================================
 
 static int SingleHexToDecimal(char c)
 {
@@ -547,9 +531,8 @@ void __stdcall UrlDecode( char* str )
 	*d = 0;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // UrlEncode - converts printable characters into URL chars like %20
-//=======================================================================================
 
 void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 {
@@ -580,9 +563,8 @@ void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 	*d = '\0';
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
-//=======================================================================================
 
 void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
 {
@@ -638,9 +620,8 @@ void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
    WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Encode - converts MBCS string to the UTF8-encoded format
-//=======================================================================================
 
 char* __stdcall Utf8Encode( const char* src )
 {
@@ -680,9 +661,8 @@ char* __stdcall Utf8Encode( const char* src )
 	return result;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Encode - converts UCS2 string to the UTF8-encoded format
-//=======================================================================================
 
 char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
 {
@@ -716,9 +696,8 @@ char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
 	return result;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // filetransfer class members
-//=======================================================================================
 
 filetransfer::filetransfer()
 {
@@ -802,10 +781,20 @@ int filetransfer::create()
 	_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, std.currentFile );
 	std.currentFile = strdup( filefull );
 
-	if ( msnRunningUnderNT && wszFileName != NULL )
-		fileId = _wopen( wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-	else
-		fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+	if ( msnRunningUnderNT && wszFileName != NULL ) {
+		fileId = _wopen( wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
+		if ( fileId != -1 ) {
+			WIN32_FIND_DATAW data;
+			HANDLE hFind = FindFirstFileW( wszFileName, &data );
+			if ( hFind != INVALID_HANDLE_VALUE ) {
+				free( std.currentFile );
+
+            char tShortName[ 20 ];
+				WideCharToMultiByte( CP_ACP, 0, data.cAlternateFileName, -1, tShortName, sizeof tShortName, 0, 0 );
+				std.currentFile = strdup( tShortName );
+		}	}
+	}
+	else fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
 
 	if ( fileId == -1 )
 		MSN_DebugLog( "Cannot create file '%s' during a file transfer", filefull );
@@ -815,9 +804,8 @@ int filetransfer::create()
 	return fileId;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // TWinErrorCode class
-//=======================================================================================
 
 TWinErrorCode::TWinErrorCode() :
 	mErrorText( NULL )
@@ -867,9 +855,8 @@ char* TWinErrorCode::getText()
 	return mErrorText;
 }
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 // InterlockedIncrement emulation
-//=======================================================================================
 
 //I hate Microsoft (c) cyreve
 
