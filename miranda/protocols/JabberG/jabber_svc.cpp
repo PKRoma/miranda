@@ -58,48 +58,49 @@ int JabberLoadIcon( WPARAM wParam, LPARAM lParam )
 		return ( int ) ( HICON ) NULL;
 }
 
-typedef struct {
-	int hSearch;
-	char jid[128];
-} JABBER_SEARCH_BASIC;
-
-static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
+static void JabberBasicSearchResult( XmlNode *iqNode, void *userdata )
 {
-	JABBER_SEARCH_RESULT jsr;
+	char *szId = JabberXmlGetAttrValue( iqNode, "id" ), 
+		  *type = JabberXmlGetAttrValue( iqNode, "type" ),
+		  *szJid = JabberXmlGetAttrValue( iqNode, "from" );
+	if ( szId == NULL || type == NULL || szJid == NULL )
+		return;
 
-	SleepEx( 10, TRUE );
-	memset( &jsr, 0, sizeof( JABBER_SEARCH_RESULT ));
-	jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
-	jsr.hdr.nick = "";
-	jsr.hdr.firstName = "";
-	jsr.hdr.lastName = "";
-	jsr.hdr.email = jsr.jid;
-	if ( strchr( jsb->jid, '@' ) == NULL ) {
-		char szServer[ 100 ];
-		if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
-			strcpy( szServer, "jabber.org" );
+	int id = atol( szId + sizeof( JABBER_IQID )-1 );
 
-		_snprintf( jsr.jid, sizeof jsr.jid, "%s@%s", jsb->jid, szServer );
+	if ( strcmp( type, "error" ) != 0 ) {
+		PROTOSEARCHRESULT jsr = { 0 };
+		jsr.cbSize = sizeof( PROTOSEARCHRESULT );
+		jsr.email = szJid;
+		jsr.nick = jsr.firstName = jsr.lastName = "";
+		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE )id, ( LPARAM )&jsr );
 	}
-	else strncpy( jsr.jid, jsb->jid, sizeof( jsr.jid ));
-	jsr.jid[ sizeof( jsr.jid )-1 ] = '\0';
-	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
-	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
-	free( jsb );
+	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE )id, 0 );
 }
 
 int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 {
-	JABBER_SEARCH_BASIC *jsb;
+	char* szJid = ( char* )lParam;
+	JabberLog( "JabberBasicSearch called with lParam = %s", szJid );
 
-	JabberLog( "JabberBasicSearch called with lParam = %s", ( char* )lParam );
-	if ( !jabberOnline || ( jsb=( JABBER_SEARCH_BASIC * ) malloc( sizeof( JABBER_SEARCH_BASIC )) )==NULL )
+	if ( !jabberOnline )
 		return 0;
 
-	jsb->hSearch = JabberSerialNext();
-	strncpy( jsb->jid, ( char* )lParam, sizeof( jsb->jid ));
-	JabberForkThread(( JABBER_THREAD_FUNC )JabberBasicSearchThread, 0, jsb );
-	return jsb->hSearch;
+	char szBuf[ 256 ];
+
+	int hSearch = JabberSerialNext();
+	if ( strchr( szJid, '@' ) == NULL ) {
+		char szServer[ 100 ];
+		if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
+			strcpy( szServer, "jabber.org" );
+
+		_snprintf( szBuf, sizeof szBuf, "%s@%s", szJid, szServer );
+	}
+	else strncpy( szBuf, szJid, sizeof szBuf );
+
+	JabberIqAdd( hSearch, IQ_PROC_GETVCARD, JabberBasicSearchResult );
+	JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp'/></iq>", hSearch, szBuf );
+	return hSearch;
 }
 
 int JabberSearchByEmail( WPARAM wParam, LPARAM lParam )
