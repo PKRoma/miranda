@@ -6,8 +6,9 @@ Legend:
 
 Version 0.2.0.1
 ===============
-bugfix: fixed GPF on logging off
-bugfix: if an attempt is made to login while plugin is connecting, mode is set to online
+[!] 0000818: Jabber disconnects when sending message that contains ampersand 
+[!] bugfix: fixed GPF on logging off
+[!] bugfix: if an attempt is made to login while plugin is connecting, mode is set to online
 
 Version 0.2.0.0
 ===============
