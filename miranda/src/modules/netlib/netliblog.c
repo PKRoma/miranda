@@ -452,7 +452,7 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 		sprintf(szLine,"%s\r\n",pszMsg);
 	EnterCriticalSection(&logOptions.cs);
 	if(logOptions.toConsole) {
-        CallServiceSync(MS_NETLIB_LOGWIN, (WPARAM)szLine, 0);
+        //CallServiceSync(MS_NETLIB_LOGWIN, (WPARAM)szLine, 0);
 	}
 	if(logOptions.toOutputDebugString) OutputDebugString(szLine);
 	if(logOptions.toFile && logOptions.szFile[0]) {
