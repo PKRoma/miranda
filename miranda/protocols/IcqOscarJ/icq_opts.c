@@ -458,7 +458,8 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 
 
-static const UINT icqContactsControls[]={IDC_ADDNEW,IDC_ADDREMOVE,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW,IDC_ENABLEAVATARS,IDC_AUTOLOADAVATARS};
+static const UINT icqContactsControls[] = {IDC_ADDNEW,IDC_ADDREMOVE,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW};
+static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS};
 static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -473,10 +474,14 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		CheckDlgButton(hwndDlg, IDC_ENABLEAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",DEFAULT_AVATARS_ENABLED));
 		CheckDlgButton(hwndDlg, IDC_AUTOLOADAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",DEFAULT_LOAD_AVATARS));
 		
-		if (DBGetContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",DEFAULT_SS_ENABLED))
+		if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED))
 			icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), TRUE);
 		else 
 			icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), FALSE);
+    if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED))
+      icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), TRUE);
+    else
+      icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), FALSE);
 		if (icqOnline) {
 			ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLE), FALSE);
@@ -497,6 +502,9 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			if (icqOnline) ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
 			else EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
 			break;
+    case IDC_ENABLEAVATARS:
+      icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLEAVATARS));
+      break;
 		}
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
