@@ -51,6 +51,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam);
 volatile LONG msnLoggedIn;
 int msnStatusMode,msnDesiredStatus;
 SOCKET msnNSSocket;
+HANDLE hLogEvent;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
@@ -87,6 +88,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	pd.szName=MSNPROTONAME;
 	pd.type=PROTOTYPE_PROTOCOL;
 	CallService(MS_PROTO_REGISTERMODULE,0,(LPARAM)&pd);
+	hLogEvent=CreateHookableEvent("MSN/Log");
 
 	//set all contacts to 'offline'
 	{	HANDLE hContact;
@@ -108,54 +110,4 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	Switchboards_Init();
 	SetTimer(NULL,0,250,MSNMainTimerProc);
 	return 0;
-}
-
-BOOL CALLBACK DlgProcMSNOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{/*
-	BOOL oldstate;
-	switch (msg)
-	{
-		case WM_ACTIVATE:
-			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE)
-			{
-				//hwndModeless = hwndDlg;
-			}
-			if (LOWORD(wParam) == WA_INACTIVE)
-			{
-				//hwndModeless = NULL;
-			}
-			return TRUE;
-		case WM_INITDIALOG:
-		{		
-			SendDlgItemMessage(hwndDlg, IDC_USEMSN, BM_SETCHECK, (opts.MSN.enabled) ? BST_CHECKED : BST_UNCHECKED, 0);		
-			SetDlgItemText(hwndDlg, IDC_UHANDLE, opts.MSN.uhandle);
-			SetDlgItemText(hwndDlg, IDC_PASSWORD, opts.MSN.password);
-			
-			return TRUE;
-		}
-		case WM_COMMAND:
-			SendMessage(hProp, PSM_CHANGED, 0, 0);
-			break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->code)
-			{
-				
-				case PSN_APPLY:
-						oldstate=opts.MSN.enabled;
-						GetDlgItemText(hwndDlg, IDC_UHANDLE, opts.MSN.uhandle, MSN_UHANDLE_LEN);
-						GetDlgItemText(hwndDlg, IDC_PASSWORD, opts.MSN.password, MSN_PASSWORD_LEN);
-					
-						opts.MSN.enabled=SendDlgItemMessage(hwndDlg, IDC_USEMSN, BM_GETCHECK, 0, 0);
-						
-						if (oldstate!=opts.MSN.enabled)
-							MessageBox(hwndDlg,"You will have to restart Miranda for your MSN changes to take affect.",MIRANDANAME,MB_OK);
-
-					return TRUE;
-				case PSN_QUERYCANCEL:
-					SetWindowLong(hwndDlg, DWL_MSGRESULT, FALSE);
-					return TRUE;
-			}
-			break;
-	}*/
-	return FALSE;
 }
