@@ -1617,6 +1617,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->showUIElements != 0) {
                     const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
                     for(i = 0;;i++) {
+                        if(hideThisControls[i] == -1)
+                            break;
                         if(hideThisControls[i] == IDOK && myGlobals.m_AllowSendButtonHidden == 0)
                             continue;               // ignore sendbutton if we don't want to hide it
                         if(saved < delta) {
@@ -1631,14 +1633,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             if(!IsWindowVisible(GetDlgItem(hwndDlg, hideThisControls[i])))
                                 ShowWindow(GetDlgItem(hwndDlg, hideThisControls[i]), SW_SHOW);
                         }
-                        if(hideThisControls[i] == -1)
-                            break;
                     }
                 }
                 
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
                 // IEVIew MOD Begin
-                if (myGlobals.g_WantIEView) {
+                if (myGlobals.g_WantIEView || dat->hwndLog != 0) {
                     RECT rcRichEdit;
                     POINT pt;
                     IEVIEWWINDOW ieWindow;
