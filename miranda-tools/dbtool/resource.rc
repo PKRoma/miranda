@@ -83,7 +83,7 @@ BEGIN
                     IDC_STATIC,77,46,178,32,0,WS_EX_TRANSPARENT
     LTEXT           "To continue, click Next.",IDC_STATIC,77,85,178,8,0,
                     WS_EX_TRANSPARENT
-    LTEXT           "This programme is licenced under the terms of the GNU General Public License. See readme.txt for details.",
+    LTEXT           "This programme is licenced under the terms of the GNU General Public License.",
                     IDC_STATIC,77,122,178,16,WS_DISABLED
 END
 
