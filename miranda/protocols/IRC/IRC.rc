@@ -450,7 +450,7 @@ END
 IDD_PREFS_CTCP DIALOGEX 0, 0, 294, 214
 STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Enable incoming requests",IDC_ENABLEXFER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,12,130,10
@@ -482,7 +482,7 @@ BEGIN
     EDITTEXT        IDC_IP,140,156,144,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_USERINFO,10,190,274,14,ES_AUTOHSCROLL
     GROUPBOX        "Client-to-Client File Transfers",IDC_STATIC,2,0,289,46
-    GROUPBOX        "Automatically accept chat requsts from... ",IDC_STATIC,
+    GROUPBOX        "Automatically accept chat requests from... ",IDC_STATIC,
                     27,73,233,24
     GROUPBOX        "Ignore chat requests from...",IDC_STATIC,27,100,233,24
     LTEXT           "User information",IDC_STATIC,10,182,52,8

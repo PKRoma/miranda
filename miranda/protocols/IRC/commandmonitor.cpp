@@ -45,6 +45,7 @@ String			sChannelPrefixes;
 String			sChannelModes;
 String			WhoisAwayReply;
 String			sTopic;
+String			sTopicName;
 String			NamesToWho = "";
 
 extern char *	pszIgnoreFile;
@@ -313,6 +314,7 @@ CMyMonitor::CMyMonitor() : irc::CIrcDefaultMonitor(g_ircSession)
 	IRC_MAP_ENTRY(CMyMonitor, "324", OnIrc_MODEQUERY)
 	IRC_MAP_ENTRY(CMyMonitor, "330", OnIrc_WHOIS_AUTH)
 	IRC_MAP_ENTRY(CMyMonitor, "332", OnIrc_INITIALTOPIC)
+	IRC_MAP_ENTRY(CMyMonitor, "333", OnIrc_INITIALTOPICNAME)
 	IRC_MAP_ENTRY(CMyMonitor, "352", OnIrc_WHO_REPLY)
 	IRC_MAP_ENTRY(CMyMonitor, "353", OnIrc_NAMES)
 	IRC_MAP_ENTRY(CMyMonitor, "366", OnIrc_ENDNAMES)
@@ -831,8 +833,6 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 	// is it a ctcp command, i e is the first and last characer of a PRIVMSG or NOTICE text ASCII 1
 	if(pmsg->parameters[1].length() >3 && pmsg->parameters[1][0] == 1 && pmsg->parameters[1][pmsg->parameters[1].length()-1] == 1 )
 	{
-		if(prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'd'))
-			return true;
 		// set mess to contain the ctcp command, excluding the leading and trailing  ASCII 1
 		String mess = pmsg->parameters[1];
 		mess.erase(0,1);
@@ -842,6 +842,17 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 		String ocommand = GetWord(mess.c_str(), 0);
 		String command = GetWord(mess.c_str(), 0);
 		transform (command.begin(),command.end(), command.begin(), tolower);
+
+		if(pmsg->sCommand != "PRIVMSG" && command != "action") // treat CTCP actions as messages when ignoring
+		{
+			if(prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'd'))
+				return true;
+		}
+		else
+		{
+			if(prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'c'))
+				return true;
+		}
 
 		if(pmsg->sCommand == "PRIVMSG")
 		{
@@ -864,8 +875,8 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 				else
 				{
 					mess.insert(0, pmsg->prefix.sNick.c_str());
-					mess.insert(0, "*");
-					mess.insert(mess.length(), "*");
+					mess.insert(0, "* ");
+					mess.insert(mess.length(), " *");
 					CIrcMessage msg = *pmsg;
 					msg.parameters[1] = mess;
 					OnIrc_PRIVMSG(&msg);
@@ -1404,15 +1415,12 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 			i++;
 			if(name != "")
 			{
-				if(strchr(sUserModePrefixes.c_str(), name[0]))
-				{
-					if(!lstrcmpi(name.substr(1, name.length()).c_str(), m_session.GetInfo().sNick.c_str()))
-					{
-						bFlag = true;
-						break;
-					}
-				}
-				else if(!lstrcmpi(name.c_str(), m_session.GetInfo().sNick.c_str()))
+				int index = 0;
+
+				while(strchr(sUserModePrefixes.c_str(), name[index]))
+					index++;
+
+				if(!lstrcmpi(name.substr(index, name.length()).c_str(), m_session.GetInfo().sNick.c_str()))
 				{
 					bFlag = true;
 					break;
@@ -1475,9 +1483,13 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 				while(sTemp != "")
 				{
 					String sStat;
+					String sTemp2 = sTemp;
 					sStat = PrefixToStatus(sTemp[0]);
-					if(PrefixToStatus(sTemp[0]) != "Normal")
+					
+					// fix for networks like freshirc where they allow more than one prefix
+					while(PrefixToStatus(sTemp[0]) != "Normal")
 						sTemp.erase(0,1);
+					
 					gcd.iType = GC_EVENT_JOIN;
 					gce.pszUID = sTemp.c_str();
 					gce.pszNick = sTemp.c_str();
@@ -1491,6 +1503,20 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 						pfnAddEvent(0, (LPARAM)&gce);
 					else
 						CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+
+					// fix for networks like freshirc where they allow more than one prefix
+					if(PrefixToStatus(sTemp2[0]) != "Normal")
+					{
+						sTemp2.erase(0,1);
+						sStat = PrefixToStatus(sTemp2[0]);
+						while(sStat != "Normal")
+						{
+							DoEvent(GC_EVENT_ADDSTATUS, (char*)sID.c_str(), sTemp.c_str(), "system", sStat.c_str(), NULL, NULL, false, false); 
+							sTemp2.erase(0,1);
+							sStat = PrefixToStatus(sTemp2[0]);
+						}
+
+					}
 
 					i++;
 					sTemp = GetWord(sNamesList.c_str(), i);
@@ -1510,8 +1536,9 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					if(sTopic != "" && !lstrcmpi(GetWord(sTopic.c_str(), 0).c_str() , sChanName.c_str()))
 					{
 						AddWindowItemData(sChanName, 0, 0, 0, GetWordAddress(sTopic.c_str(), 1));
-						DoEvent(GC_EVENT_TOPIC, sChanName.c_str(), NULL, GetWordAddress(sTopic.c_str(), 1), NULL, NULL, NULL, true, false);
+						DoEvent(GC_EVENT_TOPIC, sChanName.c_str(), sTopicName==""?NULL:sTopicName.c_str(), GetWordAddress(sTopic.c_str(), 1), NULL, NULL, NULL, true, false);
 						sTopic = "";
+						sTopicName = "";
 					}
 				}
 				
@@ -1601,12 +1628,22 @@ bool CMyMonitor::OnIrc_INITIALTOPIC(const CIrcMessage* pmsg)
 	{
 		AddWindowItemData(pmsg->parameters[1].c_str(), 0, 0, 0, (char*)pmsg->parameters[2].c_str());
 		sTopic = pmsg->parameters[1] + " " + pmsg->parameters[2];
+		sTopicName = "";
 	}
 	ShowMessage(pmsg);
 
 	return true;
 }
+bool CMyMonitor::OnIrc_INITIALTOPICNAME(const CIrcMessage* pmsg)
+{
+	if (pmsg->m_bIncoming&& pmsg->parameters.size() >2)
+	{
+		sTopicName = pmsg->parameters[2];
+	}
+	ShowMessage(pmsg);
 
+	return true;
+}
 bool CMyMonitor::OnIrc_TOPIC(const CIrcMessage* pmsg)
 {
 	if (pmsg->parameters.size() > 1 && pmsg->m_bIncoming) 

@@ -1569,6 +1569,10 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.szDescriptiveName = szTemp;
 	hNetlibDCC=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);	
 
+	//add as a known module in DB Editor ++
+	DBWriteContactSettingString(NULL, "KnownModules", ALTIRCPROTONAME,IRCPROTONAME); 
+	
+
 	if(ServiceExists(MS_GC_REGISTER))
 	{
 		GCREGISTER gcr = {0};

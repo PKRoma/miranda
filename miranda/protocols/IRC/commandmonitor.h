@@ -53,6 +53,7 @@ public:
 	bool OnIrc_NAMES(const CIrcMessage* pmsg);
 	bool OnIrc_ENDNAMES(const CIrcMessage* pmsg);
 	bool OnIrc_INITIALTOPIC(const CIrcMessage* pmsg);
+	bool OnIrc_INITIALTOPICNAME(const CIrcMessage* pmsg);
 	bool OnIrc_TOPIC(const CIrcMessage* pmsg);
 	bool OnIrc_TRYAGAIN(const CIrcMessage* pmsg);
 	bool OnIrc_NOTICE(const CIrcMessage* pmsg);
