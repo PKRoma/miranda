@@ -70,6 +70,14 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 {
 	PROTOCOLDESCRIPTOR pd;
 
+	pluginLink=link;
+
+	//DBWriteContactSettingString(NULL,MSNPROTONAME,"e-mail","");
+	/*{char pw[64]="";
+	 CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(pw),(LPARAM)pw);
+	DBWriteContactSettingString(NULL,MSNPROTONAME,"Password",pw);
+	}*/
+	
 	ZeroMemory(&pd,sizeof(pd));
 	pd.cbSize=sizeof(pd);
 	pd.szName=MSNPROTONAME;
