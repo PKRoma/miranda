@@ -22,6 +22,9 @@ procedure WriteSettingInt(PluginLink:TPluginLink;hContact:THandle;ModuleName,Set
 function ReadSettingInt(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;default:Integer):Integer;
 function ReadSettingWord(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;default:Word):Word;
 
+function ReadSettingBool(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;default:boolean):boolean;
+procedure WriteSettingBool(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;Value:boolean);
+
 procedure ReadSettingBlob(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;var pSize:Word;var pbBlob:Pointer);
 procedure WriteSettingBlob(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;pSize:Word;pbBlob:Pointer);
 procedure FreeSettingBlob(PluginLink:TPluginLink;pSize:Word;pbBlob:Pointer);
@@ -175,5 +178,16 @@ function GetContactUin(PluginLink:TPluginLink;hContact:THandle):DWord;
 begin
   result:=ReadSettingInt(PluginLink,hContact,'ICQ','UIN',0);
 end;
+
+function ReadSettingBool(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;default:boolean):boolean;
+begin
+  Result:=Boolean(ReadSettingInt(PluginLink,hContact,ModuleName,SettingName,integer(default)));
+end;
+
+procedure WriteSettingBool(PluginLink:TPluginLink;hContact:THandle;ModuleName,SettingName:PChar;Value:boolean);
+begin
+  WriteSettingInt(PluginLink,hContact,ModuleName,SettingName,integer(Value));
+end;
+
 
 end.
