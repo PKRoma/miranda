@@ -365,8 +365,10 @@ int __declspec( dllexport ) Unload( void )
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 0 ))
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 0 )) {
+		MessageBox( NULL, "The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.4.0 or later.", "MSN Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
+	}
 
 	return &pluginInfo;
 }
