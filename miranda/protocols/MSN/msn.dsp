@@ -267,10 +267,6 @@ SOURCE=..\..\SDK\headers_c\statusmodes.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\Icos\avatar.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\Icos\inbox.ico
 # End Source File
 # Begin Source File
@@ -312,6 +308,10 @@ SOURCE=.\Icos\profile.ico
 # Begin Source File
 
 SOURCE=.\resource.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icos\services.ico
 # End Source File
 # End Group
 # Begin Source File

@@ -98,6 +98,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_msgqueue.obj" \
 	"$(INTDIR)\msn_opts.obj" \
 	"$(INTDIR)\msn_p2p.obj" \
+	"$(INTDIR)\msn_p2ps.obj" \
 	"$(INTDIR)\msn_ssl.obj" \
 	"$(INTDIR)\msn_std.obj" \
 	"$(INTDIR)\msn_svcs.obj" \
@@ -106,8 +107,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\msn_p2ps.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -203,6 +203,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\msn_msgqueue.sbr" \
 	"$(INTDIR)\msn_opts.sbr" \
 	"$(INTDIR)\msn_p2p.sbr" \
+	"$(INTDIR)\msn_p2ps.sbr" \
 	"$(INTDIR)\msn_ssl.sbr" \
 	"$(INTDIR)\msn_std.sbr" \
 	"$(INTDIR)\msn_svcs.sbr" \
@@ -210,8 +211,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\msn_threads.sbr" \
 	"$(INTDIR)\msn_useropts.sbr" \
 	"$(INTDIR)\msn_ws.sbr" \
-	"$(INTDIR)\sha1.sbr" \
-	"$(INTDIR)\msn_p2ps.sbr"
+	"$(INTDIR)\sha1.sbr"
 
 "$(OUTDIR)\msn.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -236,6 +236,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_msgqueue.obj" \
 	"$(INTDIR)\msn_opts.obj" \
 	"$(INTDIR)\msn_p2p.obj" \
+	"$(INTDIR)\msn_p2ps.obj" \
 	"$(INTDIR)\msn_ssl.obj" \
 	"$(INTDIR)\msn_std.obj" \
 	"$(INTDIR)\msn_svcs.obj" \
@@ -244,8 +245,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\msn_p2ps.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
