@@ -133,6 +133,9 @@ sub rcsearch {
         while (/\s*CAPTION\s*(\".*?\")/g) {
             $found += append_str($1, $found);
         }
+        while (/\s*MENUITEM\s*(\".*?\")/g) {
+            $found += append_str($1, $found);
+        }
         if ($found gt 0) {
             $output .= "\n";
         }
