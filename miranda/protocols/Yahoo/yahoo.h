@@ -17,6 +17,7 @@
  */
 #include "pthread.h"
 
+#include "libyahoo2/config.h"
 #include "libyahoo2/yahoo2.h"
 #include "libyahoo2/yahoo2_callbacks.h"
 #include "libyahoo2/yahoo_util.h"
