@@ -445,11 +445,11 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 				if(!(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
 					//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 					if(cacheEntry->szProto==NULL) {
-						if(!IsHiddenMode(dat,ID_STATUS_OFFLINE))
+						if(!IsHiddenMode(dat,ID_STATUS_OFFLINE)||cacheEntry->noHiddenOffline)
 							AddContactToGroup(dat,group,cacheEntry);
 					}
 					else
-						if(!IsHiddenMode(dat,cacheEntry->status))
+						if(!IsHiddenMode(dat,cacheEntry->status)||cacheEntry->noHiddenOffline)
 							AddContactToGroup(dat,group,cacheEntry);
 				}
 				else AddContactToGroup(dat,group,cacheEntry);

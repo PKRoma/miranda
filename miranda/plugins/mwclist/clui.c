@@ -651,7 +651,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_SIZE:
 		{
 				RECT rc;
-
+			if(wParam!=SIZE_MINIMIZED) {
 
 				if(hwndContactList!=NULL){
 					CLUIFramesOnClistResize((WPARAM)hwnd,(LPARAM)0);
@@ -663,9 +663,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					DBWriteContactSettingDword(NULL,"CList","x",(DWORD)rc.left);
 					DBWriteContactSettingDword(NULL,"CList","y",(DWORD)rc.top);
 				}
-				DBWriteContactSettingDword(NULL,"CList","Width",(DWORD)(rc.right - rc.left));
-
-			
+				DBWriteContactSettingDword(NULL,"CList","Width",(DWORD)(rc.right - rc.left));		
+			}
 			if(wParam==SIZE_MINIMIZED) {
 				if(DBGetContactSettingByte(NULL,"CList","Min2Tray",SETTING_MIN2TRAY_DEFAULT)) {
 					ShowWindow(hwnd, SW_HIDE);

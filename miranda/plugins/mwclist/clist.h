@@ -41,6 +41,7 @@ typedef struct  {
 	int ProtoHash;
 	int	  status;
 	int Hidden;
+	int noHiddenOffline;
 	char *szGroup;
 	int i;
 	int ApparentMode;

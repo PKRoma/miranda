@@ -50,12 +50,14 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
 	if((HANDLE)wParam!=NULL&&!strcmp(cws->szModule,"CList")) {
-		if(cws->value.type==DBVT_ASCIIZ&&!strcmp(cws->szSetting,"MyHandle"))
+		if((cws->value.type==DBVT_ASCIIZ||cws->value.type==DBVT_DELETED)&&!strcmp(cws->szSetting,"MyHandle"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
 		else if(cws->value.type==DBVT_ASCIIZ&&!strcmp(cws->szSetting,"Group"))
 			WindowList_Broadcast(hClcWindowList,INTM_GROUPCHANGED,wParam,lParam);
 		else if(!strcmp(cws->szSetting,"Hidden"))
 			WindowList_Broadcast(hClcWindowList,INTM_HIDDENCHANGED,wParam,lParam);
+		else if(!strcmp(cws->szSetting,"noOffline"))
+			WindowList_Broadcast(hClcWindowList,INTM_NAMEORDERCHANGED,wParam,lParam);
 		else if(cws->value.type==DBVT_BYTE&&!strcmp(cws->szSetting,"NotOnList"))
 			WindowList_Broadcast(hClcWindowList,INTM_NOTONLISTCHANGED,wParam,lParam);
 		else if(cws->value.type==DBVT_WORD&&!strcmp(cws->szSetting,"Status"))

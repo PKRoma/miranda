@@ -8,6 +8,7 @@ boolean canloadstatusbar=FALSE;
 HWND helperhwnd=0;
 HANDLE hFrameHelperStatusBar;
 extern	 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int GetConnectingIconService (WPARAM wParam,LPARAM lParam);
 
 int UseOwnerDrawStatusBar;
 
@@ -103,18 +104,18 @@ void DrawBackGround(HWND hwnd)
 	RECT clRect,*rcPaint;
 
 	int yScroll=0;
-	int y,indent,index,fontHeight;
+	int y;
 	PAINTSTRUCT paintst;	
 	HBITMAP hBmpOsb;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
-	int grey=0,groupCountsFontTopShift;
+	int grey=0;
 	HBRUSH hBrushAlternateGrey=NULL;
 
 	HFONT hFont;
 
 	//InvalidateRect(hwnd,0,FALSE);
 	
-	hFont=SendMessage(hwnd,WM_GETFONT,0,0);
+	hFont=(HFONT)SendMessage(hwnd,WM_GETFONT,0,0);
 	hdc=BeginPaint(hwnd,&paintst);
 	rcPaint=&(paintst.rcPaint);
 
@@ -224,7 +225,7 @@ void DrawBackGround(HWND hwnd)
 			{
 			PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
 			if(PD==NULL){
-				return(0);
+				return;
 			};
 				SendMessage(hwnd,SB_GETRECT,(WPARAM)nPanel,(LPARAM)&rc);
 				//rc.left+=startoffset;
@@ -232,7 +233,7 @@ void DrawBackGround(HWND hwnd)
 				rc.left=nPanel*sectwidth+startoffset;
 				rc.right=rc.left+sectwidth-1;
 				ds.rcItem=rc;
-				ds.itemData=PD;
+				ds.itemData=(DWORD)PD;
 				ds.itemID=nPanel;
 				DrawDataForStatusBar(&ds);
 			};
