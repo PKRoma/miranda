@@ -674,6 +674,7 @@ void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T )
 		p2p_sendPortionViaServer( ft, T );
 	}
 
+	ft->p2p_msgid++;
 	ft->p2p_ackID = 3000;
 	MSN_DebugLog( "File transfer succeeded" );
 	ft->complete();
