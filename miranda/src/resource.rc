@@ -558,7 +558,7 @@ STYLE DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP |
     WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Netlib Log Options"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Show",IDC_STATIC,5,5,250,78
     CONTROL         "Sent bytes",IDC_DUMPSENT,"Button",BS_AUTOCHECKBOX | 
@@ -947,27 +947,6 @@ BEGIN
     LTEXT           "",IDC_LOCATION,65,190,208,18
     LTEXT           "Name:",IDC_NAME,17,174,39,9
     LTEXT           "",IDC_NAMEVAL,64,174,209,9
-END
-
-IDD_OPT_AUTOAWAY DIALOGEX 0, 0, 313, 210
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
-BEGIN
-    GROUPBOX        " Auto Away ",IDC_STATIC,2,2,310,206
-    COMBOBOX        IDC_AASTATUS,123,40,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,40,101,11
-    COMBOBOX        IDC_AALONGSTATUS,59,170,59,57,CBS_DROPDOWNLIST | NOT 
-                    WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "When I become idle for a long period of time:",
-                    IDC_STATIC,17,134,212,9,NOT WS_VISIBLE
-    CONTROL         "Change my status mode to:",IDC_AALONGIDLE,"Button",
-                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,30,149,101,
-                    11
-    LTEXT           "Miranda can change the status modes of your protocols when you become idle",
-                    IDC_STATIC,10,20,255,10
 END
 
 IDD_OPT_ICONS DIALOGEX 0, 0, 257, 193
@@ -1490,34 +1469,40 @@ BEGIN
                     IDC_STATIC,212,195,90,24
 END
 
-IDD_OPT_IDLE DIALOG DISCARDABLE  0, 0, 312, 239
+IDD_OPT_IDLE DIALOG DISCARDABLE  0, 0, 312, 195
 STYLE WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "If the following is left unattended:",IDC_IDLESHORT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,40,219,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,27,219,9
     CONTROL         "Windows",IDC_IDLEONWINDOWS,"Button",BS_AUTORADIOBUTTON,
-                    45,57,104,9
+                    45,41,104,9
     CONTROL         "Miranda",IDC_IDLEONMIRANDA,"Button",BS_AUTORADIOBUTTON,
-                    45,72,103,9
-    EDITTEXT        IDC_IDLE1STTIME,60,90,27,14,ES_AUTOHSCROLL | ES_NUMBER
+                    45,55,103,9
+    EDITTEXT        IDC_IDLE1STTIME,59,72,27,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_IDLESPIN,"msctls_updown32",UDS_WRAP | 
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,72,86,12,23
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,71,68,12,23
     CONTROL         "If the screen saver is active",IDC_SCREENSAVER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,115,112,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,96,112,9
     CONTROL         "If the computer is locked (2000/XP+ only)",IDC_LOCKED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,130,153,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,111,153,9
     CONTROL         "Do not let protocols report any idle information",
                     IDC_IDLEPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
-                    175,251,9
-    GROUPBOX        " Idle reporting ",IDC_STATIC,0,0,311,238
+                    139,251,9
+    GROUPBOX        "Idle",IDC_STATIC,0,0,311,194
     LTEXT           "How should Miranda discover that you are idle? ",
-                    IDC_STATIC,15,20,276,9
-    LTEXT           "minute(s)",IDC_STATIC,92,92,76,9
-    RTEXT           "for",IDC_STATIC,13,92,41,9
+                    IDC_STATIC,15,15,276,9
+    LTEXT           "minute(s)",IDC_STATIC,91,74,76,9
+    RTEXT           "for",IDC_STATIC,12,74,41,9
     LTEXT           "How should idle information be shared with others?",
-                    IDC_STATIC,15,156,276,9
+                    IDC_STATIC,15,126,276,9
+    COMBOBOX        IDC_AASTATUS,129,172,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,26,172,101,11
+    LTEXT           "Change status when Miranda becomes idle?",IDC_STATIC,16,
+                    159,255,10
 END
 
 
@@ -1868,14 +1853,6 @@ BEGIN
         BOTTOMMARGIN, 236
     END
 
-    IDD_OPT_AUTOAWAY, DIALOG
-    BEGIN
-        LEFTMARGIN, 2
-        RIGHTMARGIN, 312
-        TOPMARGIN, 2
-        BOTTOMMARGIN, 208
-    END
-
     IDD_OPT_ICONS, DIALOG
     BEGIN
         LEFTMARGIN, 4
@@ -2042,7 +2019,7 @@ BEGIN
 
     IDD_OPT_IDLE, DIALOG
     BEGIN
-        BOTTOMMARGIN, 238
+        BOTTOMMARGIN, 194
     END
 END
 #endif    // APSTUDIO_INVOKED

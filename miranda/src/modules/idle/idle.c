@@ -25,11 +25,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IDLEMOD "Idle"
 #define IDL_USERIDLECHECK "UserIdleCheck"
-#define IDL_IDLEMETHOD "IdleMethod"
-#define IDL_IDLETIME1ST "IdleTime1st"
-#define IDL_IDLEONSAVER "IdleOnSaver" // IDC_SCREENSAVER
-#define IDL_IDLEONLOCK "IdleOnLock" // IDC_LOCKED
-#define IDL_IDLEPRIVATE "IdlePrivate" // IDC_IDLEPRIVATE
+#define IDL_IDLEMETHOD    "IdleMethod"
+#define IDL_IDLETIME1ST   "IdleTime1st"
+#define IDL_IDLEONSAVER   "IdleOnSaver" // IDC_SCREENSAVER
+#define IDL_IDLEONLOCK    "IdleOnLock" // IDC_LOCKED
+#define IDL_IDLEPRIVATE   "IdlePrivate" // IDC_IDLEPRIVATE
+#define IDL_AAENABLE      "AAEnable"
+#define IDL_AASTATUS      "AAStatus"
 
 #define IdleObject_IsIdle(obj) (obj->state&0x1)
 #define IdleObject_SetIdle(obj) (obj->state|=0x1)
@@ -55,7 +57,10 @@ typedef struct {
 	unsigned int minutes;	// user setting, number of minutes of inactivity to wait for
 	POINT mousepos;
 	unsigned int mouseidle;
+    unsigned short aastatus;
 } IdleObject;
+
+static int aa_Status[] = {ID_STATUS_AWAY, ID_STATUS_DND, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH};
 
 static IdleObject gIdleObject;
 static HANDLE hIdleEvent;
@@ -68,6 +73,7 @@ static BOOL IsScreenSaverRunning(void);
 static void IdleObject_ReadSettings(IdleObject * obj)
 {
 	obj->minutes = DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLETIME1ST, 10);
+    obj->aastatus = !DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? 0 : DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, 0) ) IdleObject_UseMethod1(obj);
 	else IdleObject_UseMethod0(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, 0) ) IdleObject_SetSaverCheck(obj);
@@ -162,7 +168,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 {
 	switch ( msg ) {
 		case WM_INITDIALOG:
-		{
+		{   int j;
 			int method = DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEMETHOD, 0);
 			CheckDlgButton(hwndDlg, IDC_IDLESHORT, DBGetContactSettingByte(NULL,IDLEMOD,IDL_USERIDLECHECK,0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_IDLEONWINDOWS, method == 0 ? BST_CHECKED : BST_UNCHECKED);
@@ -174,6 +180,12 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETRANGE32, 1, 60);
 			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETPOS, 0, MAKELONG((short) DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLETIME1ST, 10), 0));
 			SendDlgItemMessage(hwndDlg, IDC_IDLE1STTIME, EM_LIMITTEXT, (WPARAM)2, 0);
+    
+            CheckDlgButton(hwndDlg, IDC_AASHORTIDLE, DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? BST_CHECKED:BST_UNCHECKED);
+            for (j = 0; j<sizeof(aa_Status)/sizeof(aa_Status[0]) ;j++) {
+				SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, (LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0) );
+			}
+            SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_SETCURSEL, DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0), 0);
 			SendMessage(hwndDlg, WM_USER+1, 0, 0);
 			return TRUE;
 		}
@@ -182,7 +194,8 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			BOOL checked = IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED;
 			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONWINDOWS), checked);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONMIRANDA), checked);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLE1STTIME), checked);			
+			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLE1STTIME), checked);	
+            EnableWindow(GetDlgItem(hwndDlg, IDC_AASTATUS), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
 			break;
 		}
 		case WM_COMMAND:
@@ -203,6 +216,15 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					SendMessage(hwndDlg, WM_USER+1, 0, 0);
 					break;
 				}
+                case IDC_AASHORTIDLE:
+				{
+					SendMessage(hwndDlg, WM_USER+1, 0, 0);
+					break;
+				}
+                case IDC_AASTATUS:
+				{
+					if (HIWORD(wParam) != CBN_SELCHANGE) return TRUE;
+				}
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
@@ -219,6 +241,13 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, IsDlgButtonChecked(hwndDlg, IDC_SCREENSAVER) == BST_CHECKED);
 				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED);
 				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED);
+                DBWriteContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
+				{
+					int curSel = SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_GETCURSEL, 0, 0);
+					if ( curSel != CB_ERR ) {
+						DBWriteContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, aa_Status[curSel]);
+					}
+				}
 				// destroy any current idle and reset settings.
 				IdleObject_Destroy(&gIdleObject);
 				IdleObject_Create(&gIdleObject);
@@ -245,6 +274,17 @@ static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
+{
+	MIRANDA_IDLE_INFO *mii = (MIRANDA_IDLE_INFO*)lParam;
+
+    if (!mii || mii->cbSize!=sizeof(MIRANDA_IDLE_INFO)) return 1;
+	mii->idleTime = gIdleObject.minutes;
+    mii->privacy = gIdleObject.state&0x10;
+    mii->aaStatus = gIdleObject.aastatus;
+	return 0;
+}
+
 static int UnloadIdleModule(WPARAM wParam, LPARAM lParam)
 {
 	IdleObject_Destroy(&gIdleObject);
@@ -258,6 +298,7 @@ int LoadIdleModule(void)
 	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandle("user32"), "GetLastInputInfo");
 	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
 	IdleObject_Create(&gIdleObject);
+    CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);
 	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadIdleModule);
 	HookEvent(ME_OPT_INITIALISE, IdleOptInit);
 	return 0;

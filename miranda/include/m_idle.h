@@ -51,11 +51,11 @@ for short idle.*/
 
 
 typedef struct {
-	int cbSize;			// sizeof()	
-	int enabled;		// monitoring is going on
-	int idleShortTime;	// short idle in mins, if zero then disabled
-	int idleLongTime;	// defunct.
-	int privacy;		// user doesnt want other people seeing anything more than they are idle
+	int cbSize;			     // sizeof()
+	unsigned int idleTime;	 // idle in mins, if zero then disabled
+	int privacy;		     // user doesnt want other people seeing anything more than they are idle
+    unsigned short aaStatus; // status to go to when user is auto away
+    
 } MIRANDA_IDLE_INFO;
 
 /*
