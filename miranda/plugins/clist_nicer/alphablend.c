@@ -62,7 +62,7 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 	FLOAT realHeight = rc->bottom - rc->top;
 	FLOAT realWidth = rc->right - rc->left;
 	
-	FLOAT realHeightHalf = floor(realHeight/2);	
+	FLOAT realHeightHalf = (int)realHeight>>1;	
 	
 	if (	rc->right < rc->left
 		||	rc->bottom < rc->top
@@ -192,8 +192,8 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 			for (x = 0; x <= ulBitmapWidth; x++) 
 			{
 				if ( ((((UINT32 *)pvBits)[x + y * ulBitmapWidth])<<8)==0xFF00FF00
-					|| ( y<(float)ulBitmapHeight/2 && !(FLG_CORNER&CORNER_BL && FLG_CORNER&CORNER_ACTIVE)) 
-					|| ( y>(float)ulBitmapHeight/2 && !(FLG_CORNER&CORNER_TL && FLG_CORNER&CORNER_ACTIVE)) )
+					|| ( y<ulBitmapHeight>>1 && !(FLG_CORNER&CORNER_BL && FLG_CORNER&CORNER_ACTIVE)) 
+					|| ( y>ulBitmapHeight>>2 && !(FLG_CORNER&CORNER_TL && FLG_CORNER&CORNER_ACTIVE)) )
 				{
 					if (FLG_GRADIENT&GRADIENT_ACTIVE)
 					{					
@@ -235,8 +235,8 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 			for (x = 0; x <= ulBitmapWidth; x++) 
 			{
 				if ( ((((UINT32 *)pvBits)[x + y * ulBitmapWidth])<<8)==0xFF00FF00
-					|| ( y<(float)ulBitmapHeight/2 && !(FLG_CORNER&CORNER_BR && FLG_CORNER&CORNER_ACTIVE)) 
-					|| ( y>(float)ulBitmapHeight/2 && !(FLG_CORNER&CORNER_TR && FLG_CORNER&CORNER_ACTIVE)) )
+					|| ( y<ulBitmapHeight>>1 && !(FLG_CORNER&CORNER_BR && FLG_CORNER&CORNER_ACTIVE)) 
+					|| ( y>ulBitmapHeight>>1 && !(FLG_CORNER&CORNER_TR && FLG_CORNER&CORNER_ACTIVE)) )
 				{
 					if (FLG_GRADIENT&GRADIENT_ACTIVE)
 					{						

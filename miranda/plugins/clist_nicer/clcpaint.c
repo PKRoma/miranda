@@ -358,11 +358,10 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				{					
 					StatusItems_t sfirstitem, ssingleitem , slastitem, slastitem_NG;
 					StatusItems_t sfirstitem_NG, ssingleitem_NG;
+					StatusItems_t sevencontact_pos,soddcontact_pos;
 
 					if (!sitem.IGNORED)
 						SetTextColor(hdcMem,sitem.TEXTCOLOR);
-					//else // set std text color
-						//SetTextColor();
 
 					// test
 					// SetTextColor(hdcMem,~sitem.COLOR&0x00FFFFFF);
@@ -371,6 +370,9 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					rc.top = y  + sitem.MARGIN_TOP;
 					rc.right = clRect.right - sitem.MARGIN_RIGHT;
 					rc.bottom = y+dat->rowHeight - sitem.MARGIN_BOTTOM;
+
+					GetItemByStatus(ID_EXTBKEVEN_CNTCTPOS, &sevencontact_pos);
+					GetItemByStatus(ID_EXTBKODD_CNTCTPOS, &soddcontact_pos);
 
 					GetItemByStatus(ID_EXTBKFIRSTITEM, &sfirstitem);
 					GetItemByStatus(ID_EXTBKSINGLEITEM, &ssingleitem);
@@ -389,6 +391,19 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 							rc.top = y  + ssingleitem.MARGIN_TOP;
 							rc.right = clRect.right - ssingleitem.MARGIN_RIGHT;
 							rc.bottom = y+dat->rowHeight - ssingleitem.MARGIN_BOTTOM;				
+							
+							// draw odd/even contact underlay
+							if ((group->scanIndex==0 || group->scanIndex%2==0) && !sevencontact_pos.IGNORED)
+							{
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+									DrawAlpha(hwnd,hdcMem,&rc,sevencontact_pos.COLOR,sevencontact_pos.ALPHA, sevencontact_pos.COLOR2, sevencontact_pos.COLOR2_TRANSPARENT, sevencontact_pos.GRADIENT,ssingleitem.CORNER);
+							}
+							else if (group->scanIndex%2!=0 && !soddcontact_pos.IGNORED)
+							{
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+									DrawAlpha(hwnd,hdcMem,&rc,soddcontact_pos.COLOR,soddcontact_pos.ALPHA, soddcontact_pos.COLOR2, soddcontact_pos.COLOR2_TRANSPARENT, soddcontact_pos.GRADIENT,ssingleitem.CORNER);
+							}
+
 							if (!sitem.IGNORED)
 							{	
 								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
@@ -403,6 +418,19 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 							rc.top = y  + sfirstitem.MARGIN_TOP;
 							rc.right = clRect.right - sfirstitem.MARGIN_RIGHT;
 							rc.bottom = y+dat->rowHeight - sfirstitem.MARGIN_BOTTOM;
+
+							// draw odd/even contact underlay
+							if ((group->scanIndex==0 || group->scanIndex%2==0) && !sevencontact_pos.IGNORED)
+							{
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+									DrawAlpha(hwnd,hdcMem,&rc,sevencontact_pos.COLOR,sevencontact_pos.ALPHA, sevencontact_pos.COLOR2, sevencontact_pos.COLOR2_TRANSPARENT, sevencontact_pos.GRADIENT,sfirstitem.CORNER);
+							}
+							else if (group->scanIndex%2!=0 && !soddcontact_pos.IGNORED)
+							{
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+									DrawAlpha(hwnd,hdcMem,&rc,soddcontact_pos.COLOR,soddcontact_pos.ALPHA, soddcontact_pos.COLOR2, soddcontact_pos.COLOR2_TRANSPARENT, soddcontact_pos.GRADIENT,sfirstitem.CORNER);
+							}
+
 							if (!sitem.IGNORED)
 							{
 								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
@@ -417,6 +445,19 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 							rc.top = y  + slastitem.MARGIN_TOP;
 							rc.right = clRect.right - slastitem.MARGIN_RIGHT;
 							rc.bottom = y+dat->rowHeight - slastitem.MARGIN_BOTTOM;
+							
+							// draw odd/even contact underlay
+							if ((group->scanIndex==0 || group->scanIndex%2==0) && !sevencontact_pos.IGNORED)
+							{
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+									DrawAlpha(hwnd,hdcMem,&rc,sevencontact_pos.COLOR,sevencontact_pos.ALPHA, sevencontact_pos.COLOR2, sevencontact_pos.COLOR2_TRANSPARENT, sevencontact_pos.GRADIENT,slastitem.CORNER);
+							}
+							else if (group->scanIndex%2!=0 && !soddcontact_pos.IGNORED)
+							{
+								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+									DrawAlpha(hwnd,hdcMem,&rc,soddcontact_pos.COLOR,soddcontact_pos.ALPHA, soddcontact_pos.COLOR2, soddcontact_pos.COLOR2_TRANSPARENT, soddcontact_pos.GRADIENT,slastitem.CORNER);
+							}
+
 							if (!sitem.IGNORED)
 							{
 								if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
@@ -430,6 +471,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					if (	group->contact[group->scanIndex].type!=CLCIT_GROUP // not a group
 						&& group->parent==NULL // not grouped
 						&& !sfirstitem_NG.IGNORED
+						&& group->scanIndex!=group->contactCount-1
 						&& !bFirstNGdrawn
 						)
 					{
@@ -439,6 +481,19 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						rc.top = y + sfirstitem_NG.MARGIN_TOP;
 						rc.right = clRect.right - sfirstitem_NG.MARGIN_RIGHT;
 						rc.bottom = y+dat->rowHeight - sfirstitem_NG.MARGIN_BOTTOM;
+
+						// draw odd/even contact underlay
+						if ((group->scanIndex==0 || group->scanIndex%2==0) && !sevencontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,sevencontact_pos.COLOR,sevencontact_pos.ALPHA, sevencontact_pos.COLOR2, sevencontact_pos.COLOR2_TRANSPARENT, sevencontact_pos.GRADIENT,sfirstitem_NG.CORNER);
+						}
+						else if (group->scanIndex%2!=0 && !soddcontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))							
+								DrawAlpha(hwnd,hdcMem,&rc,soddcontact_pos.COLOR,soddcontact_pos.ALPHA, soddcontact_pos.COLOR2, soddcontact_pos.COLOR2_TRANSPARENT, soddcontact_pos.GRADIENT,sfirstitem_NG.CORNER);
+						}
+
 						if (!sitem.IGNORED)
 						{
 							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
@@ -459,6 +514,19 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						rc.top = y  + slastitem_NG.MARGIN_TOP;
 						rc.right = clRect.right - slastitem_NG.MARGIN_RIGHT;
 						rc.bottom = y+dat->rowHeight - slastitem_NG.MARGIN_BOTTOM;
+
+						// draw odd/even contact underlay
+						if ((group->scanIndex==0 || group->scanIndex%2==0) && !sevencontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,sevencontact_pos.COLOR,sevencontact_pos.ALPHA, sevencontact_pos.COLOR2, sevencontact_pos.COLOR2_TRANSPARENT, sevencontact_pos.GRADIENT,slastitem_NG.CORNER);
+						}
+						else if (group->scanIndex%2!=0 && !soddcontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,soddcontact_pos.COLOR,soddcontact_pos.ALPHA, soddcontact_pos.COLOR2, soddcontact_pos.COLOR2_TRANSPARENT, soddcontact_pos.GRADIENT,slastitem_NG.CORNER);
+						}
+
 						if (!sitem.IGNORED)
 						{
 							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
@@ -478,6 +546,19 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						rc.top = y  + ssingleitem_NG.MARGIN_TOP;
 						rc.right = clRect.right - ssingleitem_NG.MARGIN_RIGHT;
 						rc.bottom = y+dat->rowHeight - ssingleitem_NG.MARGIN_BOTTOM;
+
+						// draw odd/even contact underlay
+						if ((group->scanIndex==0 || group->scanIndex%2==0) && !sevencontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,sevencontact_pos.COLOR,sevencontact_pos.ALPHA, sevencontact_pos.COLOR2, sevencontact_pos.COLOR2_TRANSPARENT, sevencontact_pos.GRADIENT,ssingleitem_NG.CORNER);
+						}
+						else if (group->scanIndex%2!=0 && !soddcontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,soddcontact_pos.COLOR,soddcontact_pos.ALPHA, soddcontact_pos.COLOR2, soddcontact_pos.COLOR2_TRANSPARENT, soddcontact_pos.GRADIENT,ssingleitem_NG.CORNER);
+						}
+
 						if (!sitem.IGNORED)
 						{
 							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
@@ -486,9 +567,21 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						}
 						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))								
 							DrawAlpha(hwnd,hdcMem,&rc,ssingleitem_NG.COLOR,ssingleitem_NG.ALPHA, ssingleitem_NG.COLOR2, ssingleitem_NG.COLOR2_TRANSPARENT,ssingleitem_NG.GRADIENT,ssingleitem_NG.CORNER);
-
+						
 					} else if (!sitem.IGNORED) // draw default grouped
-					{						
+					{					
+						// draw odd/even contact underlay
+						if ((group->scanIndex==0 || group->scanIndex%2==0) && !sevencontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,sevencontact_pos.COLOR,sevencontact_pos.ALPHA, sevencontact_pos.COLOR2, sevencontact_pos.COLOR2_TRANSPARENT, sevencontact_pos.GRADIENT,sitem.CORNER);
+						}
+						else if (group->scanIndex%2!=0 && !soddcontact_pos.IGNORED)
+						{
+							if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
+								DrawAlpha(hwnd,hdcMem,&rc,soddcontact_pos.COLOR,soddcontact_pos.ALPHA, soddcontact_pos.COLOR2, soddcontact_pos.COLOR2_TRANSPARENT, soddcontact_pos.GRADIENT,sitem.CORNER);
+						}
+						
 						if (!selected || DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1))
 							DrawAlpha(hwnd,hdcMem,&rc,sitem.COLOR,sitem.ALPHA, sitem.COLOR2, sitem.COLOR2_TRANSPARENT,sitem.GRADIENT,sitem.CORNER);
 						if (selected) DBGetContactSettingByte(NULL,"CLCExt","EXBK_SelBlend",1);
