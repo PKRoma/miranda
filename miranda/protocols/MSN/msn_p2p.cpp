@@ -692,7 +692,7 @@ LONG __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T )
 	memset( H, 0, sizeof( P2P_Header ));
 	H->mSessionID = ft->p2p_sessionid;
 	H->mID = ft->p2p_msgid;
-	H->mFlags = 0x020;
+	H->mFlags = 0x01000030;
 	H->mTotalSize = ft->std.currentFileSize;
 	H->mOffset = ft->std.currentFileProgress;
 	H->mPacketLen = portion;

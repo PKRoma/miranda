@@ -266,8 +266,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,7,9
- PRODUCTVERSION 0,1,7,9
+ FILEVERSION __FILEVERSION_STRING
+ PRODUCTVERSION __FILEVERSION_STRING
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -284,12 +284,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", " "
             VALUE "FileDescription", "Miranda MSN Messenger plugin"
-            VALUE "FileVersion", "0.1.7.9"
+            VALUE "FileVersion", __VERSION_STRING
             VALUE "InternalName", "msn"
             VALUE "LegalCopyright", "Copyright c 2002-2004 George Hazan"
             VALUE "OriginalFilename", "msn.dll"
             VALUE "ProductName", "Miranda"
-            VALUE "ProductVersion", "0.1.7.9"
+            VALUE "ProductVersion", __VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"
