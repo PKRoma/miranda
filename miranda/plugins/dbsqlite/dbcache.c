@@ -34,28 +34,29 @@ void UninitCache(void)
 	DbCache_Flush(NULL,WM_TIMER,0,0);
 }
 
-// given a DBVARIANT return a promoted number or error
+// given a DBVARIANT return a promoted number or error - returns 1 if successful
 int DbCache_GetVariant(DBVARIANT * dbv, int * val)
 {
 	switch ( dbv->type ) {
 		case DBVT_BYTE: 
 		{ 
-			*val=(int)dbv->bVal;
-			return 0;
+			*val=dbv->bVal;
+			break;
 		}
 		case DBVT_WORD: 
 		{ 
-			*val=(int)dbv->wVal;
-			return 0;
+			*val=dbv->wVal;
+			break;
 		}
 		case DBVT_DWORD:
 		{
-			*val=(int)dbv->dVal;
-			return 0;
+			*val=dbv->dVal;
+			break;
 		}
 		default:
-			return 1;
+			return 0;
 	} // switch
+	return 1;
 }
 
 // assumes main thread, will call csDb
@@ -130,7 +131,7 @@ int DbCache_WriteSetting(HANDLE hContact, const char * szModule, const char * sz
 	sqlite3_bind_text(st, 3, szSetting, strlen(szSetting), SQLITE_STATIC);
 	sqlite3_bind_int(st, 4, (int)dbv->type);
 	// convert the variant
-	if ( DbCache_GetVariant(dbv, &value) == 0 ) sqlite3_bind_int(st, 5, value);
+	if ( DbCache_GetVariant(dbv, &value) ) sqlite3_bind_int(st, 5, value);
 	else {
 		if ( dbv->type == DBVT_ASCIIZ && dbv->pszVal != NULL ) sqlite3_bind_text(st, 5, dbv->pszVal, strlen(dbv->pszVal), SQLITE_STATIC);
 		else if ( dbv->type == DBVT_BLOB && dbv->pbVal != NULL ) sqlite3_bind_blob(st, 5, dbv->pbVal, dbv->cpbVal, SQLITE_STATIC);
@@ -163,21 +164,26 @@ int __inline DbCache_SetVariant(sqlite3_stmt * st, DBVARIANT * dbv, int staticAl
 		case DBVT_ASCIIZ:
 		{
 			const char * p = sqlite3_column_text(st, 1);
-			size_t len = strlen(p);
-			if ( !staticAlloc ) dbv->pszVal=mir_alloc( len+1 );
-			strncpy(dbv->pszVal, p, staticAlloc ? dbv->cchVal : len );
-			dbv->cchVal=len;
-			return 0;
+			if ( p != NULL ) {
+				size_t len = strlen(p) + 1;		
+				size_t copylen = staticAlloc ? ( len < dbv->cchVal ? len : dbv->cchVal ) : len;
+				if ( !staticAlloc ) dbv->pszVal=mir_alloc( len );
+				memmove(dbv->pszVal, p, copylen );
+				return 0;
+			}
+			break;
 		}
 		case DBVT_BLOB:
 		{
 			const void * p = sqlite3_column_blob(st, 1);
-			size_t len = sqlite3_column_bytes(st, 1);		
-			size_t copylen = staticAlloc ? ( len < dbv->cpbVal ? len : dbv->cpbVal ) : len;
-			if ( !staticAlloc ) dbv->pbVal=mir_alloc( len );
-			memmove(dbv->pbVal, p, copylen );
-			dbv->cpbVal=copylen;
-			return 0;
+			if ( p != NULL ) {
+				size_t len = sqlite3_column_bytes(st, 1);		
+				size_t copylen = staticAlloc ? ( len < dbv->cpbVal ? len : dbv->cpbVal ) : len;
+				if ( !staticAlloc ) dbv->pbVal=mir_alloc( len );
+				memmove(dbv->pbVal, p, copylen );
+				return 0;
+			}
+			break;
 		}
 		case DBVT_BYTE:
 		{
@@ -234,7 +240,33 @@ int DbCache_GetSetting(HANDLE hContact, const char * szModule, const char * szSe
 	return rc;
 }
 
-
+// assumes csDb is owned
+int DbCache_DeleteSetting(HANDLE hContact, const char * szModule, const char * szSetting)
+{
+	int rc=1;
+	sqlite3_stmt * st = NULL;
+	// delete any buffered write cos it doesnt matter anymore
+	if ( sqlite3_prepare(sql, "DELETE FROM settingcache WHERE setting = ? AND module = ? AND id = ?;", -1, &st, NULL) != SQLITE_OK ) {
+		return 1;
+	}
+	sqlite3_bind_text(st, 1, szSetting, strlen(szSetting), SQLITE_STATIC);
+	sqlite3_bind_text(st, 2, szModule, strlen(szModule), SQLITE_STATIC);
+	sqlite3_bind_int(st, 3, (int) hContact);
+	rc=sqlite3_step(st);
+	sqlite3_finalize(st);
+	// now delete it from disk, success of this operation is what counts
+	if ( sqlite3_prepare(sql, "DELETE FROM settings WHERE setting = ? AND module = ? AND id = ?;", -1, &st, NULL) != SQLITE_OK ) {
+		return 1;
+	}
+	// feed in the args
+	sqlite3_bind_text(st, 1, szSetting, strlen(szSetting), SQLITE_STATIC);
+	sqlite3_bind_text(st, 2, szModule, strlen(szModule), SQLITE_STATIC);
+	sqlite3_bind_int(st, 3, (int) hContact);
+	// execute
+	rc=sqlite3_step(st) == SQLITE_OK ? 0 : 1;
+	sqlite3_finalize(st);
+	return rc;
+}
 
 
 

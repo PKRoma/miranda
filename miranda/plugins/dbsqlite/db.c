@@ -77,7 +77,21 @@ static int DbEnumSetting(WPARAM wParam, LPARAM lParam)
 
 static int DbDeleteSetting(WPARAM wParam, LPARAM lParam)
 {
-	return 1;
+	int rc=1;
+	HANDLE hContact = (HANDLE)wParam;
+	DBCONTACTGETSETTING * gs = (DBCONTACTGETSETTING *)lParam;
+	EnterCriticalSection(&csDb);
+	if ( gs && gs->szModule != NULL && gs->szSetting != NULL ) 
+		rc=DbCache_DeleteSetting(hContact, gs->szModule, gs->szSetting);
+	LeaveCriticalSection(&csDb);
+	if ( rc == 0 ) {
+		DBCONTACTWRITESETTING cws;
+		cws.szModule=gs->szModule;
+		cws.szSetting=gs->szSetting;
+		cws.value.type=DBVT_DELETED;
+		NotifyEventHooks(hWriteSettingEvent, (WPARAM) hContact, (LPARAM) &cws);
+	}
+	return rc;
 }
 
 static int DbFreeVariant(WPARAM wParam, LPARAM lParam)
