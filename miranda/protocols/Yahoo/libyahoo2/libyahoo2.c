@@ -2655,8 +2655,17 @@ static void yahoo_process_voicechat(struct yahoo_input_data *yid, struct yahoo_p
 
 static void yahoo_process_ping(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
+	char *errormsg = NULL;
+	
+	YList *l;
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		if (pair->key == 16)
+			errormsg = pair->value;
+	}
+	
 	NOTICE(("got ping packet"));
-	YAHOO_CALLBACK(ext_yahoo_got_ping)(yid->yd->client_id);
+	YAHOO_CALLBACK(ext_yahoo_got_ping)(yid->yd->client_id, errormsg);
 }
 
 static void _yahoo_webcam_get_server_connected(int fd, int error, void *d)

@@ -153,7 +153,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_cookies)(int id);
  * Params:
  * 	id   - the id that identifies the server connection
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
 
 
 /*
