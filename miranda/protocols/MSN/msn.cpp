@@ -55,7 +55,6 @@ int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
 bool     msnRunningUnderNT = false;
-bool		msnRunningUnderOldCore = false;
 bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
@@ -89,6 +88,7 @@ int				msnStatusMode,
 HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
 HANDLE			hNetlibUser = NULL;
 HANDLE         hInitChat = NULL;
+HANDLE			hEvInitChat = NULL;
 bool				msnUseExtendedPopups;
 
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
@@ -210,11 +210,10 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		hChatEvent = HookEvent( ME_GC_EVENT, MSN_GCEventHook );
 		hChatMenu = HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook );
 
-		char *ChatInit = (char*)malloc(lstrlen(msnProtocolName) + 10);
-		lstrcpy(ChatInit, msnProtocolName);
-		lstrcat(ChatInit, "\\ChatInit");
-		hInitChat = CreateHookableEvent( ChatInit );
-		HookEvent( ChatInit, MSN_ChatInit );
+		char szEvent[ 200 ];
+		_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", msnProtocolName );
+		hInitChat = CreateHookableEvent( szEvent );
+		hEvInitChat = HookEvent( szEvent, MSN_ChatInit );
 	}
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
@@ -332,11 +331,12 @@ int __declspec( dllexport ) Unload( void )
 	if ( hHookOnUserInfoInit )
 		UnhookEvent( hHookOnUserInfoInit );
 
+	if ( hChatEvent  ) UnhookEvent( hChatEvent );
+	if ( hChatMenu   ) UnhookEvent( hChatMenu );
+	if ( hEvInitChat ) UnhookEvent( hEvInitChat );
+
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
-
-	if ( hChatEvent ) UnhookEvent( hChatEvent );
-	if ( hChatMenu  ) UnhookEvent( hChatMenu );
 
 	MSN_FreeGroups();
 	Threads_Uninit();
@@ -365,11 +365,8 @@ int __declspec( dllexport ) Unload( void )
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 1, 2, 0 ))
-		return NULL;
-
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 0 ))
-		msnRunningUnderOldCore = true;
+		return NULL;
 
 	return &pluginInfo;
 }

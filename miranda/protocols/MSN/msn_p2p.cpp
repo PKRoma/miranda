@@ -377,10 +377,8 @@ bool p2p_connectTo( ThreadData* info )
 	P2P_Header reply;
 
 	NETLIBOPENCONNECTION tConn = { 0 };
-	if ( msnRunningUnderOldCore )
-      tConn.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-	else
-		tConn.cbSize = sizeof( tConn ), tConn.flags = NLOCF_V2;
+	tConn.cbSize = sizeof( tConn );
+	tConn.flags = NLOCF_V2;
 	tConn.szHost = info->mServer;
 	tConn.timeout = 5;
 	{

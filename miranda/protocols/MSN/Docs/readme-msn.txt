@@ -23,25 +23,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 ================================================================================
-Special note for users of the MSN Gateway plugin - how to use MSN 0.1.7.x
-================================================================================
-
-First of all, the presense of built-in gateway in the MSN 0.1.7.x does not mean
-that you must delete old good MSN Gateway plugin. You still are able to use
-it, keeping the built-in gateway disabled. You shoudn't change anything to do it.
-
-If you want to remove the MSN Gateway to save 300K of RAM, you must reset MSN
-network settings after removing it, because MSN Gateway plugin changes the MSN
-plugin options to create a virtual proxy inside the Miranda's process. Also, cause
-the MSN Gateway plugin automatically uses IE proxy settings, you have to choose
-one of the following variants:
-- tune the proxy options for a MSN Server Connection on the Options/Network page;
-- enable 'Use IE proxy settings' on the Options/Network/MSN Network page.
-
-Cause the gateway code sometimes depends on the proxy behavior, feel free to
-report problems with built-in gateway to me via e-mail.
-
-================================================================================
 Useful plugins which can help you to work with the MSN protocol
 ================================================================================
 
@@ -50,16 +31,21 @@ Popup 1.0.1.9
 Popup Plus 2.0.3.8
 (http://miranda-im.org/download/details.php?action=viewfile&id=1170)
 ----------------------
-
 All notifications in the MSN plugin are made using the Popup
 plugin. After the Popup plugin installation there will be some
 options available for tuning, you will find them in
 Options/Popups/MSN tab.
 
-SRMM (Unicode) 1.0.1.3
+Chat 0.2.0.2
+(http://miranda-im.org/download/details.php?action=viewfile&id=1309)
+----------------------
+This plugin allows you to support group chats with many MSN users. Without
+that plugin you can't leave a chat been being invited, so if you plan to
+use groupchats, this plugin is essential.
+
+SRMM (Unicode) 1.0.4.3
 (http://miranda-im.org/download/details.php?action=viewfile&id=1136)
 ----------------------
-
 They both are true Unicode-aware message editors. Using them you can
 send/receive Unicode messages, so you won't be dependent on the
 codepages, encodings etc. They work only under NT4/Win2k/XP/2003.
@@ -67,7 +53,6 @@ codepages, encodings etc. They work only under NT4/Win2k/XP/2003.
 Unicode History Viewer
 (http://miranda-im.org/download/details.php?action=viewfile&id=1109)
 ----------------------
-
 If you work under NT4/Win2k/XP/2003, and you can send/receive messages
 in Unicode, the standard history viewer will show question-marks when
 Unicode characters cannot be mapped to the current codepage. In this

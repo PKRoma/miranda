@@ -4,6 +4,13 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.0.1
+===============
+[-] Removed support for old versions of Miranda.
+
+WARNING!!! All versions since this one require Miranda 0.4.x core.
+This is required by the project admins.
+
 Version 0.1.7.11
 ================
 [+] Full support for server-side groups and contacts
@@ -14,6 +21,7 @@ Version 0.1.7.11
 the successful transfer.
 [!] Bug #0000761 fixed: apply button in options->popups->msn enabled on
 first showing of page
+[!] Minor fix for P2P file transfers over NAT
 
 Version 0.1.7.10
 ================
