@@ -326,7 +326,7 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 {
 	int rc=0;
 	unsigned int dwTimeout=( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) ) ? nloc->timeout : 0;
-	unsigned int notblocking=1;	
+	u_long notblocking=1;	
 	TIMEVAL tv;
 	DWORD lasterr = 0;	
 	// if dwTimeout is zero then its an old style connection or new with a 0 timeout, select() will error quicker anyway

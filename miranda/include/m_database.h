@@ -704,7 +704,7 @@ don't change any of the members.
 #include <stdio.h>
 #endif
 
-static int __inline DBGetContactSettingByte_Helper(HANDLE hContact,	const char *szModule,
+__inline static int DBGetContactSettingByte_Helper(HANDLE hContact,	const char *szModule,
 	const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
 	DBVARIANT dbv;
@@ -725,7 +725,7 @@ static int __inline DBGetContactSettingByte_Helper(HANDLE hContact,	const char *
 	return dbv.bVal;
 }
 
-static int __inline DBGetContactSettingWord_Helper(HANDLE hContact,const char *szModule,
+__inline static int DBGetContactSettingWord_Helper(HANDLE hContact,const char *szModule,
 	const char *szSetting,int errorValue,const char *szFile, const int nLine)
 {
 	DBVARIANT dbv;
@@ -746,7 +746,7 @@ static int __inline DBGetContactSettingWord_Helper(HANDLE hContact,const char *s
 	return dbv.wVal;
 }
 
-static DWORD __inline DBGetContactSettingDword_Helper(HANDLE hContact,const char *szModule,
+__inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char *szModule,
 	const char *szSetting,DWORD errorValue, const char *szFile, const int nLine)
 {
 	DBVARIANT dbv;
@@ -767,7 +767,7 @@ static DWORD __inline DBGetContactSettingDword_Helper(HANDLE hContact,const char
 	return dbv.dVal;
 }
 
-static int __inline DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,
+__inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,
 	const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
 {
 	int rc;
@@ -786,12 +786,12 @@ static int __inline DBGetContactSetting_Helper(HANDLE hContact,const char *szMod
 	return rc;
 }
 
-static int __inline DBFreeVariant(DBVARIANT *dbv)
+__inline static int DBFreeVariant(DBVARIANT *dbv)
 {
 	return CallService(MS_DB_CONTACT_FREEVARIANT,0,(LPARAM)dbv);
 }
 
-static int __inline DBDeleteContactSetting(HANDLE hContact,const char *szModule,const char *szSetting)
+__inline static int DBDeleteContactSetting(HANDLE hContact,const char *szModule,const char *szSetting)
 {
 	DBCONTACTGETSETTING cgs;
 	cgs.szModule=szModule;
@@ -799,7 +799,7 @@ static int __inline DBDeleteContactSetting(HANDLE hContact,const char *szModule,
 	return CallService(MS_DB_CONTACT_DELETESETTING,(WPARAM)hContact,(LPARAM)&cgs);
 }
 
-static int __inline DBWriteContactSettingByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
+__inline static int DBWriteContactSettingByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -810,7 +810,7 @@ static int __inline DBWriteContactSettingByte(HANDLE hContact,const char *szModu
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-static int __inline DBWriteContactSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
+__inline static int DBWriteContactSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -821,7 +821,7 @@ static int __inline DBWriteContactSettingWord(HANDLE hContact,const char *szModu
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-static int __inline DBWriteContactSettingDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
+__inline static int DBWriteContactSettingDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -832,7 +832,7 @@ static int __inline DBWriteContactSettingDword(HANDLE hContact,const char *szMod
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-static int __inline DBWriteContactSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
+__inline static int DBWriteContactSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
 {
 	DBCONTACTWRITESETTING cws;
 

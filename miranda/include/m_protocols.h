@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "statusmodes.h"
 
 //call a specific protocol service. See the PS_ constants in m_protosvc.h
-static int __inline CallProtoService(const char *szModule,const char *szService,WPARAM wParam,LPARAM lParam)
+__inline static int CallProtoService(const char *szModule,const char *szService,WPARAM wParam,LPARAM lParam)
 {
 	char str[MAXMODULELABELLENGTH];
 	strcpy(str,szModule);
@@ -48,7 +48,7 @@ typedef struct {
 	LPARAM lParam;
 } CCSDATA;
 #define MS_PROTO_CALLCONTACTSERVICE    "Proto/CallContactService"
-static int __inline CallContactService(HANDLE hContact,const char *szProtoService,WPARAM wParam,LPARAM lParam)
+__inline static int CallContactService(HANDLE hContact,const char *szProtoService,WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA ccs;
 	ccs.hContact=hContact;

@@ -59,8 +59,9 @@ int UnloadButtonModule(WPARAM wParam, LPARAM lParam) {
 }
 
 int LoadButtonModule(void) {
-	WNDCLASSEX wc = {0};
+	WNDCLASSEX wc;
 	
+	ZeroMemory(&wc, sizeof(wc));
 	wc.cbSize         = sizeof(wc);
 	wc.lpszClassName  = MIRANDABUTTONCLASS;
 	wc.lpfnWndProc    = MButtonWndProc;

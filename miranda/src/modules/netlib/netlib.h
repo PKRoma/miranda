@@ -148,3 +148,4 @@ static __inline int NLRecv(struct NetlibConnection *nlc,char *buf,int len,int fl
 	NETLIBBUFFER nlb={buf,len,flags};
 	return NetlibRecv((WPARAM)nlc,(LPARAM)&nlb);
 }
+

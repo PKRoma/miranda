@@ -33,7 +33,7 @@ static void SetControlToUnixTime(HWND hwndDlg, UINT idCtrl, time_t unixTime)
 	SYSTEMTIME st;
 	char szTime[64],szDate[64],szOutput[128];
 
-	liFiletime.QuadPart=(11644473600i64+(__int64)unixTime)*10000000;
+	liFiletime.QuadPart=(BIGI(11644473600)+(__int64)unixTime)*10000000;
 	filetime.dwHighDateTime=liFiletime.HighPart;
 	filetime.dwLowDateTime=liFiletime.LowPart;
 	FileTimeToSystemTime(&filetime,&st);

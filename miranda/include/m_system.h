@@ -295,12 +295,12 @@ of shutting down
 */
 #define MS_SYSTEM_GETBUILDSTRING "Miranda/GetBuildString"
 
-static int __inline Miranda_Terminated(void)
+__inline static int Miranda_Terminated(void)
 {
 	return CallService(MS_SYSTEM_TERMINATED,0,0);
 }
 
-static void __inline miranda_sys_free(void *ptr)
+__inline static void miranda_sys_free(void *ptr)
 {
 	if (ptr) {
 		struct MM_INTERFACE mm;

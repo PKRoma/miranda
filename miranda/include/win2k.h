@@ -84,8 +84,22 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define NOWIN2K
 #endif
 
+#ifdef _MSC_VER
+#define BIGI(x) x##i64
+#else
+#define BIGI(x) x##LL
+#endif
+
+#if defined (__GNUC__)
+    #define SECURITY_ENTRYPOINTA "InitSecurityInterfaceA"
+    #define SECURITY_ENTRYPOINT SECURITY_ENTRYPOINTA
+    #define FreeCredentialsHandle FreeCredentialsHandle
+    #ifndef OPENFILENAME_SIZE_VERSION_400
+        #define OPENFILENAME_SIZE_VERSION_400 sizeof(OPENFILENAME)
+    #endif
+    #define CDRF_NOTIFYSUBITEMDRAW  0x00000020
 // SDK isn't present or some older VC compiler was used, include missing things.
-#if !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
+#elif !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
 	#pragma message("win2k.h")
 

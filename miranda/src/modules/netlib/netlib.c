@@ -39,7 +39,7 @@ void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings)
 
 void NetlibInitializeNestedCS(struct NetlibNestedCriticalSection *nlncs)
 {
-	nlncs->dwOwningThreadId=0;
+	nlncs->dwOwningThreadId= 0;
 	nlncs->lockCount=0;
 	nlncs->hMutex=CreateMutex(NULL,FALSE,NULL);
 }

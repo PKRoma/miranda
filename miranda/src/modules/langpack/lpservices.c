@@ -94,3 +94,4 @@ int LoadLangPackServices(void)
 	CreateServiceFunction(MS_LANGPACK_TRANSLATEDIALOG,TranslateDialog);
 	return 0;
 }
+

@@ -84,7 +84,7 @@ static void ConvertBackslashes(char *str)
 
 static DWORD LangPackHash(const char *szStr)
 {
-#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK
+#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined __GNUC__
 	__asm {				//this is mediocrely optimised, but I'm sure it's good enough
 		xor  edx,edx
 		mov  esi,szStr

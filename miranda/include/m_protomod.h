@@ -63,7 +63,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //If they are called with CallContactService() (PSS_ and PSR_ services) then
 //they are called with lParam=(CCSDATA*)&ccs and wParam an opaque internal
 //reference that should be passed unchanged to MS_PROTO_CHAIN*.
-static HANDLE __inline CreateProtoServiceFunction(const char *szModule,const char *szService,MIRANDASERVICE serviceProc)
+__inline static HANDLE CreateProtoServiceFunction(const char *szModule,const char *szService,MIRANDASERVICE serviceProc)
 {
 	char str[MAXMODULELABELLENGTH];
 	strcpy(str,szModule);
@@ -104,7 +104,7 @@ static HANDLE __inline CreateProtoServiceFunction(const char *szModule,const cha
 //Thread safety: me_proto_ack is completely thread safe since 0.1.2.0
 //See the notes in core/modules.h under NotifyEventHooks()
 #define MS_PROTO_BROADCASTACK    "Proto/BroadcastAck"
-static __inline int ProtoBroadcastAck(const char *szModule,HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam)
+__inline static int ProtoBroadcastAck(const char *szModule,HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam)
 {
 	ACKDATA ack={0};
 	ack.cbSize=sizeof(ACKDATA);

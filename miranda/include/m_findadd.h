@@ -32,3 +32,4 @@ returns 0 always
 #define MS_FINDADD_FINDADD  "FindAdd/FindAddCommand" 
 
 #endif // M_FINDADD_H__
+

@@ -207,7 +207,7 @@ typedef struct {
 //socket will be closed.
 //Errors: ERROR_INVALID_PARAMETER
 #define MS_NETLIB_CLOSEHANDLE   "Netlib/CloseHandle"
-static int __inline  Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETLIB_CLOSEHANDLE,(WPARAM)h,0);}
+__inline static int Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETLIB_CLOSEHANDLE,(WPARAM)h,0);}
 
 //Open a port and wait for connections on it
 //wParam=(WPARAM)(HANDLE)hUser

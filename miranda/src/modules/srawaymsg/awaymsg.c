@@ -161,3 +161,4 @@ int LoadAwayMsgModule(void)
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,AwayMsgPreShutdown);
 	return LoadAwayMessageSending();
 }
+

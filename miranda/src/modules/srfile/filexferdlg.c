@@ -212,7 +212,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				if(dat->bytesRecvedHistory[0]==dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1])
 					lstrcpy(szTime,"??:??:??");
 				else {
-					li.QuadPart=10000000i64*(dat->transferStatus.currentFileSize-dat->transferStatus.currentFileProgress)*dat->bytesRecvedHistorySize/(dat->bytesRecvedHistory[0]-dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]);
+					li.QuadPart=BIGI(10000000)*(dat->transferStatus.currentFileSize-dat->transferStatus.currentFileProgress)*dat->bytesRecvedHistorySize/(dat->bytesRecvedHistory[0]-dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]);
 					ft.dwHighDateTime=li.HighPart; ft.dwLowDateTime=li.LowPart;
 					FileTimeToSystemTime(&ft,&st);
 					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,sizeof(szTime));
@@ -220,7 +220,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				wsprintf(szDisplay,"%s/%s  (%s %s)",szSpeed,Translate("sec"),szTime,Translate("remaining"));
 				SetDlgItemText(hwndDlg,IDC_CURRENTSPEED,szDisplay);
 				if(dat->bytesRecvedHistory[0]!=dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]) {
-					li.QuadPart=10000000i64*(dat->transferStatus.totalBytes-dat->transferStatus.totalProgress)*dat->bytesRecvedHistorySize/(dat->bytesRecvedHistory[0]-dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]);
+					li.QuadPart=BIGI(10000000)*(dat->transferStatus.totalBytes-dat->transferStatus.totalProgress)*dat->bytesRecvedHistorySize/(dat->bytesRecvedHistory[0]-dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]);
 					ft.dwHighDateTime=li.HighPart; ft.dwLowDateTime=li.LowPart;
 					FileTimeToSystemTime(&ft,&st);
 					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,sizeof(szTime));
@@ -416,21 +416,21 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 					SetDlgItemText(hwndDlg,IDC_STATUS,Translate(fts->sending?"Sending...":"Receiving..."));
 					SetFilenameControls(hwndDlg,fts);
-					SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEPROGRESS, PBM_SETPOS, fts->currentFileSize?(WPARAM)(100i64*fts->currentFileProgress/fts->currentFileSize):0, 0);
-					SendDlgItemMessage(hwndDlg,IDC_ALLFILESPROGRESS, PBM_SETPOS, fts->totalBytes?(WPARAM)(100i64*fts->totalProgress/fts->totalBytes):0, 0);
+					SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEPROGRESS, PBM_SETPOS, fts->currentFileSize?(WPARAM)(BIGI(100)*fts->currentFileProgress/fts->currentFileSize):0, 0);
+					SendDlgItemMessage(hwndDlg,IDC_ALLFILESPROGRESS, PBM_SETPOS, fts->totalBytes?(WPARAM)(BIGI(100)*fts->totalProgress/fts->totalBytes):0, 0);
 
 					GetSensiblyFormattedSize(fts->currentFileSize,szSizeTotal,sizeof(szSizeTotal),0,1,&units);
 					GetSensiblyFormattedSize(fts->currentFileProgress,szSizeDone,sizeof(szSizeTotal),units,0,NULL);
-					wsprintf(str,"%s / %s  (%d%%)",szSizeDone,szSizeTotal,fts->currentFileSize?(int)(100i64*fts->currentFileProgress/fts->currentFileSize):0);
+					wsprintf(str,"%s / %s  (%d%%)",szSizeDone,szSizeTotal,fts->currentFileSize?(int)(BIGI(100)*fts->currentFileProgress/fts->currentFileSize):0);
 					SetDlgItemText(hwndDlg,IDC_CURRENTTRANSFERRED,str);
 
 					GetSensiblyFormattedSize(fts->totalBytes,szSizeTotal,sizeof(szSizeTotal),0,1,&units);
 					GetSensiblyFormattedSize(fts->totalProgress,szSizeDone,sizeof(szSizeTotal),units,0,NULL);
-					wsprintf(str,"%s / %s  (%d%%)",szSizeDone,szSizeTotal,fts->totalBytes?(int)(100i64*fts->totalProgress/fts->totalBytes):0);
+					wsprintf(str,"%s / %s  (%d%%)",szSizeDone,szSizeTotal,fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0);
 					SetDlgItemText(hwndDlg,IDC_ALLTRANSFERRED,str);
 
 					contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-					_snprintf(str,sizeof(str),"%d%%: %s: %s",fts->totalBytes?(int)(100i64*fts->totalProgress/fts->totalBytes):0,contactName,Translate(dat->send?(fts->totalFiles==1?"Sending file":"Sending files"):(fts->totalFiles==1?"Receiving file":"Receiving files")));
+					_snprintf(str,sizeof(str),"%d%%: %s: %s",fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0,contactName,Translate(dat->send?(fts->totalFiles==1?"Sending file":"Sending files"):(fts->totalFiles==1?"Receiving file":"Receiving files")));
 					SetWindowText(GetParent(hwndDlg),str);
 					break;
 				}

@@ -53,7 +53,7 @@ typedef struct {
                    //non-read-only edit controls are not translated
 #define LPTDF_NOTITLE        2     //do not translate the title of the dialog
 #define MS_LANGPACK_TRANSLATEDIALOG  "LangPack/TranslateDialog"
-static int __inline TranslateDialogDefault(HWND hwndDlg)
+__inline static int TranslateDialogDefault(HWND hwndDlg)
 {
 	LANGPACKTRANSLATEDIALOG lptd;
 	lptd.cbSize=sizeof(lptd);

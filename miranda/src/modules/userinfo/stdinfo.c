@@ -204,7 +204,7 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                             break;
                     }
 					lift.QuadPart=*(__int64*)&ft;
-					lift.QuadPart-=(__int64)timezone*30i64*60i64*10000000i64;
+					lift.QuadPart-=(__int64)timezone*BIGI(30)*BIGI(60)*BIGI(10000000);
 					*(__int64*)&ft=lift.QuadPart;
 					FileTimeToSystemTime(&ft,&st);
 					GetTimeFormat(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,sizeof(szTime));

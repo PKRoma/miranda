@@ -432,3 +432,4 @@ void NetlibLogShutdown(void)
 	DeleteCriticalSection(&logOptions.cs);
 	if(logOptions.szFile) free(logOptions.szFile);
 }
+

@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //returns NULL if id is invalid, but will always succeed for a valid id
 #define MS_SKIN_LOADICON     "Skin/Icons/Load"
 //nice function to wrap this:
-static HICON __inline LoadSkinnedIcon(int id) {return (HICON)CallService(MS_SKIN_LOADICON,id,0);}
+__inline static HICON LoadSkinnedIcon(int id) {return (HICON)CallService(MS_SKIN_LOADICON,id,0);}
 
 //event icons
 #define SKINICON_EVENT_MESSAGE		100
@@ -68,7 +68,7 @@ static HICON __inline LoadSkinnedIcon(int id) {return (HICON)CallService(MS_SKIN
 //status icon.
 #define MS_SKIN_LOADPROTOICON     "Skin/Icons/LoadProto"
 //nice function to wrap this:
-static HICON __inline LoadSkinnedProtoIcon(const char *szProto,int status) {return (HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)szProto,status);}
+__inline static HICON LoadSkinnedProtoIcon(const char *szProto,int status) {return (HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)szProto,status);}
 
 //add a new sound so it has a default and can be changed in the options dialog
 //wParam=0
@@ -91,7 +91,7 @@ typedef struct {
 #define MS_SKIN_ADDNEWSOUND      "Skin/Sounds/AddNew"
 
 // inline only works after 0.3.4+ (2004/10/*)
-static int __inline SkinAddNewSoundEx(const char *name,const char *section,const char *description)
+__inline static int SkinAddNewSoundEx(const char *name,const char *section,const char *description)
 {
 	SKINSOUNDDESCEX ssd;
 	ZeroMemory(&ssd,sizeof(ssd));
@@ -102,7 +102,7 @@ static int __inline SkinAddNewSoundEx(const char *name,const char *section,const
 	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
 
-static int __inline SkinAddNewSound(const char *name,const char *description,const char *defaultFile)
+__inline static int SkinAddNewSound(const char *name,const char *description,const char *defaultFile)
 {
 	SKINSOUNDDESC ssd;
 	ZeroMemory(&ssd,sizeof(ssd));
@@ -119,7 +119,7 @@ static int __inline SkinAddNewSound(const char *name,const char *description,con
 //pszName should have been added with Skin/Sounds/AddNew, but if not the
 //function will not fail, it will play the Windows default sound instead.
 #define MS_SKIN_PLAYSOUND        "Skin/Sounds/Play"
-static int __inline SkinPlaySound(const char *name) {return CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
+__inline static int SkinPlaySound(const char *name) {return CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
 
 //sent when the icons DLL has been changed in the options dialog, and everyone
 //should re-make their image lists
