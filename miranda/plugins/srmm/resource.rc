@@ -28,45 +28,43 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 195
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 177
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,2,310,187
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,2,310,172
     CONTROL         "Automatically pop up the window when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,16,
                     300,10
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,30,212,10
-    CONTROL         "Close the message window on reply",IDC_CLOSEONREPLY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,44,202,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,58,221,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,44,221,10
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,72,
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,58,
                     273,10
     CONTROL         "Save the window size and location individually for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,86,300,10
+                    8,72,300,10
     CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,102,136,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,88,136,10
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,117,135,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,103,135,10
     CONTROL         "Show username on top row",IDC_SHOWINFOLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,132,138,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,118,138,10
     CONTROL         "Show toolbar buttons on top row",IDC_SHOWBUTTONLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,147,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,133,137,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,102,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,88,137,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,117,137,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,103,137,10
     CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,132,133,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,118,133,10
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,168,211,8
-    EDITTEXT        IDC_SECONDS,223,166,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,168,44,8
+                    IDC_STATIC,8,154,211,8
+    EDITTEXT        IDC_SECONDS,223,152,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,154,44,8
 END
 
 IDD_MSGSENDERROR DIALOGEX 0, 0, 187, 97
@@ -203,7 +201,7 @@ BEGIN
         VERTGUIDE, 148
         VERTGUIDE, 295
         VERTGUIDE, 310
-        BOTTOMMARGIN, 192
+        BOTTOMMARGIN, 174
     END
 
     IDD_MSGSENDERROR, DIALOG
