@@ -405,6 +405,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			dat->showAdvanced=dat->showEmail=dat->showName=dat->showProtoId=0;
 			szProto=(char*)SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
+			if ( szProto == (char *)CB_ERR ) break;
 			if(szProto==NULL) {
 				CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
 				for(i=0;i<protoCount;i++) {
@@ -789,7 +790,11 @@ static int FindAddCommand(WPARAM wParam,LPARAM lParam)
 		// that is not good either...
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
 		for(i=0,netProtoCount=0;i<protoCount;i++)
-			if(protos[i]->type==PROTOTYPE_PROTOCOL) netProtoCount++;
+			if(protos[i]->type==PROTOTYPE_PROTOCOL) { 
+				int protoCaps=CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0);
+				if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME 
+					|| protoCaps&PF1_EXTSEARCHUI ) netProtoCount++;
+			}
 		if (netProtoCount > 0) {
 			icce.dwSize=sizeof(icce);
 			icce.dwICC=ICC_USEREX_CLASSES;
@@ -828,7 +833,11 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 	// Make sure we have some networks to search on.
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
 	for(i=0,netProtoCount=0;i<protoCount;i++)
-		if(protos[i]->type==PROTOTYPE_PROTOCOL) netProtoCount++;
+		if(protos[i]->type==PROTOTYPE_PROTOCOL) {
+			int protoCaps=CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0);
+			if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME 
+				|| protoCaps&PF1_EXTSEARCHUI ) netProtoCount++;
+		}
 
 	if (netProtoCount > 0) {
 		ZeroMemory(&mi, sizeof(mi));
