@@ -65,6 +65,7 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
+	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0)) return NULL;
 	mirVersion = mirandaVersion;
 	return &pluginInfo;
 }

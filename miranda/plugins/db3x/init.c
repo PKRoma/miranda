@@ -127,7 +127,7 @@ static int UnloadDatabase(int wasLoaded)
 
 static int getFriendlyName( char * buf, size_t cch, int shortName )
 {
-	strncpy(buf,shortName ? "3.xx profile" : "Database support for 0.3.x.x profiles",cch);
+	strncpy(buf,shortName ? "0.4.x Profile" : "Database support for 0.4.x profiles",cch);
 	return 0;
 }
 
@@ -144,9 +144,9 @@ static DATABASELINK dblink = {
 
 static PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
-	"Database driver for 3.xx profiles",
-	PLUGIN_MAKE_VERSION(0,3,4,1),
-	"Provides profile support for 3.xx profiles: global settings, contacts, history, settings per contact.",
+	"Database driver for 0.4.x profiles",
+	PLUGIN_MAKE_VERSION(0,4,0,0),
+	"Provides profile support for 0.4.x profiles: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
 	"egodust@users.sourceforge.net",
 	"Copyright 2000-2005 Miranda-IM project",
@@ -169,7 +169,7 @@ __declspec(dllexport) DATABASELINK* DatabasePluginInfo(void * reserved)
 
 __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,3,4,1) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0) ) return NULL;
 	return &pluginInfo;
 }
 

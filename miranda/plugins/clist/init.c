@@ -31,7 +31,7 @@ extern HWND hwndContactList;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"Classic contact list",
-	PLUGIN_MAKE_VERSION(0,3,4,6),
+	PLUGIN_MAKE_VERSION(0,4,0,0),
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
 	"egodust@users.sourceforge.net",
@@ -51,7 +51,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,3,4,0) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0) ) return NULL;
 	return &pluginInfo;
 }
 

@@ -43,8 +43,8 @@ BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 __declspec(dllexport)
      PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
-    // Only load for 0.3.4 or greater
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 3, 4, 0))
+    // Only load for 0.4 or greater
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
         return NULL;
     return &pluginInfo;
 }

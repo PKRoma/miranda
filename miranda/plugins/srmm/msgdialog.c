@@ -464,11 +464,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.left = dat->avatarWidth+4;
 			}
             urc->rcItem.top -= dat->splitterPos - dat->originalSplitterPos;
-			{
-			char c[222];
-			_snprintf(c,222,"%d %d %d", urc->rcItem.top, urc->rcItem.bottom, urc->rcItem.left);
-			//MessageBox(0,c,c,MB_OK); 
-			}
             if (!(g_dat->flags&SMF_SENDBTN))
                 return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_BOTTOM;
@@ -587,6 +582,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_LOG));
 			{ // avatar stuff
 				dat->avatarPic = 0;
+				dat->avatarWidth = 0;
+				dat->avatarHeight = 0;
 				dat->limitAvatarH = 0;
 				dat->limitAvatarH = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT)?DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT):0;
 			}
@@ -759,6 +756,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 
 			}
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			return TRUE;
@@ -811,16 +809,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
+		dat->avatarWidth=bminfo.bmWidth+2;
+		dat->avatarHeight=bminfo.bmHeight+2;
 		if (dat->limitAvatarH&&dat->avatarHeight>dat->limitAvatarH) {
 			double aspect = 0;
 
 			aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
 			dat->avatarWidth = (int)(bminfo.bmWidth * aspect + 2); 
 			dat->avatarHeight = dat->limitAvatarH + 2;
-		}
-		else {
-			dat->avatarWidth=bminfo.bmWidth+2;
-			dat->avatarHeight=bminfo.bmHeight+2;
 		}
 		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_SHOW);
 		break;
@@ -852,7 +848,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		int caps = 0, result;
 		
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
-		//Disable avatars
         if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
 			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);

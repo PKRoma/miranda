@@ -30,8 +30,8 @@ static int CallProtoServiceSync(const char *proto, const char *service, WPARAM w
 
 HANDLE aim_toc_connect()
 {
-    NETLIBOPENCONNECTION ncon;
-    NETLIBUSERSETTINGS nlus;
+    NETLIBOPENCONNECTION ncon = { 0 };
+    NETLIBUSERSETTINGS nlus = { 0 };
 	SOCKET s;
     HANDLE con;
     char host[256];
@@ -138,6 +138,7 @@ int aim_toc_login(HANDLE hConn)
     tdt = malloc(sizeof(struct toc_data));
     tdt->password = NULL;
     tdt->username = NULL;
+	tdt->state = STATE_OFFLINE;
     hServerConn = hConn;
     hServerPacketRecver = NULL;
     if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_PW, &dbv)) {

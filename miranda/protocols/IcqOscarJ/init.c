@@ -78,9 +78,9 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 
 PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
 {
-  // Only load for 0.3.3 or greater
-  // Miranda IM v0.3.3 contained several netlib struct changes requiring a forced upgrade
-  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 3, 3, 0))
+  // Only load for 0.4 or greater
+  // Miranda IM v0.4 contained several netlib struct changes requiring a forced upgrade
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
   {
     return NULL;
   }

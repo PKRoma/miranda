@@ -469,7 +469,7 @@ static int ImportCommand(WPARAM wParam,LPARAM lParam)
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 1, 1, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
 		return NULL;
 	
 	return &pluginInfo;

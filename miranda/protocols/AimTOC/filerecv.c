@@ -148,7 +148,7 @@ static void aim_filerecv_closefile(struct aim_filerecv_request *ft) {
 
 void __cdecl aim_filerecv_thread(void *vft)
 {
-    NETLIBOPENCONNECTION nloc;
+    NETLIBOPENCONNECTION nloc = { 0 };
     struct aim_filerecv_request *ft = (struct aim_filerecv_request *) vft;
     char data[BUF_LONG], *buf;
     int recvResult;

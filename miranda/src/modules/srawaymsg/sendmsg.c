@@ -320,15 +320,15 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							dat->info[dat->oldPage].usePrevious=IsDlgButtonChecked(hwndDlg,IDC_USEPREVIOUS);
 							GetDlgItemText(hwndDlg,IDC_MSG,dat->info[dat->oldPage].msg,sizeof(dat->info[dat->oldPage].msg));
 						}
-						CheckDlgButton(hwndDlg,IDC_DONTREPLY,dat->info[i].ignore);
-						CheckDlgButton(hwndDlg,IDC_NODIALOG,dat->info[i].noDialog);
-						CheckDlgButton(hwndDlg,IDC_USEPREVIOUS,dat->info[i].usePrevious);
-						CheckDlgButton(hwndDlg,IDC_USESPECIFIC,!dat->info[i].usePrevious);
-						SetDlgItemText(hwndDlg,IDC_MSG,dat->info[i].msg);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_NODIALOG),!dat->info[i].ignore);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_USEPREVIOUS),!dat->info[i].ignore);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_USESPECIFIC),!dat->info[i].ignore);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_MSG),!(dat->info[i].ignore || dat->info[i].usePrevious));
+						CheckDlgButton(hwndDlg,IDC_DONTREPLY,i<0?0:dat->info[i].ignore);
+						CheckDlgButton(hwndDlg,IDC_NODIALOG,i<0?0:dat->info[i].noDialog);
+						CheckDlgButton(hwndDlg,IDC_USEPREVIOUS,i<0?0:dat->info[i].usePrevious);
+						CheckDlgButton(hwndDlg,IDC_USESPECIFIC,i<0?0:!dat->info[i].usePrevious);
+						SetDlgItemText(hwndDlg,IDC_MSG,i<0?"":dat->info[i].msg);
+						EnableWindow(GetDlgItem(hwndDlg,IDC_NODIALOG),i<0?0:!dat->info[i].ignore);
+						EnableWindow(GetDlgItem(hwndDlg,IDC_USEPREVIOUS),i<0?0:!dat->info[i].ignore);
+						EnableWindow(GetDlgItem(hwndDlg,IDC_USESPECIFIC),i<0?0:!dat->info[i].ignore);
+						EnableWindow(GetDlgItem(hwndDlg,IDC_MSG),i<0?0:!(dat->info[i].ignore || dat->info[i].usePrevious));
 						dat->oldPage=i;
 					}
 					return 0;

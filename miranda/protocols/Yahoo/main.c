@@ -93,10 +93,10 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	//
-    // We require Miranda 0.3.3
+    // We require Miranda 0.4
 	// We using the latest/greatest API, including Typing Notifications and other stuff.
 	//
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 3, 3, 0))
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
         return NULL;
 
     return &pluginInfo;
