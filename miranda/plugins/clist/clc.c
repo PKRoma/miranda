@@ -241,6 +241,22 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 			}
 			break;
+		
+		case WM_WINDOWPOSCHANGING:
+		{
+			if ( dat->noVScrollbar ) {
+				ShowScrollBar(hwnd, SB_VERT, FALSE);
+			} else {
+				// only show the scrollbar if it needs to be shown
+				SCROLLINFO si;
+				si.cbSize=sizeof(si);
+				si.fMask=SIF_ALL;
+				if ( GetScrollInfo(hwnd, SB_VERT, &si) && si.nPage < si.nMax ) {
+					ShowScrollBar(hwnd, SB_VERT, TRUE);
+				}
+			}
+			break;
+		}
 
 		case INTM_RELOADOPTIONS:
 			LoadClcOptions(hwnd,dat);

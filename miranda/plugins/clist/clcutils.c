@@ -220,7 +220,7 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,1);
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
-	if (dat->noVScrollbar==0) SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
+	SetScrollInfo(hwnd,SB_VERT,&si,TRUE);	
 	ScrollTo(hwnd,dat,dat->yScroll,1);
 	nm.hdr.code=CLN_LISTSIZECHANGE;
 	nm.hdr.hwndFrom=hwnd;
@@ -558,8 +558,8 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 	dat->groupIndent=DBGetContactSettingByte(NULL,"CLC","GroupIndent",CLCDEFAULT_GROUPINDENT);
 	dat->gammaCorrection=DBGetContactSettingByte(NULL,"CLC","GammaCorrect",CLCDEFAULT_GAMMACORRECT);
 	dat->showIdle=DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE);
-	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
-	ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
+	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);	
+	SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOZORDER | SWP_NOSIZE);	
 	if(!dat->bkChanged) {
 		DBVARIANT dbv;
 		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
