@@ -190,8 +190,8 @@ struct ProtocolData {
 #define DM_RESTOREWINDOWPOS  (WM_USER+43)
 #define DM_FORCESCROLL       (WM_USER+44)
 #define DM_QUERYCLIENTAREA   (WM_USER+45)
-#define DM_SAVEINPUTHISTORY  (WM_USER+46)
 #define DM_QUERYRECENT       (WM_USER+47)
+#define DM_FREEEEEEEEEEEEEE  (WM_USER+46)                   // ** free **
 #define DM_REGISTERHOTKEYS   (WM_USER+48)
 #define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)

@@ -1037,21 +1037,26 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					{
 						int iLame = 0;
 						TCHAR * p3;
+                        TCHAR *stoppedHere;
+                        
 						if(p1[3] != (TCHAR)' ' && p1[3] != (TCHAR)'\\')
 						{
 							_tcsncpy(InsertThis, p1 + 2, 3);
 							iRemoveChars = 4;
+                            InsertThis[2] = 0;
 						}
 						else
 						{
 							_tcsncpy(InsertThis, p1 + 2, 2);
 							iRemoveChars = 3;
-
+                            InsertThis[2] = 0;
 						}
 						// convert string containing char in hex format to int.
 						// i'm sure there is a better way than this lame stuff that came out of me
-                        /*
+                        
                         p3 = InsertThis;
+                        iLame = _tcstol(p3, &stoppedHere, 16);
+                        /*
 						while (*p3)
 						{
 							if(*p3 == (TCHAR)'a')
@@ -1070,8 +1075,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 								iLame += (*p3 - 48) * (int)pow(16, _tcslen(p3) -1);
 							p3++;
 						}
-						_sntprintf(InsertThis, sizeof(InsertThis), _T("%c"), iLame);
                         */
+						_sntprintf(InsertThis, sizeof(InsertThis), _T("%c"), (TCHAR)iLame);
+                        
 					}
 					else
 						iRemoveChars = 2;
@@ -1153,3 +1159,52 @@ void DoTrimMessage(TCHAR *msg)
         msg[i+1] = '\0';
 }
 
+void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+{
+    int iLength = 0, iStreamLength = 0;
+    int oldTop = 0;
+    char *szFromStream = 0;
+
+    if(wParam) {
+        oldTop = dat->iHistoryTop;
+        dat->iHistoryTop = (int)wParam;
+    }
+
+    szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
+
+    iLength = iStreamLength = lstrlenA(szFromStream) + 1;
+
+    if(iLength > 0 && dat->history != NULL) {
+        if((dat->iHistoryTop == dat->iHistorySize) && oldTop == 0) {          // shift the stack down...
+            struct InputHistory ihTemp = dat->history[0];
+            dat->iHistoryTop--;
+            MoveMemory((void *)&dat->history[0], (void *)&dat->history[1], (dat->iHistorySize - 1) * sizeof(struct InputHistory));
+            dat->history[dat->iHistoryTop] = ihTemp;
+        }
+        if(iLength > dat->history[dat->iHistoryTop].lLen) {
+            if(dat->history[dat->iHistoryTop].szText == NULL) {
+                if(iLength < HISTORY_INITIAL_ALLOCSIZE)
+                    iLength = HISTORY_INITIAL_ALLOCSIZE;
+                dat->history[dat->iHistoryTop].szText = (TCHAR *)malloc((iLength + 1) * sizeof(TCHAR));
+            }
+            else
+                dat->history[dat->iHistoryTop].szText = (TCHAR *)realloc(dat->history[dat->iHistoryTop].szText, (iLength + 1) * sizeof(TCHAR));
+            dat->history[dat->iHistoryTop].lLen = iLength;
+        }
+        if(lParam == 0)
+            CopyMemory(dat->history[dat->iHistoryTop].szText, szFromStream, iStreamLength);
+        else
+            CopyMemory(dat->history[dat->iHistoryTop].szText, &dat->sendBuffer[lParam], lParam * sizeof(wchar_t));
+        if(!oldTop) {
+            if(dat->iHistoryTop < dat->iHistorySize) {
+                dat->iHistoryTop++;
+                dat->iHistoryCurrent = dat->iHistoryTop;
+            }
+        }
+    }
+    if(szFromStream)
+        free(szFromStream);
+
+    if(oldTop)
+        dat->iHistoryTop = oldTop;
+}

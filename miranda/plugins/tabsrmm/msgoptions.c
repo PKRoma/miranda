@@ -102,11 +102,15 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
         wsprintfA(str, "Font%d", i);
-        if (DBGetContactSetting(NULL, SRMSGMOD_T, str, &dbv))
-            lstrcpyA(lf->lfFaceName, fontOptionsList[0].szDefFace);
+        if(i = MSGFONTID_SYMBOLS)
+            lstrcpyA(lf->lfFaceName, "Webdings");
         else {
-            lstrcpynA(lf->lfFaceName, dbv.pszVal, sizeof(lf->lfFaceName));
-            DBFreeVariant(&dbv);
+            if (DBGetContactSetting(NULL, SRMSGMOD_T, str, &dbv))
+                lstrcpyA(lf->lfFaceName, fontOptionsList[0].szDefFace);
+            else {
+                lstrcpynA(lf->lfFaceName, dbv.pszVal, sizeof(lf->lfFaceName));
+                DBFreeVariant(&dbv);
+            }
         }
     }
 }
@@ -142,7 +146,11 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_EVENTAPI, DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1));
             CheckDlgButton(hwndDlg, IDC_DELETETEMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0));
             CheckDlgButton(hwndDlg, IDC_FLASHCLIST, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0));
+#if defined(_UNICODE)
             CheckDlgButton(hwndDlg, IDC_SHOWFORMATTING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0));
+#else
+            EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWFORMATTING), FALSE);
+#endif            
             
             CheckDlgButton(hwndDlg, IDC_LIMITAVATARS, dwFlags & MWF_LOG_LIMITAVATARHEIGHT);
 
@@ -329,7 +337,11 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_LONGDATES, dwFlags & MWF_LOG_LONGDATES);
             CheckDlgButton(hwndDlg, IDC_RELATIVEDATES, dwFlags & MWF_LOG_USERELATIVEDATES);
             CheckDlgButton(hwndDlg, IDC_INDENTWITHTABS, dwFlags & MWF_LOG_INDENTWITHTABS);
+#if defined (_UNICODE)
             CheckDlgButton(hwndDlg, IDC_FORMATTING, dwFlags & MWF_LOG_TEXTFORMAT);
+#else
+            EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATTING), FALSE);
+#endif            
             CheckDlgButton(hwndDlg, IDC_SYMBOLS, dwFlags & MWF_LOG_SYMBOLS);
             
             CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1));
@@ -1532,7 +1544,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGDLG), hwnd, DlgProcOptions);
          tci.pszText = Translate("General");
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)0, (LPARAM)&tci);
-         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
 
          /*
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGWINDOWFONTS),hwnd, DlgProcMsgWindowFonts);
@@ -1545,19 +1557,19 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_TABBEDMSG),hwnd,DlgProcTabbedOptions);
          tci.pszText = Translate("Tabs and layout");
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)2, (LPARAM)&tci);
-         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CONTAINERS),hwnd,DlgProcContainerOptions);
          tci.pszText = Translate("Containers");
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)3, (LPARAM)&tci);
-         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGLOG),hwnd,DlgProcLogOptions);
          tci.pszText = Translate("Message log");
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)4, (LPARAM)&tci);
-         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
          // add more tabs here if needed
          // activate the final tab

@@ -45,6 +45,7 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
 char *Message_GetFromStream(HWND hwndDlg, struct MessageWindowData* dat, DWORD dwPassedFlags);
 BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat);
 void DoTrimMessage(TCHAR *msg);
+void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -354,7 +354,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                             if(mwdat->dwFlags & MWF_NEEDHISTORYSAVE) {
                                 mwdat->iHistoryCurrent = mwdat->iHistoryTop;
                                 if(GetWindowTextLengthA(hwnd) > 0)
-                                    SendMessage(GetParent(hwnd), DM_SAVEINPUTHISTORY, (WPARAM)mwdat->iHistorySize, 0);
+                                    SaveInputHistory(GetParent(hwnd), mwdat, (WPARAM)mwdat->iHistorySize, 0);
                                 else
                                     mwdat->history[mwdat->iHistorySize].szText[0] = (TCHAR)'\0';
                             }
@@ -414,8 +414,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                                 WPARAM wp = 0;
                                 if (wParam == VK_UP)
                                     wp = MAKEWPARAM(SB_LINEUP, 0);
-                                else if (wParam == VK_PRIOR)
+                                else if (wParam == VK_PRIOR) {
+                                    _DebugPopup(0, "prior");
                                     wp = MAKEWPARAM(SB_PAGEUP, 0);
+                                }
                                 else if (wParam == VK_NEXT)
                                     wp = MAKEWPARAM(SB_PAGEDOWN, 0);
                                 else if (wParam == VK_HOME)
@@ -814,7 +816,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
+#if defined(_UNICODE)
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0) ? MWF_UI_SHOWFORMAT : 0;
+#endif                
                 dat->hBkgBrush = NULL;
                 dat->hInputBkgBrush = NULL;
                 dat->hDbEventFirst = NULL;
@@ -1264,7 +1268,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
+#if defined(_UNICODE)
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0) ? MWF_UI_SHOWFORMAT : 0;
+#endif            
 
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
@@ -2019,7 +2025,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 SkinPlaySound("SendMsg");
                                 if (dat->hDbEventFirst == NULL)
                                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                                SendMessage(hwndDlg, DM_SAVEINPUTHISTORY, 0, 0);
+                                SaveInputHistory(hwndDlg, dat, 0, 0);
                                 EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 
                                 if(dat->pContainer->hwndActive == hwndDlg)
@@ -2183,13 +2189,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     POINT pt = {0};;
                     
                     dat->dwFlags &= ~MWF_WASBACKGROUNDCREATE;
-                    if(!dat->hThread) {
+                    if(!dat->hThread)
                         ShowPicture(hwndDlg,dat,FALSE,TRUE, TRUE);
-                        SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-                    }
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
-                    SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                    PostMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                 }
                 else {
@@ -2224,9 +2229,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->pic.cy = iMaxHeight + 2*1;
                 dat->pic.cx = (int)newWidth + 2*1;
             }
-            else if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
+            else if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)
                 CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
-            }
             else {
                 dat->pic.cx=bminfo.bmWidth+2*1;
                 dat->pic.cy=bminfo.bmHeight+2*1;
@@ -2474,7 +2478,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         free(streamOut);
                     }
 #else                    
-                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_ACP << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
+                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
                     if(streamOut != NULL) {
                         MessageBoxA(0, streamOut, "too", MB_OK);
                         //decoded = Utf8Decode(streamOut);
@@ -2482,6 +2486,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(converted != NULL) {
                             _tcscpy(converted, streamOut);
                             DoRtfToTags(converted, dat);
+                            MessageBoxA(0, converted, "conv", MB_OK);
                             DoTrimMessage(streamOut);
                             bufSize = lstrlenA(converted) + 1;
                             dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * sizeof(char));
@@ -3178,56 +3183,6 @@ verify:
              * 
              * updated to use RTF streaming and save rich text in utf8 format
              */
-        case DM_SAVEINPUTHISTORY:
-            {
-                int iLength = 0, iStreamLength = 0;
-                int oldTop = 0;
-                char *szFromStream = 0;
-                
-                if(wParam) {
-                    oldTop = dat->iHistoryTop;
-                    dat->iHistoryTop = (int)wParam;
-                }
-
-                szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
-                
-                iLength = iStreamLength = lstrlenA(szFromStream) + 1;
-                
-                if(iLength > 0 && dat->history != NULL) {
-                    if((dat->iHistoryTop == dat->iHistorySize) && oldTop == 0) {          // shift the stack down...
-                        struct InputHistory ihTemp = dat->history[0];
-                        dat->iHistoryTop--;
-                        MoveMemory((void *)&dat->history[0], (void *)&dat->history[1], (dat->iHistorySize - 1) * sizeof(struct InputHistory));
-                        dat->history[dat->iHistoryTop] = ihTemp;
-                    }
-                    if(iLength > dat->history[dat->iHistoryTop].lLen) {
-                        if(dat->history[dat->iHistoryTop].szText == NULL) {
-                            if(iLength < HISTORY_INITIAL_ALLOCSIZE)
-                                iLength = HISTORY_INITIAL_ALLOCSIZE;
-                            dat->history[dat->iHistoryTop].szText = (TCHAR *)malloc((iLength + 1) * sizeof(TCHAR));
-                        }
-                        else
-                            dat->history[dat->iHistoryTop].szText = (TCHAR *)realloc(dat->history[dat->iHistoryTop].szText, (iLength + 1) * sizeof(TCHAR));
-                        dat->history[dat->iHistoryTop].lLen = iLength;
-                    }
-                    if(lParam == 0)
-                        CopyMemory(dat->history[dat->iHistoryTop].szText, szFromStream, iStreamLength);
-                    else
-                        CopyMemory(dat->history[dat->iHistoryTop].szText, &dat->sendBuffer[lParam], lParam * sizeof(wchar_t));
-                    if(!oldTop) {
-                        if(dat->iHistoryTop < dat->iHistorySize) {
-                            dat->iHistoryTop++;
-                            dat->iHistoryCurrent = dat->iHistoryTop;
-                        }
-                    }
-                }
-                if(szFromStream)
-                    free(szFromStream);
-                
-                if(oldTop)
-                    dat->iHistoryTop = oldTop;
-                break;
-            }
         case DM_SAVEPERCONTACT:
             if (!dat->showPic || (dat->showPic && (dat->dwFlags & MWF_LOG_DYNAMICAVATAR))) {
                 if(!myGlobals.m_IgnoreContactSettings) {
