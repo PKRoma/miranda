@@ -91,7 +91,7 @@ void icq_TCPLinkDelete(void *pv)
   icq_TCPLink *p=(icq_TCPLink *)pv;
 
   /* process anything left in the received queue */
-  icq_TCPLinkProcessReceived(p);
+  icq_TCPLinkProcessReceived(p);	   //thing commented this out
 
   /* make sure we notify app that packets in send queue didn't make it */
   (void)icq_ListTraverse(p->send_queue, _icq_TCPLinkDelete, p->icqlink);

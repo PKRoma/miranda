@@ -416,11 +416,11 @@ void icq_RefuseChatRequest(icq_Link *icqlink, DWORD uin,
 void icq_CancelChatRequest(icq_Link *icqlink, DWORD uin, unsigned long sequence)
 {
   icq_TCPLink *pmessage=icq_TCPCheckLink(icqlink, uin, TCP_LINK_MESSAGE);
-  icq_FileSession *psession=icq_FindFileSession(icqlink, uin, sequence);
+  icq_ChatSession *psession=icq_FindChatSession(icqlink, uin, sequence);
   icq_Packet *p;
 
   if (psession)
-    icq_FileSessionClose(psession);
+    icq_ChatSessionClose(psession);
 
   /* create and send the cancel packet */
   p=icq_TCPCreateChatReqCancel(pmessage,
