@@ -60,8 +60,9 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				}
 				SetWindowText(hdlg,szTitle);
 				
-				if (acs->handleType==HANDLE_CONTACT&&acs->szProto==NULL&&acs->handle) {
-					acs->szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)acs->handle,0);
+				if ( acs->handleType==HANDLE_CONTACT && acs->handle ) {
+					if ( acs->szProto == NULL || (acs->szProto != NULL && strcmp(acs->szProto,"") == 0) ) 
+						acs->szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)acs->handle,0);
 				}
 
 				for(groupId=0;groupId<999;groupId++)
