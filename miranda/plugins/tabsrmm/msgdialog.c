@@ -30,9 +30,7 @@ $Id$
 #include "../../include/m_userinfo.h"
 #include "../../include/m_history.h"
 #include "../../include/m_addcontact.h"
-// BEGIN MOD#11: Files beeing dropped ?
 #include "../../include/m_file.h"
-// END MOD#11
 #include "msgs.h"
 #include "m_message.h"
 #include "m_popup.h"

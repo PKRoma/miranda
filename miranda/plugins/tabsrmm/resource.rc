@@ -193,7 +193,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "   "
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "General settings",IDC_STATIC,7,7,138,103
+    GROUPBOX        "General settings",IDC_STATIC,7,7,138,91
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,16,126,10
     CONTROL         "Only show the tab bar when it is needed",IDC_O_NOTABS,
@@ -225,21 +225,21 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,86,111,9
     CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,98,111,10
-    GROUPBOX        "Titlebar options",IDC_STATIC,7,111,138,42
+    GROUPBOX        "Titlebar options",IDC_STATIC,7,100,138,53
     CONTROL         "Show contacts name",IDC_SHOWCONTACTNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,118,125,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,119,125,11
     CONTROL         "Show contacts status",IDC_SHOWSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,128,124,12
-    LTEXT           "only valid if name is also shown",IDC_STATIC,25,139,117,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,129,124,12
+    LTEXT           "only valid if name is also shown",IDC_STATIC,25,140,117,
                     11
     GROUPBOX        "Show container name in titlebar",IDC_STATIC,152,111,122,
                     43
     CONTROL         "Never",IDC_O_TITLENEVER,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,165,118,100,10
+                    WS_GROUP,165,119,100,10
     CONTROL         "As prefix",IDC_O_TITLEFRONT,"Button",BS_AUTORADIOBUTTON,
-                    165,127,100,13
+                    165,128,100,13
     CONTROL         "As suffix",IDC_O_TITLESUFFIX,"Button",
-                    BS_AUTORADIOBUTTON,165,140,99,10
+                    BS_AUTORADIOBUTTON,165,141,99,10
     GROUPBOX        "Container transparency",IDC_STATIC,7,156,267,36
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,168,101,11
@@ -261,6 +261,8 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,114,225,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,169,225,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,225,225,50,14,WS_DISABLED
+    CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,109,121,10
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 227
@@ -873,6 +875,9 @@ BEGIN
 
             MENUITEM "Show Container Name as Suffix", 
                                                     ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX
+
+            MENUITEM SEPARATOR
+            MENUITEM "Use static container Icon",   ID_TITLEBAR_USESTATICCONTAINERICON
 
         END
         MENUITEM "Tabs at Bottom",              ID_VIEW_TABSATBOTTOM

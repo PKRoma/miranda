@@ -32,6 +32,15 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
           
+Version 0.9.9.3 - 2005/01/20
+
+        + new "per container option": "Use static icon" - if checked, the 
+          container will use a static icon instead of showing the contacts
+          status icon. The icon will be obtained from the tabsrmm_icons.dll
+          using ordinal #18.
+          The message icon will still be visible when the container has unread
+          events in one of its tabs.
+
 Version 0.9.9.2 - 2005/01/18
 
         ! fixed - status icon on the container did not appear when the title bar

@@ -40,18 +40,26 @@ char *MsgServiceName(HANDLE hContact)
     return PSS_MESSAGE;
 }
 
+#define MS_INITIAL_DELAY 500
 
 DWORD WINAPI DoMultiSend(LPVOID param)
 {
     int iIndex = (int)param;
     HWND hwndOwner = sendJobs[iIndex].hwndOwner;
-    DWORD dwDelay = 1000;               // start with 1sec delay...
+    DWORD dwDelay = MS_INITIAL_DELAY;               // start with 1sec delay...
+    DWORD dwDelayAdd = 0;
     struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndOwner, GWL_USERDATA);
     int i;
     
     for(i = 0; i < sendJobs[iIndex].sendCount; i++) {
         sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i]), SEND_FLAGS, (LPARAM) sendJobs[iIndex].sendBuffer);
-        Sleep(dwDelay);
+        Sleep((50 * i) + dwDelay + dwDelayAdd);
+        if(i > 2)
+            dwDelayAdd = 500;
+        if(i > 8)
+            dwDelayAdd = 1000;
+        if(i > 14)
+            dwDelayAdd = 1500;
     }
     SendMessage(hwndOwner, DM_MULTISENDTHREADCOMPLETE, 0, 0);
     return 0;

@@ -70,7 +70,7 @@ extern struct ProtocolData *protoIconData;
 extern int g_nrProtos;
 
 extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
-extern HICON g_buttonBarIcons[];
+extern HICON g_buttonBarIcons[], g_iconContainer;
 
 HMENU g_hMenuContext, g_hMenuContainer = 0, g_hMenuEncoding = 0;
 
@@ -396,6 +396,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 case ID_VIEW_TABSATBOTTOM:
                     pContainer->dwFlags ^= CNT_TABSBOTTOM;
+                    break;
+                case ID_TITLEBAR_USESTATICCONTAINERICON:
+                    pContainer->dwFlags ^= CNT_STATICICON;
+                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     break;
                 case ID_TITLEBAR_SHOWNICNAME:
                     pContainer->dwFlags ^= CNT_TITLE_SHOWNAME;
@@ -1085,6 +1089,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_TITLEBAR_DONOTSHOWCONTAINERNAME, MF_BYCOMMAND | (pContainer->dwFlags & (CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX)) ? MF_UNCHECKED : MF_CHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_SHOWCONTAINERNAME, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_PREFIX ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_SUFFIX ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, ID_TITLEBAR_USESTATICCONTAINERICON, MF_BYCOMMAND | pContainer->dwFlags & CNT_STATICICON ? MF_CHECKED : MF_UNCHECKED);
             EnableMenuItem(hMenu, ID_TITLEBAR_SHOWSTATUS, pContainer->dwFlags & CNT_TITLE_SHOWNAME);
             CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | dat->multiple ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
@@ -1428,6 +1433,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
                     break;
                 }
+                
+                if((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && g_iconContainer != 0)
+                    lParam = (LPARAM)g_iconContainer;
+                
                 if(pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
                     lParam = (LPARAM)hIconMsg;
                     //break;          // don't overwrite the new message indicator flag

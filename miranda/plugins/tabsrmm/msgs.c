@@ -50,7 +50,7 @@ static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
 HWND g_hwndHotkeyHandler;
-HICON g_iconIn, g_iconOut, g_iconErr;
+HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer;
 HBITMAP g_hbmUnknown = 0;
 
 // external plugins
@@ -1152,6 +1152,8 @@ void CreateImageList(BOOL bInitial)
             g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
             g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
             g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);
+            g_iconContainer = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTAINER), IMAGE_ICON, 0, 0, 0);
+            
             g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_nrProtos + 1) * 12 + 8, 0);
             CacheMsgLogIcons();
 

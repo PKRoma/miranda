@@ -157,6 +157,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             CheckDlgButton(hwndDlg, IDC_CNTNOSTATUSBAR, dwFlags & CNT_NOSTATUSBAR);
             CheckDlgButton(hwndDlg, IDC_HIDEMENUBAR, dwFlags & CNT_NOMENUBAR);
             CheckDlgButton(hwndDlg, IDC_TABSATBOTTOM, dwFlags & CNT_TABSBOTTOM);
+            CheckDlgButton(hwndDlg, IDC_STATICICON, dwFlags & CNT_STATICICON);
             
             if (LOBYTE(LOWORD(GetVersion())) >= 5 ) {
                 CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
@@ -197,6 +198,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                          (IsDlgButtonChecked(hwndDlg, IDC_CNTNOSTATUSBAR) ? CNT_NOSTATUSBAR : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_HIDEMENUBAR) ? CNT_NOMENUBAR : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_TABSATBOTTOM) ? CNT_TABSBOTTOM : 0) |
+                         (IsDlgButtonChecked(hwndDlg, IDC_STATICICON) ? CNT_STATICICON : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_SHOWCONTACTNAME) ? CNT_TITLE_SHOWNAME : 0);
 
             if (IsDlgButtonChecked(hwndDlg, IDC_O_FLASHDEFAULT))

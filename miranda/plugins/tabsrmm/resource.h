@@ -2,18 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
-
-#define IDC_ONLINE                      40072
-#define IDC_INVISIBLE                   40078
-#define IDC_NA                          40075
-#define IDC_OCCUPIED                    40076
-#define IDC_DND                         40074
-#define IDC_AWAY                        40073
-#define IDC_ONTHEPHONE                  40079
-#define IDC_OUTTOLUNCH                  40080
-#define IDC_FREEFORCHAT                 40077
-
-
 #define IDC_READNEXT                    3
 #define IDC_APPLY                       3
 #define IDR_CONTEXT                     180
@@ -265,6 +253,7 @@
 #define IDC_CHECK4                      1699
 #define IDC_MICROLF                     1699
 #define IDC_EVENTAPI                    1699
+#define IDC_STATICICON                  1699
 #define IDC_CHECK7                      1700
 #define IDC_DELETETEMP                  1700
 #define IDC_CHECK8                      1701
@@ -315,12 +304,21 @@
 #define ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME 40069
 #define ID_LOGMENU_ALWAYSUSEGLOBALSPLITTERPOSITION 40070
 #define ID_LOGMENU_TIMESTAMPSETTINGS    40071
+#define IDC_ONLINE                      40072
+#define IDC_AWAY                        40073
 #define ID_LOGMENU_MESSAGELOGFORMATTING 40073
+#define IDC_DND                         40074
+#define IDC_NA                          40075
 #define ID_TABMENU_CLOSECONTAINER       40075
+#define IDC_OCCUPIED                    40076
 #define ID_Menu40076                    40076
+#define IDC_FREEFORCHAT                 40077
 #define ID_STATUSBARSETTINGS_USEGLOBALDEFAULT 40077
+#define IDC_INVISIBLE                   40078
 #define ID_STATUSBARSETTINGS_SHOWTHESTATUSBAR 40078
+#define IDC_ONTHEPHONE                  40079
 #define ID_STATUSBARSETTINGS_HIDETHESTATUSBAR 40079
+#define IDC_OUTTOLUNCH                  40080
 #define ID_MESSAGELOGFORMATTING_SHOWGRID 40081
 #define ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS 40082
 #define ID_PICMENU_                     40083
@@ -382,13 +380,14 @@
 #define ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS 40169
 #define ID_LOGMENU_MESSAGELOGSETTINGSAREGLOBAL 40170
 #define ID_USER                         40173
+#define ID_TITLEBAR_USESTATICCONTAINERICON 40174
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        311
-#define _APS_NEXT_COMMAND_VALUE         40174
+#define _APS_NEXT_COMMAND_VALUE         40175
 #define _APS_NEXT_CONTROL_VALUE         1702
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

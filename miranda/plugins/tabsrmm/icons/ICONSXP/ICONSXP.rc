@@ -41,7 +41,7 @@ LANGUAGE 7, 1
 #define IDI_SMILEYICON 15
 #define IDI_RESERVED1 16
 #define IDI_RESERVED2 17
-#define IDI_RESERVED3 18
+#define IDI_CONTAINER 18
 #define IDI_RESERVED4 19
 
 #define IDB_UNKNOWNAVATAR 100
@@ -65,7 +65,7 @@ IDI_ICONOUT             ICON                    "..\\..\\res\\angeli-icons\\outg
 IDI_SMILEYICON          ICON                    "..\\..\\res\\smbutton.ico"
 IDI_RESERVED1			ICON					"..\\..\\res\\typing32.ico"
 IDI_RESERVED2			ICON					"..\\..\\res\\delete.ico"
-IDI_RESERVED3			ICON					"..\\..\\res\\empty.ico"
+IDI_CONTAINER			ICON					"..\\..\\res\\Logo.ico"
 IDI_RESERVED4			ICON					"..\\..\\res\\empty.ico"
 
 IDB_UNKNOWNAVATAR		BITMAP					"..\\..\\res\\unknown.bmp"
