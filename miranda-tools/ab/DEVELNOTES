@@ -1,2 +1,1 @@
-Yahoo is not present in this build because it still uses the old istyping API
-so fails to compile.
+Yahoo is back, SRMM is still broken with smileyAdd!

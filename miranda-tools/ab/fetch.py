@@ -116,13 +116,11 @@ except:
 	pass
 os.system("mingw32-make -f Makefile.win clean");	# run clean
 rc = os.system("mingw32-make -f Makefile.win")			# run make (release)
-rc=0
 if rc != 0:
 	print "Problem: Failed to compile Yahoo [Release], status ::", rc
 	sys.exit(rc)
 # compile debug version
 rc = os.system("mingw32-make DEBUG=1 -f Makefile.win")	# run make (debug)
-rc=0
 if rc != 0:
 	print "Problem: Failed to compile Yahoo [Debug], status ::", rc
 	sys.exit(rc)
@@ -207,6 +205,11 @@ fp.write('put zip/' + MNAME + '_debug.zip\n')
 fp.write('put zip/miranda_src.zip\n')
 fp.write('put ChangeLog\n')
 fp.write('put index.php\n')
+fp.write('ln ' + MNAME + '.zip miranda_nightly.zip')
+fp.write('ln ' + MNAME + '_debug.zip miranda_nightly-debug.zip')
+fp.write('ln ChangeLog changelog.txt')
+fp.write('ln ChangeLog changelogproto.txt')
+fp.write('ln ChangeLog changelogplugins.txt')
 fp.write('ls \n')
 fp.close()
 

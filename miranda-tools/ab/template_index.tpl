@@ -83,7 +83,7 @@
 			It is therefore possible to get a build by adding <b>"miranda_yyyymmdd.zip"</b>.
 			</p>
 			
-			<div class="tx">Linking</div>
+			<div class="tx">Remember</div>
 			
 			<p>
 			<b>Do not</b> directly link to an alpha build nightly. 
@@ -91,6 +91,19 @@
 			<b>Do not</b> release to the general public alpha builds, they are not for general public consumption.
 			
 			You may link to this page, but only under the provisio that you make aware that the page contains alpha, unverified versions of Miranda.
+			</p>
+			
+			<div class="tx">Bug Reporting</div>
+			
+			<p>
+			If you find a bug in the build, please make sure you have read the notes below and that it is
+			not a known issue.
+			</p>
+			
+			<p>
+			The SourceForge <a href="http://sourceforge.net/tracker/?group_id=2179&atid=102179">Bug Tracker</a> is the best
+			place to report bugs. Please make sure you include all information to regenerate the error, and include which
+			plugins you were using at the time if required.
 			</p>
 			
 			<div class="tx">Developers' Notes</div>
