@@ -42,7 +42,7 @@ PLUGININFO			pluginInfo=
 {						// Information about the plugin
 						sizeof( PLUGININFO ),
 						"IRC Protocol",
-						PLUGIN_MAKE_VERSION( 0,5,1,0 ),
+						PLUGIN_MAKE_VERSION( 0,5,1,1 ),
 						"IRC protocol for Miranda IM.",
 						"MatriX ' m3x",
 						"i_am_matrix@users.sourceforge.net",
@@ -65,7 +65,6 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0)) return NULL;
 	mirVersion = mirandaVersion;
 	return &pluginInfo;
 }
