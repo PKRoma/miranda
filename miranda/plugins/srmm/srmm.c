@@ -60,23 +60,31 @@ __declspec(dllexport)
 #ifdef UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
 #define SRMMMOD_OLD "SRMsg"
 #define SRMMMOD_SETTINGS_NAM "Settings"
-#define SRMMMOD_SETTINGS_VER 1
-static int old_db_byte_setting_exists(char *s) {
+#define SRMMMOD_SETTINGS_VER 2
+static int old_db_setting_exists(char *s, int type) {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING cgs;
 
 	cgs.szModule=SRMMMOD_OLD;
 	cgs.szSetting=s;
 	cgs.pValue=&dbv;
-    dbv.type=DBVT_BYTE;
+    dbv.type=type;
     if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)NULL,(LPARAM)&cgs))
         return 0;
     return 1;
 }
 static void convert_old_byte_setting(char *s) {
     if (!s) return;
-    if (old_db_byte_setting_exists(s)) {
+    if (old_db_setting_exists(s, DBVT_BYTE)) {
         db_byte_set(NULL, SRMMMOD, s, db_byte_get(NULL, SRMMMOD_OLD, s, 0));
+        db_unset(NULL, SRMMMOD_OLD, s);
+
+    }
+}
+static void convert_old_word_setting(char *s) {
+    if (!s) return;
+    if (old_db_setting_exists(s, DBVT_WORD)) {
+        db_word_set(NULL, SRMMMOD, s, db_word_get(NULL, SRMMMOD_OLD, s, 0));
         db_unset(NULL, SRMMMOD_OLD, s);
 
     }
@@ -111,6 +119,19 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
         convert_old_byte_setting(SRMSGSET_SHOWTYPINGWIN);
         convert_old_byte_setting(SRMSGSET_SHOWTYPINGNOWIN);
         convert_old_byte_setting(SRMSGSET_SHOWTYPINGCLIST);
+        convert_old_word_setting(SRMSGSET_LOADCOUNT);
+        convert_old_word_setting(SRMSGSET_LOADTIME);
+        db_unset(NULL, SRMMMOD_OLD, "splitheight");
+        db_unset(NULL, SRMMMOD_OLD, "splitwidth");
+        db_unset(NULL, SRMMMOD_OLD, "splitx");
+        db_unset(NULL, SRMMMOD_OLD, "splity");
+        db_unset(NULL, SRMMMOD_OLD, "splitsplity");
+        db_unset(NULL, SRMMMOD_OLD, "ShowFiles");
+        db_unset(NULL, SRMMMOD_OLD, "ShowURLs");
+        db_unset(NULL, SRMMMOD_OLD, "Split");
+        db_unset(NULL, SRMMMOD_OLD, "multisplit");
+        db_unset(NULL, SRMMMOD_OLD, "CloseOnReply");
+        db_unset(NULL, SRMMMOD_OLD, "ShowLogIcons");
         db_word_set(NULL, SRMMMOD, SRMMMOD_SETTINGS_NAM, SRMMMOD_SETTINGS_VER);
     }
     #endif

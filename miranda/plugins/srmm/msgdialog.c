@@ -480,7 +480,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->hBkgBrush = NULL;
             dat->hDbEventFirst = NULL;
             dat->sendBuffer = NULL;
-            dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitsplity", (DWORD) - 1);
+            dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splittery", (DWORD) - 1);
             dat->windowWasCascaded = 0;
             dat->nFlash = 0;
             dat->nTypeSecs = 0;
@@ -1411,7 +1411,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     DestroyIcon(dat->hIcons[i]);
             }
             WindowList_Remove(hMessageWindowList, hwndDlg);
-            DBWriteContactSettingDword(NULL, SRMMMOD, "splitsplity", dat->splitterY);
+            DBWriteContactSettingDword(NULL, SRMMMOD, "splittery", dat->splitterY);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
