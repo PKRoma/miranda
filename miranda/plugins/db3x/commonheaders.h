@@ -58,9 +58,3 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
-__inline char * mir_strdup(const char * src)
-{
-	char * p = mir_alloc( strlen(src)+1 );
-	strcpy(p, src);
-	return p;
-}
