@@ -598,7 +598,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( !strcmpi( tFileInfo.mVals[ j ].name, "TypingUser" ))
 				tTypingUser = tFileInfo.mVals[ j ].value;
 
-		if ( tTypingUser != NULL ) {
+		if ( tTypingUser != NULL && info->mChatID[0] == 0 ) {
 			char userNick[ 388 ];
 			strcpy( userNick, tTypingUser );
 
