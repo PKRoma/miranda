@@ -41,7 +41,8 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
         {
             char *szData, *s;
             COPYDATASTRUCT *cds = (COPYDATASTRUCT *) lParam;
-
+            
+            LOG(LOG_DEBUG, "Links: WM_COPYDATA");
             // Check to see if link support is enabled
             // We shouldn't need this check since the class instance shouldn't be running
             // but lets be safe
@@ -54,6 +55,8 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
             s += 4;
             if (!_strnicmp(s, "goim?", 5)) {
                 char *tok, *sn = NULL, *msg = NULL;
+
+                LOG(LOG_DEBUG, "Links: WM_COPYDATA - goim");
                 s += 5;
                 if (!(*s))
                     break;
@@ -77,7 +80,8 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
             if (!_strnicmp(s, "gochat?", 7)) {
                 char *tok, *rm = NULL, *ex;
                 int exchange = 0;
-
+                
+                LOG(LOG_DEBUG, "Links: WM_COPYDATA - gochat");
                 s += 7;
                 if (!(*s))
                     break;
@@ -106,7 +110,8 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
 static void aim_links_regwatcher()
 {
     WNDCLASS wc;
-
+    
+    LOG(LOG_DEBUG, "Links: regwatcher");
     if (hWatcher || aWatcherClass) {
         return;
     }
@@ -121,6 +126,7 @@ static void aim_links_regwatcher()
 
 static void aim_links_unregwatcher()
 {
+    LOG(LOG_DEBUG, "Links: unregwatcher");
     if (hWatcher) {
         DestroyWindow(hWatcher);
         hWatcher = NULL;
@@ -139,7 +145,8 @@ static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
     if (GetClassName(hwnd, szBuf, sizeof(szBuf))) {
         if (!strcmp(szBuf, AIMWATCHERCLASS)) {
             COPYDATASTRUCT cds;
-
+            
+            LOG(LOG_DEBUG, "Links: enumthreadwindowsproc - found AIMWATCHERCLASS");
             cds.dwData = 1;
             cds.cbData = strlen((char *) lParam) + 1;
             cds.lpData = (char *) lParam;
@@ -152,9 +159,11 @@ static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
 static BOOL CALLBACK aim_linsk_enumwindowsproc(HWND hwnd, LPARAM lParam)
 {
     char szBuf[32];
-
+    
+    LOG(LOG_DEBUG, "Links: enumwindowsproc");
     if (GetClassName(hwnd, szBuf, sizeof(szBuf))) {
         if (!strcmp(szBuf, MIRANDACLASS)) {
+            LOG(LOG_DEBUG, "Links: enumwindowsproc - found Miranda window");
             EnumThreadWindows(GetWindowThreadProcessId(hwnd, NULL), aim_linsk_enumthreadwindowsproc, lParam);
         }
     }
@@ -165,30 +174,39 @@ static void aim_links_register()
 {
     HKEY hkey;
     char szBuf[MAX_PATH], szExe[MAX_PATH * 2], szShort[MAX_PATH];
-
+    
+    LOG(LOG_DEBUG, "Links: register");
     if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command", &hkey) == ERROR_SUCCESS) {
         GetModuleFileName(hInstance, szBuf, sizeof(szBuf));
         GetShortPathName(szBuf, szShort, sizeof(szShort));
         // MSVC exports differently than gcc/mingw
 #ifdef _MSC_VER
         _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,_aim_links_exec@16 %%1", szShort);
+        LOG(LOG_DEBUG, "Links: registering (%s)", szExe);
 #else
         _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
+        LOG(LOG_DEBUG, "Links: registering (%s)", szExe);
 #endif
         RegSetValue(hkey, NULL, REG_SZ, szExe, strlen(szExe));
         RegCloseKey(hkey);
+    }
+    else {
+        LOG(LOG_DEBUG, "Links: unregister - unable to create registry key)");
     }
 }
 
 void aim_links_unregister()
 {
+    LOG(LOG_DEBUG, "Links: unregister)");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim");
 }
 
 void aim_links_init()
 {
+    LOG(LOG_DEBUG, "Links: init)");
     if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AL, AIM_KEY_AL_DEF)) {
+        LOG(LOG_DEBUG, "Links: init - links support is on)");
         aim_links_register();
         aim_links_regwatcher();
     }
@@ -196,6 +214,7 @@ void aim_links_init()
 
 void aim_links_destroy()
 {
+    LOG(LOG_DEBUG, "Links: destroy)");
     aim_links_unregwatcher();
 }
 
