@@ -71,9 +71,9 @@ static int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Starts a file sending thread
+// MSN_GetMyHostAsString - retrieves a host address as a string
 
-int sttGetMyHostAsString( char* parBuf, int parBufSize )
+int __stdcall MSN_GetMyHostAsString( char* parBuf, int parBufSize )
 {
 	IN_ADDR  in;
 	hostent* myhost;
@@ -108,7 +108,10 @@ int sttGetMyHostAsString( char* parBuf, int parBufSize )
 	return 0;
 }
 
-static void sttConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP )
+/////////////////////////////////////////////////////////////////////////////////////////
+// Starts a file sending thread
+
+void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP )
 {
 	MSN_DebugLog( "File transfer connection accepted" );
 
@@ -147,11 +150,11 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 	NETLIBBIND nlb = {0};
 
 	char ipaddr[256];
-	if ( sttGetMyHostAsString( ipaddr, sizeof ipaddr ))
+	if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
 		bHasError = true;
 	else {
 		nlb.cbSize = sizeof NETLIBBIND;
-		nlb.pfnNewConnection = sttConnectionProc;
+		nlb.pfnNewConnection = MSN_ConnectionProc;
 		nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
 		if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb)) == NULL ) {
 			MSN_DebugLog( "Unable to bind the port for incoming transfers" );
@@ -374,7 +377,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 	if ( Appname == NULL && SessionID != NULL && SessionProtocol != NULL ) { // netmeeting send 1
 		if ( !strcmpi( Invcommand,"ACCEPT" )) {
 			char ipaddr[256];
-			sttGetMyHostAsString( ipaddr, sizeof( ipaddr ));
+			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
 
 			ShellExecute(NULL, "open", "conf.exe", NULL, NULL, SW_SHOW);
 			Sleep(3000);
@@ -402,7 +405,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 
 		if ( MessageBox( NULL, command, "MSN Protocol", MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
 			char ipaddr[256];
-			sttGetMyHostAsString( ipaddr, sizeof( ipaddr ));
+			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
 
 			nBytes = _snprintf( command, sizeof( command ),
 				"MIME-Version: 1.0\r\n"
@@ -1078,6 +1081,11 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
+			if ( !stricmp( params, "OTH" )) {
+				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
+				MSN_DebugLog( "You have been disconnected from the MSN server because you logged on from another location using the same MSN passport." );		
+			}
+
 			return 1;
 
 		case ' PRP':	//********* PRP: user property

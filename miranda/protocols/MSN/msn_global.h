@@ -147,6 +147,9 @@ void		__stdcall	MSN_AddAuthRequest( HANDLE hContact, const char *email, const ch
 int		__stdcall	MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
 void		__stdcall	MSN_DebugLog( const char* fmt, ... );
 void		__stdcall	MSN_HandleFromContact( unsigned long uin, char* uhandle );
+int		__stdcall	MSN_GetMyHostAsString( char* parBuf, int parBufSize );
+
+void		__cdecl		MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP );
 void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
