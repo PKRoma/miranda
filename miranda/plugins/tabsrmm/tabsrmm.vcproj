@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252" ?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
@@ -92,8 +92,9 @@
 				FavorSizeOrSpeed="0"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SRMM_EXPORTS;UNICODE"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
+				EnableFunctionLevelLinking="FALSE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				PrecompiledHeaderFile=".\Release_Unicode/srmm.pch"
@@ -157,6 +158,7 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SRMM_EXPORTS"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
@@ -465,7 +467,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="msgdlgutils.c"/>
+				RelativePath="msgdlgutils.c">
+			</File>
 			<File
 				RelativePath="msglog.c">
 				<FileConfiguration
@@ -614,7 +617,8 @@
 				RelativePath=".\selectcontainer.c">
 			</File>
 			<File
-				RelativePath="sendqueue.c"/>
+				RelativePath="sendqueue.c">
+			</File>
 			<File
 				RelativePath="srmm.c">
 				<FileConfiguration
@@ -677,7 +681,8 @@
 				RelativePath="m_message.h">
 			</File>
 			<File
-				RelativePath="m_metacontacts.h"/>
+				RelativePath="m_metacontacts.h">
+			</File>
 			<File
 				RelativePath=".\m_popup.h">
 			</File>
@@ -685,7 +690,8 @@
 				RelativePath="m_tabsrmm.h">
 			</File>
 			<File
-				RelativePath="msgdlgutils.h"/>
+				RelativePath="msgdlgutils.h">
+			</File>
 			<File
 				RelativePath="msgs.h">
 			</File>
@@ -693,7 +699,8 @@
 				RelativePath="resource.h">
 			</File>
 			<File
-				RelativePath="sendqueue.h"/>
+				RelativePath="sendqueue.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -726,25 +733,25 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur">
 			</File>
 			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+			</File>
+			<File
 				RelativePath=".\res\error.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico">
+				RelativePath="..\..\Miranda-IM\res\history.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico">
+				RelativePath=".\res\angeli-icons\History.ico">
 			</File>
 			<File
 				RelativePath="res\History32.ico">
@@ -828,10 +835,10 @@
 				RelativePath="resource.rc">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">
@@ -868,7 +875,8 @@
 				RelativePath="MAKEFILE.W32.ANSI">
 			</File>
 			<File
-				RelativePath="MetaContacts.TXT"/>
+				RelativePath="MetaContacts.TXT">
+			</File>
 			<File
 				RelativePath="POPUPS.TXT">
 			</File>
@@ -879,7 +887,8 @@
 				RelativePath=".\readme.txt">
 			</File>
 			<File
-				RelativePath="langpacks\template"/>
+				RelativePath="langpacks\template">
+			</File>
 			<File
 				RelativePath="translation.txt">
 			</File>

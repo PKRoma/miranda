@@ -196,8 +196,8 @@ BEGIN
     GROUPBOX        "General settings",IDC_STATIC,7,7,138,91
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,16,126,10
-    CONTROL         "Only show the tab bar when it is needed",IDC_O_NOTABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,26,129,10
+    CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,26,129,10
     CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,36,124,10
     CONTROL         "Container stays on top",IDC_O_STICKY,"Button",

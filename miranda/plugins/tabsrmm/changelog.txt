@@ -32,7 +32,7 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
-Version 0.9.9.4 - 2005/01/20
+Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE
           snapping windows, its done. Why? Because this great plugin makes it so easy - 

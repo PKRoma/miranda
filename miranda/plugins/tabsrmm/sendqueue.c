@@ -175,6 +175,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         sendJobs[iEntry].hOwner = dat->hContact;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
         sendJobs[iEntry].hwndOwner = hwndDlg;
+        sendJobs[iEntry].iAcksNeeded = sendJobs[iEntry].sendCount;
         dat->hMultiSendThread = CreateThread(NULL, 0, DoMultiSend, (LPVOID)iEntry, 0, &dwThreadId);
     } else {
         if (dat->hContact == NULL)
@@ -186,6 +187,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         sendJobs[iEntry].hOwner = dat->hContact;
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
+        sendJobs[iEntry].iAcksNeeded = 1;
         //_DebugPopup(dat->hContact, "added to queue with sendid: %d as index: %d", sendJobs[iEntry].hSendId[0], iEntry);
     }
     dat->iOpenJobs++;

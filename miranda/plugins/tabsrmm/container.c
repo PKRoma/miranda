@@ -88,7 +88,7 @@ int GetProtoIconFromList(const char *szProto, int iStatus);
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 HMENU BuildContainerMenu();
 void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
-void FlashContainer(struct ContainerWindowData *pContainer, int iMode);
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
@@ -803,7 +803,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         item.lParam = 0;
                         item.mask = TCIF_PARAM;
                         if (TabCtrl_GetItem(hwndTab, iItem, &item)) {
-                            struct MessageWindowData *dat;
                             ShowWindow((HWND)item.lParam, SW_SHOW);
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
@@ -993,7 +992,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_MOUSEACTIVATE: {
                 TCITEM item;
 
-                FlashContainer(pContainer, 0);
+                FlashContainer(pContainer, 0, 0);
+                pContainer->dwFlashingStarted = 0;
+                
                 if(pContainer->dwFlags & CNT_DEFERREDTABSELECT) {
                     NMHDR nmhdr;
 
@@ -2231,7 +2232,7 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
  * iMode == 0: turn off flashing
  */
  
-void FlashContainer(struct ContainerWindowData *pContainer, int iMode)
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount)
 {
     FLASHWINFO fwi;
     
@@ -2244,15 +2245,45 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode)
     if(iMode) {
         fwi.dwFlags = FLASHW_ALL;
         if(pContainer->dwFlags & CNT_FLASHALWAYS)
-            fwi.dwFlags |= FLASHW_TIMERNOFG;
+            fwi.dwFlags |= FLASHW_TIMER;
         else
-            fwi.uCount = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nrflash", 4);
+            fwi.uCount = (iCount == 0) ? DBGetContactSettingByte(NULL, SRMSGMOD_T, "nrflash", 4) : iCount;
+        fwi.dwTimeout = DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000);
+        
     }
     else
         fwi.dwFlags = FLASHW_STOP;
 
-    fwi.dwTimeout = DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000);
     fwi.hwnd = pContainer->hwnd;
-
+    pContainer->dwFlashingStarted = GetTickCount();
     FlashWindowEx(&fwi);
 }
+
+void ReflashContainer(struct ContainerWindowData *pContainer)
+{
+    DWORD dwStartTime = pContainer->dwFlashingStarted;
+    
+    if(GetForegroundWindow() == pContainer->hwnd || GetActiveWindow() == pContainer->hwnd)        // dont care about active windows
+        return;
+
+    if(pContainer->dwFlags & CNT_NOFLASH || pContainer->dwFlashingStarted == 0)
+        return;                                                                                 // dont care about containers which should never flash
+    
+    if(pContainer->dwFlags & CNT_FLASHALWAYS)
+        FlashContainer(pContainer, 1, 0);
+    else {
+        // recalc the remaining flashes
+        DWORD dwInterval = DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000);
+        int iFlashesElapsed = (GetTickCount() - dwStartTime) / dwInterval;
+        DWORD dwFlashesDesired = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nrflash", 4);
+        if(iFlashesElapsed < (int)dwFlashesDesired)
+            FlashContainer(pContainer, 1, dwFlashesDesired - iFlashesElapsed);
+        else {
+            BOOL isFlashed = FlashWindow(pContainer->hwnd, TRUE);
+            if(!isFlashed)
+                FlashWindow(pContainer->hwnd, TRUE);
+        }
+    }
+    pContainer->dwFlashingStarted = dwStartTime;
+}
+

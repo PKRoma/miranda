@@ -78,6 +78,7 @@ struct ContainerWindowData {
 #endif
     DWORD dwLastActivity;
     int hIcon;                // current window icon stick indicator
+    DWORD dwFlashingStarted;
 };
 
 #define STICK_ICON_MSG 10

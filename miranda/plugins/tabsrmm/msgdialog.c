@@ -84,7 +84,8 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
 static void FlashTab(HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, int flashImage, int origImage);
-void FlashContainer(struct ContainerWindowData *pContainer, int iMode);
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
+void ReflashContainer(struct ContainerWindowData *pContainer);
 
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList;
@@ -844,6 +845,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->history[i].lLen = 0;
                     }
                 }
+                dat->iCurrentQueueError = -1;
                 dat->history[dat->iHistorySize].szText = (TCHAR *)malloc((HISTORY_INITIAL_ALLOCSIZE + 1) * sizeof(TCHAR));
                 dat->history[dat->iHistorySize].lLen = HISTORY_INITIAL_ALLOCSIZE;
 
@@ -1979,16 +1981,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      * flash window if it is not focused
                      */
                     if ((GetActiveWindow() != dat->pContainer->hwnd || GetForegroundWindow() != dat->pContainer->hwnd) && !(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
-                        if (!(dat->pContainer->dwFlags & CNT_NOFLASH)) {
-                            FlashContainer(dat->pContainer, 1);
-                            /*
-                            if (dat->pContainer->isFlashing)
-                                dat->pContainer->nFlash = 0;
-                            else {
-                                SetTimer(dat->pContainer->hwnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
-                                dat->pContainer->isFlashing = TRUE;
-                            } */
-                        }
+                        if (!(dat->pContainer->dwFlags & CNT_NOFLASH))
+                            FlashContainer(dat->pContainer, 1, 0);
                         // XXX set the message icon in the container
                         SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                         dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
@@ -2023,16 +2017,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if (GetForegroundWindow() == dat->pContainer->hwnd)
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                     } else {
-                        BOOL isFlashed = FALSE;
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
                         SendMessage(dat->pContainer->hwnd, DM_UPDATEWINICON, 0, 0);
                         HandleIconFeedback(hwndDlg, dat, -1);
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, 0, 0);
-                        if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin) {
-                            isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE);
-                            if(isFlashed);
-                            FlashWindow(dat->pContainer->hwnd, TRUE);       // SetWindowText may clear the flashing state
-                        }
+                        if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
+                            ReflashContainer(dat->pContainer);
                         dat->showTyping = 0;
                     }
                 } else {
@@ -2047,14 +2037,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) g_buttonBarIcons[5]);
                         }
                         if(IsIconic(dat->pContainer->hwnd) || GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd) {
-                            BOOL isFlashed = FALSE;
                             SetWindowTextA(dat->pContainer->hwnd, szBuf);
                             dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
-                            if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin) {
-                                isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE);
-                                if(isFlashed);
-                                FlashWindow(dat->pContainer->hwnd, TRUE);       // SetWindowText may clear the flashing state
-                            }
+                            if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
+                                ReflashContainer(dat->pContainer);
                         }
                         if (dat->pContainer->hwndActive != hwndDlg) {
                             if(dat->mayFlashTab)
@@ -2081,6 +2067,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 case MSGERROR_SENDLATER:
                 {
                     int iNextFailed;
+                    
+                    if(!(dat->dwFlags & MWF_ERRORSTATE))
+                        break;
                     
                     if(wParam == MSGERROR_SENDLATER) {
                         if(ServiceExists(BUDDYPOUNCE_SERVICENAME)) {
@@ -2145,6 +2134,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     {
                         int i, resent = 0;;
 
+                        if(!(dat->dwFlags & MWF_ERRORSTATE))
+                            break;
+                        
                         if(dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < NR_SENDJOBS) {
                             for (i = 0; i < sendJobs[dat->iCurrentQueueError].sendCount; i++) {
                                 if (sendJobs[dat->iCurrentQueueError].hSendId[i] == NULL && sendJobs[dat->iCurrentQueueError].hContact[i] == NULL)
@@ -3195,6 +3187,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(iFound == NR_SENDJOBS)               // no matching send info found in the queue
                     break;
 
+                if(sendJobs[iFound].iStatus == SQ_ERROR) {       // received ack for a job which is already in error state...
+                    if(dat->iCurrentQueueError == iFound) {
+                        dat->iCurrentQueueError = -1;
+                        ShowErrorControls(hwndDlg, dat, FALSE);
+                    }
+                }
+               
                 switch (ack->result) {
                     case ACKRESULT_FAILED: {
                         //_DebugPopup(dat->hContact, "(%d) ACK_FAILED with: %d, %d - index: %d", dat->hContact, ack->hContact, ack->hProcess, iFound);
@@ -3203,6 +3202,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
                             _snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", contactName);
                             LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
+                            sendJobs[iFound].iAcksNeeded--;
                             goto verify;
                         }
                         else {
@@ -3242,10 +3242,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 verify:                
                 sendJobs[iFound].hSendId[i] = NULL;
                 sendJobs[iFound].hContact[i] = NULL;
-                for (i = 0; i < sendJobs[iFound].sendCount; i++)
+                sendJobs[iFound].iAcksNeeded--;
+                
+                /*
+                 for (i = 0; i < sendJobs[iFound].sendCount; i++)
                     if (sendJobs[iFound].hContact[i] || sendJobs[iFound].hSendId[i])
-                        break;
-                if (i == sendJobs[iFound].sendCount) {              //all messages sent
+                        break; */
+                //if (i == sendJobs[iFound].sendCount) {              //all messages sent
+                if(sendJobs[iFound].iAcksNeeded == 0) {               // everything sent
                     if(sendJobs[iFound].sendCount > 1)
                         EnableSending(hwndDlg, dat, TRUE);
                     ClearSendJob(iFound);
@@ -3254,7 +3258,7 @@ verify:
                     iSendJobCurrent--;
                 }
                 CheckSendQueue(hwndDlg, dat);
-                if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0)
+                if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0 && !(dat->dwFlags & MWF_ERRORSTATE))
                     HandleQueueError(hwndDlg, dat, iNextFailed);
                 break;
             }

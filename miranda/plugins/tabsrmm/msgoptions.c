@@ -694,7 +694,6 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
         {
             DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
             DBVARIANT dbv;
-            BOOL translated;
             
             TranslateDialogDefault(hwndDlg);
 
