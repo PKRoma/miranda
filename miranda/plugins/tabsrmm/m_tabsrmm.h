@@ -212,16 +212,6 @@ struct TABSRMM_SessionInfo {
     struct MessageWindowData *dat;      // the session info
 };
 
-// these events are fired on creating/closing/changing tabs
-// ALL use the following parameters
-
-// wParam = hContact
-// lParam = struct TABSRMM_SessionInfo *si
-
-#define ME_MSG_SESSIONCREATED "MSG/Session/Created"
-#define ME_MSG_SESSIONCLOSING "MSG/Session/Closing"
-#define ME_MSG_SESSIONCHANGED "MSG/Session/Changed"
-
 #define ME_MSG_BEFORESEND "MSG/Session/Beforesend"      // fired, when a message is about to be sent, but BEFORE the contents of the 
                                                         // input area is examined. A plugin can therefore use this event to modify
                                                         // the contents of the input box before it is actually sent.

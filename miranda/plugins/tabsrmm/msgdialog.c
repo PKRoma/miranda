@@ -98,7 +98,7 @@ extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList, hMessageSendList;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst, g_hIconDLL;
-extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
+extern HANDLE g_hEvent_MsgWin;
 
 void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 
@@ -148,7 +148,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
 static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
-void TABSRMM_FireEvent(HANDLE hEvent, HWND hwndDlg, struct MessageWindowData *dat);
+void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -1473,7 +1473,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
-                TABSRMM_FireEvent(g_hEvent_Sessioncreated, hwndDlg, dat);
+                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
                 return TRUE;
             }
         case DM_TYPING:
@@ -2737,7 +2737,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
                         break;
 
-                    TABSRMM_FireEvent(g_hEvent_Beforesend, hwndDlg, dat);
+                    //TABSRMM_FireEvent(g_hEvent_Beforesend, hwndDlg, dat);
                     
                     bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
                     dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
@@ -3902,7 +3902,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case WM_DESTROY:
-            TABSRMM_FireEvent(g_hEvent_Sessionclosed, hwndDlg, dat);
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 // BEGIN MOD#26: Autosave notsent message (by Corsario & bi0)
 			if(dat->hContact) {
 				TCHAR *AutosaveMessage;
@@ -3988,6 +3988,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
+
+            // remove temporary contacts...
+            
+            if (dat->hContact && DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0)) {
+                if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
+                    CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
+                }
+            }
+            
 // XXX tab support
             {
                 HFONT hFont;

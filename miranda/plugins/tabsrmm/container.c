@@ -81,7 +81,7 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int GetProtoIconFromList(const char *szProto, int iStatus);
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 HMENU BuildContainerMenu();
-void TABSRMM_FireEvent(HANDLE hEvent, HWND hwndDlg, struct MessageWindowData *dat);
+void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type);
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
@@ -808,7 +808,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             SetFocus(pContainer->hwndActive);
                             dat = GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                             if(dat)
-                                TABSRMM_FireEvent(g_hEvent_Sessionchanged, pContainer->hwndActive, dat);
+                                TABSRMM_FireEvent(dat->hContact, pContainer->hwndActive, MSG_WINDOW_EVT_CUSTOM);
                         }
                         break;
                         /*

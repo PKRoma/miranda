@@ -66,7 +66,7 @@ int g_nrProtos = 0;
 HIMAGELIST g_hImageList = 0;
 int g_IconMsgEvent = 0, g_IconTypingEvent = 0, g_IconError = 0, g_IconEmpty = 0, g_IconFileEvent = 0, g_IconUrlEvent  = 0, g_IconSend = 0;
 
-HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
+HANDLE g_hEvent_MsgWin;
 
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer);
@@ -1301,27 +1301,27 @@ void InitAPI()
      * the event API
      */
 
-    g_hEvent_Sessioncreated = CreateHookableEvent(ME_MSG_SESSIONCREATED);
-    g_hEvent_Sessionclosed = CreateHookableEvent(ME_MSG_SESSIONCLOSING);
-    g_hEvent_Sessionchanged = CreateHookableEvent(ME_MSG_SESSIONCHANGED);
-    g_hEvent_Beforesend = CreateHookableEvent(ME_MSG_BEFORESEND);
-    
+    g_hEvent_MsgWin = CreateHookableEvent(ME_MSG_WINDOWEVENT);
+
     if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
         g_isMetaContactsAvail = TRUE;
 }
 
-void TABSRMM_FireEvent(HANDLE hEvent, HWND hwndDlg, struct MessageWindowData *dat)
-{
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1)) {
-        struct TABSRMM_SessionInfo si;
-        
-        si.wp.length = sizeof(si.wp);
-        GetWindowPlacement(dat->pContainer->hwnd, &si.wp);
-        
-        si.hwnd = hwndDlg;
-        si.hwndContainer = dat->pContainer->hwnd;
-        si.dat = dat;
-        si.hwndInput = GetDlgItem(hwndDlg, IDC_MESSAGE);
-        NotifyEventHooks(hEvent, (WPARAM)dat->hContact, (LPARAM)&si);
-    }
+void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
+    MessageWindowEventData mwe = { 0 };
+
+    if (hContact == NULL || hwnd == NULL) return;
+    if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 0))
+        return;
+    mwe.cbSize = sizeof(mwe);
+    mwe.hContact = hContact;
+    mwe.hwndWindow = hwnd;
+#if defined(_UNICODE)
+    mwe.szModule = "tabSRMsgW";
+#else
+    mwe.szModule = "tabSRMsg";
+#endif    
+    mwe.uType = type;
+    NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe);
 }
+

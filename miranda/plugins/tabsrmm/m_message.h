@@ -40,3 +40,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //lParam=(LPARAM)(char*)szText
 //returns 0 on success or nonzero on failure
 #define MS_MSG_FORWARDMESSAGE  "SRMsg/ForwardMessage"
+
+#define ME_MSG_WINDOWEVENT "MessageAPI/WindowEvent"
+//wParam=(WPARAM)(MessageWindowEventData*)hWindowEvent;
+//lParam=0
+//Event types
+#define MSG_WINDOW_EVT_OPENING 1 //window is about to be opened (uType is not used)
+#define MSG_WINDOW_EVT_OPEN    2 //window has been opened (uType is not used)
+#define MSG_WINDOW_EVT_CLOSING 3 //window is about to be closed (uType is not used)
+#define MSG_WINDOW_EVT_CLOSE   4 //window has been closed (uType is not used)
+#define MSG_WINDOW_EVT_CUSTOM  5 //custom event for message plugins to use (uType may be used)
+
+typedef struct {
+   int cbSize;
+   HANDLE hContact;
+   HWND hwndWindow; // top level window for the contact
+   const char* szModule; // used to get plugin type (which means you could use local if needed)
+   unsigned int uType; // see event types above
+   unsigned int uFlags; // might be needed for some event types
+   void *local; // used to store pointer to custom data
+} MessageWindowEventData;
+

@@ -266,6 +266,8 @@ BEGIN
     CONTROL         "Enable event API (support for third party plugins)",
                     IDC_EVENTAPI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,212,
                     288,10
+    CONTROL         "Delete temporary contacts on close",IDC_DELETETEMP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,158,150,10
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229

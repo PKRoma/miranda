@@ -128,6 +128,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_DIVIDERSUSEPOPUPCONFIG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0));
             CheckDlgButton(hwndDlg, IDC_SENDONSHIFTENTER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1));
             CheckDlgButton(hwndDlg, IDC_EVENTAPI, DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1));
+            CheckDlgButton(hwndDlg, IDC_DELETETEMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0));
             
             CheckDlgButton(hwndDlg, IDC_LIMITAVATARS, dwFlags & MWF_LOG_LIMITAVATARHEIGHT);
 
@@ -215,6 +216,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dynamicavatarsize", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AVADYNAMIC));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONSHIFTENTER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "eventapi", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EVENTAPI));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELETETEMP));
                             
                             if(IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARS))
                                 dwFlags |= MWF_LOG_LIMITAVATARHEIGHT;

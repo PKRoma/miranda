@@ -65,6 +65,10 @@ Version 0.0.9.4 - 2004/12/02
         * added a new icon pack to the archive which you can find in the contrib directory.
           This iconpack was contributed by Faith Healer. Thanks for sharing :)
           
+        + added the new event api also found in SRMM to support external plugins.
+          
+        + added new option to delete temporary contacts when closing a session.
+          
 Version 0.0.9.3 - 2004/11/14
 
         * unified the unsent and charcounter displays on the statusbar. The new format
