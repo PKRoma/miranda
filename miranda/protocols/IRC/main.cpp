@@ -32,7 +32,6 @@ CRITICAL_SECTION	cs;
 PLUGINLINK *		pluginLink;
 HINSTANCE			g_hInstance = NULL;	
 PREFERENCES			* prefs;	
-static				HANDLE hMainThread;
 long				lWrongVersion;
 
 //static HMODULE	m_libeay32;
@@ -43,7 +42,7 @@ PLUGININFO			pluginInfo=
 {						// Information about the plugin
 						sizeof( PLUGININFO ),
 						"IRC Protocol",
-						PLUGIN_MAKE_VERSION( 0,5,0,0 ),
+						PLUGIN_MAKE_VERSION( 0,5,0,1 ),
 						"IRC protocol for Miranda IM.",
 						"MatriX ' m3x",
 						"i_am_matrix@users.sourceforge.net",
@@ -66,7 +65,7 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if( mirandaVersion<PLUGIN_MAKE_VERSION( 0, 3, 4 ,0 ) ) 
+	if( mirandaVersion<PLUGIN_MAKE_VERSION( 0, 3, 4 ,3 ) ) 
 	{
 		if(IDYES == MessageBoxA(0,Translate("The IRC protocol could not be loaded as it is dependant on features in newer versions of Miranda IM.\n\nDo you want to download an update of Miranda IM now?."),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
@@ -126,11 +125,30 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	_CrtSetDbgFlag(flag); // Set flag to the new value
 	#endif
 
+	pluginLink=link;
 
-	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hMainThread,THREAD_SET_CONTEXT,FALSE,0);
+	if (ServiceExists(MS_SYSTEM_GETBUILDSTRING))
+	{
+// should be reenabled later when this service works
+/*
+		extern long lWrongVersion;
+		char szTemp[40];
+		CallService(MS_SYSTEM_GETBUILDSTRING, 39, (LPARAM)szTemp);
+		char * stuff = strdup (szTemp);
+		MessageBox(NULL, szTemp, "version", 0);
+		long date = atoi(szTemp);
+		if (date < lWrongVersion * 1000000)
+*/
+	}
+	else
+	{
+
+		if(IDYES == MessageBoxA(0,Translate("The IRC protocol requires features found in newer versions of Miranda IM.\n\nDo you want to download it from the Miranda IM web site now?"),Translate("IRC Error"),MB_YESNO|MB_ICONERROR))
+			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/");
+		return 1;
+	}
 
 	InitializeCriticalSection(&cs);
-	pluginLink=link;
 
 #ifdef IRC_SSL
 	m_ssleay32 = LoadLibrary("ssleay32.dll");

@@ -1,6 +1,6 @@
 ;----------------------------oOo----------------------------
 ;
-;               IRC Protocol Plugin v 0.5.0.0
+;               IRC Protocol Plugin v 0.5.0.1
 ;
 ;  Implementation of IRC RFC-1459, RFC-2812 for Miranda IM
 ;

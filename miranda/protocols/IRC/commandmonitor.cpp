@@ -245,18 +245,28 @@ static int AddOutgoingMessageToDB(HANDLE hContact, char *msg)
  
 }
 
-static void __cdecl ResolveIPThread(LPVOID di)
+void __cdecl ResolveIPThread(LPVOID di)
 {
 	EnterCriticalSection(&m_resolve);
-	IN_ADDR in;
 
-	struct hostent* myhost = gethostbyname( (char*)di );
+	IPRESOLVE * ipr = (IPRESOLVE *) di;
 
-	if ( myhost != NULL ) 
+	if ( ipr != NULL && (ipr->iType == IP_AUTO && lstrlen(prefs->MyHost) == 0 || ipr->iType == IP_MANUAL) ) 
 	{
-		memcpy( &in, myhost->h_addr, 4 );
-		_snprintf( prefs->MyHost, sizeof( prefs->MyHost ), "%s", inet_ntoa( in ));
+		IN_ADDR in;
+
+		struct hostent* myhost = gethostbyname( ipr->pszAdr );
+
+		if( myhost)
+		{
+			memcpy( &in, myhost->h_addr, 4 );
+			if(ipr->iType == IP_AUTO)
+				_snprintf( prefs->MyHost, sizeof( prefs->MyHost ), "%s", inet_ntoa( in ));
+			else
+				_snprintf( prefs->MySpecifiedHostIP, sizeof( prefs->MySpecifiedHostIP ), "%s", inet_ntoa( in ));
+		}
 	}
+	delete ipr;
 	LeaveCriticalSection(&m_resolve);
 
 }
@@ -331,7 +341,7 @@ CMyMonitor::~CMyMonitor()
 
 bool CMyMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
 {
-		CIrcDefaultMonitor::OnIrc_WELCOME(pmsg);
+	CIrcDefaultMonitor::OnIrc_WELCOME(pmsg);
 
 	if (pmsg->m_bIncoming && pmsg->parameters.size() > 1)
 	{
@@ -347,7 +357,10 @@ bool CMyMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
 				if(p1)
 				{
 					p1++;
-					forkthread(ResolveIPThread, NULL, p1);
+					IPRESOLVE * ipr = new IPRESOLVE;
+					ipr->iType = IP_AUTO;
+					ipr->pszAdr = p1;
+					forkthread(ResolveIPThread, NULL, ipr);
 				}
 
 			}
@@ -2157,12 +2170,12 @@ bool CMyMonitor::OnIrc_WHO_REPLY(const CIrcMessage* pmsg)
 		WhoReply += pmsg->parameters[5] + (String)" " +pmsg->parameters[2] + (String)" " + pmsg->parameters[3] + (String)" " + pmsg->parameters[6] +  (String)" ";
 		if(lstrcmpi(pmsg->parameters[5].c_str(), m_session.GetInfo().sNick.c_str()) ==0)
 		{
-			if(lstrlen(prefs->MyHost) == 0)
-			{
-				static char host[1024];
-				lstrcpyn(host, pmsg->parameters[3].c_str(), 1024);
-				forkthread(ResolveIPThread, NULL, host);
-			}
+			static char host[1024];
+			lstrcpyn(host, pmsg->parameters[3].c_str(), 1024);
+			IPRESOLVE * ipr = new IPRESOLVE;
+			ipr->iType = IP_AUTO;
+			ipr->pszAdr = host;
+			forkthread(ResolveIPThread, NULL, ipr);
 		}
 	}
 	if (ManualWhoCount > 0)

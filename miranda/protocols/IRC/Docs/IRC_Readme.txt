@@ -1,9 +1,9 @@
 ----------------------------oOo----------------------------
-               IRC Protocol Plugin v 0.5.0.0
+               IRC Protocol Plugin v 0.5.0.1
 
   Implementation of IRC RFC-1459, RFC-2812 for Miranda IM
 
-	Released 2003-03-03, last updated 2004-11-09
+	Released 2003-03-03, last updated 2004-11-14
 -----------------------------------------------------------
 
 

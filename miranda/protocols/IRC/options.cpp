@@ -90,8 +90,10 @@ void InitPrefs(void)
 	GetPrefsString("OnlineNotificationTime", prefs->OnlineNotificationTime, 10, "30");
 	GetPrefsString("QuitMessage", prefs->QuitMessage, 399, STR_QUITMESSAGE);
 	GetPrefsString("UserInfo", prefs->UserInfo, 499, STR_USERINFO);
-	GetPrefsString("SpecHost", prefs->MySpecifiedHost, 49, "");
+	GetPrefsString("SpecHost", prefs->MySpecifiedHost, 499, "");
 	GetPrefsString("MyLocalHost", prefs->MyLocalHost, 49, "");
+
+	lstrcpy(prefs->MySpecifiedHostIP, "");
 
 	if (GetSetting("Alias", &dbv)) {
 		prefs->Alias = new char[lstrlen(dbv.pszVal)+1];
@@ -625,7 +627,9 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 							if(IsDlgButtonChecked(hwndDlg, IDC_ENABLEIP) == BST_CHECKED)
 							{
-								GetDlgItemText(hwndDlg,IDC_IP,prefs->MySpecifiedHost, 49);
+								char szTemp[500];
+								GetDlgItemText(hwndDlg,IDC_IP,szTemp, 499);
+								lstrcpyn(prefs->MySpecifiedHost, GetWord(szTemp, 0).c_str(), 499);
 								DBWriteContactSettingString(NULL,IRCPROTONAME,"SpecHost",prefs->MySpecifiedHost);
 							}
 

@@ -29,6 +29,7 @@ char *	IsIgnored(String nick, String address, String host, char type) ;
 char *	IsIgnored(String user, char type) ;
 bool	AddIgnore(String mask, String mode, String network) ;
 bool	RemoveIgnore(String mask) ;
+void __cdecl ResolveIPThread(LPVOID di);
 
 class CMyMonitor :  public CIrcDefaultMonitor
 {

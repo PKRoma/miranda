@@ -91,6 +91,14 @@ typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
 }GCPTRS;
 
+#define IP_AUTO			1
+#define IP_MANUAL		2
+
+typedef struct IPRESOLVE_INFO_TYPE			// Contains info about the channels
+{
+	int iType;
+	char * pszAdr;
+} IPRESOLVE;
 
 typedef struct WINDOW_INFO_TYPE			// Contains info about the channels
 {
@@ -149,7 +157,8 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 	char QuitMessage[400];
 	char UserInfo[500];
 	char MyHost[50];
-	char MySpecifiedHost[50];
+	char MySpecifiedHost[500];
+	char MySpecifiedHostIP[50];
 	char MyLocalHost[50];
 	char * Alias;
 	int ServerComboSelection;

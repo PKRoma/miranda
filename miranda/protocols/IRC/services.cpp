@@ -43,7 +43,6 @@ HANDLE					hNetlibDCC = NULL;
 HWND					join_hWnd = NULL;
 HWND					quickconn_hWnd = NULL;	
 volatile bool			bChatInstalled = FALSE;
-bool					bWrongVersion = FALSE;
 extern HWND				nick_hWnd;		
 extern HWND				list_hWnd ;		
 int						RetryCount =0;				
@@ -87,7 +86,7 @@ static void InitMenus(void)
 
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
-	if (bChatInstalled && !bWrongVersion)
+	if (bChatInstalled)
 	{
 
 		mi.pszName = Translate("&Quick connect");
@@ -474,8 +473,6 @@ int	Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 		int type = DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0);
 		if ( type != 0)
 		{
-			if (type == GCW_CHATROOM)
-				PostIrcMessage( "/PART %s", dbv.pszVal);
 
 			GCEVENT gce; 
 			GCDEST gcd;
@@ -485,11 +482,14 @@ int	Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 			if(type == GCW_SERVER)
 				S = "Network log";
 			gce.cbSize = sizeof(GCEVENT);
+			gce.dwItemData = 0;
 			gcd.iType = GC_EVENT_CONTROL;
 			gcd.pszModule = IRCPROTONAME;
 			gce.pDest = &gcd;
 			gcd.pszID = (char *)S.c_str();
-			CallService(MS_GC_EVENT, WINDOW_TERMINATE, (LPARAM)&gce);
+			int i = CallService(MS_GC_EVENT, WINDOW_TERMINATE, (LPARAM)&gce);
+			if (i && type == GCW_CHATROOM)
+				PostIrcMessage( "/PART %s", dbv.pszVal);
 		}
 
 		DBFreeVariant(&dbv);
@@ -1230,7 +1230,18 @@ static void __cdecl ConnectServerThread(LPVOID di)
 		Sleep(50);
 		g_ircSession.Connect(si);
 		if (g_ircSession)
+		{
+
 			KillChatTimer(RetryTimer);
+
+			if(lstrlen(prefs->MySpecifiedHost))
+			{
+				IPRESOLVE * ipr = new IPRESOLVE;
+				ipr->iType = IP_MANUAL;
+				ipr->pszAdr = prefs->MySpecifiedHost;
+				forkthread(ResolveIPThread, NULL, ipr);
+			}
+		}
 		else
 		{
 			Temp = OldStatus;
@@ -1328,18 +1339,6 @@ static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 		msn.szProto = IRCPROTONAME;
 		msn.szInfoTitle = Translate("IRC error");
 		msn.szInfo = Translate("This protocol is dependent on another plugin named \'Chat\'\nPlease download it from the Miranda IM website!");
-		msn.dwInfoFlags = NIIF_ERROR;
-		msn.uTimeout = 15000;
-		CallService(MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL,(LPARAM) &msn);
-		return 0;
-	}
-	if (bWrongVersion)
-	{
-		MIRANDASYSTRAYNOTIFY msn;
-		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
-		msn.szProto = IRCPROTONAME;
-		msn.szInfoTitle = Translate("IRC error");
-		msn.szInfo = Translate("The IRC protocol can not connect as this version requires features in newer versions of Miranda IM.\nPlease download an upgradeded version from the Miranda IM website!");
 		msn.dwInfoFlags = NIIF_ERROR;
 		msn.uTimeout = 15000;
 		CallService(MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL,(LPARAM) &msn);
@@ -1613,25 +1612,6 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		}
 		bChatInstalled = TRUE;
 
-		if (ServiceExists(MS_SYSTEM_GETBUILDSTRING))
-		{
-// should be reenabled later when this service works
-/*
-			extern long lWrongVersion;
-			char szTemp[40];
-			CallService(MS_SYSTEM_GETBUILDSTRING, 39, (LPARAM)szTemp);
-			char * stuff = strdup (szTemp);
-			MessageBox(NULL, szTemp, "version", 0);
-			long date = atoi(szTemp);
-			if (date < lWrongVersion * 1000000)
-*/
-			bWrongVersion = FALSE;
-		}
-		else
-			bWrongVersion = TRUE;
-
-		if(bWrongVersion && IDYES == MessageBoxA(0,Translate("The IRC protocol requires features found in newer versions of Miranda IM.\n\nDo you want to download it from the Miranda IM web site now?"),Translate("IRC Error"),MB_YESNO|MB_ICONERROR))
-			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/");
 	}
 	else
 	{
