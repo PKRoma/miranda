@@ -241,10 +241,16 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 					DBWriteContactSettingByte(hCurrentContact, gpszICQProtoName, "Auth", 1);
 					currentAction = ACTION_ADDWITHAUTH;
 
-					// TODO: Ansi->UTF8
 					dwUin = DBGetContactSettingDword(hCurrentContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-					currentSequence = icq_sendUploadContactServ(dwUin, wNewGroupId, wNewContactId, pszNick, 1, SSI_ITEM_BUDDY);
-
+          { // TODO: rewrite this
+            servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+            ack->hContact = hCurrentContact;
+            ack->dwAction = SSA_SERVLIST_ACK;
+            currentSequence = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
+            ack->lParam = currentSequence; 
+            icq_sendBuddy(currentSequence, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupId, wNewContactId, pszNick, NULL, 1, SSI_ITEM_BUDDY);
+					  //currentSequence = icq_sendUploadContactServ(dwUin, wNewGroupId, wNewContactId, pszNick, 1, SSI_ITEM_BUDDY);
+          }
 					SAFE_FREE(&pszNick);
 
 					return FALSE;
@@ -336,9 +342,17 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 							
 							// Only upload contact if we have a default group ID
 							if ((wNewGroupId = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0)) != 0)
-							{
-								wNewContactId = GenerateServerId();
-								currentSequence = icq_sendUploadContactServ(dwUin, wNewGroupId, wNewContactId, pszNick, 0, SSI_ITEM_BUDDY);
+              { // TODO: rewrite this
+                servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+
+                wNewContactId = GenerateServerId();
+
+                ack->hContact = hCurrentContact;
+                ack->dwAction = SSA_SERVLIST_ACK;
+                currentSequence = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
+                ack->lParam = currentSequence; 
+                icq_sendBuddy(currentSequence, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupId, wNewContactId, pszNick, NULL, 0, SSI_ITEM_BUDDY);
+//                currentSequence = icq_sendUploadContactServ(dwUin, wNewGroupId, wNewContactId, pszNick, 0, SSI_ITEM_BUDDY);
 								return FALSE;
 							}
 							else
@@ -360,10 +374,23 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 							else 
 								AppendToUploadLog(hwndDlg, Translate("Deleting %u..."), dwUin);
 							currentAction = ACTION_REMOVE;
-							currentSequence = icq_sendDeleteServerContactServ(dwUin,
+              {
+                servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+
+                ack->hContact = hContact;
+                ack->dwAction = SSA_SERVLIST_ACK;
+                currentSequence = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+                ack->lParam = currentSequence; 
+
+                icq_sendBuddy(currentSequence, ICQ_LISTS_REMOVEFROMLIST, dwUin,
+                  (WORD)DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0),
+	                (WORD)DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0),
+                  NULL, NULL, 0, SSI_ITEM_BUDDY);
+              }
+/*              currentSequence = icq_sendDeleteServerContactServ(dwUin,
 								(WORD)DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0),
 								(WORD)DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0),
-								SSI_ITEM_BUDDY);
+								SSI_ITEM_BUDDY);*/
 						}
 						
 						SAFE_FREE(&pszNick);

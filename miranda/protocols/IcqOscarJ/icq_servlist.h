@@ -55,7 +55,7 @@
 #define SSA_GROUP_UPDATE      0x17  // update group
 #define SSA_SERVLIST_ACK      0x20  // send proto ack only (UploadUI)
 
-typedef void (*GROUPADDCALLBACK)(const char *szGroupPath, WORD wGroupId, LPARAM lParam);
+typedef void (*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
 
 // cookie struct for SSI actions
 typedef struct servlistcookie_t
@@ -73,8 +73,6 @@ typedef struct servlistcookie_t
 } servlistcookie;
 
 
-DWORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, int authRequired, WORD wItemType);
-DWORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, WORD wItemType);
 void InitServerLists(void);
 void UninitServerLists(void);
 
@@ -87,6 +85,7 @@ void setServerGroupID(const char* szPath, WORD wGroupID);
 int IsServerGroupsDefined();
 char* makeGroupPath(WORD wGroupId);
 WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
+void removeGroupPathLinks(WORD wGroupID);
 
 DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup);
 DWORD removeServContact(HANDLE hContact);
@@ -102,5 +101,8 @@ void FreeServerID(WORD wID);
 BOOL CheckServerID(WORD wID, int wCount);
 void FlushServerIDs();
 void LoadServerIDs();
+
+void FlushPendingOperations();
+void RemovePendingOperation(HANDLE hContact, int nResult);
 
 #endif /* __ICQ_SERVLIST_H */

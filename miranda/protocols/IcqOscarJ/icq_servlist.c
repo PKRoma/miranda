@@ -51,6 +51,142 @@ static int nIDListCount = 0;
 static int nIDListSize = 0;
 
 
+//typedef void (*PENDINGCALLBACK)(const char *szGroupPath, GROUPADDCALLBACK ofCallBack, servlistcookie* ack);
+
+// cookie struct for pending records
+typedef struct ssipendingitem_t
+{
+  HANDLE hContact;
+  char* szGroupPath;
+  GROUPADDCALLBACK ofCallback;
+  servlistcookie* pCookie;
+} ssipendingitem;
+
+static CRITICAL_SECTION servlistMutex;
+static int nPendingCount = 0;
+static int nPendingSize = 0;
+static ssipendingitem** pdwPendingList = NULL;
+
+
+// Used for event-driven adding of contacts, before it is completed this is used
+static BOOL AddPendingOperation(HANDLE hContact, const char* szGroup, servlistcookie* cookie, GROUPADDCALLBACK ofEvent)
+{
+  BOOL bRes = TRUE;
+  ssipendingitem* pItem = NULL;
+  int i;
+
+  EnterCriticalSection(&servlistMutex);
+  if (pdwPendingList)
+  {
+    for (i = 0; i<nPendingCount; i++)
+    {
+      if (pdwPendingList[i]->hContact == hContact)
+      { // we need the last item for this contact
+        pItem = pdwPendingList[i];
+      }
+    }
+  }
+
+  if (pItem) // we found a pending operation, so link our data
+  {
+    pItem->ofCallback = ofEvent;
+    pItem->pCookie = cookie;
+    pItem->szGroupPath = szGroup?_strdup(szGroup):NULL; // we need to duplicate the string
+    bRes = FALSE;
+
+    Netlib_Logf(ghServerNetlibUser, "Operation postponed.");
+  }
+  
+  if (nPendingCount >= nPendingSize) // add new
+	{
+		nPendingSize += 10;
+		pdwPendingList = (ssipendingitem**)realloc(pdwPendingList, nPendingSize * sizeof(ssipendingitem*));
+	}
+
+	pdwPendingList[nPendingCount] = (ssipendingitem*)calloc(sizeof(ssipendingitem),1);
+  pdwPendingList[nPendingCount]->hContact = hContact;
+
+	nPendingCount++;
+  LeaveCriticalSection(&servlistMutex);
+
+  return bRes;
+}
+
+
+
+// Check if any pending operation is in progress
+// If yes, get its data and remove it from queue
+void RemovePendingOperation(HANDLE hContact, int nResult)
+{
+  int i, j;
+  ssipendingitem* pItem = NULL;
+
+  EnterCriticalSection(&servlistMutex);
+  if (pdwPendingList)
+  {
+    for (i = 0; i<nPendingCount; i++)
+    {
+      if (pdwPendingList[i]->hContact == hContact)
+      {
+        pItem = pdwPendingList[i];
+        for (j = i+1; j<nPendingCount; j++)
+        {
+          pdwPendingList[j-1] = pdwPendingList[j];
+        }
+        nPendingCount--;
+        if (nResult) // we succeded, go on, resume operation
+        {
+          LeaveCriticalSection(&servlistMutex);
+
+          if (pItem->ofCallback)
+          {
+            Netlib_Logf(ghServerNetlibUser, "Resuming postponed operation.");
+
+            makeGroupId(pItem->szGroupPath, pItem->ofCallback, pItem->pCookie);
+          }
+          else if ((int)pItem->pCookie == 1)
+          {
+            Netlib_Logf(ghServerNetlibUser, "Resuming postponed rename.");
+
+            renameServContact(hContact, pItem->szGroupPath);
+          }
+
+          SAFE_FREE(&pItem->szGroupPath); // free the string
+          SAFE_FREE(&pItem);
+          return;
+        } // else remove all pending operations for this contact
+        if ((pItem->pCookie) && ((int)pItem->pCookie != 1))
+          SAFE_FREE(&pItem->pCookie->szGroupName); // do not leak nick name on error
+        SAFE_FREE(&pItem->szGroupPath);
+        SAFE_FREE(&pItem);
+      }
+    }
+  }
+  LeaveCriticalSection(&servlistMutex);
+  return;
+}
+
+
+
+// Remove All pending operations
+void FlushPendingOperations()
+{
+  int i;
+
+  EnterCriticalSection(&servlistMutex);
+
+  for (i = 0; i<nPendingCount; i++)
+  {
+    SAFE_FREE(&(void*)pdwPendingList[i]);
+  }
+  SAFE_FREE(&(void*)pdwPendingList);
+  nPendingCount = 0;
+  nPendingSize = 0;
+
+  LeaveCriticalSection(&servlistMutex);
+}
+
+
 
 // Add a server ID to the list of reserved IDs.
 // To speed up the process, IDs cannot be removed, and if
@@ -58,6 +194,7 @@ static int nIDListSize = 0;
 // You should call CheckServerID before reserving an ID.
 void ReserveServerID(WORD wID)
 {
+  EnterCriticalSection(&servlistMutex);
 	if (nIDListCount >= nIDListSize)
 	{
 		nIDListSize += 100;
@@ -65,9 +202,10 @@ void ReserveServerID(WORD wID)
 	}
 
 	pwIDList[nIDListCount] = wID;
-	nIDListCount++;
-	
+	nIDListCount++;	
+  LeaveCriticalSection(&servlistMutex);
 }
+
 
 
 // Remove a server ID from the list of reserved IDs.
@@ -76,11 +214,12 @@ void FreeServerID(WORD wID)
 {
   int i, j;
 
+  EnterCriticalSection(&servlistMutex);
   if (pwIDList)
   {
     for (i = 0; i<nIDListCount; i++)
-		{
-			if (pwIDList[i] == wID)
+    {
+      if (pwIDList[i] == wID)
       { // we found it, so remove
         for (j = i+1; j<nIDListCount; j++)
         {
@@ -88,39 +227,89 @@ void FreeServerID(WORD wID)
         }
         nIDListCount--;
       }
-		}
-	}
-  
+    }
+  }
+  LeaveCriticalSection(&servlistMutex);
 }
 
 
 // Returns true if dwID is reserved
 BOOL CheckServerID(WORD wID, int wCount)
 {
-	int i;
-	BOOL bFound = FALSE;
-	
-	if (pwIDList)
-	{
-		for (i = 0; i<nIDListCount; i++)
-		{
-			if ((pwIDList[i] >= wID) && (pwIDList[i] <= wID + wCount))
-				bFound = TRUE;
-		}
-	}
-	
-	return bFound;	
+  int i;
+
+  EnterCriticalSection(&servlistMutex);
+  if (pwIDList)
+  {
+    for (i = 0; i<nIDListCount; i++)
+    {
+      if ((pwIDList[i] >= wID) && (pwIDList[i] <= wID + wCount))
+      {
+        LeaveCriticalSection(&servlistMutex);
+        return TRUE;
+      }
+    }
+  }
+  LeaveCriticalSection(&servlistMutex);
+
+  return FALSE;
 }
 
 
 void FlushServerIDs()
 {
-	
-	SAFE_FREE(&pwIDList);
-	nIDListCount = 0;
-	nIDListSize = 0;
-	
+  EnterCriticalSection(&servlistMutex);
+  SAFE_FREE(&pwIDList);
+  nIDListCount = 0;
+  nIDListSize = 0;
+  LeaveCriticalSection(&servlistMutex);
 }
+
+
+
+static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
+{ 
+  if (szSetting && strlen(szSetting)<5)
+  { // it is probably server group
+    char val[MAX_PATH+2]; // dummy
+    DBVARIANT dbv;
+    DBCONTACTGETSETTING cgs;
+
+    dbv.type = DBVT_ASCIIZ;
+    dbv.pszVal = val;
+    dbv.cchVal = MAX_PATH;
+
+    cgs.szModule=(char*)lParam;
+    cgs.szSetting=szSetting;
+    cgs.pValue=&dbv;
+    if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)NULL,(LPARAM)&cgs))
+      return 0;
+    if(dbv.type!=DBVT_ASCIIZ)
+    { // it is not a cached server-group name
+      return 0;
+    }
+    ReserveServerID((WORD)strtoul(szSetting, NULL, 0x10));
+  }
+  return 0;
+}
+
+
+void ReserveServerGroups()
+{
+  DBCONTACTENUMSETTINGS dbces;
+
+  char szModule[MAX_PATH+6];
+
+  strcpy(szModule, gpszICQProtoName);
+  strcat(szModule, "Groups");
+
+  dbces.pfnEnumProc = &GroupReserveIdsEnumProc;
+  dbces.szModule = szModule;
+  dbces.lParam = (LPARAM)szModule;
+
+  CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
+}
+
 
 
 // Load all known server IDs from DB to list
@@ -128,30 +317,37 @@ void LoadServerIDs()
 {
   HANDLE hContact;
   WORD wSrvID;
+  char* szProto;
 
+  EnterCriticalSection(&servlistMutex);
   if (wSrvID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0))
     ReserveServerID(wSrvID);
   if (wSrvID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0))
     ReserveServerID(wSrvID);
 
+  ReserveServerGroups();
   
   hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
   while (hContact)
-  { // search all contacts, reserve their server IDs
-    if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0))
-      ReserveServerID(wSrvID);
-    if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvContactId", 0))
-      ReserveServerID(wSrvID);
-    if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0))
-      ReserveServerID(wSrvID);
-    if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0))
-      ReserveServerID(wSrvID);
-    if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", 0))
-      ReserveServerID(wSrvID);
-
+  { // search all our contacts, reserve their server IDs
+    szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+    if (szProto && !lstrcmp(szProto, gpszICQProtoName))
+    {
+      /*if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0))
+        ReserveServerID(wSrvID); // TODO: rewrite - use our grouplist, too much duplicity here*/
+      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvContactId", 0))
+        ReserveServerID(wSrvID);
+      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0))
+        ReserveServerID(wSrvID);
+      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0))
+        ReserveServerID(wSrvID);
+      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", 0))
+        ReserveServerID(wSrvID);
+    }
     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
   }
+  LeaveCriticalSection(&servlistMutex);
 
   return;
 }
@@ -159,24 +355,22 @@ void LoadServerIDs()
 
 WORD GenerateServerId(VOID)
 {
+  WORD wId;
 
-	WORD wId;
+  while (TRUE)
+  {
+    // Randomize a new ID
+    // Max value is probably 0x7FFF, lowest value is unknown.
+    // We use range 0x1000-0x7FFF.
+    wId = (WORD)RandRange(0x1000, 0x7FFF);
 
+    if (!CheckServerID(wId, 0))
+      break;
+  }
 
-	while (TRUE)
-	{
-		// Randomize a new ID
-		// Max value is probably 0x7FFF, lowest value is unknown.
-		// We use range 0x1000-0x7FFF.
-		wId = (WORD)RandRange(0x1000, 0x7FFF);
+  ReserveServerID(wId);
 
-		if (!CheckServerID(wId, 0))
-			break;
-	}
-	
-	ReserveServerID(wId);
-
-	return wId;
+  return wId;
 }
 
 // Generate server ID with wCount IDs free after it, for sub-groups.
@@ -355,110 +549,6 @@ DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szN
   return dwCookie;
 }
 
-DWORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, int authRequired, WORD wItemType)
-{
-
- /* icq_packet packet;
-	char szUin[10];
-	int nUinLen;
-	int nNickLen;*/
-	DWORD dwSequence;
-	/*char* szUtfNick = NULL;
-	WORD wTLVlen;
-
-
-	// Prepare UIN
-	_itoa(dwUin, szUin, 10);
-	nUinLen = strlen(szUin);
-
-
-	// Prepare custom nick name
-	if (szNick && (strlen(szNick) > 0))
-	{
-
-		int nResult;
-
-		nResult = utf8_encode(szNick, &szUtfNick);
-		nNickLen = strlen(szUtfNick);
-
-	}
-	else
-	{
-		nNickLen = 0;
-	}
-*/
-
-	// Cookie
-	dwSequence = GenerateCookie(0);
-/*
-	// Build the packet
-	packet.wLen = nUinLen + 20;	
-	if (nNickLen > 0)
-		packet.wLen += nNickLen + 4;
-	if (authRequired)
-		packet.wLen += 4;
-
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_ADDTOLIST, 0, dwSequence);
-	packWord(&packet, (WORD)nUinLen);
-	packBuffer(&packet, szUin, (WORD)nUinLen);
-	packWord(&packet, wGroupId);
-	packWord(&packet, wContactId);
-	packWord(&packet, wItemType);
-
-	wTLVlen = ((nNickLen>0) ? 4+nNickLen : 0) + (authRequired?4:0);
-	packWord(&packet, wTLVlen);
-	if (authRequired)
-		packDWord(&packet, 0x00660000);  // "Still waiting for auth" TLV
-	if (nNickLen > 0)
-	{
-		packWord(&packet, 0x0131);	// Nickname TLV
-		packWord(&packet, (WORD)nNickLen);
-		packBuffer(&packet, szUtfNick, (WORD)nNickLen);
-	}
-
-	// Send the packet and return the cookie
-	sendServPacket(&packet);
-
-	SAFE_FREE(&szUtfNick);
-*/
-  icq_sendBuddy(dwSequence, ICQ_LISTS_ADDTOLIST, dwUin, wGroupId, wContactId, szNick, NULL, authRequired, wItemType);
-
-	return dwSequence;
-	
-}
-
-
-DWORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, WORD wItemType)
-{
-/*
-  	icq_packet packet;
-	char szUin[10];
-	int nUinLen;*/
-	DWORD dwSequence;
-/*
-	_itoa(dwUin, szUin, 10);
-	nUinLen = strlen(szUin);
-*/
-	dwSequence = GenerateCookie(0);
-/*
-	packet.wLen = nUinLen + 20;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, dwSequence);
-	packWord(&packet, (WORD)nUinLen);
-	packBuffer(&packet, szUin, (WORD)nUinLen);
-	packWord(&packet, wGroupId);
-	packWord(&packet, wContactId);
-	packWord(&packet, wItemType);
-	packWord(&packet, 0x0000);     // Length of additional data
-
-	sendServPacket(&packet);
-*/
-  icq_sendBuddy(dwSequence, ICQ_LISTS_REMOVEFROMLIST, dwUin, wGroupId, wContactId, NULL, NULL, 0, wItemType);
-	return dwSequence;
-
-}
-
 
 /*****************************************
  *
@@ -561,7 +651,7 @@ void* collectGroups(int *count)
 
 
 
-static void removeGroupPathLinks(WORD wGroupID)
+void removeGroupPathLinks(WORD wGroupID)
 {
   char idstr[33];
   DBVARIANT dbv;
@@ -596,6 +686,12 @@ char* getServerGroupName(WORD wGroupID)
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "Groups");
   _itoa(wGroupID, szGroup, 0x10);
+
+  if (!CheckServerID(wGroupID, 0))
+  { // check if valid id, if not give empty and remove
+    DBDeleteContactSetting(NULL, szModule, szGroup);
+    return NULL;
+  }
 
   if (DBGetContactSetting(NULL, szModule, szGroup, &dbv))
     szRes = NULL;
@@ -632,11 +728,20 @@ void setServerGroupName(WORD wGroupID, const char* szGroupName)
 WORD getServerGroupID(const char* szPath)
 {
   char szModule[MAX_PATH+6];
+  WORD wGroupId;
 
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "Groups");
 
-  return DBGetContactSettingWord(NULL, szModule, szPath, 0);
+  wGroupId = DBGetContactSettingWord(NULL, szModule, szPath, 0);
+
+  if (wGroupId && !CheckServerID(wGroupId, 0))
+  { // known, check if still valid, if not remove
+    DBDeleteContactSetting(NULL, szModule, szPath);
+    wGroupId = 0;
+  }
+
+  return wGroupId;
 }
 
 
@@ -747,7 +852,7 @@ char* makeGroupPath(WORD wGroupId)
 
         szTempGroup = realloc(szTempGroup, strlen(szGroup)+strlen(szTempGroup)+2);
         strcat(szTempGroup, "\\");
-        strcat(szTempGroup, szGroup);
+        strcat(szTempGroup, szGroup+level);
         SAFE_FREE(&szGroup);
         szGroup = szTempGroup;
         
@@ -787,6 +892,81 @@ char* makeGroupPath(WORD wGroupId)
 
 
 
+// this is the second pard of recursive event-driven procedure
+void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
+{
+  servlistcookie* clue = (servlistcookie*)lParam;
+  char* szGroup = clue->szGroupName;
+  GROUPADDCALLBACK ofCallback = clue->ofCallback;
+  servlistcookie* param = (servlistcookie*)clue->lParam;
+  int level = countGroupLevel(wGroupID);
+
+  SAFE_FREE(&clue);
+
+  if (level == -1)
+  { // something went wrong, give the id and go away
+    if (ofCallback) ofCallback(wGroupID, (LPARAM)param);
+
+    SAFE_FREE(&szGroup);
+    return;
+  }
+  level++; // we are a sub
+
+  // check if on that id is not group of the same level, if yes, try next
+  while (CheckServerID((WORD)(wGroupID+1),0) && (countGroupLevel((WORD)(wGroupID+1)) == (level+1)))
+  {
+    wGroupID++;
+  }
+
+  if (!CheckServerID((WORD)(wGroupID+1), 0))
+  { // the next id is free, so create our group with that id
+    servlistcookie* ack;
+    DWORD dwCookie;
+    char* szSubGroup = (char*)malloc(strlen(szGroup)+level+1);
+
+    if (szSubGroup)
+    {
+      int i;
+
+      for (i=0; i<level; i++)
+      {
+        szSubGroup[i] = '>';
+      }
+      strcpy(szSubGroup+level, szGroup);
+      szSubGroup[strlen(szGroup)+level] = '\0';
+
+      if (ack = (servlistcookie*)malloc(sizeof(servlistcookie)))
+      { // we have cookie good, go on
+        ReserveServerID((WORD)(wGroupID+1));
+        
+        ack->hContact = NULL;
+        ack->wContactId = 0;
+        ack->wGroupId = wGroupID+1;
+        ack->szGroupName = szSubGroup; // we need that name
+        ack->dwAction = SSA_GROUP_ADD;
+        ack->dwUin = 0;
+        ack->ofCallback = ofCallback;
+        ack->lParam = (LPARAM)param;
+        dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
+
+        sendAddStart();
+        icq_sendGroup(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szSubGroup, NULL, 0);
+
+        SAFE_FREE(&szGroup);
+        return;
+      }
+      SAFE_FREE(&szSubGroup);
+    }
+  }
+  // we failed to create sub-group give parent groupid
+  if (ofCallback) ofCallback(wGroupID, (LPARAM)param);
+
+  SAFE_FREE(&szGroup);
+  return;
+}
+
+
+
 // create group with this path, a bit complex task
 // this supposes that all server groups are known
 WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam)
@@ -798,7 +978,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
 
   if (wGroupID = getServerGroupID(szGroup))
   {
-    if (ofCallback) ofCallback(szGroup, wGroupID, (LPARAM)lParam);
+    if (ofCallback) ofCallback(wGroupID, (LPARAM)lParam);
     return wGroupID; // if the path is known give the id
   }
 
@@ -827,22 +1007,50 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
   }
   else
   { // this is a sub-group
-    // TODO: create subgroup, recursive, event-driven, possibly relocate 
+    char* szSub = _strdup(szGroup); // create subgroup, recursive, event-driven, possibly relocate 
+    servlistcookie* ack;
+    char *szLast;
+
+    if (strstr(szSub, "\\") != NULL)
+    { // determine parent group
+      szLast = strstr(szSub, "\\")+1;
+
+      while (strstr(szLast, "\\") != NULL)
+        szLast = strstr(szLast, "\\")+1; // look for last backslash
+      szLast[-1] = '\0'; 
+    }
+    // make parent group id
+    ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+    if (ack)
+    {
+      WORD wRes;
+      ack->lParam = (LPARAM)lParam;
+      ack->ofCallback = ofCallback;
+      ack->szGroupName = _strdup(szLast); // groupname
+      wRes = makeGroupId(szSub, madeMasterGroupId, ack);
+      SAFE_FREE(&szSub);
+
+      return wRes;
+    }
+
+    SAFE_FREE(&szSub); 
   }
   
   if (strstr(szGroup, "\\") != NULL)
-  { // we failed to get grouppath, trim it to root group
-    char *szLast = strstr(szGroup, "\\")+1;
+  { // we failed to get grouppath, trim it by one group
+    char *szLast = _strdup(szGroup);
+    char *szLess = szLast;
 
     while (strstr(szLast, "\\") != NULL)
-      szLast = strstr(szGroup, "\\")+1; // look for last backslash
+      szLast = strstr(szLast, "\\")+1; // look for last backslash
     szLast[-1] = '\0'; 
-    return makeGroupId(szGroupPath, ofCallback, lParam);
+    return makeGroupId(szLess, ofCallback, lParam);
+    SAFE_FREE(&szLess);
   }
 
   // TODO: remove this, it is now only as a last resort
   wGroupID = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0); 
-  if (ofCallback) ofCallback(szGroupPath, wGroupID, (LPARAM)lParam);
+  if (ofCallback) ofCallback(wGroupID, (LPARAM)lParam);
   
   return wGroupID;
 }
@@ -854,7 +1062,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
  *
  */
 
-void addServContactReady(const char* pszGroupPath, WORD wGroupID, LPARAM lParam)
+void addServContactReady(WORD wGroupID, LPARAM lParam)
 {
   WORD wItemID;
   DWORD dwUin;
@@ -870,14 +1078,15 @@ void addServContactReady(const char* pszGroupPath, WORD wGroupID, LPARAM lParam)
 
   if (wItemID)
   { // Only add the contact if it doesnt already have an ID
+    RemovePendingOperation(ack->hContact, 0);
     Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (already there)");
     return;
   }
 
 	// Get UIN
 	if (!(dwUin = DBGetContactSettingDword(ack->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
-  {
-    // Could not do anything without uin
+  { // Could not do anything without uin
+    RemovePendingOperation(ack->hContact, 0);
     Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (no UIN)");
     return;
   }
@@ -912,7 +1121,9 @@ DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup)
     ack->hContact = hContact;
     ack->szGroupName = _strdup(pszNick); // we need this for resending
 
-    makeGroupId(pszGroup, addServContactReady, ack);
+    if (AddPendingOperation(hContact, pszGroup, ack, addServContactReady))
+      makeGroupId(pszGroup, addServContactReady, ack);
+
     return 1;
   }
 }
@@ -977,8 +1188,9 @@ DWORD removeServContact(HANDLE hContact)
 
 
 
-void moveServContactReady(const char* pszGroupPath, WORD wNewGroupID, LPARAM lParam)
+void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
 {
+  DBVARIANT dbvNick;
   WORD wItemID;
   WORD wGroupID;
   DWORD dwUin;
@@ -999,30 +1211,42 @@ void moveServContactReady(const char* pszGroupPath, WORD wNewGroupID, LPARAM lPa
   wItemID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "ServerId", 0);
   wGroupID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "SrvGroupId", 0);
 
+  // Read nick name from DB
+  if (DBGetContactSetting(ack->hContact, "CList", "MyHandle", &dbvNick))
+    pszNick = NULL; // if not read, no nick
+  else
+    pszNick = dbvNick.pszVal;
+    
+  ack->szGroupName = _strdup(pszNick); // we need this for sending
+
+  DBFreeVariant(&dbvNick);
+
   if (!wItemID) 
   { // We have no ID, so try to simply add the contact to serv-list 
     Netlib_Logf(ghServerNetlibUser, "Unable to move contact (no ItemID) -> trying to add");
     // we know the GroupID, so directly call add
-    addServContactReady(pszGroupPath, wNewGroupID, lParam);
+    addServContactReady(wNewGroupID, lParam);
     return;
   }
 
   if (!wGroupID)
   { // Only move the contact if it had an GroupID
+    RemovePendingOperation(ack->hContact, 0);
     Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no Group)");
     return;
   }
 
   if (wGroupID == wNewGroupID)
   { // Only move the contact if it had different GroupID
+    RemovePendingOperation(ack->hContact, 1);
     Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (same Group)");
     return;
   }
 
 	// Get UIN
 	if (!(dwUin = DBGetContactSettingDword(ack->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
-  {
-    // Could not do anything without uin
+  { // Could not do anything without uin
+    RemovePendingOperation(ack->hContact, 0);
     Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no UIN)");
     return;
   }
@@ -1052,8 +1276,8 @@ void moveServContactReady(const char* pszGroupPath, WORD wNewGroupID, LPARAM lPa
   sendAddStart();
   /* this is just like Licq does it, icq5 sends that in different order, but sometimes it gives unwanted
   /* side effect, so I changed the order. */
-  icq_sendBuddy(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupID, ack->wNewContactId, ack->szGroupName, pszNote, bAuth, SSI_ITEM_BUDDY);
-  icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, wGroupID, wItemID, ack->szGroupName, pszNote, bAuth, SSI_ITEM_BUDDY);
+  icq_sendBuddy(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupID, ack->wNewContactId, pszNick, pszNote, bAuth, SSI_ITEM_BUDDY);
+  icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, wGroupID, wItemID, NULL, NULL, bAuth, SSI_ITEM_BUDDY);
 
   DBFreeVariant(&dbvNote);
   SAFE_FREE(&pszNick);
@@ -1065,7 +1289,6 @@ void moveServContactReady(const char* pszGroupPath, WORD wNewGroupID, LPARAM lPa
 DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 {
   servlistcookie* ack;
-  char* pszNick;
 
   if (!GroupNameExists(pszNewGroup, -1) && (pszNewGroup != NULL) && (pszNewGroup[0]!='\0'))
   { // the contact moved to non existing group, do not do anything: MetaContact hack
@@ -1080,20 +1303,10 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
   }
   else
   {
-    DBVARIANT dbvNick;
-
-    // Read nick name from DB
-    if (DBGetContactSetting(hContact, "CList", "MyHandle", &dbvNick))
-      pszNick = NULL; // if not read, no nick
-    else
-      pszNick = dbvNick.pszVal;
-    
     ack->hContact = hContact;
-    ack->szGroupName = _strdup(pszNick); // we need this for sending
 
-    DBFreeVariant(&dbvNick);
-
-    makeGroupId(pszNewGroup, moveServContactReady, ack);
+    if (AddPendingOperation(hContact, pszNewGroup, ack, moveServContactReady))
+      makeGroupId(pszNewGroup, moveServContactReady, ack);
     return 1;
   }
 }
@@ -1253,6 +1466,62 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
 }
 
 
+
+void renameServGroup(WORD wGroupId, char* szGroupName)
+{
+  servlistcookie* ack;
+  DWORD dwCookie;
+  char* szGroup, *szLast;
+  int level = countGroupLevel(wGroupId);
+  int i;
+  void* groupData;
+  DWORD groupSize;
+
+  if (level == -1) return; // we failed to prepare group
+
+  szLast = szGroupName;
+  i = level;
+  while (i)
+  { // find correct part of grouppath
+    szLast = strstr(szLast, "\\");
+    i--;
+  }
+  szGroup = (char*)malloc(strlen(szLast)+1+level);
+  if (!szGroup) return;
+  szGroup[level] = '\0';
+
+  for (i=0;i<level;i++)
+  {
+    szGroup[i] = '>';
+  }
+  strcat(szGroup, szLast);
+  szLast = strstr(szGroup, "\\");
+  if (szLast)
+    szLast[0] = '\0';
+
+  if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
+  { // cookie failed, use old fake
+    dwCookie = GenerateCookie(ICQ_LISTS_UPDATEGROUP);
+  }
+  else if (groupData = collectBuddyGroup(wGroupId, &groupSize))
+  {
+    ack->dwAction = SSA_GROUP_RENAME;
+    ack->dwUin = 0;
+    ack->hContact = NULL;
+    ack->wGroupId = wGroupId;
+    ack->wContactId = 0;
+    ack->szGroupName = szGroup; // we need this name
+
+    dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+
+    removeGroupPathLinks(wGroupId);
+
+    icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, wGroupId, szGroup, groupData, groupSize);
+    SAFE_FREE(&groupData);
+  }
+}
+
+
 /*****************************************
  *
  *   --- Miranda Contactlist Hooks ---
@@ -1320,11 +1589,13 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     {
       if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
       {
-        renameServContact((HANDLE)wParam, cws->value.pszVal);
+        if (AddPendingOperation((HANDLE)wParam, cws->value.pszVal, (servlistcookie*)1, NULL))
+          renameServContact((HANDLE)wParam, cws->value.pszVal);
       }
       else
       {
-        renameServContact((HANDLE)wParam, NULL);
+        if (AddPendingOperation((HANDLE)wParam, NULL, (servlistcookie*)1, NULL))
+          renameServContact((HANDLE)wParam, NULL);
       }
     }
 
@@ -1333,8 +1604,28 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       DBGetContactSettingByte(NULL, gpszICQProtoName, "StoreServerDetails", DEFAULT_SS_STORE))
     {
       if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
-      {
-        moveServContactGroup((HANDLE)wParam, cws->value.pszVal);
+      { // Test if group was not renamed...
+        WORD wGroupId = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvGroupId", 0);
+        char* szGroup = makeGroupPath(wGroupId);
+        int bRenamed = 0;
+
+        if (wGroupId && !GroupNameExists(szGroup, 0))
+        { // if we moved from non-existing group, it can be rename
+          if (!getServerGroupID(cws->value.pszVal))
+          { // the target group is not known - it is probably rename
+            if (getServerGroupID(szGroup))
+            { // source group not known -> already renamed
+              bRenamed = 1;
+              Netlib_Logf(ghServerNetlibUser, "Group %x renamed.", wGroupId);
+            }
+          }
+        }
+        SAFE_FREE(&szGroup);
+
+        if (bRenamed)
+          renameServGroup(wGroupId, cws->value.pszVal);
+        else
+          moveServContactGroup((HANDLE)wParam, cws->value.pszVal);
       }
       else
       {
@@ -1476,23 +1767,24 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 
 void InitServerLists(void)
 {
-
-	hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ServListDbSettingChanged);
-	hHookContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ServListDbContactDeleted);
-
+  InitializeCriticalSection(&servlistMutex);
+  
+  hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ServListDbSettingChanged);
+  hHookContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ServListDbContactDeleted);
 }
 
 
 
 void UninitServerLists(void)
 {
+  if (hHookSettingChanged)
+    UnhookEvent(hHookSettingChanged);
 
-	if (hHookSettingChanged)
-		UnhookEvent(hHookSettingChanged);
+  if (hHookContactDeleted)
+    UnhookEvent(hHookContactDeleted);
 
-	if (hHookContactDeleted)
-		UnhookEvent(hHookContactDeleted);
+  FlushServerIDs();
+  FlushPendingOperations();
 
-	FlushServerIDs();
-
+  DeleteCriticalSection(&servlistMutex);
 }
