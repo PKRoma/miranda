@@ -111,7 +111,7 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr,PBYTE buf,int len,int *o
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char szBuffer[ 100 ];
+	char szBuffer[ MAX_PATH ];
 
 	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
 	if ( wPort != 0xFFFF ) {
@@ -243,16 +243,32 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 	pd.type = PROTOTYPE_PROTOCOL;
 	MSN_CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
 
-	//set all contacts to 'offline'
+	BOOL bWasConverted = MSN_GetByte( "AvatarsNameConverted", 0 );
 	{
 		HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL )
 		{
-			if ( !lstrcmp( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 )))
+			if ( !lstrcmp( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+
+				if ( !bWasConverted ) {
+					char tOldName[ MAX_PATH ], tNewName[ MAX_PATH ];
+					MSN_GetAvatarFileName( hContact, tOldName, MAX_PATH, true );
+					MSN_GetAvatarFileName( hContact, tNewName, MAX_PATH, false );
+					MoveFile( tOldName, tNewName );
+			}	}
 
 			hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
 	}	}
+
+	if ( !bWasConverted ) {
+		char tOldName[ MAX_PATH ], tNewName[ MAX_PATH ];
+		MSN_GetAvatarFileName( NULL, tOldName, MAX_PATH, true );
+		MSN_GetAvatarFileName( NULL, tNewName, MAX_PATH, false );
+		MoveFile( tOldName, tNewName );
+
+		MSN_SetByte( "AvatarsNameConverted", TRUE );
+	}
 
 	char mailsoundtemp[ 64 ];
 	strcpy( mailsoundtemp, protocolname );

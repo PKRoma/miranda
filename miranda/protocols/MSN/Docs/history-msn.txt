@@ -14,6 +14,9 @@ changed.
 [!] Bug #0000580 fixed: the large messages disappear being sent.
 [!] Bug #0000601 fixed: files  with  incorrect  file  names  aren't
 saved during P2P file transfers.
+[!] Bug #0000565 fixed: avatar file names becomes different after
+using the dbtool, that's why the MSN folder may have the same
+avatars several times.
 [!] Bug #0000437 fixed: expert must have an option  to  choose  the
 needed status translation schema for Away, BRB & N/A statuses.
 [*] Translation file modification.

@@ -153,7 +153,7 @@ int		__stdcall	MSN_GetMyHostAsString( char* parBuf, int parBufSize );
 
 void		__cdecl		MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP );
 void		__stdcall	MSN_GoOffline( void );
-void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
+void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen, bool bOldFormat = false );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
 int		__stdcall	MSN_SendNickname(char *email, char *nickname);
 void		__stdcall	MSN_SetServerStatus( int newStatus );

@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include "msn_md5.h"
 #include "resource.h"
 
 typedef LONG ( WINAPI pIncrementFunc )( PLONG );
@@ -206,20 +207,43 @@ void __stdcall MSN_DumpMemory( const char* buffer, int bufSize )
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 //=======================================================================================
 
-void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
+void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen, bool bOldFormat  )
 {
 	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 
 	int tPathLen = strlen( pszDest );
-	tPathLen += _snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\", msnProtocolName );
+	if ( bOldFormat )
+		tPathLen += _snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\", msnProtocolName );
+	else
+		tPathLen += _snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\"  );
 	CreateDirectory( pszDest, NULL );
 
 	if ( hContact != NULL ) {
-		ltoa(( long )hContact, pszDest + tPathLen, 10 );
+		if ( bOldFormat )
+			ltoa(( long )hContact, pszDest + tPathLen, 10 );
+		else {
+			char szEmail[ MSN_MAX_EMAIL_LEN ];
+			if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
+				ltoa(( long )hContact, szEmail, 10 );
+
+			long digest[ 4 ];
+			MD5_CTX ctx;
+			MD5Init( &ctx );
+			MD5Update( &ctx, ( BYTE* )szEmail, strlen( szEmail ));
+			MD5Final(( BYTE* )digest, &ctx );
+
+			tPathLen += _snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%08lX%08lX%08lX%08lX",
+				digest[0], digest[1], digest[2], digest[3] );
+		}
+
 		strcat( pszDest + tPathLen, ".bmp" );
 	}
-	else strcpy( pszDest + tPathLen, "avatar.png" );
-}
+	else {
+		if ( bOldFormat )
+			strcpy( pszDest + tPathLen, "avatar.png" );
+		else
+			_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", msnProtocolName );
+}	}
 
 //=======================================================================================
 // MSN_GoOffline - performs several actions when a server goes offline
