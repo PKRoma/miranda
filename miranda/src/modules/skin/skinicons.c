@@ -135,6 +135,8 @@ static HICON ExtractIconFromPath(const char *path)
 	int n;
 	HICON hIcon;
 
+	if (path == NULL) return (HICON)NULL;
+
 	lstrcpyn(file,path,sizeof(file));
 	comma=strrchr(file,',');
 	if(comma==NULL) n=0;
