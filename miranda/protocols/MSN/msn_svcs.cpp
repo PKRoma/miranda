@@ -333,7 +333,10 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 			p2p_sendStatus( ft, thread, 200 );
 	}	}
 
-	ft->std.workingDir = strdup((char *)ccs->lParam);
+	ft->std.workingDir = strdup(( char* )ccs->lParam );
+	int len = strlen( ft->std.workingDir )-1;
+	if ( ft->std.workingDir[ len ] == '\\' )
+		ft->std.workingDir[ len ] = 0;
 	return int( ft );
 }
 

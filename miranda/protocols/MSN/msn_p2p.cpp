@@ -866,18 +866,18 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 
 				_chdir( ft->std.workingDir );
 
-				char filefull[ MAX_PATH ];
-				_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
-				ft->std.currentFile = strdup( filefull );
-
 				if ( ft->inmemTransfer ) {
 					if ( ft->fileBuffer == NULL ) {
 						if (( ft->fileBuffer = ( char* )LocalAlloc( LPTR, DWORD( ft->std.totalBytes ))) == NULL ) {
-							MSN_DebugLog( "Cannot create file '%s' during a file transfer", filefull );
+							MSN_DebugLog( "Not enough memory to receive file '%s'", ft->std.currentFile );
 							return;
 				}	}	}
 				else {
 					if ( ft->fileId == -1 ) {
+						char filefull[ MAX_PATH ];
+						_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
+						ft->std.currentFile = strdup( filefull );
+
 						if ( msnRunningUnderNT )
 							ft->fileId = _wopen( ft->wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 						else
