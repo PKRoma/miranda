@@ -97,7 +97,7 @@ static int sttCreateListener(
 	nlb.cbSize = sizeof nlb;
 	nlb.pfnNewConnection = MSN_ConnectionProc;
 	nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-	if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb)) == NULL ) {
+	if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb)) == NULL ) {
 		MSN_DebugLog( "Unable to bind the port for incoming transfers" );
 		return 0;
 	}

@@ -481,6 +481,7 @@ typedef struct
 	BOOL		KeepConnectionAlive;
 	BOOL		ShowErrorsAsPopups;
 	BOOL		AwayAsBrb;
+	BOOL		SlowSend;
 }
 	MYOPTIONS;
 

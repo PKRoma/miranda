@@ -102,9 +102,9 @@ static int MsnAddToListByEvent(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	dbei.pBlob=(PBYTE) alloca(dbei.cbBlob);
-	if ( CallService(MS_DB_EVENT_GET, lParam, (LPARAM) &dbei))	return 0;
-	if ( strcmp(dbei.szModule, msnProtocolName))						return 0;
-	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST)					return 0;
+	if ( MSN_CallService(MS_DB_EVENT_GET, lParam, ( LPARAM )&dbei))	return 0;
+	if ( strcmp(dbei.szModule, msnProtocolName))						      return 0;
+	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST)					      return 0;
 
 	char* nick = (char *) (dbei.pBlob + sizeof(DWORD) + sizeof(HANDLE));
 	char* firstName = nick + strlen(nick) + 1;
@@ -781,12 +781,12 @@ LBL_Error:
 			seq = thread->sendMessage( msg, MSG_REQUIRE_ACK );
 			free( msg );
 
-			HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-
-			DWORD dwThreadId;
-			CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
-			SetEvent( hEvent );
-	}	}
+			if ( !MyOptions.SlowSend ) {
+				HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+				DWORD dwThreadId;
+				CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
+				SetEvent( hEvent );
+	}	}	}
 
 	return seq;
 }

@@ -163,7 +163,7 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 			nlb.cbSize = sizeof nlb;
 			nlb.pfnNewConnection = MSN_ConnectionProc;
 			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-			if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb)) == NULL ) {
+			if (( ft->mIncomingBoundPort = ( HANDLE )CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb)) == NULL ) {
 				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
 				bHasError = true;
 			}
@@ -690,7 +690,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 				p2p_sendViaServer( info->mP2pSession, info );
 				info->mP2pSession = NULL;
 			}
-			else if ( info->mJoinedCount > 0 )
+			else if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
 				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
 			break;
 

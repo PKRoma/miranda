@@ -351,6 +351,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton( hwndDlg, IDC_KEEPALIVE,	MSN_GetByte( "KeepAlive",   0 ));
 		CheckDlgButton( hwndDlg, IDC_AUTOGETHOST,	MSN_GetByte( "AutoGetHost", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
+		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
 
 		if ( MSN_CallService( MS_SYSTEM_GETVERSION, 0, 0 ) < 0x00030300 )
 			EnableWindow( GetDlgItem( hwndDlg, IDC_USEGATEWAY ), FALSE );
@@ -405,7 +406,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), tValue );
 			}
 
-			case IDC_KEEPALIVE:			case IDC_USEIEPROXY:
+			case IDC_KEEPALIVE:			case IDC_USEIEPROXY:		case IDC_SLOWSEND:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
@@ -454,6 +455,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));
 			MSN_SetByte( "KeepAlive",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE   ));
 			MSN_SetByte( "AutoGetHost", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOGETHOST ));
+			MSN_SetByte( "SlowSend",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND    ));
 
 			GetDlgItemText( hwndDlg, IDC_YOURHOST, str, sizeof( str ));
 			MSN_SetString( NULL, "YourHost", str );
@@ -681,6 +683,7 @@ void __stdcall LoadOptions()
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
 	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
+	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
