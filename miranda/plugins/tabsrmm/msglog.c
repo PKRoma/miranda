@@ -691,11 +691,11 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     dat->stats.lastReceivedChars = msglen - 1;
                 if (dbei.cbBlob >= (DWORD)(3 * msglen)) {         // FIXME!!! possible unicode issue?
                     msg = (TCHAR *) & dbei.pBlob[msglen];
-                    if(wcslen(msg) == (msglen - 1) && msg[msglen - 1] == (wchar_t)0x000) {
+                    //if(wcslen(msg) == (msglen - 1) && msg[msglen - 1] == (wchar_t)0x000) {
                         if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                             TrimMessage(msg);
                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
-                    }
+                    //}
                 }
                 else {
 #ifdef __MATHMOD_SUPPORT

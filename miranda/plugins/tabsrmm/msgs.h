@@ -199,6 +199,7 @@ struct ProtocolData {
 #define DM_SAVEMESSAGELOG    (WM_USER+65)
 #define DM_CHECKAUTOCLOSE    (WM_USER+66)
 #define DM_UPDATEMETACONTACTINFO (WM_USER+67)
+#define DM_SETICON           (WM_USER+68)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)

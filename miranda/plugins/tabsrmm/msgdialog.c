@@ -79,7 +79,6 @@ typedef struct
 
 extern int g_hotkeyHwnd;
 
-int _log(const char *fmt, ...); // XXX debuglog
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
 int CutContactName(char *old, char *new, int size);
@@ -855,9 +854,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
             if(urc->wId != IDC_PROTOCOL)
                 OffsetRect(&urc->rcItem, 9, 0);
-            //if (dat->multiple && !iClistOffset && (urc->wId != IDC_PROTOCOL))
-            //    OffsetRect(&urc->rcItem, -(dat->multiSplitterX + 3), 0);        // fix multisplitter clipping /w some visual styles
-
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (urc->wId == IDC_PROTOCOL)
@@ -890,8 +886,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
             urc->rcItem.right +=1;
-            //if (dat->multiple && !iClistOffset)
-            //    urc->rcItem.right -= (dat->multiSplitterX + 3);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
@@ -906,29 +900,17 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_CONTACTPIC:
             urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
             urc->rcItem.left=urc->rcItem.right-(dat->pic.cx +2);
-
-            //if (dat->multiple && !iClistOffset ) {
-            //    urc->rcItem.left-=(dat->multiSplitterX +2);
-            //    urc->rcItem.right-=(dat->multiSplitterX +2);
-            //}
             return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
         case IDC_MESSAGE:
             {
                 urc->rcItem.right = urc->dlgNewSize.cx;
                 if (dat->showPic)
                     urc->rcItem.right -= dat->pic.cx+4;
-                // if (dat->multiple && !iClistOffset) {
-                //     urc->rcItem.right -= (dat->multiSplitterX + 3);
-                // }
                 urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             }
         case IDOK:
             OffsetRect(&urc->rcItem, 9, 0);
-            // if (dat->multiple && !iClistOffset) {
-            //     urc->rcItem.left -= (dat->multiSplitterX +3);      // fix multisplitter clipping /w some visual styles...
-            //     urc->rcItem.right -= (dat->multiSplitterX +3);     // dito
-            // }
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
 
@@ -953,11 +935,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_CLIST:
             urc->rcItem.left = urc->dlgNewSize.cx - dat->multiSplitterX;
             urc->rcItem.right = urc->dlgNewSize.cx - 3;
-            if(1) {         // was iClistOffset (bottom edge of the multisplitter)
-                urc->rcItem.bottom = iClistOffset + 3;
-                return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
-            }
-            return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
+            urc->rcItem.bottom = iClistOffset + 3;
+            return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
         case IDC_TYPINGNOTIFY:
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
     }
@@ -1494,9 +1473,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->pContainer->dwFlags &= ~CNT_CREATE_MINIMIZED;
                     dat->pContainer->dwFlags |= CNT_DEFERREDCONFIGURE;
                     SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    ShowWindow(dat->pContainer->hwnd, SW_MINIMIZE);
+                    ShowWindow(dat->pContainer->hwnd, SW_SHOWMINNOACTIVE);
                     SendMessage(dat->pContainer->hwnd, DM_RESTOREWINDOWPOS, 0, 0);
-                    //SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 }
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
@@ -1512,7 +1490,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 HWND t_hwnd;
                 HICON hIcon;
-                BYTE showStatus = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
 
                 t_hwnd = dat->pContainer->hwnd;
 
@@ -1520,13 +1497,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     hIcon = LoadSkinnedProtoIcon(dat->szProto, dat->wStatus);
                     SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 
-                    if (!showStatus) {
-                        SendMessage(t_hwnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-                        break;
-                    }
-
                     if (dat->pContainer->hwndActive == hwndDlg)
-                        SendMessage(t_hwnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
+                        SendMessage(t_hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
                     break;
                 }
                 break;
@@ -1809,8 +1781,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->pContainer->hwndActive == hwndDlg)
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 }
+                
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
-
                 if(IsMetaContact(hwndDlg, dat))
                     PostMessage(hwndDlg, DM_UPDATEMETACONTACTINFO, 0, 0);
 
@@ -1829,8 +1801,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_SETFOCUS:
             if (dat->iTabID >= 0) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                /* if(dat->pContainer->dwTickLastEvent == dat->dwTickLastEvent)
-                    dat->pContainer->dwTickLastEvent = 0; */
                 dat->dwTickLastEvent = 0;
                 dat->dwFlags &= ~MWF_DIVIDERSET;
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
@@ -1848,7 +1818,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
-    // XXX autolocale stuff
+                // XXX autolocale stuff
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0)
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -2087,7 +2057,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_REMAKELOG:
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             break;
-        case DM_APPENDTOLOG:   //takes wParam=hDbEvent
+        case DM_APPENDTOLOG:
             StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
             break;
         case DM_SCROLLLOGTOBOTTOM:
@@ -2151,12 +2121,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->lastMessage = dbei.timestamp;
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
                     }
-                        
                     /*
                      * set the message log divider to mark new (maybe unseen) messages, if the container has
                      * been minimized or in the background.
                      */
-                    
                     if(!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         int iDividerSet = 0;
                         
@@ -2222,8 +2190,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      */
                     if(!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         if(IsIconic(dat->pContainer->hwnd) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0) && dat->pContainer->hwndActive != hwndDlg) {
-                            //SendMessage(dat->pContainer->hwndActive, DM_QUERYLASTUNREAD, 0, (LPARAM)&dwTimestamp);
-                            //if(!dwTimestamp) {      // the active tab has no unread events, so we can switch safely...
                             int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
                             if (iItem >= 0) {
                                 TabCtrl_SetCurSel(GetParent(hwndDlg), iItem);
@@ -2232,7 +2198,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                                 dat->pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
                             }
-                            //}
                         }
                     }
                     /*
@@ -2247,6 +2212,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 dat->pContainer->isFlashing = TRUE;
                             }
                         }
+                        // XXX set the message icon in the container
+                        SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+                        dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                     }
                 }
                 break;
@@ -2298,6 +2266,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if (dat->showTypingWin) {
                             SendMessage(dat->pContainer->hwnd, DM_UPDATEWINICON, 0, 0);
                             HandleIconFeedback(hwndDlg, dat, -1);
+                            SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, 0, 0);
                         }
                         dat->showTyping = 0;
                     }
@@ -2313,7 +2282,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) g_buttonBarIcons[5]);
                         }
                         if(IsIconic(dat->pContainer->hwnd) || GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd) {
-                            if(IsIconic(dat->pContainer->hwnd) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0)) {
+                            if(IsIconic(dat->pContainer->hwnd)) {
                                 SetWindowTextA(dat->pContainer->hwnd, szBuf);
                                 dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                             }
@@ -2331,7 +2300,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             }
                         }
                         if ((dat->showTypingWin && GetForegroundWindow() != dat->pContainer->hwnd) || (dat->showTypingWin && dat->pContainer->hwndStatus == 0))
-                            SendMessage(dat->pContainer->hwnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) g_buttonBarIcons[5]);
+                            SendMessage(dat->pContainer->hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) g_buttonBarIcons[5]);
                         dat->showTyping = 1;
                     }
                 }
@@ -2502,7 +2471,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 dat->dwFlags &= ~MWF_NEEDCHECKSIZE;
                 if(dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
-                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
                     dat->dwFlags &= ~MWF_INITMODE;
                     if(dat->lastMessage)
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
@@ -2518,11 +2486,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     }
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    PostMessage(hwndDlg, WM_SIZE, 0, 0);
+                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                 }
-                SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
+                else {
+                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
+                }
                 break;
             }
         case DM_CHECKSIZE:
@@ -4974,3 +4945,4 @@ static void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat)
         }
     }
 }
+

@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
 
+#define DM_GETSTATUSMASK (WM_USER + 10)
+
 extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 extern HWND g_hwndHotkeyHandler;
@@ -34,6 +36,7 @@ HMENU BuildContainerMenu();
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
+static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -117,10 +120,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             
             CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE));
             CheckDlgButton(hwndDlg, IDC_SHOWINFOLINE, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE));
-            CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
             CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
             CheckDlgButton(hwndDlg, IDC_SENDONENTER, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER));
-            CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
             CheckDlgButton(hwndDlg, IDC_SHOWSENDBTN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON));
 
             SendDlgItemMessageA(hwndDlg, IDC_NOTIFYTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("None"));
@@ -207,11 +208,9 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONLINE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINFOLINE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOMIN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOCLOSE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCLOSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONENTER));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STATUSWIN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSENDBTN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "debuginfo", (BYTE) SendDlgItemMessage(hwndDlg, IDC_NOTIFYTYPE, CB_GETCURSEL, 0, 0));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usedividers", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USEDIVIDERS));
@@ -593,6 +592,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             CheckDlgButton(hwndDlg, IDC_FULLUSERNAME, DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1));
             CheckDlgButton(hwndDlg, IDC_ESC_MINIMIZE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0));
             CheckDlgButton(hwndDlg, IDC_SPLITTERSTATICEDGES, DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1));
+            CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
 
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 1));
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, DBGetContactSettingWord(NULL, SRMSGMOD_T, "y-pad", 3));
@@ -635,7 +635,17 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
                     break;
+                case IDC_AUTOPOPUP:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATECONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATETABS), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_POPUPCONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATECONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
+                    break;
+                case IDC_SETUPAUTOCREATEMODES:
+                    CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hwndDlg, DlgProcSetupStatusModes);
+                    break;
             }
+           
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
         case WM_NOTIFY:
@@ -661,7 +671,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeymodifier", (BYTE) SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_GETCURSEL, 0, 0));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HOTKEYSAREGLOBAL));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SPLITTERSTATICEDGES));
-
+                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
                             SendMessage(g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
                             SendMessage(g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
@@ -1360,3 +1370,66 @@ int InitOptions(void)
     HookEvent(ME_OPT_INITIALISE, OptInitialise);
     return 0;
 }
+
+static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    DWORD dwStatusMask = DBGetContactSettingDword(NULL, SRMSGMOD_T, "autopopupmask", -1);
+    static DWORD dwNewStatusMask = 0;
+    
+    switch (msg) {
+        case WM_INITDIALOG:
+        {
+            int i;
+            
+            SetWindowTextA(hwndDlg, Translate("Choose status modes"));
+            for(i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
+                SetWindowTextA(GetDlgItem(hwndDlg, i), Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0)));
+                if(dwStatusMask != -1 && (dwStatusMask & (1<<(i - ID_STATUS_ONLINE))))
+                    CheckDlgButton(hwndDlg, i, TRUE);
+                EnableWindow(GetDlgItem(hwndDlg, i), dwStatusMask != -1);
+            }
+            if(dwStatusMask == -1)
+                CheckDlgButton(hwndDlg, IDC_ALWAYS, TRUE);
+            ShowWindow(hwndDlg, SW_SHOWNORMAL);
+            return TRUE;
+        }
+        case DM_GETSTATUSMASK:
+            {
+                if(IsDlgButtonChecked(hwndDlg, IDC_ALWAYS))
+                    dwNewStatusMask = -1;
+                else {
+                    int i;
+                    dwNewStatusMask = 0;
+                    for(i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
+                        dwNewStatusMask |= (IsDlgButtonChecked(hwndDlg, i) ? (1<<(i - ID_STATUS_ONLINE)) : 0);
+                }
+                break;
+            }
+        case WM_COMMAND:
+            {
+                switch (LOWORD(wParam)) {
+                    case IDOK:
+                    case IDCANCEL:
+                        if(LOWORD(wParam) == IDOK) {
+                            SendMessage(hwndDlg, DM_GETSTATUSMASK, 0, 0);
+                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "autopopupmask", dwNewStatusMask);
+                        }
+                        DestroyWindow(hwndDlg);
+                        break;
+                    case IDC_ALWAYS:
+                        {
+                        int i;
+                        for(i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
+                            EnableWindow(GetDlgItem(hwndDlg, i), !IsDlgButtonChecked(hwndDlg, IDC_ALWAYS));
+                        break;
+                        }
+                    default:
+                        break;
+                }
+            }
+        default:
+            break;
+    }
+    return FALSE;
+}
+

@@ -2,6 +2,18 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
+
+#define IDC_ONLINE                      40072
+#define IDC_INVISIBLE                   40078
+#define IDC_NA                          40075
+#define IDC_OCCUPIED                    40076
+#define IDC_DND                         40074
+#define IDC_AWAY                        40073
+#define IDC_ONTHEPHONE                  40079
+#define IDC_OUTTOLUNCH                  40080
+#define IDC_FREEFORCHAT                 40077
+
+
 #define IDC_READNEXT                    3
 #define IDC_APPLY                       3
 #define IDR_CONTEXT                     180
@@ -22,6 +34,7 @@
 #define IDD_OPT_CONTAINERS              301
 #define IDD_HOTKEYSLAVE                 303
 #define IDR_MENUBAR                     308
+#define IDD_CHOOSESTATUSMODES           310
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003
@@ -163,6 +176,7 @@
 #define IDC_O_FLASHDEFAULT              1634
 #define IDC_FLASHDEFAULT                1634
 #define IDC_DEFAULTCONTAINERMODE        1634
+#define IDC_ALWAYS                      1634
 #define IDOK1                           1635
 #define IDC_FULLUSERNAME                1636
 #define IDC_CHECK5                      1637
@@ -179,6 +193,7 @@
 #define IDC_LOADDEFAULTS                1642
 #define IDC_SENDLATER                   1642
 #define IDC_RETRY                       1642
+#define IDC_SETUPAUTOCREATEMODES        1642
 #define IDC_DELETECONTAINER             1643
 #define IDC_CANCELSEND                  1643
 #define IDC_O_FLASHALWAYS               1644
@@ -252,6 +267,7 @@
 #define IDC_EVENTAPI                    1699
 #define IDC_CHECK7                      1700
 #define IDC_DELETETEMP                  1700
+#define IDC_CHECK8                      1701
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -371,9 +387,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        310
+#define _APS_NEXT_RESOURCE_VALUE        311
 #define _APS_NEXT_COMMAND_VALUE         40174
-#define _APS_NEXT_CONTROL_VALUE         1701
+#define _APS_NEXT_CONTROL_VALUE         1702
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

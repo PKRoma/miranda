@@ -288,15 +288,15 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [pixels]
 
-[Automatically create tabs in the background]
+[Create tabs and containers]
 
-[NOTE: these settings have no effect if you are using the ""auto popup"" feature.]
-
-[Auto create tab on event]
+[Create tabs in the background]
 
 [Popup container if minimized]
 
-[Also create Container, but do not activate it.]
+[Create containers, but leave them minimized]
+
+[Setup status modes...]
 
 [Message dialog layout]
 

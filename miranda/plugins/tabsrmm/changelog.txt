@@ -89,13 +89,26 @@ Version 0.9.9.0 - 2005/01/08 - BETA
           and the active protocol.
           
         ! (hopefully) fixed a possible "crash at exit" problem.
+
+-----------------------
         
         + session stats tracking code added. tabSRMM will now track the stats of a
           session, including the session length, the number of sent and received
           messages, the total amount of sent and received characters, and the number
           of delivery failures.
           There is no code (yet) to display these stats though.
+
+-----------------------
+          
+        + merged bids crash fixes for the smileyadd plugin into my own version of
+          smileyadd for tabSRMM.
+          
+        + added versioninfo block to the resources.
         
+        + added an option to specify on which status modes, windows and tabs may be
+          created automatically on incoming events.
+          Check "Options->Message sessions->Message tabs->Setup Status modes...
+
 Version 0.0.9.5 - 2005/01/04
 
         ! fixed close tab on double click

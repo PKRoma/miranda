@@ -594,8 +594,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 TCHAR newtitle[256], oldtitle[256];
                 WORD wStatus = -1;
                 TCHAR tTemp[204];
-                BYTE showStatus = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
 
+                if(wParam == 0)             // no hContact given - obtain the hContact for the active tab
+                    SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME) {
                     contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0);
                 }
@@ -603,7 +605,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 temp[0] = '\0';
                 tTemp[0] = '\0';
                 
-                if((pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) || showStatus) {
+                if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
                     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
                     if (szProto) {
                         wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
@@ -645,8 +647,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(lstrcmpA(newtitle, oldtitle))
                    SetWindowTextA(hwndDlg, (LPCSTR) newtitle);
 #endif                
-                if (showStatus && wStatus != (WORD)-1)
-                    SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(szProto, wStatus));
+                if (wStatus != (WORD)-1)
+                    SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(szProto, wStatus));
                 break;
             }               
         case WM_TIMER:
@@ -1419,6 +1421,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 break;
             }
+        case DM_SETICON:
+            {
+                HICON hIconMsg = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+                if(pContainer->hIcon == hIconMsg && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
+                    break;          // don't overwrite the new message indicator flag
+                SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
+                pContainer->hIcon = (HICON)lParam;
+                break;
+            }
         case WM_DRAWITEM:
             return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
         case WM_MEASUREITEM:
@@ -1429,7 +1440,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 HICON hIcon;
                 HANDLE hContact;
                 char *szProto;
-                BYTE showStatus = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
                 
                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
 
@@ -1440,11 +1450,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
 
-                    if (!showStatus) {
-                        SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-                        break;
-                    }
-                    SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
+                    SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
                     break;
                 }
                 break;

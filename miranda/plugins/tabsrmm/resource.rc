@@ -15,6 +15,74 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CHOOSESTATUSMODES DIALOGEX 0, 0, 226, 154
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,112,133,50,14
+    PUSHBUTTON      "Abbrechen",IDCANCEL,169,133,50,14
+    CONTROL         "All modes",IDC_ALWAYS,"Button",BS_AUTOCHECKBOX,19,17,
+                    70,14
+    GROUPBOX        "Choose modes",IDC_STATIC,7,7,212,119
+    CONTROL         "",IDC_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,
+                    39,82,11
+    CONTROL         "",IDC_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,54,
+                    82,11
+    CONTROL         "",IDC_NA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,69,82,
+                    11
+    CONTROL         "",IDC_DND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,84,
+                    82,11
+    CONTROL         "",IDC_OCCUPIED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    114,39,82,11
+    CONTROL         "",IDC_INVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    114,54,82,11
+    CONTROL         "",IDC_ONTHEPHONE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    114,69,82,11
+    CONTROL         "",IDC_OUTTOLUNCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    114,84,82,11
+    CONTROL         "",IDC_FREEFORCHAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,99,82,11
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CHOOSESTATUSMODES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // Neutral (Standard) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
@@ -201,20 +269,14 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Options",IDC_STATIC,0,1,310,223
-    CONTROL         "Automatically pop up the window/tab when a message is received",
-                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,11,
-                    300,10
-    CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,22,
-                    295,10
     CONTROL         "Automatically switch tabs in minimized containers",
                     IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,34,295,10
+                    8,12,295,10
     CONTROL         "Place dividers in inactive sessions",IDC_USEDIVIDERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,46,295,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,23,295,11
     CONTROL         "Use popup configuration for placing dividers",
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,19,57,271,11
+                    WS_TABSTOP,19,35,271,11
     CONTROL         "Resize avatar larger than",IDC_LIMITAVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,70,115,10
     EDITTEXT        IDC_MAXAVATARHEIGHT,126,68,38,12,ES_AUTOHSCROLL | 
@@ -399,30 +461,27 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,31,11,
                     13
     LTEXT           "pixel",IDC_STATIC,267,34,28,11
-    GROUPBOX        "Automatically create tabs in the background",IDC_STATIC,
-                    0,65,311,46
-    LTEXT           "NOTE: these settings have no effect if you are using the ""auto popup"" feature.",
-                    IDC_STATIC,17,75,282,11
-    CONTROL         "Auto create tab on event",IDC_AUTOCREATETABS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,6,85,129,11
+    GROUPBOX        "Create tabs and containers",IDC_STATIC,0,65,311,52
+    CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,86,134,11
     CONTROL         "Popup container if minimized",IDC_POPUPCONTAINER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,6,96,132,11
-    CONTROL         "Also create Container, but do not activate it.",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,97,132,11
+    CONTROL         "Create containers, but leave them minimized",
                     IDC_AUTOCREATECONTAINER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,143,96,162,11
-    GROUPBOX        "Message dialog layout",IDC_STATIC,0,113,311,49
+                    WS_TABSTOP,143,86,162,11
+    GROUPBOX        "Message dialog layout",IDC_STATIC,0,120,311,42
     CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,123,133,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,132,133,11
     CONTROL         "Show full UIN on toolbar",IDC_FULLUSERNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,134,133,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,143,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,133,152,11
-    LTEXT           "Tab control border",IDC_STATIC,154,123,74,12
-    EDITTEXT        IDC_TABBORDER,233,121,28,13,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,142,152,11
+    LTEXT           "Tab control border",IDC_STATIC,154,132,74,12
+    EDITTEXT        IDC_TABBORDER,233,130,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,122,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,127,
                     11,13
-    LTEXT           "pixel",IDC_STATIC,268,123,35,10
+    LTEXT           "pixel",IDC_STATIC,268,132,35,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,311,62
     CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,173,141,12
@@ -440,6 +499,11 @@ BEGIN
     LTEXT           "Modifiers",IDC_STATIC,17,210,66,11
     COMBOBOX        IDC_MODIFIERS,87,208,84,50,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Automatically pop up the window/tab when a message is received",
+                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,75,
+                    300,10
+    PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,142,99,
+                    154,14
 END
 
 IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
@@ -946,12 +1010,52 @@ BEGIN
         MENUITEM "Apply Container Options globally", 
                                                 ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY
 
-        MENUITEM "Set current Options as Default Values", 
+        MENUITEM "Set current Options as Default Values",
                                                 ID_OPTIONS_SETCURRENTOPTIONSASDEFAULTVALUES
 
         MENUITEM "Save current Window Position as Default", 
                                                 ID_OPTIONS_SAVECURRENTWINDOWPOSITIONASDEFAULT
 
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,9,9,0
+ PRODUCTVERSION 0,9,9,0
+ FILEFLAGSMASK 0x37L
+#ifdef _DEBUG
+ FILEFLAGS 0x21L
+#else
+ FILEFLAGS 0x20L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
+            VALUE "FileVersion", "0, 9, 9, 0"
+            VALUE "InternalName", "tabSRMsg"
+            VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
+            VALUE "LegalTrademarks", "Gnu General Public License"
+            VALUE "OriginalFilename", "tabSRMM.dll"
+            VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
+            VALUE "ProductVersion", "0, 9, 9, 0"
+            VALUE "SpecialBuild", "pre-1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
     END
 END
 
@@ -969,3 +1073,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+

@@ -78,6 +78,7 @@ struct ContainerWindowData {
     int volatile pendingStream;
 #endif
     DWORD dwLastActivity;
+    HICON hIcon;                // current window icon
 };
 
 struct MessageSendInfo {

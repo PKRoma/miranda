@@ -245,12 +245,10 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     char *contactName;
     char toolTip[256];
     HWND hwnd;
-    BYTE bAutoPopup = FALSE, bAutoCreate = FALSE, bAutoContainer = FALSE;
+    BYTE bAutoPopup = FALSE, bAutoCreate = FALSE, bAutoContainer = FALSE, bAllowAutoCreate = 0;
     struct ContainerWindowData *pContainer = 0;
     TCHAR szName[CONTAINER_NAMELEN + 1];
-    
-    // int split = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT);
-    int split = 1;
+    DWORD dwStatusMask = 0;
     
     ZeroMemory(&dbei, sizeof(dbei));
     dbei.cbSize = sizeof(dbei);
@@ -280,20 +278,6 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
         if (iPlay)
             SkinPlaySound("RecvMsg");
     
-        // For single mode, the icon is needed or else closing the message window with a new
-        // event means the user can't open the new event
-        if (!split) {
-            ZeroMemory(&cle, sizeof(cle));
-            cle.cbSize = sizeof(cle);
-            cle.hContact = (HANDLE) wParam;
-            cle.hDbEvent = (HANDLE) lParam;
-            cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-            cle.pszService = "SRMsg/ReadMessage";
-            contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-            _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
-            cle.pszTooltip = toolTip;
-            CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
-        }
         return 0;
     }
     /* new message */
@@ -304,8 +288,21 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     bAutoPopup = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
     bAutoCreate = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 0);
     bAutoContainer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", 0);
+    dwStatusMask = DBGetContactSettingDword(NULL, SRMSGMOD_T, "autopopupmask", -1);
+
+    bAllowAutoCreate = FALSE;
     
-    if (bAutoPopup || bAutoCreate) {
+    if(dwStatusMask == -1)
+        bAllowAutoCreate = TRUE;
+    else {
+        char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
+        DWORD dwStatus = 0;
+        if(szProto)
+            dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+        if(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & dwStatusMask))              // should never happen, but...
+            bAllowAutoCreate = TRUE;
+    }
+    if (bAllowAutoCreate && (bAutoPopup || bAutoCreate)) {
         BOOL bActivate = TRUE, bPopup = TRUE;
         struct NewMessageWindowLParam newData = { 0 };
         newData.hContact = (HANDLE) wParam;
@@ -375,7 +372,6 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
     struct NewMessageWindowLParam newData = { 0 };
     struct ContainerWindowData *pContainer = 0;
     
-	// int isSplit = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT);
     int isSplit = 1;
     
     /* does the HCONTACT's protocol support IM messages? */
@@ -1064,8 +1060,12 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
             if(pContainer->isFlashing)
                 pContainer->nFlash = 0;
             else {
-                SetTimer(pContainer->hwnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
-                pContainer->isFlashing = TRUE;
+                if(pContainer->dwFlags & CNT_NOFLASH)
+                    SendMessage(pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+                else {
+                    SetTimer(pContainer->hwnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+                    pContainer->isFlashing = TRUE;
+                }
             }
         }
     }
