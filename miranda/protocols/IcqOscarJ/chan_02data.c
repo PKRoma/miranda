@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Handle channel 2 (Data) packets
 //
 // -----------------------------------------------------------------------------
 
@@ -101,7 +102,7 @@ void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength)
 	}
 	
 	// Clean up and exit
-	SAFE_FREE(pSnacHeader);
+	SAFE_FREE(&pSnacHeader);
 
 }
 
@@ -110,6 +111,7 @@ snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
 {
 
 	snac_header* pSnacHeader = NULL;
+  WORD wRef1, wRef2;
 
 
 	// Create a empty header
@@ -128,7 +130,11 @@ snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
 	unpackWord(pBuffer,  &(pSnacHeader->wFamily));
 	unpackWord(pBuffer,  &(pSnacHeader->wSubtype));
 	unpackWord(pBuffer,  &(pSnacHeader->wFlags));
-	unpackDWord(pBuffer, &(pSnacHeader->dwRef));
+  unpackWord(pBuffer,  &wRef1); // unpack reference id (sequence)
+  unpackWord(pBuffer,  &wRef2); // command
+  pSnacHeader->dwRef = wRef1 | (wRef2<<0x10);
+
+	//unpackDWord(pBuffer, &(pSnacHeader->dwRef));
 	*pwBufferLength -= 10;
 	
 	// If flag bit 15 is set, we also have a version tag
