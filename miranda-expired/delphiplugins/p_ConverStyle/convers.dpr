@@ -59,7 +59,6 @@ uses
   langpacktools in '..\units\langpacktools.pas';
 
 {$R *.RES}
-{ $R optdlgs.res}
 
 
 
@@ -216,7 +215,7 @@ begin
     SkinPlaySound(PluginLink,'RecvMsg');
     end;
   finally
-  freemem()
+  freemem(dbei.pBlob)
   end;
 end;
 
@@ -236,28 +235,6 @@ begin
       end;
 end;
 
-function OnOptInitialise(wParam{addinfo},lParam{0}:DWord):integer;cdecl;
-//var
-//  odp:TOPTIONSDIALOGPAGE;
-begin
-{ ZeroMemory(@odp,sizeof(odp));
-  odp.cbSize:=sizeof(odp);
-  odp.Position:=900000000;
-  odp.hInstance:=hInstance;
-  odp.pszTemplate:='DLG_MISCOPTIONS';
-  odp.pszTitle:='Convers. Plugin';
-  odp.pfnDlgProc:=@optionfrm.DlgProcMiscOptions;
-  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
-
-  odp.pszTemplate:='DLG_SENDOPTIONS';
-  odp.pszGroup:='Convers.. Plugin';
-  odp.pszTitle:='Send Message';
-  odp.groupPosition:=-50;
-  odp.pfnDlgProc:=@optionfrm.DlgProcSendOptions;
-  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp)); }
-  Result:=0;
-end;
-
 
 function OnModulesLoad(wParam{0},lParam{0}:DWord):integer;cdecl;
 //init plugin
@@ -272,7 +249,6 @@ begin
 
   PluginLink.HookEvent(ME_DB_EVENT_ADDED,OnMessageEventAdded);
   PluginLink.HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnUserSettingChage);
-  PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInitialise);
 
   //create menu item in contact menu
   menuitem.cbSize:=sizeof(menuitem);
