@@ -55,6 +55,13 @@ Version 0.9.9.5 - 2005/01/XX
         ! fixed a resizing issue with "windowshade" mode (if you're using windowblinds or other
           utilities which support "rolling up" a window and reduce it to the title bar only.
 
+        * changed the option pages to use a tab control. Now, tabSRMM inserts not more than
+          2 entries into the options "tree" of Mirandas main options dialog.
+          * Message windows (all settings concerning the log, containers, layout etc.)
+          * typing notify (the old typing notify dialog).
+          
+          Thanks to JdGordon for providing the sample source code :)
+
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE
