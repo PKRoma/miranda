@@ -67,8 +67,20 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         GetClientRect(GetDlgItem(hwndDlg, IDC_NAME), &rcname);
         infospace = (rcname.right - rcname.left) + 4;
     }
-    picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
-    picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
+    if(myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight < myGlobals.m_LimitStaticAvatarHeight && dat->iRealAvatarHeight == 0) {
+        picAspect = 1.0;
+        picProjectedWidth = (double)bminfo->bmWidth;
+        //if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds + infospace) && !myGlobals.m_AlwaysFullToolbarWidth)
+            dat->dynaSplitter = bminfo->bmHeight - ((dat->showUIElements != 0) ? 28 : 2);
+        //else
+            //dat->dynaSplitter = bminfo->bmHeight - 3;
+        dat->splitterY = dat->dynaSplitter + 34;
+//        _DebugPopup(dat->hContact, "%d, %d, %d", bminfo->bmHeight, dat->dynaSplitter, dat->iButtonBarNeeds);
+    }
+    else {
+        picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
+        picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
+    }
 
     if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds + infospace) && !myGlobals.m_AlwaysFullToolbarWidth) {
         dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2);
@@ -336,6 +348,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL:
                 iIgnorePerContact = !iIgnorePerContact;
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", iIgnorePerContact);
+                myGlobals.m_IgnoreContactSettings = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
                 return 1;
             case ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS:
                 {

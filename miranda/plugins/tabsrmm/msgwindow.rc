@@ -84,10 +84,10 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,92,32,16,
                     14,0x18000000L
-    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,108,32,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_FONTCOLOR,"MButtonClass",WS_TABSTOP,124,32,16,14,
-                    0x18000000L
+//    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,108,32,16,14,
+//                    0x18000000L
+//    CONTROL         "",IDC_FONTCOLOR,"MButtonClass",WS_TABSTOP,124,32,16,14,
+//                    0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
                     0x18000000L
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,31,187,1,

@@ -91,8 +91,8 @@ static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
 static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_MULTIPLE, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
-static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE, IDC_FONTFACE, IDC_FONTCOLOR};
-static const UINT controlsToHide[] = { IDC_PROTOCOL, IDC_PIC, IDC_MULTIPLE, IDC_FONTCOLOR, IDC_FONTFACE, -1 };
+static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
+static const UINT controlsToHide[] = { IDC_PIC, IDC_MULTIPLE, IDC_PROTOCOL, -1 };
 
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
@@ -1235,11 +1235,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dbtts.cbDest = sizeof(date);
                     dbtts.szDest = date;
                     CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
+                    if(lstrlenA(date) > 6)
+                        date[lstrlenA(date) - 5] = 0;
                     dbtts.szFormat = "t";
                     dbtts.cbDest = sizeof(time);
                     dbtts.szDest = time;
                     CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-                    _snprintf(fmt, sizeof(fmt), Translate("Last received on %s at %s"), date, time);
+                    _snprintf(fmt, sizeof(fmt), Translate("%s, last msg: %s, %s"), dat->uin, date, time);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
                 } else {
@@ -1270,7 +1272,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->iButtonBarNeeds = (dat->showUIElements & MWF_UI_SHOWSEND) ? 40 : 0;
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWBUTTON ? (dat->doSmileys ? 180 : 154) : 0);
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWINFO) ? 34 : 0;
-            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements & MWF_UI_SHOWFORMAT ? 140 : 0);
+            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements & MWF_UI_SHOWFORMAT ? 88 : 0);
                 
             if(dat->dwFlags & MWF_LOG_GRID && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0))
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1,1));     // XXX margins in the log (looks slightly better)
@@ -1624,18 +1626,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 delta = dat->iButtonBarReallyNeeds - buttonBarSpace;
 
-                for(i = 0;;i++) {
-                    if(saved < delta) {
-                        ShowWindow(GetDlgItem(hwndDlg, controlsToHide[i]), SW_HIDE);
-                        dat->controlsHidden = TRUE;
-                        saved += 26;
+                if(dat->showUIElements != 0) {
+                    for(i = 0;;i++) {
+                        if(saved < delta) {
+                            ShowWindow(GetDlgItem(hwndDlg, controlsToHide[i]), SW_HIDE);
+                            if(controlsToHide[i] == IDC_PROTOCOL)
+                                dat->controlsHidden = TRUE;
+                            saved += 26;
+                        }
+                        else {
+                            if(!IsWindowVisible(GetDlgItem(hwndDlg, controlsToHide[i])))
+                                ShowWindow(GetDlgItem(hwndDlg, controlsToHide[i]), SW_SHOW);
+                        }
+                        if(controlsToHide[i] == -1)
+                            break;
                     }
-                    else {
-                        if(!IsWindowVisible(GetDlgItem(hwndDlg, controlsToHide[i])))
-                            ShowWindow(GetDlgItem(hwndDlg, controlsToHide[i]), SW_SHOW);
-                    }
-                    if(controlsToHide[i] == -1)
-                        break;
                 }
                 
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
@@ -2178,7 +2183,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(!dat->hThread)
                         ShowPicture(hwndDlg,dat,FALSE,TRUE, TRUE);
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
-                    PostMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
@@ -2232,6 +2237,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         case DM_LOADSPLITTERPOS:
             {
+                if(dat->showPic && myGlobals.m_LimitStaticAvatarHeight > 0 && dat->hContactPic) {
+                    BITMAP bminfo;
+                    GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
+                    if(bminfo.bmHeight < myGlobals.m_LimitStaticAvatarHeight)
+                        break;
+                }
                 if(myGlobals.m_IgnoreContactSettings)
                     dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
                 else
@@ -3152,19 +3163,13 @@ verify:
              * updated to use RTF streaming and save rich text in utf8 format
              */
         case DM_SAVEPERCONTACT:
-            if (dat->showPic) {
-                if(!myGlobals.m_IgnoreContactSettings)
-                    DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
-                else
-                    DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
-            } else {
-                if (dat->hContact)
-                    DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
-            }
-            if (dat->hContact) {        // save contact specific settings
+            if (dat->hContact) {
                 if(!myGlobals.m_IgnoreContactSettings) {
+                    DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
                 }
+                else
+                    DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
             }
             DBWriteContactSettingDword(NULL, SRMSGMOD, "multisplit", dat->multiSplitterX);
             break;

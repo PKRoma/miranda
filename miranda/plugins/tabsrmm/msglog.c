@@ -64,7 +64,9 @@ extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 #if defined(_UNICODE)
-    extern int FormatText(HWND REdit, unsigned npos, unsigned maxlength);
+    extern WCHAR *FormatRaw(const WCHAR *msg);
+#else
+    extern char *FormatRaw(const char *msg);
 #endif
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
@@ -210,7 +212,7 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 
 #if defined( _UNICODE )
 
-static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR * line)
+static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR * line, int iFormatting)
 {
     DWORD textCharsCount = 0;
     char *d;
@@ -226,6 +228,32 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
     d += 6;
 
     for (; *line; line++, textCharsCount++) {
+        
+        if(iFormatting) {
+            if(*line == '%' && line[1] != 0) {
+                TCHAR code = line[2];
+                if(code == '0' || code == '1') {
+                    int begin = (code == '1');
+                    switch(line[1]) {
+                        case 'b':
+                            CopyMemory(d, begin ? "\\b " : "\\b0 ", begin ? 3 : 4);
+                            d += (begin ? 3 : 4);
+                            line += 2;
+                            continue;
+                        case 'i':
+                            CopyMemory(d, begin ? "\\i " : "\\i0 ", begin ? 3 : 4);
+                            d += (begin ? 3 : 4);
+                            line += 2;
+                            continue;
+                        case 'u':
+                            CopyMemory(d, begin ? "\\ul " : "\\ul0 ", begin ? 4 : 5);
+                            d += (begin ? 4 : 5);
+                            line += 2;
+                            continue;
+                    }
+                }
+            }
+        }
         if (*line == '\r' && line[1] == '\n') {
 // XXX indent mod
 			/*
@@ -265,7 +293,7 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
 #endif
 
 //same as above but does "\r\n"->"\\par " and "\t"->"\\tab " too
-static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
+static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
     va_list va;
     int charsDone, i;
@@ -281,6 +309,38 @@ static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferA
     va_end(va);
     *cbBufferEnd += charsDone;
     for (i = *cbBufferEnd - charsDone; (*buffer)[i]; i++) {
+
+        if(iFormatting) {
+            if((*buffer)[i] == '%' && (*buffer)[i + 1] != 0) {
+                char code = (*buffer)[i + 2];
+                if(code == '0' || code == '1') {
+                    int begin = (code == '1');
+
+                    if (*cbBufferEnd + 5 > *cbBufferAlloced) {
+                        *cbBufferAlloced += 1024;
+                        *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
+                    }
+                    switch((*buffer)[i + 1]) {
+                        case 'b':
+                            MoveMemory(*buffer + i + 1, *buffer + i + 1, *cbBufferEnd - i);
+                            CopyMemory(*buffer + i, begin ? "\\b1 " : "\\b0 ", 4);
+                            *cbBufferEnd += 1;
+                            continue;
+                        case 'i':
+                            MoveMemory(*buffer + i + 1, *buffer + i + 1, *cbBufferEnd - i);
+                            CopyMemory(*buffer + i, begin ? "\\i1 " : "\\i0 ", 4);
+                            *cbBufferEnd += 1;
+                            continue;
+                        case 'u':
+                            MoveMemory(*buffer + i + 2, *buffer + i + 1, *cbBufferEnd - i);
+                            CopyMemory(*buffer + i, begin ? "\\ul1 " : "\\ul0 ", 5);
+                            *cbBufferEnd += 2;
+                            continue;
+                    }
+                }
+            }
+        }
+        
         if ((*buffer)[i] == '\r' && (*buffer)[i + 1] == '\n') {
             if (*cbBufferEnd + 5 > *cbBufferAlloced) {
                 *cbBufferAlloced += 1024;
@@ -603,15 +663,15 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 
         if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_YOURTIME]);
-            AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s ", szFinalTimestamp);
+            AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s ", szFinalTimestamp);
             if(dbei.eventType == EVENTTYPE_STATUSCHANGE) {
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_YOURNAME]);
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
             }
             showColon = 0;
             if(dbei.eventType == EVENTTYPE_ERRMSG) {
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_ERROR]);
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s", dbei.szModule);
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "\r\n%s", dbei.szModule);
                 if(dbei.cbBlob != 0) {
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
@@ -646,7 +706,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         
 // events in a new line
 	if(dat->dwFlags & MWF_LOG_NEWLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG && g_groupBreak == TRUE)
-		AppendToBufferWithRTF(&buffer,&bufferEnd,&bufferAlloced,"\r\n");
+		AppendToBufferWithRTF(0, &buffer,&bufferEnd,&bufferAlloced,"\r\n");
 
     switch (dbei.eventType) {
         case EVENTTYPE_MESSAGE:
@@ -675,7 +735,12 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     //if(wcslen(msg) == (msglen - 1) && msg[msglen - 1] == (wchar_t)0x000) {
                         if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                             TrimMessage(msg);
-                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
+                        if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
+                            TCHAR *formatted = FormatRaw(msg);
+                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
+                        }
+                        else
+                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg, 0);
                     //}
                 }
                 else {
@@ -683,7 +748,12 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
                     if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                         TrimMessage(msg);
-                    AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
+                    if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
+                        TCHAR *formatted = FormatRaw(msg);
+                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
+                    }
+                    else
+                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg, 0);
                 }
             }
 #else   // unicode
@@ -692,7 +762,12 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 dat->stats.lastReceivedChars = lstrlenA(msg);
             if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                 TrimMessage(msg);
-            AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", msg);
+            if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
+                char *formatted = FormatRaw(msg);
+                AppendToBufferWithRTF(1, &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
+            }
+            else
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", msg);
 #endif      // unicode
 
             if(dbei.eventType == EVENTTYPE_ERRMSG) {
@@ -703,16 +778,16 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         }
         case EVENTTYPE_URL:
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset]);
-            AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob);
+            AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob);
             if ((dbei.pBlob + lstrlenA(dbei.pBlob) + 1) != NULL && lstrlenA(dbei.pBlob + lstrlenA(dbei.pBlob) + 1))
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, " (%s)", dbei.pBlob + lstrlenA(dbei.pBlob) + 1);
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, " (%s)", dbei.pBlob + lstrlenA(dbei.pBlob) + 1);
             break;
         case EVENTTYPE_FILE:
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset]);
             if ((dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1) != NULL && lstrlenA(dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1))
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s (%s)", dbei.pBlob + sizeof(DWORD), dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1);
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s (%s)", dbei.pBlob + sizeof(DWORD), dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1);
             else
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob + sizeof(DWORD));
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob + sizeof(DWORD));
             break;
     }
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf);
@@ -985,12 +1060,6 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 #endif            
         }
     }
-    /*
-     * do text formatting...
-     */
-
-    if(dat->dwFlags & MWF_LOG_TEXTFORMAT)
-        FormatText(hwndrtf, startAt, 0);
     
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);

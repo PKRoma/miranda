@@ -36,6 +36,7 @@ License: GPL
 #define __TSR_CXX
 #include "commonheaders.h"
 
+#include <tchar.h>
 #include <windows.h>
 #include <richedit.h>
 
@@ -47,6 +48,13 @@ License: GPL
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 
 #if defined(UNICODE)
+
+/* 
+ * old code (textformat plugin dealing directly in the edit control - not the best solution, but the author
+ * had no other choice as srmm never had an api for this...
+ */
+
+#if defined(OLD_FORMATTING)
 
 unsigned FormatSpan(HWND REdit, const std::wstring &text, unsigned npos, wchar_t prech)
 {
@@ -179,7 +187,7 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 				if (epos == old_text.size()-1) // end of stream
 					goto ok;
 				wchar_t next = old_text[epos+1];
-				if (found == sep && wcschr(post_chars, next)) // single word or end of sequence
+				if (found == sep && (wcschr(post_chars, next) || _istprint(next))) // single word or end of sequence
 					goto ok;
 
 				if (found == sep) {
@@ -203,10 +211,10 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 		std::wstring oldsub(old_text, p, epos-p+1);
 
 		unsigned first = oldsub.find_first_not_of(L"_*/");
-		if (first == oldsub.npos || oldsub[first] == ' ')
+		if (first == oldsub.npos || oldsub[first] == '\0')
 			goto miss;
 		unsigned last = oldsub.find_last_not_of(L"_*/");
-		if (last == oldsub.npos || oldsub[last] == ' ')
+		if (last == oldsub.npos || oldsub[last] == '\0')
 			goto miss;
 
 		if (oldsub.find(L"**") != oldsub.npos)
@@ -243,9 +251,57 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 	return npos;
 }
 
+#endif          // if defined(OLD_FORMATTING)
+
+static WCHAR *formatting_strings_begin[] = { L"%b1", L"%i1", L"%u1" };
+static WCHAR *formatting_strings_end[] = { L"%b0", L"%i0", L"%u0" };
+
+/*
+ * this translates formatting tags into rtf sequences...
+ */
+
+extern "C" const WCHAR *FormatRaw(const WCHAR *msg)
+{
+    static std::wstring message(msg);
+    unsigned beginmark = 0, endmark = 0, index;
+    WCHAR endmarker;
+    message.assign(msg);
+
+    if(message.find(L"://") != message.npos)
+       return(message.c_str());
+    
+    while((beginmark = message.find_first_of(L"*/_", beginmark)) != message.npos) {
+        endmarker = message[beginmark];
+        if((endmark = message.find_first_of(endmarker, beginmark + 1)) == message.npos)
+            break;
+        //wsprintf(debug, L"found: pair %d, %d", beginmark, endmark);
+        //MessageBoxW(0, debug, L"foo", MB_OK);
+        index = 0;
+        switch(endmarker) {
+            case '*':
+                index = 0;
+                break;
+            case '/':
+                index = 1;
+                break;
+            case '_':
+                index = 2;
+                break;
+        }
+        message.insert(endmark, L"%%");
+        message.replace(endmark, 3, formatting_strings_end[index]);
+        message.insert(beginmark, L"%%");
+        message.replace(beginmark, 3, formatting_strings_begin[index]);
+    }
+    //MessageBoxW(0, message.c_str(), L"foo", MB_OK);
+    return(message.c_str());
+}
+
 #else
 
 // ansi version
+
+#if defined(OLD_FORMATTING)
 
 unsigned FormatSpan(HWND REdit, const std::string &text, unsigned npos, char prech)
 {
@@ -429,6 +485,49 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 	npos += old_text.size() - opos;
 
 	return npos;
+}
+
+#endif // OLD_FORMATTING
+
+static char *formatting_strings_begin[] = { "%b1", "%i1", "%u1" };
+static char *formatting_strings_end[] = { "%b0", "%i0", "%u0" };
+
+/*
+ * this translates formatting tags into rtf sequences...
+ */
+
+extern "C" const char *FormatRaw(const char *msg)
+{
+    static std::string message(msg);
+    unsigned beginmark = 0, endmark = 0, index;
+    char endmarker;
+    message.assign(msg);
+    
+    while((beginmark = message.find_first_of("*/_", beginmark)) != message.npos) {
+        endmarker = message[beginmark];
+        if((endmark = message.find_first_of(endmarker, beginmark + 1)) == message.npos)
+            break;
+        //wsprintf(debug, L"found: pair %d, %d", beginmark, endmark);
+        //MessageBoxW(0, debug, L"foo", MB_OK);
+        index = 0;
+        switch(endmarker) {
+            case '*':
+                index = 0;
+                break;
+            case '/':
+                index = 1;
+                break;
+            case '_':
+                index = 2;
+                break;
+        }
+        message.insert(endmark, "%%");
+        message.replace(endmark, 3, formatting_strings_end[index]);
+        message.insert(beginmark, "%%");
+        message.replace(beginmark, 3, formatting_strings_begin[index]);
+    }
+    //MessageBoxW(0, message.c_str(), L"foo", MB_OK);
+    return(message.c_str());
 }
 
 #endif
