@@ -1976,3 +1976,15 @@ int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
 }
 
 
+
+int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam)
+{
+  if (gnCurrentStatus != ID_STATUS_OFFLINE && gnCurrentStatus != ID_STATUS_CONNECTING && wParam != 0)
+  {
+    DWORD dwUin = DBGetContactSettingDword((HANDLE)wParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+    if (dwUin) // send without reason, do we need any ?
+      icq_sendGrantAuthServ(dwUin, NULL);
+  }
+
+  return 0;
+}

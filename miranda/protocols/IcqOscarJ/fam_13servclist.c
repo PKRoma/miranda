@@ -48,6 +48,7 @@ extern WORD wListenPort;
 
 BOOL bIsSyncingCL = FALSE;
 
+static void handleServerCListAck(servlistcookie* sc, WORD wError);
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags);
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen);
 static void handleRecvAuthResponse(unsigned char *buf, WORD wLen);
@@ -60,9 +61,8 @@ void sendRosterAck(void);
 
 void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
-
-	switch (pSnacHeader->wSubtype)
-	{
+  switch (pSnacHeader->wSubtype)
+  {
 
   case ICQ_LISTS_ACK: // UPDATE_ACK
     if (wBufferLength >= 2)
@@ -79,66 +79,17 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
         Netlib_Logf(ghServerNetlibUser, "Received expected server list ack, action: %d, result: %d", sc->dwAction, wError);
 #endif
         FreeCookie(pSnacHeader->dwRef); // release cookie
-        switch (sc->dwAction)
-        {
-        case 1: // update visibility
-          {
-            if (wError)
-              Netlib_Logf(ghServerNetlibUser, "Server visibility update failed, error %d", wError);
-            break;
-          }
-        case 2: // update nick
-          {
-            if (wError)
-            {
-              Netlib_Logf(ghServerNetlibUser, "Renaming of server contact failed, error %d", wError);
-              icq_LogMessage(LOG_WARNING, Translate("Renaming of server contact failed."));
-            }
-            break;
-          }
-        case 3: // update comment
-          {
-            if (wError)
-            {
-              Netlib_Logf(ghServerNetlibUser, "Update of server contact's comment failed, error %d", wError);
-              icq_LogMessage(LOG_WARNING, Translate("Update of server contact's comment failed."));
-            }
-            break;
-          }
-        case 0xA: // add privacy item
-          {
-            if (wError)
-            {
-              Netlib_Logf(ghServerNetlibUser, "Adding of privacy item to server list failed, error %d", wError);
-              icq_LogMessage(LOG_WARNING, Translate("Adding of privacy item to server list failed."));
-            }
-            break;
-          }
-        case 0xB: // remove privacy item
-          {
-            if (wError)
-            {
-              Netlib_Logf(ghServerNetlibUser, "Removing of privacy item from server list failed, error %d", wError);
-              icq_LogMessage(LOG_WARNING, Translate("Removing of privacy item from server list failed."));
-            }
-            FreeServerID(sc->wContactId); // release server id
-            break;
 
-          }
-        default:
-          Netlib_Logf(ghServerNetlibUser, "Server ack cookie type (%d) not recognized.", sc->dwAction);
-        }
-        SAFE_FREE(&sc); // free the memory
+        handleServerCListAck(sc, wError);
       }
       else
       {
         Netlib_Logf(ghServerNetlibUser, "Received unexpected server list ack %u", wError);
         // TODO: remove; this is used only in upload ui
-			  ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_SERVERCLIST, wError?ACKRESULT_FAILED:ACKRESULT_SUCCESS, (HANDLE)pSnacHeader->dwRef, wError);
+        ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_SERVERCLIST, wError?ACKRESULT_FAILED:ACKRESULT_SUCCESS, (HANDLE)pSnacHeader->dwRef, wError);
       }
-
-		}
-		break;
+    }
+    break;
 
   case ICQ_LISTS_SRV_REPLYLISTS:
     /* received list rights, we just skip them */
@@ -191,6 +142,8 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 		  Netlib_Logf(ghServerNetlibUser, "Server stated roster is ok.");
 #endif
       FreeCookie(pSnacHeader->dwRef);
+      LoadServerIDs();
+
       SAFE_FREE(&sc);
     }
     else
@@ -210,16 +163,23 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 		Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x12) - End of server modification");
 		break;
 
+  case ICQ_LISTS_REMOVEFROMLIST:
+    Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x0A) - User removed from our contact list");
+    break;
+
 	case ICQ_LISTS_AUTHREQUEST:
 		handleRecvAuthRequest(pBuffer, wBufferLength);
 		break;
 
-	case ICQ_LISTS_AUTHRESPONSE2:
+	case ICQ_LISTS_SRV_AUTHRESPONSE:
 		handleRecvAuthResponse(pBuffer, wBufferLength);
 		break;
 
+	case ICQ_LISTS_AUTHGRANTED:
+    Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x15) - User granted us future authorization");
+    break;
+
 	case ICQ_LISTS_YOUWEREADDED:
-	case ICQ_LISTS_YOUWEREADDED2:
 		handleRecvAdded(pBuffer, wBufferLength);
 		break;
 
@@ -229,6 +189,247 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
 	}
 
+}
+
+
+
+static void handleServerCListAck(servlistcookie* sc, WORD wError)
+{
+  switch (sc->dwAction)
+  {
+  case SSA_VISIBILITY: 
+    {
+      if (wError)
+        Netlib_Logf(ghServerNetlibUser, "Server visibility update failed, error %d", wError);
+      break;
+    }
+  case SSA_CONTACT_RENAME: 
+    {
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Renaming of server contact failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Renaming of server contact failed."));
+      }
+      break;
+    }
+  case SSA_CONTACT_COMMENT: 
+    {
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Update of server contact's comment failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Update of server contact's comment failed."));
+      }
+      break;
+    }
+  case SSA_PRIVACY_ADD: 
+    {
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Adding of privacy item to server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Adding of privacy item to server list failed."));
+      }
+      break;
+    }
+  case SSA_PRIVACY_REMOVE: 
+    {
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Removing of privacy item from server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Removing of privacy item from server list failed."));
+      }
+      FreeServerID(sc->wContactId); // release server id
+      break;
+    }
+  case SSA_CONTACT_ADD:
+    {
+      if (wError)
+      {
+        if (wError == 0xE) // server refused to add contact w/o auth, add with
+        {
+          DWORD dwCookie;
+
+          Netlib_Logf(ghServerNetlibUser, "Contact could not be added without authorisation, add with await auth flag.");
+
+          DBWriteContactSettingByte(sc->hContact, gpszICQProtoName, "Auth", 1); // we need auth
+          dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, sc->dwUin, sc);
+          icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc->wGroupId, sc->wContactId, sc->szGroupName, NULL, 1, SSI_ITEM_BUDDY);
+
+          sc = NULL; // we do not want it to be freed now
+          break;
+        }
+        FreeServerID(sc->wContactId);
+        SAFE_FREE(&sc->szGroupName); // the the nick
+        sendAddEnd(); // end server modifications here
+
+        Netlib_Logf(ghServerNetlibUser, "Adding of contact to server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Adding of contact to server list failed."));
+      }
+      else
+      {
+        void* groupData;
+        int groupSize;
+
+        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", sc->wContactId);
+	      DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", sc->wGroupId);
+        SAFE_FREE(&sc->szGroupName); // free the nick
+
+        if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
+        { // the group is not empty, just update it
+          DWORD dwCookie;
+
+          sc->dwAction = SSA_GROUP_UPDATE;
+          sc->wContactId = 0;
+          sc->hContact = NULL;
+          sc->szGroupName = getServerGroupName(sc->wGroupId);
+          dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, sc);
+
+          icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, sc->wGroupId, sc->szGroupName, groupData, groupSize);
+          sendAddEnd(); // end server modifications here
+
+          sc = NULL; // we do not want it to be freed now
+        }
+        else
+        { // this should never happen
+          Netlib_Logf(ghServerNetlibUser, "Group update failed.");
+          sendAddEnd(); // end server modifications here
+        }
+      }
+    }
+  case SSA_GROUP_ADD:
+    {
+      SAFE_FREE(&sc->szGroupName);
+      if (wError)
+      {
+        FreeServerID(sc->wGroupId);
+        Netlib_Logf(ghServerNetlibUser, "Adding of group to server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Adding of group to server list failed."));
+      }
+      else // group added, we need to update master group
+      {
+        void* groupData;
+        int groupSize;
+        DWORD dwCookie;
+
+        setServerGroupName(sc->wGroupId, NULL); // clear group from namelist
+
+        groupData = collectGroups(&groupSize);
+        groupData = realloc(groupData, groupSize+2);
+        *(((WORD*)groupData)+(groupSize>>1)) = sc->wGroupId; // add this new group id
+        sc->wGroupId = 0;
+        sc->dwAction = SSA_GROUP_UPDATE;
+        sc->szGroupName = "";
+        dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, sc);
+
+        icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, sc->szGroupName, groupData, groupSize);
+        sendAddEnd(); // end server modifications here
+
+        SAFE_FREE(&groupData);
+
+        if (sc->ofCallback) // is add contact pending
+        {
+          sc->ofCallback(NULL, sc->wGroupId, (LPARAM)sc);
+          sc = NULL; // we do not want to be freed here
+        }
+      }
+      break;
+    }
+  case SSA_CONTACT_REMOVE:
+    {
+      if (!wError)
+      {
+        void* groupData;
+        int groupSize;
+
+        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", 0); // clear the values
+        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", 0);
+
+        FreeServerID(sc->wContactId); 
+              
+        if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
+        { // the group is still not empty, just update it
+          DWORD dwCookie;
+
+          sc->dwAction = SSA_GROUP_UPDATE;
+          sc->wContactId = 0;
+          sc->hContact = NULL;
+          sc->szGroupName = getServerGroupName(sc->wGroupId);
+          dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, sc);
+
+          icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, sc->wGroupId, sc->szGroupName, groupData, groupSize);
+          sendAddEnd(); // end server modifications here
+
+          sc = NULL; // we do not want it to be freed now
+        }
+        else // the group is empty, delete it
+        {
+          DWORD dwCookie;
+
+          sc->dwAction = SSA_GROUP_REMOVE;
+          sc->wContactId = 0;
+          sc->hContact = NULL;
+          sc->szGroupName = getServerGroupName(sc->wGroupId);
+          dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, sc);
+
+          icq_sendGroup(dwCookie, ICQ_LISTS_REMOVEFROMLIST, sc->wGroupId, sc->szGroupName, NULL, 0);
+          // here the modifications go on
+          sc = NULL; // we do not want it to be freed now
+        }
+        SAFE_FREE(&groupData); // free the memory
+      }
+      else
+      {
+        Netlib_Logf(ghServerNetlibUser, "Removing of contact from server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Removing of contact from server list failed."));
+        sendAddEnd(); // end server modifications here
+      }
+      break;
+    }
+  case SSA_GROUP_UPDATE:
+    {
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Updating of group on server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Updating of group on server list failed."));
+      }
+      SAFE_FREE(&sc->szGroupName);
+      break;
+    }
+  case SSA_GROUP_REMOVE:
+    {
+      SAFE_FREE(&sc->szGroupName);
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Removing of group from server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Removing of group from server list failed."));
+      }
+      else // group removed, we need to update master group
+      {
+        void* groupData;
+        int groupSize;
+        DWORD dwCookie;
+
+        setServerGroupName(sc->wGroupId, NULL); // clear group from namelist
+        FreeServerID(sc->wGroupId);
+
+        groupData = collectGroups(&groupSize);
+        sc->wGroupId = 0;
+        sc->dwAction = SSA_GROUP_UPDATE;
+        sc->szGroupName = "";
+        dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, sc);
+
+        icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, sc->szGroupName, groupData, groupSize);
+        sendAddEnd(); // end server modifications here
+
+        SAFE_FREE(&groupData);
+      }
+      break;
+    }
+  default:
+    Netlib_Logf(ghServerNetlibUser, "Server ack cookie type (%d) not recognized.", sc->dwAction);
+  }
+  SAFE_FREE(&sc); // free the memory
+
+  return;
 }
 
 
@@ -358,11 +559,9 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				}
 				else
 				{
-
 					HANDLE hContact;
 					char* pszProto;
 					DWORD dwUin;
-
 
 					// This looks like a real contact
 					// Check if this user already exists in local list
@@ -380,8 +579,9 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					}
 
 					if (hContact == NULL)
-					{
-						// Not already on list: add
+          { // Not already on list: add
+            char* szGroup;
+
 						Netlib_Logf(ghServerNetlibUser, "SSI adding new contact '%d'", dwUin);
 						hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
 						if (!hContact)
@@ -401,9 +601,17 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							continue;
 						}
 
+            if (szGroup = makeGroupPath(wGroupId))
+            { // try to get Miranda Group path from groupid, if succeeded save to db
+              DBWriteContactSettingString(hContact, "CList", "Group", szGroup);
+
+              SAFE_FREE(&szGroup);
+            }
+
 						DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 						if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "AddServerNew", DEFAULT_SS_ADD))
 							DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+
 					}
 					else
 					{
@@ -575,40 +783,66 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			}
 			break;
 
-		case SSI_ITEM_GROUP:
-			if ((wGroupId == 0) && (wItemId == 0))
-			{
-				/* list of groups. wTlvType=1, data is TLV(C8) containing list of WORDs which */
-				/* is the group ids
-				/* we don't need to use this. Our processing is on-the-fly */
+    case SSI_ITEM_GROUP:
+      if ((wGroupId == 0) && (wItemId == 0))
+      {
+        /* list of groups. wTlvType=1, data is TLV(C8) containing list of WORDs which */
+        /* is the group ids
+        /* we don't need to use this. Our processing is on-the-fly */
+        /* this record is always sent first in the first packet only, */
+      }
+      else if (wGroupId != 0)
+      {
+        /* wGroupId != 0: a group record */
+        if (wItemId == 0)
+        { /* no item ID: this is a group */
+          /* pszRecordName is the name of the group */
+          char* pszName = NULL;
+          WORD wNameLength;
 
-				/* this record is always sent first in the first packet only, */
-			}
-			else if (wGroupId != 0)
-			{
-				/* wGroupId != 0: a group record */
-				if (wItemId == 0)
-				{
-					/* no item ID: this is a group */
-					Netlib_Logf(ghServerNetlibUser, "Group %s was ignored, server groups not implemented", pszRecordName);
-					/* pszRecordName is the name of the group */
-					if (wDefaultGroupId == 0 || !strlen(pszRecordName) > 0)
+          wNameLength = strlen(pszRecordName);
+
+          pszName = (char*)malloc(wNameLength + 1);
+
+          if (pszRecordName)
+          {
+            char* pszTempName = NULL; // Used for UTF-8 conversion
+
+            // Copy buffer to utf-8 buffer
+            memcpy(pszName, pszRecordName, wNameLength);
+            pszName[wNameLength] = 0; // Terminate string
+
+            // Convert to ansi
+            if (utf8_decode(pszName, &pszTempName))
+            {
+              SAFE_FREE(&pszName);
+              pszName = pszTempName;
+            }
+            else
+            {
+              Netlib_Logf(ghServerNetlibUser, "Failed to convert Groupname '%s' from UTF-8", pszName);
+            }
+          }
+          
+          setServerGroupName(wGroupId, pszName);
+
+          Netlib_Logf(ghServerNetlibUser, "Group %s added to known groups.", pszName);
+					if (wDefaultGroupId == 0 || !strlen(pszRecordName) > 0) // TODO: remove
 						wDefaultGroupId = wGroupId;	  /* need to save one group ID so that we can do valid upload packets */
-					/* TODO */
-					/* wTlvType == 1 */
-					/* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */
-					/* our processing is good enough that we don't need this duplication */
-				}
-				else
-				{
-					Netlib_Logf(ghServerNetlibUser, "Unhandled type 0x01, wItemID != 0");
-				}
-			}
-			else
-			{
-				Netlib_Logf(ghServerNetlibUser, "Unhandled type 0x01");
-			}
-			break;
+
+          /* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */
+          /* our processing is good enough that we don't need this duplication */
+        }
+        else
+        {
+          Netlib_Logf(ghServerNetlibUser, "Unhandled type 0x01, wItemID != 0");
+        }
+      }
+      else
+      {
+        Netlib_Logf(ghServerNetlibUser, "Unhandled type 0x01");
+      }
+      break;
 
 		case SSI_ITEM_PERMIT:
 			/* item on visible list */
@@ -757,17 +991,67 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       }
       break;
 
-		case SSI_ITEM_IGNORE:
-			/* item on ignore list */
-			/* pszRecordName is the UIN */
-			/* TODO */
+    case SSI_ITEM_IGNORE: // item on ignore list 
+      /* pszRecordName is the UIN */
+      /* TODO: Give sense */
 
-			ReserveServerID(wItemId);
+      if (!IsStringUIN(pszRecordName))
+        Netlib_Logf(ghServerNetlibUser, "Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
+      else
+      {
+        DWORD dwUin;
+        char* pszProto;
+        HANDLE hContact;
 
-			if (!IsStringUIN(pszRecordName))
-				Netlib_Logf(ghServerNetlibUser, "Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
-			else
-				Netlib_Logf(ghServerNetlibUser, "Ignored-contact ignored (%s)", pszRecordName);
+				// This looks like a real contact
+				// Check if this user already exists in local list
+				dwUin = atoi(pszRecordName);
+				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+				while (hContact)
+				{
+					pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && (dwUin == DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+					{
+						Netlib_Logf(ghServerNetlibUser, "Ignore contact already exists '%d'", dwUin);
+						break;
+					}
+					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+				}
+
+				if (hContact == NULL)
+				{
+					/* not already on list: add */
+					Netlib_Logf(ghServerNetlibUser, "SSI adding new Ignore contact '%d'", dwUin);
+					hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
+					if (!hContact)
+					{
+						Netlib_Logf(ghServerNetlibUser, "Failed to create ICQ contact %u", dwUin);
+						if (pChain)
+							disposeChain(&pChain);
+						continue;
+					}
+					if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
+					{
+						// For some reason we failed to register the protocol to this contact
+						CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+						Netlib_Logf(ghServerNetlibUser, "Failed to register ICQ contact %u", dwUin);
+						if (pChain)
+							disposeChain(&pChain);
+						continue;
+					}
+					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
+					// It wasn't previously in the list, we hide it so it only appears in the visible list
+					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+				}
+
+				// Save Ignore ID
+				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", wItemId);
+				ReserveServerID(wItemId);
+
+				// Set apparent mode
+//				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
+        Netlib_Logf(ghServerNetlibUser, "Ignore-contact (%u)", dwUin);
+      }
 			break;
 
 		case SSI_ITEM_UNKNOWN2:
@@ -903,6 +1187,8 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	pre.timestamp=time(NULL);
 	pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+wReasonLen+5;
 
+  DBWriteContactSettingByte(ccs.hContact, gpszICQProtoName, "Grant", 1);
+
 	/*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)*/
 	pCurBlob=szBlob=(char *)malloc(pre.lParam);
 	memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
@@ -949,6 +1235,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 	dwUin = atoi(szUin);
 	hContact=HContactFromUIN(dwUin,1);
 
+  DBDeleteContactSetting(hContact, gpszICQProtoName, "Grant");
 
 	ZeroMemory(&dbei,sizeof(dbei));
 	dbei.cbSize=sizeof(dbei);
@@ -966,6 +1253,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0;
 // TODO: Change for new auth system
+// TODO: Clear grant auth show for user
 
 	CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
 

@@ -73,6 +73,7 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam);
 int IcqFileDeny(WPARAM wParam, LPARAM lParam);
 int IcqFileCancel(WPARAM wParam, LPARAM lParam);
 int IcqFileResume(WPARAM wParam, LPARAM lParam);
+int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam);
 int IcqSendAuthRequest(WPARAM,LPARAM);
 int IcqSendYouWereAdded(WPARAM,LPARAM);
 int IcqSendUserIsTyping(WPARAM wParam, LPARAM lParam);
