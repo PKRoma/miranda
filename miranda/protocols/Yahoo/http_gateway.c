@@ -26,12 +26,12 @@ int YAHOO_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPRE
 	
 	ZeroMemory(&nlhpi, sizeof(nlhpi) );
 	nlhpi.cbSize = sizeof(nlhpi);
-	nlhpi.flags = 0; // NO SEQUENCE NUMBERS
-	//nlhpi.flags = NLHPIF_USEPOSTSEQUENCE;
+	nlhpi.flags = 0; /* NO SEQUENCE NUMBERS */
+	/*nlhpi.flags = NLHPIF_USEPOSTSEQUENCE;*/
 	nlhpi.szHttpGetUrl = NULL;
 	nlhpi.szHttpPostUrl = szHttpPostUrl;
-	//nlhpi.firstPostSequence = 1;
-	//_snprintf(szHttpPostUrl, 300, "http://http.pager.yahoo.com/notify");
+	/*nlhpi.firstPostSequence = 1;
+	_snprintf(szHttpPostUrl, 300, "http://http.pager.yahoo.com/notify");*/
 	lstrcpyn(szHttpPostUrl, "http://http.pager.yahoo.com/notify", 300);
 	
 	return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
