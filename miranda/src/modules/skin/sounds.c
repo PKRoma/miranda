@@ -55,7 +55,7 @@ static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
 static int SkinPlaySoundDefault(WPARAM wParam, LPARAM lParam)
 {
 	char * pszFile = (char *) lParam;
-	if ( pszFile ) {
+	if ( pszFile && DBGetContactSettingByte(NULL,"Skin","UseSound",1) ) {
 		PlaySound(pszFile, NULL, SND_ASYNC | SND_FILENAME | SND_NOWAIT);
 	}
 	return 0;
