@@ -31,7 +31,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 178
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Options",IDC_STATIC,0,0,310,175
     CONTROL         "Automatically pop up the window when a message is received",
@@ -78,7 +78,7 @@ STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP |
     WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Send Error"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "An error has occured. The protocol reported the following error:",
                     IDC_STATIC,5,5,177,28
@@ -170,10 +170,10 @@ END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,42,248,
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x348,18,42,248,
                     131,WS_EX_CLIENTEDGE
     LTEXT           "Send typing notifications to the following users when you are typing a message to them:",
                     IDC_STATIC,19,18,245,19

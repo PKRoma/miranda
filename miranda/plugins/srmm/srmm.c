@@ -59,7 +59,7 @@ __declspec(dllexport)
 #ifdef UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
 #define SRMMMOD_OLD "SRMsg"
 #define SRMMMOD_SETTINGS_NAM "Settings"
-#define SRMMMOD_SETTINGS_VER 3
+#define SRMMMOD_SETTINGS_VER 4
 static int old_db_setting_exists(char *s, int type) {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING cgs;
