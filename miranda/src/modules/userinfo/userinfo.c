@@ -416,6 +416,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 									SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
 								}
 								ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
+								SetFocus(GetDlgItem(hwndDlg,IDC_TABS));
 							}
 							break;
 					}
