@@ -31,7 +31,7 @@ HINSTANCE g_hInst;
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Send/Receive Messages",
-    PLUGIN_MAKE_VERSION(2, 0, 0, 3),
+    PLUGIN_MAKE_VERSION(2, 0, 0, 0),
     "Send and receive instant messages",
     "Miranda IM Development Team",
     "info@miranda-im.org",
