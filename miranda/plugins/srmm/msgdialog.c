@@ -59,6 +59,7 @@ static void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
 	mwe.hwndWindow = hwnd;
 	mwe.szModule = SRMMMOD;
 	mwe.uType = type;
+	mwe.uFlags = 0;
 	NotifyEventHooks(hHookWinEvt, 0, (LPARAM)&mwe);
 }
 
