@@ -387,6 +387,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case ID_VIEW_SHOWSTATUSBAR:
                     pContainer->dwFlags ^= CNT_NOSTATUSBAR;
                     break;
+                case ID_VIEW_VERTICALMAXIMIZE:
+                    pContainer->dwFlags ^= CNT_VERTICALMAX;
+                    break;
                 case ID_VIEW_SHOWTOOLBAR:
                     pContainer->dwFlags ^= CNT_HIDETOOLBAR;
                     break;
@@ -1101,6 +1104,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_VIEW_SHOWAVATAR, MF_BYCOMMAND | dat->showPic ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOTITLE ? MF_UNCHECKED : MF_CHECKED);
             CheckMenuItem(hMenu, ID_VIEW_TABSATBOTTOM, MF_BYCOMMAND | pContainer->dwFlags & CNT_TABSBOTTOM ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, ID_VIEW_VERTICALMAXIMIZE, MF_BYCOMMAND | pContainer->dwFlags & CNT_VERTICALMAX ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_SHOWNICNAME, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_SHOWNAME ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_SHOWSTATUS, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_SHOWSTATUS ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_DONOTSHOWCONTAINERNAME, MF_BYCOMMAND | (pContainer->dwFlags & (CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX)) ? MF_UNCHECKED : MF_CHECKED);
@@ -2339,3 +2343,13 @@ void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WP
     }
 }
 
+void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(dat->pContainer->hMenu == 0)
+        return;
+    
+    if(dat->hwndLog != 0 && (DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01))
+        EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_GRAYED);
+    else
+        EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_ENABLED);
+}

@@ -444,6 +444,7 @@
 #define ID_IEVIEWSETTING_USEGLOBAL      40198
 #define ID_IEVIEWSETTING_FORCEIEVIEW    40199
 #define ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG 40200
+#define ID_VIEW_VERTICALMAXIMIZE        40201
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -451,7 +452,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40201
+#define _APS_NEXT_COMMAND_VALUE         40202
 #define _APS_NEXT_CONTROL_VALUE         1714
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

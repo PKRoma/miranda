@@ -796,7 +796,7 @@ BEGIN
         MENUITEM "Send to &multiple Users",     ID_SENDMENU_SENDTOMULTIPLEUSERS
 
         MENUITEM "Send to &Container",          ID_SENDMENU_SENDTOCONTAINER
-        MENUITEM "Force &ANSI",            			ID_SENDMENU_FORCEANSISEND
+        MENUITEM "Force &ANSI",                 ID_SENDMENU_FORCEANSISEND
     END
     POPUP "Protomenu"
     BEGIN
@@ -865,6 +865,7 @@ BEGIN
 
         END
         MENUITEM "Tabs at Bottom",              ID_VIEW_TABSATBOTTOM
+        MENUITEM "Vertical maximize",           ID_VIEW_VERTICALMAXIMIZE
         MENUITEM SEPARATOR
         POPUP "Window Flashing"
         BEGIN

@@ -66,6 +66,7 @@ char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 static void FlashTab(HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, int flashImage, int origImage);
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
 void ReflashContainer(struct ContainerWindowData *pContainer);
+void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
@@ -204,10 +205,15 @@ void SetDialogToType(HWND hwndDlg)
 #endif
     
 // IEVIew MOD Begin
+    EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), TRUE);
+    
 	if (dat->hwndLog) {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 		ShowWindow (GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
+        if(DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01)
+            EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), FALSE);
+            
 	} else
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
 // IEVIew MOD End
@@ -1510,6 +1516,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 UpdateStatusBar(hwndDlg, dat);
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
+                UpdateContainerMenu(hwndDlg, dat);
             }
             return 1;
             break;
@@ -1552,6 +1559,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 UpdateStatusBar(hwndDlg, dat);
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
+                UpdateContainerMenu(hwndDlg, dat);
             }
             break;
         case WM_GETMINMAXINFO:
@@ -1749,7 +1757,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
         case DM_REMAKELOG:
             dat->lastEventTime = 0;
-            dat->iLastEventType = 1;
+            dat->iLastEventType = -1;
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             break;
         case DM_APPENDTOLOG:
@@ -2202,10 +2210,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
-                    if(dat->hwndLog != 0) {
-                        _DebugPopup(dat->hContact, "focus set");
+                    if(dat->hwndLog != 0)
                         SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-                    }
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2722,6 +2728,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SetDialogToType(hwndDlg);
                             SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
                             SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                            UpdateContainerMenu(hwndDlg, dat);
                         }
                     }
                     break;

@@ -1,11 +1,16 @@
 				tabbed  SRMM plugin for Miranda IM 0.3.3+
 				------------------------------------------
+
+Project page: http://www.sourceforge.net/projects/tabsrmm/
+Support Forum: http://hell.at.eu.org/forums/
+
+----------------------------------------------------------
 				
 Version: 1.0.0.0
 Created: March 2004
 
-1. Intro:
----------
+1. Overview
+-----------
 
 tabSRMM is an advanced messaging module for Miranda IM (version 0.3.3 or later 
 required). It adds many new options and features to make instant messaging more
