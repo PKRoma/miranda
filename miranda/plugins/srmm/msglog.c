@@ -68,6 +68,55 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
     *cbBufferEnd += charsDone;
 }
 
+#if defined( _UNICODE )
+static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR * line)
+{
+    DWORD textCharsCount = 0;
+    char *d;
+
+    int lineLen = wcslen(line) * 9 + 8;
+    if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
+        cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
+        *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
+    }
+
+    d = *buffer + *cbBufferEnd;
+    strcpy(d, "{\\uc1 ");
+    d += 6;
+
+    for (; *line; line++, textCharsCount++) {
+        if (*line == '\r' && line[1] == '\n') {
+            CopyMemory(d, "\\par ", 5);
+            line++;
+            d += 5;
+        }
+        else if (*line == '\n') {
+            CopyMemory(d, "\\par ", 5);
+            d += 5;
+        }
+        else if (*line == '\t') {
+            CopyMemory(d, "\\tab ", 5);
+            d += 5;
+        }
+        else if (*line == '\\' || *line == '{' || *line == '}') {
+            *d++ = '\\';
+            *d++ = (char) *line;
+        }
+        else if (*line < 128) {
+            *d++ = (char) *line;
+        }
+        else
+            d += sprintf(d, "\\u%d ?", *line);
+    }
+
+    strcpy(d, "}");
+    d++;
+
+    *cbBufferEnd = (int) (d - *buffer);
+    return textCharsCount;
+}
+#endif
+
 //same as above but does "\r\n"->"\\par " and "\t"->"\\tab " too
 static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
@@ -296,11 +345,28 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     switch (dbei.eventType) {
         case EVENTTYPE_MESSAGE:
         {
+#if defined( _UNICODE )
+            wchar_t *msg;
+#else
             BYTE *msg;
+#endif
 
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
+#if defined( _UNICODE )
+            {
+                int msglen = strlen((char *) dbei.pBlob) + 1;
+                if (msglen != (int) dbei.cbBlob)
+                    msg = (TCHAR *) & dbei.pBlob[msglen];
+                else {
+                    msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
+                    MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
+                }
+                AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
+            }
+#else
             msg = (BYTE *) dbei.pBlob;
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", msg);
+#endif
             break;
         }
         case EVENTTYPE_STATUSCHANGE:
