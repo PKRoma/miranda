@@ -230,7 +230,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 	// stop if it is an active type filetransfer and the user's IP is not known
 	unsigned long ulAdr = 0;
 	if (prefs->ManualHost)
-		ulAdr = ConvertIPToInteger(prefs->MySpecifiedHost);
+		ulAdr = ConvertIPToInteger(prefs->MySpecifiedHostIP);
 	else
 		ulAdr = ConvertIPToInteger(prefs->IPFromServer?prefs->MyHost:prefs->MyLocalHost);
 
@@ -971,7 +971,7 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 				
 				unsigned long ulAdr = 0;
 				if (prefs->ManualHost)
-					ulAdr = ConvertIPToInteger(prefs->MySpecifiedHost);
+					ulAdr = ConvertIPToInteger(prefs->MySpecifiedHostIP);
 				else
 					ulAdr = ConvertIPToInteger(prefs->IPFromServer?prefs->MyHost:prefs->MyLocalHost);
 

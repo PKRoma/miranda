@@ -1052,7 +1052,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 
 					unsigned long ulAdr = 0;
 					if (prefs->ManualHost)
-						ulAdr = ConvertIPToInteger(prefs->MySpecifiedHost);
+						ulAdr = ConvertIPToInteger(prefs->MySpecifiedHostIP);
 					else
 						ulAdr = ConvertIPToInteger(prefs->IPFromServer?prefs->MyHost:prefs->MyLocalHost);
 

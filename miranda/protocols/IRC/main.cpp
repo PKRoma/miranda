@@ -42,7 +42,7 @@ PLUGININFO			pluginInfo=
 {						// Information about the plugin
 						sizeof( PLUGININFO ),
 						"IRC Protocol",
-						PLUGIN_MAKE_VERSION( 0,5,0,1 ),
+						PLUGIN_MAKE_VERSION( 0,5,0,2 ),
 						"IRC protocol for Miranda IM.",
 						"MatriX ' m3x",
 						"i_am_matrix@users.sourceforge.net",
