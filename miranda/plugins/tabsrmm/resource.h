@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by msgwindow.rc
+// Used by resource.rc
 //
 #define IDC_READNEXT                    3
 #define IDC_APPLY                       3
@@ -24,6 +24,8 @@
 #define IDR_MENUBAR                     308
 #define IDD_CHOOSESTATUSMODES           310
 #define IDD_OPTIONSDIALOG               311
+#define IDI_ICON1                       313
+#define IDI_PULLDOWNARROW               313
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003
@@ -86,6 +88,7 @@
 #define IDC_MATH_BKGCOLOUR              1271
 #define IDC_BKGOUTGOING                 1271
 #define IDC_BKGINCOMING                 1272
+#define IDC_GRIDLINES                   1273
 #define IDC_FONTCOLOUR                  1282
 #define IDC_SAMPLE                      1292
 #define IDC_FONTSIZE                    1293
@@ -101,6 +104,7 @@
 #define IDC_PROTOCOL                    1580
 #define IDC_TYPING                      1581
 #define IDC_TYPINGNOTIFY                1581
+#define IDC_PROTOMENU                   1582
 #define IDC_ERRORTEXT                   1596
 #define IDC_SHOWNOTIFY                  1600
 #define IDC_STATUSWIN                   1601
@@ -146,6 +150,7 @@
 #define IDC_USEDIVIDERS                 1628
 #define IDC_DRAWGRID                    1628
 #define IDC_LIMITTABS                   1628
+#define IDC_WANTVERTICALGRID            1628
 #define IDC_AUTOLOCALE                  1629
 #define IDC_DONTREPORTUNFOCUSED2        1629
 #define IDC_GCHECK                      1630
@@ -396,13 +401,15 @@
 #define ID_USER                         40173
 #define ID_TITLEBAR_USESTATICCONTAINERICON 40174
 #define ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT 40176
+#define ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS 40177
+#define ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS 40178
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        312
-#define _APS_NEXT_COMMAND_VALUE         40177
+#define _APS_NEXT_RESOURCE_VALUE        314
+#define _APS_NEXT_COMMAND_VALUE         40181
 #define _APS_NEXT_CONTROL_VALUE         1708
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

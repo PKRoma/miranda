@@ -119,7 +119,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iMode, HANDLE
 HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer);
 
 static WNDPROC OldMessageEditProc, OldSplitterProc;
-static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_NAME};
+static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
 static const UINT buttonLineControlsNew[] = { IDC_ADD, IDC_SMILEYBTN, IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_MULTIPLE, IDC_QUOTE, IDC_SAVE};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
@@ -601,6 +601,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             }
         case IDC_PROTOCOL:
+        case IDC_PROTOMENU:
         case IDC_ADD:
         case IDC_SMILEYBTN:
         case IDC_PIC:
@@ -619,11 +620,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if(urc->wId == IDC_RETRY || urc->wId == IDC_CANCELSEND || urc->wId == IDC_MSGSENDLATER || urc->wId == IDC_STATICTEXT || urc->wId == IDC_STATICERRORICON)
                 return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
 
-            if(urc->wId != IDC_PROTOCOL)
+            if(urc->wId != IDC_PROTOCOL && urc->wId != IDC_PROTOMENU)
                 OffsetRect(&urc->rcItem, 9, 0);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if (urc->wId == IDC_PROTOCOL)
+            if (urc->wId == IDC_PROTOCOL || urc->wId == IDC_PROTOMENU)
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             if (showSend) {
                 urc->rcItem.left -= 40;
@@ -940,6 +941,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[9]);
                 SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_STATICERRORICON, STM_SETICON, (WPARAM)g_iconErr, 0);
+                SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[16]);
+                EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), FALSE);
                 
             // Make them flat buttons
                 if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1)) {
@@ -953,6 +956,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONSETASFLATBTN, 0, 0);
+                    SendMessage(GetDlgItem(hwndDlg, IDC_PROTOMENU), BUTTONSETASFLATBTN, 0, 0);
                 }
 
                 dat->dwFlags |= MWF_INITMODE;
@@ -969,7 +973,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                 SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONADDTOOLTIP, (WPARAM) Translate("Send message"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
-
+                SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BUTTONADDTOOLTIP, (WPARAM) Translate("Protocol Menu"), 0);
+                
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
@@ -1312,7 +1317,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWBUTTON ? (dat->doSmileys ? 180 : 154) : 0);
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWINFO) ? 25 : 0;
             
-            if(dat->dwFlags & MWF_LOG_GRID)
+            if(dat->dwFlags & MWF_LOG_GRID && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0))
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1,1));     // XXX margins in the log (looks slightly better)
             else
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0,0));     // XXX margins in the log (looks slightly better)

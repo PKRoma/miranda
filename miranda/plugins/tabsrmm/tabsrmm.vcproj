@@ -483,7 +483,7 @@
 					Name="Release Unicode|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
+						Optimization="1"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -667,6 +667,9 @@
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;__MATHMOD_SUPPORT;$(NOINHERIT)"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\themes.c">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -736,10 +739,10 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
@@ -766,10 +769,13 @@
 				RelativePath=".\res\angeli-icons\HistoryXP.ico">
 			</File>
 			<File
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+			</File>
+			<File
 				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+				RelativePath="..\..\src\res\icon1.ico">
 			</File>
 			<File
 				RelativePath=".\res\in.ico">

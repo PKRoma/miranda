@@ -250,7 +250,7 @@ SOURCE=msglog.c
 # ADD CPP /nologo /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /GZ /GX 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
+# ADD CPP /nologo /Ox /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /GX 
@@ -348,6 +348,10 @@ SOURCE=srmm.c
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "__MATHMOD_SUPPORT" /GX 
 !ENDIF
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\themes.c
 # End Source File
 # End Group
 # Begin Group "Header Files"

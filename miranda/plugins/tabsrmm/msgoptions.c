@@ -836,7 +836,8 @@ static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
         "<< Incoming time (old)",
         "* Message Input Area",
         "* Status changes",
-        "* Dividers"};
+        "* Dividers",
+        "* Error and warning Messages"};
 
 #define FONTS_TO_CONFIG MSGDLGFONTCOUNT
 
@@ -875,7 +876,8 @@ static int fontListOrder[MSGDLGFONTCOUNT + 1] = {
     H_MSGFONTID_YOURTIME,
     MSGFONTID_MESSAGEAREA,
     H_MSGFONTID_STATUSCHANGES,
-    H_MSGFONTID_DIVIDERS};
+    H_MSGFONTID_DIVIDERS,
+    MSGFONTID_ERROR};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
 #define M_REMAKESAMPLE       (WM_USER+11)
@@ -1059,9 +1061,11 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 
                 SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", SRMSGDEFSET_BKGCOLOUR));
+                SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 CheckDlgButton(hwndDlg, IDC_USEINDIVIDUALBKG, dwFlags & MWF_LOG_INDIVIDUALBKG);
+                CheckDlgButton(hwndDlg, IDC_WANTVERTICALGRID, DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), dwFlags & MWF_LOG_INDIVIDUALBKG);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), dwFlags & MWF_LOG_INDIVIDUALBKG);
 
@@ -1311,6 +1315,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                 case IDC_USEINDIVIDUALBKG:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
                     EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_GRIDLINES), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
                     break;
 				case IDC_SAMPLE:
 					return 0;
@@ -1348,6 +1353,8 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inbg", SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "outbg", SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", IsDlgButtonChecked(hwndDlg, IDC_WANTVERTICALGRID));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
                                 
                                 UncacheMsgLogIcons();
@@ -1411,13 +1418,13 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.pfnDlgProc = DlgProcContainerOptions;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
+ */
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGWINDOWFONTS);
     odp.pszTitle = Translate("Fonts and colors");
     odp.pfnDlgProc = DlgProcMsgWindowFonts;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-*/    
+   
     return 0;
 }
 
@@ -1513,11 +1520,13 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)0, (LPARAM)&tci);
          MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
 
+         /*
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGWINDOWFONTS),hwnd, DlgProcMsgWindowFonts);
          tci.pszText = Translate("Fonts and Colors");
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)1, (LPARAM)&tci);
          MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
+         */
          
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_TABBEDMSG),hwnd,DlgProcTabbedOptions);
          tci.pszText = Translate("Tabs and layout");

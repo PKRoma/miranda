@@ -52,6 +52,10 @@ extern HICON g_buttonBarIcons[];
 extern 
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
+void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *szIniFilename);
+char *GetThemeFileName();
+void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
+
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo)
 {
     RECT rc;
@@ -345,6 +349,26 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                         hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
                     }
                     WindowList_Broadcast(hMessageWindowList, DM_FORCEDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
+                    return 1;
+                }
+            case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
+                {
+                    char *szFilename = GetThemeFileName();
+                    if(szFilename != NULL)
+                        WriteThemeToINI(szFilename);
+                    return 1;
+                }
+            case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
+                {
+                    char *szFilename = GetThemeFileName();
+                    if(szFilename != NULL) {
+                        ReadThemeFromINI(szFilename);
+                        UncacheMsgLogIcons();
+                        CacheMsgLogIcons();
+                        CacheLogFonts();
+                        WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
+                        WindowList_Broadcast(hMessageWindowList, DM_FORCEDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
+                    }
                     return 1;
                 }
         }

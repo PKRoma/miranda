@@ -75,7 +75,9 @@ BEGIN
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
     CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
                     0x18000000L
-    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,18,32,16,14,
+    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,17,32,8,14,
+                    0x18000000L
+    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,28,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
                     0x18000000L
@@ -92,7 +94,7 @@ BEGIN
                     WS_GROUP
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
-					WS_EX_STATICEDGE
+					WS_EX_CLIENTEDGE
                    
 END
 

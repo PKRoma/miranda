@@ -34,6 +34,18 @@ This list is imcomplete, but contains a few important things left.
 
 Version 0.9.9.5 - 2005/01/XX
 
+        First, this requires a new tabsrmm_icons.dll format. Icons have been added , so you'll
+        need to upgrade your icon packs. You can use the provided .DLL files as a template
+        as always. The new ordinal numbers are:
+        
+        #19 secureim disabled
+        #20 secured connection
+        
+        19 and 20 are only necessary, if you have a tabsrmm compatible SecureIM.dll (which
+        is not yet available).
+        
+        #21 this icon is now used for status changes
+        
         + merged std's patch for improved indenting with tabstops. This option works best
           with the following msg log settings:
           *) grouping enabled
@@ -43,18 +55,8 @@ Version 0.9.9.5 - 2005/01/XX
           It is a new message log option, available either as global or per-contact option
           (depending on the message log option mode - global or per-contact).
 
-        + added a Msg hook to properly process unicode keyboard messages. This fixes a input
-          problem with some langauges like Azeri. You need to enable it under options->messaging
-          [] Use hook to translate keyboard input.
-          This is only available in the unicode version of tabSRMM.
-          Don't enable it, if you do not experience problems with keyboard input.
-          
-          NOTE: the hook code is disabled now, as this message loop problem has been fixed
-          in the core. You need a very recent miranda build (Jan, 29, 2005) to have this fix
-          in the core.
-          
-        + merged Ghosts patch for interaction with the SecureIM plugin. See README.SecureIM for
-          more information.
+        + merged Ghosts patch for interaction with the SecureIM plugin. It needs an updated
+          Secure IM plugin which is not yet released.
           
         ! fixed a resizing issue with "windowshade" mode (if you're using windowblinds or other
           utilities which support "rolling up" a window and reduce it to the title bar only.
@@ -63,6 +65,7 @@ Version 0.9.9.5 - 2005/01/XX
           2 entries into the options "tree" of Mirandas main options dialog.
           * Message windows (all settings concerning the log, containers, layout etc.)
           * typing notify (the old typing notify dialog).
+          * fonts and colors - still an extra page.
           
           Thanks to JdGordon for providing the sample source code :)
 
@@ -92,6 +95,26 @@ Version 0.9.9.5 - 2005/01/XX
           
         ! when creating tabs minimized in the background, the container didn't always flash as
           it should.
+          
+        + added new icon to the tabsrmm_icons.dll ordinal #21 - used for status change messages 
+          in the message log.
+          
+        + added new color option in the "Fonts and colors" dialog. It is now possible to set the
+          color of the *horzontal" grid lines independently of the background color. The vertical
+          grid lines can not use this color (its a rich edit limitation), but you can disable them
+          if you want.
+          
+        + added *basic* theming support. The message log menu (menubar or toolbar button) contains
+          2 new entries which allow you to export or import all visual settings to/from .ini
+          format files. The following things are exported:
+          * all fonts (including colors, style, charset etc..)
+          * all background colors
+          * all message log formatting options.
+          The files are using a .tabrmm extension but are standard plaintext .ini files.
+          
+        + added extra font setting for error messages. Previously, they were using the same font
+          as status changes did. The new font setting is appended to the font list, so you don't
+          need to reconfigure everything this time :)
           
 Version 0.9.9.4 - 2005/01/24
 

@@ -74,7 +74,7 @@ extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
 
-extern HICON g_iconIn, g_iconOut, g_iconErr;
+extern HICON g_iconIn, g_iconOut, g_iconErr, g_iconStatus;
 
 #if defined(_STREAMTHREADING)
     extern int g_StreamThreadRunning;
@@ -185,7 +185,7 @@ void CacheMsgLogIcons()
     icons[2] = LoadSkinnedIcon(SKINICON_EVENT_FILE);
     icons[3] = g_iconOut;
     icons[4] = g_iconIn;
-    icons[5] = LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
+    icons[5] = g_iconStatus;
     icons[6] = g_iconErr;
     
     for(i = 0; i < NR_LOGICONS; i++) {
@@ -382,6 +382,8 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
     colour = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
     // RTL-Support
 	if (dat->dwFlags & MWF_LOG_RTL) 
@@ -506,7 +508,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             // this uses the default background color.
             if(dat->dwFlags & MWF_LOG_GRID) {
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep0, rtfFonts[MSGDLGFONTCOUNT]);
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 3);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 4);
             }
             else
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
@@ -603,7 +605,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             }
             showColon = 0;
             if(dbei.eventType == EVENTTYPE_ERRMSG) {
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[H_MSGFONTID_STATUSCHANGES]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_ERROR]);
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s", dbei.szModule);
                 if(dbei.cbBlob != 0) {
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
@@ -660,7 +662,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
                 if(dbei.eventType == EVENTTYPE_ERRMSG && dbei.cbBlob == 0)
                     break;
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? H_MSGFONTID_STATUSCHANGES : H_MSGFONTID_STATUSCHANGES]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[dbei.eventType == EVENTTYPE_STATUSCHANGE ? H_MSGFONTID_STATUSCHANGES : MSGFONTID_ERROR]);
             }
             else
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);

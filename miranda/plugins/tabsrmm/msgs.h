@@ -268,6 +268,7 @@ void FreeMsgLogIcons(void);
 #define MSGFONTID_MESSAGEAREA 16
 #define H_MSGFONTID_STATUSCHANGES 17
 #define H_MSGFONTID_DIVIDERS 18
+#define MSGFONTID_ERROR 19
 
 void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
 extern const int msgDlgFontCount;
@@ -395,7 +396,7 @@ struct MsgLogIcon {
 };
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 16
+#define NR_BUTTONBARICONS 17
 
 #define IDI_HISTORY 1
 #define IDI_TIMESTAMP 2
@@ -415,9 +416,9 @@ struct MsgLogIcon {
 #define IDI_SELFTYPING_ON 16
 #define IDI_SELFTYPING_OFF 17
 #define IDI_CONTAINER 18
-#define IDI_SECUREIM_ENABLED 19
-#define IDI_SECUREIM_DISABLED 20
-#define IDI_RESERVED1 21
+#define IDI_SECUREIM_ENABLED 20
+#define IDI_SECUREIM_DISABLED 19
+#define IDI_STATUSCHANGE 21
 #define IDI_RESERVED2 22
 #define IDI_RESERVED3 23
 #define IDI_RESERVED4 24
@@ -430,7 +431,7 @@ struct MsgLogIcon {
 
 #define IDB_UNKNOWNAVATAR 100
 
-#define MSGDLGFONTCOUNT 19
+#define MSGDLGFONTCOUNT 20
 
 WCHAR *Utf8Decode(const char *str);
 char *Utf8Encode(const WCHAR *str);
