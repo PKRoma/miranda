@@ -997,38 +997,24 @@ LBL_InvalidCommand:
 			if ( --sttListNumber == 0 )
 				MSN_SetServerStatus( msnDesiredStatus );
 
-			if ( msnProtVersion == 10 ) {
-				for ( int i=0; i < tNumTokens; i++ ) {
-					char* p = tWords[ i ];
-					if ( *p == 'N' && p[1] == '=' )
-						userEmail = p+2;
-					else if ( *p == 'F' && p[1] == '=' )
-						userNick = p+2;
-					else if ( *p == 'C' && p[1] == '=' )
-						userId = p+2;
-					else {
-						listId = atol( p );
-						break;
-				}	}
+			for ( int i=0; i < tNumTokens; i++ ) {
+				char* p = tWords[ i ];
+				if ( *p == 'N' && p[1] == '=' )
+					userEmail = p+2;
+				else if ( *p == 'F' && p[1] == '=' )
+					userNick = p+2;
+				else if ( *p == 'C' && p[1] == '=' )
+					userId = p+2;
+				else {
+					listId = atol( p );
+					break;
+			}	}
 
-				if ( userEmail == NULL )
-					goto LBL_InvalidCommand;
+			if ( userEmail == NULL )
+				goto LBL_InvalidCommand;
 
-				if ( userNick == NULL )
-					userNick = userEmail;
-			}
-			else
-			{
-				switch ( tNumTokens ) {
-				case 3:	case 4:	break;
-				default:
-					goto LBL_InvalidCommand;
-				}
-
-				listId = atol( data.list );
-				userEmail = data.userEmail;
-				userNick = data.userNick;
-			}
+			if ( userNick == NULL )
+				userNick = userEmail;
 
 			UrlDecode( userEmail ); UrlDecode( userNick );
 			Utf8Decode( userNick );
@@ -1046,21 +1032,14 @@ LBL_InvalidCommand:
 				DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
 			}
 
-			if ( msnProtVersion == 10 ) {
-				if ( listId & LIST_PL ) {
-					if ( !Lists_IsInList( LIST_RL, userEmail )) {
-						MSN_AddUser( hContact, userEmail, LIST_PL + LIST_REMOVE );
-						MSN_AddUser( hContact, userEmail, LIST_RL );
-					}
-
-					if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == 0 )
-						MSN_AddAuthRequest( hContact, userEmail, userNick );
+			if ( listId & LIST_PL ) {
+				if ( !Lists_IsInList( LIST_RL, userEmail )) {
+					MSN_AddUser( hContact, userEmail, LIST_PL + LIST_REMOVE );
+					MSN_AddUser( hContact, userEmail, LIST_RL );
 				}
-			}
-			else {
-				if (( listId & LIST_RL ) && !Lists_IsInList( LIST_AL, userEmail ) && !Lists_IsInList( LIST_BL, userEmail ))
-					if ( MSN_GetByte( "EnableRlAnalyze", FALSE ))
-						MSN_AddAuthRequest( hContact, userEmail, userNick );
+
+				if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == 0 )
+					MSN_AddAuthRequest( hContact, userEmail, userNick );
 			}
 
 			if ( listId & ( LIST_BL | LIST_AL )) {
@@ -1145,14 +1124,8 @@ LBL_InvalidCommand:
 				struct { char *list, *serial, *userEmail; } data;
 			};
 
-			if ( msnProtVersion < 10 ) {
-				if ( sttDivideWords( params, 3, tWords ) != 3 )
-					goto LBL_InvalidCommand;
-			}
-			else {
-				if ( sttDivideWords( params, 3, tWords ) == 2 )
-					data.userEmail = data.serial;
-			}
+			if ( sttDivideWords( params, 3, tWords ) == 2 )
+				data.userEmail = data.serial;
 
 			UrlDecode( data.userEmail );
 
@@ -1193,13 +1166,12 @@ LBL_InvalidCommand:
 		case ' NYS':    //********* SYN: section 7.5 Client User Property Synchronization
 		{
 			char* tWords[ 4 ];
-			int nRequiredWords = ( msnProtVersion == 9 ) ? 3 : 4;
-			if ( sttDivideWords( params, nRequiredWords, tWords ) != nRequiredWords )
+			if ( sttDivideWords( params, 4, tWords ) != 4 )
 				goto LBL_InvalidCommand;
 
 			Lists_Wipe();
 			sttIsSync = true;
-			sttListNumber = atol( tWords[ nRequiredWords-2 ] );
+			sttListNumber = atol( tWords[ 2 ] );
 			break;
 		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
@@ -1297,28 +1269,21 @@ LBL_InvalidCommand:
 
 						MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tNick );
 					}
-					else {
-						if ( msnProtVersion < 10 )
-							MSN_SetString( NULL, "Nick", tWords[2] );
-						MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tWords[2] );
-					}
+					else MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tWords[2] );
 
 					sttListNumber = 0;
-					if ( msnProtVersion == 10 ) {
-						char tOldDate[ 100 ], tNewDate[ 100 ];
 
-						if ( MSN_GetStaticString( "LastSyncTime", NULL, tOldDate, sizeof tOldDate ))
-							strcpy( tOldDate, "2004-07-01T00:00:00.0000000-07:00" );
+					char tOldDate[ 100 ], tNewDate[ 100 ];
+					if ( MSN_GetStaticString( "LastSyncTime", NULL, tOldDate, sizeof tOldDate ))
+						strcpy( tOldDate, "2004-07-01T00:00:00.0000000-07:00" );
 
-						SYSTEMTIME T;
-						GetSystemTime( &T );
-						_snprintf( tNewDate, sizeof tNewDate, "%04d-%02d-%02dT%02d:%02d:%02d.0000000-07:00",
-							T.wYear, T.wMonth, T.wDay, T.wHour, T.wMinute, T.wSecond );
-						MSN_SetString( NULL, "LastSyncTime", tNewDate );
+					SYSTEMTIME T;
+					GetSystemTime( &T );
+					_snprintf( tNewDate, sizeof tNewDate, "%04d-%02d-%02dT%02d:%02d:%02d.0000000-07:00",
+						T.wYear, T.wMonth, T.wDay, T.wHour, T.wMinute, T.wSecond );
+					MSN_SetString( NULL, "LastSyncTime", tNewDate );
 
-						info->sendPacket( "SYN", "%s %s", tNewDate, tOldDate );
-					}
-					else info->sendPacket( "SYN", "0" );
+					info->sendPacket( "SYN", "%s %s", tNewDate, tOldDate );
 				}
 				else {
 					MSN_DebugLog( "Unknown security package '%s'", data.security );
@@ -1338,11 +1303,7 @@ LBL_InvalidCommand:
 			if ( sscanf( params, "%6s", protocol1 ) < 1 )
 				goto LBL_InvalidCommand;
 
-			if ( !strcmp( protocol1, "MSNP10" ))
-				msnProtVersion = 10;
-			else if ( !strcmp( protocol1, "MSNP9" ))
-				msnProtVersion = 9;
-			else {
+			if ( strcmp( protocol1, "MSNP10" )) {
 				MSN_ShowError( "Server has requested an unknown protocol set (%s)", params );
 
 				if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {

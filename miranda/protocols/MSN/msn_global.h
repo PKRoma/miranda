@@ -490,7 +490,6 @@ extern	char*          msnExternalIP;
 extern	int				msnStatusMode,
 								msnDesiredStatus;
 
-extern	int				msnProtVersion;
 extern	char*          msnProtChallenge;
 extern	char*          msnProductID;
 

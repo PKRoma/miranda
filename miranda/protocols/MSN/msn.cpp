@@ -59,7 +59,6 @@ MYOPTIONS MyOptions;
 
 char* msnProtocolName = NULL;
 
-int	msnProtVersion = 0;
 char* msnProtChallenge = NULL;
 char* msnProductID  = NULL;
 

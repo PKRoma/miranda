@@ -215,12 +215,7 @@ static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
 	}	}
 
 	UrlEncode(( char* )lParam, tEmail, sizeof( tEmail ));
-
-	if ( msnProtVersion < 10 ) 
-		msnSearchID = MSN_SendPacket( msnNSSocket, "ADD", "BL %s %s", tEmail, tEmail );
-	else
-		msnSearchID = MSN_SendPacket( msnNSSocket, "ADC", "BL N=%s", tEmail );
-	return msnSearchID;
+	return msnSearchID = MSN_SendPacket( msnNSSocket, "ADC", "BL N=%s", tEmail );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -427,9 +422,6 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 
 static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
-	if ( msnProtVersion < 10 )
-		return GAIR_NOAVATAR;
-
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
 	char szContext[ MAX_PATH ];

@@ -105,31 +105,24 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 	}
 
 	int msgid;
-	if ( msnProtVersion < 10 ) {
+	if (( flags & 0xFF ) == LIST_FL ) {
+		if ( flags & LIST_REMOVE ) {
+			if ( hContact == NULL )
+				if (( hContact = MSN_HContactFromEmail( email, "", 0, 0 )) == NULL )
+					return -1;
+
+			char id[ MSN_GUID_LEN ];
+			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof id ))
+				msgid = MSN_SendPacket( msnNSSocket, "REM", "%s %s", listName, id );
+		}
+		else msgid = MSN_SendPacket( msnNSSocket, "ADC", "%s N=%s F=%s", listName, email, email );
+	}
+	else {
 		if ( flags & LIST_REMOVE )
 			msgid = MSN_SendPacket( msnNSSocket, "REM", "%s %s", listName, email );
 		else
-			msgid = MSN_SendPacket( msnNSSocket, "ADD", "%s %s %s", listName, email, email );
+			msgid = MSN_SendPacket( msnNSSocket, "ADC", "%s N=%s", listName, email );
 	}
-	else {
-		if (( flags & 0xFF ) == LIST_FL ) {
-			if ( flags & LIST_REMOVE ) {
-				if ( hContact == NULL )
-					if (( hContact = MSN_HContactFromEmail( email, "", 0, 0 )) == NULL )
-						return -1;
-
-				char id[ MSN_GUID_LEN ];
-				if ( !MSN_GetStaticString( "ID", hContact, id, sizeof id ))
-					msgid = MSN_SendPacket( msnNSSocket, "REM", "%s %s", listName, id );
-			}
-			else msgid = MSN_SendPacket( msnNSSocket, "ADC", "%s N=%s F=%s", listName, email, email );
-		}
-		else {
-			if ( flags & LIST_REMOVE )
-				msgid = MSN_SendPacket( msnNSSocket, "REM", "%s %s", listName, email );
-			else
-				msgid = MSN_SendPacket( msnNSSocket, "ADC", "%s N=%s", listName, email );
-	}	}
 
 	return msgid;
 }
@@ -314,13 +307,7 @@ int __stdcall MSN_SendNickname(char *email, char *nickname)
 
 	char urlNick[ 387 ];
 	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
-
-	if ( msnProtVersion < 10 ) {
-		char urlEmail[ 130 ];
-		UrlEncode( email, urlEmail, sizeof( urlEmail ));
-		MSN_SendPacket( msnNSSocket, "REA", "%s %s", urlEmail, urlNick );
-	}
-	else MSN_SendPacket( msnNSSocket, "PRP", "MFN %s", urlNick );
+	MSN_SendPacket( msnNSSocket, "PRP", "MFN %s", urlNick );
 
 	free( nickutf );
 	return 0;
@@ -382,7 +369,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 
 	char* szStatusName = MirandaStatusToMSN( newStatus );
 
-	if ( msnProtVersion == 10 && newStatus != ID_STATUS_OFFLINE ) {
+	if ( newStatus != ID_STATUS_OFFLINE ) {
 		char szMsnObject[ 1000 ];
 		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof szMsnObject ))
 			szMsnObject[ 0 ] = 0;

@@ -58,27 +58,25 @@ BEGIN
     EDITTEXT        IDC_PASSWORD,72,34,100,12,ES_PASSWORD | ES_AUTOHSCROLL
     RTEXT           "Nickname:",IDC_STATIC,16,52,52,8
     EDITTEXT        IDC_HANDLE2,72,50,100,12,ES_AUTOHSCROLL
-    GROUPBOX        "Expert",IDC_STATIC,8,84,280,100
-    CONTROL         "Use MSN protocol v.10",IDC_USEMSNP10,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,96,264,10
+    GROUPBOX        "Expert",IDC_STATIC,8,84,280,90
     CONTROL         "Disable main menu",IDC_DISABLE_MAIN_MENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,106,264,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,96,264,10
     CONTROL         "Send message font color/size info inside messages",
                     IDC_SENDFONTINFO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    16,116,264,10
+                    16,106,264,10
     CONTROL         "Disable all contacts not included into my contact list",
                     IDC_DISABLE_ANOTHER_CONTACTS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,16,126,264,10
+                    WS_TABSTOP,16,116,264,10
     CONTROL         "Enable avatars support",IDC_ENABLE_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,136,264,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,126,264,10
     CONTROL         "Never update your nickname from server",
                     IDC_USE_OWN_NICKNAME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,16,146,264,10
+                    WS_TABSTOP,16,136,264,10
     CONTROL         "Run the following application when new Hotmail is arrived",
                     IDC_RUN_APP_ON_HOTMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,16,156,264,10
-    EDITTEXT        IDC_MAILER_APP,16,166,244,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,264,166,15,12
+                    WS_TABSTOP,16,146,264,10
+    EDITTEXT        IDC_MAILER_APP,16,156,244,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,264,156,15,12
     CONTROL         "Create a new MSN messenger account using the MSN website",
                     IDC_NEWMSNACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,68,208,8
 END

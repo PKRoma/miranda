@@ -57,7 +57,6 @@
 #define IDC_POPUP_TIMEOUT2              1052
 #define IDC_NOTIFY_FIRSTMSG             1053
 #define IDC_DISABLE_ANOTHER_CONTACTS    1054
-#define IDC_USEMSNP10                   1055
 #define IDC_ERRORS_USING_POPUPS         1056
 #define IDC_MAILER_APP                  1057
 #define IDC_RUN_APP_ON_HOTMAIL          1058
@@ -74,7 +73,7 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        129

@@ -60,7 +60,6 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))
 			SetDlgItemText( hwndDlg, IDC_HANDLE2, tBuffer );
 
-		CheckDlgButton( hwndDlg, IDC_USEMSNP10,         MSN_GetByte( "UseMsnp10", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU,	MSN_GetByte( "DisableSetNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,		MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,	MSN_GetByte( "NeverUpdateNickname", 0 ));
@@ -100,9 +99,8 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if ( MSN_LoadPngModule() == NULL )
 						CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS, 0 );
 
-			case IDC_USEMSNP10:			case IDC_DISABLE_MAIN_MENU:
-			case IDC_SENDFONTINFO:		case IDC_DISABLE_ANOTHER_CONTACTS:
-			case IDC_USE_OWN_NICKNAME:
+			case IDC_DISABLE_MAIN_MENU:			case IDC_SENDFONTINFO:		
+			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
@@ -189,13 +187,7 @@ LBL_Continue:
 			}	}
 			MSN_SetString( NULL, "Nick", screenStr );
 
-			BYTE tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEMSNP10 );
-			if ( tValue != MSN_GetByte( "UseMsnp10", 0 )) {
-				MSN_SetByte( "UseMsnp10", tValue );
-				reconnectRequired = true;
-			}
-
-			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAIN_MENU );
+			BYTE tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAIN_MENU );
 			if ( MyOptions.DisableMenu != tValue )
 				MSN_SetByte( "DisableSetNickname", tValue );
 
