@@ -35,44 +35,28 @@ Improvements:
   Added workaround for QNext client (it is not capable of type2 msgs)
 
 
-0.3.4.2
+0.3.4.2 (not published)
 
 Bugfixes:
+  Fixed authorisation reply
+  Fixed contact transfer ack
+  Now parses URL send ack correctly, no more timeout
+  Now sending ack on contacts receive
   Now correctly add contact without auth if they does not require it
   Fixed crash on receiving long message through P2P (very old bug)
+  Many other fixes (see CVS changelog for details)
 
 New features:
+  Added full unicode message support (requires SRMM Unicode)
+  Added support for sending and receiving Idle time.
+  Added reliable client identification (if not identified, gives appropriate ICQ client)
+  Added support for avatar images (downloading only).
   Added Grant authorisation option (send & recognize)
 
 Improvements:
   Server-side list support rewritten, now uses acking, partly supports groups (without sub-groups for now).
   Most cookies standardised to imitate icq5 behaviour
-
-
-0.3.4.1
-
-Bugfixes:
-  Now parses URL send ack correctly, no more timeout
-  Now sending ack on contacts receive
-  Many other fixes (see CVS changelog for details)
-
-New features:
-  Added reliable client identification (if not identified, gives appropriate ICQ client)
-  Added support for avatar images (downloading only).
-
-Improvements:
   Basic search now automatically removes garbage from text, e.g. it can search by 123-456-789
-
-
-0.3.4
-
-Bugfixes:
-  Fixed authorisation reply
-  Fixed contact transfer ack
-
-New features:
-  Added full unicode message support (requires SRMM Unicode)
-  Added support for sending and receiving Idle time.
 
 
 0.3.3.1
