@@ -16,6 +16,8 @@ doesn't work for MSN P2P transfers.
 [!] Bug #0000092 fixed: 'User Is Typing' event delay is too slow.
 [!] Bug #0000444 fixed: the passive P2P transfer fails if MSN Messenger
 returns bad IP address
+[!] Bug #0000554 fixed: fake Hotmail notifications are shown, even
+when there's no new mail available
 [*] Translation file modification.
 
 Version 0.1.7.8
