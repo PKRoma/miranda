@@ -5,8 +5,6 @@
 #define IDD_OPT_MSN                     185
 #define IDC_PASSWORD                    1020
 #define IDC_HANDLE                      1022
-#define IDC_STATIC11                    1154
-#define IDC_STATIC12                    1155
 #define IDC_LOGINSERVER                 1171
 
 // Next default values for new objects

@@ -30,6 +30,7 @@ int MSN_HandleErrors(struct ThreadData *info,char *cmdString)
 			return 1;
 		case ERR_AUTHENTICATION_FAILED:
 			MSN_DebugLog(MSN_LOG_FATAL,"Bad Username or password");
+			MessageBox(NULL,"Your username or password is incorrect","MSN Protocol",MB_OK);
 			CmdQueue_AddProtoAck(NULL,ACKTYPE_LOGIN,ACKRESULT_FAILED,NULL,LOGINERR_WRONGPASSWORD);
 			return 1;
 		default:

@@ -91,9 +91,11 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 				if(!strcmp(security1,"MD5")) {
 					//SEND USR I packet, section 7.3 Authentication
 					DBVARIANT dbv;
-					DBGetContactSetting(NULL,MSNPROTONAME,"e-mail",&dbv);
-					MSN_SendPacket(info->s,"USR","MD5 I %s",dbv.pszVal);
-					DBFreeVariant(&dbv);
+					if(!DBGetContactSetting(NULL,MSNPROTONAME,"e-mail",&dbv)) {
+						MSN_SendPacket(info->s,"USR","MD5 I %s",dbv.pszVal);
+						DBFreeVariant(&dbv);
+					}
+					else MSN_SendPacket(info->s,"USR","MD5 I ");   //this will fail, of course
 				}
 				else {
 					MSN_DebugLog(MSN_LOG_FATAL,"Unknown security package '%s'",security1);
@@ -332,13 +334,15 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 						long challen;
 						DBVARIANT dbv;
 
-						DBGetContactSetting(NULL,MSNPROTONAME,"Password",&dbv);
-						CallService(MS_DB_CRYPT_DECODESTRING,strlen(dbv.pszVal)+1,(LPARAM)dbv.pszVal);
-						//fill chal info
-						chalinfo=(char*)malloc(strlen(authChallengeInfo)+strlen(dbv.pszVal)+4);
-						strcpy(chalinfo,authChallengeInfo);
-						strcat(chalinfo,dbv.pszVal);
-						DBFreeVariant(&dbv);
+						if(!DBGetContactSetting(NULL,MSNPROTONAME,"Password",&dbv)) {
+							CallService(MS_DB_CRYPT_DECODESTRING,strlen(dbv.pszVal)+1,(LPARAM)dbv.pszVal);
+							//fill chal info
+							chalinfo=(char*)malloc(strlen(authChallengeInfo)+strlen(dbv.pszVal)+4);
+							strcpy(chalinfo,authChallengeInfo);
+							strcat(chalinfo,dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else chalinfo=_strdup("xxxxxxxxxx");
 
 						challen=strlen(chalinfo);
 						//Digest it
