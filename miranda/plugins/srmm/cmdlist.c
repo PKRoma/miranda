@@ -40,14 +40,14 @@ TCmdList *tcmdlist_append(TCmdList *list, char *data) {
 	TCmdList *n;
 	TCmdList *new_list = malloc(sizeof(TCmdList));
 	TCmdList *attach_to = NULL;
-    
-    if (!data) {
-        free(new_list);
-        return list;
-    }
+	
+	if (!data) {
+		free(new_list);
+		return list;
+	}
 	new_list->next = NULL;
 	new_list->szCmd = _strdup(data);
-    new_list->hash = tcmdlist_hash(data);
+	new_list->hash = tcmdlist_hash(data);
 	for (n=list; n!=NULL; n=n->next) {
 		attach_to = n;
 	}
@@ -58,27 +58,27 @@ TCmdList *tcmdlist_append(TCmdList *list, char *data) {
 	else {
 		new_list->prev = attach_to;
 		attach_to->next = new_list;
-        if (tcmdlist_len(list)>20) {
-            list = tcmdlist_remove(list, list->szCmd);
-        }
+		if (tcmdlist_len(list)>20) {
+			list = tcmdlist_remove(list, list->szCmd);
+		}
 		return list;
 	}
 }
 
 TCmdList *tcmdlist_remove(TCmdList *list, char *data) {
 	TCmdList *n;
-    unsigned long hash;
+	unsigned long hash;
 
-    if (!data) return list;
-    hash = tcmdlist_hash(data);
+	if (!data) return list;
+	hash = tcmdlist_hash(data);
 	for (n=list; n!=NULL; n=n->next) {
 		if (n->hash==hash&&!strcmp(n->szCmd, data)) {
-            if (n->next) n->next->prev = n->prev;
-            if (n->prev) n->prev->next = n->next;
-            if (n==list) list = n->next;
-            free(n->szCmd);
-            free(n);
-            return list;
+			if (n->next) n->next->prev = n->prev;
+			if (n->prev) n->prev->next = n->next;
+			if (n==list) list = n->next;
+			free(n->szCmd);
+			free(n);
+			return list;
 		}
 	}
 	return list;
@@ -86,22 +86,22 @@ TCmdList *tcmdlist_remove(TCmdList *list, char *data) {
 
 int tcmdlist_len(TCmdList *list) {
 	TCmdList *n;
-    int i = 0;
+	int i = 0;
 
 	for (n=list; n!=NULL; n=n->next) {
-        i++;
-    }
-    return i;
+		i++;
+	}
+	return i;
 }
 
 TCmdList *tcmdlist_last(TCmdList *list) {
 	TCmdList *n;
 
 	for (n=list; n!=NULL; n=n->next) {
-        if (!n->next) 
-            return n;
-    }
-    return NULL;
+		if (!n->next) 
+			return n;
+	}
+	return NULL;
 }
 
 void tcmdlist_free(TCmdList *list) {
@@ -109,7 +109,7 @@ void tcmdlist_free(TCmdList *list) {
 
 	while (n!=NULL) {
 		next = n->next;
-        free(n->szCmd);
+		free(n->szCmd);
 		free(n);
 		n = next;
 	}

@@ -24,7 +24,7 @@ typedef struct _TCmdList {
 	struct _TCmdList *next;
 	struct _TCmdList *prev;
 	char *szCmd;
-    unsigned long hash;
+	unsigned long hash;
 } TCmdList;
 
 TCmdList *tcmdlist_append(TCmdList *list, char *data);
