@@ -131,12 +131,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
         db_unset(NULL, SRMMMOD_OLD, "CloseOnReply");
         db_unset(NULL, SRMMMOD_OLD, "ShowLogIcons");
         db_unset(NULL, SRMMMOD_OLD, "MessageTimeout");
-
-        {
-            BYTE b = db_byte_get(NULL, SRMMMOD, "AutoPopup", 0);
-            db_byte_set(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, b);
-            db_unset(NULL, SRMMMOD, "AutoPopup");
-        }
         db_dword_set(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
         db_word_set(NULL, SRMMMOD, SRMMMOD_SETTINGS_NAM, SRMMMOD_SETTINGS_VER);
     }
