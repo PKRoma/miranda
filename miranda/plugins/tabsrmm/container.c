@@ -675,7 +675,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         if(IsWindow(hwndClients[i])) {
                             if((HWND)hwndClients[i] != pContainer->hwndActive)
                                 pContainer->bDontSmartClose = TRUE;
-                            SendMessage((HWND)hwndClients[i], DM_CHECKAUTOCLOSE, (WPARAM)(dwTimeout), 0);
+                            SendMessage((HWND)hwndClients[i], DM_CHECKAUTOCLOSE, (WPARAM)(dwTimeout * 60), 0);
                             pContainer->bDontSmartClose = FALSE;
                         }
                     }

@@ -40,8 +40,8 @@ Version 0.0.9.4 - 2004/12/02
           smiley backgrounds in tabsrmm will not work when using the individual background
           colors.
           
-        + new option - > auto close tab after x seconds of inactivity. Does exactly that.
-          Tabs don't get autoclosed when:
+        + new option - > auto close tab after x minutes of inactivity. 
+          Does exactly that. Tabs don't get autoclosed when:
           a) unread messages are there (the tab icon is flashing)
           b) the input area contains characters
           

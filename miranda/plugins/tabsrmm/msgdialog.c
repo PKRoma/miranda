@@ -569,6 +569,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     return 0;
                 }
             }
+            if(wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
+                SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+                return 0;
+            }
             if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
                 if (wParam == 0x9) {            // ctrl-shift tab
                     SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
@@ -1204,6 +1208,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 
                 dat->dwFlags |= MWF_INITMODE;
+                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
                 
                 SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONADDTOOLTIP, (WPARAM) Translate("Add Contact Permanently to List"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
@@ -4018,7 +4023,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
             }
 // XXX end mod
-            //_DebugPopup(dat->hContact, "WM_DESTROY (hwnd = %d)", hwndDlg);
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
+            
             if (dat)
                 free(dat);
             else

@@ -1311,7 +1311,7 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
     MessageWindowEventData mwe = { 0 };
 
     if (hContact == NULL || hwnd == NULL) return;
-    if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 0))
+    if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1))
         return;
     mwe.cbSize = sizeof(mwe);
     mwe.hContact = hContact;

@@ -654,12 +654,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	if(dat->dwFlags & MWF_LOG_UNDERLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG)
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ul0");
 // XXX end mod
-    if (showColon) {
-        if (dat->isHistory)
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, ": ");
-        else
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, ": ");
-    }
+    if (showColon)
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, ": ");
     else
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");
         
