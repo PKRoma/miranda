@@ -51,7 +51,7 @@ static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 {
 	UINT id;
 
-	switch(wParam) {
+	switch(wParam&0xFFFF) {
 		case PLI_PROTOCOL: id=IDI_MSN; break;
 		default: return (int)(HICON)NULL;	
 	}
