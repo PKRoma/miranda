@@ -80,7 +80,7 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
 {
   // Only load for 0.4 or greater
   // Miranda IM v0.4 contained several netlib struct changes requiring a forced upgrade
-  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 3, 3, 0)) // TODO: this is temporary
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0)) 
   {
     return NULL;
   }
