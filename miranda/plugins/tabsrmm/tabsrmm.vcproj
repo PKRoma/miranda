@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252" ?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
@@ -801,6 +801,8 @@
 			<File
 				RelativePath="commonheaders.h">
 			</File>
+			<File
+				RelativePath="IcoLib.h"/>
 			<File
 				RelativePath="ImageDataObject.h">
 			</File>

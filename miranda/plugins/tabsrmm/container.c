@@ -523,7 +523,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
                 mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
-                mmi->ptMinTrackSize.x = 280;
+                mmi->ptMinTrackSize.x = 275;
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 pt.y = rc.top;
                 TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
@@ -538,7 +538,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     mmi->ptMaxSize.x = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
                     mmi->ptMaxSize.y = rcDesktop.bottom - rcDesktop.top;
                     mmi->ptMaxPosition.x = wp.rcNormalPosition.left;
-                    mmi->ptMaxPosition.y = 0;
+                    if(IsIconic(hwndDlg))
+                        mmi->ptMaxPosition.y = rcDesktop.top;
+                    else
+                        mmi->ptMaxPosition.y = 0;
                 }
                 return 0;
             }
@@ -548,7 +551,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 int i = 0;
                 TCITEM item = {0};
                 POINT pt = {0};
-                
+
                 if(IsIconic(hwndDlg)) {
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
                     break;

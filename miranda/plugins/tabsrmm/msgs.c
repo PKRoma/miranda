@@ -30,6 +30,7 @@ $Id$
 #include "m_smileyadd.h"
 #include "m_ieview.h"
 #include "m_metacontacts.h"
+#include "IcoLib.h"
 
 MYGLOBALS myGlobals;
 
@@ -74,7 +75,9 @@ void ConvertAllToUTF8();
 void InitAPI();
 void ReloadGlobals();
 void LoadIconTheme();
-void UnloadIconTheme();
+int LoadFromIconLib();
+int SetupIconLibConfig();
+HICON LoadOneIcon(int iconId, char *szName);
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
@@ -852,6 +855,13 @@ int SplitmsgShutdown(void)
     return 0;
 }
 
+static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
+{
+    UncacheMsgLogIcons();
+    LoadFromIconLib();
+    CacheMsgLogIcons();
+}
+
 static int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
     if (hMsgMenuItem) {
@@ -866,8 +876,9 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
             CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
         }
     }
-    LoadIconTheme();
+    UncacheMsgLogIcons();
     CreateImageList(FALSE);
+    CacheMsgLogIcons();
     WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
     WindowList_Broadcast(hMessageWindowList, DM_UPDATEWINICON, 0, 0);
     return 0;
@@ -895,6 +906,8 @@ int LoadSendRecvMessageModule(void)
     hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
     HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
     HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
+    if(ServiceExists(MS_SKIN2_ADDICON))
+        HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
     HookEvent(ME_PROTO_ACK, ProtoAck);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
@@ -1254,13 +1267,7 @@ void CreateImageList(BOOL bInitial)
     myGlobals.g_IconMsgEvent = iCurIcon++;
 
     // typing notify icon
-    if(g_hIconDLL) {
-        hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);    
-        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-        DestroyIcon(hIcon);
-    }
-    else
-        ImageList_AddIcon(myGlobals.g_hImageList, 0);
+    ImageList_AddIcon(myGlobals.g_hImageList, myGlobals.g_buttonBarIcons[5]);
     myGlobals.g_IconTypingEvent = iCurIcon++;
 
     hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
@@ -1271,22 +1278,10 @@ void CreateImageList(BOOL bInitial)
     ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
     myGlobals.g_IconUrlEvent = iCurIcon++;
 
-    if(g_hIconDLL) {
-        hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-        DestroyIcon(hIcon);
-    }
-    else
-        ImageList_AddIcon(myGlobals.g_hImageList, 0);
+    ImageList_AddIcon(myGlobals.g_hImageList, myGlobals.g_iconErr);
     myGlobals.g_IconError = iCurIcon++;
 
-    if(g_hIconDLL) {
-        hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-        DestroyIcon(hIcon);
-    }
-    else
-        ImageList_AddIcon(myGlobals.g_hImageList, 0);
+    ImageList_AddIcon(myGlobals.g_hImageList, myGlobals.g_buttonBarIcons[9]);
     myGlobals.g_IconSend = iCurIcon++;
     
     ImageList_AddIcon(myGlobals.g_hImageList, 0);             // empty (end of list)
@@ -1409,38 +1404,229 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned i
     NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe);
 }
 
+/*
+ * this creates the configuration the first time, tabSRMM is started when IcoLib plugin is installed.
+ * It uses the icons from the default icons DLL under plugins...
+ */
+
+
+int SetupIconLibConfig()
+{
+    SKINICONDESC sid;
+    char szFilename[MAX_PATH];
+
+    strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
+    g_hIconDLL = LoadLibraryA(szFilename);
+    if(g_hIconDLL == 0) {
+        MessageBoxA(0, "Critical: cannot init IcoLib, no resource DLL found.", "tabSRMM", MB_OK);
+        return 0;
+    }
+    GetModuleFileNameA(g_hIconDLL, szFilename, MAX_PATH);
+    
+    sid.cbSize = sizeof(SKINICONDESC);
+    sid.pszSection = "TabSRMM";
+    sid.pszDefaultFile = szFilename;
+
+    sid.pszName = (char *) "tabSRMM_history";
+    sid.iDefaultIndex = -IDI_HISTORY;
+    sid.pszDescription = Translate("Show history");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_mlog";
+    sid.iDefaultIndex = -IDI_TIMESTAMP;
+    sid.pszDescription = Translate("Message Log Options");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_add";
+    sid.iDefaultIndex = -IDI_ADDCONTACT;
+    sid.pszDescription = Translate("Add contact");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_multi";
+    sid.iDefaultIndex = -IDI_MULTISEND;
+    sid.pszDescription = Translate("Multisend indicator");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_typing";
+    sid.iDefaultIndex = -IDI_TYPING;
+    sid.pszDescription = Translate("Contact is typing");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_quote";
+    sid.iDefaultIndex = -IDI_QUOTE;
+    sid.pszDescription = Translate("Quote text");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    
+    sid.pszName = (char *) "tabSRMM_save";
+    sid.iDefaultIndex = -IDI_SAVE;
+    sid.pszDescription = Translate("Save and close");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_send";
+    sid.iDefaultIndex = -IDI_CHECK;
+    sid.pszDescription = Translate("Send message");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_avatar";
+    sid.iDefaultIndex = -IDI_CONTACTPIC;
+    sid.pszDescription = Translate("Avatar menu");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_close";
+    sid.iDefaultIndex = -IDI_CLOSEMSGDLG;
+    sid.pszDescription = Translate("Close");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    
+    sid.pszName = (char *) "tabSRMM_usermenu";
+    sid.iDefaultIndex = -IDI_USERMENU;
+    sid.pszDescription = Translate("User menu");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_error";
+    sid.iDefaultIndex = -IDI_MSGERROR;
+    sid.pszDescription = Translate("Message delivery error");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_in";
+    sid.iDefaultIndex = -IDI_ICONIN;
+    sid.pszDescription = Translate("Incoming message icon");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_out";
+    sid.iDefaultIndex = -IDI_ICONOUT;
+    sid.pszDescription = Translate("Outgoing message icon");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_emoticon";
+    sid.iDefaultIndex = -IDI_SMILEYICON;
+    sid.pszDescription = Translate("Smiley button");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    
+    sid.pszName = (char *) "tabSRMM_mtn_on";
+    sid.iDefaultIndex = -IDI_SELFTYPING_ON;
+    sid.pszDescription = Translate("Sending Typing notify is on");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_mtn_off";
+    sid.iDefaultIndex = -IDI_SELFTYPING_OFF;
+    sid.pszDescription = Translate("Sending Typing notify is off");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_container";
+    sid.iDefaultIndex = -IDI_CONTAINER;
+    sid.pszDescription = Translate("Static container icon");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_secureim_on";
+    sid.iDefaultIndex = -IDI_SECUREIM_ENABLED;
+    sid.pszDescription = Translate("SecureIM is on");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_secureim_off";
+    sid.iDefaultIndex = -IDI_SECUREIM_DISABLED;
+    sid.pszDescription = Translate("SecureIM is off");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_status";
+    sid.iDefaultIndex = -IDI_STATUSCHANGE;
+    sid.pszDescription = Translate("Statuschange");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_bold";
+    sid.iDefaultIndex = -IDI_FONTBOLD;
+    sid.pszDescription = Translate("Format bold");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_italic";
+    sid.iDefaultIndex = -IDI_FONTITALIC;
+    sid.pszDescription = Translate("Format italic");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    
+    sid.pszName = (char *) "tabSRMM_underline";
+    sid.iDefaultIndex = -IDI_FONTUNDERLINE;
+    sid.pszDescription = Translate("Format underline");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_face";
+    sid.iDefaultIndex = -IDI_FONTFACE;
+    sid.pszDescription = Translate("Font face");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    sid.pszName = (char *) "tabSRMM_color";
+    sid.iDefaultIndex = -IDI_FONTCOLOR;
+    sid.pszDescription = Translate("Font color");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    GetModuleFileNameA(g_hInst, szFilename, MAX_PATH);
+    sid.pszName = (char *) "tabSRMM_pulldown";
+    sid.iDefaultIndex = -IDI_PULLDOWNARROW;
+    sid.pszDescription = Translate("Pulldown Button");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    return 1;
+}
+
+// load the icon theme from IconLib - check if it exists...
+
+int LoadFromIconLib()
+{
+    myGlobals.g_buttonBarIcons[0] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_add");
+    myGlobals.g_buttonBarIcons[1] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_history");
+    myGlobals.g_buttonBarIcons[2] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_mlog");
+    myGlobals.g_buttonBarIcons[3] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_multi");
+    myGlobals.g_buttonBarIcons[4] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_usermenu");
+    myGlobals.g_buttonBarIcons[5] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_typing");
+    myGlobals.g_buttonBarIcons[6] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_close");
+    myGlobals.g_buttonBarIcons[7] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_save");
+    myGlobals.g_buttonBarIcons[8] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_quote");
+    myGlobals.g_buttonBarIcons[9] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_send");
+    myGlobals.g_buttonBarIcons[10] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_avatar");
+    myGlobals.g_buttonBarIcons[11] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_emoticon");
+    myGlobals.g_buttonBarIcons[12] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_mtn_on");
+    myGlobals.g_buttonBarIcons[13] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_mtn_off");
+    myGlobals.g_buttonBarIcons[14] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_secureim_on");
+    myGlobals.g_buttonBarIcons[15] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_secureim_off");
+    myGlobals.g_buttonBarIcons[16] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_pulldown");
+    myGlobals.g_buttonBarIcons[17] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_bold");
+    myGlobals.g_buttonBarIcons[18] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_italic");
+    myGlobals.g_buttonBarIcons[19] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_underline");
+    myGlobals.g_buttonBarIcons[20] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_face");
+    myGlobals.g_buttonBarIcons[21] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_color");
+
+    UncacheMsgLogIcons();
+    myGlobals.g_iconIn = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_in");
+    myGlobals.g_iconOut = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_out");
+    myGlobals.g_iconErr = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_error");
+    myGlobals.g_iconContainer = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_container");
+    myGlobals.g_iconStatus = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_status");
+
+    ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconError, myGlobals.g_iconErr);
+    ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconSend, myGlobals.g_buttonBarIcons[9]);
+    ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconTypingEvent, myGlobals.g_buttonBarIcons[5]);
+    CacheMsgLogIcons();
+    WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
+    return 0;
+}
 void LoadIconTheme()
 {
     char szFilename[MAX_PATH];
-    DBVARIANT dbv;
-    HANDLE hFile;
     char szIDString[256];
     int cxIcon = GetSystemMetrics(SM_CXSMICON);
     int cyIcon = GetSystemMetrics(SM_CYSMICON);
 
-    if(g_hIconDLL) {
-        FreeLibrary(g_hIconDLL);
-        g_hIconDLL = 0;
-    }
-    
-    if(DBGetContactSetting(NULL, SRMSGMOD_T, "icondll", &dbv)) {
-        strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
-        if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
-            strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
+    if(ServiceExists(MS_SKIN2_ADDICON)) {               // ico lib present...
+        if(SetupIconLibConfig() == 0)
+            return;
         else
-            CloseHandle(hFile);
-    }
-    else {
-        strncpy(szFilename, dbv.pszVal, MAX_PATH);
-        DBFreeVariant(&dbv);
+            LoadFromIconLib();
+        return;
     }
 
-    if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+    // no icolib present, load it the default way...
+    
+    if(g_hIconDLL == 0) {                               // first time, load the library...
         strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
-    else
-        CloseHandle(hFile);
-
-    g_hIconDLL = LoadLibraryA(szFilename);
+        g_hIconDLL = LoadLibraryA(szFilename);
+    }
 
     if(g_hIconDLL == NULL)
         MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
@@ -1457,11 +1643,8 @@ void LoadIconTheme()
                 }
             }
         }
-        UnloadIconTheme();
         UncacheMsgLogIcons();
-        
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
-
         myGlobals.g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
         myGlobals.g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
         myGlobals.g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);
@@ -1499,24 +1682,7 @@ void LoadIconTheme()
 failure:
     if(g_hIconDLL) {
         FreeLibrary(g_hIconDLL);
-        g_hIconDLL = 0;
+        g_hIconDLL = 0;    
     }
 }
 
-void UnloadIconTheme()
-{
-    int i;
-    
-    for(i = 0; i < NR_BUTTONBARICONS; i++) {
-        if(myGlobals.g_buttonBarIcons[i] != 0) {
-            DestroyIcon(myGlobals.g_buttonBarIcons[i]);
-            myGlobals.g_buttonBarIcons[i] = 0;
-        }
-    }
-    DestroyIcon(myGlobals.g_iconIn);
-    DestroyIcon(myGlobals.g_iconOut);
-    DestroyIcon(myGlobals.g_iconErr);
-    DestroyIcon(myGlobals.g_iconContainer);
-    DestroyIcon(myGlobals.g_iconStatus);
-    DeleteObject(myGlobals.g_hbmUnknown);
-}

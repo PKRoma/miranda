@@ -466,9 +466,6 @@ BEGIN
                     6,109,289,9
     CONTROL         "Flat message log (no static edge)",IDC_FLATMSGLOG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,140,140,10
-    LTEXT           "Icon DLL",IDC_STATIC,153,134,39,11
-    EDITTEXT        IDC_ICONDLLNAME,187,132,79,13,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_SELECTICONDLL,271,132,26,13
     CONTROL         "Perform version check on Icon DLL",IDC_CHECKICONDLL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,148,144,11
 END
