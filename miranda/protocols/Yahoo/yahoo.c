@@ -112,11 +112,15 @@ int miranda_to_yahoo(int myyahooStatus)
 void yahoo_set_status(int myyahooStatus, char *msg, int away)
 {
 	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
-	
-    if (YAHOO_CUSTOM_STATUS != myyahooStatus)
-        yahoo_set_away(ylad->id, miranda_to_yahoo(myyahooStatus), msg, away);
-    else
-	    yahoo_set_away(ylad->id, YAHOO_CUSTOM_STATUS, msg, away);
+
+	/* Safety check, don't dereference Invalid pointers */
+	if ((ylad != NULL) && (ylad->id > 0) )  {
+			
+		if (YAHOO_CUSTOM_STATUS != myyahooStatus)
+			yahoo_set_away(ylad->id, miranda_to_yahoo(myyahooStatus), msg, away);
+		else
+			yahoo_set_away(ylad->id, YAHOO_CUSTOM_STATUS, msg, away);
+	}
 }
 
 int yahoo_to_miranda_status(int yahooStatus, int away)
@@ -600,17 +604,33 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	if (hContact == NULL) {
 		LOG(("Buddy Not Found. Adding..."));
 		hContact = add_buddy(who, who, 0);
+	} else {
+		LOG(("Buddy Found On My List!"));
+		LOG(("Buddy %d", hContact));
 	}
 	
+	LOG(("Before Setting Status"));
 	if (!mobile)
 		YAHOO_SetWord(hContact, "Status", yahoo_to_miranda_status(stat,away));
 	else
 		YAHOO_SetWord(hContact, "Status", ID_STATUS_ONTHEPHONE);
 	
+	LOG(("After Setting Status"));
 	YAHOO_SetWord(hContact, "YStatus", stat);
+	LOG(("Before away flag"));
 	YAHOO_SetWord(hContact, "YAway", away);
+	LOG(("Before mobile"));
 	YAHOO_SetWord(hContact, "Mobile", mobile);
-	YAHOO_SetString(hContact, "YMsg", (msg != NULL) ? msg : "");
+
+	LOG(("About to set the status message for my buddy."));
+	if(msg) {
+		LOG(("%s custom message '%s'", who, msg));
+		YAHOO_SetString(hContact, "YMsg", msg);
+	} else {
+		YAHOO_SetString(hContact, "YMsg", "");
+	}
+
+	
 	
 	
 	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
@@ -624,9 +644,6 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
 		
-	if(msg) {
-		LOG(("%s custom message '%s'", who, msg));
-	}
 }
 
 void ext_yahoo_got_buddies(int id, YList * buds)
