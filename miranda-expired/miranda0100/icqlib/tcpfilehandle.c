@@ -234,7 +234,7 @@ void icq_HandleFileAck(icq_TCPLink *plink, icq_Packet *p, int port)
   pfile=icq_FindFileSession(plink->icqlink, plink->remote_uin, 0);
 
   pfile->tcplink=pfilelink;
-  pfilelink->id=pfile->id;
+  pfilelink->id=pfile->id;	   //this was commented out by thing. why?
 
   invoke_callback(plink->icqlink, icq_RequestNotify)(plink->icqlink,
     pfile->id, ICQ_NOTIFY_FILESESSION, sizeof(icq_FileSession), pfile);

@@ -77,6 +77,7 @@ void icq_FileSessionDelete(void *pv)
     while(*p2)
       free(*(p2++));
     free(p->files);
+	p->files=NULL;
   }
 
   if (p->current_fd > -1 ) {
