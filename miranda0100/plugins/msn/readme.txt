@@ -4,8 +4,8 @@ MSN Messenger Protocol Plugin Readme
 ********** PLEASE READ THIS DOCUMENT IN ITS ENTIRITY **********
 If you file a bug about something that's in here I won't be at all pleased.
 
-Yes, this is a plugin to implement the MSN protocol. It goes online and
-sends/recvs messages, and that's about it.
+Yes, this is a plugin to implement the MSN protocol. It goes online,
+sends/recvs messages, and receives auth requests.
 
 IMPORTANT: It will *not* prompt you to enter your login and password when you
 first run it. You must remember to enter them in the options before you can

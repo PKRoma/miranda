@@ -75,6 +75,7 @@ int CmdQueue_AddDbWriteSetting(HANDLE hContact,const char *szModule,const char *
 int CmdQueue_AddDbWriteSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *pszVal);
 int CmdQueue_AddDbWriteSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD wVal);
 int CmdQueue_AddDbCreateContact(const char *email,const char *nick,int temporary,HANDLE hWaitEvent,HANDLE *phContact);
+int CmdQueue_AddDbAuthRequest(const char *email,const char *nick);
 
 #define SBSTATUS_NEW        0
 #define SBSTATUS_DNSLOOKUP  1
@@ -92,6 +93,17 @@ int MsgQueue_Add(HANDLE hContact,const char *msg,DWORD flags);
 HANDLE MsgQueue_GetNextRecipient(void);
 char *MsgQueue_GetNext(HANDLE hContact,PDWORD pFlags,int *seq);
 int MsgQueue_AllocateUniqueSeq(void);
+
+#define LIST_AL  1
+#define LIST_BL  2
+#define LIST_RL  3
+#define LIST_FL  4
+#define IsValidListCode(n)  ((n)>=LIST_AL && (n)<=LIST_RL)
+int Lists_NameToCode(const char *name);
+void Lists_Add(int list,const char *email,const char *nick);
+int Lists_IsInList(int list,const char *email);
+void Lists_Remove(int list,const char *email);
+void Lists_Wipe(void);
 
 //MSN error codes
 #define ERR_SYNTAX_ERROR                 200
@@ -129,3 +141,4 @@ int MsgQueue_AllocateUniqueSeq(void);
 #define ERR_AUTHENTICATION_FAILED        911
 #define ERR_NOT_ALLOWED_WHEN_OFFLINE     913
 #define ERR_NOT_ACCEPTING_NEW_USERS      920
+#define ERR_EMAIL_ADDRESS_NOT_VERIFIED   924

@@ -46,6 +46,8 @@ void Switchboards_Init(void);
 void Switchboards_Uninit(void);
 void MsgQueue_Init(void);
 void MsgQueue_Uninit(void);
+void Lists_Init(void);
+void Lists_Uninit(void);
 int MsnOptInit(WPARAM wParam,LPARAM lParam);
 
 volatile LONG msnLoggedIn;
@@ -66,6 +68,7 @@ int __declspec(dllexport) Unload(void)
 	Switchboards_Uninit();
 	CmdQueue_Uninit();
 	MsgQueue_Uninit();
+	Lists_Uninit();
 	return 0;
 }
 
@@ -105,6 +108,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	msnLoggedIn=0;
 	MSN_WS_Init();
 	LoadMsnServices();
+	Lists_Init();
 	MsgQueue_Init();
 	CmdQueue_Init();
 	Switchboards_Init();
