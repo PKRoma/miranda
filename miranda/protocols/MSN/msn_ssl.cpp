@@ -70,6 +70,17 @@ static void  sttApplyProxy( HINTERNET parHandle )
 	else MSN_DebugLog( "Warning: proxy user password is required but missing" );
 }
 
+static void sttSuckMethan( HINTERNET hRequest )
+{
+	DWORD dwSize;
+
+	do {
+		char tmpbuf[100];
+		f_InternetReadFile( hRequest, tmpbuf, 50, &dwSize);
+	}
+		while (dwSize != 0);
+}
+
 static char* sttSslGet( char* parUrl, char* parChallenge )
 {
 	DWORD tFlags =
@@ -210,17 +221,10 @@ LBL_Restart:
 
 				case HTTP_STATUS_DENIED:
 				case HTTP_STATUS_PROXY_AUTH_REQ:
-					{	char tmpbuf[100];
-						DWORD dwSize;
-						do {
-							f_InternetReadFile( tRequest, tmpbuf, 50, &dwSize);
-						}
-							while (dwSize != 0);
-					}
-						
 					if ( tUsesProxy && !bProxyParamsSubstituted ) {
 						bProxyParamsSubstituted = true;
 						sttApplyProxy( tUrlHandle ); 
+						sttSuckMethan( tRequest );
 						goto LBL_Restart;
 					}
 
@@ -235,8 +239,11 @@ LBL_Restart:
 				case ERROR_INTERNET_SEC_CERT_ERRORS:
 				case ERROR_INTERNET_SEC_CERT_NO_REV:
 				case ERROR_INTERNET_SEC_CERT_REV_FAILED:
-					if ( ERROR_CANCELLED != f_InternetErrorDlg( GetDesktopWindow(), tRequest, tErrorCode, ERROR_FLAGS, NULL ))
+					MSN_DebugLog( "HttpSendRequest returned error code %d", tErrorCode );
+					if ( ERROR_INTERNET_FORCE_RETRY == f_InternetErrorDlg( GetDesktopWindow(), tRequest, tErrorCode, ERROR_FLAGS, NULL )) {
+						sttSuckMethan( tRequest );
 						goto LBL_Restart;
+					}
 
 					// else fall into the general error handling routine
 
