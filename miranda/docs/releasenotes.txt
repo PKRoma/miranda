@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             March 2004 (v0.3.3)
+                             December 2004 (v0.4)
 
                           http://www.miranda-im.org
 
@@ -27,7 +27,51 @@ This section lists some of the changes between different releases. We have tried
 to list all the important ones without getting too technical. 
 
 If you want to see the full changelogs, go here:
-http://miranda-icq.sourceforge.net/alpha/
+http://www.miranda-im.org/testing/
+
+* New in 0.4
+Bugfixes:
+ - Crashes after warning about unsuccessful search
+ - ESC doesn't work in User Detail
+ - Phrases with leading and trailing spaces not translateable
+ - Incorrect Local time in Userinfo
+ - CheckDlgButton didn't draw correctly if used after creation in button control
+ - Offline users weren't always shown in Typing Notify Options
+ - Ctrl+w closes message window
+ - Moving a group outside the CLC causes a crash
+ - Crash translating a menu
+ - Scrollbar still appeared sometimes if XP skinning was enabled
+ - Contact list control read-disk-on-paint bugs
+ - Many database bug fixes (crashes, corruption)
+ - AIM: Removing user from deny list didn't always update mode in Miranda
+ - AIM: Fixed file transfers with Mac users
+ - ICQ: Error alert blocked I/O
+ - MSN: Connection/login fixes
+ - IRC: Many bug fixes
+
+Enhancements:
+ - Database and contact list control moved to plugins
+ - Relative paths for icons, sounds, and contact list background
+ - Scroll through past messages with ctrl+up/dn in message window
+ - New idle module to handle autoaway and protocol idleness
+ - Pin to desktop option in Window options
+ - Dim idle contacts option
+ - Use windows colours option for contact list
+ - New status bar options (hide bevel, hide gripper)
+ - Database I/O improvements
+ - Option to hide vertical scroll bar
+ - AIM: Show mobile users as 'on the phone'
+ - MSN: Sending/receiving avatar support
+ - MSN: Peer to peer support
+ - IRC: DCC filetransfers and Chats
+ - IRC: Reversed filetransfers
+ - IRC: Send-ahead support
+ - IRC: Incoming TDCC support
+ - IRC: CTCP support (all the usual commands)
+ - IRC: Configurable quit message
+ - IRC: Option to show addresses in joins/quits etc
+ - IRC: Formatting of outgoing text
+ - IRC: Optional SSL support
 
 * New in 0.3.3
 
