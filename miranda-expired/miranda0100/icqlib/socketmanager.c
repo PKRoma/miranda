@@ -171,7 +171,12 @@ void icq_HandleReadySocket(int socket_fd, int type)
 {
   icq_SocketReady(icq_FindSocket(socket_fd), type);
 }
-  
+
+//#include <stdio.h>  
+//#define l(t) {FILE *fp; fp=fopen("c:\\miranda.log.txt","at"); fprintf(fp,"%u: %d: %s\n",GetTickCount(),__LINE__,(t)); fclose(fp);}
+//#define l2(t,a,b) {FILE *fp; fp=fopen("c:\\miranda.log.txt","at"); fprintf(fp,"%u: %d: %s,%d,%d\n",GetTickCount(),__LINE__,(t),(a),(b)); fclose(fp);}
+#define l(t)
+#define l2(t,a,b)
 int _icq_SocketBuildFdSets(void *p, va_list data)
 {
   icq_Socket *s = p;
@@ -180,6 +185,7 @@ int _icq_SocketBuildFdSets(void *p, va_list data)
   
   for (i=0; i<ICQ_SOCKET_MAX; i++)
     if (s->handlers[i]) {
+	  l2("test socket hSock,r/w",s->socket,i);
       FD_SET(s->socket, &(icq_FdSets[i]));
       if (s->socket > icq_MaxSocket)
         icq_MaxSocket = s->socket;
@@ -219,18 +225,24 @@ int _icq_SocketHandleReady(void *p, va_list data)
 void icq_SocketPoll()
 {
   struct timeval tv;
-
+  l("before sbfds");
   icq_SocketBuildFdSets();
+  l("after sbfds");
   
   tv.tv_sec = 0; tv.tv_usec = 0;
     
   /* determine which sockets require maintenance */
+  l("before select");
   select(icq_MaxSocket+1, &(icq_FdSets[ICQ_SOCKET_READ]),
     &(icq_FdSets[ICQ_SOCKET_WRITE]), NULL, &tv);
+  l("after select");
 
   /* handle ready sockets */
   (void)icq_ListTraverse(icq_SocketList, _icq_SocketHandleReady);
+  l("after traverse");
 }
+#undef l
+#undef l2
 
 int _icq_FindSocket(void *p, va_list data)
 {
