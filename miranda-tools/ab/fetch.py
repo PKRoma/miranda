@@ -180,7 +180,7 @@ fp.close()
 # The upload.py part of fetch.py
 # -------------------------------------------------------------------------------------
 
-if sys.argv[2] == "test":
+if len(sys.argv) >= 3 and sys.argv[2] == "test":
 	print "\n*** Build stage completed, skipping upload cos you passed 'test'"
 	sys.exit(0)
 
