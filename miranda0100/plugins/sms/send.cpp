@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../miranda32/random/plugins/newpluginapi.h"
 #include "../../miranda32/database/m_database.h"
 #include "../../miranda32/protocols/protocols/m_protosvc.h"
-#include "../../plugins/icqoscar/m_icq.h"     //this will be moving soon
+#include "../../miranda32/protocols/icqoscar/m_icq.h"
 
 extern HWND hwndStatus;
 
