@@ -433,9 +433,14 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 
 	if ( flags & MSN_SHOW_ERROR ) {
 		ppd->lchIcon   = LoadIcon( NULL, IDI_WARNING );
-		ppd->colorBack = RGB(191,0,0); //Red
-		ppd->colorText = RGB(255,245,225); //Yellow
-		ppd->iSeconds  = 300;
+		if ( ServiceExists( MS_POPUP_ADDCLASS ))
+			ppd->lpzClass  = POPUP_CLASS_WARNING;
+		else {
+			ppd->colorBack = RGB(191,0,0); //Red
+			ppd->colorText = RGB(255,245,225); //Yellow
+		}
+
+		ppd->iSeconds  = MyOptions.PopupTimeoutOther;
 	}
 	else {
 		ppd->colorBack = ( MyOptions.UseWinColors ) ? GetSysColor( COLOR_BTNFACE ) : MyOptions.BGColour;

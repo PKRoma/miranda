@@ -181,12 +181,15 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 
 LBL_Restart:
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, tBuffer, DWORD(-1), NULL, 0 );
-			if ( tErrorCode == 0 )
-			{	tErrorCode = GetLastError();
-				MSN_DebugLog( "HttpSendRequest() failed with error %ld", tErrorCode );
+			if ( tErrorCode == 0 ) {
+				TWinErrorCode errCode;
+				MSN_DebugLog( "HttpSendRequest() failed with error %ld", errCode.mErrorCode );
 
 				if ( tErrorCode == 2 )
 					MSN_ShowError( "Internet Explorer is in the 'Offline' mode. Switch IE to the 'Online' mode and then try to relogin" );
+				else
+					MSN_ShowError( "MSN Passport verification failed with error %d: %s",
+						errCode.mErrorCode, errCode.getText());
 			}
 			else
 			{
@@ -225,7 +228,7 @@ LBL_Restart:
 					if ( !f_HttpQueryInfo( tRequest, HTTP_QUERY_STATUS_TEXT, tBuffer, &tBufSize, NULL ))
 						strcpy( tBuffer, "unknown error" );
 
-					MSN_ShowError( "Attempt to make the SSL connection resulted to error %d: %s.", dwCode, tBuffer );
+					MSN_ShowError( "Internet secure connection (SSL) failed with error %d: %s", dwCode, tBuffer );
 					MSN_DebugLog( "SSL error %d: '%s'", dwCode, tBuffer );
 					goto LBL_PrintHeaders;
 			}	}
