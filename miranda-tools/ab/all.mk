@@ -56,7 +56,7 @@ changelog: unzip
 	$(WGET) $(WGETFLAGS) http://xolphin.nl/egodust/ChangeLog.part --output-document=$(OUTPUT)/ChangeLog_$(CO_YMD).part
 	
 # all the plugin names
-PLUGIN_NAMES=icq msn aim yahoo jabber srmm clist mwclist dbx_3x
+PLUGIN_NAMES=icq msn aim yahoo jabber srmm clist_classic clist_mw dbx_3x
 
 # give these names to the packager
 export PLUGIN_NAMES
