@@ -57,6 +57,8 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 			}
 			i=AddInfoItemToGroup(group,cii->flags,cii->pszText);
 			RecalcScrollBar(hwnd,dat);
+			dat->NeedResort=TRUE;
+			SortCLC(hwnd,dat,1);
 			return (LRESULT)group->contact[i].hContact|HCONTACT_ISINFO;
 		}
 

@@ -165,6 +165,7 @@ static CRITICAL_SECTION csFrameHook;
 static BOOLEAN CLUIFramesFitInSize(void);
 static int RemoveItemFromList(int pos,wndFrame **lpFrames,int *FrameItemCount);
 HWND hWndExplorerToolBar;
+static int GapBetweenFrames=1;
 
 static int RemoveItemFromList(int pos,wndFrame **lpFrames,int *FrameItemCount)
 {
@@ -1925,12 +1926,14 @@ int CLUIFramesResize(const RECT newsize)
 	int drawitems;
 	int clientfrm;
 	int i,j;
+	int sepw=GapBetweenFrames;
 	SortData *sdarray;
 
 	if(nFramescount<1) return 0; 
 
 	newheight=newsize.bottom-newsize.top;
 
+	
 	// search for alClient frame and get the titlebar's height
 	tbh=0;
 	clientfrm=CLUIFramesGetalClientFrame();
@@ -1967,9 +1970,9 @@ int CLUIFramesResize(const RECT newsize)
 			if(((Frames[i].align!=alClient))&&(!Frames[i].floating)&&(Frames[i].visible)&&(!Frames[i].needhide)) {
 				drawitems++;
 				curfrmtbh=(TitleBarH+1)*btoint(Frames[i].TitleBar.ShowTitleBar);
-				sumheight+=(Frames[i].height)+curfrmtbh+1;
+				sumheight+=(Frames[i].height)+curfrmtbh+sepw;
 				if(sumheight>newheight-tbh) {
-					sumheight-=(Frames[i].height)+curfrmtbh+1;
+					sumheight-=(Frames[i].height)+curfrmtbh+sepw;
 					Frames[i].needhide=TRUE;
 					drawitems--;
 					break;
@@ -1979,13 +1982,13 @@ int CLUIFramesResize(const RECT newsize)
 	}
 
 	prevframe=-1;
-	prevframebottomline=-1;
+	prevframebottomline=0;
 	for(j=0;j<nFramescount;j++) {
 		//move all alTop frames
 		i=sdarray[j].realpos;
 		if((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alTop)) {
 			curfrmtbh=(TitleBarH+1)*btoint(Frames[i].TitleBar.ShowTitleBar);
-			Frames[i].wndSize.top=prevframebottomline+1+(curfrmtbh);
+			Frames[i].wndSize.top=prevframebottomline+sepw+(curfrmtbh);
 			Frames[i].wndSize.bottom=Frames[i].height+Frames[i].wndSize.top;
 			Frames[i].prevvisframe=prevframe;
 			prevframe=i;
@@ -2002,9 +2005,8 @@ int CLUIFramesResize(const RECT newsize)
 			//move alClient frame
 			i=sdarray[j].realpos;
 			if((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alClient)) {			
-				Frames[i].wndSize.top=prevframebottomline+1+(tbh);
-				//Frames[i].wndSize.bottom=Frames[i].wndSize.top+newheight-sumheight-tbh-1;
-				Frames[i].wndSize.bottom=Frames[i].wndSize.top+newheight-sumheight-tbh;
+				Frames[i].wndSize.top=prevframebottomline+sepw+(tbh);
+				Frames[i].wndSize.bottom=Frames[i].wndSize.top+newheight-sumheight-tbh-sepw;
 
 				Frames[i].height=Frames[i].wndSize.bottom-Frames[i].wndSize.top;
 				Frames[i].prevvisframe=prevframe;
@@ -2020,23 +2022,21 @@ int CLUIFramesResize(const RECT newsize)
 	}
 
 	//newheight
-	prevframebottomline=newheight+1;
+	prevframebottomline=newheight+sepw;
 	//prevframe=-1;
 	for(j=nFramescount-1;j>=0;j--) {
 		//move all alBottom frames
 		i=sdarray[j].realpos;
 		if((Frames[i].visible)&&(!Frames[i].floating)&&(!Frames[i].needhide)&&(Frames[i].align==alBottom)) {
 			curfrmtbh=(TitleBarH+1)*btoint(Frames[i].TitleBar.ShowTitleBar);
-			//Frames[i].wndSize.top=prevframebottomline+1+(curfrmtbh+1);
-			//Frames[i].wndSize.bottom=Frames[i].height+Frames[i].wndSize.top;
-			Frames[i].wndSize.bottom=prevframebottomline-1;
+
+			Frames[i].wndSize.bottom=prevframebottomline-sepw;
 			Frames[i].wndSize.top=Frames[i].wndSize.bottom-Frames[i].height;
 			Frames[i].prevvisframe=prevframe;
 			prevframe=i;
 			prevframebottomline=Frames[i].wndSize.top/*-1*/-curfrmtbh;
 			if(prevframebottomline>newheight) {
-				//prevframebottomline-=Frames[i].height+(curfrmtbh+1);
-				//Frames[i].needhide=TRUE;
+			
 			}
 		}
 	}
@@ -3029,6 +3029,7 @@ int LoadCLUIFramesModule(void)
 	RegisterClass(&cntclass);
 	//end container helper
 
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
 
 	nFramescount=0;
 	InitializeCriticalSection(&csFrameHook);
