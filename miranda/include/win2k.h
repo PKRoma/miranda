@@ -24,13 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef WIN2K_H__
 #define WIN2K_H__ 1
 
-// Later versions VC2003 have the newer SDK
-#if _MSVER >= 1300
-#define NOWIN2K
-#endif
-
-#if !defined(NOWIN2K)
-
 /*
 This file was made to define the new constants normally provided by the windows
 sdk you can get from http://www.microsoft.com/msdownload/platformsdk/sdkupdate/
@@ -83,8 +76,12 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define CBS_CHECKEDHOT      6
 #endif
 
+#if _MSC_VER >= 1300
+#define NOWIN2K
+#endif
+
 // SDK isn't present or some older VC compiler was used, include missing things.
-#if !defined WS_EX_LAYERED || !defined IDC_HAND
+#if !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
 	#pragma message("win2k.h")
 
@@ -234,10 +231,8 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 }
 	
 #endif /* SDK check */
-
-#endif // _MSC_VER
-
 #endif // WIN2K_H__
+
 
 
 	
