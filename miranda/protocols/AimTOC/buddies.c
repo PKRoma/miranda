@@ -309,18 +309,14 @@ void aim_buddy_parseconfig(char *config)
                     _snprintf(nm, sizeof(nm), c + 2);
                     if (!aim_buddy_delaydeletecheck(nm)) {
                         LOG(LOG_DEBUG, "Parsed buddy from server config (%s) in %s", nm, group);
-                        hContact = aim_buddy_get(nm, 1, 1, 1, group);
-                        if (hContact) {
-                            // reset permission for user, gets set back on d and p items if present
-                            DBWriteContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0);
-                        }
+                        hContact = aim_buddy_get(nm, 1, 1, 0, group);
                     }
                 }
                 else if (*c == 'd') {
                     char nm[80];
                     _snprintf(nm, sizeof(nm), c + 2);
                     LOG(LOG_DEBUG, "Parsed deny mode from server config (%s)", nm);
-                    hContact = aim_buddy_get(nm, 1, 1, 1, group);
+                    hContact = aim_buddy_get(nm, 1, 0, 0, group);
                     if (hContact) {
                         LOG(LOG_DEBUG, "Updating deny mode for contact (%s)", nm);
                         DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, ID_STATUS_OFFLINE);
@@ -331,7 +327,7 @@ void aim_buddy_parseconfig(char *config)
                     char nm[80];
                     _snprintf(nm, sizeof(nm), c + 2);
                     LOG(LOG_DEBUG, "Parsed permit mode from server config (%s)", nm);
-                    hContact = aim_buddy_get(nm, 1, 1, 1, group);
+                    hContact = aim_buddy_get(nm, 1, 0, 0, group);
                     if (hContact) {
                         LOG(LOG_DEBUG, "Updating permit mode for contact (%s)", nm);
                         DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, ID_STATUS_ONLINE);
@@ -346,7 +342,6 @@ void aim_buddy_parseconfig(char *config)
             } while ((c = strtok(NULL, "\n")));
         }
     }
-    aim_buddy_updateconfig();
 }
 
 void aim_buddy_updateconfig()

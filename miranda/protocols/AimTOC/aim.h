@@ -101,6 +101,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef MIN
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #endif
+#define XFREE(x) if (x) free(x)
 
 #define AIM_PROTONAME	"AIM"   // Protocol Name
 

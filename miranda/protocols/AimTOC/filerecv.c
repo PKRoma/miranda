@@ -16,22 +16,14 @@ void aim_filerecv_free_fr(struct aim_filerecv_request *ft)
 {
     pthread_mutex_lock(&freeMutex);
     if (ft) {
-        if (ft->user)
-            free(ft->user);
-        if (ft->cookie)
-            free(ft->cookie);
-        if (ft->ip)
-            free(ft->ip);
-        if (ft->vip)
-            free(ft->vip);
-        if (ft->message)
-            free(ft->message);
-        if (ft->filename)
-            free(ft->filename);
-        if (ft->savepath)
-            free(ft->savepath);
-        if (ft->cfullname)
-            free(ft->cfullname);
+        XFREE(ft->user);
+        XFREE(ft->cookie);
+        XFREE(ft->ip);
+        XFREE(ft->vip);
+        XFREE(ft->message);
+        XFREE(ft->filename);
+        XFREE(ft->savepath);
+        XFREE(ft->cfullname);
         free(ft);
         ft = NULL;
     }
