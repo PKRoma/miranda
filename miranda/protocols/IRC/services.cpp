@@ -491,6 +491,17 @@ int	Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 			if (i && type == GCW_CHATROOM)
 				PostIrcMessage( "/PART %s", dbv.pszVal);
 		}
+		else
+		{
+			BYTE bDCC = DBGetContactSettingByte((HANDLE)wp, IRCPROTONAME, "DCC", 0) ;
+			if(bDCC)
+			{
+				CDccSession * dcc = g_ircSession.FindDCCSession((HANDLE)wp);
+				if(dcc)
+					dcc->Disconnect();
+			}
+		}
+
 
 		DBFreeVariant(&dbv);
 	}
@@ -1571,7 +1582,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	hNetlibDCC=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);	
 
 	//add as a known module in DB Editor ++
-	DBWriteContactSettingString(NULL, "KnownModules", ALTIRCPROTONAME,IRCPROTONAME); 
+	CallService("DBEditorpp/RegisterSingleModule",(WPARAM)IRCPROTONAME,0);
 	
 
 	if(ServiceExists(MS_GC_REGISTER))
