@@ -314,6 +314,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	tFileInfo.readFromBuffer( msgBody );
 
 	const char* Appname = tFileInfo[ "Application-Name" ];
+	const char* AppGUID = tFileInfo[ "Application-GUID" ];
 	const char* Invcommand = tFileInfo[ "Invitation-Command" ];
 	const char* Invcookie = tFileInfo[ "Invitation-Cookie" ];
 	const char* Appfile = tFileInfo[ "Application-File" ];
@@ -323,6 +324,13 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	const char* AuthCookie = tFileInfo[ "AuthCookie" ];
 	const char* SessionID = tFileInfo[ "Session-ID" ];
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
+
+	if ( AppGUID != NULL ) { 
+		if ( strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
+			MSN_ShowPopup( MSN_GetContactName( info->mJoinedContacts[0] ), 
+				MSN_Translate( "Contact tried to open an audio conference, which isn't supported" ), MSN_ALLOW_MSGBOX );
+			return;
+	}	}
 
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
 		filetransfer* ft = info->mMsnFtp = new filetransfer();

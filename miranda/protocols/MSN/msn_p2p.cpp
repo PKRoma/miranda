@@ -926,6 +926,12 @@ static void sttInitFileTransfer(
 		return;
 	}
 
+	if ( dwAppID == 4 && !strcmp( szEufGuid, "{4BD96FC0-AB17-4425-A14A-439185962DC8}" )) {
+		MSN_ShowPopup( MSN_GetContactName( info->mJoinedContacts[0] ), 
+			MSN_Translate( "Contact tried to open a webcam conference, which isn't supported" ), MSN_ALLOW_MSGBOX );
+		return;
+	}
+
 	delete ft;
 	MSN_DebugLog( "Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid );
 }
