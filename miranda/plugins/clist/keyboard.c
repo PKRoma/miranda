@@ -91,14 +91,14 @@ int HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam)
 {
     if (wParam==aHide)
         ShowHide(0,0);
-    else if (wParam==aRead) {
+    else if (wParam==aSearch) {
         DBVARIANT dbv;
         if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
             CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
             mir_free(dbv.pszVal);
         }
     }
-    else if (wParam==aSearch) {
+    else if (wParam==aRead) {
         if(EventsProcessTrayDoubleClick()==0) return TRUE;
         SetForegroundWindow(hwnd);
         SetFocus(hwnd);
