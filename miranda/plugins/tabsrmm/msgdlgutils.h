@@ -37,6 +37,10 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode);
 int CheckValidSmileyPack(char *szProto, HICON *hButtonIcon);
 void CreateSmileyIcon(struct MessageWindowData *dat, HICON hIcon);
 TCHAR *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes);
+void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat);
+void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread);
+DWORD WINAPI LoadPictureThread(LPVOID param);
+void SetDialogToType(HWND hwndDlg);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

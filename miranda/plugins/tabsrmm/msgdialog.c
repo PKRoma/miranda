@@ -155,34 +155,6 @@ DWORD WINAPI StreamThread(LPVOID param)
 
 #endif
 
-DWORD WINAPI LoadPictureThread(LPVOID param)
-{
-    HBITMAP hBm;
-    HWND hwndDlg = (HWND)param;
-    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-    DBVARIANT dbv;
-
-    if(dat) {
-        if (!DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv)) {
-            hBm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-            DBFreeVariant(&dbv);
-            if(hBm == 0)
-                return 0;
-            if(IsWindow(hwndDlg)) {
-                dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-                if(dat) {
-                    dat->hContactPic = hBm;
-                    SendMessage((HWND)param, DM_PICTHREADCOMPLETE, 0, (LPARAM)hBm);
-                }
-                else
-                    DeleteObject(hBm);
-            }
-            else
-                DeleteObject(hBm);
-        }
-    }
-    return 0;
-}
 // BEGIN MOD#11: Files beeing dropped ?
 static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilename)
 {
@@ -216,7 +188,7 @@ void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, in
         ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
 }
 
-static void SetDialogToType(HWND hwndDlg)
+void SetDialogToType(HWND hwndDlg)
 {
     struct MessageWindowData *dat;
     HICON hButtonIcon = 0;
@@ -325,146 +297,6 @@ static void SetDialogToType(HWND hwndDlg)
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
 }
 
-// BEGIN MOD#33: Show contact's picture
-void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread)
-{
-    DBVARIANT dbv;
-    RECT rc;
-    int picFailed = FALSE;
-    int iUnknown = FALSE;
-    
-    dat->pic.cy = dat->pic.cx = 60;                        
-    if(changePic && startThread) {
-        if (dat->hContactPic) {
-            if(dat->hContactPic != g_hbmUnknown)
-                DeleteObject(dat->hContactPic);
-            dat->hContactPic=NULL;
-        }
-        DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic");
-    }
-    
-    if (showNewPic) {
-        if (startThread && dat->hContactPic) {
-            if(dat->hContactPic != g_hbmUnknown)
-                DeleteObject(dat->hContactPic);
-            dat->hContactPic=NULL;
-        }
-        if (DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv)) {
-            if (!DBGetContactSetting(dat->hContact,"ContactPhoto","File",&dbv)) {
-                DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic" ,dbv.pszVal);
-                DBFreeVariant(&dbv);
-            } else {
-                if (!DBGetContactSetting(dat->hContact, dat->szProto, "Photo", &dbv)) {
-                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T,"MOD_Pic",dbv.pszVal);
-                    DBFreeVariant(&dbv);
-                }
-                else
-                    iUnknown = TRUE;
-            }
-        }
-        if (!DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv) || iUnknown) {
-            BITMAP bminfo;
-            BOOL isNoPic = FALSE;
-            int maxImageSizeX=500;
-            int maxImageSizeY=300;
-            DWORD dwThreadId;
-            HANDLE hFile;
-            
-            /*
-             * use non-blocking (in its own thread) avatar loading only if its not a local file (i.e. ICQ web photo).
-             * note that remote avatars via MSN are considered to be local files, because downloading these is a
-             * 2-stage process (notificaton about the change and a further notification when the file is ready
-             */
-            
-            if(iUnknown) {
-                dat->hContactPic = g_hbmUnknown;
-            }
-            else {
-                if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
-                    if(startThread && dat->hThread == 0) {
-                        dat->showPic = 0;
-                        ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), SW_HIDE);
-                        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                        SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                        SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                        InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-                        dat->hThread = CreateThread(NULL, 0, LoadPictureThread, (LPVOID)hwndDlg, 0, &dwThreadId);
-                        DBFreeVariant(&dbv);
-                        return;
-                    }
-                }
-                else {
-                    CloseHandle(hFile);
-                    dat->hContactPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-                }
-            }
-
-            if(dat->hContactPic == 0)
-                dat->hContactPic = g_hbmUnknown;
-            else {
-                GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
-                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                    if (bminfo.bmWidth <= 0 || bminfo.bmHeight <= 0) 
-                        isNoPic=TRUE;
-                }
-                else  {
-                    if (bminfo.bmWidth>maxImageSizeX || bminfo.bmWidth<=0 || bminfo.bmHeight<=0 || bminfo.bmHeight>maxImageSizeY) 
-                        isNoPic=TRUE;
-                }
-            }
-            if (isNoPic) {
-                _DebugPopup(dat->hContact, "%s %s", dbv.pszVal, Translate("has either a wrong size (max 150 x 150) or is not a recognized image file"));
-                if(dat->hContactPic && dat->hContactPic != g_hbmUnknown)
-                    DeleteObject(dat->hContactPic);
-                dat->hContactPic = g_hbmUnknown;
-            }
-            DBFreeVariant(&dbv);
-        } else {
-            if(dat->hContactPic && dat->hContactPic != g_hbmUnknown)
-                DeleteObject(dat->hContactPic);
-            dat->hContactPic = g_hbmUnknown;
-        }
-        if(dat->hContactPic) {
-            dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-            if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                if(dat->dynaSplitter == 0 || dat->splitterY == 0)
-                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-                dat->dynaSplitter = dat->splitterY - 34;
-            }
-            else
-                SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-            ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-            InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-        }
-        else {
-            dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-            ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-            dat->pic.cy = dat->pic.cx = 60;
-            InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-        }
-    } else {
-        dat->showPic = dat->showPic ? 0 : 1;
-        DBWriteContactSettingByte(dat->hContact,SRMSGMOD_T,"MOD_ShowPic",(BYTE)dat->showPic);
-        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-    }
-
-    GetWindowRect(GetDlgItem(hwndDlg,IDC_CONTACTPIC),&rc);
-    if (dat->minEditBoxSize.cy+3>dat->splitterY)
-        SendMessage(hwndDlg,DM_SPLITTERMOVED,(WPARAM)rc.bottom-dat->minEditBoxSize.cy,(LPARAM)GetDlgItem(hwndDlg,IDC_SPLITTER));
-    if (!showNewPic)
-        SetDialogToType(hwndDlg);
-    else
-        SendMessage(hwndDlg,WM_SIZE,0,0);
-
-    SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
-    SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
-}
-// END MOD#33
-
-#define ENTERCLICKTIME   1000   //max time in ms during which a double-tap on enter will cause a send
 #define EDITMSGQUEUE_PASSTHRUCLIPBOARD  //if set the typing queue won't capture ctrl-C etc because people might want to use them on the read only text
                                                   //todo: decide if this should be set or not
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -873,17 +705,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-}
-
-void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) == 4) {
-        TCHAR buf[128];
-        int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-
-        _sntprintf(buf, sizeof(buf), _T("%d/%d"), dat->iOpenJobs, len);
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
-    }
 }
 
 #ifdef __MATHMOD_SUPPORT
@@ -1392,16 +1213,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)
                     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
+                dat->dwLastActivity = GetTickCount();
+                dat->pContainer->dwLastActivity = dat->dwLastActivity;
+                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
                 if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
                     dat->pContainer->dwFlags &= ~CNT_CREATE_MINIMIZED;
                     dat->pContainer->dwFlags |= CNT_DEFERREDCONFIGURE;
                     SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    ShowWindow(dat->pContainer->hwnd, SW_SHOWMINNOACTIVE);
                     SendMessage(dat->pContainer->hwnd, DM_RESTOREWINDOWPOS, 0, 0);
+                    return FALSE;
                 }
-                dat->dwLastActivity = GetTickCount();
-                dat->pContainer->dwLastActivity = dat->dwLastActivity;
-                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
                 return TRUE;
             }
         case DM_TYPING:
@@ -2152,7 +1973,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 int iIndex = wParam - TIMERID_MSGSEND;
                 
                 KillTimer(hwndDlg, wParam);
-                _DebugPopup(dat->hContact, "timeout for: %d (index: %d)", dat->hContact, iIndex);
+                //_DebugPopup(dat->hContact, "timeout for: %d (index: %d)", dat->hContact, iIndex);
                 _snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
                 sendJobs[iIndex].iStatus = SQ_ERROR;
                 if(!(dat->dwFlags & MWF_ERRORSTATE))
@@ -3348,7 +3169,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 switch (ack->result) {
                     case ACKRESULT_FAILED: {
-                        _DebugPopup(dat->hContact, "(%d) ACK_FAILED with: %d, %d - index: %d", dat->hContact, ack->hContact, ack->hProcess, iFound);
+                        //_DebugPopup(dat->hContact, "(%d) ACK_FAILED with: %d, %d - index: %d", dat->hContact, ack->hContact, ack->hProcess, iFound);
                         if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
                             char szErrMsg[256];
                             char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
@@ -3946,6 +3767,12 @@ verify:
                         }
                     }
                     free(dat->history);
+                }
+                for(i = 0; i < NR_SENDJOBS; i++) {
+                    if(sendJobs[i].hOwner == dat->hContact && sendJobs[i].iStatus != 0) {
+                        _DebugPopup(dat->hContact, "SendQueue: Clearing orphaned send job (%d)", i);
+                        ClearSendJob(i);
+                    }
                 }
             }
             

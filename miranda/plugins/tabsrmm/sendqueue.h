@@ -25,7 +25,7 @@ extern HBITMAP g_hbmUnknown;
 
 void ClearSendJob(int iIndex);
 int FindNextFailedMsg(HWND hwndDlg, struct MessageWindowData *dat);
-int HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
+void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen);
 int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat);

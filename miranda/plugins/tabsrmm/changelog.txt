@@ -39,6 +39,18 @@ Version 0.9.9.2 - 2005/01/18
           
         ! the dialog box for choosing the autopopup status modes is now translateable.
         
+        ! hopefully fixed the long standing bug which was causing the container to
+          steal the focus, even when it was created minimized on the taskbar.
+          
+        * NEW SEND QUEUE system - work in progress, handle with care :)
+          multisend is temporarily disabled, because it doesn't really work right
+          now, but in the end it should, and it should work even better than the
+          old system.
+          
+          The rewritten send queue may cause troubles with error handling, so please
+          backup your old tabsrmm.dll first. You have been warned.
+          Also, icon feedback may be broken as of now.
+        
 Version 0.9.9.1 - 2005/01/14
 
         ! fixed a few translation bugs (menu bar, the new status mode dialog)

@@ -1,5 +1,5 @@
 #define CONTAINER_NAMELEN 25
-#define NR_SENDJOBS 2
+#define NR_SENDJOBS 30
 
 #define MWF_SAVEBTN_SAV 2
 

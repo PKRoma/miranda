@@ -195,7 +195,6 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
             pContainer->dwFlags |= CNT_CREATE_CLONED;
             pContainer->hContactFrom = hContactFrom;
         }
-        
         pContainer->hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGCONTAINER), NULL, DlgProcContainer, (LPARAM) pContainer);
         return pContainer;
     }
@@ -240,7 +239,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 HMENU hSysmenu;
                 DWORD dwCreateFlags;
                 int iMenuItems;
-                
+
                 pContainer = (struct ContainerWindowData *) lParam;
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pContainer);
                 pContainer->iLastClick = 0xffffffff;
@@ -307,7 +306,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 
                 if(pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
 //                    SetWindowPos(dat->pContainer->hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE |SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING | SWP_NOREPOSITION);
-                    //ShowWindow(hwndDlg, SW_MINIMIZE);
+                    ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
                 }
                 else {
                     SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
@@ -988,7 +987,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
        /*
         * pass the WM_ACTIVATE msg to the active message dialog child
         */
-		case WM_ACTIVATE:
+        case WM_ACTIVATE:
 			if (LOWORD(wParam == WA_INACTIVE)) {
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
 					pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)HIWORD(pContainer->dwTransparency), LWA_ALPHA);

@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
+int LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int i, char *szMsg);
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
@@ -45,7 +46,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 1),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 2),
     "Send and receive instant messages, using a split mode interface and tab containers.",
     "SRMM by Miranda Team, tab UI by Nightwish",
     "silvercircle@gmail.com",
