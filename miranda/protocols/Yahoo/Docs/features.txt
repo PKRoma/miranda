@@ -66,4 +66,12 @@ plugin'
 [-]         Send messages from a particular identity
 [-]         Conferencing with a particular identity
 
+[P]	Avatar Support
+[D]	    Receive avatars from your buddies.
+[ ]	    Set your own avatar
+
+[P]	Stealth Settings
+[D]	    Hide your own online status from certain buddies.
+[ ]	    Show yourself online to certain buddies while being invisible to everybody else.
+
 libyahoo2 does not yet have support for Voice messages, nor for IMvironments.
