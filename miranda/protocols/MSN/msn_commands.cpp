@@ -198,25 +198,18 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes e-mail notification
 
-static void sttNotificationMessage( char* msgBody, bool isInitial )
+static void sttNotificationMessage( const char* msgBody, bool isInitial )
 {
 	char tBuffer[512];
 	char tBuffer2[512];
 	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
+	int  UnreadMessages = -1, UnreadFolders = -1;
 
-	int   UnreadMessages = -1, UnreadFolders = -1;
-
-	char* passportini = "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=%L";
-	char* rruini = "/cgi-bin/HoTMaiL";
-
-	if ( passport ) free( passport );
-	passport = strdup( passportini );
-
-	if ( rru ) free( rru );
-	rru = strdup( rruini );
+	replaceStr( passport, "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=%L" );
+	replaceStr( rru, "/cgi-bin/HoTMaiL" ); 
 
 	MimeHeaders tFileInfo;
-	char* msgFile = tFileInfo.readFromBuffer( msgBody );
+	tFileInfo.readFromBuffer( msgBody );
 
 	const char* From = tFileInfo[ "From" ];
 	const char* Subject = tFileInfo[ "Subject" ];
@@ -227,16 +220,9 @@ static void sttNotificationMessage( char* msgBody, bool isInitial )
 			UnreadMessages = atoi( p );
 		if (( p = tFileInfo[ "Folders-Unread" ] ) != NULL )
 			UnreadFolders = atoi( p );
-
-		if (( p = tFileInfo[ "Inbox-URL" ] ) != NULL ) {
-			if ( rru ) free( rru );
-			rru = strdup( p );
-		}
-
-		if (( p = tFileInfo[ "Post-URL" ] ) != NULL && !isInitial ) {
-			if ( passport ) free( passport );
-			passport = strdup( p );
-	}	}
+	}
+	replaceStr( rru,      tFileInfo[ "Inbox-URL" ] );
+	replaceStr( passport, tFileInfo[ "Post-URL" ]  );
 
 	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) {
 		char mimeFrom[ 1024 ], mimeSubject[ 1024 ];
@@ -312,10 +298,10 @@ LBL_Run:
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes various invitations
 
-static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char* nick )
+static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email, char* nick )
 {
 	MimeHeaders tFileInfo;
-	char* msgFile = tFileInfo.readFromBuffer( msgBody );
+	tFileInfo.readFromBuffer( msgBody );
 
 	const char* Appname = tFileInfo[ "Application-Name" ];
 	const char* Invcommand = tFileInfo[ "Invitation-Command" ];
@@ -466,6 +452,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	UrlDecode( data.fromEmail ); UrlDecode( data.fromNick ); Utf8Decode( data.fromNick );
 
 	char* msg = ( char* )alloca( msgBytes+1 );
+
 	int bytesFromData = min( info->mBytesInData, msgBytes );
 	memcpy( msg, info->mData, bytesFromData );
 	info->mBytesInData -= bytesFromData;
@@ -484,19 +471,13 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	MSN_DebugLog( "Message:\n%s", msg );
 
 	MimeHeaders tHeader;
-	char* msgBody = ( char* )tHeader.readFromBuffer( msg );
+	const char* msgBody = tHeader.readFromBuffer( msg );
 
-	//message from the server (probably)
+	// message from the server (probably)
 	if (( strchr( data.fromEmail, '@' ) == NULL ) && strcmpi( data.fromEmail, "Hotmail" ))
 		return;
 
-	char* tContentType = NULL;
-	{
-		for ( int i=0; i < tHeader.mCount; i++ )
-			if ( !strcmpi( tHeader.mVals[ i ].name,"Content-Type" ))
-				tContentType = tHeader.mVals[ i ].value;
-	}
-
+	const char* tContentType = tHeader[ "Content-Type" ];
 	if ( tContentType == NULL )
 		return;
 
@@ -507,7 +488,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		wchar_t* tRealBody = NULL;
 		int      tRealBodyLen = 0;
 		if ( strstr( tContentType, "charset=UTF-8" ))
-		{	Utf8Decode( msgBody, 0, &tRealBody );
+		{	Utf8Decode(( char* )msgBody, 0, &tRealBody );
 			tRealBodyLen = wcslen( tRealBody );
 		}
 		int tMsgBodyLen = strlen( msgBody );
@@ -565,30 +546,14 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 	if ( !strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
 		MimeHeaders tFileInfo;
-		char* msgFile = tFileInfo.readFromBuffer( msg );
+		tFileInfo.readFromBuffer( msg );
+		replaceStr( sid,           tFileInfo[ "sid" ]      );
+		replaceStr( kv,            tFileInfo[ "kv" ]       );
+		replaceStr( MSPAuth,       tFileInfo[ "MSPAuth" ]  );
+		replaceStr( msnExternalIP, tFileInfo[ "ClientIP" ] );
 
-		for ( int j=0, sidLen=0, kvLen=0, MSPAuthLen=0; j < tFileInfo.mCount; j++ ) {
-			MimeHeader& H = tFileInfo.mVals[ j ];
-
-			if ( !strcmpi( H.name, "sid" )) {
-				if ( sid ) free( sid );
-				sid = strdup( H.value );
-			}
-			else if ( !strcmpi( H.name, "kv" )) {
-				if ( kv ) free( kv );
-				kv = strdup( H.value );
-			}
-			else if ( !strcmpi( H.name, "MSPAuth" )) {
-				if ( MSPAuth ) free( MSPAuth );
-				MSPAuth = strdup( H.value );
-			}
-			else if ( !strcmpi( H.name, "ClientIP" )) {
-				if ( msnExternalIP ) free( msnExternalIP );
-				msnExternalIP = strdup( H.value );
-
-				if ( MSN_GetByte( "AutoGetHost", 1 ))
-					MSN_SetString( NULL, "YourHost", H.value );
-		}	}
+		if ( msnExternalIP != NULL && MSN_GetByte( "AutoGetHost", 1 ))
+			MSN_SetString( NULL, "YourHost", msnExternalIP );
 
 		return;
 	}

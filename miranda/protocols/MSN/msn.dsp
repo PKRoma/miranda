@@ -126,6 +126,10 @@ SOURCE=.\msn_http.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_libstr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_lists.cpp
 # End Source File
 # Begin Source File

@@ -701,15 +701,17 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 
 struct TFakeAckParams
 {
-	inline TFakeAckParams( HANDLE p1, HANDLE p2, LONG p3 ) :
+	inline TFakeAckParams( HANDLE p1, HANDLE p2, LONG p3, LPCSTR p4 ) :
 		hEvent( p1 ),
 		hContact( p2 ),
-		id( p3 )
+		id( p3 ),
+		msg( p4 )
 		{}
 
 	HANDLE	hEvent;
 	HANDLE	hContact;
 	LONG		id;
+	LPCSTR	msg;
 };
 
 static DWORD CALLBACK sttFakeAck( LPVOID param )
@@ -718,25 +720,48 @@ static DWORD CALLBACK sttFakeAck( LPVOID param )
 	WaitForSingleObject( tParam->hEvent, INFINITE );
 
 	Sleep( 100 );
-	MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )tParam->id, 0 );
+	if ( tParam->msg == NULL )
+		MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )tParam->id, 0 );
+	else
+		MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )tParam->id, LPARAM( tParam->msg ));
 
 	CloseHandle( tParam->hEvent );
 	delete tParam;
 	return 0;
 }
 
-static int sttSendMessage( CCSDATA* ccs, char* msg )
+static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 {
-	int seq;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
+	char *msg, *errMsg = NULL;
 
+	if ( ccs->wParam & PREF_UNICODE ) {
+		char* p = ( char* )ccs->lParam;
+		msg = Utf8EncodeUcs2(( wchar_t* )&p[ strlen(p)+1 ] );
+	}
+	else msg = Utf8Encode(( char* )ccs->lParam );
+
+	if ( strlen( msg ) > 1202 ) {
+		errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );
+LBL_Error:
+		free( msg );
+
+		HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+		DWORD dwThreadId;
+		CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, 999999, errMsg ), 0, &dwThreadId ));
+		SetEvent( hEvent );
+		return 999999;
+	}
+	
+	int seq;
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread == NULL )
 	{
 		WORD wStatus = MSN_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE );
-		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE )
-		{	free( msg );
-			return 0;
-		}
+		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
+			errMsg = MSN_Translate( "MSN protocol does not support offline messages" );
+			goto LBL_Error;
+		}		
 
 		if ( MsgQueue_CheckContact( ccs->hContact ) == NULL )
 			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
@@ -754,27 +779,11 @@ static int sttSendMessage( CCSDATA* ccs, char* msg )
 			HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
 			DWORD dwThreadId;
-			CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq ), 0, &dwThreadId ));
+			CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
 			SetEvent( hEvent );
 	}	}
 
 	return seq;
-}
-
-static int MsnSendMessage(WPARAM wParam,LPARAM lParam)
-{
-	CCSDATA* ccs = ( CCSDATA* )lParam;
-	char* msg = Utf8Encode(( char* )ccs->lParam );
-	return sttSendMessage( ccs, msg );
-}
-
-static int MsnSendMessageW(WPARAM wParam,LPARAM lParam)
-{
-	CCSDATA* ccs = ( CCSDATA* )lParam;
-
-	char* p = ( char* )ccs->lParam;
-	char* msg = Utf8EncodeUcs2(( wchar_t* )&p[ strlen(p)+1 ] );
-	return sttSendMessage( ccs, msg );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -838,6 +847,8 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 		return 2;
 
 	MSN_DibBitsToAvatar( pDib, pDibBits );
+	if ( msnLoggedIn )
+		MSN_SetServerStatus( msnStatusMode );
 	return 0;
 }
 
@@ -1081,7 +1092,6 @@ int LoadMsnServices( void )
 		mi.pszName = MSN_Translate( "Set &Avatar" );
 		mi.pszService = servicefunction;
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -1160,7 +1170,6 @@ int LoadMsnServices( void )
 	MSN_CreateProtoServiceFunction( PSS_FILEDENY,			MsnFileDeny );
 	MSN_CreateProtoServiceFunction( PSS_GETINFO,				MsnGetInfo );
 	MSN_CreateProtoServiceFunction( PSS_MESSAGE,				MsnSendMessage );
-	MSN_CreateProtoServiceFunction( PSS_MESSAGE"W",			MsnSendMessageW );
 	MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,  MsnSetApparentMode );
 	MSN_CreateProtoServiceFunction( PSS_USERISTYPING,     MsnUserIsTyping );
 

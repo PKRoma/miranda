@@ -41,10 +41,12 @@ CLEAN :
 	-@erase "$(INTDIR)\mmdecsjis.obj"
 	-@erase "$(INTDIR)\msn.obj"
 	-@erase "$(INTDIR)\msn.pch"
+	-@erase "$(INTDIR)\msn_bitmap.obj"
 	-@erase "$(INTDIR)\msn_commands.obj"
 	-@erase "$(INTDIR)\msn_contact.obj"
 	-@erase "$(INTDIR)\msn_errors.obj"
 	-@erase "$(INTDIR)\msn_http.obj"
+	-@erase "$(INTDIR)\msn_libstr.obj"
 	-@erase "$(INTDIR)\msn_lists.obj"
 	-@erase "$(INTDIR)\msn_md5c.obj"
 	-@erase "$(INTDIR)\msn_mime.obj"
@@ -87,6 +89,7 @@ DEF_FILE= \
 LINK32_OBJS= \
 	"$(INTDIR)\mmdecsjis.obj" \
 	"$(INTDIR)\msn.obj" \
+	"$(INTDIR)\msn_bitmap.obj" \
 	"$(INTDIR)\msn_commands.obj" \
 	"$(INTDIR)\msn_contact.obj" \
 	"$(INTDIR)\msn_errors.obj" \
@@ -107,7 +110,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\msn_libstr.obj"
 
 "..\..\bin\release\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -131,6 +135,8 @@ CLEAN :
 	-@erase "$(INTDIR)\msn.obj"
 	-@erase "$(INTDIR)\msn.pch"
 	-@erase "$(INTDIR)\msn.sbr"
+	-@erase "$(INTDIR)\msn_bitmap.obj"
+	-@erase "$(INTDIR)\msn_bitmap.sbr"
 	-@erase "$(INTDIR)\msn_commands.obj"
 	-@erase "$(INTDIR)\msn_commands.sbr"
 	-@erase "$(INTDIR)\msn_contact.obj"
@@ -139,6 +145,8 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_errors.sbr"
 	-@erase "$(INTDIR)\msn_http.obj"
 	-@erase "$(INTDIR)\msn_http.sbr"
+	-@erase "$(INTDIR)\msn_libstr.obj"
+	-@erase "$(INTDIR)\msn_libstr.sbr"
 	-@erase "$(INTDIR)\msn_lists.obj"
 	-@erase "$(INTDIR)\msn_lists.sbr"
 	-@erase "$(INTDIR)\msn_md5c.obj"
@@ -192,6 +200,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\msn.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\mmdecsjis.sbr" \
 	"$(INTDIR)\msn.sbr" \
+	"$(INTDIR)\msn_bitmap.sbr" \
 	"$(INTDIR)\msn_commands.sbr" \
 	"$(INTDIR)\msn_contact.sbr" \
 	"$(INTDIR)\msn_errors.sbr" \
@@ -211,7 +220,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\msn_threads.sbr" \
 	"$(INTDIR)\msn_useropts.sbr" \
 	"$(INTDIR)\msn_ws.sbr" \
-	"$(INTDIR)\sha1.sbr"
+	"$(INTDIR)\sha1.sbr" \
+	"$(INTDIR)\msn_libstr.sbr"
 
 "$(OUTDIR)\msn.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -225,6 +235,7 @@ DEF_FILE= \
 LINK32_OBJS= \
 	"$(INTDIR)\mmdecsjis.obj" \
 	"$(INTDIR)\msn.obj" \
+	"$(INTDIR)\msn_bitmap.obj" \
 	"$(INTDIR)\msn_commands.obj" \
 	"$(INTDIR)\msn_contact.obj" \
 	"$(INTDIR)\msn_errors.obj" \
@@ -245,7 +256,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\msn_libstr.obj"
 
 "..\..\bin\debug\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -335,6 +347,22 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /Gi /ZI /Od /I "../../include" /D "WIN32" /D "
 
 !ENDIF 
 
+SOURCE=.\msn_bitmap.cpp
+
+!IF  "$(CFG)" == "msn - Win32 Release"
+
+
+"$(INTDIR)\msn_bitmap.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug"
+
+
+"$(INTDIR)\msn_bitmap.obj"	"$(INTDIR)\msn_bitmap.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ENDIF 
+
 SOURCE=.\msn_commands.cpp
 
 !IF  "$(CFG)" == "msn - Win32 Release"
@@ -395,6 +423,22 @@ SOURCE=.\msn_http.cpp
 
 
 "$(INTDIR)\msn_http.obj"	"$(INTDIR)\msn_http.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ENDIF 
+
+SOURCE=.\msn_libstr.cpp
+
+!IF  "$(CFG)" == "msn - Win32 Release"
+
+
+"$(INTDIR)\msn_libstr.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug"
+
+
+"$(INTDIR)\msn_libstr.obj"	"$(INTDIR)\msn_libstr.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
 
 
 !ENDIF 

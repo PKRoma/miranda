@@ -126,8 +126,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
-BOOL		__stdcall	MSN_WS_Init( void );
-void		__stdcall	MSN_WS_CleanUp( void );
 int		__stdcall	MSN_WS_Send( HANDLE, char* data, int datalen );
 int		__stdcall	MSN_WS_Recv( HANDLE, char* data, long datalen );
 
@@ -152,6 +150,7 @@ int		__stdcall	MSN_AddUser( HANDLE hContact, const char* email, int flags );
 void		__stdcall	MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
 int		__stdcall	MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
 void		__stdcall	MSN_DebugLog( const char* fmt, ... );
+void		__stdcall	MSN_DumpMemory( const char* buffer, int bufSize );
 void		__stdcall	MSN_HandleFromContact( unsigned long uin, char* uhandle );
 int		__stdcall	MSN_GetMyHostAsString( char* parBuf, int parBufSize );
 
@@ -192,7 +191,10 @@ LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 DWORD		WINAPI	MsnShowMailThread( LPVOID );
 
 int IsWinver( void );
-void strdel( char* parBuffer, int len );
+
+void  replaceStr( char*& dest, const char* src );
+char* rtrim( char *string );
+void  strdel( char* parBuffer, int len );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
@@ -223,7 +225,7 @@ struct MimeHeaders
 	MimeHeaders( int );
 	~MimeHeaders();
 
-	char*	readFromBuffer( const char* pSrc );
+	const char*	readFromBuffer( const char* pSrc );
 	const char* operator[]( const char* fieldName );
 
 	void  addString( const char* name, const char* szValue );
@@ -327,6 +329,7 @@ enum TInfoType
 struct TQueueItem
 {
 	TQueueItem* next;
+	int  datalen;
 	char data[1];
 };
 
@@ -402,7 +405,7 @@ void			__stdcall MSN_PingParentThread( ThreadData*, filetransfer* ft );
 
 void __stdcall p2p_ackOtherFiles( ThreadData* info );
 void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
-void __stdcall p2p_processMsg( ThreadData* info, char* msgbody );
+void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody );
 void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
 void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus );
 

@@ -720,7 +720,7 @@ static void sttInitFileTransfer(
 	ThreadData*		info,
 	MimeHeaders&	tFileInfo,
 	MimeHeaders&	tFileInfo2,
-	char*				msgbody )
+	const char*		msgbody )
 {
 	char szMyEmail[ MSN_MAX_EMAIL_LEN ], szContactEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( MSN_GetStaticString( "e-mail", info->mJoinedContacts[0], szContactEmail, sizeof szContactEmail ))
@@ -766,7 +766,7 @@ static void sttInitFileTransfer(
 			cbLen = 252;
 		szContext = ( char* )alloca( cbLen+1 );
 
-		NETLIBBASE64 nlb = { msgbody, cbLen, ( PBYTE )szContext, cbLen };
+		NETLIBBASE64 nlb = { ( char* )msgbody, cbLen, ( PBYTE )szContext, cbLen };
 		MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
 	}
 
@@ -883,8 +883,8 @@ static void sttInitDirectTransfer(
 	if ( ft == NULL )
 		return;
 
-	if ( ft->p2p_callID ) free( ft->p2p_callID );  ft->p2p_callID = strdup( szCallID );
-	if ( ft->p2p_branch ) free( ft->p2p_branch );  ft->p2p_branch = strdup( szBranch );
+	replaceStr( ft->p2p_callID, szCallID );
+	replaceStr( ft->p2p_branch, szBranch );
 	ft->p2p_acksessid = 0x024B0000 + rand();
 
 	const char	*szConnType = tFileInfo2[ "Conn-Type" ],
@@ -1100,7 +1100,7 @@ static void sttCloseTransfer( P2P_Header* hdrdata, ThreadData* info, MimeHeaders
 	p2p_unregisterSession( ft );
 }
 
-void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
+void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 {
 	P2P_Header* hdrdata = ( P2P_Header* )msgbody; msgbody += sizeof( P2P_Header );
 	sttLogHeader( hdrdata );

@@ -4,6 +4,11 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.1.7.10
+================
+[!] Bug #000580 fixed: the large messages disappear being sent.
+[!] Multiple bugfixes for gateways & P2P file transfers
+
 Version 0.1.7.9a
 ================
 [!] Bug #0000564 fixed: MSN Messenger doesn't confirm a file

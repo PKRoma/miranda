@@ -32,44 +32,40 @@ static char sttGatewayHeader[] =
 
 //=======================================================================================
 
-BOOL __stdcall	MSN_WS_Init()
-{
-	WSADATA wsd;
-	if (WSAStartup(MAKEWORD(2,2),&wsd)!=0) return FALSE;
-
-	return TRUE;
-}
-
-void __stdcall	MSN_WS_CleanUp()
-{
-	WSACleanup();
-}
-
 int __stdcall MSN_WS_Send( HANDLE s, char* data, int datalen )
 {
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
-	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) {
+	if ( MyOptions.UseGateway ) {
 		ThreadData* T = MSN_GetThreadByConnection( s );
 		if ( T == NULL ) {
 			MSN_DebugLog( "Send failed: no owning thread" );
 			return FALSE;
 		}
 
-		TQueueItem* tNewItem = ( TQueueItem* )malloc( datalen + sizeof( void* ) + 1 );
-		strcpy( tNewItem->data, data );
+		if ( datalen != 5 && memcmp( data, "PNG\r\n", 5 ) != 0 )
+			T->mGatewayTimeout = 2;
 
-		TQueueItem* p = T->mFirstQueueItem;
-		if ( p != NULL ) {
-			while ( p->next != NULL )
-				p = p->next;
+		if ( !MyOptions.UseProxy ) {
+			TQueueItem* tNewItem = ( TQueueItem* )malloc( datalen + sizeof( void* ) + sizeof( int ) + 1 );
+			tNewItem->datalen = datalen;
+			memcpy( tNewItem->data, data, datalen );
+			tNewItem->data[datalen] = 0;
 
-			p ->next = tNewItem;
+			TQueueItem* p = T->mFirstQueueItem;
+			if ( p != NULL ) {
+				while ( p->next != NULL )
+					p = p->next;
+
+				p ->next = tNewItem;
+			}
+			else T->mFirstQueueItem = tNewItem;
+
+			tNewItem->next = NULL;
+			return TRUE;
 		}
 
-		tNewItem->next = NULL;
-		T->mFirstQueueItem = tNewItem;
-		return TRUE;
+		MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), T->mGatewayTimeout );
 	}
 
 	int rlen = MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
@@ -120,14 +116,15 @@ LBL_RecvAgain:
 				TQueueItem* QI = T->mFirstQueueItem;
 				if ( QI != NULL )
 				{
-					int tBufLen = strlen( QI->data );
-
 					char szHttpPostUrl[300];
-					T->getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), tBufLen == 0 );
+					T->getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), QI->datalen == 0 );
 
-					char* tBuffer = ( char* )alloca( tBufLen+400 );
-					int cbBytes = _snprintf( tBuffer, tBufLen+400, sttGatewayHeader,
-						szHttpPostUrl, MSN_USER_AGENT, T->mGatewayIP, tBufLen, QI->data );
+					char* tBuffer = ( char* )alloca( QI->datalen+400 );
+					int cbBytes = _snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
+						szHttpPostUrl, MSN_USER_AGENT, T->mGatewayIP, QI->datalen, "" );
+					memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
+					cbBytes += QI->datalen;
+					tBuffer[ cbBytes ] = 0;
 
 					NETLIBBUFFER nlb = { tBuffer, cbBytes, 0 };
 					ret = MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
@@ -188,11 +185,10 @@ LBL_RecvAgain:
 	}
 
 	bool  tIsSessionClosed = false;
-	int   tContentLength = 0;
-	char* rest;
+	int   tContentLength = 0, hdrLen;
 	{
 		MimeHeaders tHeaders;
-		rest = tHeaders.readFromBuffer( p+2 );
+		const char* rest = tHeaders.readFromBuffer( p+2 );
 		if ( *rest == '\r' )
 			rest += 2;
 
@@ -211,14 +207,16 @@ LBL_RecvAgain:
 
 			if ( stricmp( H.name, "Content-Length" ) == 0 )
 				tContentLength = atol( H.value );
-	}	}
+		}
+
+		hdrLen = int( rest - data );
+	}
 
 	bCanPeekMsg = true;
 
 	if ( tContentLength == 0 )
 		goto LBL_RecvAgain;
 
-	int hdrLen = int( rest - data );
 	ret -= hdrLen;
 	if ( ret <= 0 ) {
 		nlb.buf = data;
@@ -227,7 +225,7 @@ LBL_RecvAgain:
 		if ( ret <= 0 )
 			return ret;
 	}
-	else strdel( data, hdrLen );
+	else memmove( data, data+hdrLen, ret );
 
 	if ( tContentLength > ret ) {
 		tContentLength -= ret;

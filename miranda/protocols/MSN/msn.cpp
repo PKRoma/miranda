@@ -110,19 +110,6 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr,PBYTE buf,int len,int *o
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
-static char* rtrim( char *string )
-{
-   char* p = string + strlen( string ) - 1;
-
-   while ( p >= string )
-   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
-         break;
-
-		*p-- = 0;
-   }
-   return string;
-}
-
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	char szBuffer[ 100 ];
@@ -278,7 +265,6 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
 	msnLoggedIn = 0;
-	MSN_WS_Init();
 	LoadMsnServices();
 	Lists_Init();
 	MsgQueue_Init();
@@ -298,7 +284,6 @@ int __declspec( dllexport ) Unload( void )
 		UnhookEvent( hHookOnUserInfoInit );
 
 	Threads_Uninit();
-	MSN_WS_CleanUp();
 	MsgQueue_Uninit();
 	Lists_Uninit();
 	P2pSessions_Uninit();

@@ -244,14 +244,6 @@ LBL_Restart:
 	return tSslAnswer;
 }
 
-void strdel( char* parBuffer, int len )
-{
-	for ( char* p = parBuffer+len; *p != 0; p++ )
-		p[ -len ] = *p;
-
-	p[ -len ] = '\0';
-}
-
 int MSN_Auth8( char* authChallengeInfo, char*& parResult )
 {
 	parResult = NULL;

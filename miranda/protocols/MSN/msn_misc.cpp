@@ -177,6 +177,35 @@ void __stdcall	MSN_DebugLog( const char *fmt, ... )
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 //=======================================================================================
 
+void __stdcall MSN_DumpMemory( const char* buffer, int bufSize )
+{
+   char TmpBuffer[ 256 ];
+   long Ptr = 0;
+
+   while ( Ptr < bufSize ) {
+		char* bufferPtr = TmpBuffer + sprintf( TmpBuffer, "%04X ", Ptr );
+      int i;
+
+		for ( i=0; Ptr+i < bufSize && i < 16; i++ )
+         bufferPtr += sprintf( bufferPtr, "%02X ", BYTE( buffer[Ptr+i] ));
+
+		while ( i++ < 17 ) {
+			strcat( bufferPtr, "   " );
+			bufferPtr += 3;
+		}
+
+      for ( i=0; Ptr < bufSize && i < 16; i++, Ptr++ )
+			*bufferPtr++ = ( BYTE( buffer[ Ptr ]) >= ' ' ) ? buffer[ Ptr ] : '.';
+
+		*bufferPtr = 0;
+
+		MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )TmpBuffer );
+}	}
+
+//=======================================================================================
+// MSN_GetAvatarFileName - gets a file name for an contact's avatar
+//=======================================================================================
+
 void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 {
 	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));

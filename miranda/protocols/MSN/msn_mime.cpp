@@ -99,51 +99,54 @@ char* MimeHeaders::writeToBuffer( char* pDest )
 /////////////////////////////////////////////////////////////////////////////////////////
 // read set of values from buffer
 
-char* MimeHeaders::readFromBuffer( const char* parString )
+const char* MimeHeaders::readFromBuffer( const char* parString )
 {
-	char  line[ 4096 ];
-	const char* msgBody = parString;
-
 	int        headerCount = 0;
 	MimeHeader headers[ 100 ];
+	char		  line[ 4096 ];
 
 	while ( true ) {
-		lstrcpyn( line, msgBody, sizeof( line ));
-		char* peol = strchr( line, '\r' );
+		if ( parString[0] == '\r' && parString[1] == '\n' ) {
+			parString += 2;
+			break;
+		}
+
+		const char* peol = strchr( parString, '\r' );
 		if ( peol == NULL )
 			break;
 
-		msgBody = peol;
-		if ( *++msgBody=='\n' )
-			msgBody++;
-
-		parString += int( msgBody - line );
-
-		if ( line[0] == '\r' )
+		int cbLen = int( peol - parString );
+		if ( cbLen > sizeof( line ))
 			break;
 
-		*peol='\0';
-		peol = strchr( line,':' );
-		if ( peol == NULL )
-		{
-			MSN_DebugLog( "MSG: Invalid MIME header: '%s'",line);
+      memcpy( line, parString, cbLen );
+		line[ cbLen ] = 0;
+
+		if ( *++peol == '\n' )
+			peol++;
+
+		parString = peol;
+
+		char* delim = strchr( line, ':' );
+		if ( delim == NULL ) {
+			MSN_DebugLog( "MSG: Invalid MIME header: '%s'", line );
 			continue;
 		}
 
-		*peol='\0'; peol++;
-		while ( *peol==' ' || *peol=='\t' )
-			peol++;
+		*delim++ = '\0';
+		while ( *delim == ' ' || *delim == '\t' )
+			delim++;
 
 		MimeHeader& H = headers[ headerCount ];
 		H.name = strdup( line );
-		H.value = strdup( peol );
+		H.value = strdup( delim );
 		headerCount++;
 	}
 
 	mCount = headerCount;
 	mVals = ( MimeHeader* )malloc( sizeof( MimeHeader )*headerCount );
 	memcpy( mVals, headers, sizeof( MimeHeader )*headerCount );
-	return ( char* )parString;
+	return parString;
 }
 
 const char* MimeHeaders::operator[]( const char* szFieldName )
