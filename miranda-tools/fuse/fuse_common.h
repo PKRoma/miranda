@@ -4,6 +4,7 @@
 
 #include <imagehlp.h>
 #pragma comment(lib,"imagehlp.lib")
+#pragma comment(lib,"version.lib")
 #include <stdio.h>
 
 #define _ALPHA_FUSE_
