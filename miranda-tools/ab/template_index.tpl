@@ -101,7 +101,7 @@
 			</p>
 			
 			<p>
-			The SourceForge <a href="http://sourceforge.net/tracker/?group_id=2179&atid=102179">Bug Tracker</a> is the best
+			Miranda's <a href="http://miranda-icq.sourceforge.net/bugs/">Bug Tracker</a> is the best
 			place to report bugs. Please make sure you include all information to regenerate the error, and include which
 			plugins you were using at the time if required.
 			</p>

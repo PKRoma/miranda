@@ -205,11 +205,6 @@ fp.write('put zip/' + MNAME + '_debug.zip\n')
 fp.write('put zip/miranda_src.zip\n')
 fp.write('put ChangeLog\n')
 fp.write('put index.php\n')
-fp.write('ln ' + MNAME + '.zip miranda_nightly.zip')
-fp.write('ln ' + MNAME + '_debug.zip miranda_nightly-debug.zip')
-fp.write('ln ChangeLog changelog.txt')
-fp.write('ln ChangeLog changelogproto.txt')
-fp.write('ln ChangeLog changelogplugins.txt')
 fp.write('ls \n')
 fp.close()
 
@@ -217,6 +212,8 @@ rc = os.system("util\\psftp -v -l " + USER + ' -pw ' + p  + ' -C -batch -b uploa
 if rc != 0:
 	print "Problem! failed to create psftp connection..."
 	sys.exit(rc)
+	
+import rich
 
 print "\n*** Automatic build process complete."
 sys.exit(0) # done
