@@ -142,34 +142,58 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       write_flap(&packet, ICQ_DATA_CHAN);
       packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQLISTS, 0, ICQ_LISTS_CLI_REQLISTS<<0x10);
       sendServPacket(&packet);
-#ifdef _DEBUG
-      Netlib_Logf(ghServerNetlibUser, "Requesting roster check");
-#endif
-      packet.wLen = 16;
-      write_flap(&packet, ICQ_DATA_CHAN);
-      ack = (servlistcookie*)malloc(sizeof(servlistcookie));
-      if (ack)
-      { // we try to use standalone cookie if available
-        ack->dwAction = SSA_CHECK_ROSTER; // loading list
-        ack->dwUin = 0; // init content
-        dwCookie = AllocateCookie(ICQ_LISTS_CLI_CHECK, 0, ack);
-      }
-      else // if not use that old fake
-        dwCookie = ICQ_LISTS_CLI_CHECK<<0x10;
 
-      packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, dwCookie);
-      // check if it was not changed elsewhere (force reload, set that setting to zero)
-      if (IsServerGroupsDefined())
+      if (!wRecordCount) // CLI_REQROSTER
+      { // we do not have any data - request full list
+#ifdef _DEBUG
+        Netlib_Logf(ghServerNetlibUser, "Requesting full roster");
+#endif
+        packet.wLen = 10;
+        write_flap(&packet, ICQ_DATA_CHAN);
+        ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+        if (ack)
+        { // we try to use standalone cookie if available
+          ack->dwAction = SSA_CHECK_ROSTER; // loading list
+          ack->dwUin = 0; // init content
+          dwCookie = AllocateCookie(ICQ_LISTS_CLI_REQUEST, 0, ack);
+        }
+        else // if not use that old fake
+          dwCookie = ICQ_LISTS_CLI_REQUEST<<0x10;
+
+        packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQUEST, 0, dwCookie);
+        sendServPacket(&packet);
+      }
+      else // CLI_CHECKROSTER
       {
-        packDWord(&packet, dwLastUpdate);  // last saved time
-        packWord(&packet, wRecordCount);   // number of records saved
+#ifdef _DEBUG
+        Netlib_Logf(ghServerNetlibUser, "Requesting roster check");
+#endif
+        packet.wLen = 16;
+        write_flap(&packet, ICQ_DATA_CHAN);
+        ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+        if (ack)  // TODO: rewrite - use get list service for empty list
+        { // we try to use standalone cookie if available
+          ack->dwAction = SSA_CHECK_ROSTER; // loading list
+          ack->dwUin = 0; // init content
+          dwCookie = AllocateCookie(ICQ_LISTS_CLI_CHECK, 0, ack);
+        }
+        else // if not use that old fake
+          dwCookie = ICQ_LISTS_CLI_CHECK<<0x10;
+
+        packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, dwCookie);
+        // check if it was not changed elsewhere (force reload, set that setting to zero)
+        if (IsServerGroupsDefined())
+        {
+          packDWord(&packet, dwLastUpdate);  // last saved time
+          packWord(&packet, wRecordCount);   // number of records saved
+        }
+        else
+        { // we need to get groups info into DB, force receive list
+          packDWord(&packet, 0);  // last saved time
+          packWord(&packet, 0);   // number of records saved
+        }
+        sendServPacket(&packet);
       }
-      else
-      { // we need to get groups info into DB, force receive list
-        packDWord(&packet, 0);  // last saved time
-        packWord(&packet, 0);   // number of records saved
-      }
-      sendServPacket(&packet);
     }
 
     // CLI_REQLOCATION
