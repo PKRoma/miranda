@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -244,7 +245,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 					dwUin = DBGetContactSettingDword(hCurrentContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 					currentSequence = icq_sendUploadContactServ(dwUin, wNewGroupId, wNewContactId, pszNick, 1, SSI_ITEM_BUDDY);
 
-					SAFE_FREE(pszNick);
+					SAFE_FREE(&pszNick);
 
 					return FALSE;
 
@@ -365,7 +366,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 								SSI_ITEM_BUDDY);
 						}
 						
-						SAFE_FREE(pszNick);
+						SAFE_FREE(&pszNick);
 						
 						break;
 					}

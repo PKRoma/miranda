@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -209,12 +210,12 @@ void disposeChain(oscar_tlv_chain **list)
 
 		if (now->tlv) /* Possibly null if malloc failed on it in readintotlvchain*/
 		{
-			SAFE_FREE(now->tlv->pData);
-			SAFE_FREE(now->tlv);
+			SAFE_FREE(&now->tlv->pData);
+			SAFE_FREE(&now->tlv);
 		}
 
 		temp = now->next;
-		SAFE_FREE(now);
+		SAFE_FREE(&now);
 		now = temp;
 	}
 
