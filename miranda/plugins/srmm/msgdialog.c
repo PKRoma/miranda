@@ -593,8 +593,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
 					dat->avatarPic = g_hbmUnknown;
 					dat->showAvatar = 1;
-					SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
 				}
+				SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
 			}
 			if (dat->hContact && dat->szProto != NULL)
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
