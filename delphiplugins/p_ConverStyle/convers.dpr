@@ -56,7 +56,8 @@ uses
   m_email in '..\headerfiles\m_email.pas',
   optionsd in 'optionsd.pas',
   m_langpack in '..\headerfiles\m_langpack.pas',
-  langpacktools in '..\units\langpacktools.pas';
+  langpacktools in '..\units\langpacktools.pas',
+  m_crypt in '..\headerfiles\m_crypt.pas';
 
 {$R *.RES}
 
@@ -152,6 +153,9 @@ var
   dbei:TDBEVENTINFO;
 
   icqmessage:TIcqMessage;
+
+  cm:TCRYPTMESSAGE;
+  blob:pchar;
 begin
   Result:=0;
   if blinkid=0 then
@@ -182,12 +186,38 @@ begin
     PluginLink.CallService(MS_DB_EVENT_MARKREAD,wParam{hContact},lParam{hDbEvent});
     //remove flashing icon for incoming message at the contact list
     PluginLink.CallService(MS_CLIST_REMOVEEVENT,wParam{hContact},lParam{hDbEvent});
-    end;
+    end
+  else
+    Exit;
+
   //if incoming message
   if (dbei.flags and DBEF_SENT=0) then
     icqmessage.hContact:=wParam{hContact}
   else//if outgoing message
     icqmessage.hContact:=0;
+
+  //decrypt message
+  if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,0,1))>=0 then//0.1.0.1+
+    begin
+    GetMem(blob,strlen(PChar(dbei.pBlob))+1);//backup text
+    strcopy(blob,PChar(dbei.pBlob));
+    cm.cbSize:=sizeof(TCRYPTMESSAGE);
+    cm.hContact:=wParam;
+    cm.pMessage:=PChar(dbei.pBlob);
+    cm.cchMessage:=strlen(PChar(dbei.pBlob));
+    cm.cchMessageMax:=0;
+    cm.messageType:=CMTF_MESSAGE;
+    PluginLink.CallService(MS_CRYPT_DECRYPT,0,dword(@cm));
+    //use more memory?
+    if (cm.cchMessageMax>=strlen(blob)+1) then
+      begin
+      FreeMem(dbei.pBlob);
+      GetMem(dbei.pBlob,cm.cchMessageMax+1);
+      strcopy(PChar(dbei.pBlob),Blob);
+      end;
+    PluginLink.CallService(MS_CRYPT_DECRYPT,0,dword(@cm));
+    FreeMem(blob);
+    end;
 
   icqmessage.Msg:=string(PChar(dbei.pBlob));
 
