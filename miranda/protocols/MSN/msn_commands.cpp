@@ -203,7 +203,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	char tBuffer[512];
 	char tBuffer2[512];
 	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
-	int  UnreadMessages = -1, UnreadFolders = -1;
+	int  UnreadMessages = -1, UnreadJunkEmails = -1;
 
 	replaceStr( passport, "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=%L" );
 	replaceStr( rru, "/cgi-bin/HoTMaiL" );
@@ -219,7 +219,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 		if (( p = tFileInfo[ "Inbox-Unread" ] ) != NULL )
 			UnreadMessages = atoi( p );
 		if (( p = tFileInfo[ "Folders-Unread" ] ) != NULL )
-			UnreadFolders = atoi( p );
+			UnreadJunkEmails = atoi( p );
 	}
 	replaceStr( rru,      tFileInfo[ "Inbox-URL" ] );
 	replaceStr( passport, tFileInfo[ "Post-URL" ]  );
@@ -245,7 +245,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	}	}
 	else {
 		// nothing to do, a fake notification
-		if ( UnreadMessages == 0 && UnreadFolders == 0 )
+		if ( UnreadMessages == 0 && UnreadJunkEmails == 0 )
 			return;
 
 		char* dest;
@@ -254,8 +254,8 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			dest = tBuffer2;
 		}
 		else dest = tBuffer;
-		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages in %d folders." ), 
-			UnreadMessages, ( UnreadFolders == 0 ) ? 1 : UnreadFolders );
+		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages (%d junk e-mails)." ), 
+			UnreadMessages, UnreadJunkEmails );
 	}
 
 	// Disable to notify receiving hotmail
