@@ -494,6 +494,8 @@ var
 begin
   Assert(Sendmemo.Lines.Text<>'','No text inserted');
 
+  Self.ActiveControl:=SendMemo;
+
   Text:=Sendmemo.Lines.Text;
   Text:=trimright(Text);
 
