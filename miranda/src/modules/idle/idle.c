@@ -180,6 +180,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		case WM_INITDIALOG:
 		{   int j;
 			int method = DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEMETHOD, 0);
+			TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_IDLESHORT, DBGetContactSettingByte(NULL,IDLEMOD,IDL_USERIDLECHECK,0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_IDLEONWINDOWS, method == 0 ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_IDLEONMIRANDA, method ? BST_CHECKED : BST_UNCHECKED);
