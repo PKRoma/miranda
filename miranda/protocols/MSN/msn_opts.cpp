@@ -540,6 +540,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAIL,      MSN_GetByte( "DisableHotmail", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTJUNK,	     MSN_GetByte( "DisableHotmailJunk", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_USERTYPE,     MSN_GetByte( "DisplayTyping", 0 ));
+		CheckDlgButton( hwndDlg, IDC_NOTIFY_ENDSESSION,   MSN_GetByte( "EnableSessionPopup", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_FIRSTMSG,     MSN_GetByte( "EnableDeliveryPopup", 1 ));
 		CheckDlgButton( hwndDlg, IDC_ERRORS_USING_POPUPS, MSN_GetByte( "ShowErrorsAsPopups", 0 ));
 
@@ -571,6 +572,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 
 		case IDC_DISABLEHOTJUNK:
 		case IDC_NOTIFY_USERTYPE:
+		case IDC_NOTIFY_ENDSESSION:
 		case IDC_POPUP_TIMEOUT:
 		case IDC_POPUP_TIMEOUT2:
 		case IDC_NOTIFY_FIRSTMSG:
@@ -637,6 +639,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 				MSN_SetByte( "DisableHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAIL ));
 				MSN_SetByte( "DisableHotmailJunk",( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTJUNK ));
 				MSN_SetByte( "EnableDeliveryPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_FIRSTMSG ));
+				MSN_SetByte( "EnableSessionPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_ENDSESSION ));
 				return TRUE;
 			}
 			break;

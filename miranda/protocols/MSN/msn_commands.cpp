@@ -877,9 +877,11 @@ LBL_InvalidCommand:
 
 			sttDivideWords( params, 2, tWords );
 			UrlDecode( data.userEmail );
-			MSN_DebugLog( "Contact left channel: %s", data.userEmail );
 
-// modified for chat
+			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
+				MSN_ShowPopup( data.userEmail, "Contact left channel", 0 );
+
+			// modified for chat
 			if ( msnHaveChatDll ) {
 				GCDEST gcd = {0};
 				gcd.pszModule = msnProtocolName;

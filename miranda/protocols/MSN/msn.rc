@@ -72,7 +72,7 @@ BEGIN
                     WS_TABSTOP,12,129,192,10
     CONTROL         "Treat Away status as 'Be Right Back'",IDC_AWAY_AS_BRB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,140,192,10
-    CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button", 
+    CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,151,192,10
     CONTROL         "Run the following application when new Hotmail is arrived",
                     IDC_RUN_APP_ON_HOTMAIL,"Button",BS_AUTOCHECKBOX | 
@@ -120,12 +120,12 @@ BEGIN
                     263,10
 END
 
-IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 240, 212
+IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 238, 220
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Colours",IDC_STATIC,4,0,232,60
+    GROUPBOX        "Colours",IDC_STATIC,4,0,232,59
     CONTROL         "",IDC_BGCOLOUR,"ColourPicker",WS_TABSTOP,12,12,39,12
     LTEXT           "Background colour",IDC_STATIC,56,14,176,8,
                     SS_CENTERIMAGE
@@ -134,33 +134,35 @@ BEGIN
     CONTROL         "&Use Windows colours",IDC_USEWINCOLORS,"Button",
                     BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,12,44,
                     220,8
-    GROUPBOX        "Hotmail",IDC_STATIC,4,64,232,60
+    GROUPBOX        "Hotmail",IDC_STATIC,4,61,232,59
     CONTROL         "Disable receiving Hotmail notifications",
                     IDC_DISABLEHOTMAIL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,76,220,10
+                    12,72,220,10
     CONTROL         "Ignore new messages in 'Junk Mail' folder only (at startup)",
                     IDC_DISABLEHOTJUNK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    22,88,202,10
-    LTEXT           "Timeout (*)",IDC_STATIC,12,106,52,8
-    EDITTEXT        IDC_POPUP_TIMEOUT,72,104,24,12,ES_AUTOHSCROLL | 
+                    22,84,202,10
+    LTEXT           "Timeout (*)",IDC_STATIC,12,102,52,8
+    EDITTEXT        IDC_POPUP_TIMEOUT,72,100,24,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    LTEXT           "sec.",IDC_STATIC,100,106,30,8
-    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW,176,104,52,12
-    GROUPBOX        "Other",IDC_STATIC,4,128,232,70
+    LTEXT           "sec.",IDC_STATIC,100,102,30,8
+    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW,176,100,52,12
+    GROUPBOX        "Other",IDC_STATIC,3,122,232,81
     CONTROL         "Display popups when user is typing",IDC_NOTIFY_USERTYPE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,140,216,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,135,216,10
     CONTROL         "Display errors using popups",IDC_ERRORS_USING_POPUPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,152,216,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,147,216,10
     CONTROL         "Enable 'First message delivered' popup",
                     IDC_NOTIFY_FIRSTMSG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,164,216,10
-    LTEXT           "Timeout (*)",IDC_STATIC,12,178,60,8
-    EDITTEXT        IDC_POPUP_TIMEOUT2,72,176,24,12,ES_AUTOHSCROLL | 
+                    WS_TABSTOP,11,159,216,10
+    LTEXT           "Timeout (*)",IDC_STATIC,10,186,60,8
+    EDITTEXT        IDC_POPUP_TIMEOUT2,70,183,24,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    LTEXT           "sec.",IDC_STATIC,100,178,30,8
-    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,176,176,52,12
+    LTEXT           "sec.",IDC_STATIC,98,186,30,8
+    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,183,52,12
     LTEXT           "(*) Timeouts require Popup v. 1.0.1.9 or later",
-                    IDC_STATIC,4,200,232,8
+                    IDC_STATIC,4,207,232,8
+    CONTROL         "Enable 'User left channel' popup",IDC_NOTIFY_ENDSESSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,172,218,8
 END
 
 IDD_SETNICKNAME DIALOG  0, 0, 187, 42
@@ -250,7 +252,8 @@ BEGIN
 
     IDD_HOTMAIL_OPT_POPUP, DIALOG
     BEGIN
-        BOTTOMMARGIN, 92
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 236
     END
 
     IDD_SETNICKNAME, DIALOG
