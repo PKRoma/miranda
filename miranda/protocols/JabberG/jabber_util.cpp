@@ -31,6 +31,20 @@ extern UINT jabberCodePage;
 static CRITICAL_SECTION serialMutex;
 static unsigned int serial;
 
+static struct
+{
+	int   charFrom;
+	int   replLen;
+	char* replStr;
+}
+	sttUrlChars[] = {
+		{ '&',  5, "&amp;" },
+		{ '\'', 6, "&apos;" },
+		{ '>',  4, "&gt;" },
+		{ '<',  4, "&lt;" },
+		{ '"',  6, "&quot;" }
+	};
+
 void __stdcall JabberSerialInit( void )
 {
 	InitializeCriticalSection( &serialMutex );
@@ -643,29 +657,52 @@ char* __stdcall JabberTextEncode( const char* str )
 	return s2;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberTextEncodeW - prepare a string for transmission
+
 char* __stdcall JabberTextEncodeW( const wchar_t* str )
 {
 	if ( str == NULL )
 		return NULL;
 
-	wchar_t* s1 = ( wchar_t* )alloca(( wcslen( str )+1 )*sizeof( wchar_t ));
-	wchar_t *p, *q;
+	const wchar_t *s;
+	int resLen = 1;
 
-	for ( p = ( WCHAR* )str, q = s1; *p; p++ )
-		if ( *p != '\r' ) {
-			*q = *p;
-			q++;
-		}
+	for ( s = str; *s; s++ ) {
+		switch( *s ) {
+			case '\r':	continue;
+			case '&':   resLen += 5;	break;
+			case '\'':  resLen += 6;	break;
+			case '>':
+			case '<':	resLen += 6;	break;
+			case '\"':  resLen += 6;	break;
+			default:		resLen++;		break;
+	}	}
 
-	*q = '\0';
+	wchar_t* tmp = ( wchar_t* )alloca( resLen * sizeof( wchar_t )), *d;
 
-	for ( p = s1; *p != '\0'; p++ )
-		if ( *p > 0 && *p < 0x20 && *p != 0x09 && *p != 0x0a && *p != 0x0d )
-			*p = ( char )0x20;
+	for ( s = str, d = tmp; *s; s++ ) {
+		switch( *s ) {
+		case '\r':	continue;
+		case '&':   wcscpy( d, L"&amp;" );		d += 5;	break;
+		case '\'':  wcscpy( d, L"&apos;" );	d += 6;	break;
+		case '>':   wcscpy( d, L"&gt;" );		d += 4;	break;
+		case '<':	wcscpy( d, L"&lt;" );		d += 4;	break;
+		case '\"':  wcscpy( d, L"&quot;" );	d += 6;	break;
+		default:		
+			if ( *s > 0 && *s < 0x20 && *s != 0x09 && *s != 0x0a && *s != 0x0d )
+				*d++ = ' ';
+			else
+				*d++ = *s;
+	}	}
 
+	*d = 0;
 
-	return JabberUtf8EncodeW( s1 );
+	return JabberUtf8EncodeW( tmp );
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberTextDecode - retrieve a text from the encoded string
 
 char* __stdcall JabberTextDecode( const char* str )
 {
