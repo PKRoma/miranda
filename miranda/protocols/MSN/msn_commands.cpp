@@ -324,7 +324,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
 		ft->std.currentFile = strdup( Appfile );
-		Utf8Decode( ft->std.currentFile, strlen( Appfile ), &ft->wszFileName );
+		Utf8Decode( ft->std.currentFile, &ft->wszFileName );
 		ft->fileId = -1;
 		ft->std.currentFileSize = atol( Appfilesize );
 		ft->std.totalBytes = atol( Appfilesize );
@@ -493,7 +493,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		wchar_t* tRealBody = NULL;
 		int      tRealBodyLen = 0;
 		if ( strstr( tContentType, "charset=UTF-8" ))
-		{	Utf8Decode(( char* )msgBody, 0, &tRealBody );
+		{	Utf8Decode(( char* )msgBody, &tRealBody );
 			tRealBodyLen = wcslen( tRealBody );
 		}
 		int tMsgBodyLen = strlen( msgBody );

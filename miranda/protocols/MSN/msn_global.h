@@ -137,7 +137,7 @@ char*		__stdcall	MirandaStatusToMSN( int status );
 int		__stdcall	MSNStatusToMiranda( const char* status );
 void		__stdcall	UrlDecode( char*str );
 void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );
-void		__stdcall	Utf8Decode( char* str, int maxSize = 0, wchar_t** = NULL );
+void		__stdcall	Utf8Decode( char* str, wchar_t** = NULL );
 char*		__stdcall	Utf8Encode( const char* src );
 char*    __stdcall	Utf8EncodeUcs2( const wchar_t* src );
 

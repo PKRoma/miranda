@@ -583,9 +583,10 @@ void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 // Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
 //=======================================================================================
 
-void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 )
+void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
 {
-	wchar_t* tempBuf;
+	if ( str == NULL )
+		return;
 
 	int len = strlen( str );
 	if ( len < 2 ) {
@@ -597,7 +598,7 @@ void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 )
 		return;
 	}
 
-	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
 	{
 		wchar_t* d = tempBuf;
 		BYTE* s = ( BYTE* )str;
@@ -633,10 +634,7 @@ void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 )
 		memcpy( *ucs2, tempBuf, fullLen );
 	}
 
-	if ( maxSize == 0 )
-		maxSize = len;
-
-   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, maxSize, NULL, NULL );
+   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
 }
 
 //=======================================================================================

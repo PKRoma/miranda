@@ -345,6 +345,9 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
 	ft->bCanceled = true;
+	if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
+		SetEvent( ft->hWaitEvent );
+
 	if ( ft->p2p_appID != 0 ) {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 		if ( thread != NULL )
