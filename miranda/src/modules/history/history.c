@@ -199,6 +199,7 @@ static void FillHistoryThread(THistoryThread *hInfo)
 
 	SendDlgItemMessage(hInfo->hwnd,IDC_LIST,LB_SETCURSEL,0,0);
 	SendMessage(hInfo->hwnd,WM_COMMAND,MAKEWPARAM(IDC_LIST,LBN_SELCHANGE),0);
+    EnableWindow(GetDlgItem(hInfo->hwnd, IDC_LIST), TRUE);
 	free(hInfo);
 }
 
@@ -243,6 +244,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case DM_HREBUILD:
 		{
 			THistoryThread *hInfo = (THistoryThread*)malloc(sizeof(THistoryThread));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_LIST), FALSE);
 			hInfo->hContact = hContact;
 			hInfo->hwnd = hwndDlg;			
 			forkthread(FillHistoryThread, 0, hInfo);
