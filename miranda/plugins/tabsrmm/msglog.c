@@ -58,6 +58,7 @@ char szSep0[40], szSep1[152], szSep2[40];
 int g_groupBreak = TRUE;
 static char *szMyName, *szYourName;
 static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
+static char *szGroupedSeparator = "> ";
 
 extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
@@ -553,7 +554,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		char *szName, *szFinalTimestamp, szDummy = '\0';
 		BYTE bHideNick = g_groupBreak ? !(dat->dwFlags & MWF_LOG_SHOWNICK) : TRUE;
 
-		if (dat->dwFlags & MWF_LOG_SHOWTIME || !g_groupBreak) {
+		if (dat->dwFlags & MWF_LOG_SHOWTIME && (g_groupBreak || dat->dwEventIsShown & MWF_SHOW_MARKFOLLOWUPTS)) {
             showColon = 1;
 			if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0)) {
 				if(!isSent)
@@ -578,6 +579,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			}
             szFinalTimestamp = MakeRelativeDate(dat, dbei.timestamp, g_groupBreak);
 		}
+        else if (!g_groupBreak)
+            szFinalTimestamp = szGroupedSeparator;
         else
             szFinalTimestamp = &szDummy;
 

@@ -46,6 +46,7 @@
 #define MWF_SHOW_INOUTICONS 4
 #define MWF_SHOW_EMPTYLINEFIX 8
 #define MWF_SHOW_MICROLF 16
+#define MWF_SHOW_MARKFOLLOWUPTS 32
 
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
@@ -201,4 +202,26 @@ struct StreamJob {
 //returns struct MessageWindowData *dat, 0 if no window is found
 #define MS_MSG_MOD_GETWINDOWFLAGS "SRMsg_MOD/GetWindowFlags"
 
+// events
 
+struct TABSRMM_SessionInfo {
+    HWND hwnd;              // handle of the message dialog (tab)
+    HWND hwndContainer;     // handle of the parent container
+    HWND hwndInput;         // handle of the input area (rich edit)
+    WINDOWPLACEMENT wp;     // window placement of the parent container
+    struct MessageWindowData *dat;      // the session info
+};
+
+// these events are fired on creating/closing/changing tabs
+// ALL use the following parameters
+
+// wParam = hContact
+// lParam = struct TABSRMM_SessionInfo *si
+
+#define ME_MSG_SESSIONCREATED "MSG/Session/Created"
+#define ME_MSG_SESSIONCLOSING "MSG/Session/Closing"
+#define ME_MSG_SESSIONCHANGED "MSG/Session/Changed"
+
+#define ME_MSG_BEFORESEND "MSG/Session/Beforesend"      // fired, when a message is about to be sent, but BEFORE the contents of the 
+                                                        // input area is examined. A plugin can therefore use this event to modify
+                                                        // the contents of the input box before it is actually sent.

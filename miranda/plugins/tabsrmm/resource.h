@@ -237,13 +237,17 @@
 #define IDC_LONGDATES                   1691
 #define IDC_CHECK3                      1692
 #define IDC_CNTNOSTATUSBAR              1692
-#define IDC_MICROLF                     1692
 #define IDC_AUTOCLOSELAST               1692
+#define IDC_MARKFOLLOWUPTIMESTAMP       1692
 #define IDC_HIDEMENUBAR                 1693
 #define IDC_TABSATBOTTOM                1694
 #define IDC_STATICCONTROL               1695
 #define IDC_AUTOCLOSETABTIME            1696
 #define IDC_AUTOCLOSETABSPIN            1697
+#define IDC_SENDONSHIFTENTER            1698
+#define IDC_CHECK4                      1699
+#define IDC_MICROLF                     1699
+#define IDC_EVENTAPI                    1699
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -364,7 +368,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
 #define _APS_NEXT_COMMAND_VALUE         40173
-#define _APS_NEXT_CONTROL_VALUE         1698
+#define _APS_NEXT_CONTROL_VALUE         1700
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

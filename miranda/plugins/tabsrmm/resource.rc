@@ -217,21 +217,21 @@ BEGIN
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,57,271,11
     CONTROL         "Show debugging info Popups",IDC_DEBUGPOPUPS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,167,117,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,189,117,10
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,168,135,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,159,135,10
     CONTROL         "Show protocol icon and userID field.",IDC_SHOWINFOLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,179,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,169,138,10
     CONTROL         "Show toolbar buttons",IDC_SHOWBUTTONLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,190,137,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,179,137,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,148,190,141,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,148,179,137,10
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,203,211,8
-    EDITTEXT        IDC_SECONDS,223,201,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,203,44,8
+                    IDC_STATIC,8,202,211,8
+    EDITTEXT        IDC_SECONDS,223,200,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,202,44,8
     CONTROL         "Resize Avatar larger than",IDC_LIMITAVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,70,115,10
     EDITTEXT        IDC_MAXAVATARHEIGHT,126,68,38,12,ES_AUTOHSCROLL | 
@@ -242,7 +242,7 @@ BEGIN
     LTEXT           "pixels in height",IDC_STATIC,191,70,51,11
     CONTROL         "Use threaded streaming (RESTART Miranda if you change this)",
                     IDC_STREAMTHREADING,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,155,274,11
+                    WS_TABSTOP,8,147,274,11
     LTEXT           "Show avatars",IDC_STATIC,20,97,60,10
     COMBOBOX        IDC_AVATARMODE,75,94,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
@@ -261,6 +261,11 @@ BEGIN
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     20,122,247,10
+    CONTROL         "Send on SHIFT - Enter",IDC_SENDONSHIFTENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,168,94,10
+    CONTROL         "Enable event API (support for third party plugins)",
+                    IDC_EVENTAPI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,212,
+                    288,10
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -295,17 +300,15 @@ BEGIN
     CONTROL         "Ignore per-contact message log settings",
                     IDC_IGNORECONTACTSETTINGS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,158,50,142,11
-    CONTROL         "More aggressive log updates",IDC_AGGRESSIVEUPDATE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,79,118,10
-    GROUPBOX        "Formatting options",IDC_STATIC,0,97,305,74
+    GROUPBOX        "Formatting options",IDC_STATIC,0,97,305,76
     CONTROL         "Show Events in a new line",IDC_SHOW_EVENTS_NL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,106,127,9
     CONTROL         "Underline Timestamp/Nick",IDC_UNDERLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,118,128,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,116,128,9
     CONTROL         "Show timestamp after Nickname",IDC_SWAPTIMESTAMP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,133,138,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,126,138,9
     CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,147,131,10
+                    WS_TABSTOP,10,136,131,9
     CONTROL         "Indent events",IDC_INDENT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,158,104,61,10
     LTEXT           "(pixels)",IDC_STATIC,231,104,31,9
@@ -338,14 +341,17 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
                     WS_DISABLED,178,209,10,14
     LTEXT           "minutes old",IDC_STMINSOLD,185,212,90,8,WS_DISABLED
-    CONTROL         "Group subsequent messages",IDC_GROUPMODE,"Button",
+    CONTROL         "Use Message Grouping",IDC_GROUPMODE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,158,132,141,11
     CONTROL         "Use relative timestamps",IDC_RELATIVEDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,147,102,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,146,102,9
     CONTROL         "Use long date format",IDC_LONGDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,159,119,10
-    CONTROL         "Use micro linefeeds",IDC_MICROLF,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,67,113,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,156,119,9
+    CONTROL         "Use timestamps for followup messages",
+                    IDC_MARKFOLLOWUPTIMESTAMP,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,158,146,140,11
+    CONTROL         "Use micro Linefeeds",IDC_MICROLF,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,159,78,123,8
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252

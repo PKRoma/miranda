@@ -97,6 +97,7 @@ extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList, hMessageSendList;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst, g_hIconDLL;
+extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
 
 void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 
@@ -146,6 +147,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
 static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
+void TABSRMM_FireEvent(HANDLE hEvent, HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -557,7 +559,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             break;
         case WM_KEYDOWN:
             if(wParam == VK_RETURN) {
-                if (GetKeyState(VK_SHIFT) & 0x8000) {
+                if ((GetKeyState(VK_SHIFT) & 0x8000) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1)) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
                 }
@@ -1411,7 +1413,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #else
                         dat->hkl = LoadKeyboardLayout(dbv.pszVal, KLF_ACTIVATE);
 #endif
-                        if (dat->hkl)
+                        if (dat->hkl && newData->iActivate)
                             PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                         DBFreeVariant(&dbv);
                     } else {
@@ -1470,6 +1472,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
+                TABSRMM_FireEvent(g_hEvent_Sessioncreated, hwndDlg, dat);
                 return TRUE;
             }
         case DM_TYPING:
@@ -1556,6 +1559,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0) ? MWF_SHOW_INOUTICONS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 0) ? MWF_SHOW_EMPTYLINEFIX : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "microlf", 1) ? MWF_SHOW_MICROLF : 0;
+            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             
             dat->iButtonBarNeeds = (dat->showUIElements & MWF_UI_SHOWSEND) ? 40 : 0;
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWBUTTON ? (dat->doSmileys ? 180 : 154) : 0);
@@ -1812,9 +1816,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
     // XXX autolocale stuff
-                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0) {
+                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0)
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
-                }
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
                 dat->dwLastActivity = GetTickCount();
@@ -2733,6 +2736,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
                         break;
 
+                    TABSRMM_FireEvent(g_hEvent_Beforesend, hwndDlg, dat);
+                    
                     bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
                     dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
                     GetDlgItemTextA(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
@@ -3896,6 +3901,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case WM_DESTROY:
+            TABSRMM_FireEvent(g_hEvent_Sessionclosed, hwndDlg, dat);
 // BEGIN MOD#26: Autosave notsent message (by Corsario & bi0)
 			if(dat->hContact) {
 				TCHAR *AutosaveMessage;
@@ -4828,3 +4834,4 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     dat->pic.cy = dat->iRealAvatarHeight + 2*1;
     dat->pic.cx = (int)newWidth + 2*1;
 }
+

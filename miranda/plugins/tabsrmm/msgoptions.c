@@ -126,6 +126,9 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_USEDIVIDERS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0));
             CheckDlgButton(hwndDlg, IDC_AUTOSWITCHTABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0));
             CheckDlgButton(hwndDlg, IDC_DIVIDERSUSEPOPUPCONFIG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0));
+            CheckDlgButton(hwndDlg, IDC_SENDONSHIFTENTER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1));
+            CheckDlgButton(hwndDlg, IDC_EVENTAPI, DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1));
+            
             CheckDlgButton(hwndDlg, IDC_LIMITAVATARS, dwFlags & MWF_LOG_LIMITAVATARHEIGHT);
 
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Globally on"));
@@ -210,6 +213,9 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "streamthreading", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STREAMTHREADING));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_GETCURSEL, 0, 0));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dynamicavatarsize", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AVADYNAMIC));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONSHIFTENTER));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "eventapi", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EVENTAPI));
+                            
                             if(IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARS))
                                 dwFlags |= MWF_LOG_LIMITAVATARHEIGHT;
                             else
@@ -288,13 +294,14 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             
             CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 0));
             CheckDlgButton(hwndDlg, IDC_MICROLF, DBGetContactSettingByte(NULL, SRMSGMOD_T, "microlf", 1));
+            CheckDlgButton(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP), IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE));
             
             CheckDlgButton(hwndDlg, IDC_INOUTICONS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0));
             CheckDlgButton(hwndDlg, IDC_LOGSTATUS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0));
 
             CheckDlgButton(hwndDlg, IDC_IGNORECONTACTSETTINGS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 1));
             CheckDlgButton(hwndDlg, IDC_LOGHOTKEYS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0));
-            CheckDlgButton(hwndDlg, IDC_AGGRESSIVEUPDATE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggroupd", 1));
             
             SetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), FALSE);
             SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
@@ -330,6 +337,9 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case IDC_LOADTIMEN:
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
+                    break;
+                case IDC_GROUPMODE:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP), IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE));
                     break;
             }
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -381,8 +391,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "logstatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LOGSTATUS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_INOUTICONS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EMPTYLINEFIX));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "aggroupd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AGGRESSIVEUPDATE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "microlf", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MICROLF));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP));
                             
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
                             return TRUE;

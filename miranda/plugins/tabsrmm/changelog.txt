@@ -32,7 +32,7 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
-Version 0.0.9.4 - 2004/11/XX
+Version 0.0.9.4 - 2004/12/02
 
         * small change in smileyadd and tabSRMM's interface to smileyadd as an attempt
           to fix a rare bug with smiley background color in chat.dll windows.
@@ -57,7 +57,14 @@ Version 0.0.9.4 - 2004/11/XX
         
         * quoting does no longer replace the entire typed message. The quoted text is now
           inserted at the caret location.
+          
+        * You can now disable "Send on SHIFT Enter".
+        
+        * The small timestamp for grouped messages can be replaced by a simple ">" character.
 
+        * added a new icon pack to the archive which you can find in the contrib directory.
+          This iconpack was contributed by Faith Healer. Thanks for sharing :)
+          
 Version 0.0.9.3 - 2004/11/14
 
         * unified the unsent and charcounter displays on the statusbar. The new format

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 
-#define _STREAMTHREADING 1
+// #define _STREAMTHREADING 1
 
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26

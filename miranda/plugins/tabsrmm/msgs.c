@@ -64,6 +64,8 @@ int g_nrProtos = 0;
 HIMAGELIST g_hImageList = 0;
 int g_IconMsgEvent = 0, g_IconTypingEvent = 0, g_IconError = 0, g_IconEmpty = 0, g_IconFileEvent = 0, g_IconUrlEvent  = 0, g_IconSend = 0;
 
+HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
+
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer);
 int GetProtoIconFromList(const char *szProto, int iStatus);
@@ -75,6 +77,7 @@ void CacheMsgLogIcons();
 void UncacheMsgLogIcons();
 void CacheLogFonts();
 void ConvertAllToUTF8();
+void InitAPI();
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
@@ -783,19 +786,8 @@ int LoadSendRecvMessageModule(void)
     HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
-    CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
-#if defined(_UNICODE)
-    CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand);
-#endif
-    CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
-    CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
-    CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
-
-    // XXX service function which finds open windows / tabs for other plugins (e.g. NewEventNotify)
-    CreateServiceFunction(MS_MSG_MOD_MESSAGEDIALOGOPENED,MessageWindowOpened); 
-    CreateServiceFunction(MS_MSG_MOD_GETWINDOWDATA,GetMessageWindowData); 
-    CreateServiceFunction(MS_MSG_MOD_GETWINDOWFLAGS,GetMessageWindowFlags); 
-
+    InitAPI();
+    
 #ifdef __MATHMOD_SUPPORT	
     //mathMod begin
      // register callback-function for every contact
@@ -1276,4 +1268,68 @@ void ConvertAllToUTF8()
 }
 #endif
 
+static int EventTester(WPARAM wParam, LPARAM lParam)
+{
+    _DebugPopup((HANDLE)wParam, "event received");
+}
 
+static int EventTester1(WPARAM wParam, LPARAM lParam)
+{
+    _DebugPopup((HANDLE)wParam, "changed");
+}
+
+/*
+ * initialises the internal API, services, events etc...
+ */
+
+void InitAPI()
+{
+    HANDLE hEvent;
+    /*
+     * common services (SRMM style)
+     */
+    
+    CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
+#if defined(_UNICODE)
+    CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand);
+#endif
+    CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
+    CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
+    CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
+
+    /*
+     * tabSRMM - specific services
+     */
+    
+    CreateServiceFunction(MS_MSG_MOD_MESSAGEDIALOGOPENED,MessageWindowOpened); 
+    CreateServiceFunction(MS_MSG_MOD_GETWINDOWDATA,GetMessageWindowData); 
+    CreateServiceFunction(MS_MSG_MOD_GETWINDOWFLAGS,GetMessageWindowFlags); 
+
+    /*
+     * the event API
+     */
+
+    g_hEvent_Sessioncreated = CreateHookableEvent(ME_MSG_SESSIONCREATED);
+    g_hEvent_Sessionclosed = CreateHookableEvent(ME_MSG_SESSIONCLOSING);
+    g_hEvent_Sessionchanged = CreateHookableEvent(ME_MSG_SESSIONCHANGED);
+    g_hEvent_Beforesend = CreateHookableEvent(ME_MSG_BEFORESEND);
+    
+    HookEvent(ME_MSG_SESSIONCLOSING, EventTester);
+    HookEvent(ME_MSG_SESSIONCHANGED, EventTester1);
+}
+
+void TABSRMM_FireEvent(HANDLE hEvent, HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1)) {
+        struct TABSRMM_SessionInfo si;
+        
+        si.wp.length = sizeof(si.wp);
+        GetWindowPlacement(dat->pContainer->hwnd, &si.wp);
+        
+        si.hwnd = hwndDlg;
+        si.hwndContainer = dat->pContainer->hwnd;
+        si.dat = dat;
+        si.hwndInput = GetDlgItem(hwndDlg, IDC_MESSAGE);
+        NotifyEventHooks(hEvent, (WPARAM)dat->hContact, (LPARAM)&si);
+    }
+}

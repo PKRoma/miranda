@@ -67,6 +67,7 @@ extern  HIMAGELIST g_hImageList;
 extern struct ProtocolData *protoIconData;
 extern int g_nrProtos;
 
+extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
 HMENU g_hMenuContext, g_hMenuContainer = 0, g_hMenuEncoding = 0;
 
 #define DEFAULT_CONTAINER_POS 0x00400040
@@ -798,11 +799,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         item.lParam = 0;
                         item.mask = TCIF_PARAM;
                         if (TabCtrl_GetItem(hwndTab, iItem, &item)) {
+                            struct MessageWindowData *dat;
                             ShowWindow((HWND)item.lParam, SW_SHOW);
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
                             SetFocus(pContainer->hwndActive);
+                            dat = GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                            if(dat)
+                                TABSRMM_FireEvent(g_hEvent_Sessionchanged, pContainer->hwndActive, dat);
                         }
                         break;
                         /*
@@ -868,19 +873,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             pt1 = pt;
                             GetSystemTimeAsFileTime(&ft);
                             if (abs(pt.x - pContainer->pLastPos.x) < 5 && abs(pt.y - pContainer->pLastPos.y) < 5) {
-                                if ((ft.dwLowDateTime - pContainer->iLastClick) < GetDoubleClickTime()) {
+                                if ((ft.dwLowDateTime - pContainer->iLastClick) < (GetDoubleClickTime() * 10000)) {
                                     if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
                                         if (MessageBoxA(pContainer->hwnd, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO)
                                             break;
                                     }
-                                    if ((iItem = GetTabItemFromMouse(hwndTab,  &pt)) == -1)
-                                        break;
-                                    ZeroMemory((void *)&item,  sizeof(item));
-                                    item.mask = TCIF_PARAM;
-                                    TabCtrl_GetItem(hwndTab, iItem, &item);
-                                    if (item.lParam && (HWND) item.lParam == pContainer->hwndActive) {
-                                        SendMessage((HWND) item.lParam, WM_CLOSE, 0, 1);
-                                    }
+                                    GetCursorPos(&pt);
+                                    SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
                                 }
                             }
                             pContainer->iLastClick = ft.dwLowDateTime;
