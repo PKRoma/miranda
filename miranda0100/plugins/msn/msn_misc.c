@@ -109,16 +109,15 @@ char *MirandaStatusToMSN(int status)
 		case ID_STATUS_OCCUPIED: return "BSY";
 		case ID_STATUS_ONTHEPHONE: return "PHN";
 		case ID_STATUS_OUTTOLUNCH: return "LUN";
+		case ID_STATUS_INVISIBLE: return "HDN";
 		default: return "NLN";
 		//also: IDL=idle
-		//      HDN=invisible (but can't receive messages, so of questionable usefulness)
 	}
 }
 
 int MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
-		case ' NDH':
 		case ' NLN': return ID_STATUS_ONLINE;
 		case ' YWA': return ID_STATUS_NA;
 		case ' LDI':
@@ -126,6 +125,7 @@ int MSNStatusToMiranda(const char *status)
 		case ' YSB': return ID_STATUS_OCCUPIED;
 		case ' NHP': return ID_STATUS_ONTHEPHONE;
 		case ' NUL': return ID_STATUS_OUTTOLUNCH;
+		case ' NDH': return ID_STATUS_INVISIBLE;
 		default: return ID_STATUS_OFFLINE;
 	}
 }
