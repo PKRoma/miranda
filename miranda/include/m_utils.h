@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /* Opens a URL in the user's default web browser   v0.1.0.1+
 wParam=bOpenInNewWindow
 lParam=(LPARAM)(const char*)szUrl
-returns 0 on success, nonzero on failure
+returns 0 always
 bOpenInNewWindow should be zero to open the URL in the browser window the user
 last used, or nonzero to open in a new browser window. If there's no browser
 running, one will be opened to show the URL.

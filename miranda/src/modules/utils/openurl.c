@@ -128,9 +128,14 @@ static int DdeOpenUrl(const char *szBrowser,char *szUrl,int newWindow,HWND hwndD
 	return 0;
 }
 
-static int OpenURL(WPARAM wParam,LPARAM lParam)
+typedef struct {
+    char *szUrl;
+    int newWindow;
+} TOpenUrlInfo;
+
+static void OpenURLThread(void *arg)
 {
-	char *szUrl=(char*)lParam;
+    TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)arg;
 	char *szResult;
 	HWND hwndDdeMsg;
 	struct DdeMsgWindowData msgWndData={0};
@@ -140,13 +145,14 @@ static int OpenURL(WPARAM wParam,LPARAM lParam)
 	char szCommandName[MAX_PATH];
 	DWORD dataLength;
 	int success=0;
-
+    
+    if (!hUrlInfo->szUrl) return;
 	hwndDdeMsg=CreateWindow(WNDCLASS_DDEMSGWINDOW,"",0,0,0,0,0,NULL,NULL,GetModuleHandle(NULL),NULL);
 	SetWindowLong(hwndDdeMsg,0,(LONG)&msgWndData);
 
-	if(!_strnicmp(szUrl,"ftp:",4) || !_strnicmp(szUrl,"ftp.",4)) pszProtocol="ftp";
-	if(!_strnicmp(szUrl,"mailto:",7)) pszProtocol="mailto";
-	if(!_strnicmp(szUrl,"news:",5)) pszProtocol="news";
+	if(!_strnicmp(hUrlInfo->szUrl,"ftp:",4) || !_strnicmp(hUrlInfo->szUrl,"ftp.",4)) pszProtocol="ftp";
+	if(!_strnicmp(hUrlInfo->szUrl,"mailto:",7)) pszProtocol="mailto";
+	if(!_strnicmp(hUrlInfo->szUrl,"news:",5)) pszProtocol="news";
 	else pszProtocol="http";
 	wsprintf(szSubkey,"%s\\shell\\open\\command",pszProtocol);
 	if(RegOpenKeyEx(HKEY_CURRENT_USER,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS
@@ -155,42 +161,52 @@ static int OpenURL(WPARAM wParam,LPARAM lParam)
 		if(RegQueryValueEx(hKey,NULL,NULL,NULL,(PBYTE)szCommandName,&dataLength)==ERROR_SUCCESS) {
 			strlwr(szCommandName);
 			if(strstr(szCommandName,"mozilla") || strstr(szCommandName,"netscape"))
-				success=(DdeOpenUrl("mozilla",szUrl,wParam,hwndDdeMsg)==0 || DdeOpenUrl("netscape",szUrl,wParam,hwndDdeMsg)==0);
+				success=(DdeOpenUrl("mozilla",hUrlInfo->szUrl,hUrlInfo->newWindow,hwndDdeMsg)==0 || DdeOpenUrl("netscape",hUrlInfo->szUrl,hUrlInfo->newWindow,hwndDdeMsg)==0);
 			else if(strstr(szCommandName,"iexplore") || strstr(szCommandName,"msimn"))
-				success=0==DdeOpenUrl("iexplore",szUrl,wParam,hwndDdeMsg);
+				success=0==DdeOpenUrl("iexplore",hUrlInfo->szUrl,hUrlInfo->newWindow,hwndDdeMsg);
 			else if(strstr(szCommandName,"opera"))
-				success=0==DdeOpenUrl("opera",szUrl,wParam,hwndDdeMsg);
+				success=0==DdeOpenUrl("opera",hUrlInfo->szUrl,hUrlInfo->newWindow,hwndDdeMsg);
 			//opera's the default anyway
 		}
 		RegCloseKey(hKey);
 	}
 
 	DestroyWindow(hwndDdeMsg);
-	if(success) return 0;
+	if(success) return;
 
 	//wack a protocol on it
-	if((isalpha(szUrl[0]) && szUrl[1]==':') || szUrl[0]=='\\') {
-		szResult=(char*)malloc(lstrlen(szUrl)+9);
-		wsprintf(szResult,"file:///%s",szUrl);
+	if((isalpha(hUrlInfo->szUrl[0]) && hUrlInfo->szUrl[1]==':') || hUrlInfo->szUrl[0]=='\\') {
+		szResult=(char*)malloc(lstrlen(hUrlInfo->szUrl)+9);
+		wsprintf(szResult,"file:///%s",hUrlInfo->szUrl);
 	}
 	else {
 		int i;
-		for(i=0;isalpha(szUrl[i]);i++);
-		if(szUrl[i]==':') szResult=_strdup(szUrl);
+		for(i=0;isalpha(hUrlInfo->szUrl[i]);i++);
+		if(hUrlInfo->szUrl[i]==':') szResult=_strdup(hUrlInfo->szUrl);
 		else {
-			if(!_strnicmp(szUrl,"ftp.",4)) {
-				szResult=(char*)malloc(lstrlen(szUrl)+7);
-				wsprintf(szResult,"ftp://%s",szUrl);
+			if(!_strnicmp(hUrlInfo->szUrl,"ftp.",4)) {
+				szResult=(char*)malloc(lstrlen(hUrlInfo->szUrl)+7);
+				wsprintf(szResult,"ftp://%s",hUrlInfo->szUrl);
 			}
 			else {
-				szResult=(char*)malloc(lstrlen(szUrl)+8);
-				wsprintf(szResult,"http://%s",szUrl);
+				szResult=(char*)malloc(lstrlen(hUrlInfo->szUrl)+8);
+				wsprintf(szResult,"http://%s",hUrlInfo->szUrl);
 			}
 		}
 	}
 	ShellExecute(NULL, "open",szResult, NULL, NULL, SW_SHOW);
 	free(szResult);
-	return 0;
+    free(hUrlInfo->szUrl);
+    free(hUrlInfo);
+	return;
+}
+
+static int OpenURL(WPARAM wParam,LPARAM lParam) {
+    TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)malloc(sizeof(TOpenUrlInfo));
+    hUrlInfo->szUrl = (char*)lParam?_strdup((char*)lParam):NULL;
+    hUrlInfo->newWindow = (int)wParam;
+    forkthread(OpenURLThread, 0, (void*)hUrlInfo);
+    return 0;
 }
 
 int InitOpenUrl(void)
