@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,9 +38,8 @@
 
 
 
-void write_httphdr(icq_packet* pPacket, WORD wType)
+void write_httphdr(icq_packet* pPacket, WORD wType, DWORD dwSeq)
 {
-
 	pPacket->wPlace = 0;
 	pPacket->wLen += 14;
 	pPacket->pData = (BYTE*)calloc(1, pPacket->wLen);
@@ -48,15 +48,13 @@ void write_httphdr(icq_packet* pPacket, WORD wType)
 	packWord(pPacket, HTTP_PROXY_VERSION);
 	packWord(pPacket, wType);
 	packDWord(pPacket, 0); // Flags?
-	packDWord(pPacket, 1); // Packet subtype?
-
+	packDWord(pPacket, dwSeq); // Connection sequence ?
 }
 
 
 
 void write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 {
-
 	pPacket->wPlace = 0;
 	pPacket->wLen += 6;
 	pPacket->pData = (BYTE*)calloc(1, pPacket->wLen);
@@ -65,84 +63,69 @@ void write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 	packByte(pPacket, byFlapChannel);
 	packWord(pPacket, 0);                 // This is the sequence ID, it is filled in during the actual sending
 	packWord(pPacket, (WORD)(pPacket->wLen - 6)); // This counter should not include the flap header (thus the -6)
-
 }
 
 
 
 void directPacketInit(icq_packet* pPacket, DWORD dwSize)
 {
-
 	pPacket->wPlace = 0;
 	pPacket->wLen   = (WORD)dwSize;
 	pPacket->pData  = (BYTE *)calloc(1, dwSize + 2);
 
 	packLEWord(pPacket, pPacket->wLen);
-
 }
 
 
 
 void packByte(icq_packet* pPacket, BYTE byValue)
 {
-
 	pPacket->pData[pPacket->wPlace++] = byValue;
-
 }
 
 
 
 void packWord(icq_packet* pPacket, WORD wValue)
 {
-
 	pPacket->pData[pPacket->wPlace++] = ((wValue & 0xff00) >> 8);
 	pPacket->pData[pPacket->wPlace++] = (wValue & 0x00ff);
-
 }
 
 
 
 void packDWord(icq_packet* pPacket, DWORD dwValue)
 {
-	
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0xff000000) >> 24);
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x00ff0000) >> 16);
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x0000ff00) >> 8);
 	pPacket->pData[pPacket->wPlace++] = (BYTE) (dwValue & 0x000000ff);
-	
 }
 
 
 
 void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue)
 {
-
 	packWord(pPacket, wType);
 	packWord(pPacket, wLength);
 	packBuffer(pPacket, pbyValue, wLength);
-
 }
 
 
 
 void packTLVWord(icq_packet* pPacket, WORD wType, WORD wValue)
 {
-
 	packWord(pPacket, wType);
 	packWord(pPacket, 0x02);
 	packWord(pPacket, wValue);
-
 }
 
 
 
 void packTLVDWord(icq_packet* pPacket, WORD wType, DWORD dwValue)
 {
-
 	packWord(pPacket, wType);
 	packWord(pPacket, 0x04);
 	packDWord(pPacket, dwValue);
-
 }
 
 
@@ -176,42 +159,35 @@ void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength)
 
 void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSeq)
 {
-
 	packWord(pPacket, wFamily);  // Family type
 	packWord(pPacket, wSubtype); // Family subtype
 	packWord(pPacket, wFlags);   // SNAC flags
   packWord(pPacket, (WORD)dwSeq); // SNAC request id (sequence)
 	packWord(pPacket, (WORD)(dwSeq>>0x10));  // SNAC request id (command)
-
 }
 
 
 
 void packLEWord(icq_packet* pPacket, WORD wValue)
 {
-
 	pPacket->pData[pPacket->wPlace++] =  (wValue & 0x00ff);
 	pPacket->pData[pPacket->wPlace++] = ((wValue & 0xff00) >> 8);
-
 }
 
 
 
 void packLEDWord(icq_packet* pPacket, DWORD dwValue)
 {
-
 	pPacket->pData[pPacket->wPlace++] = (BYTE) (dwValue & 0x000000ff);
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x0000ff00) >> 8);
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x00ff0000) >> 16);
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0xff000000) >> 24);
-
 }
 
 
 
 void unpackByte(BYTE** pSource, BYTE* byDestination)
 {
-
 	if (byDestination)
 	{
 		*byDestination = *(*pSource)++;
@@ -220,7 +196,6 @@ void unpackByte(BYTE** pSource, BYTE* byDestination)
 	{
 		*pSource += 1;
 	}
-
 }
 
 

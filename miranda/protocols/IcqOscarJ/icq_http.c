@@ -37,10 +37,12 @@
 #include "icqoscar.h"
 
 
+extern int isLoginServer;
+int dwGatewaySeq = 1;
+
 
 int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr)
 {
-
 	WORD wLen, wVersion, wType;
 	WORD wIpLen;
 	DWORD dwSid1, dwSid2, dwSid3, dwSid4;
@@ -94,63 +96,55 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 	_snprintf(szHttpGetUrl, 300, "http://%s/monitor?sid=%s", szHttpServer, szSid);
 	_snprintf(szHttpPostUrl, 300, "http://%s/data?sid=%s&seq=", szHttpServer, szSid);
 
-	return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
-
+  return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
 
 
 int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
 {
+  icq_packet packet;
+  int serverNameLen;
 
-	icq_packet packet;
-	int serverNameLen;
+  serverNameLen = strlen(nloc->szHost);
 
+  packet.wLen = (WORD)(serverNameLen + 4);
+  write_httphdr(&packet, HTTP_PACKETTYPE_LOGIN, dwGatewaySeq);
+  packWord(&packet, (WORD)serverNameLen);
+  packBuffer(&packet, nloc->szHost, (WORD)serverNameLen);
+  packWord(&packet, nloc->wPort);
+  Netlib_Send(hConn, packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
+  SAFE_FREE(&packet.pData);
 
-	serverNameLen = strlen(nloc->szHost);
-
-	packet.wLen = (WORD)(serverNameLen + 4);
-	write_httphdr(&packet, HTTP_PACKETTYPE_LOGIN);
-	packWord(&packet, (WORD)serverNameLen);
-	packBuffer(&packet, nloc->szHost, (WORD)serverNameLen);
-	packWord(&packet, nloc->wPort);
-	Netlib_Send(hConn, packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
-	SAFE_FREE(&packet.pData);
-
-	return 1;
-
+  return 1;
 }
 
 
 
 int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend)
 {
+  icq_packet packet;
+  int sendResult;
 
-	icq_packet packet;
-	int sendResult;
+  packet.wLen = len;
+  write_httphdr(&packet, HTTP_PACKETTYPE_FLAP, dwGatewaySeq);
+  packBuffer(&packet, buf, (WORD)len);
+  sendResult = Netlib_Send(hConn, packet.pData, packet.wLen, flags);
+  SAFE_FREE(&packet.pData);
 
+  if(sendResult <= 0)
+    return sendResult;
 
-	packet.wLen = len;
-	write_httphdr(&packet, HTTP_PACKETTYPE_FLAP);
-	packBuffer(&packet, buf, (WORD)len);
-	sendResult = Netlib_Send(hConn, packet.pData, packet.wLen, flags);
-	SAFE_FREE(&packet.pData);
+  if(sendResult < 14)
+    return 0;
 
-	if(sendResult <= 0)
-		return sendResult;
-
-	if(sendResult < 14)
-		return 0;
-
-	return sendResult - 14;
-
+  return sendResult - 14;
 }
 
 
 
 PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int* outBufLen, void *(*NetlibRealloc)(void *, size_t))
 {
-
 	WORD wLen, wType;
 	PBYTE tbuf;
 	int i, copyBytes;
@@ -180,6 +174,14 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 			memcpy(buf + i, tbuf, copyBytes);
 			i += copyBytes;
 		}
+/*    else if (wType == HTTP_PACKETTYPE_4UNK && !isLoginServer)
+    { // on the BOS connection we should reply to this????
+      icq_packet packet;
+
+      packet.wLen = 0;
+      write_httphdr(&packet, HTTP_PACKETTYPE_6UNK, 1);
+      Netlib_Send(nlhr->nlc, packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
+    }*/
 		tbuf += wLen - 12;
 	}
 	*outBufLen = i;

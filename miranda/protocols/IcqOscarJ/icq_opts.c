@@ -132,7 +132,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			
 			SetDlgItemInt(hwndDlg, IDC_ICQPORT, DBGetContactSettingWord(NULL, gpszICQProtoName, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
 			CheckDlgButton(hwndDlg, IDC_KEEPALIVE, DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0));
-			
+			CheckDlgButton(hwndDlg, IDC_USEGATEWAY, DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0));
 			CheckDlgButton(hwndDlg, IDC_SLOWSEND, DBGetContactSettingByte(NULL, gpszICQProtoName, "SlowSend", 1));
 			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
 			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-DBGetContactSettingByte(NULL, gpszICQProtoName, "ShowLogLevel", LOG_FATAL));
@@ -212,21 +212,18 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					DBWriteContactSettingString(NULL, gpszICQProtoName, "OscarServer", str);
 					DBWriteContactSettingWord(NULL, gpszICQProtoName, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
 					DBWriteContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
+          DBWriteContactSettingByte(NULL, gpszICQProtoName, "UseGateway", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY));
 					DBWriteContactSettingByte(NULL, gpszICQProtoName, "SlowSend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND));
 					DBWriteContactSettingByte(NULL, gpszICQProtoName, "ShowLogLevel", (BYTE)(3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
 
 					return TRUE;
-
 				}
 			}
-
 		}
 		break;
-		
-	}
+  }
 
-
-	return FALSE;
+  return FALSE;
 }
 
 
@@ -436,8 +433,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			break;
 	}
 	
-	return FALSE;
-	
+	return FALSE;	
 }
 
 
@@ -507,18 +503,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLEAVATARS));
       DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOLOADAVATARS));
       DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLink",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LINKAVATARS));
-/*      if(IsDlgButtonChecked(hwndDlg,IDC_ENABLE) && IsDlgButtonChecked(hwndDlg,IDC_ADDNEW)) {
-        HANDLE hContact;
-				char *szProto;
-				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-				while (hContact)
-				{
-					szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-					if (szProto && !strcmp(szProto, gpszICQProtoName) && DBGetContactSettingWord(hContact,gpszICQProtoName,"ServerId",0))
-						DBDeleteContactSetting(hContact,"CList","Hidden");
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-				} // showed all server contacts - superfluous already
-			}*/
+
       return TRUE;
     }
     break;

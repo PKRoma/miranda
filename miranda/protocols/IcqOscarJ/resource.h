@@ -14,6 +14,7 @@
 #define IDD_OPT_ICQPRIVACY              260
 #define IDC_LOG                         1001
 #define IDI_ICQ                         1001
+#define IDC_USEGATEWAY                  1010
 #define IDC_KEEPALIVE                   1011
 #define IDC_PW                          1015
 #define IDC_REGISTER                    1016

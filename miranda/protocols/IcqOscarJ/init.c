@@ -78,29 +78,25 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 
 PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
 {
-
-	// Only load for 0.3.3 or greater
-	// Miranda IM v0.3.3 contained several netlib struct changes requiring a forced upgrade
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 3, 3, 0))
-	{
-		return NULL;
-	}
-	else
-	{
-		return &pluginInfo;
-	}
-
+  // Only load for 0.3.3 or greater
+  // Miranda IM v0.3.3 contained several netlib struct changes requiring a forced upgrade
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 3, 3, 0))
+  {
+    return NULL;
+  }
+  else
+  {
+    return &pluginInfo;
+  }
 }
 
 
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
+  hInst = hinstDLL;
 
-	hInst = hinstDLL;
-
-	return TRUE;
-
+  return TRUE;
 }
 
 
@@ -358,37 +354,44 @@ int __declspec(dllexport) Unload(void)
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	NETLIBUSER nlu = {0};
-	char pszP2PName[MAX_PATH+3];
+  NETLIBUSER nlu = {0};
+  char pszP2PName[MAX_PATH+3];
+  char szBuffer[MAX_PATH+64];
 
+  strcpy(pszP2PName, gpszICQProtoName);
+  strcat(pszP2PName, "P2P");
 
-	strcpy(pszP2PName, gpszICQProtoName);
-	strcat(pszP2PName, "P2P");
+  _snprintf(szBuffer, sizeof szBuffer, "%s server connection", gpszICQProtoName);
+  nlu.cbSize = sizeof(nlu);
+  nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS; 
+  nlu.szDescriptiveName = Translate(szBuffer);
+  nlu.szSettingsModule = gpszICQProtoName;
 
-	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY;
-	nlu.szDescriptiveName = Translate("ICQ server connection");
-	nlu.szSettingsModule = gpszICQProtoName;
-	nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
-	nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";
-	nlu.pfnHttpGatewayInit = icq_httpGatewayInit;
-	nlu.pfnHttpGatewayBegin = icq_httpGatewayBegin;
-	nlu.pfnHttpGatewayWrapSend = icq_httpGatewayWrapSend;
-	nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
+  if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0))
+  {
+    nlu.flags |= NUF_HTTPGATEWAY;
+    nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
+    nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";
+    nlu.pfnHttpGatewayInit = icq_httpGatewayInit;
+    nlu.pfnHttpGatewayBegin = icq_httpGatewayBegin;
+    nlu.pfnHttpGatewayWrapSend = icq_httpGatewayWrapSend;
+    nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
+  }
 	ghServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-	nlu.szDescriptiveName = Translate("ICQ client-to-client connections");
-	nlu.szSettingsModule = pszP2PName;
-	nlu.minIncomingPorts = 1;
-	hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+  _snprintf(szBuffer, sizeof szBuffer, "%s client-to-client connections", gpszICQProtoName);
+  nlu.flags = NUF_OUTGOING | NUF_INCOMING;
+  nlu.szDescriptiveName = Translate(szBuffer);
+  nlu.szSettingsModule = pszP2PName;
+  nlu.minIncomingPorts = 1;
+  hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-	hHookOptionInit = HookEvent(ME_OPT_INITIALISE, IcqOptInit);
-	hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
+  hHookOptionInit = HookEvent(ME_OPT_INITIALISE, IcqOptInit);
+  hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
 
-	hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
+  hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
 
-	return 0;
+  return 0;
 }
 
 
@@ -422,9 +425,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 void UpdateGlobalSettings()
 {
-
-	gbAimEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AimEnabled", DEFAULT_AIM_ENABLED);
-	gbSsiEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED);
+  gbAimEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AimEnabled", DEFAULT_AIM_ENABLED);
+  gbSsiEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED);
   gbAvatarsEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
-
 }
