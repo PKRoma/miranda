@@ -130,7 +130,7 @@ int LoadDatabaseModule(void)
 	if(InitSettings()) return 1;
 	if(InitEvents()) return 1;
 	if(InitCrypt()) return 1;
-	if(InitTime()) return 1;
+	//if(InitTime()) return 1;
 	//if(InitIni()) return 1;
 	CreateServiceFunction(MS_DB_GETPROFILENAME,GetProfileName);
 	CreateServiceFunction(MS_DB_GETPROFILEPATH,GetProfilePath);
