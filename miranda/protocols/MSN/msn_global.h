@@ -165,8 +165,13 @@ void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
 void		__stdcall	LoadOptions( void );
 
-HANDLE	__stdcall	MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
+#if defined( _DEBUG )
+#define MSN_CallService CallService
+#else
 int		__stdcall	MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+#endif
+
+HANDLE	__stdcall	MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
 void     __stdcall   MSN_EnableMenuItems( BOOL );
 void     __fastcall	MSN_FreeVariant( DBVARIANT* dbv );
 char*		__stdcall	MSN_GetContactName( HANDLE hContact );

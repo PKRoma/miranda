@@ -32,20 +32,24 @@ int MSN_HandleCommands(ThreadData *info,char *cmdString);
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
 extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
 
+static HANDLE hKeepAliveThreadEvt = NULL;
+
 //=======================================================================================
 //	Keep-alive thread for the main connection
 //=======================================================================================
+
+extern int msnPingTimeout;
 
 void __cdecl msn_keepAliveThread(ThreadData *info)
 {
 	while( TRUE )
 	{
-		for ( int i=0; i < 60; i++ ) {
-			if ( Miranda_Terminated() )
+		for ( int i=0; i < msnPingTimeout; i++ ) {
+			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
+				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
+				MSN_DebugLog( "Closing keep-alive thread" );
 				return;
-
-			Sleep( 1000 );
-		}
+		}	}
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
@@ -317,8 +321,11 @@ void __cdecl MSNServerThread( ThreadData* info )
 		msnNsThread = info;
 		msnLoggedIn = true;
 
+		hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );
+
 		ThreadData* newThread = new ThreadData;
 		memcpy( newThread, info, sizeof( ThreadData ));
+		newThread->s = NULL;
 		newThread->startThread(( pThreadFunc )msn_keepAliveThread );
 	}
 
@@ -391,14 +398,13 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	if ( tIsMainThread ) {
 		MSN_GoOffline();
+		msnNsThread = NULL;
+		SetEvent( hKeepAliveThreadEvt );
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		if ( info->mJoinedContacts != NULL )
 			free( info->mJoinedContacts );
 	}
-
-	if ( tIsMainThread )
-		msnNsThread = NULL;
 
 	MSN_DebugLog( "Thread ending now" );
 }
@@ -781,10 +787,12 @@ static void __cdecl forkthread_r(struct FORK_ARG *fa)
 	ThreadData* arg = fa->arg;
 	MSN_CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
 	sttRegisterThread( arg );
+	MSN_DebugLog( "Starting thread %08X (%08X)", GetCurrentThreadId(), callercode );
 	SetEvent(fa->hEvent);
 	__try {
 		callercode(arg);
 	} __finally {
+		MSN_DebugLog( "Leaving thread %08X (%08X)", GetCurrentThreadId(), callercode );
 		sttUnregisterThread( arg );
 		delete arg;
 

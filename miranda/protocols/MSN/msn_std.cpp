@@ -35,10 +35,12 @@ HANDLE __stdcall MSN_CreateProtoServiceFunction(
 	return CreateServiceFunction( str, serviceProc );
 }
 
+#if !defined( _DEBUG )
 int __stdcall MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam )
 {
 	return CallService( szSvcName, wParam, lParam );
 }
+#endif
 
 void __stdcall MSN_EnableMenuItems( BOOL parEnable )
 {
