@@ -519,6 +519,7 @@ extern	char*          msnProductID;
 
 extern	char*			   ModuleName;
 extern	char*	         mailsoundname;
+extern	HANDLE         msnGetInfoContact;
 
 extern	char*          sid;
 extern	char*          kv;

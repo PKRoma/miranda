@@ -473,13 +473,16 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetInfo - nothing to do, cause we cannot obtain information from the server
 
+HANDLE msnGetInfoContact = NULL;
+
 static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
 {
 	if ( !msnLoggedIn )
 		return 0;
 
 	CCSDATA *ccs=(CCSDATA*)lParam;
-	MSN_SendBroadcast( ccs->hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
+	msnGetInfoContact = ccs->hContact;
+	msnNsThread->send( "PNG\r\n", 5 );
 	return 1;
 }
 
