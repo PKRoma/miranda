@@ -1248,6 +1248,8 @@ LBL_InvalidCommand:
 				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );
 				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
 			}
+			else if ( listId & LIST_FL )
+				DBDeleteContactSetting( sttListedContact, "CList", "Hidden" );
 
 			if ( listId & LIST_PL ) {
 				if ( !Lists_IsInList( LIST_RL, userEmail )) {
