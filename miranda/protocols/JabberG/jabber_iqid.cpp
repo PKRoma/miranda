@@ -52,8 +52,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 				if (( str=JabberSha1( text )) != NULL ) {
 					_snprintf( text, sizeof( text ), "<digest>%s</digest>", str );
 					free( str );
-				}
-			}
+			}	}
 		}
 		else if ( JabberXmlGetChild( queryNode, "password" ) != NULL ) {
 			if (( str=JabberTextEncode( info->password )) != NULL ) {
@@ -70,8 +69,8 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 			if (( str=JabberTextEncode( info->resource )) != NULL ) {
 				_snprintf( text+strlen( text ), sizeof( text )-strlen( text ), "<resource>%s</resource>", str );
 				free( str );
-			}
-		}
+		}	}
+
 		if (( str=JabberTextEncode( info->username )) != NULL ) {
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultSetAuth );
@@ -81,8 +80,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 	}
 	else if ( !strcmp( type, "error" )) {
 		JabberSend( info->s, "</stream:stream>" );
-	}
-}
+}	}
 
 void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 {
@@ -121,8 +119,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		MessageBox( NULL, text, JTranslate( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		jabberThreadInfo = NULL;	// To disallow auto reconnect
-	}
-}
+}	}
 
 void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 {
@@ -784,10 +781,8 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 															DeleteFile( item->photoFileName );
 														item->photoFileName = _strdup( szTempFileName );
 														JabberLog( "Contact's picture saved to %s", szTempFileName );
-													}
-												}
-											}
-										}
+										}	}	}	}
+
 										CloseHandle( hFile );
 									}
 									free( buffer );
@@ -1073,8 +1068,8 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 						if (( str=JabberXmlGetAttrValue( identityNode, "name" )) != NULL ) {
 							if ( item->name ) free( item->name );
 							item->name = JabberTextDecode( str );
-						}
-					}
+					}	}
+
 					item->cap = 0;
 					for ( i=0; i<queryNode->numChild; i++ ) {
 						if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
@@ -1122,12 +1117,8 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 										item->cap |= CLIENT_CAP_SIFILE;
 									else if ( !strcmp( var, "http://jabber.org/protocol/bytestreams" ))
 										item->cap |= CLIENT_CAP_BYTESTREAM;
-								}
-							}
-						}
-					}
-				}
-			}
+			}	}	}	}	}	}
+
 			// Check for pending file transfer session request
 			if ( item->ft != NULL ) {
 				JABBER_FILE_TRANSFER *ft;
@@ -1138,7 +1129,4 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 					JabberFtInitiate( item->jid, ft );
 				else
 					JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
-			}
-		}
-	}
-}
+}	}	}	}
