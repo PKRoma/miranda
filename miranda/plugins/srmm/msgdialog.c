@@ -290,6 +290,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         SendMessage(hwnd, EM_SETSEL, 0, -1);
                     }
                 }
+                EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
             }
             else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000)) {
                 if (pdat->cmdList) {
@@ -308,6 +309,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         SetWindowText(hwnd, "");
                     }
                 }
+                EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
             }
             if (wParam == VK_RETURN)
                 break;
