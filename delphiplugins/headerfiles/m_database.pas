@@ -300,6 +300,9 @@ type
 const
   EVENTTYPE_MESSAGE  = 0;
   EVENTTYPE_URL      = 1;
+  EVENTTYPE_ADDED         =1000;  //v0.1.1.0+: these used to be module-
+  EVENTTYPE_AUTHREQUEST   =1001;  //specific codes, hence the module-
+  EVENTTYPE_FILE          =1002;  //specific limit has been raised to 2000
 const
   MS_DB_EVENT_ADD='DB/Event/Add';
   
