@@ -25,6 +25,7 @@
 #include <m_skin.h>
 #include <m_popup.h>
 #include <m_message.h>
+#include "utf8.h"
 
 typedef struct {
 	int id;
@@ -510,7 +511,8 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8)
 	    char *tmp;
 
 		if (!utf8) {
-			tmp = y_str_to_utf8(msg);
+			utf8_encode(msg, &tmp);
+        	//tmp = y_str_to_utf8(msg);
 			yahoo_send_im(ylad->id, NULL, id, tmp, 1);
 			free(tmp);
 		} else 
