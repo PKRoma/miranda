@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "aim.h"
 
+int firstRun = 0;
 static BOOL CALLBACK aim_firstrun_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void aim_firstrun_check()
@@ -27,6 +28,7 @@ void aim_firstrun_check()
 
     if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_FR, 0))
         return;
+    firstRun = 1;
     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_FR, 1);
     if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_UN, &dbv)) {
         DBFreeVariant(&dbv);

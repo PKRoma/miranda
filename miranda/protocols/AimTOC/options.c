@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "aim.h"
 
+int importBuddies = 0;
 static BOOL CALLBACK aim_options_generaloptsproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK aim_options_contactoptsproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK aim_options_gchatoptsproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -192,7 +193,7 @@ static BOOL CALLBACK aim_options_contactoptsproc(HWND hwndDlg, UINT msg, WPARAM 
             CheckDlgButton(hwndDlg, IDC_AWAYRESPONSE, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AR, AIM_KEY_AR_DEF));
             CheckDlgButton(hwndDlg, IDC_AWAYCLIST, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AC, AIM_KEY_AC_DEF));
             EnableWindow(GetDlgItem(hwndDlg, IDC_AWAYCLIST), IsDlgButtonChecked(hwndDlg, IDC_AWAYRESPONSE));
-            CheckDlgButton(hwndDlg, IDC_DOWNLOADCTCS, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SS, AIM_KEY_SS_DEF));
+            CheckDlgButton(hwndDlg, IDC_DOWNLOADCTCS, importBuddies);
             break;
         }
         case WM_COMMAND:
@@ -218,7 +219,7 @@ static BOOL CALLBACK aim_options_contactoptsproc(HWND hwndDlg, UINT msg, WPARAM 
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_WD, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_OPTWARNNOTIFY));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AR, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AWAYRESPONSE));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AC, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AWAYCLIST));
-                    DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DOWNLOADCTCS));
+                    importBuddies = IsDlgButtonChecked(hwndDlg, IDC_DOWNLOADCTCS);
                     break;
                 }
             }

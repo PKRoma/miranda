@@ -39,7 +39,7 @@ HANDLE aim_toc_connect()
 	SOCKADDR_IN saddr;
 	int len;
 
-    hServerSideList = DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SS, AIM_KEY_SS_DEF);
+    hServerSideList = importBuddies||firstRun;
 	if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_TS, &dbv)) {
 		_snprintf(host, sizeof(host), "%s", dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -81,13 +81,16 @@ HANDLE aim_toc_connect()
 	else {
 		DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, host);
 	}
+    
+    importBuddies = 0;
     return con;
 }
 
 void aim_toc_disconnect()
 {
     pthread_mutex_lock(&connectionHandleMutex);
-    hServerSideList = DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SS, AIM_KEY_SS_DEF);
+    firstRun = 0;
+    hServerSideList = importBuddies;
     if (szStatus) {
         free(szStatus);
         szStatus = NULL;

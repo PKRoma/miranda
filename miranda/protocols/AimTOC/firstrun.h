@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef FIRSTRUN_H
 #define FIRSTRUN_H
 
+extern int firstRun;
+
 void aim_firstrun_check();
 
 #endif

@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
+extern int importBuddies;
 int aim_options_init(WPARAM wParam, LPARAM lParam);
 extern const int msgDlgFontCount;
 void LoadGroupChatFont(int i, LOGFONT * lf, COLORREF * colour);

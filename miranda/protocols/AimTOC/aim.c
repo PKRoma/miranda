@@ -68,7 +68,7 @@ int aim_modulesloaded(WPARAM wParam, LPARAM lParam)
     hHookOptsInit = HookEvent(ME_OPT_INITIALISE, aim_options_init);
     hHookSettingDeleted = HookEvent(ME_DB_CONTACT_DELETED, aim_util_userdeleted);
     hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, aim_util_dbsettingchanged);
-    hServerSideList = DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SS, AIM_KEY_SS_DEF);
+    hServerSideList = importBuddies;
     aim_evil_init();
     aim_userinfo_init();
     aim_gchat_init();
