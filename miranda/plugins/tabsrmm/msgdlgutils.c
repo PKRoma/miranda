@@ -104,7 +104,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         }
         else {
             if(dat->splitterY <= dat->bottomOffset + 27 + (showToolbar ? 0 : 27))
-                dat->splitterY = dat->bottomOffset + 27 + (showToolbar ? 1 : 27);;
+                dat->splitterY = dat->bottomOffset + 27 + (showToolbar ? 0 : 27);;
                 if(dat->splitterY - 27 > dat->bottomOffset)
                     dat->pic.cy = dat->splitterY - 28;
                 else

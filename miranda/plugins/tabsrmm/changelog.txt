@@ -15,6 +15,12 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.93 - 2005/04/02
+
+        * updated translation template, added german translation
+        
+        
+
 Version 0.9.9.92 - 2005/03/31
 
         * plugins like HTTPServer (and all others which try to feed text into the message 

@@ -41,6 +41,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Select container for %s]
 
+[Select container]
+
 [You cannot delete the default container]
 
 [This name is already in use]
@@ -366,6 +368,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Typing Notification Options]
 
+[Flash window once on typing events (only if flashing enabled)]
+
 [Send typing notifications to the following users when you are typing a message to the them:]
 
 [Show typing notifications when a user is typing a message]
@@ -584,6 +588,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Set these values as defaults for new containers]
 
+[Also apply them to all existing containers]
+
 [Load defaults]
 
 [Apply]
@@ -660,6 +666,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Show Message Icons]
 
+[Symbols instead of Icons]
+
 [Show Nickname]
 
 [Display Timestamp after Nickname]
@@ -719,6 +727,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Show Status Bar]
 
 [Title Bar]
+
+[Show Title Bar]
 
 [Show Nickname]
 
@@ -841,4 +851,14 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Autosave on Close]
 
 [Save Now]
+;
+; option pages titles
+;
+[General]
+
+[Tabs and layout]
+
+[Containers]
+
+[Message log]
 

@@ -41,6 +41,8 @@ Die Sendewarteschlange ist voll
 Sie haben keine Kontakte in der Liste markiert. Markieren Sie Kontakte, indem sie das nebenstehende Kästchen wählen.
 [Send Message]
 Nachricht senden
+[Select container]
+Container auswählen
 [Select container for %s]
 Wählen Sie einen Container für %s
 [You cannot delete the default container]
@@ -349,6 +351,8 @@ Versionskontrolle für Symbol DLL
 ; ------------------------
 ; ----------------- typing notify options
 ; ------------------------
+[Flash window once on typing events (only if flashing enabled)]
+Fenster blinkt bei Tippbenachrichtigung
 [Typing Notification Options]
 Einstellungen für Tippbenachrichtigungen
 [Send typing notifications to the following users when you are typing a message to the them:]
@@ -483,7 +487,8 @@ An, wenn vorhanden
 Global AUS
 [Automatically close tabs after]
 Schließe Tabs automatisch nach
-[Minuten Inaktivität (0 = niemals)]
+[minutes of inactivity (0 = disable)]
+Minuten Inaktivität (0 = niemals)
 [Also auto-close the last tab and its container]
 Auch den letzten Tab und damit das Fenster schließen
 [Send on SHIFT - Enter]
@@ -520,31 +525,31 @@ Toolbar immer auf voller Breite halten
 [General settings]
 Allgemeine Einstellungen
 [Hide title bar]
-[Keine Titelleiste]
+Keine Titelleiste
 [Only show tab bar when it's needed]
-[Tabs nur wenn notwendig (mehr als 1)
+Keine Tabs bei nur einer Sitzung
 [Enable popups if minimized]
 [Popups, wenn Fenster minimiert
 [Container stays on top]
-[Immer im Vordergrund]
+Immer im Vordergrund
 [Flashing options]
-[Blinkoptionen]
+Blinkoptionen
 [Use default setting]
-[Standardwert]
+Standardwert
 [Flash until focused]
-[Blinken bis zur Aktivierung]
+Blinken bis zur Aktivierung
 [Disable flashing]
-[Niemals blinken]
+Niemals blinken
 [Titlebar options]
-[Titelzeile]
+Titelzeile
 [Use static container Icon]
-[Festes Symbol verwenden]
+Festes Symbol verwenden
 [Show contacts name]
-[Kontaktname zeigen]
+Kontaktname zeigen
 [Show contacts status]
-[Kontaktstatus zeigen]
+Kontaktstatus zeigen
 [Show container name in titlebar]
-[Name des Containers im Titel
+Name des Containers im Tite
 [Never]
 Nie
 [As prefix]
@@ -561,6 +566,8 @@ aktiv
 inaktiv
 [Set these values as defaults for new containers]
 Diese Werte als Standard für neue container verwenden
+[Also apply them to all existing containers]
+Diese Werte auf alle existierenden Container anwenden
 [Load defaults]
 Standard laden
 [Apply]
@@ -634,6 +641,8 @@ Bild laden...
 Automatische Aktualisierung unterbinden
 [Show Message Icons]
 Symbole zeigen
+[Symbols instead of Icons]
+Textsymbole statt Icons
 [Show Nickname]
 Name zeigen
 [Display Timestamp after Nickname]
@@ -694,12 +703,14 @@ Zeige Menüleiste
 Zeige Statuszeile
 [Title Bar]
 Titelzeile
+[Show Title Bar]
+Titelleiste sichtbar
 [Vertical maximize]
 Vertikal maximieren
 [Show Nickname]
-Zeige Name
+Name sichtbar
 [Show Status]
-Zeige Status
+Status sichtbar
 [Do not show Container Name]
 Containername nicht anzeigen
 [Show Container Name as Prefix]
@@ -805,12 +816,14 @@ Immer eigene Position verwenden
 Automatisch beim Schließen speichern
 [Save Now]
 Jetzt speichern
+;
 ; option pages titles
+;
 [General]
 Allgemein
 [Tabs and layout]
 Tabs und Layout
 [Containers]
 Containers
-[Message Log]
+[Message log]
 Nachrichtenverlauf

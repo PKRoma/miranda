@@ -75,7 +75,6 @@ extern HINSTANCE g_hInst;
 void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 
 #if defined(_STREAMTHREADING)
-    // stream thread stuff
     #define NR_STREAMJOBS 100
     
     extern HANDLE g_hStreamThread;
@@ -137,7 +136,8 @@ DWORD WINAPI StreamThread(LPVOID param)
 
 #endif
 
-// BEGIN MOD#11: Files beeing dropped ?
+// drop files onto message input area...
+
 static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilename)
 {
 	*pppFiles=(char**)realloc(*pppFiles,(++*totalCount+1)*sizeof(char*));
@@ -161,7 +161,6 @@ static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilenam
 		}
 	}
 }
-// END MOD#11
 
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
 {
@@ -462,10 +461,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         }
                 }
             }
-// XXX tabmod
             if (wParam == VK_RETURN)
                 break;
-            //fall through
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -863,9 +860,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags |= (myGlobals.m_RTLDefault == 0 ? (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) ? MWF_LOG_RTL : 0) : (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1) ? MWF_LOG_RTL : 0));
                 }
                 dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
-// BEGIN MOD#33: Show contact's picture
                 dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-// END MOD#33
+
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
 
                 ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), SW_HIDE);
@@ -904,7 +900,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
                 
-            // Make them flat buttons
+                // Make them flat buttons
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0)) {
                     for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
                         SendMessage(GetDlgItem(hwndDlg, buttonLineControlsNew[i]), BUTTONSETASFLATBTN, 0, 0);
@@ -1096,7 +1092,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
                             FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
                         SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-                        //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;

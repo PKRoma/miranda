@@ -1010,6 +1010,8 @@
 				RelativePath=".\changelog.txt">
 			</File>
 			<File
+				RelativePath="langpacks\langpack_tabsrmm_german.txt"/>
+			<File
 				RelativePath="MAKEFILE.W32">
 			</File>
 			<File

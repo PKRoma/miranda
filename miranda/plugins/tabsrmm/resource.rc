@@ -229,31 +229,31 @@ BEGIN
     COMBOBOX        IDC_NOTIFYTYPE,111,44,66,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Avatar options",IDC_STATIC,0,62,303,52
-    LTEXT           "Display",IDC_STATIC,9,72,56,9
-    COMBOBOX        IDC_AVATARDISPLAY,64,69,90,46,CBS_DROPDOWNLIST | 
+    LTEXT           "Display",IDC_STATIC,9,73,56,9
+    COMBOBOX        IDC_AVATARDISPLAY,64,70,90,46,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Limit to",IDC_STATIC,159,71,29,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,197,69,35,12,ES_AUTOHSCROLL | 
+    LTEXT           "Limit to",IDC_STATIC,159,72,29,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,197,70,35,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,70,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,242,71,56,11
+    LTEXT           "pixels in height",IDC_STATIC,242,72,56,11
     CONTROL         "Always keep the button bar at full width",
                     IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,85,276,10
+                    WS_TABSTOP,8,86,276,10
     LTEXT           "Show avatars",IDC_STATIC,10,101,60,10
     COMBOBOX        IDC_AVATARMODE,65,98,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Behaviour",IDC_STATIC,0,115,303,94
-    LTEXT           "Automatically close tabs after",IDC_STATIC,10,124,100,
+    LTEXT           "Automatically close tabs after",IDC_STATIC,10,124,119,
                     11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,111,122,44,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_AUTOCLOSETABTIME,131,122,31,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,151,123,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,169,124,
+                    UDS_ARROWKEYS,158,123,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,176,124,
                     122,11
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
@@ -421,17 +421,17 @@ BEGIN
     LTEXT           "pixel",IDC_STATIC,267,25,28,11
     CONTROL         "Warn on close message tab",IDC_WARNONCLOSE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,33,139,10
-    LTEXT           "Tab control margins:",IDC_STATIC,7,47,74,11
-    RTEXT           "inner",IDC_STATIC,110,47,30,11
-    EDITTEXT        IDC_TABBORDER,147,44,28,13,ES_AUTOHSCROLL
+    LTEXT           "Tab control margins:",IDC_STATIC,7,47,133,11
+    RTEXT           "inner",IDC_STATIC,148,47,28,11
+    EDITTEXT        IDC_TABBORDER,183,44,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,174,43,11,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,210,43,11,
                     13
-    RTEXT           "outer",IDC_STATIC,184,47,30,11
-    EDITTEXT        IDC_TABBORDEROUTER,224,44,28,13,ES_AUTOHSCROLL
+    RTEXT           "outer",IDC_STATIC,220,47,30,11
+    EDITTEXT        IDC_TABBORDEROUTER,260,44,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTER,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,251,44,11,13
+                    UDS_ARROWKEYS,287,44,11,13
     GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,62
     CONTROL         "Automatically pop up the window/tab when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,70,
@@ -439,15 +439,15 @@ BEGIN
     CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,81,127,11
     CONTROL         "Popup container if minimized",IDC_POPUPCONTAINER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,6,92,132,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,92,151,11
     CONTROL         "Automatically switch tabs in minimized containers",
                     IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     6,109,289,9
     CONTROL         "Create containers, but leave them minimized",
                     IDC_AUTOCREATECONTAINER,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,137,81,156,11
-    PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,137,94,
-                    154,14
+    PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,165,94,
+                    126,14
     GROUPBOX        "Message dialog layout",IDC_STATIC,0,122,303,40
     CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,133,133,11
