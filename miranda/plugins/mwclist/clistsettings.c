@@ -187,16 +187,23 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 			pdnce->szProto=GetProtoForContact(pdnce->hContact);
 			if (pdnce->szProto==NULL) 
 			{
-				pdnce->protoNotExists=TRUE;
+				pdnce->protoNotExists=FALSE;
 			}else
 			{
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto)==(int)NULL)
 				{
 					pdnce->protoNotExists=TRUE;
+				}else
+				{
+					if(pdnce->szProto&&pdnce->name) 
+					{
+						mir_free(pdnce->name);
+						pdnce->name=NULL;
+					}
 				}
 			}
-
-/*			{
+/*
+			{
 				char buf[256];
 				sprintf(buf,"LoadCacheDispEntry_Proto %x %s ProtoIsLoaded: %s\r\n",pdnce,(pdnce->szProto?pdnce->szProto:"NoProtocol"),(pdnce->protoNotExists)?"NO":"FALSE/UNKNOWN");
 				OutputDebugString(buf);
@@ -233,11 +240,13 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 				{
 					pdnce->protoNotExists=FALSE;						
 	
-						/*{
+					/*	
+						{
 							char buf[256];
 							sprintf(buf,"LoadCacheDispEntry_Proto %x %s Now Loaded !!! \r\n",pdnce,(pdnce->szProto?pdnce->szProto:"NoProtocol"));
 							OutputDebugString(buf);
-						}*/
+						}
+						*/
 
 					pdnce->name=(char *)GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
 					getedname=TRUE;
@@ -247,15 +256,16 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 
 		}
 
-			{
-				/*if (getedname)
+/*			{
+				if (getedname)
 				{				
 				char buf[256];
 				sprintf(buf,"LoadCacheDispEntry_GetedName %x %s isUnknown: %x\r\n",pdnce,(pdnce->name?pdnce->name:""),pdnce->isUnknown);
 				OutputDebugString(buf);
 				}
-				*/
+				
 			}		
+*/
 
 
 		if (pdnce->status==0)
@@ -444,12 +454,12 @@ int GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)
 	if (ci.hContact==NULL) ci.szProto = "ICQ";
 				
 /*				{
-				
 				char buf[256];
 				sprintf(buf,"GetNameForContactutf hcont:%x isunk:%x \r\n",ci.hContact,isUnknown);
 				OutputDebugString(buf);
 				}
-*/
+				*/
+
 	if (TRUE)
 	{
 	
@@ -566,10 +576,11 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	// Early exit
 	if ((HANDLE)wParam == NULL)
 		return 0;
-
+__try 
+	{ 
 	dbv.pszVal = NULL;
 	pdnce=GetDisplayNameCacheEntry((HANDLE)wParam);
-
+	
 	if (pdnce==NULL)
 	{
 		OutputDebugString("!!! Very bad pdnce not found.");
@@ -653,6 +664,12 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	// Clean up
 	if (dbv.pszVal)
 		mir_free(dbv.pszVal);
+
+} 
+__except (exceptFunction(GetExceptionInformation()) ) 
+{ 
+		return 0; 
+} 
 
  	return 0;
 

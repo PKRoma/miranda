@@ -143,4 +143,22 @@ static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSett
 	return str;
 }
 
+static DWORD exceptFunction(LPEXCEPTION_POINTERS EP) 
+{ 
+    //printf("1 ");                     // printed first 
+	char buf[4096];
+	
+	
+	sprintf(buf,"\r\nExceptCode: %x\r\nExceptFlags: %x\r\nExceptAddress: %x\r\n",
+		EP->ExceptionRecord->ExceptionCode,
+		EP->ExceptionRecord->ExceptionFlags,
+		EP->ExceptionRecord->ExceptionAddress
+		);
+	OutputDebugStr(buf);
+	MessageBoxA(0,buf,"clist_mw Exception",0);
+
+    
+	return EXCEPTION_EXECUTE_HANDLER; 
+} 
+
 #endif

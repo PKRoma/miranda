@@ -49,6 +49,9 @@ int CLUIFrameResizeFloatingFrame(int framepos);
 extern int ProcessCommandProxy(WPARAM wParam,LPARAM lParam);
 extern int InitFramesMenus(void);
 extern int UnitFramesMenu();
+
+boolean FramesSysNotStarted=TRUE;
+
 typedef struct 
 {
 	int order;
@@ -1656,6 +1659,7 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	CLISTFrame *clfrm=(CLISTFrame *)wParam;
 
 	if(hwndContactList==0) return -1;
+	if (FramesSysNotStarted) return -1;
 	if(clfrm->cbSize!=sizeof(CLISTFrame)) return -1;
 	if(!(TitleBarFont)) TitleBarFont=(HFONT)CLUILoadTitleBarFont();
 
@@ -1773,9 +1777,12 @@ SendMessage(Frames[nFramescount].TitleBar.hwndTip,TTM_ACTIVATE,(WPARAM)Frames[nF
 static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
+	if (FramesSysNotStarted) return -1;
 	lockfrm();
 	pos=id2pos(wParam);
+	
 	if (pos<0||pos>nFramescount){ulockfrm();return(-1);};
+	
 	
 	if (Frames[pos].name!=NULL) free(Frames[pos].name);
 	if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
@@ -2046,6 +2053,7 @@ int CLUIFramesResize(const RECT newsize)
 
 int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam)
 {
+	if (FramesSysNotStarted) return -1;
 	if(wParam==-1) { CLUIFramesOnClistResize((WPARAM)hwndContactList,(LPARAM)0); return 0;}
 	if(lParam&FU_FMPOS)	CLUIFramesOnClistResize((WPARAM)hwndContactList,1);
 	lockfrm();
@@ -2064,6 +2072,7 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	RECT nRect,rcStatus;
 	int tick,i;
 	
+	if (FramesSysNotStarted) return -1;
 	lockfrm();
 	//if (resizing){return(0);};
 	//resizing=TRUE;
@@ -3054,12 +3063,14 @@ int LoadCLUIFramesModule(void)
 
 	CreateServiceFunction("Set_Floating",CLUIFrameSetFloat);
 	hWndExplorerToolBar	=FindWindowEx(0,0,"Shell_TrayWnd",NULL);
+	FramesSysNotStarted=FALSE;
 	return 0;
 }
 
 int UnLoadCLUIFramesModule(void)
 {
 	int i;
+	FramesSysNotStarted=TRUE;
 	CLUIFramesOnClistResize((WPARAM)hwndContactList,0);
 	CLUIFramesStoreAllFrames();
 	lockfrm();
@@ -3075,6 +3086,8 @@ int UnLoadCLUIFramesModule(void)
 	if (Frames[i].name!=NULL) free(Frames[i].name);
 	if (Frames[i].TitleBar.tbname!=NULL) free(Frames[i].TitleBar.tbname);
 	}
+	if(Frames) free(Frames);
+	Frames=NULL;
 	nFramescount=0;
 	UnregisterClass(CLUIFrameTitleBarClassName,g_hInst);
 	DeleteObject(TitleBarFont);

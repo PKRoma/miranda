@@ -51,6 +51,7 @@ HANDLE hFrameContactTree;
 BYTE showOpts;//for statusbar
 
 typedef struct{
+int IconsCount;
 int CycleStartTick;
 char *szProto;
 int n;
@@ -61,6 +62,7 @@ ProtoTicks CycleStartTick[64];//max 64 protocols
 
 int CycleTimeInterval=2000;
 int CycleIconCount=8;
+int DefaultStep=100;
 
 BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 BOOL (WINAPI *MyAnimateWindow)(HWND hWnd,DWORD dwTime,DWORD dwFlags);
@@ -131,6 +133,26 @@ pProtoTicks GetProtoTicksByProto(char * szProto)
 return (NULL);
 }
 
+int GetConnectingIconForProtoCount(char *szProto)
+{
+	char file[MAX_PATH],fileFull[MAX_PATH],szFullPath[MAX_PATH];
+	char szPath[MAX_PATH];
+	char *str;
+	int ret;
+
+		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
+		str=strrchr(szPath,'\\');
+		if(str!=NULL) *str=0;
+		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_conn_%s.dll", szPath, szProto);
+		
+	lstrcpyn(file,szFullPath,sizeof(file));
+    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
+	ret=ExtractIconEx(fileFull,-1,NULL,NULL,1);
+	if (ret==0&&!strcmp(szProto,"ICQ")) ret=8;
+	return ret;
+
+}
+
 static HICON ExtractIconFromPath(const char *path)
 {
 	char *comma;
@@ -197,6 +219,9 @@ HICON GetConnectingIconForProto(char *szProto,int b)
 	
 		return(hIcon);
 }
+
+
+
 //wParam = szProto
 int GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 {
@@ -212,13 +237,14 @@ int GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 						if (pt!=NULL)
 						{
 						
-						if (pt->CycleStartTick!=0) 
+						if (pt->CycleStartTick!=0&&pt->IconsCount!=0) 
 						{					
-								b=((GetTickCount()-pt->CycleStartTick)/(CycleTimeInterval/CycleIconCount))%CycleIconCount;
+								b=((GetTickCount()-pt->CycleStartTick)/(DefaultStep))%pt->IconsCount;
 								hIcon=GetConnectingIconForProto(szProto,b);
 						};
 						}
 						
+					
 						return (int)hIcon;
 };
 
@@ -235,20 +261,29 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 					{
 			
 						ProtoTicks *pt=NULL;
+						int cnt;
 
 						pt=GetProtoTicksByProto(szProto);
 						if (pt!=NULL)
 						{
 						
+
 						if (pt->CycleStartTick==0) 
 						{					
 						//	sprintf(buf,"SetTimer %d\r\n",pt->n);
 						//	OutputDebugString(buf);
 
 							KillTimer(hwndContactList,TM_STATUSBARUPDATE+pt->n);
-							SetTimer(hwndContactList,TM_STATUSBARUPDATE+pt->n,(int)(CycleTimeInterval/CycleIconCount)/1,0);
+							cnt=GetConnectingIconForProtoCount(szProto);
+							if (cnt!=0)
+							{
+							DefaultStep=DBGetContactSettingWord(NULL,"CLUI","DefaultStepConnectingIcon",100);
+							pt->IconsCount=cnt;
+							SetTimer(hwndContactList,TM_STATUSBARUPDATE+pt->n,(int)(DefaultStep)/1,0);
 							pt->TimerCreated=1;
 							pt->CycleStartTick=GetTickCount();
+							}
+
 						};
 					};
 				}
@@ -493,7 +528,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);		
 
 		//create the status wnd
-		//hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);
+		//hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);	
 		CluiProtocolStatusChanged(0,0);
 		
 		{	MENUITEMINFO mii;
