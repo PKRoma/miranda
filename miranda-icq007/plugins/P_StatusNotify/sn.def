@@ -1,0 +1,5 @@
+LIBRARY 'statusnotify.dll'
+EXPORTS
+	Load
+	Unload
+	Notify
