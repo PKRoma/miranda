@@ -38,8 +38,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_MSG_SENDMESSAGE  "SRMsg/SendCommand"
 
 #define ME_MSG_WINDOWEVENT "MessageAPI/WindowEvent"
-//wParam=(WPARAM)(MessageWindowEventData*)hWindowEvent;
-//lParam=0
+//wparam=0
+//lparam=(WPARAM)(MessageWindowEventData*)hWindowEvent;
 //Event types
 #define MSG_WINDOW_EVT_OPENING 1 //window is about to be opened (uType is not used)
 #define MSG_WINDOW_EVT_OPEN    2 //window has been opened (uType is not used)
