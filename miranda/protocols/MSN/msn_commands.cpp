@@ -1540,8 +1540,6 @@ LBL_InvalidCommand:
 				else if ( !strcmp( data.security, "OK" )) {
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] ); Utf8Decode( tWords[2] );
 
-					MSN_SetByte( "EnableRlAnalyze", TRUE );
-
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
 						char tNick[ 130 ];
 						MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick );
