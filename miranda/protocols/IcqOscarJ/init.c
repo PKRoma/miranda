@@ -61,7 +61,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,4,6),
+	PLUGIN_MAKE_VERSION(0,3,5,0),
 	"Support for ICQ network, slightly enhanced.",
 	"Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
@@ -103,15 +103,12 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 int __declspec(dllexport) Load(PLUGINLINK *link)
 {
-
 	PROTOCOLDESCRIPTOR pd;
-
 
 	pluginLink = link;
 
 	srand(time(NULL));
 	_tzset();
-
 
 	// Get module name from DLL file name
     {
@@ -156,7 +153,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	// Setup services
 	{
-
 		char pszServiceName[MAX_PATH+30];
 
 
@@ -292,26 +288,21 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	}
 
 	return 0;
-
 }
 
 
 
 int __declspec(dllexport) Unload(void)
 {
-
 	if (hServerConn)
 	{
-
 		icq_packet packet;
-
 
 		packet.wLen = 0;
 		write_flap(&packet, ICQ_CLOSE_CHAN);
 		sendServPacket(&packet);
 
 		icq_serverDisconnect(1);
-
 	}
 
 	UninitServerLists();
@@ -347,7 +338,6 @@ int __declspec(dllexport) Unload(void)
 		UnhookEvent(hHookIdleEvent);
 
 	return 0;
-
 }
 
 
@@ -356,10 +346,24 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
   NETLIBUSER nlu = {0};
   char pszP2PName[MAX_PATH+3];
+  char pszGroupsName[MAX_PATH+10];
+  char pszSrvGroupsName[MAX_PATH+10];
   char szBuffer[MAX_PATH+64];
+  char* modules[5] = {0};
 
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
+
+  strcpy(pszGroupsName, gpszICQProtoName);
+  strcat(pszGroupsName, "Groups");
+  strcpy(pszSrvGroupsName, gpszICQProtoName);
+  strcat(pszSrvGroupsName, "SrvGroups");
+  modules[0] = gpszICQProtoName;
+  modules[1] = pszP2PName;
+  modules[2] = pszGroupsName;
+  modules[3] = pszSrvGroupsName;
+  CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
+
 
   _snprintf(szBuffer, sizeof szBuffer, "%s server connection", gpszICQProtoName);
   nlu.cbSize = sizeof(nlu);
