@@ -3,16 +3,17 @@ ZIPFLAGS=-9 -X -j
 ifeq ($(MODE),Release)
 LMODE=
 else
-LMODE=_debug
+LMODE=debug_
 endif
-BIN_DIR=$(CVSDIR)/Bin/$(MODE)
+BINDIR=$(CVSDIR)/Bin/$(MODE)
 
-PLUGINS=srmm.dll changeinfo.dll import.dll
-PROTOCOLS=aim.dll ICQ.dll jabber.dll msn.dll Yahoo.dll
-BIN_PLUGINS=$(foreach P, $(PLUGINS), $(BIN_DIR)/Plugins/$(P))
-BIN_PROTOCOLS=$(foreach P, $(PROTOCOLS), $(BIN_DIR)/Plugins/$(P))
+#export PLUGIN_NAMES
 
 all:
-	$(ZIP) $(ZIPFLAGS) $(OUTPUT)/miranda_core$(LMODE)_$(CO_YMD).zip $(BIN_DIR)/miranda32.exe
-	$(ZIP) $(ZIPFLAGS) $(OUTPUT)/miranda_plugins$(LMODE)_$(CO_YMD).zip $(BIN_PLUGINS)
-	$(ZIP) $(ZIPFLAGS) $(OUTPUT)/miranda_protocols$(LMODE)_$(CO_YMD).zip $(BIN_PROTOCOLS)
+define ZIPUP
+$(ZIP) $(ZIPFLAGS) $(OUTPUT)/miranda32_$(LMODE)$(CO_YMD).zip $(BINDIR)/miranda32.exe
+for name in $(PLUGIN_NAMES); do \
+$(ZIP) $(ZIPFLAGS) $(OUTPUT)/$$name\_$(LMODE)$(CO_YMD).zip $(BINDIR)/Plugins/$$name.dll; \
+done
+endef
+	$(ZIPUP)

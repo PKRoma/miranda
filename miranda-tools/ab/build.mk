@@ -28,7 +28,7 @@ msn: unzip
 yahoo: unzip
 	$(MAKE) --directory=$(CVSDIR)/Protocols/Yahoo -f Makefile.win $(if $(DEBUG),DEBUG=1)
 
-plugins: unzip srmm changeinfo import
+plugins: unzip srmm changeinfo import tabsrmm clist
 # all plugins have been built
 	
 srmm: unzip
@@ -39,4 +39,10 @@ changeinfo: unzip
 
 import: unzip
 	$(MSDEV) $(CVSDIR)/Plugins/import/import.dsp //MAKE "import - Win32 $(MODE)" $(MSDEV_PFLAGS)
+	
+tabsrmm: unzip
+	$(MSDEV) $(CVSDIR)/Plugins/tabsrmm/srmm.dsp //MAKE "srmm - Win32 $(MODE)" $(MSDEV_PFLAGS)
+
+clist: unzip
+	$(MSDEV) $(CVSDIR)/Plugins/clist/clist.dsp //MAKE "clist - Win32 $(MODE)" $(MSDEV_PFLAGS)
 	
