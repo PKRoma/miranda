@@ -1742,8 +1742,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(dat->hwndStatus);
 		if (dat->hAvatarAck)
 			UnhookEvent(dat->hAvatarAck);
-		if (dat->avatarPic)
-			DeleteObject(dat->avatarPic);
 		{
 			int i;
 			for (i = 0; i < sizeof(dat->hIcons) / sizeof(dat->hIcons[0]); i++)
@@ -1751,7 +1749,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		tcmdlist_free(dat->cmdList);
 		WindowList_Remove(hMessageWindowList, hwndDlg);
-		DBWriteContactSettingDword(NULL, SRMMMOD, "splittery", dat->splitterY);
+		if (!dat->showAvatar||!dat->avatarPic)
+			DBWriteContactSettingDword(NULL, SRMMMOD, "splittery", dat->splitterY);
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
@@ -1783,6 +1782,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
 			}
 		}
+		if (dat->avatarPic)
+			DeleteObject(dat->avatarPic);
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		free(dat);
 		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
