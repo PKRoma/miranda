@@ -2,17 +2,17 @@
 // Gadu-Gadu Plugin for Miranda IM
 //
 // Copyright (c) 2003 Adam Strzelecki <ono+miranda@java.pl>
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -31,25 +31,25 @@ LPPICTURE tokenPicture = NULL;
 int tokenwidth = 0;
 int tokenheight = 0;
 
-#define MAX_LOADSTRING 100 
-#define HIMETRIC_INCH 2540 
-#define MAP_LOGHIM_TO_PIX(x,ppli) ( ((ppli)*(x) + HIMETRIC_INCH/2) / HIMETRIC_INCH ) 
+#define MAX_LOADSTRING 100
+#define HIMETRIC_INCH 2540
+#define MAP_LOGHIM_TO_PIX(x,ppli) ( ((ppli)*(x) + HIMETRIC_INCH/2) / HIMETRIC_INCH )
 
 ////////////////////////////////////////////////////////////////////////////////
 // User Util Dlg Page : Data
 BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg) 
+    switch(msg)
     {
         case WM_INITDIALOG:
             TranslateDialogDefault(hwndDlg);
-			RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc); 
+			RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
 			InvalidateRect(hwndDlg, &rc, TRUE);
             return TRUE;
 
 		case WM_CTLCOLORSTATIC:
 			/*
-			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) || 
+			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
 				(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
 			{
 				SetBkColor((HDC)wParam,RGB(255,255,255));
@@ -58,7 +58,7 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			*/
 			break;
         case WM_COMMAND:
-            switch(LOWORD(wParam)) 
+            switch(LOWORD(wParam))
             {
                 case IDOK:
                 {
@@ -75,27 +75,27 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			{
 				PAINTSTRUCT paintStruct;
 				HDC hdc = BeginPaint(hwndDlg, &paintStruct);
-				RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc); 
+				RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
 				FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
-				
-				if (tokenPicture) 
-				{ 
-					// get width and height of picture 
-					long hmWidth; 
-					long hmHeight; 
-					tokenPicture->get_Width(&hmWidth); 
-					tokenPicture->get_Height(&hmHeight); 
-					
-					// convert himetric to pixels 
-					int nWidth = MulDiv(hmWidth, GetDeviceCaps(hdc, LOGPIXELSX), HIMETRIC_INCH); 
-					int nHeight = MulDiv(hmHeight, GetDeviceCaps(hdc, LOGPIXELSY), HIMETRIC_INCH); 
-					
-					// display picture using IPicture::Render 
-					tokenPicture->Render(hdc, 
-						(rc.right - tokenwidth) / 2, 
-						(rc.bottom - rc.top - tokenheight) / 2, 
-						nWidth, nHeight, 0, hmHeight, hmWidth, -hmHeight, &rc); 
-				} 
+
+				if (tokenPicture)
+				{
+					// get width and height of picture
+					long hmWidth;
+					long hmHeight;
+					tokenPicture->get_Width(&hmWidth);
+					tokenPicture->get_Height(&hmHeight);
+
+					// convert himetric to pixels
+					int nWidth = MulDiv(hmWidth, GetDeviceCaps(hdc, LOGPIXELSX), HIMETRIC_INCH);
+					int nHeight = MulDiv(hmHeight, GetDeviceCaps(hdc, LOGPIXELSY), HIMETRIC_INCH);
+
+					// display picture using IPicture::Render
+					tokenPicture->Render(hdc,
+						(rc.right - tokenwidth) / 2,
+						(rc.bottom - rc.top - tokenheight) / 2,
+						nWidth, nHeight, 0, hmHeight, hmWidth, -hmHeight, &rc);
+				}
 				EndPaint(hwndDlg, &paintStruct);
 				return 0;
 			}
@@ -118,10 +118,10 @@ int gg_gettoken()
 	ggTokenid = NULL;
 	ggTokenval = NULL;
 
-	if(!(h = gg_token(0)) || gg_token_watch_fd(h) || h->state == GG_STATE_ERROR || h->state != GG_STATE_DONE) 
+	if(!(h = gg_token(0)) || gg_token_watch_fd(h) || h->state == GG_STATE_ERROR || h->state != GG_STATE_DONE)
 	{
 		char error[128];
-		sprintf(error, Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h->error));
+		sprintf(error, Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h ? h->error : 0));
 		MessageBox(
 				NULL,
 				error,
@@ -132,10 +132,10 @@ int gg_gettoken()
 		return FALSE;
 	}
 
-	if (!(t = (struct gg_token *)h->data) || (!h->body)) 
+	if (!(t = (struct gg_token *)h->data) || (!h->body))
 	{
 		char error[128];
-		sprintf(error, Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h->error));
+		sprintf(error, Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h ? h->error : 0));
 		MessageBox(
 				NULL,
 				error,
@@ -206,7 +206,7 @@ int gg_gettoken()
         return FALSE;
     }
     pstm->Release();
-	
+
 	// Load token dialog
     if(DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_TOKEN), NULL, gg_tokendlgproc, 0) == IDCANCEL)
 	{

@@ -2,17 +2,17 @@
 // Gadu-Gadu Plugin for Miranda IM
 //
 // Copyright (c) 2003 Adam Strzelecki <ono+miranda@java.pl>
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -31,16 +31,16 @@ void *gg_doregister(char *newPass, char *newEmail)
 
 	// Load token
 	if(!gg_gettoken()) return NULL;
-	
+
     // Connection handle
-    struct gg_http *h; 
+    struct gg_http *h;
 	struct gg_pubdir *s;
-    
-    if (!(h = gg_register3(newEmail, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || !s->uin) 
+
+    if (!(h = gg_register3(newEmail, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || !s->uin)
     {
         char error[128];
         sprintf(error, Translate("Cannot register new account because of error:\n\t%s"),
-			(h && !s) ? http_error_string(h->error) : 
+			(h && !s) ? http_error_string(h ? h->error : 0) :
 		    (s ? Translate("Registration rejected") : strerror(errno)));
         MessageBox(
             NULL,
@@ -48,7 +48,7 @@ void *gg_doregister(char *newPass, char *newEmail)
             GG_PROTOERROR,
             MB_OK | MB_ICONSTOP
         );
-        
+
 #ifdef DEBUGMODE
         gg_netlog("gg_doregister(): Cannot register because of \"%s\".", strerror(errno));
 #endif
@@ -89,14 +89,14 @@ void *gg_dounregister(uin_t uin, char *password)
 	if(!gg_gettoken()) return NULL;
 
     // Connection handle
-    struct gg_http *h; 
+    struct gg_http *h;
 	struct gg_pubdir *s;
-    
-    if (!(h = gg_unregister3(uin, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || s->uin != uin) 
+
+    if (!(h = gg_unregister3(uin, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || s->uin != uin)
     {
         char error[128];
-        sprintf(error, Translate("Your account cannot be removed because of error:\n\t%s"), 
-			(h && !s) ? http_error_string(h->error) : 
+        sprintf(error, Translate("Your account cannot be removed because of error:\n\t%s"),
+			(h && !s) ? http_error_string(h ? h->error : 0) :
 		    (s ? Translate("Bad number or password") : strerror(errno)));
         MessageBox(
             NULL,
@@ -104,7 +104,7 @@ void *gg_dounregister(uin_t uin, char *password)
             GG_PROTOERROR,
             MB_OK | MB_ICONSTOP
         );
-        
+
 #ifdef DEBUGMODE
         gg_netlog("gg_dounregister(): Cannot remove account because of \"%s\".", strerror(errno));
 #endif
@@ -141,7 +141,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 
     // Readup email
 	char email[255] = "\0"; DBVARIANT dbv_email;
-    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email)) 
+    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email))
         strcpy(email, dbv_email.pszVal);
 	DBFreeVariant(&dbv_email);
 
@@ -149,14 +149,14 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 	if(!gg_gettoken()) return NULL;
 
     // Connection handle
-    struct gg_http *h; 
+    struct gg_http *h;
 	struct gg_pubdir *s;
-    
-    if (!(h = gg_change_passwd4(uin, email, password, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success) 
+
+    if (!(h = gg_change_passwd4(uin, email, password, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
     {
         char error[128];
         sprintf(error, Translate("Your password cannot be changed because of error:\n\t%s"),
-			(h && !s) ? http_error_string(h->error) : 
+			(h && !s) ? http_error_string(h ? h->error : 0) :
 		    (s ? Translate("Invalid data entered") : strerror(errno)));
         MessageBox(
             NULL,
@@ -164,7 +164,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
             GG_PROTOERROR,
             MB_OK | MB_ICONSTOP
         );
-        
+
 #ifdef DEBUGMODE
         gg_netlog("gg_dochpass(): Cannot change password because of \"%s\".", strerror(errno));
 #endif
@@ -203,14 +203,14 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 	if(!gg_gettoken()) return NULL;
 
     // Connection handle
-    struct gg_http *h; 
+    struct gg_http *h;
 	struct gg_pubdir *s;
-    
-    if (!(h = gg_change_passwd4(uin, newEmail, password, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success) 
+
+    if (!(h = gg_change_passwd4(uin, newEmail, password, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
     {
         char error[128];
         sprintf(error, Translate("Your e-mail cannot be changed because of error:\n\t%s"),
-			(h && !s) ? http_error_string(h->error) : 
+			(h && !s) ? http_error_string(h ? h->error : 0) :
 		    (s ? Translate("Bad old e-mail or password") : strerror(errno)));
         MessageBox(
             NULL,
@@ -218,7 +218,7 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
             GG_PROTOERROR,
             MB_OK | MB_ICONSTOP
         );
-        
+
 #ifdef DEBUGMODE
         gg_netlog("gg_dochpass(): Cannot change e-mail because of \"%s\".", strerror(errno));
 #endif
@@ -250,14 +250,14 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
     GGUSERUTILDLGDATA *dat;
     dat = (GGUSERUTILDLGDATA  *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-    switch(msg) 
+    switch(msg)
     {
         case WM_INITDIALOG:
             TranslateDialogDefault(hwndDlg);
             dat = (GGUSERUTILDLGDATA  *)lParam;
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			if(dat)
-			{	
+			{
 				// Readup email
 				SetDlgItemText(hwndDlg, IDC_EMAIL, dat->email);
 				// Make bold title font
@@ -271,7 +271,7 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
             return TRUE;
 
 		case WM_CTLCOLORSTATIC:
-			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) || 
+			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
 				(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
 			{
 				SetBkColor((HDC)wParam,RGB(255,255,255));
@@ -285,7 +285,7 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			}
 			break;
         case WM_COMMAND:
-            switch(LOWORD(wParam)) 
+            switch(LOWORD(wParam))
             {
 				case IDC_PASSWORD:
 				case IDC_CPASSWORD:
@@ -307,7 +307,7 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                     GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
                     GetDlgItemText(hwndDlg, IDC_CPASSWORD, cpass, sizeof(cpass));
                     GetDlgItemText(hwndDlg, IDC_EMAIL, email, sizeof(email));
-                
+
 					// Check dialog box mode
 					if(dat && dat->mode == GG_USERUTIL_CREATE)
 						gg_doregister(pass, email);
@@ -342,7 +342,7 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
     DBVARIANT dbv_pass, dbv_email;
 
     // Readup password
-    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv_pass)) 
+    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv_pass))
     {
         CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv_pass.pszVal) + 1, (LPARAM) dbv_pass.pszVal);
         password = dbv_pass.pszVal;
@@ -350,11 +350,11 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
     else return 0;
 
 	// Readup uin
-    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))) 
+    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
         return 0;
 
     // Readup email
-    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email)) 
+    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email))
     {
         email = dbv_email.pszVal;
     }
@@ -368,7 +368,7 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 	dat.uin = uin;
 	dat.pass = password;
 	dat.email = email;
-	
+
     DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CHPASS), NULL, gg_userutildlgproc, (LPARAM)&dat);
 
     DBFreeVariant(&dbv_pass);
@@ -380,7 +380,7 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 void gg_initchpass()
 {
 	return;
-	
+
 	// Rest depreciated
     CLISTMENUITEM mi;
     ZeroMemory(&mi,sizeof(mi));
