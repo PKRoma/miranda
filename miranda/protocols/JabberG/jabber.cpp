@@ -1,7 +1,8 @@
 /*
 
 Jabber Protocol Plugin for Miranda IM
-Copyright (C) 2002-2004  Santithorn Bunchua
+Copyright (C) 2002-04  Santithorn Bunchua
+Copyright (C) 2005     George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -34,10 +35,10 @@ PLUGININFO pluginInfo = {
 	PLUGIN_MAKE_VERSION(0,1,1,8),
 	//"Jabber protocol plugin for Miranda IM",
 	"Jabber protocol plugin for Miranda IM (pre-0.1.1.9 cvs "__DATE__")",
-	"Santithorn Bunchua",
-	"keh@au.edu",
-	"(c) 2002-2004 Santithorn Bunchua",
-	"http://jabber.au.edu/miranda",
+	"George Hazan",
+	"ghazan@postman.ru",
+	"(c) 2002-2004 Santithorn Bunchua, 2005 George Hazan",
+	"http://miranda-im.org/download/details.php?action=viewfile&id=437",
 	0,
 	0
 };
