@@ -28,6 +28,7 @@ $Id$
 #include "m_message.h"
 #include "msgs.h"
 #include "m_smileyadd.h"
+#include "m_metacontacts.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -51,6 +52,7 @@ int hMsgMenuItemCount = 0;
 HWND g_hwndHotkeyHandler;
 HICON g_iconIn, g_iconOut, g_iconErr;
 HBITMAP g_hbmUnknown = 0;
+int g_isMetaContactsAvail = 0;
 
 extern HINSTANCE g_hInst;
 HMODULE hDLL;
@@ -1268,16 +1270,6 @@ void ConvertAllToUTF8()
 }
 #endif
 
-static int EventTester(WPARAM wParam, LPARAM lParam)
-{
-    _DebugPopup((HANDLE)wParam, "event received");
-}
-
-static int EventTester1(WPARAM wParam, LPARAM lParam)
-{
-    _DebugPopup((HANDLE)wParam, "changed");
-}
-
 /*
  * initialises the internal API, services, events etc...
  */
@@ -1314,8 +1306,8 @@ void InitAPI()
     g_hEvent_Sessionchanged = CreateHookableEvent(ME_MSG_SESSIONCHANGED);
     g_hEvent_Beforesend = CreateHookableEvent(ME_MSG_BEFORESEND);
     
-    HookEvent(ME_MSG_SESSIONCLOSING, EventTester);
-    HookEvent(ME_MSG_SESSIONCHANGED, EventTester1);
+    if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
+        g_isMetaContactsAvail = TRUE;
 }
 
 void TABSRMM_FireEvent(HANDLE hEvent, HWND hwndDlg, struct MessageWindowData *dat)

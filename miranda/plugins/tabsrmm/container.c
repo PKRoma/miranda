@@ -81,6 +81,7 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int GetProtoIconFromList(const char *szProto, int iStatus);
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 HMENU BuildContainerMenu();
+void TABSRMM_FireEvent(HANDLE hEvent, HWND hwndDlg, struct MessageWindowData *dat);
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);

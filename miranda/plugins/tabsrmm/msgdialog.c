@@ -37,6 +37,7 @@ $Id$
 #include "m_message.h"
 #include "m_popup.h"
 #include "m_smileyadd.h"
+#include "m_metacontacts.h"
 
 #define TIMERID_MSGSEND      0
 #define TIMERID_ANTIBOMB     2
