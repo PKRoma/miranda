@@ -73,7 +73,7 @@ typedef struct avatarrequest_t
 } avatarrequest;
 
 avatarthreadstartinfo* currentAvatarThread; 
-static int pendingStart = 1;
+int pendingAvatarsStart = 1;
 static int pendingLogin = 0;
 avatarrequest* pendingRequests = NULL;
 
@@ -125,7 +125,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
 
   if (!hConn)
   {
-    pendingStart = 0;
+    pendingAvatarsStart = 0;
     Netlib_Logf(ghServerNetlibUser, "Avatar: Connect failed");
 
     SAFE_FREE(&cookie);
@@ -135,6 +135,8 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   if (pendingLogin)
   {
     Netlib_Logf(ghServerNetlibUser, "Avatar, Multiple start thread attempt, ignored.");
+    Netlib_CloseHandle(hConn);
+    SAFE_FREE(&cookie);
     return;
   }
   
@@ -247,10 +249,10 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
 
   Netlib_Logf(ghServerNetlibUser, "Request to get %d avatar image added to queue.", dwUin);
 
-  if (!AvatarsReady && !pendingStart)
+  if (!AvatarsReady && !pendingAvatarsStart)
   {
     icq_requestnewfamily(0x10, StartAvatarThread);
-    pendingStart = 1;
+    pendingAvatarsStart = 1;
   }
 
   return -1; // we added to queue
@@ -331,10 +333,10 @@ static int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 
   Netlib_Logf(ghServerNetlibUser, "Request to upload avatar image added to queue.");
 
-  if (!AvatarsReady && !pendingStart)
+  if (!AvatarsReady && !pendingAvatarsStart)
   {
+    pendingAvatarsStart = 1;
     icq_requestnewfamily(0x10, StartAvatarThread);
-    pendingStart = 1;
   }
 
   return -1; // we added to queue
@@ -369,9 +371,19 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
         {  // timeout, check if we should be still running
           if (Miranda_Terminated())
             atsi->stopThread = 1; // we must stop here, cause due to a hack in netlib, we always get timeout, even if the connection is already dead
+#ifdef _DEBUG
           else
             Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Idle.");
-          continue; // TODO: add keep-alive
+#endif
+          if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
+          { // send keep-alive packet
+            icq_packet packet;
+
+            packet.wLen = 0;
+            write_flap(&packet, ICQ_PING_CHAN);
+            sendAvatarPacket(&packet, atsi);
+          }
+          continue; 
         }
         Netlib_Logf(ghServerNetlibUser, "Abortive closure of avatar socket");
         break;
@@ -389,8 +401,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           avatarrequest* reqdata = pendingRequests;
           pendingRequests = reqdata->pNext;
 
+#ifdef _DEBUG
           Netlib_Logf(ghServerNetlibUser, "Picked up the %d request from queue.", reqdata->dwUin);
-
+#endif
           switch (reqdata->type)
           {
           case 1: // get avatar
@@ -422,7 +435,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
   if (currentAvatarThread == atsi) // if we stoped by error or unexpectedly, clear global variable
   {
     AvatarsReady = FALSE; // we are not ready
-    pendingStart = 0;
+    pendingAvatarsStart = 0;
     pendingLogin = 0;
     currentAvatarThread = NULL; // this is horrible, rewrite
   }
@@ -665,7 +678,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     sendAvatarPacket(&packet, atsi);
     
     AvatarsReady = TRUE; // we are ready to process requests
-    pendingStart = 0;
+    pendingAvatarsStart = 0;
     pendingLogin = 0;
 
     Netlib_Logf(ghServerNetlibUser, " *** Yeehah, avatar login sequence complete");
@@ -723,8 +736,26 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           out = fopen(ac->szFile, "wb");
 			    if (out) 
           {
+            DBCONTACTWRITESETTING cws;
+            DBVARIANT dbv;
+            int dummy;
+
             fwrite(pBuffer, datalen, 1, out);
             fclose(out);
+
+            if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
+            {
+              cws.szModule = gpszICQProtoName; // set saved hash
+              cws.value.type = DBVT_BLOB;
+              cws.value.pbVal = dbv.pbVal;
+              cws.value.cpbVal = dbv.cpbVal; 
+              cws.szSetting = "AvatarSaved";
+              dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)ac->hContact, (LPARAM)&cws);
+
+              DBFreeVariant(&dbv);
+            }
+            else
+              Netlib_Logf(ghServerNetlibUser, "Failed to set file hash.");
 
             ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&ai, (LPARAM)NULL);
           }
@@ -740,7 +771,6 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         }
         SAFE_FREE(&ac->szFile);
         SAFE_FREE(&ac);
-
       }
       else
       {

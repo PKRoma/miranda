@@ -5,6 +5,7 @@
 #define IDD_ICQACCOUNT                  103
 #define IDD_ASKAUTH                     104
 #define IDD_LOGINPW                     105
+#define IDD_INFO_AVATAR                 106
 #define IDD_OPT_ICQ                     185
 #define IDD_INFO_ICQ                    224
 #define IDD_ICQADVANCEDSEARCH           242
@@ -23,6 +24,7 @@
 #define IDC_SUPTIME                     1020
 #define IDC_                            1021
 #define IDC_ICQNUM                      1022
+#define IDC_AVATAR                      1022
 #define IDC_CLIST                       1035
 #define IDC_EMAIL                       1048
 #define IDC_NICK                        1053
@@ -50,6 +52,7 @@
 #define IDC_MIRVER                      1251
 #define IDC_ONLINESINCE                 1252
 #define IDC_SYSTEMUPTIME                1253
+#define IDC_IDLETIME                    1254
 #define IDC_SLOWSEND                    1301
 #define IDC_LOGLEVEL                    1331
 #define IDC_LEVELDESCR                  1332
@@ -80,9 +83,9 @@
 #define IDC_IGNORE                      1528
 #define IDC_ENABLE                      1529
 #define IDC_LOADFROMSERVER              1530
-#define IDC_SAVETOSERVER                1533
 #define IDC_ADDNEW                      1531
 #define IDC_ADDREMOVE                   1532
+#define IDC_SAVETOSERVER                1533
 #define IDC_ENABLEAVATARS               1536
 #define IDC_AUTOLOADAVATARS             1537
 #define IDC_WEBAWARE                    1546
@@ -100,12 +103,12 @@
 #define IDC_STATIC_CLIST                1558
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        106
+#define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1022
+#define _APS_NEXT_CONTROL_VALUE         1023
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
