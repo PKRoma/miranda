@@ -2,7 +2,7 @@ library convers;
 
 {
 Conversation Style Messaging Plugin 
-Version 0.99
+Version 0.99.3
 by Christian Kästner
 for Miranda ICQ 0.1
 written with Delphi 5 Pro
@@ -61,7 +61,7 @@ uses
 
 
 {$R *.RES}
-{$R optdlgs.res}
+{ $R optdlgs.res}
 
 
 
@@ -74,7 +74,7 @@ begin
   ZeroMemory(@PluginInfo,SizeOf(PluginInfo));
   PluginInfo.cbSize:=sizeof(TPLUGININFO);
   PluginInfo.shortName:='Conversation Style Messaging';
-  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,2,0);
+  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,3,0);
   PluginInfo.description:='This plugin offers a conversation style messaging ability for Miranda ICQ. Like most instant message programs you see the history above the input field. Additionally it has a 3 different display stiles and couple of nice features and options.';
   PluginInfo.author:='Christian Kästner';
   PluginInfo.authorEmail:='christian.k@stner.de';
@@ -82,7 +82,7 @@ begin
   PluginInfo.homepage:='http://www.kaestnerpro.de/convers.zip';
   PluginInfo.isTransient:=0;
   PluginInfo.replacesDefaultModule:=DEFMOD_SRMESSAGE;
-  PluginInfoVersion:='0.992';
+  PluginInfoVersion:='0.993';
 
   Result:=@PluginInfo;
 end;
@@ -239,14 +239,14 @@ function OnOptInitialise(wParam{addinfo},lParam{0}:DWord):integer;cdecl;
 var
   odp:TOPTIONSDIALOGPAGE;
 begin
- ZeroMemory(@odp,sizeof(odp));
+{ ZeroMemory(@odp,sizeof(odp));
   odp.cbSize:=sizeof(odp);
   odp.Position:=900000000;
   odp.hInstance:=hInstance;
   odp.pszTemplate:='DLG_MISCOPTIONS';
   odp.pszTitle:='Convers. Plugin';
   odp.pfnDlgProc:=@optionfrm.DlgProcMiscOptions;
-  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
+  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));}
   Result:=0;
 end;
 

@@ -22,7 +22,7 @@ resourcestring
   text_chard='Char: %d';
   text_TextTooLong='Text too long. Enable splitting messages, send direct or shorten message.';
 const
-  DEFAULT_TIMEOUT_MSGSEND=8000;//8sec timeout for message sending (doesnt matter if direct or through server)
+  DEFAULT_TIMEOUT_MSGSEND=40000;//8sec timeout for message sending (doesnt matter if direct or through server)
   MaxMessageLength=450;
 
 const
