@@ -844,7 +844,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			TranslateDialogDefault( hwndDlg );
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN )));
-			SendMessage( GetDlgItem( hwndDlg, IDC_NICKNAME ), EM_LIMITTEXT, 130, 0 );
+			SendMessage( GetDlgItem( hwndDlg, IDC_NICKNAME ), EM_LIMITTEXT, 129, 0 );
 
 			char tNick[ 130 ];
 			if ( !MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick ))
@@ -858,7 +858,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case IDOK:
 					if ( msnLoggedIn )
 					{
-						char str[ 130+1 ];
+						char str[ 130 ];
 						GetDlgItemText( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
 
 						char tEmail[ MSN_MAX_EMAIL_LEN ];
