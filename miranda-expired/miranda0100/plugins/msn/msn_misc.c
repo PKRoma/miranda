@@ -67,6 +67,7 @@ void MSN_DebugLog(int level,const char *fmt,...)
 		text=(char*)malloc(strlen(head)+strlen(str)+2);
 		wsprintf(text,"%s%s\n",head,str);
 		OutputDebugString(text);
+		free(text);
 	}
 #endif
 	free(str);
