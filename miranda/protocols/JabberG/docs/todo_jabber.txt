@@ -1,0 +1,5 @@
+1. Remove built-in groupchat support
+
+2. Remove built-in reconnection support
+
+3. Place the conferences list into the contact list

@@ -6,8 +6,8 @@ Legend:
 
 Version 0.2.0.2
 ===============
-[+] search by JID now verifies the user's presense, without confirming any
-input
+[+] search by JID now verifies the user's presense, instead of confirming any
+user input
 [+] wish #0000299: DisableMainMenuItem option wanted
 [!] bug #0000298 fixed: search by nickname instead of a full JID resulted
 to the auth process stuck.
