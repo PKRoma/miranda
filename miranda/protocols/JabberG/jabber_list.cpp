@@ -126,29 +126,23 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 
 int JabberListExist( JABBER_LIST list, const char* jid )
 {
-	int i, len;
-	char* s, *p, *q;
-
-	s = _strdup( jid ); _strlwr( s );
+	char* s = ( char* )alloca( strlen( jid )+1 ), *p, *q;
+	strcpy( s, jid );
 	// strip resouce name if any
-	if (( p=strchr( s, '@' )) != NULL ) {
+	if (( p=strchr( s, '@' )) != NULL )
 		if (( q=strchr( p, '/' )) != NULL )
 			*q = '\0';
-	}
-	len = strlen( s );
 
 	EnterCriticalSection( &csLists );
-	for( i=0; i<count; i++ )
+	for ( int i=0; i<count; i++ ) {
 		if ( lists[i].list==list ) {
 			p = lists[i].jid;
-			if ( p && ( int )strlen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !strncmp( p, s, len )) {
+			if ( p && !lstrcmpi( p, s )) {
 			  	LeaveCriticalSection( &csLists );
-				free( s );
 				return i+1;
-			}
-		}
+	}	}	}
+
 	LeaveCriticalSection( &csLists );
-	free( s );
 	return 0;
 }
 
@@ -163,7 +157,7 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const char* jid )
 		return item;
 	}
 
-	s = _strdup( jid ); _strlwr( s );
+	s = strdup( jid );
 	// strip resource name if any
 	if (( p=strchr( s, '@' )) != NULL ) {
 		if (( q=strchr( p, '/' )) != NULL )

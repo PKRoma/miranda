@@ -1166,7 +1166,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
 					iqId = JabberSerialNext();
 					JabberIqAdd( iqId, IQ_PROC_GETVCARD, JabberIqResultGetVcard );
-					JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp'/></iq>", iqId, jid );
+					JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp'/></iq>", iqId, UTF8(jid));
 					dat->animating = TRUE;
 					SetTimer( hwndDlg, 1, 200, NULL );
 					free( jid );

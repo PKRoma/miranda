@@ -89,7 +89,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		item->jbt = jbt;
 		hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 		jbt->hEvent = hEvent;
-		_snprintf( streamHost, sizeof( streamHost ), "<streamhost jid='%s' host='%s' port='%d'/>", jabberThreadInfo->fullJID, localAddr, nlb.wPort );
+		_snprintf( streamHost, sizeof( streamHost ), "<streamhost jid='%s' host='%s' port='%d'/>", UTF8(jabberThreadInfo->fullJID), localAddr, nlb.wPort );
 		free( localAddr );
 	}
 
@@ -101,8 +101,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 				"%s"
 			"</query>"
 		"</iq>",
-		jbt->dstJID, iqId, jbt->sid, streamHost
-	 );
+		UTF8(jbt->dstJID), iqId, jbt->sid, streamHost );
 
 	if ( bDirect ) {
 		WaitForSingleObject( hEvent, INFINITE );
@@ -246,6 +245,7 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 		// 08-09 bnd.port server bound port
 		if ( datalen==47 && *(( DWORD* )buffer )==0x03000105 && buffer[4]==40 && *(( WORD* )( buffer+45 ))==0 ) {
 			_snprintf( text, sizeof( text ), "%s%s%s", jbt->sid, jbt->srcJID, jbt->dstJID );
+			JabberLog( "Auth: '%s'", text );
 			if (( str=JabberSha1( text )) != NULL ) {
 				for ( i=0; i<40 && buffer[i+5]==str[i]; i++ );
 				free( str );
@@ -293,13 +293,13 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 
 		szId = JabberXmlGetAttrValue( iqNode, "id" );
 		jbt->iqId = ( szId )?_strdup( szId ):NULL;
-		jbt->srcJID = _strdup( from );
+		jbt->srcJID = _strdup( JabberStringDecode( from ));
 		jbt->dstJID = _strdup( jabberThreadInfo->fullJID );
 		jbt->sid = _strdup( sid );
 
 		if (( buffer=( char* )malloc( JABBER_NETWORK_BUFFER_SIZE )) == NULL ) {
 			JabberLog( "bytestream_send cannot allocate network buffer, connection closed." );
-			JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='406' type='auth'><not-acceptable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></iq>", jbt->srcJID, jbt->iqId );
+			JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='406' type='auth'><not-acceptable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></iq>", UTF8(jbt->srcJID), jbt->iqId );
 			JabberByteFreeJbt( jbt );
 			return;
 		}
@@ -313,7 +313,7 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 
 				port = ( WORD )atoi( szPort );
 				if ( jbt->streamhostJID ) free( jbt->streamhostJID );
-				jbt->streamhostJID = _strdup( str );
+				jbt->streamhostJID = _strdup( JabberStringDecode( str ));
 
 				JabberLog( "bytestream_recv connecting to %s:%d", szHost, port );
 				NETLIBOPENCONNECTION nloc = { 0 };
@@ -359,7 +359,7 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 		jbt->pfnFinal(( jbt->state==JBT_DONE )?TRUE:FALSE, jbt->userdata );
 		if ( !validStreamhost ) {
 			JabberLog( "bytestream_recv_connection session not completed" );
-			JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='404' type='cancel'><item-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></iq>", jbt->srcJID, jbt->iqId );
+			JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='404' type='cancel'><item-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></iq>", UTF8(jbt->srcJID), jbt->iqId );
 		}
 	}
 	JabberByteFreeJbt( jbt );
@@ -392,6 +392,7 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 			*(( DWORD* )data ) = 0x03000105;
 			data[4] = 40;
 			_snprintf( text, sizeof( text ), "%s%s%s", jbt->sid, jbt->srcJID, jbt->dstJID );
+			JabberLog( "Auth: '%s'", text );
 			szHash = JabberSha1( text );
 			strncpy(( char* )( data+5 ), szHash, 40 );
 			free( szHash );
@@ -419,7 +420,7 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 				break;
 			}
 			jbt->state = JBT_RECVING;
-			JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s' id='%s'><query xmlns='http://jabber.org/protocol/bytestreams'><streamhost-used jid='%s'/></query></iq>", jbt->srcJID, jbt->iqId, jbt->streamhostJID );
+			JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s' id='%s'><query xmlns='http://jabber.org/protocol/bytestreams'><streamhost-used jid='%s'/></query></iq>", UTF8(jbt->srcJID), jbt->iqId, UTF8(jbt->streamhostJID));
 		}
 		else
 			jbt->state = JBT_SOCKSERR;

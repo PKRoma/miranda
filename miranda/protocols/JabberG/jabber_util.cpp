@@ -106,30 +106,30 @@ int __stdcall JabberSend( HANDLE hConn, const char* fmt, ... )
 	return result;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// JabberHContactFromJID - looks for the HCONTACT with required JID
+
 HANDLE __stdcall JabberHContactFromJID( const char* jid )
 {
-	HANDLE hContact, hContactMatched;
-	DBVARIANT dbv;
-	char* szProto;
-	char* s, *p, *q;
-	int len;
-	char* s2;
+	if ( jid == NULL )
+		return ( HANDLE )NULL;
 
-	if ( jid == NULL ) return ( HANDLE ) NULL;
+   char* s = ( char* )alloca( strlen( jid )+1 ), *p, *q;
+	strcpy( s, jid );
 
-	s = _strdup( jid ); _strlwr( s );
 	// Strip resource name if any
-	if (( p=strchr( s, '@' )) != NULL ) {
+	if (( p=strchr( s, '@' )) != NULL )
 		if (( q=strchr( p, '/' )) != NULL )
 			*q = '\0';
-	}
-	len = strlen( s );
 
-	hContactMatched = NULL;
-	hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	int len = strlen( s );
+
+	HANDLE hContactMatched = NULL;
+	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
+			DBVARIANT dbv;
 			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
 				if (( p=dbv.pszVal ) != NULL ) {
 					if ( !stricmp( p, jid )) {	// exact match ( node@domain/resource )
@@ -138,48 +138,19 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 						break;
 					}
 					// match only node@domain part
-					if (( int )strlen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !strncmp( p, s, len )) {
+					if ( !lstrcmpi( p, s )) {
 						hContactMatched = hContact;
-					}
-				}
+						JFreeVariant( &dbv );
+						break;
+				}	}
+
 				JFreeVariant( &dbv );
-			}
-		}
+		}	}
+
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
 
-	if ( hContactMatched != NULL ) {
-		free( s );
-		return hContactMatched;
-	}
-
-	// The following is for the transition to storing JID and resource in UTF8 format.
-	// If we can't find the particular JID, we ut8decode the JID and try again below.
-	// If found, we update the JID using the utf8 format.
-	s2 = JabberTextDecode( s );
-	len = strlen( s2 );
-	hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL ) {
-		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
-			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-				p = dbv.pszVal;
-				if ( p && ( int )strlen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !strncmp( p, s2, len )) {
-					JFreeVariant( &dbv );
-					// Update with the utf8 format
-					JSetString( hContact, "jid", s );
-					free( s );
-					free( s2 );
-					return hContact;
-				}
-				JFreeVariant( &dbv );
-			}
-		}
-		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
-	}
-	free( s2 );
-	free( s );
-	return NULL;
+	return hContactMatched;
 }
 
 char* __stdcall JabberNickFromJID( const char* jid )
@@ -189,28 +160,16 @@ char* __stdcall JabberNickFromJID( const char* jid )
 
 	if (( p=strchr( jid, '@' )) == NULL )
 		p = strchr( jid, '/' );
+
 	if ( p != NULL ) {
 		if (( nick=( char* )malloc(( p-jid )+1 )) != NULL ) {
 			strncpy( nick, jid, p-jid );
 			nick[p-jid] = '\0';
 		}
 	}
-	else {
-		nick = _strdup( jid );
-	}
+	else nick = _strdup( jid );
 
 	return nick;
-}
-
-char*  __stdcall JabberLocalNickFromJID( const char* jid )
-{
-	char* p;
-	char* localNick;
-
-	p = JabberNickFromJID( jid );
-	localNick = JabberTextDecode( p );
-	free( p );
-	return localNick;
 }
 
 void __stdcall JabberUrlDecode( char* str )
@@ -601,16 +560,19 @@ void __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible )
 			if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
 				apparentMode = JGetWord( hContact, "ApparentMode", 0 );
 				if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
-					JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", item->jid );
+					JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(item->jid));
 				}
 				else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE ) {
-					JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", item->jid );
+					JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", UTF8(item->jid));
 				}
 			}
 		}
 		i++;
 	}
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberTextEncodeW - prepare a string for transmission
 
 char* __stdcall JabberTextEncode( const char* str )
 {
@@ -688,6 +650,19 @@ char* __stdcall JabberTextEncodeW( const wchar_t* str )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// JabberStringDecode - retrieve a text from the encoded string
+
+char* __stdcall JabberStringDecode( char* str )
+{
+	if ( str == NULL )
+		return NULL;
+
+	JabberUtf8Decode( str, NULL );
+	JabberUrlDecode( str );
+	return str;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // JabberTextDecode - retrieve a text from the encoded string
 
 char* __stdcall JabberTextDecode( const char* str )
@@ -705,6 +680,9 @@ char* __stdcall JabberTextDecode( const char* str )
 
 	return s2;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberBase64Encode 
 
 static char b64table[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -743,6 +721,9 @@ char* __stdcall JabberBase64Encode( const char* buffer, int bufferLen )
 
 	return res;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberBase64Decode
 
 static unsigned char b64rtable[256];
 
@@ -912,7 +893,7 @@ void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 	_snprintf( priorityStr, sizeof( priorityStr ), "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
 
 	if ( to != NULL )
-		_snprintf( toStr, sizeof( toStr ), " to='%s'", to );
+		_snprintf( toStr, sizeof( toStr ), " to='%s'", UTF8(to));
 	else
 		toStr[0] = '\0';
 
@@ -1066,20 +1047,24 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 	va_end( vararg );
 }
 
-static char clientJID[3072];
-
-char* __stdcall JabberGetClientJID( char* jid )
+char* __stdcall JabberGetClientJID( const char* jid, char* dest, size_t destLen )
 {
-	char* resource, *p;
+	if ( jid == NULL ) 
+		return NULL;
 
-	if ( jid == NULL ) return NULL;
-	strncpy( clientJID, jid, sizeof( clientJID ));
-	clientJID[sizeof( clientJID )-1] = '\0';
-	if (( p=strchr( clientJID, '/' )) == NULL ) {
-		p = clientJID + strlen( clientJID );
-		if (( resource=JabberListGetBestResourceNamePtr( jid )) != NULL )
-			_snprintf( p, sizeof( clientJID )-strlen( clientJID )-1, "/%s", resource );
+	size_t len = strlen( jid );
+	if ( len >= destLen )
+		len = destLen-1;
+
+	memcpy( dest, jid, len );
+	dest[ len ] = '\0';
+
+	char* p = strchr( dest, '/' );
+	if ( p == NULL ) {
+		char* resource = JabberListGetBestResourceNamePtr( jid );
+		if ( resource != NULL )
+			_snprintf( dest+len, destLen-len-1, "/%s", resource );
 	}
 
-	return clientJID;
+	return dest;
 }

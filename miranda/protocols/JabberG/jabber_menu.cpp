@@ -67,7 +67,7 @@ int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam )
 	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
 		if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
 			// JID is already in UTF-8 format, no encoding required
-			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", dbv.pszVal );
+			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", UTF8(dbv.pszVal));
 			JFreeVariant( &dbv );
 		}
 	}
@@ -82,7 +82,7 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
 		if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
 			// JID is already in UTF-8 format, no encoding required
-			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribed'/>", dbv.pszVal );
+			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribed'/>", UTF8(dbv.pszVal));
 			JFreeVariant( &dbv );
 		}
 	}

@@ -259,7 +259,7 @@ BOOL CALLBACK JabberGcLogInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				switch ( gcLogInputInfo->type ) {
 				case MUC_SETTOPIC:
 					if (( str=JabberTextEncode( text )) != NULL ) {
-						JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><subject>%s</subject><body>/me has set the topic to: %s</body></message>", gcLogInfo->roomJid, str, str );
+						JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><subject>%s</subject><body>/me has set the topic to: %s</body></message>", UTF8(gcLogInfo->roomJid), str, str );
 						free( str );
 					}
 					break;
@@ -276,19 +276,19 @@ BOOL CALLBACK JabberGcLogInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					break;
 				case MUC_KICKREASON:
 					if (( str=JabberTextEncode( text )) != NULL ) {
-						JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='http://jabber.org/protocol/muc#admin'><item nick='%s' role='none'><reason>%s</reason></item></query></iq>", gcLogInfo->roomJid, gcLogInputInfo->nick, str );
+						JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='http://jabber.org/protocol/muc#admin'><item nick='%s' role='none'><reason>%s</reason></item></query></iq>", UTF8(gcLogInfo->roomJid), gcLogInputInfo->nick, str );
 						free( str );
 					}
 					break;
 				case MUC_BANREASON:
 					if (( str=JabberTextEncode( text )) != NULL ) {
-						JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='http://jabber.org/protocol/muc#admin'><item nick='%s' affiliation='outcast'><reason>%s</reason></item></query></iq>", gcLogInfo->roomJid, gcLogInputInfo->nick, str );
+						JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='http://jabber.org/protocol/muc#admin'><item nick='%s' affiliation='outcast'><reason>%s</reason></item></query></iq>", UTF8(gcLogInfo->roomJid), gcLogInputInfo->nick, str );
 						free( str );
 					}
 					break;
 				case MUC_DESTROYREASON:
 					if (( str=JabberTextEncode( text )) != NULL ) {
-						JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='http://jabber.org/protocol/muc#owner'><destroy><reason>%s</reason></destroy></query></iq>", gcLogInfo->roomJid, str );
+						JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='http://jabber.org/protocol/muc#owner'><destroy><reason>%s</reason></destroy></query></iq>", UTF8(gcLogInfo->roomJid), str );
 						free( str );
 					}
 					break;
@@ -566,7 +566,7 @@ static BOOL CALLBACK JabberGcLogDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			JABBER_LIST_ITEM *item;
 
 			if (( item=JabberListGetItemPtr( LIST_CHATROOM, gcLogInfo->roomJid ))!=NULL && item->hwndGcDlg==hwndDlg ) {
-				JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", gcLogInfo->roomJid );
+				JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", UTF8(gcLogInfo->roomJid));
 				JabberListRemove( LIST_CHATROOM, gcLogInfo->roomJid );
 			}
 		}
@@ -663,7 +663,7 @@ static BOOL CALLBACK JabberGcLogDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				SetDlgItemText( hwndDlg, IDC_EDIT, "" );
 				if ( jabberOnline ) {
 					if (( str=JabberTextEncode( text )) != NULL ) {
-						JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><body>%s</body></message>", gcLogInfo->roomJid, str );
+						JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><body>%s</body></message>", UTF8(gcLogInfo->roomJid), str );
 						free( str );
 					}
 				}

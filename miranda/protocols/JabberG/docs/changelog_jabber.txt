@@ -10,6 +10,7 @@ Version 0.2.0.2
 user input
 [+] wish #0000299: DisableMainMenuItem option wanted
 [-] reconnection ability removed, use KeepStatus plugin instead
+[!] bug #0000868 fixed: numerous problems with JIDs in UTF8.
 [!] bug #0000298 fixed: search by nickname instead of a full JID resulted
 to the auth process stuck.
 [!] bug #0000691 fixed: Jabber writes to MyHandle instead of a NickName

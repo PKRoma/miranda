@@ -40,7 +40,6 @@ void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata )
 		_snprintf( idStr, sizeof( idStr ), " id='%s'", iqId );
 
 	if ( !strcmp( iqType, "get" )) {
-
 		JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s'%s>"
 			"<user jid='%s' type='client' name='Miranda' xmlns='%s'>"
 			"<ns>http://jabber.org/protocol/disco#info</ns>"
@@ -52,10 +51,8 @@ void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata )
 			"<ns>jabber:x:data</ns>"
 			"<ns>jabber:x:event</ns>"
 			"<ns>vcard-temp</ns>"
-			"</user></iq>", iqFrom, idStr, jabberJID, xmlns );
-
-	}
-}
+			"</user></iq>", iqFrom, idStr, UTF8(jabberJID), xmlns );
+}	}
 
 void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 {
@@ -65,10 +62,12 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 	char idStr[64];
 
 	if ( iqNode == NULL ) return;
-	if (( iqFrom=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-	if (( iqType=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
-	if (( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" )) == NULL ) return;
+	if (( iqFrom = JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
+	if (( iqType = JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
+	if (( queryNode = JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
+	if (( xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" )) == NULL ) return;
+
+	JabberStringDecode( iqFrom );
 
 	p = strrchr( xmlns, '/' );
 	discoType = strrchr( xmlns, '#' );
@@ -81,7 +80,6 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 		_snprintf( idStr, sizeof( idStr ), " id='%s'", iqId );
 
 	if ( !strcmp( iqType, "get" )) {
-
 		if ( !strcmp( discoType, "#info" )) {
 			JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s'%s><query xmlns='%s'>"
 				"<identity category='user' type='client' name='Miranda'/>"
@@ -97,11 +95,7 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 				"<feature var='jabber:x:data'/>"
 				"<feature var='jabber:x:event'/>"
 				"<feature var='vcard-temp'/>"
-				"</query></iq>", iqFrom, idStr, xmlns );
+				"</query></iq>", UTF8(iqFrom), idStr, xmlns );
 		}
-		else {
-			JabberSend( jabberThreadInfo->s, "<iq type='result'%s><query xmlns='%s'/></iq>", idStr, xmlns );
-		}
-
-	}
-}
+		else JabberSend( jabberThreadInfo->s, "<iq type='result'%s><query xmlns='%s'/></iq>", idStr, xmlns );
+}	}

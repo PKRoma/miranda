@@ -298,6 +298,7 @@ typedef struct {
 
 typedef void ( *JABBER_FORM_SUBMIT_FUNC )( char* submitStr, void *userdata );
 typedef void ( __cdecl *JABBER_THREAD_FUNC )( void * );
+
 /*******************************************************************
  * Global variables
  *******************************************************************/
@@ -397,7 +398,6 @@ int           __stdcall JabberSend( JABBER_SOCKET s, const char* fmt, ... );
 HANDLE        __stdcall JabberHContactFromJID( const char* jid );
 void          __stdcall JabberLog( const char* fmt, ... );
 char*         __stdcall JabberNickFromJID( const char* jid );
-char*         __stdcall JabberLocalNickFromJID( const char* jid );
 void          __stdcall JabberUrlDecode( char* str );
 void          __stdcall JabberUrlDecodeW( WCHAR* str );
 char*         __stdcall JabberUrlEncode( const char* str );
@@ -415,6 +415,7 @@ void          __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible );
 char*         __stdcall JabberTextEncode( const char* str );
 char*         __stdcall JabberTextEncodeW( const wchar_t *str );
 char*         __stdcall JabberTextDecode( const char* str );
+char*         __stdcall JabberStringDecode( char* str );
 char*         __stdcall JabberBase64Encode( const char* buffer, int bufferLen );
 char*         __stdcall JabberBase64Decode( const char* buffer, int *resultLen );
 char*         __stdcall JabberGetVersionText();
@@ -424,7 +425,7 @@ void          __stdcall JabberSendPresenceTo( int status, char* to, char* extra 
 void          __stdcall JabberSendPresence( int );
 char*         __stdcall JabberRtfEscape( char* str );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
-char*         __stdcall JabberGetClientJID( char* jid );
+char*         __stdcall JabberGetClientJID( const char* jid, char*, size_t );
 
 //---- jabber_misc.c ------------------------------------------------
 
@@ -473,5 +474,25 @@ void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft );
 BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
 
 #include "jabber_list.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// UTF8 encode helper
+
+class UTFEncoder {
+	char* m_body;
+
+public:
+	__forceinline UTFEncoder( const char* pSrc ) :
+		m_body( JabberTextEncode( pSrc ))
+		{}
+
+	__forceinline ~UTFEncoder()
+		{  free( m_body );
+		}
+
+	__forceinline const char* str() const { return m_body; }
+};
+
+#define UTF8(A) UTFEncoder(A).str()
 
 #endif

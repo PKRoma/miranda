@@ -100,7 +100,7 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="jabber.h"
-				AssemblerOutput="3"
+				AssemblerOutput="4"
 				BrowseInformationFile="$(IntDir)/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"

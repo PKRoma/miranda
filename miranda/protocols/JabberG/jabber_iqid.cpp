@@ -55,10 +55,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 			}	}
 		}
 		else if ( JabberXmlGetChild( queryNode, "password" ) != NULL ) {
-			if (( str=JabberTextEncode( info->password )) != NULL ) {
-				_snprintf( text, sizeof( text ), "<password>%s</password>", str );
-				free( str );
-			}
+			_snprintf( text, sizeof( text ), "<password>%s</password>", UTF8( info->password ));
 		}
 		else {
 			JabberLog( "No known authentication mechanism accepted by the server." );
@@ -153,13 +150,11 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 					else sub = SUB_NONE;
 
 					if (( jid = JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
+						JabberStringDecode( jid );
 						if (( name = JabberXmlGetAttrValue( itemNode, "name" )) != NULL )
 							nick = JabberTextDecode( name );
-						else {
-							str = JabberNickFromJID( jid );
-							nick = JabberTextDecode( str );
-							free( str );
-						}
+						else
+							nick = JabberNickFromJID( jid );
 
 						if ( nick != NULL ) {
 							JABBER_LIST_ITEM* item = JabberListAdd( LIST_ROSTER, jid );
@@ -280,7 +275,7 @@ void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata )
 				agentNode = queryNode->child[i];
 				if ( !strcmp( agentNode->name, "agent" )) {
 					if (( jid=JabberXmlGetAttrValue( agentNode, "jid" )) != NULL ) {
-						item = JabberListAdd( LIST_AGENT, jid );
+						item = JabberListAdd( LIST_AGENT, JabberStringDecode( jid ));
 						if ( JabberXmlGetChild( agentNode, "register" ) != NULL )
 							item->cap |= AGENT_CAP_REGISTER;
 						if ( JabberXmlGetChild( agentNode, "search" ) != NULL )
@@ -375,8 +370,8 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 	}
 	else {
 		free( localJID );
-		hContact = JabberHContactFromJID( jid );
-		if ( hContact == NULL ) return;
+		if (( hContact = JabberHContactFromJID( JabberStringDecode( jid ))) == NULL )
+			return;
 		JabberLog( "Other user's vcard" );
 	}
 
@@ -946,7 +941,7 @@ void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 			itemNode = queryNode->child[i];
 			if ( !strcmp( itemNode->name, "item" )) {
 				if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-					strncpy( jsr.jid, jid, sizeof( jsr.jid ));
+					strncpy( jsr.jid, JabberStringDecode( jid ), sizeof( jsr.jid ));
 					jsr.jid[sizeof( jsr.jid )-1] = '\0';
 					JabberLog( "Result jid=%s", jid );
 					if (( n=JabberXmlGetChild( itemNode, "nick" ))!=NULL && n->text!=NULL )
@@ -1021,12 +1016,12 @@ void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 				for ( i=0; i<queryNode->numChild; i++ ) {
 					if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !strcmp( itemNode->name, "item" )) {
 						if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-							item = JabberListAdd( LIST_AGENT, jid );
+							item = JabberListAdd( LIST_AGENT, JabberStringDecode( jid ));
 							item->name = JabberTextDecode( JabberXmlGetAttrValue( itemNode, "name" ));
 							item->cap = AGENT_CAP_REGISTER | AGENT_CAP_GROUPCHAT;	// default to all cap until specific info is later received
 							iqId = JabberSerialNext();
 							JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
-							JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#info'/></iq>", iqId, jid );
+							JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#info'/></iq>", iqId, UTF8(jid));
 		}	}	}	}	}
 
 		if ( hwndJabberAgents != NULL ) {
@@ -1040,7 +1035,7 @@ void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 		// disco is not supported, try jabber:iq:agents
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:agents'/></iq>", iqId, from );
+		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:agents'/></iq>", iqId, UTF8(from));
 }	}
 
 void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
@@ -1056,7 +1051,7 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 	// ACTION: refresh agent list dialog
 	JabberLog( "<iq/> iqIdDiscoAgentInfo" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
+	if (( from=JabberStringDecode( JabberXmlGetAttrValue( iqNode, "from" ))) == NULL ) return;
 
 	if ( !strcmp( type, "result" )) {
 		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
@@ -1101,32 +1096,35 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
 
-	if ( !strcmp( type, "result" )) {
-		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-			if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-				str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-				if ( str!=NULL && !strcmp( str, "http://jabber.org/protocol/disco#info" )) {
-					item->cap = CLIENT_CAP_READY;
-					for ( i=0; i<queryNode->numChild; i++ ) {
-						if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
-							if ( !strcmp( itemNode->name, "feature" )) {
-								if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-									if ( !strcmp( var, "http://jabber.org/protocol/si" ))
-										item->cap |= CLIENT_CAP_SI;
-									else if ( !strcmp( var, "http://jabber.org/protocol/si/profile/file-transfer" ))
-										item->cap |= CLIENT_CAP_SIFILE;
-									else if ( !strcmp( var, "http://jabber.org/protocol/bytestreams" ))
-										item->cap |= CLIENT_CAP_BYTESTREAM;
-			}	}	}	}	}	}
+	if ( strcmp( type, "result" ) != 0 )
+		return;
+	if (( item=JabberListGetItemPtr( LIST_ROSTER, JabberStringDecode( from ))) == NULL ) 
+		return;
 
-			// Check for pending file transfer session request
-			if ( item->ft != NULL ) {
-				JABBER_FILE_TRANSFER *ft;
+	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
+		str = JabberXmlGetAttrValue( queryNode, "xmlns" );
+		if ( str!=NULL && !strcmp( str, "http://jabber.org/protocol/disco#info" )) {
+			item->cap = CLIENT_CAP_READY;
+			for ( i=0; i<queryNode->numChild; i++ ) {
+				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
+					if ( !strcmp( itemNode->name, "feature" )) {
+						if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
+							if ( !strcmp( var, "http://jabber.org/protocol/si" ))
+								item->cap |= CLIENT_CAP_SI;
+							else if ( !strcmp( var, "http://jabber.org/protocol/si/profile/file-transfer" ))
+								item->cap |= CLIENT_CAP_SIFILE;
+							else if ( !strcmp( var, "http://jabber.org/protocol/bytestreams" ))
+								item->cap |= CLIENT_CAP_BYTESTREAM;
+	}	}	}	}	}	}
 
-				ft = item->ft;
-				item->ft = NULL;
-				if (( item->cap&CLIENT_CAP_FILE ) && ( item->cap&CLIENT_CAP_BYTESTREAM ))
-					JabberFtInitiate( item->jid, ft );
-				else
-					JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
-}	}	}	}
+	// Check for pending file transfer session request
+	if ( item->ft != NULL ) {
+		JABBER_FILE_TRANSFER *ft;
+
+		ft = item->ft;
+		item->ft = NULL;
+		if (( item->cap&CLIENT_CAP_FILE ) && ( item->cap&CLIENT_CAP_BYTESTREAM ))
+			JabberFtInitiate( item->jid, ft );
+		else
+			JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
+}	}

@@ -43,11 +43,9 @@ int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam )
 
 static void JabberRegisterAgent( HWND hwndDlg, char* jid )
 {
-	int iqId;
-
-	iqId = JabberSerialNext();
+	int iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_GETREGISTER, JabberIqResultGetRegister );
-	JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:register'/></iq>", iqId, jid );
+	JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:register'/></iq>", iqId, UTF8( jid ));
 	hwndAgentRegInput = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), hwndDlg, JabberAgentRegInputDlgProc, 0 );
 }
 
@@ -91,13 +89,11 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		ListView_InsertColumn( lv, 1, &lvCol );
 		if ( jabberOnline ) {
 			SetDlgItemText( hwndDlg, IDC_AGENT_SERVER, jabberThreadInfo->server );
-			if (( p=JabberTextEncode( jabberThreadInfo->server )) != NULL ) {
-				JabberListRemoveList( LIST_AGENT );
-				iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
-				JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, p );
-				free( p );
-			}
+			JabberListRemoveList( LIST_AGENT );
+			iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
+			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, UTF8(jabberThreadInfo->server));
+
 			SendMessage( hwndDlg, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 		}
 		return TRUE;
@@ -267,15 +263,12 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			break;
 		case IDC_AGENT_BROWSE:
 			GetDlgItemText( hwndDlg, IDC_AGENT_SERVER, text, sizeof( text ));
-			if (( p=JabberTextEncode( text )) != NULL ) {
-				EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_BROWSE ), FALSE );
-				ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_AGENT_LIST ));
-				JabberListRemoveList( LIST_AGENT );
-				iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
-				JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, p );
-				free( p );
-			}
+			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_BROWSE ), FALSE );
+			ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_AGENT_LIST ));
+			JabberListRemoveList( LIST_AGENT );
+			iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
+			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, UTF8(text));
 			return TRUE;
 		case IDC_AGENT_LOGON:
 		case IDC_AGENT_LOGOFF:
@@ -291,11 +284,10 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				ListView_GetItem( lv, &lvItem );
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
 					if ( LOWORD( wParam )==IDC_AGENT_LOGON )
-						JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", item->jid );
+						JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", UTF8(item->jid));
 					else
-						JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", item->jid );
-				}
-			}
+						JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", UTF8(item->jid));
+			}	}
 			return TRUE;
 		case IDC_AGENT_UNREGISTER:
 			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_UNREGISTER ), FALSE );
@@ -316,10 +308,9 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 						JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='jabber:iq:register'><remove/></query></iq>", p );
 						JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item jid='%s' subscription='remove'></item></query></iq>", p );
 						free( p );
-					}
-				}
-			}
+			}	}	}
 			return TRUE;
+
 		case IDCLOSE:
 			DestroyWindow( hwndDlg );
 			return TRUE;
@@ -409,10 +400,7 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 								free( p );
 							}
 							id++;
-						}
-					}
-				}
-			}
+			}	}	}	}
 
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_SETREGISTER, JabberIqResultSetRegister );

@@ -50,7 +50,7 @@ void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
 							if (( roomNode=confNode->child[j] )!=NULL && !strcmp( roomNode->name, "item" )) {
 								if (( category=JabberXmlGetAttrValue( roomNode, "category" ))!=NULL && !strcmp( category, "conference" )) {
 									if (( jid=JabberXmlGetAttrValue( roomNode, "jid" )) != NULL ) {
-										item = JabberListAdd( LIST_ROOM, jid );
+										item = JabberListAdd( LIST_ROOM, JabberStringDecode( jid ));
 										if (( str=JabberXmlGetAttrValue( roomNode, "name" )) != NULL )
 											item->name = JabberTextDecode( str );
 										if (( str=JabberXmlGetAttrValue( roomNode, "type" )) != NULL )
@@ -87,9 +87,8 @@ void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
 
 void JabberSetMucConfig( char* submitStr, void *userdata )
 {
-	if ( jabberThreadInfo && userdata ) {
+	if ( jabberThreadInfo && userdata )
 		JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'><query xmlns='http://jabber.org/protocol/muc#owner'>%s</query></iq>", ( char* )userdata, submitStr );
-	}
 }
 
 void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata )
@@ -140,7 +139,7 @@ void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 			for ( i=0; i<queryNode->numChild; i++ ) {
 				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !strcmp( itemNode->name, "item" )) {
 					if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-						item = JabberListAdd( LIST_ROOM, jid );
+						item = JabberListAdd( LIST_ROOM, JabberStringDecode( jid ));
 						item->name = JabberTextDecode( JabberXmlGetAttrValue( itemNode, "name" ));
 					}
 				}
@@ -157,7 +156,7 @@ void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 		// disco is not supported, try browse
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_BROWSEROOMS, JabberIqResultBrowseRooms );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:browse'/></iq>", iqId, from );
+		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:browse'/></iq>", iqId, UTF8(from));
 	}
 }
 
@@ -188,7 +187,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			// lParam is ( JABBER_MUC_JIDLIST_INFO * )
 			JABBER_MUC_JIDLIST_INFO *jidListInfo;
 			XmlNode *iqNode, *queryNode, *itemNode;
-			char* from, *jid, *localJid, *localFrom;
+			char* from, *jid, *localFrom;
 			LVITEM lvi;
 			HWND hwndList;
 			int count, i;
@@ -249,18 +248,13 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 							for ( i=0; i<queryNode->numChild; i++ ) {
 								if (( itemNode=queryNode->child[i] ) != NULL ) {
 									if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-										localJid = JabberTextDecode( jid );
-										lvi.pszText = localJid;
+										JabberStringDecode( jid );
+										lvi.pszText = jid;
 										lvi.lParam = ( LPARAM )_strdup( jid );
 										ListView_InsertItem( hwndList, &lvi );
-										free( localJid );
 										lvi.iItem++;
-									}
-								}
-							}
-						}
-					}
-				}
+				}	}	}	}	}	}
+
 				lvi.mask = LVIF_PARAM;
 				lvi.lParam = ( LPARAM )( -1 );
 				ListView_InsertItem( hwndList, &lvi );
@@ -295,10 +289,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 								DestroyIcon( hIcon );
 								SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
 								return TRUE;
-							}
-						}
-					}
-				}
+				}	}	}	}
 				break;
 			case NM_CLICK:
 				{

@@ -89,16 +89,14 @@ void JabberDBAddAuthRequest( char* jid, char* nick )
 		if (( q=strchr( p, '/' )) != NULL )
 			*q = '\0';
 	}
-	_strlwr( s );
-
+	
 	if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
 		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
 		JSetString( hContact, "jid", s );
 	}
-	else {
-		DBDeleteContactSetting( hContact, jabberProtoName, "Hidden" );
-	}
+	else DBDeleteContactSetting( hContact, jabberProtoName, "Hidden" );
+
 	JSetString( hContact, "Nick", nick );
 
 	//blob is: uin( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), first( ASCIIZ ), last( ASCIIZ ), email( ASCIIZ ), reason( ASCIIZ )
@@ -139,11 +137,10 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 	s = _strdup( jid );
 	q = NULL;
 	// strip resource if present
-	if (( p=strchr( s, '@' )) != NULL ) {
+	if (( p=strchr( s, '@' )) != NULL )
 		if (( q=strchr( p, '/' )) != NULL )
 			*q = '\0';
-	}
-	_strlwr( s );
+	
 	if ( !stripResource && q!=NULL )	// so that resource is not converted to lowercase
 		*q = '/';
 	len = strlen( s );
