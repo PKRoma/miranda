@@ -661,7 +661,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	sft->fileId = -1;
 
 	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
-	if ( dwFlags & 0x30000000 )
+	if ( dwFlags & 0x70000000 )
 		p2p_invite( ccs->hContact, MSN_APPID_FILE, sft );
 	else {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
