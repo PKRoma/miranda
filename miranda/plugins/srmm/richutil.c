@@ -14,9 +14,6 @@
 	If no xptheme is present, the window isn't subclassed the SubClass function
 	just returns.  And if WS_EX_CLIENTEDGE isn't present, the subclass does nothing.
 	Otherwise it removes the border and draws it by itself.
-
-	The subclass takes over GWL_USERDATA for the rich edit control, so you can't use 
-	it for now.  TODO: Use a global list to hold the control info.
 */
 
 // UxTheme Stuff
@@ -31,6 +28,71 @@ static BOOL    (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int)
 
 static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static RichUtil_ClearUglyBorder(TRichUtil *ru);
+
+// List Begin
+static CRITICAL_SECTION g_reCS;
+
+typedef struct _RUList {
+	struct _RUList *_next;
+	struct _RUList *_prev;
+	TRichUtil *_ru;
+} RUList;
+
+static RUList *ru_list_add(RUList *list, TRichUtil *ru) {
+	RUList *l = (RUList*)malloc(sizeof(RUList));
+
+	EnterCriticalSection(&g_reCS);
+	l->_next = list;
+	l->_prev = NULL;
+	l->_ru = ru;
+	if (list)
+		list->_prev = l;
+	LeaveCriticalSection(&g_reCS);
+	return l;
+}
+
+static RUList *ru_list_remove_link(RUList *list, RUList *link) {
+	if (!link)
+		return list;
+	if (link->_next)
+		link->_next->_prev = link->_prev;
+	if (link->_prev)
+		link->_prev->_next = link->_next;
+	if (link==list)
+		list = link->_next;
+	return list;
+}
+
+static RUList *ru_list_remove(RUList *list, TRichUtil *ru) {
+	RUList *l;
+	
+	EnterCriticalSection(&g_reCS);
+	for (l=list; l!=NULL; l = list->_next) {
+		if (l->_ru==ru) {
+			list = ru_list_remove_link(list, l);
+			free(l);
+		}
+	}
+	LeaveCriticalSection(&g_reCS);
+	return list;
+}
+
+static TRichUtil *ru_list_find(RUList *list, HWND hwnd) {
+	RUList *l;
+	
+	EnterCriticalSection(&g_reCS);
+	for (l=list; l!=NULL; l = list->_next) {
+		if (IsWindow(l->_ru->hwnd)&&l->_ru->hwnd==hwnd) {
+			LeaveCriticalSection(&g_reCS);
+			return l->_ru;
+		}
+	}
+	LeaveCriticalSection(&g_reCS);
+	return NULL;
+}
+
+static RUList *g_reInstances = NULL;
+// List End
 
 void RichUtil_Load() {
 	mTheme = IsWinVerXPPlus()?LoadLibraryA("uxtheme.dll"):0;
@@ -52,21 +114,24 @@ void RichUtil_Load() {
 		FreeLibrary(mTheme);
 		mTheme=NULL;
 	}
+	InitializeCriticalSection(&g_reCS);
 }
 
 void RichUtil_Unload() {
 	if (mTheme) {
 		FreeLibrary(mTheme);
 	}
+	DeleteCriticalSection(&g_reCS);
 }
 
 int RichUtil_SubClass(HWND hwndEdit) {
-	if (mTheme&&IsWindow(hwndEdit)) {
+	if (IsWindow(hwndEdit)) {
 		TRichUtil *ru = (TRichUtil*)malloc(sizeof(TRichUtil));
 
+		g_reInstances = ru_list_add(g_reInstances, ru);
 		ZeroMemory(ru, sizeof(TRichUtil));
 		ru->hwnd = hwndEdit;
-		SetWindowLong(ru->hwnd, GWL_USERDATA, (LONG)ru); // Ugly hack
+		ru->hasUglyBorder = 0;
 		ru->origProc = (WNDPROC)SetWindowLong(ru->hwnd, GWL_WNDPROC, (LONG)&RichUtil_Proc);
 		RichUtil_ClearUglyBorder(ru);
 		return 1;
@@ -77,7 +142,7 @@ int RichUtil_SubClass(HWND hwndEdit) {
 static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	TRichUtil *ru;
 
-	ru = (TRichUtil *)GetWindowLong(hwnd, GWL_USERDATA);
+	ru = ru_list_find(g_reInstances, hwnd);
 	switch(msg) {
 		case WM_THEMECHANGED:
 		case WM_STYLECHANGED:
@@ -158,6 +223,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				if((WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC) == &RichUtil_Proc)
 					SetWindowLong(hwnd, GWL_WNDPROC, (LONG)ru->origProc);
 			}
+			g_reInstances = ru_list_remove(g_reInstances, ru);
 			if (ru) free(ru);
 			return ret;
 		}
@@ -166,11 +232,10 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 }
 
 static RichUtil_ClearUglyBorder(TRichUtil *ru) {
-	if (MyIsThemeActive()&&GetWindowLong(ru->hwnd, GWL_EXSTYLE)&WS_EX_CLIENTEDGE) {
+	if (mTheme&&MyIsThemeActive()&&GetWindowLong(ru->hwnd, GWL_EXSTYLE)&WS_EX_CLIENTEDGE) {
 		ru->hasUglyBorder = 1;
 		SetWindowLong(ru->hwnd, GWL_EXSTYLE, GetWindowLong(ru->hwnd, GWL_EXSTYLE)^WS_EX_CLIENTEDGE);
 	}
-	else 
 	// Redraw window since the style may have changed
 	SetWindowPos(ru->hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE|SWP_FRAMECHANGED);
 	RedrawWindow(ru->hwnd, NULL, NULL, RDW_INVALIDATE|RDW_NOCHILDREN|RDW_UPDATENOW|RDW_FRAME);
