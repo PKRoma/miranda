@@ -1154,7 +1154,7 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 		case 3000: 
 			p2p_sendBye( info, ft );
 			p2p_unregisterSession( ft );
-			break;
+			return;
 
 		case 99:
 			p2p_sendAck( ft, info, hdrdata );
@@ -1171,6 +1171,7 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 			char tContext[ 256 ];
 			if ( !MSN_GetStaticString( "PictContext", hContact, tContext, sizeof( tContext )))
 				MSN_SetString( hContact, "PictSavedContext", tContext );
+			return;
 		}
 
 		ft->p2p_ackID++;
