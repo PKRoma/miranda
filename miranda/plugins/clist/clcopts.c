@@ -307,11 +307,13 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg,IDC_BITMAP,DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)?BST_CHECKED:BST_UNCHECKED);
-			SendMessage(hwndDlg,WM_USER+10,0,0);
+			SendMessage(hwndDlg,WM_USER+10,0,0);			
 			SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_BKCOLOUR);
 			SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR));
 			SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELBKCOLOUR);
 			SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","SelBkColour",CLCDEFAULT_SELBKCOLOUR));
+			CheckDlgButton(hwndDlg,IDC_WINCOLOUR, DBGetContactSettingByte(NULL,"CLC","UseWinColours",0));
+			SendMessage(hwndDlg,WM_USER+11,0,0);
 			{	DBVARIANT dbv;
 				if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
 					SetDlgItemText(hwndDlg,IDC_FILENAME,dbv.pszVal);
@@ -341,6 +343,13 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SCROLL),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_PROPORTIONAL),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
 			break;
+		case WM_USER+11:
+		{
+			BOOL b = IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR),!b);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SELCOLOUR),!b);
+			break;
+		}
 		case WM_COMMAND:
 			if(LOWORD(wParam)==IDC_BROWSE) {
 				char str[MAX_PATH];
@@ -363,6 +372,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else if(LOWORD(wParam)==IDC_FILENAME && HIWORD(wParam)!=EN_CHANGE) break;
 			if(LOWORD(wParam)==IDC_BITMAP) SendMessage(hwndDlg,WM_USER+10,0,0);
+			if(LOWORD(wParam)==IDC_WINCOLOUR) SendMessage(hwndDlg,WM_USER+11,0,0);
 			if(LOWORD(wParam)==IDC_FILENAME && (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus())) return 0;
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
@@ -380,6 +390,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								col=SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_GETCOLOUR,0,0);
 								if(col==CLCDEFAULT_SELBKCOLOUR) DBDeleteContactSetting(NULL,"CLC","SelBkColour");
 								else DBWriteContactSettingDword(NULL,"CLC","SelBkColour",col);
+								DBWriteContactSettingByte(NULL,"CLC","UseWinColours", IsDlgButtonChecked(hwndDlg,IDC_WINCOLOUR));
 							}
 							{	char str[MAX_PATH];
 								GetDlgItemText(hwndDlg,IDC_FILENAME,str,sizeof(str));
