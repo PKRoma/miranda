@@ -3,3 +3,5 @@
 2. Remove built-in reconnection support
 
 3. Place the conferences list into the contact list
+
+4. HTTP Gateway mode support
