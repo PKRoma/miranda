@@ -2,8 +2,11 @@
 /*
 $Id$
 $Log$
-Revision 1.1  2001/04/22 12:39:06  cyreve
-Initial revision
+Revision 1.2  2001/04/24 01:10:27  cyreve
+get long msgs working, limit now 1023 chars
+
+Revision 1.1.1.1  2001/04/22 12:39:06  cyreve
+
 
 Revision 1.13  2000/08/13 19:44:41  denis
 Cyrillic recoding on received URL description added.
@@ -308,7 +311,7 @@ int icq_TCPProcessHello(icq_Packet *p, icq_TCPLink *plink)
 
 void icq_TCPOnMessageReceived(ICQLINK *link, DWORD uin, const char *message, DWORD id, icq_TCPLink *plink)
 {
-  char data[512] ;
+  char data[1024] ;
 #ifdef TCP_PACKET_TRACE
 #ifdef TCP_TRACE_ODS
 {char str[128];
@@ -329,7 +332,8 @@ void icq_TCPOnMessageReceived(ICQLINK *link, DWORD uin, const char *message, DWO
     icq_Packet *pack;
     icq_TCPLink *preallink=icq_FindTCPLink(link, uin, TCP_LINK_MESSAGE);
 
-    strncpy(data,message,512) ;
+    strncpy(data,message,sizeof(data)) ;
+	data[sizeof(data)-1]='\0';
     icq_RusConv("wk",data) ;
 
     (*link->icq_RecvMessage)(link, uin, ptime->tm_hour, ptime->tm_min,
