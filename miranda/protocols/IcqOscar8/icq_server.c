@@ -371,7 +371,7 @@ void icq_login(const char* szPassword)
 
 	
 	dwUin = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);				
-	stsi = (serverthread_start_info*)malloc(sizeof(serverthread_start_info));
+	stsi = (serverthread_start_info*)calloc(sizeof(serverthread_start_info),1);
 	stsi->nloc.cbSize = sizeof(NETLIBOPENCONNECTION);
 	stsi->nloc.flags = 0;
 
