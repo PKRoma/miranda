@@ -279,6 +279,7 @@
 #define IDC_HIDETOOLBAR                 1700
 #define IDC_CHECK8                      1701
 #define IDC_FLASHCLIST                  1701
+#define IDC_MSGLOGPLUGIN                1701
 #define IDC_NRFLASH                     1702
 #define IDC_NRFLASHSPIN                 1703
 #define IDC_FLASHINTERVAL               1704

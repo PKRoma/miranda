@@ -367,6 +367,8 @@ BEGIN
     LTEXT           "(needs Webdings font installed)",IDC_STATIC,20,52,121,9
     CONTROL         "Only format whole words",IDC_FORMATWHOLEWORDSONLY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,68,130,11
+    CONTROL         "Activate support for external log",IDC_MSGLOGPLUGIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,81,140,10
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256

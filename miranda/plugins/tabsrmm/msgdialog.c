@@ -25,6 +25,9 @@ $Id$
 
 #include "commonheaders.h"
 #pragma hdrstop
+// IEVIew MOD Begin
+#include "m_ieview.h"
+// IEVIew MOD End
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
 #include "../../include/m_userinfo.h"
@@ -195,7 +198,13 @@ void SetDialogToType(HWND hwndDlg)
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), FALSE);
     }
 
-    ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
+// IEVIew MOD Begin
+	if (myGlobals.g_WantIEView) {
+		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
+		ShowWindow (GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
+	} else
+		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
+// IEVIew MOD End
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), SW_HIDE);
     
     if (showToolbar) {
@@ -751,6 +760,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetContactUIN(hwndDlg, dat);
                 
                 dat->hwnd = hwndDlg;
+                // IEVIew MOD Begin
+                if (myGlobals.g_WantIEView) {
+                    IEVIEWWINDOW ieWindow;
+                    ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+                    ieWindow.iType = IEW_CREATE;
+                    ieWindow.dwFlags = 0;
+                    ieWindow.dwMode = IEWM_TABSRMM;
+                    ieWindow.parent = hwndDlg;
+                    ieWindow.x = 0;
+                    ieWindow.y = 0;
+                    ieWindow.cx = 200;
+                    ieWindow.cy = 300;
+                    CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+                    dat->hwndLog = ieWindow.hwnd;
+                }
+                // IEVIew MOD End
+
 
                 // input history stuff (initialise it..)
 
@@ -887,7 +913,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                 SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONADDTOOLTIP, (WPARAM) Translate("Send message"), 0);
-                SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details (SHIFT-click to view history)"), 0);
+                SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BUTTONADDTOOLTIP, (WPARAM) Translate("Protocol Menu"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONADDTOOLTIP, (WPARAM) Translate("Bold text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONADDTOOLTIP, (WPARAM) Translate("Italic text"), 0);
@@ -1611,6 +1637,30 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
+                // IEVIew MOD Begin
+                if (myGlobals.g_WantIEView) {
+                    RECT rcRichEdit;
+                    POINT pt;
+                    IEVIEWWINDOW ieWindow;
+//                    int  exw, exh;
+                    GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
+                    pt.x = rcRichEdit.left;
+                    pt.y = rcRichEdit.top;
+                    ScreenToClient(hwndDlg, &pt);
+    //                exw = urc->dlgNewSize.cx;// / 2 - 3;
+    //                exh = urc->dlgNewSize.cy - dat->splitterY;//(urc->rcItem.bottom-urc->rcItem.top) * urc->dlgNewSize.cy / urc->dlgOriginalSize.cy;
+                    ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+                    ieWindow.iType = IEW_SETPOS;
+                    ieWindow.parent = hwndDlg;
+                    ieWindow.hwnd = dat->hwndLog;
+                    ieWindow.x = pt.x;
+                    ieWindow.y = pt.y;
+                    ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
+                    ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
+                    CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+                    //urc->rcItem.left += exw;
+                }
+                // IEVIew MOD End
                 break;
             }
         case DM_SPLITTERMOVED:
@@ -2724,6 +2774,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
 // END MOD#33
                 case IDM_CLEAR:
+                    // IEVIew MOD Begin
+                    if (myGlobals.g_WantIEView || dat->hwndLog != 0) {
+                        IEVIEWEVENT event;
+                        event.cbSize = sizeof(IEVIEWEVENT);
+                        event.iType = IEE_CLEAR_LOG;
+                        event.hwnd = dat->hwndLog;
+                        event.hContact = dat->hContact;
+                        CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+                    }
+                    // IEVIew MOD End
+
                     SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
                     dat->hDbEventFirst = NULL;
                     break;
@@ -3643,6 +3704,16 @@ verify:
             else
                 MessageBoxA(0,"dat == 0 in WM_DESTROY", "Warning", MB_OK);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+            // IEVIew MOD Begin
+            if (myGlobals.g_WantIEView || dat->hwndLog != 0) {
+                IEVIEWWINDOW ieWindow;
+                ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+                ieWindow.iType = IEW_DESTROY;
+                ieWindow.hwnd = dat->hwndLog;
+                CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+            }
+            // IEVIew MOD End
+
             break;
     }
     return FALSE;

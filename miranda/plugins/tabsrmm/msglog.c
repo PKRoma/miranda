@@ -32,6 +32,9 @@ $Id$
 #include <locale.h>
 #include "msgs.h"
 #include "m_smileyadd.h"
+// IEVIew MOD Begin
+#include "m_ieview.h"
+// IEVIew MOD End
 
 #if defined(RTFBITMAPS)
 static PBYTE pLogIconBmpBits[21];
@@ -845,6 +848,24 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     LONG startAt = 0;
     FINDTEXTEXA fi;
     
+    // IEVIew MOD Begin
+    if (myGlobals.g_WantIEView && dat->hwndLog != 0) {
+        IEVIEWEVENT event;
+        event.cbSize = sizeof(IEVIEWEVENT);
+        event.hwnd = dat->hwndLog;
+        if (!fAppend) {
+            event.iType = IEE_CLEAR_LOG;
+            CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+        }
+        event.iType = IEE_LOG_EVENTS;
+        event.hContact = dat->hContact;
+        event.hDbEventFirst = hDbEventFirst;
+        event.count = count;       
+        CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+        return;
+    }
+    // IEVIew MOD End
+
     // separator strings used for grid lines, message separation and so on...
     
     dwExtraLf = myGlobals.m_ExtraMicroLF;

@@ -512,6 +512,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 pContainer->dwFlags &= ~CNT_SIZINGLOOP;
                 break;
             }
@@ -530,10 +531,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
 
         case WM_SIZE: { 
-                RECT rc, rcClient;
+                RECT rcClient;
                 int i = 0;
                 TCITEM item = {0};
-
+                POINT pt = {0};
+                
                 if(IsIconic(hwndDlg)) {
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
                     break;
@@ -564,12 +566,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 
                 if (lParam) {
                     if(pContainer->dwFlags & CNT_TABSBOTTOM)
-                        MoveWindow(hwndTab, 2, 2, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 2, TRUE);
+                        MoveWindow(hwndTab, 2, 2, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 2, FALSE);
                     else
-                        MoveWindow(hwndTab, 2, 5, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 5, TRUE);
+                        MoveWindow(hwndTab, 2, 5, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 5, FALSE);
                 }
                 AdjustTabClientRect(pContainer, &rcClient);
-                rc = rcClient;
+
+                //rc = rcClient;
                 /*
                  * we care about all client sessions, but we really resize only the active tab (hwndActive)
                  * we tell inactive tabs to resize theirselves later when they get activated (DM_CHECKSIZE
@@ -580,7 +583,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     TabCtrl_GetItem(hwndTab, i, &item);
                     if((HWND)item.lParam == pContainer->hwndActive) {
                         MoveWindow((HWND)item.lParam, rcClient.left +1, rcClient.top, (rcClient.right - rcClient.left) - 8, (rcClient.bottom - rcClient.top) -2, TRUE);
+                        RedrawWindow(GetDlgItem((HWND)item.lParam, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
                         if(!(pContainer->dwFlags & CNT_SIZINGLOOP)) {
+                            SendDlgItemMessage((HWND)item.lParam, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                             SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                         }
                     }
@@ -591,6 +596,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 }
+                RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
+                RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
                 break; 
             } 
         case DM_UPDATETITLE: {
