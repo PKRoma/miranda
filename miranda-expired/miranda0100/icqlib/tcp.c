@@ -224,9 +224,13 @@ unsigned long icq_SendFileRequest(icq_Link *icqlink, unsigned long uin,
   /* count the number and size of the files */
   pfile->total_files=0;
   while(*files) {
+#ifdef _WIN32
+    struct _stat file_status;
+    if(_stat(*files, &file_status)==0) {
+#else
     struct stat file_status;
-
     if(stat(*files, &file_status)==0) {
+#endif
       pfile->total_files++;
       pfile->total_bytes+=file_status.st_size;
     }
@@ -416,7 +420,7 @@ void icq_RefuseChatRequest(icq_Link *icqlink, DWORD uin,
 void icq_CancelChatRequest(icq_Link *icqlink, DWORD uin, unsigned long sequence)
 {
   icq_TCPLink *pmessage=icq_TCPCheckLink(icqlink, uin, TCP_LINK_MESSAGE);
-  icq_ChatSession *psession=icq_FindChatSession(icqlink, uin, sequence);
+  icq_ChatSession *psession=icq_FindChatSession(icqlink, uin);
   icq_Packet *p;
 
   if (psession)

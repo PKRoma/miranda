@@ -128,7 +128,11 @@ void icq_FileSessionSetHandle(icq_FileSession *p, const char *handle)
 
 void icq_FileSessionSetCurrentFile(icq_FileSession *p, const char *filename)
 {
-  struct stat file_status;
+#ifdef _WIN32
+  struct _stat file_status;
+#else
+  struct _stat file_status;
+#endif
   char file[1024];
 
   strcpy(file, p->working_dir);
@@ -143,17 +147,21 @@ void icq_FileSessionSetCurrentFile(icq_FileSession *p, const char *filename)
   p->current_file_progress=0;
 
   /* does the file already exist? */
+#ifdef _WIN32
+  if (_stat(file, &file_status)==0) {
+#else
   if (stat(file, &file_status)==0) {
+#endif
     p->current_file_progress=file_status.st_size;
     p->total_transferred_bytes+=file_status.st_size;
 #ifdef _WIN32
-    p->current_fd=open(file, O_WRONLY | O_APPEND | O_BINARY);
+    p->current_fd=open(file, _O_WRONLY | _O_APPEND | _O_BINARY);
 #else
     p->current_fd=open(file, O_WRONLY | O_APPEND);
 #endif
   } else {
 #ifdef _WIN32
-    p->current_fd=open(file, O_WRONLY | O_CREAT | O_BINARY,_S_IREAD|_S_IWRITE);
+    p->current_fd=open(file, _O_WRONLY | _O_CREAT | _O_BINARY,_S_IREAD|_S_IWRITE);
 #else
     p->current_fd=open(file, O_WRONLY | O_CREAT, S_IRWXU);
 #endif
@@ -181,18 +189,24 @@ void icq_FileSessionPrepareNextFile(icq_FileSession *p)
   }
 
   if(*files) {
+#ifdef _WIN32
+    struct _stat file_status;
+#else
     struct stat file_status;
+#endif
 
     if (p->current_fd>-1) {
        close(p->current_fd);
        p->current_fd=-1;
     }
 
-    if (stat(*files, &file_status)==0) {
-       char *basename=*files;
 #ifdef _WIN32
+    if (_stat(*files, &file_status)==0) {
+       char *basename=*files;
        char *pos=strrchr(basename, '\\');
 #else
+    if (stat(*files, &file_status)==0) {
+       char *basename=*files;
        char *pos=strrchr(basename, '/');
 #endif
        if(pos) basename=pos+1;
@@ -200,7 +214,7 @@ void icq_FileSessionPrepareNextFile(icq_FileSession *p)
        p->current_file_progress=0;
        p->current_file_size=file_status.st_size;
 #ifdef _WIN32
-       p->current_fd=open(*files, O_RDONLY | O_BINARY);
+       p->current_fd=open(*files, _O_RDONLY | _O_BINARY);
 #else
        p->current_fd=open(*files, O_RDONLY);
 #endif
