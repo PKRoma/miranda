@@ -99,6 +99,19 @@ icq_Packet *icq_TCPCreateMessagePacket(icq_TCPLink *plink, const char *message)
   return p;
 }
 
+icq_Packet *icq_TCPCreateAwayReqPacket(icq_TCPLink *plink, WORD statusMode)
+{
+  icq_Packet *p=icq_TCPCreateStdPacket(
+    plink,
+    ICQ_TCP_MESSAGE,
+    statusMode,		  //one of the icq_tcp_msg_read... constants
+    "",
+    0, /* status */
+    0);
+
+  return p;
+}
+
 icq_Packet *icq_TCPCreateURLPacket(icq_TCPLink *plink, const char *message,
    const char *url)
 {

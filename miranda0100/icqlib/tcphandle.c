@@ -76,6 +76,11 @@ void icq_TCPProcessPacket(icq_Packet *p, icq_TCPLink *plink)
     case ICQ_TCP_MSG_MSG:
     case ICQ_TCP_MSG_URL:
     case ICQ_TCP_MSG_CONTACTLIST:
+	case ICQ_TCP_MSG_READAWAY:
+	case ICQ_TCP_MSG_READNA:
+	case ICQ_TCP_MSG_READDND:
+	case ICQ_TCP_MSG_READOCCUPIED:
+	case ICQ_TCP_MSG_READFFC:
       p->id=icq_PacketRead32(p);
       break;
 
@@ -161,6 +166,19 @@ void icq_TCPProcessPacket(icq_Packet *p, icq_TCPLink *plink)
               (plink->icqlink, p->id, ICQ_NOTIFY_SUCCESS, 0, NULL);
           }
           break;
+
+		case ICQ_TCP_MSG_READAWAY:
+		case ICQ_TCP_MSG_READNA:
+		case ICQ_TCP_MSG_READDND:
+		case ICQ_TCP_MSG_READOCCUPIED:
+		case ICQ_TCP_MSG_READFFC:
+          icq_FmtLog(plink->icqlink, ICQ_LOG_MESSAGE, "received away msg, seq %d\n", p->id);
+		  if(plink->icqlink->icq_RecvAwayMsg)
+		  {
+		    invoke_callback(plink->icqlink, icq_RecvAwayMsg)
+			  (plink->icqlink, p->id, message);
+		  }
+		  break;
       }
       break;
 
