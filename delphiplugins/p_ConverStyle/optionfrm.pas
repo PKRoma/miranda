@@ -181,7 +181,6 @@ begin
   val:=ReadSettingInt(PluginLink,0,'Convers','SendTimeout',DEFAULT_TIMEOUT_MSGSEND);
   TimeoutEdit.Text:=IntToStr(val);
   TimeoutEdit.tag:=val;
-  val:=ReadSettingInt(PluginLink,0,'Convers','AutoRetry',2);
 
   //load display type
   val:=ReadSettingInt(PluginLink,0,'Convers','DisplayType',Integer(DefaultDisplayMode));
@@ -500,10 +499,8 @@ begin
 end;
 
 function DlgProcSendOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
-var
-  str:string;
-  pc:PChar;
-  val:integer;
+//var
+//  str:string;
 begin
   Result:=False;
 

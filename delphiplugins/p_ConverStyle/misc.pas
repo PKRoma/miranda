@@ -18,7 +18,7 @@ uses
 
 
 
-resourcestring
+const
   text_chard='Char: %d';
   text_TextTooLong='Text too long. Enable splitting messages, send direct or shorten message.';
 const

@@ -16,7 +16,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls,globals,m_clist,clisttools,statusmodes,skintools,
   m_skin,databasetools,m_icq,m_database, Menus,m_history,newpluginapi,
-  m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email,optionfrm;
+  m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email,optionfrm,
+  langpacktools;
 
 
 
@@ -195,14 +196,14 @@ begin
       TStringAlignGrid(HistoryMemo).DefaultRowHeight:=16;
       TStringAlignGrid(HistoryMemo).FixedCols:=0;
       if not fGridSettings.InclTime then
-        TStringAlignGrid(HistoryMemo).cells[0,0]:='Message'
+        TStringAlignGrid(HistoryMemo).cells[0,0]:=Translate('Message')
       else
         begin
-        TStringAlignGrid(HistoryMemo).cells[1,0]:='Message';
+        TStringAlignGrid(HistoryMemo).cells[1,0]:=Translate('Message');
         if fGridSettings.InclDate then
-          TStringAlignGrid(HistoryMemo).cells[0,0]:='Date/Time'
+          TStringAlignGrid(HistoryMemo).cells[0,0]:=Translate('Date/Time')
         else
-          TStringAlignGrid(HistoryMemo).cells[0,0]:='Time';
+          TStringAlignGrid(HistoryMemo).cells[0,0]:=Translate('Time');
         end;
       TStringAlignGrid(HistoryMemo).AllowCutnPaste:=True;
       TStringAlignGrid(HistoryMemo).Font.Assign(SendMemo.Font);
@@ -229,9 +230,9 @@ var
 begin
   //add menuitems to system menu
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, $F201, '-');
-  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F210, '&Options...');
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F210, Translatep('&Options...'));
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, $F201, '-');
-  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F200, 'Plugin &Info...');
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F200, Translatep('Plugin &Info...'));
 
   //init message queue
   SendMessageQueue:=TList.Create;
@@ -265,9 +266,9 @@ procedure TMsgWindow.FormCloseQuery(Sender: TObject;
 //ask if really close when there are still messages in the msgqueue.
 begin
   if SendMessageQueue.Count=1 then
-    CanClose:=MessageDlg('There is still a messages in the message queue. This message wont be send if you close the message window.'#13#10'Close message window nevertheless?',mtWarning,[mbyes,mbno],0)=idyes;
+    CanClose:=MessageDlg(StringReplace(Translate('There is still a messages in the message queue. This message wont be send if you close the message window.\nClose message window nevertheless?'),'\n',#13#10,[rfReplaceAll]),mtWarning,[mbyes,mbno],0)=idyes;
   if SendMessageQueue.Count>1 then
-    CanClose:=MessageDlg(format('There are still %d messages in the message queue. These messages wont be send if you close the message window.'#13#10'Close message window nevertheless?',[SendMessageQueue.Count]),mtWarning,[mbyes,mbno],0)=idyes;
+    CanClose:=MessageDlg(Format(StringReplace(Translate('There are still %d messages in the message queue. These messages wont be send if you close the message window.\nClose message window nevertheless?'),'\n',#13#10,[rfReplaceAll]),[SendMessageQueue.Count]),mtWarning,[mbyes,mbno],0)=idyes;
 end;
 
 procedure TMsgWindow.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -514,7 +515,7 @@ begin
 
   if not FSplitLargeMessages and (Length(text)>iMaxMessageLength) then
     begin
-    dialogs.ShowMessage(text_texttoolong);
+    dialogs.ShowMessage(translate(text_texttoolong));
     Exit;
     end;
 
@@ -743,6 +744,20 @@ begin
   else
     SendDefaultWayItem.default:=true;
   end;
+
+  //language
+  CancelBtn.Caption:=translate('Cancel');
+  SendBtn.Caption:=translate('&Send');
+  UserBtn.Caption:=translate('&User');
+  HistoryMenuItem.Caption:=translate('View &History');
+  UserDetailsMenuItem.Caption:=translate('User &Details');
+  AddUserMenuItem.Caption:=translate('&Add permanently to list');
+//  SendFiles1.Caption:=translate('Send files');
+  UserSendEMailMenuItem.Caption:=translate('Send e-mail');
+  SendDefaultWayItem.Caption:=translate('Send using default way');
+  SendThroughServerItem.Caption:=translate('Send through server');
+  SendDirectItem.Caption:=translate('Send direct');
+  SendBestWayItem.Caption:=translate('Send using best way');
 end;
 
 procedure TMsgWindow.ReloadOptions(optiontype:TOptionType=otAll);
@@ -869,26 +884,27 @@ procedure TMsgWindow.LoadPos;
 //load save position from message window
 var
   val:integer;
-  uin_identifier:string;
+var
+  hC:THandle;
 begin
-  uin_identifier:='';
+  hC:=0;
   if fSavePosition then
-    uin_identifier:=IntToStr(UIN);
+    hC:=hContact;
 
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'l'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','posl',maxint);
   if val<>MaxInt then
     Self.Left:=val;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'t'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','post',maxint);
   if val<>MaxInt then
     Self.Top:=val;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'r'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','posr',maxint);
   if val<>MaxInt then
     Self.Width:=val-Self.Left;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'b'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','posb',maxint);
   if val<>MaxInt then
     if val-Self.Top>100 then
       Self.Height:=val-Self.Top;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'hm'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','poshm',maxint);
   if val<>MaxInt then
     begin
     if (val>Self.Height) or (val<10) then
@@ -900,17 +916,17 @@ end;
 procedure TMsgWindow.SavePos;
 //save message window position
 var
-  uin_identifier:string;
+  hC:THandle;
 begin
-  uin_identifier:='';
+  hC:=0;
   if fSavePosition then
-    uin_identifier:=IntToStr(UIN);
+    hC:=hContact;
 
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'l'),Self.left);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'t'),Self.Top);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'r'),Self.Left+Self.Width);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'b'),Self.Top+Self.Height);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'hm'),HistoryMemo.Height);
+  WriteSettingInt(PluginLink,hC,'Convers','posl',Self.left);
+  WriteSettingInt(PluginLink,hC,'Convers','post',Self.Top);
+  WriteSettingInt(PluginLink,hC,'Convers','posr',Self.Left+Self.Width);
+  WriteSettingInt(PluginLink,hC,'Convers','posb',Self.Top+Self.Height);
+  WriteSettingInt(PluginLink,hC,'Convers','poshm',HistoryMemo.Height);
 end;
 
 
@@ -1031,7 +1047,7 @@ begin
   if fDoubleEnter or fSingleEnter then
     Text:=trimright(Text);
   textlength:=Length(text);
-  CharCountLabel.Caption:=Format(text_chard,[textlength]);
+  CharCountLabel.Caption:=Format(translate(text_chard),[textlength]);
   ShowSplit(textlength>MaxMessageLength);
   SendBtn.Enabled:=SendMemo.Enabled and (textlength<>0);
 end;
@@ -1114,7 +1130,7 @@ begin
       cle.lParam:=blinkid;
       cle.hIcon:=LoadSkinnedIcon(PluginLink,SKINICON_EVENT_MESSAGE);
       cle.pszService:=PluginService_ReadBlinkMessage;
-      cle.pszTooltip:=pchar('Message from '+GetUserNick(Self.hContact));
+      cle.pszTooltip:=pchar(format(translate('Message from %s'),[GetUserNick(Self.hContact)]));
       PluginLink.CallService(MS_CLIST_ADDEVENT,blinkid,dword(@cle));
       end;
   end;
