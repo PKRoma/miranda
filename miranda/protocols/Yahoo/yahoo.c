@@ -1043,7 +1043,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 			
 			for(s = stealth; s && *s; s++) {
 				
-				if (strcmp(*s, dbv.pszVal) == 0) {
+				if (lstrcmpi(*s, dbv.pszVal) == 0) {
 					LOG(("GOT id = %s", dbv.pszVal));
 					found = 1;
 					break;
