@@ -144,13 +144,16 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_EVENTAPI, DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1));
             CheckDlgButton(hwndDlg, IDC_DELETETEMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0));
             CheckDlgButton(hwndDlg, IDC_FLASHCLIST, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0));
-            CheckDlgButton(hwndDlg, IDC_SHOWFORMATTING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0));
             
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Globally on"));
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("On for protocols with avatar support"));
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Per contact setting"));
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("On, if present"));
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Globally OFF"));
+
+            SendDlgItemMessageA(hwndDlg, IDC_TOOLBARHIDEMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Hide formatting buttons first"));
+            SendDlgItemMessageA(hwndDlg, IDC_TOOLBARHIDEMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Hide standard buttons first"));
+            SendDlgItemMessage(hwndDlg, IDC_TOOLBARHIDEMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", 0), 0);
             
 #if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
             CheckDlgButton(hwndDlg, IDC_USEKBDHOOK, DBGetContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", 0));
@@ -183,6 +186,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_ALWAYSFULLWIDTHTOOLBAR, DBGetContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", 0));
             CheckDlgButton(hwndDlg, IDC_LIMITAVATARS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "limitavatars", 0));
             CheckDlgButton(hwndDlg, IDC_SENDFORMAT, DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendformat", 0));
+            CheckDlgButton(hwndDlg, IDC_ALLOWSENDBUTTONHIDE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0));
             
             EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCLOSELAST), GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE) > 0);
             return TRUE;
@@ -237,10 +241,11 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "eventapi", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EVENTAPI));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELETETEMP));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flashcl", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLASHCLIST));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWFORMATTING));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ALWAYSFULLWIDTHTOOLBAR));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limitavatars", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "sendformat", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SENDFORMAT));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hidesend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ALLOWSENDBUTTONHIDE));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", (BYTE)SendDlgItemMessage(hwndDlg, IDC_TOOLBARHIDEMODE, CB_GETCURSEL, 0, 0));
                             
 #if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USEKBDHOOK));
@@ -328,6 +333,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_INDENTWITHTABS, dwFlags & MWF_LOG_INDENTWITHTABS);
             CheckDlgButton(hwndDlg, IDC_FORMATTING, dwFlags & MWF_LOG_TEXTFORMAT);
             CheckDlgButton(hwndDlg, IDC_SYMBOLS, dwFlags & MWF_LOG_SYMBOLS);
+            CheckDlgButton(hwndDlg, IDC_FORMATWHOLEWORDSONLY, DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatwords", 0));
             
             CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1));
             CheckDlgButton(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1));
@@ -435,6 +441,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_INOUTICONS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EMPTYLINEFIX));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "formatwords", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FORMATWHOLEWORDSONLY));
+                            
                             ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
                             return TRUE;
@@ -629,7 +637,8 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             CheckDlgButton(hwndDlg, IDC_ESC_MINIMIZE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0));
             CheckDlgButton(hwndDlg, IDC_SPLITTERSTATICEDGES, DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1));
             CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
-
+            CheckDlgButton(hwndDlg, IDC_FLATMSGLOG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0));
+            
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 1));
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, DBGetContactSettingWord(NULL, SRMSGMOD_T, "y-pad", 3));
             SetDlgItemInt(hwndDlg, IDC_TABPADDING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3), FALSE);;
@@ -707,6 +716,8 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HOTKEYSAREGLOBAL));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SPLITTERSTATICEDGES));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSWITCHTABS));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flatlog", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATMSGLOG));
+                            
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                             ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
@@ -1327,7 +1338,6 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                 case IDC_USEINDIVIDUALBKG:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
                     EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_GRIDLINES), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
                     break;
 				case IDC_SAMPLE:
 					return 0;
@@ -1648,5 +1658,8 @@ void ReloadGlobals()
          myGlobals.m_LimitStaticAvatarHeight = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 0);
      else
          myGlobals.m_LimitStaticAvatarHeight = 0;
-     myGlobals.m_SendFormat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendformat", 0);
+     myGlobals.m_SendFormat = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendformat", 0);
+     myGlobals.m_FormatWholeWordsOnly = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatwords", 0);
+     myGlobals.m_AllowSendButtonHidden = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0);
+     myGlobals.m_ToolbarHideMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", 0);
 }

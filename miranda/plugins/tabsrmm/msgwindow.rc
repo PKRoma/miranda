@@ -74,7 +74,7 @@ BEGIN
                     0x18000000L
     CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,17,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,34,32,8,14,
+    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,33,32,8,14,
                     0x18000000L
     CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,44,32,16,14,
                     0x18000000L
@@ -102,7 +102,7 @@ BEGIN
                     WS_GROUP
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
-                    WS_EX_CLIENTEDGE
+                    WS_EX_STATICEDGE
 END
 
 #endif    // Neutral resources

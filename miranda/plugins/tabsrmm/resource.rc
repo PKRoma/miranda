@@ -212,7 +212,7 @@ IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Visual options",IDC_STATIC,0,0,303,64
+    GROUPBOX        "Visual options",IDC_STATIC,0,0,303,62
     CONTROL         "Place dividers in inactive sessions",IDC_USEDIVIDERS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,9,289,11
     CONTROL         "Use popup configuration for placing dividers",
@@ -220,55 +220,62 @@ BEGIN
                     WS_TABSTOP,19,20,271,11
     CONTROL         "Flash contact list and tray icons for new events in unfocused windows",
                     IDC_FLASHCLIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    34,263,9
-    LTEXT           "Notifications:",IDC_STATIC,9,50,92,9
-    COMBOBOX        IDC_NOTIFYTYPE,111,47,66,46,CBS_DROPDOWNLIST | CBS_SORT | 
+                    33,263,9
+    LTEXT           "Notifications:",IDC_STATIC,9,47,92,9
+    COMBOBOX        IDC_NOTIFYTYPE,111,44,66,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Avatar options",IDC_STATIC,0,65,303,46
+    GROUPBOX        "Avatar options",IDC_STATIC,0,62,303,46
     CONTROL         "Do not resize avatars less than",IDC_LIMITAVATARS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,74,115,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,146,73,38,12,ES_AUTOHSCROLL | 
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,71,115,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,146,69,38,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,185,74,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,185,70,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,226,75,69,11
+    LTEXT           "pixels in height",IDC_STATIC,226,71,69,11
     CONTROL         "Always keep the button bar at full width",
                     IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,86,276,10
-    LTEXT           "Show avatars",IDC_STATIC,10,98,60,10
-    COMBOBOX        IDC_AVATARMODE,65,95,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_TABSTOP,8,83,276,10
+    LTEXT           "Show avatars",IDC_STATIC,10,96,60,10
+    COMBOBOX        IDC_AVATARMODE,65,93,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Behaviour",IDC_STATIC,0,114,303,96
-    LTEXT           "Automatically close tabs after",IDC_STATIC,10,124,100,
+    GROUPBOX        "Behaviour",IDC_STATIC,0,110,303,100
+    LTEXT           "Automatically close tabs after",IDC_STATIC,10,119,100,
                     11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,111,122,44,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_AUTOCLOSETABTIME,111,117,44,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,151,123,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,169,124,
+                    UDS_ARROWKEYS,151,118,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,169,119,
                     122,11
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    10,135,280,10
+                    9,130,280,10
     CONTROL         "Delete temporary contacts on close",IDC_DELETETEMP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,170,134,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,172,134,10
     CONTROL         "Send formatting info",IDC_SENDFORMAT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,183,135,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,184,135,9
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,195,211,8
+                    IDC_STATIC,8,196,211,8
     CONTROL         "Send on SHIFT - Enter",IDC_SENDONSHIFTENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,161,152,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,162,152,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,172,153,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,173,153,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,183,153,10
-    EDITTEXT        IDC_SECONDS,223,193,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,195,44,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,184,153,10
+    EDITTEXT        IDC_SECONDS,223,194,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,196,44,8
     CONTROL         "Enable event API (support for third party plugins)",
                     IDC_EVENTAPI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,212,
                     288,10
+    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,144,133,
+                    8
+    COMBOBOX        IDC_TOOLBARHIDEMODE,147,142,109,46,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Also, allow a hidden send button",
+                    IDC_ALLOWSENDBUTTONHIDE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,156,132,9
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
@@ -358,6 +365,8 @@ BEGIN
     CONTROL         "Use symbols instead of icons",IDC_SYMBOLS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,44,134,8
     LTEXT           "(needs Webdings font installed)",IDC_STATIC,20,52,121,9
+    CONTROL         "Only format whole words",IDC_FORMATWHOLEWORDSONLY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,68,130,11
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
@@ -417,9 +426,9 @@ BEGIN
     CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,138,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,148,152,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,149,145,11
     LTEXT           "Tab control border",IDC_STATIC,154,138,74,12
-    EDITTEXT        IDC_TABBORDER,233,130,28,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TABBORDER,233,135,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,127,
                     11,13
@@ -449,6 +458,8 @@ BEGIN
     CONTROL         "Automatically switch tabs in minimized containers",
                     IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     6,110,289,10
+    CONTROL         "Flat message log (no static edge)",IDC_FLATMSGLOG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,150,133,10
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147
@@ -973,8 +984,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,0
- PRODUCTVERSION 0,9,9,0
+ FILEVERSION 0,9,9,5
+ PRODUCTVERSION 0,9,9,5
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -990,13 +1001,13 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 0"
+            VALUE "FileVersion", "0, 9, 9, 5"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 0"
+            VALUE "ProductVersion", "0, 9, 9, 5"
             VALUE "SpecialBuild", "pre-1"
         END
     END

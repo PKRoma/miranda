@@ -32,7 +32,7 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
-Version 0.9.9.5 - 2005/02/02
+Version 0.9.9.5 - 2005/02/17
 
         First, this requires a new tabsrmm_icons.dll format. Icons have been added , so you'll
         need to upgrade your icon packs. You can use the provided .DLL files as a template
@@ -119,7 +119,7 @@ Version 0.9.9.5 - 2005/02/02
         * unified all eventhooks - finally. 
         
         + added simple text formatting routines for formatting *bold* /italic/ and _underline_ 
-          in the message log. The code was taken from the textformat plugin and adopted to
+          in the message log. Some code was taken from the textformat plugin and adopted to 
           tabSRMM (unicode aware, some small changes)-
           
         * added message log options: "use symbols instead of icons". This will use symbols
@@ -137,6 +137,11 @@ Version 0.9.9.5 - 2005/02/02
           useful if you have enabled the formatting buttons, because they will increase the
           space needed on the toolbar significantly.
 
+          [ ] Do not resize avatars less than [___] pixels in height.
+          When opening a window/tab, the avatar will be kept in its original size when it is
+          less than x pixels heigh (where x is configurable). The splitter position will be
+          set so that the avatar can be drawn unresized.
+
         ! fixed dividers screwing up linespacing sometimes.
 
         * UIN is now cached for non-metacontacts (saves service calls at every status change and 
@@ -149,6 +154,16 @@ Version 0.9.9.5 - 2005/02/02
           can now quickly show/hide the toolbar from a menu entry (view->tool bar) or from the
           container options dialog. Toolbar is also no longer a global, but a "per container"
           setting, so you can have different configurations in different containers.
+          Toolbar resizing and button hiding is now dyanmic. The layout code will hide less
+          important buttons when there is not enough space.
+          
+        + new option -> Tabs and layout: Flat message log. When checked, the message log will
+          appear w/o a border or static window edge.
+          
+        + ability to configure which buttons should be hidden first when the available space
+          on the button bar is not sufficient to display all buttons. You can choose between the
+          formatting controls and the standard buttons. You can also choose if you want the send
+          button to be hidden automatically.
 
 Version 0.9.9.4 - 2005/01/24
 

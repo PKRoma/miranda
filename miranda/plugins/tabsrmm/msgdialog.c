@@ -44,6 +44,9 @@ $Id$
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 #endif
 
+#define TOOLBAR_PROTO_HIDDEN 1
+#define TOOLBAR_SEND_HIDDEN 2
+
 extern MYGLOBALS myGlobals;
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -92,7 +95,8 @@ static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
 static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_MULTIPLE, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
-static const UINT controlsToHide[] = { IDC_PIC, IDC_MULTIPLE, IDC_PROTOCOL, -1 };
+static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_MULTIPLE, IDC_FONTUNDERLINE, IDC_PROTOCOL, -1 };
+static const UINT controlsToHide1[] = { IDOK, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
 
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
@@ -529,7 +533,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_NAME:
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if(dat->controlsHidden)
+            if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
                 OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
              return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_SMILEYBTN:
@@ -542,7 +546,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if(!dat->doSmileys)
                 OffsetRect(&urc->rcItem, -22, 0);
-            if(dat->controlsHidden)
+            if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
                 OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_PROTOCOL:
@@ -568,11 +572,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, 12, 0);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if(dat->controlsHidden && urc->wId == IDC_PROTOMENU)
+            if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN && urc->wId == IDC_PROTOMENU)
                 OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
             if (urc->wId == IDC_PROTOCOL || urc->wId == IDC_PROTOMENU)
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-            if (showToolbar) {
+            if (showToolbar && !(dat->controlsHidden & TOOLBAR_SEND_HIDDEN)) {
                 urc->rcItem.left -= 40;
                 urc->rcItem.right -= 40;
             }
@@ -755,6 +759,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                 }
+                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0))
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+                
                 SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                 dat->bTabFlash = FALSE;
                 dat->mayFlashTab = FALSE;
@@ -1202,10 +1209,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
             if(lParam == 1)
                 SetDialogToType(hwndDlg);
-            dat->iButtonBarNeeds = dat->showUIElements ? 66 : 0;
+            dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
             dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
             dat->iButtonBarNeeds += (dat->showUIElements) ? 34 : 0;
-            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? 62 : 0);
+            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 128 : 88) : 0);
             if(lParam == 1) {
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
@@ -1360,7 +1367,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         }
-                        SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, (WPARAM) iHasName ? dat->uin : "", 0);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)dat->uin : (WPARAM)"", 0);
                         
                     }
                 } else
@@ -1580,18 +1587,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 delta = dat->iButtonBarReallyNeeds - buttonBarSpace;
 
                 if(dat->showUIElements != 0) {
+                    const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
                     for(i = 0;;i++) {
+                        if(hideThisControls[i] == IDOK && myGlobals.m_AllowSendButtonHidden == 0)
+                            continue;               // ignore sendbutton if we don't want to hide it
                         if(saved < delta) {
-                            ShowWindow(GetDlgItem(hwndDlg, controlsToHide[i]), SW_HIDE);
-                            if(controlsToHide[i] == IDC_PROTOCOL)
-                                dat->controlsHidden = TRUE;
-                            saved += 26;
+                            ShowWindow(GetDlgItem(hwndDlg, hideThisControls[i]), SW_HIDE);
+                            if(hideThisControls[i] == IDC_PROTOCOL)
+                                dat->controlsHidden |= TOOLBAR_PROTO_HIDDEN;
+                            if(hideThisControls[i] == IDOK)
+                                dat->controlsHidden |= TOOLBAR_SEND_HIDDEN;
+                            saved += (hideThisControls[i] == IDOK ? 40 : 26);
                         }
                         else {
-                            if(!IsWindowVisible(GetDlgItem(hwndDlg, controlsToHide[i])))
-                                ShowWindow(GetDlgItem(hwndDlg, controlsToHide[i]), SW_SHOW);
+                            if(!IsWindowVisible(GetDlgItem(hwndDlg, hideThisControls[i])))
+                                ShowWindow(GetDlgItem(hwndDlg, hideThisControls[i]), SW_SHOW);
                         }
-                        if(controlsToHide[i] == -1)
+                        if(hideThisControls[i] == -1)
                             break;
                     }
                 }

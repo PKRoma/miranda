@@ -218,6 +218,9 @@ typedef struct _globals {
     int m_AlwaysFullToolbarWidth;
     int m_LimitStaticAvatarHeight;
     int m_SendFormat;
+    int m_FormatWholeWordsOnly;
+    int m_AllowSendButtonHidden;
+    int m_ToolbarHideMode;
 } MYGLOBALS;
     
 struct InputHistory {

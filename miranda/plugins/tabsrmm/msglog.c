@@ -64,7 +64,7 @@ extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 #if defined(_UNICODE)
-    extern WCHAR *FormatRaw(const WCHAR *msg);
+    extern WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly);
 #else
     extern char *FormatRaw(const char *msg);
 #endif
@@ -234,22 +234,24 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
                 TCHAR code = line[2];
                 if(code == '0' || code == '1') {
                     int begin = (code == '1');
-                    switch(line[1]) {
-                        case 'b':
-                            CopyMemory(d, begin ? "\\b " : "\\b0 ", begin ? 3 : 4);
-                            d += (begin ? 3 : 4);
-                            line += 2;
-                            continue;
-                        case 'i':
-                            CopyMemory(d, begin ? "\\i " : "\\i0 ", begin ? 3 : 4);
-                            d += (begin ? 3 : 4);
-                            line += 2;
-                            continue;
-                        case 'u':
-                            CopyMemory(d, begin ? "\\ul " : "\\ul0 ", begin ? 4 : 5);
-                            d += (begin ? 4 : 5);
-                            line += 2;
-                            continue;
+                    if(!begin || (begin && line[3] == ' ')) {
+                        switch(line[1]) {
+                            case 'b':
+                                CopyMemory(d, begin ? "\\b " : "\\b0 ", begin ? 3 : 4);
+                                d += (begin ? 3 : 4);
+                                line += (begin ? 3 : 2);
+                                continue;
+                            case 'i':
+                                CopyMemory(d, begin ? "\\i " : "\\i0 ", begin ? 3 : 4);
+                                d += (begin ? 3 : 4);
+                                line += (begin ? 3 : 2);
+                                continue;
+                            case 'u':
+                                CopyMemory(d, begin ? "\\ul " : "\\ul0 ", begin ? 4 : 5);
+                                d += (begin ? 4 : 5);
+                                line += (begin ? 3 : 2);
+                                continue;
+                        }
                     }
                 }
             }
@@ -736,7 +738,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                         if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                             TrimMessage(msg);
                         if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
-                            TCHAR *formatted = FormatRaw(msg);
+                            TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
                             AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
                         }
                         else
@@ -749,7 +751,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                         TrimMessage(msg);
                     if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
-                        TCHAR *formatted = FormatRaw(msg);
+                        TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
                     }
                     else

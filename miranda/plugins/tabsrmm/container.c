@@ -564,7 +564,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 
                 if (lParam) {
                     if(pContainer->dwFlags & CNT_TABSBOTTOM)
-                        MoveWindow(hwndTab, 2, 2, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 1, TRUE);
+                        MoveWindow(hwndTab, 2, 2, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 2, TRUE);
                     else
                         MoveWindow(hwndTab, 2, 5, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 5, TRUE);
                 }

@@ -231,6 +231,7 @@
 #define IDC_AVATARMODE2                 1675
 #define IDC_NOTIFYTYPE                  1675
 #define IDC_RICHEDIT21                  1676
+#define IDC_TOOLBARHIDEMODE             1676
 #define IDC_EMPTYLINEFIX                1677
 #define IDC_SPLITTERSTATICEDGES         1677
 #define IDC_STREAMTHREADING             1677
@@ -253,6 +254,7 @@
 #define IDC_USESNAPPING                 1690
 #define IDC_EXTRAMICROLF                1690
 #define IDC_SENDFORMAT                  1690
+#define IDC_FLATMSGLOG                  1690
 #define IDC_LONGDATES                   1691
 #define IDC_CHECK3                      1692
 #define IDC_CNTNOSTATUSBAR              1692
@@ -287,7 +289,10 @@
 #define IDC_CHECK6                      1709
 #define IDC_ALWAYSFULLWIDTHTOOLBAR      1709
 #define IDC_SHOWUIN                     1709
+#define IDC_FORMATWHOLEWORDSONLY        1709
 #define IDC_STATUSGROUP                 1710
+#define IDC_CHECK9                      1711
+#define IDC_ALLOWSENDBUTTONHIDE         1711
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -427,7 +432,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
 #define _APS_NEXT_COMMAND_VALUE         40190
-#define _APS_NEXT_CONTROL_VALUE         1711
+#define _APS_NEXT_CONTROL_VALUE         1712
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
