@@ -81,11 +81,49 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
         FreeCookie(pSnacHeader->dwRef); // release cookie
         switch (sc->dwAction)
         {
-        case 1:  // TODO: parse all events and show icq errors
+        case 1: // update visibility
           {
             if (wError)
               Netlib_Logf(ghServerNetlibUser, "Server visibility update failed, error %d", wError);
             break;
+          }
+        case 2: // update nick
+          {
+            if (wError)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Renaming of server contact failed, error %d", wError);
+              icq_LogMessage(LOG_WARNING, Translate("Renaming of server contact failed."));
+            }
+            break;
+          }
+        case 3: // update comment
+          {
+            if (wError)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Update of server contact's comment failed, error %d", wError);
+              icq_LogMessage(LOG_WARNING, Translate("Update of server contact's comment failed."));
+            }
+            break;
+          }
+        case 0xA: // add privacy item
+          {
+            if (wError)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Adding of privacy item to server list failed, error %d", wError);
+              icq_LogMessage(LOG_WARNING, Translate("Adding of privacy item to server list failed."));
+            }
+            break;
+          }
+        case 0xB: // remove privacy item
+          {
+            if (wError)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Removing of privacy item from server list failed, error %d", wError);
+              icq_LogMessage(LOG_WARNING, Translate("Removing of privacy item from server list failed."));
+            }
+            FreeServerID(sc->wContactId); // release server id
+            break;
+
           }
         default:
           Netlib_Logf(ghServerNetlibUser, "Server ack cookie type (%d) not recognized.", sc->dwAction);
@@ -1105,130 +1143,6 @@ void sendAddEnd(void)
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYEND, 0, ICQ_LISTS_CLI_MODIFYEND<<0x10);
   sendServPacket(&packet);
-}
-
-
-
-// Is called when a contact has been renamed locally to update
-// the server side nick name.
-DWORD renameServContact(HANDLE hContact, const char *pszNick)
-{
-
-	icq_packet packet;
-	WORD wGroupID;
-	WORD wItemID;
-	DWORD dwUin;
-	char szUin[10];
-	int nUinLen;
-	int nNickLen = 0;
-	char* pszUtfNick = NULL;
-	DWORD dwSequence = 0;
-	BOOL bAuthRequired;
-
-
-	// Get the contact's group ID
-	if (!(wGroupID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0)))
-	{
-		if (!(wGroupID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0)))
-		{
-			// Could not find a usable group ID
-			Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no group ID");
-			return 0;
-		}
-	}
-
-	// Get the contact's item ID
-	if (!(wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0)))
-	{
-		if (!(wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0)))
-		{
-			if (!(wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0)))
-			{
-				// Could not find usable item ID
-				Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no item ID");
-				return 0;
-			}
-		}
-	}
-
-
-	// Check if contact is authorized
-	bAuthRequired = (DBGetContactSettingByte(hContact, gpszICQProtoName, "Auth", 0) == 1);
-
-
-	// Make UIN string
-	dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-	_itoa(dwUin, szUin, 10);
-	nUinLen = strlen(szUin);
-
-
-	// Convert to utf
-	if (pszNick && (strlen(pszNick) > 0))
-	{
-		utf8_encode(pszNick, &pszUtfNick);
-		if (pszUtfNick)
-			nNickLen = strlen(pszUtfNick);
-	}
-
-
-	// Pack packet header
-	dwSequence = GenerateCookie(ICQ_LISTS_UPDATEGROUP);
-	packet.wLen = nUinLen + 20;
-	if (nNickLen > 0)
-		packet.wLen += 4 + nNickLen;
-	if (bAuthRequired)
-		packet.wLen += 4;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	// The sequence we pack here should be a combination of ICQ_LISTS_UPDATEGROUP & wSequence.
-	// For example, ICQ2003b sends 0x00030009
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_UPDATEGROUP, 0, dwSequence);
-	packWord(&packet, (WORD)nUinLen);
-	packBuffer(&packet, szUin, (WORD)nUinLen);
-	packWord(&packet, wGroupID);
-	packWord(&packet, wItemID);
-	packWord(&packet, 0);	     // Entry type (0 = contact)
-
-
-	// Pack contact data
-	{
-
-		WORD wBytesToPack = 0;
-
-
-		if (nNickLen > 0)
-			wBytesToPack += 4 + nNickLen;
-
-		if (bAuthRequired)
-			wBytesToPack += 4;
-
-		if (wBytesToPack > 0)
-		{
-			packWord(&packet, wBytesToPack);    // Payload length
-			if (bAuthRequired)
-				packDWord(&packet, 0x00660000); // TLV(0x66)
-			if (nNickLen > 0)
-			{
-				packWord(&packet, 0x0131);	    // TLV(0x0131)
-				packWord(&packet, (WORD)nNickLen);
-				packBuffer(&packet, pszUtfNick, (WORD)nNickLen);
-			}
-		}
-	}
-
-	// There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
-	// ICQ_LISTS_CLI_MODIFYEND when just changing nick name
-
-	sendServPacket(&packet);
-
-	if (nNickLen > 0)
-		Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x09) - CLI_UPDATEGROUP, renaming %u to %s (seq: %u)", dwUin, pszNick, dwSequence);
-	else
-		Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x09) - CLI_UPDATEGROUP, removed nickname for %u (seq: %u)", dwUin, dwSequence);
-
-	SAFE_FREE(&pszUtfNick);
-
-	return dwSequence;
-
 }
 
 

@@ -104,7 +104,7 @@ static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WOR
 
 
 
-static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wPriority, int isAck, int includeDcInfo, BYTE bRequestServerAck)
+static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wPriority, int isAck, int includeDcInfo, BYTE bRequestServerAck)
 {
 
 	DWORD dwID1;
@@ -114,7 +114,7 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, WORD w
 	dwID1 = time(NULL);
 	dwID2 = RandRange(0, 0x00FF);
 
-	packServMsgSendHeader(p, wCookie, dwID1, dwID2, dwUin, 0x0002,
+	packServMsgSendHeader(p, dwCookie, dwID1, dwID2, dwUin, 0x0002,
 		(WORD)(wLen + 95 + (bRequestServerAck?4:0) + (includeDcInfo?14:0)));
 
 	packWord(p, 0x05);			/* TLV type */
@@ -122,7 +122,7 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, WORD w
 	packWord(p, (WORD)(isAck ? 2: 0));	   /* not aborting anything */
 	packLEDWord(p, dwID1);   // Msg ID part 1
 	packLEDWord(p, dwID2); // Msg ID part 2
-	packDWord(p, 0x09461349);		/* capabilities (4 dwords) */
+	packDWord(p, 0x09461349);		/* capability (4 dwords) */
 	packDWord(p, 0x4C7F11D1);
 	packDWord(p, 0x82224445);
 	packDWord(p, 0x53540000);
@@ -150,9 +150,9 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, WORD w
 	packWord(p, 0);
 	packLEDWord(p, 3);	   /* unknown */
 	packByte(p, 0);
-	packLEWord(p, wCookie); // Reference cookie
+	packLEWord(p, (WORD)dwCookie); // Reference cookie
 	packLEWord(p, 0x0E);    // Unknown
-	packLEWord(p, wCookie); // Reference cookie again
+	packLEWord(p, (WORD)dwCookie); // Reference cookie again
 
 	packDWord(p, 0); // Unknown (12 bytes)
 	packDWord(p, 0); //  -
@@ -441,7 +441,7 @@ DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, 
 	DWORD dwCookie;
 
 
-	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(ICQ_MSG_SRV_SEND, dwUin, (void*)pCookieData);
 
 	// Pack the standard header
 	packServChannel2Header(&packet, dwUin, (WORD)(nBodyLen+11), dwCookie, pCookieData->bMessageType, 0,
@@ -574,7 +574,7 @@ void sendOwnerInfoRequest(void)
 	pCookieData->bRequestType = REQUESTTYPE_OWNER;
 	dwCookie = AllocateCookie(0, dwLocalUIN, (void*)pCookieData);
 
-	packServIcqExtensionHeader(&packet, 6, 0x07D0, dwCookie);
+	packServIcqExtensionHeader(&packet, 6, 0x07D0, (WORD)dwCookie);
 	packLEWord(&packet, 0x04D0);
 	packLEDWord(&packet, dwLocalUIN);
 
@@ -596,7 +596,7 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 	pCookieData->bRequestType = REQUESTTYPE_USERAUTO;
 	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
-	packServIcqExtensionHeader(&packet, 6, 0x07D0, dwCookie);
+	packServIcqExtensionHeader(&packet, 6, 0x07D0, (WORD)dwCookie);
 	packLEWord(&packet, 0x04BA);
 	packLEDWord(&packet, dwUin);
 
@@ -617,7 +617,7 @@ DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 	pCookieData = malloc(sizeof(fam15_cookie_data));
 	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
-	packServIcqExtensionHeader(&packet, 6, CLI_META_INFO_REQ, dwCookie);
+	packServIcqExtensionHeader(&packet, 6, CLI_META_INFO_REQ, (WORD)dwCookie);
 	if (bMinimal)
 	{
 		pCookieData->bRequestType = REQUESTTYPE_USERMINIMAL;
@@ -658,13 +658,13 @@ DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
 
 
 
-void icq_sendFileSendServv7(DWORD dwUin, WORD wCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize)
+void icq_sendFileSendServv7(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize)
 {
 
 	icq_packet packet;
 
 
-	packServChannel2Header(&packet, dwUin, (WORD)(18 + strlen(szDescr) + strlen(szFiles)), wCookie, MTYPE_FILEREQ, 0, 1, 0, 1, 1);
+	packServChannel2Header(&packet, dwUin, (WORD)(18 + strlen(szDescr) + strlen(szFiles)), dwCookie, MTYPE_FILEREQ, 0, 1, 0, 1, 1);
 
 	packLEWord(&packet, (WORD)(strlen(szDescr) + 1));
 	packBuffer(&packet, szDescr, (WORD)(strlen(szDescr) + 1));
@@ -680,7 +680,7 @@ void icq_sendFileSendServv7(DWORD dwUin, WORD wCookie, const char *szFiles, cons
 
 
 
-void icq_sendFileSendServv8(DWORD dwUin, WORD wCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize)
+void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize)
 {
 
 	icq_packet packet;
@@ -703,7 +703,7 @@ void icq_sendFileSendServv8(DWORD dwUin, WORD wCookie, const char *szFiles, cons
 	wFlapLen = 202 + nUinLen + strlen(szDescr) + strlen(szFiles)+1;
 	packet.wLen = wFlapLen;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, wCookie);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, dwCookie);
 	packLEDWord(&packet, dwMsgID1); // Msg ID part 1
 	packLEDWord(&packet, dwMsgID2); // Msg ID part 2
 	packWord(&packet, 0x0002);	    // Channel
@@ -741,9 +741,9 @@ void icq_sendFileSendServv8(DWORD dwUin, WORD wCookie, const char *szFiles, cons
 	packDWord(&packet, 0); //  -
 	packDWord(&packet, CLIENTFEATURES);
 	packDWord(&packet, DC_TYPE);
-	packLEWord(&packet, wCookie); // Reference cookie
+	packLEWord(&packet, (WORD)dwCookie); // Reference cookie
 	packLEWord(&packet, 0x0E);    // Unknown
-	packLEWord(&packet, wCookie); // Reference cookie again
+	packLEWord(&packet, (WORD)dwCookie); // Reference cookie again
 	packDWord(&packet, 0); // Unknown (12 bytes)
 	packDWord(&packet, 0); //  -
 	packDWord(&packet, 0); //  -
@@ -790,7 +790,7 @@ void icq_sendFileSendServv8(DWORD dwUin, WORD wCookie, const char *szFiles, cons
 
 
 /* also sends rejections */
-void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted)
+void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted)
 {
 
 	icq_packet packet;
@@ -810,7 +810,7 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, c
 	wFlapLen = 202 + nUinLen + strlen(szDescr) + strlen(szFiles)+1;
 	packet.wLen = wFlapLen;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, wCookie);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, dwCookie);
 	packLEDWord(&packet, TS1);		   // timestamp1
 	packLEDWord(&packet, TS2);		   // timestamp2
 	packWord(&packet, 0x0002);	           // message format
@@ -848,9 +848,9 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, c
 	packDWord(&packet, 0); //  -
 	packDWord(&packet, CLIENTFEATURES);
 	packDWord(&packet, DC_TYPE);
-	packLEWord(&packet, wCookie); // Reference cookie
+	packLEWord(&packet, (WORD)dwCookie); // Reference cookie
 	packLEWord(&packet, 0x0E);    // Unknown
-	packLEWord(&packet, wCookie); // Reference cookie again
+	packLEWord(&packet, (WORD)dwCookie); // Reference cookie again
 	packDWord(&packet, 0); // Unknown (12 bytes)
 	packDWord(&packet, 0); //  -
 	packDWord(&packet, 0); //  -
@@ -897,7 +897,7 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, c
 
 
 
-void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, const char* szFiles, const char* szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted)
+void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char* szFiles, const char* szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted)
 {
 
 	icq_packet packet;
@@ -918,7 +918,7 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, c
 	wFlapLen = 150 + nUinLen + strlen(szDescr)+1 + strlen(szFiles)+2;
 	packet.wLen = wFlapLen;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, wCookie);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, dwCookie);
 	packLEDWord(&packet, TS1);		   // timestamp1
 	packLEDWord(&packet, TS2);		   // timestamp2
 	packWord(&packet, 0x0002);         // message format
@@ -956,9 +956,9 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, c
 	packDWord(&packet, 0); //  -
 	packDWord(&packet, 0x0003); // Unknown
 	packDWord(&packet, 0x0004); // Unknown
-	packLEWord(&packet, wCookie); // Reference cookie
+	packLEWord(&packet, (WORD)dwCookie); // Reference cookie
 	packLEWord(&packet, 0x0E);    // Unknown
-	packLEWord(&packet, wCookie); // Reference cookie again
+	packLEWord(&packet, (WORD)dwCookie); // Reference cookie again
 	packDWord(&packet, 0); // Unknown (12 bytes)
 	packDWord(&packet, 0); //  -
 	packDWord(&packet, 0); //  -
@@ -1227,7 +1227,7 @@ DWORD sendTLVSearchPacket(char* pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsers
 	dwCookie = GenerateCookie(0);
 
 	// Pack headers
-	packServIcqExtensionHeader(&packet, (WORD)(wInfoLen + 7), CLI_META_INFO_REQ, dwCookie);
+	packServIcqExtensionHeader(&packet, (WORD)(wInfoLen + 7), CLI_META_INFO_REQ, (WORD)dwCookie);
 
 	// Pack search type
 	packLEWord(&packet, 0x055f);
@@ -1262,7 +1262,7 @@ DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 
 	dwCookie = GenerateCookie(0);
 
-	packServIcqExtensionHeader(&packet, (WORD)(2 + bufferLen), CLI_META_INFO_REQ, dwCookie);
+	packServIcqExtensionHeader(&packet, (WORD)(2 + bufferLen), CLI_META_INFO_REQ, (WORD)dwCookie);
 	packWord(&packet, 0x3305);		   /* subtype: full search */
 	packBuffer(&packet, (const char*)fieldsBuffer, (WORD)bufferLen);
 
@@ -1283,7 +1283,7 @@ DWORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDat
 
 	dwCookie = GenerateCookie(0);
 
-	packServIcqExtensionHeader(&packet, (WORD)(wDataLen + 2), 0x07D0, dwCookie);
+	packServIcqExtensionHeader(&packet, (WORD)(wDataLen + 2), 0x07D0, (WORD)dwCookie);
 	packWord(&packet, type);
 	packBuffer(&packet, pData, wDataLen);
 
@@ -1349,7 +1349,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 
 		dwCookie = GenerateCookie(0);
 
-		packServIcqExtensionHeader(&packet, (WORD)(wBufferLen + 27), 0x07D0, dwCookie);
+		packServIcqExtensionHeader(&packet, (WORD)(wBufferLen + 27), 0x07D0, (WORD)dwCookie);
 		packWord(&packet, 0x8214);	   /* send sms */
 		packWord(&packet, 1);
 		packWord(&packet, 0x16);
@@ -1406,64 +1406,121 @@ void icq_sendNewContact(DWORD dwUin)
 // list==1: invisible list
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
 {
+  // Tell server to change our server-side contact visbility list
+  if (gbSsiEnabled)
+  {
+    WORD wContactId;
+    WORD wType;
 
-	// Tell server to change our server-side contact visbility list
-	if (gbSsiEnabled)
-	{
+    if (list == 0)
+      wType = SSI_ITEM_PERMIT;
+    else
+      wType = SSI_ITEM_DENY;
 
-		WORD wContactId;
-		WORD wType;
+    if (add)
+    {
+      servlistcookie* ack;
+      DWORD dwCookie;
+      
+      if (wType == SSI_ITEM_DENY) 
+      { // check if we should make the changes, this is 2nd level check
+        if (DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0) != 0)
+          return;
+      }
+      else
+      {
+        if (DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0) != 0)
+          return;
+      }
 
+      // Add
+      wContactId = GenerateServerId();
 
-		if (list == 0)
-			wType = SSI_ITEM_PERMIT;
-		else
-			wType = SSI_ITEM_DENY;
+      if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
+      { // cookie failed, use old fake
+        dwCookie = GenerateCookie(ICQ_LISTS_ADDTOLIST);
+      }
+      else
+      {
+        ack->dwAction = 0xA; // add privacy item
+        ack->dwUin = dwUin;
+        ack->hContact = hContact;
+        ack->wGroupId = 0;
+        ack->wContactId = wContactId;
 
-		if (add)
-		{
+        dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
+      }
+      
+      icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, dwUin, 0, wContactId, NULL, NULL, 0, wType);
 
-			// Add
-			wContactId = GenerateServerId();
+      if (wType == SSI_ITEM_DENY)
+        DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", wContactId);
+      else
+        DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", wContactId);
+    }
+    else
+    {
+      // Remove
+      if (wType == SSI_ITEM_DENY)
+      {
+        wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
 
-			icq_sendUploadContactServ(dwUin, 0, wContactId, NULL, FALSE, wType);
+        if (wContactId)
+        {
+          servlistcookie* ack;
+          DWORD dwCookie;
 
-			if (wType == SSI_ITEM_DENY)
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", wContactId);
-			else
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", wContactId);
+          if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
+          { // cookie failed, use old fake
+            dwCookie = GenerateCookie(ICQ_LISTS_ADDTOLIST);
+          }
+          else
+          {
+            ack->dwAction = 0xB; // remove privacy item
+            ack->dwUin = dwUin;
+            ack->hContact = hContact;
+            ack->wGroupId = 0;
+            ack->wContactId = wContactId;
 
-		}
-		else
-		{
+            dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+          }
 
-			// Remove
-			if (wType == SSI_ITEM_DENY)
-			{
+          icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, 0, wContactId, NULL, NULL, 0, SSI_ITEM_DENY);
+        }
 
-				wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
+        DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvDenyId");
+      }
+      else
+      {
+        wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
 
-				if (wContactId)
-					icq_sendDeleteServerContactServ(dwUin, 0, wContactId, SSI_ITEM_DENY);
+        if (wContactId)
+        {
+          servlistcookie* ack;
+          DWORD dwCookie;
 
-				DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvDenyId");
-			}
-			else
-			{
+          if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
+          { // cookie failed, use old fake
+            dwCookie = GenerateCookie(ICQ_LISTS_ADDTOLIST);
+          }
+          else
+          {
+            ack->dwAction = 0xB; // remove privacy item
+            ack->dwUin = dwUin;
+            ack->hContact = hContact;
+            ack->wGroupId = 0;
+            ack->wContactId = wContactId;
 
-				wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
+            dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+          }
 
-				if (wContactId)
-					icq_sendDeleteServerContactServ(dwUin, 0, wContactId, SSI_ITEM_PERMIT);
+          icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, 0, wContactId, NULL, NULL, 0, SSI_ITEM_PERMIT);
+        }
 
-				DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvPermitId");
-
-			}
-
-		}
-
-	}
-
+        DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvPermitId");
+      }
+    }
+  }
 
 	// Notify server that we have changed
 	// our client side visibility list

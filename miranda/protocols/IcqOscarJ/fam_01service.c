@@ -153,7 +153,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         ack->dwUin = 0; // init content
         dwCookie = AllocateCookie(ICQ_LISTS_CLI_CHECK, 0, ack);
       }
-      else // if not use, that old fake
+      else // if not use that old fake
         dwCookie = ICQ_LISTS_CLI_CHECK<<0x10;
 
       packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, dwCookie);

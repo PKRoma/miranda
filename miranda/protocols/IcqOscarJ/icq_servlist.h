@@ -40,11 +40,26 @@
 // actions:
 // 0 = request serv-list
 // 1 = update visibility
+// 2 = update contact's nick
+// 3 = update contact's comment
+// 5 = rename group
+// A = add privacy item
+// B = remove privacy item
+// 10 = add contact w/o auth
+// 11 = add contact with auth
+// 12 = move to group
+// 13 = delete contact
+// 15 = create group
+// 16 = delete group
+// 17 = update group
 // cookie struct for SSI actions
 typedef struct servlistcookie_t
 {
   DWORD dwUin;
   HANDLE hContact;
+  WORD wContactId;
+  WORD wGroupId;
+  WORD wNewGroupId;
   int dwAction; 
 } servlistcookie;
 
@@ -54,8 +69,8 @@ DWORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactI
 void InitServerLists(void);
 void UninitServerLists(void);
 
-WORD icq_sendBuddy(WORD wAction, DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
-WORD icq_sendGroup(WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
+DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
+DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
 
 WORD GenerateServerId(VOID);
 WORD GenerateServerIdPair(int wCount);
