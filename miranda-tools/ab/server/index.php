@@ -26,16 +26,17 @@ $timestamp = mktime( $co_time_t[0], $co_time_t[1], $co_time_t[2], $co_date_t[1],
 
 $FILELIST = array(
 	array('miranda32', 0, 'Main application', 'strong' => 1),
-	array('clist', 1, 'Classic contact list', 'strong' => 1),
+	array('clist', 1, 'Classic contact list', 'strong' => 0),
+	array('mwclist', 1, 'multiwin clist by Bethoven', 'strong' => 0),
 	array('icq', 1, 'access ICQ', 'strong' => 0),
 	array('aim', 1, 'access AIM', 'strong' => 0),
 	array('jabber', 1, 'access Jabber', 'strong' => 0),
 	array('msn', 1, 'access MSN', 'strong' => 0),
 	array('yahoo', 1, 'access Yahoo', 'strong' => 0),
-	array('tabsrmm', 1, 'Tab/container messaging interface, forked from SRMM by Nightwish', 'strong' => 0),
-	array('srmm', 1, 'Provides a split/single messaging window interface', 'strong' => 0),
-	array('import', 1, 'Import contacts, settings, history from other Miranda profiles, ICQ databases', 'strong' => 0),
-	array('changeinfo', 1, 'Change your ICQ user details from within Miranda', 'strong' => 0)
+	//array('tabsrmm', 1, 'Tab/container messaging interface, SRMM based by Nightwish', 'strong' => 0),
+	array('srmm', 1, 'Provides a split/single messaging window interface', 'strong' => 0)
+	//array('import', 1, 'Import contacts, settings, history from other Miranda profiles, ICQ databases', 'strong' => 0),
+	//array('changeinfo', 1, 'Change your ICQ user details from within Miranda', 'strong' => 0)
 );
 
 function get_file_list($mode)
