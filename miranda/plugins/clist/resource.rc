@@ -79,7 +79,7 @@ END
 IDD_OPT_CLIST DIALOGEX 0, 0, 314, 204
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Hide offline users",IDC_HIDEOFFLINE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,124,10
@@ -688,52 +688,6 @@ BEGIN
         MENUITEM "&Delete Group",               POPUP_DELETEGROUP
     END
 END
-
-
-#ifndef _MAC
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,4,0
- PRODUCTVERSION 0,3,4,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
-            VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "Miranda IM Contact List\0"
-            VALUE "FileVersion", "0.3.4 alpha\0"
-            VALUE "InternalName", "clist\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "clist.dll\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Miranda IM Contact List\0"
-            VALUE "ProductVersion", "0.3.4 alpha\0"
-            VALUE "SpecialBuild", "\0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-
-#endif    // !_MAC
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
