@@ -6,63 +6,65 @@ Legend:
 
 Version 0.4.0.1
 ===============
-[-] Removed support for old versions of Miranda.
+[+] wish #0000971 fixed: Block & Unblock actions must be separated
+[-] removed support for old versions of Miranda.
+[!] fixes for minor string allocation problems.
 
 WARNING!!! All versions since this one require Miranda 0.4.x core.
 This is required by the project admins.
 
 Version 0.1.7.11
 ================
-[+] Full support for server-side groups and contacts
-[+] Wish #0000142 fixed: a popup for session disconnection
-[+] Wish #0000149 fixed: CHAT.DLL support was added for groupchats (thanks noname)
-[!] Bug #0000458 fixed: Messages disappear when sending to MSN.
-[!] Bug #0000684 fixed: a file with the Unicode name fails to open after
+[+] full support for server-side groups and contacts
+[+] wish #0000142 fixed: a popup for session disconnection
+[+] wish #0000149 fixed: CHAT.DLL support was added for groupchats (thanks noname)
+[!] bug #0000458 fixed: Messages disappear when sending to MSN.
+[!] bug #0000684 fixed: a file with the Unicode name fails to open after
 the successful transfer.
-[!] Bug #0000761 fixed: apply button in options->popups->msn enabled on
+[!] bug #0000761 fixed: apply button in options->popups->msn enabled on
 first showing of page
-[!] Minor fix for P2P file transfers over NAT
+[!] minor fix for P2P file transfers over NAT
 
 Version 0.1.7.10
 ================
-[!] Multiple bugfixes for gateways & P2P file transfers
-[*] Login rules were changed a bit: now Miranda assigns its own
+[!] multiple bugfixes for gateways & P2P file transfers
+[*] login rules were changed a bit: now Miranda assigns its own
 proxy address to SSL connection when the 'Use IE proxy settings'
 option is turned off. If you don't use a proxy, nothing gets
 changed.
-[!] Bug #0000580 fixed: the large messages disappear being sent.
-[!] Bug #0000601 fixed: files  with  incorrect  file  names  aren't
+[!] bug #0000580 fixed: the large messages disappear being sent.
+[!] bug #0000601 fixed: files  with  incorrect  file  names  aren't
 saved during P2P file transfers.
-[!] Bug #0000565 fixed: avatar file names becomes different after
+[!] bug #0000565 fixed: avatar file names becomes different after
 using the dbtool, that's why the MSN folder may have the same
 avatars several times.
-[!] Bug #0000437 fixed: expert must have an option  to  choose  the
+[!] bug #0000437 fixed: expert must have an option  to  choose  the
 needed status translation schema for Away, BRB & N/A statuses.
-[!] Bug #0000541 fixed: if Miranda asks to overwrite a file
+[!] bug #0000541 fixed: if Miranda asks to overwrite a file
 during the f/t, a crash can occur when user cancels it.
-[*] Translation file modification.
+[*] translation file modification.
 
 Version 0.1.7.9a
 ================
-[!] Bug #0000564 fixed: MSN Messenger doesn't confirm a file
+[!] bug #0000564 fixed: MSN Messenger doesn't confirm a file
 transfer from Miranda when it goes via the server
 
 Version 0.1.7.9
 ===============
 [+] wish #000519: the ability to create avatars from PNG images.
-[+] Contact's phone numbers support was added
-[+] Options dialog was changed to allow a user to see his own avatar.
-[-] MSN protocol v.9 support code was removed
-[!] Option 'File Transfers -> If a file already exists  ->  Rename'
+[+] contact's phone numbers support was added
+[+] options dialog was changed to allow a user to see his own avatar.
+[-] mSN protocol v.9 support code was removed
+[!] option 'File Transfers -> If a file already exists  ->  Rename'
 doesn't work for MSN P2P transfers.
-[!] Bug #0000092 fixed: 'User Is Typing' event delay is too slow.
-[!] Bug #0000423 fixed: Send Message To Offline User Return Message Time
-Out Message
-[!] Bug #0000444 fixed: the passive P2P transfer fails if MSN Messenger
+[!] bug #0000092 fixed: 'User Is Typing' event delay is too slow.
+[!] bug #0000423 fixed: Send Message To Offline User Return Message Time
+Out message
+[!] bug #0000444 fixed: the passive P2P transfer fails if MSN Messenger
 returns bad IP address
-[!] Bug #0000554 fixed: fake Hotmail notifications are shown, even
+[!] bug #0000554 fixed: fake Hotmail notifications are shown, even
 when there's no new mail available
-[*] Translation file modification.
+[*] translation file modification.
 
 Version 0.1.7.8
 ===============
