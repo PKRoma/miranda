@@ -856,7 +856,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 
     //strcpy(szSep2, fAppend ? "\\par" : "");
     strcpy(szSep2, fAppend ? "\\par\\sl0" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl0" : "\\par\\sl0"));
-    
+
     ZeroMemory(&ci, sizeof(ci));
     ci.cbSize = sizeof(ci);
     ci.hContact = NULL;
@@ -883,13 +883,13 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     if (fAppend) {
         GETTEXTLENGTHEX gtxl = {0};
-#if defined (_UNICODE)
+#if defined(_UNICODE)
         gtxl.codepage = 1200;
-#else        
-        gtxl.codepage = CP_ACP;
-#endif        
         gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
-        
+#else
+        gtxl.codepage = CP_ACP;
+        gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
+#endif        
         sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
 
@@ -910,13 +910,13 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     if (fAppend && (dat->dwEventIsShown & MWF_SHOW_MICROLF)) {
         GETTEXTLENGTHEX gtxl = {0};
-#if defined (_UNICODE)
+#if defined(_UNICODE)
         gtxl.codepage = 1200;
-#else        
-        gtxl.codepage = CP_ACP;
-#endif        
         gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
-
+#else
+        gtxl.codepage = CP_ACP;
+        gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
+#endif        
         sel.cpMax = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
         sel.cpMin = sel.cpMax - 1;
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
@@ -1040,7 +1040,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
             else
                 CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
 #else
-            CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&smadd);
+            CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
 #endif            
         }
     }
