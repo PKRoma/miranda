@@ -12,6 +12,7 @@
 [Unread mail is available: %d messages (%d junk e-mails).]
 [Test: Arrival Hotmail]
 [A New Hotmail has come!]
+[Contact left channel]
 
 ; Messages
 
@@ -73,8 +74,11 @@
 [Send message font color/size info inside messages]
 [Disable all contacts not included into my contact list]
 [Enable avatars support]
+[Manage server groups]
+[Treat Away status as 'Be Right Back']
 [Never update your nickname from server]
 [Run the following application when new Hotmail is arrived]
+[Server groups import may change your contact list layout after next login. Do you want to upload your groups to the server?]
 
 ; Network options dialog
 
@@ -86,6 +90,7 @@
 [Keep connection alive (send a ping packet every minute)]
 [Incoming file transfers]
 [Automatically obtain host/port for incoming file transfers]
+[Notify me when a message delivery has failed]
 [Your host (or router):]
 [Reset]
 [The changes you have made require you to reconnect to the MSN Messenger network before they take effect]

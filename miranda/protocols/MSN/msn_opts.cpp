@@ -198,8 +198,8 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			case IDC_MANAGEGROUPS:
 				if ( IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ))
 					if ( IDYES == MessageBox( hwndDlg, 
-											MSN_Translate( "Your contact groups layout may be corrupted after next login. "
-																"Do you want to upload your current groups to the server?" ),
+											MSN_Translate( "Server groups import may change your contact list layout after next login. "
+																"Do you want to upload your groups to the server?" ),
 											MSN_Translate( "MSN Protocol" ), MB_YESNOCANCEL ))
 						(new ThreadData())->startThread( sttUploadGroups );
 				goto LBL_Apply;
