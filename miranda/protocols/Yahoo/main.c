@@ -44,7 +44,7 @@ pthread_mutex_t connectionHandleMutex;
 PLUGININFO pluginInfo={
 		sizeof(PLUGININFO),
 		"Yahoo Protocol",
-		PLUGIN_MAKE_VERSION(0, 3, 0, 2),
+		PLUGIN_MAKE_VERSION(0, 3, 0, 4),
 		"Yahoo Protocol support via libyahoo2 library.",
 		"Gennady Feldman",
 		"gennady_feldman at gena01.com",
