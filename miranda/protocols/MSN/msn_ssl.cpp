@@ -34,6 +34,7 @@ typedef BOOL  ( WINAPI *ft_HttpSendRequest )( HINTERNET, LPCSTR, DWORD, LPVOID, 
 typedef BOOL  ( WINAPI *ft_InternetCloseHandle )( HINTERNET );
 typedef DWORD ( WINAPI *ft_InternetErrorDlg )( HWND, HINTERNET, DWORD, DWORD, LPVOID* );
 typedef BOOL  ( WINAPI *ft_InternetSetOption )( HINTERNET, DWORD, LPVOID, DWORD );
+typedef BOOL  ( WINAPI *ft_InternetReadFile )( HINTERNET, LPVOID, DWORD, LPDWORD );
 
 typedef HINTERNET ( WINAPI *ft_HttpOpenRequest )( HINTERNET, LPCSTR, LPCSTR, LPCSTR, LPCSTR, LPCSTR*, DWORD, DWORD );
 typedef HINTERNET ( WINAPI *ft_InternetConnect )( HINTERNET, LPCSTR, INTERNET_PORT, LPCSTR, LPCSTR, DWORD, DWORD, DWORD );
@@ -43,12 +44,31 @@ static ft_InternetCloseHandle f_InternetCloseHandle;
 static ft_InternetConnect     f_InternetConnect;
 static ft_InternetErrorDlg    f_InternetErrorDlg;
 static ft_InternetOpen        f_InternetOpen;
+static ft_InternetReadFile    f_InternetReadFile;
 static ft_InternetSetOption   f_InternetSetOption;
 static ft_HttpOpenRequest     f_HttpOpenRequest;
 static ft_HttpQueryInfo       f_HttpQueryInfo;
 static ft_HttpSendRequest     f_HttpSendRequest;
 
 static char* sttLoginHost = NULL;
+
+static void  sttApplyProxy( HINTERNET parHandle )
+{
+	char tBuffer[ 100 ];
+
+	MSN_DebugLog( "Applying proxy parameters..." );
+
+	if ( !MSN_GetStaticString( "NLProxyAuthUser", NULL, tBuffer, SSL_BUF_SIZE ))
+		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_USERNAME, tBuffer, strlen( tBuffer ));
+	else
+		MSN_DebugLog( "Warning: proxy user name is required but missing" );
+
+	if ( !MSN_GetStaticString( "NLProxyAuthPassword", NULL, tBuffer, SSL_BUF_SIZE )) {
+		MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer ), ( LPARAM )tBuffer );
+		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_PASSWORD, tBuffer, strlen( tBuffer ));
+	}
+	else MSN_DebugLog( "Warning: proxy user password is required but missing" );
+}
 
 static char* sttSslGet( char* parUrl, char* parChallenge )
 {
@@ -84,31 +104,30 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 	}
 
 	int tUsesProxy = MSN_GetByte( "NLUseProxy", 0 );
-	if ( tUsesProxy )
-	{
-		/*
-		if ( DBGetContactSetting( NULL, msnProtocolName, "NLProxyServer", &dbv ))
-		{	MSN_DebugLog( "Proxy server name should be set if proxy is used" );
-			return NULL;
+	if ( tUsesProxy ) {
+		if ( !MSN_GetByte( "UseIeProxy", 0 )) {
+			char szProxy[ 100 ];
+			if ( MSN_GetStaticString( "NLProxyServer", NULL, szProxy, sizeof szProxy )) {
+				MSN_DebugLog( "Proxy server name should be set if proxy is used" );
+				return NULL;
+			}
+
+			int tPortNumber = MSN_GetWord( NULL, "NLProxyPort", -1 );
+			if ( tPortNumber == -1 ) {
+				MSN_DebugLog( "Proxy server port should be set if proxy is used" );
+				return NULL;
+			}
+
+			_snprintf( tBuffer, SSL_BUF_SIZE, "%s:%d", szProxy, tPortNumber );
+
+			tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, tInternetFlags );
 		}
-
-		int tPortNumber = DBGetContactSettingWord( NULL, msnProtocolName, "NLProxyPort", -1 );
-		if ( tPortNumber == -1 )
-		{	MSN_DebugLog( "Proxy server port should be set if proxy is used" );
-			return NULL;
-		}
-
-		_snprintf( tBuffer, SSL_BUF_SIZE, "%s:%d", dbv.pszVal, tPortNumber );
-
-		tNetHandle = InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, tInternetFlags );
-		MSN_FreeVariant( &dbv );
-		*/
-		tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, tInternetFlags );
+		else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, tInternetFlags );
 	}
 	else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, tInternetFlags );
 
-	if ( tNetHandle == NULL )
-	{	MSN_DebugLog( "InternetOpen() failed" );
+	if ( tNetHandle == NULL ) {
+		MSN_DebugLog( "InternetOpen() failed" );
 		return NULL;
 	}
 
@@ -126,8 +145,7 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 	}
 
 	char* tObjectName = ( char* )strchr( parUrl, '/' );
-	if ( tObjectName != NULL )
-	{
+	if ( tObjectName != NULL ) {
 		int tLen = strlen( tObjectName )+1;
 		char* newBuf = ( char* )alloca( tLen );
 		memcpy( newBuf, tObjectName, tLen );
@@ -140,31 +158,16 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 	char* tSslAnswer = NULL;
 
 	HINTERNET tUrlHandle = f_InternetConnect( tNetHandle, parUrl, INTERNET_DEFAULT_HTTPS_PORT, "", "", INTERNET_SERVICE_HTTP, INTERNET_FLAG_NO_AUTO_REDIRECT + INTERNET_FLAG_NO_COOKIES, 0 );
-	if ( tUrlHandle != NULL )
-	{
+	if ( tUrlHandle != NULL ) {
 		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "GET", tObjectName, NULL, "", NULL, tFlags, NULL );
-		if ( tRequest != NULL )
-		{
+		if ( tRequest != NULL ) {
 			DWORD tBufSize;
+			bool  bProxyParamsSubstituted = false;
 
 			if ( tUsesProxy )
-			{
-				MSN_DebugLog( "Applying proxy parameters..." );
+				sttApplyProxy( tRequest ); 
 
-				if ( !MSN_GetStaticString( "NLProxyAuthUser", NULL, tBuffer, SSL_BUF_SIZE ))
-					f_InternetSetOption( tRequest, INTERNET_OPTION_PROXY_USERNAME, tBuffer, strlen( tBuffer )+1 );
-				else
-					MSN_DebugLog( "Warning: proxy user name is required but missing" );
-
-				if ( !MSN_GetStaticString( "NLProxyAuthPassword", NULL, tBuffer, SSL_BUF_SIZE )) {
-					MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer )+1, ( LPARAM )tBuffer );
-					f_InternetSetOption( tRequest, INTERNET_OPTION_PROXY_PASSWORD, tBuffer, strlen( tBuffer )+1 );
-				}
-				else MSN_DebugLog( "Warning: proxy user password is required but missing" );
-			}
-
-			if ( parChallenge != NULL )
-			{
+			if ( parChallenge != NULL ) {
 				char tPassword[ 100 ];
 				MSN_GetStaticString( "Password", NULL, tPassword, sizeof tPassword );
 				MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tPassword )+1, ( LPARAM )tPassword );
@@ -180,6 +183,7 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 			else tBuffer[ 0 ] = 0;
 
 LBL_Restart:
+			MSN_DebugLog( "Sending request..." );
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, tBuffer, DWORD(-1), NULL, 0 );
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
@@ -191,8 +195,7 @@ LBL_Restart:
 					MSN_ShowError( "MSN Passport verification failed with error %d: %s",
 						errCode.mErrorCode, errCode.getText());
 			}
-			else
-			{
+			else {
 				DWORD dwCode;
 				tBufSize = sizeof( dwCode );
 				f_HttpQueryInfo( tRequest, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &dwCode, &tBufSize, 0 );
@@ -203,6 +206,24 @@ LBL_Restart:
 					f_HttpQueryInfo( tRequest, HTTP_QUERY_LOCATION, tBuffer, &tBufSize, NULL );
 					tSslAnswer = sttSslGet( tBuffer, parChallenge );
 					break;
+
+				case HTTP_STATUS_DENIED:
+				case HTTP_STATUS_PROXY_AUTH_REQ:
+					{	char tmpbuf[100];
+						DWORD dwSize;
+						do {
+							f_InternetReadFile( tRequest, tmpbuf, 50, &dwSize);
+						}
+							while (dwSize != 0);
+					}
+						
+					if ( tUsesProxy && !bProxyParamsSubstituted ) {
+						bProxyParamsSubstituted = true;
+						sttApplyProxy( tUrlHandle ); 
+						goto LBL_Restart;
+					}
+
+					// else fall down to display the error dialog
 
 				case ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR:
 				case ERROR_INTERNET_INCORRECT_PASSWORD:
@@ -260,6 +281,7 @@ int MSN_Auth8( char* authChallengeInfo, char*& parResult )
 	f_InternetConnect = (ft_InternetConnect)GetProcAddress( tDll, "InternetConnectA" );
 	f_InternetErrorDlg = (ft_InternetErrorDlg)GetProcAddress( tDll, "InternetErrorDlg" );
 	f_InternetOpen = (ft_InternetOpen)GetProcAddress( tDll, "InternetOpenA" );
+	f_InternetReadFile = (ft_InternetReadFile)GetProcAddress( tDll, "InternetReadFile" );
 	f_InternetSetOption = (ft_InternetSetOption)GetProcAddress( tDll, "InternetSetOptionA" );
 	f_HttpOpenRequest = (ft_HttpOpenRequest)GetProcAddress( tDll, "HttpOpenRequestA" );
 	f_HttpQueryInfo = (ft_HttpQueryInfo)GetProcAddress( tDll, "HttpQueryInfoA" );
