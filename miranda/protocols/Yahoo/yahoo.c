@@ -841,18 +841,17 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	
 	if (!hContact){
 		error = 1;
-		
 	} else {
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", avt->cksum);
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 1);
 	}
-	
+
     if(!error) {
 				
 				do {
 					dw = Netlib_Recv((HANDLE)fd, buf, 4096, MSG_NODUMP);
 				
 					if (dw) {
-						//WriteFile(myhFile, buf, dw, &c, NULL);
 						CopyMemory(&pBuff[rsize], buf, dw);
 						rsize += dw;
 					}
@@ -861,6 +860,10 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 			
     }
 	
+	if (DBGetContactSettingDword(hContact, yahooProtocolName, "PictCK", 0) != avt->cksum) {
+		LOG(("WARNING: Checksum updated during download?!"));
+		error = 1; /* don't use this one? */
+	} 
     LOG(("File download complete!"));
 
 //    ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
@@ -901,15 +904,14 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	}
 
 	FREE(pBuff);
-	
+
+	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
+
 	AI.cbSize = sizeof AI;
 	AI.format = PA_FORMAT_BMP;
 	AI.hContact = hContact;
 	lstrcpy(AI.filename,buf);
 
-	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", avt->cksum);
-	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
-	
 	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED,(HANDLE) &AI, 0);
 }
 
@@ -923,9 +925,6 @@ static void __cdecl yahoo_recv_avatarthread(struct avatar_info *avt)
 	}
 	//YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
 	
-	//YAHOO_RecvFile(sf);
-	//if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
-	//	CloseHandle( sf->hWaitEvent );
 	LOG(("yahoo_recv_avatarthread who:%s url:%s checksum: %d", avt->who, avt->pic_url, avt->cksum));
 	yahoo_get_url_handle(ylad->id, avt->pic_url, &get_picture, avt);
 	
@@ -949,6 +948,23 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 	LOG(("ext_yahoo_got_picture exiting"));
 }
 
+void yahoo_reset_avatar(HANDLE 	hContact)
+{
+    PROTO_AVATAR_INFORMATION AI;
+        
+	//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
+	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+
+	AI.cbSize = sizeof AI;
+	AI.format = PA_FORMAT_BMP;
+	AI.hContact = hContact;
+	GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename);
+	DeleteFile(AI.filename);
+	
+	AI.filename[0]='\0';
+	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+}
+
 void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int cksum)
 {
 	HANDLE 	hContact = 0;
@@ -963,17 +979,7 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
 	
 	/* Last thing check the checksum and request new one if we need to */
 	if (!cksum || cksum == -1) {
-        PROTO_AVATAR_INFORMATION AI;
-        
-		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
-		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
-
-		AI.cbSize = sizeof AI;
-		AI.format = PA_FORMAT_BMP;
-		AI.hContact = hContact;
-		AI.filename[0]='\0';
-
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+        yahoo_reset_avatar(hContact);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
@@ -998,18 +1004,8 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 	
 	/* Last thing check the checksum and request new one if we need to */
 	if (!buddy_icon || buddy_icon == -1) {
-        PROTO_AVATAR_INFORMATION AI;
-        
-		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
-		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
-
-		AI.cbSize = sizeof AI;
-		AI.format = PA_FORMAT_BMP;
-		AI.hContact = hContact;
-		AI.filename[0]='\0';
-
-
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+		yahoo_reset_avatar(hContact);
+		
 	} else if (buddy_icon == 2) {
 		YAHOO_request_avatar(who);	
 	}
@@ -1218,9 +1214,23 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 	ccs.lParam = (LPARAM) &pre;
 	pre.flags = (utf8) ? PREF_UNICODE : 0;
 	
-	if (tm)
+	if (tm) {
+		HANDLE hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
+	
+		if (hEvent) { // contact has events
+			DBEVENTINFO dbei;
+			DWORD dummy;
+	
+			dbei.cbSize = sizeof (DBEVENTINFO);
+			dbei.pBlob = (char*)&dummy;
+			dbei.cbBlob = 2;
+			if (!CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei)) 
+				// got that event, if newer than ts then reset to current time
+				if (tm < dbei.timestamp) tm = time(NULL);
+		}
+
 		pre.timestamp = tm;
-	else
+	} else
 		pre.timestamp = time(NULL);
 		
 	pre.szMessage = tMsgBuf;
@@ -1234,7 +1244,7 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 		/* request the buddy image */
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 		YAHOO_request_avatar(who);
-	}
+	} 
 }
 
 void ext_yahoo_rejected(int id, char *who, char *msg)
