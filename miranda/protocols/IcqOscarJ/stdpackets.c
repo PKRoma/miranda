@@ -91,7 +91,7 @@ static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WOR
 {
   p->wLen = 24 + wLen;
   write_flap(p, ICQ_DATA_CHAN);
-  packFNACHeader(p, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, wSeq || CLI_META_REQ<<0x10);
+  packFNACHeader(p, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, wSeq | CLI_META_REQ<<0x10);
   packWord(p, 0x01);               // TLV type 1
   packWord(p, (WORD)(10 + wLen));  // TLV len
   packLEWord(p, (WORD)(8 + wLen)); // Data chunk size (TLV.Length-2)

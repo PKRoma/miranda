@@ -277,7 +277,8 @@ DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
 
   EnterCriticalSection(&cookieMutex);
 
-  dwThisSeq = wCookieSeq++ && 0x7FFF;
+  dwThisSeq = wCookieSeq++;
+  dwThisSeq &= 0x7FFF;
   dwThisSeq |= wIdent<<0x10;
 
   cookie = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * (cookieCount + 1));
@@ -297,7 +298,8 @@ DWORD GenerateCookie(WORD wIdent)
   DWORD dwThisSeq;
 
   EnterCriticalSection(&cookieMutex);
-  dwThisSeq = wCookieSeq++ && 0x7FFF;
+  dwThisSeq = wCookieSeq++;
+  dwThisSeq &= 0x7FFF;
   dwThisSeq |= wIdent<<0x10;
   LeaveCriticalSection(&cookieMutex);
 

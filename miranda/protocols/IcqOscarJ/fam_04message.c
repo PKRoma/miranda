@@ -2248,7 +2248,7 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 
 	p.wLen = 23 + byUinlen;
 	write_flap(&p, ICQ_DATA_CHAN);
-	packFNACHeader(&p, ICQ_MSG_FAMILY, ICQ_MTN, 0, ICQ_MTN);
+	packFNACHeader(&p, ICQ_MSG_FAMILY, ICQ_MTN, 0, ICQ_MTN<<0x10);
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packWord(&p, 0x01);               // Channel
