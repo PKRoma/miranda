@@ -13,7 +13,7 @@ unit statusmodes;
 
 interface
 
-uses m_skin;
+uses m_skin,langpacktools;
 
 const
   //Status modes used for Icons
@@ -40,14 +40,14 @@ const
   STATUS_FREE_CHAT  = $0020;
   STATUS_INVISIBLE  = $0100;
 
-resourcestring
-  statusstr_offline='offline';
-  statusstr_online='online';
-  statusstr_away='away';
-  statusstr_na='na';
-  statusstr_occupied='occupied';
-  statusstr_dnd='dnd';
-  statusstr_invisible='invisible';
+const//translated internally
+  statusstr_offline='Offline';
+  statusstr_online='Online';
+  statusstr_away='Away';
+  statusstr_na='NA';
+  statusstr_occupied='Occupied';
+  statusstr_dnd='DND';
+  statusstr_invisible='Invisible';
   statusstr_freeforchat='Free For Chat';
 
 
@@ -93,28 +93,28 @@ end;
 function icq_ConvertStatus2Str(status:Word):string;
 begin
   if status = STATUS_OFFLINE then
-    Result:=statusstr_offline
+    Result:=translate(statusstr_offline)
   else
   if (status and STATUS_INVISIBLE)=STATUS_INVISIBLE then
-    Result:=statusstr_invisible
+    Result:=translate(statusstr_invisible)
   else
   if (status and STATUS_FREE_CHAT)=STATUS_FREE_CHAT then
-    Result:=statusstr_freeforchat
+    Result:=translate(statusstr_freeforchat)
   else
   if (status and STATUS_DND)=STATUS_DND then
-    Result:=statusstr_DND
+    Result:=translate(statusstr_DND)
   else
   if (status and STATUS_NA)=STATUS_NA then
-    Result:=statusstr_na
+    Result:=translate(statusstr_na)
   else
   if (status and STATUS_AWAY)=STATUS_AWAY then
-    Result:=statusstr_away
+    Result:=translate(statusstr_away)
   else
   if (status and STATUS_OCCUPIED)=STATUS_OCCUPIED then
-    Result:=statusstr_occupied
+    Result:=translate(statusstr_occupied)
   else
   if (status and $01FF)=0 then
-    Result:=statusstr_online
+    Result:=translate(statusstr_online)
   else
     Result:='Error';
 end;
