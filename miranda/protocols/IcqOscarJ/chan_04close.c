@@ -59,7 +59,6 @@ static void handleSignonError(WORD wError);
 
 void handleCloseChannel(unsigned char *buf, WORD datalen)
 {
-
 	WORD wCookieLen;
 	WORD i;
 	char* newServer;
@@ -147,8 +146,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
 	}
 
-	Netlib_Logf(ghServerNetlibUser, "Authenticated. Connecting to %s", newServer);
-
+	Netlib_Logf(ghServerNetlibUser, "Authenticated.");
 
 	/* Get the ip and port */
 	i = 0;
@@ -163,6 +161,14 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	nloc.flags = 0;
 	nloc.szHost = servip;
 	nloc.wPort = (WORD)atoi(&newServer[i]);
+  { /* Time to close the Connection & packet receiver */
+    Netlib_CloseHandle(hServerPacketRecver);
+    Netlib_CloseHandle(hServerConn);
+    hServerPacketRecver = NULL; // clear the variable
+    Netlib_Logf(ghServerNetlibUser, "Closed connection to login server");
+  }
+
+	Netlib_Logf(ghServerNetlibUser, "Connecting to %s", newServer);
   hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
   if (!hServerConn && (GetLastError() == 87))
   { // this ensures that an old Miranda can also connect
@@ -175,12 +181,9 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to ICQ communication server");
 	}
 	else
-	{
-		/* Time to recreate the packet receiver */
+  { /* Time to recreate the packet receiver */
 		cookieData = cookie;
 		cookieDataLen = wCookieLen;
-		Netlib_CloseHandle(hServerPacketRecver);
-		Netlib_Logf(ghServerNetlibUser, "Closed connection to login server");
 		hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
 		if (!hServerPacketRecver)
 		{
@@ -188,18 +191,15 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		}
 	}
 
-
 	// Free allocated memory
 	// NOTE: "cookie" will get freed when we have connected to the communication server.
 	SAFE_FREE(&newServer);
-
 }
 
 
 
 static void handleMigration()
 {
-
 	NETLIBOPENCONNECTION nloc = {0};
 	char servip[20];
 	unsigned int i;
@@ -276,9 +276,7 @@ static void handleMigration()
 
 static void handleSignonError(WORD wError)
 {
-
 	char msg[256];
-
 
 	switch (wError)
 	{
@@ -325,18 +323,14 @@ static void handleSignonError(WORD wError)
 		_snprintf(msg, 50, Translate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
-
 	}
-
 }
 
 
 
 static void handleRuntimeError(WORD wError)
 {
-
 	char msg[256];
-
 
 	switch (wError)
 	{
@@ -352,7 +346,5 @@ static void handleRuntimeError(WORD wError)
 		_snprintf(msg, 50, Translate("Unknown runtime error: 0x%02x"), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
-
 	}
-
 }
