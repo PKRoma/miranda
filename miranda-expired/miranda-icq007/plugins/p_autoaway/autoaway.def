@@ -1,0 +1,5 @@
+LIBRARY 'autoaway.dll'
+EXPORTS
+	Load
+	Unload
+	Notify
