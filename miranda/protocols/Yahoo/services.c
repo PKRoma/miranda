@@ -54,8 +54,8 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
     switch (wParam) {        
         case PFLAGNUM_1:
             ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSG | PF1_BASICSEARCH
-			                        | PF1_FILESEND  | PF1_FILERECV ;
-//                          | PF1_VISLIST | PF1_FILESEND | PF1_FILERECV ;
+			                        | PF1_FILESEND  | PF1_FILERECV;
+//                          | PF1_SERVERCLIST | PF1_VISLIST ;
             break;
 
         case PFLAGNUM_2:
@@ -361,7 +361,7 @@ static int YahooBasicSearch(WPARAM wParam,LPARAM lParam)
 
 static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 {
-	if ( !yahooLoggedIn )  //should never happen for MSN contacts
+	if ( !yahooLoggedIn )  //should never happen for Yahoo contacts
 		return 0;
 
 	char* szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
