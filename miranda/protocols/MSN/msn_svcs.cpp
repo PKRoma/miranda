@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void __cdecl MSNServerThread( ThreadData* info );
 void MSN_ChatStart(ThreadData* info);
 
-HANDLE msnSetNicknameMenuItem = NULL;
+HANDLE msnBlockMenuItem = NULL;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAddToList - adds contact to the server list
@@ -648,6 +648,22 @@ static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnRebuildContactMenu - gray or ungray the block menus according to contact's status
+
+static int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
+{
+	char szEmail[ MSN_MAX_EMAIL_LEN ];
+	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, szEmail, sizeof szEmail )) {
+		CLISTMENUITEM clmi = { 0 };
+		clmi.cbSize = sizeof( clmi );
+		clmi.pszName = MSN_Translate( ( Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block" ));
+		clmi.flags = CMIM_NAME;
+		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
+	}
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MsnRecvFile - creates a database event from the file request been received
 
 int MsnRecvFile( WPARAM wParam, LPARAM lParam )
@@ -1028,12 +1044,11 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 		WORD tServerPort = MSN_GetWord( NULL, "MSNMPort", 1863 );
 
 		char tServer[ sizeof( newThread->mServer ) ];
-		if ( !MSN_GetStaticString( "LoginServer", NULL, tServer, sizeof( tServer )))
-			lstrcpyn( newThread->mServer, tServer, sizeof( newThread->mServer ));
-		else
-			strcpy( newThread->mServer, MSN_DEFAULT_LOGIN_SERVER );
+		if ( MSN_GetStaticString( "LoginServer", NULL, tServer, sizeof( tServer )))
+			strcpy( tServer, MSN_DEFAULT_LOGIN_SERVER );
 
-		sprintf( newThread->mServer + strlen( newThread->mServer ), ":%i", tServerPort );
+		_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%i", tServer, tServerPort );
+		newThread->mServer[ sizeof(newThread->mServer)-1 ] = 0;
 
 		newThread->mType = SERVER_DISPATCH;
 		{	int oldMode = msnStatusMode;
@@ -1109,6 +1124,7 @@ static int MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
 
 static HANDLE hHookSettingChanged = NULL;
 static HANDLE hHookContactDeleted = NULL;
+static HANDLE hHookRebuildCMenu = NULL;
 
 int LoadMsnServices( void )
 {
@@ -1183,9 +1199,9 @@ int LoadMsnServices( void )
 	mi.position = -500050000;
 	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSNBLOCK ));
 	mi.pszContactOwner = msnProtocolName;
-	mi.pszName = MSN_Translate( "&Block/Unblock" );
+	mi.pszName = MSN_Translate( "&Block" );
 	mi.pszService = servicefunction;
-	msnSetNicknameMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+	msnBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	strcpy( tDest, MSN_INVITE );
 	CreateServiceFunction( servicefunction, MsnInviteCommand );
@@ -1224,6 +1240,7 @@ int LoadMsnServices( void )
 
 	hHookContactDeleted = HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted );
 	hHookSettingChanged = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged );
+	hHookRebuildCMenu   = HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu );
 
 	MSN_CreateProtoServiceFunction( PS_ADDTOLIST,			MsnAddToList );
 	MSN_CreateProtoServiceFunction( PS_ADDTOLISTBYEVENT,	MsnAddToListByEvent );
@@ -1263,4 +1280,7 @@ void UnloadMsnServices( void )
 
 	if ( hHookContactDeleted )
 		UnhookEvent( hHookContactDeleted );
+
+	if ( hHookRebuildCMenu )
+		UnhookEvent( hHookRebuildCMenu );
 }

@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-extern HANDLE msnSetNicknameMenuItem;
+extern HANDLE msnBlockMenuItem;
 
 HANDLE __stdcall MSN_CreateProtoServiceFunction(
 	const char* szService,
@@ -59,7 +59,7 @@ void __stdcall MSN_EnableMenuItems( BOOL parEnable )
 		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnMenuItems[i], ( LPARAM )&clmi );
 	}
 
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnSetNicknameMenuItem, ( LPARAM )&clmi );
+	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
 }
 
 DWORD __stdcall MSN_GetByte( const char* valueName, int parDefltValue )
