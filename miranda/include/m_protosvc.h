@@ -214,6 +214,8 @@ will pick this up and everything will be good.
 //If the new mode requires that the protocol switch from offline to online then
 //it will do so, but errors will be reported in the form of an additional ack:
 //type=ACKTYPE_LOGIN, result=ACKRESULT_FAILURE, hProcess=NULL, lParam=LOGINERR_
+// (added during 0.3.4.3) the protocol will send LOGINERR_OTHERLOCATION if the login 
+// was disconnected because of a login at another location
 #define LOGINERR_WRONGPASSWORD  1
 #define LOGINERR_NONETWORK      2
 #define LOGINERR_PROXYFAILURE   3
@@ -221,6 +223,7 @@ will pick this up and everything will be good.
 #define LOGINERR_NOSERVER       5
 #define LOGINERR_TIMEOUT        6
 #define LOGINERR_WRONGPROTOCOL  7
+#define LOGINERR_OTHERLOCATION  8
 //protocols may define more error codes starting at 1000
 #define PS_SETSTATUS   "/SetStatus"
 
