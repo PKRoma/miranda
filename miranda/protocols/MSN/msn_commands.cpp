@@ -605,7 +605,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( hContact != NULL )
 				strcpy( userNick, MSN_GetContactName( hContact ));
 
-			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 3 );
+			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 5 );
 
 			if ( MSN_GetByte( "DisplayTyping", 0 ))
 				MSN_ShowPopup( userNick, MSN_Translate( "typing..." ), 0 );
