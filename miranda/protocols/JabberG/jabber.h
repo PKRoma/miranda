@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _JABBER_H_
 #define _JABBER_H_
 
+#include <malloc.h>
+
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -381,7 +383,6 @@ char *JabberUtf8Decode(const char *str);
 char *JabberUtf8Encode(const char *str);
 char *JabberSha1(char *str);
 char *JabberUnixToDos(const char *str);
-void JabberDosToUnix(char *str);
 void JabberHttpUrlDecode(char *str);
 char *JabberHttpUrlEncode(const char *str);
 int JabberCombineStatus(int status1, int status2);
@@ -389,6 +390,7 @@ char *JabberErrorStr(int errorCode);
 char *JabberErrorMsg(XmlNode *errorNode);
 void JabberSendVisibleInvisiblePresence(BOOL invisible);
 char *JabberTextEncode(const char *str);
+char *JabberTextEncodeW(const wchar_t *str);
 char *JabberTextDecode(const char *str);
 char *JabberBase64Encode(const char *buffer, int bufferLen);
 char *JabberBase64Decode(const char *buffer, int *resultLen);

@@ -375,33 +375,24 @@ char *JabberUtf8Decode(const char *str)
 */
 }
 
-char *JabberUtf8Encode(const char *str)
+char* JabberUtf8EncodeW( const WCHAR* wstr )
 {
-	unsigned char *szOut;
-	int len, i;
-	WCHAR *wszTemp, *w;
-
-	if (str == NULL) return NULL;
-
-	len = strlen(str);
-
-	// Convert local codepage to unicode
-	if ((wszTemp=(WCHAR *) malloc(sizeof(WCHAR) * (len + 1))) == NULL) return NULL;
-	MultiByteToWideChar(jabberCodePage, 0, str, -1, wszTemp, len + 1);
+	const WCHAR* w;
 
 	// Convert unicode to utf8
-	len = 0;
-	for (w=wszTemp; *w; w++) {
+	int len = 0;
+	for ( w = wstr; *w; w++ ) {
 		if (*w < 0x0080) len++;
 		else if (*w < 0x0800) len += 2;
 		else len += 3;
 	}
 
-	if ((szOut=(unsigned char *) malloc(len + 1)) == NULL)
+	unsigned char* szOut = ( unsigned char* )malloc( len+1);
+	if ( szOut == NULL )
 		return NULL;
 
-	i = 0;
-	for (w=wszTemp; *w; w++) {
+	int i = 0;
+	for ( w = wstr; *w; w++ ) {
 		if (*w < 0x0080)
 			szOut[i++] = (unsigned char) *w;
 		else if (*w < 0x0800) {
@@ -412,55 +403,23 @@ char *JabberUtf8Encode(const char *str)
 			szOut[i++] = 0xe0 | ((*w) >> 12);
 			szOut[i++] = 0x80 | (((*w) >> 6) & 0x3f);
 			szOut[i++] = 0x80 | ((*w) & 0x3f);
-		}
-	}
-	szOut[i] = '\0';
+	}	}
 
-	free(wszTemp);
-
+	szOut[ i ] = '\0';
 	return (char *) szOut;
+}
 
-/*
-	// Number of bytes for each unicode character depending on language
-	switch (jabberLang) {
-	case JABBER_LANG_THAI: x = 3; break;
-	default: x = 2; break;
-	}
+char* JabberUtf8Encode(const char *str)
+{
+	if ( str == NULL )
+		return NULL;
 
-	for (c=0,p=(char *)str; *p!='\0'; p++) {
-		if (*p < 0)
-			c += x;
-		else
-			c++;
-	}
+	// Convert local codepage to unicode
+	int len = strlen( str );
+	WCHAR* wszTemp = ( WCHAR* )alloca( sizeof( WCHAR )*( len+1 ));
+	MultiByteToWideChar( jabberCodePage, 0, str, -1, wszTemp, len+1 );
 
-	if ((s=(char *) malloc(c+1)) != NULL) {
-		for (p=(char *)str,q=s; *p!='\0'; p++) {
-			if (*p < 0) {
-				switch (jabberLang) {
-				case JABBER_LANG_THAI:
-					temp = (BYTE) (p[0]-0xA0);
-					q[0] = (char) 0xE0;
-					q[1] = ((temp>>6)&0x01) | 0xB8;
-					q[2] = (temp&0x3F) | 0x80;
-					break;
-				default:
-					q[0] = ((p[0]&0xC0)>>6) | 0xc0;
-					q[1] = (p[0]&0x3f) | 0x80;
-					break;
-				}
-				q += x;
-			}
-			else {
-				*q = *p;
-				q++;
-			}
-		}
-		*q = '\0';
-	}
-
-	return s;
-*/
+	return JabberUtf8EncodeW( wszTemp );
 }
 
 char *JabberSha1(char *str)
@@ -509,22 +468,6 @@ char *JabberUnixToDos(const char *str)
 		*q = '\0';
 	}
 	return res;
-}
-
-void JabberDosToUnix(char *str)
-{
-	char *p, *q;
-
-	if (str==NULL || str[0]=='\0')
-		return;
-
-	for (p=q=str; *p!='\0'; p++) {
-		if (*p != '\r') {
-			*q = *p;
-			q++;
-		}
-	}
-	*q = '\0';
 }
 
 char *JabberHttpUrlEncode(const char *str)
@@ -671,24 +614,59 @@ void JabberSendVisibleInvisiblePresence(BOOL invisible)
 	}
 }
 
-char *JabberTextEncode(const char *str)
+char* JabberTextEncode( const char* str )
 {
-	char *s1;
-	char *s2;
-
-	if (str == NULL) return NULL;
-	if ((s1=JabberUrlEncode(str)) == NULL) {
+	if ( str == NULL )
 		return NULL;
-	}
+
+	char* s1 = JabberUrlEncode( str );
+	if ( s1 == NULL )
+		return NULL;
+
 	// Convert invalid control characters to space
-	for (s2=s1; *s2!='\0'; s2++) {
-		if (*s2>0 && *s2<0x20 && *s2!=0x09 && *s2!=0x0a && *s2!=0x0d)
-			*s2 = (char) 0x20;
+	if ( *s1 ) {
+		char *p, *q;
+
+		for ( p = s1; *p != '\0'; p++ )
+			if ( *p > 0 && *p < 0x20 && *p != 0x09 && *p != 0x0a && *p != 0x0d )
+				*p = ( char )0x20;
+
+		for ( p = q = s1; *p!='\0'; p++ ) {
+			if ( *p != '\r' ) {
+				*q = *p;
+				q++;
+		}	}
+
+		*q = '\0';
 	}
-	JabberDosToUnix(s1);
-	s2 = JabberUtf8Encode(s1);
-	free(s1);
+
+	char* s2 = JabberUtf8Encode( s1 );
+	free( s1 );
 	return s2;
+}
+
+char* JabberTextEncodeW( const wchar_t* str )
+{
+	if ( str == NULL )
+		return NULL;
+
+	wchar_t* s1 = ( wchar_t* )alloca(( wcslen( str )+1 )*sizeof( wchar_t ));
+	wchar_t *p, *q;
+
+	for ( p = ( WCHAR* )str, q = s1; *p; p++ )
+		if ( *p != '\r' ) {
+			*q = *p;
+			q++;
+		}
+
+	*q = '\0';
+
+	for ( p = s1; *p != '\0'; p++ )
+		if ( *p > 0 && *p < 0x20 && *p != 0x09 && *p != 0x0a && *p != 0x0d )
+			*p = ( char )0x20;
+
+
+	return JabberUtf8EncodeW( s1 );
 }
 
 char *JabberTextDecode(const char *str)

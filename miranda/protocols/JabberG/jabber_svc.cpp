@@ -587,22 +587,28 @@ static void __cdecl JabberSendMessageAckThread(HANDLE hContact)
 int JabberSendMessage(WPARAM wParam, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
-	DBVARIANT dbv;
-	char *msg;
 	JABBER_LIST_ITEM *item;
 	int id;
-	char msgType[16];
 
-	if (!jabberOnline || DBGetContactSetting(ccs->hContact, jabberProtoName, "jid", &dbv)) {
+	DBVARIANT dbv;
+	if ( !jabberOnline || DBGetContactSetting(ccs->hContact, jabberProtoName, "jid", &dbv)) {
 		ProtoBroadcastAck(jabberProtoName, ccs->hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 0);
 		return 0;
 	}
 
-	if ((msg=JabberTextEncode((char *) ccs->lParam)) != NULL) {
+	char *pszSrc = ( char* )ccs->lParam, *msg;
+	if ( ccs->wParam & PREF_UNICODE )
+		msg = JabberTextEncodeW(( wchar_t* )&pszSrc[ strlen(pszSrc)+1 ] );
+	else
+		msg = JabberTextEncode( pszSrc );
+
+	if ( msg != NULL) {
+		char msgType[ 16 ];
 		if (JabberListExist(LIST_CHATROOM, dbv.pszVal) && strchr(dbv.pszVal, '/')==NULL)
 			strcpy(msgType, "groupchat");
 		else
 			strcpy(msgType, "chat");
+
 		if (!strcmp(msgType, "groupchat") || DBGetContactSettingByte(NULL, jabberProtoName, "MsgAck", FALSE) == FALSE) {
 			if (!strcmp(msgType, "groupchat"))
 				JabberSend(jabberThreadInfo->s, "<message to='%s' type='%s'><body>%s</body></message>", dbv.pszVal, msgType, msg);

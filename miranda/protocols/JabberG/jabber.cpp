@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_ssl.h"
 #include "jabber_iq.h"
 #include "resource.h"
-#include <richedit.h>
+#include "version.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -32,9 +32,8 @@ PLUGINLINK *pluginLink;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"Jabber Protocol",
-	PLUGIN_MAKE_VERSION(0,1,1,8),
-	//"Jabber protocol plugin for Miranda IM",
-	"Jabber protocol plugin for Miranda IM (pre-0.1.1.9 cvs "__DATE__")",
+	__VERSION_DWORD,
+	"Jabber protocol plugin for Miranda IM ("__DATE__")",
 	"George Hazan",
 	"ghazan@postman.ru",
 	"(c) 2002-2004 Santithorn Bunchua, 2005 George Hazan",
@@ -118,7 +117,7 @@ BOOL WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved)
 	return TRUE;
 }
 
-__declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0,3,3,0)) {
 		MessageBox(NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.3.3 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
@@ -127,7 +126,7 @@ __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 	return &pluginInfo;
 }
 
-int __declspec(dllexport) Unload(void)
+extern "C" int __declspec(dllexport) Unload(void)
 {
 	int i;
 
@@ -234,7 +233,7 @@ static void JabberIconInit()
 		jabberIcon[i] = ( HICON )LoadImage(hInst, MAKEINTRESOURCE(iconList[i]), IMAGE_ICON, 0, 0, 0);
 }
 
-int __declspec(dllexport) Load(PLUGINLINK *link)
+extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 {
 	PROTOCOLDESCRIPTOR pd;
 	HANDLE hContact;
