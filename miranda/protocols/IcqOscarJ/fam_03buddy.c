@@ -678,7 +678,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 			}
       else
-        if (szClient == 0) szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
+        /*if (szClient == 0)*/ szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
 
 		}
 
