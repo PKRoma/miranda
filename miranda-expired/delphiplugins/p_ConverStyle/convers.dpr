@@ -2,7 +2,7 @@ library convers;
 
 {
 Conversation Style Messaging Plugin 
-Version 0.99.3
+Version 0.99.4
 by Christian Kästner
 for Miranda ICQ 0.1
 written with Delphi 5 Pro
@@ -54,11 +54,9 @@ uses
   m_options in '..\headerfiles\m_options.pas',
   timeoutfrm in 'timeoutfrm.pas' {TimeoutForm},
   m_email in '..\headerfiles\m_email.pas',
-  optionsd in 'optionsd.pas';
-
-
-
-
+  optionsd in 'optionsd.pas',
+  m_langpack in '..\headerfiles\m_langpack.pas',
+  langpacktools in '..\units\langpacktools.pas';
 
 {$R *.RES}
 { $R optdlgs.res}
@@ -74,7 +72,7 @@ begin
   ZeroMemory(@PluginInfo,SizeOf(PluginInfo));
   PluginInfo.cbSize:=sizeof(TPLUGININFO);
   PluginInfo.shortName:='Conversation Style Messaging';
-  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,3,0);
+  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,4,0);
   PluginInfo.description:='This plugin offers a conversation style messaging ability for Miranda ICQ. Like most instant message programs you see the history above the input field. Additionally it has a 3 different display stiles and couple of nice features and options.';
   PluginInfo.author:='Christian Kästner';
   PluginInfo.authorEmail:='christian.k@stner.de';
@@ -82,7 +80,7 @@ begin
   PluginInfo.homepage:='http://www.kaestnerpro.de/convers.zip';
   PluginInfo.isTransient:=0;
   PluginInfo.replacesDefaultModule:=DEFMOD_SRMESSAGE;
-  PluginInfoVersion:='0.993';
+  PluginInfoVersion:='0.994';
 
   Result:=@PluginInfo;
 end;
@@ -126,7 +124,6 @@ begin
   msgwindow.Show;
   msgwindow.BringWindowToFront;
   msgwindow.SetFocus;
-  setfocus(msgwindow.Handle);
 
   Result:=0;
 end;
@@ -236,8 +233,8 @@ begin
 end;
 
 function OnOptInitialise(wParam{addinfo},lParam{0}:DWord):integer;cdecl;
-var
-  odp:TOPTIONSDIALOGPAGE;
+//var
+//  odp:TOPTIONSDIALOGPAGE;
 begin
 { ZeroMemory(@odp,sizeof(odp));
   odp.cbSize:=sizeof(odp);
@@ -246,7 +243,14 @@ begin
   odp.pszTemplate:='DLG_MISCOPTIONS';
   odp.pszTitle:='Convers. Plugin';
   odp.pfnDlgProc:=@optionfrm.DlgProcMiscOptions;
-  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));}
+  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
+
+  odp.pszTemplate:='DLG_SENDOPTIONS';
+  odp.pszGroup:='Convers.. Plugin';
+  odp.pszTitle:='Send Message';
+  odp.groupPosition:=-50;
+  odp.pfnDlgProc:=@optionfrm.DlgProcSendOptions;
+  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp)); }
   Result:=0;
 end;
 

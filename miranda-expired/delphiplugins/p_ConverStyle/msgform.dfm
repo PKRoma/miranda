@@ -93,7 +93,7 @@ object MsgWindow: TMsgWindow
     object UserBtn: TToolbarButton97
       Left = 92
       Top = 6
-      Width = 53
+      Width = 61
       Height = 23
       DropdownArrowWidth = 12
       DropdownMenu = UserMenu
