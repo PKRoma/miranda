@@ -10,6 +10,8 @@ Version 0.4.0.1
 [+] wish #0000966 fixed: to show the warning when a  contact  tries
 to establish a audio/video/webcam conference with you.
 [-] removed support for old versions of Miranda.
+[!] bug #0000996 fixed: File transfer fails when auto-accept is on
+and file already exists in destination directory
 [!] fixes for minor string allocation problems.
 
 WARNING!!! All versions since this one require Miranda 0.4.x core.
