@@ -239,7 +239,8 @@
 #define IDC_TOOLBARHIDEMODE             1676
 #define IDC_EMPTYLINEFIX                1677
 #define IDC_SPLITTERSTATICEDGES         1677
-#define IDC_STREAMTHREADING             1677
+#define IDC_STREAMTHREADING             1672
+#define IDC_AVATARDISPLAY               1677
 #define IDC_MAXAVATARHEIGHT             1678
 #define IDC_TABLIMIT                    1678
 #define IDC_RIGHTINDENT                 1678

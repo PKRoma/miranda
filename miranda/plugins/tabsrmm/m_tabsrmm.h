@@ -51,6 +51,9 @@
 #define SMODE_FORCEANSI 4
 #define SMODE_SENDLATER 8
 
+#define AVATARMODE_DYNAMIC 0
+#define AVATARMODE_STATIC 1
+
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
 	TCHAR szName[CONTAINER_NAMELEN + 4];		// container name
@@ -179,6 +182,7 @@ struct MessageWindowData {
     HANDLE hFlashingEvent;
     char uin[80];
     BOOL bNotOnList;
+    int  iAvatarDisplayMode;
 };
 
 typedef struct _recentinfo {
@@ -231,6 +235,7 @@ typedef struct _globals {
     int m_AllowSendButtonHidden;
     int m_ToolbarHideMode;
     int m_FixFutureTimestamps;
+    int m_AvatarDisplayMode;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

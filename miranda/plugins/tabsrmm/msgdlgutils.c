@@ -70,10 +70,12 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     
     GetClientRect(hwndDlg, &rc);
     
-    if(myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight < myGlobals.m_LimitStaticAvatarHeight && dat->iRealAvatarHeight == 0) {
+    if(myGlobals.m_AvatarDisplayMode != AVATARMODE_DYNAMIC && myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight < myGlobals.m_LimitStaticAvatarHeight && dat->iRealAvatarHeight == 0) {
         int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
         RECT rcContainer;
         int cx;
+        if(!dat->showPic)           // don't care if no avatar is visible
+            return;
         if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
             return;
         

@@ -15,6 +15,12 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.92 - 2005/03/30
+
+        ! fixed broken dialog layout on forward message
+        
+        ! nicknames may again contain characters like { and }
+
 Version 0.9.9.91 - 2005/03/28
 
         * non-unicode version now sets the IEEF_NO_UNICODE flag for IEview. That may

@@ -674,16 +674,19 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         else {
             if((dat->dwFlags & MWF_LOG_SHOWTIME) && !bHideNick) {		// show both...
                 if(dat->dwFlags & MWF_LOG_SWAPNICK) {		// first nick, then time..
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset], szName);
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+                    AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
                 } else {
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset], szName);
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+                    AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
                 }
-            } else if(dat->dwFlags & MWF_LOG_SHOWTIME || !g_groupBreak) {
+            } else if(dat->dwFlags & MWF_LOG_SHOWTIME || !g_groupBreak)
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
-            } else if(!bHideNick) {
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset], szName);
+            else if(!bHideNick) {
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
             }
         }
 	}

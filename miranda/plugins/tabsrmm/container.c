@@ -522,12 +522,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 POINT pt;
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
-                mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
+                //mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
                 mmi->ptMinTrackSize.x = 275;
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 pt.y = rc.top;
                 TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
-                mmi->ptMinTrackSize.y += ((rc.top - pt.y) + 10);
+                //mmi->ptMinTrackSize.y += ((rc.top - pt.y) + 10);
                 if(pContainer->dwFlags & CNT_VERTICALMAX) {
                     WINDOWPLACEMENT wp;
                     RECT rcDesktop;
@@ -616,7 +616,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
                 RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
                 if (pContainer->hwndStatus)
-                    RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+                    RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
                 break; 
             } 
         case DM_UPDATETITLE: {
