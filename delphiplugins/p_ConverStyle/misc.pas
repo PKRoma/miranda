@@ -89,8 +89,8 @@ const
     );
 
 
-var
-  blinkid:integer;//id uses for message blinking on contactlist
+const
+  blinkid=123456;//random identifier used to flash an icon for "incoming message" on contact list
 
 
 procedure StartWait;
