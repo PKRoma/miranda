@@ -65,8 +65,6 @@ type
     Label2: TLabel;
     CloseWindowCheck: TCheckBox;
     SplitLargeMessagesCheck: TCheckBox;
-    Label3: TLabel;
-    AutoRetryEdit: TEdit;
     procedure AboutBtnClick(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -86,7 +84,6 @@ type
     procedure Button1Click(Sender: TObject);
     procedure r_changefontClick(Sender: TObject);
     procedure TimeoutEditExit(Sender: TObject);
-    procedure AutoRetryEditExit(Sender: TObject);
   private
     richsettings:TRichEditSettings;
     gridsettings:TGridEditSettings;
@@ -96,6 +93,8 @@ type
 
 
 function DlgProcMiscOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
+function DlgProcSendOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
+
 
 implementation
 
@@ -118,7 +117,6 @@ var
   val:integer;
 begin
   TimeoutEditExit(Self);
-  AutoRetryEditExit(Self);
   LoadRecentMsgCountEditExit(Self);
 
   //misc
@@ -131,7 +129,6 @@ begin
   WriteSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(CloseWindowCheck.Checked));
   WriteSettingInt(PluginLink,0,'Convers','HandleIncoming',HandleIncomingGroup.ItemIndex);
   WriteSettingInt(PluginLink,0,'Convers','SendTimeout',TimeoutEdit.tag);
-  WriteSettingInt(PluginLink,0,'Convers','AutoRetry',AutoRetryEdit.tag);
 
   //displaytype
   Val:=integer(dmmemo);
@@ -185,8 +182,6 @@ begin
   TimeoutEdit.Text:=IntToStr(val);
   TimeoutEdit.tag:=val;
   val:=ReadSettingInt(PluginLink,0,'Convers','AutoRetry',2);
-  AutoRetryEdit.Text:=IntToStr(val);
-  AutoRetryEdit.tag:=val;
 
   //load display type
   val:=ReadSettingInt(PluginLink,0,'Convers','DisplayType',Integer(DefaultDisplayMode));
@@ -417,26 +412,12 @@ begin
   end;
 end;
 
-procedure TOptionForm.AutoRetryEditExit(Sender: TObject);
-var
-  v:integer;
-begin
-  try
-  v:=StrToInt(AutoRetryEdit.Text);
-  if v>=0 then
-    AutoRetryEdit.tag:=v
-  else
-    ShowMessage(AutoRetryEdit.Text+' is not a valid entry.');
-  except
-  ShowMessage('"'+AutoRetryEdit.text+'" is not a valid number.');
-  end;
-end;
-
 function Checked(c:Boolean):Cardinal;
 //converts boolean value to  BST_CHECKED
 begin
   if c then Result:=BST_CHECKED	else Result:=BST_UNCHECKED;
 end;
+
 function DlgProcMiscOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
 var
   str:string;
@@ -513,6 +494,41 @@ begin
         Result:=True;
 
         windowmgr.ReloadOptions(otMisc);
+        end;
+      end;
+   end;
+end;
+
+function DlgProcSendOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
+var
+  str:string;
+  pc:PChar;
+  val:integer;
+begin
+  Result:=False;
+
+  case message of
+    WM_INITDIALOG:
+      begin
+      //load options
+
+      //make sure we can save the dialog...
+      SendMessage(GetParent(dialog), PSM_CHANGED, 0, 0);
+
+      Result:=True;
+      end;
+    WM_COMMAND:
+      begin
+      end;
+    WM_NOTIFY:
+      begin
+      if PNMHdr(lParam)^.code = PSN_KILLACTIVE then//check if all values are ok
+        ;
+      if PNMHdr(lParam)^.code = PSN_APPLY then//save settings
+        begin
+        Result:=True;
+
+        windowmgr.ReloadOptions(otSend);
         end;
       end;
    end;
