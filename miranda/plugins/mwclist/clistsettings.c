@@ -40,6 +40,8 @@ char *GetProtoForContact(HANDLE hContact);
 int GetStatusForContact(HANDLE hContact,char *szProto);
 char *UnknownConctactTranslatedName;
 extern boolean OnModulesLoadedCalled;
+void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
+
 
 static int DumpElem( pdisplayNameCacheEntry pdnce )
 {
@@ -99,6 +101,7 @@ void InitDisplayNameCache(SortedList *list)
 			displayNameCacheEntry *pdnce;
 			pdnce=mir_calloc(1,sizeof(displayNameCacheEntry));
 			pdnce->hContact=hContact;
+			InvalidateDisplayNameCacheEntryByPDNE(hContact,pdnce,0);
 			List_Insert(list,pdnce,i);
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 		i++;
@@ -641,7 +644,8 @@ __try
 		InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
 		}
 
-		if(!strcmp(cws->szSetting,"Hidden")) {		
+		if(!strcmp(cws->szSetting,"Hidden")) {
+		InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);		
 			if(cws->value.type==DBVT_DELETED || cws->value.bVal==0) {
 				char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 				ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);

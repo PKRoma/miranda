@@ -53,7 +53,7 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 			WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
 		else if(cws->value.type==DBVT_ASCIIZ&&!strcmp(cws->szSetting,"Group"))
 			WindowList_Broadcast(hClcWindowList,INTM_GROUPCHANGED,wParam,lParam);
-		else if(cws->value.type==DBVT_BYTE&&!strcmp(cws->szSetting,"Hidden"))
+		else if(!strcmp(cws->szSetting,"Hidden"))
 			WindowList_Broadcast(hClcWindowList,INTM_HIDDENCHANGED,wParam,lParam);
 		else if(cws->value.type==DBVT_BYTE&&!strcmp(cws->szSetting,"NotOnList"))
 			WindowList_Broadcast(hClcWindowList,INTM_NOTONLISTCHANGED,wParam,lParam);
