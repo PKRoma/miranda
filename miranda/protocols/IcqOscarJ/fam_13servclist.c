@@ -309,19 +309,26 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       {
         void* groupData;
         int groupSize;
+        servlistcookie* ack;
         DWORD dwCookie;
 
-        setServerGroupName(sc->wGroupId, NULL); // clear group from namelist
+        setServerGroupName(sc->wGroupId, sc->szGroupName); // add group to namelist
 
         groupData = collectGroups(&groupSize);
         groupData = realloc(groupData, groupSize+2);
         *(((WORD*)groupData)+(groupSize>>1)) = sc->wGroupId; // add this new group id
-        sc->wGroupId = 0;
-        sc->dwAction = SSA_GROUP_UPDATE;
-        sc->szGroupName = "";
-        dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, sc);
+        groupSize += 2;
 
-        icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, sc->szGroupName, groupData, groupSize);
+        ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+        if (ack)
+        {
+          ack->wGroupId = 0;
+          ack->dwAction = SSA_GROUP_UPDATE;
+          ack->szGroupName = NULL;
+          dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+
+          icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
+        }
         sendAddEnd(); // end server modifications here
 
         SAFE_FREE(&groupData);
@@ -423,6 +430,110 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
         SAFE_FREE(&groupData);
       }
+      break;
+    }
+  case SSA_CONTACT_SET_GROUP:
+    { // we moved contact to another group
+      if (sc->lParam == -1)
+      { // the first was an error
+        break;
+      }
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Moving of user to another group on server list failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, Translate("Moving of user to another group on server list failed."));
+        if (!sc->lParam) // is this first ack ?
+        {
+          sc->lParam = -1;
+          sc = NULL; // this can't be freed here
+        }
+        break;
+      }
+      if (sc->lParam) // is this the second ack ?
+      {
+        void* groupData;
+        int groupSize;
+        int bEnd = 1; // shall we end the sever modifications
+
+        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", sc->wNewContactId);
+	      DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", sc->wNewGroupId);
+        FreeServerID(sc->wContactId); // release old contact id
+
+        if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize)) // update the group we moved from
+        { // the group is still not empty, just update it
+          DWORD dwCookie;
+          servlistcookie* ack;
+
+          ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+          if (!ack)
+          {
+            Netlib_Logf(ghServerNetlibUser, "Updating of group on server list failed (malloc error)");
+            break;
+          }
+          ack->dwAction = SSA_GROUP_UPDATE;
+          ack->wContactId = 0;
+          ack->hContact = NULL;
+          ack->szGroupName = getServerGroupName(sc->wGroupId);
+          ack->wGroupId = sc->wGroupId;
+          dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+
+          icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, ack->wGroupId, ack->szGroupName, groupData, groupSize);
+        }
+        else // the group is empty, delete it
+        {
+          DWORD dwCookie;
+          servlistcookie* ack;
+
+          ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+          if (!ack)
+          {
+            Netlib_Logf(ghServerNetlibUser, "Updating of group on server list failed (malloc error)");
+            break;
+          }
+          ack->dwAction = SSA_GROUP_REMOVE;
+          ack->wContactId = 0;
+          ack->hContact = NULL;
+          ack->szGroupName = getServerGroupName(sc->wGroupId);
+          ack->wGroupId = sc->wGroupId;
+          dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, ack);
+
+          icq_sendGroup(dwCookie, ICQ_LISTS_REMOVEFROMLIST, ack->wGroupId, ack->szGroupName, NULL, 0);
+          bEnd = 0; // here the modifications go on
+        }
+        SAFE_FREE(&groupData); // free the memory
+
+        groupData = collectBuddyGroup(sc->wNewGroupId, &groupSize); // update the group we moved to
+        {
+          DWORD dwCookie;
+          servlistcookie* ack;
+
+          ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+          if (!ack)
+          {
+            Netlib_Logf(ghServerNetlibUser, "Updating of group on server list failed (malloc error)");
+            break;
+          }
+          ack->dwAction = SSA_GROUP_UPDATE;
+          ack->wContactId = 0;
+          ack->hContact = NULL;
+          ack->szGroupName = getServerGroupName(sc->wNewGroupId);
+          ack->wGroupId = sc->wNewGroupId;
+          dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+
+          icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, ack->wGroupId, ack->szGroupName, groupData, groupSize);
+        }
+        if (bEnd) sendAddEnd();
+      }
+      else
+      {
+        sc->lParam = 1;
+        sc = NULL; // wait for second ack
+      }
+      break;
+    }
+  case SSA_SERVLIST_ACK:
+    {
+      ProtoBroadcastAck(gpszICQProtoName, sc->hContact, ICQACKTYPE_SERVERCLIST, wError?ACKRESULT_FAILED:ACKRESULT_SUCCESS, (HANDLE)sc->lParam, wError);
       break;
     }
   default:
@@ -602,7 +713,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							continue;
 						}
 
-            if (szGroup = makeGroupPath(wGroupId))
+            if (szGroup = makeGroupPath(wGroupId, TRUE))
             { // try to get Miranda Group path from groupid, if succeeded save to db
               DBWriteContactSettingString(hContact, "CList", "Group", szGroup);
 
@@ -832,7 +943,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
           SAFE_FREE(&pszName);
           /* demangle full grouppath, create groups, set it to known */
-          pszName = makeGroupPath(wGroupId); 
+          pszName = makeGroupPath(wGroupId, FALSE); 
           SAFE_FREE(&pszName);
 
           /* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */
@@ -1089,6 +1200,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       break;
 
 		case SSI_ITEM_UNKNOWN1:
+      if (wGroupId == 0)
+      {
+        /* ICQ2k ShortcutBar Items */
+        /* data is TLV(CD) text */
+      }
+
 		default:
 			Netlib_Logf(ghServerNetlibUser, "SSI unhandled item %2x", wTlvType);
 			break;

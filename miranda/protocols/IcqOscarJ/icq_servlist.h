@@ -53,6 +53,7 @@
 #define SSA_GROUP_ADD         0x15  // create group
 #define SSA_GROUP_REMOVE      0x16  // delete group
 #define SSA_GROUP_UPDATE      0x17  // update group
+#define SSA_SERVLIST_ACK      0x20  // send proto ack only (UploadUI)
 
 typedef void (*GROUPADDCALLBACK)(const char *szGroupPath, WORD wGroupId, LPARAM lParam);
 
@@ -64,6 +65,7 @@ typedef struct servlistcookie_t
   WORD wContactId;
   WORD wGroupId;
   char* szGroupName;
+  WORD wNewContactId;
   WORD wNewGroupId;
   int dwAction; 
   GROUPADDCALLBACK ofCallback;
@@ -83,7 +85,7 @@ void setServerGroupName(WORD wGroupID, const char* szGroupName);
 WORD getServerGroupID(const char* szPath);
 void setServerGroupID(const char* szPath, WORD wGroupID);
 int IsServerGroupsDefined();
-char* makeGroupPath(WORD wGroupId);
+char* makeGroupPath(WORD wGroupId, DWORD bCanCreate);
 WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
 
 DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup);

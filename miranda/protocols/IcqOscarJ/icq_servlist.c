@@ -323,7 +323,7 @@ DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szN
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
   packWord(&packet, (WORD)nNameLen);
-  packBuffer(&packet, szUtfName, (WORD)nNameLen);
+  if (nNameLen) packBuffer(&packet, szUtfName, (WORD)nNameLen);
   packWord(&packet, wGroupId);
   packWord(&packet, 0); // ItemId is always 0 for groups
   packWord(&packet, 1); // ItemType 1 = group
@@ -663,7 +663,7 @@ int countGroupLevel(WORD wGroupId)
 
 
 // demangle group path
-char* makeGroupPath(WORD wGroupId)
+char* makeGroupPath(WORD wGroupId, DWORD bCanCreate)
 {
   char* szGroup = NULL;
 
@@ -692,7 +692,7 @@ char* makeGroupPath(WORD wGroupId)
         { // that was not a sub-group, it was just a group starting with >
           int hGroup;
 
-          if (!GroupNameExists(szGroup, -1))
+          if (!GroupNameExists(szGroup, -1) && bCanCreate)
           { // if the group does not exist, create it
             hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
             CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
@@ -701,7 +701,7 @@ char* makeGroupPath(WORD wGroupId)
           return szGroup;
         }
 
-        szTempGroup = makeGroupPath(wId);
+        szTempGroup = makeGroupPath(wId, bCanCreate);
 
         szTempGroup = realloc(szTempGroup, strlen(szGroup)+strlen(szTempGroup)+2);
         strcat(szTempGroup, "\\");
@@ -717,7 +717,7 @@ char* makeGroupPath(WORD wGroupId)
         { // unknown path, create
           int hGroup;
 
-          if (!GroupNameExists(szGroup, -1))
+          if (!GroupNameExists(szGroup, -1) && bCanCreate)
           { // if the group does not exist, create it
             hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
             CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
@@ -730,7 +730,7 @@ char* makeGroupPath(WORD wGroupId)
       { // create that group
         int hGroup;
 
-        if (!GroupNameExists(szGroup, -1))
+        if (!GroupNameExists(szGroup, -1) && bCanCreate)
         { // if the group does not exist, create it
           hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
           CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
@@ -794,7 +794,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
     return makeGroupId(szGroupPath, ofCallback, lParam);
   }
 
-  // TODO: remove this, it is now only as a last resource
+  // TODO: remove this, it is now only as a last resort
   wGroupID = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0); 
   if (ofCallback) ofCallback(szGroupPath, wGroupID, (LPARAM)lParam);
   
@@ -931,10 +931,113 @@ DWORD removeServContact(HANDLE hContact)
 
 
 
+void moveServContactReady(const char* pszGroupPath, WORD wNewGroupID, LPARAM lParam)
+{
+  WORD wItemID;
+  WORD wGroupID;
+  DWORD dwUin;
+  servlistcookie* ack;
+  DWORD dwCookie, dwCookie2;
+  DBVARIANT dbvNote;
+  char* pszNote;
+  char* pszNick;
+  BYTE bAuth;
+
+  if (!wNewGroupID) return; // something went wrong
+	
+  ack = (servlistcookie*)lParam;
+  if (!ack) return;
+
+  wItemID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "ServerId", 0);
+  wGroupID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "SrvGroupId", 0);
+
+  if (!wItemID) // TODO: do not fail here, just add the user to the correct group
+  { // Only move the contact if it had an ID
+    Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no ID)");
+    return;
+  }
+
+  if (!wGroupID)
+  { // Only move the contact if it had an GroupID
+    Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no Group)");
+    return;
+  }
+
+  if (wGroupID == wNewGroupID)
+  { // Only move the contact if it had different GroupID
+    Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (same Group)");
+    return;
+  }
+
+	// Get UIN
+	if (!(dwUin = DBGetContactSettingDword(ack->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+  {
+    // Could not do anything without uin
+    Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no UIN)");
+    return;
+  }
+
+  // Read comment from DB
+  if (DBGetContactSetting(ack->hContact, "UserInfo", "MyNotes", &dbvNote))
+    pszNote = NULL; // if not read, no note
+  else
+    pszNote = dbvNote.pszVal;
+
+  bAuth = DBGetContactSettingByte(ack->hContact, gpszICQProtoName, "Auth", 0);
+
+  pszNick = ack->szGroupName;
+
+  ack->szGroupName = NULL;
+  ack->dwAction = SSA_CONTACT_SET_GROUP;
+  ack->dwUin = dwUin;
+  ack->wGroupId = wGroupID;
+  ack->wContactId = wItemID;
+  ack->wNewContactId = GenerateServerId(); // icq5 recreates also this, imitate
+  ack->wNewGroupId = wNewGroupID;
+  ack->lParam = 0; // we use this as a sign
+
+  dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+  dwCookie2 = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
+
+  sendAddStart();
+  icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, wGroupID, wItemID, ack->szGroupName, pszNote, bAuth, SSI_ITEM_BUDDY);
+  icq_sendBuddy(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupID, ack->wNewContactId, ack->szGroupName, pszNote, bAuth, SSI_ITEM_BUDDY);
+
+  DBFreeVariant(&dbvNote);
+  SAFE_FREE(&pszNick);
+}
+
+
+
 // Called when contact should be moved from one group to another, create new, remove empty
 DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 {
-  return 0;
+  servlistcookie* ack;
+  char* pszNick;
+
+  if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
+  { // Could not do anything without cookie
+    Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (malloc failed)");
+    return 0;
+  }
+  else
+  {
+    DBVARIANT dbvNick;
+
+    // Read nick name from DB
+    if (DBGetContactSetting(hContact, "CList", "MyHandle", &dbvNick))
+      pszNick = NULL; // if not read, no nick
+    else
+      pszNick = dbvNick.pszVal;
+    
+    ack->hContact = hContact;
+    ack->szGroupName = _strdup(pszNick); // we need this for sending
+
+    DBFreeVariant(&dbvNick);
+
+    makeGroupId(pszNewGroup, moveServContactReady, ack);
+    return 1;
+  }
 }
 
 
