@@ -100,6 +100,7 @@ static struct branch_t branch2[] = {
 	{"Prefix all events with a timestamp", "ShowTimeStamp", 0,1, NULL},
 	{"Only prefix with timestamp if it has changed", "ShowTimeStampIfChanged", 0,0, NULL},
 	{"Indent the second line of a message", "LogIndentEnabled", 0,0, NULL},
+	{"Add \':\' to auto-completed user names", "AddColonToAutoComplete", 0, 1, NULL},
 	{"Strip colors from messages in the log", "StripFormatting", 0, 0, NULL},
 	{"Enable the \'event filter\' for new rooms", "FilterEnabled", 0,0, NULL}
 };
@@ -1058,7 +1059,7 @@ void LoadGlobalSettings(void)
 	g_LogOptions.StripFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "StripFormatting", 0);
 	g_LogOptions.TrayIconInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TrayIconInactiveOnly", 1);
 	g_LogOptions.PopUpInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "PopUpInactiveOnly", 1);
-
+	g_LogOptions.AddColonToAutoComplete = (BOOL)DBGetContactSettingByte(NULL, "Chat", "AddColonToAutoComplete", 1);
 	g_LogOptions.iPopupStyle = DBGetContactSettingByte(NULL, "Chat", "PopupStyle", 1);
 	g_LogOptions.iPopupTimeout = DBGetContactSettingWord(NULL, "Chat", "PopupTimeout", 3);
 	g_LogOptions.crPUBkgColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorBG", GetSysColor(COLOR_WINDOW));

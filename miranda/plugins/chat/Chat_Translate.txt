@@ -1,6 +1,6 @@
 ;----------------------------oOo----------------------------
 ;
-;                   Chat Plugin v 0.2.0.1
+;                   Chat Plugin v 0.2.0.2
 ;
 ;
 ;                   TRANSLATION TEMPLATE
@@ -161,6 +161,7 @@
 ;[Prefix all events with a timestamp]
 ;[Only prefix with timestamp if it has changed]
 ;[Indent the second line of a message]
+;[Add \':\' to auto-completed user names]
 ;[Strip colors from messages in the log]
 ;[Enable the \'event filter\' for new rooms]
 ;[Show topic changes]

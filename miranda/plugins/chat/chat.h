@@ -237,6 +237,7 @@ typedef struct GlobalLogSettings_t {
 	BOOL		StripFormat;
 	BOOL		PopUpInactiveOnly;
 	BOOL		TrayIconInactiveOnly;
+	BOOL		AddColonToAutoComplete;
 	DWORD		dwIconFlags;
 	DWORD		dwTrayIconFlags;
 	DWORD		dwPopupFlags;

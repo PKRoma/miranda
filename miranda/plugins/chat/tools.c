@@ -116,8 +116,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 					SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
 				}
 				SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
-				SetActiveWindow(hWindow);
-
+				SetForegroundWindow(hWindow);
 
 				PUDeletePopUp(hWnd);
 

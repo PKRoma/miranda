@@ -593,7 +593,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					&& wParam != VK_DELETE )
 				{
 
-					if(start == 0)
+					if(g_LogOptions.AddColonToAutoComplete && start == 0)
 					{
 						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) ": ");
 					}
@@ -676,7 +676,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				return TRUE;
 		
 			}			
-			if (wParam == 0x56 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-v (paste clean text)
+			if ((wParam == 45 && GetKeyState(VK_SHIFT) & 0x8000 || wParam == 0x56 && GetKeyState(VK_CONTROL) & 0x8000 )&& !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-v (paste clean text)
 			{
 				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
 				return TRUE;
@@ -2166,6 +2166,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
                             }break;
 					   default:
+							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
 							DoEventHookAsync(hwndDlg, dat->pszID, dat->pszModule, GC_USER_LOGMENU, NULL, NULL, (LPARAM)uID);
 							break;
 
