@@ -17,7 +17,7 @@ WGETFLAGS=--tries=10 --waitretry=60
 
 SFTP=bin/sftp.exe
 SFTP_SHELL=shell.sourceforge.net
-SFTP_PATH=/home/groups/m/mi/miranda-icq/htdocs/ab
+SFTP_PATH=/home/groups/m/mi/miranda/htdocs/testing/
 SFTP_BATCH=sftp_batch.tmp
 
 all: prepare fetch build package upload
@@ -26,13 +26,8 @@ all: prepare fetch build package upload
 prepare_ex:
 define MAKEOUTPUTDIRS 
 -mkdir tmp 
--mkdir tmp\\cvs 
--mkdir tmp\\output 
--mkdir tmp\\cvs\\bin 
--mkdir tmp\\cvs\\bin\\Release 
--mkdir tmp\\cvs\\bin\\Release\\Plugins 
--mkdir tmp\\cvs\\bin\\Debug	 
--mkdir tmp\\cvs\\bin\\Debug\\Plugins
+-mkdir tmp\\cvs
+-mkdir tmp\\output
 endef
 	$(MAKEOUTPUTDIRS)
 	
@@ -40,7 +35,7 @@ prepare:
 	$(MAKE) --silent -f all.mk prepare_ex
 	
 build: fetch unzip changelog
-	$(MAKE) -f build.mk all MODE=Debug DEBUG=1 --jobs=2
+#$(MAKE) -f build.mk all MODE=Debug DEBUG=1 --jobs=2
 	$(MAKE) -f build.mk all MODE=Release --jobs=4
 
 fetch: prepare
@@ -61,14 +56,14 @@ changelog: unzip
 	$(WGET) $(WGETFLAGS) http://xolphin.nl/egodust/ChangeLog.part --output-document=$(OUTPUT)/ChangeLog_$(CO_YMD).part
 	
 # all the plugin names
-PLUGIN_NAMES=icq msn aim yahoo jabber srmm clist mwclist
+PLUGIN_NAMES=icq msn aim yahoo jabber srmm clist mwclist dbx_3x
 
 # give these names to the packager
 export PLUGIN_NAMES
 
-package: build
+package: 
+#build
 	$(MAKE) --silent -f package.mk MODE=Release
-	$(MAKE) --silent -f package.mk MODE=Debug
 
 upload: package
 	$(MAKE) --silent -f all.mk generate_upload_list > $(SFTP_BATCH)
@@ -80,14 +75,10 @@ cd $(SFTP_PATH)
 # put miranda
 echo put $(OUTPUT)/miranda32_$(CO_YMD).zip
 echo chmod 744 miranda32_$(CO_YMD).zip
-echo put $(OUTPUT)/miranda32_debug_$(CO_YMD).zip
-echo chmod 744 miranda32_debug_$(CO_YMD).zip
 # put all the plugins in various modes and change permissions
 for file in $(PLUGIN_NAMES); do \
 echo put $(OUTPUT)/$$file\_$(CO_YMD).zip; \
 echo chmod 744 $$file\_$(CO_YMD).zip; \
-echo put $(OUTPUT)/$$file\_debug_$(CO_YMD).zip; \
-echo chmod 744 $$file\_debug_$(CO_YMD).zip; \
 done
 # put the cvs
 echo put $(TMPDIR)/miranda_cvs.zip miranda_cvs_$(CO_YMD).zip

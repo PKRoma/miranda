@@ -5,7 +5,7 @@ LMODE=
 else
 LMODE=debug_
 endif
-BINDIR=$(CVSDIR)/Bin/$(MODE)
+BINDIR=$(CVSDIR)/miranda/bin/$(MODE)
 
 #export PLUGIN_NAMES
 
