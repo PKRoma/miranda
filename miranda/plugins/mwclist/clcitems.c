@@ -374,6 +374,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 	dat->list.totalMembers=0;
 	dat->NeedResort=1;
 	dat->selection=-1;
+	dat->HiLightMode=DBGetContactSettingByte(NULL,"CLC","HiLightMode",0);
 	{
 		int i;
 		char *szGroupName;

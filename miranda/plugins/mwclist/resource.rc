@@ -146,7 +146,7 @@ END
 IDD_OPT_CLIST DIALOGEX 0, 0, 314, 204
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Hide offline users",IDC_HIDEOFFLINE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,124,10
@@ -160,7 +160,7 @@ BEGIN
                     WS_TABSTOP,10,84,124,10
     CONTROL         "Hide contact list after it has been idle for",
                     IDC_AUTOHIDE,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,10,100,124,16
+                    BS_MULTILINE | WS_TABSTOP,10,100,124,22
     EDITTEXT        IDC_HIDETIME,54,109,30,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_HIDETIMESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
@@ -168,48 +168,50 @@ BEGIN
                     14
     LTEXT           "seconds",IDC_STAUTOHIDESECS,87,111,47,8
     CONTROL         "Sort contacts by name",IDC_SORTBYNAME,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,153,14,144,10
+                    BS_AUTORADIOBUTTON | WS_GROUP,153,14,87,10
     CONTROL         "Sort contacts by status",IDC_SORTBYSTATUS,"Button",
-                    BS_AUTORADIOBUTTON,153,26,149,10
+                    BS_AUTORADIOBUTTON,153,38,89,10
     CONTROL         "Sort contacts by protocol",IDC_SORTBYPROTO,"Button",
-                    BS_AUTORADIOBUTTON,153,38,151,10
+                    BS_AUTORADIOBUTTON,153,50,151,10
     CONTROL         "Single click interface",IDC_ONECLK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,152,68,150,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,151,82,150,10
     CONTROL         "Always show status in tooltip",IDC_ALWAYSSTATUS,"Button",
-                    BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,152,
-                    81,151,11
+                    BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,151,
+                    95,151,11
     CONTROL         "Disable icon blinking",IDC_DISABLEBLINK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,152,95,86,9
-    EDITTEXT        IDC_BLINKTIME,153,109,35,12,ES_NUMBER
-    LTEXT           "ms, delay between icon blinking",IDC_STATIC,192,110,113,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,151,108,86,9
+    EDITTEXT        IDC_BLINKTIME,153,122,35,12,ES_NUMBER
+    LTEXT           "ms, delay between icon blinking",IDC_STATIC,203,124,102,
                     8
     CONTROL         "Show",IDC_DONTCYCLE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,10,143,97,10
-    COMBOBOX        IDC_PRIMARYSTATUS,107,142,78,70,CBS_DROPDOWNLIST | 
+                    WS_GROUP,10,154,97,10
+    COMBOBOX        IDC_PRIMARYSTATUS,107,153,78,70,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "icon when statuses differ",IDC_STATIC,189,144,116,8,NOT 
+    LTEXT           "icon when statuses differ",IDC_STATIC,189,155,116,8,NOT 
                     WS_GROUP
     CONTROL         "Cycle icons every",IDC_CYCLE,"Button",
-                    BS_AUTORADIOBUTTON,10,160,97,10
-    EDITTEXT        IDC_CYCLETIME,107,159,30,12,ES_RIGHT | ES_NUMBER
+                    BS_AUTORADIOBUTTON,10,172,97,10
+    EDITTEXT        IDC_CYCLETIME,107,170,30,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_CYCLETIMESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,127,158,
-                    10,14
-    LTEXT           "seconds, when statuses differ",IDC_STATIC,140,161,165,8,
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,137,168,
+                    11,14
+    LTEXT           "seconds, when statuses differ",IDC_STATIC,173,172,132,8,
                     NOT WS_GROUP
     CONTROL         "Show multiple icons",IDC_MULTITRAY,"Button",
-                    BS_AUTORADIOBUTTON,10,177,98,10
+                    BS_AUTORADIOBUTTON,9,182,98,10
     CONTROL         "Only when statuses differ",IDC_ALWAYSMULTI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,108,177,198,10
-    GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,2,135,126
-    GROUPBOX        "System tray icon",IDC_STATIC,143,57,169,70
+                    BS_AUTOCHECKBOX | WS_TABSTOP,107,182,198,10
+    GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,2,135,139
+    GROUPBOX        "System tray icon",IDC_STATIC,143,71,169,70
     GROUPBOX        "System tray icon when using multiple protocols",
-                    IDC_STATIC,2,131,310,66
-    GROUPBOX        "Contact List Sorting",IDC_STATIC,143,2,169,54,WS_GROUP
+                    IDC_STATIC,2,142,310,54
+    GROUPBOX        "Contact List Sorting",IDC_STATIC,143,2,169,69,WS_GROUP
     CONTROL         "Spin5",IDC_BLINKSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,173,97,11,21
+                    UDS_HOTTRACK,177,109,11,12
+    CONTROL         "Dont move offline user to bottom",IDC_NOOFFLINEMOVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,25,131,10
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 232
@@ -288,7 +290,7 @@ END
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Items",IDC_STATIC,2,2,310,114
     CONTROL         "Show divider between online and offline contacts",
@@ -310,7 +312,7 @@ BEGIN
     LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,10,112,8
     CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",
                     TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,191,20,112,86
+                    WS_BORDER | WS_TABSTOP,191,20,112,43
     GROUPBOX        "Groups",IDC_STATIC,2,120,148,121
     CONTROL         "Draw a line alongside group names",IDC_LINEWITHGROUPS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,
@@ -360,6 +362,14 @@ BEGIN
                     WS_TABSTOP,11,102,153,10
     CONTROL         "Hide vertical scrollbar",IDC_NOSCROLLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,160,140,10
+    CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
+                    197,71,39,10
+    CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
+                    BS_AUTORADIOBUTTON,197,91,61,10
+    CONTROL         "Full selection",IDC_HILIGHTMODE1,"Button",
+                    BS_AUTORADIOBUTTON,197,81,57,10
+    CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
+                    BS_AUTORADIOBUTTON,198,101,55,10
 END
 
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 240
@@ -531,7 +541,7 @@ BEGIN
         VERTGUIDE, 107
         TOPMARGIN, 2
         BOTTOMMARGIN, 202
-        HORZGUIDE, 179
+        HORZGUIDE, 182
         HORZGUIDE, 196
     END
 

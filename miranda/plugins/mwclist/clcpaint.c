@@ -316,9 +316,38 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
 			//background
 			if(selected) {
-				int x=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2;
-				ImageList_DrawEx(dat->himlHighlight,0,hdcMem,x,y,min(width+5,clRect.right-x),dat->rowHeight,CLR_NONE,CLR_NONE,dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
-				SetTextColor(hdcMem,dat->selTextColour);
+				switch (dat->HiLightMode)
+				{
+				case 0:
+						{
+						int x=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2;
+						ImageList_DrawEx(dat->himlHighlight,0,hdcMem,x,y,min(width+5,clRect.right-x),dat->rowHeight,CLR_NONE,CLR_NONE,dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
+						SetTextColor(hdcMem,dat->selTextColour);
+						break;
+						};
+				case 1:
+					{
+   					  ImageList_DrawEx(dat->himlHighlight,0,hdcMem,0,y,clRect.right,
+						  dat->rowHeight,CLR_NONE,CLR_NONE,
+						  dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
+						 SetTextColor(hdcMem,dat->selTextColour);
+						 break;
+					};
+
+				case 2:
+					{
+						  ImageList_DrawEx(dat->himlHighlight,0,hdcMem,1,y+1,clRect.right-2,
+						  dat->rowHeight-1,CLR_NONE,CLR_NONE,
+						  dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
+						  SetTextColor(hdcMem,dat->selTextColour);
+						  break;
+					};
+				case 3:
+					{
+						SetTextColor(hdcMem,dat->selTextColour);	
+						break;
+					};
+				};
 			}
 			else if(hottrack)
 				SetHotTrackColour(hdcMem,dat);

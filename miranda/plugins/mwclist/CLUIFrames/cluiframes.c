@@ -1258,6 +1258,7 @@ int CLUIFramesShowHideFrameTitleBar(WPARAM wParam,LPARAM lParam)
 	
 	CLUIFramesOnClistResize((WPARAM)hwndContactList,(LPARAM)0);
 
+
 	return 0;
 }
 //wparam=frameid
@@ -1946,7 +1947,9 @@ int CLUIFramesResize(const RECT newsize)
 			i=sdarray[j].realpos;
 			if((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alClient)) {			
 				Frames[i].wndSize.top=prevframebottomline+1+(tbh);
-				Frames[i].wndSize.bottom=Frames[i].wndSize.top+newheight-sumheight-tbh-1;
+				//Frames[i].wndSize.bottom=Frames[i].wndSize.top+newheight-sumheight-tbh-1;
+				Frames[i].wndSize.bottom=Frames[i].wndSize.top+newheight-sumheight-tbh;
+
 				Frames[i].height=Frames[i].wndSize.bottom-Frames[i].wndSize.top;
 				Frames[i].prevvisframe=prevframe;
 				prevframe=i;

@@ -143,6 +143,7 @@ struct ClcData {
 	int noVScrollbar;
 	int NeedResort;
 	SortedList lCLCContactsCache;
+	BYTE HiLightMode;
 };
 
 //clc.c
@@ -234,5 +235,6 @@ char *GetContactCachedProtocol(HANDLE hContact);
 #define CLCDEFAULT_LEFTMARGIN    0
 #define CLCDEFAULT_GAMMACORRECT  1
 #define CLCDEFAULT_SHOWIDLE      0
+
 
 #endif _CLC_H_

@@ -31,6 +31,7 @@ extern char *GetContactCachedProtocol(HANDLE hContact);
 
 static int sortByStatus;
 static int sortByProto;
+static int sortNoOfflineBottom;
 struct {
 	int status,order;
 } statusModeOrder[]={
@@ -105,6 +106,8 @@ void LoadContactTree(void)
 	}
 	sortByStatus=DBGetContactSettingByte(NULL,"CList","SortByStatus",SETTING_SORTBYSTATUS_DEFAULT);
 	sortByProto=DBGetContactSettingByte(NULL,"CList","SortByProto",SETTING_SORTBYPROTO_DEFAULT);
+	sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
+
 	CallService(MS_CLUI_SORTLIST,0,0);
 	CallService(MS_CLUI_LISTENDREBUILD,0,0);
 	
@@ -152,8 +155,11 @@ int CompareContacts(WPARAM wParam,LPARAM lParam)
 	}
 	else {
 		//one is offline: offline goes below online
-		if((statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) {
-			return 2*(statusa==ID_STATUS_OFFLINE)-1;
+		if (sortNoOfflineBottom==0)
+			{
+			if((statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) {
+				return 2*(statusa==ID_STATUS_OFFLINE)-1;
+			};
 		}
 	}
 

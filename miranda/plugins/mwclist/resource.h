@@ -533,6 +533,11 @@
 #define IDC_AASHORTIDLE                 1651
 #define IDC_AALONGSTATUS                1652
 #define IDC_AALONGIDLE                  1656
+#define IDC_NOOFFLINEMOVE               1657
+#define IDC_HILIGHTMODE                 1658
+#define IDC_HILIGHTMODE2                1659
+#define IDC_HILIGHTMODE1                1660
+#define IDC_HILIGHTMODE3                1661
 #define IDD_OPT_GENMENU                 11267
 #define IDC_MENUITEMS                   11710
 #define IDC_MENUOBJECTS                 11711
@@ -573,7 +578,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        278
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1657
+#define _APS_NEXT_CONTROL_VALUE         1659
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -131,12 +131,25 @@ static HICON ExtractIconFromPath(const char *path)
 	char file[MAX_PATH],fileFull[MAX_PATH];
 	int n;
 	HICON hIcon;
-
+	{
+		char buf[512];
+		sprintf(buf,"LoadIcon %s\r\n",path);
+	OutputDebugString(buf);
+	}
 	lstrcpyn(file,path,sizeof(file));
 	comma=strrchr(file,',');
 	if(comma==NULL) n=0;
 	else {n=atoi(comma+1); *comma=0;}
     CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
+	
+#ifdef _DEBUG
+	{
+		char buf[512];
+		sprintf(buf,"LoadIconFull %d %s\r\n",n,fileFull);
+	OutputDebugString(buf);
+	}
+#endif
+
 	hIcon=NULL;
 	ExtractIconEx(fileFull,n,NULL,&hIcon,1);
 	return hIcon;
@@ -150,10 +163,21 @@ HICON GetConnectingIconForProto(char *szProto,int b,int status)
 
 		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
 		str=strrchr(szPath,'\\');
+		b=b-1;
 		if(str!=NULL) *str=0;
 		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_conn_%s.dll,%d", szPath, szProto, b+1);
 		hIcon=ExtractIconFromPath(szFullPath);
 		if (hIcon) return hIcon;
+
+#ifdef _DEBUG
+		{
+		char buf [256];
+		sprintf(buf,"IconNotFound %s %d\r\n",szProto,b);
+		OutputDebugString(buf);
+		}
+#endif
+
+
 	if (!strcmp(szProto,"ICQ"))
 	{
 		
@@ -164,7 +188,8 @@ HICON GetConnectingIconForProto(char *szProto,int b,int status)
 #endif
 		return(LoadIcon(g_hInst,(LPCSTR)(IDI_ICQC1+b)));
 	}
-		hIcon=LoadSkinnedProtoIcon(szProto,status);	
+
+	hIcon=LoadSkinnedProtoIcon(szProto,status);	
 		return(hIcon);
 }
 
@@ -296,7 +321,30 @@ return(0);
 };
 
 
+int GetStatsuBarProtoRect(HWND hwnd,char *szProto,RECT *rc)
+{
+	int nParts,nPanel;
+	ProtocolData *PD;
+	
+	nParts=SendMessage(hwnd,SB_GETPARTS,0,0);
+	FillMemory(rc,sizeof(RECT),0);
 
+    for (nPanel=0;nPanel<nParts;nPanel++)
+	{
+	PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
+	if(PD==NULL){
+		return(0);
+	};
+	
+	
+	if (!strcmp(szProto,PD->RealName))
+		{
+			SendMessage(hwnd,SB_GETRECT,(WPARAM)nPanel,(LPARAM)rc);
+			return(0);
+		};
+	};
+return (0);
+};
 
 
 
@@ -542,6 +590,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			
 		case WM_TIMER:
 			
+
 			if ((int)wParam>=TM_STATUSBARUPDATE&&(int)wParam<=TM_STATUSBARUPDATE+64)
 			{
 					
@@ -569,8 +618,16 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					};
 				//RedrawWindow(hwndStatus,NULL,NULL,RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 				//UpdateWindow(hwndStatus);
-					InvalidateRect(hwndStatus,NULL,FALSE);
-					PostMessage(hwndStatus,WM_PAINT,0,0);
+					pt=&CycleStartTick[wParam-TM_STATUSBARUPDATE];
+					{
+					RECT rc;
+					GetStatsuBarProtoRect(hwndStatus,pt->szProto,&rc);
+					rc.right=rc.left+GetSystemMetrics(SM_CXSMICON);
+
+					InvalidateRect(hwndStatus,&rc,TRUE);
+					}
+					//SendMessage(hwndStatus,WM_PAINT,0,0);
+					UpdateWindow(hwndStatus);
 				break;
 			}
 			
@@ -887,8 +944,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						
 						//if (nParts>1) hMenu=GetSubMenu(hMenu,nPanel);
 
-						totcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",0);
-
+								totcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",0);
+//							nParts=SendMessage(hwndStatus,SB_GETPARTS,0,0);
 								PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
 								if(PD==NULL){return(0);};
 								menuid=PD->protopos;
@@ -967,7 +1024,18 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 				if (PD==NULL){break;};			
 
+				
 				szProto=PD->RealName;
+//				Sleep(200);
+				//FillRect(dis->hDC,dis->rcItem,
+				//dis->rcItem
+#ifdef _DEBUG
+				{
+					char buf[512];
+					sprintf(buf,"proto: %s\r\n",szProto);
+					OutputDebugString(buf);
+				}
+#endif
 				
 				status=CallProtoService(szProto,PS_GETSTATUS,0,0);
 				SetBkMode(dis->hDC,TRANSPARENT);
@@ -1002,6 +1070,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						//hIcon=LoadSkinnedProtoIcon(szProto,status);
 						}else
 						{
+							//OutputDebugString("Cyclestart=0\r\n");
 							hIcon=LoadSkinnedProtoIcon(szProto,status);
 						}
 						
@@ -1010,6 +1079,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					{				
 
 					hIcon=LoadSkinnedProtoIcon(szProto,status);
+					{
+					//OutputDebugString("status!=Connecting\r\n");
+					}
+
 					}
 					DrawIconEx(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-GetSystemMetrics(SM_CYSMICON))>>1,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 					x+=GetSystemMetrics(SM_CXSMICON)+2;
