@@ -58,11 +58,11 @@ void JabberGcLogLoadFont( JABBER_GCLOG_FONT *fontInfo )
 		else
 			fontInfo[i].face[0] = '\0';
 		sprintf( key, "GcLogFont%dSize", i );
-		fontInfo[i].size = ( char ) JGetByte( key, 10 );
+		fontInfo[i].size = ( BYTE )JGetByte( key, 10 );
 		sprintf( key, "GcLogFont%dStyle", i );
-		fontInfo[i].style = JGetByte( key, 0 );
+		fontInfo[i].style = ( BYTE )JGetByte( key, 0 );
 		sprintf( key, "GcLogFont%dCharset", i );
-		fontInfo[i].charset = JGetByte( key, ANSI_CHARSET );
+		fontInfo[i].charset = ( BYTE )JGetByte( key, ANSI_CHARSET );
 		sprintf( key, "GcLogFont%dColor", i );
 		fontInfo[i].color = JGetDword( NULL, key, defColor[i] );
 	}
