@@ -186,6 +186,18 @@ void FreeSearchResults(HWND hwndResults)
 	EnableResultButtons(GetParent(hwndResults),0);
 }
 
+// on its own thread
+static void BeginSearchFailed(void * arg)
+{
+	char buf[128];
+	if ( arg != NULL ) { 
+		_snprintf(buf,sizeof(buf),Translate("Could not start a search on '%s', there was a problem - is %s connected?"),arg,arg);
+		free((char*)arg);
+	}
+	else strncpy(buf,Translate("Could not search on any of the protocols, are you online?"),sizeof(buf));
+	MessageBox(0,buf,Translate("Problem with search"),MB_OK | MB_ICONERROR);
+}
+
 int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,const char *szSearchService,DWORD requiredCapability,void *pvSearchParams)
 {
 	int protoCount,i;
@@ -210,12 +222,13 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 		if(failures) {
 			//infuriatingly vague error message. fixme.
 			if(dat->searchCount==0) {
-				MessageBox(hwndDlg,Translate("None of the messaging protocols were able to initiate the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
+				//MessageBox(hwndDlg,Translate("None of the messaging protocols were able to initiate the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
+				forkthread(BeginSearchFailed,0,NULL);
 				free(dat->search);
 				dat->search=NULL;
 				return 1;
 			}
-			MessageBox(hwndDlg,Translate("One or more of the messaging protocols failed to initiate the search, however some were successful. Please correct the fault if you wish to search using the other protocols."),Translate("Search"),MB_OK);
+			//MessageBox(hwndDlg,Translate("One or more of the messaging protocols failed to initiate the search, however some were successful. Please correct the fault if you wish to search using the other protocols."),Translate("Search"),MB_OK);
 		}
 	}
 	else {
@@ -225,7 +238,8 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 		dat->search[0].szProto=szProto;
 		if(dat->search[0].hProcess==NULL) {
 			//infuriatingly vague error message. fixme.
-			MessageBox(hwndDlg,Translate("The messaging protocol reported an error initiating the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
+			//MessageBox(hwndDlg,Translate("The messaging protocol reported an error initiating the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
+			forkthread(BeginSearchFailed,0,(void*)_strdup(szProto));
 			free(dat->search);
 			dat->search=NULL;
 			dat->searchCount=0;
