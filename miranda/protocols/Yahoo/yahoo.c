@@ -634,12 +634,12 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	
 	
 	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
-		LOG(("%s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60));
-		
-		time(&idlets);
-		//if (idle > 0) || (stat == YAHOO_STATUS_IDLE) ) {
-		idlets -= idle;
-		//} 
+		if (idle > 0 || stat > 0) {
+			LOG(("%s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60));
+			
+			time(&idlets);
+			idlets -= idle;
+		}
 	} 
 		
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
@@ -1093,10 +1093,15 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 			LOG(("[ext_yahoo_got_ping] Error msg: %s", errormsg));
 
 			if (YAHOO_GetByte( "ShowErrors", 1 )) {
-				if (YAHOO_hasnotification())
-					YAHOO_shownotification("Yahoo Ping Error", errormsg, NIIF_ERROR);
-				else
-					MessageBox(NULL, errormsg, "Yahoo Ping Error", MB_OK | MB_ICONINFORMATION);
+				if (!YAHOO_ShowPopup("Yahoo Ping Error", errormsg, YAHOO_NOTIFY_POPUP)) {
+					if (YAHOO_hasnotification())
+						YAHOO_shownotification("Yahoo Ping Error", errormsg, NIIF_ERROR);
+					else
+						MessageBox(NULL, errormsg, "Yahoo Ping Error", MB_OK | MB_ICONINFORMATION);
+				}
+				//if (ServiceExists( MS_POPUP_SHOWMESSAGE && !PUShowMessage(strdup(errormsg), SM_WARNING)) ){
+				//} else if (YAHOO_hasnotification())
+				//		YAHOO_shownotification("Yahoo Ping Error", errormsg, NIIF_ERROR);
 			}
 			
 			return;
