@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../miranda32/random/ignore/m_ignore.h"
 #include "../../miranda32/random/langpack/m_langpack.h"
 #include "icqproto.h"
-#define Translate(s)   ((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
 
 extern int icqNetTestTimerId,icqConnectTimeoutId,icqConnectRetries;
 extern int icqConnectStatusMode;
