@@ -105,16 +105,19 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 				if(!IsWindowVisible(hWindow))
 					bRedrawFlag = TRUE;
+				SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 				if (IsIconic(hWindow))
 					ShowWindow(hWindow, SW_NORMAL);
-				ShowWindow(hWindow, SW_SHOW);
-				SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
-//				RedrawWindow(hWindow, NULL, NULL, RDW_INVALIDATE|RDW_ALLCHILDREN);
 				SendMessage(hWindow, WM_SIZE, 0, 0);
-				SetForegroundWindow(hWindow);
-
+				ShowWindow(hWindow, SW_SHOW);
 				if(bRedrawFlag)
+				{
+					InvalidateRect(hWindow, NULL, TRUE);
 					SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+				}
+				SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
+				SetActiveWindow(hWindow);
+
 
 				PUDeletePopUp(hWnd);
 

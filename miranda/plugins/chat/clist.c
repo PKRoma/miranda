@@ -176,27 +176,37 @@ int	CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam)
 					{
 						if(!IsWindowVisible(hWindow))
 							 bRedrawFlag = TRUE;
-						ShowWindow(hWindow, SW_SHOW);
 						SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 						if (IsIconic(hWindow))
 							ShowWindow(hWindow, SW_NORMAL);
 						SendMessage(hWindow, WM_SIZE, 0, 0);
-						SetForegroundWindow(hWindow);
+						ShowWindow(hWindow, SW_SHOW);
+						if(bRedrawFlag)
+						{
+							InvalidateRect(hWindow, NULL, TRUE);
+							SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+						}
+						SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
+						SetActiveWindow(hWindow);
 					}
 				}
 				else
 				{
 					if(!IsWindowVisible(hWindow))
 						bRedrawFlag = TRUE;
+					SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 					if (IsIconic(hWindow))
 						ShowWindow(hWindow, SW_NORMAL);
-					ShowWindow(hWindow, SW_SHOW);
-					SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 					SendMessage(hWindow, WM_SIZE, 0, 0);
-					SetForegroundWindow(hWindow);
+					ShowWindow(hWindow, SW_SHOW);
+					if(bRedrawFlag)
+					{
+						InvalidateRect(hWindow, NULL, TRUE);
+						SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+					}
+					SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
+					SetActiveWindow(hWindow);
 				}
-				if(bRedrawFlag)
-					SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
 			}
 			DBFreeVariant(&dbv);
 			return 1;

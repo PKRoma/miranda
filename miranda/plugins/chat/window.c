@@ -1721,14 +1721,19 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					SetActiveChatWindow(dat->pszID, dat->pszModule);
 					if(!IsWindowVisible(hwndDlg))
 						bRedrawFlag = TRUE;
+					SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
 					if (IsIconic(hwndDlg))
 						ShowWindow(hwndDlg, SW_NORMAL);
-					ShowWindow(hwndDlg, SW_SHOW); 
-					SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
-					SetActiveWindow(hwndDlg);
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
+					ShowWindow(hwndDlg, SW_SHOW);
 					if(bRedrawFlag)
+					{
+						InvalidateRect(hwndDlg, NULL, TRUE);
 						SendMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
+					}
+					SetWindowPos(hwndDlg, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
+					SetActiveWindow(hwndDlg);
+
 				}
 				nlu->dwItemData = 1; // stupid fix
 				return TRUE;
