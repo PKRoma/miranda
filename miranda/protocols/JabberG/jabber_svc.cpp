@@ -69,10 +69,11 @@ static void JabberBasicSearchResult( XmlNode *iqNode, void *userdata )
 	int id = atol( szId + sizeof( JABBER_IQID )-1 );
 
 	if ( strcmp( type, "error" ) != 0 ) {
-		PROTOSEARCHRESULT jsr = { 0 };
-		jsr.cbSize = sizeof( PROTOSEARCHRESULT );
-		jsr.email = szJid;
-		jsr.nick = jsr.firstName = jsr.lastName = "";
+		JABBER_SEARCH_RESULT jsr = { 0 };
+		jsr.hdr.cbSize = sizeof( jsr );
+		jsr.hdr.email = jsr.jid;
+		jsr.hdr.nick = jsr.hdr.firstName = jsr.hdr.lastName = "";
+		strncpy( jsr.jid, szJid, sizeof jsr.jid );
 		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE )id, ( LPARAM )&jsr );
 	}
 	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE )id, 0 );
