@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 containeroptions.c  dialog implementaion for setting the container options.
                     part of tabSRMM
+$Id$
 */
 
 #include "commonheaders.h"
