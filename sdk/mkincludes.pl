@@ -5,7 +5,7 @@ use File::Copy;
 use File::Find;
 use Win32::AbsPath;
 
-$rootdir = '../../miranda-im/';
+$rootdir = '../../Miranda-IM/';
 $outdir = Win32::AbsPath::Fix('../headers_c/');
 $now = localtime(time);
 
@@ -14,15 +14,15 @@ find(\&filesearch, $rootdir);
 
 sub copyreqs {
     print "Copying win2k.h...\n";
-    copy("../../miranda-im/win2k.h","$outdir\\win2k.h");
+    copy("../../Miranda-IM/win2k.h","$outdir\\win2k.h");
     print "Copying m_icq.h...\n";
     copy("../../protocols/IcqOscar8/m_icq.h","$outdir\\m_icq.h");
     print "Copying m_fuse.h...\n";
-    copy("../../tools/fuse/m_fuse.h","$outdir\\m_fuse.h");
+    copy("../../Tools/fuse/m_fuse.h","$outdir\\m_fuse.h");
     print "Copying newpluginapi.h...\n";
-    copy("../../miranda-im/random/plugins/newpluginapi.h","$outdir\\newpluginapi.h");
+    copy("../../Miranda-IM/random/plugins/newpluginapi.h","$outdir\\newpluginapi.h");
     print "Copying statusmodes.h...\n";
-    copy("../../miranda-im/ui/contactlist/statusmodes.h","$outdir\\statusmodes.h");
+    copy("../../Miranda-IM/ui/contactlist/statusmodes.h","$outdir\\statusmodes.h");
 }
 
 sub filesearch {
