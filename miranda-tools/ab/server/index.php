@@ -25,15 +25,17 @@ $timezone = trim ( $checkout[2] );
 $timestamp = mktime( $co_time_t[0], $co_time_t[1], $co_time_t[2], $co_date_t[1], $co_date_t[2], $co_date_t[0] );
 
 $FILELIST = array(
-	array('miranda32.exe', 'Main application', 'miranda_core', 'strong' => 1),
-	array('ICQ.dll', 'access ICQ', 'miranda_protocols', 'strong' => 0),
-	array('aim.dll', 'access AIM', 'miranda_protocols', 'strong' => 0),
-	array('jabber.dll', 'access Jabber', 'miranda_protocols', 'strong' => 0),
-	array('msn.dll', 'access MSN', 'miranda_protocols', 'strong' => 0),
-	array('Yahoo.dll', 'access Yahoo', 'miranda_protocols', 'strong' => 0),
-	array('srmm.dll', 'Provides a split/single messaging window interface', 'miranda_plugins', 'strong' => 1),
-	array('import.dll', 'Import contacts, settings, history from other Miranda profiles, ICQ databases', 'miranda_plugins', 'strong' => 0),
-	array('changeinfo.dll', 'Change your ICQ user details from within Miranda', 'miranda_plugins', 'strong' => 0)
+	array('miranda32', 0, 'Main application', 'strong' => 1),
+	array('clist', 1, 'Classic contact list', 'strong' => 1),
+	array('icq', 1, 'access ICQ', 'strong' => 0),
+	array('aim', 1, 'access AIM', 'strong' => 0),
+	array('jabber', 1, 'access Jabber', 'strong' => 0),
+	array('msn', 1, 'access MSN', 'strong' => 0),
+	array('yahoo', 1, 'access Yahoo', 'strong' => 0),
+	array('tabsrmm', 1, 'Tab/container messaging interface, forked from SRMM by Nightwish', 'strong' => 0),
+	array('srmm', 1, 'Provides a split/single messaging window interface', 'strong' => 0),
+	array('import', 1, 'Import contacts, settings, history from other Miranda profiles, ICQ databases', 'strong' => 0),
+	array('changeinfo', 1, 'Change your ICQ user details from within Miranda', 'strong' => 0)
 );
 
 function get_file_list($mode)
@@ -41,15 +43,15 @@ function get_file_list($mode)
 	global $FILELIST, $buildstamp;
 	$output=null;
 	foreach ($FILELIST as $file) {
-		$zip = $file[2] . '_' . ( $mode == 'debug' ? 'debug_' : '') . $buildstamp . '.zip';
+		$zip = $file[0] . '_' . ( $mode == 'debug' ? 'debug_' : '') . $buildstamp . '.zip';
 		$size = @ filesize($zip);
 		$output .= sprintf('<tr> <td>%s%s%s</td> <td> <a href="%s">%s</a> </td> <td>%d KB</td> <td>%s</td> </tr>', 
 			$file['strong'] == 1 ? '<strong>' : '',
-			$file[0],
+			$file[0] . ($file[1] ? '.dll':'.exe'),
 			$file['strong'] == 1 ? '</strong>' : '',
 			$zip, $zip, 
 			$size ? $size / 1024 : 0,
-			$file[1]
+			$file[2]
 			);
 	}
 	return $output;
@@ -81,7 +83,7 @@ function get_file_list($mode)
 	}
 	$xml = xml_parser_create();
 	if ( $xml ) {		
-		$cl = implode('', @file('ChangeLog.part'));
+		$cl = implode('', @file('ChangeLog_'.$buildstamp.'.part'));
 		xml_set_element_handler($xml, 'startElement', 'endElement');
 		xml_set_character_data_handler($xml, 'cdataElement');
 		if ( xml_parse($xml, $cl, true) ) {
@@ -206,7 +208,7 @@ from new features and fixes for problems et al, quicker.
 
 <p>
 These faster releases are called <strong>alpha builds</strong> or development/CVS snapshots. 
-This version of Miranda contains all the changes that have occured, today. These changes might be 
+This version of Miranda contains all the changes that have occured recently. These changes might be 
 <strong>good or bad</strong>.
 
 Unless you require a certain feature or fix which you know is contained within the latest 
@@ -224,8 +226,11 @@ marked in bold plus any which you require. <strong>Do not use these components w
 release</strong>.
 </p>
 <p>
-You should note that some components are packaged together, e.g. if you require ICQ only you must
-download the protocol package and discard any of the other protocols.
+<?php	
+	$datestr = date('l \t\h\e jS \o\f F, Y', $timestamp); //l jS, F Y T
+	echo sprintf('There have been %u change%s since the last build. The current build was generated on <strong>%s</strong> at %s %s.', sizeof($CHANGES), (sizeof($CHANGES) == 1 ? '' : 's'),
+		$datestr,  date('H:i:s', $timestamp), $timezone);	
+?>
 </p>
 <table class="filelist">
 	<thead><tr>
@@ -246,11 +251,7 @@ download the protocol package and discard any of the other protocols.
 <div class="section">What's changed?</div>
 	<div class="sectiondata">
 <p>
-<?php	
-	$datestr = date('l \t\h\e jS \o\f F, Y', $timestamp); //l jS, F Y T
-	echo sprintf('There have been %u change%s since the last build. The current build was generated on <strong>%s</strong> at %s %s.', sizeof($CHANGES), (sizeof($CHANGES) == 1 ? '' : 's'),
-		$datestr,  date('H:i:s', $timestamp), $timezone);	
-?>
+
 </p>
 <table class="filelist" id="changelog">
 	<thead>
@@ -351,18 +352,12 @@ symlinks (shortcuts) are kept valid, they will always point to the latest versio
 		<td>Contains</td>
 	</tr></thead>
 	<tbody>
-		<tr>
-			<td> <a href="miranda_core_latest.zip">miranda_core_latest.zip</a> </td>
-			<td>points to the latest core</td>
-		</tr>
-		<tr>
-			<td> <a href="miranda_protocols_latest.zip">miranda_protocols_latest.zip</a> </td>
-			<td>points to the latest protocols</td>
-		</tr>
-		<tr>
-			<td> <a href="miranda_plugins_latest.zip">miranda_plugins_latest.zip</a> </td>
-			<td>points to the latest plugins</td>
-		</tr>
+<?php
+foreach($FILELIST as $file) {
+	echo sprintf("<tr> <td> <a href=\"%s_latest.zip\">%s_latest.zip</a> </td> <td>points to the latest %s</td> </tr>",
+		$file[0], $file[0], $file[0]);
+}
+?>
 		<tr>
 			<td> <a href="miranda_cvs_latest.zip">miranda_cvs_latest.zip</a> </td>
 			<td>points to the latest CVS</td>
