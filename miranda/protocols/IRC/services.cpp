@@ -1420,7 +1420,7 @@ static int Service_GetStatus(WPARAM wParam,LPARAM lParam)
 }
 static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
-	if (GlobalStatus != ID_STATUS_ONLINE && GlobalStatus != ID_STATUS_INVISIBLE && GlobalStatus != ID_STATUS_FREECHAT && GlobalStatus != ID_STATUS_CONNECTING && GlobalStatus != ID_STATUS_OFFLINE)
+	if (wParam != ID_STATUS_ONLINE && wParam != ID_STATUS_INVISIBLE && wParam != ID_STATUS_FREECHAT && wParam != ID_STATUS_CONNECTING && wParam != ID_STATUS_OFFLINE)
 	{
 		if (StatusMessage == "" || lParam == NULL || StatusMessage != ReplaceString((char *)lParam, "\r\n", " ") )
 		{
