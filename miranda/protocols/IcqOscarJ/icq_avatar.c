@@ -634,7 +634,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     // Miranda mimics the behaviour of Icq5
     packet.wLen = 18;
     write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES<<0x10);
     packDWord(&packet, 0x00010004);
     packDWord(&packet, 0x00100001);
     sendAvatarPacket(&packet, atsi);
@@ -649,7 +649,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 #endif
     packet.wLen = 10;
     write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQ_RATE_INFO, 0, ICQ_CLIENT_REQ_RATE_INFO);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQ_RATE_INFO, 0, ICQ_CLIENT_REQ_RATE_INFO<<0x10);
     sendAvatarPacket(&packet, atsi);
     break;
 
@@ -661,7 +661,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     /* Don't really care about this now, just send the ack */
     packet.wLen = 20;
     write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK, 0, ICQ_CLIENT_RATE_ACK);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK, 0, ICQ_CLIENT_RATE_ACK<<0x10);
     packDWord(&packet, 0x00010002);
     packDWord(&packet, 0x00030004);
     packWord(&packet, 0x0005);
@@ -670,7 +670,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     // send cli_ready
     packet.wLen = 26;
     write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY<<0x10);
     packDWord(&packet, 0x00010004);
     packDWord(&packet, 0x001008E4);
     packDWord(&packet, 0x00100001);
