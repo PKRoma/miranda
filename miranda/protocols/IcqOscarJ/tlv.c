@@ -61,6 +61,7 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
 		if (!(now->tlv))
 		{
 			disposeChain(&chain);
+      SAFE_FREE(&now);
 			return NULL;
 		}
 

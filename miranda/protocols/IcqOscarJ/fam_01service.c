@@ -384,6 +384,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     // pick request data
     if ((!FindCookie(pSnacHeader->dwRef, NULL, &reqdata)) || (reqdata->wFamily != wFamily))
     {
+      disposeChain(&pChain);
       Netlib_Logf(ghServerNetlibUser, "Received unexpected SNAC(1,5), skipping.");
       break;
     }
@@ -430,6 +431,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
       // Free allocated memory
       // NOTE: "cookie" will get freed when we have connected to the avatar server.
+      disposeChain(&pChain);
       SAFE_FREE(&pServer);
       SAFE_FREE(&reqdata);
     }
