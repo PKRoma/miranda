@@ -23,16 +23,20 @@ Bugfixes:
   Move to group was not working properly
   On accept/decline filetransfer miranda was sometimes disconnected
   Group with subgroups was deleted if empty, that messed up subgroups
+  Newly added contacts from server sometimes missed their group
+  Offline messages are no longer received older than existing ones
 
 New features:
   Added avatar tab to user-details dialog to show avatar even without mToolTip
   Linking avatar to mToolTip is now optional
   My user-details now show more informations & added idle since to ICQ tab
+  Added support for uploading your own avatar image
 
 Improvements:
   Added partial support for subgroups (supported: rename, move, parial: add)
   Added optional linking to mToolTip, link only if no image set
   Added workaround for QNext client (it is not capable of type2 msgs)
+  Added option to turn off HTTP gateway on HTTP proxy
 
 
 0.3.4.2 (not published)
