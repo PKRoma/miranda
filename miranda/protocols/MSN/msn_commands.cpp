@@ -879,7 +879,7 @@ LBL_InvalidCommand:
 			UrlDecode( data.userEmail );
 
 			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
-				MSN_ShowPopup( data.userEmail, "Contact left channel", 0 );
+				MSN_ShowPopup( data.userEmail, MSN_Translate( "Contact left channel" ), 0 );
 
 			// modified for chat
 			if ( msnHaveChatDll ) {
@@ -1091,8 +1091,7 @@ LBL_InvalidCommand:
 				char* tContactName = MSN_GetContactName( info->mJoinedContacts[0] );
 
 				char multichatmsg[256];
-				_snprintf(
-					multichatmsg, sizeof( multichatmsg ),
+				_snprintf( multichatmsg, sizeof( multichatmsg ),
 					MSN_Translate( "%s (%s) has joined the chat with %s" ),
 					data.userNick, data.userEmail, tContactName );
 
