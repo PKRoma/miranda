@@ -13,3 +13,5 @@
 #define strcat lstrcat
 #define strcmp lstrcmp
 #define strcpy lstrcpy
+
+#define USE_STRUCT_CALLBACKS
