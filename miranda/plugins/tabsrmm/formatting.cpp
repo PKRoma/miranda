@@ -519,6 +519,9 @@ extern "C" const char *FormatRaw(const char *msg, int bWordsOnly)
     char endmarker;
     message.assign(msg);
     
+    if(message.find("://") != message.npos)
+       return(message.c_str());
+
     while((beginmark = message.find_first_of("*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
         if(bWordsOnly) {

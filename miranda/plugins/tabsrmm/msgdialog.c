@@ -2645,7 +2645,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     szText[i] = '\r';
                                 i++;
                             }*/
-                            szQuoted=QuoteText(szText, 64, 0);
+                            szQuoted=QuoteText(szFromStream, 64, 0);
                             SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
                             free(szQuoted);
                             free(szFromStream);

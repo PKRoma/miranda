@@ -118,6 +118,15 @@ struct LogStreamData
 
 char rtfFonts[MSGDLGFONTCOUNT + 2][128];
 
+int safe_wcslen(wchar_t *msg, int chars) {
+    int i;
+
+    for(i = 0; i < chars; i++) {
+        if(msg[i] == (WCHAR)0)
+            return i;
+    }
+    return i;
+}
 /*
  * remove any empty line at the end of a message to avoid some RichEdit "issues" with
  * the highlight code (individual background colors).
@@ -699,7 +708,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         {
 #if defined( _UNICODE )
             wchar_t *msg;
-            int lpi;
 #else
             BYTE *msg;
 #endif
@@ -712,14 +720,13 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
 #if defined( _UNICODE )
             {
-                int msglen = _mbslen((char *) dbei.pBlob) + 1;
+                int msglen = lstrlenA((char *) dbei.pBlob) + 1;
+                
                 if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                     dat->stats.lastReceivedChars = msglen - 1;
-                if (dbei.cbBlob >= (DWORD)(3 * msglen)) {
+                if (dbei.cbBlob >= (DWORD)(2 * msglen)) {
                     msg = (wchar_t *) &dbei.pBlob[msglen];
-                    lpi = IS_TEXT_UNICODE_ASCII16;
-//                    if(1) {
-                    if(IsTextUnicode((void *)msg, 2 * msglen, NULL) || msg[msglen -1] == (WCHAR)0) {
+                    if(safe_wcslen(msg, (dbei.cbBlob - msglen) / 2) <= msglen - 1) {
                         TrimMessage(msg);
                         if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
                             TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);

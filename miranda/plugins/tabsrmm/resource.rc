@@ -401,7 +401,7 @@ IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab options",IDC_STATIC,0,0,303,57
+    GROUPBOX        "Tab options",IDC_STATIC,0,0,303,59
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,11,135,10
     EDITTEXT        IDC_CUT_TITLEMAX,148,9,30,12,ES_AUTOHSCROLL
@@ -412,12 +412,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,33,136,12
     CONTROL         "Warn on close message tab",IDC_WARNONCLOSE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,46,139,10
-    LTEXT           "Vertical tab padding",IDC_STATIC,148,30,71,10
-    EDITTEXT        IDC_TABPADDING,226,27,28,13,ES_AUTOHSCROLL
+    LTEXT           "Vertical tab padding",IDC_STATIC,148,34,71,10
+    EDITTEXT        IDC_TABPADDING,226,31,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,31,11,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,33,11,
                     13
-    LTEXT           "pixel",IDC_STATIC,267,29,28,11
+    LTEXT           "pixel",IDC_STATIC,267,33,28,11
     GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,64
     CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,81,127,11
@@ -431,12 +431,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,138,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,149,145,11
-    LTEXT           "Tab control border",IDC_STATIC,148,44,74,12
-    EDITTEXT        IDC_TABBORDER,226,41,28,13,ES_AUTOHSCROLL
+    LTEXT           "Tab control border",IDC_STATIC,148,46,74,12
+    EDITTEXT        IDC_TABBORDER,226,43,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,248,33,11,
                     13
-    LTEXT           "pixel",IDC_STATIC,262,44,31,10
+    LTEXT           "pixel",IDC_STATIC,262,46,31,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,303,60
     CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,174,141,12
