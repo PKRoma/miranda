@@ -183,6 +183,8 @@ static int ProtoAckHook(WPARAM wParam,LPARAM lParam)
 			if(szAckId==NULL) continue;
 			if(!lstrcmp(szAckId,szRcptId)) {
 				char *szDelivered;
+				free(szAckId);
+				free(szRcptId);
 				smsSend[i].receipt=_strdup((char*)ack->lParam);
 				szDelivered=GetXMLField(smsSend[i].receipt,"sms_delivery_receipt","delivered",NULL);
 				if(szDelivered==NULL)
@@ -197,7 +199,9 @@ static int ProtoAckHook(WPARAM wParam,LPARAM lParam)
 				UpdateStatusColumn(i);
 				return 0;
 			}
+			free(szAckId);
 		}
+		free(szRcptId);
 	}
 	return 0;
 }
