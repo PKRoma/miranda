@@ -21,8 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "m_clui.h"
-#include "clist.h"
 
 void TrayIconSetToBase(char *szPreferredProto);
 static int RemoveEvent(WPARAM wParam,LPARAM lParam);
@@ -31,6 +29,7 @@ extern HWND hwndContactTree;
 
 struct CListEvent {
 	int imlIconIndex;
+	int imlIconOverlayIndex;
 	int flashesDone;
 	CLISTEVENT cle;
 };
@@ -46,6 +45,8 @@ static int imlIconCount;
 static UINT flashTimerId;
 static int iconsOn;
 extern HIMAGELIST hCListImages;
+static int disableTrayFlash;
+static int disableIconFlash;
 
 static int GetImlIconIndex(HICON hIcon)
 {
@@ -69,12 +70,12 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dw
 		char *szProto;
 		if(event[0].cle.hContact==NULL) szProto=NULL;
 		else szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)event[0].cle.hContact,0);
-		TrayIconUpdateWithImageList((iconsOn || DBGetContactSettingByte(NULL,"CList","DisableTrayFlash",0))?event[0].imlIconIndex:0,event[0].cle.pszTooltip,szProto);
+		TrayIconUpdateWithImageList((iconsOn || disableTrayFlash)?event[0].imlIconIndex:event[0].imlIconOverlayIndex,event[0].cle.pszTooltip,szProto);
 	}
-	for(i=0;i<eventCount;i++) {
+	for(i=0;i<eventCount;i++) {		
 		for(j=0;j<i;j++) if(event[j].cle.hContact==event[i].cle.hContact) break;
-		if(j<i) continue;
-		ChangeContactIcon(event[i].cle.hContact,iconsOn?event[i].imlIconIndex:0,0);
+		if(j<i) continue;				
+		ChangeContactIcon(event[i].cle.hContact, iconsOn || disableIconFlash ? event[i].imlIconIndex : event[i].imlIconOverlayIndex ,0);
 		if(event[i].cle.flags&CLEF_ONLYAFEW) {
 			if(0==--event[i].flashesDone) RemoveEvent((WPARAM)event[i].cle.hContact,(LPARAM)event[i].cle.hDbEvent);
 		}
@@ -96,6 +97,7 @@ static int AddEvent(WPARAM wParam,LPARAM lParam)
 	MoveMemory(&event[i+1],&event[i],sizeof(struct CListEvent)*(eventCount-i));
 	event[i].cle=*cle;
 	event[i].imlIconIndex=GetImlIconIndex(event[i].cle.hIcon);
+	event[i].imlIconOverlayIndex=0;
 	event[i].flashesDone=12;
 	event[i].cle.pszService=mir_strdup(event[i].cle.pszService);
 	event[i].cle.pszTooltip=mir_strdup(event[i].cle.pszTooltip);
@@ -106,7 +108,7 @@ static int AddEvent(WPARAM wParam,LPARAM lParam)
 		else szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)event[0].cle.hContact,0);
 		iconsOn=1;
 		flashTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","IconFlashTime",550),IconFlashTimer);
-	    TrayIconUpdateWithImageList(iconsOn?event[0].imlIconIndex:0,event[0].cle.pszTooltip,szProto);
+	    TrayIconUpdateWithImageList(iconsOn?event[0].imlIconIndex: event[0].imlIconOverlayIndex ,event[0].cle.pszTooltip,szProto);
 	}
 	ChangeContactIcon(cle->hContact,event[eventCount-1].imlIconIndex,1);
 	SortContacts();
@@ -175,7 +177,7 @@ static int RemoveEvent(WPARAM wParam, LPARAM lParam)
 			szProto = NULL;
 		else
 			szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)event[0].cle.hContact, 0);
-		TrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : 0, event[0].cle.pszTooltip, szProto);
+		TrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto);
 	}
 
 	return 0;
@@ -252,14 +254,29 @@ static int RemoveEventsForContact(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int CListEventSettingsChanged(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact=(HANDLE)wParam;
+	DBCONTACTWRITESETTING * cws = (DBCONTACTWRITESETTING *)lParam;
+	if ( hContact == NULL && cws && cws->szModule && cws->szSetting 
+		&& strcmp(cws->szModule,"CList")==0 ) {
+		if ( strcmp(cws->szSetting,"DisableTrayFlash") == 0 )disableTrayFlash = (int) cws->value.bVal;
+		else if ( strcmp(cws->szSetting,"NoIconBlink") == 0 )disableIconFlash = (int) cws->value.bVal;
+	}
+	return 0;
+}
+
 int InitCListEvents(void)
 {
 	event=NULL;
 	eventCount=0;
+	disableTrayFlash=DBGetContactSettingByte(NULL,"CList","DisableTrayFlash",0);
+	disableIconFlash=DBGetContactSettingByte(NULL,"CList","NoIconBlink",0);
 	CreateServiceFunction(MS_CLIST_ADDEVENT,AddEvent);
 	CreateServiceFunction(MS_CLIST_REMOVEEVENT,RemoveEvent);
 	CreateServiceFunction(MS_CLIST_GETEVENT,GetEvent);
 	HookEvent(ME_DB_CONTACT_DELETED,RemoveEventsForContact);
+	HookEvent(ME_DB_CONTACT_SETTINGCHANGED,CListEventSettingsChanged);
 	return 0;
 }
 

@@ -563,6 +563,8 @@
 #define IDC_GENMENU_SET                 11718
 #define IDC_GENMENU_SET2                11719
 #define IDC_GENMENU_DEFAULT             11719
+#define IDC_ICONBLINK					11720
+
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001

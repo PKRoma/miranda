@@ -80,8 +80,27 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 {
 	switch (msg)
 	{
+		case WM_USER+1:
+		{
+			HANDLE hContact=(HANDLE)wParam;
+			DBCONTACTWRITESETTING * ws = (DBCONTACTWRITESETTING *)lParam;
+			if ( hContact == NULL && ws != NULL && ws->szModule != NULL && ws->szSetting != NULL
+				&& lstrcmpi(ws->szModule,"CList")==0 && lstrcmpi(ws->szSetting,"UseGroups")==0
+				&& IsWindowVisible(hwndDlg) ) {
+				CheckDlgButton(hwndDlg,IDC_DISABLEGROUPS,ws->value.bVal == 0);
+			}
+			break;
+		}
+		case WM_DESTROY: 
+		{
+			UnhookEvent( (HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA) );
+			break;
+		}
+
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED,hwndDlg,WM_USER+1));
+
 			CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_HIDEOFFLINE, DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_HIDEEMPTYGROUPS, DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -118,6 +137,8 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_CYCLE, DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_CYCLE ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_MULTITRAY, DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_DISABLEBLINK, DBGetContactSettingByte(NULL,"CList","DisableTrayFlash",0) == 1 ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_ICONBLINK, DBGetContactSettingByte(NULL,"CList","NoIconBlink",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
+
 			if(IsDlgButtonChecked(hwndDlg,IDC_DONTCYCLE)) {
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIMESPIN),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIME),FALSE);
@@ -205,6 +226,8 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							DBWriteContactSettingWord(NULL,"CList","CycleTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_CYCLETIMESPIN,UDM_GETPOS,0,0));
 							DBWriteContactSettingWord(NULL,"CList","IconFlashTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_BLINKSPIN,UDM_GETPOS,0,0));
 							DBWriteContactSettingByte(NULL,"CList","DisableTrayFlash",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DISABLEBLINK));
+							DBWriteContactSettingByte(NULL,"CList","NoIconBlink", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_ICONBLINK));
+
 							if (!SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETCURSEL,0,0),0)) 
 								DBDeleteContactSetting(NULL, "CList","PrimaryStatus");
 							else DBWriteContactSettingString(NULL,"CList","PrimaryStatus",((PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETCURSEL,0,0),0))->szName);

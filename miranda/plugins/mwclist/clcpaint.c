@@ -456,14 +456,38 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				}
 			}
 			else
-				TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(group->contact[group->scanIndex].szText));
+			{
+				char * szText = group->contact[group->scanIndex].szText;
+				RECT rc;					
+				rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
+				rc.top=y+((dat->rowHeight-fontHeight)>>1);
+				rc.right=(clRect.right - clRect.left);
+				rc.bottom=rc.top;
+				DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);				
+			}
+			//TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(group->contact[group->scanIndex].szText));
+
+			if(selected) {
+				if(group->contact[group->scanIndex].type!=CLCIT_DIVIDER) {										
+					char * szText = group->contact[group->scanIndex].szText;
+					RECT rc;
+					int qlen=lstrlen(dat->szQuickSearch);
+					SetTextColor(hdcMem,dat->quickSearchColour);				
+					rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
+					rc.top=y+((dat->rowHeight-fontHeight)>>1);
+					rc.right=(clRect.right - clRect.left);
+					rc.bottom=rc.top;
+					if ( qlen ) DrawText(hdcMem, szText, qlen, &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+				}
+			}
+/*
 			if(selected) {
 				if(group->contact[group->scanIndex].type!=CLCIT_DIVIDER) {
 					SetTextColor(hdcMem,dat->quickSearchColour);
 					TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(dat->szQuickSearch));
 				}
 			}
-
+*/
 			//extra icons
 			for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
 				COLORREF colourFg=dat->selBkColour;
