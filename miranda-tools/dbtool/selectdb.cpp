@@ -103,7 +103,7 @@ BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			ListView_SetExtendedListViewStyleEx(GetDlgItem(hdlg,IDC_DBLIST),LVS_EX_FULLROWSELECT,LVS_EX_FULLROWSELECT);
 			{	LV_COLUMN lvc;
 				lvc.mask=LVCF_WIDTH|LVCF_FMT|LVCF_TEXT;
-				lvc.cx=200;
+				lvc.cx=195;
 				lvc.fmt=LVCFMT_LEFT;
 				lvc.pszText="Database";
 				ListView_InsertColumn(GetDlgItem(hdlg,IDC_DBLIST),0,&lvc);
