@@ -75,6 +75,10 @@ int icq_TCPInit(icq_Link *icqlink)
   /* reset tcp sequence number */
   icqlink->d->icq_TCPSequence=0xfffffffe;
 
+#if defined _WIN32 && (defined TCP_PROCESS_TRACE || defined TCP_PACKET_TRACE || defined TCP_RAW_TRACE || defined TCP_BUFFER_TRACE || defined TCP_QUEUE_TRACE)
+  freopen("c:\\icqlibstdout.log.txt","wt",stdout);
+#endif
+
   return 0;
 }
 
