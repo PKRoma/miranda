@@ -255,6 +255,9 @@ ProtoBroadcastAck(), listeners must hook ME_PROTO_ACK, note that lParam = ACKDAT
 #define PA_FORMAT_JPEG		2
 #define PA_FORMAT_ICON		3	
 #define PA_FORMAT_BMP		4
+#define PA_FORMAT_GIF       5
+#define PA_FORMAT_SWF       6
+#define PA_FORMAT_XML       7
 
 typedef struct {
 	int cbSize;					// sizeof()
