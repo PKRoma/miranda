@@ -58,10 +58,13 @@ static void __cdecl _updatethread(void *unused) {
                     DBWriteContactSettingString(NULL, UC_MOD, "Result", nlreply->pData);
                     DBWriteContactSettingDword(NULL, UC_MOD, "LastSuccess", time(NULL));
                 }
+				DBFreeVariant(&dbv);
             }
             else DBWriteContactSettingString(NULL, UC_MOD, "Result", nlreply->pData);
         }
         else DBWriteContactSettingDword(NULL, UC_MOD, "LastFail", time(NULL));
+		// free HTTP reply
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)nlreply);
     }
     else {
         DBWriteContactSettingDword(NULL, UC_MOD, "LastFail", time(NULL));
