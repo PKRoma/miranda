@@ -42,7 +42,14 @@ char *strchr (), *strrchr ();
 
 
 #include <errno.h>
-#include <unistd.h>
+
+/* special check for MSVC compiler */
+#ifndef _MSC_VER
+#ifndef __MINGW32__
+ #include <unistd.h>
+#endif
+#endif
+
 #include <ctype.h>
 #include "yahoo2.h"
 #include "yahoo2_callbacks.h"
@@ -50,12 +57,6 @@ char *strchr (), *strrchr ();
 #include "yahoo_util.h"
 
 #include "yahoo_debug.h"
-#ifdef __MINGW32__
-#include <winsock2.h>
-# define write(a,b,c) send(a,b,c,0)
-# define read(a,b,c)  recv(a,b,c,0)
-# define snprintf _snprintf
-#endif
 
 #ifdef USE_STRUCT_CALLBACKS
 extern struct yahoo_callbacks *yc;

@@ -20,6 +20,8 @@
 
 /* Gena01 - added some defined to fix compilation with mingw gcc */
 /* __try/__finally taken from abiword patch found on the web */
+#ifdef __MINGW32__
+
 #if 0
  #include <crtdbg.h>
 #else
@@ -30,6 +32,8 @@
 #define _try __try
 #define _except __except
 #define _finally __finally
+#endif
+
 #endif
 
 #include <excpt.h> 

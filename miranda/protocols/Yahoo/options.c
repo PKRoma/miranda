@@ -207,6 +207,8 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	case WM_INITDIALOG:
 	{
 		BOOL toSet;
+		int tTimeout;
+		
         TranslateDialogDefault(hwndDlg);
 		
 		//Colors. First step is configuring the colours.
@@ -237,7 +239,7 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		
 		SetButtonCheck( hwndDlg, IDC_NOTIFY_USERTYPE, YAHOO_GetByte( "DisplayTyping", 1 ));
 		
-		int tTimeout = YAHOO_GetDword( "PopupTimeout", 3 );
+		tTimeout = YAHOO_GetDword( "PopupTimeout", 3 );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, YAHOO_GetDword( "PopupTimeoutOther", tTimeout ), FALSE );
 

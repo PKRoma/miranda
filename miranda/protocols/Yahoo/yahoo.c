@@ -321,7 +321,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		pfts.currentFileSize = size; //ntohl(ft->hdr.size);
 			
 		LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
-		wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
+		wsprintf(buf, "%s\\%s", sf->savepath, sf->filename);
 		
 		pfts.currentFile = _strdup(buf);		
 		
@@ -368,7 +368,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 			if (sf->action != FILERESUME_RENAME ) {
 				LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
 			
-				wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
+				wsprintf(buf, "%s\\%s", sf->savepath, sf->filename);
 			} else {
 				LOG(("file: %s", sf->filename ));
 			//wsprintf(buf, "%s\%s", sf->filename);
@@ -452,9 +452,10 @@ void YAHOO_basicsearch(const char *nick)
 
 void YAHOO_remove_buddy(const char *who)
 {
-    LOG(("YAHOO_remove_buddy '%s'", who));
-	HANDLE hContact;
+    HANDLE hContact;
 	DBVARIANT dbv;
+	
+	LOG(("YAHOO_remove_buddy '%s'", who));
 	
 	hContact = getbuddyH(who);
 
@@ -742,10 +743,11 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 
 	/* Last thing check the checksum and request new one if we need to */
 	if (!cksum || cksum == -1) {
+        PROTO_AVATAR_INFORMATION AI;
+        
 		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 
-		PROTO_AVATAR_INFORMATION AI;
 		AI.cbSize = sizeof AI;
 		AI.format = PA_FORMAT_BMP;
 		AI.hContact = hContact;
@@ -832,6 +834,9 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	if (!pBuff) 
 		error = 1;
 	
+	if (!size) /* empty file or some file loading error. don't crash! */
+        error = 1;
+        
 	hContact = getbuddyH(avt->who);
 	
 	if (!hContact){
@@ -861,13 +866,12 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 //    ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 	if (!error) {
 			HANDLE myhFile;
-		
+            BITMAPINFOHEADER* pDib;
 			
 			//---- Converting memory buffer to bitmap and saving it to disk
 			if ( !YAHOO_LoadPngModule() )
 				return;
 
-			BITMAPINFOHEADER* pDib;
 			if ( !png2dibConvertor( pBuff, rsize, &pDib )) {
 				FREE(pBuff);
 				return;
@@ -959,10 +963,11 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
 	
 	/* Last thing check the checksum and request new one if we need to */
 	if (!cksum || cksum == -1) {
+        PROTO_AVATAR_INFORMATION AI;
+        
 		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 
-		PROTO_AVATAR_INFORMATION AI;
 		AI.cbSize = sizeof AI;
 		AI.format = PA_FORMAT_BMP;
 		AI.hContact = hContact;
@@ -993,10 +998,11 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 	
 	/* Last thing check the checksum and request new one if we need to */
 	if (!buddy_icon || buddy_icon == -1) {
+        PROTO_AVATAR_INFORMATION AI;
+        
 		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 
-		PROTO_AVATAR_INFORMATION AI;
 		AI.cbSize = sizeof AI;
 		AI.format = PA_FORMAT_BMP;
 		AI.hContact = hContact;
@@ -1260,9 +1266,6 @@ void YAHOO_add_buddy(const char *who, const char *group, const char *msg)
 
 void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 {
-    LOG(("ext_yahoo_contact_added %s added you w/ msg '%s'", who, msg));
-
-   	//char buff[1024];
 	char *szBlob,*pCurBlob;
 	char m[1024], m1[5];
    	DWORD dwUin;
@@ -1272,6 +1275,8 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
 
+    LOG(("ext_yahoo_contact_added %s added you w/ msg '%s'", who, msg));
+    
 	hContact = add_buddy(who, who, PALF_TEMPORARY);
 	
 	ccs.szProtoService= PSR_AUTH;
@@ -1772,12 +1777,13 @@ static void connect_complete(void *data, int source, yahoo_input_condition condi
 {
 	struct connect_callback_data *ccd = data;
 	int error = 0;//, err_size = sizeof(error);
+    NETLIBSELECT tSelect = {0};
 
 	ext_yahoo_remove_handler(0, ccd->tag);
 	
 	// We Need to read the Socket error
 	//getsockopt(source, SOL_SOCKET, SO_ERROR, &error, (socklen_t *)&err_size);
-	NETLIBSELECT tSelect = {0};
+	
 	tSelect.cbSize = sizeof( tSelect );
 	//tSelect.dwTimeout = T->mGatewayTimeout * 1000;
 	tSelect.dwTimeout = 1;
@@ -1853,19 +1859,20 @@ void ext_yahoo_chat_yahooerror(int id)
 
 void ext_yahoo_got_search_result(int id, int found, int start, int total, YList *contacts)
 {
+    PROTOSEARCHRESULT psr;
+	struct yahoo_found_contact *yct=NULL;
+	char *c;
+    YList *en=contacts;
+
 	LOG(("got search result: "));
 	
 	LOG(("ID: %d", id));
 	LOG(("Found: %d", found));
 	LOG(("Start: %d", start));
 	LOG(("Total: %d", total));
-	
-	
-    PROTOSEARCHRESULT psr;
-	struct yahoo_found_contact *yct=NULL;
-	char *c;
+		
 	//int i;
-	YList *en=contacts;
+	
 /*    if (aim_util_isme(sn)) {
         ProtoBroadcastAck(AIM_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
         return;

@@ -14,4 +14,17 @@
 #define strcmp lstrcmp
 #define strcpy lstrcpy
 
+#ifdef _MSC_VER
+
+#define strncasecmp strnicmp
+
+#define wsnprintf _wsnprintf
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+
+#endif
+
 #define USE_STRUCT_CALLBACKS
+
+#define write(a,b,c) send(a,b,c,0)
+#define read(a,b,c)  recv(a,b,c,0)

@@ -169,15 +169,15 @@ static int CALLBACK YahooMailPopupDlgProc(HWND hWnd, UINT message, WPARAM wParam
 
 int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags )
 {
-	if ( !ServiceExists( MS_POPUP_ADDPOPUP ))
-	{	
+	POPUPDATAEX ppd;
+
+	if ( !ServiceExists( MS_POPUP_ADDPOPUP )){	
 		if ( flags & YAHOO_ALLOW_MSGBOX )
 			MessageBox( NULL, msg, "Yahoo Protocol", MB_OK | MB_ICONINFORMATION );
 
 		return 0;
 	}
 
-	POPUPDATAEX ppd;
 
 	ZeroMemory(&ppd, sizeof(ppd) );
 	ppd.lchContact = NULL;

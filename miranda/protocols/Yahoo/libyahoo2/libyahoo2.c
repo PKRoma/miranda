@@ -47,7 +47,12 @@
 # include "config.h"
 #endif
 
-#include <unistd.h>
+#ifndef _MSC_VER
+#ifndef __MINGW32__
+# include <unistd.h>
+#endif
+#endif
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -68,12 +73,6 @@ char *strchr (), *strrchr ();
 
 #include <sys/types.h>
 
-#ifdef __MINGW32__
-# include <winsock2.h>
-# define write(a,b,c) send(a,b,c,0)
-# define read(a,b,c)  recv(a,b,c,0)
-#endif
-
 #include <stdlib.h>
 #include <ctype.h>
 
@@ -86,10 +85,6 @@ char *strchr (), *strrchr ();
 
 #include "yahoo2_callbacks.h"
 #include "yahoo_debug.h"
-#ifdef __MINGW32__
-#define snprintf _snprintf
-#define vsnprintf _vsnprintf
-#endif
 
 #ifdef USE_STRUCT_CALLBACKS
 struct yahoo_callbacks *yc=NULL;
@@ -3518,10 +3513,11 @@ static void yahoo_process_search_connection(struct yahoo_input_data *yid, int ov
 	int k, n;
 	int start=0, found=0, total=0;
 	YList *contacts=NULL;
-
+    struct yahoo_input_data *pyid;
+    
 	LOG(("[yahoo_process_search_connection] over:%d", over));
 	
-	struct yahoo_input_data *pyid = find_input_by_id_and_type(yid->yd->client_id, YAHOO_CONNECTION_PAGER);
+	pyid = find_input_by_id_and_type(yid->yd->client_id, YAHOO_CONNECTION_PAGER);
 
 	if(!over || !pyid)
 		return;

@@ -30,6 +30,7 @@ extern int do_yahoo_debug;
 
 int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 {
+    int rlen;
     //LOG(("send socket: %d, %d bytes", s, len));
 
     if (yahooStatus == ID_STATUS_OFFLINE) {
@@ -37,7 +38,7 @@ int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
         return 0;
 	}
 
-    int rlen = Netlib_Send((HANDLE)s, buf, len, 0);
+    rlen = Netlib_Send((HANDLE)s, buf, len, 0);
 
     if (rlen == SOCKET_ERROR) {
         LOG(("SEND Error."));
