@@ -54,7 +54,7 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
     int ret = 0;
     switch (wParam) {        
         case PFLAGNUM_1:
-            ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSG | PF1_BASICSEARCH
+            ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSGRECV |  PF1_BASICSEARCH
 			                        | PF1_FILESEND  | PF1_FILERECV| PF1_VISLIST;
 //                          | PF1_SERVERCLIST | PF1_VISLIST ;
             break;
