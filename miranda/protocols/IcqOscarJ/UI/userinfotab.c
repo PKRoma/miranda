@@ -243,7 +243,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       if (pData->hContact)
         pData->hEventHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_REBIND_AVATAR);
       else
-      { // Temporarily disabled - avatar not working
+      { 
         ShowWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), SW_SHOW);
         ShowWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), SW_SHOW);
       }
@@ -351,12 +351,20 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
         if (szFile = ChooseAvatarFileName())
         { // user selected file for his avatar
+          char szMyFile[MAX_PATH+1];
           HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+
+          GetAvatarFileName(0, PA_FORMAT_JPEG, szMyFile, MAX_PATH);
+          if (!CopyFile(szFile, szMyFile, FALSE))
+          {
+            Netlib_Logf(ghServerNetlibUser, "Failed to copy our avatar to local storage.");
+            strcpy(szMyFile, szFile);
+          }
 
           if (avt)
           {
             char* hash;
-            hash = calcMD5Hash(szFile);
+            hash = calcMD5Hash(szMyFile);
             if (hash)
             {
               char* ihash = malloc(0x14);
@@ -375,7 +383,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                   DeleteObject(avt);
                   avt = 0;
                 }
-                DBWriteContactSettingString(NULL, gpszICQProtoName, "AvatarFile", szFile);
+                DBWriteContactSettingString(NULL, gpszICQProtoName, "AvatarFile", szMyFile);
 
                 SAFE_FREE(&ihash);
               }
