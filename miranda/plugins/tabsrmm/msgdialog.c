@@ -2273,7 +2273,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-                    _DebugPopup(dat->hContact, "scroll from backgroundcreate");
                     //SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                 }
                 else {
