@@ -1332,6 +1332,7 @@ void DisconnectFromServer(void)
 }
 static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 {	
+
 	if (!bChatInstalled)
 	{
 		MIRANDASYSTRAYNOTIFY msn;
@@ -1419,11 +1420,11 @@ static int Service_GetStatus(WPARAM wParam,LPARAM lParam)
 }
 static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
-    if (wParam != ID_STATUS_ONLINE && wParam != ID_STATUS_FREECHAT)
+	if (GlobalStatus != ID_STATUS_ONLINE && wParam != ID_STATUS_FREECHAT)
 	{
-		if (StatusMessage == "" || StatusMessage != (char *)lParam || lParam == NULL)
+		if (StatusMessage == "" || lParam == NULL || StatusMessage != ReplaceString((char *)lParam, "\r\n", " ") )
 		{
-			if(lParam == NULL || (lParam != NULL && *(char*)lParam == '\0'))
+			if(lParam == NULL ||  *(char*)lParam == '\0')
 				StatusMessage = STR_AWAYMESSAGE;
 			else 
 				StatusMessage =  ReplaceString((char *)lParam, "\r\n", " ");
