@@ -1,0 +1,17 @@
+
+#define IDD_OSCAR_USERINFO 1000
+#define IDC_STC1 1
+#define IDC_BTN1 2
+#define IDC_EDT1 3
+#define IDC_EDT2 4
+#include <windows.h>
+IDD_OSCAR_USERINFO DIALOGEX 6, 5, 306, 221
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "User ID and password",1,2,0,302,91
+    EDITTEXT        IDC_EDT1,52,25,103,13,ES_AUTOHSCROLL | NOT WS_BORDER,
+                    WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_EDT2,52,43,103,13,ES_PASSWORD | ES_AUTOHSCROLL | NOT 
+                    WS_BORDER,WS_EX_CLIENTEDGE
+END
