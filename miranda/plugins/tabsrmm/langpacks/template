@@ -11,6 +11,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [&Cancel]
 
+[Cancel]
+
 [&Retry]
 
 [Send &later]
@@ -93,6 +95,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Don't report if minimized]
 
 [Container options...]
+
+[&User]
 
 [User]
 
@@ -688,7 +692,7 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [&User]
 
-[Message Log]
+[Message &Log]
 
 [Log Items to show]
 
@@ -702,7 +706,7 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Timestamp Settings]
 
-[Container]
+[&Container]
 
 [Event Popups]
 

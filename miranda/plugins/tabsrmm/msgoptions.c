@@ -639,7 +639,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                     EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATECONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                     EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATETABS), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                     EnableWindow(GetDlgItem(hwndDlg, IDC_POPUPCONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATECONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                     break;
                 case IDC_SETUPAUTOCREATEMODES:
                     CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hwndDlg, DlgProcSetupStatusModes);

@@ -1137,10 +1137,9 @@ void CreateImageList(BOOL bInitial)
         int cxIcon = GetSystemMetrics(SM_CXSMICON);
         int cyIcon = GetSystemMetrics(SM_CYSMICON);
         
-        //g_hIconDLL = LoadLibraryExA("plugins/tabsrmm_icons.dll", NULL, LOAD_LIBRARY_AS_DATAFILE);
         g_hIconDLL = LoadLibraryA("plugins/tabsrmm_icons.dll");
         if(g_hIconDLL == NULL)
-            MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "b", MB_OK);
+            MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
         else {
             g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
             

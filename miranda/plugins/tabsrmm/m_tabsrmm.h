@@ -103,7 +103,6 @@ struct MessageSessionStats {
 
 struct MessageWindowData {
 	HANDLE hContact;
-    HANDLE hPictAck;
     HWND hwnd;
 	HANDLE hDbEventFirst,hDbEventLast;
 	HANDLE hAckEvent;

@@ -1250,11 +1250,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     /* get around a lame bug in the Windows template resource code where richedits are limited to 0x7FFF */
                         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
                         pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-                        if(pCaps & PF4_AVATARS) {
+                        if(pCaps & PF4_AVATARS)
                             SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
-                        }
-                        else
-                            dat->hPictAck = 0;
                     }
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
@@ -1462,9 +1459,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                     dat->mayFlashTab = TRUE;
                     dat->dwTickLastEvent = GetTickCount();
+                    dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
+                    SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                     //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                 }
-                
                 SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
                 if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)
                     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
@@ -1531,13 +1529,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case DM_OPTIONSAPPLIED:
-
 #ifdef __MATHMOD_SUPPORT            
             //mathMod begin
 			CallService(MATH_SETBKGCOLOR, 0, (LPARAM)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MATH_BKGCOLOUR, SRMSGDEFSET_MATH_BKGCOLOUR));
 			//mathMod end
 #endif            
-            
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
                 if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0)) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
@@ -1549,7 +1545,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwFlags |= MWF_LOG_DYNAMICAVATAR;
             else
                 dat->dwFlags &= ~MWF_LOG_DYNAMICAVATAR;
-            
             dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
@@ -1813,7 +1808,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 if(dat->dwFlags & MWF_NEEDCHECKSIZE)
-                    SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
+                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);
 
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
@@ -1850,7 +1845,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags &= ~MWF_DEFERREDREMAKELOG;
                 }
                 if(dat->dwFlags & MWF_NEEDCHECKSIZE)
-                    SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
+                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);
 
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
@@ -2262,11 +2257,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if (GetForegroundWindow() == dat->pContainer->hwnd)
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                     } else {
+                        BOOL isFlashed = FALSE;
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
-                        if (dat->showTypingWin) {
-                            SendMessage(dat->pContainer->hwnd, DM_UPDATEWINICON, 0, 0);
-                            HandleIconFeedback(hwndDlg, dat, -1);
-                            SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, 0, 0);
+                        SendMessage(dat->pContainer->hwnd, DM_UPDATEWINICON, 0, 0);
+                        HandleIconFeedback(hwndDlg, dat, -1);
+                        SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, 0, 0);
+                        if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin) {
+                            isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE) || dat->pContainer->isFlashing;
+                            if(isFlashed);
+                            FlashWindow(dat->pContainer->hwnd, TRUE);       // SetWindowText may clear the flashing state
                         }
                         dat->showTyping = 0;
                     }
@@ -2282,9 +2281,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) g_buttonBarIcons[5]);
                         }
                         if(IsIconic(dat->pContainer->hwnd) || GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd) {
-                            if(IsIconic(dat->pContainer->hwnd)) {
-                                SetWindowTextA(dat->pContainer->hwnd, szBuf);
-                                dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
+                            BOOL isFlashed = FALSE;
+                            SetWindowTextA(dat->pContainer->hwnd, szBuf);
+                            dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
+                            if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin) {
+                                isFlashed = FlashWindow(dat->pContainer->hwnd, FALSE) || dat->pContainer->isFlashing;
+                                if(isFlashed);
+                                FlashWindow(dat->pContainer->hwnd, TRUE);       // SetWindowText may clear the flashing state
                             }
                         }
                         if (dat->pContainer->hwndActive != hwndDlg) {
@@ -2299,7 +2302,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 }
                             }
                         }
-                        if ((dat->showTypingWin && GetForegroundWindow() != dat->pContainer->hwnd) || (dat->showTypingWin && dat->pContainer->hwndStatus == 0))
+                        if ((GetForegroundWindow() != dat->pContainer->hwnd) || (dat->pContainer->hwndStatus == 0))
                             SendMessage(dat->pContainer->hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) g_buttonBarIcons[5]);
                         dat->showTyping = 1;
                     }
@@ -2486,7 +2489,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     }
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                    PostMessage(hwndDlg, WM_SIZE, 0, 0);
+                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                 }
@@ -3063,23 +3066,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
                     }
                     break;
-// END MOD#33
-// BEGIN MOD#33: Show contact's picture
-/*                    
-                case IDC_CONTACTPIC:
-                    SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
-                    if(GetWindowLong(hwndDlg, DWL_MSGRESULT) == 0) {
-                        ShowPicture(hwndDlg,dat,TRUE,TRUE,TRUE);
-                        if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-                            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                        }
-                    }
-                    break;
-*/                    
 // END MOD#33
                 case IDM_CLEAR:
                     SetDlgItemText(hwndDlg, IDC_LOG, _T(""));

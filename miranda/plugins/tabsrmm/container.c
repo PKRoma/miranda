@@ -69,6 +69,8 @@ extern struct ProtocolData *protoIconData;
 extern int g_nrProtos;
 
 extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
+extern HICON g_buttonBarIcons[];
+
 HMENU g_hMenuContext, g_hMenuContainer = 0, g_hMenuEncoding = 0;
 
 #define DEFAULT_CONTAINER_POS 0x00400040
@@ -1067,7 +1069,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 if(hContact) {
                     hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
-                    ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMenu, Translate("User"));
+                    ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMenu, Translate("&User"));
                     DrawMenuBar(hwndDlg);
                     GetCursorPos(&pt);
                     TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
@@ -1424,8 +1426,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case DM_SETICON:
             {
                 HICON hIconMsg = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+                if((HICON)lParam == g_buttonBarIcons[5]) {               // always set typing icon, but don't save it...
+                    SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
+                    break;
+                }
                 if(pContainer->hIcon == hIconMsg && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
-                    break;          // don't overwrite the new message indicator flag
+                    lParam = (LPARAM)pContainer->hIcon;
+                    //break;          // don't overwrite the new message indicator flag
                 SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
                 pContainer->hIcon = (HICON)lParam;
                 break;
@@ -1802,11 +1809,11 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
             rc->top = rcTab.top - 2;
         rc->top += pContainer->tBorder;
         rc->left -= 1;
-        rc->right +=3;
+        rc->right += ((pContainer->tBorder == 0) ? 3 : 2);
         rc->left += pContainer->tBorder;
         rc->right -= pContainer->tBorder;
         if(!(pContainer->dwFlags & CNT_TABSBOTTOM)) {
-            rc->bottom -= (pContainer->statusBarHeight + 1);
+            rc->bottom -= (pContainer->statusBarHeight + (pContainer->tBorder == 0 ? 1 : 2));
             rc->bottom -= (pContainer->tBorder == 0) ? 2 : 4;
         }
         else {

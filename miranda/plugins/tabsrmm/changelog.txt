@@ -109,7 +109,26 @@ Version 0.9.9.0 - 2005/01/08 - BETA
           created automatically on incoming events.
           Check "Options->Message sessions->Message tabs->Setup Status modes...
 
-Version 0.0.9.5 - 2005/01/04
+        * changed the title bar + icon notification code. The message icon is now ex-
+          clusivly used for indicating a waiting event in a tab. Typing notifications
+          will be shown in the title bar, unless the window is focused.
+          Typing notification messages + icons should no longer remain when the window
+          receives a "typing off" message.
+
+Version 0.9.9.1 - 2005/01/14
+
+        * fixed a few translation bugs (menu bar, the new status mode dialog)
+
+        + new option: typing notify->Flash window once on typing events.
+          This can be disabled to avoid the flashes when a typing notification
+          arrives...
+          It is enabled by default and replaces the old option to enable the
+          typing notify window icons (which is gone).
+          
+        ! manually opening a container does not give him a message icon instead
+          of the status icon.
+        
+ Version 0.0.9.5 - 2005/01/04
 
         ! fixed close tab on double click
         

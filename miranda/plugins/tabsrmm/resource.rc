@@ -35,9 +35,9 @@ CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,112,133,50,14
-    PUSHBUTTON      "Abbrechen",IDCANCEL,169,133,50,14
-    CONTROL         "All modes",IDC_ALWAYS,"Button",BS_AUTOCHECKBOX,19,17,
-                    70,14
+    PUSHBUTTON      "Cancel",IDCANCEL,169,133,50,14
+    CONTROL         "All modes",IDC_ALWAYS,"Button",BS_AUTOCHECKBOX,19,17,70,
+                    14
     GROUPBOX        "Choose modes",IDC_STATIC,7,7,212,119
     CONTROL         "",IDC_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,
                     39,82,11
@@ -427,7 +427,7 @@ BEGIN
     CONTROL         "Show typing notifications when a user is typing a message",
                     IDC_SHOWNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,
                     178,233,13
-    CONTROL         "Update inactive message window icons when a user is typing",
+    CONTROL         "Flash window once on typing events (only if flashing enabled)",
                     IDC_TYPEWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,193,
                     230,10
     CONTROL         "Show typing notification when no message dialog is open",
@@ -855,7 +855,7 @@ BEGIN
                                                 ID_FILE_CLOSEMESSAGESESSION
         MENUITEM "Close Container\tAlt-F4",     ID_FILE_CLOSE
     END
-    POPUP "View"
+    POPUP "&View"
     BEGIN
         MENUITEM "Show Menu Bar",               ID_VIEW_SHOWMENUBAR
         MENUITEM "Show Status Bar",             ID_VIEW_SHOWSTATUSBAR
@@ -921,7 +921,7 @@ BEGIN
         MENUITEM "Stay on Top",                 ID_VIEW_STAYONTOP
     END
     MENUITEM "&User",                       ID_USER
-    POPUP "Message Log"
+    POPUP "Message &Log"
     BEGIN
         POPUP "Log Items to show"
         BEGIN
@@ -975,7 +975,7 @@ BEGIN
                                                 ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
 
     END
-    POPUP "Container"
+    POPUP "&Container"
     BEGIN
         MENUITEM "Container Options...",        ID_CONTAINER_CONTAINEROPTIONS
 
@@ -1010,7 +1010,7 @@ BEGIN
         MENUITEM "Apply Container Options globally", 
                                                 ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY
 
-        MENUITEM "Set current Options as Default Values",
+        MENUITEM "Set current Options as Default Values", 
                                                 ID_OPTIONS_SETCURRENTOPTIONSASDEFAULTVALUES
 
         MENUITEM "Save current Window Position as Default", 
