@@ -352,7 +352,8 @@ struct ThreadData
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*  mMsnFtp;          // file transfer block
 	filetransfer*  mP2pSession;		// new styled transfer
-	DWORD          mTotalSend;       // number of bytes wriiten
+	ThreadData*    mParentThread;		// thread that began the f/t
+	LONG				mP2PInitTrid;
 
 	//----| internal data buffer |--------------------------------------------------------
 	int            mBytesInData;     // bytes available in data buffer
@@ -380,6 +381,7 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE hConn );
 ThreadData*	__stdcall MSN_GetThreadByContact( HANDLE hContact );
 ThreadData*	__stdcall MSN_GetThreadByPort( WORD wPort );
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
+void			__stdcall MSN_PingParentThread( ThreadData*, filetransfer* ft );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
@@ -391,6 +393,9 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL 
 void __stdcall p2p_processMsg( ThreadData* info, char* msgbody );
 void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
 void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus );
+
+void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T );
+long __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T );
 
 void __stdcall p2p_registerSession( filetransfer* ft );
 void __stdcall p2p_unregisterSession( filetransfer* ft );

@@ -190,7 +190,6 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		ThreadData* newThread = new ThreadData;
 		newThread->mType = SERVER_FILETRANS;
 		newThread->mCaller = 2;
-		newThread->mTotalSend = 0;
 		newThread->mMsnFtp = ft;
 		newThread->startThread(( pThreadFunc )MSNSendfileThread );
 }	}
@@ -709,7 +708,12 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
-			if ( info->mJoinedCount > 0 )
+			if ( info->mP2PInitTrid == trid ) {
+				info->mP2PInitTrid = 0;
+				p2p_sendViaServer( info->mP2pSession, info );
+				info->mP2pSession = NULL;
+			}
+			else if ( info->mJoinedCount > 0 )
 				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
 			break;
 

@@ -97,8 +97,6 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 		case ' RFT':    //********* TFR
 		{
 			char* sendpacket = ( char* )alloca( 2048 );
-			int wPlace;
-			WORD packetLen;
 			filetransfer* ft = info->mMsnFtp;
 
 			info->mCaller = 3;
@@ -109,19 +107,21 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				break;
 
 			MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0 );
-			while( info->mTotalSend < ft->std.currentFileSize ) 
+			while( ft->std.currentFileProgress < ft->std.currentFileSize ) 
 			{
 				if ( ft->bCanceled )
 					break;
 
-				wPlace=0;
-				sendpacket[wPlace++]=0x00;
-				packetLen=(((ft->std.currentFileSize)-(info->mTotalSend)) > 2045) ? 2045: (WORD)((ft->std.currentFileSize)-(info->mTotalSend));
-				sendpacket[wPlace++]=(packetLen & 0x00ff);
-				sendpacket[wPlace++]=((packetLen & 0xff00) >> 8);
-				_read(ft->fileId, &sendpacket[wPlace], packetLen);
+				int wPlace = 0;
+				sendpacket[ wPlace++ ] = 0x00;
+				int packetLen = ft->std.currentFileSize - ft->std.currentFileProgress;
+				if ( packetLen > 2045 )
+					packetLen = 2045;
 
-				info->mTotalSend+=packetLen;
+				sendpacket[ wPlace++ ] = packetLen & 0x00ff;
+				sendpacket[ wPlace++ ] = ( packetLen & 0xff00 ) >> 8;
+				_read( ft->fileId, &sendpacket[wPlace], packetLen );
+
 				MSN_WS_Send( info->s, &sendpacket[0], packetLen+3 );
 
 				ft->std.totalProgress += packetLen;
@@ -224,14 +224,12 @@ LBL_Success:	ft->complete();
 					goto LBL_Error;
 
 				_write( ft->fileId, p, dataLen );
-				info->mTotalSend += dataLen;
-					
 				ft->std.totalProgress += dataLen;
 				ft->std.currentFileProgress += dataLen;
 
 				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 
-				if ( info->mTotalSend == ft->std.totalBytes )
+				if ( ft->std.currentFileProgress == ft->std.totalBytes )
 					goto LBL_Success;
 	}	}	}
 
@@ -648,6 +646,21 @@ ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 	
 	LeaveCriticalSection( &sttLock );
 	return tResult;
+}
+
+void __stdcall MSN_PingParentThread( ThreadData* parentThread, filetransfer* ft )
+{
+	EnterCriticalSection( &sttLock );
+
+	for ( int i=0; i < MAX_THREAD_COUNT; i++ )
+	{
+		if ( sttThreads[ i ] == parentThread ) {
+			parentThread->mP2pSession = ft;
+			parentThread->mP2PInitTrid = p2p_sendPortionViaServer( ft, parentThread );
+			break;
+	}	}
+	
+	LeaveCriticalSection( &sttLock );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -13,6 +13,7 @@ Main menu item 'Set my own avatar' was deleted.
 [!] Option 'File Transfers -> If a file already exists  ->  Rename'
 doesn't work for MSN P2P transfers.
 [!] Bug #0000092 fixed: 'User Is Typing' event delay is too slow.
+[!] bugfix for some MSN Messenger file transfer issues
 
 Version 0.1.7.8
 ===============

@@ -90,7 +90,6 @@ static int sttCreateListener( filetransfer* ft, pThreadFunc thrdFunc, char* szBo
 		ThreadData* newThread = new ThreadData;
 		newThread->mType = SERVER_FILETRANS;
 		newThread->mCaller = 3;
-		newThread->mTotalSend = 0;
 		newThread->mP2pSession = ft;
 		strncpy( newThread->mCookie, ( char* )szUuid, sizeof newThread->mCookie );
 		ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
@@ -348,6 +347,7 @@ bool p2p_connectTo( ThreadData* info )
 			MSN_DebugLog( "Connection Failed (%d): %s", err.mErrorCode, err.getText() );
 		}
 
+		MSN_PingParentThread( info->mParentThread, ft );
 		return false;
 	}
 
@@ -626,46 +626,52 @@ void __cdecl p2p_filePassiveSendThread( ThreadData* info )
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendViaServer - sends a file via server
 
-void p2p_sendViaServer( filetransfer* ft, ThreadData* T )
+void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T )
 {
-	for ( unsigned long size = 0; size < ft->std.totalBytes; size += 1202 ) {
+	while ( ft->std.currentFileProgress < ft->std.totalBytes ) {
 		if ( ft->bCanceled ) {
 			p2p_sendBye( T, ft );
 			MSN_DebugLog( "File transfer canceled" );
 			return;
 		}
 
-		long portion = 1202;
-		if ( portion + size > ft->std.totalBytes )
-			portion = ft->std.totalBytes - size;
-
-		char databuf[ 1500 ], *p = databuf;
-		p += sprintf( p, sttP2Pheader, ft->p2p_dest );
-		P2P_Header* H = ( P2P_Header* )p; p += sizeof( P2P_Header );
-		memset( H, 0, sizeof( P2P_Header ));
-		H->mSessionID = ft->p2p_sessionid;
-		H->mID = ft->p2p_msgid;
-		H->mFlags = 0x020;
-		H->mTotalSize = ft->std.currentFileSize;
-		H->mOffset = size;
-		H->mPacketLen = portion;
-		H->mAckSessionID = ft->p2p_acksessid;
-
-		::read( ft->fileId, p, portion );
-
-		p += portion;
-		*( long* )p = 0x02000000; p += sizeof( long );
-
-		T->sendRawMessage( 'D', databuf, int( p - databuf ));
-
-		ft->std.totalProgress += H->mPacketLen;
-		ft->std.currentFileProgress += H->mPacketLen;
-		MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
+		p2p_sendPortionViaServer( ft, T );
 	}
 
 	ft->p2p_ackID = 3000;
 	MSN_DebugLog( "File transfer succeeded" );
 	ft->complete();
+}
+
+LONG __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T )
+{
+	long portion = ft->std.totalBytes - ft->std.currentFileProgress;
+	if ( portion > 1202 )
+		portion = 1202;
+
+	char databuf[ 1500 ], *p = databuf;
+	p += sprintf( p, sttP2Pheader, ft->p2p_dest );
+	P2P_Header* H = ( P2P_Header* )p; p += sizeof( P2P_Header );
+	memset( H, 0, sizeof( P2P_Header ));
+	H->mSessionID = ft->p2p_sessionid;
+	H->mID = ft->p2p_msgid;
+	H->mFlags = 0x020;
+	H->mTotalSize = ft->std.currentFileSize;
+	H->mOffset = ft->std.currentFileProgress;
+	H->mPacketLen = portion;
+	H->mAckSessionID = ft->p2p_acksessid;
+
+	::read( ft->fileId, p, portion );
+
+	p += portion;
+	*( long* )p = 0x02000000; p += sizeof( long );
+
+	LONG trid = T->sendRawMessage( 'D', databuf, int( p - databuf ));
+
+	ft->std.totalProgress += H->mPacketLen;
+	ft->std.currentFileProgress += H->mPacketLen;
+	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
+	return trid;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -914,6 +920,7 @@ static void sttInitDirectTransfer2(
 		ThreadData* newThread = new ThreadData;
 		newThread->mType = SERVER_FILETRANS;
 		newThread->mP2pSession = ft;
+		newThread->mParentThread = info;
 		strncpy( newThread->mCookie, szNonce, sizeof newThread->mCookie );
 		_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szInternalAddress, szInternalPort );
 		newThread->startThread(( pThreadFunc )p2p_fileActiveRecvThread );
@@ -998,6 +1005,7 @@ LBL_Close:
 			ThreadData* newThread = new ThreadData;
 			newThread->mType = SERVER_FILETRANS;
 			newThread->mP2pSession = ft;
+			newThread->mParentThread = info;
 			strncpy( newThread->mCookie, szNonce, sizeof newThread->mCookie );
 			_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szInternalAddress, szInternalPort );
 			newThread->startThread(( pThreadFunc )p2p_filePassiveSendThread );
