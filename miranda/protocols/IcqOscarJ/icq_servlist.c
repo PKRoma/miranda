@@ -66,6 +66,135 @@ static CRITICAL_SECTION servlistMutex;
 static int nPendingCount = 0;
 static int nPendingSize = 0;
 static ssipendingitem** pdwPendingList = NULL;
+static int nJustAddedCount = 0;
+static int nJustAddedSize = 0;
+static HANDLE* pdwJustAddedList = NULL;
+static WORD* pwGroupRenameList = NULL;
+static int nGroupRenameCount = 0;
+static int nGroupRenameSize = 0;
+
+
+// Add running group rename operation
+void AddGroupRename(WORD wGroupID)
+{
+  EnterCriticalSection(&servlistMutex);
+	if (nGroupRenameCount >= nGroupRenameSize)
+	{
+		nGroupRenameSize += 10;
+		pwGroupRenameList = (WORD*)realloc(pwGroupRenameList, nGroupRenameSize * sizeof(WORD));
+	}
+
+	pwGroupRenameList[nGroupRenameCount] = wGroupID;
+	nGroupRenameCount++;	
+  LeaveCriticalSection(&servlistMutex);
+}
+
+
+// Remove running group rename operation
+void RemoveGroupRename(WORD wGroupID)
+{
+  int i, j;
+
+  EnterCriticalSection(&servlistMutex);
+  if (pwGroupRenameList)
+  {
+    for (i = 0; i<nGroupRenameCount; i++)
+    {
+      if (pwGroupRenameList[i] == wGroupID)
+      { // we found it, so remove
+        for (j = i+1; j<nGroupRenameCount; j++)
+        {
+          pwGroupRenameList[j-1] = pwGroupRenameList[j];
+        }
+        nGroupRenameCount--;
+      }
+    }
+  }
+  LeaveCriticalSection(&servlistMutex);
+}
+
+
+// Returns true if dwID is reserved
+BOOL IsGroupRenamed(WORD wGroupID)
+{
+  int i;
+
+  EnterCriticalSection(&servlistMutex);
+  if (pwGroupRenameList)
+  {
+    for (i = 0; i<nGroupRenameCount; i++)
+    {
+      if (pwGroupRenameList[i] == wGroupID)
+      {
+        LeaveCriticalSection(&servlistMutex);
+        return TRUE;
+      }
+    }
+  }
+  LeaveCriticalSection(&servlistMutex);
+
+  return FALSE;
+}
+
+
+void FlushGroupRenames()
+{
+  EnterCriticalSection(&servlistMutex);
+  SAFE_FREE(&pwGroupRenameList);
+  nGroupRenameCount = 0;
+  nGroupRenameSize = 0;
+  LeaveCriticalSection(&servlistMutex);
+}
+
+
+// used for adding new contacts to list - sync with visible items
+void AddJustAddedContact(HANDLE hContact)
+{
+  EnterCriticalSection(&servlistMutex);
+	if (nJustAddedCount >= nJustAddedSize)
+	{
+		nJustAddedSize += 10;
+		pdwJustAddedList = (HANDLE*)realloc(pdwJustAddedList, nJustAddedSize * sizeof(HANDLE));
+	}
+
+	pdwJustAddedList[nJustAddedCount] = hContact;
+	nJustAddedCount++;	
+  LeaveCriticalSection(&servlistMutex);
+}
+
+
+// was the contact added during this serv-list load
+BOOL IsContactJustAdded(HANDLE hContact)
+{
+  int i;
+
+  EnterCriticalSection(&servlistMutex);
+  if (pdwJustAddedList)
+  {
+    for (i = 0; i<nJustAddedCount; i++)
+    {
+      if (pdwJustAddedList[i] == hContact)
+      {
+        LeaveCriticalSection(&servlistMutex);
+        return TRUE;
+      }
+    }
+  }
+  LeaveCriticalSection(&servlistMutex);
+
+  return FALSE;
+}
+
+
+void FlushJustAddedContacts()
+{
+  EnterCriticalSection(&servlistMutex);
+  SAFE_FREE((void*)&pdwJustAddedList);
+  nJustAddedSize = 0;
+  nJustAddedCount = 0;
+  LeaveCriticalSection(&servlistMutex);
+}
+
 
 
 // Used for event-driven adding of contacts, before it is completed this is used
@@ -557,7 +686,14 @@ DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szN
  */
 
 static int GroupNamesEnumProc(const char *szSetting,LPARAM lParam)
-{ // we do nothing here, just return zero
+{ // if we got pointer, store setting name, return zero
+  if (lParam)
+  {
+    char** block = (char**)malloc(2*sizeof(char*));
+    block[1] = _strdup(szSetting);
+    block[0] = ((char**)lParam)[0];
+    ((char**)lParam)[0] = (char*)block;
+  }
   return 0;
 }
 
@@ -566,16 +702,40 @@ int IsServerGroupsDefined()
 {
   DBCONTACTENUMSETTINGS dbces;
 
-  char szModule[MAX_PATH+6];
+  char szModule[MAX_PATH+9];
 
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "Groups");
 
   dbces.pfnEnumProc = &GroupNamesEnumProc;
   dbces.szModule = szModule;
+  dbces.lParam = 0;
 
   if (CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces))
     return 0; // no groups defined
+
+  strcpy(szModule, gpszICQProtoName);
+  strcat(szModule, "SrvGroups");
+
+  if (CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces))
+  { // old version of groups, remove old settings and force to reload all info
+    char** list = NULL;
+    strcpy(szModule, gpszICQProtoName);
+    strcat(szModule, "Groups");
+    dbces.lParam = (LPARAM)&list;
+    CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
+    while (list)
+    {
+      void* bet;
+
+      DBDeleteContactSetting(NULL, szModule, list[1]);
+      SAFE_FREE(&list[1]);
+      bet = list;
+      list = (char**)list[0];
+      SAFE_FREE(&bet);
+    }
+    return 0; // no groups defined
+  }
   else 
     return 1;
 }
@@ -651,16 +811,54 @@ void* collectGroups(int *count)
 
 
 
+static int GroupLinksEnumProc(const char *szSetting,LPARAM lParam)
+{ // check link target, add if match
+  if (DBGetContactSettingWord(NULL, ((char**)lParam)[2], szSetting, 0) == (WORD)((char**)lParam)[1])
+  {
+    char** block = (char**)malloc(2*sizeof(char*));
+    block[1] = _strdup(szSetting);
+    block[0] = ((char**)lParam)[0];
+    ((char**)lParam)[0] = (char*)block;
+  }
+  return 0;
+}
+
+
 void removeGroupPathLinks(WORD wGroupID)
-{
-  char idstr[33];
-  DBVARIANT dbv;
-  int i;
+{ // remove miranda grouppath links targeting to this groupid
+//  char idstr[33];
+//  DBVARIANT dbv;
+  DBCONTACTENUMSETTINGS dbces;
+//  int i;
   char szModule[MAX_PATH+6];
+  char* pars[3];
 
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "Groups");
 
+  pars[0] = NULL;
+  pars[1] = (char*)wGroupID;
+  pars[2] = szModule;
+
+  dbces.pfnEnumProc = &GroupLinksEnumProc;
+  dbces.szModule = szModule;
+  dbces.lParam = (LPARAM)pars;
+
+  if (!CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces))
+  { // we found some links, remove them
+    char** list = (char**)pars[0];
+    while (list)
+    {
+      void* bet;
+
+      DBDeleteContactSetting(NULL, szModule, list[1]);
+      SAFE_FREE(&list[1]);
+      bet = list;
+      list = (char**)list[0];
+      SAFE_FREE(&bet);
+    }
+  }
+/*
   for(i=0;;i++)
   {
     itoa(i,idstr,10);
@@ -670,7 +868,7 @@ void removeGroupPathLinks(WORD wGroupID)
       DBDeleteContactSetting(NULL, szModule, dbv.pszVal+1);
     }
     DBFreeVariant(&dbv);
-  }
+  }*/
   return;
 }
 
@@ -679,12 +877,12 @@ void removeGroupPathLinks(WORD wGroupID)
 char* getServerGroupName(WORD wGroupID)
 {
   DBVARIANT dbv;
-  char szModule[MAX_PATH+6];
+  char szModule[MAX_PATH+9];
   char szGroup[16];
   char *szRes;
 
   strcpy(szModule, gpszICQProtoName);
-  strcat(szModule, "Groups");
+  strcat(szModule, "SrvGroups");
   _itoa(wGroupID, szGroup, 0x10);
 
   if (!CheckServerID(wGroupID, 0))
@@ -706,11 +904,11 @@ char* getServerGroupName(WORD wGroupID)
 
 void setServerGroupName(WORD wGroupID, const char* szGroupName)
 {
-  char szModule[MAX_PATH+6];
+  char szModule[MAX_PATH+9];
   char szGroup[16];
 
   strcpy(szModule, gpszICQProtoName);
-  strcat(szModule, "Groups");
+  strcat(szModule, "SrvGroups");
   _itoa(wGroupID, szGroup, 0x10);
 
   if (szGroupName)
@@ -770,6 +968,7 @@ static int GroupNameExists(const char *name,int skipGroup)
   DBVARIANT dbv;
   int i;
 
+  if (name == NULL) return 1; // no group always exists
   for(i=0;;i++)
   {
     if(i==skipGroup) continue;
@@ -830,6 +1029,18 @@ char* makeGroupPath(WORD wGroupId)
         int levnew = countGroupLevel(wId);
         char* szTempGroup;
 
+        if (level == -1)
+        { // this is just an ordinary group
+          int hGroup;
+
+          if (!GroupNameExists(szGroup, -1))
+          { // if the group does not exist, create it
+            hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
+            CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
+          }
+          setServerGroupID(szGroup, wGroupId); // set grouppath id
+          return szGroup;
+        }
         while ((levnew >= level) && (levnew != -1))
         { // we look for parent group
           wId--;
@@ -1477,13 +1688,15 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
   void* groupData;
   DWORD groupSize;
 
+  if (IsGroupRenamed(wGroupId)) return; // the group was already renamed
+  
   if (level == -1) return; // we failed to prepare group
 
   szLast = szGroupName;
   i = level;
   while (i)
   { // find correct part of grouppath
-    szLast = strstr(szLast, "\\");
+    szLast = strstr(szLast, "\\")+1;
     i--;
   }
   szGroup = (char*)malloc(strlen(szLast)+1+level);
@@ -1503,7 +1716,7 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
   { // cookie failed, use old fake
     dwCookie = GenerateCookie(ICQ_LISTS_UPDATEGROUP);
   }
-  else if (groupData = collectBuddyGroup(wGroupId, &groupSize))
+  if (groupData = collectBuddyGroup(wGroupId, &groupSize))
   {
     ack->dwAction = SSA_GROUP_RENAME;
     ack->dwUin = 0;
@@ -1514,7 +1727,8 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
 
     dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
 
-    removeGroupPathLinks(wGroupId);
+    //removeGroupPathLinks(wGroupId);
+    AddGroupRename(wGroupId);
 
     icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, wGroupId, szGroup, groupData, groupSize);
     SAFE_FREE(&groupData);
@@ -1609,7 +1823,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         char* szGroup = makeGroupPath(wGroupId);
         int bRenamed = 0;
 
-        if (wGroupId && !GroupNameExists(szGroup, 0))
+        if (wGroupId && !GroupNameExists(szGroup, -1))
         { // if we moved from non-existing group, it can be rename
           if (!getServerGroupID(cws->value.pszVal))
           { // the target group is not known - it is probably rename

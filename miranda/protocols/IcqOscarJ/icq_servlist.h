@@ -86,6 +86,7 @@ int IsServerGroupsDefined();
 char* makeGroupPath(WORD wGroupId);
 WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
 void removeGroupPathLinks(WORD wGroupID);
+int countGroupLevel(WORD wGroupId);
 
 DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup);
 DWORD removeServContact(HANDLE hContact);
@@ -104,5 +105,12 @@ void LoadServerIDs();
 
 void FlushPendingOperations();
 void RemovePendingOperation(HANDLE hContact, int nResult);
+void AddGroupRename(WORD wGroupID);
+void RemoveGroupRename(WORD wGroupID);
+void FlushGroupRenames();
+
+void AddJustAddedContact(HANDLE hContact);
+BOOL IsContactJustAdded(HANDLE hContact);
+void FlushJustAddedContacts();
 
 #endif /* __ICQ_SERVLIST_H */

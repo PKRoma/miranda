@@ -210,6 +210,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
   FlushServerIDs(); // clear server IDs list
   FlushPendingOperations(); // clear pending operations list
+  FlushGroupRenames(); // clear group rename in progress list
 
   return 0;
 }

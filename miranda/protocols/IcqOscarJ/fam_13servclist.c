@@ -553,8 +553,10 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       else
       { 
         setServerGroupName(sc->wGroupId, sc->szGroupName);
-         //TODO: update group links
+        removeGroupPathLinks(sc->wGroupId);
+        setServerGroupID(makeGroupPath(sc->wGroupId), sc->wGroupId);
       }
+      RemoveGroupRename(sc->wGroupId);
       break;
     }
   case SSA_SERVLIST_ACK:
@@ -745,6 +747,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
               SAFE_FREE(&szGroup);
             }
             bAdded = 1;
+            AddJustAddedContact(hContact);
 
 						DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 						if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "AddServerNew", DEFAULT_SS_ADD))
@@ -753,13 +756,15 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					}
 					else
 					{
-						// Make sure it's not hidden or temporary
-						if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "AddServerNew", DEFAULT_SS_ADD))
-						{
+						// If we should add new contacts and this contact was just added, show it
+						if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AddServerNew", DEFAULT_SS_ADD) && IsContactJustAdded(hContact))
+            {
 							DBWriteContactSettingByte(hContact, "CList", "Hidden", 0);
-							DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
-						}
-					}
+              bAdded = 1; // we want details for new contacts
+            }
+            // Contact on server is always on list
+            DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
+          }
 
 					// Save group and item ID
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", wItemId);
@@ -1037,6 +1042,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+          // Add it to the list, so it can be added properly if proper contact
+          AddJustAddedContact(hContact);
 				}
 
 				// Save permit ID
@@ -1101,6 +1108,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+          // Add it to the list, so it can be added properly if proper contact
+          AddJustAddedContact(hContact);
 				}
 
 				// Save Deny ID
@@ -1178,8 +1187,10 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						continue;
 					}
 					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
-					// It wasn't previously in the list, we hide it so it only appears in the visible list
+					// It wasn't previously in the list, we hide it
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+          // Add it to the list, so it can be added properly if proper contact
+          AddJustAddedContact(hContact);
 				}
 
 				// Save Ignore ID
@@ -1259,15 +1270,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 	if (bIsLastPacket)
 	{
-
 		// No contacts left to sync
 		bIsSyncingCL = FALSE;
 
 		if (wLen >= 4)
 		{
-
 			DWORD dwLastUpdateTime;
-
 
 			/* finally we get a time_t of the last update time */
 			unpackDWord(&buf, &dwLastUpdateTime);
@@ -1297,12 +1305,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         icq_sendGroup(seq, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0);
       }
     }
-	}
-	else
-	{
-		Netlib_Logf(ghServerNetlibUser, "Waiting for more packets");
-	}
-
+    // serv-list sync finished, clear just added contacts
+    FlushJustAddedContacts(); 
+  }
+  else
+  {
+    Netlib_Logf(ghServerNetlibUser, "Waiting for more packets");
+  }
 }
 
 
