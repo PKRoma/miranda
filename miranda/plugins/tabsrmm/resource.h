@@ -213,6 +213,8 @@
 #define IDC_COMBO1                      1674
 #define IDC_MODIFIERS                   1674
 #define IDC_AVATARMODE                  1674
+#define IDC_AVATARMODE2                 1675
+#define IDC_NOTIFYTYPE                  1675
 #define IDC_RICHEDIT21                  1676
 #define IDC_CHECK6                      1677
 #define IDC_EMPTYLINEFIX                1677

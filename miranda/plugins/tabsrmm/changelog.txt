@@ -41,7 +41,7 @@ Version 0.9.9.0 - 2005/01/08 - BETA
 
         * removed debugging option to disable micro linefeeds
         
-        * minor layout changes (avatar field alignment)
+        * minor layout changes (avatar field alignment and tab control client area)
         
         * removed obsolete code for layouting the multisend splitter in the old way.
 
@@ -59,6 +59,36 @@ Version 0.9.9.0 - 2005/01/08 - BETA
           but for metacontacts it opens a context menu if you click the protocol
           icon with your right mouse button.
           
+        * changed internal typing notification code - it's now using the popup configuration 
+          setting from the current container so that you can have the baloon-type
+          tray notifications or flashing icons based on the state of the current window
+          (minimized, unfocused etc.)
+        
+        ! the error control buttons were not translateable. Fixed.
+        
+        * metacontacts support: unforce protocol added to tab closing code.
+        
+        * tabsrmm can now display notifications and debug messages using ballon-type
+          tray notifications. This feature no longer depends on the popup plugin.
+          See: Options->Message Session->Messaging->Notifications. Three settings are
+          available:
+          * None (disable them completely)
+          * Tray notifications (use baloon-style tray tooltips)
+          * Popups - use popups. If the popup plugin is not installed, it will fall
+            back to tray notifications.
+            
+        * the included NewEventNotify plugin can now use the OSD (on screen display)
+          plugin to display its notifications about new messages. You need to have
+          the OSD plugin installed and you need to actiavte it under:
+          Options->Popups->Event Notify->Use OSD plugin instead of popups.
+          NOTE: this is experimental - the osd plugin is very new and may contain
+          bugs.
+          
+        + added a tooltip to the new status bar panel - it shows your own nickname
+          and the active protocol.
+          
+        ! (hopefully) fixed a possible "crash at exit" problem.
+        
 Version 0.0.9.5 - 2005/01/04
 
         ! fixed close tab on double click

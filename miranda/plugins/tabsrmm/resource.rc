@@ -216,8 +216,6 @@ BEGIN
     CONTROL         "Use popup configuration for placing dividers",
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,57,271,11
-    CONTROL         "Show debugging info Popups",IDC_DEBUGPOPUPS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,189,117,10
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,159,135,10
     CONTROL         "Show protocol icon and userID field.",IDC_SHOWINFOLINE,
@@ -268,6 +266,9 @@ BEGIN
                     288,10
     CONTROL         "Delete temporary contacts on close",IDC_DELETETEMP,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,158,150,10
+    LTEXT           "Notifications:",IDC_STATIC,8,192,58,9
+    COMBOBOX        IDC_NOTIFYTYPE,74,188,66,46,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229

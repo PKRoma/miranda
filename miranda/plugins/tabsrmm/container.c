@@ -83,6 +83,7 @@ int GetProtoIconFromList(const char *szProto, int iStatus);
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 HMENU BuildContainerMenu();
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type);
+void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
@@ -1266,7 +1267,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             else {
                 if(!pContainer->hwndStatus)
-                    pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
+                    pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 
                 if(pContainer->hwndStatus) {
                     RECT rcs;
@@ -1395,11 +1396,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 int iSelection = 0;
                                 iSelection = TrackPopupMenu(hMC, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                                 if(iSelection < 1000 && iSelection >= 100) {         // the "force" submenu...
-                                    //_DebugPopup(0, "force: %d", iSelection);
-                                    CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)hContact,  (LPARAM)(iSelection - 100));
+                                    if(iSelection == 999) {                           // un-force
+                                        CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)hContact, 0);
+                                        DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", -1);
+                                    }
+                                    else {
+                                        CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)hContact,  (LPARAM)(iSelection - 100));
+                                        DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", (DWORD)(iSelection - 100));
+                                    }
                                 }
                                 else if(iSelection >= 1000) {                        // the "default" menu...
-                                    //_DebugPopup(0, "set default: %d", iSelection);
                                     CallService(MS_MC_SETDEFAULTCONTACTNUM, (WPARAM)hContact, (LPARAM)(iSelection - 1000));
                                 }
                                 DestroyMenu(hMC);
@@ -1709,7 +1715,6 @@ struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pC
     }
 }
 
-// FIXME UNICODE !
 struct ContainerWindowData *FindContainerByName(const TCHAR *name) {
     struct ContainerWindowData *pCurrent = pFirstContainer;
 
@@ -1733,7 +1738,14 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
     struct ContainerWindowData *pCurrent = pFirstContainer;
 
     if (pContainer == pFirstContainer) {
-        pFirstContainer = pContainer->pNextContainer;
+        if(pContainer->pNextContainer != NULL) {
+            pFirstContainer = pContainer->pNextContainer;
+            _DebugPopup(0, "Removed first container");
+        }
+        else {
+            _DebugPopup(0, "Removed first container (none left)");
+            pFirstContainer = NULL;
+        }
         return pFirstContainer;
     }
 
@@ -1792,8 +1804,8 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
         rc->left += pContainer->tBorder;
         rc->right -= pContainer->tBorder;
         if(!(pContainer->dwFlags & CNT_TABSBOTTOM)) {
-            rc->bottom -= pContainer->statusBarHeight;
-            rc->bottom -= (pContainer->tBorder == 0) ? 3 : 4;
+            rc->bottom -= (pContainer->statusBarHeight + 1);
+            rc->bottom -= (pContainer->tBorder == 0) ? 2 : 4;
         }
         else {
             rc->bottom = rcTab.bottom + 4;
@@ -2152,9 +2164,9 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
     HMENU hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
     DBVARIANT dbv;
     int iNumProtos = 0, i = 0, iDefaultProtoByNum = 0;
-    char szTemp[50], *szProtoMostOnline = 0;
-    HANDLE hContactMostOnline;
-    DWORD iChecked;
+    char szTemp[50], *szProtoMostOnline = NULL, szMenuLine[128], *nick = NULL;
+    HANDLE hContactMostOnline, handle;
+    DWORD iChecked, isForced;
     
     struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
     if(dat == NULL)
@@ -2175,20 +2187,26 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
     iDefaultProtoByNum = (int)CallService(MS_MC_GETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, 0);
     hContactMostOnline = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
     szProtoMostOnline = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContactMostOnline, 0);
+    isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
     
     for(i = 0; i < iNumProtos; i++) {
         _snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
         if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
+        _snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
+        if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0)
+            nick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, 0);
+        
+        _snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s %s", dbv.pszVal, nick, i == isForced ? "(Forced)" : "");
         iChecked = MF_UNCHECKED;
-        if(szProtoMostOnline != NULL) {
-            if(!lstrcmpA(dbv.pszVal, szProtoMostOnline))
-                iChecked = MF_CHECKED;
-        }
-        AppendMenuA(hMCSubForce, MF_STRING | iChecked, 100 + i, dbv.pszVal);
-        AppendMenuA(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, dbv.pszVal);
+        if(hContactMostOnline != 0 && hContactMostOnline == handle)
+            iChecked = MF_CHECKED;
+        AppendMenuA(hMCSubForce, MF_STRING | iChecked, 100 + i, szMenuLine);
+        AppendMenuA(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
         DBFreeVariant(&dbv);
     }
+    AppendMenuA(hMCSubForce, MF_SEPARATOR, 1, "");
+    AppendMenuA(hMCSubForce, MF_STRING | isForced == -1 ? MF_CHECKED : MF_UNCHECKED, 999, "Autoselect");
     InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, Translate("Use Protocol"));
     InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, Translate("Set Default Protocol"));
     

@@ -457,8 +457,14 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
         return 0;
     if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
         SendMessage(hwnd, DM_TYPING, 0, lParam);
-        foundWin = 1;
     }
+    // check popup config to decide wheter tray notification should be shown.. even for open windows/tabs
+    if(hwnd) {
+        foundWin = MessageWindowOpened(0, hwnd);
+    }
+    else
+        foundWin = 0;
+    
     if ((int) lParam && !foundWin && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, SRMSGDEFSET_SHOWTYPINGNOWIN)) {
         char szTip[256];
 
@@ -664,15 +670,11 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
-    struct ContainerWindowData *pCurrent = 0;
     DestroyWindow(g_hwndHotkeyHandler);
     //WindowList_BroadcastAsync(hMessageSendList, WM_CLOSE, 0, 1);
     //WindowList_BroadcastAsync(hMessageWindowList, WM_CLOSE, 0, 1);
-    pCurrent = pFirstContainer;
-    while(pCurrent) {
-        SendMessage(pCurrent->hwnd, WM_CLOSE, 0, 1);
-        pCurrent = pCurrent->pNextContainer;
-    }
+    while(pFirstContainer)
+        SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
     return 0;
 }
 

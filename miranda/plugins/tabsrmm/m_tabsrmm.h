@@ -92,6 +92,14 @@ struct SendJob {
     int sendCount;
 };
 
+struct MessageSessionStats {
+    time_t started;
+    unsigned int iSent, iReceived, iSentBytes, iReceivedBytes;
+    unsigned int iFailures;
+    unsigned int lastReceivedChars;
+    BOOL bWritten;
+};
+
 struct MessageWindowData {
 	HANDLE hContact;
     HANDLE hPictAck;
@@ -153,6 +161,7 @@ struct MessageWindowData {
     int iButtonBarNeeds;
     DWORD dwLastActivity;
     HICON hProtoIcon;
+    struct MessageSessionStats stats;
 };
 
 typedef struct _recentinfo {

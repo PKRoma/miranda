@@ -27,11 +27,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
 #define SB_SETICON (WM_USER+15)
+#define SB_SETTIPTEXTA (WM_USER+16)
 #define GT_SELECTION 2
 #define ST_SELECTION 2
 #define TCS_BOTTOM 0x0002
 #define ST_DEFAULT 0
 #define CFM_WEIGHT 0x0040000
+#define SBT_TOOLTIPS 0x0800
 
 typedef struct __gettextex
 {

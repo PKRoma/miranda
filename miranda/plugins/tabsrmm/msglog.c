@@ -457,6 +457,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         }
     }
 
+    dat->stats.lastReceivedChars = 0;
+    
 // BEGIN MOD#32: Use different fonts for old history events
 	// Not working for outgoing messages in History
 	// dat->isHistory=(dbei.flags&DBEF_READ) ? TRUE : FALSE;
@@ -671,6 +673,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         {
 #if defined( _UNICODE )
             wchar_t *msg;
+            wchar_t tmp;
 #else
             BYTE *msg;
 #endif
@@ -685,11 +688,15 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 #if defined( _UNICODE )
             {
                 int msglen = strlen((char *) dbei.pBlob) + 1;
-                if (dbei.cbBlob == (3 * msglen)) {         // FIXME!!! possible unicode issue?
+                if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
+                    dat->stats.lastReceivedChars = msglen - 1;
+                if (dbei.cbBlob >= (3 * msglen)) {         // FIXME!!! possible unicode issue?
                     msg = (TCHAR *) & dbei.pBlob[msglen];
-                    if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
-                        TrimMessage(msg);
-                    AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
+                    if(wcslen(msg) == (msglen - 1) && msg[msglen - 1] == (wchar_t)0x000) {
+                        if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
+                            TrimMessage(msg);
+                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
+                    }
                 }
                 else {
 #ifdef __MATHMOD_SUPPORT
@@ -722,6 +729,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             }
 #else   // unicode
             msg = (BYTE *) dbei.pBlob;
+            if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
+                dat->stats.lastReceivedChars = lstrlenA(msg);
 #ifdef __MATHMOD_SUPPORT
             //mathMod begin
 			// show Math-Formula in Log

@@ -136,7 +136,6 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat);
 static void ShiftSendQueueDown(HWND hwndDlg, struct MessageWindowData *dat);
 static void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat);
 static void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg);
-static void UpdateUnsentDisplay(HWND hwndDlg, struct MessageWindowData *dat);
 static void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat);
 static void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat);
 static void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat);
@@ -144,9 +143,12 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 static void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd);
 static void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat);
+static void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat);
 static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
 static char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat);
 static void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
+static void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
+
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId);
@@ -1094,6 +1096,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->wStatus = ID_STATUS_OFFLINE;
                 
                 dat->hwnd = hwndDlg;
+
+                dat->stats.started = time(NULL);
                 
                 // input history stuff (initialise it..)
 
@@ -1244,6 +1248,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_CHANGE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_RETRY), Translate("Retry"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_CANCELSEND), Translate("Cancel"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), Translate("Send later"));
+                
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
                 
@@ -2145,7 +2153,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->lastMessage = dbei.timestamp;
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
                     }
-
+                        
                     /*
                      * set the message log divider to mark new (maybe unseen) messages, if the container has
                      * been minimized or in the background.
@@ -2178,6 +2186,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     
                     if ((HANDLE) lParam != dat->hDbEventFirst && (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0) == NULL) {
                         SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
+                        if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
+                            dat->stats.iReceived++;
+                            dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
+                        }
+                        
                     }
                     else
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -2355,14 +2368,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 dbei.flags = DBEF_SENT;
                                 dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
                                 dbei.timestamp = time(NULL);
-                                //dbei.cbBlob = lstrlenA(dat->sendBuffer) + 1;
                                 dbei.cbBlob = lstrlenA(szNote) + 1;
-#if defined( _UNICODE )
-                                //dbei.cbBlob *= sizeof(TCHAR) + 1;
-#endif
-                                //dbei.pBlob = (PBYTE) dat->sendBuffer;
                                 dbei.pBlob = (PBYTE) szNote;
-                                //hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
                                 StreamInEvents(hwndDlg,  0, 1, 1, &dbei);
                                 SkinPlaySound("SendMsg");
                                 if (dat->hDbEventFirst == NULL) {
@@ -3455,6 +3462,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->sendJobs[0].sendInfo[i].hContact, 0);
                 dbei.timestamp = time(NULL);
                 dbei.cbBlob = lstrlenA(dat->sendJobs[0].sendBuffer) + 1;
+                dat->stats.iSentBytes += (dbei.cbBlob - 1);
+                dat->stats.iSent++;
+                
 #if defined( _UNICODE )
                 dbei.cbBlob *= sizeof(TCHAR) + 1;
 #endif
@@ -3806,10 +3816,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         
         case DM_UPDATEMETACONTACTINFO:      // update the icon in the statusbar for the "most online" protocol
         {
+            DWORD isForced;
+            
+            if((isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1)) >= 0) {
+                char szTemp[64];
+                _snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
+                if(DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0) == ID_STATUS_OFFLINE) {
+                    _DebugPopup(dat->hContact, "MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection.", isForced);
+                    CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
+                    DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
+                }
+            }
             dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
-            if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0)
+            if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0) {
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)dat->hProtoIcon);
-
+                UpdateStatusBarTooltips(hwndDlg, dat);
+            }
             break;
         }
 
@@ -4026,6 +4048,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             
             WindowList_Remove(hMessageWindowList, hwndDlg);
             SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);
+            if(!dat->stats.bWritten) {
+                WriteStatsOnClose(hwndDlg, dat);
+                dat->stats.bWritten = TRUE;
+            }
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
@@ -4036,6 +4062,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
                     CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
                 }
+            }
+
+            // metacontacts support
+
+            if(IsMetaContact(hwndDlg, dat)) {
+                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
+                CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
             }
             
 // XXX tab support
@@ -4221,7 +4254,7 @@ static int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
     if(dat->pContainer->hwndActive == hwndDlg)
-        UpdateUnsentDisplay(hwndDlg, dat);
+        UpdateReadChars(hwndDlg, dat);
 
     UpdateSaveAndSendButton(hwndDlg, dat);
     
@@ -4304,7 +4337,7 @@ static void ShiftSendQueueDown(HWND hwndDlg, struct MessageWindowData *dat)
         _DebugPopup(dat->hContact, "Warning: shiftsendqueue with no pending events");
 
     if(dat->pContainer->hwndActive == hwndDlg)
-        UpdateUnsentDisplay(hwndDlg, dat);
+        UpdateReadChars(hwndDlg, dat);
 }
 
 /*
@@ -4344,17 +4377,6 @@ static void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSe
     dbei.timestamp = time(NULL);
     dbei.szModule = szErrMsg;
     StreamInEvents(hwndDlg, NULL, 1, 1, &dbei);
-}
-
-static void UpdateUnsentDisplay(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 2) {
-        TCHAR buf[128];
-        int len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
-
-        _sntprintf(buf, sizeof(buf), _T("%d/%d"), dat->iSendJobCurrent, len);
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
-    }
 }
 
 static void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
@@ -4546,25 +4568,55 @@ static void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode
 {
     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dlg) {
         int nParts = SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0);
-        
+
         if(iMode)
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)g_buttonBarIcons[12]);
         else
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)g_buttonBarIcons[13]);
-        
+
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
     }
 }
 
+static void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
+        char szTipText[256], *szProto = NULL;
+        CONTACTINFO ci;
+
+        if(IsMetaContact(hwndDlg, dat))
+            szProto = GetCurrentMetaContactProto(hwndDlg, dat);
+        else
+            szProto = dat->szProto;
+        
+        ZeroMemory(&ci, sizeof(ci));
+        ci.cbSize = sizeof(ci);
+        ci.hContact = NULL;
+        ci.szProto = szProto;
+        ci.dwFlag = CNF_DISPLAY;
+        if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+            if(IsMetaContact(hwndDlg, dat))
+                _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s (MetaContact)"), ci.pszVal, szProto);
+            else
+                _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s"), ci.pszVal, szProto); 
+            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
+        }
+        if(ci.pszVal)
+            miranda_sys_free(ci.pszVal);
+    }
+}
 static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
+        char szTipText[256];
+        CONTACTINFO ci;
+
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
         UpdateReadChars(hwndDlg, dat);
-        UpdateUnsentDisplay(hwndDlg, dat);
         if(dat->hProtoIcon)
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)dat->hProtoIcon);
+        UpdateStatusBarTooltips(hwndDlg, dat);
     }
 }
 static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)
@@ -4894,15 +4946,37 @@ static char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *
 {
     HANDLE hSubContact = 0;
     
-    if(IsMetaContact(hwndDlg, dat)) {
-        hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
-        if(hSubContact)
-            return (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hSubContact, 0);
-        else
-            return dat->szProto;
-    }
-    else {
-        return NULL;
-    }
+    hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
+    if(hSubContact)
+        return (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hSubContact, 0);
+    else
+        return dat->szProto;
 }
 
+static void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    DBEVENTINFO dbei;
+    char buffer[450];
+    HANDLE hNewEvent;
+    int iLen;
+    time_t now = time(NULL);
+    now = now - dat->stats.started;
+
+    return;
+    
+    if(dat->hContact != 0 && DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0) != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
+        _snprintf(buffer, sizeof(buffer), "Session close - active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
+        dbei.cbSize = sizeof(dbei);
+        dbei.pBlob = (PBYTE) buffer;
+        dbei.cbBlob = strlen(buffer) + 1;
+        dbei.eventType = EVENTTYPE_STATUSCHANGE;
+        dbei.flags = DBEF_READ;
+        dbei.timestamp = time(NULL);
+        dbei.szModule = dat->szProto;
+        hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
+        if (dat->hDbEventFirst == NULL) {
+            dat->hDbEventFirst = hNewEvent;
+            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+        }
+    }
+}
