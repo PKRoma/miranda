@@ -302,6 +302,12 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 			InvalidateRect(hwnd,NULL,FALSE);
 			break;
 
+		case CLM_SETEXTRACOLUMNSSPACE:
+			dat->extraColumnSpacing=(int)wParam;
+			InvalidateRect(hwnd,NULL,FALSE);
+			break;
+
+
 		case CLM_SETFONT:
 			if(HIWORD(lParam)<0 || HIWORD(lParam)>FONTID_MAX) return 0;
 			dat->fontInfo[HIWORD(lParam)].hFont=(HFONT)wParam;

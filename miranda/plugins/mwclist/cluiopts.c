@@ -30,6 +30,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 extern hFrameHelperStatusBar;
 extern void ReAssignExtraIcons();
 extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int UseOwnerDrawStatusBar;
 
 static UINT expertOnlyControls[]={IDC_BRINGTOFRONT, IDC_AUTOSIZE,IDC_STATIC21,IDC_MAXSIZEHEIGHT,IDC_MAXSIZESPIN,IDC_STATIC22,IDC_AUTOSIZEUPWARD,IDC_SHOWMAINMENU,IDC_SHOWCAPTION,IDC_CLIENTDRAG};
 int CluiOptInit(WPARAM wParam,LPARAM lParam)
@@ -320,6 +321,9 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			CheckDlgButton(hwndDlg, IDC_EQUALSECTIONS, DBGetContactSettingByte(NULL,"CLUI","EqualSections",0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SBPANELBEVEL, DBGetContactSettingByte(NULL,"CLUI","SBarBevel",1) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SHOWSIZEGRIP, DBGetContactSettingByte(NULL,"CLUI","SBarUseSizeGrip",1) ? BST_CHECKED : BST_UNCHECKED);
+
+			CheckDlgButton(hwndDlg, IDC_USEOWNERDRAW, DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",1) ? BST_CHECKED : BST_UNCHECKED);
+			
 			SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLUI","SBarBKColor",CLR_DEFAULT));
 
 			if(!IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR)) {
@@ -332,6 +336,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SBPANELBEVEL),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWSIZEGRIP),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_USEOWNERDRAW),FALSE);
+
 			}
 			return TRUE;
 		case WM_COMMAND:
@@ -345,6 +351,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SBPANELBEVEL),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWSIZEGRIP),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));	
+				EnableWindow(GetDlgItem(hwndDlg,IDC_USEOWNERDRAW),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));	
+
 			}
 			if (LOWORD(wParam)==IDC_DEFBKCOLOR)
 			{
@@ -375,7 +383,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					DBWriteContactSettingByte(NULL,"CLUI","SBarUseSizeGrip",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWSIZEGRIP));
 					
 					DBWriteContactSettingByte(NULL,"CLUI","UseConnectingIcon",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USECONNECTINGICON));
-					
+					DBWriteContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USEOWNERDRAW));
+					UseOwnerDrawStatusBar=DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",0);
 /*
 					if(IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR)) ShowWindow(hwndStatus,SW_SHOW);
 					else ShowWindow(hwndStatus,SW_HIDE);

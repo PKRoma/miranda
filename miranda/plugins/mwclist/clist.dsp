@@ -489,6 +489,10 @@ SOURCE=.\genmenu_rc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\IcoLib.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\m_clc.h
 # End Source File
 # Begin Source File
@@ -558,6 +562,10 @@ SOURCE=.\res\away.ico
 # Begin Source File
 
 SOURCE=.\res\blank.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\blank1.ico
 # End Source File
 # Begin Source File
 

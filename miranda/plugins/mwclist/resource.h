@@ -6,6 +6,7 @@
 #define IDC_NOTOALL                     3
 #define IDC_APPLY                       3
 #define MIM_V1                          10
+#define IDI_GLOBUS                      11
 #define MIM_V2                          20
 #define MIM_V3                          30
 #define MIM_V4                          30
@@ -52,6 +53,7 @@
 #define IDD_NEWPROFILE                  198
 #define IDR_CLISTMENU                   199
 #define IDI_BLANK                       200
+#define IDI_NEWGROUP                    200
 #define IDD_FINDADD                     201
 #define IDI_USERONLINE                  201
 #define IDD_OPT_AUTOAWAY                202
@@ -122,7 +124,8 @@
 #define IDI_ICQC7                       275
 #define IDI_ICQC8                       276
 #define IDI_EMAIL                       277
-#define IDD_DIALOG1                     278
+#define IDI_BLANK1                      278
+#define IDD_DIALOG1                     280
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -345,7 +348,6 @@
 #define IDC_SCRIPT                      1300
 #define IDC_TILEV                       1301
 #define IDC_GAMMACORRECT                1302
-#define IDC_TILEV2                      1302
 #define IDC_TILEVROWH                   1302
 #define IDC_INTERESTS                   1305
 #define IDC_EMAILS                      1306
@@ -368,6 +370,7 @@
 #define IDC_SHOWSTATUS                  1325
 #define IDC_EQUALSECTIONS               1326
 #define IDC_SHOWSIZEGRIP                1327
+#define IDC_USEOWNERDRAW                1328
 #define IDC_SHOWSBAR                    1329
 #define IDC_RIGHTMIRANDA                1330
 #define IDC_RIGHTSTATUS                 1331
@@ -595,7 +598,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        279
+#define _APS_NEXT_RESOURCE_VALUE        281
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1762
 #define _APS_NEXT_SYMED_VALUE           101

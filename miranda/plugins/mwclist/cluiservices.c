@@ -66,15 +66,14 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	SendMessage(hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
 	
 	SendMessage(hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT)); 
-
+	OutputDebugStr("StatusBar Recreating\r\n");
 	partWidths=(int*)malloc(storedcount*sizeof(int));
 	if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
 		RECT rc;
 		int part;
 		SendMessage(hwndStatus,WM_SIZE,0,0);
 		GetClientRect(hwndStatus,&rc);
-		rc.right-=borders[0]*2+GetSystemMetrics(SM_CXVSCROLL);
-
+		rc.right-=borders[0]*2;
 		toshow=0;
 		for (i=0;i<storedcount;i++)
 		{

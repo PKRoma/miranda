@@ -50,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLS_EX_QUICKSEARCHVISONLY  0x00000200
 #define CLS_EX_SORTGROUPSALPHA     0x00000400
 #define CLS_EX_NOSMOOTHSCROLLING   0x00000800
+#define CLS_EX_MULTICOLUMNALIGNLEFT   0x00001000
 
 #define CLM_FIRST   0x1000    //this is the same as LVM_FIRST
 #define CLM_LAST    0x1100
@@ -114,6 +115,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLM_SETEXTRACOLUMNS   (CLM_FIRST+30)   //wParam=number of extra columns (zero to MAXEXTRACOLUMNS from clc.h, currently 16)
 #define CLM_SETEXTRAIMAGE     (CLM_FIRST+31)   //wParam=hItem, lParam=MAKELPARAM(iColumn (0 based),iImage). iImage=0xFF is a blank
 #define CLM_SETEXTRAIMAGELIST (CLM_FIRST+32)   //lParam=HIMAGELIST
+#define CLM_SETEXTRACOLUMNSSPACE   (CLM_FIRST+73)   //wParam=extra space between icons
+
 #define FONTID_CONTACTS    0
 #define FONTID_INVIS       1
 #define FONTID_OFFLINE     2

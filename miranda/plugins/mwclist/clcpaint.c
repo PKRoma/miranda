@@ -224,6 +224,10 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					else {
 						destw=clRect.right;
 						desth=bmp.bmHeight;
+							if (dat->backgroundBmpUse&CLBF_TILEVTOROWHEIGHT)
+							{
+								desth=dat->rowHeight;
+							}	
 					}
 					break;
 				case CLB_STRETCHV:
@@ -452,7 +456,15 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					rc.right--;
 					ExtTextOut(hdcMem,rc.left,rc.top,ETO_CLIPPED,&rc,group->contact[group->scanIndex].szText,lstrlen(group->contact[group->scanIndex].szText),NULL);
 				}
-				else TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(group->contact[group->scanIndex].szText));
+				else 
+				{
+					TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(group->contact[group->scanIndex].szText));
+				/*	
+					GetTextExtentPoint32(hdc,hitcontact->szText,lstrlen(hitcontact->szText),&textSize);
+					width=textSize.cx;
+				*/
+				}
+					
 				if(dat->exStyle&CLS_EX_LINEWITHGROUPS) {
 					rc.top=y+(dat->rowHeight>>1); rc.bottom=rc.top+2;
 					rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace+width+3;
@@ -485,24 +497,45 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					if ( qlen ) DrawText(hdcMem, szText, qlen, &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
 				}
 			}
-/*
-			if(selected) {
-				if(group->contact[group->scanIndex].type!=CLCIT_DIVIDER) {
-					SetTextColor(hdcMem,dat->quickSearchColour);
-					TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(dat->szQuickSearch));
-				}
-			}
-*/
+		
 			//extra icons
-			for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
-				COLORREF colourFg=dat->selBkColour;
-				int mode=ILD_NORMAL;
-				if(group->contact[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
-				if(selected) mode=ILD_SELECTED;
-				else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
-				else if(group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
-				ImageList_DrawEx(dat->himlExtraColumns,group->contact[group->scanIndex].iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-iImage),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+			if (!(style&CLS_EX_MULTICOLUMNALIGNLEFT))
+			{							
+					for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
+						COLORREF colourFg=dat->selBkColour;
+						int mode=ILD_NORMAL;
+						if(group->contact[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
+						if(selected) mode=ILD_SELECTED;
+						else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
+						else if(group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
+						ImageList_DrawEx(dat->himlExtraColumns,group->contact[group->scanIndex].iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-iImage),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+					}
 			}
+			else
+			{
+				int ic=0;	
+				for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
+						COLORREF colourFg=dat->selBkColour;
+						int mode=ILD_NORMAL;
+						int x;
+
+						if(group->contact[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
+						if(selected) mode=ILD_SELECTED;
+						else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
+						else if(group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
+						
+						x=(dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2+width);
+						x+=16;
+						x=x+dat->extraColumnSpacing*(ic);
+						if (iImage==dat->extraColumnsCount-1) {x=clRect.right-18;};
+						ImageList_DrawEx(dat->himlExtraColumns,group->contact[group->scanIndex].iExtraImage[iImage],hdcMem,
+							x,
+							y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+					ic++;
+					}
+			}
+
+
 		}
 		index++;
 		y+=dat->rowHeight;

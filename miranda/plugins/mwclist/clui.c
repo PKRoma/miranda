@@ -82,6 +82,9 @@ extern int LoadProtocolOrderModule(void);
 extern int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam);
 extern int ExtraToColumnNum(int extra);
 extern void TrayIconUpdateBase(const char *szChangedProto);
+extern void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis);
+extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
+
 void InvalidateDisplayNameCacheEntry(HANDLE hContact);
 
 #define M_CREATECLC  (WM_USER+1)
@@ -183,17 +186,41 @@ static HICON ExtractIconFromPath(const char *path)
 	return hIcon;
 }
 
-HICON LoadIconFromExternalFile(char *filename,int i)
+HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx)
 {
-		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
+		char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 		HICON hIcon=NULL;
+		SKINICONDESC sid;
 
 		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
+		GetModuleFileName(g_hInst, szMyPath, MAX_PATH);
 		str=strrchr(szPath,'\\');
 		if(str!=NULL) *str=0;
 		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
+		
+		if (!UseLibrary||!ServiceExists(MS_SKIN2_ADDICON))
+		{		
 		hIcon=ExtractIconFromPath(szFullPath);
 		if (hIcon) return hIcon;
+		}
+		else
+		{
+			if (registerit&&IconName!=NULL&&SectName!=NULL)	
+			{
+				sid.cbSize = sizeof(sid);
+				sid.pszSection = Translate(SectName);				
+				sid.pszName=IconName;
+				sid.pszDescription=Description;
+				sid.pszDefaultFile=szMyPath;
+				sid.iDefaultIndex=internalidx;
+				CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+			}
+			return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
+		}
+		
+		
+		
+		
 		return (HICON)0;
 }
 
@@ -207,7 +234,7 @@ HICON GetConnectingIconForProto(char *szProto,int b)
 //		hIcon=ExtractIconFromPath(szFullPath);
 //		if (hIcon) return hIcon;
 
-		hIcon=LoadIconFromExternalFile(szFullPath,b+1);
+		hIcon=LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0);
 		if (hIcon) return hIcon;
 
 #ifdef _DEBUG
@@ -391,6 +418,7 @@ int PreCreateCLC(HWND parent)
 					//|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
 					|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
 					|CLS_MULTICOLUMN
+					|DBGetContactSettingByte(NULL,"CLUI","ExtraIconsAlignToLeft",1)?CLS_EX_MULTICOLUMNALIGNLEFT:0
 					),
 					0,0,0,0,parent,NULL,g_hInst,NULL);
 	
@@ -998,31 +1026,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						
 						break;
 
-/*
-							NMCLISTCONTROL *nmc=(NMCLISTCONTROL*)lParam;
-							RECT rcWindow,rcTree,rcWorkArea;
-							int maxHeight,newHeight;
-							
-							if(!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) break;
-							if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) break;
-							maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",75);
-							GetWindowRect(hwnd,&rcWindow);
-							GetWindowRect(hwndContactTree,&rcTree);
-							SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);
-							newHeight=max(nmc->pt.y,9)+1+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
-							if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
-								newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;
-							if(DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0)) {
-								rcWindow.top=rcWindow.bottom-newHeight;
-								if(rcWindow.top<rcWorkArea.top) rcWindow.top=rcWorkArea.top;
-							}
-							else {
-								rcWindow.bottom=rcWindow.top+newHeight;
-								if(rcWindow.bottom>rcWorkArea.bottom) rcWindow.bottom=rcWorkArea.bottom;
-							}
-							SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
-							break;
-*/
 						}
 					case NM_CLICK:
 						{	NMCLISTCONTROL *nm=(NMCLISTCONTROL*)lParam;
@@ -1033,11 +1036,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 							if (hitFlags&CLCHT_ONITEMEXTRA)
 							{					
-								int v,e;
+								int v,e,w;
+								pdisplayNameCacheEntry pdnce; 
 									v=ExtraToColumnNum(EXTRA_ICON_PROTO);
 									e=ExtraToColumnNum(EXTRA_ICON_EMAIL);
+									w=ExtraToColumnNum(EXTRA_ICON_ADV1);
+
 									if (!IsHContactGroup(hItem)&&!IsHContactInfo(hItem))
 									{
+										pdnce=GetDisplayNameCacheEntry(nm->hItem);
+										if (pdnce==NULL) return 0;
+
 										if(nm->iColumn==v) {
 												CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
 											};
@@ -1051,9 +1060,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 												{
 													sprintf(buf,"mailto:%s",email);
 													ShellExecute(hwnd,"open",buf,NULL,NULL,SW_SHOW);
-												}
-												
-											};										
+												}											
+											};	
+										if(nm->iColumn==w) {
+											char *homepage;
+											homepage=DBGetString(pdnce->hContact,pdnce->szProto, "Homepage");
+											if (homepage!=NULL)
+											{											
+											ShellExecute(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
+											}
+										}
+										
 								}
 							};	
 						if(hItem) break;
@@ -1092,10 +1109,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								SendMessage(hwndStatus,SB_GETRECT,nPanel,(LPARAM)&rc);
 								}
 						
-						//if (nParts>1) hMenu=GetSubMenu(hMenu,nPanel);
+
 
 								totcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",0);
-//							nParts=SendMessage(hwndStatus,SB_GETPARTS,0,0);
 								PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
 								if(PD==NULL){return(0);};
 								menuid=PD->protopos;
@@ -1105,9 +1121,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								if(GetSubMenu(hMenu,menuid)) hMenu=GetSubMenu(hMenu,menuid);
 						if (hMenu!=NULL)				
 						{						
-							pt.x=rc.left;
-							pt.y=rc.top;
-							ClientToScreen(hwndStatus,&pt);
+							//pt.x=rc.left;
+							//pt.y=rc.top;
+							GetCursorPos(&pt);
+							//ClientToScreen(hwndStatus,&pt);
 							TrackPopupMenu(hMenu,TPM_BOTTOMALIGN|TPM_LEFTALIGN,pt.x,pt.y,0,hwnd,NULL);
 						}
 						}
@@ -1133,19 +1150,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			if(PtInRect(&rc,pt)) {
 				HMENU hMenu;
-				/*
-				hMenu=GetSubMenu(LoadMenu(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CONTEXT)),1);
-				CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hMenu,0);
-				CheckMenuItem(hMenu,POPUP_HIDEOFFLINE,DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?MF_CHECKED:MF_UNCHECKED);
-				CheckMenuItem(hMenu,POPUP_HIDEOFFLINEROOT,SendMessage(hwndContactTree,CLM_GETHIDEOFFLINEROOT,0,0)?MF_CHECKED:MF_UNCHECKED);
-				CheckMenuItem(hMenu,POPUP_HIDEEMPTYGROUPS,GetWindowLong(hwndContactTree,GWL_STYLE)&CLS_HIDEEMPTYGROUPS?MF_CHECKED:MF_UNCHECKED);
-				CheckMenuItem(hMenu,POPUP_DISABLEGROUPS,GetWindowLong(hwndContactTree,GWL_STYLE)&CLS_USEGROUPS?MF_UNCHECKED:MF_CHECKED);
-				TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON,pt.x,pt.y,0,hwnd,NULL);
-				*/
 				hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDGROUP,0,0);
 				TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON,pt.x,pt.y,0,hwnd,NULL);
-
-				//DestroyMenu(hMenu);
 				return 0;
 			}
 			GetWindowRect(hwndStatus,&rc);
@@ -1169,74 +1175,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
 		case WM_DRAWITEM:
-			{	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
+			{
+			LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
 			if(dis->hwndItem==hwndStatus/*&&IsWindowVisible(hwndStatus)*/) {
-				ProtocolData *PD=(ProtocolData *)dis->itemData;
-				char *szProto=(char*)dis->itemData;
-				int status,x;
-				SIZE textSize;
-				boolean NeedDestroy=FALSE;
-				HICON hIcon;
-
-				if (PD==NULL){break;};					
-				szProto=PD->RealName;
-#ifdef _DEBUG
-				{
-					//char buf[512];
-					//sprintf(buf,"proto: %s draw at pos: %d\r\n",szProto,dis->rcItem.left);
-					//OutputDebugString(buf);
-				}
-#endif
-				
-				status=CallProtoService(szProto,PS_GETSTATUS,0,0);
-				SetBkMode(dis->hDC,TRANSPARENT);
-				x=dis->rcItem.left;
-
-				if(showOpts&1) {
-					
-					//char buf [256];
-					
-					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
-						{
-						hIcon=(HICON)GetConnectingIconService((WPARAM)szProto,0);
-
-							if (hIcon)
-							{
-									NeedDestroy=TRUE;
-							}else
-							{
-								hIcon=LoadSkinnedProtoIcon(szProto,status);
-							}
-							
-					}else					
-					{				
-					hIcon=LoadSkinnedProtoIcon(szProto,status);
-					}
-					DrawIconEx(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-GetSystemMetrics(SM_CYSMICON))>>1,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
- 					if (NeedDestroy) DestroyIcon(hIcon);
-					x+=GetSystemMetrics(SM_CXSMICON)+2;
-				}
-				else x+=2;
-				if(showOpts&2) {
-					char szName[64];
-					szName[0]=0;
-					if (CallProtoService(szProto,PS_GETNAME,sizeof(szName),(LPARAM)szName)) {
-						strcpy(szName,szProto);
-					} //if
-					if(lstrlen(szName)<sizeof(szName)-1) lstrcat(szName," ");
-					GetTextExtentPoint32(dis->hDC,szName,lstrlen(szName),&textSize);
-					TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szName,lstrlen(szName));
-					x+=textSize.cx;
-				}
-				if(showOpts&4) {
-					char *szStatus;
-					szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0);
-					if (!szStatus) szStatus="";
-					GetTextExtentPoint32(dis->hDC,szStatus,lstrlen(szStatus),&textSize);
-					TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szStatus,lstrlen(szStatus));
-					
-				}
-
+			DrawDataForStatusBar(dis);
 			}
 			else if(dis->CtlType==ODT_MENU) {
 				if(dis->itemData==MENU_MIRANDAMENU) {

@@ -9,13 +9,274 @@ HWND helperhwnd=0;
 HANDLE hFrameHelperStatusBar;
 extern	 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 
+int UseOwnerDrawStatusBar;
+
+
 #define TM_STATUSBAR 23435234
 #define TM_STATUSBARHIDE 23435235
 boolean tooltipshoing;
+WNDPROC OldWindowProc=NULL;
 
 
 POINT lastpnt;
 RECT OldRc={0};
+static	HBITMAP hBmpBackground;
+static int backgroundBmpUse;
+static COLORREF bkColour;
+int showOpts;
+int extraspace;
+
+void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
+		{
+			//LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
+				ProtocolData *PD=(ProtocolData *)dis->itemData;
+				char *szProto=(char*)dis->itemData;
+				int status,x;
+				SIZE textSize;
+				boolean NeedDestroy=FALSE;
+				HICON hIcon;
+
+				if (PD==NULL){return;};					
+				szProto=PD->RealName;
+#ifdef _DEBUG
+				{
+					//char buf[512];
+					//sprintf(buf,"proto: %s draw at pos: %d\r\n",szProto,dis->rcItem.left);
+					//OutputDebugString(buf);
+				}
+#endif
+				
+				status=CallProtoService(szProto,PS_GETSTATUS,0,0);
+				SetBkMode(dis->hDC,TRANSPARENT);
+				x=dis->rcItem.left+extraspace;
+
+				if(showOpts&1) {
+					
+					//char buf [256];
+					
+					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+						{
+						hIcon=(HICON)GetConnectingIconService((WPARAM)szProto,0);
+
+							if (hIcon)
+							{
+									NeedDestroy=TRUE;
+							}else
+							{
+								hIcon=LoadSkinnedProtoIcon(szProto,status);
+							}
+							
+					}else					
+					{				
+					hIcon=LoadSkinnedProtoIcon(szProto,status);
+					}
+					DrawIconEx(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-GetSystemMetrics(SM_CYSMICON))>>1,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+ 					if (NeedDestroy) DestroyIcon(hIcon);
+					x+=GetSystemMetrics(SM_CXSMICON)+2;
+				}
+				else x+=2;
+				if(showOpts&2) {
+					char szName[64];
+					szName[0]=0;
+					if (CallProtoService(szProto,PS_GETNAME,sizeof(szName),(LPARAM)szName)) {
+						strcpy(szName,szProto);
+					} //if
+					if(lstrlen(szName)<sizeof(szName)-1) lstrcat(szName," ");
+					GetTextExtentPoint32(dis->hDC,szName,lstrlen(szName),&textSize);
+					TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szName,lstrlen(szName));
+					x+=textSize.cx;
+				}
+				if(showOpts&4) {
+					char *szStatus;
+					szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0);
+					if (!szStatus) szStatus="";
+					GetTextExtentPoint32(dis->hDC,szStatus,lstrlen(szStatus),&textSize);
+					TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szStatus,lstrlen(szStatus));
+					
+				
+			}
+}
+
+void DrawBackGround(HWND hwnd)
+{
+	HDC hdcMem,hdc;
+	RECT clRect,*rcPaint;
+
+	int yScroll=0;
+	int y,indent,index,fontHeight;
+	PAINTSTRUCT paintst;	
+	HBITMAP hBmpOsb;
+	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
+	int grey=0,groupCountsFontTopShift;
+	HBRUSH hBrushAlternateGrey=NULL;
+
+	HFONT hFont;
+
+	//InvalidateRect(hwnd,0,FALSE);
+	
+	hFont=SendMessage(hwnd,WM_GETFONT,0,0);
+	hdc=BeginPaint(hwnd,&paintst);
+	rcPaint=&(paintst.rcPaint);
+
+	GetClientRect(hwnd,&clRect);
+	if(rcPaint==NULL) rcPaint=&clRect;
+	y=-yScroll;
+	hdcMem=CreateCompatibleDC(hdc);
+	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
+	SelectObject(hdcMem,hBmpOsb);
+	SelectObject(hdcMem,hFont);
+	SetBkMode(hdcMem,TRANSPARENT);
+	{	HBRUSH hBrush,hoBrush;
+		
+		hBrush=CreateSolidBrush(bkColour);
+		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
+		FillRect(hdcMem,rcPaint,hBrush);
+		SelectObject(hdcMem,hoBrush);
+		DeleteObject(hBrush);
+		if(hBmpBackground) {
+			BITMAP bmp;
+			HDC hdcBmp;
+			int x,y;
+			int maxx,maxy;
+			int destw,desth;
+
+			GetObject(hBmpBackground,sizeof(bmp),&bmp);
+			hdcBmp=CreateCompatibleDC(hdcMem);
+			SelectObject(hdcBmp,hBmpBackground);
+			y=backgroundBmpUse&CLBF_SCROLL?-yScroll:0;
+			maxx=backgroundBmpUse&CLBF_TILEH?clRect.right:1;
+			maxy=backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
+			switch(backgroundBmpUse&CLBM_TYPE) {
+				case CLB_STRETCH:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						if(clRect.right*bmp.bmHeight<clRect.bottom*bmp.bmWidth) {
+							desth=clRect.bottom;
+							destw=desth*bmp.bmWidth/bmp.bmHeight;
+						}
+						else {
+							destw=clRect.right;
+							desth=destw*bmp.bmHeight/bmp.bmWidth;
+						}
+					}
+					else {
+						destw=clRect.right;
+						desth=clRect.bottom;
+					}
+					break;
+				case CLB_STRETCHH:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						destw=clRect.right;
+						desth=destw*bmp.bmHeight/bmp.bmWidth;
+					}
+					else {
+						destw=clRect.right;
+						desth=bmp.bmHeight;
+					}
+					break;
+				case CLB_STRETCHV:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						desth=clRect.bottom;
+						destw=desth*bmp.bmWidth/bmp.bmHeight;
+					}
+					else {
+						destw=bmp.bmWidth;
+						desth=clRect.bottom;
+					}
+					break;
+				default:    //clb_topleft
+					destw=bmp.bmWidth;
+					desth=bmp.bmHeight;
+					break;
+			}
+			desth=clRect.bottom -clRect.top;
+			for(;y<maxy;y+=desth) {
+				if(y<rcPaint->top-desth) continue;
+				for(x=0;x<maxx;x+=destw)
+					StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
+			}
+			DeleteDC(hdcBmp);
+		}
+	}
+		
+	//call to draw icons
+	{
+		DRAWITEMSTRUCT ds;
+		int nParts,nPanel;
+		ProtocolData *PD;
+		RECT rc,clrc;
+		int startoffset,sectwidth;
+
+		memset(&ds,0,sizeof(ds));
+		ds.hwndItem=hwnd;
+		ds.hDC=hdcMem;
+
+
+		startoffset=DBGetContactSettingDword(NULL,"CLUI","FirstIconOffset",0);
+
+			nParts=SendMessage(hwnd,SB_GETPARTS,0,0);
+			memset(&rc,0,sizeof(RECT));
+			GetClientRect(hwnd,&clrc);
+			clrc.right-=clrc.left;
+			clrc.right-=startoffset;
+			sectwidth=clrc.right/nParts;
+
+			for (nPanel=0;nPanel<nParts;nPanel++)
+			{
+			PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
+			if(PD==NULL){
+				return(0);
+			};
+				SendMessage(hwnd,SB_GETRECT,(WPARAM)nPanel,(LPARAM)&rc);
+				//rc.left+=startoffset;
+				//if (rc.left>=rc.right) rc.left=rc.right-1;
+				rc.left=nPanel*sectwidth+startoffset;
+				rc.right=rc.left+sectwidth-1;
+				ds.rcItem=rc;
+				ds.itemData=PD;
+				ds.itemID=nPanel;
+				DrawDataForStatusBar(&ds);
+			};
+		
+	}
+
+  
+
+	
+	
+		BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,SRCCOPY);
+		DeleteDC(hdcMem);
+		DeleteObject(hBmpOsb);
+		paintst.fErase=FALSE;
+		EndPaint(hwnd,&paintst);	
+}
+
+
+LRESULT CALLBACK StatusBarOwnerDrawProc(          HWND hwnd,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam
+)
+{
+if (UseOwnerDrawStatusBar)
+{
+	switch(uMsg)
+	{
+	case WM_ERASEBKGND:
+		{
+
+			//DrawBackGround(hwnd);
+			return 0;
+		}
+	case WM_PAINT:
+		{
+			DrawBackGround(hwnd);
+		}
+	};
+
+};
+return (CallWindowProc(OldWindowProc,hwnd,uMsg,wParam,lParam)
+		);
+}
 
 LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -275,10 +536,6 @@ int CreateStatusBarFrame()
 				Frame.name=(Translate("Status"));
 				hFrameHelperStatusBar=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 				
-				//frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),0);
-				//frameopt=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",0)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER;
-				//CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),frameopt);
-
 	hStatusBarShowToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_SHOW_TOOLTIP);
 	hStatusBarHideToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_HIDE_TOOLTIP);
 				
@@ -289,10 +546,34 @@ int CreateStatusBarhWnd(HWND parent)
 {
 			helperhwnd=CreateStatusHelper(parent);
 
+	UseOwnerDrawStatusBar=DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",0);
+
+		{	
+		DBVARIANT dbv;
+		showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);		
+		bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
+		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
+		if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+			if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
+				hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+				mir_free(dbv.pszVal);
+			}
+		}
+		backgroundBmpUse=DBGetContactSettingWord(NULL,"CLC","BkBmpUse",CLCDEFAULT_BKBMPUSE);
+		extraspace=DBGetContactSettingWord(NULL,"CLC","BkExtraSpace",0);
+		};			
+			
 			//create the status wnd
 			hwndStatus = CreateStatusWindow(
 				
 				(DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE)?SBARS_SIZEGRIP:0)|
 				WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", helperhwnd, 0);
+
+			OldWindowProc=(WNDPROC)GetWindowLong(hwndStatus,GWL_WNDPROC);
+			SetWindowLong(hwndStatus,GWL_WNDPROC,(LONG)&StatusBarOwnerDrawProc);
+
+
+
+
 return((int)hwndStatus);
 };

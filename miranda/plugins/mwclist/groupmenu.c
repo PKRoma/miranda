@@ -41,8 +41,7 @@ int NewGroupIconidx;
 
 extern HWND hwndContactTree;
 extern HIMAGELIST hCListImages;
-extern HICON LoadIconFromExternalFile(char *filename,int i);
-
+extern HICON LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx);
 
 void InitSubGroupMenus(void);
 
@@ -269,7 +268,7 @@ void InitGroupMenus(void)
 	TMenuParam tmp;
 	OptParam op;
 	HICON hicon;
-	hicon=LoadIconFromExternalFile("clisticons.dll",2);
+	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,TRUE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP);
 	NewGroupIconidx=ImageList_AddIcon(hCListImages,hicon );	
 	
 	CreateServiceFunction("CLISTMENUSGroup/ExecService",GroupMenuExecService);

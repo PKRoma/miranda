@@ -67,7 +67,7 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	struct ClcContact *hitcontact;
 	struct ClcGroup *hitgroup;
 	int hit,indent,width,i,cxSmIcon;
-	int checkboxWidth;
+	int checkboxWidth,ic=0;
 	SIZE textSize;
 	HDC hdc;
 	RECT clRect;
@@ -112,15 +112,7 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 		if(flags) *flags|=CLCHT_ONITEMICON;
 		return hit;
 	}
-	cxSmIcon=GetSystemMetrics(SM_CXSMICON);
-	for(i=0;i<dat->extraColumnsCount;i++) {
-		if(hitcontact->iExtraImage[i]==0xFF) continue;
-		if(testx>=clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-i) &&
-		   testx<clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-i)+cxSmIcon) {
-			if(flags) *flags|=CLCHT_ONITEMEXTRA|(i<<24);
-			return hit;
-		}
-	}
+
 	hdc=GetDC(hwnd);
 	if(hitcontact->type==CLCIT_GROUP) SelectObject(hdc,dat->fontInfo[FONTID_GROUPS].hFont);
 	else SelectObject(hdc,dat->fontInfo[FONTID_CONTACTS].hFont);
@@ -132,6 +124,33 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	
 	GetTextExtentPoint32(hdc,hitcontact->szText,lstrlen(hitcontact->szText),&textSize);
 	width=textSize.cx;
+//extra icons
+	cxSmIcon=GetSystemMetrics(SM_CXSMICON);
+	for(i=0;i<dat->extraColumnsCount;i++) {
+		int x;
+		if(hitcontact->iExtraImage[i]==0xFF) continue;
+
+			if ((style&CLS_EX_MULTICOLUMNALIGNLEFT))
+			{							
+				x=(dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2+width);
+				x+=16;
+				x=x+dat->extraColumnSpacing*(ic);
+				if (i==dat->extraColumnsCount-1) {x=clRect.right-18;};
+			}else
+			{
+				x=clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-i);
+			}
+		ic++;
+
+		if(testx>=x &&
+		   testx<x+cxSmIcon) {
+			if(flags) *flags|=CLCHT_ONITEMEXTRA|(i<<24);
+			return hit;
+		}
+	}	
+	
+	
+	
 	if(hitcontact->type==CLCIT_GROUP) {
 		char *szCounts;
 		szCounts=GetGroupCountsText(dat,hitcontact);
