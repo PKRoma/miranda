@@ -17,14 +17,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "msn_global.h"
-#include "resource.h"
-#include "../../miranda32/protocols/protocols/protomod.h"
+//#include "resource.h"
+#include "../../miranda32/protocols/protocols/m_protomod.h"
+#include "../../miranda32/protocols/protocols/m_protosvc.h"
 #include "../../miranda32/database/m_database.h"
+#include "../../miranda32/ui/contactlist/m_clist.h"
+
+extern SOCKET msnSock;
+extern int msnLoggedIn;
 
 static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 {
 	if(wParam==PFLAGNUM_1)
-		return PF1_IM|PF1_BASICSEARCH|PF1_ADDSEARCHRES;
+		return PF1_IM|PF1_BASICSEARCH|PF1_ADDSEARCHRES|PF1_SERVERCLIST;
 	if(wParam==PFLAGNUM_2)
 		return PF2_ONLINE|PF2_SHORTAWAY|PF2_LONGAWAY|PF2_LIGHTDND|PF2_ONTHEPHONE|PF2_OUTTOLUNCH;
 	if(wParam==PFLAGNUM_3)
@@ -85,7 +90,7 @@ int MsnSetStatus(WPARAM wParam,LPARAM lParam)
 
 int MsnGetStatus(WPARAM wParam,LPARAM lParam)
 {
-	return msnStatusMode;
+	return ID_STATUS_OFFLINE; //msnStatusMode;
 }
 
 static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
@@ -95,11 +100,11 @@ static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
 
 static HANDLE AddToListByUin(DWORD uin,DWORD flags)
 {
-	HANDLE hContact;
+	/*HANDLE hContact;
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	while(hContact!=NULL) {
-		if(!strcmp((char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0),ICQPROTONAME)) {
+		if(!strcmp((char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0),MSNPROTONAME)) {
 			if(DBGetContactSettingDword(hContact,ICQPROTONAME,"UIN",0)==uin) {
 				if((!flags&PALF_TEMPORARY)) {
 					DBDeleteContactSetting(hContact,"CList","NotOnList");
@@ -117,15 +122,16 @@ static HANDLE AddToListByUin(DWORD uin,DWORD flags)
 		DBWriteContactSettingByte(hContact,"CList","NotOnList",1);
 		DBWriteContactSettingByte(hContact,"CList","Hidden",1);
 	}
-	return hContact;
+	return hContact;*/
+	return 0;
 }
 
 static int MsnAddToList(WPARAM wParam,LPARAM lParam)
 {
 	PROTOSEARCHRESULT *psr=(PROTOSEARCHRESULT*)lParam;
 
-	if(psr->hdr.cbSize!=sizeof(PROTOSEARCHRESULT)) return (int)(HANDLE)NULL;
-	return
+	if(psr->cbSize!=sizeof(PROTOSEARCHRESULT)) return (int)(HANDLE)NULL;
+	return 0;
 }
 
 static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
@@ -138,7 +144,7 @@ static int MsnSendMessage(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA *ccs=(CCSDATA*)lParam;
 
-	return seq;
+	return 0;//seq;
 }
 
 int LoadMsnServices(void)

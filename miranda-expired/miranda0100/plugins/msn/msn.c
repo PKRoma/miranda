@@ -17,9 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "msn_global.h"
-#include "resource.h"
+//#include "resource.h"
 #include "../../miranda32/core/m_system.h"
-#include "../../miranda32/protocols/protocols/protomod.h"
+#include "../../miranda32/protocols/protocols/m_protomod.h"
 #include "../../miranda32/database/m_database.h"
 #include "../../miranda32/ui/contactlist/m_clist.h"
 
@@ -78,11 +78,9 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	//set all contacts to 'offline'
 	{	HANDLE hContact;
-		DBVARIANT dbv;
-		DWORD uin;
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 		while(hContact!=NULL) {
-			if(!lstrcmp(MSNPROTONAME,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0)))
+			if(!lstrcmp(MSNPROTONAME,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0))) {
 				DBWriteContactSettingWord(hContact,MSNPROTONAME,"Status",ID_STATUS_OFFLINE);
 				//icq_ContactAdd(plink,uin);
 			}

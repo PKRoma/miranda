@@ -137,5 +137,3 @@ extern SOCKET msnSock;
 		extern int		MSN_ccount;
 		
 	#endif
-
-#endif 

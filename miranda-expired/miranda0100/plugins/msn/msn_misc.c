@@ -21,10 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //MISC FUNC
 
-	#include <windows.h>
-	#include <winsock.h>
-	#include <stdio.h>
 	#include "msn_global.h"
+	#include <stdio.h>
 /*
 #ifndef MODULAR
 	#include "../../core/miranda.h"
