@@ -168,11 +168,12 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		case WM_NOTIFY:
 		{
 			NMHDR * hdr = (NMHDR *)lParam;
-			if ( hdr && hdr->code == PSN_APPLY && dat ) {
-				char szName[MAX_PATH];				
-				LRESULT curSel = SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETCURSEL,0,0);
+			if ( hdr && hdr->code == PSN_APPLY && dat && IsWindowVisible(hwndDlg) ) {
+				char szName[MAX_PATH];						
+				LRESULT curSel = SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETCURSEL,0,0);				
 				if ( curSel == CB_ERR ) break; // should never happen				
 				GetWindowText(GetDlgItem(hwndDlg,IDC_PROFILENAME),szName,sizeof(szName));
+				if ( lstrlen(szName) == 0 ) break;
 				_snprintf(dat->pd->szProfile,MAX_PATH,"%s\\%s.dat",dat->pd->szProfileDir,szName);
 				dat->pd->newProfile=1;
 				dat->pd->dblink=(DATABASELINK *)SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETITEMDATA,(WPARAM)curSel,0);
