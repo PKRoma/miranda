@@ -70,7 +70,7 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 			PF1_EXTSEARCHUI | PF1_SEARCHBYEMAIL | PF1_SEARCHBYNAME | PF1_CHANGEINFO |
             PF1_NUMERICUSERID |
 			PF1_ADDED | PF1_CONTACT;
-		if (gbSsiEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE))
+		if (gbSsiEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
 			nReturn |= PF1_SERVERCLIST;
 		break;
 

@@ -1776,7 +1776,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     // Has a temporary contact just been added permanently?
     if (!strcmp(cws->szSetting, "NotOnList") &&
       (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
-      DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE))
+      DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
     {
       char* szProto;
       DWORD dwUin;
@@ -1879,6 +1879,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     }
   }
 
+  if (!strcmp(cws->szModule, "ContactPhoto"))
+  { // contact photo changed ?
+    ContactPhotoSettingChanged((HANDLE)wParam);
+  }
+
   return 0;
 }
 
@@ -1886,12 +1891,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
-	
 	if (!icqOnline || !gbSsiEnabled)
 		return 0;
-	
-	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE))
-	{
+
+//	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE))
+  { // we need all server contacts on local buddy list
 
 		WORD wContactID;
 		WORD wGroupID;
