@@ -244,6 +244,21 @@ it shouldnt matter */
 
 typedef void (*NETLIBNEWCONNECTIONPROC_V2)(HANDLE hNewConnection,DWORD dwRemoteIP, void * pExtra);
 typedef void (*NETLIBNEWCONNECTIONPROC)(HANDLE hNewConnection,DWORD dwRemoteIP);
+/* This is NETLIBBIND prior to 2004/08/05+, DONT use this anymore unless you want to work
+with older cores, pExtra isnt available on older cores and never will be - for a period of time, the ABI
+for this service was broken and older NETLIBBINDs were not supported, if NULL is returned and the
+argument is good, then tell the user to upgrade to the latest CVS.
+
+The older structure was used til around 2004/08/05 */
+typedef struct {
+	int cbSize;
+	NETLIBNEWCONNECTIONPROC pfnNewConnection;
+	     //function to call when there's a new connection. Params are: the
+		 //new connection, IP of remote machine (host byte order)
+	DWORD dwInternalIP;   //set on return, host byte order
+	WORD wPort;			  //set on return, host byte order
+} NETLIBBINDOLD;
+
 typedef struct {
 	int cbSize;
 	union { // new code should use V2
