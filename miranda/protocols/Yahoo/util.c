@@ -253,6 +253,20 @@ int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 
             }
         }
+    }else if (!strcmp(cws->szModule, yahooProtocolName) && !strcmp(cws->szSetting, "ApparentMode")) {
+		DBVARIANT dbv;
+		
+        YAHOO_DebugLog("DB Setting changed.  YAHOO user's visible setting changed.");
+		
+		if ( !DBGetContactSetting( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+			int iAdd;
+			
+			
+			iAdd = (ID_STATUS_OFFLINE == DBGetContactSettingWord((HANDLE) wParam, yahooProtocolName, "ApparentMode", 0));
+			yahoo_stealth(dbv.pszVal, iAdd);
+			DBFreeVariant(&dbv);
+		}
+        //aim_buddy_updatemode((HANDLE) wParam);
     }
     return 0;
 }

@@ -54,7 +54,7 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
     switch (wParam) {        
         case PFLAGNUM_1:
             ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSG | PF1_BASICSEARCH
-			                        | PF1_FILESEND  | PF1_FILERECV;
+			                        | PF1_FILESEND  | PF1_FILERECV| PF1_VISLIST;
 //                          | PF1_SERVERCLIST | PF1_VISLIST ;
             break;
 
@@ -1010,6 +1010,23 @@ int YahooIdleEvent(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
+{
+    int oldMode;
+    CCSDATA *ccs = (CCSDATA *) lParam;
+
+    if (ccs->wParam && ccs->wParam != ID_STATUS_OFFLINE)
+        return 1;
+	
+    oldMode = DBGetContactSettingWord(ccs->hContact, yahooProtocolName, "ApparentMode", 0);
+	
+    if ((int) ccs->wParam == oldMode)
+        return 1;
+	
+    DBWriteContactSettingWord(ccs->hContact, yahooProtocolName, "ApparentMode", (WORD) ccs->wParam);
+    return 1;
+}
+
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;
 
@@ -1123,6 +1140,7 @@ int LoadYahooServices( void )
 	//File(s) have been received
 	YAHOO_CreateProtoServiceFunction( PSR_FILE,				YahooRecvFile );
 	
+	YAHOO_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,	YahooSetApparentMode);
 	return 0;
 }
 

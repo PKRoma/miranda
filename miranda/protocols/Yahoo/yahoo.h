@@ -139,6 +139,7 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8);
 void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
 int miranda_to_yahoo(int myyahooStatus);
+void yahoo_stealth(const char *buddy, int add);
 
 BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcYahooPopUpOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

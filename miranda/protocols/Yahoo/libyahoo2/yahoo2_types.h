@@ -170,6 +170,7 @@ struct yahoo_data {
 	int   client_id;
 
 	char  *rawbuddylist;
+	char  *rawstealthlist;
 	char  *ignorelist;
 
 	void  *server_settings;

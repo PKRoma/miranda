@@ -49,7 +49,7 @@ arguments=
 intermediateFilesDirectory=Release
 outputFilesDirectory=Release
 compilerPreprocessor=
-extraCompilerOptions=-DHAVE_CONFIG_H -DUSE_STRUCT_CALLBACKS
+extraCompilerOptions=-DHAVE_CONFIG_H
 compilerIncludeDirectory=..\..\include\
 noWarning=0
 defaultWarning=1
@@ -67,7 +67,7 @@ optimizeLevel=4
 libraryPath=
 outputFilename=Release\Yahoo.dll
 libraries=
-extraLinkerOptions=
+extraLinkerOptions=-Wl,-Map,Release\\yahoo.map
 ignoreStartupFile=0
 ignoreDefaultLibs=0
 stripExecutableFile=1
@@ -124,10 +124,14 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-services.c,2250
-libyahoo2\libyahoo2.c,99790
-main.c,1658
-util.c,6004
-options.c,10396
-yahoo.h,4310
-yahoo.c,523
+yahoo.c,42528
+http_gateway.c,2593
+main.c,4768
+options.c,2848
+yahoo.h,500
+libyahoo2\yahoo2_callbacks.h,12480
+server.c,1950
+libyahoo2\libyahoo2.c,0
+Yahoo.rc,4239
+services.c,6111
+util.c,8832

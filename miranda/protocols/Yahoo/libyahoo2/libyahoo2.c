@@ -786,6 +786,7 @@ static void yahoo_free_data(struct yahoo_data *yd)
 	FREE(yd->cookie_c);
 	FREE(yd->login_cookie);
 	FREE(yd->login_id);
+	FREE(yd->rawstealthlist);
 
 	yahoo_free_buddies(yd->buddies);
 	yahoo_free_buddies(yd->ignore);
@@ -1720,7 +1721,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 {
 	struct yahoo_data *yd = yid->yd;
 	YList *l;
-
+	
 	if (!yd->logged_in) {
 		yd->logged_in = TRUE;
 		if(yd->current_status < 0)
@@ -1758,17 +1759,6 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			YAHOO_CALLBACK(ext_yahoo_got_identities)(yd->client_id, yd->identities);
 			break;
 		case 59: /* cookies */
-			if(yd->ignorelist) {
-				yd->ignore = bud_str2list(yd->ignorelist);
-				FREE(yd->ignorelist);
-				YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
-			}
-			if(yd->rawbuddylist) {
-				yd->buddies = bud_str2list(yd->rawbuddylist);
-				FREE(yd->rawbuddylist);
-				YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
-			}
-
 			if(pair->value[0]=='Y') {
 				FREE(yd->cookie_y);
 				FREE(yd->login_cookie);
@@ -1785,9 +1775,6 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 				yd->cookie_c = getcookie(pair->value);
 			} 
 
-			if(yd->cookie_y && yd->cookie_t && yd->cookie_c)
-				YAHOO_CALLBACK(ext_yahoo_got_cookies)(yd->client_id);
-
 			break;
 		case 3: /* my id */
 		case 90: /* 1 */
@@ -1796,8 +1783,43 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 		case 102: /* NULL */
 		case 93: /* 86400/1440 */
 			break;
+		case 185: /* stealth list */
+			if(!yd->rawstealthlist)
+				yd->rawstealthlist = strdup(pair->value);
+			else {
+				yd->rawstealthlist = y_string_append(yd->rawstealthlist, pair->value);
+			}
+			
+			WARNING(("Got stealth list: %s", pair->value));
+			break;
+		
 		}
 	}
+	
+	if(yd->ignorelist) {
+		yd->ignore = bud_str2list(yd->ignorelist);
+		FREE(yd->ignorelist);
+		YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
+	}
+	
+	if(yd->rawbuddylist) {
+		yd->buddies = bud_str2list(yd->rawbuddylist);
+		FREE(yd->rawbuddylist);
+		
+		/*if (yd->rawstealthlist) {
+			WARNING(("Parsed stealth list: %s", yd->rawstealthlist));
+			yd->stealth = bud_str2list(yd->rawstealthlist);
+			FREE(yd->rawstealthlist);
+		}*/
+		
+		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies, yd->rawstealthlist);
+	}
+
+
+	if(yd->cookie_y && yd->cookie_t && yd->cookie_c)
+				YAHOO_CALLBACK(ext_yahoo_got_cookies)(yd->client_id);
+
+
 }
 
 static void yahoo_process_verify(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -3395,7 +3417,7 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 	}
 
 	if(changed)
-		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
+		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies, yd->rawstealthlist);
 }
 
 static void yahoo_process_search_connection(struct yahoo_input_data *yid, int over)
@@ -3922,6 +3944,27 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 		
 	}
 
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+}
+
+void yahoo_set_stealth(int id, const char *buddy, int add)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+	int service;
+	char s[4];
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(185, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 31, add ? "1" : "2");
+	yahoo_packet_hash(pkt, 13, "2");
+	yahoo_packet_hash(pkt, 7, buddy);
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 }

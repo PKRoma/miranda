@@ -124,6 +124,17 @@ void yahoo_set_status(int myyahooStatus, char *msg, int away)
 	}
 }
 
+void yahoo_stealth(const char *buddy, int add)
+{
+	LOG(("yahoo_stealth buddy: %s, add: %d", buddy, add));
+
+	/* Safety check, don't dereference Invalid pointers */
+	if ((ylad != NULL) && (ylad->id > 0) )  {
+		yahoo_set_stealth(ylad->id, buddy, add);
+	}
+}
+
+
 int yahoo_to_miranda_status(int yahooStatus, int away)
 {
     int ret = ID_STATUS_OFFLINE;
@@ -350,11 +361,18 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		free(pfts.currentFile);
 		
 		if (! sf->cancel) {
-			LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
-			//wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
-			//wsprintf(buf, "%s\%s", sf->filename);
-			lstrcpy(buf, sf->filename);
 			
+			if (sf->action != FILERESUME_RENAME ) {
+				LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
+			
+				wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
+			} else {
+				LOG(("file: %s", sf->filename ));
+			//wsprintf(buf, "%s\%s", sf->filename);
+				lstrcpy(buf, sf->filename);
+			}
+			
+			//pfts.files = &buf;
 			pfts.currentFile = _strdup(buf);		
 	
 			LOG(("Getting file: %s", buf));
@@ -705,8 +723,15 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		
 }
 
-void ext_yahoo_got_buddies(int id, YList * buds)
+void ext_yahoo_got_buddies(int id, YList * buds, char *stealthlist)
 {
+	char **stealth = NULL;
+	char **s;
+	int found = 0;
+	
+	if (stealthlist)
+		stealth = y_strsplit(stealthlist, ",", -1);
+	
     LOG(("ext_yahoo_got_buddies"));
     
 	if (buds == NULL) {
@@ -753,6 +778,32 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 			YAHOO_SetString( hContact, "e-mail", bud->yab_entry->email);
 		  
 		  
+		}
+		
+		
+		found = 0;
+		
+		for(s = stealth; s && *s; s++) {
+			
+			if (strcmp(*s, bud->id) == 0) {
+				LOG(("GOT id = %s", bud->id));
+				found = 1;
+				break;
+			}
+		}
+		
+		/* Check the stealth list */
+		if (found) { /* we have him on our Stealth List */
+			LOG(("Setting STEALTH for id = %s", bud->id));
+			/* need to set the ApparentMode thingy */
+			if (ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
+				DBWriteContactSettingWord(hContact, yahooProtocolName, "ApparentMode", (WORD) ID_STATUS_OFFLINE);
+			
+		} else { /* he is not on the Stealth List */
+			LOG(("Resetting STEALTH for id = %s", bud->id));
+			/* need to delete the ApparentMode thingy */
+			if (DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
+				DBDeleteContactSetting(hContact, yahooProtocolName, "ApparentMode");
 		}
 	}
 
@@ -1338,13 +1389,15 @@ int ext_yahoo_connect(char *h, int p)
         
         yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
 
-        wsprintf(z, "Connection to %s:%d failed", ncon.szHost, ncon.wPort);
-        
-       	if (YAHOO_hasnotification())
-       		 YAHOO_shownotification("Yahoo Login Error", z, NIIF_ERROR);
-	    else
-	         MessageBox(NULL, z, "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
-
+		if (YAHOO_GetByte( "ShowErrors", 1 )) {
+			wsprintf(z, "Connection to %s:%d failed", ncon.szHost, ncon.wPort);
+			if (!YAHOO_ShowPopup("Yahoo Error", z, YAHOO_NOTIFY_POPUP)) {
+				if (YAHOO_hasnotification())
+					 YAHOO_shownotification("Yahoo Login Error", z, NIIF_ERROR);
+				else
+					 MessageBox(NULL, z, "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
+			}
+		}
         return -1;
     }
 
@@ -1428,7 +1481,6 @@ static void connect_complete(void *data, int source, yahoo_input_condition condi
 void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 {
 	int ret=1;
-	char buff[1024]={0};
 
 	LOG(("yahoo_callback"));
 	if(c->id < 0) {
@@ -1440,15 +1492,10 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 		if(ret>0 && cond & YAHOO_INPUT_WRITE)
 			ret = yahoo_write_ready(c->id, c->fd, c->data);
 
-		if(ret == -1)
-			snprintf(buff, sizeof(buff), 
-				"Yahoo read error (%d): %s", errno, strerror(errno));
-		else if(ret == 0)
-			snprintf(buff, sizeof(buff), 
-				"Yahoo read error: Server closed socket");
-
-//		if(buff[0])
-//			print_message((buff));
+		if (ret == -1) {
+			LOG(("Yahoo read error (%d): %s", errno, strerror(errno)));
+		} else if(ret == 0)
+			LOG(("Yahoo read error: Server closed socket"));
 	}
 }
 

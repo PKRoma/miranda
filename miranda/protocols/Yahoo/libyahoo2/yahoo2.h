@@ -104,6 +104,7 @@ void yahoo_send_typing(int id, const char *from, const char *who, int typ);
 /* used to set away/back status. */
 /* away says whether the custom message is an away message or a sig */
 void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away);
+void yahoo_set_stealth(int id, const char *buddy, int add);
 
 void yahoo_add_buddy(int id, const char *who, const char *group, const char *msg);
 void yahoo_remove_buddy(int id, const char *who, const char *group);

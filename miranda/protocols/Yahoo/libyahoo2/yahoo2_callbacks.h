@@ -107,7 +107,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_login_response)(int id, int succ, char *url);
  * 	id   - the id that identifies the server connection
  * 	buds - the buddy list
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_buddies)(int id, YList * buds);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_buddies)(int id, YList * buds, char *stealthlist);
 
 
 
