@@ -30,7 +30,7 @@ extern HWND hwndContactList;
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
-	"Contact List",
+	"Classic contact list",
 	PLUGIN_MAKE_VERSION(0,3,4,0),
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
@@ -65,11 +65,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-/*
-The plugin loader in the first pass will call this plugin, which means we will get a chance
-to HookEvent() ME_SYSTEM_SHUTDOWN before the plugin loader, woot.
-*/
-int __declspec(dllexport) Load(PLUGINLINK * link)
+int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
 	pluginLink=link;
@@ -84,6 +80,12 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	if (rc==0) rc=LoadCLCModule();
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
 	return rc;
+}
+
+// a plugin loader aware of CList exports will never call this.
+int __declspec(dllexport) Load(PLUGINLINK * link)
+{
+	return 1;
 }
 
 int __declspec(dllexport) Unload(void)
