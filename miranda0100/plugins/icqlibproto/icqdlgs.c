@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../miranda32/protocols/protocols/m_protomod.h"
 #include "../../miranda32/protocols/protocols/m_protosvc.h"
 #include "icqproto.h"
-#define Translate(s)   ((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
 
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcIcqMsgsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
