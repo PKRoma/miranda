@@ -717,8 +717,9 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     dat->stats.lastReceivedChars = msglen - 1;
                 if (dbei.cbBlob >= (DWORD)(3 * msglen)) {
                     msg = (wchar_t *) &dbei.pBlob[msglen];
-                    lpi = IS_TEXT_UNICODE_UNICODE_MASK;
-                    if(IsTextUnicode((void *)msg, 2 * msglen, &lpi)) {
+                    lpi = IS_TEXT_UNICODE_ASCII16;
+//                    if(1) {
+                    if(IsTextUnicode((void *)msg, 2 * msglen, NULL) || msg[msglen -1] == (WCHAR)0) {
                         TrimMessage(msg);
                         if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
                             TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);

@@ -1185,7 +1185,6 @@ void CreateImageList(BOOL bInitial)
     int i, j;
     HICON hIcon;
     int iCurIcon = 0;
-    HMODULE hIconDLL;
     
     // enumerate available protocols... full protocol icon support 
 

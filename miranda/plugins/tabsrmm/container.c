@@ -352,10 +352,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             
             if(dat) {
                 DWORD dwOldMsgWindowFlags = dat->dwFlags;
+                DWORD dwOldEventIsShown = dat->dwEventIsShown;
+                
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICMENU) == 1)
                     break;
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
-                    if(dat->dwFlags != dwOldMsgWindowFlags) {
+                    if(dat->dwFlags != dwOldMsgWindowFlags || dat->dwEventIsShown != dwOldEventIsShown) {
                         WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)pContainer->hwndActive, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
                         if(myGlobals.m_IgnoreContactSettings)
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);

@@ -53,6 +53,7 @@ void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, in
 void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *szIniFilename);
 char *GetThemeFileName();
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
+void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 
 /*
  * calculates avatar layouting, based on splitter position to find the optimal size
@@ -68,14 +69,29 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     GetClientRect(hwndDlg, &rc);
     
     if(myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight < myGlobals.m_LimitStaticAvatarHeight && dat->iRealAvatarHeight == 0) {
+        int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+        RECT rcContainer;
+        int cx;
+        if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
+            return;
+        
+        GetClientRect(dat->pContainer->hwnd, &rcContainer);
+        AdjustTabClientRect(dat->pContainer, &rcContainer);
+        cx = rcContainer.right - rcContainer.left - 8;
         picAspect = 1.0;
         picProjectedWidth = (double)bminfo->bmWidth;
-        //if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds + infospace) && !myGlobals.m_AlwaysFullToolbarWidth)
-            dat->dynaSplitter = bminfo->bmHeight - ((dat->showUIElements != 0) ? 28 : 2);
-        //else
-            //dat->dynaSplitter = bminfo->bmHeight - 3;
+        if(((cx) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
+            dat->dynaSplitter = bminfo->bmHeight - ((showToolbar != 0) ? 28 : 3);
+            dat->iRealAvatarHeight = bminfo->bmHeight;
+            dat->bottomOffset = dat->dynaSplitter + 100;
+        }
+        else {
+            dat->dynaSplitter = bminfo->bmHeight - 3;
+            dat->iRealAvatarHeight = bminfo->bmHeight;
+            dat->bottomOffset = -33;
+        }
         dat->splitterY = dat->dynaSplitter + 34;
-//        _DebugPopup(dat->hContact, "%d, %d, %d", bminfo->bmHeight, dat->dynaSplitter, dat->iButtonBarNeeds);
+        goto ok;
     }
     else {
         picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
@@ -90,7 +106,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         dat->iRealAvatarHeight = dat->dynaSplitter + 3;
         dat->bottomOffset = -33;
     }
-
+ok:
     aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
     newWidth = (double)bminfo->bmWidth * aspect;
     if(newWidth > (double)(rc.right - rc.left) * 0.8)
@@ -180,8 +196,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, dat->dwFlags & MWF_LOG_INDENT ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
-        //EnableMenuItem(submenu, ID_PICMENU_ALIGNFORFULL, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) ? MF_ENABLED : MF_GRAYED));
-        //EnableMenuItem(submenu, ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         CheckMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
@@ -313,6 +327,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 dat->dwFlags ^= MWF_LOG_SYMBOLS;
                 return 1;
             case ID_MESSAGEICONS_USEINCOMING:
+                dat->dwEventIsShown ^= MWF_SHOW_INOUTICONS;
+                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", dat->dwEventIsShown & MWF_SHOW_INOUTICONS ? 1 : 0);
                 return 1;
             case ID_LOGMENU_SHOWNICKNAME:
                 dat->dwFlags ^= MWF_LOG_SHOWNICK;

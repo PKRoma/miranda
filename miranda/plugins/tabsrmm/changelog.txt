@@ -13,25 +13,24 @@ SF.NET Project Page: http://www.sourceforge.net/projects/tabsrmm/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-        		 KNOWN BUGS AND ISSUES, missing features etc.
-			 ============================================
-						
-*) ALT-S not working properly for everyone (will look into it).
+Version 0.9.9.5a - 2005/02/22
 
-*) creating tabs in the background may steal focus from the active window. Annyoing...
-   problem is not yet found, since this happens rarely and is hard to reproduce.
-
+        Bugfix release only.
         
-                         T O D O
-                         =======
-                         
-This list is imcomplete, but contains a few important things left.
-
-        * better error handling for timeouts and other sending errors.
+        ! tab icons were partially broken because of the "load icon pack at runtime" feature.
         
-        * add a menu bar to the message window to get the options and settings more
-          centralized. However, the menu bar needs to be hide-able (maybe automatically)
+        ! The menu entry to select in/out icons did not work properly.
+        
+        ! when loading a new icon pack at runtime, all message windows will be closed before
+          applying the new icons. A dialog box will inform you about this and you can, of course,
+          cancel the process.
+          
+        ! the "protocol menu" button was visible, even it does not (yet) provide any functionality.
 
+        ! The option "do not resize avatars less than x pixels in height" should now work ok.
+        
+        ! fixed possible problem with unicode detection.
+        
 Version 0.9.9.5 - 2005/02/17
 
         First, this requires a new tabsrmm_icons.dll format. Icons have been added , so you'll

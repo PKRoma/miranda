@@ -34,6 +34,7 @@ extern MYGLOBALS myGlobals;
 extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 extern HMODULE g_hIconDLL;
+extern struct ContainerWindowData *pFirstContainer;
 
 #if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
     extern HHOOK g_hMsgHook;
@@ -723,7 +724,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             char szNewFilename[MAX_PATH];
                             //CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFilename, (LPARAM)szNewFilename);
                             SetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, szFilename);
-                            DBWriteContactSettingString(NULL, SRMSGMOD_T, "icondll", szFilename);
                         }
                     }
             }
@@ -762,12 +762,18 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             ReloadGlobals();
                             GetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, szFilename, MAX_PATH);
                             if(strncmp(szFilename, szOldFileName, MAX_PATH)) {
-                                DBWriteContactSettingString(NULL, SRMSGMOD_T, "icondll", szFilename);
-                                UncacheMsgLogIcons();
-                                UnloadIconTheme();
-                                FreeLibrary(g_hIconDLL);
-                                CreateImageList(FALSE);
-                                WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
+                                if(MessageBoxA(0, Translate("Changing the icon pack at runtime requires closing of all open message windows.\nProceed?"), Translate("Warning"), MB_YESNO) == IDYES) {
+                                    DBWriteContactSettingString(NULL, SRMSGMOD_T, "icondll", szFilename);
+                                    UncacheMsgLogIcons();
+                                    UnloadIconTheme();
+                                    FreeLibrary(g_hIconDLL);
+                                    CreateImageList(FALSE);
+                                    while(pFirstContainer)
+                                        SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
+                                    //WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
+                                }
+                                else
+                                    SetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, szOldFileName);
                             }
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
                             SendMessage(myGlobals.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);

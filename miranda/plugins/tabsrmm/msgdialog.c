@@ -198,6 +198,11 @@ void SetDialogToType(HWND hwndDlg)
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), FALSE);
     }
 
+#if defined(_RELEASE_BUILD)
+    EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), FALSE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), SW_HIDE);
+#endif
+    
 // IEVIew MOD Begin
 	if (myGlobals.g_WantIEView) {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
@@ -2392,11 +2397,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->hContactPic && dat->showPic) {
                         HDC hdcMem = CreateCompatibleDC(dis->hDC);
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->hContactPic);
-                        SetStretchBltMode(dis->hDC, HALFTONE);
-                        StretchBlt(dis->hDC, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                        if(dat->iRealAvatarHeight != bminfo.bmHeight) {
+                            SetStretchBltMode(dis->hDC, HALFTONE);
+                            StretchBlt(dis->hDC, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                        }
+                        else            // don't stretch blit if not necessary
+                            BitBlt(dis->hDC, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
                         DeleteObject(hbmMem);
                         DeleteDC(hdcMem);
                     }
+                    return 0;
                 }
                 return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
             }
@@ -2723,6 +2733,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 2);
                     int iSelection, isHandled;
                     DWORD dwOldFlags = dat->dwFlags;
+                    DWORD dwOldEventIsShown = dat->dwEventIsShown;
                     
                     MsgWindowUpdateMenu(hwndDlg, dat, submenu, MENU_LOGMENU);
                     
@@ -2731,7 +2742,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                     isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_LOGMENU);
 
-                    if(dat->dwFlags != dwOldFlags) {
+                    if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
                         WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
                         if(myGlobals.m_IgnoreContactSettings)
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
@@ -3517,7 +3528,7 @@ verify:
                     return TRUE;
                 }
                 
-                if(dat->iOpenJobs > 0)
+                if(dat->iOpenJobs > 0 && lParam != 2)
                     return TRUE;
                 
 #if defined(_STREAMTHREADING)
