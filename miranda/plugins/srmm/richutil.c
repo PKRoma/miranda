@@ -33,7 +33,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 static RichUtil_ClearUglyBorder(TRichUtil *ru);
 
 void RichUtil_Load() {
-	mTheme = IsWinVerXPPlus()?LoadLibrary("uxtheme.dll"):0;
+	mTheme = IsWinVerXPPlus()?LoadLibraryA("uxtheme.dll"):0;
 	if (!mTheme) return;
 	MyOpenThemeData = (HANDLE (WINAPI *)(HWND, LPCWSTR))GetProcAddress(mTheme, "OpenThemeData");
 	MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))GetProcAddress(mTheme, "CloseThemeData");
