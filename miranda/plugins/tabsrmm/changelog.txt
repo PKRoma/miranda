@@ -26,7 +26,7 @@ Version 0.9.9.8 - 2005/03/04
           number for the string identifier is 101.
           
           The version check can be disabled on the "tabs and layout" page (just below the
-          option to load a new icon pack at runtime).
+          option to load a new icon pack at runtime) by unchecking "Perform version check on Icon DLL"
           
         + added option to "vertical maximize" a container (per container setting). If enabled,
           a container is maximized only in its vertical dimension, so that the window will
@@ -38,7 +38,9 @@ Version 0.9.9.8 - 2005/03/04
         * changing message log or other option will no longer wipe the text from the input
           area.
      
-        ! reset last eventtype and timestamp (for grouping messages) before rebuilding the log
+        ! reset last eventtype and timestamp (for grouping messages) before rebuilding the log.
+          This fixes an issue where the first message in the log could be visible with "in group"
+          formatting (w/o an icon, nickname and long timestamp).
         
         ! ctrl-enter inserts linefeed when "send on enter" is active. I broke that a few
           versions ago.

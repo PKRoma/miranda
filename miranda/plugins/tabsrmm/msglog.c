@@ -125,7 +125,7 @@ int safe_wcslen(wchar_t *msg, int chars) {
         if(msg[i] == (WCHAR)0)
             return i;
     }
-    return i;
+    return 0;
 }
 /*
  * remove any empty line at the end of a message to avoid some RichEdit "issues" with
@@ -708,6 +708,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         {
 #if defined( _UNICODE )
             wchar_t *msg;
+            int wlen;
 #else
             BYTE *msg;
 #endif
@@ -726,7 +727,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     dat->stats.lastReceivedChars = msglen - 1;
                 if (dbei.cbBlob >= (DWORD)(2 * msglen)) {
                     msg = (wchar_t *) &dbei.pBlob[msglen];
-                    if(safe_wcslen(msg, (dbei.cbBlob - msglen) / 2) <= msglen - 1) {
+                    wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
+                    if(wlen <= (msglen - 1) && wlen > 0){
                         TrimMessage(msg);
                         if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
                             TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
