@@ -57,11 +57,62 @@ __declspec(dllexport)
 }
 
 #define UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
+#ifdef UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
+#define SRMMMOD_OLD "SRMsg"
+#define SRMMMOD_SETTINGS_NAM "Settings"
+#define SRMMMOD_SETTINGS_VER 1
+static int old_db_byte_setting_exists(char *s) {
+	DBVARIANT dbv;
+	DBCONTACTGETSETTING cgs;
+
+	cgs.szModule=SRMMMOD_OLD;
+	cgs.szSetting=s;
+	cgs.pValue=&dbv;
+    dbv.type=DBVT_BYTE;
+    if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)NULL,(LPARAM)&cgs))
+        return 0;
+    return 1;
+}
+static void convert_old_byte_setting(char *s) {
+    if (!s) return;
+    if (old_db_byte_setting_exists(s)) {
+        db_byte_set(NULL, SRMMMOD, s, db_byte_get(NULL, SRMMMOD_OLD, s, 0));
+        db_unset(NULL, SRMMMOD_OLD, s);
+
+    }
+}
+#endif
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
     pluginLink = link;
     #ifdef UPDATE_SETTINGS_FROM_OLD_SRMM_MODULE
-
+    if (db_word_get(NULL, SRMMMOD, SRMMMOD_SETTINGS_NAM, 0)<SRMMMOD_SETTINGS_VER) {
+        convert_old_byte_setting(SRMSGSET_SHOWBUTTONLINE);
+        convert_old_byte_setting(SRMSGSET_SHOWINFOLINE);
+        convert_old_byte_setting(SRMSGSET_AUTOPOPUP);
+        convert_old_byte_setting(SRMSGSET_AUTOMIN);
+        convert_old_byte_setting(SRMSGSET_AUTOCLOSE);
+        convert_old_byte_setting(SRMSGSET_SAVEPERCONTACT);
+        convert_old_byte_setting(SRMSGSET_CASCADE);
+        convert_old_byte_setting(SRMSGSET_SENDONENTER);
+        convert_old_byte_setting(SRMSGSET_SENDONDBLENTER);
+        convert_old_byte_setting(SRMSGSET_STATUSICON);
+        convert_old_byte_setting(SRMSGSET_SENDBUTTON);
+        convert_old_byte_setting(SRMSGSET_CHARCOUNT);
+        convert_old_byte_setting(SRMSGSET_MSGTIMEOUT);
+        convert_old_byte_setting(SRMSGSET_LOADHISTORY);
+        convert_old_byte_setting(SRMSGSET_HIDENAMES);
+        convert_old_byte_setting(SRMSGSET_SHOWTIME);
+        convert_old_byte_setting(SRMSGSET_SHOWDATE);
+        convert_old_byte_setting(SRMSGSET_TYPING);
+        convert_old_byte_setting(SRMSGSET_TYPINGNEW);
+        convert_old_byte_setting(SRMSGSET_TYPINGUNKNOWN);
+        convert_old_byte_setting(SRMSGSET_SHOWTYPING);
+        convert_old_byte_setting(SRMSGSET_SHOWTYPINGWIN);
+        convert_old_byte_setting(SRMSGSET_SHOWTYPINGNOWIN);
+        convert_old_byte_setting(SRMSGSET_SHOWTYPINGCLIST);
+        db_word_set(NULL, SRMMMOD, SRMMMOD_SETTINGS_NAM, SRMMMOD_SETTINGS_VER);
+    }
     #endif
     return LoadSendRecvMessageModule();
 }

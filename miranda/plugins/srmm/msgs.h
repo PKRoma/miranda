@@ -20,6 +20,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+#ifndef SRMM_MSGS_H
+#define SRMM_MSGS_H
+
 #include <richedit.h>
 #include <richole.h>
 #define MSGERROR_CANCEL	0
@@ -186,3 +189,5 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_SHOWTYPINGNOWIN 0
 #define SRMSGSET_SHOWTYPINGCLIST    "ShowTypingClist"
 #define SRMSGDEFSET_SHOWTYPINGCLIST 1
+
+#endif
