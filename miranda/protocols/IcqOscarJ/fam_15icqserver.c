@@ -263,21 +263,40 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 			if (dwTimestamp > (unsigned long)time(NULL))
 				dwTimestamp = time(NULL);
 
+      { // Check if the time is not behind last user event, if yes, get current time
+        HANDLE hContact = HContactFromUIN(dwUin, 0);
+
+        if (hContact)
+        { // we have contact
+          HANDLE hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
+          
+          if (hEvent)
+          { // contact has events
+            DBEVENTINFO dbei;
+            DWORD dummy;
+            
+            dbei.cbSize = sizeof (DBEVENTINFO);
+            dbei.pBlob = (char*)&dummy;
+            dbei.cbBlob = 2;
+            if (!CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei))
+            { // got that event, if newer than ts then reset to current time
+              if (dwTimestamp<dbei.timestamp) dwTimestamp = time(NULL);
+            }
+          }
+        }
+      }
 
 			// Handle the actual message
 			handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, bType, bFlags,
 				0, wPacketLen, wMsgLen, databuf);
 
-		
 			// Success
 			return; 
-
 		}
 	}
 
 	// Failure
 	Netlib_Logf(ghServerNetlibUser, "Error: Broken offline message");
-
 }
 
 
