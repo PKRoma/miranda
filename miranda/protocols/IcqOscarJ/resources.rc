@@ -152,13 +152,13 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,4,0
+ FILEVERSION 0,3,4,1
  PRODUCTVERSION 0,3,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x1L
+ FILEFLAGS 0x21L
 #else
- FILEFLAGS 0x0L
+ FILEFLAGS 0x20L
 #endif
  FILEOS 0x40004L
  FILETYPE 0x2L
@@ -170,16 +170,16 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "ICQ protocol plugin for Miranda IM\0"
-            VALUE "FileVersion", "0, 3, 4, 0\0"
+            VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
+            VALUE "FileVersion", "0, 3, 4, 1\0"
             VALUE "InternalName", "ICQ protocol plugin for Miranda IM (Joe)\0"
-            VALUE "LegalCopyright", "Copyright (C) 2000,2001,2002,2003,2004 Martin ™berg, Richard Hughes, Jon Keating\0"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2005 Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ICQ.dll\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "\0"
-            VALUE "ProductVersion", "0, 3, 4, 0\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "ProductName", "ICQ Protocol Support\0"
+            VALUE "ProductVersion", "0, 3, 4, 1\0"
+            VALUE "SpecialBuild", "Built by Joe @ Whale\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -211,7 +211,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 314, 240
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Direct connections",IDC_STATIC_DC1,7,7,300,78
     LTEXT           "Allowing direct connections will expose your IP address but may be necessary for some ICQ features to work properly.",
@@ -265,10 +265,10 @@ BEGIN
     LTEXT           "Port:",IDC_STATIC,5,44,71,8
     EDITTEXT        IDC_PORT,74,44,141,8,ES_AUTOHSCROLL | ES_READONLY | NOT
                     WS_BORDER | NOT WS_TABSTOP
-    LTEXT           "ICQ Version:",IDC_STATIC,5,57,71,8
+    LTEXT           "Protocol Version:",IDC_STATIC,5,57,71,8
     EDITTEXT        IDC_VERSION,74,57,142,8,ES_AUTOHSCROLL | ES_READONLY |
                     NOT WS_BORDER | NOT WS_TABSTOP
-    LTEXT           "Miranda IM Version:",IDC_STATIC,5,70,71,8
+    LTEXT           "User Client:",IDC_STATIC,5,70,71,8
     EDITTEXT        IDC_MIRVER,74,70,141,8,ES_AUTOHSCROLL | ES_READONLY |
                     NOT WS_BORDER | NOT WS_TABSTOP
     CONTROL         "Change my details using the ICQ website",
@@ -420,7 +420,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 IDD_OPT_ICQ DIALOGEX 0, 0, 281, 234
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "User ID and password",IDC_STICQGROUP,4,4,273,95
     RTEXT           "ICQ number:",IDC_STATIC11,12,19,51,8
@@ -455,29 +455,41 @@ BEGIN
                     IDC_STATIC,12,48,257,19
 END
 
-IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 177
+IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 228
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "ICQ contacts stored on server",IDC_STICQGROUP,4,4,306,
-                    169
-    PUSHBUTTON      "Manage server's list...",IDC_UPLOADNOW,12,81,97,14
-    CONTROL         "Enable server-side contact lists",IDC_ENABLE,"Button",
+                    112
+    PUSHBUTTON      "Manage server's list...",IDC_UPLOADNOW,12,94,97,14
+    CONTROL         "Enable server-side contact lists *",IDC_ENABLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,19,290,10
-    CONTROL         "Update my contacts' nicks from the server",
-                    IDC_USESERVERNICKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,50,290,10
     CONTROL         "Add extra contacts from the server's list to my list",
                     IDC_ADDNEW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,37,
                     290,10
     CONTROL         "Add and remove contacts from the server's list when I add/remove them from mine",
                     IDC_ADDREMOVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    63,290,10
+                    50,290,10
+    CONTROL         "Update my contacts' details from the server *",
+                    IDC_LOADFROMSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,63,290,10
+    CONTROL         "Update contacts' details on the server's list when I change them in mine",
+                    IDC_SAVETOSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,76,290,10
+    GROUPBOX        "ICQ avatars",IDC_STATIC,4,120,306,40
+    CONTROL         "Enable avatar support",
+                    IDC_ENABLEAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,132,290,10
+    CONTROL         "Load avatars automatically (like ICQ Lite).",
+                    IDC_AUTOLOADAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,145,290,10
     LTEXT           "You will need to reconnect to the ICQ network for the changes you have made on this page to take effect.",
-                    IDC_RECONNECTREQD,12,103,290,16,NOT WS_VISIBLE
+                    IDC_RECONNECTREQD,12,165,290,16,NOT WS_VISIBLE
     LTEXT           "You cannot enable/disable the server-side contact list while you are connected to the ICQ network.",
-                    IDC_OFFLINETOENABLE,12,124,290,16,NOT WS_VISIBLE
+                    IDC_OFFLINETOENABLE,12,186,290,16,NOT WS_VISIBLE
+    LTEXT           "Note: The options marked with an asterisk have important side-effects or caveats that may not be initially apparent documented in the help.",
+                    IDC_STATIC,12,207,290,16, SS_CENTER
 END
 
 IDD_ICQUPLOADLIST DIALOGEX 0, 0, 227, 168
@@ -537,7 +549,7 @@ BEGIN
         VERTGUIDE, 12
         VERTGUIDE, 302
         TOPMARGIN, 4
-        BOTTOMMARGIN, 173
+        BOTTOMMARGIN, 224
     END
 
     IDD_ICQUPLOADLIST, DIALOG
