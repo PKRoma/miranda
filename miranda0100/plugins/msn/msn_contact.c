@@ -22,10 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //LOGIN TO A DS Server
 
 
-	#include <windows.h>
-	#include <winsock.h>
 	#include "MSN_global.h"
-	#include "../../resource.h"
+//	#include "resource.h"
 /*
 #ifndef MODULAR
 	#include "../../core/miranda.h"

@@ -21,13 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //WINSOCK FUNCS
 
-	#include <windows.h>
-	#include <winsock.h>
-	#include "../../core/modules.h"
-	#include "../../resource.h"
-	#include "../../ui/contactlist/m_clist.h"
-
 	#include "msn_global.h"
+//	#include "resource.h"
+	#include "../../miranda32/ui/contactlist/m_clist.h"
 /*
 #ifndef MODULAR
 	#include "../../core/miranda.h"
@@ -122,7 +118,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		{	//data there*/
 
 			data[0]=0;
-			if ((rlen=recv(*s,data,datalen,0))==SOCKET_ERROR)
+			if ((rlen=recv(*s,data,datalen-1,0))==SOCKET_ERROR)
 			{
 				DWORD err;
 				err=GetLastError();
