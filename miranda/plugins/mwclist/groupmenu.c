@@ -37,7 +37,12 @@ HANDLE hHideOfflineUsersMenuItem;
 HANDLE hHideOfflineUsersOutHereMenuItem;
 HANDLE hHideEmptyGroupsMenuItem;
 HANDLE hDisableGroupsMenuItem;
+int NewGroupIconidx;
+
 extern HWND hwndContactTree;
+extern HIMAGELIST hCListImages;
+extern HICON LoadIconFromExternalFile(char *filename,int i);
+
 
 void InitSubGroupMenus(void);
 
@@ -263,6 +268,9 @@ void InitGroupMenus(void)
 {
 	TMenuParam tmp;
 	OptParam op;
+	HICON hicon;
+	hicon=LoadIconFromExternalFile("clisticons.dll",2);
+	NewGroupIconidx=ImageList_AddIcon(hCListImages,hicon );	
 	
 	CreateServiceFunction("CLISTMENUSGroup/ExecService",GroupMenuExecService);
 	CreateServiceFunction("CLISTMENUSGroup/FreeOwnerDataGroupMenu",FreeOwnerDataGroupMenu);
@@ -368,7 +376,7 @@ void InitGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=100000;
-	mi.hIcon=NULL;
+	mi.hIcon=ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
 	mi.pszService=MS_CLIST_GROUPCREATE;
 	mi.pszName=Translate("&New Group");	
 	AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
@@ -662,7 +670,6 @@ void InitSubGroupMenus(void)
 	HookEvent(ME_CLIST_PREBUILDSUBGROUPMENU,OnBuildSubGroupMenu);
 
 
-
 	//SubGroup menu
 	memset(&tmp,0,sizeof(tmp));
 	tmp.cbSize=sizeof(tmp);
@@ -695,7 +702,7 @@ void InitSubGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=1000;
-	mi.hIcon=NULL;
+	mi.hIcon=ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=Translate("&New SubGroup");	
 	gmp.lParam=0;gmp.wParam=POPUP_NEWSUBGROUP;
@@ -713,7 +720,7 @@ void InitSubGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=900001;
-	mi.hIcon=NULL;
+	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_RENAME));
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=Translate("&Rename Group");	
 	gmp.lParam=0;gmp.wParam=POPUP_RENAMEGROUP;
@@ -722,7 +729,7 @@ void InitSubGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=900002;
-	mi.hIcon=NULL;
+	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_DELETE));
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=Translate("&Delete Group");	
 	gmp.lParam=0;gmp.wParam=POPUP_DELETEGROUP;

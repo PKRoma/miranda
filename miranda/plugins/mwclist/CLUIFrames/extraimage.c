@@ -10,10 +10,11 @@ static HANDLE hExtraImageListRebuilding,hExtraImageApplying;
 extern HWND hwndContactTree;
 static HIMAGELIST hExtraImageList;
 extern HINSTANCE g_hInst;
+extern HIMAGELIST hCListImages;
 
 void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void LoadExtraImageFunc();
-
+HICON LoadIconFromExternalFile(char *filename,int i);
 
 boolean isColumnVisible(int extra)
 {
@@ -129,6 +130,7 @@ void ReloadExtraIcons()
 			{	
 				int count,i;
 				PROTOCOLDESCRIPTOR **protos;
+				HICON hicon;
 				
 				SendMessage(hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)NULL);		
 				if (hExtraImageList){ImageList_Destroy(hExtraImageList);};
@@ -136,8 +138,15 @@ void ReloadExtraIcons()
 				//adding protocol icons
 				CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 		
-				ImageList_AddIcon(hExtraImageList,LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_EMAIL)) );
-				ImageList_AddIcon(hExtraImageList,LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_SMS)) );
+	
+				//loading icons
+				hicon=LoadIconFromExternalFile("clisticons.dll",0);
+				if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_EMAIL));
+				ImageList_AddIcon(hExtraImageList,hicon );
+
+				hicon=LoadIconFromExternalFile("clisticons.dll",1);
+				if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_SMS));
+				ImageList_AddIcon(hExtraImageList,hicon );				
 
 				//calc only needed protocols
 				for(i=0;i<count;i++) {
@@ -195,7 +204,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	PROTOCOLDESCRIPTOR **protos;
 	int em,pr,sms,a1,a2;
 	int tick=0;
-	int inphcont=hContact;
+	int inphcont=(int)hContact;
 
 	hcontgiven=(hContact!=0);
 
@@ -325,4 +334,7 @@ void LoadExtraImageFunc()
 	hExtraImageListRebuilding=CreateHookableEvent(ME_CLIST_EXTRA_LIST_REBUILD);
 	hExtraImageApplying=CreateHookableEvent(ME_CLIST_EXTRA_IMAGE_APPLY);
 
+	
+
 };
+

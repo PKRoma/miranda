@@ -183,18 +183,31 @@ static HICON ExtractIconFromPath(const char *path)
 	return hIcon;
 }
 
-
-HICON GetConnectingIconForProto(char *szProto,int b)
+HICON LoadIconFromExternalFile(char *filename,int i)
 {
 		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 		HICON hIcon=NULL;
 
 		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
 		str=strrchr(szPath,'\\');
-		b=b-1;
 		if(str!=NULL) *str=0;
-		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_conn_%s.dll,%d", szPath, szProto, b+1);
+		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
 		hIcon=ExtractIconFromPath(szFullPath);
+		if (hIcon) return hIcon;
+		return (HICON)0;
+}
+
+HICON GetConnectingIconForProto(char *szProto,int b)
+{
+		char szFullPath[MAX_PATH];
+		HICON hIcon=NULL;
+
+		b=b-1;
+		_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szProto);
+//		hIcon=ExtractIconFromPath(szFullPath);
+//		if (hIcon) return hIcon;
+
+		hIcon=LoadIconFromExternalFile(szFullPath,b+1);
 		if (hIcon) return hIcon;
 
 #ifdef _DEBUG
