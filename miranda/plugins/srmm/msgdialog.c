@@ -211,6 +211,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 SendMessage(hwnd, EM_SETSEL, 0, -1);
                 return 0;
             }
+            if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {     // ctrl-w
+                SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+                return 0;
+            }
             if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {    //ctrl-backspace
                 DWORD start, end;
                 TCHAR *text;

@@ -24,6 +24,7 @@ Changes
  - Show separate incoming/outgoing icons for messages with "Show Icons" option
  - Show status changes in the message window
  - Message area supports Ctrl+Up/Down to scroll through past messages
+ - Close message dialog with Ctrl+w
 
 1.0.4.2
  - Typing Notify options didn't enable/disable correctly
