@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -35,12 +36,17 @@
 
 
 
-WORD GenerateServerId(VOID);
-WORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, int authRequired, WORD wItemType);
-WORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, WORD wItemType);
+DWORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, int authRequired, WORD wItemType);
+DWORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, WORD wItemType);
 void InitServerLists(void);
 void UninitServerLists(void);
 
+WORD icq_sendBuddy(WORD wAction, DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
+WORD icq_sendGroup(WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
+
+WORD GenerateServerId(VOID);
+WORD GenerateServerIdPair(int wCount);
 void ReserveServerID(WORD wID);
-BOOL CheckServerID(WORD wID);
+void FreeServerID(WORD wID);
+BOOL CheckServerID(WORD wID, int wCount);
 void FlushServerIDs();

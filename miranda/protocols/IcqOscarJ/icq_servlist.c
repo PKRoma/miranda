@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Functions that handles list of used server IDs, sends low-level packets for SSI information
 //
 // -----------------------------------------------------------------------------
 
@@ -57,7 +58,6 @@ static int nIDListSize = 0;
 // You should call CheckServerID before reserving an ID.
 void ReserveServerID(WORD wID)
 {
-	
 	if (nIDListCount >= nIDListSize)
 	{
 		nIDListSize += 100;
@@ -70,39 +70,57 @@ void ReserveServerID(WORD wID)
 }
 
 
+// Remove a server ID from the list of reserved IDs.
+// Used for deleting contacts and other modifications.
+void FreeServerID(WORD wID)
+{
+  int i, j;
+
+  if (pwIDList)
+  {
+    for (i = 0; i<nIDListCount; i++)
+		{
+			if (pwIDList[i] == wID)
+      { // we found it, so remove
+        for (j = i+1; j<nIDListCount; j++)
+        {
+          pwIDList[j-1] = pwIDList[j];
+        }
+        nIDListCount--;
+      }
+		}
+	}
+  
+}
+
 
 // Returns true if dwID is reserved
-BOOL CheckServerID(WORD wID)
+BOOL CheckServerID(WORD wID, int wCount)
 {
-	
 	int i;
 	BOOL bFound = FALSE;
-	
 	
 	if (pwIDList)
 	{
 		for (i = 0; i<nIDListCount; i++)
 		{
-			if (pwIDList[i] == wID)
+			if ((pwIDList[i] >= wID) && (pwIDList[i] <= wID + wCount))
 				bFound = TRUE;
 		}
 	}
 	
-	return bFound;
-	
+	return bFound;	
 }
-
 
 
 void FlushServerIDs()
 {
 	
-	SAFE_FREE(pwIDList);
+	SAFE_FREE(&pwIDList);
 	nIDListCount = 0;
 	nIDListSize = 0;
 	
 }
-
 
 
 WORD GenerateServerId(VOID)
@@ -118,28 +136,53 @@ WORD GenerateServerId(VOID)
 		// We use range 0x1000-0x7FFF.
 		wId = (WORD)RandRange(0x1000, 0x7FFF);
 
-		if (!CheckServerID(wId))
+		if (!CheckServerID(wId, 0))
 			break;
-		
-		break;
 	}
 	
 	ReserveServerID(wId);
 
 	return wId;
+}
 
+// Generate server ID with wCount IDs free after it, for sub-groups.
+WORD GenerateServerIdPair(int wCount)
+{
+  WORD wId;
+
+  while (TRUE)
+  {
+    // Randomize a new ID
+    // Max value is probably 0x7FFF, lowest value is unknown.
+    // We use range 0x1000-0x7FFF.
+    wId = (WORD)RandRange(0x1000, 0x7FFF);
+
+    if (!CheckServerID(wId, wCount))
+      break;
+	}
+	
+	ReserveServerID(wId);
+
+	return wId;
 }
 
 
+WORD icq_sendBuddy(WORD wAction, DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType)
+{
+}
 
-WORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, int authRequired, WORD wItemType)
+WORD icq_sendGroup(WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent)
+{
+}
+
+DWORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, int authRequired, WORD wItemType)
 {
 
-   	icq_packet packet;
+  icq_packet packet;
 	char szUin[10];
 	int nUinLen;
 	int nNickLen;
-	WORD wSequence;
+	DWORD dwSequence;
 	char* szUtfNick = NULL;
 	WORD wTLVlen;
 
@@ -166,7 +209,7 @@ WORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, cons
 
 
 	// Cookie
-	wSequence = GenerateCookie();
+	dwSequence = GenerateCookie(0);
 
 	// Build the packet
 	packet.wLen = nUinLen + 20;	
@@ -176,7 +219,7 @@ WORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, cons
 		packet.wLen += 4;
 
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_ADDTOLIST, 0, wSequence);
+	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_ADDTOLIST, 0, dwSequence);
 	packWord(&packet, (WORD)nUinLen);
 	packBuffer(&packet, szUin, (WORD)nUinLen);
 	packWord(&packet, wGroupId);
@@ -197,29 +240,29 @@ WORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, cons
 	// Send the packet and return the cookie
 	sendServPacket(&packet);
 
-	SAFE_FREE(szUtfNick);
+	SAFE_FREE(&szUtfNick);
 
-	return wSequence;
+	return dwSequence;
 	
 }
 
 
-WORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, WORD wItemType)
+DWORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, WORD wItemType)
 {
 
   	icq_packet packet;
 	char szUin[10];
 	int nUinLen;
-	WORD wSequence;
+	DWORD dwSequence;
 
 	_itoa(dwUin, szUin, 10);
 	nUinLen = strlen(szUin);
 
-	wSequence = GenerateCookie();
+	dwSequence = GenerateCookie(0);
 
 	packet.wLen = nUinLen + 20;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, wSequence);
+	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, dwSequence);
 	packWord(&packet, (WORD)nUinLen);
 	packBuffer(&packet, szUin, (WORD)nUinLen);
 	packWord(&packet, wGroupId);
@@ -229,7 +272,7 @@ WORD icq_sendDeleteServerContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId
 
 	sendServPacket(&packet);
 
-	return wSequence;
+	return dwSequence;
 
 }
 
@@ -270,7 +313,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 			if (szProto && !strcmp(szProto, gpszICQProtoName) && dwUin)
 			{
 				
-				WORD wGroupId;
+				WORD wGroupId; // TODO: rework for server-groups support
 				WORD wContactId;
 
 				
@@ -294,7 +337,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 		// Has contact been renamed?
 		if (!strcmp(cws->szSetting, "MyHandle") &&
-			DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerNicks", DEFAULT_SS_NICKS))
+			DBGetContactSettingByte(NULL, gpszICQProtoName, "StoreServerDetails", DEFAULT_SS_STORE))
 		{
 			if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
 			{
@@ -308,6 +351,22 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 		
 	}
 
+	if (!strcmp(cws->szModule, "UserInfo"))
+	{
+		if (!strcmp(cws->szSetting, "MyNotes") &&
+			DBGetContactSettingByte(NULL, gpszICQProtoName, "StoreServerDetails", DEFAULT_SS_STORE))
+		{
+			if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
+			{
+				// TODO: add function to store notes on server
+			}
+			else
+			{
+				// TODO: add function to store notes on server
+			}
+		}
+
+  }
 
 	return 0;
 
