@@ -372,8 +372,6 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				dat->shortGroupWidth=rcReorder.right-rc.left;
 				dat->groupHeight=rc.bottom-rc.top;
 			}
-			if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0))
-				SetWindowPos(GetDlgItem(hwndDlg,IDC_STICONSGROUP),0,0,0,dat->shortGroupWidth,dat->groupHeight,SWP_NOZORDER|SWP_NOMOVE);
 			SendMessage(hwndDlg,DM_REBUILDICONSPREVIEW,0,0);
 			return TRUE;
 		}
@@ -690,9 +688,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					NotifyEventHooks(hIconsChangedEvent,0,0);
 					return TRUE;
 				}
-				case PSN_EXPERTCHANGED:
-					SetWindowPos(GetDlgItem(hwndDlg,IDC_STICONSGROUP),0,0,0,((PSHNOTIFY*)lParam)->lParam?dat->originalGroupWidth:dat->shortGroupWidth,dat->groupHeight,SWP_NOZORDER|SWP_NOMOVE);
-					break;
+				break;
 			}
 			break;
 		case WM_DESTROY:
