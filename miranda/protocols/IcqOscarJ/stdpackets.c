@@ -1578,85 +1578,102 @@ void icq_sendEntireVisInvisList(int list)
 
 
 
+void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
+{
+  icq_packet packet;
+  unsigned char szUin[10];
+  unsigned char nUinlen;
+  WORD nMsglen;
+
+  ltoa(dwUin, szUin, 10);
+  nUinlen = strlen(szUin);
+  nMsglen = strlen(szMsg);
+
+  packet.wLen = 15 + nUinlen + nMsglen;
+
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GRANTAUTH, 0, ICQ_LISTS_GRANTAUTH<<0x10);
+  packByte(&packet, nUinlen);
+  packBuffer(&packet, szUin, nUinlen);
+  packWord(&packet, (WORD)nMsglen);
+  packBuffer(&packet, szMsg, nMsglen);
+  packWord(&packet, 0);
+
+  sendServPacket(&packet);
+}
+
+
+
 void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
 {
+  icq_packet packet;
+  unsigned char szUin[10];
+  unsigned char nUinlen;
+  WORD nMsglen;
 
-	icq_packet packet;
-	unsigned char szUin[10];
-	unsigned char nUinlen;
-	WORD nMsglen;
+  ltoa(dwUin, szUin, 10);
+  nUinlen = strlen(szUin);
+  nMsglen = strlen(szMsg);
 
+  packet.wLen = 15 + nUinlen + nMsglen;
 
-	ltoa(dwUin, szUin, 10);
-	nUinlen = strlen(szUin);
-	nMsglen = strlen(szMsg);
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REQUESTAUTH, 0, ICQ_LISTS_REQUESTAUTH<<0x10);
+  packByte(&packet, nUinlen);
+  packBuffer(&packet, szUin, nUinlen);
+  packWord(&packet, (WORD)nMsglen);
+  packBuffer(&packet, szMsg, nMsglen);
+  packWord(&packet, 0);
 
-	packet.wLen = 15 + nUinlen + nMsglen;
-
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REQUESTAUTH, 0, 0);
-	packByte(&packet, nUinlen);
-	packBuffer(&packet, szUin, nUinlen);
-	packWord(&packet, (WORD)nMsglen);
-	packBuffer(&packet, szMsg, nMsglen);
-	packWord(&packet, 0);
-
-	sendServPacket(&packet);
-
+  sendServPacket(&packet);
 }
 
 
 
 void icq_sendAuthResponseServ(DWORD dwUin, int auth, char *szReason)
 {
+  icq_packet p;
+  WORD nReasonlen;
+  unsigned char szUin[10], nUinlen;
 
-	icq_packet p;
-	WORD nReasonlen;
-	unsigned char szUin[10], nUinlen;
+  ltoa(dwUin, szUin, 10);
+  nUinlen = strlen(szUin);
+  nReasonlen = strlen(szReason);
 
+  p.wLen = 16 + nUinlen + nReasonlen;
+  write_flap(&p, ICQ_DATA_CHAN);
+  packFNACHeader(&p, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_AUTHRESPONSE, 0, ICQ_LISTS_CLI_AUTHRESPONSE<<0x10);
+  packByte(&p, nUinlen);
+  packBuffer(&p, szUin, nUinlen);
+  packByte(&p, (BYTE)auth);
+  packWord(&p, nReasonlen);
+  packBuffer(&p, szReason, nReasonlen);
+  packWord(&p, 0);
 
-	ltoa(dwUin, szUin, 10);
-	nUinlen = strlen(szUin);
-	nReasonlen = strlen(szReason);
-
-	p.wLen = 16 + nUinlen + nReasonlen;
-	write_flap(&p, ICQ_DATA_CHAN);
-	packFNACHeader(&p, ICQ_LISTS_FAMILY, ICQ_LISTS_AUTHRESPONSE, 0, 0x1A);
-	packByte(&p, nUinlen);
-	packBuffer(&p, szUin, nUinlen);
-	packByte(&p, (BYTE)auth);
-	packWord(&p, nReasonlen);
-	packBuffer(&p, szReason, nReasonlen);
-	packWord(&p, 0);
-
-	sendServPacket(&p);
-
+  sendServPacket(&p);
 }
 
 
 
 void icq_sendYouWereAddedServ(DWORD dwUin, DWORD dwMyUin)
 {
+  icq_packet packet;
+  DWORD dwID1;
+  DWORD dwID2;
 
-	icq_packet packet;
-	DWORD dwID1;
-	DWORD dwID2;
+  dwID1 = time(NULL);
+  dwID2 = RandRange(0, 0x00FF);
 
+  packServMsgSendHeader(&packet, 0, dwID1, dwID2, dwUin, 0x0004, 17);
+  packWord(&packet, 0x0005);		// TLV(5)
+  packWord(&packet, 0x0009);
+  packLEDWord(&packet, dwMyUin);
+  packByte(&packet, MTYPE_ADDED);
+  packByte(&packet, 0);			// msg-flags
+  packLEWord(&packet, 0x0001);	// len of NTS
+  packByte(&packet, 0);			// NTS
+  packWord(&packet, 0x0006);		// TLV(6)
+  packWord(&packet, 0);
 
-	dwID1 = time(NULL);
-	dwID2 = RandRange(0, 0x00FF);
-
-	packServMsgSendHeader(&packet, 0, dwID1, dwID2, dwUin, 0x0004, 17);
-	packWord(&packet, 0x0005);		// TLV(5)
-	packWord(&packet, 0x0009);
-	packLEDWord(&packet, dwMyUin);
-	packByte(&packet, MTYPE_ADDED);
-	packByte(&packet, 0);			// msg-flags
-	packLEWord(&packet, 0x0001);	// len of NTS
-	packByte(&packet, 0);			// NTS
-	packWord(&packet, 0x0006);		// TLV(6)
-	packWord(&packet, 0);
-
-	sendServPacket(&packet);
-
+  sendServPacket(&packet);
 }

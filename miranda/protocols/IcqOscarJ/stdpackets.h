@@ -87,6 +87,7 @@ void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, BYTE, const char **);
 void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
 DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
+void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg);
 void icq_sendAuthReqServ(DWORD dwUin,char *szMsg);
 void icq_sendAuthResponseServ(DWORD,int,char *);
 void icq_sendYouWereAddedServ(DWORD,DWORD);
