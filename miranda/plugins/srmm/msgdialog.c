@@ -91,7 +91,6 @@ static void SetDialogToType(HWND hwndDlg)
         SendMessage(dat->hwndStatus, SB_SETPARTS, 1, (LPARAM) statwidths);
     }
     UpdateReadChars(hwndDlg, dat->hwndStatus);
-    SetDlgItemTextA(hwndDlg, IDOK, Translate("&Reply"));
     ShowWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDCANCEL), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
