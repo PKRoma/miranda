@@ -84,8 +84,11 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SetDlgItemText( hwndDlg, IDC_PASSWORD, tBuffer );
 		}
 
+		HWND wnd = GetDlgItem( hwndDlg, IDC_HANDLE2 );
 		if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))
-			SetDlgItemText( hwndDlg, IDC_HANDLE2, tBuffer );
+			SetWindowText( wnd, tBuffer );
+		if ( !msnLoggedIn )
+			EnableWindow( wnd, FALSE );
 
 		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU, MSN_GetByte( "DisableSetNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
@@ -246,26 +249,25 @@ LBL_Continue:
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE, tEmail, sizeof( tEmail ));
-			if ( !MSN_GetStaticString( "e-mail", NULL, dbStr, sizeof( dbStr )))
-				if ( strcmp( tEmail, dbStr ))
-					reconnectRequired = true;
+			if ( MSN_GetStaticString( "e-mail", NULL, dbStr, sizeof( dbStr )))
+				dbStr[0] = 0;
+			if ( strcmp( tEmail, dbStr ))
+				reconnectRequired = true;
 			MSN_SetString( NULL, "e-mail", tEmail );
 
 			GetDlgItemText( hwndDlg, IDC_PASSWORD, screenStr, sizeof( screenStr ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( screenStr ),( LPARAM )screenStr );
-			if ( !MSN_GetStaticString( "Password", NULL, dbStr, sizeof( dbStr )))
-				if ( strcmp( screenStr, dbStr ))
-					reconnectRequired = true;
+			if ( MSN_GetStaticString( "Password", NULL, dbStr, sizeof( dbStr )))
+				dbStr[0] = 0;
+			if ( strcmp( screenStr, dbStr ))
+				reconnectRequired = true;
 			MSN_SetString( NULL, "Password", screenStr );
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
-			if ( !MSN_GetStaticString( "Nick", NULL, dbStr, sizeof( dbStr ))) {
-				if ( strcmp( screenStr, dbStr )) {
-					reconnectRequired = true;
-
-					if ( msnLoggedIn )
-						MSN_SendNickname( tEmail, screenStr );
-			}	}
+			if ( MSN_GetStaticString( "Nick", NULL, dbStr, sizeof( dbStr )))
+				dbStr[0] = 0;
+			if ( strcmp( screenStr, dbStr ) && msnLoggedIn )
+				MSN_SendNickname( tEmail, screenStr );
 			MSN_SetString( NULL, "Nick", screenStr );
 
 			BYTE tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
