@@ -1213,6 +1213,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
 				break;
 			if (DbEventIsShown(&dbei, dat)) {
+				if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT))) {
+					if (GetForegroundWindow()==hwndDlg)
+						SkinPlaySound("RecvMsgActive");
+					else SkinPlaySound("RecvMsgInactive");
+				}
 				if (dbei.eventType == EVENTTYPE_MESSAGE && dat->hwndStatus && !(dbei.flags & (DBEF_SENT))) {
 					dat->lastMessage = dbei.timestamp;
 					SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
