@@ -79,6 +79,9 @@
 #define ICQ_NOTIFY_CHATSESSION    7
 #define ICQ_NOTIFY_FILESESSION    8
 
+#define ICQ_MAX_MESSAGE_SIZE	 1024
+#define ICQ_MAX_UDP_MESSAGE_SIZE 480
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

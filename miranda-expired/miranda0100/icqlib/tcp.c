@@ -107,9 +107,10 @@ DWORD icq_TCPSendMessage(icq_Link *icqlink, DWORD uin, const char *message)
   icq_TCPLink *plink;
   icq_Packet *p;
   DWORD sequence;
-  char data[512] ;
+  char data[ICQ_MAX_MESSAGE_SIZE] ;
   
-  strncpy(data,message,512) ;
+  strncpy(data,message,sizeof(data));
+  data[sizeof(data)-1]='\0';
   icq_RusConv("kw", data) ;
 
   plink=icq_TCPCheckLink(icqlink, uin, TCP_LINK_MESSAGE);
@@ -130,12 +131,12 @@ DWORD icq_TCPSendURL(icq_Link *icqlink, DWORD uin, const char *message, const ch
   icq_TCPLink *plink;
   icq_Packet *p;
   DWORD sequence;
-  char data[512];
+  char data[ICQ_MAX_MESSAGE_SIZE];
 
   plink=icq_TCPCheckLink(icqlink, uin, TCP_LINK_MESSAGE);
   
-  strncpy(data, message, 512);
-  data[511] = '\0';
+  strncpy(data, message, sizeof(data));
+  data[sizeof(data)-1] = '\0';
   icq_RusConv("kw", data);
 
   /* create and send the url packet */
@@ -154,12 +155,12 @@ DWORD icq_SendChatRequest(icq_Link *icqlink, DWORD uin, const char *message)
   icq_TCPLink *plink;
   icq_Packet *p;
   DWORD sequence;
-  char data[512];
+  char data[ICQ_MAX_MESSAGE_SIZE];
 
   plink=icq_TCPCheckLink(icqlink, uin, TCP_LINK_MESSAGE);
   
-  strncpy(data, message, 512);
-  data[511] = '\0';
+  strncpy(data, message, sizeof(data));
+  data[sizeof(data)-1] = '\0';
   icq_RusConv("kw", data);
 
   /* create and send the url packet */
@@ -181,7 +182,7 @@ unsigned long icq_SendFileRequest(icq_Link *icqlink, unsigned long uin,
   icq_Packet *p;
   unsigned long sequence;
   char filename[64];
-  char data[512];
+  char data[ICQ_MAX_MESSAGE_SIZE];
 
   plink=icq_TCPCheckLink(icqlink, uin, TCP_LINK_MESSAGE);
 
@@ -206,8 +207,8 @@ unsigned long icq_SendFileRequest(icq_Link *icqlink, unsigned long uin,
 
   strncpy(filename, *(pfile->files), 64);
 
-  strncpy(data, message, 512);
-  data[511] = '\0';
+  strncpy(data, message, sizeof(data));
+  data[sizeof(data)-1] = '\0';
   icq_RusConv("kw", data);  
 
   /* create and send the file req packet */
@@ -258,14 +259,14 @@ void icq_AcceptChatRequest(icq_Link *icqlink, DWORD uin, unsigned long sequence)
 void icq_TCPSendChatData(icq_Link *icqlink, DWORD uin, const char *data)
 {
   icq_TCPLink *plink=icq_FindTCPLink(icqlink, uin, TCP_LINK_CHAT);
-  char data1[512];
+  char data1[ICQ_MAX_MESSAGE_SIZE];
   int data1_len;
 
   if(!plink)
     return;  
 
-  strncpy(data1,data,512) ;
-  data1[511] = '\0';
+  strncpy(data1,data,sizeof(data1)) ;
+  data1[sizeof(data1)-1] = '\0';
   data1_len = strlen(data);
   icq_ChatRusConv_n("kw", data1, data1_len);
 
