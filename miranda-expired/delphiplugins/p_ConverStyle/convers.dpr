@@ -94,7 +94,6 @@ begin
   PluginLink:=link^;
 
   windowmgr:=twindowmanager.Create;
-  blinkid:=0;
 
   //init history functions later
   PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
@@ -128,12 +127,12 @@ begin
   Result:=0;
 end;
 
-function OnReadBlinkMessage(wParam{Contact},lParam{BlinkID}:DWord):integer;cdecl;
+function OnReadBlinkMessage(wParam{hwndContactList},lParam{PCLISTEVENT}:DWord):integer;cdecl;
 //brings to front a hided dialog when incoming messages blink only on contactlist
 var
   msgwindow:TMsgWindow;
 begin
-  msgwindow:=LaunchMessageWindow(PCLISTEVENT(lParam)^.hContact);
+  msgwindow:=LaunchMessageWindow(PCLISTEVENT(lParam).hContact);
 
   msgwindow.Show;
   msgwindow.BringWindowToFront;
@@ -158,8 +157,6 @@ var
   blob:pchar;
 begin
   Result:=0;
-  if blinkid=0 then
-    blinkid:=lParam;
 
   dbei.cbSize:=sizeof(dbei);
   //alloc memory for message
@@ -184,8 +181,6 @@ begin
     begin
     //mark read
     PluginLink.CallService(MS_DB_EVENT_MARKREAD,wParam{hContact},lParam{hDbEvent});
-    //remove flashing icon for incoming message at the contact list
-    PluginLink.CallService(MS_CLIST_REMOVEEVENT,wParam{hContact},lParam{hDbEvent});
     end
   else
     Exit;

@@ -1,6 +1,6 @@
 object OptionForm: TOptionForm
-  Left = -536
-  Top = 332
+  Left = -528
+  Top = 461
   BorderStyle = bsDialog
   Caption = 'Conversation Style Messaging - Options'
   ClientHeight = 368
@@ -58,7 +58,7 @@ object OptionForm: TOptionForm
     Top = 8
     Width = 321
     Height = 305
-    ActivePage = TabSheet3
+    ActivePage = TabSheet1
     TabOrder = 3
     object TabSheet1: TTabSheet
       Caption = 'Misc'

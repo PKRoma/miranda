@@ -75,6 +75,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure TabEnterWorkAroundBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     HistoryMemo:TWinControl;//basic class for memo, richedit and grid
   private//options
@@ -122,6 +123,7 @@ type
     hContact:THandle;
     fCloseWindowAfterSend:Boolean;
     WindowManager:Pointer;
+    fFlashingContactList:Boolean;
     function UIN:integer;
 
     procedure LoadRecentMessages(ExceptLast:Boolean=False);
@@ -163,6 +165,7 @@ begin
   fCloseWindowAfterSend:=False;
   fGridSettings.InclTime:=True;
   fSendTimeout:=DEFAULT_TIMEOUT_MSGSEND;
+  fFlashingContactList:=False;
 
   LoadOptions;
 
@@ -641,6 +644,7 @@ begin
       except
       end;
 
+    try
     case MessageTimeout(mtext) of
       taRetry:
         //just send first event in message again
@@ -654,6 +658,8 @@ begin
         DeleteFirstSendMessageQueueItem;
         SendMessageFromSendQueue;
         end;
+    end;
+    except
     end;
     end;
 end;
@@ -1160,14 +1166,18 @@ begin
     3://blink on contact list
       if not Self.Visible then
       begin
-      cle.cbSize:=sizeof(cle);
-      cle.hContact:=Self.hContact;
-      cle.hDbEvent:=blinkid;
-      cle.lParam:=blinkid;
-      cle.hIcon:=LoadSkinnedIcon(PluginLink,SKINICON_EVENT_MESSAGE);
-      cle.pszService:=PluginService_ReadBlinkMessage;
-      cle.pszTooltip:=pchar(format(translate('Message from %s'),[GetUserNick(Self.hContact)]));
-      PluginLink.CallService(MS_CLIST_ADDEVENT,blinkid,dword(@cle));
+      if not fFlashingContactList then
+        begin
+        cle.cbSize:=sizeof(cle);
+        cle.hContact:=Self.hContact;
+        cle.hDbEvent:=blinkid;
+        cle.lParam:=blinkid;
+        cle.hIcon:=LoadSkinnedIcon(PluginLink,SKINICON_EVENT_MESSAGE);
+        cle.pszService:=PluginService_ReadBlinkMessage;
+        cle.pszTooltip:=pchar(format(translate('Message from %s'),[GetUserNick(Self.hContact)]));
+        PluginLink.CallService(MS_CLIST_ADDEVENT,blinkid,dword(@cle));
+        fFlashingContactList:=True;
+        end;
       end;
   end;
 end;
@@ -1472,5 +1482,12 @@ begin
 end;
 
 
+
+procedure TMsgWindow.FormShow(Sender: TObject);
+begin
+  //remove flashing icon for incoming message at the contact list
+  PluginLink.CallService(MS_CLIST_REMOVEEVENT,dword(hContact),dword(blinkid));
+  fFlashingContactList:=False;
+end;
 
 end.

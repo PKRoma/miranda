@@ -23,6 +23,7 @@ object MsgWindow: TMsgWindow
   OnKeyDown = FormKeyDown
   OnKeyUp = FormKeyUp
   OnResize = FormResize
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter: TSplitter
