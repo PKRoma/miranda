@@ -369,6 +369,8 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
         {  // timeout, check if we should be still running
           if (Miranda_Terminated())
             atsi->stopThread = 1; // we must stop here, cause due to a hack in netlib, we always get timeout, even if the connection is already dead
+          else
+            Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Idle.");
           continue; // TODO: add keep-alive
         }
         Netlib_Logf(ghServerNetlibUser, "Abortive closure of avatar socket");

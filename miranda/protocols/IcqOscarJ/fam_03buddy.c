@@ -380,6 +380,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           }
           else
           { // we found hash check if it changed or not
+            Netlib_Logf(ghServerNetlibUser, "Old Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", dbv.pbVal[0], dbv.pbVal[1], dbv.pbVal[2], dbv.pbVal[3], dbv.pbVal[4], dbv.pbVal[5], dbv.pbVal[6], dbv.pbVal[7], dbv.pbVal[8], dbv.pbVal[9], dbv.pbVal[10], dbv.pbVal[11], dbv.pbVal[12], dbv.pbVal[13], dbv.pbVal[14], dbv.pbVal[15], dbv.pbVal[16], dbv.pbVal[17], dbv.pbVal[18], dbv.pbVal[19], dbv.pbVal[20]);
             if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
             { // the hash is different, request new avatar
               dwJob = 1;
@@ -411,6 +412,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
           if (dwJob)
           {
+            Netlib_Logf(ghServerNetlibUser, "New Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", pTLV->pData[0], pTLV->pData[1], pTLV->pData[2], pTLV->pData[3], pTLV->pData[4], pTLV->pData[5], pTLV->pData[6], pTLV->pData[7], pTLV->pData[8], pTLV->pData[9], pTLV->pData[10], pTLV->pData[11], pTLV->pData[12], pTLV->pData[13], pTLV->pData[14], pTLV->pData[15], pTLV->pData[16], pTLV->pData[17], pTLV->pData[18], pTLV->pData[19], pTLV->pData[20]);
             ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, new hash stored.");
@@ -430,7 +432,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             if (GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar)) 
             { // avatar request sent or added to queue
               if (dwPaFormat == PA_FORMAT_JPEG)
-              {
+              { // TODO: move to separate function for linking avatar file to mToolTip and others
                 DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
                 DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
                 if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szAvatar))

@@ -495,7 +495,7 @@ void* collectBuddyGroup(WORD wGroupID, int *count)
   { // search all contacts
     if (wGroupID == DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0))
     { // add only buddys from specified group
-      wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerID", 0);
+      wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
 
       if (wItemID)
       { // valid ID, add
@@ -669,6 +669,7 @@ char* makeGroupPath(WORD wGroupId)
 
   if (szGroup = getServerGroupName(wGroupId))
   { // this groupid is not valid
+    while (strstr(szGroup, "\\")!=NULL) *strstr(szGroup, "\\") = '_'; // remove invalid char
     if (getServerGroupID(szGroup) == wGroupId)
     { // this grouppath is known and is for this group, set user group
       return szGroup;
@@ -749,14 +750,17 @@ char* makeGroupPath(WORD wGroupId)
 WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam)
 {
   WORD wGroupID = 0;
+  char* szGroup = (char*)szGroupPath;
 
-  if (wGroupID = getServerGroupID(szGroupPath))
+  if (!szGroup || szGroup[0]=='\0') szGroup = "General"; // TODO: make some default group name
+
+  if (wGroupID = getServerGroupID(szGroup))
   {
-    if (ofCallback) ofCallback(szGroupPath, wGroupID, (LPARAM)lParam);
+    if (ofCallback) ofCallback(szGroup, wGroupID, (LPARAM)lParam);
     return wGroupID; // if the path is known give the id
   }
 
-  if (!strstr(szGroupPath, "\\"))
+  if (!strstr(szGroup, "\\"))
   { // a root group can be simply created without problems
     servlistcookie* ack;
     DWORD dwCookie;
@@ -774,7 +778,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
       dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
 
       sendAddStart();
-      icq_sendGroup(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szGroupPath, NULL, 0);
+      icq_sendGroup(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szGroup, NULL, 0);
 
       return 0;
     }
@@ -784,9 +788,9 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
     // TODO: create subgroup, recursive, event-driven, possibly relocate 
   }
   
-  if (strstr(szGroupPath, "\\") != NULL)
+  if (strstr(szGroup, "\\") != NULL)
   { // we failed to get grouppath, trim it to root group
-    strstr(szGroupPath, "\\")[0] = '\0';
+    strstr(szGroup, "\\")[0] = '\0';
     return makeGroupId(szGroupPath, ofCallback, lParam);
   }
 

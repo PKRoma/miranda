@@ -294,6 +294,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           sendAddEnd(); // end server modifications here
         }
       }
+      break;
     }
   case SSA_GROUP_ADD:
     {
@@ -823,12 +824,16 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
               Netlib_Logf(ghServerNetlibUser, "Failed to convert Groupname '%s' from UTF-8", pszName);
             }
           }
-          
           setServerGroupName(wGroupId, pszName);
 
           Netlib_Logf(ghServerNetlibUser, "Group %s added to known groups.", pszName);
 					if (wDefaultGroupId == 0 || !strlen(pszRecordName) > 0) // TODO: remove
 						wDefaultGroupId = wGroupId;	  /* need to save one group ID so that we can do valid upload packets */
+
+          SAFE_FREE(&pszName);
+          /* demangle full grouppath, create groups, set it to known */
+          pszName = makeGroupPath(wGroupId); 
+          SAFE_FREE(&pszName);
 
           /* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */
           /* our processing is good enough that we don't need this duplication */
