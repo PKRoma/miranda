@@ -719,13 +719,12 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
 		{	int i;
-			int minHeight=1;//GetSystemMetrics(SM_CYSMICON) + 1;
+			int minHeight=GetSystemMetrics(SM_CYSMICON);
 			for(i=0;i<=FONTID_MAX;i++)
 				if(fontSettings[i].size>minHeight) minHeight=fontSettings[i].size;
 			i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
-			//if(i<minHeight) 
+			if(i<minHeight) 
 				SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
-			//SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETRANGE,0,MAKELONG(255,minHeight));
 			break;
 		}
 		case M_LOADFONT:	//load font wParam into the controls
@@ -831,7 +830,10 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						case PSN_APPLY:
 							{	int i;
 								char str[20];
-
+								
+								// Force min height calculation
+								// This prevents users from setting the row height to be too low
+								SendMessage(hwndDlg,M_REDOROWHEIGHT,0,0);
 								for(i=0;i<=FONTID_MAX;i++) {
 									wsprintf(str,"Font%dName",i);
 									DBWriteContactSettingString(NULL,"CLC",str,fontSettings[i].szFace);
