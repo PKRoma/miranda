@@ -1340,8 +1340,8 @@ begin
   lSetKeyNull:=False;
 
   //STRG+ENTER and STRG+S shortcut for sending
-  if ((key in [ord('s'),ord('S')]) and (ssCtrl in Shift)) or
-    ((key = vk_return) and ((ssCtrl in Shift) or (ssAlt in Shift))) then
+  if ((key in [ord('s'),ord('S')]) and ([ssCtrl] = Shift)) or
+    ((key = vk_return) and (([ssCtrl] = Shift) or ([ssAlt] = Shift))) then
     begin
     key:=0;
     lSetKeyNull:=True;
@@ -1350,7 +1350,7 @@ begin
     end;
 
   //ALT Shortcuts
-  if (ssAlt in Shift) then
+  if Shift=[ssAlt] then
     begin
     if key in [ord('s'),ord('S')] then
       if SendBtn.Enabled then
