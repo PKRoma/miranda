@@ -2393,8 +2393,7 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Please complete the following form to create a new user profile",
                     IDC_STATIC,7,7,212,10
-    EDITTEXT        IDC_PROFILENAME,49,27,75,12,ES_LOWERCASE | 
-                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_PROFILENAME,49,27,75,12,ES_AUTOHSCROLL
     COMBOBOX        IDC_PROFILEDRIVERS,49,72,75,56,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "Profile",IDC_STATIC,20,28,26,9
