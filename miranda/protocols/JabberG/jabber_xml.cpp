@@ -351,7 +351,7 @@ static BOOL JabberXmlProcessElem( XmlState *xmlState, XmlElemType elemType, char
 				( *( xmlState->callback1_close ))( node, xmlState->userdata1_close );
 				JabberXmlRemoveChild( parentNode, node );
 			}
-			if ( node->depth==2 && xmlState->callback2_close!=NULL ) {
+			else if ( node->depth==2 && xmlState->callback2_close!=NULL ) {
 				( *xmlState->callback2_close )( node, xmlState->userdata2_close );
 				JabberXmlRemoveChild( parentNode, node );
 			}
