@@ -286,13 +286,14 @@ void aim_buddy_update(char *nick, int online, int type, int idle, int evil, time
 
 void aim_buddy_parseconfig(char *config)
 {
-    LOG(LOG_DEBUG, "aim_buddy_parseconfig: Parsing configuation from server if using server-side lists");
     if (!config)
         return;
     if (hServerSideList) {
         char *c, group[256];
         HANDLE hContact;
-
+        TList *buddies = NULL;
+        
+        LOG(LOG_DEBUG, "Parsing configuation from server");
         group[0] = '\0';
         if (config != NULL) {
             c = strtok(config, "\n");
@@ -310,9 +311,10 @@ void aim_buddy_parseconfig(char *config)
                     _snprintf(nm, sizeof(nm), c + 2);
                     if (!aim_buddy_delaydeletecheck(nm)) {
                         LOG(LOG_DEBUG, "Parsed buddy from server config (%s) in %s", nm, group);
-                        hContact = aim_buddy_get(nm, 1, 1, 0, group);
+                        hContact = aim_buddy_get(nm, 1, 1, 1, group);
                         if (hContact) {
                             DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 1);
+                            buddies = tlist_append(buddies, _strdup(nm));
                         }
                     }
                 }
@@ -344,6 +346,33 @@ void aim_buddy_parseconfig(char *config)
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SM, m);
                 }
             } while ((c = strtok(NULL, "\n")));
+        }
+        {   // Update new contacts on the server
+            if (buddies) {
+                TList *n = buddies;
+                char *un;
+
+                char mbuf[MSG_LEN * 2];
+                int buflen = 0;
+
+                strcpy(mbuf, "toc_add_buddy ");
+                buflen = strlen(mbuf);
+                while(n) {
+                    un = (char*)n->data;
+                    if (un&&strlen(un)&&(buflen+strlen(un)+1<MSG_LEN*2)) {
+                        strcat(mbuf, un);
+                        strcat(mbuf, " ");
+                        buflen = strlen(mbuf);
+                    }
+                    if (un) free((char*)n->data);
+                    n = n->next;
+                }
+                if (strlen(mbuf)>strlen("toc_add_buddy ")) {
+                    LOG(LOG_DEBUG, "Updating new contacts on the server");
+                    aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
+                }
+                tlist_free(buddies);
+            }
         }
         aim_buddy_updateconfig(1);
     }
