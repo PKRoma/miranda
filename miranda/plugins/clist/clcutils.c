@@ -541,17 +541,20 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 		for(i=0;i<=FONTID_MAX;i++) {
 			if(!dat->fontInfo[i].changed) DeleteObject(dat->fontInfo[i].hFont);
 			GetFontSetting(i,&lf,&dat->fontInfo[i].colour);
-			if (0) {
+			{
+				LONG height;
 				HDC hdc=GetDC(NULL);
+				height=lf.lfHeight;
 				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 				ReleaseDC(NULL,hdc);				
+				dat->fontInfo[i].hFont=CreateFontIndirect(&lf);
+				lf.lfHeight=height;
 			}
-			dat->fontInfo[i].hFont=CreateFontIndirect(&lf);
 			dat->fontInfo[i].changed=0;
 			SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc,"x",1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
-			if(fontSize.cy+2>dat->rowHeight) dat->rowHeight=fontSize.cy+2;
+			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
 		}
 		ReleaseDC(hwnd,hdc);
 	}

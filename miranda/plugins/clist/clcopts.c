@@ -445,7 +445,7 @@ struct {
 } static fontSettings[FONTID_MAX+1];
 #include <poppack.h>
 static WORD fontSameAsDefault[FONTID_MAX+1]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02};
-static char *fontSizes[]={"8","10","14","16","18","20","24","28"};
+static char *fontSizes[]={"6","8","10","14","16","18","20","24","28"};
 static int fontListOrder[FONTID_MAX+1]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_GROUPS,FONTID_GROUPCOUNTS,FONTID_DIVIDERS};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
@@ -551,7 +551,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						HFONT hFont=CreateFontIndirect(&lf);
 						hdc=GetDC(hwndDlg);
 						SelectObject(hdc,hFont);
-						GetTextExtentPoint32(hdc,"x",1,&size);
+						GetTextExtentPoint32(hdc,"_W",2,&size);
 						ReleaseDC(hwndDlg,hdc);
 						DeleteObject(hFont);
 						fontSettings[fontId].size=(char)size.cy;
@@ -666,7 +666,12 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SendDlgItemMessage(hwndDlg,IDC_SAMPLE,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDC_FONTID,WM_GETFONT,0,0),0);
 				DeleteObject(hFontSample);
 			}
-			lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);
+			lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);			
+			{
+				HDC hdc=GetDC(NULL);				
+				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+				ReleaseDC(NULL,hdc);				
+			}
 			lf.lfWidth=lf.lfEscapement=lf.lfOrientation=0;
 			lf.lfWeight=IsDlgButtonChecked(hwndDlg,IDC_BOLD)?FW_BOLD:FW_NORMAL;
 			lf.lfItalic=IsDlgButtonChecked(hwndDlg,IDC_ITALIC);
@@ -715,11 +720,12 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
 		{	int i;
-			int minHeight=1;//GetSystemMetrics(SM_CYSMICON);
+			int minHeight=5;//GetSystemMetrics(SM_CYSMICON);
 			for(i=0;i<=FONTID_MAX;i++)
-				if(fontSettings[i].size+2>minHeight) minHeight=fontSettings[i].size+2;
+				if(fontSettings[i].size>minHeight) minHeight=fontSettings[i].size;
 			i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
-			if(i<minHeight) SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
+			//if(i<minHeight) 
+				SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
 			SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETRANGE,0,MAKELONG(255,minHeight));
 			break;
 		}
