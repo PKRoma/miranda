@@ -516,6 +516,7 @@
 #define IDC_AALONGIDLE                  1656
 #define IDC_ONDESKTOP                   1657
 #define IDC_WINCOLOUR                   1659
+#define IDC_ICONBLINK                   1660
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -546,7 +547,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        269
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1660
+#define _APS_NEXT_CONTROL_VALUE         1661
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
