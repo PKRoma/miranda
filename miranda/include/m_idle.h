@@ -54,7 +54,7 @@ typedef struct {
 	int cbSize;			     // sizeof()
 	unsigned int idleTime;	 // idle in mins, if zero then disabled
 	int privacy;		     // user doesnt want other people seeing anything more than they are idle
-    unsigned short aaStatus; // status to go to when user is auto away
+    int aaStatus; // status to go to when user is auto away
     
 } MIRANDA_IDLE_INFO;
 
