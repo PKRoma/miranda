@@ -1505,6 +1505,36 @@ BEGIN
     GROUPBOX        "Status Change on Idle",IDC_STATIC,4,129,303,45
 END
 
+IDD_PROFILE_SELECTION DIALOG DISCARDABLE  0, 0, 226, 142
+STYLE WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "List1",IDC_PROFILELIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | 
+                    WS_TABSTOP,3,2,222,137
+END
+
+IDD_PROFILE_NEW DIALOG DISCARDABLE  0, 0, 226, 142
+STYLE WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Please complete the following form to create a new user profile",
+                    IDC_STATIC,7,7,212,10
+    EDITTEXT        IDC_PROFILENAME,49,27,75,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_PROFILEDRIVERS,49,72,75,56,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Profile",IDC_STATIC,20,28,26,9
+    LTEXT           "e.g. Workplace",IDC_STATIC,131,28,77,11,WS_DISABLED
+    LTEXT           "You can select a different profile driver from the default, it may offer more features or abilities, if in doubt use the default.",
+                    IDC_STATIC,7,49,212,17
+    LTEXT           "e.g. 3.xx profile",IDC_STATIC,131,73,77,11,WS_DISABLED
+    LTEXT           "Driver",IDC_STATIC,20,74,23,9
+    LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",
+                    IDC_NODBDRIVERS,7,113,212,22,NOT WS_VISIBLE
+END
+
 IDD_OPT_PLUGINS DIALOG DISCARDABLE  0, 0, 315, 247
 STYLE WS_CHILD
 FONT 8, "MS Shell Dlg"
@@ -2043,6 +2073,20 @@ BEGIN
         VERTGUIDE, 302
     END
 
+    IDD_PROFILE_SELECTION, DIALOG
+    BEGIN
+        RIGHTMARGIN, 225
+        BOTTOMMARGIN, 141
+    END
+
+    IDD_PROFILE_NEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 135
+    END
+
     IDD_OPT_PLUGINS, DIALOG
     BEGIN
         BOTTOMMARGIN, 235
@@ -2287,77 +2331,6 @@ END
 #endif    // !_MAC
 
 #endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.K.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_PROFILE_SELECTION DIALOG DISCARDABLE  0, 0, 226, 142
-STYLE WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
-FONT 8, "MS Shell Dlg"
-BEGIN
-    CONTROL         "List1",IDC_PROFILELIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | 
-                    WS_TABSTOP,3,2,222,137
-END
-
-IDD_PROFILE_NEW DIALOG DISCARDABLE  0, 0, 226, 142
-STYLE WS_CHILD
-FONT 8, "MS Shell Dlg"
-BEGIN
-    LTEXT           "Please complete the following form to create a new user profile",
-                    IDC_STATIC,7,7,212,10
-    EDITTEXT        IDC_PROFILENAME,49,27,75,12,ES_AUTOHSCROLL
-    COMBOBOX        IDC_PROFILEDRIVERS,49,72,75,56,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Profile",IDC_STATIC,20,28,26,9
-    LTEXT           "e.g. Workplace",IDC_STATIC,131,28,77,11,WS_DISABLED
-    LTEXT           "You can select a different profile driver from the default, it may offer more features or abilities, if in doubt use the default.",
-                    IDC_STATIC,7,49,212,17
-    LTEXT           "e.g. 3.xx profile",IDC_STATIC,131,73,77,11,WS_DISABLED
-    LTEXT           "Driver",IDC_STATIC,20,74,23,9
-    LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",
-                    IDC_NODBDRIVERS,7,113,212,22,NOT WS_VISIBLE
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
-BEGIN
-    IDD_PROFILE_SELECTION, DIALOG
-    BEGIN
-        RIGHTMARGIN, 225
-        BOTTOMMARGIN, 141
-    END
-
-    IDD_PROFILE_NEW, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 135
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // English (U.K.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
