@@ -23,7 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../../core/commonheaders.h"
 #include "netlib.h"
-//#define alloca(a) _alloca((a))
+
+#define MS_NETLIB_LOGWIN "Netlib/Log/Win"
 
 extern HANDLE hConnectionHeaderMutex;
 
@@ -171,11 +172,12 @@ static void ClearConsole(void)
     }
 }
 
-static void SendConsoleMessage(char *msg) 
+static int SendConsoleMessage(WPARAM wParam, LPARAM lParam) 
 {
     if (IsWindow(logOptions.hwndLog)) {
-        SendMessage(logOptions.hwndLog, DM_LOG, (WPARAM)msg, 0);
+        SendMessage(logOptions.hwndLog, DM_LOG, wParam, 0);
     }
+    return 0;
 }
 
 static void ShowConsole(void)
@@ -450,7 +452,7 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 		sprintf(szLine,"%s\r\n",pszMsg);
 	EnterCriticalSection(&logOptions.cs);
 	if(logOptions.toConsole) {
-        SendConsoleMessage(szLine);
+        CallServiceSync(MS_NETLIB_LOGWIN, (WPARAM)szLine, 0);
 	}
 	if(logOptions.toOutputDebugString) OutputDebugString(szLine);
 	if(logOptions.toFile && logOptions.szFile[0]) {
@@ -579,6 +581,7 @@ void NetlibLogInit(void)
 	LARGE_INTEGER li;
 
 	CreateServiceFunction(MS_NETLIB_LOG,NetlibLog);
+    CreateServiceFunction(MS_NETLIB_LOGWIN,SendConsoleMessage);
 	QueryPerformanceFrequency(&li);
 	perfCounterFreq=li.QuadPart;
 	QueryPerformanceCounter(&li);
