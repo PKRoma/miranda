@@ -761,7 +761,7 @@ static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 		dbcws.szModule=dbcgs->szModule;
 		dbcws.szSetting=dbcgs->szSetting;
 		dbcws.value.type=DBVT_DELETED;
-		NotifyEventHooks(hSettingChangeEvent,wParam,(LPARAM)&dbcws);
+		NotifyEventHooks(hSettingChangeEvent,saveWparam,(LPARAM)&dbcws);
 	}
 	return 0;
 }
