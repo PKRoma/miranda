@@ -25,8 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "database.h"
 #include <m_plugins.h>
 
-extern HANDLE hDbFile;
-extern struct DBHeader dbHeader;
 struct MM_INTERFACE memoryManagerInterface;
 extern char szDbPath[MAX_PATH];
 
@@ -103,20 +101,6 @@ static int grokHeader( char * profile, int * error )
 	return rc;
 }
 
-static int getReady( char * profile ) 
-{
-	DWORD dummy=0;
-	hDbFile=CreateFile(profile,GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
-	if ( hDbFile == INVALID_HANDLE_VALUE ) {
-		return 1;
-	}
-	if ( !ReadFile(hDbFile,&dbHeader,sizeof(dbHeader),&dummy,NULL) ) {
-		CloseHandle(hDbFile);
-		return 1;
-	}
-	return 0;
-}
-
 // returns 0 if all the APIs are injected otherwise, 1
 static int LoadDatabase( char * profile, PLUGINLINK * link )
 {
@@ -154,7 +138,6 @@ static DATABASELINK dblink = {
 	getFriendlyName,
 	makeDatabase,
 	grokHeader,
-	getReady,
 	LoadDatabase,
 	UnloadDatabase,	
 };
