@@ -66,7 +66,8 @@ Version 0.9.9.0 - 2005/01/08 - BETA
         
         ! the error control buttons were not translateable. Fixed.
         
-        * metacontacts support: unforce protocol added to tab closing code.
+        * metacontacts support: unforce protocol added to tab closing code and the
+          context menu in the status bar.
         
         * tabsrmm can now display notifications and debug messages using ballon-type
           tray notifications. This feature no longer depends on the popup plugin.
@@ -88,6 +89,12 @@ Version 0.9.9.0 - 2005/01/08 - BETA
           and the active protocol.
           
         ! (hopefully) fixed a possible "crash at exit" problem.
+        
+        + session stats tracking code added. tabSRMM will now track the stats of a
+          session, including the session length, the number of sent and received
+          messages, the total amount of sent and received characters, and the number
+          of delivery failures.
+          There is no code (yet) to display these stats though.
         
 Version 0.0.9.5 - 2005/01/04
 

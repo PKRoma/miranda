@@ -1049,10 +1049,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     if (dat != 0)
         dat->iTabID = GetTabIndexFromHWND(hwndTab, hwndDlg);
     else {
-        if(dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS)) {
-            //_DebugPopup(NULL, "dat == 0 on %x (window = %d)", msg, hwndDlg);
+        if(dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
             return 0;
-        }
         
     }
     switch (msg) {
@@ -2524,7 +2522,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                 }
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                 break;
             }
         case DM_CHECKSIZE:
@@ -4608,8 +4606,6 @@ static void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat)
 static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
-        char szTipText[256];
-        CONTACTINFO ci;
 
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
@@ -4958,7 +4954,6 @@ static void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat)
     DBEVENTINFO dbei;
     char buffer[450];
     HANDLE hNewEvent;
-    int iLen;
     time_t now = time(NULL);
     now = now - dat->stats.started;
 

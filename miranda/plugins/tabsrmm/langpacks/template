@@ -1,0 +1,368 @@
+;this is a template for translating tabSRMM
+
+;
+tabSRMM Version 0.9.9.0 - 2005/01/10
+
+; global strings
+
+[OK]
+
+[Ok]
+
+[Cancel]
+
+[Retry]
+
+[Send later]
+
+
+;
+; -------- option pages ---------
+;
+; fonts and color option page.
+
+[Message Window Fonts]
+
+[same]
+
+[Typeface]
+
+[Size]
+
+[Style]
+
+[Color]
+
+[as:]
+
+[Bold]
+
+[Italic]
+
+[Underline]
+
+[Background colors]
+
+[Default background]
+
+[Input area background]
+
+[Outgoing background:]
+
+[Incoming background:]
+
+[Use multiple background colors]
+
+; ------------------------
+; ----------------- container options page (global, set container mode and stuff...) ------------
+; ------------------------
+
+[To set container options, please use the container settings dialog. It is avalable by:\n1. chossing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.]
+
+[Container mode]
+
+[Use contact list group names for organizing containers]
+
+[Maximum number of tabs per container]
+
+[Use single window mode (one container per session)]
+
+[Set display name for the default container (instead of just ""default"")]
+
+[Use default container mode (manual contact assignments)]
+
+; ------------------------
+; ----------------- select container dialog box
+; ------------------------
+
+[Available containers]
+
+[Create new]
+
+[Create a new container]
+
+[Delete]
+
+[Rename]
+
+; ------------------------
+; ----------------- message tab options
+; ------------------------
+
+[Tab options]
+
+[Limit nicknames on tabs to]
+
+[characters]
+
+[Show full name as a tooltip over tabs]
+
+[Show status text on tabs]
+
+[Warn on close message tab]
+
+[Vertical tab padding]
+
+[pixel]
+
+[pixels]
+
+[Automatically create tabs in the background]
+
+[NOTE: these settings have no effect if you are using the ""auto popup"" feature.]
+
+[Auto create tab on event]
+
+[Popup container if minimized]
+
+[Also create Container, but do not activate it.]
+
+[Message dialog layout]
+
+[Use flat buttons]
+
+[Show full UIN on toolbar]
+
+[Tab control border]
+
+[Miscellaneous options]
+
+[Activate autolocale support]
+
+[Input history:]
+
+[entries]
+
+[Use ESC key for closing sessions]
+
+[Use global hotkeys for finding message sessions]
+
+[Modifiers]
+
+[Splitters have static edges]
+
+; ------------------------
+; ----------------- typing notify options
+; ------------------------
+
+[Typing Notification Options]
+
+[Send typing notifications to the following users when you are typing a message to the them:]
+
+[Show typing notifications when a user is typing a message]
+
+[Update inactive message window icons when a user is typing]
+
+[Show typing notification when no message dialog is open]
+
+[Flash in the system tray and in the contact list]
+
+[Show balloon popup]
+
+; ------------------------
+; ----------------- message log options
+; ------------------------
+
+[Items to show]
+
+[Show url events]
+
+[Show icons]
+
+[Use in/out icons]
+
+[Show nicknames]
+
+[Show times]
+
+[Show dates]
+
+[Show seconds]
+
+[Other options]
+
+[Enable message log scrolling hotkeys]
+
+[Log status changes]
+
+[Remove trailing empty lines]
+
+[Ignore per-contact message log settings]
+
+[Formatting options]
+
+[Message body in a new line]
+
+[Underline timestamp/nickname]
+
+[Show timestamp after nickname]
+
+[Draw grid lines]
+
+[Indent message body]
+
+[(pixels)]
+
+[Left]
+
+[Right]
+
+[Load History Events]
+
+[Load unread events only]
+
+[Load number of previous events]
+
+[Load previous events less than]
+
+[minutes old]
+
+[Use message grouping]
+
+[Use relative timestamps]
+
+[Use long date format]
+
+[Mark followup messages with timestamps]
+
+; ------------------------
+; ----------------- message dialog options
+; ------------------------
+
+[Message Window Options]
+
+[Automatically pop up the window/tab when a message is received]
+
+[Use the contact's status icon as the window icon]
+
+[Automatically switch tabs in minimized containers]
+
+[Place dividers in inactive sessions]
+
+[Use popup configuration for placing dividers]
+
+[Show 'Send' button]
+
+[Show protocol icon and userID field.]
+
+[Show toolbar buttons]
+
+[Minimize the message window on send]
+
+[Send message on 'Enter']
+
+[Show warning when message has not been received after]
+
+[seconds.]
+
+[Resize avatar larger than]
+
+[pixels in height]
+
+[Use threaded streaming (RESTART Miranda if you change this)]
+
+[Show avatars]
+
+[Globally on]
+
+[On for protocols with avatar support]
+
+[Per contact setting]
+
+[On, if present]
+
+[Globally OFF]
+
+[Dynamically resize avatars depending on splitter position]
+
+[Automatically close tabs after]
+
+[minutes of inactivity (0 = disable)]
+
+[Also auto-close the last tab and its container]
+
+[Send on SHIFT - Enter]
+
+[Enable event API (support for third party plugins)]
+
+[Delete temporary contacts on close]
+
+[Notifications:]
+
+[None]
+
+[Tray notifications]
+
+[Popups]
+
+; ------------------------
+; ----------------- container options page (the per container setting stuff)
+; ------------------------
+
+[General settings]
+
+[Hide title bar]
+
+[Only show the tab bar when it is needed]
+
+[Enable popups if minimized]
+
+[Container stays on top]
+
+[Flashing options]
+
+[Use default setting]
+
+[Flash until focused]
+
+[Disable flashing]
+
+[Titlebar options]
+
+[Show contacts name]
+
+[Show contacts status]
+
+[Show container name in titlebar]
+
+[Never]
+
+[As prefix]
+
+[As suffix]
+
+[Container transparency]
+
+[Enable transparency]
+
+[active]
+
+[inactive]
+
+[Set these values as defaults for new containers]
+
+[Load defaults]
+
+[Apply]
+
+[Enable popups if unfocused]
+
+[Always enable popups for]
+
+[inactive tabs]
+
+[only valid if name is also shown]
+
+[Layout options]
+
+[Single row tab control]
+
+[Sync sounds with popup mode]
+
+[Hide the status bar]
+
+[Hide the menu bar]
+
+[Tabs at the bottom]
+
+

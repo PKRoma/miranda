@@ -1738,14 +1738,10 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
     struct ContainerWindowData *pCurrent = pFirstContainer;
 
     if (pContainer == pFirstContainer) {
-        if(pContainer->pNextContainer != NULL) {
+        if(pContainer->pNextContainer != NULL)
             pFirstContainer = pContainer->pNextContainer;
-            _DebugPopup(0, "Removed first container");
-        }
-        else {
-            _DebugPopup(0, "Removed first container (none left)");
+        else
             pFirstContainer = NULL;
-        }
         return pFirstContainer;
     }
 
@@ -2164,9 +2160,10 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
     HMENU hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
     DBVARIANT dbv;
     int iNumProtos = 0, i = 0, iDefaultProtoByNum = 0;
-    char szTemp[50], *szProtoMostOnline = NULL, szMenuLine[128], *nick = NULL;
+    char szTemp[50], *szProtoMostOnline = NULL, szMenuLine[128], *nick = NULL, *szStatusText = NULL;
     HANDLE hContactMostOnline, handle;
     DWORD iChecked, isForced;
+    WORD wStatus;
     
     struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
     if(dat == NULL)
@@ -2180,7 +2177,7 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
     hMCSubForce = CreatePopupMenu();
     hMCSubDefault = CreatePopupMenu();
 
-    AppendMenuA(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, "Meta Contact");
+    AppendMenuA(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, Translate("Meta Contact"));
     AppendMenuA(hMenu, MF_SEPARATOR, 1, "");
 
     iNumProtos = (int)CallService(MS_MC_GETNUMCONTACTS, (WPARAM)dat->hContact, 0);
@@ -2194,10 +2191,13 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
         if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
         _snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
-        if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0)
+        if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0) {
             nick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, 0);
-        
-        _snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s %s", dbv.pszVal, nick, i == isForced ? "(Forced)" : "");
+            _snprintf(szTemp, sizeof(szTemp), "Status%d", i);
+            wStatus = (WORD)DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0);
+            szStatusText = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, 0);
+        }
+        _snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s [%s] %s", dbv.pszVal, nick, szStatusText, i == isForced ? Translate("(Forced)") : "");
         iChecked = MF_UNCHECKED;
         if(hContactMostOnline != 0 && hContactMostOnline == handle)
             iChecked = MF_CHECKED;
@@ -2205,8 +2205,8 @@ static HMENU BuildMCProtocolMenu(HWND hwndDlg)
         AppendMenuA(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
         DBFreeVariant(&dbv);
     }
-    AppendMenuA(hMCSubForce, MF_SEPARATOR, 1, "");
-    AppendMenuA(hMCSubForce, MF_STRING | isForced == -1 ? MF_CHECKED : MF_UNCHECKED, 999, "Autoselect");
+    AppendMenuA(hMCSubForce, MF_SEPARATOR, 900, "");
+    AppendMenuA(hMCSubForce, MF_STRING | ((isForced == -1) ? MF_CHECKED : MF_UNCHECKED), 999, Translate("Autoselect"));
     InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, Translate("Use Protocol"));
     InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, Translate("Set Default Protocol"));
     

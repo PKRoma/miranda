@@ -673,7 +673,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         {
 #if defined( _UNICODE )
             wchar_t *msg;
-            wchar_t tmp;
 #else
             BYTE *msg;
 #endif
@@ -690,7 +689,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 int msglen = strlen((char *) dbei.pBlob) + 1;
                 if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                     dat->stats.lastReceivedChars = msglen - 1;
-                if (dbei.cbBlob >= (3 * msglen)) {         // FIXME!!! possible unicode issue?
+                if (dbei.cbBlob >= (DWORD)(3 * msglen)) {         // FIXME!!! possible unicode issue?
                     msg = (TCHAR *) & dbei.pBlob[msglen];
                     if(wcslen(msg) == (msglen - 1) && msg[msglen - 1] == (wchar_t)0x000) {
                         if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)

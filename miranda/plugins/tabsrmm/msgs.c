@@ -460,7 +460,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
     }
     // check popup config to decide wheter tray notification should be shown.. even for open windows/tabs
     if(hwnd) {
-        foundWin = MessageWindowOpened(0, hwnd);
+        foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
     }
     else
         foundWin = 0;
@@ -1052,8 +1052,8 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	newData.pContainer = pContainer;
     newData.iActivate = (int) bActivateTab;
     pContainer->iChilds++;
-    SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
     hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), GetDlgItem(pContainer->hwnd, IDC_MSGTABS), DlgProcMessage, (LPARAM) &newData);
+    SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
     // if the container is minimized, then pop it up...
     if(IsIconic(pContainer->hwnd)) {
         if(bPopupContainer) {

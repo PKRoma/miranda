@@ -860,6 +860,8 @@
 				RelativePath="MAKEFILE.W32.ANSI">
 			</File>
 			<File
+				RelativePath="MetaContacts.TXT"/>
+			<File
 				RelativePath="POPUPS.TXT">
 			</File>
 			<File
@@ -868,6 +870,8 @@
 			<File
 				RelativePath=".\readme.txt">
 			</File>
+			<File
+				RelativePath="langpacks\template"/>
 			<File
 				RelativePath="translation.txt">
 			</File>
