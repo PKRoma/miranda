@@ -118,6 +118,13 @@ static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			mmi->ptMinTrackSize.y = 100;
 			return 0;
 		}
+        case WM_CTLCOLOREDIT:
+            if((HWND)lParam==GetDlgItem(hwndDlg,IDC_LOG)) {
+                SetTextColor((HDC)wParam,RGB(255,255,255));
+                SetBkColor((HDC)wParam,RGB(0,0,0));
+                return (BOOL)GetStockObject(BLACK_BRUSH);
+            }
+            break;
         case WM_DESTROY:
             Utils_SaveWindowPosition(hwndDlg,NULL,"Netlib","log");
             break;
