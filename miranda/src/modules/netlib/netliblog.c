@@ -28,18 +28,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE hConnectionHeaderMutex;
 
-#define DM_CLEARLOG (WM_USER+1)
-#define DM_LOG      (WM_USER+2)
-#define DMO_UPDATE  (WM_USER+3)
-
 #define TIMEFORMAT_NONE         0
 #define TIMEFORMAT_HHMMSS       1
 #define TIMEFORMAT_MILLISECONDS 2
 #define TIMEFORMAT_MICROSECONDS 3
 struct {
 	HWND hwndOpts;
-    HWND hwndLog;
-	int toConsole;
 	int toOutputDebugString;
 	int toFile;
 	char *szFile;
@@ -52,147 +46,6 @@ struct {
 static __int64 mirandaStartTime,perfCounterFreq;
 
 static const char *szTimeFormats[]={"No times","Standard hh:mm:ss times","Times in milliseconds","Times in microseconds"};
-
-static int IsConsoleVisible(void)
-{
-	if (IsWindow(logOptions.hwndLog)) {
-        return IsWindowVisible(logOptions.hwndLog)?1:0;
-    }
-    else {
-        return 0;
-    }
-}
-
-static int ConsoleResizeProc(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc) 
-{
-    switch(urc->wId) {
-        case IDC_LOG:
-            return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
-    }
-    return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
-}
-
-static void UpdateConsoleOpts(void)
-{
-    if (logOptions.hwndOpts) {
-        SendMessage(logOptions.hwndOpts, DMO_UPDATE, 0, 0);
-    }
-}
-
-static UINT uLen = 0;
-static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-        {
-            HFONT hFont = CreateFont(14,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FIXED_PITCH|FF_DONTCARE,"Courier New");
-            SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETFONT, (WPARAM)hFont, 0);
-            SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL)));
-            {
-                int x, y, w, h;
-
-                x = DBGetContactSettingDword(NULL, "Netlib", "logx", -1);
-                y = DBGetContactSettingDword(NULL, "Netlib", "logy", -1);
-                w = DBGetContactSettingDword(NULL, "Netlib", "logwidth", -1);
-                h = DBGetContactSettingDword(NULL, "Netlib", "logheight", -1);
-                if (x!=-1 && y!=-1 && w!=-1 && h!=-1) {
-                    WINDOWPLACEMENT wp;
-
-                    GetWindowPlacement(hwndDlg, &wp);
-		            wp.rcNormalPosition.left = x;
-		            wp.rcNormalPosition.top = y;
-		            wp.rcNormalPosition.right = wp.rcNormalPosition.left + w;
-		            wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + h;
-                    wp.flags = 0;
-                    wp.showCmd = SW_HIDE;
-                    SetWindowPlacement(hwndDlg, &wp);
-                }
-                else ShowWindow(hwndDlg, SW_HIDE);
-            }
-            return TRUE;
-        }
-        case DM_CLEARLOG:
-            SetDlgItemText(hwndDlg, IDC_LOG, "");
-            uLen = 0;
-            break;
-        case DM_LOG:
-        {
-            char *str = (char*)wParam;
-            if (!str) break;
-            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, uLen, uLen);
-            uLen += lstrlen(str);
-            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, 0, (WPARAM)str);
-            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SCROLLCARET, 0, 0);
-            break;
-        }
-		case WM_SIZE:
-		{	
-            UTILRESIZEDIALOG urd;
-
-			if(IsIconic(hwndDlg)) break;
-			ZeroMemory(&urd, sizeof(urd));
-			urd.cbSize = sizeof(urd);
-			urd.hInstance = GetModuleHandle(NULL);
-			urd.hwndDlg = hwndDlg;
-			urd.lpTemplate = MAKEINTRESOURCE(IDD_NETLIBLOG);
-			urd.pfnResizer = ConsoleResizeProc;
-			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
-			break;
-		}
-		case WM_GETMINMAXINFO:
-		{	
-            MINMAXINFO *mmi = (MINMAXINFO*)lParam;
-			mmi->ptMinTrackSize.x = 200;
-			mmi->ptMinTrackSize.y = 100;
-			return 0;
-		}
-        case WM_CTLCOLOREDIT:
-            if((HWND)lParam==GetDlgItem(hwndDlg,IDC_LOG)) {
-                SetTextColor((HDC)wParam,RGB(255,255,255));
-                SetBkColor((HDC)wParam,RGB(0,0,0));
-                return (BOOL)GetStockObject(BLACK_BRUSH);
-            }
-            break;
-        case WM_CLOSE:
-            ShowWindow(hwndDlg, SW_HIDE);
-            UpdateConsoleOpts();
-            break;
-        case WM_DESTROY:
-            Utils_SaveWindowPosition(hwndDlg,NULL,"Netlib","log");
-            break;
-    }
-    return FALSE;
-}
-
-static void ClearConsole(void) 
-{
-    if (IsWindow(logOptions.hwndLog)) {
-        SendMessage(logOptions.hwndLog, DM_CLEARLOG, 0, 0);
-    }
-}
-
-static int SendConsoleMessage(WPARAM wParam, LPARAM lParam) 
-{
-    if (IsWindow(logOptions.hwndLog)) {
-        SendMessage(logOptions.hwndLog, DM_LOG, wParam, 0);
-    }
-    return 0;
-}
-
-static void ShowConsole(void)
-{
-    if (IsWindow(logOptions.hwndLog)) {
-        ShowWindow(logOptions.hwndLog, SW_SHOW);
-    }
-}
-
-static void HideConsole(void)
-{
-    if (IsWindow(logOptions.hwndLog)) {
-        ShowWindow(logOptions.hwndLog, SW_HIDE);
-    }
-}
 
 static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
@@ -211,7 +64,6 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			}
 			SendDlgItemMessage(hwndDlg,IDC_TIMEFORMAT,CB_SETCURSEL,logOptions.timeFormat,0);
 			CheckDlgButton(hwndDlg,IDC_SHOWNAMES,logOptions.showUser?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_SHOWCONSOLEATSTART,DBGetContactSettingByte(NULL,"Netlib","ShowConsoleAtStart",0)?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg,IDC_TOOUTPUTDEBUGSTRING,logOptions.toOutputDebugString?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg,IDC_TOFILE,logOptions.toFile?BST_CHECKED:BST_UNCHECKED);
 			SetDlgItemText(hwndDlg,IDC_FILENAME,logOptions.szFile);
@@ -222,15 +74,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					DBFreeVariant(&dbv);
 				}
 			}
-            SendMessage(hwndDlg, DMO_UPDATE, 0, 0);
 			return TRUE;
-        case DMO_UPDATE:
-        {
-            CheckDlgButton(hwndDlg,IDC_TOCONSOLE,logOptions.toConsole?BST_CHECKED:BST_UNCHECKED);
-            if(IsConsoleVisible()) SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Hide console"));
-            else SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Show console"));
-            break;
-        }
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDC_DUMPRECV:
@@ -253,25 +97,6 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					break;
 				case IDC_SHOWNAMES:
 					logOptions.showUser=IsDlgButtonChecked(hwndDlg,LOWORD(wParam));
-					break;
-				case IDC_TOCONSOLE:
-					logOptions.toConsole=IsDlgButtonChecked(hwndDlg,LOWORD(wParam));
-					break;
-				case IDC_SHOWCONSOLE:
-					if(IsConsoleVisible()) {
-						SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Show console"));
-						HideConsole();
-					}
-					else {
-						SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Hide console"));
-						ShowConsole();
-					}
-					break;
-				case IDC_CLEARCONSOLE:
-					ClearConsole();
-					break;
-				case IDC_SHOWCONSOLEATSTART:
-					DBWriteContactSettingByte(NULL,"Netlib","ShowConsoleAtStart",(BYTE)IsDlgButtonChecked(hwndDlg,LOWORD(wParam)));
 					break;
 				case IDC_TOOUTPUTDEBUGSTRING:
 					logOptions.toOutputDebugString=IsDlgButtonChecked(hwndDlg,LOWORD(wParam));
@@ -367,7 +192,6 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					DBWriteContactSettingByte(NULL,"Netlib","AutoDetectText",(BYTE)logOptions.autoDetectText);
 					DBWriteContactSettingByte(NULL,"Netlib","TimeFormat",(BYTE)logOptions.timeFormat);
 					DBWriteContactSettingByte(NULL,"Netlib","ShowUser",(BYTE)logOptions.showUser);
-					DBWriteContactSettingByte(NULL,"Netlib","ToConsole",(BYTE)logOptions.toConsole);
 					DBWriteContactSettingByte(NULL,"Netlib","ToOutputDebugString",(BYTE)logOptions.toOutputDebugString);
 					DBWriteContactSettingByte(NULL,"Netlib","ToFile",(BYTE)logOptions.toFile);
 					DBWriteContactSettingString(NULL,"Netlib","File",logOptions.szFile?logOptions.szFile:"");
@@ -444,17 +268,13 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 			szTime[0]='\0';
 			break;
 	}
+	EnterCriticalSection(&logOptions.cs);
 	if(logOptions.showUser) lstrcat(szTime," ");
-	szLine=(char*)malloc(lstrlen(pszMsg)+lstrlen(nlu->user.szSettingsModule)+5+lstrlen(szTime));
+	szLine=(char*)alloca(lstrlen(pszMsg)+lstrlen(nlu->user.szSettingsModule)+5+lstrlen(szTime));
 	if(logOptions.timeFormat || logOptions.showUser)
 		sprintf(szLine,"[%s%s] %s\n",szTime,logOptions.showUser?nlu->user.szSettingsModule:"",pszMsg);
 	else
 		sprintf(szLine,"%s\n",pszMsg);
-	EnterCriticalSection(&logOptions.cs);
-	if(logOptions.toConsole) {
-		//DWORD charsWritten;
-		//WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE),szLine,lstrlen(szLine),&charsWritten,NULL);
-	}
 	if(logOptions.toOutputDebugString) OutputDebugString(szLine);
 	if(logOptions.toFile && logOptions.szFile[0]) {
 		FILE *fp;
@@ -469,7 +289,6 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 		}
 	}
 	LeaveCriticalSection(&logOptions.cs);
-	free(szLine);
 	SetLastError(dwOriginalLastError);
 	return 1;
 }
@@ -492,7 +311,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 		return;
 
 	// Check user's log settings
-	if (!(logOptions.toConsole || logOptions.toOutputDebugString ||
+	if (!(logOptions.toOutputDebugString ||
 		(logOptions.toFile && logOptions.szFile[0])))
 		return;
 	if ((sent && !logOptions.dumpSent) ||
@@ -567,21 +386,12 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 }
 
-static int LogMenuCommand(WPARAM wParam, LPARAM lParam)
-{
-    logOptions.toConsole = 1;
-    ShowConsole();
-    UpdateConsoleOpts();
-    return 0;
-}
-
 void NetlibLogInit(void)
 {
 	DBVARIANT dbv;
 	LARGE_INTEGER li;
 
 	CreateServiceFunction(MS_NETLIB_LOG,NetlibLog);
-    CreateServiceFunction(MS_NETLIB_LOGWIN,SendConsoleMessage);
 	QueryPerformanceFrequency(&li);
 	perfCounterFreq=li.QuadPart;
 	QueryPerformanceCounter(&li);
@@ -594,10 +404,8 @@ void NetlibLogInit(void)
 	logOptions.autoDetectText=DBGetContactSettingByte(NULL,"Netlib","AutoDetectText",1);
 	logOptions.timeFormat=DBGetContactSettingByte(NULL,"Netlib","TimeFormat",TIMEFORMAT_HHMMSS);
 	logOptions.showUser=DBGetContactSettingByte(NULL,"Netlib","ShowUser",1);
-	logOptions.toConsole=DBGetContactSettingByte(NULL,"Netlib","ToConsole",0);
 	logOptions.toOutputDebugString=DBGetContactSettingByte(NULL,"Netlib","ToOutputDebugString",0);
 	logOptions.toFile=DBGetContactSettingByte(NULL,"Netlib","ToFile",0);
-    logOptions.hwndLog = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_NETLIBLOG), NULL, DlgConsole);
 	if(!DBGetContactSetting(NULL,"Netlib","File",&dbv)) {
 		logOptions.szFile=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -607,8 +415,6 @@ void NetlibLogInit(void)
 		fp=fopen(logOptions.szFile,"wt");
 		if(fp) fclose(fp);
 	}
-	if(DBGetContactSettingByte(NULL,"Netlib","ShowConsoleAtStart",0))
-		ShowConsole();
 	if(DBGetContactSettingByte(NULL,"Netlib","ShowLogOptsAtStart",0))
 		NetlibLogShowOptions();
 	if(!DBGetContactSetting(NULL,"Netlib","RunAtStart",&dbv)) {
@@ -618,26 +424,11 @@ void NetlibLogInit(void)
 		if(dbv.pszVal[0]) CreateProcess(NULL,dbv.pszVal,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi);
 		DBFreeVariant(&dbv);
 	}
-    {
-        CLISTMENUITEM mi;
-
-        CreateServiceFunction("Netlib/Menu/Log", LogMenuCommand);
-	    ZeroMemory(&mi, sizeof(mi));
-	    mi.cbSize = sizeof(mi);
-        mi.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL));
-        mi.pszPopupName = Translate("&Help");
-        mi.popupPosition = 2000090000;
-        mi.position = 2000010000;
-        mi.pszName = Translate("Network Log");
-        mi.pszService = "Netlib/Menu/Log";
-        CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-    }
 }
 
 void NetlibLogShutdown(void)
 {
-	if(logOptions.hwndOpts) DestroyWindow(logOptions.hwndOpts);
-    if(logOptions.hwndLog) DestroyWindow(logOptions.hwndLog);
+	if(IsWindow(logOptions.hwndOpts)) DestroyWindow(logOptions.hwndOpts);
 	DeleteCriticalSection(&logOptions.cs);
 	if(logOptions.szFile) free(logOptions.szFile);
 }
