@@ -597,7 +597,10 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       {
         Netlib_Logf(ghServerNetlibUser, "Uploading of avatar hash failed.");
         if (sc->wGroupId) // is avatar added ?
+        {
           FreeServerID(sc->wContactId);
+          DBDeleteContactSetting(NULL, gpszICQProtoName, "SrvAvatarID"); // to fix old versions
+        }
       }
       else
       {
