@@ -105,6 +105,13 @@ static void LL_Remove(pluginEntryList * head, pluginEntry * q)
 static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion, int checkTypeAPI, int * exports)
 {
 	HINSTANCE h = NULL;
+	// this is evil but these plugins are buggy/old and people are blaming Miranda
+	{
+		char * p = strrchr(plugin,'\\');
+		if ( p != NULL && ++p ) {
+			if ( lstrcmpi(p,"autoloadavatars.dll")==0 || lstrcmpi(p,"multiwindow.dll")==0 ) return 0;
+		}
+	}
 	h = LoadLibrary(plugin);
 	if ( h == NULL ) return 0;
 	// loaded, check for exports
