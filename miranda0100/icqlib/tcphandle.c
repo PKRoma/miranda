@@ -236,7 +236,7 @@ int icq_TCPProcessHello(icq_Packet *p, icq_TCPLink *plink)
 
 void icq_TCPOnMessageReceived(icq_Link *icqlink, DWORD uin, const char *message, DWORD id, icq_TCPLink *plink)
 {
-  char data[512];
+  char data[ICQ_MAX_MESSAGE_SIZE];
 
   /* use the current system time for time received */
   time_t t=time(0);
@@ -248,7 +248,8 @@ void icq_TCPOnMessageReceived(icq_Link *icqlink, DWORD uin, const char *message,
          uin, (int)id);
 #endif
 
-  strncpy(data,message,512) ;
+  strncpy(data,message,sizeof(data)) ;
+  data[sizeof(data)-1]='\0';
   icq_RusConv("wk",data) ;
 
   invoke_callback(icqlink,icq_RecvMessage)(icqlink, uin, ptime->tm_hour, 

@@ -266,7 +266,8 @@ void icq_FileSessionClose(icq_FileSession *p)
 
 void icq_FileSessionSetWorkingDir(icq_FileSession *p, const char *dir)
 {
-  strncpy(p->working_dir, dir, 512);
+  strncpy(p->working_dir, dir, sizeof(p->working_dir));
+  p->working_dir[sizeof(p->working_dir)-1]='\0';
 }  
 
 void icq_FileSessionSetFiles(icq_FileSession *p, char **files)
