@@ -89,7 +89,7 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 		if(flags) *flags|=CLCHT_INLEFTMARGIN|CLCHT_NOWHERE;
 		return -1;
 	}
-	hit=GetRowByIndex(dat,(testy+dat->yScroll)/dat->rowHeight,&hitcontact,&hitgroup);
+	hit=GetRowByIndex(dat,(testy+dat->yScroll)/(dat->rowHeight ? dat->rowHeight : 1 ),&hitcontact,&hitgroup);
 	if(hit==-1) {
 		if(flags) *flags|=CLCHT_NOWHERE|CLCHT_BELOWITEMS;
 		return -1;
