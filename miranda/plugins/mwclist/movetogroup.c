@@ -12,18 +12,7 @@ HWND hwndTopToolBar=0;
 //lparam .popupposition from CLISTMENUITEM
 
 #define MTG_MOVE								"MoveToGroup/Move"
-/*
-char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-	DBVARIANT dbv;
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-		str=strdup(dbv.pszVal);
-	DBFreeVariant(&dbv);
-	return str;
-}
-*/
+
 static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 {
 	

@@ -540,18 +540,6 @@ void GetBorderSize(HWND hwnd,RECT *rect)
 
 };
 
-
-char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-	DBVARIANT dbv;
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-		str=strdup(dbv.pszVal);
-	DBFreeVariant(&dbv);
-	return str;
-}
-
 //append string
 char __inline *AS(char *str,const char *setting,char *addstr)
 {

@@ -50,8 +50,17 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		};
 	case WM_SHOWWINDOW:
 		{
-			DBWriteContactSettingByte(0,"CLUI","ShowSBar",(BYTE)(wParam?1:0));
-				if (tooltipshoing){
+			{
+				int res;
+				if (hFrameHelperStatusBar)
+				{
+					res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),0);
+					DBWriteContactSettingByte(0,"CLUI","ShowSBar",(BYTE)((res&F_VISIBLE)?1:0));
+				}
+			}
+			
+
+			if (tooltipshoing){
 					NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
 					tooltipshoing=FALSE;
 				};

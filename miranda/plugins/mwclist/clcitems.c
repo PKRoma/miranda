@@ -376,16 +376,32 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 	dat->NeedResort=1;
 	dat->selection=-1;
 	dat->HiLightMode=DBGetContactSettingByte(NULL,"CLC","HiLightMode",0);
+
 	{
-		int i;
+		int i,r;
 		char *szGroupName;
 		DWORD groupFlags;
-
+		
+		
 		for(i=1;;i++) {
 			szGroupName=(char*)CallService(MS_CLIST_GROUPGETNAME2,i,(LPARAM)&groupFlags);
 			if(szGroupName==NULL) break;
 			AddGroup(hwnd,dat,szGroupName,groupFlags,i,0);
+			r=i;
 		}
+		/*
+		AddGroup(hwnd,dat,"_____________",groupFlags,r+1,0);
+		r++;
+		
+		for(i=1;;i++) {
+			char buf[256];
+
+			szGroupName=(char*)CallService(MS_CLIST_GROUPGETNAME2,i,(LPARAM)&groupFlags);
+			if(szGroupName==NULL) break;
+			sprintf(buf,"-%s",szGroupName);
+			AddGroup(hwnd,dat,buf,groupFlags,r+i,0);
+		}
+		*/
 	}
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
@@ -406,7 +422,21 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 			if(strlen(cacheEntry->szGroup)==0)
 				group=&dat->list;
 			else {
-				group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);
+				/*
+				if (cacheEntry->status==ID_STATUS_OFFLINE)
+				{
+					char buf[256];
+					sprintf(buf,"-%s",cacheEntry->szGroup);
+					group=AddGroup(hwnd,dat,buf,(DWORD)-1,0,0);	
+
+				}else
+				{
+				
+				}
+				*/
+				group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);	
+				
+				
 				//mir_free(dbv.pszVal);
 			}
 
@@ -762,5 +792,5 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 	OutputDebugString(buf);
 	}	
 	ClearRowByIndexCache();
-	PostMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
+	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }

@@ -985,14 +985,27 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 							if (hitFlags&CLCHT_ONITEMEXTRA)
 							{					
-								int v=ExtraToColumnNum(EXTRA_ICON_PROTO);
-								if(nm->iColumn==v) {
+								int v,e;
+									v=ExtraToColumnNum(EXTRA_ICON_PROTO);
+									e=ExtraToColumnNum(EXTRA_ICON_EMAIL);
 									if (!IsHContactGroup(hItem)&&!IsHContactInfo(hItem))
 									{
-										CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
-									}
-									
-									
+										if(nm->iColumn==v) {
+												CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
+											};
+										if(nm->iColumn==e) {
+												//CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
+												char *email,buf[4096];
+												email=DBGetString(nm->hItem,"UserInfo", "Mye-mail0");
+												
+												
+												if (email)
+												{
+													sprintf(buf,"mailto:%s",email);
+													ShellExecute(hwnd,"open",buf,NULL,NULL,SW_SHOW);
+												}
+												
+											};										
 								}
 							};	
 						if(hItem) break;
