@@ -554,6 +554,8 @@ void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *
 	_snprintf(z, sizeof(z), "[miranda] Got conference invite to room: %s with msg: %s", room ?room:"", msg ?msg:"");
 	LOG(("[ext_yahoo_got_conf_invite] %s", z));
 	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0);
+	
+	yahoo_conference_decline(ylad->id, NULL, members, room, "I am sorry, but i can't join your conference since this feature is not currently implemented in my client.");
 }
 
 void ext_yahoo_conf_userdecline(int id, char *who, char *room, char *msg)
@@ -1170,19 +1172,70 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	// Show Error Message
 	//
 	if (YAHOO_GetByte( "ShowErrors", 1 )) {
-		if (YAHOO_hasnotification())
-			YAHOO_shownotification("Yahoo Login Error", buff, NIIF_ERROR);
-		else
-			MessageBox(NULL, buff, "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
+		if (!YAHOO_ShowPopup("Yahoo Login Error", buff, YAHOO_NOTIFY_POPUP)) {
+			if (YAHOO_hasnotification())
+				YAHOO_shownotification("Yahoo Login Error", buff, NIIF_ERROR);
+			else
+				MessageBox(NULL, buff, "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
+		}
 	}
 }
 
 void ext_yahoo_error(int id, char *err, int fatal, int num)
 {
-    LOG(("Yahoo Error: %s", err));
-    
+	char buff[1024];
+	
+	LOG(("Yahoo Error: id: %d, fatal: %d, num: %d, %s", id, fatal, num, err));
+        
+	switch(num) {
+		case E_UNKNOWN:
+			snprintf(buff, sizeof(buff), "unknown error %s", err);
+			break;
+		case E_CUSTOM:
+			snprintf(buff, sizeof(buff), "custom error %s", err);
+			break;
+		case E_CONFNOTAVAIL:
+			snprintf(buff, sizeof(buff), "%s is not available for the conference", err);
+			break;
+		case E_IGNOREDUP:
+			snprintf(buff, sizeof(buff), "%s is already ignored", err);
+			break;
+		case E_IGNORENONE:
+			snprintf(buff, sizeof(buff), "%s is not in the ignore list", err);
+			break;
+		case E_IGNORECONF:
+			snprintf(buff, sizeof(buff), "%s is in buddy list - cannot ignore ", err);
+			break;
+		case E_SYSTEM:
+			snprintf(buff, sizeof(buff), "system error %s", err);
+			break;
+		case E_CONNECTION:
+			snprintf(buff, sizeof(buff), "server connection error %s", err);
+			break;
+	}
+	
+	
 	if(fatal)
 		yahoo_logout();
+	
+	ext_yahoo_log(buff);
+	
+	//poll_loop = 0; -- do we need this??
+	/*
+       yahoo_logout(); -- The following Line MAKES us LOOP and CPU 100%
+     */
+	//
+	// Show Error Message
+	//
+	if (YAHOO_GetByte( "ShowErrors", 1 )) {
+		if (!YAHOO_ShowPopup("Yahoo Error", buff, YAHOO_NOTIFY_POPUP)) {
+			if (YAHOO_hasnotification())
+				YAHOO_shownotification("Yahoo Error", buff, NIIF_ERROR);
+			else
+				MessageBox(NULL, buff, "Yahoo Error", MB_OK | MB_ICONINFORMATION);
+		}
+	}
+
 }
 
 int ext_yahoo_connect(char *h, int p)
