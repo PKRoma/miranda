@@ -904,16 +904,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
             break;
-        case WM_SETFOCUS:
-            SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-            break;
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_ACTIVE)
                 break;
             //fall through
+        case WM_ACTIVATEAPP:
         case WM_MOUSEACTIVATE:
             if (KillTimer(hwndDlg, TIMERID_FLASHWND))
                 FlashWindow(hwndDlg, FALSE);
+            //fall through
+        case WM_SETFOCUS:
+            SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
             break;
         case WM_GETMINMAXINFO:
         {
