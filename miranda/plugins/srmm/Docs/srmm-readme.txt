@@ -1,6 +1,6 @@
 
-       SRMM Plugin v1.0.1 for Miranda IM
-       _________________________________
+       SRMM Plugin for Miranda IM
+       __________________________
 
 
 About
@@ -16,6 +16,9 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
+2.1.0.0
+ - Added ability to compile with unicode support
+
 2.0.0.0
  - Remove send to multiple "feature"
  - Remove single message mode
@@ -27,6 +30,8 @@ Changes
  - Close message dialog with Ctrl+w
  - Fixed some focus/flash issues
  - Added option to delete temporary contacts on window close
+ - Support window api v0.0.0.1
+ - Retry dialog caused crash
 
 1.0.4.2
  - Typing Notify options didn't enable/disable correctly
