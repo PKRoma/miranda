@@ -8,7 +8,7 @@ import socket
 #
 # these are all the modules we want
 #
-CVS_MODULES = ['Miranda-IM', 'SDK', 'Protocols', 'Plugins', 'Tools']
+CVS_MODULES = ['miranda']
 
 #
 # make sure the script is running in /home/egodust/ab/
@@ -26,7 +26,7 @@ os.environ['CVS_RSH'] = 'ssh'
 # fetch all the modules to disk, Q = quiet, r = store all files as read only, group/others = no access
 #
 for m in CVS_MODULES:
-	rc = os.system('/usr/bin/cvs -z5 -d:ext:miranda_ab@cvs.sourceforge.net:/cvsroot/miranda-icq checkout ' + m)
+	rc = os.system('/usr/bin/cvs -z5 -d:ext:miranda_ab@cvs.sourceforge.net:/cvsroot/miranda checkout ' + m)
 	if rc != 0:
 		print 'Failed to CVS checkout ' + m
 		sys.exit(rc)
@@ -45,6 +45,11 @@ if rc != 0:
 rc = os.system('find -type f -iname *.dsp -exec unix2dos --quiet {} \;')
 if rc != 0:
 	print 'Failed to find/convert *.dsp files'
+	sys.exit(rc)
+
+rc = os.system('find -type f -iname *.txt -exec unix2dos --quiet {} \;')
+if rc != 0:
+	print 'Failed to find/convert *.txt'
 	sys.exit(rc)
 
 #rc = os.system('tar --create --bzip --verbose --file=miranda_cvs_tmp.bz2 --exclude CVS --exclude CVSROOT --exclude Tools/ab/Util ' + string.join(CVS_MODULES) )
