@@ -223,7 +223,7 @@ my $No_XML_ISO_Date = 0;
 my $FSF_Style = 0;
 
 # Show times in UTC instead of local time
-my $UTC_Times = 0;
+my $UTC_Times = 1;
 
 # Show times in output?
 my $Show_Times = 1;
@@ -232,7 +232,7 @@ my $Show_Times = 1;
 my $Show_Day_Of_Week = 0;
 
 # Show revision numbers in output?
-my $Show_Revisions = 1;
+my $Show_Revisions = 0;
 
 # Show dead files in output?
 my $Show_Dead = 0;
