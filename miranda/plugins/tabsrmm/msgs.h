@@ -68,6 +68,9 @@ typedef struct _settextex {
 
 #endif
 
+#define NR_LOGICONS 8
+#define NR_BUTTONBARICONS 17
+
 #include <richedit.h>
 #include <richole.h>
 #include "m_tabsrmm.h"
@@ -212,6 +215,7 @@ struct ProtocolData {
 #define DM_SETICON           (WM_USER+68)
 #define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
 #define DM_SECURE_CHANGED    (WM_USER+70)
+#define DM_QUERYSTATUS       (WM_USER+71)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
@@ -394,9 +398,6 @@ struct MsgLogIcon {
     HDC hdc, hdcMem;
     HBRUSH hBkgBrush;
 };
-
-#define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 17
 
 #define IDI_HISTORY 1
 #define IDI_TIMESTAMP 2

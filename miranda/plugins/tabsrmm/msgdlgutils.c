@@ -43,13 +43,10 @@ $Id$
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
 
-extern int g_SmileyAddAvail, g_MetaContactsAvail, g_SecureIMAvail;
+extern MYGLOBALS myGlobals;
+
 extern HMODULE g_hInst;
-extern HBITMAP g_hbmUnknown;
 extern HANDLE hMessageWindowList;
-extern int g_IconEmpty, g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconError, g_IconSend;
-extern HICON g_buttonBarIcons[];
-extern 
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
 void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *szIniFilename);
@@ -94,7 +91,7 @@ int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->hContact == 0 || dat->szProto == NULL)
        return 0;
     
-    return (g_MetaContactsAvail && !strcmp(dat->szProto, "MetaContacts"));
+    return (myGlobals.g_MetaContactsAvail && !strcmp(dat->szProto, "MetaContacts"));
 }
 char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat)
 {
@@ -117,7 +114,7 @@ void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat)
 
     return;
     
-    if(dat->hContact != 0 && DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0) != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
+    if(dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
         _snprintf(buffer, sizeof(buffer), "Session close - active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
         dbei.cbSize = sizeof(dbei);
         dbei.pBlob = (PBYTE) buffer;
@@ -139,7 +136,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     if(menuID == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
-        int iLogStatus = (DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0) != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
+        int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
         CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_MESSAGEBODYINANEWLINE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_NEWLINE ? MF_CHECKED : MF_UNCHECKED);
@@ -158,12 +155,12 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_LONGDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_USERELATIVEDATES ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (myGlobals.m_IgnoreContactSettings ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENTWITHTABS ? MF_CHECKED : MF_UNCHECKED);
         
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
-        EnableMenuItem(submenu, ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_GRAYED : MF_ENABLED);
+        EnableMenuItem(submenu, ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS, myGlobals.m_IgnoreContactSettings ? MF_GRAYED : MF_ENABLED);
         EnableMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, dat->dwFlags & MWF_LOG_INDENT ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
@@ -213,9 +210,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_PICMENU_RESETTHEAVATAR:
                 DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic");
-                if(dat->hContactPic && dat->hContactPic != g_hbmUnknown)
+                if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
                     DeleteObject(dat->hContactPic);
-                dat->hContactPic = g_hbmUnknown;
+                dat->hContactPic = myGlobals.g_hbmUnknown;
                 DBDeleteContactSetting(dat->hContact, "ContactPhoto", "File");
                 SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
                 InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
@@ -257,8 +254,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
     else if(menuId == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
-        int iLogStatus = (DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0) != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
-        int iIgnorePerContact = DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
+        int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
+        int iIgnorePerContact = myGlobals.m_IgnoreContactSettings;
 
         DWORD dwOldFlags = dat->dwFlags;
 
@@ -397,11 +394,11 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iS
                 _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s (MetaContact)"), ci.pszVal, szProto);
             else
                 _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s"), ci.pszVal, szProto); 
-            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
         }
         if(ci.pszVal)
             miranda_sys_free(ci.pszVal);
-        if(g_SecureIMAvail && iSecIMStatus >= 0) {
+        if(myGlobals.g_SecureIMAvail && iSecIMStatus >= 0) {
             _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? "enabled" : "disabled");
             SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
         }
@@ -425,15 +422,15 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         int iSecIMStatus = 0;
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
-        if(g_SecureIMAvail) {
+        if(myGlobals.g_SecureIMAvail) {
             if((iSecIMStatus = CallService("SecureIM/IsContactSecured", (WPARAM)dat->hContact, 0)) != 0)
-                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)g_buttonBarIcons[14]);
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[14]);
             else
-                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)g_buttonBarIcons[15]);
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[15]);
         }
         UpdateReadChars(hwndDlg, dat);
         if(dat->hProtoIcon)
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
         UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
     }
 }
@@ -449,7 +446,7 @@ void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)
 
     if(iIcon == -1) {    // restore status image
         if(dat->dwFlags & MWF_ERRORSTATE) {
-            iIcon = g_IconError;
+            iIcon = myGlobals.g_IconError;
         }
         else {
             iIcon = dat->iTabImage;
@@ -469,7 +466,7 @@ void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)
 
 int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    BYTE bAvatarMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0);
+    BYTE bAvatarMode = myGlobals.m_AvatarMode;
 
     dat->showPic = 0;
     switch(bAvatarMode) {
@@ -480,7 +477,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
             dat->showPic = 0;
             break;
         case 3:             // on, if present
-            if(dat->hContactPic && dat->hContactPic != g_hbmUnknown)
+            if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
                 dat->showPic = 1;
             else
                 dat->showPic = 0;
@@ -491,7 +488,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 
                 if(dat->szProto) {
                     pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-                    if((pCaps & PF4_AVATARS) && dat->hContactPic && dat->hContactPic != g_hbmUnknown) {
+                    if((pCaps & PF4_AVATARS) && dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown) {
                         dat->showPic = 1;
                     }
                 }
@@ -510,9 +507,9 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode)
         int nParts = SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0);
 
         if(iMode)
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)g_buttonBarIcons[12]);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)myGlobals.g_buttonBarIcons[12]);
         else
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)g_buttonBarIcons[13]);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)myGlobals.g_buttonBarIcons[13]);
 
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
     }
@@ -526,7 +523,7 @@ int CheckValidSmileyPack(char *szProto, HICON *hButtonIcon)
 {
     SMADD_INFO smainfo;
 
-    if(g_SmileyAddAvail) {
+    if(myGlobals.g_SmileyAddAvail) {
         smainfo.cbSize = sizeof(smainfo);
         smainfo.Protocolname = szProto;
         CallService(MS_SMILEYADD_GETINFO, 0, (LPARAM)&smainfo);
@@ -689,7 +686,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
     dat->pic.cy = dat->pic.cx = 60;                        
     if(changePic && startThread) {
         if (dat->hContactPic) {
-            if(dat->hContactPic != g_hbmUnknown)
+            if(dat->hContactPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hContactPic);
             dat->hContactPic=NULL;
         }
@@ -698,7 +695,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
     
     if (showNewPic) {
         if (startThread && dat->hContactPic) {
-            if(dat->hContactPic != g_hbmUnknown)
+            if(dat->hContactPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hContactPic);
             dat->hContactPic=NULL;
         }
@@ -730,7 +727,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
              */
             
             if(iUnknown) {
-                dat->hContactPic = g_hbmUnknown;
+                dat->hContactPic = myGlobals.g_hbmUnknown;
             }
             else {
                 if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
@@ -753,7 +750,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
             }
 
             if(dat->hContactPic == 0)
-                dat->hContactPic = g_hbmUnknown;
+                dat->hContactPic = myGlobals.g_hbmUnknown;
             else {
                 GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
                 if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
@@ -767,15 +764,15 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
             }
             if (isNoPic) {
                 _DebugPopup(dat->hContact, "%s %s", dbv.pszVal, Translate("has either a wrong size (max 150 x 150) or is not a recognized image file"));
-                if(dat->hContactPic && dat->hContactPic != g_hbmUnknown)
+                if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
                     DeleteObject(dat->hContactPic);
-                dat->hContactPic = g_hbmUnknown;
+                dat->hContactPic = myGlobals.g_hbmUnknown;
             }
             DBFreeVariant(&dbv);
         } else {
-            if(dat->hContactPic && dat->hContactPic != g_hbmUnknown)
+            if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hContactPic);
-            dat->hContactPic = g_hbmUnknown;
+            dat->hContactPic = myGlobals.g_hbmUnknown;
         }
         if(dat->hContactPic) {
             dat->showPic = GetAvatarVisibility(hwndDlg, dat);
@@ -822,7 +819,7 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
     CLISTEVENT cle;
     char toolTip[256], *contactName;
 
-    if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0))
+    if(!myGlobals.m_FlashOnClist)
         return;
 
     if(hEvent == 0)

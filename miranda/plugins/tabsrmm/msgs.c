@@ -42,6 +42,8 @@ $Id$
 //mathMod end
 #endif
 
+MYGLOBALS myGlobals;
+
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
@@ -49,33 +51,19 @@ HANDLE hMessageWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
-HWND g_hwndHotkeyHandler;
-HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
-HBITMAP g_hbmUnknown = 0;
-
-// external plugins
-
-int g_MetaContactsAvail = 0, g_SmileyAddAvail = 0, g_SecureIMAvail = 0;
 
 
 extern HINSTANCE g_hInst;
 HMODULE hDLL;
 PSLWA pSetLayeredWindowAttributes;
-extern TCHAR g_szDefaultContainerName[];
-extern HMENU g_hMenuContext;
-extern int g_wantSnapping;
 
 extern struct ContainerWindowData *pFirstContainer;
 
 // send jobs...
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
-extern int iSendJobCurrent, iSendJobMax;
 
 struct ProtocolData *protoIconData = NULL;
-int g_nrProtos = 0;
-HIMAGELIST g_hImageList = 0;
-int g_IconMsgEvent = 0, g_IconTypingEvent = 0, g_IconError = 0, g_IconEmpty = 0, g_IconFileEvent = 0, g_IconUrlEvent  = 0, g_IconSend = 0;
 
 HANDLE g_hEvent_MsgWin;
 #if defined(_UNICODE)
@@ -96,6 +84,7 @@ void UncacheMsgLogIcons();
 void CacheLogFonts();
 void ConvertAllToUTF8();
 void InitAPI();
+void ReloadGlobals();
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
@@ -739,19 +728,19 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #if defined(_UNICODE)
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
         if(dbv.type == DBVT_ASCIIZ) 
-            _tcsncpy(g_szDefaultContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
+            _tcsncpy(myGlobals.g_szDefaultContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
 #else
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainername", &dbv)) {
         if(dbv.type == DBVT_ASCIIZ)
-            strncpy(g_szDefaultContainerName, dbv.pszVal, CONTAINER_NAMELEN);
+            strncpy(myGlobals.g_szDefaultContainerName, dbv.pszVal, CONTAINER_NAMELEN);
 #endif        
         DBFreeVariant(&dbv);
     }
     else
-        _tcsncpy(g_szDefaultContainerName, _T("Default"), CONTAINER_NAMELEN);
+        _tcsncpy(myGlobals.g_szDefaultContainerName, _T("Default"), CONTAINER_NAMELEN);
 
-    g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
-    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) g_hMenuContext, 0);   
+    myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
+    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
     BuildContainerMenu();
     
 #if defined(_UNICODE)
@@ -765,7 +754,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     else
         DBFreeVariant(&dbv);
 
-    g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
+    myGlobals.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
 
 #if defined(_STREAMTHREADING)
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "streamthreading", 0)) {
@@ -779,15 +768,15 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #endif
 
     if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
-        g_SmileyAddAvail = 1;
+        myGlobals.g_SmileyAddAvail = 1;
 
-    g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0);
+    myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0);
     
     if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
-        g_MetaContactsAvail = 1;
+        myGlobals.g_MetaContactsAvail = 1;
 
     if(ServiceExists("SecureIM/IsContactSecured"))
-        g_SecureIMAvail = 1;
+        myGlobals.g_SecureIMAvail = 1;
 
 #if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", 0))
@@ -805,7 +794,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
-    DestroyWindow(g_hwndHotkeyHandler);
+    DestroyWindow(myGlobals.g_hwndHotkeyHandler);
     //WindowList_BroadcastAsync(hMessageSendList, WM_CLOSE, 0, 1);
     //WindowList_BroadcastAsync(hMessageWindowList, WM_CLOSE, 0, 1);
     while(pFirstContainer)
@@ -839,9 +828,9 @@ int SplitmsgShutdown(void)
         hMsgMenuItem = NULL;
         hMsgMenuItemCount = 0;
     }
-    ImageList_RemoveAll(g_hImageList);
-    ImageList_Destroy(g_hImageList);
-    DestroyMenu(g_hMenuContext);
+    ImageList_RemoveAll(myGlobals.g_hImageList);
+    ImageList_Destroy(myGlobals.g_hImageList);
+    DestroyMenu(myGlobals.g_hMenuContext);
     UncacheMsgLogIcons();
 #if defined(_STREAMTHREADING)
     if(g_StreamThreadRunning != 0) {
@@ -851,13 +840,13 @@ int SplitmsgShutdown(void)
         DeleteCriticalSection(&sjcs);
     }
 #endif    
-    DestroyIcon(g_iconIn);
-    DestroyIcon(g_iconOut);
-    DestroyIcon(g_iconErr);
+    DestroyIcon(myGlobals.g_iconIn);
+    DestroyIcon(myGlobals.g_iconOut);
+    DestroyIcon(myGlobals.g_iconErr);
     for (i = 0; i < NR_BUTTONBARICONS; i++)
-        DestroyIcon(g_buttonBarIcons[i]);
-    if(g_hbmUnknown)
-        DeleteObject(g_hbmUnknown);
+        DestroyIcon(myGlobals.g_buttonBarIcons[i]);
+    if(myGlobals.g_hbmUnknown)
+        DeleteObject(myGlobals.g_hbmUnknown);
     return 0;
 }
 
@@ -929,6 +918,8 @@ int LoadSendRecvMessageModule(void)
 
     OleInitialize(NULL);
     InitREOleCallback();
+    ZeroMemory((void *)&myGlobals, sizeof(myGlobals));
+    ReloadGlobals();
     hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
     InitOptions();
     hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
@@ -1267,11 +1258,11 @@ void CreateImageList(BOOL bInitial)
 
     // enumerate available protocols... full protocol icon support 
 
-    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &g_nrProtos, (LPARAM) &pProtos);
+    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &myGlobals.g_nrProtos, (LPARAM) &pProtos);
 
     if(bInitial) {
-        if (g_nrProtos) {
-            protoIconData = (struct ProtocolData *) malloc(sizeof(struct ProtocolData) * g_nrProtos);
+        if (myGlobals.g_nrProtos) {
+            protoIconData = (struct ProtocolData *) malloc(sizeof(struct ProtocolData) * myGlobals.g_nrProtos);
         } else {
             MessageBoxA(0, "Warning: LoadIcons - no protocols found", "Warning", MB_OK);
         }
@@ -1287,44 +1278,44 @@ void CreateImageList(BOOL bInitial)
         if(g_hIconDLL == NULL)
             MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
         else {
-            g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+            myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
 
-            g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
-            g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
-            g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_iconContainer = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTAINER), IMAGE_ICON, 0, 0, 0);
-            g_iconStatus = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_STATUSCHANGE), IMAGE_ICON, 0, 0, 0);
-            g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_nrProtos + 1) * 12 + 8, 0);
+            myGlobals.g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
+            myGlobals.g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
+            myGlobals.g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_iconContainer = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTAINER), IMAGE_ICON, 0, 0, 0);
+            myGlobals.g_iconStatus = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_STATUSCHANGE), IMAGE_ICON, 0, 0, 0);
+            myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (myGlobals.g_nrProtos + 1) * 12 + 8, 0);
             CacheMsgLogIcons();
 
             // load button bar Icons
 
-            g_buttonBarIcons[0] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[1] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_HISTORY), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[2] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TIMESTAMP), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[3] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MULTISEND), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[4] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_USERMENU), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[5] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[6] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CLOSEMSGDLG), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[7] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SAVE), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[8] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_QUOTE), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[9] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[10] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTACTPIC), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[11] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SMILEYICON), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[12] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_ON), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[13] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_OFF), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[14] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_ENABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[15] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_DISABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
-            g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[0] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[1] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_HISTORY), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[2] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TIMESTAMP), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[3] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MULTISEND), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[4] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_USERMENU), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[5] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[6] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CLOSEMSGDLG), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[7] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SAVE), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[8] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_QUOTE), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[9] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[10] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTACTPIC), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[11] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SMILEYICON), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[12] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_ON), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[13] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_OFF), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[14] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_ENABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[15] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_DISABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
         }
     }
     else
-        ImageList_RemoveAll(g_hImageList);
+        ImageList_RemoveAll(myGlobals.g_hImageList);
 
     // load global status icons...
     for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
         hIcon = LoadSkinnedProtoIcon(0, i);
-        ImageList_AddIcon(g_hImageList, hIcon);
+        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
     }
     iCurIcon = i - ID_STATUS_OFFLINE;
 
@@ -1334,7 +1325,7 @@ void CreateImageList(BOOL bInitial)
      * each protocol.
      */
 
-    for(i = 0; i < g_nrProtos; i++) {
+    for(i = 0; i < myGlobals.g_nrProtos; i++) {
         if (pProtos[i]->type != PROTOTYPE_PROTOCOL)
             continue;
         strncpy(protoIconData[i].szName, pProtos[i]->szName, sizeof(protoIconData[i].szName));
@@ -1342,7 +1333,7 @@ void CreateImageList(BOOL bInitial)
         for (j = ID_STATUS_OFFLINE; j <= ID_STATUS_OUTTOLUNCH; j++) {
             hIcon = LoadSkinnedProtoIcon(protoIconData[i].szName, j);
             if (hIcon != 0) {
-                ImageList_AddIcon(g_hImageList, hIcon);
+                ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
                 iCurIcon++;
             }
         }
@@ -1350,35 +1341,35 @@ void CreateImageList(BOOL bInitial)
 
     // message event icon
     hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-    ImageList_AddIcon(g_hImageList, hIcon);
-    g_IconMsgEvent = iCurIcon++;
+    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
+    myGlobals.g_IconMsgEvent = iCurIcon++;
 
     // typing notify icon
     hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);    
-    ImageList_AddIcon(g_hImageList, hIcon);
+    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
     DestroyIcon(hIcon);
-    g_IconTypingEvent = iCurIcon++;
+    myGlobals.g_IconTypingEvent = iCurIcon++;
 
     hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-    ImageList_AddIcon(g_hImageList, hIcon);
-    g_IconFileEvent = iCurIcon++;
+    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
+    myGlobals.g_IconFileEvent = iCurIcon++;
 
     hIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
-    ImageList_AddIcon(g_hImageList, hIcon);
-    g_IconUrlEvent = iCurIcon++;
+    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
+    myGlobals.g_IconUrlEvent = iCurIcon++;
 
     hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-    ImageList_AddIcon(g_hImageList, hIcon);
+    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
     DestroyIcon(hIcon);
-    g_IconError = iCurIcon++;
+    myGlobals.g_IconError = iCurIcon++;
 
     hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-    ImageList_AddIcon(g_hImageList, hIcon);
+    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
     DestroyIcon(hIcon);
-    g_IconSend = iCurIcon++;
+    myGlobals.g_IconSend = iCurIcon++;
     
-    ImageList_AddIcon(g_hImageList, 0);             // empty (end of list)
-    g_IconEmpty = iCurIcon;
+    ImageList_AddIcon(myGlobals.g_hImageList, 0);             // empty (end of list)
+    myGlobals.g_IconEmpty = iCurIcon;
 
 }
 

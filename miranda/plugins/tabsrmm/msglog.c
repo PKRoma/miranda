@@ -48,7 +48,6 @@ static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
 int _log(const char *fmt, ...);
 static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak);
 static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
-extern int g_SmileyAddAvail;
 
 #if defined(_STREAMTHREADING)
     extern int g_StreamThreadRunning;
@@ -74,7 +73,7 @@ extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
 
-extern HICON g_iconIn, g_iconOut, g_iconErr, g_iconStatus;
+extern MYGLOBALS myGlobals;
 
 #if defined(_STREAMTHREADING)
     extern int g_StreamThreadRunning;
@@ -117,8 +116,6 @@ struct LogStreamData
 };
 
 char rtfFonts[MSGDLGFONTCOUNT + 2][128];
-
-extern HMENU g_hMenuEncoding;
 
 /*
  * remove any empty line at the end of a message to avoid some RichEdit "issues" with
@@ -183,13 +180,13 @@ void CacheMsgLogIcons()
     icons[0] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
     icons[1] = LoadSkinnedIcon(SKINICON_EVENT_URL);
     icons[2] = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-    icons[3] = g_iconOut;
-    icons[4] = g_iconIn;
-    icons[5] = g_iconStatus;
-    icons[6] = g_iconErr;
+    icons[3] = myGlobals.g_iconOut;
+    icons[4] = myGlobals.g_iconIn;
+    icons[5] = myGlobals.g_iconStatus;
+    icons[6] = myGlobals.g_iconErr;
     
     for(i = 0; i < NR_LOGICONS; i++) {
-        if(icons[i] == g_iconOut || icons[i] == g_iconIn)
+        if(icons[i] == myGlobals.g_iconOut || icons[i] == myGlobals.g_iconIn)
             size = 0;
         else
             size = 16;          // force mirandas icons into small mode (16x16 pixels - on some systems, they load with incorrect size..?)
@@ -618,21 +615,15 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             if((dat->dwFlags & MWF_LOG_SHOWTIME) && !bHideNick) {		// show both...
                 if(dat->dwFlags & MWF_LOG_SWAPNICK) {		// first nick, then time..
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset], szName);
-                    //AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
-                    //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
                 } else {
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
-                    //AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset], szName);
-                    AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
                 }
             } else if(dat->dwFlags & MWF_LOG_SHOWTIME || !g_groupBreak) {
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
-                //AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
             } else if(!bHideNick) {
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset], szName);
-                //AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
             }
         }
 	}
@@ -830,7 +821,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     // separator strings used for grid lines, message separation and so on...
     
-    dwExtraLf = DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0);
+    dwExtraLf = myGlobals.m_ExtraMicroLF;
 
     strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
     
@@ -893,7 +884,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
     dat->hDbEventLast = streamData.hDbEventLast;
     
-    if (fAppend) { // && !DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0)) {
+    if (fAppend) {
         GETTEXTLENGTHEX gtxl = {0};
 #if defined(_UNICODE)
         gtxl.codepage = 1200;
@@ -1002,7 +993,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
      * do smiley replacing, using the service
      */
 
-    if(g_SmileyAddAvail && DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0)) {
+    if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled) {
         CHARRANGE sel;
         SMADD_RICHEDIT2 smadd;
 
@@ -1065,16 +1056,16 @@ static BOOL CALLBACK LangAddCallback(LPCSTR str)
 	count = sizeof(cpTable)/sizeof(cpTable[0]);
 	for (i=0; i<count && cpTable[i].cpId!=cp; i++);
 	if (i < count) {
-        AppendMenuA(g_hMenuEncoding, MF_STRING, cp, Translate(cpTable[i].cpName));
+        AppendMenuA(myGlobals.g_hMenuEncoding, MF_STRING, cp, Translate(cpTable[i].cpName));
 	}
 	return TRUE;
 }
 
 void BuildCodePageList()
 {
-    g_hMenuEncoding = CreateMenu();
-    AppendMenuA(g_hMenuEncoding, MF_STRING, 500, Translate("Use default codepage"));
-    AppendMenuA(g_hMenuEncoding, MF_SEPARATOR, 0, 0);
+    myGlobals.g_hMenuEncoding = CreateMenu();
+    AppendMenuA(myGlobals.g_hMenuEncoding, MF_STRING, 500, Translate("Use default codepage"));
+    AppendMenuA(myGlobals.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
     EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
 }
 

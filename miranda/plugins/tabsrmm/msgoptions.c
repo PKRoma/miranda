@@ -28,10 +28,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
+extern MYGLOBALS myGlobals;
+
 extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
-extern HWND g_hwndHotkeyHandler;
-extern int g_wantSnapping;
 
 #if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
     extern HHOOK g_hMsgHook;
@@ -39,7 +39,7 @@ extern int g_wantSnapping;
 #endif
 
 HMENU BuildContainerMenu();
-void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
+void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals();
 
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
 static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -64,8 +64,6 @@ struct FontOptionsList
 static fontOptionsList[] = {
     {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -10}};
     
-TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
-
 void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
 {
     char str[32];
@@ -265,7 +263,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             
                             msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000 : SRMSGDEFSET_MSGTIMEOUT;
                             DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
-
+                            ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
                             return TRUE;
                         }
@@ -429,7 +427,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_INOUTICONS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EMPTYLINEFIX));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP));
-                            
+                            ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
                             return TRUE;
                         }
@@ -585,6 +583,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPEWIN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPETRAY));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYTRAY));
+                            ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
                         }
                     }
@@ -701,9 +700,10 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HOTKEYSAREGLOBAL));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SPLITTERSTATICEDGES));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
+                            ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
-                            SendMessage(g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
-                            SendMessage(g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
+                            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
+                            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
 							return TRUE;
                     }
             }
@@ -792,7 +792,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 #else                            
                             DBWriteContactSettingString(NULL, SRMSGMOD_T, "defaultcontainername", szContainerName);
 #endif                            
-                            _tcsncpy(g_szDefaultContainerName, szContainerName, CONTAINER_NAMELEN);
+                            _tcsncpy(myGlobals.g_szDefaultContainerName, szContainerName, CONTAINER_NAMELEN);
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limittabs", IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "maxtabs", GetDlgItemInt(hwndDlg, IDC_TABLIMIT, &translated, FALSE));
@@ -800,7 +800,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", GetDlgItemInt(hwndDlg, IDC_FLASHINTERVAL, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nrflash", GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING));
-                            g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);
+                            myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);
                             BuildContainerMenu();
                             return TRUE;
                         }
@@ -1356,7 +1356,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", IsDlgButtonChecked(hwndDlg, IDC_WANTVERTICALGRID));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
-                                
+                                ReloadGlobals();
                                 UncacheMsgLogIcons();
                                 CacheMsgLogIcons();
                                 CacheLogFonts();
@@ -1601,4 +1601,35 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
       break;
    }
    return FALSE;
+}
+
+/*
+ * reload options which may change during M is running and put them in our global option
+ * struct to minimize the number of DB reads...
+ */
+
+void ReloadGlobals()
+{
+     myGlobals.m_SmileyPluginEnabled = (int)DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0);
+     myGlobals.m_SendOnShiftEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1);
+     myGlobals.m_SendOnEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
+     myGlobals.m_MsgLogHotkeys = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0);
+     myGlobals.m_AutoLocaleSupport = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0);
+     myGlobals.m_IgnoreContactSettings = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
+     myGlobals.m_FullUin = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1);
+     myGlobals.m_AutoSwitchTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0);
+     myGlobals.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
+     myGlobals.m_CutContactNameOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0);
+     myGlobals.m_StatusOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0);
+     myGlobals.m_LogStatusChanges = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0);
+     myGlobals.m_UseDividers = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0);
+     myGlobals.m_DividersUsePopupConfig = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0);
+     myGlobals.m_MsgTimeout = (int)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
+     myGlobals.m_AvatarMaxHeight = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100);
+     myGlobals.m_EscapeCloses = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0);
+     myGlobals.m_WarnOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0);
+     myGlobals.m_ExtraMicroLF = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0);
+     myGlobals.m_AvatarMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0);
+     myGlobals.m_FlashOnClist = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0);
+     myGlobals.m_TabAutoClose = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", 0);
 }

@@ -61,20 +61,14 @@ $Id$
 
 char *szWarnClose = "Do you really want to close this session?";
 
+extern MYGLOBALS myGlobals;
+
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-extern HANDLE hMessageWindowList, hMessageSendList;
+extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
 
-extern  HIMAGELIST g_hImageList;
 extern struct ProtocolData *protoIconData;
-extern int g_nrProtos, g_SecureIMAvail;
-
-extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
-extern HICON g_buttonBarIcons[], g_iconContainer;
-
-HMENU g_hMenuContext, g_hMenuContainer = 0, g_hMenuEncoding = 0;
-int   g_wantSnapping = 0;
 
 #define DEFAULT_CONTAINER_POS 0x00400040
 #define DEFAULT_CONTAINER_SIZE 0x019001f4
@@ -117,7 +111,6 @@ int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern HMODULE hDLL;
 extern PSLWA pSetLayeredWindowAttributes;
-extern TCHAR g_szDefaultContainerName[];
 
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
     DBVARIANT dbv;
@@ -231,7 +224,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     TCITEM item;
     HWND  hwndTab;
 
-    if(g_wantSnapping)
+    if(myGlobals.g_wantSnapping)
         CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
     
     pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -290,14 +283,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 /*
                  * assign the global image list...
                  */
-                if(g_hImageList) 
-                    TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), g_hImageList);
+                if(myGlobals.g_hImageList) 
+                    TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
 
                 TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), 5, DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
                 /*
                  * context menu
                  */
-                pContainer->hMenuContext = g_hMenuContext;
+                pContainer->hMenuContext = myGlobals.g_hMenuContext;
                 /*
                  * tab tooltips...
                  */
@@ -365,7 +358,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
                     if(dat->dwFlags != dwOldMsgWindowFlags) {
                         WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)pContainer->hwndActive, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                        if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0))
+                        if(myGlobals.m_IgnoreContactSettings)
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
                     }
                     break;
@@ -553,12 +546,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - (g_SecureIMAvail ? 20 : 0);
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - (g_SecureIMAvail ? 20 : 0);
-                    statwidths[2] = rcs.right - rcs.left - 35 - (g_SecureIMAvail ? 20 : 0);
-                    statwidths[3] = g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - (myGlobals.g_SecureIMAvail ? 20 : 0);
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - (myGlobals.g_SecureIMAvail ? 20 : 0);
+                    statwidths[2] = rcs.right - rcs.left - 35 - (myGlobals.g_SecureIMAvail ? 20 : 0);
+                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
                     statwidths[4] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                 }
                 else
@@ -604,7 +597,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 TCHAR newtitle[256], oldtitle[256];
                 WORD wStatus = -1;
                 TCHAR tTemp[204];
-
+                
                 if(wParam == 0)             // no hContact given - obtain the hContact for the active tab
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 
@@ -617,8 +610,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 
                 szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
                 if (szProto)
-                    wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-                
+                    SendMessage(pContainer->hwndActive, DM_QUERYSTATUS, 0, (LPARAM)&wStatus);
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
                     szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
                     if(szStatus != NULL && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS && pContainer->dwFlags & CNT_TITLE_SHOWNAME)
@@ -636,13 +628,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 #endif                
                 if(pContainer->dwFlags & CNT_TITLE_PREFIX) {
                     if(!_tcsncmp(pContainer->szName, _T("default"), CONTAINER_NAMELEN) && _tcslen(pContainer->szName) == 7)
-                        _sntprintf(newtitle, 255, _T("[%s] %s"), g_szDefaultContainerName, tTemp);
+                        _sntprintf(newtitle, 255, _T("[%s] %s"), myGlobals.g_szDefaultContainerName, tTemp);
                     else
                         _sntprintf(newtitle, 255, _T("[%s] %s"), pContainer->szName, tTemp);
                 }
                 else if(pContainer->dwFlags & CNT_TITLE_SUFFIX) {
                     if(!_tcsncmp(pContainer->szName, _T("default"), CONTAINER_NAMELEN) && _tcslen(pContainer->szName) == 7)
-                        _sntprintf(newtitle, 255, _T("%s [%s]"), tTemp, g_szDefaultContainerName);
+                        _sntprintf(newtitle, 255, _T("%s [%s]"), tTemp, myGlobals.g_szDefaultContainerName);
                     else
                         _sntprintf(newtitle, 255, _T("%s [%s]"), tTemp, pContainer->szName);
                 }
@@ -668,7 +660,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 DWORD dwTimeout;
                 
                 item.mask = TCIF_PARAM;
-                if((dwTimeout = DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", 0)) > 0) {
+                if((dwTimeout = myGlobals.m_TabAutoClose) > 0) {
                     int clients = TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS));
                     HWND *hwndClients = (HWND *)malloc(sizeof(HWND) * ( clients + 1));
                     for(i = 0; i < clients; i++) {
@@ -725,7 +717,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case SC_MAXIMIZE:
                 case SC_RESTORE:
                     pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-                    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                    //SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                     break;
             }
             break;
@@ -842,8 +834,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                     contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) cdat->hContact, 0);
                                     if (contactName) {
                                         if (cdat->szProto) {
-                                            iStatus = DBGetContactSettingWord(cdat->hContact, cdat->szProto, "Status", ID_STATUS_OFFLINE);
-                                            szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, cdat->szProto == NULL ? ID_STATUS_OFFLINE : iStatus, 0);                                            
+                                            iStatus = cdat->wStatus;
+                                            szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, cdat->szProto == NULL ? ID_STATUS_OFFLINE : iStatus, 0);
                                             nmtt->hinst = NULL;
                                             _snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
 #if defined ( _UNICODE )
@@ -1036,7 +1028,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SetWindowPos(pContainer->hwndActive, HWND_TOP, rc.left + 1, rc.top, (rc.right - rc.left) - 8, (rc.bottom - rc.top) - 2, SWP_NOZORDER | SWP_SHOWWINDOW);
                     SetFocus(GetDlgItem(pContainer->hwndActive, IDC_LOG));
                     SetFocus(pContainer->hwndActive);
-                    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                    //SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -1271,12 +1263,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - g_SecureIMAvail ? 20 : 0;
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - g_SecureIMAvail ? 20 : 0;
-                    statwidths[2] = rcs.right - rcs.left - 35 - g_SecureIMAvail ? 20 : 0;
-                    statwidths[3] = g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - myGlobals.g_SecureIMAvail ? 20 : 0;
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - myGlobals.g_SecureIMAvail ? 20 : 0;
+                    statwidths[2] = rcs.right - rcs.left - 35 - myGlobals.g_SecureIMAvail ? 20 : 0;
+                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
                     statwidths[4] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
                     SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);
@@ -1380,7 +1372,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     HMENU hMenu;
                     RECT rcPanel;
                     
-                    SendMessage(pContainer->hwndStatus, SB_GETRECT, g_SecureIMAvail ? 3 : 2, (LPARAM)&rcPanel);
+                    SendMessage(pContainer->hwndStatus, SB_GETRECT, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)&rcPanel);
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     if(hContact) {
                         GetCursorPos(&pt);
@@ -1424,13 +1416,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case DM_SETICON:
             {
                 HICON hIconMsg = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-                if((HICON)lParam == g_buttonBarIcons[5]) {               // always set typing icon, but don't save it...
+                if((HICON)lParam == myGlobals.g_buttonBarIcons[5]) {               // always set typing icon, but don't save it...
                     SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
                     break;
                 }
                 
-                if((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && g_iconContainer != 0)
-                    lParam = (LPARAM)g_iconContainer;
+                if((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && myGlobals.g_iconContainer != 0)
+                    lParam = (LPARAM)myGlobals.g_iconContainer;
                 
                 if(pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
                     lParam = (LPARAM)hIconMsg;
@@ -1455,8 +1447,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 
                 if (szProto) {
-                    wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-
+                    SendMessage(pContainer->hwndActive, DM_QUERYSTATUS, 0, (LPARAM)&wStatus);
                     hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
 
                     SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
@@ -1698,7 +1689,7 @@ int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
 
 int CutContactName(char *oldname, char *newname, int size)
 {
-    int cutMax = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
+    int cutMax = myGlobals.m_CutContactNameTo;
     if ((int)strlen(oldname) <= cutMax)
         strncpy(newname, oldname, size);
     else {
@@ -1784,7 +1775,7 @@ int GetProtoIconFromList(const char *szProto, int iStatus)
     if (szProto == NULL || strlen(szProto) == 0) {
         return 0;
     }
-    for (i = 0; i < g_nrProtos; i++) {
+    for (i = 0; i < myGlobals.g_nrProtos; i++) {
         if (!strncmp(protoIconData[i].szName, szProto, sizeof(protoIconData[i].szName))) {
             return protoIconData[i].iFirstIconID + ( iStatus - ID_STATUS_OFFLINE );
         }
@@ -2129,11 +2120,11 @@ HMENU BuildContainerMenu()
     HMENU hMenu;
     MENUITEMINFO mii = {0};
 
-    if(g_hMenuContainer != 0) {
-        HMENU submenu = GetSubMenu(g_hMenuContext, 0);
+    if(myGlobals.g_hMenuContainer != 0) {
+        HMENU submenu = GetSubMenu(myGlobals.g_hMenuContext, 0);
         RemoveMenu(submenu, 5, MF_BYPOSITION);
-        DestroyMenu(g_hMenuContainer);
-        g_hMenuContainer = 0;
+        DestroyMenu(myGlobals.g_hMenuContainer);
+        myGlobals.g_hMenuContainer = 0;
     }
 
     // no container attach menu, if we are using the "clist group mode"
@@ -2164,9 +2155,8 @@ HMENU BuildContainerMenu()
         i++;
     } while ( TRUE );
 
-    //InsertMenu(g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, _T("Attach to"));
-    InsertMenuA(g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, Translate("Attach to"));
-    g_hMenuContainer = hMenu;
+    InsertMenuA(myGlobals.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, Translate("Attach to"));
+    myGlobals.g_hMenuContainer = hMenu;
     return hMenu;
 }
 

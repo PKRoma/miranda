@@ -181,6 +181,46 @@ typedef struct _recentinfo {
     HWND  hwndFirst, hwndMostRecent;    // client window handles
 } RECENTINFO;
 
+typedef struct _globals {
+    // static options, initialised when plugin is loading
+    HWND g_hwndHotkeyHandler;
+    HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
+    HBITMAP g_hbmUnknown;
+    // external plugins
+    int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail;
+    int g_IconMsgEvent, g_IconTypingEvent, g_IconError, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
+    HIMAGELIST g_hImageList;
+    int g_nrProtos;
+    HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding;
+    int  g_wantSnapping;
+    HICON g_buttonBarIcons[NR_BUTTONBARICONS];
+    TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
+    int iSendJobCurrent;
+    // dynamic options, may be reloaded
+    int m_SmileyPluginEnabled;
+    int m_SendOnShiftEnter;
+    int m_SendOnEnter;
+    int m_MsgLogHotkeys;
+    int m_AutoLocaleSupport;
+    int m_IgnoreContactSettings;
+    int m_FullUin;
+    int m_AutoSwitchTabs;
+    int m_CutContactNameOnTabs;
+    int m_CutContactNameTo;
+    int m_StatusOnTabs;
+    int m_LogStatusChanges;
+    int m_UseDividers;
+    int m_DividersUsePopupConfig;
+    int m_MsgTimeout;
+    int m_AvatarMaxHeight;
+    int m_EscapeCloses;
+    int m_WarnOnClose;
+    int m_ExtraMicroLF;
+    int m_AvatarMode;
+    int m_FlashOnClist;
+    int m_TabAutoClose;
+} MYGLOBALS;
+    
 struct InputHistory {
     TCHAR *szText;
     int   lLen;

@@ -44,10 +44,6 @@ $Id$
     #define SEND_FLAGS 0
 #endif
 
-extern int g_IconEmpty, g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconError, g_IconSend;
-extern HICON g_iconErr;
-extern HBITMAP g_hbmUnknown;
-
 void ClearSendJob(int iIndex);
 int FindNextFailedMsg(HWND hwndDlg, struct MessageWindowData *dat);
 void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);

@@ -18,13 +18,12 @@
 #include "m_smileyadd.h"
 #include "sendqueue.h"
 
-extern HICON g_buttonBarIcons[];
+extern MYGLOBALS myGlobals;
+
 extern char *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern const UINT errorControls[5];
-extern int g_SecureIMAvail;
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
-extern int iSendJobCurrent;
 
 char *MsgServiceName(HANDLE hContact)
 {
@@ -54,7 +53,7 @@ DWORD WINAPI DoMultiSend(LPVOID param)
     
     for(i = 0; i < sendJobs[iIndex].sendCount; i++) {
         sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i]), SEND_FLAGS, (LPARAM) sendJobs[iIndex].sendBuffer);
-        SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
+        SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, myGlobals.m_MsgTimeout, NULL);
         Sleep((50 * i) + dwDelay + dwDelayAdd);
         if(i > 2)
             dwDelayAdd = 500;
@@ -92,7 +91,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     LogErrorMessage(hwndDlg, dat, iEntry, (char *)szErrorMsg);
     RecallFailedMessage(hwndDlg, dat, iEntry);
     ShowErrorControls(hwndDlg, dat, TRUE);
-    HandleIconFeedback(hwndDlg, dat, g_IconError);
+    HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconError);
 }
 /*
  * add a message to the sending queue.
@@ -103,7 +102,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
     int iLength = 0, i;
     int iFound = NR_SENDJOBS;
     
-    if(iSendJobCurrent >= NR_SENDJOBS) {
+    if(myGlobals.iSendJobCurrent >= NR_SENDJOBS) {
         _DebugMessage(hwndDlg, dat, "Send queue full");
         return 0;
     }
@@ -191,18 +190,18 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
         sendJobs[iEntry].iAcksNeeded = 1;
-        SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
+        SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
         //_DebugPopup(dat->hContact, "added to queue with sendid: %d as index: %d", sendJobs[iEntry].hSendId[0], iEntry);
     }
     dat->iOpenJobs++;
-    iSendJobCurrent++;
+    myGlobals.iSendJobCurrent++;
 
     // give icon feedback...
 
     if(dat->pContainer->hwndActive == hwndDlg)
         UpdateReadChars(hwndDlg, dat);
 
-    HandleIconFeedback(hwndDlg, dat, g_IconSend);
+    HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
     
     if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
         SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
@@ -239,7 +238,7 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
         HandleIconFeedback(hwndDlg, dat, -1);
     }
     else
-        HandleIconFeedback(hwndDlg, dat, g_IconSend);
+        HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
     
     if(dat->pContainer->hwndActive == hwndDlg)    
         UpdateReadChars(hwndDlg, dat);
@@ -295,7 +294,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 {
     if(showCmd) {
         dat->dwFlags |= MWF_ERRORSTATE;
-        dat->iTabImage = g_IconError;
+        dat->iTabImage = myGlobals.g_IconError;
     }
     else {
         dat->dwFlags &= ~MWF_ERRORSTATE;
@@ -342,12 +341,12 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
 
     if (len) {          // looks complex but avoids flickering on the button while typing.
         if (!(dat->dwFlags & MWF_SAVEBTN_SAV)) {
-            SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[7]);
+            SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[7]);
             SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_save, 0);
             dat->dwFlags |= MWF_SAVEBTN_SAV;
         }
     } else {
-        SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[6]);
+        SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[6]);
         SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
         dat->dwFlags &= ~MWF_SAVEBTN_SAV;
     }
@@ -368,7 +367,7 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
         ppd.colorBack = RGB(255,0,0);
         ppd.PluginData = hwndDlg;
         ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
-        ppd.lchIcon = g_iconErr;
+        ppd.lchIcon = myGlobals.g_iconErr;
         CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
     }
 }

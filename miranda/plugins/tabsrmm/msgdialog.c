@@ -50,6 +50,7 @@ $Id$
 #define MTH_GET_PREVIEW_HEIGHT "Math/getPreviewHeight"
 #define MTH_GET_PREVIEW_SHOWN "Math/getPreviewShown"
 #define MTH_SUBSTITUTE_DELIMITER "Math/SubstituteDelimiter"
+
 typedef struct
 {
     int top;
@@ -70,7 +71,7 @@ typedef struct
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 #endif
 
-extern int g_hotkeyHwnd;
+extern MYGLOBALS myGlobals;
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -107,10 +108,7 @@ void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
     void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
 #endif
 
-HICON g_buttonBarIcons[NR_BUTTONBARICONS];
 extern char *szWarnClose;
-extern HMENU g_hMenuEncoding;
-extern int g_SmileyAddAvail, g_MetaContactsAvail, g_SecureIMAvail;
 
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigned int subType);
 struct ContainerWindowData *FindContainerByName(const TCHAR *name);
@@ -125,7 +123,6 @@ static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
 struct SendJob sendJobs[NR_SENDJOBS];
-int iSendJobCurrent;
 
 #if defined(_STREAMTHREADING)
 
@@ -222,7 +219,7 @@ void SetDialogToType(HWND hwndDlg)
 
 // smileybutton stuff...
     
-    if(g_SmileyAddAvail && DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0)) {
+    if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled) {
         nrSmileys = CheckValidSmileyPack(dat->szProto, &hButtonIcon);
 
         if(hButtonIcon == 0) {
@@ -244,7 +241,7 @@ void SetDialogToType(HWND hwndDlg)
             }
             else {
                 dat->hSmileyIcon = 0;
-                SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[11]);
+                SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
             }
         }
         else {
@@ -339,11 +336,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             break;
         case WM_KEYDOWN:
             if(wParam == VK_RETURN) {
-                if ((GetKeyState(VK_SHIFT) & 0x8000) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1)) {
+                if ((GetKeyState(VK_SHIFT) & 0x8000) && myGlobals.m_SendOnShiftEnter) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
                 }
-                if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER))) {
+                if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != myGlobals.m_SendOnEnter)) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
                 }
@@ -445,7 +442,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                             si.fMask = SIF_POS;
                             si.nPos = si.nMax - si.nPage + 1;
                             SetScrollInfo(GetDlgItem(GetParent(hwnd), IDC_LOG), SB_VERT, &si, TRUE);
-                            if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0)) {
+                            if (myGlobals.m_MsgLogHotkeys) {
                                 WPARAM wp = 0;
                                 if (wParam == VK_UP)
                                     wp = MAKEWPARAM(SB_LINEUP, 0);
@@ -507,7 +504,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             }
             break;
         case WM_INPUTLANGCHANGEREQUEST: {
-                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0)) {
+                if (myGlobals.m_AutoLocaleSupport) {
                     SendMessage(GetParent(hwnd), DM_SETLOCALE, wParam, lParam);
                     PostMessage(GetParent(hwnd), DM_SAVELOCALE, 0, 0);
                     return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
@@ -882,9 +879,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 // load log option flags...
                 dat->dwFlags = (DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL);
 
-                dat->doSmileys = DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0);
+                dat->doSmileys = myGlobals.m_SmileyPluginEnabled;
                 
-                if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0)) {
+                if(!myGlobals.m_IgnoreContactSettings) {
                     DWORD dwLocalFlags = 0;
                     int dwLocalSmAdd = 0;
                     int doLimitAvatar = dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT;
@@ -898,7 +895,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dat->doSmileys = dwLocalSmAdd;
                     }
                 }
-                if(!g_SmileyAddAvail)
+                if(!myGlobals.g_SmileyAddAvail)
                     dat->doSmileys = 0;
                 
                 if(dat->hContact) {
@@ -931,22 +928,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
 
-                SendDlgItemMessage(hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[0]);
-                SendDlgItemMessage(hwndDlg, IDC_HISTORY, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[1]);
-                SendDlgItemMessage(hwndDlg, IDC_TIME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[2]);
-                SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[3]);
-                SendDlgItemMessage(hwndDlg, IDC_QUOTE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[8]);
-                SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[6]);
-                SendDlgItemMessage(hwndDlg, IDC_PIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[10]);
-                SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[9]);
+                SendDlgItemMessage(hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[0]);
+                SendDlgItemMessage(hwndDlg, IDC_HISTORY, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[1]);
+                SendDlgItemMessage(hwndDlg, IDC_TIME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[2]);
+                SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[3]);
+                SendDlgItemMessage(hwndDlg, IDC_QUOTE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[8]);
+                SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[6]);
+                SendDlgItemMessage(hwndDlg, IDC_PIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[10]);
+                SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[9]);
                 SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BUTTONSETASPUSHBTN, 0, 0);
-                SendDlgItemMessage(hwndDlg, IDC_STATICERRORICON, STM_SETICON, (WPARAM)g_iconErr, 0);
-                SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[16]);
+                SendDlgItemMessage(hwndDlg, IDC_STATICERRORICON, STM_SETICON, (WPARAM)myGlobals.g_iconErr, 0);
+                SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), FALSE);
                 
             // Make them flat buttons
-                if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1)) {
-                    SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[4]);
+                if (!myGlobals.m_FullUin) {
+                    SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
                 }
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0)) {
                     for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
@@ -1148,7 +1145,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 /*
                  * set locale if saved to contact
                  */
-                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0) {
+                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
                     DBVARIANT dbv;
                     int res;
                     char szKLName[KL_NAMELENGTH+1];
@@ -1184,12 +1181,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left + 1, rc.top, (rc.right - rc.left) - 8, (rc.bottom - rc.top) - 2, 0);
                     SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    if(IsIconic(dat->pContainer->hwnd) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0)) {
+                    if(IsIconic(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
                         DBEVENTINFO dbei = {0};
 
                         dbei.flags = 0;
                         dbei.eventType = EVENTTYPE_MESSAGE;
-                        dat->iFlashIcon = g_IconMsgEvent;
+                        dat->iFlashIcon = myGlobals.g_IconMsgEvent;
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                         dat->mayFlashTab = TRUE;
                         dat->dwTickLastEvent = GetTickCount();
@@ -1209,7 +1206,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dbei.flags = 0;
                     dbei.eventType = EVENTTYPE_MESSAGE;
                     dat->dwFlags |= (MWF_WASBACKGROUNDCREATE | MWF_NEEDCHECKSIZE);
-                    dat->iFlashIcon = g_IconMsgEvent;
+                    dat->iFlashIcon = myGlobals.g_IconMsgEvent;
                     SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                     dat->mayFlashTab = TRUE;
                     dat->dwTickLastEvent = GetTickCount();
@@ -1292,7 +1289,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			//mathMod end
 #endif            
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
-                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0)) {
+                if(myGlobals.m_IgnoreContactSettings) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
                     dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
                 }
@@ -1448,12 +1445,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
 
                         if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
-                            if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0))
+                            if (myGlobals.m_CutContactNameOnTabs)
                                 CutContactName(contactName, newcontactname, sizeof(newcontactname));
                             else
                                 strncpy(newcontactname, contactName, sizeof(newcontactname));
 
-                            if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1)) {
+                            if (myGlobals.m_FullUin) {
                                 SetDlgItemTextA(hwndDlg, IDC_NAME, hasName ? buf : contactName);
                                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                             }
@@ -1462,7 +1459,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                             szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                             if (strlen(newcontactname) != 0 && szStatus != NULL) {
-                                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0))
+                                if (myGlobals.m_StatusOnTabs)
                                     _snprintf(newtitle, 127, "%s (%s)", newcontactname, szStatus);
                                 else
                                     _snprintf(newtitle, 127, "%s", newcontactname);
@@ -1482,7 +1479,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 item.mask = TCIF_TEXT;
 
                 if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
-                    if(dat->hContact != 0 && DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0) != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
+                    if(dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
                         if(dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD)-1 && !(dat->dwFlags & MWF_INITMODE)) {             // log status changes to message log
                             DBEVENTINFO dbei;
                             char buffer[450];
@@ -1550,7 +1547,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
         case DM_ADDDIVIDER:
             {
-                if(!(dat->dwFlags & MWF_DIVIDERSET) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0)) {
+                if(!(dat->dwFlags & MWF_DIVIDERSET) && myGlobals.m_UseDividers) {
                     if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG)) > 0) {
                         dat->dwFlags |= MWF_DIVIDERWANTED;
                         dat->dwFlags |= MWF_DIVIDERSET;
@@ -1584,7 +1581,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
-                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0)
+                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0)
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
@@ -1626,7 +1623,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
-                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0)
+                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0)
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 
                 UpdateStatusBar(hwndDlg, dat);
@@ -1793,7 +1790,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if((HWND) wParam == hwndDlg)
                 SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             else {
-                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0)) {
+                if(myGlobals.m_IgnoreContactSettings) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
                     dat->dwFlags |= (lParam & MWF_LOG_ALL);
                     dat->dwFlags |= MWF_DEFERREDREMAKELOG;
@@ -1897,7 +1894,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         int iDividerSet = 0;
                         
-                        if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0)) {
+                        if(myGlobals.m_DividersUsePopupConfig) {
                             if(!MessageWindowOpened((WPARAM)dat->hContact, 0)) {
                                 iDividerSet = 1;
                                 SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
@@ -1938,16 +1935,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if ((IsIconic(dat->pContainer->hwnd) || TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         switch (dbei.eventType) {
                             case EVENTTYPE_MESSAGE:
-                                dat->iFlashIcon = g_IconMsgEvent;
+                                dat->iFlashIcon = myGlobals.g_IconMsgEvent;
                                 break;
                             case EVENTTYPE_URL:
-                                dat->iFlashIcon = g_IconUrlEvent;
+                                dat->iFlashIcon = myGlobals.g_IconUrlEvent;
                                 break;
                             case EVENTTYPE_FILE:
-                                dat->iFlashIcon = g_IconFileEvent;
+                                dat->iFlashIcon = myGlobals.g_IconFileEvent;
                                 break;
                             default:
-                                dat->iFlashIcon = g_IconMsgEvent;
+                                dat->iFlashIcon = myGlobals.g_IconMsgEvent;
                                 break;
                         }
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
@@ -1963,7 +1960,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      * never switch for status changes...
                      */
                     if(!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
-                        if(IsIconic(dat->pContainer->hwnd) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0) && dat->pContainer->hwndActive != hwndDlg) {
+                        if(IsIconic(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && dat->pContainer->hwndActive != hwndDlg) {
                             int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
                             if (iItem >= 0) {
                                 TabCtrl_SetCurSel(GetParent(hwndDlg), iItem);
@@ -2048,7 +2045,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->nTypeSecs--;
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
                             SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
-                            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) g_buttonBarIcons[5]);
+                            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                         }
                         if(IsIconic(dat->pContainer->hwnd) || GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd) {
                             SetWindowTextA(dat->pContainer->hwnd, szBuf);
@@ -2058,18 +2055,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                         if (dat->pContainer->hwndActive != hwndDlg) {
                             if(dat->mayFlashTab)
-                                dat->iFlashIcon = g_IconTypingEvent;
-                            HandleIconFeedback(hwndDlg, dat, g_IconTypingEvent);
+                                dat->iFlashIcon = myGlobals.g_IconTypingEvent;
+                            HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconTypingEvent);
                         }
                         else {          // active tab may show icon if status bar is disabled
                             if(!dat->pContainer->hwndStatus) {
                                 if(TabCtrl_GetItemCount(GetParent(hwndDlg)) > 1 || !(dat->pContainer->dwFlags & CNT_HIDETABS)) {
-                                    HandleIconFeedback(hwndDlg, dat, g_IconTypingEvent);
+                                    HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconTypingEvent);
                                 }
                             }
                         }
                         if ((GetForegroundWindow() != dat->pContainer->hwnd) || (dat->pContainer->hwndStatus == 0))
-                            SendMessage(dat->pContainer->hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) g_buttonBarIcons[5]);
+                            SendMessage(dat->pContainer->hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                         dat->showTyping = 1;
                     }
                 }
@@ -2123,7 +2120,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                                 if(dat->pContainer->hwndActive == hwndDlg)
                                     UpdateReadChars(hwndDlg, dat);
-                                SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[6]);
+                                SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[6]);
                                 SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                                 dat->dwFlags &= ~MWF_SAVEBTN_SAV;
                                 free(szMessage);
@@ -2131,7 +2128,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
                     dat->iOpenJobs--;
-                    iSendJobCurrent--;
+                    myGlobals.iSendJobCurrent--;
                     if(dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < NR_SENDJOBS)
                         ClearSendJob(dat->iCurrentQueueError);
                     else
@@ -2163,7 +2160,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             _DebugPopup(dat->hContact, "iCurrentQueueError out of bounds (%d)", dat->iCurrentQueueError);
                         if(resent) {
                             int iNextFailed;
-                            SetTimer(hwndDlg, TIMERID_MSGSEND + dat->iCurrentQueueError, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
+                            SetTimer(hwndDlg, TIMERID_MSGSEND + dat->iCurrentQueueError, myGlobals.m_MsgTimeout, NULL);
                             sendJobs[dat->iCurrentQueueError].iStatus = SQ_INPROGRESS;
                             dat->iCurrentQueueError = -1;
                             ShowErrorControls(hwndDlg, dat, FALSE);
@@ -2182,7 +2179,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
 // XXX tab mod
         case DM_SAVELOCALE: {
-                if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact) {
+                if (myGlobals.m_AutoLocaleSupport && dat->hContact) {
                     char szKLName[KL_NAMELENGTH + 1];
 #if defined ( _UNICODE )
                     GetKeyboardLayoutNameA(szKLName);
@@ -2201,7 +2198,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case DM_SETLOCALE:
-            if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0) {
+            if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
                 if (lParam == 0) {
                     if (GetKeyboardLayout(0) != dat->hkl) {
                         ActivateKeyboardLayout(dat->hkl, 0);
@@ -2235,6 +2232,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_QUERYHCONTACT: {
                 HANDLE *phContact = (HANDLE *) lParam;
                 *phContact = dat->hContact;
+                return 0;
+            }
+        case DM_QUERYSTATUS: {
+                WORD *wStatus = (WORD *) lParam;
+                *wStatus = dat->wStatus;
                 return 0;
             }
         case DM_QUERYFLAGS: {
@@ -2281,10 +2283,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         ShowPicture(hwndDlg,dat,FALSE,TRUE, TRUE);
                         SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     }
+                    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
-                    //SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2311,7 +2313,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
             GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
-            iMaxHeight = DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100);
+            iMaxHeight = myGlobals.m_AvatarMaxHeight;
             if((dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT) && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) && bminfo.bmHeight > (LONG)iMaxHeight) {
                 double aspect = (double)iMaxHeight / (double)bminfo.bmHeight;
                 double newWidth = (double)bminfo.bmWidth * aspect;
@@ -2346,7 +2348,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         int iMaxHeight = 0;
                         
                         GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
-                        iMaxHeight = DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100);
+                        iMaxHeight = myGlobals.m_AvatarMaxHeight;
                         if(dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT && bminfo.bmHeight > (LONG)iMaxHeight)
                             dat->bottomOffset = iMaxHeight;
                         else
@@ -2383,7 +2385,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", (DWORD) 150);
                 }
                 else {
-                    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0))
+                    if(myGlobals.m_IgnoreContactSettings)
                         dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
                     else {
                         dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150));
@@ -2477,14 +2479,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
                 if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
-                    DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, g_buttonBarIcons[5], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
+                    DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, myGlobals.g_buttonBarIcons[5], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
                 } else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && dat->hContactPic && dat->showPic) {
                     HPEN hPen;
                     BITMAP bminfo;
                     double dAspect = 0, dNewWidth = 0;
                     DWORD iMaxHeight;
                     
-                    iMaxHeight = DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100);
+                    iMaxHeight = myGlobals.m_AvatarMaxHeight;
                     GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
                     if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
                         RECT rc;
@@ -2777,7 +2779,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) dat->hContact, 0);
                     break;
                 case IDC_SMILEYBTN:
-                    if(dat->doSmileys && g_SmileyAddAvail) {
+                    if(dat->doSmileys && myGlobals.g_SmileyAddAvail) {
                         SMADD_SHOWSEL smaddInfo;
                         HICON hButtonIcon = 0;
                         RECT rc;
@@ -2813,7 +2815,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     if(dat->dwFlags != dwOldFlags) {
                         WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                        if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0))
+                        if(myGlobals.m_IgnoreContactSettings)
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
                     }
                     break;
@@ -3028,13 +3030,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                         if(idFrom == IDC_LOG)  {
                                             int i;
                                             InsertMenuA(hSubMenu, 5, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
-                                            InsertMenuA(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) g_hMenuEncoding, Translate("ANSI Encoding"));
-                                            for(i = 0; i < GetMenuItemCount(g_hMenuEncoding); i++)
-                                                CheckMenuItem(g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+                                            InsertMenuA(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, Translate("ANSI Encoding"));
+                                            for(i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
+                                                CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
                                             if(dat->codePage == CP_ACP)
-                                                CheckMenuItem(g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+                                                CheckMenuItem(myGlobals.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
                                             else
-                                                CheckMenuItem(g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
+                                                CheckMenuItem(myGlobals.g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
                                                 
                                         }
 #endif                                        
@@ -3278,7 +3280,7 @@ verify:
                     ClearSendJob(iFound);
                     KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
                     dat->iOpenJobs--;
-                    iSendJobCurrent--;
+                    myGlobals.iSendJobCurrent--;
                 }
                 CheckSendQueue(hwndDlg, dat);
                 if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0 && !(dat->dwFlags & MWF_ERRORSTATE))
@@ -3345,7 +3347,7 @@ verify:
             }
         case DM_SAVEPERCONTACT:
             if (!dat->showPic || (dat->showPic && (dat->dwFlags & MWF_LOG_DYNAMICAVATAR))) {
-                if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0)) {
+                if(!myGlobals.m_IgnoreContactSettings) {
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
                 }
                 else {
@@ -3356,7 +3358,7 @@ verify:
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
             }
             if (dat->hContact) {        // save contact specific settings
-                if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0)) {
+                if(!myGlobals.m_IgnoreContactSettings) {
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
                 }
             }
@@ -3496,7 +3498,7 @@ verify:
             
             SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
             if(dat->szProto) {
-                if(DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+                if(dat->wStatus == ID_STATUS_OFFLINE)
                     return 0;
                 pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
                 if(!(pCaps & PF4_AVATARS))
@@ -3624,7 +3626,7 @@ verify:
             }
             dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
             if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0) {
-                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
                 UpdateStatusBarTooltips(hwndDlg, dat, -1);
             }
             break;
@@ -3700,7 +3702,7 @@ verify:
                     return TRUE;
                 }
                
-                if(wParam == 0 && lParam == 0 && !DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0)) {
+                if(wParam == 0 && lParam == 0 && !myGlobals.m_EscapeCloses) {
                     SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
                     return TRUE;
                 }
@@ -3713,7 +3715,7 @@ verify:
                     return TRUE;
 #endif                
                 if(!lParam) {
-                    if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
+                    if (myGlobals.m_WarnOnClose) {
                         if (MessageBoxA(dat->pContainer->hwnd, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO) {
                             return TRUE;
                         }
@@ -3842,7 +3844,7 @@ verify:
             }
             
 // BEGIN MOD#33: Show contact's picture
-            if (dat->hContactPic && dat->hContactPic != g_hbmUnknown)
+            if (dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hContactPic);
 // END MOD#33
             if (dat->hSmileyIcon)
