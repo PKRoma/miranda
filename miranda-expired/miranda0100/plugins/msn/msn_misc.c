@@ -158,7 +158,7 @@ void UrlEncode(const char *src,char *dest,int cbDest)
 {
 	int iSrc,iDest;
 	for(iSrc=iDest=0;src[iSrc];iSrc++) {
-		if(src[iSrc]<=' ') {
+		if(src[iSrc]<=' ' || src[iSrc]=='%') {
 			if(iDest>=cbDest-4) break;
 			dest[iDest++]='%';
 			_itoa((unsigned char)src[iSrc],dest+iDest,16);
