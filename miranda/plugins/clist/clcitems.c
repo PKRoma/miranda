@@ -167,10 +167,11 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,HANDLE 
 	for(i=group->contactCount-1;i>=0;i--)
 		if(group->contact[i].type!=CLCIT_INFO || !(group->contact[i].flags&CLCIIF_BELOWCONTACTS)) break;
 	i=AddItemToGroup(group,i+1);
+	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 	group->contact[i].type=CLCIT_CONTACT;
 	group->contact[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
-	group->contact[i].hContact=hContact;
-	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+	group->contact[i].hContact=hContact;	
+	group->contact[i].proto=szProto;
 	if(szProto!=NULL&&!IsHiddenMode(dat,DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE)))
 		group->contact[i].flags|=CONTACTF_ONLINE;
 	apparentMode=szProto!=NULL?DBGetContactSettingWord(hContact,szProto,"ApparentMode",0):0;
@@ -181,7 +182,6 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,HANDLE 
 	idleMode=szProto!=NULL?DBGetContactSettingDword(hContact,szProto,"IdleTS",0):0;
 	if (idleMode) group->contact[i].flags|=CONTACTF_IDLE;
 	lstrcpyn(group->contact[i].szText,(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0),sizeof(group->contact[i].szText));
-	group->contact[i].proto = szProto;
 }
 
 void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)

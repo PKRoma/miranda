@@ -42,7 +42,7 @@ void ClcOptionsChanged(void)
 static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	char *szProto;
-	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
+	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;	
 	if(!strcmp(cws->szModule,"CList")) {
 		if(!strcmp(cws->szSetting,"MyHandle"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
@@ -62,7 +62,21 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 	}
 	else {
 		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-		if(szProto==NULL || strcmp(szProto,cws->szModule)) return 0;
+		if ( szProto != NULL && (HANDLE)wParam != NULL ) {
+			char * id = NULL;
+			if ( !strcmp(cws->szModule,"Protocol") && !strcmp(cws->szSetting,"p") ) {
+				WindowList_Broadcast(hClcWindowList,INTM_PROTOCHANGED,wParam,lParam);
+			}
+			// something is being written to a protocol module
+			if ( !strcmp(szProto,cws->szModule) ) {
+				// was a unique setting key written?
+				id=(char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
+				if ( (int)id != CALLSERVICE_NOTFOUND && id != NULL && !strcmp(id,cws->szSetting) ) {
+					WindowList_Broadcast(hClcWindowList,INTM_PROTOCHANGED,wParam,lParam);
+				}
+			} 
+		}
+		if(szProto==NULL || strcmp(szProto,cws->szModule)) return 0;		
 		if(!strcmp(cws->szSetting,"Nick") || !strcmp(cws->szSetting,"FirstName") || !strcmp(cws->szSetting,"e-mail") || !strcmp(cws->szSetting,"LastName") || !strcmp(cws->szSetting,"UIN"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
 		else if(!strcmp(cws->szSetting,"ApparentMode"))
@@ -360,7 +374,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			break;
 
 		case INTM_CONTACTADDED:
-			AddContactToTree(hwnd,dat,(HANDLE)wParam,1,1);
+			AddContactToTree(hwnd,dat,(HANDLE)wParam,1,1);			
 			NotifyNewContact(hwnd,(HANDLE)wParam);
 			RecalcScrollBar(hwnd,dat);
 			SortCLC(hwnd,dat,1);
@@ -467,6 +481,17 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		case INTM_NAMECHANGED:
 		{	struct ClcContact *contact;
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL)) break;
+			lstrcpyn(contact->szText,(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0),sizeof(contact->szText));
+			SortCLC(hwnd,dat,1);
+			break;
+		}
+
+		case INTM_PROTOCHANGED: 
+		{
+			struct ClcContact *contact=NULL;
+			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL)) break;
+			contact->proto=(char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);	
+			CallService(MS_CLIST_INVALIDATEDISPLAYNAME,wParam,0);
 			lstrcpyn(contact->szText,(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0),sizeof(contact->szText));
 			SortCLC(hwnd,dat,1);
 			break;
