@@ -153,6 +153,8 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_SENDBUTTON     0
 #define SRMSGSET_CHARCOUNT         "ShowCharCount"
 #define SRMSGDEFSET_CHARCOUNT      0
+#define SRMSGSET_CTRLSUPPORT       "SupportCtrlUpDn"
+#define SRMSGDEFSET_CTRLSUPPORT    1
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
 #define SRMSGDEFSET_MSGTIMEOUT     10000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)

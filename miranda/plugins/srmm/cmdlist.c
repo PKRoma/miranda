@@ -58,7 +58,7 @@ TCmdList *tcmdlist_append(TCmdList *list, char *data) {
 	else {
 		new_list->prev = attach_to;
 		attach_to->next = new_list;
-        if (tcmdlist_len(list)>10) {
+        if (tcmdlist_len(list)>20) {
             list = tcmdlist_remove(list, list->szCmd);
         }
 		return list;

@@ -28,12 +28,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 213
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 231
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,2,310,208
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,0,310,228
     CONTROL         "Automatically pop up the window when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,16,
                     300,10
@@ -62,17 +62,20 @@ BEGIN
     CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,178,133,10
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,196,211,8
-    EDITTEXT        IDC_SECONDS,223,194,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,196,44,8
+                    IDC_STATIC,8,211,211,8
+    EDITTEXT        IDC_SECONDS,223,209,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,211,44,8
+    CONTROL         "Support control up/down in message area to show previously sent messages",
+                    IDC_CTRLSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
+                    192,298,10
 END
 
 IDD_MSGSENDERROR DIALOGEX 0, 0, 187, 97
 STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | 
     WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Message send error"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+CAPTION "Send Error"
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "An error has occured. The protocol reported the following error:",
                     IDC_STATIC,5,5,177,28
@@ -164,7 +167,7 @@ END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,42,248,
@@ -203,7 +206,7 @@ BEGIN
         VERTGUIDE, 148
         VERTGUIDE, 295
         VERTGUIDE, 310
-        BOTTOMMARGIN, 210
+        BOTTOMMARGIN, 228
     END
 
     IDD_MSGSENDERROR, DIALOG
