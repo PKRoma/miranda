@@ -130,7 +130,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				char *szStatus,*contactName,*pszNewTitleStart;
 				char *szProto;
 
-				pszNewTitleStart="URL from ";
+				pszNewTitleStart=Translate("URL from ");
 
 				if (dat->hContact) {
 					szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
@@ -163,7 +163,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						SetDlgItemText(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-						_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", Translate(pszNewTitleStart), contactName, szStatus);
+						_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else
@@ -566,7 +566,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				char *szStatus,*contactName,*pszNewTitleStart;
 				char *szProto;
 
-				pszNewTitleStart="Send URL to ";
+				pszNewTitleStart=Translate("Send URL to");
 
 				if (dat->hContact) {
 					szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
@@ -598,7 +598,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						SetDlgItemText(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-						_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", Translate(pszNewTitleStart), contactName, szStatus);
+						_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else
