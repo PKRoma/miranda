@@ -42,6 +42,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define WinVerMajor()      LOBYTE(LOWORD(GetVersion()))
 #define WinVerMinor()      HIBYTE(LOWORD(GetVersion()))
 #define IsWinVerNT()       ((GetVersion()&0x80000000)==0)
+// IsWinVerNT4Plus() is buggy, Windows 98 is 4.10.1998
 #define IsWinVerNT4Plus()  (WinVerMajor()>=5 || WinVerMinor()>0 || IsWinVerNT())
 #define IsWinVer98Plus()   (LOWORD(GetVersion())!=4)
 #define IsWinVerMEPlus()   (WinVerMajor()>=5 || WinVerMinor()>10)
