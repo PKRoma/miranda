@@ -17,6 +17,7 @@ _______
 
 Bugfixes:
   Now correctly add contact without auth if they does not require it
+  Fixed crash on receiving long message through P2P (very old bug)
 
 New features:
   Added Grant authorisation option (send & recognize)
@@ -43,7 +44,7 @@ Improvements:
 
 0.3.4.0
 
-Bugfixes:  
+Bugfixes:
   Fixed authorisation reply
   Fixed contact transfer ack
 
