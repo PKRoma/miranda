@@ -10,6 +10,7 @@ except:
 	pass
 p = string.strip(fp.read())
 fp.close()
-args = string.join(sys.argv[3:(-2)])		# take everything off the command line after script, password file, then ignore cvs server
-args = args + ' -pw ' + p + ' -batch -C ' + sys.argv[2] + ' cvs server'
+
+# reformat args to be: username, pass, options <server> <commands>
+args = '-l ' + sys.argv[3] + ' -pw ' + p + ' -batch -C ' + sys.argv[1] + ' ' + string.join( sys.argv[4:] )
 os.system("util\\tp.exe " + args)
