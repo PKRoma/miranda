@@ -439,8 +439,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_EXTSTATUS: // our avatar
   {
-//    DBCONTACTWRITESETTING cws;
-
     Netlib_Logf(ghServerNetlibUser, "Received our avatar hash & status.");
 
     if ((wBufferLength >= 0x14) && gbAvatarsEnabled)
@@ -449,13 +447,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       {
         case 1: // our avatar is on the server, store hash
         {
-/*          int dummy;
-          cws.szModule = gpszICQProtoName;
-          cws.szSetting = "AvatarHash";
-          cws.value.type = DBVT_BLOB;
-          cws.value.pbVal = pBuffer;
-          cws.value.cpbVal = 0x14;
-          dummy = CallService(MS_DB_CONTACT_WRITESETTING, 0, (LPARAM)&cws);*/
           DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", pBuffer, 0x14);
           
           // TODO: here we need to find a file, check its hash, if invalid get avatar from server
@@ -942,7 +933,7 @@ void handleServUINSettings(int nPort, int nIP)
 		packDWord(&packet, WEBFRONTPORT);   // Web front port
 		packDWord(&packet, CLIENTFEATURES); // Client features
 		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x80030405);     // Abused timestamp
+		packDWord(&packet, 0x80030406);     // Abused timestamp
 		packDWord(&packet, 0x00000000);     // Timestamp
 		packWord(&packet, 0x0000);          // Unknown
 

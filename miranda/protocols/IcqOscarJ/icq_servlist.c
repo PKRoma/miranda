@@ -545,7 +545,7 @@ DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WO
 
   // Prepare UIN
   _itoa(dwUin, szUin, 10);
-  nUinLen = strlen(szUin);
+  nUinLen = strlennull(szUin);
 
   if (!nUinLen)
   {
@@ -559,7 +559,7 @@ DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WO
     int nResult;
 
     nResult = utf8_encode(szNick, &szUtfNick);
-    nNickLen = strlen(szUtfNick);
+    nNickLen = strlennull(szUtfNick);
   }
   else
   {
@@ -572,7 +572,7 @@ DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WO
     int nResult;
 
     nResult = utf8_encode(szNote, &szUtfNote);
-    nNoteLen = strlen(szUtfNote);
+    nNoteLen = strlennull(szUtfNote);
   }
   else
   {
@@ -636,7 +636,7 @@ DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szN
     int nResult;
 
     nResult = utf8_encode(szName, &szUtfName);
-    nNameLen = strlen(szUtfName);
+    nNameLen = strlennull(szUtfName);
   }
   else
   {
@@ -990,7 +990,7 @@ static int GroupNameExists(const char *name,int skipGroup)
 int countGroupLevel(WORD wGroupId)
 {
   char* szGroupName = getServerGroupName(wGroupId);
-  int nNameLen = strlen(szGroupName);
+  int nNameLen = strlennull(szGroupName);
   int i = 0;
 
   while (i<nNameLen)
@@ -1022,7 +1022,7 @@ char* makeGroupPath(WORD wGroupId)
     }
     else
     {
-      if (strlen(szGroup) && (szGroup[0] == '>'))
+      if (strlennull(szGroup) && (szGroup[0] == '>'))
       { // it is probably a sub-group
         WORD wId = wGroupId-1;
         int level = countGroupLevel(wGroupId);
@@ -1061,7 +1061,7 @@ char* makeGroupPath(WORD wGroupId)
 
         szTempGroup = makeGroupPath(wId);
 
-        szTempGroup = realloc(szTempGroup, strlen(szGroup)+strlen(szTempGroup)+2);
+        szTempGroup = realloc(szTempGroup, strlennull(szGroup)+strlennull(szTempGroup)+2);
         strcat(szTempGroup, "\\");
         strcat(szTempGroup, szGroup+level);
         SAFE_FREE(&szGroup);
@@ -1138,7 +1138,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
   { // the next id is free, so create our group with that id
     servlistcookie* ack;
     DWORD dwCookie;
-    char* szSubGroup = (char*)malloc(strlen(szGroup)+level+1);
+    char* szSubGroup = (char*)malloc(strlennull(szGroup)+level+1);
 
     if (szSubGroup)
     {
@@ -1149,7 +1149,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
         szSubGroup[i] = '>';
       }
       strcpy(szSubGroup+level, szGroup);
-      szSubGroup[strlen(szGroup)+level] = '\0';
+      szSubGroup[strlennull(szGroup)+level] = '\0';
 
       if (ack = (servlistcookie*)malloc(sizeof(servlistcookie)))
       { // we have cookie good, go on
@@ -1165,7 +1165,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
         ack->lParam = (LPARAM)param;
         dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
 
-        sendAddStart();
+        sendAddStart(0);
         icq_sendGroup(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szSubGroup, NULL, 0);
 
         SAFE_FREE(&szGroup);
@@ -1215,7 +1215,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
       ack->lParam = (LPARAM)lParam;
       dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
 
-      sendAddStart();
+      sendAddStart(0);
       icq_sendGroup(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szGroup, NULL, 0);
 
       return 0;
@@ -1319,7 +1319,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 
   dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
 
-  sendAddStart();
+  sendAddStart(1); // TODO: make some sense here
   icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, dwUin, wGroupID, wItemID, ack->szGroupName, NULL, 0, SSI_ITEM_BUDDY);
 }
 
@@ -1386,7 +1386,6 @@ DWORD removeServContact(HANDLE hContact)
   { // Could not do anything without cookie
     Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (malloc failed)");
     return 0;
-//    dwCookie = GenerateCookie(ICQ_LISTS_REMOVEFROMLIST);
   }
   else
   {
@@ -1399,7 +1398,7 @@ DWORD removeServContact(HANDLE hContact)
     dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
   }
 
-  sendAddStart();
+  sendAddStart(0);
   icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, wGroupID, wItemID, NULL, NULL, 0, SSI_ITEM_BUDDY);
 
   return 0;
@@ -1495,7 +1494,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
   dwCookie2 = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
 
-  sendAddStart();
+  sendAddStart(0);
   /* this is just like Licq does it, icq5 sends that in different order, but sometimes it gives unwanted
   /* side effect, so I changed the order. */
   icq_sendBuddy(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupID, ack->wNewContactId, pszNick, pszNote, bAuth, SSI_ITEM_BUDDY);
@@ -1713,7 +1712,7 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
     szLast = strstr(szLast, "\\")+1;
     i--;
   }
-  szGroup = (char*)malloc(strlen(szLast)+1+level);
+  szGroup = (char*)malloc(strlennull(szLast)+1+level);
   if (!szGroup) return;
   szGroup[level] = '\0';
 

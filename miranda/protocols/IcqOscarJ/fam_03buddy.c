@@ -399,7 +399,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 			pTLV = getTLV(pChain, 0x1D, 1);
 			if (pTLV && (pTLV->wLen >= 0x14))
 			{
-//        DBCONTACTWRITESETTING cws;
         DBVARIANT dbv;
         int dummy;
         int dwJob = 0;
@@ -449,12 +448,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, new hash stored.");
 
-/*            cws.szModule = gpszICQProtoName;
-            cws.szSetting = "AvatarHash";
-            cws.value.type = DBVT_BLOB;
-            cws.value.pbVal = pTLV->pData;
-            cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
-				    dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);*/
             if (dummy = DBWriteContactSettingBlob(hContact, gpszICQProtoName, "AvatarHash", pTLV->pData, 0x14))
             {
               Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
@@ -500,12 +493,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, hash stored.");
 
-/*            cws.szModule = gpszICQProtoName;
-            cws.szSetting = "AvatarHash";
-            cws.value.type = DBVT_BLOB;
-            cws.value.pbVal = pTLV->pData;
-            cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
-				    dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);*/
             if (dummy = DBWriteContactSettingBlob(hContact, gpszICQProtoName, "AvatarHash", pTLV->pData, 0x14))
             {
               Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);

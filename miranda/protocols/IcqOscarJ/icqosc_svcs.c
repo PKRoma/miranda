@@ -237,7 +237,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 			write_flap(&packet, ICQ_CLOSE_CHAN);
 			sendServPacket(&packet);
 
-			icq_serverDisconnect();
+			icq_serverDisconnect(1);
 
 			gnCurrentStatus = ID_STATUS_OFFLINE;
 			ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,

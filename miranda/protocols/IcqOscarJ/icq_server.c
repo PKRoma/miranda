@@ -166,7 +166,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 	}
 
 	// Time to shutdown
-	icq_serverDisconnect();
+	icq_serverDisconnect(0);
 	if (gnCurrentStatus != ID_STATUS_OFFLINE)
 	{
 		int oldStatus = gnCurrentStatus;
@@ -214,7 +214,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 
 
-void icq_serverDisconnect(void)
+void icq_serverDisconnect(int bWait)
 {
 
 	EnterCriticalSection(&connectionHandleMutex);
@@ -224,11 +224,13 @@ void icq_serverDisconnect(void)
 		Netlib_CloseHandle(hServerConn);
 		hServerConn = NULL;
 		LeaveCriticalSection(&connectionHandleMutex);
-
+    
 		// Not called from network thread?
-		if (GetCurrentThreadId() != serverThreadId.dwThreadId)
+		if (bWait)//(GetCurrentThreadId() != serverThreadId.dwThreadId)
+    {
 			while (WaitForSingleObjectEx(serverThreadId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
-		CloseHandle(serverThreadId.hThread);
+		  CloseHandle(serverThreadId.hThread);
+    }
 	}
 	else
 		LeaveCriticalSection(&connectionHandleMutex);
@@ -343,7 +345,7 @@ void sendServPacket(icq_packet* pPacket)
 		if (nSendResult == SOCKET_ERROR)
 		{
 			icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Your connection with the ICQ server was abortively closed");
-			icq_serverDisconnect();
+			icq_serverDisconnect(0);
 
 			if (gnCurrentStatus != ID_STATUS_OFFLINE)
 			{

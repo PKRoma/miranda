@@ -51,8 +51,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags);
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen);
 static void handleRecvAuthResponse(unsigned char *buf, WORD wLen);
 static void handleRecvAdded(unsigned char *buf, WORD wLen);
-void sendAddStart(void);
-void sendAddEnd(void);
 void sendRosterAck(void);
 
 
@@ -404,19 +402,22 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
           sc = NULL; // we do not want it to be freed now
         }
-        else // the group is empty, delete it
+        else // the group is empty, delete it if it does not have sub-groups
         {
           DWORD dwCookie;
 
-          sc->dwAction = SSA_GROUP_REMOVE;
-          sc->wContactId = 0;
-          sc->hContact = NULL;
-          sc->szGroupName = getServerGroupName(sc->wGroupId);
-          dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, sc);
+          if (CheckServerID(sc->wGroupId, 0) && countGroupLevel(sc->wGroupId)>0)
+          { // is next id an sub-group, if yes, we cannot delete this group
+            sc->dwAction = SSA_GROUP_REMOVE;
+            sc->wContactId = 0;
+            sc->hContact = NULL;
+            sc->szGroupName = getServerGroupName(sc->wGroupId);
+            dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, sc);
 
-          icq_sendGroup(dwCookie, ICQ_LISTS_REMOVEFROMLIST, sc->wGroupId, sc->szGroupName, NULL, 0);
-          // here the modifications go on
-          sc = NULL; // we do not want it to be freed now
+            icq_sendGroup(dwCookie, ICQ_LISTS_REMOVEFROMLIST, sc->wGroupId, sc->szGroupName, NULL, 0);
+            // here the modifications go on
+            sc = NULL; // we do not want it to be freed now
+          }
         }
         SAFE_FREE(&groupData); // free the memory
       }
@@ -1718,14 +1719,14 @@ void updateServAvatarHash(char* pHash)
 
 // Should be called before the server list is modified. When all
 // modifications are done, call sendAddEnd().
-void sendAddStart(void)
+void sendAddStart(int bImport)
 {
   icq_packet packet;
 
-  packet.wLen = 14;
+  packet.wLen = bImport?14:10;
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART<<0x10);
-  packDWord(&packet, 1<<0x10); // TODO: should be optional
+  if (bImport) packDWord(&packet, 1<<0x10); 
   sendServPacket(&packet);
 }
 

@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Implements Manage Server List dialog
 //
 // -----------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ extern HANDLE hInst;
 extern HANDLE ghServerNetlibUser;
 
 static HWND hwndUploadContacts=NULL;
-static const UINT settingsControls[]={IDC_STATIC12,IDC_GROUPS,IDC_ALLGROUPS,IDC_VISIBILITY,IDC_IGNORE,IDOK};
+static const UINT settingsControls[]={IDOK};
 
 
 
@@ -51,27 +51,30 @@ static const UINT settingsControls[]={IDC_STATIC12,IDC_GROUPS,IDC_ALLGROUPS,IDC_
 // are selected, deselects it if not.
 static void UpdateAllContactsCheckmark(HWND hwndList, HANDLE hItemAll)
 {
+  int check = 1;
+  HANDLE hContact;
+  HANDLE hItem;
+  char* szProto;
 
-	int check = 1;
-	HANDLE hContact;
-	HANDLE hItem;
+  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
-	
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  while (hContact)
+  {
+    hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+    if (hItem)
+    {
+      szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+      if (szProto && !lstrcmp(szProto, gpszICQProtoName))
+        if (!SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
+        { // if any of our contacts is unchecked, uncheck all contacts as well
+          check = 0;
+          break;
+        }
+    }
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+  }
 
-	while (hContact)
-	{
-		hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-		if (hItem && !SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
-		{ 
-			check = 0;
-			break;
-		}
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-	}
-
-	SendMessage(hwndList, CLM_SETCHECKMARK, (WPARAM)hItemAll, check);
-	
+  SendMessage(hwndList, CLM_SETCHECKMARK, (WPARAM)hItemAll, check);
 }
 
 
@@ -80,7 +83,6 @@ static void UpdateAllContactsCheckmark(HWND hwndList, HANDLE hItemAll)
 // that indicates wether or not they are already uploaded
 static void UpdateCheckmarks(HWND hwndDlg, HANDLE hItemAll)
 {
-	
 	HANDLE hContact;
 	HANDLE hItem;
 	char* szProto;
@@ -95,51 +97,43 @@ static void UpdateCheckmarks(HWND hwndDlg, HANDLE hItemAll)
 			szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 			if (szProto && !lstrcmp(szProto, gpszICQProtoName))
 				SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem,
-				DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0) != 0);
+				  DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0) != 0);
 		}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
-	
+
 	// Update the "All contacts" checkmark
 	UpdateAllContactsCheckmark(GetDlgItem(hwndDlg,IDC_CLIST),hItemAll);
-	
 }
 
 
 
 static void AppendToUploadLog(HWND hwndDlg, const char *fmt, ...)
 {
+  va_list va;
+  char szText[1024];
+  int iItem;
 
-	va_list va;
-	char szText[1024];
-	int iItem;
+  va_start(va, fmt);
+  _vsnprintf(szText, sizeof(szText), fmt, va);
+  va_end(va);
 
-
-	va_start(va, fmt);
-	_vsnprintf(szText, sizeof(szText), fmt, va);
-	va_end(va);
-
-	iItem = SendDlgItemMessage(hwndDlg, IDC_LOG, LB_ADDSTRING, 0, (LPARAM)szText);
-	SendDlgItemMessage(hwndDlg, IDC_LOG, LB_SETTOPINDEX, iItem, 0);
-
+  iItem = SendDlgItemMessage(hwndDlg, IDC_LOG, LB_ADDSTRING, 0, (LPARAM)szText);
+  SendDlgItemMessage(hwndDlg, IDC_LOG, LB_SETTOPINDEX, iItem, 0);
 }
 
 
 
 static void DeleteLastUploadLogLine(HWND hwndDlg)
 {
-
-	SendDlgItemMessage(hwndDlg, IDC_LOG, LB_DELETESTRING, SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETCOUNT, 0, 0)-1, 0);
-
+  SendDlgItemMessage(hwndDlg, IDC_LOG, LB_DELETESTRING, SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETCOUNT, 0, 0)-1, 0);
 }
 
 
 
 static void GetLastUploadLogLine(HWND hwndDlg, char *szBuf)
 {
-
-	SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETTEXT, SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETCOUNT, 0, 0)-1, (LPARAM)szBuf);
-
+  SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETTEXT, SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETCOUNT, 0, 0)-1, (LPARAM)szBuf);
 }
 
 
@@ -151,7 +145,6 @@ static void GetLastUploadLogLine(HWND hwndDlg, char *szBuf)
 #define M_UPLOADMORE  (WM_USER+101)
 static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-
 	static int working;
 	static HANDLE hItemAll;
 	static HANDLE hProtoAckHook;
@@ -161,32 +154,28 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 	static WORD wNewContactId;
 	static WORD wNewGroupId;
 
+  switch(message)
+  {
 
-	switch(message)
-	{
-		
-	case WM_INITDIALOG:
-		{
+  case WM_INITDIALOG:
+    {
+      CLCINFOITEM cii = {0};
+
+      TranslateDialogDefault(hwndDlg);
+      working = 0;
+      hProtoAckHook = NULL;
 			
-			CLCINFOITEM cii = {0};
-			
-			
-			TranslateDialogDefault(hwndDlg);
-			working = 0;
-			hProtoAckHook = NULL;
-			
-			// Add the "All contacts" item
-			cii.cbSize = sizeof(cii);
-			cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
-			cii.pszText = Translate("** All contacts **");
-			hItemAll = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
-			
-			UpdateCheckmarks(hwndDlg, hItemAll);
-		}
-		
-		return TRUE;
-		
-		
+      // Add the "All contacts" item
+      cii.cbSize = sizeof(cii);
+      cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
+      cii.pszText = Translate("** All contacts **");
+      hItemAll = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
+
+      UpdateCheckmarks(hwndDlg, hItemAll);
+    }
+
+    return TRUE;
+
 		// The M_PROTOACK message is received when the
 		// server has responded to our last update packet
 	case M_PROTOACK:
@@ -352,7 +341,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 currentSequence = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
                 ack->lParam = currentSequence; 
                 icq_sendBuddy(currentSequence, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupId, wNewContactId, pszNick, NULL, 0, SSI_ITEM_BUDDY);
-//                currentSequence = icq_sendUploadContactServ(dwUin, wNewGroupId, wNewContactId, pszNick, 0, SSI_ITEM_BUDDY);
 								return FALSE;
 							}
 							else
@@ -387,10 +375,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 	                (WORD)DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0),
                   NULL, NULL, 0, SSI_ITEM_BUDDY);
               }
-/*              currentSequence = icq_sendDeleteServerContactServ(dwUin,
-								(WORD)DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0),
-								(WORD)DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0),
-								SSI_ITEM_BUDDY);*/
 						}
 						
 						SAFE_FREE(&pszNick);
@@ -402,7 +386,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 				
 			}
-			
+
 			if (hContact == NULL)
 			{
 				// All contacts are in sync
@@ -432,7 +416,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, 0xFFFFFFFF, 0);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_CLIST), NULL, FALSE);
 				hProtoAckHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, M_PROTOACK);
-				sendAddStart();
+				sendAddStart(1);
 				PostMessage(hwndDlg, M_UPLOADMORE, 0, 0);
 				break;
 				
@@ -527,32 +511,27 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 		}
 		break;
 		
-	case WM_CLOSE:
-		DestroyWindow(hwndDlg);
-		break;
-		
-	case WM_DESTROY:
-		if (hProtoAckHook)
-			UnhookEvent(hProtoAckHook);
-		hwndUploadContacts = NULL;
-		working = 0;
-		break;
-		
-	}
-	
-	
-	return FALSE;
-	
+  case WM_CLOSE:
+    DestroyWindow(hwndDlg);
+    break;
+
+  case WM_DESTROY:
+    if (hProtoAckHook)
+      UnhookEvent(hProtoAckHook);
+    hwndUploadContacts = NULL;
+    working = 0;
+    break;
+  }
+
+  return FALSE;
 }
 
 
 
 void ShowUploadContactsDialog(void)
 {
+  if (hwndUploadContacts == NULL)
+    hwndUploadContacts = CreateDialog(hInst, MAKEINTRESOURCE(IDD_ICQUPLOADLIST), NULL, DlgProcUploadList);
 
-	if (hwndUploadContacts == NULL)
-		hwndUploadContacts = CreateDialog(hInst, MAKEINTRESOURCE(IDD_ICQUPLOADLIST), NULL, DlgProcUploadList);
-
-	SetForegroundWindow(hwndUploadContacts);
-
+  SetForegroundWindow(hwndUploadContacts);
 }

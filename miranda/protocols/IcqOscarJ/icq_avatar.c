@@ -49,6 +49,7 @@ typedef struct avatarthreadstartinfo_t
   WORD wLocalSequence;
   CRITICAL_SECTION localSeqMutex;
   int pendingLogin;
+  int paused;
 } avatarthreadstartinfo;
 
 typedef struct avatarcookie_t
@@ -56,6 +57,7 @@ typedef struct avatarcookie_t
   DWORD dwUin;
   HANDLE hContact;
   unsigned int hashlen;
+  char *hash;
   unsigned int cbData;
   char *szFile;
 } avatarcookie;
@@ -146,6 +148,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   atsi = (avatarthreadstartinfo*)malloc(sizeof(avatarthreadstartinfo));
   atsi->pendingLogin = 1;
   atsi->stopThread = 0; // we want thread to run
+  atsi->paused = 0;
   // Randomize sequence
   atsi->wLocalSequence = (WORD)RandRange(0, 0x7fff);
   atsi->hConnection = hConn;
@@ -178,7 +181,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
   avatarthreadstartinfo* atsi;
 
   atsi = currentAvatarThread; // we take avatar thread - horrible, but realiable
-  if (AvatarsReady) // check if we are ready
+  if (AvatarsReady && !atsi->paused) // check if we are ready
   {
     icq_packet packet;
     char szUin[33];
@@ -193,6 +196,8 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
     if (!ack) return 0; // out of memory, go away
     ack->dwUin = dwUin;
     ack->hContact = hContact;
+    ack->hash = (char*)malloc(hashlen);
+    memcpy(ack->hash, hash, hashlen); // copy the data
     ack->hashlen = hashlen;
     ack->szFile = _strdup(file); // we duplicate the string
     dwCookie = AllocateCookie(6, dwUin, ack);
@@ -211,6 +216,10 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
 
       return dwCookie;
     }
+    FreeCookie(dwCookie); // sending failed, free resources
+    SAFE_FREE(&ack->szFile);
+    SAFE_FREE(&ack->hash);
+    SAFE_FREE(&ack);
   }
   // we failed to send request, or avatar thread not ready
   EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
@@ -265,7 +274,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
   avatarthreadstartinfo* atsi;
 
   atsi = currentAvatarThread; // we take avatar thread - horrible, but realiable
-  if (AvatarsReady) // check if we are ready
+  if (AvatarsReady && !atsi->paused) // check if we are ready
   {
     icq_packet packet;
     DWORD dwCookie;
@@ -291,6 +300,8 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 
       return dwCookie;
     }
+    FreeCookie(dwCookie); // failed to send, free resources
+    SAFE_FREE(&ack);
   }
   // we failed to send request, or avatar thread not ready
   EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
@@ -393,7 +404,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
       // Deal with the packet
       packetRecv.bytesUsed = handleAvatarPackets(packetRecv.buffer, packetRecv.bytesAvailable, atsi);
       
-      if ((AvatarsReady == TRUE) && (packetRecv.bytesAvailable == packetRecv.bytesUsed)) // no packets pending
+      if ((AvatarsReady == TRUE) && (packetRecv.bytesAvailable == packetRecv.bytesUsed) && !atsi->paused) // no packets pending
       { // process request queue
         EnterCriticalSection(&cookieMutex);
 
@@ -499,13 +510,12 @@ int handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* a
 int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi)
 {
   int lResult = 0;
-  
+
   // This critsec makes sure that the sequence order doesn't get screwed up
   EnterCriticalSection(&atsi->localSeqMutex);
 
   if (atsi->hConnection)
   {
-
     int nRetries;
     int nSendResult;
 
@@ -527,7 +537,6 @@ int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi)
 
       Sleep(1000);
     }
-
 
     // Send error
     if (nSendResult == SOCKET_ERROR)
@@ -684,8 +693,22 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     Netlib_Logf(ghServerNetlibUser, " *** Yeehah, avatar login sequence complete");
     break;
 
+  case ICQ_SERVER_PAUSE:
+    Netlib_Logf(ghServerNetlibUser, "Avatar server is going down in a few seconds... (Flags: %u, Ref: %u", pSnacHeader->wFlags, pSnacHeader->dwRef);
+    // This is the list of groups that we want to have on the next server
+    packet.wLen = 14;
+    write_flap(&packet, ICQ_DATA_CHAN);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_PAUSE_ACK, 0, ICQ_CLIENT_PAUSE_ACK<<0x10);
+    packWord(&packet,ICQ_SERVICE_FAMILY);
+    packWord(&packet,0x10);
+    sendAvatarPacket(&packet, atsi);
+#ifdef _DEBUG
+    Netlib_Logf(ghServerNetlibUser, "Sent server pause ack");
+#endif
+    break;
+
   default:
-    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x01,%2x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x01,%2x) - Unknown SNAC (Flags: %u, Ref: %u)", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
   }
 }
@@ -720,6 +743,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
 
           SAFE_FREE(&ac->szFile);
+          SAFE_FREE(&ac->hash);
           SAFE_FREE(&ac);
 
           break;
@@ -736,7 +760,6 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           out = fopen(ac->szFile, "wb");
 			    if (out) 
           {
-//            DBCONTACTWRITESETTING cws;
             DBVARIANT dbv;
 
             fwrite(pBuffer, datalen, 1, out);
@@ -744,19 +767,21 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 
             if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
             {
-/*              cws.szModule = gpszICQProtoName; // set saved hash
-              cws.value.type = DBVT_BLOB;
-              cws.value.pbVal = dbv.pbVal;
-              cws.value.cpbVal = dbv.cpbVal; 
-              cws.szSetting = "AvatarSaved";
-              if (CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)ac->hContact, (LPARAM)&cws))*/
               if (DBWriteContactSettingBlob(ac->hContact, gpszICQProtoName, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
                 Netlib_Logf(ghServerNetlibUser, "Failed to set file hash.");
 
               DBFreeVariant(&dbv);
             }
             else
-              Netlib_Logf(ghServerNetlibUser, "Failed to set file hash (no hash in DB?).");
+            {
+              Netlib_Logf(ghServerNetlibUser, "Warning: DB error (no hash in DB).");
+              // the hash was lost, try to fix that
+              if (DBWriteContactSettingBlob(ac->hContact, gpszICQProtoName, "AvatarSaved", ac->hash, ac->hashlen) ||
+                DBWriteContactSettingBlob(ac->hContact, gpszICQProtoName, "AvatarHash", ac->hash, ac->hashlen))
+              {
+                Netlib_Logf(ghServerNetlibUser, "Failed to save avatar hash to DB");
+              }
+            }
 
             ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&ai, (LPARAM)NULL);
           }
@@ -767,10 +792,12 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 
           DeleteFile(ac->szFile);
           // there was probably some error, delete the hash too
+          DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarSaved");
           DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash");
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
         }
         SAFE_FREE(&ac->szFile);
+        SAFE_FREE(&ac->hash);
         SAFE_FREE(&ac);
       }
       else
@@ -806,7 +833,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       break;
     }
   default:
-    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x02,%2x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x02,%2x) - Unknown SNAC (Flags: %u, Ref: %u)", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
   }

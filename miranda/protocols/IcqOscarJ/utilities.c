@@ -936,7 +936,7 @@ static int bPhotoLock = 0;
 
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
 { // set contact photo if linked if no photo set link
-  if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
+  if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", DEFAULT_LINK_AVATARS))
   {
     bPhotoLock = 1;
     __try
