@@ -581,6 +581,10 @@ bool CMyMonitor::OnIrc_MODEQUERY(const CIrcMessage* pmsg)
 bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 {	
 	bool flag = false; 
+	bool bContainsValidModes = false;
+	String sModes = "";
+	String sParams = "";
+
 	if (pmsg->parameters.size() > 1 && pmsg->m_bIncoming) 
 	{
 
@@ -593,33 +597,91 @@ bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 			while (*p1 != '\0')
 			{
 				if (*p1 == '+')
+				{
 					bAdd = true;
+					sModes += "+";
+				}
 				if (*p1 == '-')
+				{
 					bAdd = false;
+					sModes += "-";
+				}
 				if (*p1 == 'l' && bAdd)
+				{
+					bContainsValidModes = true;
+					sModes += "l";
+					sParams += " " + pmsg->parameters[iParametercount];
 					iParametercount++;
+				}
 				if (*p1 == 'b' || *p1 == 'k')
+				{
+					bContainsValidModes = true;
+					sModes += *p1;
+					sParams += " " + pmsg->parameters[iParametercount];
 					iParametercount++;
+				}
 
 				if(strchr(sUserModes.c_str(), *p1))
 				{
 					String sStatus = ModeToStatus(*p1);
 					if(pmsg->parameters.size() > iParametercount)
 					{
-						DoEvent(bAdd?GC_EVENT_ADDSTATUS:GC_EVENT_REMOVESTATUS, pmsg->parameters[0].c_str(), pmsg->parameters[iParametercount].c_str(), pmsg->prefix.sNick.c_str(), sStatus.c_str(), NULL, NULL, true, false); 
+						DoEvent(bAdd?GC_EVENT_ADDSTATUS:GC_EVENT_REMOVESTATUS, pmsg->parameters[0].c_str(), pmsg->parameters[iParametercount].c_str(), pmsg->prefix.sNick.c_str(), sStatus.c_str(), NULL, NULL, prefs->OldStyleModes?false:true, false); 
 						iParametercount++;
 					}
 				}
 				else if (*p1 != 'b' && *p1 != ' ' && *p1 != '+' && *p1 != '-')
+				{
+					bContainsValidModes = true;
+					if(*p1 != 'l' && *p1 != 'k')
+						sModes += *p1;
 					flag = true;
+				}
 
 				p1++;
 			}
+
+			if(prefs->OldStyleModes)
+			{
+				String sMessage;
+				char temp[256]; *temp = '\0';
+				_snprintf(temp, 255, Translate(	"%s sets mode %s" ), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str());
+				sMessage = temp;
+				for(int i=2; i < pmsg->parameters.size(); i++)
+				{
+					sMessage = sMessage  +" "+ pmsg->parameters[i];
+				}
+				DoEvent(GC_EVENT_INFORMATION, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), sMessage.c_str(), NULL, NULL, NULL, true, false); 
+			}
+			else if(bContainsValidModes)
+			{
+				for(int i=iParametercount; i < pmsg->parameters.size(); i++)
+				{
+					sParams += " "+ pmsg->parameters[i];
+				}
+
+
+				char temp[4000]; *temp = '\0';
+				_snprintf(temp, 3999, Translate(	"%s sets mode %s%s" ), pmsg->prefix.sNick.c_str(), sModes.c_str(), sParams.c_str());
+				DoEvent(GC_EVENT_INFORMATION, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+			}
+
 			if (flag)
 				PostIrcMessage("/MODE %s", pmsg->parameters[0].c_str());
 		}
 		else
-			flag = true;
+		{
+				String sMessage;
+				char temp[256]; *temp = '\0';
+				_snprintf(temp, 255, Translate(	"%s sets mode %s" ), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str());
+				sMessage = temp;
+				for(int i=2; i < pmsg->parameters.size(); i++)
+				{
+					sMessage = sMessage  +" "+ pmsg->parameters[i];
+				}
+				DoEvent(GC_EVENT_INFORMATION, "Network Log", pmsg->prefix.sNick.c_str(), sMessage.c_str(), NULL, NULL, NULL, true, false); 
+
+		}
 	}
 	else
 		ShowMessage(pmsg); 

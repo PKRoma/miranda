@@ -137,6 +137,7 @@ void InitPrefs(void)
 	prefs->ManualHost = DBGetContactSettingByte(NULL,IRCPROTONAME, "ManualHost", 0);
 	prefs->IPFromServer = DBGetContactSettingByte(NULL,IRCPROTONAME, "IPFromServer", 0);
 	prefs->DisconnectDCCChats = DBGetContactSettingByte(NULL,IRCPROTONAME, "DisconnectDCCChats", 1);
+	prefs->OldStyleModes = DBGetContactSettingByte(NULL,IRCPROTONAME, "OldStyleModes", 0);
 	prefs->MyHost[0] = '\0';
 	prefs->colors[0] = RGB(255,255,255);
 	prefs->colors[1] = RGB(0,0,0);
@@ -1080,6 +1081,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 				SetDlgItemText(hwndDlg,IDC_RETRYWAIT,prefs->RetryWait);
 				SetDlgItemText(hwndDlg,IDC_RETRYCOUNT,prefs->RetryCount);			
 				CheckDlgButton(hwndDlg,IDC_ADDRESS, ((prefs->ShowAddresses) ? (BST_CHECKED) : (BST_UNCHECKED)));
+				CheckDlgButton(hwndDlg,IDC_OLDSTYLE, ((prefs->OldStyleModes) ? (BST_CHECKED) : (BST_UNCHECKED)));
 				CheckDlgButton(hwndDlg,IDC_ONLINENOTIF, ((prefs->AutoOnlineNotification) ? (BST_CHECKED) : (BST_UNCHECKED)));
 				EnableWindow(GetDlgItem(hwndDlg, IDC_ONLINETIMER), prefs->AutoOnlineNotification);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_NOTTEMP), prefs->AutoOnlineNotification);
@@ -1341,6 +1343,8 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 							DBWriteContactSettingByte(NULL,IRCPROTONAME,"Retry",prefs->Retry);
 							prefs->ShowAddresses = IsDlgButtonChecked(hwndDlg, IDC_ADDRESS)== BST_CHECKED;
 							DBWriteContactSettingByte(NULL,IRCPROTONAME,"ShowAddresses",prefs->ShowAddresses);
+							prefs->OldStyleModes = IsDlgButtonChecked(hwndDlg, IDC_OLDSTYLE)== BST_CHECKED;
+							DBWriteContactSettingByte(NULL,IRCPROTONAME,"OldStyleModes",prefs->OldStyleModes);
 
 							prefs->UseServer = IsDlgButtonChecked(hwndDlg, IDC_USESERVER )== BST_CHECKED;
 							DBWriteContactSettingByte(NULL,IRCPROTONAME,"UseServer",prefs->UseServer);

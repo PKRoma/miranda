@@ -188,6 +188,7 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 	BYTE DCCChatIgnore;
 	BYTE DCCPassive;
 	BYTE ManualHost;
+	BYTE OldStyleModes;
 	POINT ListSize;
 	COLORREF colors[16];
 

@@ -183,8 +183,6 @@ BOOL ShowMessage (const CIrcMessage* pmsg)
 
 	if (prefs->UseServer)
 	{
-		if(!pmsg->m_bIncoming && !bEcho)
-			return false;
 		DoEvent(GC_EVENT_INFORMATION, "Network log", pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():g_ircSession.GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
 		return true;
 	}

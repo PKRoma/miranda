@@ -581,6 +581,10 @@ int DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char*
 	GCEVENT gce = {0};
 	String sID;
 	String sText = "";
+	extern bool bEcho;
+
+	if(iEvent == GC_EVENT_INFORMATION && bIsMe && !bEcho)
+			return false;
 
 	if(pszText)
 	{
@@ -600,6 +604,7 @@ int DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char*
 	}
 	else
 		gcd.pszID = NULL;
+
 
 	gcd.pszModule = IRCPROTONAME;
 	gcd.iType = iEvent;

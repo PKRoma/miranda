@@ -84,6 +84,7 @@
 #define IDC_SHOWSERVER                  1049
 #define IDC_ADDRESS                     1050
 #define IDC_AUTOJOIN                    1051
+#define IDC_OLDSTYLE                    1052
 #define IDC_ADD                         1090
 #define IDC_DELETE                      1091
 #define IDC_ALIASEDIT                   1094

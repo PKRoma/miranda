@@ -303,13 +303,13 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 		if (!lstrcmpi(one.c_str(), "on"))
 		{
 			bEcho = TRUE;
-			DoEvent(GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), Translate("Outgoing commands are shown in the server window"), NULL, NULL, NULL, true, false); 
+			DoEvent(GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), Translate("Outgoing commands are shown"), NULL, NULL, NULL, true, false); 
 		}
 		
 		if (!lstrcmpi(one.c_str(), "off"))
 		{
+			DoEvent(GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), Translate("Outgoing commands are not shown"), NULL, NULL, NULL, true, false); 
 			bEcho = FALSE;
-			DoEvent(GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), Translate("Outgoing commands are not shown in the server window"), NULL, NULL, NULL, true, false); 
 		}
 
 		return true;
@@ -794,9 +794,12 @@ bool PostIrcMessageWnd(char* window, HANDLE hContact, const char * szBuf)
 	{
 		lstrcpyn(windowname, "Network log", 255);
 	}
-	char * p1 = strchr(windowname, ' ');
-	if (p1)
-		*p1 = '\0';
+	if(lstrcmpi(window, "Network log") != 0)
+	{
+		char * p1 = strchr(windowname, ' ');
+		if (p1)
+			*p1 = '\0';
+	}
 
 	// remove unecessary linebreaks, and do the aliases
 	String Message = szBuf;
@@ -844,7 +847,10 @@ bool PostIrcMessageWnd(char* window, HANDLE hContact, const char * szBuf)
 
 		// Do this if the message is not a command
 		if (GetWord(DoThis.c_str(), 0)[0] != '/') {
-			DoThis = (String)"/PRIVMSG " + (String)windowname + (String)" "+ DoThis;
+			if(lstrcmpi(window, "Network log") == 0 && g_ircSession.GetInfo().sServerName != "")
+				DoThis = (String)"/PRIVMSG " + g_ircSession.GetInfo().sServerName + (String)" "+ DoThis;
+			else
+				DoThis = (String)"/PRIVMSG " + (String)windowname + (String)" "+ DoThis;
 			flag = true;
 		}
 

@@ -482,12 +482,12 @@ void CIrcSession::DoReceive()
 		nb.pfnNewConnectionV2 =  DoIdent;
 		nb.wPort = m_info.iIdentServerPort;
 		hBindPort= (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlib,(LPARAM) &nb);
-		if (hBindPort && nb.wPort != m_info.iIdentServerPort)
+		if (!hBindPort || nb.wPort != m_info.iIdentServerPort)
 		{
 			char szTemp[200];
 			_snprintf(szTemp, sizeof(szTemp), "Error: unable to bind local port %u", m_info.iIdentServerPort);
 			CallService(MS_NETLIB_LOG, (WPARAM) hNetlib , (LPARAM) szTemp );
-			Netlib_CloseHandle(hBindPort);
+			KillIdent();
 		}
 	}
 
