@@ -78,6 +78,7 @@ char *NickFromHandle(HANDLE);
 
 size_t strlennull(const char *string);
 
+void ResetSettingsOnListReloadt(void);
 void ResetSettingsOnConnect(void);
 void ResetSettingsOnLoad(void);
 int RandRange(int nLow, int nHigh);

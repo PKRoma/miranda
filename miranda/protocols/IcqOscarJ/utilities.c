@@ -535,6 +535,38 @@ size_t strlennull(const char *string)
 
 
 
+void ResetSettingsOnListReload()
+{
+  HANDLE hContact;
+  char *szProto;
+
+  // Reset a bunch of session specific settings
+  DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0);
+  DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0); // TODO: remove, this is useless
+  DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0);
+
+  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+
+  while (hContact)
+  {
+    szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+
+    if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+    {
+      // All these values will be restored during the serv-list receive
+      DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
+      DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
+      DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
+      DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
+      DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
+    }
+
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+  }
+}
+
+
+
 void ResetSettingsOnConnect()
 {
 
@@ -543,9 +575,8 @@ void ResetSettingsOnConnect()
 
 
 	// Reset a bunch of session specific settings
-	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0);
-	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0);
-	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0);
+//	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0);
+  DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -561,11 +592,11 @@ void ResetSettingsOnConnect()
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
 
 			// All these values will be restored during the login
-			DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
-			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
-			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
-			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
-			DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
+//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
+//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
+//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
+//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
+//			DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
 			if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 		}
