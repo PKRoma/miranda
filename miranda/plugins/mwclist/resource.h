@@ -345,6 +345,8 @@
 #define IDC_SCRIPT                      1300
 #define IDC_TILEV                       1301
 #define IDC_GAMMACORRECT                1302
+#define IDC_TILEV2                      1302
+#define IDC_TILEVROWH                   1302
 #define IDC_INTERESTS                   1305
 #define IDC_EMAILS                      1306
 #define IDC_PAST                        1307

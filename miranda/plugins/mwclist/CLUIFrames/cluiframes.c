@@ -1427,7 +1427,33 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
 		int oldHeight;
 
 		// do not collapse/uncollapse client/locked/invisible frames
-		if(Frames[FrameId].align==alClient) return 0;
+		if(Frames[FrameId].align==alClient&&!(Frames[FrameId].Locked||(!Frames[FrameId].visible)||Frames[FrameId].floating)) 
+		{
+			RECT rc;
+			if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) {ulockfrm();return 0;};
+			if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) {ulockfrm();return 0;};
+			GetWindowRect(hwndContactList,&rc);
+
+			if(Frames[FrameId].collapsed==TRUE)	{
+				rc.bottom-=rc.top;
+				rc.bottom-=Frames[FrameId].height;
+				Frames[FrameId].HeightWhenCollapsed=Frames[FrameId].height;
+				Frames[FrameId].collapsed=FALSE;
+			}
+			else
+			{
+				rc.bottom-=rc.top;
+				rc.bottom+=Frames[FrameId].HeightWhenCollapsed;			
+				Frames[FrameId].collapsed=TRUE;
+			}
+				
+			SetWindowPos(hwndContactList,NULL,0,0,rc.right-rc.left,rc.bottom,SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOMOVE);
+			
+			CLUIFramesStoreAllFrames();
+			ulockfrm();
+			return 0;
+
+		}
 		if(Frames[FrameId].Locked||(!Frames[FrameId].visible)) return 0;
 
 		oldHeight=Frames[FrameId].height;
@@ -2000,9 +2026,11 @@ int CLUIFramesResize(const RECT newsize)
 			//move alClient frame
 			i=sdarray[j].realpos;
 			if((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alClient)) {			
+				int oldh;
 				Frames[i].wndSize.top=prevframebottomline+sepw+(tbh);
 				Frames[i].wndSize.bottom=Frames[i].wndSize.top+newheight-sumheight-tbh-sepw;
 
+				oldh=Frames[i].height;
 				Frames[i].height=Frames[i].wndSize.bottom-Frames[i].wndSize.top;
 				Frames[i].prevvisframe=prevframe;
 				prevframe=i;

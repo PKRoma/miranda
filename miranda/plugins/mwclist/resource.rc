@@ -460,12 +460,12 @@ BEGIN
     LTEXT           "Colour:",IDC_STCOLOURTEXT,228,102,37,8,NOT WS_VISIBLE
 END
 
-IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 132
+IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 151
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Contact List Background",IDC_STATIC,4,4,227,124
+    GROUPBOX        "Contact List Background",IDC_STATIC,4,4,227,141
     LTEXT           "Background colour:",IDC_STATIC,12,20,72,8,NOT WS_GROUP
     CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,84,19,32,10
     LTEXT           "Selection colour:",IDC_STATIC,12,36,72,8
@@ -477,15 +477,15 @@ BEGIN
     CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,22,84,100,10
     CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,122,84,101,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,84,101,10
     CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,97,100,10
+                    WS_TABSTOP,22,97,93,10
     CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,122,97,101,10
+                    WS_TABSTOP,22,110,85,10
     CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,110,100,10
+                    WS_TABSTOP,121,110,100,10
     CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,122,110,101,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,97,101,10
     CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
                     150,15,39,10
     CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
@@ -494,6 +494,8 @@ BEGIN
                     BS_AUTORADIOBUTTON,150,25,57,10
     CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
                     BS_AUTORADIOBUTTON,150,45,55,10
+    CONTROL         "Tile vertically according to Row Height",IDC_TILEVROWH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,125,205,10
 END
 
 IDD_OPT_CLCTEXTSIMPLE DIALOGEX 0, 0, 277, 240
@@ -671,7 +673,7 @@ BEGIN
         VERTGUIDE, 22
         VERTGUIDE, 122
         TOPMARGIN, 4
-        BOTTOMMARGIN, 128
+        BOTTOMMARGIN, 147
         HORZGUIDE, 24
         HORZGUIDE, 40
         HORZGUIDE, 73

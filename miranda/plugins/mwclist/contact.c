@@ -29,7 +29,7 @@ extern HANDLE hContactIconChangedEvent;
 extern int GetContactCachedStatus(HANDLE hContact);
 extern char *GetContactCachedProtocol(HANDLE hContact);
 
-static int sortByStatus;
+int sortByStatus;
 static int sortByProto;
 static int sortNoOfflineBottom;
 struct {

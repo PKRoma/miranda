@@ -239,6 +239,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				default:    //clb_topleft
 					destw=bmp.bmWidth;
 					desth=bmp.bmHeight;
+					if (dat->backgroundBmpUse&CLBF_TILEVTOROWHEIGHT)
+					{
+						desth=dat->rowHeight;
+					}
+									
 					break;
 			}
 			for(;y<maxy;y+=desth) {

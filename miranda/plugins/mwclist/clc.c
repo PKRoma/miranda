@@ -39,6 +39,7 @@ extern void InitDisplayNameCache(SortedList *list);
 extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
 int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
+extern int sortByStatus;
 
 void ClcOptionsChanged(void)
 {
@@ -480,6 +481,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			else {	  //item in list already
 				DWORD style=GetWindowLong(hwnd,GWL_STYLE);				
 				if(contact->iImage==(WORD)lParam) break;				
+				if (sortByStatus) dat->NeedResort=1;
+
 				if(!shouldShow && !(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
 					HANDLE hSelItem;
 					struct ClcContact *selcontact;

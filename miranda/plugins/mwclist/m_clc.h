@@ -107,6 +107,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLBF_TILEV        0x2000
 #define CLBF_PROPORTIONAL 0x4000
 #define CLBF_SCROLL       0x8000
+#define CLBF_TILEVTOROWHEIGHT        0x0100
 #define CLM_SETBKBITMAP       (CLM_FIRST+27)   //wParam=mode, lParam=hBitmap (don't delete it), NULL for none
 #define CLM_SETBKCOLOR        (CLM_FIRST+28)   //wParam=a COLORREF, default is GetSysColor(COLOR_3DFACE)
 #define CLM_SETCHECKMARK      (CLM_FIRST+29)   //wParam=hItem, lParam=1 or 0
