@@ -107,6 +107,9 @@ int LoadUtilsModule(void);		// ui: utils (has a few window classes, like HyperLi
 int LoadCLCModule(void);		// window class: CLC control
 int LoadButtonModule(void);		// window class: button class
 int LoadContactsModule(void);    // random: contact
+#ifdef _ALPHA_BASE_
+int LoadUpdateCheckModule(void); // Alpha build update check
+#endif
 
 static int LoadDefaultModules(void)
 {
@@ -124,6 +127,9 @@ static int LoadDefaultModules(void)
 	if(LoadOptionsModule()) return 1;	
 	if(LoadContactsModule()) return 1;	
 	if(LoadAddContactModule()) return 1;
+	#ifdef _ALPHA_BASE_
+	if(LoadUpdateCheckModule()) return 1;
+	#endif
 	if(LoadNewPluginsModule()) return 1; // will call Load() on everything, clist will load first
 
 	//this info will be available at LoadNewPluginsModule()
