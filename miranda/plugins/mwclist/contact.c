@@ -77,7 +77,10 @@ void LoadContactTree(void)
 {
 	HANDLE hContact;
 	int i,hideOffline,status,tick;
-	
+	pdisplayNameCacheEntry cacheEntry;
+		
+
+
 	tick=GetTickCount();
 	CallService(MS_CLUI_LISTBEGINREBUILD,0,0);
 	for(i=1;;i++) {
@@ -89,9 +92,15 @@ void LoadContactTree(void)
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 
 	while(hContact!=NULL) {
-		status=GetContactCachedStatus(hContact);
-		if((!hideOffline || status!=ID_STATUS_OFFLINE) && !DBGetContactSettingByte(hContact,"CList","Hidden",0))
-			ChangeContactIcon(hContact,IconFromStatusMode((char*)GetContactCachedProtocol(hContact),status),1);
+		cacheEntry=GetContactFullCacheEntry(hContact);
+		if (cacheEntry==NULL)
+		{
+			MessageBox(0,"Fail To Get CacheEntry for hContact","!!!!!",0);
+			break;
+		}
+		status=cacheEntry->status;
+		if((!hideOffline || status!=ID_STATUS_OFFLINE) && !cacheEntry->Hidden)
+			ChangeContactIcon(hContact,IconFromStatusMode((char*)cacheEntry->szProto,status),1);
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
 	sortByStatus=DBGetContactSettingByte(NULL,"CList","SortByStatus",SETTING_SORTBYSTATUS_DEFAULT);
@@ -114,18 +123,16 @@ void LoadContactTree(void)
 int CompareContacts(WPARAM wParam,LPARAM lParam)
 {
 	HANDLE a=(HANDLE)wParam,b=(HANDLE)lParam;
-	char namea[128],*nameb;
+//	char namea[128],*nameb;
+	char *namea,*nameb;
 	int statusa,statusb;
 	char *szProto1,*szProto2;
 	int rc;
 
-	statusa=GetContactCachedStatus(a);
-	statusb=GetContactCachedStatus(b);
+	GetContactInfosForSort(a,&szProto1,&namea,&statusa);
+	GetContactInfosForSort(b,&szProto2,&nameb,&statusb);
 
 	if (sortByProto) {
-
-		szProto1=GetContactCachedProtocol(a);
-		szProto2=GetContactCachedProtocol(b);
 
 		/* deal with statuses, online contacts have to go above offline */
 		if((statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) {
@@ -149,12 +156,6 @@ int CompareContacts(WPARAM wParam,LPARAM lParam)
 			return 2*(statusa==ID_STATUS_OFFLINE)-1;
 		}
 	}
-
-
-	nameb=(char*)GetContactDisplayName((WPARAM)a,0);
-	strncpy(namea,nameb,sizeof(namea));
-	namea[sizeof(namea)-1]=0;
-	nameb=(char*)GetContactDisplayName((WPARAM)b,0);
 
 	//otherwise just compare names
 	return _stricmp(namea,nameb);

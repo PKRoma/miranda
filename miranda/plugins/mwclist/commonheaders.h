@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+#ifndef _COMMON_HEADERS_H_
+#define _COMMON_HEADERS_H_
 
 #include <malloc.h>
 
@@ -39,6 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <string.h>
 #include <direct.h>
+#include "m_clist.h"
 #include "resource.h"
 #include "forkthread.h"
 #include <win2k.h>
@@ -47,7 +50,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
-#include "m_clist.h"
 #include <m_options.h>
 #include <m_protosvc.h>
 #include <m_utils.h>
@@ -56,6 +58,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_plugins.h>
 #include "m_genmenu.h"
 #include "genmenu.h"
+#include "m_clui.h"
+#include "m_clc.h"
+#include "clc.h"
+#include "clist.h"
+#include ".\CLUIFrames\cluiframes.h"
+#include ".\CLUIFrames\m_cluiframes.h"
 
 // shared vars
 extern HINSTANCE g_hInst;
@@ -76,6 +84,11 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
+#ifndef CS_DROPSHADOW
+#define CS_DROPSHADOW 0x00020000	
+#endif
+
+
 __inline void *mir_calloc( size_t num, size_t size )
 {
  	void *p=mir_alloc(num*size);
@@ -92,3 +105,5 @@ __inline char * mir_strdup(const char * src)
 	strcpy(p, src);
 	return p;
 }
+
+#endif

@@ -26,6 +26,7 @@
 #include "genmenu.h"
 
 #define TM_AUTOALPHA  1
+#define TM_STATUSBARUPDATE  200
 #define MENU_MIRANDAMENU         0xFFFF1234
 
 static HMODULE hUserDll;
@@ -34,9 +35,30 @@ HWND hwndContactList = NULL;
 HWND hwndStatus;
 HMENU hMenuMain;
 static HANDLE hContactDraggingEvent,hContactDroppedEvent,hContactDragStopEvent;
-static int transparentFocus=1;
 HWND hwndContactTree;
 UINT hMsgGetProfile=0;
+
+extern boolean canloadstatusbar;
+
+HANDLE hSettingChangedHook=0;
+
+static int transparentFocus=1;
+static byte oldhideoffline;
+static int lastreqh=0,requr=0,disableautoupd=1;
+HANDLE hFrameContactTree;
+
+
+typedef struct{
+int CycleStartTick;
+char *szProto;
+int n;
+int TimerCreated;
+} ProtoTicks,*pProtoTicks;
+
+ProtoTicks CycleStartTick[64];//max 64 protocols 
+
+int CycleTimeInterval=2000;
+int CycleIconCount=8;
 
 BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 BOOL (WINAPI *MyAnimateWindow)(HWND hWnd,DWORD dwTime,DWORD dwFlags);
@@ -45,6 +67,16 @@ int CluiOptInit(WPARAM wParam,LPARAM lParam);
 int SortList(WPARAM wParam,LPARAM lParam);
 int LoadCluiServices(void);
 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int CheckProtocolOrder();
+
+extern void SetAllExtraIcons(HWND hwndList);
+extern void ReloadExtraIcons();
+extern void LoadExtraImageFunc();
+extern int CreateStatusBarhWnd(HWND parent);
+extern int CreateStatusBarFrame();
+extern int LoadProtocolOrderModule(void);
+
+#define M_CREATECLC  (WM_USER+1)
 
 static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
@@ -56,7 +88,82 @@ static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 	SetMenuItemInfo(hMenuMain,0,TRUE,&mii);
 	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 	SetMenuItemInfo(hMenuMain,1,TRUE,&mii);
+
+	canloadstatusbar=TRUE;
+	CheckProtocolOrder();
+	SendMessage(hwndContactList,WM_SIZE,0,0);
+	CluiProtocolStatusChanged(0,0);
+	Sleep(0);
+	PostMessage(hwndContactList,M_CREATECLC,0,0);
+	
+	
 	return 0;
+}
+
+pProtoTicks GetProtoTicksByProto(char * szProto)
+{
+	int i;
+
+						for (i=0;i<64;i++)
+						{
+							if (CycleStartTick[i].szProto==NULL) break;
+							if (strcmp(CycleStartTick[i].szProto,szProto)) continue;
+							return(&CycleStartTick[i]);
+						}
+							for (i=0;i<64;i++)
+							{
+								if (CycleStartTick[i].szProto==NULL)
+								{
+									CycleStartTick[i].szProto=mir_strdup(szProto);
+									CycleStartTick[i].CycleStartTick=0;
+									CycleStartTick[i].n=i;
+									return(&CycleStartTick[i]);
+								}
+							}
+return (NULL);
+}
+
+static HICON ExtractIconFromPath(const char *path)
+{
+	char *comma;
+	char file[MAX_PATH],fileFull[MAX_PATH];
+	int n;
+	HICON hIcon;
+
+	lstrcpyn(file,path,sizeof(file));
+	comma=strrchr(file,',');
+	if(comma==NULL) n=0;
+	else {n=atoi(comma+1); *comma=0;}
+    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
+	hIcon=NULL;
+	ExtractIconEx(fileFull,n,NULL,&hIcon,1);
+	return hIcon;
+}
+
+
+HICON GetConnectingIconForProto(char *szProto,int b,int status)
+{
+		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
+		HICON hIcon;
+
+		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
+		str=strrchr(szPath,'\\');
+		if(str!=NULL) *str=0;
+		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_conn_%s.dll,%d", szPath, szProto, b+1);
+		hIcon=ExtractIconFromPath(szFullPath);
+		if (hIcon) return hIcon;
+	if (!strcmp(szProto,"ICQ"))
+	{
+		
+#ifdef _DEBUG
+		char buf [256];
+		sprintf(buf,"Icon %d %d\r\n",GetTickCount(),b);
+		//OutputDebugString(buf);
+#endif
+		return(LoadIcon(g_hInst,(LPCSTR)(IDI_ICQC1+b)));
+	}
+		hIcon=LoadSkinnedProtoIcon(szProto,status);	
+		return(hIcon);
 }
 
 
@@ -75,6 +182,41 @@ static void RestoreMode()
 
 }
 
+int OnSettingChanging(WPARAM wParam,LPARAM lParam)
+{
+	
+	if (wParam==0){return(0);};
+	{
+		DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
+		if (dbcws==NULL){return(0);};
+		
+		if (!strcmp(dbcws->szSetting,"e-mail"))
+		{
+			SetAllExtraIcons(hwndContactTree);
+			return(0);
+		};
+		if (!strcmp(dbcws->szSetting,"Cellular"))
+		{		
+			SetAllExtraIcons(hwndContactTree);
+			return(0);
+		};
+		
+		if (!strcmp(dbcws->szModule,"UserInfo"))
+		{
+			if (!strcmp(dbcws->szSetting,"MyPhone0"))
+			{		
+				SetAllExtraIcons(hwndContactTree);
+				return(0);
+			};
+			if (!strcmp(dbcws->szSetting,"Mye-mail0"))
+			{	
+				SetAllExtraIcons(hwndContactTree);	
+				return(0);
+			};
+		};
+	}
+	return(0);
+};
 
 
 // Disconnect all protocols.
@@ -96,9 +238,65 @@ static void DisconnectAll()
 	
 }
 
+int PreCreateCLC(HWND parent)
+{
+			hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,"",
+					WS_CHILD|WS_CLIPCHILDREN
+					|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
+					|CLS_HIDEOFFLINE
+					//|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
+					|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
+					|CLS_MULTICOLUMN
+					),
+					0,0,0,0,parent,NULL,g_hInst,NULL);
+	
+	return((int)hwndContactTree);
+};
+
+int CreateCLC(HWND parent)
+{
+			//SendMessage(hwndContactList,WM_SIZE,0,0);
+			Sleep(0);
+	{		
+	   // create contact list frame
+		CLISTFrame Frame;
+		memset(&Frame,0,sizeof(Frame));
+		Frame.cbSize=sizeof(CLISTFrame);
+		Frame.hWnd=hwndContactTree;
+		Frame.align=alClient;
+		Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+			//LoadIcon(hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+		Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP;
+		Frame.name=(Translate("My Contacts"));
+		hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
+		//free(Frame.name);
+	CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,hFrameContactTree),(LPARAM)Translate("My Contacts"));	
+	}
+	
+	ReloadExtraIcons();
+	{
+		{	int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+			if(state==SETTING_STATE_NORMAL) ShowWindow(hwndContactList, SW_SHOW);
+			else if(state==SETTING_STATE_MINIMIZED) ShowWindow(hwndContactList, SW_SHOWMINIMIZED);
+		}
+		lastreqh=0;
+		{
+			CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
+		}
+
+		
+		lastreqh=0;
+		disableautoupd=0;
+	}
+hSettingChangedHook=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnSettingChanging);
+return(0);
+};
 
 
-#define M_CREATECLC  (WM_USER+1)
+
+
+
+
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
 	{	LRESULT result;
@@ -155,7 +353,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		DrawMenuBar(hwnd);
 		
 		//create the status wnd
-		hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);
+		//hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);
 		CluiProtocolStatusChanged(0,0);
 		
 		{	MENUITEMINFO mii;
@@ -171,7 +369,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		}
 		
 		//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
-		PostMessage(hwnd,M_CREATECLC,0,0);
+		//PostMessage(hwnd,M_CREATECLC,0,0);
 		
 		hMsgGetProfile=RegisterWindowMessage("Miranda::GetProfile"); // don't localise
 		
@@ -201,13 +399,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		return FALSE;
 
 	case M_CREATECLC:
-		hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,"",
-			WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN
-			|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
-			|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
-			|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0),
-			0,0,0,0,hwnd,NULL,GetModuleHandle(NULL),NULL);
-		SendMessage(hwnd,WM_SIZE,0,0);
+			CreateCLC(hwnd);
 		break;
 
 		// Power management
@@ -236,6 +428,33 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 		
 	case WM_SIZE:
+		{
+				RECT rc;
+
+
+				if(hwndContactList!=NULL){
+					CLUIFramesOnClistResize((WPARAM)hwnd,(LPARAM)0);
+				};
+				GetWindowRect(hwnd, &rc);		
+			if(!CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
+				{ //if docked, dont remember pos (except for width)
+					DBWriteContactSettingDword(NULL,"CList","Height",(DWORD)(rc.bottom - rc.top));
+					DBWriteContactSettingDword(NULL,"CList","x",(DWORD)rc.left);
+					DBWriteContactSettingDword(NULL,"CList","y",(DWORD)rc.top);
+				}
+				DBWriteContactSettingDword(NULL,"CList","Width",(DWORD)(rc.right - rc.left));
+
+			
+			if(wParam==SIZE_MINIMIZED) {
+				if(DBGetContactSettingByte(NULL,"CList","Min2Tray",SETTING_MIN2TRAY_DEFAULT)) {
+					ShowWindow(hwnd, SW_HIDE);
+					DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
+				}
+				else DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_MINIMIZED);
+			}
+			return(0);
+		}
+/*
 		if(IsZoomed(hwnd)) ShowWindow(hwnd,SW_SHOWNORMAL);
 			{	RECT rect,rcStatus;
 			GetClientRect(hwnd, &rect);
@@ -254,6 +473,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				}
 				else DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_MINIMIZED);
 			}
+*/
 			// drop thru
 		case WM_MOVE:
 			if(!IsIconic(hwnd)) {
@@ -271,7 +491,15 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return FALSE;
 			
 		case WM_SETFOCUS:
-			SetFocus(hwndContactTree);
+				{	
+				boolean isfloating;
+				isfloating=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLOATING,hFrameContactTree),0);
+				if (isfloating==FALSE)
+				{
+					SetFocus(hwndContactTree);
+				};
+				}
+			//SetFocus(hwndContactTree);
 			return 0;
 			
 		case WM_ACTIVATE:
@@ -310,6 +538,39 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			
 		case WM_TIMER:
+			
+			if ((int)wParam>=TM_STATUSBARUPDATE||(int)wParam<=TM_STATUSBARUPDATE+64)
+			{
+					
+					int status,i;
+
+					ProtoTicks *pt=NULL;
+					for (i=0;i<64;i++)
+					{
+					
+					pt=&CycleStartTick[i];
+
+					if (pt->szProto!=NULL&&pt->TimerCreated==1)
+					{
+					
+							status=CallProtoService(pt->szProto,PS_GETSTATUS,0,0);
+
+							if (!(status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES))
+							{													
+									pt->CycleStartTick=0;
+										KillTimer(hwnd,TM_STATUSBARUPDATE+pt->n);
+										pt->TimerCreated=0;
+							}
+					}
+
+					};
+				//RedrawWindow(hwndStatus,NULL,NULL,RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+				//UpdateWindow(hwndStatus);
+					InvalidateRect(hwndStatus,NULL,FALSE);
+					PostMessage(hwndStatus,WM_PAINT,0,0);
+				break;
+			}
+			
 			if ((int)wParam==TM_AUTOALPHA)
 			{	int inwnd;
 			
@@ -425,12 +686,16 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return FALSE;
 			case WM_KEYDOWN:
 				CallService(MS_CLIST_MENUPROCESSHOTKEY,wParam,MPCF_MAINMENU|MPCF_CONTACTMENU);
+				if (wParam==VK_F5)
+				{
+					SendMessage(hwndContactTree,CLM_AUTOREBUILD,0,0);
+				};
 				break;
 				
 			case WM_GETMINMAXINFO:
 				DefWindowProc(hwnd,msg,wParam,lParam);
-				((LPMINMAXINFO)lParam)->ptMinTrackSize.x=16+GetSystemMetrics(SM_CXHTHUMB);
-				((LPMINMAXINFO)lParam)->ptMinTrackSize.y=16;
+				((LPMINMAXINFO)lParam)->ptMinTrackSize.x=18;
+				if (requr==0){((LPMINMAXINFO)lParam)->ptMinTrackSize.y=CLUIFramesGetMinHeight();};
 				return 0;
 				
 			case WM_DISPLAYCHANGE:
@@ -443,6 +708,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				{
 					switch (((LPNMHDR)lParam)->code)
 					{
+					case CLN_NEWCONTACT:
+					case CLN_LISTREBUILT:
+						{
+							SetAllExtraIcons(hwndContactTree);
+							return(FALSE);
+						}								
 					case CLN_EXPANDED:
 						{
 							NMCLISTCONTROL *nmc=(NMCLISTCONTROL*)lParam;
@@ -484,6 +755,52 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						}
 					case CLN_LISTSIZECHANGE:
 						{
+
+						NMCLISTCONTROL *nmc=(NMCLISTCONTROL*)lParam;
+						RECT rcWindow,rcTree,rcWorkArea;
+						int maxHeight,newHeight;
+
+						if (disableautoupd==1){break;};
+						if(!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) break;
+
+						
+						if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) break;
+						if (hFrameContactTree==0)break;
+						maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",75);
+						GetWindowRect(hwnd,&rcWindow);
+						GetWindowRect(hwndContactTree,&rcTree);
+						SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);
+						if (nmc->pt.y>(rcWorkArea.bottom-rcWorkArea.top)) 
+						{
+							break;
+						};
+						if ((nmc->pt.y)==lastreqh)
+						{
+						//	break;
+						}
+						lastreqh=nmc->pt.y;
+						newHeight=max(nmc->pt.y,3)+3+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
+						if (newHeight==(rcWindow.bottom-rcWindow.top)) break;
+
+						if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
+							newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;
+						if(DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0)) {
+							rcWindow.top=rcWindow.bottom-newHeight;
+							if(rcWindow.top<rcWorkArea.top) rcWindow.top=rcWorkArea.top;
+						}
+						else {
+						 	rcWindow.bottom=rcWindow.top+newHeight;
+							if(rcWindow.bottom>rcWorkArea.bottom) rcWindow.bottom=rcWorkArea.bottom;
+						}
+						if (requr==1){break;};
+						requr=1;					
+						SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
+						GetWindowRect(hwnd,&rcWindow);
+						requr=0;
+						
+						break;
+
+/*
 							NMCLISTCONTROL *nmc=(NMCLISTCONTROL*)lParam;
 							RECT rcWindow,rcTree,rcWorkArea;
 							int maxHeight,newHeight;
@@ -507,6 +824,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 							}
 							SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
 							break;
+*/
 						}
 					case NM_CLICK:
 						{	NMCLISTCONTROL *nm=(NMCLISTCONTROL*)lParam;
@@ -534,6 +852,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 							HMENU hMenu;
 							RECT rc;
 							POINT pt;
+							int totcount;
+							ProtocolData *PD;
+							int menuid;
 							
 							hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 							nParts=SendMessage(hwndStatus,SB_GETPARTS,0,0);
@@ -541,13 +862,29 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								nPanel=nParts-1;
 								SendMessage(hwndStatus,SB_GETRECT,nPanel,(LPARAM)&rc);
 								if (nm->pt.x < rc.left) return FALSE;
-						} else { nPanel=nm->dwItemSpec; }
-						if (nParts>1) hMenu=GetSubMenu(hMenu,nPanel);
-						SendMessage(hwndStatus,SB_GETRECT,nPanel,(LPARAM)&rc);
-						pt.x=rc.left;
-						pt.y=rc.top;
-						ClientToScreen(hwndStatus,&pt);
-						TrackPopupMenu(hMenu,TPM_BOTTOMALIGN|TPM_LEFTALIGN,pt.x,pt.y,0,hwnd,NULL);
+						} else { 
+								nPanel=nm->dwItemSpec; 
+								SendMessage(hwndStatus,SB_GETRECT,nPanel,(LPARAM)&rc);
+								}
+						
+						//if (nParts>1) hMenu=GetSubMenu(hMenu,nPanel);
+
+						totcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",0);
+
+								PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
+								if(PD==NULL){return(0);};
+								menuid=PD->protopos;
+								menuid=totcount-menuid-1;
+								if (menuid<0){break;};
+								hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+								if(GetSubMenu(hMenu,menuid)) hMenu=GetSubMenu(hMenu,menuid);
+						if (hMenu!=NULL)				
+						{						
+							pt.x=rc.left;
+							pt.y=rc.top;
+							ClientToScreen(hwndStatus,&pt);
+							TrackPopupMenu(hMenu,TPM_BOTTOMALIGN|TPM_LEFTALIGN,pt.x,pt.y,0,hwnd,NULL);
+						}
 						}
 					}
 				}
@@ -603,17 +940,59 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
 		case WM_DRAWITEM:
 			{	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
-			if(dis->hwndItem==hwndStatus) {
+			if(dis->hwndItem==hwndStatus&&IsWindowVisible(hwndStatus)) {
+				ProtocolData *PD=(ProtocolData *)dis->itemData;
 				char *szProto=(char*)dis->itemData;
 				int status,x;
 				SIZE textSize;
 				BYTE showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);
+
+				if (PD==NULL){break;};			
+
+				szProto=PD->RealName;
+				
 				status=CallProtoService(szProto,PS_GETSTATUS,0,0);
 				SetBkMode(dis->hDC,TRANSPARENT);
 				x=dis->rcItem.left;
 				if(showOpts&1) {
 					HICON hIcon;
+					char buf [256];
+					
+					if (status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+					{
+						int b;
+						
+						ProtoTicks *pt=NULL;
+						pt=GetProtoTicksByProto(szProto);
+						if (pt!=NULL)
+						{
+						
+						if (pt->CycleStartTick==0) 
+						{					
+							sprintf(buf,"SetTimer %d\r\n",pt->n);
+							OutputDebugString(buf);
+
+							KillTimer(hwnd,TM_STATUSBARUPDATE+pt->n);
+							SetTimer(hwnd,TM_STATUSBARUPDATE+pt->n,(int)(CycleTimeInterval/CycleIconCount)/1,0);
+							pt->TimerCreated=1;
+							pt->CycleStartTick=GetTickCount();
+						};
+						
+						b=((GetTickCount()-pt->CycleStartTick)/(CycleTimeInterval/CycleIconCount))%CycleIconCount;
+						
+						hIcon=GetConnectingIconForProto(szProto,b,status);
+						//hIcon=LoadSkinnedProtoIcon(szProto,status);
+						}else
+						{
+							hIcon=LoadSkinnedProtoIcon(szProto,status);
+						}
+						
+					}else
+					
+					{				
+
 					hIcon=LoadSkinnedProtoIcon(szProto,status);
+					}
 					DrawIconEx(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-GetSystemMetrics(SM_CYSMICON))>>1,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 					x+=GetSystemMetrics(SM_CXSMICON)+2;
 				}
@@ -696,6 +1075,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			
 			return FALSE;
 		case WM_DESTROY:
+/*
 			if(!IsIconic(hwnd)) {
 				RECT rc;
 				GetWindowRect(hwnd, &rc);
@@ -717,6 +1097,31 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			ImageList_Destroy(himlMirandaIcon);
 			FreeLibrary(hUserDll);
 			PostQuitMessage(0);
+	*/
+			{
+			
+			//saving state
+			int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);				
+			
+			if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
+
+			DisconnectAll();
+			
+			if (state==SETTING_STATE_NORMAL){ShowWindow(hwnd,SW_HIDE);};
+
+			CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);
+			DestroyWindow(hwndContactTree);
+
+
+			UnLoadCLUIFramesModule();		
+			
+			ImageList_Destroy(himlMirandaIcon);
+			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
+			FreeLibrary(hUserDll);
+			PostQuitMessage(0);
+
+			hwndContactList=NULL;
+			}
 		default:
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
@@ -727,6 +1132,9 @@ static int CluiIconsChanged(WPARAM wParam,LPARAM lParam)
 {
 	ImageList_ReplaceIcon(himlMirandaIcon,0,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	DrawMenuBar(hwndContactList);
+	ReloadExtraIcons();
+	SetAllExtraIcons(hwndContactTree);
+
 	return 0;
 }
 
@@ -768,15 +1176,16 @@ static int MenuItem_RenameContact(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-#ifndef CS_DROPSHADOW
-#define CS_DROPSHADOW 0x00020000	
-#endif
-
 int LoadCLUIModule(void)
 {
 	WNDCLASS wndclass;
 	DBVARIANT dbv;
 	char titleText[256];
+	ATOM	a;
+	int laster;
+	canloadstatusbar=FALSE;
+	hFrameContactTree=0;
+	
 	
 	hUserDll = LoadLibrary("user32.dll");
 	if (hUserDll) {
@@ -791,18 +1200,18 @@ int LoadCLUIModule(void)
 	hContactDragStopEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	LoadCluiServices();
 
-    wndclass.style         = CS_HREDRAW | CS_VREDRAW | ( IsWinVerXPPlus() && DBGetContactSettingByte(NULL,"CList", "WindowShadow",0) == 1 ? CS_DROPSHADOW : 0) ;
+    wndclass.style         = ( IsWinVerXPPlus() && DBGetContactSettingByte(NULL,"CList", "WindowShadow",0) == 1 ? CS_DROPSHADOW : 0) ;
     wndclass.lpfnWndProc   = ContactListWndProc;
     wndclass.cbClsExtra    = 0;
     wndclass.cbWndExtra    = 0;
-    wndclass.hInstance     = GetModuleHandle(NULL);
+    wndclass.hInstance     = g_hInst;
     wndclass.hIcon         = LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
     wndclass.hCursor       = LoadCursor (NULL, IDC_ARROW);
     wndclass.hbrBackground = (HBRUSH)(COLOR_3DFACE+1);
     wndclass.lpszMenuName  = MAKEINTRESOURCE(IDR_CLISTMENU);
     wndclass.lpszClassName = MIRANDACLASS;
 	
-	RegisterClass(&wndclass);
+	a=RegisterClass(&wndclass);
 	
 	if(DBGetContactSetting(NULL,"CList","TitleText",&dbv))
 		lstrcpyn(titleText,MIRANDANAME,sizeof(titleText));
@@ -810,27 +1219,39 @@ int LoadCLUIModule(void)
 		lstrcpyn(titleText,dbv.pszVal,sizeof(titleText));
 		DBFreeVariant(&dbv);
 	}
+	
+	
+	oldhideoffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
+
 	hwndContactList= CreateWindowEx(DBGetContactSettingByte(NULL,"CList","ToolWindow",SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0,
 						  MIRANDACLASS,
 						  titleText,
 						  (DBGetContactSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT)?WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX:0)|WS_POPUPWINDOW|WS_THICKFRAME|WS_CLIPCHILDREN,
-						  (int)DBGetContactSettingDword(NULL,"CList","x",700),
-						  (int)DBGetContactSettingDword(NULL,"CList","y",221),
-						  (int)DBGetContactSettingDword(NULL,"CList","Width",108),
-						  (int)DBGetContactSettingDword(NULL,"CList","Height",310),
+						  (int)DBGetContactSettingDword(NULL,"CList","x",50),
+						  (int)DBGetContactSettingDword(NULL,"CList","y",50),
+						  (int)DBGetContactSettingDword(NULL,"CList","Width",150),
+						  (int)DBGetContactSettingDword(NULL,"CList","Height",200),
 						  NULL,
 						  NULL,
-						  GetModuleHandle(NULL),
+						  g_hInst,
 						  NULL);
+
+	laster=GetLastError();
+	PreCreateCLC(hwndContactList);
 	
-	{	int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
-	hMenuMain=GetMenu(hwndContactList);
-	if(!DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT)) SetMenu(hwndContactList,NULL);
-	if(state==SETTING_STATE_NORMAL) ShowWindow(hwndContactList, SW_SHOW);
-	else if(state==SETTING_STATE_MINIMIZED) ShowWindow(hwndContactList, SW_SHOWMINIMIZED);
-	SetWindowPos(hwndContactList, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	LoadCLUIFramesModule();
+	LoadExtraImageFunc();	
+				// create status bar frame
+	CreateStatusBarhWnd(hwndContactList);				
+	CreateStatusBarFrame();
+
+	{	//int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+		hMenuMain=GetMenu(hwndContactList);
+		if(!DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT)) SetMenu(hwndContactList,NULL);
+		SetWindowPos(hwndContactList, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	}
-	{	CLISTMENUITEM mi;
+	
+	 {	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.flags=0;
@@ -843,5 +1264,9 @@ int LoadCLUIModule(void)
 	hRenameMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, MenuItem_PreBuild);
 	}
+	
+	 LoadProtocolOrderModule();
+	 lastreqh=0;
+	 
 	return 0;
 }

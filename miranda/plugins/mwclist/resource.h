@@ -2,8 +2,6 @@
 // Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
-#include "genmenu_rc.h"
-
 #define IDC_AUTHICON                    1
 #define IDC_NOTOALL                     3
 #define IDC_APPLY                       3
@@ -105,11 +103,23 @@
 #define IDD_DENYREASON                  256
 #define IDD_ADDCONTACT                  257
 #define IDD_OPT_CONTACT                 261
+#define IDD_OPT_PROTOCOLORDER           262
 #define IDI_MULTISEND                   263
 #define IDI_DOWNARROW                   264
 #define IDD_CREDITS                     265
 #define IDD_OPT_IDLE                    268
+#define IDI_ICQC1                       269
+#define IDI_ICQC2                       270
+#define IDI_ICQC3                       271
+#define IDI_ICQC4                       272
+#define IDI_ICQC5                       273
+#define IDI_ICQC6                       274
+#define IDI_ICQC7                       275
+#define IDI_ICQC8                       276
+#define IDI_EMAIL                       277
+#define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
+#define IDC_DEFBKCOLOR                  1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
 #define IDI_OUTTOLUNCH                  1003
@@ -183,10 +193,15 @@
 #define IDC_ALWAYSSTATUS                1103
 #define IDC_NETSEARCH                   1104
 #define IDC_CONFIRMDELETE               1104
+#define IDC_EXTRA_PROTO                 1104
 #define IDC_SORTBYPROTO                 1105
 #define IDC_SHOWOPTIONS                 1105
+#define IDC_EXTRA_EMAIL                 1105
 #define IDC_SEARCHURL                   1106
+#define IDC_EXTRA_CELLULAR              1106
+#define IDC_EXTRA_ADV2                  1107
 #define IDC_BUILDTIME                   1108
+#define IDC_EXTRA_ADV1                  1108
 #define IDC_NUMBER                      1113
 #define IDC_UIN                         1123
 #define IDC_TRANSPARENT                 1124
@@ -343,6 +358,7 @@
 #define IDC_SHOWPROTO                   1324
 #define IDC_SHOWSTATUS                  1325
 #define IDC_EQUALSECTIONS               1326
+#define IDC_SHOWSIZEGRIP                1327
 #define IDC_SHOWSBAR                    1329
 #define IDC_RIGHTMIRANDA                1330
 #define IDC_RIGHTSTATUS                 1331
@@ -490,6 +506,8 @@
 #define IDC_DEVS                        1589
 #define IDC_GPL                         1590
 #define IDC_LOGO                        1591
+#define IDC_PROTOCOLORDER               1591
+#define IDC_PROTOCOLORDERWARNING        1592
 #define IDC_CREDITSTEXT                 1595
 #define IDC_WSLOCK                      1599
 #define IDC_BLINKTIME                   1607
@@ -515,6 +533,16 @@
 #define IDC_AASHORTIDLE                 1651
 #define IDC_AALONGSTATUS                1652
 #define IDC_AALONGIDLE                  1656
+#define IDD_OPT_GENMENU                 11267
+#define IDC_MENUITEMS                   11710
+#define IDC_MENUOBJECTS                 11711
+#define IDC_NOTSUPPORTWARNING           11712
+#define IDC_INSERTSEPARATOR             11715
+#define IDC_GENMENU_SERVICE             11716
+#define IDC_GENMENU_CUSTOMNAME          11717
+#define IDC_GENMENU_SET                 11718
+#define IDC_GENMENU_SET2                11719
+#define IDC_GENMENU_DEFAULT             11719
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -543,7 +571,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        269
+#define _APS_NEXT_RESOURCE_VALUE        278
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1657
 #define _APS_NEXT_SYMED_VALUE           101

@@ -25,12 +25,178 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 
 extern HWND hwndContactTree,hwndContactList,hwndStatus;
+extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
+
+static int GetHwndTree(WPARAM wParam,LPARAM lParam)
+{
+	return (int)hwndContactTree;
+}
+
 
 static int GetHwnd(WPARAM wParam,LPARAM lParam)
 {
 	return (int)hwndContactList;
 }
+int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
+{
+	int protoCount,i;
+	PROTOCOLDESCRIPTOR **proto;
+	PROTOCOLDESCRIPTOR *curprotocol;
+	int *partWidths,partCount;
+	int borders[3];
+	int status;
+	int storedcount;
+	char *szStoredName;
+	char buf[10];
+	int toshow;
+	
 
+	
+	if (hwndStatus==0) return(0);
+	
+	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
+	if(protoCount==0) return 0;
+
+	//CheckProtocolOrder();
+	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
+	if (storedcount==-1){return(0);};
+	
+	SendMessage(hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
+	
+	SendMessage(hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT)); 
+	//
+	/* only working after restart
+	{
+	int olds=GetWindowLong(hwndStatus,GWL_STYLE);
+	//olds&=~SBARS_SIZEGRIP;
+	//if (olds&DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE)) olds|=SBARS_SIZEGRIP;
+	olds|=SBARS_SIZEGRIP;
+	SetWindowLong(hwndStatus,GWL_STYLE,olds);
+	};
+*/
+	partWidths=(int*)malloc(storedcount*sizeof(int));
+	if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
+		RECT rc;
+		int part;
+		SendMessage(hwndStatus,WM_SIZE,0,0);
+		GetClientRect(hwndStatus,&rc);
+		rc.right-=borders[0]*2+GetSystemMetrics(SM_CXVSCROLL);
+
+		toshow=0;
+		for (i=0;i<storedcount;i++)
+		{
+			itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;};
+			toshow++;
+		};
+
+		if (toshow>0)
+		{
+			for (part=0,i=0;i<storedcount;i++)
+			{
+				//DBGetContactSettingByte(0,"Protocols","ProtoCount",-1)
+
+				itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+				if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;};
+
+				partWidths[part]=(part+1)*rc.right/toshow-(borders[2]>>1);
+				//partWidths[part]=40*part+40; 
+				part++;
+			};
+		//partCount=part;
+		}
+		partCount=toshow;		
+
+	}
+	else {
+		char *modeDescr;
+		HDC hdc;
+		SIZE textSize;
+		BYTE showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",5);
+		int x;
+		char szName[32];
+
+		hdc=GetDC(NULL);
+		SelectObject(hdc,(HFONT)SendMessage(hwndStatus,WM_GETFONT,0,0));
+
+		for(partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
+			//if(proto[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
+
+			itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+			//show this protocol ?
+			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;};
+			
+			itoa(i,(char *)&buf,10);
+			szStoredName=DBGetString(NULL,"Protocols",buf);
+			if (szStoredName==NULL){continue;};
+			curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
+			if (curprotocol==0){continue;};
+			
+			
+			x=2;
+			if(showOpts&1) x+=GetSystemMetrics(SM_CXSMICON);
+			if(showOpts&2) {
+				CallProtoService(curprotocol->szName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
+				if(showOpts&4 && lstrlen(szName)<sizeof(szName)-1) lstrcat(szName," ");
+				GetTextExtentPoint32(hdc,szName,lstrlen(szName),&textSize);				
+				x+=textSize.cx;
+			}
+			if(showOpts&4) {
+				modeDescr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0),0);
+				GetTextExtentPoint32(hdc,modeDescr,lstrlen(modeDescr),&textSize);
+				x+=textSize.cx;
+			}
+			partWidths[partCount]=(partCount?partWidths[partCount-1]:0)+x+2;
+			partCount++;
+		}
+		ReleaseDC(NULL,hdc);
+	}
+	if(partCount==0) {
+		SendMessage(hwndStatus,SB_SIMPLE,TRUE,0);
+		free(partWidths);
+		return 0;
+	}
+	SendMessage(hwndStatus,SB_SIMPLE,FALSE,0);
+
+	partWidths[partCount-1]=-1;
+
+	SendMessage(hwndStatus,SB_SETMINHEIGHT,GetSystemMetrics(SM_CYSMICON)+2,0);
+	SendMessage(hwndStatus,SB_SETPARTS,partCount,(LPARAM)partWidths);
+	free(partWidths);
+
+	
+	for(partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
+		ProtocolData	*PD;
+			
+			itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+			//show this protocol ?
+			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;};	
+
+			itoa(i,(char *)&buf,10);
+			szStoredName=DBGetString(NULL,"Protocols",buf);
+			if (szStoredName==NULL){continue;};
+			curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
+			if (curprotocol==0){continue;};
+
+		status=CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0);
+		//SendMessage(hwndStatus,SB_SETTEXT,partCount|SBT_OWNERDRAW,(LPARAM)curprotocol->szName);
+		PD=(ProtocolData*)malloc(sizeof(ProtocolData));
+		PD->RealName=strdup(curprotocol->szName);
+		itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
+		PD->protopos=DBGetContactSettingDword(NULL,"Protocols",(char *)&buf,-1);
+		{
+		int flags;
+		flags = SBT_OWNERDRAW; 
+		if ( DBGetContactSettingByte(NULL,"CLUI","SBarBevel", 1)==0 ) flags |= SBT_NOBORDERS;
+		SendMessage(hwndStatus,SB_SETTEXT,partCount|flags,(LPARAM)PD);
+		}
+		partCount++;
+	}
+	return 0;
+}
+
+
+/*
 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
 	int protoCount,i;
@@ -108,7 +274,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-
+*/
 int SortList(WPARAM wParam,LPARAM lParam)
 {
 	//unnecessary: CLC does this automatically
@@ -203,6 +369,7 @@ static int GetCaps(WPARAM wParam,LPARAM lParam)
 int LoadCluiServices(void)
 {
 	CreateServiceFunction(MS_CLUI_GETHWND,GetHwnd);
+	CreateServiceFunction(MS_CLUI_GETHWNDTREE,GetHwndTree);
 	CreateServiceFunction(MS_CLUI_PROTOCOLSTATUSCHANGED,CluiProtocolStatusChanged);
 	CreateServiceFunction(MS_CLUI_GROUPADDED,GroupAdded);
 	CreateServiceFunction(MS_CLUI_CONTACTSETICON,ContactSetIcon);

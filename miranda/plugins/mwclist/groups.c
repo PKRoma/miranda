@@ -21,8 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "m_clui.h"
-#include "clist.h"
+
 
 static int RenameGroup(WPARAM wParam,LPARAM lParam);
 static int MoveGroupBefore(WPARAM wParam,LPARAM lParam);
@@ -191,8 +190,11 @@ static int RenameGroupWithMove(int groupId,const char *szName,int move)
 	//must rename setting in all child contacts too
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	do {
-		if(DBGetContactSetting(hContact,"CList","Group",&dbv)) continue;
-		if(strcmp(dbv.pszVal,oldName)) continue;
+				pdisplayNameCacheEntry cacheEntry;
+				cacheEntry=GetContactFullCacheEntry(hContact);
+
+		if(strlen(cacheEntry->szGroup)==0) continue;
+		if(strcmp(cacheEntry->szGroup,oldName)) continue;
 		DBWriteContactSettingString(hContact,"CList","Group",szName);
 	} while((hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0))!=NULL);
 

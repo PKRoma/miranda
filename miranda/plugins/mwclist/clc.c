@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
+#include "clist.h"
 
 static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -99,7 +100,7 @@ static int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 	int i;
 
 	if(ack->type==ACKTYPE_STATUS) {
-		WindowList_Broadcast(hClcWindowList,INTM_INVALIDATE,0,0);
+		WindowList_BroadcastAsync(hClcWindowList,INTM_INVALIDATE,0,0);
 		if (ack->result==ACKRESULT_SUCCESS) {
 			for (i=0;i<hClcProtoCount;i++) {
 				if (!lstrcmp(clcProto[i].szProto,ack->szModule)) {
@@ -114,25 +115,25 @@ static int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 
 static int ClcContactAdded(WPARAM wParam,LPARAM lParam)
 {
-	WindowList_Broadcast(hClcWindowList,INTM_CONTACTADDED,wParam,lParam);
+	WindowList_BroadcastAsync(hClcWindowList,INTM_CONTACTADDED,wParam,lParam);
 	return 0;
 }
 
 static int ClcContactDeleted(WPARAM wParam,LPARAM lParam)
 {
-	WindowList_Broadcast(hClcWindowList,INTM_CONTACTDELETED,wParam,lParam);
+	WindowList_BroadcastAsync(hClcWindowList,INTM_CONTACTDELETED,wParam,lParam);
 	return 0;
 }
 
 static int ClcContactIconChanged(WPARAM wParam,LPARAM lParam)
 {
-	WindowList_Broadcast(hClcWindowList,INTM_ICONCHANGED,wParam,lParam);
+	WindowList_BroadcastAsync(hClcWindowList,INTM_ICONCHANGED,wParam,lParam);
 	return 0;
 }
 
 static int ClcIconsChanged(WPARAM wParam,LPARAM lParam)
 {
-	WindowList_Broadcast(hClcWindowList,INTM_INVALIDATE,0,0);
+	WindowList_BroadcastAsync(hClcWindowList,INTM_INVALIDATE,0,0);
 	return 0;
 }
 
@@ -358,7 +359,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 						break;  //only expanded has changed: no action reqd
 				}
 			}
-			SaveStateAndRebuildList(hwnd,dat);
+			//SaveStateAndRebuildList(hwnd,dat);
+			SetTimer(hwnd,TIMERID_REBUILDAFTER,1,NULL);
 			break;
 		}
 
@@ -423,17 +425,22 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		{	struct ClcContact *contact=NULL;
 			struct ClcGroup *group=NULL;
 			int recalcScrollBar=0,shouldShow;
+			pdisplayNameCacheEntry cacheEntry;
+
 			WORD status;
 			char *szProto;
 			int NeedResort=0;
 
+			cacheEntry=GetContactFullCacheEntry((HANDLE)wParam);
+
 			//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-			szProto=GetContactCachedProtocol((HANDLE)wParam);
+			//szProto=GetContactCachedProtocol((HANDLE)wParam);
+			szProto=cacheEntry->szProto;
 			if(szProto==NULL) status=ID_STATUS_OFFLINE;
-			else status=GetContactCachedStatus((HANDLE)wParam);
+			else status=cacheEntry->status;
 			
 			shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN
-			            || !DBGetContactSettingByte((HANDLE)wParam,"CList","Hidden",0))
+			            || !cacheEntry->Hidden)
 					&& (!IsHiddenMode(dat,status)
 					    || CallService(MS_CLIST_GETCONTACTICON,wParam,0)!=lParam);	//this means an offline msg is flashing, so the contact should be shown
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL)) {				
@@ -749,14 +756,17 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			if (wParam==TIMERID_REBUILDAFTER)
 			{
 				KillTimer(hwnd,TIMERID_REBUILDAFTER);
+#ifdef _DEBUG
+OutputDebugString("Delayed REBUILDAFTER\r\n");
+#endif
 				SaveStateAndRebuildList(hwnd,dat);
 				break;
 			}
 			if (wParam==TIMERID_DELAYEDRESORTCLC)
 			{
 				KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-#ifdef __DEBUG
-OutputDebugString("Delayed Sort CLC");
+#ifdef _DEBUG
+OutputDebugString("Delayed Sort CLC\r\n");
 #endif
 				SortCLC(hwnd,dat,1);
 				break;

@@ -134,7 +134,10 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 
 			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 			while(hContact) {
-				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+				pdisplayNameCacheEntry cacheEntry;
+				cacheEntry=GetContactFullCacheEntry(hContact);
+
+				szProto=cacheEntry->szProto;
 				if(szProto!=NULL && !strcmp(szProto,ack->szModule))
 					if(DBGetContactSettingByte(hContact,"CList","Delete",0))
 						CallService(MS_DB_CONTACT_DELETE,(WPARAM)hContact,0);
@@ -165,8 +168,15 @@ int IconFromStatusMode(const char *szProto,int status)
 static int GetContactIcon(WPARAM wParam,LPARAM lParam)
 {
 	char *szProto;
-	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-	return IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE));
+	int status;
+	
+	pdisplayNameCacheEntry cacheEntry;
+	cacheEntry=GetContactFullCacheEntry((HANDLE)wParam);
+
+	//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
+	szProto=cacheEntry->szProto;
+	status=cacheEntry->status;
+	return IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:status);
 }
 
 static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)

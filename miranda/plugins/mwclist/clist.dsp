@@ -43,7 +43,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -90,6 +91,30 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "CLUIFrames"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\CLUIFrames\cluiframes.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\CLUIFrames\extraimage.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\CLUIFrames\framesmenu.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\CLUIFrames\m_cluiframes.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\CLUIFrames\protocolorder.c
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\clc.c
@@ -287,6 +312,10 @@ SOURCE=.\clui.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\CLUIFrames\cluiframes.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\cluiopts.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"
@@ -418,6 +447,10 @@ SOURCE=.\keyboard.c
 !ENDIF 
 
 # End Source File
+# Begin Source File
+
+SOURCE=.\CLUIFrames\statusbar.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -474,6 +507,38 @@ SOURCE=.\statusmodes.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=.\res\1.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\2.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\3.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\4.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\5.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\6.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\7.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\8.ico
+# End Source File
 # Begin Source File
 
 SOURCE=.\res\addcontact.ico

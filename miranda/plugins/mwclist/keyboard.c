@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "clist.h"
 
 #define HOTKEY_SHOWHIDE 0x01
 #define HOTKEY_READMSG  0x02

@@ -27,6 +27,9 @@ extern HMENU hMenuMain;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern hFrameHelperStatusBar;
+extern void ReAssignExtraIcons();
+extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 
 static UINT expertOnlyControls[]={IDC_BRINGTOFRONT, IDC_AUTOSIZE,IDC_STATIC21,IDC_MAXSIZEHEIGHT,IDC_MAXSIZESPIN,IDC_STATIC22,IDC_AUTOSIZEUPWARD,IDC_SHOWMAINMENU,IDC_SHOWCAPTION,IDC_CLIENTDRAG};
 int CluiOptInit(WPARAM wParam,LPARAM lParam)
@@ -98,14 +101,36 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			{	DBVARIANT dbv;
 				char *s;
+				char szUin[20];
+
 				if(DBGetContactSetting(NULL,"CList","TitleText",&dbv))
 					s=mir_strdup(dbv.pszVal);
 					else
 					s=mir_strdup(MIRANDANAME);
 
+					dbv.pszVal=s;
 
-				SetDlgItemText(hwndDlg,IDC_TITLETEXT,s);
+				SetDlgItemText(hwndDlg,IDC_TITLETEXT,dbv.pszVal);
 				mir_free(dbv.pszVal);
+				SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)MIRANDANAME);
+				wsprintf(szUin,"%u",DBGetContactSettingDword(NULL,"ICQ","UIN",0));
+				SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)szUin);
+				
+				if(!DBGetContactSetting(NULL,"ICQ","Nick",&dbv)) {
+					SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
+					mir_free(dbv.pszVal);
+					dbv.pszVal=NULL;
+				}
+				if(!DBGetContactSetting(NULL,"ICQ","FirstName",&dbv)) {
+					SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
+					mir_free(dbv.pszVal);
+					dbv.pszVal=NULL;
+				}
+				if(!DBGetContactSetting(NULL,"ICQ","e-mail",&dbv)) {
+					SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
+					mir_free(dbv.pszVal);
+					dbv.pszVal=NULL;
+				}
 			}
 			if(!IsWinVer2000Plus()) {
 				EnableWindow(GetDlgItem(hwndDlg,IDC_FADEINOUT),FALSE);
@@ -126,6 +151,17 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_SETPOS,TRUE,DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT));
 			SendDlgItemMessage(hwndDlg,IDC_TRANSINACTIVE,TBM_SETPOS,TRUE,DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT));
 			SendMessage(hwndDlg,WM_HSCROLL,0x12345678,0);
+
+			{//===EXTRA Icons
+			CheckDlgButton(hwndDlg, IDC_EXTRA_PROTO, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",1) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_EXTRA_EMAIL, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",1) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_EXTRA_CELLULAR, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",1) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_EXTRA_ADV1, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",1) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_EXTRA_ADV2, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",1) ? BST_CHECKED : BST_UNCHECKED);			
+			
+			};
+			
+
 			return TRUE;
 			
 		case WM_COMMAND:
@@ -240,6 +276,16 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 					}
 					SendMessage(hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
+					{
+						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_PROTO));
+						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_EMAIL));
+						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_CELLULAR));
+						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_ADV1));
+						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_ADV2));
+						//SetAllExtraIcons()	
+						ReAssignExtraIcons();
+					};			
+					
 					return TRUE;
 			}
 			break;
@@ -263,6 +309,9 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			CheckDlgButton(hwndDlg, IDC_RIGHTMIRANDA, !IsDlgButtonChecked(hwndDlg,IDC_RIGHTSTATUS) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_EQUALSECTIONS, DBGetContactSettingByte(NULL,"CLUI","EqualSections",0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SBPANELBEVEL, DBGetContactSettingByte(NULL,"CLUI","SBarBevel",1) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOWSIZEGRIP, DBGetContactSettingByte(NULL,"CLUI","SBarUseSizeGrip",1) ? BST_CHECKED : BST_UNCHECKED);
+			SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLUI","SBarBKColor",CLR_DEFAULT));
+
 			if(!IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR)) {
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWICON),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWPROTO),FALSE);
@@ -271,6 +320,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				EnableWindow(GetDlgItem(hwndDlg,IDC_RIGHTMIRANDA),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_EQUALSECTIONS),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SBPANELBEVEL),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWSIZEGRIP),FALSE);
+
 			}
 			return TRUE;
 		case WM_COMMAND:
@@ -282,22 +333,61 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				EnableWindow(GetDlgItem(hwndDlg,IDC_RIGHTMIRANDA),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_EQUALSECTIONS),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SBPANELBEVEL),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWSIZEGRIP),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
+			
 			}
+			if (LOWORD(wParam)==IDC_DEFBKCOLOR)
+			{
+							SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETCOLOUR,0,CLR_DEFAULT);
+							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);		
+			};
+
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 		case WM_NOTIFY:
 			switch (((LPNMHDR)lParam)->code)
 			{
 				case PSN_APPLY:
+					{
+					int frameopt;
+
+					COLORREF col;
+					col=SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_GETCOLOUR,0,0);
+					DBWriteContactSettingDword(NULL,"CLUI","SBarBKColor",col);
+						
+						
+						
 					DBWriteContactSettingByte(NULL,"CLUI","ShowSBar",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 					DBWriteContactSettingByte(NULL,"CLUI","SBarShow",(BYTE)((IsDlgButtonChecked(hwndDlg,IDC_SHOWICON)?1:0)|(IsDlgButtonChecked(hwndDlg,IDC_SHOWPROTO)?2:0)|(IsDlgButtonChecked(hwndDlg,IDC_SHOWSTATUS)?4:0)));
 					DBWriteContactSettingByte(NULL,"CLUI","SBarRightClk",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_RIGHTMIRANDA));
 					DBWriteContactSettingByte(NULL,"CLUI","EqualSections",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EQUALSECTIONS));
 					DBWriteContactSettingByte(NULL,"CLUI","SBarBevel",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SBPANELBEVEL));
+					DBWriteContactSettingByte(NULL,"CLUI","SBarUseSizeGrip",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWSIZEGRIP));
+/*
 					if(IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR)) ShowWindow(hwndStatus,SW_SHOW);
 					else ShowWindow(hwndStatus,SW_HIDE);
+*/
+					
+					frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),0);
+				
+					frameopt=frameopt & (~F_VISIBLE);		
+
+					if(IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR)) 
+					{
+						ShowWindow(hwndStatus,SW_SHOW);
+						frameopt|=F_VISIBLE;
+					}
+					else 
+					{
+						ShowWindow(hwndStatus,SW_HIDE);
+					};
+				    CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),frameopt);
+
 					SendMessage(hwndContactList,WM_SIZE,0,0);
+					//CheckProtocolOrder();
+					CluiProtocolStatusChanged(0,0);			
 					return TRUE;
+					}
 			}
 			break;
 	}

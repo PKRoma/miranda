@@ -9,7 +9,7 @@
 //
 #include <windows.h>
 #include <winres.h>
-#include "../../include/statusmodes.h"
+#include "statusmodes.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -22,6 +22,49 @@
 LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 #pragma code_page(1251)
 #endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_SMS                 ICON    DISCARDABLE     "res\\sms.ico"
+IDI_ICQC1               ICON    DISCARDABLE     "res\\1.ico"
+IDI_ICQC2               ICON    DISCARDABLE     "res\\2.ico"
+IDI_ICQC3               ICON    DISCARDABLE     "res\\3.ico"
+IDI_ICQC4               ICON    DISCARDABLE     "res\\4.ico"
+IDI_ICQC5               ICON    DISCARDABLE     "res\\5.ico"
+IDI_ICQC6               ICON    DISCARDABLE     "res\\6.ico"
+IDI_ICQC7               ICON    DISCARDABLE     "res\\7.ico"
+IDI_ICQC8               ICON    DISCARDABLE     "res\\8.ico"
+IDI_EMAIL               ICON    DISCARDABLE     "res\\sendmail.ico"
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
+IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
+IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
+IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
+IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -51,24 +94,6 @@ BEGIN
     PUSHBUTTON      "Set",IDC_GENMENU_SET,128,196,17,14,WS_DISABLED
     PUSHBUTTON      "Default",IDC_GENMENU_DEFAULT,77,196,43,14,WS_DISABLED
 END
-
-#endif    // Russian resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
 STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
@@ -222,19 +247,19 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,151,86,147,10
     LTEXT           "Title bar text:",IDC_STATIC,12,106,51,8
     GROUPBOX        "Translucency options (Windows 2000/XP only)",IDC_STATIC,
-                    4,130,305,98
+                    4,130,191,95
     CONTROL         "Fade contact list in/out",IDC_FADEINOUT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,13,144,163,10
     CONTROL         "Transparent contact list",IDC_TRANSPARENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,13,161,151,9
-    LTEXT           "Inactive opacity:",IDC_STATIC11,23,176,89,8
+    LTEXT           "Inactive opacity:",IDC_STATIC11,23,176,67,8
     CONTROL         "Slider2",IDC_TRANSINACTIVE,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,112,175,130,11
-    LTEXT           "Active opacity:",IDC_STATIC12,23,192,89,8
+                    TBS_NOTICKS | WS_TABSTOP,95,175,70,11
+    LTEXT           "Active opacity:",IDC_STATIC12,23,192,67,8
     CONTROL         "Slider2",IDC_TRANSACTIVE,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,112,191,130,11
-    LTEXT           "000%",IDC_INACTIVEPERC,246,176,29,8,SS_NOPREFIX
-    LTEXT           "000%",IDC_ACTIVEPERC,246,192,29,8,SS_NOPREFIX
+                    TBS_NOTICKS | WS_TABSTOP,95,190,70,11
+    LTEXT           "000%",IDC_INACTIVEPERC,165,175,25,8,SS_NOPREFIX
+    LTEXT           "000%",IDC_ACTIVEPERC,165,195,25,8,SS_NOPREFIX
     CONTROL         "Show menu bar",IDC_SHOWMAINMENU,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,13,60,128,10
     CONTROL         "Easy move",IDC_CLIENTDRAG,"Button",BS_AUTOCHECKBOX | 
@@ -247,6 +272,17 @@ BEGIN
     EDITTEXT        IDC_TITLETEXT,63,104,72,12,ES_AUTOHSCROLL
     CONTROL         "Enable drop shadow (restart required)",IDC_DROPSHADOW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,207,138,10
+    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,200,130,110,95
+    CONTROL         "Protocol Type",IDC_EXTRA_PROTO,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,210,150,70,10
+    CONTROL         "E-mail",IDC_EXTRA_EMAIL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,210,164,75,10
+    CONTROL         "Cellular",IDC_EXTRA_CELLULAR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,210,176,92,10
+    CONTROL         "Advanced #2",IDC_EXTRA_ADV2,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,210,189,92,10
+    CONTROL         "Advanced #1",IDC_EXTRA_ADV1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,210,202,92,10
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
@@ -412,30 +448,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,122,110,101,10
 END
 
-IDD_OPT_SBAR DIALOGEX 0, 0, 178, 157
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Status Bar",IDC_STATIC,4,4,170,149
-    CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,17,152,10
-    CONTROL         "Show icons",IDC_SHOWICON,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,33,142,10
-    CONTROL         "Show protocol names",IDC_SHOWPROTO,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,48,142,10
-    CONTROL         "Show status text",IDC_SHOWSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,63,142,10
-    CONTROL         "Right click opens status menu",IDC_RIGHTSTATUS,"Button",
-                    BS_AUTORADIOBUTTON,22,124,142,10
-    CONTROL         "Right click opens Miranda IM menu",IDC_RIGHTMIRANDA,
-                    "Button",BS_AUTORADIOBUTTON,22,111,142,10
-    CONTROL         "Make sections equal width",IDC_EQUALSECTIONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,79,142,10
-    CONTROL         "Show bevel effect on panels",IDC_SBPANELBEVEL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,94,107,10
-END
-
 IDD_OPT_CLCTEXTSIMPLE DIALOGEX 0, 0, 277, 240
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
@@ -596,17 +608,6 @@ BEGIN
         HORZGUIDE, 115
     END
 
-    IDD_OPT_SBAR, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 174
-        VERTGUIDE, 12
-        VERTGUIDE, 22
-        VERTGUIDE, 164
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 153
-    END
-
     IDD_OPT_CLCTEXTSIMPLE, DIALOG
     BEGIN
         LEFTMARGIN, 4
@@ -646,7 +647,7 @@ END
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
-    "#include ""../../SDK/headers_c/statusmodes.h""\r\n"
+    "#include ""statusmodes.h""\r\n"
     "\0"
 END
 
@@ -658,19 +659,6 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
-IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
-IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
-IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
-IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -784,6 +772,136 @@ END
 #endif    // !_MAC
 
 #endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Dutch (Netherlands) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NLD)
+#ifdef _WIN32
+LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OPT_PROTOCOLORDER DIALOG DISCARDABLE  0, 0, 300, 211
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
+                    IDC_PROTOCOLORDERWARNING,5,190,289,14,NOT WS_VISIBLE
+    GROUPBOX        "Protocol Order && Visibility",IDC_STATIC,75,0,147,185
+    CONTROL         "Tree1",IDC_PROTOCOLORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
+                    WS_BORDER | WS_TABSTOP,85,40,132,95
+    LTEXT           "Show protocols in the following order, drag to choose another order:",
+                    IDC_STATIC,85,15,132,20
+    LTEXT           "Note: In MultiWindow plugin this option change order only in StatusBar.",
+                    IDC_STATIC,85,160,130,20
+    PUSHBUTTON      "Reset",IDC_RESETPROTOCOLDATA,120,140,50,14,BS_NOTIFY
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_OPT_PROTOCOLORDER, DIALOG
+    BEGIN
+        VERTGUIDE, 8
+        VERTGUIDE, 140
+        VERTGUIDE, 158
+        VERTGUIDE, 290
+        VERTGUIDE, 297
+        BOTTOMMARGIN, 209
+        HORZGUIDE, 17
+        HORZGUIDE, 38
+        HORZGUIDE, 133
+        HORZGUIDE, 138
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Dutch (Netherlands) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Canada) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENC)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OPT_SBAR DIALOGEX 0, 0, 178, 181
+STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Status Bar",IDC_STATIC,4,4,170,171
+    CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,12,17,152,10
+    CONTROL         "Show icons",IDC_SHOWICON,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,35,142,10
+    CONTROL         "Show protocol names",IDC_SHOWPROTO,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,47,142,10
+    CONTROL         "Show status text",IDC_SHOWSTATUS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,59,142,10
+    CONTROL         "Right click opens status menu",IDC_RIGHTSTATUS,"Button",
+                    BS_AUTORADIOBUTTON,20,100,142,10
+    CONTROL         "Right click opens Miranda menu",IDC_RIGHTMIRANDA,"Button",
+                    BS_AUTORADIOBUTTON,20,111,142,10
+    CONTROL         "Make sections equal width",IDC_EQUALSECTIONS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,130,142,10
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,100,150,32,10
+    LTEXT           "Background colour:",IDC_STATIC,20,150,72,8,NOT WS_GROUP
+    PUSHBUTTON      "-",IDC_DEFBKCOLOR,135,150,6,10
+    CONTROL         "Show size grip",IDC_SHOWSIZEGRIP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,72,142,10
+    CONTROL         "Show bevel effect on panels",IDC_SBPANELBEVEL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,86,107,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_OPT_SBAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 174
+        VERTGUIDE, 12
+        VERTGUIDE, 22
+        VERTGUIDE, 164
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 177
+        HORZGUIDE, 33
+        HORZGUIDE, 73
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (Canada) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

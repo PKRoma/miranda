@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
+#include "clist.h"
 
 //routines for managing adding/removal of items in the list, including sorting
 
@@ -107,17 +108,29 @@ struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const char *szName,DWORD
 			group->totalMembers=0;
 			if(flags!=(DWORD)-1 && pNextField==NULL && calcTotalMembers) {
 				HANDLE hContact;
-				DBVARIANT dbv;
+				//DBVARIANT dbv;
+				int tick;
+				char buf[256];
+
 				DWORD style=GetWindowLong(hwnd,GWL_STYLE);
+
 				hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
+
+				tick=GetTickCount();
 				while(hContact) {
-					if(!DBGetContactSetting(hContact,"CList","Group",&dbv)) {
-						if(!lstrcmp(dbv.pszVal,szName) && (style&CLS_SHOWHIDDEN || !DBGetContactSettingByte(hContact,"CList","Hidden",0)))
+					pdisplayNameCacheEntry cacheEntry;
+					cacheEntry=GetContactFullCacheEntry(hContact);
+
+					if(cacheEntry->szGroup!=NULL&&strlen(cacheEntry->szGroup)!=0) {
+						if(!lstrcmp(cacheEntry->szGroup,szName) && (style&CLS_SHOWHIDDEN || !cacheEntry->Hidden))
 							group->totalMembers++;
-						mir_free(dbv.pszVal);
+						//mir_free(dbv.pszVal);
 					}
 					hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 				}
+				tick=GetTickCount()-tick;
+				sprintf(buf,"AddGroup Finds %d\r\n",tick);
+				OutputDebugString(buf);
 			}
 		}
 	} while(pNextField);
@@ -169,13 +182,16 @@ int AddInfoItemToGroup(struct ClcGroup *group,int flags,const char *pszText)
 	return i;
 }
 
-static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,HANDLE hContact)
+static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdisplayNameCacheEntry cacheEntry)
 {
 	char *szProto;
 	WORD apparentMode;
 	DWORD idleMode;
+	HANDLE hContact;
 
 	int i;
+	
+	hContact=cacheEntry->hContact;
 	
 	dat->NeedResort=1;
 	for(i=group->contactCount-1;i>=0;i--)
@@ -184,17 +200,18 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,HANDLE 
 	group->contact[i].type=CLCIT_CONTACT;
 	group->contact[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
 	group->contact[i].hContact=hContact;
-	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-	if(szProto!=NULL&&!IsHiddenMode(dat,DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE)))
+	szProto=cacheEntry->szProto;
+	if(szProto!=NULL&&!IsHiddenMode(dat,cacheEntry->status))
 		group->contact[i].flags|=CONTACTF_ONLINE;
-	apparentMode=szProto!=NULL?DBGetContactSettingWord(hContact,szProto,"ApparentMode",0):0;
+	apparentMode=szProto!=NULL?cacheEntry->ApparentMode:0;
 	if(apparentMode==ID_STATUS_OFFLINE)	group->contact[i].flags|=CONTACTF_INVISTO;
 	else if(apparentMode==ID_STATUS_ONLINE) group->contact[i].flags|=CONTACTF_VISTO;
 	else if(apparentMode) group->contact[i].flags|=CONTACTF_VISTO|CONTACTF_INVISTO;
-	if(DBGetContactSettingByte(hContact,"CList","NotOnList",0)) group->contact[i].flags|=CONTACTF_NOTONLIST;
-	idleMode=szProto!=NULL?DBGetContactSettingDword(hContact,szProto,"IdleTS",0):0;
+	if(cacheEntry->NotOnList) group->contact[i].flags|=CONTACTF_NOTONLIST;
+	idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
 	if (idleMode) group->contact[i].flags|=CONTACTF_IDLE;
-	lstrcpyn(group->contact[i].szText,(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0),sizeof(group->contact[i].szText));
+
+	lstrcpyn(group->contact[i].szText,cacheEntry->name,sizeof(group->contact[i].szText));
 	group->contact[i].proto = szProto;
 	
 	ClearRowByIndexCache();
@@ -203,10 +220,16 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,HANDLE 
 void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)
 {
 	struct ClcGroup *group;
-	DBVARIANT dbv;
+	pdisplayNameCacheEntry cacheEntry;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	WORD status;
-	char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+	char *szProto;
+	
+	
+	cacheEntry=GetContactFullCacheEntry(hContact);
+	szProto=cacheEntry->szProto;
+
+	//char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 	
 	dat->NeedResort=1;
 	ClearRowByIndexCache();
@@ -214,37 +237,37 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 	if(style&CLS_NOHIDEOFFLINE) checkHideOffline=0;
 	if(checkHideOffline) {
 		if(szProto==NULL) status=ID_STATUS_OFFLINE;
-		else status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
+		else status=cacheEntry->status;
 	}
 
-	if(DBGetContactSetting(hContact,"CList","Group",&dbv))
+	if(strlen(cacheEntry->szGroup)==0)
 		group=&dat->list;
 	else {
-		group=AddGroup(hwnd,dat,dbv.pszVal,(DWORD)-1,0,0);
+		group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);
 		if(group==NULL) {
 			int i,len;
 			DWORD groupFlags;
 			char *szGroupName;
-			if(!(style&CLS_HIDEEMPTYGROUPS)) {mir_free(dbv.pszVal); return;}
+			if(!(style&CLS_HIDEEMPTYGROUPS)) {/*mir_free(dbv.pszVal);*/return;}
 			if(checkHideOffline && IsHiddenMode(dat,status)) {
 				for(i=1;;i++) {
 					szGroupName=(char*)CallService(MS_CLIST_GROUPGETNAME2,i,(LPARAM)&groupFlags);
-					if(szGroupName==NULL) {mir_free(dbv.pszVal); return;}   //never happens
-					if(!lstrcmp(szGroupName,dbv.pszVal)) break;
+					if(szGroupName==NULL) {/*mir_free(dbv.pszVal);*/ return;}   //never happens
+					if(!lstrcmp(szGroupName,cacheEntry->szGroup)) break;
 				}
-				if(groupFlags&GROUPF_HIDEOFFLINE) {mir_free(dbv.pszVal); return;}
+				if(groupFlags&GROUPF_HIDEOFFLINE) {/*mir_free(dbv.pszVal);*/ return;}
 			}
 			for(i=1;;i++) {
 				szGroupName=(char*)CallService(MS_CLIST_GROUPGETNAME2,i,(LPARAM)&groupFlags);
-				if(szGroupName==NULL) {mir_free(dbv.pszVal); return;}   //never happens
-				if(!lstrcmp(szGroupName,dbv.pszVal)) break;
+				if(szGroupName==NULL) {/*mir_free(dbv.pszVal);*/ return;}   //never happens
+				if(!lstrcmp(szGroupName,cacheEntry->szGroup)) break;
 				len=lstrlen(szGroupName);
-				if(!strncmp(szGroupName,dbv.pszVal,len) && dbv.pszVal[len]=='\\')
+				if(!strncmp(szGroupName,cacheEntry->szGroup,len) && cacheEntry->szGroup[len]=='\\')
 					AddGroup(hwnd,dat,szGroupName,groupFlags,i,1);
 			}
-			group=AddGroup(hwnd,dat,dbv.pszVal,groupFlags,i,1);
+			group=AddGroup(hwnd,dat,cacheEntry->szGroup,groupFlags,i,1);
 		}
-		mir_free(dbv.pszVal);
+	//	mir_free(dbv.pszVal);
 	}
 	if(checkHideOffline) {
 		if(IsHiddenMode(dat,status) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
@@ -252,7 +275,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 			return;
 		}
 	}
-	AddContactToGroup(dat,group,hContact);
+	AddContactToGroup(dat,group,cacheEntry);
 	if(updateTotalCount) group->totalMembers++;
 	ClearRowByIndexCache();
 }
@@ -322,11 +345,11 @@ void DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 
 void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 {
-	char *szProto;
+//	char *szProto;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	HANDLE hContact;
 	struct ClcGroup *group;
-	DBVARIANT dbv;
+	//DBVARIANT dbv;
 	int tick=GetTickCount();
 
 	ClearRowByIndexCache();
@@ -351,27 +374,35 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	while(hContact) {
-		if(style&CLS_SHOWHIDDEN || !DBGetContactSettingByte(hContact,"CList","Hidden",0)) {
-			if(DBGetContactSetting(hContact,"CList","Group",&dbv))
+		
+		pdisplayNameCacheEntry cacheEntry;
+		
+		cacheEntry=GetContactFullCacheEntry(hContact);
+		if (cacheEntry==NULL)
+		{
+			MessageBox(0,"Fail To Get CacheEntry for hContact","!!!!!!!!",0);
+		}
+		if(style&CLS_SHOWHIDDEN || !cacheEntry->Hidden) {
+			if(strlen(cacheEntry->szGroup)==0)
 				group=&dat->list;
 			else {
-				group=AddGroup(hwnd,dat,dbv.pszVal,(DWORD)-1,0,0);
-				mir_free(dbv.pszVal);
+				group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);
+				//mir_free(dbv.pszVal);
 			}
 
 			if(group!=NULL) {
 				group->totalMembers++;
 				if(!(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
-					szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-					if(szProto==NULL) {
+					//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+					if(cacheEntry->szProto==NULL) {
 						if(!IsHiddenMode(dat,ID_STATUS_OFFLINE))
-							AddContactToGroup(dat,group,hContact);
+							AddContactToGroup(dat,group,cacheEntry);
 					}
 					else
-						if(!IsHiddenMode(dat,DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE)))
-							AddContactToGroup(dat,group,hContact);
+						if(!IsHiddenMode(dat,cacheEntry->status))
+							AddContactToGroup(dat,group,cacheEntry);
 				}
-				else AddContactToGroup(dat,group,hContact);
+				else AddContactToGroup(dat,group,cacheEntry);
 			}
 		}
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);

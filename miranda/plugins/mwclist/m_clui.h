@@ -25,6 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //you probably shouldn't need to call anything in here. Look in
 //ui/contactlist/m_clist.h instead
 
+//get ContactTree hwnd
+#define MS_CLUI_GETHWNDTREE     "CLUI/GetHwndTree"
+
+
 //gets the handle for the contact list window
 //wParam=lParam=0
 //returns the HWND

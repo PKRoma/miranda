@@ -92,6 +92,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 // never called by a newer plugin loader.
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
+	
+	MessageBox(0,"You Running Old Miranda, use >30-10-2004 version!","MultiWindow Clist",0);
+	CListInitialise(link);
 	return 1;
 }
 
