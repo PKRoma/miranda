@@ -183,6 +183,10 @@ SOURCE=.\jabber_ssl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_std.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_svc.cpp
 # ADD CPP /Yu
 # End Source File

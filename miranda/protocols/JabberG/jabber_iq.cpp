@@ -134,10 +134,10 @@ void JabberIqAdd(unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC fun
 	LeaveCriticalSection(&csIqList);
 }
 
-JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc(char *xmlns)
+JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc(char* xmlns)
 {
 	unsigned int len, count, i;
-	char *p, *q;
+	char* p, *q;
 
 	if (xmlns == NULL)
 		return NULL;

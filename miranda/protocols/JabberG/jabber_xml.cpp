@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "jabber.h"
 
-static BOOL JabberXmlProcessElem(XmlState *xmlState, XmlElemType elemType, char *elemText, char *elemAttr);
+static BOOL JabberXmlProcessElem(XmlState *xmlState, XmlElemType elemType, char* elemText, char* elemAttr);
 static void JabberXmlRemoveChild(XmlNode *node, XmlNode *child);
 
 void JabberXmlInitState(XmlState *xmlState)
@@ -99,10 +99,10 @@ BOOL JabberXmlSetCallback(XmlState *xmlState, int depth, XmlElemType type, JABBE
 
 #define TAG_MAX_LEN 50
 #define ATTR_MAX_LEN 1024
-int JabberXmlParse(XmlState *xmlState, char *buffer, int datalen)
+int JabberXmlParse(XmlState *xmlState, char* buffer, int datalen)
 {
-	char *p, *q, *r, *eob;
-	char *str;
+	char* p, *q, *r, *eob;
+	char* str;
 	int num;
 	char tag[TAG_MAX_LEN];
 	char attr[ATTR_MAX_LEN];
@@ -166,7 +166,7 @@ int JabberXmlParse(XmlState *xmlState, char *buffer, int datalen)
 		else {	// found inner text
 			for (q=p+1; q<eob && *q!='<'; q++);
 			if (q < eob) {	// found starting bracket of the next element
-				str = (char *) malloc(q-p+1);
+				str = ( char* )malloc(q-p+1);
 				strncpy(str, p, q-p);
 				str[q-p] = '\0';
 				JabberXmlProcessElem(xmlState, ELEM_TEXT, str, NULL);
@@ -182,11 +182,11 @@ int JabberXmlParse(XmlState *xmlState, char *buffer, int datalen)
 	return num;
 }
 
-static void JabberXmlParseAttr(XmlNode *node, char *text)
+static void JabberXmlParseAttr(XmlNode *node, char* text)
 {
-	char *kstart, *vstart;
+	char* kstart, *vstart;
 	int klen, vlen;
-	char *p;
+	char* p;
 	XmlAttr *a;
 
 	if (node==NULL || text==NULL || strlen(text)<=0)
@@ -215,7 +215,7 @@ static void JabberXmlParseAttr(XmlNode *node, char *text)
 		for (;*p!='\0' && (*p==' ' || *p=='\t'); p++);
 
 		if (*p == '\0') {
-			a->name = (char *) malloc(klen+1);
+			a->name = ( char* )malloc(klen+1);
 			strncpy(a->name, kstart, klen);
 			a->name[klen] = '\0';
 			a->value = _strdup("");
@@ -223,7 +223,7 @@ static void JabberXmlParseAttr(XmlNode *node, char *text)
 		}
 
 		if (*p != '=') {
-			a->name = (char *) malloc(klen+1);
+			a->name = ( char* )malloc(klen+1);
 			strncpy(a->name, kstart, klen);
 			a->name[klen] = '\0';
 			a->value = _strdup("");
@@ -237,7 +237,7 @@ static void JabberXmlParseAttr(XmlNode *node, char *text)
 		for (;*p!='\0' && (*p==' ' || *p=='\t'); p++);
 
 		if (*p == '\0') {
-			a->name = (char *) malloc(klen+1);
+			a->name = ( char* )malloc(klen+1);
 			strncpy(a->name, kstart, klen);
 			a->name[klen] = '\0';
 			a->value = _strdup("");
@@ -258,20 +258,20 @@ static void JabberXmlParseAttr(XmlNode *node, char *text)
 			vlen = p-vstart;
 		}
 
-		a->name = (char *) malloc(klen+1);
+		a->name = ( char* )malloc(klen+1);
 		strncpy(a->name, kstart, klen);
 		a->name[klen] = '\0';
-		a->value = (char *) malloc(vlen+1);
+		a->value = ( char* )malloc(vlen+1);
 		strncpy(a->value, vstart, vlen);
 		a->value[vlen] = '\0';
 	}
 }
 
-static BOOL JabberXmlProcessElem(XmlState *xmlState, XmlElemType elemType, char *elemText, char *elemAttr)
+static BOOL JabberXmlProcessElem(XmlState *xmlState, XmlElemType elemType, char* elemText, char* elemAttr)
 {
 	XmlNode *node, *parentNode, *n;
 	BOOL activateCallback = FALSE;
-	char *text, *attr;
+	char* text, *attr;
 
 	if (elemText == NULL) return FALSE;
 
@@ -378,7 +378,7 @@ static BOOL JabberXmlProcessElem(XmlState *xmlState, XmlElemType elemType, char 
 	return TRUE;
 }
 
-char *JabberXmlGetAttrValue(XmlNode *node, char *key)
+char* JabberXmlGetAttrValue(XmlNode *node, char* key)
 {
 	int i;
 
@@ -391,12 +391,12 @@ char *JabberXmlGetAttrValue(XmlNode *node, char *key)
 	return NULL;
 }
 
-XmlNode *JabberXmlGetChild(XmlNode *node, char *tag)
+XmlNode *JabberXmlGetChild(XmlNode *node, char* tag)
 {
 	return JabberXmlGetNthChild(node, tag, 1);
 }
 
-XmlNode *JabberXmlGetNthChild(XmlNode *node, char *tag, int nth)
+XmlNode *JabberXmlGetNthChild(XmlNode *node, char* tag, int nth)
 {
 	int i, num;
 
@@ -414,10 +414,10 @@ XmlNode *JabberXmlGetNthChild(XmlNode *node, char *tag, int nth)
 	return NULL;
 }
 
-XmlNode *JabberXmlGetChildWithGivenAttrValue(XmlNode *node, char *tag, char *attrKey, char *attrValue)
+XmlNode *JabberXmlGetChildWithGivenAttrValue(XmlNode *node, char* tag, char* attrKey, char* attrValue)
 {
 	int i;
-	char *str;
+	char* str;
 
 	if (node==NULL || node->numChild<=0 || tag==NULL || strlen(tag)<=0 || attrKey==NULL || strlen(attrKey)<=0 || attrValue==NULL || strlen(attrValue)<=0)
 		return NULL;
@@ -449,7 +449,7 @@ void JabberXmlDumpAll(XmlState *xmlState)
 
 void JabberXmlDumpNode(XmlNode *node)
 {
-	char *str;
+	char* str;
 	int i;
 
 	if (node == NULL) {
@@ -457,7 +457,7 @@ void JabberXmlDumpNode(XmlNode *node)
 		return;
 	}
 
-	str = (char *) malloc(256);
+	str = ( char* )malloc(256);
 	str[0] = '\0';
 	for (i=0; i<node->depth; i++)
 		strcat(str, "  ");
@@ -588,7 +588,7 @@ XmlNode *JabberXmlCopyNode(XmlNode *node)
 }
 
 #ifdef _DEBUG
-XmlNode *JabberXmlCreateNode(char *name)
+XmlNode *JabberXmlCreateNode(char* name)
 {
 	XmlNode *n;
 
@@ -601,7 +601,7 @@ XmlNode *JabberXmlCreateNode(char *name)
 	return n;
 }
 
-void JabberXmlAddAttr(XmlNode *n, char *name, char *value)
+void JabberXmlAddAttr(XmlNode *n, char* name, char* value)
 {
 	int i;
 
@@ -616,7 +616,7 @@ void JabberXmlAddAttr(XmlNode *n, char *name, char *value)
 	n->attr[i]->value = _strdup(value);
 }
 
-XmlNode *JabberXmlAddChild(XmlNode *n, char *name)
+XmlNode *JabberXmlAddChild(XmlNode *n, char* name)
 {
 	int i;
 
@@ -632,7 +632,7 @@ XmlNode *JabberXmlAddChild(XmlNode *n, char *name)
 	return n->child[i];
 }
 
-void JabberXmlAddText(XmlNode *n, char *text)
+void JabberXmlAddText(XmlNode *n, char* text)
 {
 	if (n!=NULL && text!=NULL) {
 		if (n->text) free(n->text);

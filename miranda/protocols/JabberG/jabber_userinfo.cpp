@@ -30,15 +30,15 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 
 int JabberUserInfoInit(WPARAM wParam, LPARAM lParam)
 {
-	char *szProto;
+	char* szProto;
 	HANDLE hContact;
 	OPTIONSDIALOGPAGE odp = {0};
 
-	if (!CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM) jabberProtoName))
+	if (!JCallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM) jabberProtoName))
 		return 0;
 
 	hContact = (HANDLE) lParam;
-	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+	szProto = ( char* )JCallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 	if (szProto!=NULL && !strcmp(szProto, jabberProtoName)) {
 		odp.cbSize = sizeof(odp);
 		odp.hIcon = NULL;
@@ -47,12 +47,12 @@ int JabberUserInfoInit(WPARAM wParam, LPARAM lParam)
 		odp.position = -2000000000;
 		odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_JABBER);
 		odp.pszTitle = jabberModuleName;
-		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) &odp);
+		JCallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) &odp);
 		odp.pfnDlgProc = JabberUserPhotoDlgProc;
 		odp.position = 2000000000;
 		odp.pszTemplate = MAKEINTRESOURCE(IDD_VCARD_PHOTO);
-		odp.pszTitle = Translate("Photo");
-		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) &odp);
+		odp.pszTitle = JTranslate("Photo");
+		JCallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) &odp);
 	}
 	return 0;
 }
@@ -71,19 +71,19 @@ static BOOL CALLBACK JabberUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 			DBVARIANT dbv;
 			HANDLE hContact;
 			HWND hwndList;
-			char *jid;
+			char* jid;
 			int count, i, index;
 			JABBER_LIST_ITEM *item;
 			JABBER_RESOURCE_STATUS *r;
-			char *localResource;
+			char* localResource;
 
 			hwndList = GetDlgItem(hwndDlg, IDC_INFO_RESOURCE);
 			SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
 			SetDlgItemText(hwndDlg, IDC_INFO_JID, "");
 			SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, "");
-			SetDlgItemText(hwndDlg, IDC_SOFTWARE, Translate("<click resource to view>"));
-			SetDlgItemText(hwndDlg, IDC_VERSION, Translate("<click resource to view>"));
-			SetDlgItemText(hwndDlg, IDC_SYSTEM, Translate("<click resource to view>"));
+			SetDlgItemText(hwndDlg, IDC_SOFTWARE, JTranslate("<click resource to view>"));
+			SetDlgItemText(hwndDlg, IDC_VERSION, JTranslate("<click resource to view>"));
+			SetDlgItemText(hwndDlg, IDC_SYSTEM, JTranslate("<click resource to view>"));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SOFTWARE), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_VERSION), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SYSTEM), FALSE);
@@ -107,27 +107,27 @@ static BOOL CALLBACK JabberUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 						}
 						switch (item->subscription) {
 						case SUB_BOTH:
-							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, Translate("both"));
+							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, JTranslate("both"));
 							break;
 						case SUB_TO:
-							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, Translate("to"));
+							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, JTranslate("to"));
 							break;
 						case SUB_FROM:
-							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, Translate("from"));
+							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, JTranslate("from"));
 							break;
 						default:
-							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, Translate("none"));
+							SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, JTranslate("none"));
 							break;
 						}
 					}
 					else {
-						SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, Translate("none (not on roster)"));
+						SetDlgItemText(hwndDlg, IDC_SUBSCRIPTION, JTranslate("none (not on roster)"));
 					}
 				}
 				else {
 					EnableWindow(hwndList, FALSE);
 				}
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 		}
 		break;
@@ -154,19 +154,19 @@ static BOOL CALLBACK JabberUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 					HWND hwndList;
 					HANDLE hContact;
 					DBVARIANT dbv;
-					char *szResource;
+					char* szResource;
 					int nItem, i;
 					JABBER_LIST_ITEM *item;
 					JABBER_RESOURCE_STATUS *r;
-					char *jid;
+					char* jid;
 
 					hwndList = GetDlgItem(hwndDlg, IDC_INFO_RESOURCE);
 					hContact = (HANDLE) GetWindowLong(hwndDlg, GWL_USERDATA);
 					if (!DBGetContactSetting(hContact, jabberProtoName, "jid", &dbv)) {
 						jid = dbv.pszVal;
 						nItem = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
-						szResource = (char *) SendMessage(hwndList, LB_GETITEMDATA, (WPARAM) nItem, 0);
-						if (szResource!=(char *)LB_ERR && (item=JabberListGetItemPtr(LIST_ROSTER, jid))!=NULL && (r=item->resource)!=NULL) {
+						szResource = ( char* )SendMessage(hwndList, LB_GETITEMDATA, (WPARAM) nItem, 0);
+						if (szResource!=(char* )LB_ERR && (item=JabberListGetItemPtr(LIST_ROSTER, jid))!=NULL && (r=item->resource)!=NULL) {
 							for (i=0; i<item->resourceCount && strcmp(r[i].resourceName, szResource); i++);
 							if (i < item->resourceCount) {
 								if (r[i].software != NULL) {
@@ -174,7 +174,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 									EnableWindow(GetDlgItem(hwndDlg, IDC_SOFTWARE), TRUE);
 								}
 								else {
-									SetDlgItemText(hwndDlg, IDC_SOFTWARE, Translate("<not specified>"));
+									SetDlgItemText(hwndDlg, IDC_SOFTWARE, JTranslate("<not specified>"));
 									EnableWindow(GetDlgItem(hwndDlg, IDC_SOFTWARE), FALSE);
 								}
 								if (r[i].version != NULL) {
@@ -182,7 +182,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 									EnableWindow(GetDlgItem(hwndDlg, IDC_VERSION), TRUE);
 								}
 								else {
-									SetDlgItemText(hwndDlg, IDC_VERSION, Translate("<not specified>"));
+									SetDlgItemText(hwndDlg, IDC_VERSION, JTranslate("<not specified>"));
 									EnableWindow(GetDlgItem(hwndDlg, IDC_VERSION), FALSE);
 								}
 								if (r[i].system != NULL) {
@@ -190,12 +190,12 @@ static BOOL CALLBACK JabberUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 									EnableWindow(GetDlgItem(hwndDlg, IDC_SYSTEM), TRUE);
 								}
 								else {
-									SetDlgItemText(hwndDlg, IDC_SYSTEM, Translate("<not specified>"));
+									SetDlgItemText(hwndDlg, IDC_SYSTEM, JTranslate("<not specified>"));
 									EnableWindow(GetDlgItem(hwndDlg, IDC_SYSTEM), FALSE);
 								}
 							}
 						}
-						DBFreeVariant(&dbv);
+						JFreeVariant(&dbv);
 					}
 				}
 			}
@@ -245,7 +245,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 		{
 			JABBER_LIST_ITEM *item;
 			DBVARIANT dbv;
-			char *jid;
+			char* jid;
 
 			if (photoInfo->hBitmap) {
 				DeleteObject(photoInfo->hBitmap);
@@ -257,11 +257,11 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 				if ((item=JabberListGetItemPtr(LIST_ROSTER, jid)) != NULL) {
 					if (item->photoFileName) {
 						JabberLog("Showing picture from %s", item->photoFileName);
-						photoInfo->hBitmap = (HBITMAP) CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM) item->photoFileName);
+						photoInfo->hBitmap = (HBITMAP) JCallService(MS_UTILS_LOADBITMAP, 0, (LPARAM) item->photoFileName);
 						ShowWindow(GetDlgItem(hwndDlg, IDC_SAVE), SW_SHOW);
 					}
 				}
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 			InvalidateRect(hwndDlg, NULL, TRUE);
 			UpdateWindow(hwndDlg);
@@ -278,7 +278,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 				static char szFilter[512];
 				unsigned char buffer[3];
 				char szFileName[_MAX_PATH];
-				char *jid;
+				char* jid;
 				DWORD n;
 
 				if (DBGetContactSetting(photoInfo->hContact, jabberProtoName, "jid", &dbv))
@@ -288,22 +288,22 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 					if ((hFile=CreateFile(item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
 						if (ReadFile(hFile, buffer, 3, &n, NULL) && n==3) {
 							if (!strncmp((char*)buffer, "BM", 2)) {
-								_snprintf(szFilter, sizeof(szFilter), "BMP %s (*.bmp)", Translate("format"));
+								_snprintf(szFilter, sizeof(szFilter), "BMP %s (*.bmp)", JTranslate("format"));
 								n = strlen(szFilter);
 								strncpy(szFilter+n+1, "*.BMP", sizeof(szFilter)-n-2);
 							}
 							else if (!strncmp((char*)buffer, "GIF", 3)) {
-								_snprintf(szFilter, sizeof(szFilter), "GIF %s (*.gif)", Translate("format"));
+								_snprintf(szFilter, sizeof(szFilter), "GIF %s (*.gif)", JTranslate("format"));
 								n = strlen(szFilter);
 								strncpy(szFilter+n+1, "*.GIF", sizeof(szFilter)-n-2);
 							}
 							else if (buffer[0]==0xff && buffer[1]==0xd8 && buffer[2]==0xff) {
-								_snprintf(szFilter, sizeof(szFilter), "JPEG %s (*.jpg;*.jpeg)", Translate("format"));
+								_snprintf(szFilter, sizeof(szFilter), "JPEG %s (*.jpg;*.jpeg)", JTranslate("format"));
 								n = strlen(szFilter);
 								strncpy(szFilter+n+1, "*.JPG;*.JPEG", sizeof(szFilter)-n-2);
 							}
 							else {
-								_snprintf(szFilter, sizeof(szFilter), "%s (*.*)", Translate("Unknown format"));
+								_snprintf(szFilter, sizeof(szFilter), "%s (*.*)", JTranslate("Unknown format"));
 								n = strlen(szFilter);
 								strncpy(szFilter+n+1, "*.*", sizeof(szFilter)-n-2);
 							}
@@ -342,7 +342,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 						CloseHandle(hFile);
 					}
 				}
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 
 			}
 			break;
@@ -350,10 +350,10 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 		break;
 	case WM_PAINT:
 		if (!jabberOnline) {
-			SetDlgItemText(hwndDlg, IDC_CANVAS, Translate("<Photo not available while offline>"));
+			SetDlgItemText(hwndDlg, IDC_CANVAS, JTranslate("<Photo not available while offline>"));
 		}
 		else if (!photoInfo->hBitmap) {
-			SetDlgItemText(hwndDlg, IDC_CANVAS, Translate("<No photo>"));
+			SetDlgItemText(hwndDlg, IDC_CANVAS, JTranslate("<No photo>"));
 		}
 		else {
 			BITMAP bm;

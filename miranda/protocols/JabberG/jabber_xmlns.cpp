@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void JabberXmlnsBrowse(XmlNode *iqNode, void *userdata)
 {
 	XmlNode *queryNode;
-	char *xmlns, *iqFrom, *iqType, *iqId;
+	char* xmlns, *iqFrom, *iqType, *iqId;
 	char idStr[64];
 
 	if (iqNode == NULL) return;
@@ -60,8 +60,8 @@ void JabberXmlnsBrowse(XmlNode *iqNode, void *userdata)
 void JabberXmlnsDisco(XmlNode *iqNode, void *userdata)
 {
 	XmlNode *queryNode;
-	char *xmlns, *p, *discoType;
-	char *iqFrom, *iqType, *iqId;
+	char* xmlns, *p, *discoType;
+	char* iqFrom, *iqType, *iqId;
 	char idStr[64];
 
 	if (iqNode == NULL) return;

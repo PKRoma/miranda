@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static void JabberByteInitiateResult(XmlNode *iqNode, void *userdata);
 static void JabberByteSendConnection(HANDLE hNewConnection, DWORD dwRemoteIP);
-static int JabberByteSendParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char *buffer, int datalen);
+static int JabberByteSendParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen);
 
 void JabberByteFreeJbt(JABBER_BYTE_TRANSFER *jbt)
 {
@@ -48,7 +48,7 @@ void __cdecl JabberByteSendThread(JABBER_BYTE_TRANSFER *jbt)
 {
 	BOOL bDirect, bProxy;
 	char streamHost[256];
-	char *localAddr;
+	char* localAddr;
 	struct in_addr in;
 	DBVARIANT dbv;
 	NETLIBBIND nlb = {0};
@@ -59,16 +59,16 @@ void __cdecl JabberByteSendThread(JABBER_BYTE_TRANSFER *jbt)
 
 	JabberLog("Thread started: type=bytestream_send");
 
-	bDirect = DBGetContactSettingByte(NULL, jabberProtoName, "BsDirect", TRUE);
-	bProxy = DBGetContactSettingByte(NULL, jabberProtoName, "BsProxy", FALSE);
+	bDirect = JGetByte( "BsDirect", TRUE);
+	bProxy = JGetByte( "BsProxy", FALSE);
 
 	streamHost[0] = '\0';
 	if (bDirect) {
 		localAddr = NULL;
-		if (DBGetContactSettingByte(NULL, jabberProtoName, "BsDirectManual", FALSE) == TRUE) {
+		if (JGetByte( "BsDirectManual", FALSE) == TRUE) {
 			if (!DBGetContactSetting(NULL, jabberProtoName, "BsDirectAddr", &dbv)) {
 				localAddr = _strdup(dbv.pszVal);
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 		}
 		if (localAddr == NULL) {
@@ -78,7 +78,7 @@ void __cdecl JabberByteSendThread(JABBER_BYTE_TRANSFER *jbt)
 		nlb.cbSize = sizeof(NETLIBBIND);
 		nlb.pfnNewConnection = JabberByteSendConnection;
 		nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-		jbt->hConn = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb);
+		jbt->hConn = (HANDLE) JCallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb);
 		if (jbt->hConn == NULL) {
 			JabberLog("Cannot allocate port for bytestream_send thread, thread ended.");
 			JabberByteFreeJbt(jbt);
@@ -120,7 +120,7 @@ void __cdecl JabberByteSendThread(JABBER_BYTE_TRANSFER *jbt)
 
 static void JabberByteInitiateResult(XmlNode *iqNode, void *userdata)
 {
-	char *type;
+	char* type;
 
 	if ((type=JabberXmlGetAttrValue(iqNode, "type")) == NULL) return;
 	if (!strcmp(type, "result")) {
@@ -140,11 +140,11 @@ static void JabberByteSendConnection(HANDLE hConn, DWORD dwRemoteIP)
 	int recvResult, bytesParsed;
 	HANDLE hListen;
 	JABBER_LIST_ITEM *item;
-	char *buffer;
+	char* buffer;
 	int datalen;
 
 	localPort = 0;
-	if ((s=CallService(MS_NETLIB_GETSOCKET, (WPARAM) hConn, 0)) != INVALID_SOCKET) {
+	if ((s=JCallService(MS_NETLIB_GETSOCKET, (WPARAM) hConn, 0)) != INVALID_SOCKET) {
 		len = sizeof(saddr);
 		if (getsockname(s, (SOCKADDR *) &saddr, &len) != SOCKET_ERROR)
 			localPort = ntohs(saddr.sin_port);
@@ -166,7 +166,7 @@ static void JabberByteSendConnection(HANDLE hConn, DWORD dwRemoteIP)
 
 	jbt = item->jbt;
 
-	if ((buffer=(char *) malloc(JABBER_NETWORK_BUFFER_SIZE)) == NULL) {
+	if ((buffer=( char* )malloc(JABBER_NETWORK_BUFFER_SIZE)) == NULL) {
 		JabberLog("bytestream_send cannot allocate network buffer, connection closed.");
 		jbt->state = JBT_ERROR;
 		Netlib_CloseHandle(hConn);
@@ -195,13 +195,13 @@ static void JabberByteSendConnection(HANDLE hConn, DWORD dwRemoteIP)
 	if (jbt->hEvent != NULL) SetEvent(jbt->hEvent);
 }
 
-static int JabberByteSendParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char *buffer, int datalen)
+static int JabberByteSendParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen)
 {
 	int nMethods;
 	BYTE data[10];
 	char text[256];
 	int i;
-	char *str;
+	char* str;
 
 	switch (jbt->state) {
 	case JBT_INIT:
@@ -270,18 +270,18 @@ static int JabberByteSendParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char *bu
 
 ///////////////// Bytestream receiving /////////////////////////
 
-static int JabberByteReceiveParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char *buffer, int datalen);
+static int JabberByteReceiveParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen);
 
 void __cdecl JabberByteReceiveThread(JABBER_BYTE_TRANSFER *jbt)
 {
 	XmlNode *iqNode, *queryNode, *n;
-	char *from, *sid, *szHost, *szPort, *szId, *str;
+	char* from, *sid, *szHost, *szPort, *szId, *str;
 	int i;
 	WORD port;
 	NETLIBOPENCONNECTION nloc;
 	HANDLE hConn;
 	char data[3];
-	char *buffer;
+	char* buffer;
 	int datalen, bytesParsed, recvResult;
 	BOOL validStreamhost;
 
@@ -298,7 +298,7 @@ void __cdecl JabberByteReceiveThread(JABBER_BYTE_TRANSFER *jbt)
 		jbt->dstJID = _strdup(jabberThreadInfo->fullJID);
 		jbt->sid = _strdup(sid);
 
-		if ((buffer=(char *) malloc(JABBER_NETWORK_BUFFER_SIZE)) == NULL) {
+		if ((buffer=( char* )malloc(JABBER_NETWORK_BUFFER_SIZE)) == NULL) {
 			JabberLog("bytestream_send cannot allocate network buffer, connection closed.");
 			JabberSend(jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='406' type='auth'><not-acceptable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></iq>", jbt->srcJID, jbt->iqId);
 			JabberByteFreeJbt(jbt);
@@ -312,7 +312,7 @@ void __cdecl JabberByteReceiveThread(JABBER_BYTE_TRANSFER *jbt)
 				(szPort=JabberXmlGetAttrValue(n, "port"))!=NULL &&
 				(str=JabberXmlGetAttrValue(n, "jid"))!=NULL) {
 
-				port = (WORD) atoi(szPort);
+				port = ( WORD )atoi(szPort);
 				if (jbt->streamhostJID) free(jbt->streamhostJID);
 				jbt->streamhostJID = _strdup(str);
 
@@ -321,7 +321,7 @@ void __cdecl JabberByteReceiveThread(JABBER_BYTE_TRANSFER *jbt)
 				nloc.szHost = szHost;
 				nloc.wPort = port;
 				nloc.flags = 0;
-				hConn = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) &nloc);
+				hConn = (HANDLE) JCallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) &nloc);
 				if (hConn == NULL) {
 					JabberLog("bytestream_recv_connection connection failed (%d), try next streamhost", WSAGetLastError());
 					continue;
@@ -364,11 +364,11 @@ void __cdecl JabberByteReceiveThread(JABBER_BYTE_TRANSFER *jbt)
 	JabberLog("Thread ended: type=bytestream_recv");
 }
 
-static int JabberByteReceiveParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char *buffer, int datalen)
+static int JabberByteReceiveParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen)
 {
 	BYTE data[47];
 	char text[256];
-	char *szHash;
+	char* szHash;
 	int bytesReceived;
 	int num;
 
@@ -391,7 +391,7 @@ static int JabberByteReceiveParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char 
 			data[4] = 40;
 			_snprintf(text, sizeof(text), "%s%s%s", jbt->sid, jbt->srcJID, jbt->dstJID);
 			szHash = JabberSha1(text);
-			strncpy((char *)(data+5), szHash, 40);
+			strncpy((char* )(data+5), szHash, 40);
 			free(szHash);
 			Netlib_Send(hConn, ( char* )data, 47, MSG_NODUMP);
 			jbt->state = JBT_CONNECT;

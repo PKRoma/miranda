@@ -40,7 +40,7 @@ typedef enum {
 typedef void (*JABBER_IQ_PFUNC)(XmlNode *iqNode, void *usedata);
 
 typedef struct {
-	char *xmlns;
+	char* xmlns;
 	JABBER_IQ_PFUNC func;
 	BOOL allowSubNs;		// e.g. #info in disco#info
 } JABBER_IQ_XMLNS_FUNC;
@@ -49,7 +49,7 @@ void JabberIqInit();
 void JabberIqUninit();
 JABBER_IQ_PFUNC JabberIqFetchFunc(int iqId);
 void JabberIqAdd(unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func);
-JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc(char *xmlns);
+JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc(char* xmlns);
 
 void JabberIqResultGetAuth(XmlNode *iqNode, void *userdata);
 void JabberIqResultSetAuth(XmlNode *iqNode, void *userdata);

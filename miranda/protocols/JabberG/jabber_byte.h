@@ -25,17 +25,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef enum { JBT_INIT, JBT_AUTH, JBT_CONNECT, JBT_SOCKSERR, JBT_SENDING, JBT_RECVING, JBT_DONE, JBT_ERROR } JABBER_BYTE_STATE;
 
 typedef struct {
-	char *sid;
-	char *srcJID;
-	char *dstJID;
-	char *streamhostJID;
-	char *iqId;
+	char* sid;
+	char* srcJID;
+	char* dstJID;
+	char* streamhostJID;
+	char* iqId;
 	JABBER_BYTE_STATE state;
 	HANDLE hConn;
 	HANDLE hEvent;
 	XmlNode *iqNode;
 	BOOL (*pfnSend)(HANDLE hConn, void *userdata);
-	int (*pfnRecv)(HANDLE hConn, void *userdata, char *buffer, int datalen);
+	int (*pfnRecv)(HANDLE hConn, void *userdata, char* buffer, int datalen);
 	void (*pfnFinal)(BOOL success, void *userdata);
 	void *userdata;
 } JABBER_BYTE_TRANSFER;

@@ -39,7 +39,7 @@ static JABBER_GCLOG_FONT gcLogFont[JABBER_GCLOG_NUM_FONT];
 
 typedef struct {
 	HANDLE hEvent;
-	char *jid;
+	char* jid;
 } JABBER_GCLOG_INITDIALOG;
 
 void JabberGcLogLoadFont(JABBER_GCLOG_FONT *fontInfo)
@@ -53,18 +53,18 @@ void JabberGcLogLoadFont(JABBER_GCLOG_FONT *fontInfo)
 		sprintf(key, "GcLogFont%dFace", i);
 		if (!DBGetContactSetting(NULL, jabberProtoName, key, &dbv)) {
 			strncpy(fontInfo[i].face, dbv.pszVal, sizeof(fontInfo[i].face));
-			DBFreeVariant(&dbv);
+			JFreeVariant(&dbv);
 		}
 		else
 			fontInfo[i].face[0] = '\0';
 		sprintf(key, "GcLogFont%dSize", i);
-		fontInfo[i].size = (char) DBGetContactSettingByte(NULL, jabberProtoName, key, 10);
+		fontInfo[i].size = (char) JGetByte( key, 10);
 		sprintf(key, "GcLogFont%dStyle", i);
-		fontInfo[i].style = DBGetContactSettingByte(NULL, jabberProtoName, key, 0);
+		fontInfo[i].style = JGetByte( key, 0);
 		sprintf(key, "GcLogFont%dCharset", i);
-		fontInfo[i].charset = DBGetContactSettingByte(NULL, jabberProtoName, key, ANSI_CHARSET);
+		fontInfo[i].charset = JGetByte( key, ANSI_CHARSET);
 		sprintf(key, "GcLogFont%dColor", i);
-		fontInfo[i].color = DBGetContactSettingDword(NULL, jabberProtoName, key, defColor[i]);
+		fontInfo[i].color = JGetDword( NULL, key, defColor[i]);
 	}
 }
 
@@ -77,7 +77,7 @@ static BOOL CALLBACK JabberGcLogEditWndProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		return DLGC_WANTALLKEYS; //DLGC_WANTARROWS|DLGC_WANTCHARS|DLGC_HASSETSEL|DLGC_WANTALLKEYS;
 	case WM_CHAR:
 		if (wParam=='\r' || wParam=='\n') {
-			if (((GetKeyState(VK_CONTROL)&0x8000)==0) == DBGetContactSettingByte(NULL, jabberProtoName, "GcLogSendOnEnter", TRUE)) {
+			if (((GetKeyState(VK_CONTROL)&0x8000)==0) == JGetByte( "GcLogSendOnEnter", TRUE)) {
 				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 				return 0;
 			}
@@ -178,7 +178,7 @@ BOOL CALLBACK JabberGcLogInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			JABBER_GCLOG_INFO *gcLogInfo;
 			char text[1024];
-			char *localRoomJid, *localNick;
+			char* localRoomJid, *localNick;
 
 			TranslateDialogDefault(hwndDlg);
 			gcLogInputInfo = (JABBER_GCLOG_INPUT_INFO *) lParam;
@@ -187,7 +187,7 @@ BOOL CALLBACK JabberGcLogInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			case MUC_SETTOPIC:
 				gcLogInfo = gcLogInputInfo->gcLogInfo;
 				localRoomJid = JabberTextDecode(gcLogInfo->roomJid);
-				_snprintf(text, sizeof(text), "%s %s", Translate("Set topic for"), localRoomJid);
+				_snprintf(text, sizeof(text), "%s %s", JTranslate("Set topic for"), localRoomJid);
 				SetWindowText(hwndDlg, text);
 				free(localRoomJid);
 				GetDlgItemText(GetParent(hwndDlg), IDC_TOPIC, text, sizeof(text));
@@ -196,48 +196,48 @@ BOOL CALLBACK JabberGcLogInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			case MUC_CHANGENICK:
 				gcLogInfo = gcLogInputInfo->gcLogInfo;
 				localRoomJid = JabberTextDecode(gcLogInfo->roomJid);
-				_snprintf(text, sizeof(text), "%s %s", Translate("Change nickname in"), localRoomJid);
+				_snprintf(text, sizeof(text), "%s %s", JTranslate("Change nickname in"), localRoomJid);
 				SetWindowText(hwndDlg, text);
 				free(localRoomJid);
 				SetDlgItemText(hwndDlg, IDC_TOPIC, gcLogInputInfo->nick);
-				SetDlgItemText(hwndDlg, IDOK, Translate("Change"));
+				SetDlgItemText(hwndDlg, IDOK, JTranslate("Change"));
 				break;
 			case MUC_KICKREASON:
 				localNick = JabberTextDecode(gcLogInputInfo->nick);
-				_snprintf(text, sizeof(text), "%s %s", Translate("Reason to kick"), localNick);
+				_snprintf(text, sizeof(text), "%s %s", JTranslate("Reason to kick"), localNick);
 				SetWindowText(hwndDlg, text);
 				free(localNick);
-				SetDlgItemText(hwndDlg, IDOK, Translate("Kick"));
+				SetDlgItemText(hwndDlg, IDOK, JTranslate("Kick"));
 				break;
 			case MUC_BANREASON:
 				localNick = JabberTextDecode(gcLogInputInfo->nick);
-				_snprintf(text, sizeof(text), "%s %s", Translate("Reason to ban"), localNick);
+				_snprintf(text, sizeof(text), "%s %s", JTranslate("Reason to ban"), localNick);
 				SetWindowText(hwndDlg, text);
 				free(localNick);
-				SetDlgItemText(hwndDlg, IDOK, Translate("Ban"));
+				SetDlgItemText(hwndDlg, IDOK, JTranslate("Ban"));
 				break;
 			case MUC_DESTROYREASON:
 				gcLogInfo = gcLogInputInfo->gcLogInfo;
 				localRoomJid = JabberTextDecode(gcLogInfo->roomJid);
-				_snprintf(text, sizeof(text), "%s %s", Translate("Reason to destroy"), localRoomJid);
+				_snprintf(text, sizeof(text), "%s %s", JTranslate("Reason to destroy"), localRoomJid);
 				SetWindowText(hwndDlg, text);
 				free(localRoomJid);
-				SetDlgItemText(hwndDlg, IDOK, Translate("Destroy"));
+				SetDlgItemText(hwndDlg, IDOK, JTranslate("Destroy"));
 				break;
 			case MUC_ADDJID:
 				localRoomJid = JabberTextDecode(gcLogInputInfo->jidListInfo->roomJid);
 				_snprintf(text, sizeof(text), "%s %s (%s)",
-					Translate("Add to"),
-					(gcLogInputInfo->jidListInfo->type==MUC_VOICELIST) ? Translate("Voice List") :
-					(gcLogInputInfo->jidListInfo->type==MUC_MEMBERLIST) ? Translate("Member List") :
-					(gcLogInputInfo->jidListInfo->type==MUC_MODERATORLIST) ? Translate("Moderator List") :
-					(gcLogInputInfo->jidListInfo->type==MUC_BANLIST) ? Translate("Ban List") :
-					(gcLogInputInfo->jidListInfo->type==MUC_ADMINLIST) ? Translate("Admin List") :
-					(gcLogInputInfo->jidListInfo->type==MUC_OWNERLIST) ? Translate("Owner List") :
-					Translate("JID List"),
+					JTranslate("Add to"),
+					(gcLogInputInfo->jidListInfo->type==MUC_VOICELIST) ? JTranslate("Voice List") :
+					(gcLogInputInfo->jidListInfo->type==MUC_MEMBERLIST) ? JTranslate("Member List") :
+					(gcLogInputInfo->jidListInfo->type==MUC_MODERATORLIST) ? JTranslate("Moderator List") :
+					(gcLogInputInfo->jidListInfo->type==MUC_BANLIST) ? JTranslate("Ban List") :
+					(gcLogInputInfo->jidListInfo->type==MUC_ADMINLIST) ? JTranslate("Admin List") :
+					(gcLogInputInfo->jidListInfo->type==MUC_OWNERLIST) ? JTranslate("Owner List") :
+					JTranslate("JID List"),
 					localRoomJid);
 				SetWindowText(hwndDlg, text);
-				SetDlgItemText(hwndDlg, IDOK, Translate("Add"));
+				SetDlgItemText(hwndDlg, IDOK, JTranslate("Add"));
 				free(localRoomJid);
 				break;
 			}
@@ -249,7 +249,7 @@ BOOL CALLBACK JabberGcLogInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			if (jabberOnline) {
 				JABBER_GCLOG_INFO *gcLogInfo;
 				char text[1024];
-				char *str;
+				char* str;
 				JABBER_LIST_ITEM *item;
 
 				gcLogInputInfo = (JABBER_GCLOG_INPUT_INFO *) GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -294,7 +294,7 @@ BOOL CALLBACK JabberGcLogInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					break;
 				case MUC_ADDJID:
 					{
-						char *p, *q;
+						char* p, *q;
 						int iqId;
 
 						// Trim leading and trailing whitespaces
@@ -390,12 +390,12 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc(HWND hwndDlg, UINT msg, WPARAM wPa
 			int index;
 			HWND hwndComboBox;
 			JABBER_LIST_ITEM *item;
-			char *str;
+			char* str;
 			int n;
 
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_GROUP)));
-			if ((str=JabberTextDecode((char *) lParam)) != NULL) {
+			if ((str=JabberTextDecode(( char* )lParam)) != NULL) {
 				SetDlgItemText(hwndDlg, IDC_ROOM, str);
 			}
 			hwndComboBox = GetDlgItem(hwndDlg, IDC_USER);
@@ -411,7 +411,7 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc(HWND hwndDlg, UINT msg, WPARAM wPa
 				}
 				index++;
 			}
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) _strdup((char *) lParam));
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) _strdup(( char* )lParam));
 		}
 		return TRUE;
 	case WM_COMMAND:
@@ -419,12 +419,12 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc(HWND hwndDlg, UINT msg, WPARAM wPa
 		case IDC_INVITE:
 			{
 				char text[256];
-				char *room, *user, *reason;
+				char* room, *user, *reason;
 				HWND hwndComboBox;
 				int iqId, n;
 
 				hwndComboBox = GetDlgItem(hwndDlg, IDC_USER);
-				if ((room=(char *) GetWindowLong(hwndDlg, GWL_USERDATA)) != NULL) {
+				if ((room=( char* )GetWindowLong(hwndDlg, GWL_USERDATA)) != NULL) {
 					n = SendMessage(hwndComboBox, CB_GETCURSEL, 0, 0);
 					if (n < 0) {
 						// Use text box string because no selection is made
@@ -432,7 +432,7 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc(HWND hwndDlg, UINT msg, WPARAM wPa
 						user = JabberTextEncode(text);
 					}
 					else {
-						user = (char *) SendMessage(hwndComboBox, CB_GETITEMDATA, n, 0);
+						user = ( char* )SendMessage(hwndComboBox, CB_GETITEMDATA, n, 0);
 					}
 					if (user != NULL) {
 						GetDlgItemText(hwndDlg, IDC_REASON, text, sizeof(text));
@@ -460,9 +460,9 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc(HWND hwndDlg, UINT msg, WPARAM wPa
 		break;
 	case WM_DESTROY:
 		{
-			char *str;
+			char* str;
 			
-			if ((str=(char *) GetWindowLong(hwndDlg, GWL_USERDATA)) != NULL)
+			if ((str=( char* )GetWindowLong(hwndDlg, GWL_USERDATA)) != NULL)
 				free(str);
 		}
 		break;
@@ -473,7 +473,7 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc(HWND hwndDlg, UINT msg, WPARAM wPa
 
 static VOID CALLBACK JabberGcLogSendMessageApcProc(DWORD param)
 {
-	CallService(MS_MSG_SENDMESSAGE, (WPARAM) param, (LPARAM) NULL);
+	JCallService(MS_MSG_SENDMESSAGE, (WPARAM) param, (LPARAM) NULL);
 }
 
 static BOOL CALLBACK JabberGcLogDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -489,14 +489,14 @@ static BOOL CALLBACK JabberGcLogDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			RECT rect;
 			JABBER_LIST_ITEM *item;
-			char *localJid;
+			char* localJid;
 
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_GROUP)));
 			TranslateDialogDefault(hwndDlg);
 			gcLogInfo = (JABBER_GCLOG_INFO *) malloc(sizeof(JABBER_GCLOG_INFO));
 			gcLogInfo->roomJid = NULL;
-			gcLogInfo->vSplitterPos = DBGetContactSettingDword(NULL, jabberProtoName, "GcLogVSplit", 100);
-			gcLogInfo->hSplitterPos = DBGetContactSettingDword(NULL, jabberProtoName, "GcLogHSplit", 40);
+			gcLogInfo->vSplitterPos = JGetDword( NULL, "GcLogVSplit", 100);
+			gcLogInfo->hSplitterPos = JGetDword( NULL, "GcLogHSplit", 40);
 			gcLogInfo->hSplitterMinAbove = 70;
 			gcLogInfo->hSplitterMinBelow = 40;
 			gcLogInfo->vSplitterMinLeft = 70;
@@ -625,12 +625,12 @@ static BOOL CALLBACK JabberGcLogDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			smre.disableRedraw = FALSE;
 			// Must be called from the gclog thread and must call
 			// OleInitialize() at the beginning of the thread (in GcLogCreatThread)
-			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM) &smre);
+			JCallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM) &smre);
 		}
 		break;
 	case WM_JABBER_FLASHWND:
 		if ((GetActiveWindow()!=hwndDlg || GetForegroundWindow()!=hwndDlg)
-			&& DBGetContactSettingByte(NULL, jabberProtoName, "GcLogFlash", TRUE)) {
+			&& JGetByte( "GcLogFlash", TRUE)) {
 
 			SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 		}
@@ -657,7 +657,7 @@ static BOOL CALLBACK JabberGcLogDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case IDOK:
 			{
 				char text[2048];
-				char *str;
+				char* str;
 
 				GetDlgItemText(hwndDlg, IDC_EDIT, text, sizeof(text));
 				SetDlgItemText(hwndDlg, IDC_EDIT, "");
@@ -772,7 +772,7 @@ static BOOL CALLBACK JabberGcLogDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				HMENU hMenu, hSubMenu;
 				HANDLE hContact;
 				char nick[256], jid[256];
-				char *localNick;
+				char* localNick;
 				JABBER_GCLOG_INPUT_INFO *gcLogInputInfo;
 
 				SendDlgItemMessage(hwndDlg, IDC_LIST, LB_SETCURSEL, i, 0);
@@ -812,14 +812,14 @@ static BOOL CALLBACK JabberGcLogDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						}
 					}
 
-					CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+					JCallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 					switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD|TPM_RIGHTBUTTON, xPos, yPos, 0, hwndDlg, NULL)) {
 					case IDM_MESSAGE:
 						localNick = JabberTextDecode(nick);
 						_snprintf(jid, sizeof(jid), "%s/%s", gcLogInfo->roomJid, nick);
 						hContact = JabberDBCreateContact(jid, localNick, TRUE, FALSE);
-						//CallService(MS_MSG_SENDMESSAGE, (WPARAM) hContact, (LPARAM) NULL);
-						QueueUserAPC(JabberGcLogSendMessageApcProc, hMainThread, (DWORD) hContact);
+						//JCallService(MS_MSG_SENDMESSAGE, (WPARAM) hContact, (LPARAM) NULL);
+						QueueUserAPC(JabberGcLogSendMessageApcProc, hMainThread, ( DWORD )hContact);
 						free(localNick);
 						break;
 					case IDM_KICK:
@@ -899,7 +899,7 @@ static BOOL CALLBACK JabberGcLogDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 									EnableMenuItem(hSubMenu, IDM_CONFIG, MF_BYCOMMAND | MF_ENABLED);
 									EnableMenuItem(hSubMenu, IDM_DESTROY, MF_BYCOMMAND | MF_ENABLED);
 								}
-								CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+								JCallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 								pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
 								pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 								ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
@@ -995,11 +995,11 @@ static void __cdecl JabberGcLogCreateThread(JABBER_GCLOG_INITDIALOG *gcInit)
 	}
 }
 
-void JabberGcLogCreate(char *jid)
+void JabberGcLogCreate(char* jid)
 {
 	JABBER_LIST_ITEM *item;
 	JABBER_GCLOG_INITDIALOG gcInit;
-	char *roomJid, *p;
+	char* roomJid, *p;
 
 	if ((item=JabberListGetItemPtr(LIST_CHATROOM, jid)) != NULL) {
 		if (item->hwndGcDlg == NULL) {
@@ -1020,9 +1020,9 @@ void JabberGcLogCreate(char *jid)
 	}
 }
 
-void JabberGcLogUpdateMemberStatus(char *jid)
+void JabberGcLogUpdateMemberStatus(char* jid)
 {
-	char *nick;
+	char* nick;
 	JABBER_LIST_ITEM *item;
 	RECT rect;
 	int nItem, i;
@@ -1054,17 +1054,17 @@ static VOID CALLBACK JabberGcLogSmileyApcProc(DWORD param)
 	smre.hwndRichEditControl = (HWND) param;
 	smre.Protocolname = jabberProtoName;
 	smre.rangeToReplace = NULL; //&sel;
-	CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM) &smre);
+	JCallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM) &smre);
 }
 
-void JabberGcLogAppend(char *jid, time_t timestamp, char *str)
+void JabberGcLogAppend(char* jid, time_t timestamp, char* str)
 {
 	JABBER_LIST_ITEM *item;
 	HWND hwndLog;
 	CHARRANGE sel;
 	SETTEXTEX stt;
-	char *nick;
-	char *msg, *escapedStr;
+	char* nick;
+	char* msg, *escapedStr;
 	int nMin, nMax;
 	int msgSize, i;
 	struct tm *ltime;
@@ -1100,14 +1100,14 @@ void JabberGcLogAppend(char *jid, time_t timestamp, char *str)
 							nick, escapedStr+4);
 					}
 					else {
-						if (DBGetContactSettingByte(NULL, jabberProtoName, "GcLogTime", TRUE)==TRUE && (ltime=localtime(&timestamp))!=NULL) {
+						if (JGetByte( "GcLogTime", TRUE)==TRUE && (ltime=localtime(&timestamp))!=NULL) {
 							if (gcLogFont[2].face[0])
 								JabberStringAppend(&msg, &msgSize, "\\f2");
 							JabberStringAppend(&msg, &msgSize, "\\cf2\\fs%d\\b%d\\i%d ",
 								2*gcLogFont[2].size,
 								(gcLogFont[2].style & JABBER_FONT_BOLD)?1:0,
 								(gcLogFont[2].style & JABBER_FONT_ITALIC)?1:0);
-							if (DBGetContactSettingByte(NULL, jabberProtoName, "GcLogDate", FALSE) == TRUE) {
+							if (JGetByte( "GcLogDate", FALSE) == TRUE) {
 								JabberStringAppend(&msg, &msgSize, "%d/%d/%02d ", ltime->tm_mon+1, ltime->tm_mday, ltime->tm_year%100);
 							}
 							if (ltime->tm_hour >= 12) {
@@ -1171,10 +1171,10 @@ void JabberGcLogAppend(char *jid, time_t timestamp, char *str)
 	}
 }
 
-void JabberGcLogSetTopic(char *jid, char *str)
+void JabberGcLogSetTopic(char* jid, char* str)
 {
 	JABBER_LIST_ITEM *item;
-	char *localTopic;
+	char* localTopic;
 
 	if ((item=JabberListGetItemPtr(LIST_CHATROOM, jid))!=NULL && item->hwndGcDlg!=NULL) {
 		if (str != NULL) {

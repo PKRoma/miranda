@@ -41,7 +41,7 @@ int JabberMenuHandleAgents(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static void JabberRegisterAgent(HWND hwndDlg, char *jid)
+static void JabberRegisterAgent(HWND hwndDlg, char* jid)
 {
 	int iqId;
 
@@ -59,7 +59,7 @@ static BOOL CALLBACK JabberAgentsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	JABBER_LIST_ITEM *item;
 	int i;
 	char text[128];
-	char *p;
+	char* p;
 	int iqId;
 
 	switch (msg) {
@@ -70,22 +70,22 @@ static BOOL CALLBACK JabberAgentsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		// Add columns to the top list
 		lv = GetDlgItem(hwndDlg, IDC_AGENT_LIST);
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-		lvCol.pszText = Translate("JID");
+		lvCol.pszText = JTranslate("JID");
 		lvCol.cx = 120;
 		lvCol.iSubItem = 0;
 		ListView_InsertColumn(lv, 0, &lvCol);
-		lvCol.pszText = Translate("Description");
+		lvCol.pszText = JTranslate("Description");
 		lvCol.cx = 250;
 		lvCol.iSubItem = 1;
 		ListView_InsertColumn(lv, 1, &lvCol);
 		// Add columns to the bottom list
 		lv = GetDlgItem(hwndDlg, IDC_AGENT_TRANSPORT);
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-		lvCol.pszText = Translate("JID");
+		lvCol.pszText = JTranslate("JID");
 		lvCol.cx = 120;
 		lvCol.iSubItem = 0;
 		ListView_InsertColumn(lv, 0, &lvCol);
-		lvCol.pszText = Translate("Status");
+		lvCol.pszText = JTranslate("Status");
 		lvCol.cx = 80;
 		lvCol.iSubItem = 1;
 		ListView_InsertColumn(lv, 1, &lvCol);
@@ -165,7 +165,7 @@ static BOOL CALLBACK JabberAgentsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	case WM_JABBER_AGENT_REFRESH:
 		// lParam = server from which agent information is obtained
 		if (lParam)
-			SetDlgItemText(hwndDlg, IDC_AGENT_SERVER, (char *) lParam);
+			SetDlgItemText(hwndDlg, IDC_AGENT_SERVER, ( char* )lParam);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_AGENT_REGISTER), FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_AGENT_SEARCH), FALSE);
 		i = 0;
@@ -207,9 +207,9 @@ static BOOL CALLBACK JabberAgentsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					ListView_InsertItem(lv, &lvItem);
 					lvItem.iSubItem = 1;
 					if (item->status != ID_STATUS_OFFLINE)
-						lvItem.pszText = Translate("Online");
+						lvItem.pszText = JTranslate("Online");
 					else
-						lvItem.pszText = Translate("Offline");
+						lvItem.pszText = JTranslate("Offline");
 					ListView_SetItem(lv, &lvItem);
 					lvItem.iItem++;
 				}
@@ -343,20 +343,20 @@ BOOL CALLBACK JabberAgentRegInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	HWND hFrame, hCtrl;
 	HFONT hFont;
 	int id, ypos, i;
-	char *from;
-	char *str, *str2, *regStr;
+	char* from;
+	char* str, *str2, *regStr;
 	LONG frameExStyle;
 	int iqId;
-	char *p;
+	char* p;
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		EnableWindow(GetParent(hwndDlg), FALSE);
 		TranslateDialogDefault(hwndDlg);
 		agentRegIqNode = NULL;
-		SetWindowText(hwndDlg, Translate("Jabber Agent Registration"));
-		SetDlgItemText(hwndDlg, IDC_SUBMIT, Translate("Register"));
-		SetDlgItemText(hwndDlg, IDC_FRAME_TEXT, Translate("Please wait..."));
+		SetWindowText(hwndDlg, JTranslate("Jabber Agent Registration"));
+		SetDlgItemText(hwndDlg, IDC_SUBMIT, JTranslate("Register"));
+		SetDlgItemText(hwndDlg, IDC_FRAME_TEXT, JTranslate("Please wait..."));
 
 		// Enable WS_EX_CONTROLPARENT on IDC_FRAME (so tab stop goes through all its children)
 		frameExStyle = GetWindowLong(GetDlgItem(hwndDlg, IDC_FRAME), GWL_EXSTYLE);
@@ -371,10 +371,10 @@ BOOL CALLBACK JabberAgentRegInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			if ((from=JabberXmlGetAttrValue(agentRegIqNode, "from")) == NULL) return TRUE;
 			if ((queryNode=JabberXmlGetChild(agentRegIqNode, "query")) == NULL) return TRUE;
 			hFrame = GetDlgItem(hwndDlg, IDC_FRAME);
-			regStr = (char *) malloc(512);
+			regStr = ( char* )malloc(512);
 			regStr[0] = '\0';
-			str = (char *) malloc(128);
-			str2 = (char *) malloc(128);
+			str = ( char* )malloc(128);
+			str2 = ( char* )malloc(128);
 			id = 0;
 			if ((xNode=JabberXmlGetChild(queryNode, "x")) != NULL) {
 				// use new jabber:x:data form
@@ -561,10 +561,10 @@ static BOOL CALLBACK JabberAgentRegDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		}
 		break;
 	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress (0-100), lparam=status string
-		if ((char *) lParam == NULL)
-			SetDlgItemText(hwndDlg, IDC_REG_STATUS, Translate("No message"));
+		if (( char* )lParam == NULL)
+			SetDlgItemText(hwndDlg, IDC_REG_STATUS, JTranslate("No message"));
 		else
-			SetDlgItemText(hwndDlg, IDC_REG_STATUS, (char *) lParam);
+			SetDlgItemText(hwndDlg, IDC_REG_STATUS, ( char* )lParam);
 		if (wParam >= 0)
 			SendMessage(GetDlgItem(hwndDlg, IDC_PROGRESS_REG), PBM_SETPOS, wParam, 0);
 		if (wParam >= 100) {

@@ -41,22 +41,22 @@ int JabberOptInit(WPARAM wParam, LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 0;
 	odp.hInstance = hInst;
-	odp.pszGroup = Translate("Network");
+	odp.pszGroup = JTranslate("Network");
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_JABBER);
 	odp.pszTitle = jabberModuleName;
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.pfnDlgProc = JabberOptDlgProc;
 	odp.nIDBottomSimpleControl = IDC_SIMPLE;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+	JCallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_JABBER2);
-	_snprintf(str, sizeof(str), "%s %s", jabberModuleName, Translate("Advanced"));
+	_snprintf(str, sizeof(str), "%s %s", jabberModuleName, JTranslate("Advanced"));
 	str[sizeof(str)-1] = '\0';
 	odp.pszTitle = str;
 	odp.pfnDlgProc = JabberAdvOptDlgProc;
 	odp.flags = ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	odp.nIDBottomSimpleControl = 0;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+	JCallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
 	return 0;
 }
@@ -70,7 +70,7 @@ static BOOL CALLBACK JabberRegisterDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		regInfo = (struct ThreadData *) lParam;
-		wsprintf(text, "%s %s@%s:%d ?", Translate("Register"), regInfo->username, regInfo->server, regInfo->port);
+		wsprintf(text, "%s %s@%s:%d ?", JTranslate("Register"), regInfo->username, regInfo->server, regInfo->port);
 		SetDlgItemText(hwndDlg, IDC_REG_STATUS, text);
 		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) regInfo);
 		return TRUE;
@@ -107,10 +107,10 @@ static BOOL CALLBACK JabberRegisterDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		}
 		break;
 	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress (0-100), lparam=status string
-		if ((char *) lParam == NULL)
-			SetDlgItemText(hwndDlg, IDC_REG_STATUS, Translate("No message"));
+		if (( char* )lParam == NULL)
+			SetDlgItemText(hwndDlg, IDC_REG_STATUS, JTranslate("No message"));
 		else
-			SetDlgItemText(hwndDlg, IDC_REG_STATUS, (char *) lParam);
+			SetDlgItemText(hwndDlg, IDC_REG_STATUS, ( char* )lParam);
 		if (wParam >= 0)
 			SendMessage(GetDlgItem(hwndDlg, IDC_PROGRESS_REG), PBM_SETPOS, wParam, 0);
 		if (wParam >= 100) {
@@ -130,7 +130,7 @@ static BOOL CALLBACK JabberMsgLangAdd(LPTSTR str)
 {
 	int i, count, index;
 	UINT cp;
-	static struct { UINT cpId; char *cpName; } cpTable[] = {
+	static struct { UINT cpId; char* cpName; } cpTable[] = {
 		{	874,	"Thai" },
 		{	932,	"Japanese" },
 		{	936,	"Simplified Chinese" },
@@ -152,7 +152,7 @@ static BOOL CALLBACK JabberMsgLangAdd(LPTSTR str)
 	count = sizeof(cpTable)/sizeof(cpTable[0]);
 	for (i=0; i<count && cpTable[i].cpId!=cp; i++);
 	if (i < count) {
-		if ((index=SendMessage(msgLangListBox, CB_ADDSTRING, 0, (LPARAM) Translate(cpTable[i].cpName))) >= 0) {
+		if ((index=SendMessage(msgLangListBox, CB_ADDSTRING, 0, (LPARAM) JTranslate(cpTable[i].cpName))) >= 0) {
 			SendMessage(msgLangListBox, CB_SETITEMDATA, (WPARAM) index, (LPARAM) cp);
 			if (jabberCodePage == cp)
 				SendMessage(msgLangListBox, CB_SETCURSEL, (WPARAM) index, 0);
@@ -193,42 +193,40 @@ static BOOL CALLBACK JabberOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			if (!DBGetContactSetting(NULL, jabberProtoName, "LoginName", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_EDIT_USERNAME, dbv.pszVal);
 				if (!dbv.pszVal[0]) enableRegister = FALSE;
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 			if (!DBGetContactSetting(NULL, jabberProtoName, "Password", &dbv)) {
-				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal)+1, (LPARAM) dbv.pszVal);
+				JCallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal)+1, (LPARAM) dbv.pszVal);
 				SetDlgItemText(hwndDlg, IDC_EDIT_PASSWORD, dbv.pszVal);
 				if (!dbv.pszVal[0]) enableRegister = FALSE;
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 			if (!DBGetContactSetting(NULL, jabberProtoName, "Resource", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_EDIT_RESOURCE, dbv.pszVal);
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
-			else {
-				SetDlgItemText(hwndDlg, IDC_EDIT_RESOURCE, "Miranda");
-			}
+			else SetDlgItemText(hwndDlg, IDC_EDIT_RESOURCE, "Miranda");
+
 			SendMessage(GetDlgItem(hwndDlg, IDC_PRIORITY_SPIN), UDM_SETRANGE, 0, (LPARAM) MAKELONG(100, 0));
-			sprintf(text, "%d", DBGetContactSettingWord(NULL, jabberProtoName, "Priority", 0));
+			sprintf(text, "%d", JGetWord( NULL, "Priority", 0));
 			SetDlgItemText(hwndDlg, IDC_PRIORITY, text);
-			CheckDlgButton(hwndDlg, IDC_SAVEPASSWORD, DBGetContactSettingByte(NULL, jabberProtoName, "SavePassword", TRUE));
+			CheckDlgButton(hwndDlg, IDC_SAVEPASSWORD, JGetByte( "SavePassword", TRUE));
 			if (!DBGetContactSetting(NULL, jabberProtoName, "LoginServer", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, dbv.pszVal);
 				if (!dbv.pszVal[0]) enableRegister = FALSE;
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
-			else {
-				SetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, "jabber.org");
-			}
-			port = (WORD) DBGetContactSettingWord(NULL, jabberProtoName, "Port", JABBER_DEFAULT_PORT);
+			else SetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, "jabber.org");
+
+			port = ( WORD )JGetWord( NULL, "Port", JABBER_DEFAULT_PORT);
 			SetDlgItemInt(hwndDlg, IDC_PORT, port, FALSE);
 			if (port <= 0) enableRegister = FALSE;
 
-			CheckDlgButton(hwndDlg, IDC_USE_SSL, DBGetContactSettingByte(NULL, jabberProtoName, "UseSSL", FALSE));
+			CheckDlgButton(hwndDlg, IDC_USE_SSL, JGetByte( "UseSSL", FALSE));
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON_REGISTER), enableRegister);
 
-			if (DBGetContactSettingByte(NULL, jabberProtoName, "ManualConnect", FALSE) == TRUE) {
+			if (JGetByte( "ManualConnect", FALSE) == TRUE) {
 				CheckDlgButton(hwndDlg, IDC_MANUAL, TRUE);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_HOST), TRUE);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_HOSTPORT), TRUE);
@@ -236,24 +234,24 @@ static BOOL CALLBACK JabberOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 			if (!DBGetContactSetting(NULL, jabberProtoName, "ManualHost", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_HOST, dbv.pszVal);
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
-			SetDlgItemInt(hwndDlg, IDC_HOSTPORT, DBGetContactSettingWord(NULL, jabberProtoName, "ManualPort", JABBER_DEFAULT_PORT), FALSE);
+			SetDlgItemInt(hwndDlg, IDC_HOSTPORT, JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT), FALSE);
 
-			CheckDlgButton(hwndDlg, IDC_KEEPALIVE, DBGetContactSettingByte(NULL, jabberProtoName, "KeepAlive", TRUE));
-			CheckDlgButton(hwndDlg, IDC_RECONNECT, DBGetContactSettingByte(NULL, jabberProtoName, "Reconnect", FALSE));
-			CheckDlgButton(hwndDlg, IDC_ROSTER_SYNC, DBGetContactSettingByte(NULL, jabberProtoName, "RosterSync", FALSE));
+			CheckDlgButton(hwndDlg, IDC_KEEPALIVE, JGetByte( "KeepAlive", TRUE));
+			CheckDlgButton(hwndDlg, IDC_RECONNECT, JGetByte( "Reconnect", FALSE));
+			CheckDlgButton(hwndDlg, IDC_ROSTER_SYNC, JGetByte( "RosterSync", FALSE));
 
 			if (!DBGetContactSetting(NULL, jabberProtoName, "Jud", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_JUD, dbv.pszVal);
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 			else {
 				SetDlgItemText(hwndDlg, IDC_JUD, "users.jabber.org");
 			}
 
 			msgLangListBox = GetDlgItem(hwndDlg, IDC_MSGLANG);
-			wsprintf(text, "== %s ==", Translate("System default"));
+			wsprintf(text, "== %s ==", JTranslate("System default"));
 			SendMessage(msgLangListBox, CB_ADDSTRING, 0, (LPARAM) text);
 			SendMessage(msgLangListBox, CB_SETITEMDATA, 0, CP_ACP);
 			SendMessage(msgLangListBox, CB_SETCURSEL, 0, 0);
@@ -298,11 +296,11 @@ static BOOL CALLBACK JabberOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			GetDlgItemText(hwndDlg, IDC_EDIT_PASSWORD, regInfo.password, sizeof(regInfo.password));
 			GetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, regInfo.server, sizeof(regInfo.server));
 			if (IsDlgButtonChecked(hwndDlg, IDC_MANUAL)) {
-				regInfo.port = (WORD) GetDlgItemInt(hwndDlg, IDC_HOSTPORT, NULL, FALSE);
+				regInfo.port = ( WORD )GetDlgItemInt(hwndDlg, IDC_HOSTPORT, NULL, FALSE);
 				GetDlgItemText(hwndDlg, IDC_HOST, regInfo.manualHost, sizeof(regInfo.manualHost));
 			}
 			else {
-				regInfo.port = (WORD) GetDlgItemInt(hwndDlg, IDC_PORT, NULL, FALSE);
+				regInfo.port = ( WORD )GetDlgItemInt(hwndDlg, IDC_PORT, NULL, FALSE);
 				regInfo.manualHost[0] = '\0';
 			}
 			if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && (!IsDlgButtonChecked(hwndDlg, IDC_MANUAL) || regInfo.manualHost[0]))
@@ -319,11 +317,11 @@ static BOOL CALLBACK JabberOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			GetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, regInfo.server, sizeof(regInfo.server));
 			if (IsDlgButtonChecked(hwndDlg, IDC_MANUAL)) {
 				GetDlgItemText(hwndDlg, IDC_HOST, regInfo.manualHost, sizeof(regInfo.manualHost));
-				regInfo.port = (WORD) GetDlgItemInt(hwndDlg, IDC_HOSTPORT, NULL, FALSE);
+				regInfo.port = ( WORD )GetDlgItemInt(hwndDlg, IDC_HOSTPORT, NULL, FALSE);
 			}
 			else {
 				regInfo.manualHost[0] = '\0';
-				regInfo.port = (WORD) GetDlgItemInt(hwndDlg, IDC_PORT, NULL, FALSE);
+				regInfo.port = ( WORD )GetDlgItemInt(hwndDlg, IDC_PORT, NULL, FALSE);
 			}
 			regInfo.useSSL = IsDlgButtonChecked(hwndDlg, IDC_USE_SSL);
 
@@ -364,16 +362,16 @@ static BOOL CALLBACK JabberOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				GetDlgItemText(hwndDlg, IDC_EDIT_USERNAME, text, sizeof(text));
 				if (DBGetContactSetting(NULL, jabberProtoName, "LoginName", &dbv) || strcmp(text, dbv.pszVal))
 					reconnectRequired = TRUE;
-				if (dbv.pszVal != NULL)	DBFreeVariant(&dbv);
-				DBWriteContactSettingString(NULL, jabberProtoName, "LoginName", text);
+				if (dbv.pszVal != NULL)	JFreeVariant(&dbv);
+				JSetString( NULL, "LoginName", text);
 
 				if (IsDlgButtonChecked(hwndDlg, IDC_SAVEPASSWORD)) {
 					GetDlgItemText(hwndDlg, IDC_EDIT_PASSWORD, text, sizeof(text));
-					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(text), (LPARAM) text);
+					JCallService(MS_DB_CRYPT_ENCODESTRING, sizeof(text), (LPARAM) text);
 					if (DBGetContactSetting(NULL, jabberProtoName, "Password", &dbv) || strcmp(text, dbv.pszVal))
 						reconnectRequired = TRUE;
-					if (dbv.pszVal != NULL)	DBFreeVariant(&dbv);
-					DBWriteContactSettingString(NULL, jabberProtoName, "Password", text);
+					if (dbv.pszVal != NULL)	JFreeVariant(&dbv);
+					JSetString( NULL, "Password", text);
 				}
 				else
 					DBDeleteContactSetting(NULL, jabberProtoName, "Password");
@@ -381,62 +379,62 @@ static BOOL CALLBACK JabberOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				GetDlgItemText(hwndDlg, IDC_EDIT_RESOURCE, text, sizeof(text));
 				if (DBGetContactSetting(NULL, jabberProtoName, "Resource", &dbv) || strcmp(text, dbv.pszVal))
 					reconnectRequired = TRUE;
-				if (dbv.pszVal != NULL)	DBFreeVariant(&dbv);
-				DBWriteContactSettingString(NULL, jabberProtoName, "Resource", text);
+				if (dbv.pszVal != NULL)	JFreeVariant(&dbv);
+				JSetString( NULL, "Resource", text);
 
 				GetDlgItemText(hwndDlg, IDC_PRIORITY, text, sizeof(text));
-				port = (WORD) atoi(text);
+				port = ( WORD )atoi(text);
 				if (port > 100) port = 100;
 				if (port < 0) port = 0;
-				if (DBGetContactSettingWord(NULL, jabberProtoName, "Priority", 0) != port)
+				if (JSetWord( NULL, "Priority", 0) != port)
 					reconnectRequired = TRUE;
-				DBWriteContactSettingWord(NULL, jabberProtoName, "Priority", (WORD) port);
+				JSetWord( NULL, "Priority", ( WORD )port);
 
-				DBWriteContactSettingByte(NULL, jabberProtoName, "SavePassword", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVEPASSWORD));
+				JSetByte( "SavePassword", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVEPASSWORD));
 
 				GetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, text, sizeof(text));
 				if (DBGetContactSetting(NULL, jabberProtoName, "LoginServer", &dbv) || strcmp(text, dbv.pszVal))
 					reconnectRequired = TRUE;
-				if (dbv.pszVal != NULL)	DBFreeVariant(&dbv);
-				DBWriteContactSettingString(NULL, jabberProtoName, "LoginServer", text);
+				if (dbv.pszVal != NULL)	JFreeVariant(&dbv);
+				JSetString( NULL, "LoginServer", text);
 
-				port = (WORD) GetDlgItemInt(hwndDlg, IDC_PORT, NULL, FALSE);
-				if (DBGetContactSettingWord(NULL, jabberProtoName, "Port", JABBER_DEFAULT_PORT) != port)
+				port = ( WORD )GetDlgItemInt(hwndDlg, IDC_PORT, NULL, FALSE);
+				if ( JGetWord( NULL, "Port", JABBER_DEFAULT_PORT) != port)
 					reconnectRequired = TRUE;
-				DBWriteContactSettingWord(NULL, jabberProtoName, "Port", port);
+				JSetWord( NULL, "Port", port);
 
-				DBWriteContactSettingByte(NULL, jabberProtoName, "UseSSL", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USE_SSL));
+				JSetByte( "UseSSL", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USE_SSL));
 
-				DBWriteContactSettingByte(NULL, jabberProtoName, "ManualConnect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MANUAL));
+				JSetByte( "ManualConnect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MANUAL));
 
 				GetDlgItemText(hwndDlg, IDC_HOST, text, sizeof(text));
 				if (DBGetContactSetting(NULL, jabberProtoName, "ManualHost", &dbv) || strcmp(text, dbv.pszVal))
 					reconnectRequired = TRUE;
-				if (dbv.pszVal != NULL)	DBFreeVariant(&dbv);
-				DBWriteContactSettingString(NULL, jabberProtoName, "ManualHost", text);
+				if (dbv.pszVal != NULL)	JFreeVariant(&dbv);
+				JSetString( NULL, "ManualHost", text);
 
-				port = (WORD) GetDlgItemInt(hwndDlg, IDC_HOSTPORT, NULL, FALSE);
-				if (DBGetContactSettingWord(NULL, jabberProtoName, "ManualPort", JABBER_DEFAULT_PORT) != port)
+				port = ( WORD )GetDlgItemInt(hwndDlg, IDC_HOSTPORT, NULL, FALSE);
+				if (JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT) != port)
 					reconnectRequired = TRUE;
-				DBWriteContactSettingWord(NULL, jabberProtoName, "ManualPort", port);
+				JSetWord( NULL, "ManualPort", port);
 
-				DBWriteContactSettingByte(NULL, jabberProtoName, "KeepAlive", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
+				JSetByte( "KeepAlive", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
 				jabberSendKeepAlive = IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE);
 
-				DBWriteContactSettingByte(NULL, jabberProtoName, "Reconnect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RECONNECT));
-				DBWriteContactSettingByte(NULL, jabberProtoName, "RosterSync", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ROSTER_SYNC));
+				JSetByte( "Reconnect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RECONNECT));
+				JSetByte( "RosterSync", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ROSTER_SYNC));
 
 				GetDlgItemText(hwndDlg, IDC_JUD, text, sizeof(text));
-				DBWriteContactSettingString(NULL, jabberProtoName, "Jud", text);
+				JSetString( NULL, "Jud", text);
 
 				index = SendMessage(GetDlgItem(hwndDlg, IDC_MSGLANG), CB_GETCURSEL, 0, 0);
 				if (index >= 0) {
 					jabberCodePage = SendMessage(GetDlgItem(hwndDlg, IDC_MSGLANG), CB_GETITEMDATA, (WPARAM) index, 0);
-					DBWriteContactSettingWord(NULL, jabberProtoName, "CodePage", (WORD) jabberCodePage);
+					JSetWord( NULL, "CodePage", ( WORD )jabberCodePage);
 				}
 
 				if (reconnectRequired && jabberConnected)
-					MessageBox(hwndDlg, Translate("These changes will take effect the next time you connect to the Jabber network."), Translate("Jabber Protocol Option"), MB_OK|MB_SETFOREGROUND);
+					MessageBox(hwndDlg, JTranslate("These changes will take effect the next time you connect to the Jabber network."), JTranslate("Jabber Protocol Option"), MB_OK|MB_SETFOREGROUND);
 
 				return TRUE;
 			}
@@ -480,38 +478,38 @@ static BOOL CALLBACK JabberAdvOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				SendDlgItemMessage(hwndDlg, IDC_FONTSHOW, WM_SETFONT, (WPARAM) hFont, FALSE);
 				SetDlgItemText(hwndDlg, IDC_FONTSHOW, lf.lfFaceName);
 			}
-			if (DBGetContactSettingByte(NULL, jabberProtoName, "GcLogSendOnEnter", TRUE) == TRUE)
+			if (JGetByte( "GcLogSendOnEnter", TRUE) == TRUE)
 				CheckRadioButton(hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_ENTER);
 			else
 				CheckRadioButton(hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_CTRLENTER);
-			CheckDlgButton(hwndDlg, IDC_FLASH, DBGetContactSettingByte(NULL, jabberProtoName, "GcLogFlash", TRUE));
-			if (DBGetContactSettingByte(NULL, jabberProtoName, "GcLogTime", TRUE) == TRUE)
+			CheckDlgButton(hwndDlg, IDC_FLASH, JGetByte( "GcLogFlash", TRUE));
+			if (JGetByte( "GcLogTime", TRUE) == TRUE)
 				CheckDlgButton(hwndDlg, IDC_TIME, TRUE);
 			else
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DATE), FALSE);
-			CheckDlgButton(hwndDlg, IDC_DATE, DBGetContactSettingByte(NULL, jabberProtoName, "GcLogDate", FALSE));
+			CheckDlgButton(hwndDlg, IDC_DATE, JGetByte( "GcLogDate", FALSE));
 
 			// File transfer options
-			bDirect = DBGetContactSettingByte(NULL, jabberProtoName, "BsDirect", TRUE);
-			bManualDirect = DBGetContactSettingByte(NULL, jabberProtoName, "BsDirectManual", FALSE);
+			bDirect = JGetByte( "BsDirect", TRUE);
+			bManualDirect = JGetByte( "BsDirectManual", FALSE);
 			CheckDlgButton(hwndDlg, IDC_DIRECT, bDirect);
 			CheckDlgButton(hwndDlg, IDC_DIRECT_MANUAL, bManualDirect);
 			if (!DBGetContactSetting(NULL, jabberProtoName, "BsDirectAddr", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_DIRECT_ADDR, dbv.pszVal);
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 			if (!bDirect)
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DIRECT_MANUAL), FALSE);
 			if (!bDirect || !bManualDirect)
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DIRECT_ADDR), FALSE);
 
-			bProxy = DBGetContactSettingByte(NULL, jabberProtoName, "BsProxy", FALSE);
-			bManualProxy = DBGetContactSettingByte(NULL, jabberProtoName, "BsProxyManual", FALSE);
+			bProxy = JGetByte( "BsProxy", FALSE);
+			bManualProxy = JGetByte( "BsProxyManual", FALSE);
 			CheckDlgButton(hwndDlg, IDC_PROXY, bProxy);
 			CheckDlgButton(hwndDlg, IDC_PROXY_MANUAL, bManualProxy);
 			if (!DBGetContactSetting(NULL, jabberProtoName, "BsProxyServer", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_PROXY_ADDR, dbv.pszVal);
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 			if (!bProxy)
 				EnableWindow(GetDlgItem(hwndDlg, IDC_PROXY_MANUAL), FALSE);
@@ -519,9 +517,9 @@ static BOOL CALLBACK JabberAdvOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				EnableWindow(GetDlgItem(hwndDlg, IDC_PROXY_ADDR), FALSE);
 
 			// Miscellaneous options
-			CheckDlgButton(hwndDlg, IDC_SHOW_TRANSPORT, DBGetContactSettingByte(NULL, jabberProtoName, "ShowTransport", TRUE));
-			CheckDlgButton(hwndDlg, IDC_AUTO_ADD, DBGetContactSettingByte(NULL, jabberProtoName, "AutoAdd", TRUE));
-			CheckDlgButton(hwndDlg, IDC_MSG_ACK, DBGetContactSettingByte(NULL, jabberProtoName, "MsgAck", FALSE));
+			CheckDlgButton(hwndDlg, IDC_SHOW_TRANSPORT, JGetByte( "ShowTransport", TRUE));
+			CheckDlgButton(hwndDlg, IDC_AUTO_ADD, JGetByte( "AutoAdd", TRUE));
+			CheckDlgButton(hwndDlg, IDC_MSG_ACK, JGetByte( "MsgAck", FALSE));
 
 			return TRUE;
 		}
@@ -598,52 +596,52 @@ static BOOL CALLBACK JabberAdvOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						sprintf(key, "GcLogFont%dFace", i);
 						DBWriteContactSettingString(NULL, jabberProtoName, key, lf.lfFaceName);
 						sprintf(key, "GcLogFont%dSize", i);
-						DBWriteContactSettingByte(NULL, jabberProtoName, key, (BYTE) MulDiv(abs(lf.lfHeight), 72, GetDeviceCaps(GetDC(NULL), LOGPIXELSY)));
+						JSetByte( key, (BYTE) MulDiv(abs(lf.lfHeight), 72, GetDeviceCaps(GetDC(NULL), LOGPIXELSY)));
 						sprintf(key, "GcLogFont%dCharset", i);
-						DBWriteContactSettingByte(NULL, jabberProtoName, key, lf.lfCharSet);
+						JSetByte( key, lf.lfCharSet);
 						fontStyle = (lf.lfWeight>=FW_BOLD) ? JABBER_FONT_BOLD : 0;
 						if (lf.lfItalic == TRUE)
 							fontStyle |= JABBER_FONT_ITALIC;
 						sprintf(key, "GcLogFont%dStyle", i);
-						DBWriteContactSettingByte(NULL, jabberProtoName, key, fontStyle);
+						JSetByte( key, fontStyle);
 						// color is missing here!!!
 						// this is intentional so that we will use default color
 					}
-					if (jabberOnline) {
+					if (jabberOnline)
 						WindowList_Broadcast(hWndListGcLog, WM_JABBER_SET_FONT, 0, 0);
-					}
 				}
-				DBWriteContactSettingByte(NULL, jabberProtoName, "GcLogSendOnEnter", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ENTER));
-				DBWriteContactSettingByte(NULL, jabberProtoName, "GcLogFlash", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLASH));
-				DBWriteContactSettingByte(NULL, jabberProtoName, "GcLogTime", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TIME));
-				DBWriteContactSettingByte(NULL, jabberProtoName, "GcLogDate", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DATE));
+
+				JSetByte( "GcLogSendOnEnter", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ENTER));
+				JSetByte( "GcLogFlash", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLASH));
+				JSetByte( "GcLogTime", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TIME));
+				JSetByte( "GcLogDate", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DATE));
 
 				// File transfer options
-				DBWriteContactSettingByte(NULL, jabberProtoName, "BsDirect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DIRECT));
-				DBWriteContactSettingByte(NULL, jabberProtoName, "BsDirectManual", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DIRECT_MANUAL));
+				JSetByte( "BsDirect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DIRECT));
+				JSetByte( "BsDirectManual", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DIRECT_MANUAL));
 				GetDlgItemText(hwndDlg, IDC_DIRECT_ADDR, text, sizeof(text));
-				DBWriteContactSettingString(NULL, jabberProtoName, "BsDirectAddr", text);
-				DBWriteContactSettingByte(NULL, jabberProtoName, "BsProxy", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_PROXY));
-				DBWriteContactSettingByte(NULL, jabberProtoName, "BsProxyManual", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_PROXY_MANUAL));
+				JSetString( NULL, "BsDirectAddr", text);
+				JSetByte( "BsProxy", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_PROXY));
+				JSetByte( "BsProxyManual", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_PROXY_MANUAL));
 				GetDlgItemText(hwndDlg, IDC_PROXY_ADDR, text, sizeof(text));
-				DBWriteContactSettingString(NULL, jabberProtoName, "BsProxyAddr", text);
+				JSetString( NULL, "BsProxyAddr", text);
 
 				// Miscellaneous options
 				bChecked = IsDlgButtonChecked(hwndDlg, IDC_SHOW_TRANSPORT);
-				DBWriteContactSettingByte(NULL, jabberProtoName, "ShowTransport", (BYTE) bChecked);
+				JSetByte( "ShowTransport", (BYTE) bChecked);
 				index = 0;
 				while ((index=JabberListFindNext(LIST_ROSTER, index)) >= 0) {
 					if ((item=JabberListGetItemPtrFromIndex(index)) != NULL) {
 						if (strchr(item->jid, '@') == NULL) {
 							if ((hContact=JabberHContactFromJID(item->jid)) != NULL) {
 								if (bChecked) {
-									if (item->status != DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE)) {
-										DBWriteContactSettingWord(hContact, jabberProtoName, "Status", (WORD) item->status);
+									if (item->status != JGetWord( hContact, "Status", ID_STATUS_OFFLINE)) {
+										JSetWord( hContact, "Status", ( WORD )item->status );
 									}
 								}
 								else {
-									if (DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
-										DBWriteContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE);
+									if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE) {
+										JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 									}
 								}
 							}
@@ -651,8 +649,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 					index++;
 				}
-				DBWriteContactSettingByte(NULL, jabberProtoName, "AutoAdd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTO_ADD));
-				DBWriteContactSettingByte(NULL, jabberProtoName, "MsgAck", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MSG_ACK));
+				JSetByte( "AutoAdd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTO_ADD));
+				JSetByte( "MsgAck", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MSG_ACK));
 
 				return TRUE;
 			}

@@ -26,20 +26,20 @@ typedef enum { ELEM_OPEN, ELEM_CLOSE, ELEM_OPENCLOSE, ELEM_TEXT } XmlElemType;
 typedef enum { NODE_OPEN, NODE_CLOSE } XmlNodeType;
 
 typedef struct tagXmlAttr {
-	char *name;
-	char *value;
+	char* name;
+	char* value;
 } XmlAttr;
 
 typedef struct tagXmlNode {
 	int depth;									// depth of the current node (1=root)
-	char *name;									// tag name of the current node
+	char* name;									// tag name of the current node
 	int numAttr;								// number of attributes
 	int maxNumAttr;								// internal use (num of slots currently allocated to attr)
 	XmlAttr **attr;								// attribute list
 	int numChild;								// number of direct child nodes
 	int maxNumChild;							// internal use (num of slots currently allocated to child)
 	struct tagXmlNode **child;					// child node list
-	char *text;
+	char* text;
 	XmlNodeType state;							// internal use by parser
 } XmlNode;
 
@@ -61,11 +61,11 @@ typedef struct tagXmlState {
 void JabberXmlInitState(XmlState *xmlState);
 void JabberXmlDestroyState(XmlState *xmlState);
 BOOL JabberXmlSetCallback(XmlState *xmlState, int depth, XmlElemType type, void (*callback)(), void *userdata);
-int JabberXmlParse(XmlState *xmlState, char *buffer, int datalen);
-char *JabberXmlGetAttrValue(XmlNode *node, char *key);
-XmlNode *JabberXmlGetChild(XmlNode *node, char *tag);
-XmlNode *JabberXmlGetNthChild(XmlNode *node, char *tag, int nth);
-XmlNode *JabberXmlGetChildWithGivenAttrValue(XmlNode *node, char *tag, char *attrKey, char *attrValue);
+int JabberXmlParse(XmlState *xmlState, char* buffer, int datalen);
+char* JabberXmlGetAttrValue(XmlNode *node, char* key);
+XmlNode *JabberXmlGetChild(XmlNode *node, char* tag);
+XmlNode *JabberXmlGetNthChild(XmlNode *node, char* tag, int nth);
+XmlNode *JabberXmlGetChildWithGivenAttrValue(XmlNode *node, char* tag, char* attrKey, char* attrValue);
 void JabberXmlFreeNode(XmlNode *node);
 void JabberXmlDumpAll(XmlState *xmlState);
 void JabberXmlDumpNode(XmlNode *node);
@@ -73,10 +73,10 @@ XmlNode *JabberXmlCopyNode(XmlNode *node);
 BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, JABBER_XML_CALLBACK callback, void *userdata);
 
 #ifdef _DEBUG
-XmlNode *JabberXmlCreateNode(char *name);
-void JabberXmlAddAttr(XmlNode *n, char *name, char *value);
-XmlNode *JabberXmlAddChild(XmlNode *n, char *name);
-void JabberXmlAddText(XmlNode *n, char *text);
+XmlNode *JabberXmlCreateNode(char* name);
+void JabberXmlAddAttr(XmlNode *n, char* name, char* value);
+XmlNode *JabberXmlAddChild(XmlNode *n, char* name);
+void JabberXmlAddText(XmlNode *n, char* text);
 #endif
 
 #endif

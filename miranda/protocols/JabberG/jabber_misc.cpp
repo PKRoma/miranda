@@ -23,9 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber.h"
 #include "jabber_list.h"
 
-void JabberDBAddAuthRequest(char *jid, char *nick)
+void JabberDBAddAuthRequest(char* jid, char* nick)
 {
-	char *s, *p, *q;
+	char* s, *p, *q;
 	DBEVENTINFO dbei = {0};
 	PBYTE pCurBlob;
 	HANDLE hContact;
@@ -39,8 +39,8 @@ void JabberDBAddAuthRequest(char *jid, char *nick)
 	_strlwr(s);
 
 	if ((hContact=JabberHContactFromJID(jid)) == NULL) {
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_ADD, 0, 0);
-		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) jabberProtoName);
+		hContact = (HANDLE) JCallService(MS_DB_CONTACT_ADD, 0, 0);
+		JCallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) jabberProtoName);
 		DBWriteContactSettingString(hContact, jabberProtoName, "jid", s);
 	}
 	else {
@@ -52,30 +52,30 @@ void JabberDBAddAuthRequest(char *jid, char *nick)
 	//blob is: 0(DWORD), hContact(HANDLE), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
 	dbei.cbSize = sizeof(DBEVENTINFO);
 	dbei.szModule = jabberProtoName;
-	dbei.timestamp = (DWORD) time(NULL);
+	dbei.timestamp = ( DWORD )time(NULL);
 	dbei.flags = 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
-	dbei.cbBlob = sizeof(DWORD) + sizeof(HANDLE) + strlen(nick) + strlen(jid) + 5;
+	dbei.cbBlob = sizeof( DWORD )+ sizeof(HANDLE) + strlen(nick) + strlen(jid) + 5;
 	pCurBlob = dbei.pBlob = (PBYTE) malloc(dbei.cbBlob);
 	*((PDWORD) pCurBlob) = 0; pCurBlob += sizeof(DWORD);
 	*((PHANDLE) pCurBlob) = hContact; pCurBlob += sizeof(HANDLE);
-	strcpy((char *) pCurBlob, nick); pCurBlob += strlen(nick)+1;
+	strcpy(( char* )pCurBlob, nick); pCurBlob += strlen(nick)+1;
 	*pCurBlob = '\0'; pCurBlob++;		//firstName
 	*pCurBlob = '\0'; pCurBlob++;		//lastName
-	strcpy((char *) pCurBlob, jid); pCurBlob += strlen(jid)+1;
+	strcpy(( char* )pCurBlob, jid); pCurBlob += strlen(jid)+1;
 	*pCurBlob = '\0';					//reason
 
-	CallService(MS_DB_EVENT_ADD, (WPARAM) (HANDLE) NULL, (LPARAM) &dbei);
+	JCallService(MS_DB_EVENT_ADD, (WPARAM) (HANDLE) NULL, (LPARAM) &dbei);
 	JabberLog("Setup DBAUTHREQUEST with nick='%s' jid='%s'", nick, jid);
 }
 
-HANDLE JabberDBCreateContact(char *jid, char *nick, BOOL temporary, BOOL stripResource)
+HANDLE JabberDBCreateContact(char* jid, char* nick, BOOL temporary, BOOL stripResource)
 {
 	HANDLE hContact;
-	char *s, *p, *q;
+	char* s, *p, *q;
 	DBVARIANT dbv;
 	int len;
-	char *szProto;
+	char* szProto;
 
 	if (jid==NULL || jid[0]=='\0')
 		return NULL;
@@ -93,26 +93,26 @@ HANDLE JabberDBCreateContact(char *jid, char *nick, BOOL temporary, BOOL stripRe
 	len = strlen(s);
 
 	// We can't use JabberHContactFromJID() here because of the stripResource option
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact != NULL) {
-		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		szProto = ( char* )JCallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (szProto!=NULL && !strcmp(jabberProtoName, szProto)) {
 			if (!DBGetContactSetting(hContact, jabberProtoName, "jid", &dbv)) {
 				p = dbv.pszVal;
 				if (p && (int)strlen(p)>=len && (p[len]=='\0'||p[len]=='/') && !strncmp(p, s, len)) {
-					DBFreeVariant(&dbv);
+					JFreeVariant(&dbv);
 					break;
 				}
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
 		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 
 	//if ((hContact=JabberHContactFromJID(s)) == NULL) {
 	if (hContact == NULL) {
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_ADD, 0, 0);
-		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) jabberProtoName);
+		hContact = (HANDLE) JCallService(MS_DB_CONTACT_ADD, 0, 0);
+		JCallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) jabberProtoName);
 		DBWriteContactSettingString(hContact, jabberProtoName, "jid", s);
 		if (nick!=NULL && nick[0]!='\0')
 			DBWriteContactSettingString(hContact, jabberProtoName, "Nick", nick);
@@ -126,12 +126,12 @@ HANDLE JabberDBCreateContact(char *jid, char *nick, BOOL temporary, BOOL stripRe
 	return hContact;
 }
 
-static void JabberContactListCreateClistGroup(char *groupName)
+static void JabberContactListCreateClistGroup(char* groupName)
 {
 	char str[33], newName[128];
 	int i;
 	DBVARIANT dbv;
-	char *name;
+	char* name;
 
 	for (i=0;;i++) {
 		itoa(i, str, 10);
@@ -140,10 +140,10 @@ static void JabberContactListCreateClistGroup(char *groupName)
 		name = dbv.pszVal;
 		if (name[0]!='\0' && !strcmp(name+1, groupName)) {
 			// Already exist, no need to create
-			DBFreeVariant(&dbv);
+			JFreeVariant(&dbv);
 			return;
 		}
-		DBFreeVariant(&dbv);
+		JFreeVariant(&dbv);
 	}
 
 	// Create new group with id = i (str is the text representation of i)
@@ -151,13 +151,13 @@ static void JabberContactListCreateClistGroup(char *groupName)
 	strncpy(newName+1, groupName, sizeof(newName)-1);
 	newName[sizeof(newName)-1] = '\0';
 	DBWriteContactSettingString(NULL, "CListGroups", str, newName);
-	CallService(MS_CLUI_GROUPADDED, i+1, 0);
+	JCallService(MS_CLUI_GROUPADDED, i+1, 0);
 }
 
-void JabberContactListCreateGroup(char *groupName)
+void JabberContactListCreateGroup(char* groupName)
 {
 	char name[128];
-	char *p;
+	char* p;
 
 	if (groupName==NULL || groupName[0]=='\0' || groupName[0]=='\\') return;
 
@@ -183,12 +183,12 @@ static void __cdecl forkthread_r(struct FORK_ARG *fa)
 {	
 	void (*callercode)(void*) = fa->threadcode;
 	void *arg = fa->arg;
-	CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
+	JCallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
 	SetEvent(fa->hEvent);
 	__try {
 		callercode(arg);
 	} __finally {
-		CallService(MS_SYSTEM_THREAD_POP, 0, 0);
+		JCallService(MS_SYSTEM_THREAD_POP, 0, 0);
 	} 
 	return;
 }

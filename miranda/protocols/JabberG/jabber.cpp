@@ -44,8 +44,8 @@ PLUGININFO pluginInfo = {
 
 HANDLE hMainThread;
 DWORD jabberMainThreadId;
-char *jabberProtoName;	// "JABBER"
-char *jabberModuleName;	// "Jabber"
+char* jabberProtoName;	// "JABBER"
+char* jabberModuleName;	// "Jabber"
 CRITICAL_SECTION mutex;
 HANDLE hNetlibUser;
 // Main jabber server connection thread global variables
@@ -56,15 +56,15 @@ int jabberStatus;
 int jabberDesiredStatus;
 BOOL modeMsgStatusChangePending;
 BOOL jabberChangeStatusMessageOnly;
-char *jabberJID = NULL;
-char *streamId;
+char* jabberJID = NULL;
+char* streamId;
 DWORD jabberLocalIP;
 UINT jabberCodePage;
 JABBER_MODEMSGS modeMsgs;
-//char *jabberModeMsg;
+//char* jabberModeMsg;
 CRITICAL_SECTION modeMsgMutex;
-char *jabberVcardPhotoFileName;
-char *jabberVcardPhotoType;
+char* jabberVcardPhotoFileName;
+char* jabberVcardPhotoType;
 BOOL jabberSendKeepAlive;
 HICON jabberIcon[JABBER_ICON_TOTAL];
 
@@ -229,17 +229,19 @@ static void JabberIconInit()
 		IDI_GCVOICE
 	};
 
-	for (i=0; i<JABBER_ICON_TOTAL; i++)
+	for ( i=0; i < JABBER_ICON_TOTAL; i++ )
 		jabberIcon[i] = ( HICON )LoadImage(hInst, MAKEINTRESOURCE(iconList[i]), IMAGE_ICON, 0, 0, 0);
 }
 
 extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 {
+	pluginLink = link;
+
 	PROTOCOLDESCRIPTOR pd;
 	HANDLE hContact;
 	char text[_MAX_PATH];
-	char *p, *q;
-	char *szProto;
+	char* p, *q;
+	char* szProto;
 	CLISTMENUITEM mi, clmi;
 
 	GetModuleFileName(hInst, text, sizeof(text));
@@ -256,7 +258,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	JabberLog("Setting protocol/module name to '%s/%s'", jabberProtoName, jabberModuleName);
 
-	pluginLink = link;
 	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0);
 	jabberMainThreadId = GetCurrentThreadId();
 	hLibSSL = NULL;
@@ -275,7 +276,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	hwndMucAdminList = NULL;
 	hwndMucOwnerList = NULL;
 	hwndJabberChangePassword = NULL;
-	hWndListGcLog = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
+	hWndListGcLog = (HANDLE) JCallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 
 	HookEvent(ME_OPT_INITIALISE, JabberOptInit);
 	HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
@@ -286,7 +287,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	pd.cbSize = sizeof(PROTOCOLDESCRIPTOR);
 	pd.szName = jabberProtoName;
 	pd.type = PROTOTYPE_PROTOCOL;
-	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) &pd);
+	JCallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) &pd);
 
 	memset(&mi, 0, sizeof(CLISTMENUITEM));
 	mi.cbSize = sizeof(CLISTMENUITEM);
@@ -300,71 +301,70 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mi.popupPosition = 500090000;
 	wsprintf(text, "%s/Agents", jabberModuleName);
 	CreateServiceFunction(text, JabberMenuHandleAgents);
-	mi.pszName = Translate("Agents...");
+	mi.pszName = JTranslate("Agents...");
 	mi.position = 2000050000;
 	mi.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_AGENTS));
 	mi.pszService = text;
-	hMenuAgent = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuAgent, (LPARAM) &clmi);
+	hMenuAgent = (HANDLE) JCallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuAgent, (LPARAM) &clmi);
 	// "Change Password..."
 	wsprintf(text, "%s/ChangePassword", jabberModuleName);
 	CreateServiceFunction(text, JabberMenuHandleChangePassword);
-	mi.pszName = Translate("Change Password...");
+	mi.pszName = JTranslate("Change Password...");
 	mi.position = 2000050001;
 	mi.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_KEYS));
 	mi.pszService = text;
-	hMenuChangePassword = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuChangePassword, (LPARAM) &clmi);
+	hMenuChangePassword = (HANDLE) JCallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuChangePassword, (LPARAM) &clmi);
 	// "Multi-User Conference..."
 	wsprintf(text, "%s/Groupchat", jabberModuleName);
 	CreateServiceFunction(text, JabberMenuHandleGroupchat);
-	mi.pszName = Translate("Multi-User Conference...");
+	mi.pszName = JTranslate("Multi-User Conference...");
 	mi.position = 2000050002;
 	mi.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_GROUP));
 	mi.pszService = text;
-	hMenuGroupchat = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuGroupchat, (LPARAM) &clmi);
+	hMenuGroupchat = (HANDLE) JCallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuGroupchat, (LPARAM) &clmi);
 	// "Personal vCard..."
 	wsprintf(text, "%s/Vcard", jabberModuleName);
 	CreateServiceFunction(text, JabberMenuHandleVcard);
-	mi.pszName = Translate("Personal vCard...");
+	mi.pszName = JTranslate("Personal vCard...");
 	mi.position = 2000050003;
 	mi.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_VCARD));
 	mi.pszService = text;
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	JCallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 	// Add contact menu
 	// "Request authorization"
 	sprintf(text, "%s/RequestAuth", jabberModuleName);
 	CreateServiceFunction(text, JabberMenuHandleRequestAuth);
-	mi.pszName = Translate("Request authorization");
+	mi.pszName = JTranslate("Request authorization");
 	mi.position = -2000001001;
 	mi.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_REQUEST));
 	mi.pszService = text;
 	mi.pszContactOwner = jabberProtoName;
-	hMenuRequestAuth = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
+	hMenuRequestAuth = (HANDLE) JCallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
 	// "Grant authorization"
 	sprintf(text, "%s/GrantAuth", jabberModuleName);
 	CreateServiceFunction(text, JabberMenuHandleGrantAuth);
-	mi.pszName = Translate("Grant authorization");
+	mi.pszName = JTranslate("Grant authorization");
 	mi.position = -2000001000;
 	mi.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_GRANT));
 	mi.pszService = text;
 	mi.pszContactOwner = jabberProtoName;
-	hMenuGrantAuth = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
+	hMenuGrantAuth = (HANDLE) JCallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
 
-	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu);
+	HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu );
 
 	// Set all contacts to offline
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact != NULL) {
-		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if(szProto!=NULL && !strcmp(szProto, jabberProtoName)) {
-			if (DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
-				DBWriteContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE);
-			}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		szProto = ( char* )JCallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		if ( szProto != NULL && !strcmp( szProto, jabberProtoName ))
+			if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE)
+				JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+
+		hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 
 	streamId = NULL;
@@ -376,9 +376,9 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	jabberChangeStatusMessageOnly = FALSE;
 	jabberVcardPhotoFileName = NULL;
 	jabberVcardPhotoType = NULL;
-	memset((char *) &modeMsgs, 0, sizeof(JABBER_MODEMSGS));
+	memset(( char* )&modeMsgs, 0, sizeof(JABBER_MODEMSGS));
 	//jabberModeMsg = NULL;
-	jabberCodePage = DBGetContactSettingWord(NULL, jabberProtoName, "CodePage", CP_ACP);
+	jabberCodePage = JGetWord( NULL, "CodePage", CP_ACP);
 
 	InitializeCriticalSection(&mutex);
 	InitializeCriticalSection(&modeMsgMutex);

@@ -522,6 +522,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_std.cpp">
+			</File>
+			<File
 				RelativePath="jabber_svc.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">

@@ -55,7 +55,7 @@ static BOOL CALLBACK JabberPasswordDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		wsprintf(text, "%s %s", Translate("Enter password for"), (char *) lParam);
+		wsprintf(text, "%s %s", JTranslate("Enter password for"), ( char* )lParam);
 		SetDlgItemText(hwndDlg, IDC_JID, text);
 		return TRUE;
 	case WM_COMMAND:
@@ -87,8 +87,8 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 {
 	DBVARIANT dbv;
 	char jidStr[128];
-	char *connectHost;
-	char *buffer;
+	char* connectHost;
+	char* buffer;
 	int datalen;
 	XmlState xmlState;
 	HANDLE hContact;
@@ -98,11 +98,11 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 	int reconnectMaxTime;
 	int numRetry;
 	int reconnectTime;
-	char *str;
+	char* str;
 	CLISTMENUITEM clmi;
 	PVOID ssl;
 	BOOL sslMode;
-	char *szLogBuffer;
+	char* szLogBuffer;
 
 	JabberLog("Thread started: type=%d", info->type);
 
@@ -128,7 +128,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 
 		if (!DBGetContactSetting(NULL, jabberProtoName, "LoginName", &dbv)) {
 			strncpy(info->username, dbv.pszVal, sizeof(info->username)-1);
-			DBFreeVariant(&dbv);
+			JFreeVariant(&dbv);
 		}
 		else {
 			free(info);
@@ -143,7 +143,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 
 		if (!DBGetContactSetting(NULL, jabberProtoName, "LoginServer", &dbv)) {
 			strncpy(info->server, dbv.pszVal, sizeof(info->server)-1);
-			DBFreeVariant(&dbv);
+			JFreeVariant(&dbv);
 		}
 		else {
 			free(info);
@@ -158,7 +158,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 
 		if (!DBGetContactSetting(NULL, jabberProtoName, "Resource", &dbv)) {
 			strncpy(info->resource, dbv.pszVal, sizeof(info->resource)-1);
-			DBFreeVariant(&dbv);
+			JFreeVariant(&dbv);
 		}
 		else
 			strcpy(info->resource, "Miranda");
@@ -168,7 +168,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 		strncpy(info->fullJID, str, sizeof(info->fullJID)-1);
 		free(str);
 
-		if (DBGetContactSettingByte(NULL, jabberProtoName, "SavePassword", TRUE) == FALSE) {
+		if (JGetByte( "SavePassword", TRUE) == FALSE) {
 			_snprintf(jidStr, sizeof(jidStr), "%s@%s", info->username, info->server);
 			// Ugly hack: continue logging on only the return value is &(onlinePassword[0])
 			// because if WM_QUIT while dialog box is still visible, p is returned with some
@@ -176,10 +176,10 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 			// Should be better with modeless.
 			onlinePassword[0] = (char) -1;
 			hEventPasswdDlg = CreateEvent(NULL, FALSE, FALSE, NULL);
-			QueueUserAPC(JabberPasswordCreateDialogApcProc, hMainThread, (DWORD) jidStr);
+			QueueUserAPC(JabberPasswordCreateDialogApcProc, hMainThread, ( DWORD )jidStr);
 			WaitForSingleObject(hEventPasswdDlg, INFINITE);
 			CloseHandle(hEventPasswdDlg);
-			//if ((p=(char *)DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_PASSWORD), NULL, JabberPasswordDlgProc, (LPARAM) jidStr)) != onlinePassword) {
+			//if ((p=(char* )DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_PASSWORD), NULL, JabberPasswordDlgProc, (LPARAM) jidStr)) != onlinePassword) {
 			if (onlinePassword[0] == (char) -1) {
 				free(info);
 				jabberThreadInfo = NULL;
@@ -204,25 +204,25 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 				JabberLog("Thread ended, password is not configured");
 				return;
 			}
-			CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal)+1, (LPARAM) dbv.pszVal);
+			JCallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal)+1, (LPARAM) dbv.pszVal);
 			strncpy(info->password, dbv.pszVal, sizeof(info->password));
 			info->password[sizeof(info->password)-1] = '\0';
-			DBFreeVariant(&dbv);
+			JFreeVariant(&dbv);
 		}
 
-		if (DBGetContactSettingByte(NULL, jabberProtoName, "ManualConnect", FALSE) == TRUE) {
+		if (JGetByte( "ManualConnect", FALSE) == TRUE) {
 			if (!DBGetContactSetting(NULL, jabberProtoName, "ManualHost", &dbv)) {
 				strncpy(info->manualHost, dbv.pszVal, sizeof(info->manualHost));
 				info->manualHost[sizeof(info->manualHost)-1] = '\0';
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 			}
-			info->port = DBGetContactSettingWord(NULL, jabberProtoName, "ManualPort", JABBER_DEFAULT_PORT);
+			info->port = JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT);
 		}
 		else {
-			info->port = DBGetContactSettingWord(NULL, jabberProtoName, "Port", JABBER_DEFAULT_PORT);
+			info->port = JGetWord( NULL, "Port", JABBER_DEFAULT_PORT);
 		}
 
-		info->useSSL = DBGetContactSettingByte(NULL, jabberProtoName, "UseSSL", FALSE);
+		info->useSSL = JGetByte( "UseSSL", FALSE);
 	}
 
 	else if (info->type == JABBER_SESSION_REGISTER) {
@@ -230,7 +230,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 		// Multiple thread allowed, although not possible :)
 		// thinking again.. multiple thread should not be allowed
 		info->reg_done = FALSE;
-		SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 25, (LPARAM) Translate("Connecting..."));
+		SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 25, (LPARAM) JTranslate("Connecting..."));
 		iqIdRegGetReg = -1;
 		iqIdRegSetReg = -1;
 	}
@@ -249,7 +249,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 	JabberLog("Thread type=%d server='%s' port='%d'", info->type, connectHost, info->port);
 
 	jabberNetworkBufferSize = 2048;
-	if ((buffer=(char *) malloc(jabberNetworkBufferSize+1)) == NULL) {	// +1 is for '\0' when debug logging this buffer
+	if ((buffer=( char* )malloc(jabberNetworkBufferSize+1)) == NULL) {	// +1 is for '\0' when debug logging this buffer
 		JabberLog("Cannot allocate network buffer, thread ended");
 		if (info->type == JABBER_SESSION_NORMAL) {
 			oldStatus = jabberStatus;
@@ -259,7 +259,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 			jabberThreadInfo = NULL;
 		}
 		else if (info->type == JABBER_SESSION_REGISTER) {
-			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) Translate("Error: Not enough memory"));
+			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) JTranslate("Error: Not enough memory"));
 		}
 		free(info);
 		JabberLog("Thread ended, network buffer cannot be allocated");
@@ -280,7 +280,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 					jabberStatus = ID_STATUS_OFFLINE;
 					ProtoBroadcastAck(jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK);
 					ProtoBroadcastAck(jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, jabberStatus);
-					if (DBGetContactSettingByte(NULL, jabberProtoName, "Reconnect", FALSE) == TRUE) {
+					if (JGetByte( "Reconnect", FALSE) == TRUE) {
 						reconnectTime = rand() % reconnectMaxTime;
 						JabberLog("Sleeping %d seconds before automatic reconnecting...", reconnectTime);
 						SleepEx(reconnectTime * 1000, TRUE);
@@ -306,7 +306,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 				}
 			}
 			else if (info->type == JABBER_SESSION_REGISTER) {
-				SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) Translate("Error: Cannot connect to the server"));
+				SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) JTranslate("Error: Cannot connect to the server"));
 			}
 			JabberLog("Thread ended, connection failed");
 			free(buffer);
@@ -315,7 +315,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 		}
 
 		// Determine local IP
-		socket = CallService(MS_NETLIB_GETSOCKET, (WPARAM) info->s, 0);
+		socket = JCallService(MS_NETLIB_GETSOCKET, (WPARAM) info->s, 0);
 		if (info->type==JABBER_SESSION_NORMAL && socket!=INVALID_SOCKET) {
 			struct sockaddr_in saddr;
 			int len;
@@ -362,12 +362,12 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 						jabberThreadInfo = NULL;
 				}
 				else if (info->type == JABBER_SESSION_REGISTER) {
-					SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) Translate("Error: Cannot connect to the server"));
+					SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) JTranslate("Error: Cannot connect to the server"));
 				}
 				free(buffer);
 				free(info);
 				if (!hLibSSL)
-					MessageBox(NULL, Translate("The connection requires an OpenSSL library, which is not installed."), Translate("Jabber Connection Error"), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND);
+					MessageBox(NULL, JTranslate("The connection requires an OpenSSL library, which is not installed."), JTranslate("Jabber Connection Error"), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND);
 				JabberLog("Thread ended, SSL connection failed");
 				return;
 			}
@@ -378,9 +378,9 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 
 			if (info->type == JABBER_SESSION_NORMAL) {
 				jabberConnected = TRUE;
-				jabberJID = (char *) malloc(strlen(info->username)+strlen(info->server)+2);
+				jabberJID = ( char* )malloc(strlen(info->username)+strlen(info->server)+2);
 				sprintf(jabberJID, "%s@%s", info->username, info->server);
-				if (DBGetContactSettingByte(NULL, jabberProtoName, "KeepAlive", 1))
+				if (JGetByte( "KeepAlive", 1))
 					jabberSendKeepAlive = TRUE;
 				else
 					jabberSendKeepAlive = FALSE;
@@ -420,7 +420,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 				JabberLog("RECV:%s", buffer);
 				if (sslMode && DBGetContactSettingByte(NULL, "Netlib", "DumpRecv", TRUE)==TRUE) {
 					// Emulate netlib log feature for SSL connection
-					if ((szLogBuffer=(char *)malloc(recvResult+128)) != NULL) {
+					if ((szLogBuffer=(char* )malloc(recvResult+128)) != NULL) {
 						strcpy(szLogBuffer, "(SSL) Data received\n");
 						memcpy(szLogBuffer+strlen(szLogBuffer), buffer+datalen-recvResult, recvResult+1 /* also copy \0 */);
 						Netlib_Logf(hNetlibUser, "%s", szLogBuffer);	// %s to protect against when fmt tokens are in szLogBuffer causing crash
@@ -438,7 +438,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 				else if (datalen == jabberNetworkBufferSize) {
 					jabberNetworkBufferSize += 2048;
 					JabberLog("Increasing network buffer size to %d", jabberNetworkBufferSize);
-					if ((buffer=(char *) realloc(buffer, jabberNetworkBufferSize+1)) == NULL) {
+					if ((buffer=( char* )realloc(buffer, jabberNetworkBufferSize+1)) == NULL) {
 						JabberLog("Cannot reallocate more network buffer, go offline now");
 						break;
 					}
@@ -456,9 +456,9 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 				memset(&clmi, 0, sizeof(CLISTMENUITEM));
 				clmi.cbSize = sizeof(CLISTMENUITEM);
 				clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
-				CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuAgent, (LPARAM) &clmi);
-				CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuChangePassword, (LPARAM) &clmi);
-				CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuGroupchat, (LPARAM) &clmi);
+				JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuAgent, (LPARAM) &clmi);
+				JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuChangePassword, (LPARAM) &clmi);
+				JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuGroupchat, (LPARAM) &clmi);
 				if (hwndJabberChangePassword) {
 					//DestroyWindow(hwndJabberChangePassword);
 					// Since this is a different thread, simulate the click on the cancel button instead
@@ -479,15 +479,15 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 				ProtoBroadcastAck(jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, jabberStatus);
 
 				// Set all contacts to offline
-				hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+				hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 				while (hContact != NULL) {
-					str = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+					str = ( char* )JCallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 					if(str!=NULL && !strcmp(str, jabberProtoName)) {
-						if (DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
-							DBWriteContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE);
+						if (JGetWord( hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
+							JSetWord( hContact, "Status", ID_STATUS_OFFLINE);
 						}
 					}
-					hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+					hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 				}
 
 				free(jabberJID);
@@ -502,7 +502,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 				}
 			}
 			else if (info->type==JABBER_SESSION_REGISTER && !info->reg_done) {
-				SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) Translate("Error: Connection lost"));
+				SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) JTranslate("Error: Connection lost"));
 			}
 		}
 		else {
@@ -520,7 +520,7 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 			JabberSslRemoveHandle(info->s);
 		}
 
-		if (info->type!=JABBER_SESSION_NORMAL || DBGetContactSettingByte(NULL, jabberProtoName, "Reconnect", FALSE)==FALSE)
+		if (info->type!=JABBER_SESSION_NORMAL || JGetByte( "Reconnect", FALSE)==FALSE)
 			break;
 
 		if (jabberThreadInfo != info)	// Make sure this is still the main Jabber connection thread
@@ -555,9 +555,9 @@ void __cdecl JabberServerThread(struct ThreadData *info)
 static void JabberProcessStreamOpening(XmlNode *node, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
-	char *sid;
+	char* sid;
 	int iqId;
-	char *p;
+	char* p;
 
 	if (node->name==NULL || strcmp(node->name, "stream:stream"))
 		return;
@@ -579,7 +579,7 @@ static void JabberProcessStreamOpening(XmlNode *node, void *userdata)
 			iqIdRegGetReg = JabberSerialNext();
 			JabberSend(info->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:register'/></iq>", iqIdRegGetReg, info->server);
 			free(p);
-			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, (LPARAM) Translate("Requesting registration instruction..."));
+			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, (LPARAM) JTranslate("Requesting registration instruction..."));
 		}
 	}
 	else
@@ -592,7 +592,7 @@ static void JabberProcessStreamClosing(XmlNode *node, void *userdata)
 
 	Netlib_CloseHandle(info->s);
 	if (node->name && !strcmp(node->name, "stream:error") && node->text)
-		MessageBox(NULL, Translate(node->text), Translate("Jabber Connection Error"), MB_OK|MB_ICONERROR|MB_SETFOREGROUND);
+		MessageBox(NULL, JTranslate(node->text), JTranslate("Jabber Connection Error"), MB_OK|MB_ICONERROR|MB_SETFOREGROUND);
 }
 
 static void JabberProcessProtocol(XmlNode *node, void *userdata)
@@ -625,7 +625,7 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 {
 	struct ThreadData *info;
 	XmlNode *bodyNode, *subjectNode, *xNode, *inviteNode, *idNode, *n;
-	char *from, *type, *nick, *p, *idStr, *fromResource;
+	char* from, *type, *nick, *p, *idStr, *fromResource;
 	int id;
 
 	if (!node->name || strcmp(node->name, "message")) return;
@@ -734,7 +734,7 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 			if (item != NULL) {
 				item->wantComposingEvent = composing;
 				if ( hContact != NULL)
-					CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
+					JCallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 
 				if (item->resourceMode==RSMODE_LASTSEEN && (fromResource=strchr(from, '/'))!=NULL) {
 					fromResource++;
@@ -768,7 +768,7 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 
 			PROTORECVEVENT recv;
 			recv.flags = PREF_UNICODE;
-			recv.timestamp = (DWORD) msgTime;
+			recv.timestamp = ( DWORD )msgTime;
 			recv.szMessage = buf;
 			recv.lParam = 0;
 
@@ -777,7 +777,7 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 			ccs.wParam = 0;
 			ccs.szProtoService = PSR_MESSAGE;
 			ccs.lParam = (LPARAM) &recv;
-			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
+			JCallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
 		}
 
 		free( szMessage );
@@ -802,12 +802,12 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 				HANDLE hContact;
 				if (JabberXmlGetChild(xNode, "composing") != NULL)
 					if ((hContact=JabberHContactFromJID(from)) != NULL)
-						CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_INFINITE);
+						JCallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_INFINITE);
 
 				if (xNode->numChild==0 || (xNode->numChild==1 && idNode!=NULL))
 					// Maybe a cancel to the previous composing
 					if ((hContact=JabberHContactFromJID(from)) != NULL)
-						CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
+						JCallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 }	}	}	}
 
 static void JabberProcessPresence(XmlNode *node, void *userdata)
@@ -817,9 +817,9 @@ static void JabberProcessPresence(XmlNode *node, void *userdata)
 	XmlNode *showNode, *statusNode;
 	JABBER_LIST_ITEM *item;
 	JABBER_RESOURCE_STATUS *r;
-	char *from, *type, *nick, *show;
+	char* from, *type, *nick, *show;
 	int status, count, i;
-	char *p;
+	char* p;
 
 	if (!node || !node->name || strcmp(node->name, "presence")) return;
 	if ((info=(struct ThreadData *) userdata) == NULL) return;
@@ -876,9 +876,9 @@ static void JabberProcessPresence(XmlNode *node, void *userdata)
 						item->status = status;
 					}
 
-					if (strchr(from, '@')!=NULL || DBGetContactSettingByte(NULL, jabberProtoName, "ShowTransport", TRUE)==TRUE) {
-						if (DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE) != status)
-							DBWriteContactSettingWord(hContact, jabberProtoName, "Status", (WORD) status);
+					if (strchr(from, '@')!=NULL || JGetByte( "ShowTransport", TRUE)==TRUE) {
+						if (JGetWord( hContact, "Status", ID_STATUS_OFFLINE) != status)
+							JSetWord( hContact, "Status", ( WORD )status);
 					}
 					if (strchr(from, '@')==NULL && hwndJabberAgents)
 						SendMessage(hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0);
@@ -904,11 +904,11 @@ static void JabberProcessPresence(XmlNode *node, void *userdata)
 					item->status = status;
 				}
 				if ((hContact=JabberHContactFromJID(from)) != NULL) {
-					if (strchr(from, '@')!=NULL || DBGetContactSettingByte(NULL, jabberProtoName, "ShowTransport", TRUE)==TRUE) {
-						if (DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE) != status)
-							DBWriteContactSettingWord(hContact, jabberProtoName, "Status", (WORD) status);
+					if (strchr(from, '@')!=NULL || JGetByte( "ShowTransport", TRUE)==TRUE) {
+						if (JGetWord( hContact, "Status", ID_STATUS_OFFLINE) != status)
+							JSetWord( hContact, "Status", ( WORD )status);
 					}
-					CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
+					JCallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 					JabberLog("%s offline, set contact status to %d", from, status);
 				}
 				if (strchr(from, '@')==NULL && hwndJabberAgents)
@@ -944,9 +944,9 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 	struct ThreadData *info;
 	HANDLE hContact;
 	XmlNode *queryNode, *siNode, *n;
-	char *from, *type, *jid, *nick;
-	char *xmlns, *profile;
-	char *idStr, *str, *p, *q;
+	char* from, *type, *jid, *nick;
+	char* xmlns, *profile;
+	char* idStr, *str, *p, *q;
 	char text[256];
 	int id;
 	int i;
@@ -991,7 +991,7 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 		if (!strcmp(xmlns, "jabber:iq:roster")) {
 			XmlNode *itemNode, *groupNode;
 			JABBER_LIST_ITEM *item;
-			char *name;
+			char* name;
 
 			JabberLog("<iq/> Got roster push, query has %d children", queryNode->numChild);
 			for (i=0; i<queryNode->numChild; i++) {
@@ -1028,8 +1028,8 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 											DBDeleteContactSetting(hContact, "CList", "Group");
 										}
 										if (!strcmp(str, "none") || (!strcmp(str, "from") && strchr(jid, '@')!=NULL)) {
-											if (DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-												DBWriteContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE);
+											if (JGetWord( hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+												JSetWord( hContact, "Status", ID_STATUS_OFFLINE);
 										}
 									}
 									else {
@@ -1048,8 +1048,8 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 								// remove, so that history will be retained.
 								if (!strcmp(str, "remove")) {
 									if ((hContact=JabberHContactFromJID(jid)) != NULL) {
-										if (DBGetContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-											DBWriteContactSettingWord(hContact, jabberProtoName, "Status", ID_STATUS_OFFLINE);
+										if (JGetWord( hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+											JSetWord( hContact, "Status", ID_STATUS_OFFLINE);
 										JabberListRemove(LIST_ROSTER, jid);
 									}
 								}
@@ -1084,7 +1084,7 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 							strncpy(text, p, q-p);
 							text[q-p] = '\0';
 							if ((p=strchr(text, ':')) != NULL) {
-								ft->httpPort = (WORD) atoi(p+1);
+								ft->httpPort = ( WORD )atoi(p+1);
 								*p = '\0';
 							}
 							ft->httpHostName = _strdup(text);
@@ -1100,7 +1100,7 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 				if (ft->httpHostName && ft->httpPath) {
 					CCSDATA ccs;
 					PROTORECVEVENT pre;
-					char *szBlob, *desc;
+					char* szBlob, *desc;
 
 					JabberLog("Host=%s Port=%d Path=%s", ft->httpHostName, ft->httpPort, ft->httpPath);
 					if ((n=JabberXmlGetChild(queryNode, "desc"))!=NULL && n->text!=NULL)
@@ -1116,10 +1116,10 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 							str = ft->httpPath;
 						str = _strdup(str);
 						JabberHttpUrlDecode(str);
-						szBlob = (char *) malloc(sizeof(DWORD) + strlen(str) + strlen(desc) + 2);
-						*((PDWORD) szBlob) = (DWORD) ft;
+						szBlob = ( char* )malloc(sizeof( DWORD )+ strlen(str) + strlen(desc) + 2);
+						*((PDWORD) szBlob) = ( DWORD )ft;
 						strcpy(szBlob + sizeof(DWORD), str);
-						strcpy(szBlob + sizeof(DWORD) + strlen(str) + 1, desc);
+						strcpy(szBlob + sizeof( DWORD )+ strlen(str) + 1, desc);
 						pre.flags = 0;
 						pre.timestamp = time(NULL);
 						pre.szMessage = szBlob;
@@ -1128,7 +1128,7 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 						ccs.hContact = ft->hContact;
 						ccs.wParam = 0;
 						ccs.lParam = (LPARAM) &pre;
-						CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
+						JCallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
 						free(szBlob);
 						free(str);
 						free(desc);
@@ -1157,7 +1157,7 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 		// RECVED: software version query
 		// ACTION: return my software version
 		if (!strcmp(xmlns, "jabber:iq:version")) {
-			char *from, *resultId, *version, *os;
+			char* from, *resultId, *version, *os;
 			OSVERSIONINFO osvi;
 			char mversion[64];
 
@@ -1171,25 +1171,25 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 					switch (osvi.dwPlatformId) {
 					case VER_PLATFORM_WIN32_NT:
 						if (osvi.dwMajorVersion == 5) {
-							if (osvi.dwMinorVersion == 2) os = JabberTextEncode(Translate("Windows Server 2003"));
-							else if (osvi.dwMinorVersion == 1) os = JabberTextEncode(Translate("Windows XP"));
-							else if (osvi.dwMinorVersion == 0) os = JabberTextEncode(Translate("Windows 2000"));
+							if (osvi.dwMinorVersion == 2) os = JabberTextEncode(JTranslate("Windows Server 2003"));
+							else if (osvi.dwMinorVersion == 1) os = JabberTextEncode(JTranslate("Windows XP"));
+							else if (osvi.dwMinorVersion == 0) os = JabberTextEncode(JTranslate("Windows 2000"));
 						}
 						else if (osvi.dwMajorVersion <= 4) {
-							os = JabberTextEncode(Translate("Windows NT"));
+							os = JabberTextEncode(JTranslate("Windows NT"));
 						}
 						break;
 					case VER_PLATFORM_WIN32_WINDOWS:
 						if (osvi.dwMajorVersion == 4) {
-							if (osvi.dwMinorVersion == 0) os = JabberTextEncode(Translate("Windows 95"));
-							if (osvi.dwMinorVersion == 10) os = JabberTextEncode(Translate("Windows 98"));
-							if (osvi.dwMinorVersion == 90) os = JabberTextEncode(Translate("Windows ME"));
+							if (osvi.dwMinorVersion == 0) os = JabberTextEncode(JTranslate("Windows 95"));
+							if (osvi.dwMinorVersion == 10) os = JabberTextEncode(JTranslate("Windows 98"));
+							if (osvi.dwMinorVersion == 90) os = JabberTextEncode(JTranslate("Windows ME"));
 						}
 						break;
 					}
 				}
-				if (os == NULL) os = JabberTextEncode(Translate("Windows"));
-				CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(mversion), (LPARAM) mversion);
+				if (os == NULL) os = JabberTextEncode(JTranslate("Windows"));
+				JCallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(mversion), (LPARAM) mversion);
 				if ((resultId=JabberTextEncode(idStr)) != NULL) {
 					JabberSend(jabberThreadInfo->s, "<iq type='result' id='%s' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin (Miranda IM %s)</name><version>%s</version><os>%s</os></query></iq>", resultId, from, mversion, version?version:"", os?os:"");
 					free(resultId);
@@ -1209,7 +1209,7 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 		// RECVED: software version result
 		// ACTION: update version information for the specified jid/resource
 		if (!strcmp(xmlns, "jabber:iq:version")) {
-			char *from;
+			char* from;
 			JABBER_LIST_ITEM *item;
 			JABBER_RESOURCE_STATUS *r;
 
@@ -1283,10 +1283,10 @@ static void JabberProcessRegIq(XmlNode *node, void *userdata)
 {
 	struct ThreadData *info;
 	XmlNode *errorNode;
-	char *type, *str;
+	char* type, *str;
 	char text[256];
 	unsigned int id;
-	char *p, *q;
+	char* p, *q;
 
 	if (!node->name || strcmp(node->name, "iq")) return;
 	if ((info=(struct ThreadData *) userdata) == NULL) return;
@@ -1312,13 +1312,13 @@ static void JabberProcessRegIq(XmlNode *node, void *userdata)
 				}
 				free(p);
 			}
-			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 75, (LPARAM) Translate("Sending registration information..."));
+			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 75, (LPARAM) JTranslate("Sending registration information..."));
 		}
 		// RECVED: result of the registration process
 		// ACTION: account registration successful
 		else if (id == iqIdRegSetReg) {
 			JabberSend(info->s, "</stream:stream>");
-			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) Translate("Registration successful"));
+			SendMessage(info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) JTranslate("Registration successful"));
 			info->reg_done = TRUE;
 		}
 	}
@@ -1342,7 +1342,7 @@ static void __cdecl JabberKeepAliveThread(JABBER_SOCKET s)
 	nls.dwTimeout = 60000;	// 60000 millisecond (1 minute)
 	nls.hExceptConns[0] = s;
 	for (;;) {
-		if (CallService(MS_NETLIB_SELECT, 0, (LPARAM) &nls) != 0)
+		if (JCallService(MS_NETLIB_SELECT, 0, (LPARAM) &nls) != 0)
 			break;
 		if (jabberSendKeepAlive)
 			JabberSend(s, " \t ");

@@ -27,7 +27,7 @@ BOOL JabberWsInit(void)
 	NETLIBUSER nlu = {0};
 	char name[128];
 
-	sprintf(name, "%s %s", jabberModuleName, Translate("connection"));
+	sprintf(name, "%s %s", jabberModuleName, JTranslate("connection"));
 
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;	// | NUF_HTTPGATEWAY;
@@ -39,7 +39,7 @@ BOOL JabberWsInit(void)
 	//nlu.pfnHttpGatewayBegin = JabberHttpGatewayBegin;
 	//nlu.pfnHttpGatewayWrapSend = JabberHttpGatewayWrapSend;
 	//nlu.pfnHttpGatewayUnwrapRecv = JabberHttpGatewayUnwrapRecv;
-	hNetlibUser = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) &nlu);
+	hNetlibUser = (HANDLE) JCallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) &nlu);
 
 	return (hNetlibUser!=NULL)?TRUE:FALSE;
 }
@@ -49,7 +49,7 @@ void JabberWsUninit(void)
 	Netlib_CloseHandle(hNetlibUser);
 }
 
-JABBER_SOCKET JabberWsConnect(char *host, WORD port)
+JABBER_SOCKET JabberWsConnect(char* host, WORD port)
 {
 	NETLIBOPENCONNECTION nloc;
 
@@ -57,10 +57,10 @@ JABBER_SOCKET JabberWsConnect(char *host, WORD port)
 	nloc.szHost = host;
 	nloc.wPort = port;
 	nloc.flags = 0;
-	return (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) &nloc);
+	return (HANDLE) JCallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) &nloc);
 }
 
-int JabberWsSend(JABBER_SOCKET hConn, char *data, int datalen)
+int JabberWsSend(JABBER_SOCKET hConn, char* data, int datalen)
 {
 	int len;
 
@@ -71,7 +71,7 @@ int JabberWsSend(JABBER_SOCKET hConn, char *data, int datalen)
 	return TRUE;
 }
 
-int JabberWsRecv(JABBER_SOCKET hConn, char *data, long datalen)
+int JabberWsRecv(JABBER_SOCKET hConn, char* data, long datalen)
 {
 	int ret;
 

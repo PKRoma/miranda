@@ -32,10 +32,10 @@ static void JabberListFreeItemInternal(JABBER_LIST_ITEM *item);
 #ifdef _DEBUG
 static void PrintResource(int index)
 {
-	char *p;
+	char* p;
 	int i, resourceCount;
 	JABBER_RESOURCE_STATUS *resource;
-	char *str;
+	char* str;
 
 	if (index<0 || index>=count) {
 		JabberLog("PrintResource(): index out-of-bound");
@@ -124,10 +124,10 @@ static void JabberListFreeItemInternal(JABBER_LIST_ITEM *item)
 	if (item->newNick) free(item->newNick);
 }
 
-int JabberListExist(JABBER_LIST list, const char *jid)
+int JabberListExist(JABBER_LIST list, const char* jid)
 {
 	int i, len;
-	char *s, *p, *q;
+	char* s, *p, *q;
 
 	s = _strdup(jid); _strlwr(s);
 	// strip resouce name if any
@@ -152,9 +152,9 @@ int JabberListExist(JABBER_LIST list, const char *jid)
 	return 0;
 }
 
-JABBER_LIST_ITEM *JabberListAdd(JABBER_LIST list, const char *jid)
+JABBER_LIST_ITEM *JabberListAdd(JABBER_LIST list, const char* jid)
 {
-	char *s, *p, *q;
+	char* s, *p, *q;
 	JABBER_LIST_ITEM *item;
 
 	EnterCriticalSection(&csLists);
@@ -185,7 +185,7 @@ JABBER_LIST_ITEM *JabberListAdd(JABBER_LIST list, const char *jid)
 	return item;
 }
 
-void JabberListRemove(JABBER_LIST list, const char *jid)
+void JabberListRemove(JABBER_LIST list, const char* jid)
 {
 	int i;
 
@@ -225,11 +225,11 @@ void JabberListRemoveByIndex(int index)
 	LeaveCriticalSection(&csLists);
 }
 
-void JabberListAddResource(JABBER_LIST list, const char *jid, int status, const char *statusMessage)
+void JabberListAddResource(JABBER_LIST list, const char* jid, int status, const char* statusMessage)
 {
 	int i, j, resourceCount;
-	char *p, *q;
-	char *resource;
+	char* p, *q;
+	char* resource;
 	JABBER_RESOURCE_STATUS *r;
 
 	EnterCriticalSection(&csLists);
@@ -304,11 +304,11 @@ void JabberListAddResource(JABBER_LIST list, const char *jid, int status, const 
 	LeaveCriticalSection(&csLists);
 }
 
-void JabberListRemoveResource(JABBER_LIST list, const char *jid)
+void JabberListRemoveResource(JABBER_LIST list, const char* jid)
 {
 	int i, j, resourceCount;
-	char *p, *q;
-	char *resource;
+	char* p, *q;
+	char* resource;
 	JABBER_RESOURCE_STATUS *r;
 
 	EnterCriticalSection(&csLists);
@@ -361,9 +361,9 @@ void JabberListRemoveResource(JABBER_LIST list, const char *jid)
 	LeaveCriticalSection(&csLists);
 }
 
-char *JabberListGetBestResourceNamePtr(const char *jid)
+char* JabberListGetBestResourceNamePtr(const char* jid)
 {
-	char *res;
+	char* res;
 	int i;
 
 	EnterCriticalSection(&csLists);
@@ -389,9 +389,9 @@ char *JabberListGetBestResourceNamePtr(const char *jid)
 	return res;
 }
 
-char *JabberListGetBestClientResourceNamePtr(const char *jid)
+char* JabberListGetBestClientResourceNamePtr(const char* jid)
 {
-	char *res;
+	char* res;
 	int i, status, s;
 	BOOL foundBetter;
 	JABBER_RESOURCE_STATUS *r;
@@ -460,7 +460,7 @@ int JabberListFindNext(JABBER_LIST list, int fromOffset)
 	return -1;
 }
 
-JABBER_LIST_ITEM *JabberListGetItemPtr(JABBER_LIST list, const char *jid)
+JABBER_LIST_ITEM *JabberListGetItemPtr(JABBER_LIST list, const char* jid)
 {
 	int i;
 

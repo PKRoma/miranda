@@ -74,11 +74,11 @@ typedef enum {			// initial default to RSMODE_LASTSEEN
 
 typedef struct {
 	int status;
-	char *resourceName;	// in UTF-8
-	char *statusMessage;
-	char *software;
-	char *version;
-	char *system;
+	char* resourceName;	// in UTF-8
+	char* statusMessage;
+	char* software;
+	char* version;
+	char* system;
 	unsigned int cap;					// 0 = haven't done disco#info yet, see CLIENT_CAP_*
 	JABBER_GC_AFFILIATION affiliation;
 	JABBER_GC_ROLE role;
@@ -86,11 +86,11 @@ typedef struct {
 
 typedef struct {
 	JABBER_LIST list;
-	char *jid;
+	char* jid;
 
 	// LIST_ROSTER
 	// jid = jid of the contact
-	char *nick;
+	char* nick;
 	int resourceCount;
 	int status;	// Main status, currently useful for transport where no resource information is kept.
 				// On normal contact, this is the same status as shown on contact list.
@@ -98,34 +98,34 @@ typedef struct {
 	int defaultResource;	// index to resource[x] which is the default, negative (-1) means no resource is chosen yet
 	JABBER_RESOURCE_MODE resourceMode;
 	JABBER_SUBSCRIPTION subscription;
-	char *statusMessage;	// Status message when the update is to JID with no resource specified (e.g. transport user)
-	char *group;
-	char *photoFileName;
+	char* statusMessage;	// Status message when the update is to JID with no resource specified (e.g. transport user)
+	char* group;
+	char* photoFileName;
 	int idMsgAckPending;
-	char *messageEventIdStr;
+	char* messageEventIdStr;
 	BOOL wantComposingEvent;
 	WORD cap;	// See CLIENT_CAP_* above
 
 	// LIST_AGENT
 	// jid = jid of the agent
 	// WORD cap;	// See AGENT_CAP_* above
-	char *name;
-	char *service;
+	char* name;
+	char* service;
 
 	// LIST_ROOM
 	// jid = room JID
-	// char *name; // room name
-	char *type;	// room type
+	// char* name; // room name
+	char* type;	// room type
 
 	// LIST_CHATROOM
 	// jid = room JID
-	// char *nick;	// my nick in this chat room (SPECIAL: in UTF8)
+	// char* nick;	// my nick in this chat room (SPECIAL: in UTF8)
 	// JABBER_RESOURCE_STATUS *resource;	// participant nicks in this room
 	HWND hwndGcDlg;	// groupchat messaging window for this room
 	HWND hwndGcListBan;
 	HWND hwndGcListAdmin;
 	HWND hwndGcListOwner;
-	char *newNick;	// new nickname that is pending in the change nick process
+	char* newNick;	// new nickname that is pending in the change nick process
 
 	// LIST_FILE
 	// jid = string representation of port number
@@ -149,18 +149,18 @@ typedef struct {
 void JabberListInit(void);
 void JabberListUninit(void);
 void JabberListWipe(void);
-int JabberListExist(JABBER_LIST list, const char *jid);
-JABBER_LIST_ITEM *JabberListAdd(JABBER_LIST list, const char *jid);
-void JabberListRemove(JABBER_LIST list, const char *jid);
+int JabberListExist(JABBER_LIST list, const char* jid);
+JABBER_LIST_ITEM *JabberListAdd(JABBER_LIST list, const char* jid);
+void JabberListRemove(JABBER_LIST list, const char* jid);
 void JabberListRemoveList(JABBER_LIST list);
 void JabberListRemoveByIndex(int index);
 int JabberListFindNext(JABBER_LIST list, int fromOffset);
-JABBER_LIST_ITEM *JabberListGetItemPtr(JABBER_LIST list, const char *jid);
+JABBER_LIST_ITEM *JabberListGetItemPtr(JABBER_LIST list, const char* jid);
 JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex(int index);
 
-void JabberListAddResource(JABBER_LIST list, const char *jid, int status, const char *statusMessage);
-void JabberListRemoveResource(JABBER_LIST list, const char *jid);
-char *JabberListGetBestResourceNamePtr(const char *jid);
-char *JabberListGetBestClientResourceNamePtr(const char *jid);
+void JabberListAddResource(JABBER_LIST list, const char* jid, int status, const char* statusMessage);
+void JabberListRemoveResource(JABBER_LIST list, const char* jid);
+char* JabberListGetBestResourceNamePtr(const char* jid);
+char* JabberListGetBestClientResourceNamePtr(const char* jid);
 
 #endif

@@ -137,12 +137,7 @@ enum {
 /*******************************************************************
  * Macro definitions
  *******************************************************************/
-#ifdef _DEBUG
-void JabberLog(const char* fmt, ...);
-#else
-#define JabberLog()
-#pragma warning(disable:4002)
-#endif
+
 #define JabberSendInvisiblePresence()	JabberSendVisibleInvisiblePresence(TRUE)
 #define JabberSendVisiblePresence()		JabberSendVisibleInvisiblePresence(FALSE)
 
@@ -362,63 +357,96 @@ extern HWND hwndMucOwnerList;
  * Function declarations
  *******************************************************************/
 
+//---- jabber_std.cpp ----------------------------------------------
+
+HANDLE __stdcall  JCreateServiceFunction( const char* szService, MIRANDASERVICE serviceProc );
+int    __stdcall  JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+DWORD  __stdcall  JGetByte( const char* valueName, int parDefltValue );
+char*  __stdcall  JGetContactName( HANDLE hContact );
+DWORD  __stdcall  JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
+int    __stdcall  JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
+WORD   __stdcall  JGetWord( HANDLE hContact, const char* valueName, int parDefltValue );
+void   __fastcall JFreeVariant( DBVARIANT* dbv );
+int    __stdcall  JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
+DWORD  __stdcall  JSetByte( const char* valueName, int parValue );
+DWORD  __stdcall  JSetByte( HANDLE hContact, const char* valueName, int parValue );
+DWORD  __stdcall  JSetDword( HANDLE hContact, const char* valueName, DWORD parValue );
+DWORD  __stdcall  JSetString( HANDLE hContact, const char* valueName, const char* parValue );
+DWORD  __stdcall  JSetWord( HANDLE hContact, const char* valueName, int parValue );
+char*  __stdcall  JTranslate( const char* str );
+
+//---- jabber_thread.cpp -------------------------------------------
+
 void __cdecl JabberServerThread(struct ThreadData *info);
-// jabber_ws.c
-BOOL JabberWsInit(void);
-void JabberWsUninit(void);
+
+//---- jabber_ws.c -------------------------------------------------
+
+BOOL          JabberWsInit(void);
+void          JabberWsUninit(void);
 JABBER_SOCKET JabberWsConnect(char* host, WORD port);
-int JabberWsSend(JABBER_SOCKET s, char* data, int datalen);
-int JabberWsRecv(JABBER_SOCKET s, char* data, long datalen);
-// jabber_util.c
-void JabberSerialInit(void);
-void JabberSerialUninit(void);
-unsigned int JabberSerialNext(void);
-int JabberSend(JABBER_SOCKET s, const char* fmt, ...);
-HANDLE JabberHContactFromJID(const char* jid);
-char* JabberNickFromJID(const char* jid);
-char* JabberLocalNickFromJID(const char* jid);
-void JabberUrlDecode(char* str);
-void JabberUrlDecodeW(WCHAR* str);
-char* JabberUrlEncode(const char* str);
-void JabberUtf8Decode( char*,WCHAR** );
-char* JabberUtf8Encode(const char* str);
-char* JabberSha1(char* str);
-char* JabberUnixToDos(const char* str);
-WCHAR* JabberUnixToDosW(const WCHAR* str);
-void JabberHttpUrlDecode(char* str);
-char* JabberHttpUrlEncode(const char* str);
-int JabberCombineStatus(int status1, int status2);
-char* JabberErrorStr(int errorCode);
-char* JabberErrorMsg(XmlNode *errorNode);
-void JabberSendVisibleInvisiblePresence(BOOL invisible);
-char* JabberTextEncode(const char* str);
-char* JabberTextEncodeW(const wchar_t *str);
-char* JabberTextDecode(const char* str);
-char* JabberBase64Encode(const char* buffer, int bufferLen);
-char* JabberBase64Decode(const char* buffer, int *resultLen);
-char* JabberGetVersionText();
-time_t JabberIsoToUnixTime(char* stamp);
-int JabberCountryNameToId(char* ctry);
-void JabberSendPresenceTo(int status, char* to, char* extra);
-void JabberSendPresence(int);
-char* JabberRtfEscape(char* str);
-void JabberStringAppend(char* *str, int *sizeAlloced, const char* fmt, ...);
-char* JabberGetClientJID(char* jid);
-// jabber_misc.c
+int           JabberWsSend(JABBER_SOCKET s, char* data, int datalen);
+int           JabberWsRecv(JABBER_SOCKET s, char* data, long datalen);
+
+//---- jabber_util.c ----------------------------------------------
+
+void          __stdcall JabberSerialInit(void);
+void          __stdcall JabberSerialUninit(void);
+unsigned int  __stdcall JabberSerialNext(void);
+int           __stdcall JabberSend(JABBER_SOCKET s, const char* fmt, ...);
+HANDLE        __stdcall JabberHContactFromJID(const char* jid);
+void          __stdcall JabberLog(const char* fmt, ...);
+char*         __stdcall JabberNickFromJID(const char* jid);
+char*         __stdcall JabberLocalNickFromJID(const char* jid);
+void          __stdcall JabberUrlDecode(char* str);
+void          __stdcall JabberUrlDecodeW(WCHAR* str);
+char*         __stdcall JabberUrlEncode(const char* str);
+void          __stdcall JabberUtf8Decode( char*,WCHAR** );
+char*         __stdcall JabberUtf8Encode(const char* str);
+char*         __stdcall JabberSha1(char* str);
+char*         __stdcall JabberUnixToDos(const char* str);
+WCHAR*        __stdcall JabberUnixToDosW(const WCHAR* str);
+void          __stdcall JabberHttpUrlDecode(char* str);
+char*         __stdcall JabberHttpUrlEncode(const char* str);
+int           __stdcall JabberCombineStatus(int status1, int status2);
+char*         __stdcall JabberErrorStr(int errorCode);
+char*         __stdcall JabberErrorMsg(XmlNode *errorNode);
+void          __stdcall JabberSendVisibleInvisiblePresence(BOOL invisible);
+char*         __stdcall JabberTextEncode(const char* str);
+char*         __stdcall JabberTextEncodeW(const wchar_t *str);
+char*         __stdcall JabberTextDecode(const char* str);
+char*         __stdcall JabberBase64Encode(const char* buffer, int bufferLen);
+char*         __stdcall JabberBase64Decode(const char* buffer, int *resultLen);
+char*         __stdcall JabberGetVersionText();
+time_t        __stdcall JabberIsoToUnixTime(char* stamp);
+int           __stdcall JabberCountryNameToId(char* ctry);
+void          __stdcall JabberSendPresenceTo(int status, char* to, char* extra);
+void          __stdcall JabberSendPresence(int);
+char*         __stdcall JabberRtfEscape(char* str);
+void          __stdcall JabberStringAppend(char* *str, int *sizeAlloced, const char* fmt, ...);
+char*         __stdcall JabberGetClientJID(char* jid);
+
+//---- jabber_misc.c ------------------------------------------------
+
 void JabberDBAddAuthRequest(char* jid, char* nick);
 HANDLE JabberDBCreateContact(char* jid, char* nick, BOOL temporary, BOOL stripResource);
 void JabberContactListCreateGroup(char* groupName);
 unsigned long JabberForkThread(void (__cdecl *threadcode)(void*), unsigned long stacksize, void *arg);
-// jabber_file.c
+
+//---- jabber_file.c ------------------------------------------------
+
 void JabberFileFreeFt(JABBER_FILE_TRANSFER *ft);
 void __cdecl JabberFileReceiveThread(JABBER_FILE_TRANSFER *ft);
 void __cdecl JabberFileServerThread(JABBER_FILE_TRANSFER *ft);
-// jabber_groupchat.c
+
+//---- jabber_groupchat.c -------------------------------------------
+
 int JabberMenuHandleGroupchat(WPARAM wParam, LPARAM lParam);
 void JabberGroupchatProcessPresence(XmlNode *node, void *userdata);
 void JabberGroupchatProcessMessage(XmlNode *node, void *userdata);
 void JabberGroupchatProcessInvite(char* roomJid, char* from, char* reason, char* password);
-// jabber_groupchatlog.c
+
+//---- jabber_groupchatlog.c ----------------------------------------
+
 void JabberGcLogInit();
 void JabberGcLogUninit();
 void JabberGcLogLoadFont(JABBER_GCLOG_FONT *fontInfo);
@@ -427,11 +455,15 @@ void JabberGcLogAppend(char* jid, time_t timestamp, char* str);
 void JabberGcLogUpdateMemberStatus(char* jid);
 void JabberGcLogSetTopic(char* jid, char* str);
 BOOL CALLBACK JabberGcLogInputDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-// jabber_form.c
+
+//---- jabber_form.c ------------------------------------------------
+
 void JabberFormCreateUI(HWND hwndStatic, XmlNode *xNode, int *formHeight);
 char* JabberFormGetData(HWND hwndStatic, XmlNode *xNode);
 void JabberFormCreateDialog(XmlNode *xNode, char* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata);
-// jabber_ft.c
+
+//---- jabber_ft.c --------------------------------------------------
+
 void JabberFtCancel(JABBER_FILE_TRANSFER *ft);
 void JabberFtInitiate(char* jid, JABBER_FILE_TRANSFER *ft);
 void JabberFtHandleSiRequest(XmlNode *iqNode);

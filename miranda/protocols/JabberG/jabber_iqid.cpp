@@ -25,16 +25,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_list.h"
 #include "jabber_iq.h"
 
-extern char *streamId;
-extern char *jabberVcardPhotoFileName;
-extern char *jabberVcardPhotoType;
+extern char* streamId;
+extern char* jabberVcardPhotoFileName;
+extern char* jabberVcardPhotoType;
 
 void JabberIqResultGetAuth(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
 	XmlNode *queryNode;
-	char *type;
-	char *str;
+	char* type;
+	char* str;
 	char text[256];
 	int iqId;
 
@@ -87,7 +87,7 @@ void JabberIqResultGetAuth(XmlNode *iqNode, void *userdata)
 void JabberIqResultSetAuth(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
-	char *type;
+	char* type;
 	int iqId;
 
 	// RECVED: authentication result
@@ -99,9 +99,9 @@ void JabberIqResultSetAuth(XmlNode *iqNode, void *userdata)
 		DBVARIANT dbv;
 
 		if (DBGetContactSetting(NULL, jabberProtoName, "Nick", &dbv))
-			DBWriteContactSettingString(NULL, jabberProtoName, "Nick", info->username);
+			JSetString( NULL, "Nick", info->username);
 		else
-			DBFreeVariant(&dbv);
+			JFreeVariant(&dbv);
 		iqId = JabberSerialNext();
 		JabberIqAdd(iqId, IQ_PROC_NONE, JabberIqResultGetRoster);
 		JabberSend(info->s, "<iq type='get' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:roster'/></iq>", iqId);
@@ -117,8 +117,8 @@ void JabberIqResultSetAuth(XmlNode *iqNode, void *userdata)
 		char text[128];
 
 		JabberSend(info->s, "</stream:stream>");
-		_snprintf(text, sizeof(text), "%s %s@%s.", Translate("Authentication failed for"), info->username, info->server);
-		MessageBox(NULL, text, Translate("Jabber Authentication"), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND);
+		_snprintf(text, sizeof(text), "%s %s@%s.", JTranslate("Authentication failed for"), info->username, info->server);
+		MessageBox(NULL, text, JTranslate("Jabber Authentication"), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND);
 		ProtoBroadcastAck(jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 		jabberThreadInfo = NULL;	// To disallow auto reconnect
 	}
@@ -128,8 +128,8 @@ void JabberIqResultGetRoster(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
 	XmlNode *queryNode;
-	char *type;
-	char *str;
+	char* type;
+	char* str;
 
 	// RECVED: roster information
 	// ACTION: populate LIST_ROSTER and create contact for any new rosters
@@ -145,7 +145,7 @@ void JabberIqResultGetRoster(XmlNode *iqNode, void *userdata)
 			JABBER_SUBSCRIPTION sub;
 			JABBER_LIST_ITEM *item;
 			HANDLE hContact;
-			char *jid, *name, *nick;
+			char* jid, *name, *nick;
 			int i, oldStatus;
 			CLISTMENUITEM clmi;
 
@@ -186,7 +186,7 @@ void JabberIqResultGetRoster(XmlNode *iqNode, void *userdata)
 								if (!DBGetContactSetting(hContact, "CList", "Group", &dbv)) {
 									if (strcmp(dbv.pszVal, item->group))
 										DBWriteContactSettingString(hContact, "CList", "Group", item->group);
-									DBFreeVariant(&dbv);
+									JFreeVariant(&dbv);
 								}
 								else
 									DBWriteContactSettingString(hContact, "CList", "Group", item->group);
@@ -200,15 +200,15 @@ void JabberIqResultGetRoster(XmlNode *iqNode, void *userdata)
 				}
 			}
 			// Delete orphaned contacts (if roster sync is enabled)
-			if (DBGetContactSettingByte(NULL, jabberProtoName, "RosterSync", FALSE) == TRUE) {
+			if (JGetByte( "RosterSync", FALSE) == TRUE) {
 				HANDLE *list;
 				int listSize, listAllocSize;
 
 				listSize = listAllocSize = 0;
 				list = NULL;
-				hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+				hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 				while (hContact != NULL) {
-					str = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+					str = ( char* )JCallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 					if(str!=NULL && !strcmp(str, jabberProtoName)) {
 						if (!DBGetContactSetting(hContact, jabberProtoName, "jid", &dbv)) {
 							if (!JabberListExist(LIST_ROSTER, dbv.pszVal)) {
@@ -222,14 +222,14 @@ void JabberIqResultGetRoster(XmlNode *iqNode, void *userdata)
 								}
 								list[listSize++] = hContact;
 							}
-							DBFreeVariant(&dbv);
+							JFreeVariant(&dbv);
 						}
 					}
-					hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+					hContact = (HANDLE) JCallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 				}
 				for (i=0; i<listSize; i++) {
 					JabberLog("Syncing roster: deleting 0x%x", list[i]);
-					CallService(MS_DB_CONTACT_DELETE, (WPARAM) list[i], 0);
+					JCallService(MS_DB_CONTACT_DELETE, (WPARAM) list[i], 0);
 				}
 				if (list != NULL)
 					free(list);
@@ -239,9 +239,9 @@ void JabberIqResultGetRoster(XmlNode *iqNode, void *userdata)
 			memset(&clmi, 0, sizeof(CLISTMENUITEM));
 			clmi.cbSize = sizeof(CLISTMENUITEM);
 			clmi.flags = CMIM_FLAGS;
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuAgent, (LPARAM) &clmi);
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuChangePassword, (LPARAM) &clmi);
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuGroupchat, (LPARAM) &clmi);
+			JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuAgent, (LPARAM) &clmi);
+			JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuChangePassword, (LPARAM) &clmi);
+			JCallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMenuGroupchat, (LPARAM) &clmi);
 			if (hwndJabberGroupchat)
 				SendMessage(hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0);
 			if (hwndJabberJoinGroupchat)
@@ -298,8 +298,8 @@ void JabberIqResultGetAgents(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
 	XmlNode *queryNode;
-	char *type, *jid;
-	char *str;
+	char* type, *jid;
+	char* str;
 
 	// RECVED: agent list
 	// ACTION: refresh agent list dialog
@@ -350,8 +350,8 @@ void JabberIqResultGetRegister(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
 	XmlNode *queryNode, *errorNode, *n;
-	char *type;
-	char *str;
+	char* type;
+	char* str;
 
 	// RECVED: result of the request for (agent) registration mechanism
 	// ACTION: activate (agent) registration input dialog
@@ -379,8 +379,8 @@ void JabberIqResultGetRegister(XmlNode *iqNode, void *userdata)
 void JabberIqResultSetRegister(XmlNode *iqNode, void *userdata)
 {
 	XmlNode *errorNode;
-	char *type;
-	char *str;
+	char* type;
+	char* str;
 
 	// RECVED: result of registration process
 	// ACTION: notify of successful agent registration
@@ -389,7 +389,7 @@ void JabberIqResultSetRegister(XmlNode *iqNode, void *userdata)
 
 	if (!strcmp(type, "result")) {
 		if (hwndRegProgress)
-			SendMessage(hwndRegProgress, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) Translate("Registration successful"));
+			SendMessage(hwndRegProgress, WM_JABBER_REGDLG_UPDATE, 100, (LPARAM) JTranslate("Registration successful"));
 	}
 	else if (!strcmp(type, "error")) {
 		if (hwndRegProgress) {
@@ -404,7 +404,7 @@ void JabberIqResultSetRegister(XmlNode *iqNode, void *userdata)
 void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 {
 	XmlNode *vCardNode, *m, *n, *o;
-	char *type, *jid, *localJID;
+	char* type, *jid, *localJID;
 	HANDLE hContact;
 	char text[128];
 	int len;
@@ -438,7 +438,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 		BOOL hasDesc, hasPhoto;
 		int nEmail, nPhone, nYear, nMonth, nDay;
 		int i;
-		char *nText, *mText, *oText;
+		char* nText, *mText, *oText;
 
 		hasFn = hasNick = hasGiven = hasFamily = hasMiddle = hasBday = hasGender = FALSE;
 		hasPhone = hasFax = hasCell = hasUrl = FALSE;
@@ -514,7 +514,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 							if (JabberXmlGetChild(n, "WORK") != NULL) nFlag |= JABBER_VCEMAIL_WORK;
 							if (JabberXmlGetChild(n, "INTERNET") != NULL) nFlag |= JABBER_VCEMAIL_INTERNET;
 							if (JabberXmlGetChild(n, "X400") != NULL) nFlag |= JABBER_VCEMAIL_X400;
-							DBWriteContactSettingWord(NULL, jabberProtoName, text, nFlag);
+							JSetWord( NULL, text, nFlag);
 						}
 						nEmail++;
 					}
@@ -525,15 +525,15 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						if (hContact != NULL) {
 							if (sscanf(n->text, "%d-%d-%d", &nYear, &nMonth, &nDay) == 3) {
 								hasBday = TRUE;
-								DBWriteContactSettingWord(hContact, jabberProtoName, "BirthYear", (WORD) nYear);
-								DBWriteContactSettingByte(hContact, jabberProtoName, "BirthMonth", (BYTE) nMonth);
-								DBWriteContactSettingByte(hContact, jabberProtoName, "BirthDay", (BYTE) nDay);
+								JSetWord( hContact, "BirthYear", ( WORD )nYear);
+								JSetByte( hContact, "BirthMonth", (BYTE) nMonth);
+								JSetByte( hContact, "BirthDay", (BYTE) nDay);
 							}
 						}
 						else {
 							hasBday = TRUE;
 							nText = JabberTextDecode(n->text);
-							DBWriteContactSettingString(NULL, jabberProtoName, "BirthDate", nText);
+							JSetString( NULL, "BirthDate", nText);
 							free(nText);
 						}
 					}
@@ -544,13 +544,13 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						if (hContact != NULL) {
 							if (n->text[0] && strchr("mMfF", n->text[0])!=NULL) {
 								hasGender = TRUE;
-								DBWriteContactSettingByte(hContact, jabberProtoName, "Gender", (BYTE) toupper(n->text[0]));
+								JSetByte( hContact, "Gender", (BYTE) toupper(n->text[0]));
 							}
 						}
 						else {
 							hasGender = TRUE;
 							nText = JabberTextDecode(n->text);
-							DBWriteContactSettingString(NULL, jabberProtoName, "GenderString", nText);
+							JSetString( NULL, "GenderString", nText);
 							free(nText);
 						}
 					}
@@ -616,7 +616,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 							hasHomeCtry = TRUE;
 							mText = JabberTextDecode(m->text);
 							if (hContact != NULL)
-								DBWriteContactSettingWord(hContact, jabberProtoName, "Country", (WORD) JabberCountryNameToId(mText));
+								JSetWord( hContact, "Country", ( WORD )JabberCountryNameToId(mText));
 							else
 								DBWriteContactSettingString(hContact, jabberProtoName, "CountryName", mText);
 							free(mText);
@@ -682,7 +682,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 							hasWorkCtry = TRUE;
 							mText = JabberTextDecode(m->text);
 							if (hContact != NULL)
-								DBWriteContactSettingWord(hContact, jabberProtoName, "CompanyCountry", (WORD) JabberCountryNameToId(mText));
+								JSetWord( hContact, "CompanyCountry", ( WORD )JabberCountryNameToId(mText));
 							else
 								DBWriteContactSettingString(hContact, jabberProtoName, "CompanyCountryName", mText);
 							free(mText);
@@ -737,7 +737,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 							if (JabberXmlGetChild(n, "MODEM") != NULL) nFlag |= JABBER_VCTEL_MODEM;
 							if (JabberXmlGetChild(n, "ISDN") != NULL) nFlag |= JABBER_VCTEL_ISDN;
 							if (JabberXmlGetChild(n, "PCS") != NULL) nFlag |= JABBER_VCTEL_PCS;
-							DBWriteContactSettingWord(NULL, jabberProtoName, text, nFlag);
+							JSetWord( NULL, text, nFlag);
 							nPhone++;
 						}
 						free(mText);
@@ -795,7 +795,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 				else if (!strcmp(n->name, "PHOTO")) {
 					if (/*hContact==NULL &&*/ !hasPhoto && (m=JabberXmlGetChild(n, "TYPE"))!=NULL && m->text!=NULL && (!strcmp(m->text, "image/jpeg") || !strcmp(m->text, "image/gif") || !strcmp(m->text, "image/bmp"))) {
 						if ((o=JabberXmlGetChild(n, "BINVAL"))!=NULL && o->text) {
-							char *buffer;
+							char* buffer;
 							int bufferLen;
 							DWORD nWritten;
 							char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
@@ -864,7 +864,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 				else {
 					sprintf(text, "e-mail%d", nEmail-1);
 					if (DBGetContactSetting(hContact, jabberProtoName, text, &dbv)) break;
-					DBFreeVariant(&dbv);
+					JFreeVariant(&dbv);
 					DBDeleteContactSetting(hContact, jabberProtoName, text);
 				}
 				nEmail++;
@@ -874,7 +874,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 			while (1) {
 				sprintf(text, "e-mail%d", nEmail);
 				if (DBGetContactSetting(NULL, jabberProtoName, text, &dbv)) break;
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 				DBDeleteContactSetting(NULL, jabberProtoName, text);
 				sprintf(text, "e-mailFlag%d", nEmail);
 				DBDeleteContactSetting(NULL, jabberProtoName, text);
@@ -905,7 +905,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 			while (1) {
 				sprintf(text, "Phone%d", nPhone);
 				if (DBGetContactSetting(NULL, jabberProtoName, text, &dbv)) break;
-				DBFreeVariant(&dbv);
+				JFreeVariant(&dbv);
 				DBDeleteContactSetting(NULL, jabberProtoName, text);
 				sprintf(text, "PhoneFlag%d", nPhone);
 				DBDeleteContactSetting(NULL, jabberProtoName, text);
@@ -974,7 +974,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 
 void JabberIqResultSetVcard(XmlNode *iqNode, void *userdata)
 {
-	char *type;
+	char* type;
 
 	JabberLog("<iq/> iqIdSetVcard");
 	if ((type=JabberXmlGetAttrValue(iqNode, "type")) == NULL) return;
@@ -986,7 +986,7 @@ void JabberIqResultSetVcard(XmlNode *iqNode, void *userdata)
 void JabberIqResultSetSearch(XmlNode *iqNode, void *userdata)
 {
 	XmlNode *queryNode, *itemNode, *n;
-	char *type, *jid, *str;
+	char* type, *jid, *str;
 	int id, i;
 	JABBER_SEARCH_RESULT jsr;
 
@@ -1041,17 +1041,17 @@ void JabberIqResultSetSearch(XmlNode *iqNode, void *userdata)
 
 void JabberIqResultSetPassword(XmlNode *iqNode, void *userdata)
 {
-	char *type;
+	char* type;
 
 	JabberLog("<iq/> iqIdSetPassword");
 	if ((type=JabberXmlGetAttrValue(iqNode, "type")) == NULL) return;
 
 	if (!strcmp(type, "result")) {
 		strncpy(jabberThreadInfo->password, jabberThreadInfo->newPassword, sizeof(jabberThreadInfo->password));
-		MessageBox(NULL, Translate("Password is successfully changed. Don't forget to update your password in the Jabber protocol option."), Translate("Change Password"), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND);
+		MessageBox(NULL, JTranslate("Password is successfully changed. Don't forget to update your password in the Jabber protocol option."), JTranslate("Change Password"), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND);
 	}
 	else if (!strcmp(type, "error")) {
-		MessageBox(NULL, Translate("Password cannot be changed."), Translate("Change Password"), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND);
+		MessageBox(NULL, JTranslate("Password cannot be changed."), JTranslate("Change Password"), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND);
 	}
 }
 
@@ -1059,11 +1059,11 @@ void JabberIqResultDiscoAgentItems(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
 	XmlNode *queryNode, *itemNode;
-	char *type, *jid, *from;
+	char* type, *jid, *from;
 	JABBER_LIST_ITEM *item;
 	int i;
 	int iqId;
-	char *str;
+	char* str;
 
 	// RECVED: agent list
 	// ACTION: refresh agent list dialog
@@ -1109,10 +1109,10 @@ void JabberIqResultDiscoAgentInfo(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
 	XmlNode *queryNode, *itemNode, *identityNode;
-	char *type, *from, *var;
+	char* type, *from, *var;
 	JABBER_LIST_ITEM *item;
 	int i;
-	char *str;
+	char* str;
 
 	// RECVED: info for a specific agent
 	// ACTION: refresh agent list dialog
@@ -1157,10 +1157,10 @@ void JabberIqResultDiscoClientInfo(XmlNode *iqNode, void *userdata)
 {
 	struct ThreadData *info = (struct ThreadData *) userdata;
 	XmlNode *queryNode, *itemNode;
-	char *type, *from, *var;
+	char* type, *from, *var;
 	JABBER_LIST_ITEM *item;
 	int i;
-	char *str;
+	char* str;
 
 	// RECVED: info for a specific client
 	// ACTION: update client cap

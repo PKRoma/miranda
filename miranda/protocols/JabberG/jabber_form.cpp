@@ -44,7 +44,7 @@ void JabberFormCreateUI(HWND hwndStatic, XmlNode *xNode, int *formHeight)
 	HFONT hFont;
 	XmlNode *n, *v, *o, *vs;
 	int id, i, j, k, ypos, index, size;
-	char *label, *type, *labelStr, *valueStr, *varStr, *str, *p, *valueText;
+	char* label, *type, *labelStr, *valueStr, *varStr, *str, *p, *valueText;
 	int labelOffset, labelWidth, labelHeight;
 	int ctrlOffset, ctrlWidth;
 	RECT frameRect, strRect;
@@ -108,7 +108,7 @@ void JabberFormCreateUI(HWND hwndStatic, XmlNode *xNode, int *formHeight)
 							if (v->name && !strcmp(v->name, "value") && v->text)
 								size += strlen(v->text) + 2;
 						}
-						str = (char *) malloc(size);
+						str = ( char* )malloc(size);
 						str[0] = '\0';
 						for (j=0; j<n->numChild; j++) {
 							v = n->child[j];
@@ -230,20 +230,20 @@ void JabberFormCreateUI(HWND hwndStatic, XmlNode *xNode, int *formHeight)
 	*formHeight = ypos;
 }
 
-char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
+char* JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 {
 	HWND hFrame, hCtrl;
 	XmlNode *n, *v, *o;
 	int id, i, j, k, len, count, size;
-	char *varName, *type;
-	char *regStr, *fieldStr, *str, *str2, *p, *q, *s, *labelStr, *labelText;
+	char* varName, *type;
+	char* regStr, *fieldStr, *str, *str2, *p, *q, *s, *labelStr, *labelText;
 	unsigned int regStrSize;
 
 	if (xNode==NULL || xNode->name==NULL || strcmp(xNode->name, "x") || hwndStatic==NULL) return NULL;
 	hFrame = hwndStatic;
 
 	regStrSize = 512;
-	regStr = (char *) malloc(regStrSize);
+	regStr = ( char* )malloc(regStrSize);
 	regStr[0] = '\0';
 	id = 0;
 	strcpy(regStr, "<x xmlns='jabber:x:data' type='submit'>");
@@ -258,7 +258,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 
 				if (!strcmp(type, "text-multi") || !strcmp(type, "jid-multi")) {
 					len = GetWindowTextLength(GetDlgItem(hFrame, id));
-					str = (char *) malloc(len+1);
+					str = ( char* )malloc(len+1);
 					GetDlgItemText(hFrame, id, str, len+1);
 					p = str; len = 0;
 					while (p != NULL) {
@@ -271,7 +271,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 						free(s);
 						p = q?q+2:NULL;
 					}
-					str2 = (char *) malloc(len+1);
+					str2 = ( char* )malloc(len+1);
 					str2[0] = '\0';
 					p = str;
 					while (p != NULL) {
@@ -285,7 +285,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 						p = q?q+2:NULL;
 					}
 					if ((p=JabberTextEncode(varName)) != NULL) {
-						fieldStr = (char *) malloc(strlen(p) + strlen(str2) + 38);
+						fieldStr = ( char* )malloc(strlen(p) + strlen(str2) + 38);
 						sprintf(fieldStr, "<field var='%s'>%s</field>", p, str2);
 						free(p);
 					}
@@ -295,7 +295,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 				}
 				else if (!strcmp(type, "boolean")) {
 					if ((p=JabberTextEncode(varName)) != NULL) {
-						fieldStr = (char *) malloc(strlen(p) + 40);
+						fieldStr = ( char* )malloc(strlen(p) + 40);
 						sprintf(fieldStr, "<field var='%s'><value>%d</value></field>", p, IsDlgButtonChecked(hFrame, id)==BST_CHECKED?1:0);
 						free(p);
 					}
@@ -303,7 +303,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 				}
 				else if (!strcmp(type, "list-single")) {
 					len = GetWindowTextLength(GetDlgItem(hFrame, id));
-					str = (char *) malloc(len+1);
+					str = ( char* )malloc(len+1);
 					GetDlgItemText(hFrame, id, str, len+1);
 					for (j=0; j<n->numChild; j++) {
 						o = n->child[j];
@@ -324,7 +324,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 					if (j < n->numChild) {
 						if ((p=JabberTextEncode(varName)) != NULL) {
 							if ((q=JabberTextEncode(v->text)) != NULL) {
-								fieldStr = (char *) malloc(strlen(p) + strlen(q) + 38);
+								fieldStr = ( char* )malloc(strlen(p) + strlen(q) + 38);
 								sprintf(fieldStr, "<field var='%s'><value>%s</value></field>", p, q);
 								free(q);
 							}
@@ -337,7 +337,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 				else if (!strcmp(type, "list-multi")) {
 					if ((p=JabberTextEncode(varName)) != NULL) {
 						size = strlen(p) + 23;
-						fieldStr = (char *) malloc(size);	// <field var='xxx'></field>
+						fieldStr = ( char* )malloc(size);	// <field var='xxx'></field>
 						sprintf(fieldStr, "<field var='%s'>", p);
 						free(p);
 
@@ -358,7 +358,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 													if (!strcmp(labelStr, str)) {
 														if ((q=JabberTextEncode(v->text)) != NULL) {
 															size += strlen(q)+15;
-															fieldStr = (char *) realloc(fieldStr, size);
+															fieldStr = ( char* )realloc(fieldStr, size);
 															sprintf(fieldStr+strlen(fieldStr), "<value>%s</value>", q);
 															free(q);
 														}
@@ -381,13 +381,13 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 						v = JabberXmlGetChild(n, "value");
 						if (v!=NULL && v->text!=NULL) {
 							if ((q=JabberTextEncode(v->text)) != NULL) {
-								fieldStr = (char *) malloc(strlen(p) + strlen(q) + 38);
+								fieldStr = ( char* )malloc(strlen(p) + strlen(q) + 38);
 								sprintf(fieldStr, "<field var='%s'><value>%s</value></field>", p, q);
 								free(q);
 							}
 						}
 						else {
-							fieldStr = (char *) malloc(strlen(p) + 16);
+							fieldStr = ( char* )malloc(strlen(p) + 16);
 							sprintf(fieldStr, "<field var='%s'/>", p);
 						}
 						free(p);
@@ -395,11 +395,11 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 				}
 				else { // everything else is considered "text-single" or "text-private"
 					len = GetWindowTextLength(GetDlgItem(hFrame, id));
-					str = (char *) malloc(len+1);
+					str = ( char* )malloc(len+1);
 					GetDlgItemText(hFrame, id, str, len+1);
 					if ((p=JabberTextEncode(varName)) != NULL) {
 						if ((q=JabberTextEncode(str)) != NULL) {
-							fieldStr = (char *) malloc(strlen(p) + strlen(q) + 38);
+							fieldStr = ( char* )malloc(strlen(p) + strlen(q) + 38);
 							sprintf(fieldStr, "<field var='%s'><value>%s</value></field>", p, q);
 							free(q);
 						}
@@ -412,7 +412,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 				if (fieldStr != NULL) {
 					if (strlen(regStr)+strlen(fieldStr)+5 > regStrSize) {
 						regStrSize = strlen(regStr)+strlen(fieldStr)+512;
-						regStr = (char *) realloc(regStr, regStrSize);
+						regStr = ( char* )realloc(regStr, regStrSize);
 					}
 					strcat(regStr, fieldStr);
 					free(fieldStr);
@@ -444,7 +444,7 @@ static BOOL CALLBACK JabberFormDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			XmlNode *n;
 			LONG frameExStyle;
-			char *str;
+			char* str;
 
 			// lParam is (JABBER_FORM_INFO *)
 			TranslateDialogDefault(hwndDlg);
@@ -459,7 +459,7 @@ static BOOL CALLBACK JabberFormDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					}
 				}
 				else if (jfi->defTitle != NULL)
-					SetWindowText(hwndDlg, Translate(jfi->defTitle));
+					SetWindowText(hwndDlg, JTranslate(jfi->defTitle));
 				// Set instruction field
 				if (jfi->xNode!=NULL && (n=JabberXmlGetChild(jfi->xNode, "instructions"))!=NULL && n->text!=NULL) {
 					if ((str=JabberTextDecode(n->text)) != NULL) {
@@ -540,7 +540,7 @@ static BOOL CALLBACK JabberFormDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case IDC_SUBMIT:
 			jfi = (JABBER_FORM_INFO *) GetWindowLong(hwndDlg, GWL_USERDATA);
 			if (jfi != NULL) {
-				char *str;
+				char* str;
 
 				str = JabberFormGetData(GetDlgItem(hwndDlg, IDC_FRAME), jfi->xNode);
 				(jfi->pfnSubmit)(str, jfi->userdata);
@@ -572,7 +572,7 @@ static VOID CALLBACK JabberFormCreateDialogApcProc(DWORD param)
 	CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_FORM), NULL, JabberFormDlgProc, (LPARAM) param);
 }
 
-void JabberFormCreateDialog(XmlNode *xNode, char *defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata)
+void JabberFormCreateDialog(XmlNode *xNode, char* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata)
 {
 	JABBER_FORM_INFO *jfi;
 
@@ -585,7 +585,7 @@ void JabberFormCreateDialog(XmlNode *xNode, char *defTitle, JABBER_FORM_SUBMIT_F
 	jfi->userdata = userdata;
 
 	if (GetCurrentThreadId() != jabberMainThreadId)
-		QueueUserAPC(JabberFormCreateDialogApcProc, hMainThread, (DWORD) jfi);
+		QueueUserAPC(JabberFormCreateDialogApcProc, hMainThread, ( DWORD )jfi);
 	else
-		JabberFormCreateDialogApcProc((DWORD) jfi);
+		JabberFormCreateDialogApcProc(( DWORD )jfi);
 }

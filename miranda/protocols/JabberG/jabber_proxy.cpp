@@ -71,7 +71,7 @@ int JabberHttpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPRE
 	nlhpi.firstPostSequence = 1;
 	sprintf(szHttpGetUrl, "http://%s/monitor?sid=%s", szHttpServer, szSid);
 	sprintf(szHttpPostUrl, "http://%s/data?sid=%s&seq=", szHttpServer, szSid);
-	return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
+	return JCallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 #endif
 	return 1;
 }

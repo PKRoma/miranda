@@ -77,10 +77,10 @@ static void JabberFtSiResult(XmlNode *iqNode, void *userdata);
 static BOOL JabberFtSend(HANDLE hConn, void *userdata);
 static void JabberFtSendFinal(BOOL success, void *userdata);
 
-void JabberFtInitiate(char *jid, JABBER_FILE_TRANSFER *ft)
+void JabberFtInitiate(char* jid, JABBER_FILE_TRANSFER *ft)
 {
 	int iqId;
-	char *rs, *filename, *encFilename, *encDesc, *p;
+	char* rs, *filename, *encFilename, *encDesc, *p;
 	char idStr[32];
 	JABBER_LIST_ITEM *item;
 	int i;
@@ -138,8 +138,8 @@ void JabberFtInitiate(char *jid, JABBER_FILE_TRANSFER *ft)
 
 static void JabberFtSiResult(XmlNode *iqNode, void *userdata)
 {
-	char *type, *from;
-	char *idStr, *str;
+	char* type, *from;
+	char* idStr, *str;
 	XmlNode *siNode, *fileNode, *rangeNode, *featureNode, *xNode, *fieldNode, *valueNode;
 	JABBER_LIST_ITEM *item;
 	int offset, length;
@@ -202,7 +202,7 @@ static BOOL JabberFtSend(HANDLE hConn, void *userdata)
 	PROTOFILETRANSFERSTATUS pfts;
 	struct _stat statbuf;
 	int fd;
-	char *buffer;
+	char* buffer;
 	int numRead;
 
 	JabberLog("Sending [%s]", ft->files[ft->currentFile]);
@@ -224,7 +224,7 @@ static BOOL JabberFtSend(HANDLE hConn, void *userdata)
 	pfts.currentFileSize = statbuf.st_size;
 	pfts.currentFileTime = 0;
 	ft->fileReceivedBytes = 0;
-	if ((buffer=(char *)malloc(2048)) != NULL) {
+	if ((buffer=(char* )malloc(2048)) != NULL) {
 		while ((numRead=_read(fd, buffer, 2048)) > 0) {
 			if (Netlib_Send(hConn, buffer, numRead, MSG_NODUMP) != numRead) {
 				free(buffer);
@@ -277,14 +277,14 @@ static void JabberFtSendFinal(BOOL success, void *userdata)
 
 ///////////////// File receiving through stream initiation /////////////////////////
 
-static int JabberFtReceive(HANDLE hConn, void *userdata, char *buffer, int datalen);
+static int JabberFtReceive(HANDLE hConn, void *userdata, char* buffer, int datalen);
 static void JabberFtReceiveFinal(BOOL success, void *userdata);
 
 void JabberFtHandleSiRequest(XmlNode *iqNode)
 {
-	char *from, *sid;
+	char* from, *sid;
 	XmlNode *siNode, *fileNode, *featureNode, *xNode, *fieldNode, *optionNode, *n;
-	char *szId, *str, *filename, *localFilename;
+	char* szId, *str, *filename, *localFilename;
 	int filesize, i;
 	JABBER_FT_TYPE ftType;
 
@@ -322,7 +322,7 @@ void JabberFtHandleSiRequest(XmlNode *iqNode)
 				JABBER_FILE_TRANSFER *ft;
 				CCSDATA ccs;
 				PROTORECVEVENT pre;
-				char *szBlob, *desc;
+				char* szBlob, *desc;
 
 				if ((n=JabberXmlGetChild(fileNode, "desc"))!=NULL && n->text!=NULL)
 					desc = JabberTextDecode(n->text);
@@ -340,10 +340,10 @@ void JabberFtHandleSiRequest(XmlNode *iqNode)
 						ft->fileName = localFilename;
 						ft->fileTotalSize = filesize;
 						ft->fileId = -1;
-						szBlob = (char *) malloc(sizeof(DWORD) + strlen(localFilename) + strlen(desc) + 2);
-						*((PDWORD) szBlob) = (DWORD) ft;
+						szBlob = ( char* )malloc(sizeof( DWORD )+ strlen(localFilename) + strlen(desc) + 2);
+						*((PDWORD) szBlob) = ( DWORD )ft;
 						strcpy(szBlob + sizeof(DWORD), localFilename);
-						strcpy(szBlob + sizeof(DWORD) + strlen(localFilename) + 1, desc);
+						strcpy(szBlob + sizeof( DWORD )+ strlen(localFilename) + 1, desc);
 						pre.flags = 0;
 						pre.timestamp = time(NULL);
 						pre.szMessage = szBlob;
@@ -352,7 +352,7 @@ void JabberFtHandleSiRequest(XmlNode *iqNode)
 						ccs.hContact = ft->hContact;
 						ccs.wParam = 0;
 						ccs.lParam = (LPARAM) &pre;
-						CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
+						JCallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
 						free(szBlob);
 					}
 					free(desc);
@@ -374,7 +374,7 @@ void JabberFtHandleSiRequest(XmlNode *iqNode)
 void JabberFtAcceptSiRequest(JABBER_FILE_TRANSFER *ft)
 {
 	JABBER_LIST_ITEM *item;
-	char *szId;
+	char* szId;
 
 	if (!jabberOnline || ft==NULL || ft->jid==NULL || ft->sid==NULL) return;
 
@@ -403,7 +403,7 @@ void JabberFtAcceptSiRequest(JABBER_FILE_TRANSFER *ft)
 BOOL JabberFtHandleBytestreamRequest(XmlNode *iqNode)
 {
 	XmlNode *queryNode;
-	char *sid;
+	char* sid;
 	JABBER_LIST_ITEM *item;
 	JABBER_BYTE_TRANSFER *jbt;
 
@@ -428,14 +428,14 @@ BOOL JabberFtHandleBytestreamRequest(XmlNode *iqNode)
 	return FALSE;
 }
 
-static int JabberFtReceive(HANDLE hConn, void *userdata, char *buffer, int datalen)
+static int JabberFtReceive(HANDLE hConn, void *userdata, char* buffer, int datalen)
 {
 	JABBER_FILE_TRANSFER *ft = (JABBER_FILE_TRANSFER *) userdata;
 	int remainingBytes, writeSize;
 	PROTOFILETRANSFERSTATUS pfts;
 
 	if (ft->fileId < 0) {
-		ft->fullFileName = (char *) malloc(strlen(ft->szSavePath) + strlen(ft->fileName) + 2);
+		ft->fullFileName = ( char* )malloc(strlen(ft->szSavePath) + strlen(ft->fileName) + 2);
 		if (ft->szSavePath[strlen(ft->szSavePath)-1] == '\\')
 			sprintf(ft->fullFileName, "%s%s", ft->szSavePath, ft->fileName);
 		else
