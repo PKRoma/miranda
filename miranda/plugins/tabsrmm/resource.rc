@@ -228,9 +228,7 @@ BEGIN
     CONTROL         "Show toolbar buttons",IDC_SHOWBUTTONLINE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,190,137,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,156,141,10
-    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,168,137,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,167,141,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,148,179,137,10
     CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
@@ -721,26 +719,6 @@ BEGIN
                                                 ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
 
     END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog Info
-//
-
-IDD_OPT_MSGDLG DLGINIT
-BEGIN
-    IDC_AVATARMODE, 0x403, 12, 0
-0x6c47, 0x626f, 0x6c61, 0x796c, 0x6f20, 0x006e, 
-    IDC_AVATARMODE, 0x403, 37, 0
-0x6e4f, 0x6620, 0x726f, 0x7020, 0x6f72, 0x6f74, 0x6f63, 0x736c, 0x7720, 
-0x7469, 0x2068, 0x7661, 0x7461, 0x7261, 0x7320, 0x7075, 0x6f70, 0x7472, 
-"\000" 
-    IDC_AVATARMODE, 0x403, 20, 0
-0x6550, 0x2072, 0x6f63, 0x746e, 0x6361, 0x2074, 0x6573, 0x7474, 0x6e69, 
-0x0067, 
-    0
 END
 
 #endif    // Englisch (USA) resources

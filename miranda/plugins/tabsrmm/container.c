@@ -1281,6 +1281,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if(pContainer->dwFlags & CNT_NOMENUBAR) {
                 if(pContainer->hMenu) {
                     SetMenu(hwndDlg, NULL);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
             }
@@ -1290,6 +1291,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
                 }
                 SetMenu(hwndDlg, pContainer->hMenu);
+                ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_SHOW);
+                SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 DrawMenuBar(hwndDlg);
             }
             

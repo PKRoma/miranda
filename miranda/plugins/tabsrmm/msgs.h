@@ -28,6 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define COLOR_HOTLIGHT 26
 #define SB_SETICON (WM_USER+15)
 #define GT_SELECTION 2
+#define TCS_BOTTOM 0x0002
+#define ST_DEFAULT 0
+#define CFM_WEIGHT 0x0040000
 
 typedef struct __gettextex
 {
@@ -38,6 +41,19 @@ typedef struct __gettextex
 	LPCSTR	lpDefaultChar;	// Replacement for unmappable chars			
 	LPBOOL	lpUsedDefChar;	// Pointer to flag set when def char used	
 } _GETTEXTEX;
+
+typedef struct tagNMMOUSE {
+    NMHDR   hdr;
+    DWORD_PTR dwItemSpec;
+    DWORD_PTR dwItemData;
+    POINT   pt;
+    LPARAM  dwHitInfo; // any specifics about where on the item or control the mouse is
+} NMMOUSE, *LPNMMOUSE;
+
+typedef struct _settextex {
+    DWORD	flags;
+    UINT	codepage;
+} SETTEXTEX;
 
 #endif
 

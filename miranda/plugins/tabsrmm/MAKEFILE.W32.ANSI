@@ -3,11 +3,12 @@
 
 CPP  = g++.exe
 CC   = gcc.exe
+LIBDIR=c:/dev-cpp/lib
 WINDRES = windres.exe
 RES  = tabsrmm_private.res
-OBJ  = Release_MINGW32/container.o Release_MINGW32/containeroptions.o Release_MINGW32/hotkeyhandler.o Release_MINGW32/msgdialog.o Release_MINGW32/msglog.o Release_MINGW32/msgoptions.o Release_MINGW32/msgs.o Release_MINGW32/selectcontainer.o Release_MINGW32/srmm.o $(RES)
-LINKOBJ  = Release_MINGW32/container.o Release_MINGW32/containeroptions.o Release_MINGW32/hotkeyhandler.o Release_MINGW32/msgdialog.o Release_MINGW32/msglog.o Release_MINGW32/msgoptions.o Release_MINGW32/msgs.o Release_MINGW32/selectcontainer.o Release_MINGW32/srmm.o $(RES)
-LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias ../../../../Dev-Cpp/lib/libgdi32.a ../../../../Dev-Cpp/lib/libole32.a ../../../../Dev-Cpp/lib/libuser32.a ../../../../Dev-Cpp/lib/libcomctl32.a ../../../../Dev-Cpp/lib/libuuid.a ../../../../Dev-Cpp/lib/libcomdlg32.a  -mwindows -s
+OBJ  = Release_MINGW32/ImageDataObject.o Release_MINGW32/container.o Release_MINGW32/containeroptions.o Release_MINGW32/hotkeyhandler.o Release_MINGW32/msgdialog.o Release_MINGW32/msglog.o Release_MINGW32/msgoptions.o Release_MINGW32/msgs.o Release_MINGW32/selectcontainer.o Release_MINGW32/srmm.o $(RES)
+LINKOBJ  = Release_MINGW32/ImageDataObject.o Release_MINGW32/container.o Release_MINGW32/containeroptions.o Release_MINGW32/hotkeyhandler.o Release_MINGW32/msgdialog.o Release_MINGW32/msglog.o Release_MINGW32/msgoptions.o Release_MINGW32/msgs.o Release_MINGW32/selectcontainer.o Release_MINGW32/srmm.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)/libgdi32.a $(LIBDIR)/libole32.a $(LIBDIR)/libuser32.a $(LIBDIR)/libcomctl32.a $(LIBDIR)/libuuid.a $(LIBDIR)/libcomdlg32.a $(LIBDIR)/libstdc++.a -mwindows -s
 INCS =  -I"C:/Dev-Cpp/include"
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
 BIN  = Release_MINGW32/tabsrmm.dll
@@ -28,6 +29,9 @@ STATICLIB=Release_MINGW32/libtabsrmm.a
 
 $(BIN): $(LINKOBJ)
 	$(DLLWRAP) --output-def $(DEFFILE) --implib $(STATICLIB) $(LINKOBJ) $(LIBS) -o $(BIN)
+
+Release_MINGW32/ImageDataObject.o: ImageDataObject.cpp
+	$(CPP) -c ImageDataObject.cpp -o Release_MINGW32/ImageDataObject.o $(CFLAGS)
 
 Release_MINGW32/container.o: container.c
 	$(CC) -c container.c -o Release_MINGW32/container.o $(CFLAGS)
@@ -56,5 +60,5 @@ Release_MINGW32/selectcontainer.o: selectcontainer.c
 Release_MINGW32/srmm.o: srmm.c
 	$(CC) -c srmm.c -o Release_MINGW32/srmm.o $(CFLAGS)
 
-tabsrmm_private.res: tabsrmm_private.rc 
+tabsrmm_private.res: tabsrmm_private.rc
 	$(WINDRES) -i tabsrmm_private.rc -I rc -o tabsrmm_private.res -O coff -D__GNUWIN32__

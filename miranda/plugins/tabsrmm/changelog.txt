@@ -32,6 +32,13 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
+Version 0.0.9.2 - 2004/11/12
+
+        * various avatar layouting fixes.
+        
+        * removed "Send on double enter" as this is broken due to the rich edit input
+          area.
+
 Version 0.0.9.1 - 2004/11/11
 
         * RTL didn't fully work for the message input area

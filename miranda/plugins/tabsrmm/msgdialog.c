@@ -471,9 +471,12 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
         if(dat->hContactPic) {
             dat->showPic = GetAvatarVisibility(hwndDlg, dat);
             if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                if(dat->dynaSplitter == 0 || dat->splitterY == 0)
+                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                 dat->dynaSplitter = dat->splitterY - 34;
             }
+            else
+                SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
             SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
             SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
             ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
@@ -505,12 +508,6 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
 }
 // END MOD#33
 
-struct MsgEditSubclassData {
-    DWORD lastEnterTime;
-};
-
-#define EM_SUBCLASSED             (WM_USER+0x101)
-#define EM_UNSUBCLASSED           (WM_USER+0x102)
 #define ENTERCLICKTIME   1000   //max time in ms during which a double-tap on enter will cause a send
 #define EDITMSGQUEUE_PASSTHRUCLIPBOARD  //if set the typing queue won't capture ctrl-C etc because people might want to use them on the read only text
                                                   //todo: decide if this should be set or not
@@ -526,11 +523,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			SendMessage(GetParent(hwnd),WM_DROPFILES,(WPARAM)wParam,(LPARAM)lParam);
 			break;
 // END MOD#11
-        case EM_SUBCLASSED:
-            dat = (struct MsgEditSubclassData *) malloc(sizeof(struct MsgEditSubclassData));
-            SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
-            dat->lastEnterTime = 0;
-            return 0;
         case WM_CHAR:
             if (wParam == 21 && GetKeyState(VK_CONTROL) & 0x8000) {             // ctrl-U next unread tab
                 SendMessage(GetParent(hwnd), DM_QUERYPENDING, DM_QUERY_NEXT, 0);
@@ -550,6 +542,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
                 return 0;
             }
+            if (wParam == 0x0f && GetKeyState(VK_CONTROL) & 0x8000) {
+                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), GetParent(hwnd), DlgProcContainerOptions, (LPARAM) mwdat->pContainer);
+                return 0;
+            }
         case WM_KEYUP:
             break;
         case WM_KEYDOWN:
@@ -561,15 +557,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER))) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
-                }
-                if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER)) {
-                    if (dat->lastEnterTime + ENTERCLICKTIME < GetTickCount())
-                        dat->lastEnterTime = GetTickCount();
-                    else {
-                        SendMessage(hwnd, WM_CHAR, '\b', 0);
-                        PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-                        return 0;
-                    }
                 }
             }
             if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
@@ -697,10 +684,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_MBUTTONDOWN:
         case WM_MOUSEWHEEL:
         case WM_KILLFOCUS:
-            dat->lastEnterTime = 0;
             break;
         case WM_SYSCHAR:
-            dat->lastEnterTime = 0;
             if(VkKeyScan((TCHAR)wParam) == 'S' && GetKeyState(VK_MENU) && 0x8000) {
                 if (!(GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
@@ -736,9 +721,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 }
                 break;
             }
-        case EM_UNSUBCLASSED:
-            free(dat);
-            return 0;
     }
     return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -1260,7 +1242,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SUBCLASSED, 0, 0);
             // Hack alert.  Read the CList/UseGroups setting an hide/show groups in our clist
                 if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
@@ -2739,7 +2720,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     gtx.lpDefaultChar = 0;
                     gtx.lpUsedDefChar = 0;
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
-                    // GetDlgItemTextW(hwndDlg, IDC_MESSAGE, (TCHAR *) & dat->sendBuffer[bufSize], bufSize);
+                    //GetDlgItemTextW(hwndDlg, IDC_MESSAGE, (TCHAR *) & dat->sendBuffer[bufSize], bufSize);
 #endif
                     if (dat->sendBuffer[0] == 0)
                         break;
@@ -2845,11 +2826,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         int iAlloced = 0;
                         int iSize = 0;
                         SETTEXTEX stx = {ST_DEFAULT, 1200};
-#ifdef __GNUWIN32__
-                        _GETTEXTEX gtx;
-#else                        
                         GETTEXTEX gtx;
-#endif                        
 #endif                        
 
                         if (dat->hDbEventLast==NULL) break;
@@ -3572,7 +3549,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
          */
         case DM_PICTURECHANGED:
             ShowPicture(hwndDlg, dat, TRUE, TRUE, TRUE);
-            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+            if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
+                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+            }
             return 0;
 
         case DM_STATUSBARCHANGED:
@@ -3604,7 +3586,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
                     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
@@ -3930,7 +3911,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
-            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
 // XXX tab support
             {
@@ -4298,7 +4278,9 @@ static void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat)
     NotifyDeliveryFailure(hwndDlg, dat);
     if(iLen == 0) {                     // message area is empty, so we can recall the failed message...
 #if defined(_UNICODE)
-        SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)&dat->sendJobs[0].sendBuffer[lstrlenA(dat->sendJobs[0].sendBuffer) + 1]);
+        SETTEXTEX stx = {ST_DEFAULT,1200};
+        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&dat->sendJobs[0].sendBuffer[lstrlenA(dat->sendJobs[0].sendBuffer) + 1]);
+        //SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)&dat->sendJobs[0].sendBuffer[lstrlenA(dat->sendJobs[0].sendBuffer) + 1]);
 #else
         SetDlgItemTextA(hwndDlg, IDC_MESSAGE, (char *)dat->sendJobs[0].sendBuffer);
 #endif
