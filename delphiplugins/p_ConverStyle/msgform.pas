@@ -1323,13 +1323,13 @@ procedure TMsgWindow.FormKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   //STRG+ENTER and STRG+S shortcut for sending
-  if Shift=[ssCtrl] then
-    if (key in [vk_return,ord('S')]) then
-      begin
-      key:=0;
-      if SendBtn.Enabled then
-        SendBtnClick(Sender);
-      end;
+  if ((key = ord('S')) and (Shift=[ssCtrl])) or
+    ((key = vk_return) and ((ssCtrl in Shift) or (ssAlt in Shift))) then
+    begin
+    key:=0;
+    if SendBtn.Enabled then
+      SendBtnClick(Sender);
+    end;
 
   if Shift=[ssAlt] then
     begin
