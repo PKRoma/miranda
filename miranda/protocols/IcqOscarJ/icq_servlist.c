@@ -1127,8 +1127,8 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
   }
   level++; // we are a sub
 
-  // check if on that id is not group of the same level, if yes, try next
-  while (CheckServerID((WORD)(wGroupID+1),0) && (countGroupLevel((WORD)(wGroupID+1)) == (level+1)))
+  // check if on that id is not group of the same or greater level, if yes, try next
+  while (CheckServerID((WORD)(wGroupID+1),0) && (countGroupLevel((WORD)(wGroupID+1)) >= level))
   {
     wGroupID++;
   }
