@@ -72,7 +72,6 @@ int LoadNewPluginsModuleInfos(void); // core: preloading plugins
 int LoadNewPluginsModule(void);	// core: N.O. plugins
 int LoadNetlibModule(void);		// core: network
 int LoadLangPackModule(void);	// core: translation
-int LoadFirstRunModule(void);	// core: used for setup
 int LoadProtocolsModule(void);	// core: protocol manager
 int LoadIgnoreModule(void);		// protocol filter: ignore
 
@@ -113,7 +112,6 @@ static int LoadDefaultModules(void)
 	if(LoadProtocolsModule()) return 1;
 	if(LoadSkinModule()) return 1;
 	if(LoadButtonModule()) return 1;
-    if(LoadFirstRunModule()) return 1;
 	if(LoadOptionsModule()) return 1;	
 	if(LoadContactsModule()) return 1;	
 	if(LoadAddContactModule()) return 1;

@@ -373,14 +373,6 @@ SOURCE=.\modules\findadd\findadd.h
 SOURCE=.\modules\findadd\searchresults.c
 # End Source File
 # End Group
-# Begin Group "firstrun"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\modules\firstrun\firstrun.c
-# End Source File
-# End Group
 # Begin Group "help"
 
 # PROP Default_Filter ""
