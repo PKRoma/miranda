@@ -12,7 +12,7 @@
 ####################################################################
 #
 # OPTIONS:
-# 
+#
 # Example Usage: 'make DEBUG=1'
 #
 # DEBUG     Compiles with debug options on
@@ -26,51 +26,36 @@
 # (using the latest package updates).  Older versions make work as
 # well.  You will also need a copy of rm.exe for the make clean to
 # work (http://unxutils.sourceforge.net/).  Make sure you create a
-# 'debug\plugins' directory in the root directory of this cvs 
-# module or the compile will fail.  To format the code (format 
+# 'debug\plugins' directory in the root directory of this cvs
+# module or the compile will fail.  To format the code (format
 # target) you will need GNU Indent from:
 # http://gnuwin32.sourceforge.net/.  Indent.exe will need to be in
 # the path or in the same directory as the source.
 ####################################################################
-OBJ = gg.o \
-      keepalive.o \
-      dialogs.o \
-      pthread.o \
-      services.o \
-      import.o \
-      dynstuff.o \
-      ownerinfo.o \
-	  userutils.o \
-	  filetransfer.o \
-	  ssl.o \
-      core.o \
-      token.o \
-      image.o
+CFILES = 	gg.c \
+			keepalive.c \
+			dialogs.c \
+			pthread.c \
+			services.c \
+			import.c \
+			dynstuff.c \
+			ownerinfo.c \
+			userutils.c \
+			filetransfer.c \
+			ssl.c \
+			core.c
+CPPFILES = 	token.cpp \
+			image.cpp
 
-SRC = gg.c \
-      keepalive.c \
-      dialogs.c \
-      pthread.c \
-      services.c \
-      import.c \
-      dynstuff.c \
-      ownerinfo.c \
-	  userutils.c \
-	  filetransfer.c \
-	  ssl.c \
-      core.c \
-      token.cpp \
-      image.cpp
-
-#SRC = $(OBJ:.o=.c)
+OBJ = $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
 RES = resource.res
 HDR = gg.h pthread.h resource.h toc.h ssl.h
 LIB = libgadu/libgadu.a -lws2_32 -lgdi32 -lcomdlg32 -lcomctl32 -lole32 -loleaut32 -lolepro32 -luuid -lstdc++
 
 # Set here miranda SDK headers
-INC = -I../../include
+INC = -I../../include -Iinclude
 
-# Output dir
+# Output dll and debug additions (report gen)
 ifdef DEBUG
 BIN = GGdebug.dll
 else
@@ -79,6 +64,7 @@ endif
 
 UPX = upx --best -q --compress-icons=0
 CC = gcc
+CPP = g++
 RC = windres
 RM = rm
 DW = dllwrap
@@ -103,7 +89,7 @@ CPPFLAGS  = -O2 $(DEFINES) $(INC)
 endif
 
 # Targets
-all : $(OBJ) $(RES)
+all : libgadu/libgadu.a $(OBJ) $(RES)
 	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
 ifdef UPX
 ifndef DEBUG
@@ -111,10 +97,13 @@ ifndef DEBUG
 endif
 endif
 
+libgadu/libgadu.a:
+	make -C libgadu
+
 $(RES) : $(RES:.res=.rc) $(RES:.res=.h) Makefile
 	$(RC) $(RCFLAGS) -o $(RES) -i $(RES:.res=.rc)
 
-depend : 
+depend :
 	$(CC) -MM $(CFLAGS) $(SRC)>Makefile.dep
 
 format :
@@ -122,6 +111,6 @@ format :
 	$(RM) *.*~
 
 clean :
-	$(RM) -f $(OBJ) $(RES)
+	$(RM) -f *.o *.a $(RES)
 
 -include Makefile.dep
