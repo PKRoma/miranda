@@ -30,7 +30,7 @@ IDI_GCHAT    ICON    DISCARDABLE "icos\\groupchat.ico"
 IDI_GCHATA   ICON    DISCARDABLE "icos\\groupchata.ico"
 IDI_BLANK    ICON    DISCARDABLE "icos\\blank.ico"
 
-IDD_OPT_AIM DIALOGEX 0,0,280,200
+IDD_OPT_AIM DIALOGEX 0,0,280,187
 STYLE DS_FIXEDSYS|WS_CHILD|WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg"
@@ -43,18 +43,17 @@ BEGIN
     EDITTEXT        IDC_PW,84,40,85,12,ES_PASSWORD|ES_AUTOHSCROLL
     EDITTEXT        IDC_DN,84,59,85,12,ES_AUTOHSCROLL
     CONTROL         "Lost AIM Password?",IDC_LOSTLINK,"Hyperlink",WS_TABSTOP,175,42,90,8
-	GROUPBOX        "Advanced Configuration",IDC_STDSTATIC,4,89,273,99
+	GROUPBOX        "Advanced Configuration",IDC_STDSTATIC,4,89,273,86
 	LTEXT           "Login Server:",IDC_STDLSERVER,12,104,55,8
     EDITTEXT        IDC_TOCSERVER,68,102,97,12,ES_AUTOHSCROLL
     LTEXT           "Port:",IDC_STDLPORT,173,104,25,8
     EDITTEXT        IDC_TOCPORT,199,102,29,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,235,102,34,12
 	LTEXT           "Note: Use port 0 to connect on a random port",IDC_STATIC,12,119,255,8
-	CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,133,255,10
-	CONTROL         "Show error messages",IDC_SHOWERRORS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,146,255,10
-	CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,159,255,10
-	CONTROL         "Show change password menu item",IDC_PASSWORD,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,172,255,10
-    CTEXT           "A restart of Miranda IM is required for changes to take effect.",IDC_RELOADREQD,12,191,260,12,NOT WS_VISIBLE
+	CONTROL         "Show error messages",IDC_SHOWERRORS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,133,255,10
+	CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,146,255,10
+	CONTROL         "Show change password menu item",IDC_PASSWORD,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,159,255,10
+    CTEXT           "A restart of Miranda IM is required for changes to take effect.",IDC_RELOADREQD,12,172,260,12,NOT WS_VISIBLE
 END
 
 IDD_OPT_AIMCONTACTS DIALOGEX 0,0,280,102

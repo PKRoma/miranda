@@ -138,7 +138,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_WD      "ShowWarn"       // Show the warn dialog when warned
 #define AIM_KEY_LA      "LastAwayChange" // Used for determining if autoresponse it sent
 #define AIM_KEY_AR      "AutoResponse"   // Send autoresponse
-#define AIM_KEY_KA      "KeepAlive"      // Keep-alive support
 #define AIM_KEY_AC      "ClistAutoResp"  // Only auto-response to users on your clist
 #define AIM_KEY_AM      "ApparentMode"   // Apparent mode
 #define AIM_KEY_SA		"ServerAddr"     // Server Address

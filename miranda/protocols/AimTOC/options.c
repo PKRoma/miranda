@@ -97,7 +97,6 @@ static BOOL CALLBACK aim_options_generaloptsproc(HWND hwndDlg, UINT msg, WPARAM 
             else
                 SetDlgItemText(hwndDlg, IDC_TOCSERVER, AIM_TOC_HOST);
             SetDlgItemInt(hwndDlg, IDC_TOCPORT, DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT, AIM_TOC_PORT), FALSE);
-            CheckDlgButton(hwndDlg, IDC_KEEPALIVE, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_KA, AIM_KEY_KA_DEF));
             EnableWindow(GetDlgItem(hwndDlg, IDC_IDLETIMEVAL), IsDlgButtonChecked(hwndDlg, IDC_ENABLEIDLE));
             CheckDlgButton(hwndDlg, IDC_SHOWERRORS, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, AIM_KEY_SE_DEF));
             CheckDlgButton(hwndDlg, IDC_WEBSUPPORT, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AL, AIM_KEY_AL_DEF));
@@ -168,7 +167,6 @@ static BOOL CALLBACK aim_options_generaloptsproc(HWND hwndDlg, UINT msg, WPARAM 
                     DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_TS, str);
                     val = GetDlgItemInt(hwndDlg, IDC_TOCPORT, NULL, TRUE);
                     DBWriteContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT, (WORD) val > 0 || val == 0 ? val : AIM_TOC_PORT);
-                    DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_KA, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWERRORS));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AL, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_PM, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_PASSWORD));

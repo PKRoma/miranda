@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "aim.h"
 
-#define KATIMEOUT (1000*60)     // 1000 milliseconds * 60 = 60 secs
+#define KATIMEOUT (1000*90)     // 1000 milliseconds * 60 = 60 secs
 
 static int hTimer = 0;
 static void CALLBACK aim_keepalive_timer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
@@ -32,7 +32,7 @@ static void CALLBACK aim_keepalive_timer(HWND hwnd, UINT message, UINT idEvent, 
 
 void aim_keepalive_init()
 {
-    if (!hTimer && DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_KA, AIM_KEY_KA_DEF)) {
+    if (!hTimer) {
         hTimer = SetTimer(NULL, 0, KATIMEOUT, aim_keepalive_timer);
     }
 }
