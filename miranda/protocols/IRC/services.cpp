@@ -1615,13 +1615,17 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 		if (ServiceExists(MS_SYSTEM_GETBUILDSTRING))
 		{
+// should be reenabled later when this service works
+/*
 			extern long lWrongVersion;
 			char szTemp[40];
 			CallService(MS_SYSTEM_GETBUILDSTRING, 39, (LPARAM)szTemp);
 			char * stuff = strdup (szTemp);
+			MessageBox(NULL, szTemp, "version", 0);
 			long date = atoi(szTemp);
 			if (date < lWrongVersion * 1000000)
-				bWrongVersion = TRUE;
+*/
+			bWrongVersion = FALSE;
 		}
 		else
 			bWrongVersion = TRUE;
