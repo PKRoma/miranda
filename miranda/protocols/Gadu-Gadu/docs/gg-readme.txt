@@ -51,6 +51,10 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 4. Todo
 -------
+ - Groupchat
+ - Use a list of GG servers instead of one address when connecting
+ - Show ignored contacts that they are blocked (aka org. GG client blocking)
+ - Animated GIFs support (image sending)
  - Full Netlib integration
  - Voice chat
 
@@ -177,6 +181,15 @@ Note: For secure connections this plugin requires OpenSSL DLL
  - Server host and external forwarding host could be specified as a hostname or
    IP number (before only IP number was valid). This could be useful for dynamic
    IPs and DNS mapping services such as dyndns.org.
+0.0.2.5: 2004-12-01
+ - Fix: Plugin crashed when reporting token download connection related errors
+ - Fix: Max image size limit changed to 512KB
+ - Option to turn on/off showing contacts that are not on my list but having me
+   on their contact list.
+0.0.2.6: 2004-12-13
+ - Fix: Notification list should be sent in one piece gg_notify_ex(*uinlist),
+   not one by one gg_add_notify_ex(uin)
+ - Fix: GG.dll uses now internal Miranda safe thread registering
 
 6. Latest development version:
 ------------------------------

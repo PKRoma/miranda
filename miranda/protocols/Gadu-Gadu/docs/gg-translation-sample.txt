@@ -27,6 +27,8 @@ Pokazuj u¿ytkowników z opisem stanu jako niewidocznych
 Ignoruj nadchodz¹ce wiadomoœci konferencyjne
 [Automatically pop up the window when a image is received]
 Automatycznie pokazuj okienko na wierzchu, kiedy otrzymam obrazek
+[Show contacts not on my list having me on their list]
+Pokazuj kontakty spoza mojej listy maj¹ce mnie na swojej liœcie
 [Gadu-Gadu Number:]
 Numer Gadu-Gadu:
 [Gadu-Gadu Number]
