@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -70,6 +71,10 @@ typedef struct {
 // Request authorization
 // wParam=(WPARAM)hContact
 #define MS_REQ_AUTH "/ReqAuth"
+
+// Grant authorization
+// wParam=(WPARAM)hContact;
+#define MS_GRANT_AUTH "/GrantAuth"
 
 //Send an SMS via the ICQ network
 //wParam=(WPARAM)(const char*)szPhoneNumber
