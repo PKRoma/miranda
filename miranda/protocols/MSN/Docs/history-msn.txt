@@ -6,6 +6,7 @@ Legend:
 
 Version 0.1.7.11
 ================
+[+] Wish #0000149 fixed: CHAT.DLL support was added for groupchats (thanks noname)
 [!] Bug #0000458 fixed: Messages disappear when sending to MSN.
 [!] Bug #0000761 fixed: apply button in options->popups->msn enabled on
 first showing of page

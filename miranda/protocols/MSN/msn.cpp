@@ -55,6 +55,7 @@ int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
 bool     msnRunningUnderNT = false;
 bool		msnRunningUnderOldCore = false;
+bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
 
@@ -86,9 +87,14 @@ int				msnStatusMode,
 					msnDesiredStatus;
 HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
 HANDLE			hNetlibUser = NULL;
+HANDLE         hInitChat = NULL;
 bool				msnUseExtendedPopups;
 
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
+
+int MSN_GCEventHook( WPARAM wParam, LPARAM lParam );
+int MSN_GCMenuHook( WPARAM wParam, LPARAM lParam );
+int MSN_ChatInit( WPARAM wParam, LPARAM lParam );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Main DLL function
@@ -106,6 +112,10 @@ int msn_httpGatewayInit(HANDLE hConn,NETLIBOPENCONNECTION *nloc,NETLIBHTTPREQUES
 int msn_httpGatewayBegin(HANDLE hConn,NETLIBOPENCONNECTION *nloc);
 int msn_httpGatewayWrapSend(HANDLE hConn,PBYTE buf,int len,int flags,MIRANDASERVICE pfnNetlibSend);
 PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr,PBYTE buf,int len,int *outBufLen,void *(*NetlibRealloc)(void*,size_t));
+
+static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
+static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
@@ -182,6 +192,29 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 			nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
 			MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
 	}	}
+
+	if ( ServiceExists( MS_GC_REGISTER )) {
+		msnHaveChatDll = true;
+
+		GCREGISTER gcr = {0};
+		gcr.cbSize = sizeof( GCREGISTER );
+		gcr.dwFlags = GC_TYPNOTIF;
+		gcr.iMaxText = 0;
+		gcr.nColors = 16;
+		gcr.pColors = &crCols[0];
+		gcr.pszModuleDispName = msnProtocolName;
+		gcr.pszModule = msnProtocolName;
+		MSN_CallService( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
+
+		hChatEvent = HookEvent( ME_GC_EVENT, MSN_GCEventHook );
+		hChatMenu = HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook );
+
+		char *ChatInit = (char*)malloc(lstrlen(msnProtocolName) + 10);
+		lstrcpy(ChatInit, msnProtocolName);
+		lstrcat(ChatInit, "\\ChatInit");
+		hInitChat = CreateHookableEvent( ChatInit );
+		HookEvent( ChatInit, MSN_ChatInit );
+	}
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
 	hHookOnUserInfoInit = HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit );
@@ -297,6 +330,9 @@ int __declspec( dllexport ) Unload( void )
 
 	if ( hHookOnUserInfoInit )
 		UnhookEvent( hHookOnUserInfoInit );
+
+	if ( hChatEvent ) UnhookEvent( hChatEvent );
+	if ( hChatMenu  ) UnhookEvent( hChatMenu );
 
 	Threads_Uninit();
 	MsgQueue_Uninit();

@@ -195,7 +195,7 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE )lParam;
 
-	char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
 	if (( szProto == NULL || strcmp( szProto, msnProtocolName )) && hContact )
 		return 0;
 
@@ -214,6 +214,6 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_USEROPTS);
 	odp.pszTitle = Translate(msnProtocolName);
 
-	CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+	MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	return 0;
 }

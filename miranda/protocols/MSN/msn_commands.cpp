@@ -47,6 +47,7 @@ char *rru;
 
 extern int uniqueEventId;
 extern char sttHeaderStart[];
+extern HANDLE hInitChat;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN_ReceiveMessage - receives message or a file from the server
@@ -163,7 +164,7 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 			nlb.cbSize = sizeof nlb;
 			nlb.pfnNewConnection = MSN_ConnectionProc;
 			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-			if (( ft->mIncomingBoundPort = ( HANDLE )CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb)) == NULL ) {
+			if (( ft->mIncomingBoundPort = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb)) == NULL ) {
 				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
 				bHasError = true;
 			}
@@ -501,18 +502,54 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		char* tPrefix = NULL;
 		int   tPrefixLen = 0;
 
-		if ( info->mJoinedCount > 1 && info->mJoinedContacts != NULL && info->mJoinedContacts[0] != tContact ) {
-			for ( int j=1; j < info->mJoinedCount; j++ ) {
-				if ( info->mJoinedContacts[j] == tContact ) {
-					char* tNickName = MSN_GetContactName( info->mJoinedContacts[j] );
-					tPrefixLen = strlen( tNickName )+2;
-					tPrefix = ( char* )alloca( tPrefixLen+1 );
-					strcpy( tPrefix, "<" );
-					strcat( tPrefix, tNickName );
-					strcat( tPrefix, "> " );
-					ccs.hContact = info->mJoinedContacts[ 0 ];
-					break;
-			}	}
+		if ( info->mJoinedCount > 1 && info->mJoinedContacts != NULL ) {
+			if ( msnHaveChatDll ) {
+				if ( info->mChatID[0] == 0 ) {
+					NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
+					Sleep(5);
+
+					// add all participants onto the list
+					GCDEST gcd = {0};
+					gcd.pszModule = msnProtocolName;
+					gcd.pszID = info->mChatID;
+					gcd.iType = GC_EVENT_JOIN;
+
+					GCEVENT gce = {0};
+					gce.cbSize = sizeof(GCEVENT);
+					gce.pDest = &gcd;
+					gce.pszStatus = Translate("Others");
+					gce.time = time(NULL);
+					gce.bIsMe = FALSE;
+					gce.bAddToLog = TRUE;
+
+					for ( int j=0; j < info->mJoinedCount; j++ ) {
+						if (( long )info->mJoinedContacts[j] > 0 ) {
+							gce.pszNick = MSN_GetContactName( info->mJoinedContacts[j] );
+
+							char tEmail[ MSN_MAX_EMAIL_LEN ];
+							if ( !MSN_GetStaticString( "e-mail", info->mJoinedContacts[j], tEmail, sizeof tEmail )) {
+								gce.pszUID = tEmail;
+								MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+				}	}	}	}
+
+				char* tNickName = MSN_GetContactName( MSN_HContactFromEmail( data.fromEmail, NULL, 1, 1 ));
+				tPrefixLen = strlen( tNickName )+2;
+				tPrefix = ( char* )alloca( tPrefixLen+1 );
+				strcpy( tPrefix, tNickName );
+				strcat( tPrefix, ": " );
+			}
+			else if ( info->mJoinedContacts[0] != tContact ) {
+				for ( int j=1; j < info->mJoinedCount; j++ ) {
+					if ( info->mJoinedContacts[j] == tContact ) {
+						char* tNickName = MSN_GetContactName( info->mJoinedContacts[j] );
+						tPrefixLen = strlen( tNickName )+2;
+						tPrefix = ( char* )alloca( tPrefixLen+1 );
+						strcpy( tPrefix, "<" );
+						strcat( tPrefix, tNickName );
+						strcat( tPrefix, "> " );
+						ccs.hContact = info->mJoinedContacts[ 0 ];
+						break;
+			}	}	}
 		}
 		else ccs.hContact = tContact;
 
@@ -536,16 +573,35 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			free( tRealBody );
 		}
 
-		PROTORECVEVENT pre;
-		pre.szMessage = ( char* )tMsgBuf;
-		pre.flags = PREF_UNICODE;
-		pre.timestamp = ( DWORD )time(NULL);
-		pre.lParam = 0;
+		if ( info->mChatID[0] ) {
+			GCDEST gcd = {0};
+			GCEVENT gce = {0};
 
-		ccs.szProtoService = PSR_MESSAGE;
-		ccs.wParam = 0;
-		ccs.lParam = ( LPARAM )&pre;
-		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+			gcd.pszModule = msnProtocolName;
+			gcd.pszID = info->mChatID;
+			gcd.iType = GC_EVENT_MESSAGE;
+			gce.cbSize = sizeof(GCEVENT);
+			gce.pDest = &gcd;
+			gce.pszUID = data.fromEmail;
+			gce.pszNick = MSN_GetContactName(MSN_HContactFromEmail(data.fromEmail, NULL, 1, 1));
+			gce.time = time(NULL);
+			gce.bIsMe = FALSE;
+			gce.pszText = (char*)tMsgBuf;
+			gce.bAddToLog = TRUE;
+			MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+		}
+		else {
+			PROTORECVEVENT pre;
+			pre.szMessage = ( char* )tMsgBuf;
+			pre.flags = PREF_UNICODE;
+			pre.timestamp = ( DWORD )time(NULL);
+			pre.lParam = 0;
+
+			ccs.szProtoService = PSR_MESSAGE;
+			ccs.wParam = 0;
+			ccs.lParam = ( LPARAM )&pre;
+			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+		}
 		return;
 	}
 
@@ -794,9 +850,44 @@ LBL_InvalidCommand:
 			UrlDecode( data.userEmail );
 			MSN_DebugLog( "Contact left channel: %s", data.userEmail );
 
-			// nobody left in, we might as well leave too
-			if ( MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 )) == 0 )
-				info->sendPacket( "OUT", NULL );
+// modified for chat
+			if ( msnHaveChatDll ) {
+				GCDEST gcd = {0};
+				gcd.pszModule = msnProtocolName;
+				gcd.pszID = info->mChatID;
+				gcd.iType = GC_EVENT_QUIT;
+
+				GCEVENT gce = {0};
+				gce.cbSize = sizeof( GCEVENT );
+				gce.pDest = &gcd;
+				gce.pszNick = MSN_GetContactName( MSN_HContactFromEmail( data.userEmail, NULL, 1, 1 ));
+				gce.pszUID = data.userEmail;
+				gce.time = time( NULL );
+				gce.bIsMe = FALSE;
+				gce.bAddToLog = TRUE;
+				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+			}
+
+			int personleft = MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 ));
+			// in here, the first contact is the chat ID, starting from the second will be actual contact
+			// if only 1 person left in conversation
+			if ( personleft == 2 ) {
+				if ( MessageBox( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard SRMM session?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
+					// kill chat dlg and open srmm dialog
+					GCEVENT gce = {0};
+					GCDEST gcd = {0};
+					gce.cbSize = sizeof( GCEVENT );
+					gce.pDest = &gcd;
+
+					gcd.pszModule = msnProtocolName;
+					gcd.pszID = info->mChatID;
+					gcd.iType = GC_EVENT_CONTROL;
+					MSN_CallService( MS_GC_EVENT, WINDOW_OFFLINE, ( LPARAM )&gce );
+					MSN_CallService( MS_GC_EVENT, WINDOW_TERMINATE, ( LPARAM )&gce );
+			}	}
+
+			if ( personleft == 1 )
+				info->sendPacket("OUT", NULL );
 			break;
 		}
 		case ' LAC':    //********* CAL: section 8.3 Inviting Users to a Switchboard Session
@@ -908,6 +999,9 @@ LBL_InvalidCommand:
 				MSN_SetDword( hContact, "FlagBits", atol( data.objid ));
 
 				if ( data.cmdstring[0] ) {
+					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+					if (temp_status == (WORD)ID_STATUS_OFFLINE)
+						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 					if ( hContact != NULL ) {
 						char szSavedContext[ 256 ];
@@ -950,6 +1044,48 @@ LBL_InvalidCommand:
 
 				MSN_ShowPopup( tContactName, multichatmsg, MSN_ALLOW_MSGBOX );
 			}
+
+			if ( msnHaveChatDll && info->mJoinedCount > 1 ) {
+				GCDEST gcd = {0};
+				GCEVENT gce = {0};
+				HANDLE firstcontact = info->mJoinedContacts[0];
+
+				// this is done so to prevent freezing of the window
+				if ( info->mChatID[0] == 0 )
+					NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
+
+				// add the first contact back in
+				char tEmail[ MSN_MAX_EMAIL_LEN ];
+				MSN_GetStaticString( "e-mail", firstcontact, tEmail, sizeof( tEmail ));
+
+				gcd.pszModule = msnProtocolName;
+				gcd.pszID = info->mChatID;
+				gcd.iType = GC_EVENT_JOIN;
+				gce.cbSize = sizeof(GCEVENT);
+				gce.pDest = &gcd;
+				gce.pszNick = MSN_GetContactName(firstcontact);
+
+				gce.pszUID = tEmail;
+				gce.pszStatus = Translate("Others");
+				gce.time = time(NULL);
+				gce.bIsMe = FALSE;
+				gce.bAddToLog = TRUE;
+				MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+
+				gcd.pszModule = msnProtocolName;
+				gcd.pszID = info->mChatID;
+				gcd.iType = GC_EVENT_JOIN;
+				gce.cbSize = sizeof(GCEVENT);
+				gce.pDest = &gcd;
+				gce.pszNick = MSN_GetContactName(MSN_HContactFromEmail(data.userEmail, NULL, 1, 1));
+				gce.pszUID = data.userEmail;
+				gce.pszStatus = Translate("Others");
+				gce.time = time(NULL);
+				gce.bIsMe = FALSE;
+				gce.bAddToLog = TRUE;
+				MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+			}
+
 			break;
 		}
 		case ' IOJ':    //********* JOI: section 8.5 Session Participant Changes
@@ -1003,7 +1139,25 @@ LBL_InvalidCommand:
 					data.userNick, data.userEmail, tContactName );
 
 				MSN_ShowPopup( tContactName, multichatmsg, MSN_ALLOW_MSGBOX );
-			}
+
+				if ( msnHaveChatDll ) {
+					GCDEST gcd = {0};
+					GCEVENT gce = {0};
+
+					gcd.pszModule = msnProtocolName;
+					gcd.pszID = info->mChatID;
+					gcd.iType = GC_EVENT_JOIN;
+
+					gce.cbSize = sizeof(GCEVENT);
+					gce.pDest = &gcd;
+					gce.pszNick = MSN_GetContactName( MSN_HContactFromEmail( data.userEmail, NULL, 1, 1 ));
+					gce.pszUID = data.userEmail;
+					gce.pszStatus = Translate( "Others" );
+					gce.time = time(NULL);
+					gce.bIsMe = FALSE;
+					gce.bAddToLog = TRUE;
+					MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+			}	}
 			return 0;
 		}
 		case ' GSL':	//********* LSG: something strange ;)

@@ -30,8 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void __cdecl MSNServerThread( ThreadData* info );
 
-extern	HINSTANCE hInst;
-
 HANDLE msnSetNicknameMenuItem = NULL;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -523,30 +521,41 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 {
 	ThreadData* tActiveThreads[ 64 ];
 	int tThreads = MSN_GetActiveThreads( tActiveThreads ), tChosenThread;
-	switch( tThreads )
-	{
-		case 0:	return 0;
+// modified for chat
+		
 
-		case 1:	tChosenThread = 0;
-					break;
+	switch( tThreads ) {
+	case 0:	
+		return 0;
 
-		default:
-			HMENU tMenu = ::CreatePopupMenu();
+	case 1:
+		tChosenThread = 0;
+		break;
 
-			for ( int i=0; i < tThreads; i++ )
-				::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactName( *tActiveThreads[i]->mJoinedContacts ));
+	default:
+		HMENU tMenu = ::CreatePopupMenu();
 
-			HWND tWindow = CreateWindow("EDIT","",0,1,1,1,1,NULL,NULL,hInst,NULL);
+		for ( int i=0; i < tThreads; i++ ) {
+			if ( tActiveThreads[i]->mJoinedContacts < 0 ) {
+				char sessionName[ 255 ];
+				_snprintf( sessionName, sizeof( sessionName ), "%s%s",
+					Translate( "MSN Chat #" ), tActiveThreads[i]->mChatID );
+				::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
+			}
+			else ::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactName( *tActiveThreads[i]->mJoinedContacts ));
+		}
 
-			POINT pt;
-			::GetCursorPos ( &pt );
-			tChosenThread = ::TrackPopupMenu( tMenu, TPM_NONOTIFY | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, pt.x, pt.y, 0, tWindow, NULL );
-			::DestroyMenu( tMenu );
-			::DestroyWindow( tWindow );
-			if ( !tChosenThread )
-				return 0;
+		HWND tWindow = CreateWindow("EDIT","",0,1,1,1,1,NULL,NULL,hInst,NULL);
 
-			tChosenThread--;
+		POINT pt;
+		::GetCursorPos ( &pt );
+		tChosenThread = ::TrackPopupMenu( tMenu, TPM_NONOTIFY | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, pt.x, pt.y, 0, tWindow, NULL );
+		::DestroyMenu( tMenu );
+		::DestroyWindow( tWindow );
+		if ( !tChosenThread )
+			return 0;
+
+		tChosenThread--;
 	}
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];

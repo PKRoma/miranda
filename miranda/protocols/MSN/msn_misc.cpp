@@ -808,6 +808,8 @@ int filetransfer::create()
 
 	if ( fileId == -1 )
 		MSN_DebugLog( "Cannot create file '%s' during a file transfer", filefull );
+	else if ( std.currentFileSize != 0 )
+		_chsize( fileId, std.currentFileSize );
 
 	return fileId;
 }

@@ -208,6 +208,9 @@
 				RelativePath=".\msn_bitmap.cpp">
 			</File>
 			<File
+				RelativePath=".\msn_chat.cpp">
+			</File>
+			<File
 				RelativePath="msn_commands.cpp">
 				<FileConfiguration
 					Name="Release|Win32">

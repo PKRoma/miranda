@@ -56,6 +56,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_netlib.h>
 #include <m_popup.h>
 
+#include "sdk/m_chat.h"
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN error codes
 
@@ -287,7 +289,6 @@ struct filetransfer
 	};
 
 	bool			mOwnsThread,	// thread was created specifically for that file transfer
-					mIsDirect,		// set for P2P direct transfers
 					mIsFirst;		//	set for the first transfer for a contact
 
 	WORD			mIncomingPort;
@@ -320,7 +321,8 @@ enum TInfoType
 	SERVER_DISPATCH,
 	SERVER_NOTIFICATION,
 	SERVER_SWITCHBOARD,
-	SERVER_FILETRANS
+	SERVER_FILETRANS,
+	SERVER_P2P_DIRECT
 };
 
 struct TQueueItem
@@ -342,6 +344,7 @@ struct ThreadData
 	char           mServer[80];      // server name
 
 	HANDLE         s;	               // NetLib connection for the thread
+	char				mChatID[10];
 
 	//----| for gateways |----------------------------------------------------------------
 	char           mSessionID[ 50 ]; // Gateway session ID
@@ -390,6 +393,7 @@ void			__stdcall MSN_CloseThreads( void );
 int			__stdcall MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact );
 int			__stdcall MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact );
 void			__stdcall MSN_InitThreads( void );
+int			__stdcall MSN_GetChatThreads( ThreadData** parResult );
 int         __stdcall MSN_GetActiveThreads( ThreadData** );
 ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE hConn );
 ThreadData*	__stdcall MSN_GetThreadByContact( HANDLE hContact );
@@ -533,3 +537,4 @@ extern	int				msnOtherContactsBlocked;
 
 extern   bool				msnRunningUnderNT;
 extern	bool				msnRunningUnderOldCore;
+extern	bool				msnHaveChatDll;
