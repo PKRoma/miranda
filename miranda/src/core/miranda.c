@@ -29,6 +29,10 @@ void DestroyModularEngine(void);
 void UnloadDatabaseModule(void);
 int UnloadNewPluginsModule(void);
 
+DWORD (WINAPI *MyMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
+static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *pHandles, 
+	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags);
+
 static HANDLE hOkToExitEvent,hModulesLoadedEvent;
 HANDLE hShutdownEvent,hPreShutdownEvent;
 static HANDLE hWaitObjects[MAXIMUM_WAIT_OBJECTS-1];
@@ -127,42 +131,41 @@ static void __stdcall DummyAPCFunc(DWORD dwArg)
 	return;
 }
 
-static int UnwindThreadWait(void)
+static int MirandaWaitForMutex(HANDLE hEvent)
 {
-	/*
-	Gain a lock to the thread list and APC call every thread
-	which should wake them all up! -- the thread won't really know
-	Miranda is calling it and not maybe it's own queued function.
-	The aim is to wake up all the sleeping threads, so that's okay.
-	*/
-	if (WaitForSingleObject(hStackMutex,INFINITE)==WAIT_OBJECT_0) 
-	{
+	for (;;) {
+		// will get WAIT_IO_COMPLETE for QueueUserAPC() which isnt a result
+		DWORD rc=MsgWaitForMultipleObjectsExWorkaround(1, &hEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE);
+		if ( rc == WAIT_OBJECT_0 + 1 ) {
+			MSG msg;
+			while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) {
+				if ( IsDialogMessage(msg.hwnd, &msg) ) continue;
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		} else if ( rc==WAIT_OBJECT_0 ) {
+			// got object
+			return 1;
+		} else if ( rc==WAIT_ABANDONED_0 || rc == WAIT_FAILED ) return 0;		
+	}
+}
+
+static void UnwindThreadWait(void)
+{
+	// acquire the list and wake up any alertable threads
+	if ( MirandaWaitForMutex(hStackMutex) ) {
 		int j;
 		for (j=0;j<WaitingThreadsCount;j++)
-			QueueUserAPC(DummyAPCFunc,WaitingThreads[j].hThread,0);
+			QueueUserAPC(DummyAPCFunc,WaitingThreads[j].hThread, 0);
 		ReleaseMutex(hStackMutex);
-	} //if	
-	for(;;) {
-		switch(WaitForSingleObjectEx(hThreadQueueEmpty,INFINITE,TRUE)) 
-		{
-			case WAIT_OBJECT_0: // thread list is empty
-			{
-				if (WaitForSingleObject(hStackMutex,INFINITE)==WAIT_OBJECT_0) { // gain the list lock so we know thread pop cleared it's call frame
-					ReleaseMutex(hStackMutex);
-				}
-				return 0;
-			}
-			case WAIT_IO_COMPLETION: // I/O queued
-			{
-				break;
-			}
-		}//switch
 	}
-	return 0;
+	// wait til the thread list is empty 
+	MirandaWaitForMutex(hThreadQueueEmpty);
 }
 
 int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 {
+	ResetEvent(hThreadQueueEmpty); // thread list is not empty
 	if (WaitForSingleObject(hStackMutex,INFINITE)==WAIT_OBJECT_0) 
 	{
 		HANDLE hThread=0;		
@@ -178,8 +181,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 			OutputDebugString(szBuf);
 		}
 #endif
-		ReleaseMutex(hStackMutex);
-		ResetEvent(hThreadQueueEmpty); // thread list is not empty
+		ReleaseMutex(hStackMutex);		
 	} //if
 	return 0;
 }
@@ -288,10 +290,19 @@ static int SystemGetIdle(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *pHandles, 
+	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags)
+{
+	if ( MyMsgWaitForMultipleObjectsEx != NULL )
+		return MyMsgWaitForMultipleObjectsEx(nCount, pHandles, dwMsecs, dwWakeMask, dwFlags);
+	// can wait for msgs and objects but not APC, or objects and APC but not msgs!
+	return 0;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	DWORD (WINAPI *MyMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
 	DWORD myPid=0;
+	int messageloop=1;
 	
 
 #ifdef _DEBUG
@@ -319,61 +330,50 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	CreateServiceFunction(MS_SYSTEM_GETIDLE, SystemGetIdle);
 	dwEventTime=GetTickCount();
 	myPid=GetCurrentProcessId();
-	for(;;) {
+	for(;messageloop;) {
 		MSG msg;
-		DWORD result;
-		HWND h;
-		DWORD pid;
-
-		msg.message=WM_QUIT+1;
-		while(PeekMessage(&msg,NULL,0,0,PM_REMOVE)) { 			
-			if ( hAPCWindow == msg.hwnd ) {
-				DispatchMessage(&msg);
-				continue;
+		DWORD rc;
+		BOOL dying=FALSE;
+		rc=MsgWaitForMultipleObjectsExWorkaround(waitObjectCount, hWaitObjects, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE);
+		if ( rc >= WAIT_OBJECT_0 && rc < WAIT_OBJECT_0 + waitObjectCount) {
+			rc -= WAIT_OBJECT_0;
+			CallService(pszWaitServices[rc], (WPARAM) hWaitObjects[rc], 0);
+		}
+		// 
+		while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) {
+			if ( msg.message != WM_QUIT ) {
+				HWND h=GetForegroundWindow();
+				DWORD pid = 0;
+				if ( h != NULL && GetWindowThreadProcessId(h,&pid) && pid==myPid 
+					&& GetClassLong(h, GCW_ATOM)==32770 ) {
+					if ( IsDialogMessage(h, &msg) ) continue;
+				}
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);		
+				checkIdle(&msg);
+				if ( SetIdleCallback != NULL ) 
+					SetIdleCallback();
+			} else if ( !dying ) {
+				dying++;
+				SetEvent(hMirandaShutdown);
+				NotifyEventHooks(hPreShutdownEvent, 0, 0);
+				DestroyingModularEngine();
+				// this spins and processes the msg loop, objects and APC.
+				UnwindThreadWait();
+				NotifyEventHooks(hShutdownEvent, 0, 0);
+				// if the hooks generated any messages, it'll get processed before the second WM_QUIT
+				PostQuitMessage(0);
+			} else if ( dying ) {
+				messageloop=0;	
 			}
-			checkIdle(&msg);
-			if(msg.message==WM_QUIT) break;
-			h=GetForegroundWindow();
-			if ( h != NULL ) {
-				GetWindowThreadProcessId(h,&pid);
-				if ( pid==myPid && GetClassLong(h,GCW_ATOM)==32770 ) { 
-					if ( IsDialogMessage(h,&msg) ) continue;
-				} //if
-			} //if
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);			
-		}
-		if(msg.message==WM_QUIT) break;
-		if (SetIdleCallback) SetIdleCallback();
-		if(MyMsgWaitForMultipleObjectsEx) {
-			result=MyMsgWaitForMultipleObjectsEx(waitObjectCount,hWaitObjects,INFINITE,QS_ALLINPUT,MWMO_ALERTABLE);
-		}
-		else {	//WHY isn't it available on win95??? There's no reason.
-			result=MsgWaitForMultipleObjects(waitObjectCount,hWaitObjects,FALSE,75,QS_ALLINPUT);
-			if(result==WAIT_TIMEOUT)
-				result=WaitForMultipleObjectsEx(waitObjectCount,hWaitObjects,FALSE,25,TRUE);
-		}
-		if(result>=WAIT_OBJECT_0 && result<WAIT_OBJECT_0+waitObjectCount)
-			CallService(pszWaitServices[result-WAIT_OBJECT_0],(WPARAM)hWaitObjects[result-WAIT_OBJECT_0],0);
+		} // while
 	}
-	SetEvent(hMirandaShutdown);
-	NotifyEventHooks(hPreShutdownEvent,0,0);
-	{ /* process the message queue for any pending messages left over from leaving the main loop */
-		MSG msg;
-		while (PeekMessage(&msg,0,0,0,PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
-	DestroyingModularEngine();
-	UnwindThreadWait();
-	NotifyEventHooks(hShutdownEvent,0,0);
 	UnloadDatabaseModule();  
 	UnloadNewPluginsModule();
 	DestroyModularEngine();
 	CloseHandle(hStackMutex);
 	CloseHandle(hMirandaShutdown);
-	CloseHandle(hThreadQueueEmpty);	
+	CloseHandle(hThreadQueueEmpty);
 	DestroyWindow(hAPCWindow);
 	return 0;
 }
