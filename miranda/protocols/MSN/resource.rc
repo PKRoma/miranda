@@ -39,6 +39,7 @@ IDI_INVITE              ICON                    "Icos\\invite.ico"
 IDI_PROFILE             ICON                    "Icos\\profile.ico"
 IDI_NETMEETING          ICON                    "Icos\\netmeeting.ico"
 IDI_SERVICES            ICON                    "Icos\\services.ico"
+IDI_AVATAR              ICON                    "Icos\\avatar.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -172,7 +173,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Avatar",IDC_STATIC,8,8,100,10
     CONTROL         "",IDC_MSN_PICT,"Static",SS_BITMAP,8,18,64,64
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,8,18,64,60
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,8,18,64,
+                    60
     LTEXT           "Running on a mobile device",IDC_STATIC,8,82,100,10
     LTEXT           "",IDC_MOBILE,108,82,10,10
     LTEXT           "Running on a MSN mobile device",IDC_STATIC,8,92,100,10
@@ -264,8 +266,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION __FILEVERSION_STRING
- PRODUCTVERSION __FILEVERSION_STRING
+ FILEVERSION 0,1,7,9
+ PRODUCTVERSION 0,1,7,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -280,18 +282,14 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "Miranda MSN Messenger plugin\0"
-            VALUE "FileVersion", __VERSION_STRING "\0"
-            VALUE "InternalName", "msn\0"
-            VALUE "LegalCopyright", "Copyright c 2002-2004 George Hazan\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "msn.dll\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Miranda\0"
-            VALUE "ProductVersion", __VERSION_STRING "\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "CompanyName", " "
+            VALUE "FileDescription", "Miranda MSN Messenger plugin"
+            VALUE "FileVersion", "0.1.7.9"
+            VALUE "InternalName", "msn"
+            VALUE "LegalCopyright", "Copyright c 2002-2004 George Hazan"
+            VALUE "OriginalFilename", "msn.dll"
+            VALUE "ProductName", "Miranda"
+            VALUE "ProductVersion", "0.1.7.9"
         END
     END
     BLOCK "VarFileInfo"
@@ -299,6 +297,7 @@ BEGIN
         VALUE "Translation", 0x0, 1200
     END
 END
+
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

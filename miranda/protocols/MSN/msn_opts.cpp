@@ -26,9 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <direct.h>
 
 #include "resource.h"
-
 #include "msn_md5.h"
-#include "sha1.h"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
@@ -51,73 +49,16 @@ static void sttSetAvatar( HWND hwndDlg )
 	if ( !MSN_LoadPngModule() )
 		return;
 
-	char szFilter[ 512 ];
-	_snprintf( szFilter, sizeof( szFilter ),
-		"%s%c*.BMP;*.RLE%c%s%c*.JPG;*.JPEG%c%s%c*.GIF%c%s%c*.PNG%c%s%c*%c%c0",
-			MSN_Translate( "Windows Bitmaps" ), 0, 0,
-			MSN_Translate( "JPEG Bitmaps" ), 0, 0,
-			MSN_Translate( "GIF Bitmaps" ), 0, 0,
-			MSN_Translate( "PNG Images" ), 0, 0, 
-			MSN_Translate( "All Files" ), 0, 0, 0 );
-
-	char str[ MAX_PATH ]; str[0] = 0;
-	OPENFILENAME ofn = {0};
-	ofn.lStructSize = sizeof( OPENFILENAME );
-	ofn.lpstrFilter = szFilter;
-	ofn.lpstrFile = str;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-	ofn.nMaxFile = sizeof str;
-	ofn.nMaxFileTitle = MAX_PATH;
-	ofn.lpstrDefExt = "bmp";
-	if ( !GetOpenFileName( &ofn ))
+	char szFileName[ MAX_PATH ];
+	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
 		return;
 
-	HBITMAP hBitmap = MSN_LoadPictureToBitmap( str );
+	HBITMAP hBitmap = MSN_LoadPictureToBitmap( szFileName );
 	if ( hBitmap == NULL )
 		return;
 
-	BITMAP bmp;
-	HDC hDC = CreateCompatibleDC( NULL );
-	SelectObject( hDC, hBitmap );
-	GetObject( hBitmap, sizeof( BITMAP ), &bmp );
-
-	HDC hBmpDC = CreateCompatibleDC( hDC );
-	HBITMAP hStretchedBitmap = CreateBitmap( 96, 96, 1, GetDeviceCaps( hDC, BITSPIXEL ), NULL );
-	SelectObject( hBmpDC, hStretchedBitmap );
-	int side, dx, dy;
-
-	if ( bmp.bmWidth > bmp.bmHeight ) {
-		side = bmp.bmHeight;
-		dx = ( bmp.bmWidth - bmp.bmHeight )/2;
-		dy = 0;
-	}
-	else {
-		side = bmp.bmWidth;
-		dx = 0;
-		dy = ( bmp.bmHeight - bmp.bmWidth )/2;
-	}
-
-	SetStretchBltMode( hBmpDC, HALFTONE );
-	StretchBlt( hBmpDC, 0, 0, 96, 96, hDC, dx, dy, side, side, SRCCOPY );
-	DeleteObject( hBitmap );	
-	DeleteDC( hDC );
-
-	BITMAPINFO* bmi = ( BITMAPINFO* )alloca( sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
-	memset( bmi, 0, sizeof BITMAPINFO );
-	bmi->bmiHeader.biSize = 0x28;
-	if ( GetDIBits( hBmpDC, hStretchedBitmap, 0, 96, NULL, bmi, DIB_RGB_COLORS ) == 0 ) {
-		TWinErrorCode errCode;
-		MSN_ShowError( "Unable to get the bitmap: error %d (%s)", errCode.mErrorCode, errCode.getText() );
+	if ( MSN_BitmapToAvatarDibBits( hBitmap, pDib, pDibBits ) != ERROR_SUCCESS )
 		return;
-	}
-
-	pDib = ( BITMAPINFOHEADER* )GlobalAlloc( LPTR, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 + bmi->bmiHeader.biSizeImage );
-	memcpy( pDib, bmi, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
-	pDibBits = (( BYTE* )pDib ) + sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256;
-
-	GetDIBits( hBmpDC, hStretchedBitmap, 0, pDib->biHeight, pDibBits, ( BITMAPINFO* )pDib, DIB_RGB_COLORS );
-	DeleteObject( hStretchedBitmap );	
-	DeleteDC( hBmpDC );
 
 	InvalidateRect( hwndDlg, NULL, TRUE );
 }
@@ -346,67 +287,8 @@ LBL_Del:			DeleteFile( tFileName );
 					if ( pDib == NULL || pDibBits == NULL )
 						goto LBL_Del;
 
-					long dwPngSize = 0;
-					if ( dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, NULL, &dwPngSize )) {
-						BYTE* pPngMemBuffer = new BYTE[ dwPngSize ];
-						dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, pPngMemBuffer, &dwPngSize );
-
-						SHA1Context sha1ctx;
-						BYTE sha1c[ SHA1HashSize ], sha1d[ SHA1HashSize ];
-						char szSha1c[ 40 ], szSha1d[ 40 ];
-						SHA1Reset( &sha1ctx );
-						SHA1Input( &sha1ctx, pPngMemBuffer, dwPngSize );
-						SHA1Result( &sha1ctx, sha1d );
-						{	NETLIBBASE64 nlb = { szSha1d, sizeof szSha1d, ( PBYTE )sha1d, sizeof sha1d };
-							MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
-						}
-
-						SHA1Reset( &sha1ctx );
-
-						char szEmail[ MSN_MAX_EMAIL_LEN ];
-						MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail );
-						SHA1Input( &sha1ctx, ( PBYTE )"Creator", 7 );
-						SHA1Input( &sha1ctx, ( PBYTE )szEmail, strlen( szEmail ));
-
-						char szFileSize[ 20 ];
-						ltoa( dwPngSize, szFileSize, 10 );
-						SHA1Input( &sha1ctx, ( PBYTE )"Size", 4 );
-						SHA1Input( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
-
-						SHA1Input( &sha1ctx, ( PBYTE )"Type", 4 );
-						SHA1Input( &sha1ctx, ( PBYTE )"3", 1 );
-
-						SHA1Input( &sha1ctx, ( PBYTE )"Location", 8 );
-						SHA1Input( &sha1ctx, ( PBYTE )"TFR43.dat", 9 );
-
-						SHA1Input( &sha1ctx, ( PBYTE )"Friendly", 8 );
-						SHA1Input( &sha1ctx, ( PBYTE )"AAA=", 4 );
-
-						SHA1Input( &sha1ctx, ( PBYTE )"SHA1D", 5 );
-						SHA1Input( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
-						SHA1Result( &sha1ctx, sha1c );
-						{	NETLIBBASE64 nlb = { szSha1c, sizeof szSha1c, ( PBYTE )sha1c, sizeof sha1c };
-							MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
-						}
-						{	char* szBuffer = ( char* )alloca( 1000 );
-							_snprintf( szBuffer, 1000,
-								"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"TFR43.dat\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
-								szEmail, dwPngSize, szSha1d, szSha1c );
-
-							char* szEncodedBuffer = ( char* )alloca( 1000 );
-							UrlEncode( szBuffer, szEncodedBuffer, 1000 );
-
-							MSN_SetString( NULL, "PictObject", szEncodedBuffer );
-						}
-						{	char tFileName[ MAX_PATH ];
-							MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
-							FILE* out = fopen( tFileName, "wb" );
-							if ( out != NULL ) {
-								fwrite( pPngMemBuffer, dwPngSize, 1, out );
-								fclose( out );
-						}	}
-						delete pPngMemBuffer;
-				}	}
+					MSN_DibBitsToAvatar( pDib, pDibBits );
+				}
 
 				if ( msnLoggedIn )
 					MSN_SetServerStatus( msnStatusMode );

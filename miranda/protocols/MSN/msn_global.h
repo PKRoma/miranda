@@ -112,13 +112,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_VIEW_PROFILE "/ViewProfile"
 
 #define MENU_ITEMS_COUNT 2
-#define MS_SET_NICKNAME  "/SetNicknameCommand"
-#define MS_GOTO_INBOX    "/GotoInbox"
-#define MS_EDIT_PROFILE  "/EditProfile"
-#define MS_SET_AVATAR    "/SetAvatar"
-#define MS_VIEW_STATUS   "/ViewMsnStatus"
+#define MS_GOTO_INBOX		"/GotoInbox"
+#define MS_EDIT_PROFILE		"/EditProfile"
+#define MS_SET_AVATAR		"/SetAvatar"
+#define MS_VIEW_STATUS		"/ViewMsnStatus"
+#define MS_SET_NICKNAME_UI "/SetNicknameUI"
+#define MS_SET_AVATAR_UI	"/SetAvatarUI"
 
 #define MSN_SET_NICKNAME  "/SetNickname"
+#define MSN_SET_AVATAR    "/SetAvatar"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
@@ -178,8 +180,11 @@ DWORD		__stdcall	MSN_SetString( HANDLE hContact, const char* valueName, const ch
 void     __cdecl		MSN_ShowError( const char* msgtext, ... );
 char*		__stdcall	MSN_Translate( const char* str );
 
-int		__stdcall	MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits );
+int		__stdcall	MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits );
+int		__stdcall	MSN_DibBitsToAvatar( BITMAPINFOHEADER* pDib, BYTE* pDibBits );
+int		__stdcall	MSN_EnterBitmapFileName( char* szDest );
 HBITMAP	__stdcall	MSN_LoadPictureToBitmap( const char* pszFileName );
+int		__stdcall	MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits );
 
 VOID		CALLBACK MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
 LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

@@ -809,9 +809,9 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MsnSetApparentMode - controls contact visibility
 
-static int MsnSetApparentMode(WPARAM wParam, LPARAM lParam)
+static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 {
-	CCSDATA *ccs = (CCSDATA *) lParam;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
 	if ( ccs->wParam && ccs->wParam != ID_STATUS_OFFLINE )
 	  return 1;
 
@@ -820,6 +820,36 @@ static int MsnSetApparentMode(WPARAM wParam, LPARAM lParam)
 		MSN_SetWord( ccs->hContact, "ApparentMode", ( WORD )ccs->wParam );
 
 	return 1;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//	MsnSetAvatar - sets an avatar without UI
+
+static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
+{
+	HBITMAP hBitmap = MSN_LoadPictureToBitmap(( const char* )lParam );
+	if ( hBitmap == NULL )
+		return 1;
+
+	BITMAPINFOHEADER* pDib;
+	BYTE* pDibBits;
+	if ( MSN_BitmapToAvatarDibBits( hBitmap, pDib, pDibBits ))
+		return 2;
+
+	MSN_DibBitsToAvatar( pDib, pDibBits );
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//	MsnSetAvatar - sets an avatar without UI
+
+static int MsnSetAvatarUI( WPARAM wParam, LPARAM lParam )
+{
+	char szFileName[ MAX_PATH ];
+	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
+		return 1;
+
+	return MsnSetAvatar( 0, ( LPARAM )szFileName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -879,7 +909,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
-static int SetNicknameCommand( WPARAM wParam, LPARAM lParam )
+static int SetNicknameUI( WPARAM wParam, LPARAM lParam )
 {
 	HWND hwndSetNickname = CreateDialog(hInst, MAKEINTRESOURCE( IDD_SETNICKNAME ), NULL, DlgProcSetNickname );
 	
@@ -1002,8 +1032,8 @@ int LoadMsnServices( void )
 
 	if ( !MSN_GetByte( "DisableSetNickname", 0 ))
 	{
-		strcpy( tDest, MS_SET_NICKNAME );
-		CreateServiceFunction( servicefunction, SetNicknameCommand );
+		strcpy( tDest, MS_SET_NICKNAME_UI );
+		CreateServiceFunction( servicefunction, SetNicknameUI );
 
 		memset( &mi, 0, sizeof( mi ));
 		mi.popupPosition = 500085000;
@@ -1041,6 +1071,16 @@ int LoadMsnServices( void )
 		mi.pszName = MSN_Translate( "View MSN Services &Status" );
 		mi.pszService = servicefunction;
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+		strcpy( tDest, MS_SET_AVATAR_UI );
+		CreateServiceFunction( servicefunction, MsnSetAvatarUI );
+
+		mi.position = 2000060004;
+		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_AVATAR ));
+		mi.pszName = MSN_Translate( "Set &Avatar" );
+		mi.pszService = servicefunction;
+		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -1123,6 +1163,7 @@ int LoadMsnServices( void )
 	MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,  MsnSetApparentMode );
 	MSN_CreateProtoServiceFunction( PSS_USERISTYPING,     MsnUserIsTyping );
 
+	MSN_CreateProtoServiceFunction( MSN_SET_AVATAR,			MsnSetAvatar );	
 	MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,		MsnSetNickName );
 	return 0;
 }
