@@ -664,6 +664,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 	char* szPluginName;
 	int typeId;
 
+  wCookie &= 0x7FFF; // TODO: this must be changed, it is here for compatibility reasons only
 
 	Netlib_Logf(ghServerNetlibUser, "Parsing Greeting message through server");
 
