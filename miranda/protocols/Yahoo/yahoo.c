@@ -1122,7 +1122,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 
 	ext_yahoo_log(buff);
 	
-	poll_loop = 0;
+	//poll_loop = 0; -- do we need this??
 	/*
        yahoo_logout(); -- The following Line MAKES us LOOP and CPU 100%
      */
