@@ -87,19 +87,17 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 
 
 
-static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WORD wCookie)
+static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WORD wSeq)
 {
-
-	p->wLen = 24 + wLen;
-	write_flap(p, ICQ_DATA_CHAN);
-	packFNACHeader(p, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, 0);
-	packWord(p, 0x01);               // TLV type 1
-	packWord(p, (WORD)(10 + wLen));  // TLV len
-	packLEWord(p, (WORD)(8 + wLen)); // Data chunk size (TLV.Length-2)
-	packLEDWord(p, dwLocalUIN);      // My UIN
-	packLEWord(p, wType);              // Request type
-	packWord(p, wCookie);
-
+  p->wLen = 24 + wLen;
+  write_flap(p, ICQ_DATA_CHAN);
+  packFNACHeader(p, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, wSeq || CLI_META_REQ<<0x10);
+  packWord(p, 0x01);               // TLV type 1
+  packWord(p, (WORD)(10 + wLen));  // TLV len
+  packLEWord(p, (WORD)(8 + wLen)); // Data chunk size (TLV.Length-2)
+  packLEDWord(p, dwLocalUIN);      // My UIN
+  packLEWord(p, wType);            // Request type
+  packWord(p, wSeq);
 }
 
 
@@ -251,7 +249,7 @@ void icq_setidle(int bAllow)
 		/* SNAC 1,11 */
 		packet.wLen = 14;
 		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE);
+		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE<<0x10);
 		if (bAllow==1)
 		{
 			packDWord(&packet, 0x0000003C);
@@ -299,7 +297,7 @@ void icq_setstatus(WORD wStatus)
 	// Pack data in packet
 	packet.wLen = 18;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS);
+	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
 	packWord(&packet, 0x06);    // TLV 6
 	packWord(&packet, 0x04);    // TLV length
 	packWord(&packet, wFlags);  // Status flags
@@ -1392,7 +1390,7 @@ void icq_sendNewContact(DWORD dwUin)
 
 	packet.wLen = nUinLen + 11;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, 0, 0);
+	packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, 0, ICQ_USER_ADDTOLIST<<0x10);
 	packByte(&packet, (BYTE)nUinLen);
 	packBuffer(&packet, szUin, (BYTE)nUinLen);
 
@@ -1554,7 +1552,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
 
 		packet.wLen = nUinLen + 1 + 10;
 		write_flap(&packet, ICQ_DATA_CHAN);
-		packFNACHeader(&packet, ICQ_BOS_FAMILY, wSnac, 0, wSnac);
+		packFNACHeader(&packet, ICQ_BOS_FAMILY, wSnac, 0, wSnac<<0x10);
 		packByte(&packet, (BYTE)nUinLen);
 		packBuffer(&packet, szUin, (BYTE)nUinLen);
 
