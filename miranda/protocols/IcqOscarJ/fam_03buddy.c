@@ -101,7 +101,8 @@ const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', '
 const capstr capSimOld    = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x00};
 const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', 0, 0, 0, 0};
 const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
-const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, 'R', '.', 'K', ' ', '.', ' ', 0, 0, 0, 0};
+const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
+const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capRichText  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
@@ -110,6 +111,7 @@ const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x8
 const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
 const capstr capXtraz     = {0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0};
 const capstr capIcq5Extra = {0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_SENDFILE
+const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
 
 
 // TLV(1) Unknown (x50)
@@ -279,7 +281,15 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       }
       else if (dwFT1 == 0xffffffbe)
       {
-        szClient = "alicq";
+        unsigned ver1 = (dwFT1>>24)&0xFF;
+        unsigned ver2 = (dwFT1>>16)&0xFF;
+        unsigned ver3 = (dwFT1>>8)&0xFF;
+        
+        if (ver3) 
+          _snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
+        else  
+          _snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
+        szClient = szClientBuf;
       }
       else if (dwFT1 == 0xFFFFFF7F)
       {
@@ -288,6 +298,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       else if (dwFT1 == 0xFFFFFFAB)
       {
         szClient = "YSM";
+      }
+      else if (dwFT1 == 0x04031980)
+      {
+        szClient = "vICQ";
       }
       else if ((dwFT1 == 0x3AA773EE) && (dwFT2 == 0x3AA66380))
       {
@@ -418,11 +432,15 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, new hash stored.");
 
             cws.szModule = gpszICQProtoName;
-				    cws.szSetting = "AvatarHash";
-				    cws.value.type = DBVT_BLOB;
-				    cws.value.pbVal = pTLV->pData;
-				    cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
+            cws.szSetting = "AvatarHash";
+            cws.value.type = DBVT_BLOB;
+            cws.value.pbVal = pTLV->pData;
+            cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
 				    dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
+            if (dummy)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
+            }
 
             if (pTLV->pData[1] == 8)
               dwPaFormat = PA_FORMAT_XML;
@@ -468,11 +486,15 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, hash stored.");
 
             cws.szModule = gpszICQProtoName;
-				    cws.szSetting = "AvatarHash";
-				    cws.value.type = DBVT_BLOB;
-				    cws.value.pbVal = pTLV->pData;
-				    cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
+            cws.szSetting = "AvatarHash";
+            cws.value.type = DBVT_BLOB;
+            cws.value.pbVal = pTLV->pData;
+            cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
 				    dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
+            if (dummy)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
+            }
           }
           else
           {
@@ -480,6 +502,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           }
         }
 			}
+      else if (wOldStatus == ID_STATUS_OFFLINE)
+      { // if user were offline, and now hash not found, clear the hash
+      //  DBDeleteContactSetting(hContact, gpszICQProtoName, "AvatarHash"); // TODO: need more testing
+        // TODO: configure, here should be removed also the mtooltip link if it is ours - in procedure
+      }
 
 			// Update the contact's capabilities
 			if (wOldStatus == ID_STATUS_OFFLINE)
@@ -576,9 +603,27 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           {
             szClient = "IM2";
           }
+          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capAndRQ, 9))
+          {
+            unsigned ver1 = (*capId)[0xC];
+            unsigned ver2 = (*capId)[0xB];
+            unsigned ver3 = (*capId)[0xA];
+            unsigned ver4 = (*capId)[9];
+            if (ver4) 
+              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+            else if (ver3) 
+              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
+            else
+              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
+            szClient = szClientBuf;
+          }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))
           {
             szClient = "ICQ for Mac";
+          }
+          else if (MatchCap(pTLV->pData, pTLV->wLen, &capAimIcon, 0x10))
+          { // this is what I really hate, but as it seems to me, there is no other way to detect libgaim
+            szClient = "libgaim";
           }
           else // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
           {
@@ -761,7 +806,6 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
 		Netlib_Logf(ghServerNetlibUser, "%u went offline.", dwUIN);
 		DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 		DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
-		DBDeleteContactSetting(hContact, gpszICQProtoName, "AvatarHash");  // is this really necessary ?
 	}
 
 }
