@@ -952,21 +952,22 @@ END
 IDD_OPT_AUTOAWAY DIALOGEX 0, 0, 313, 210
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        " Auto Away ",IDC_STATIC,2,2,310,206
-    COMBOBOX        IDC_AASTATUS,138,40,59,50,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_AASTATUS,123,40,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "When I become idle for a short period of time:",
-                    IDC_STATIC,10,20,180,9
     CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,30,40,101,11
-    COMBOBOX        IDC_AALONGSTATUS,138,90,59,57,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,40,101,11
+    COMBOBOX        IDC_AALONGSTATUS,59,170,59,57,CBS_DROPDOWNLIST | NOT 
+                    WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
     LTEXT           "When I become idle for a long period of time:",
-                    IDC_STATIC,10,70,212,9
+                    IDC_STATIC,17,134,212,9,NOT WS_VISIBLE
     CONTROL         "Change my status mode to:",IDC_AALONGIDLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,30,90,101,11
+                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,30,149,101,
+                    11
+    LTEXT           "Miranda can change the status modes of your protocols when you become idle",
+                    IDC_STATIC,10,20,255,10
 END
 
 IDD_OPT_ICONS DIALOGEX 0, 0, 257, 193
@@ -1493,36 +1494,30 @@ IDD_OPT_IDLE DIALOG DISCARDABLE  0, 0, 312, 239
 STYLE WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        " Idle ",IDC_STATIC,0,0,311,238
-    CONTROL         "Enable idle support (needs a better name)",
-                    IDC_IDLECHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,
-                    15,292,11
-    LTEXT           "Determine how idle I am from:",IDC_STATIC,25,34,185,9
+    CONTROL         "If the following is left unattended:",IDC_IDLESHORT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,40,219,9
     CONTROL         "Windows",IDC_IDLEONWINDOWS,"Button",BS_AUTORADIOBUTTON,
-                    40,51,150,9
+                    45,57,104,9
     CONTROL         "Miranda",IDC_IDLEONMIRANDA,"Button",BS_AUTORADIOBUTTON,
-                    40,85,204,9
-    CONTROL         "Use GetLastInputInfo(), monitors keyboard and mouse <-- too nerdy",
-                    IDC_IDLEUSEGLI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,61,
-                    68,236,9
+                    45,72,103,9
+    EDITTEXT        IDC_IDLE1STTIME,60,90,27,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin2",IDC_IDLESPIN,"msctls_updown32",UDS_WRAP | 
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,72,86,12,23
     CONTROL         "If the screen saver is active",IDC_SCREENSAVER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,105,235,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,115,112,9
     CONTROL         "If the computer is locked (2000/XP+ only)",IDC_LOCKED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,120,250,9
-    CONTROL         "Use 'short' idle time (needs a better name)",
-                    IDC_IDLESHORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
-                    161,183,9
-    CONTROL         "Use 'long' idle time (needs a better name)",
-                    IDC_IDLELONG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
-                    177,183,9
-    EDITTEXT        IDC_IDLE1STTIME,216,158,20,14,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_IDLE2NDTIME,216,175,20,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Do not share my idle information with anyone on my contact list",
-                    IDC_IDLEPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,
-                    198,285,10
-    LTEXT           "You can set how many minutes have to elapse for both short/long idle:",
-                    IDC_STATIC,10,140,291,10
-    LTEXT           "minute(s)",IDC_STATIC,241,168,54,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,130,153,9
+    CONTROL         "Do not let protocols report any idle information",
+                    IDC_IDLEPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
+                    175,251,9
+    GROUPBOX        " Idle reporting ",IDC_STATIC,0,0,311,238
+    LTEXT           "How should Miranda discover that you are idle? ",
+                    IDC_STATIC,15,20,276,9
+    LTEXT           "minute(s)",IDC_STATIC,92,92,76,9
+    RTEXT           "for",IDC_STATIC,13,92,41,9
+    LTEXT           "How should idle information be shared with others?",
+                    IDC_STATIC,15,156,276,9
 END
 
 
