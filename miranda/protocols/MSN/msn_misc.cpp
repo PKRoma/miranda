@@ -808,8 +808,11 @@ int filetransfer::create()
 				free( std.currentFile );
 
             char tShortName[ 20 ];
-				WideCharToMultiByte( CP_ACP, 0, data.cAlternateFileName, -1, tShortName, sizeof tShortName, 0, 0 );
-				std.currentFile = strdup( tShortName );
+				WideCharToMultiByte( CP_ACP, 0, 
+					( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName, 
+					-1, tShortName, sizeof tShortName, 0, 0 );
+				_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
+				std.currentFile = strdup( filefull );
 		}	}
 	}
 	else fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
