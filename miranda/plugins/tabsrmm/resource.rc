@@ -33,17 +33,10 @@ STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER |
     WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-#if defined(UNICODE)
-    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
-                    WS_EX_STATICEDGE
-#else
     CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
-#endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
     PUSHBUTTON      "&Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
@@ -191,7 +184,7 @@ BEGIN
                     11
     GROUPBOX        "Layout options",IDC_STATIC,151,55,123,54
     CONTROL         "Single Row tab control",IDC_SINGLEROWTAB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,64,100,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,63,100,10
     CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,84,121,9
     CONTROL         "Hide the Status Bar",IDC_CNTNOSTATUSBAR,"Button",
@@ -199,7 +192,7 @@ BEGIN
     CONTROL         "Hide the Menu Bar",IDC_HIDEMENUBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,86,89,9
     CONTROL         "Tabs at the Bottom",IDC_TABSATBOTTOM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,96,80,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,98,80,10
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 227

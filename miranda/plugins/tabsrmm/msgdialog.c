@@ -546,11 +546,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             }
             if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
                 break;
-            //for saved msg queue the keyup/keydowns generate wm_chars themselves
-            if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {              //ctrl-a
-                SendMessage(hwnd, EM_SETSEL, 0, -1);
-                return 0;
-            }
             if (wParam == 0x0c && GetKeyState(VK_CONTROL) & 0x8000) {
                 SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
                 return 0;
@@ -1545,18 +1540,25 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 COLORREF inputcharcolor;
                 CHARFORMAT2A cf2 = {0};
                 LOGFONTA lf;
+                HDC hdc = GetDC(NULL);
+                int logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
+                ReleaseDC(NULL, hdc);
                 
                 dat->hBkgBrush = CreateSolidBrush(colour);
                 dat->hInputBkgBrush = CreateSolidBrush(inputcolour);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, inputcolour);
                 LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, &inputcharcolor);
-                cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_BOLD | CFM_ITALIC;
+                cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
                 cf2.cbSize = sizeof(cf2);
                 cf2.crTextColor = inputcharcolor;
                 cf2.bCharSet = lf.lfCharSet;
                 strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
-                cf2.dwEffects = (lf.lfItalic ? CFE_ITALIC : 0) | (lf.lfWeight ? CFE_BOLD : 0);
+                cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
+                cf2.wWeight = (WORD)lf.lfWeight;
+                cf2.bPitchAndFamily = lf.lfPitchAndFamily;
+                cf2.yHeight = abs(lf.lfHeight) * 15;
+//                _DebugPopup(dat->hContact, "size: %d", cf2.yHeight);
                 SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
             }
             if (dat->dwFlags & MWF_LOG_RTL) {

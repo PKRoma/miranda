@@ -176,9 +176,8 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                         break;
                     }
                 case IDC_CNTLIST:
-                    if (HIWORD(wParam) == LBN_DBLCLK) {
+                    if (HIWORD(wParam) == LBN_DBLCLK) 
                         SendMessage(hwndDlg, WM_COMMAND, IDOK, 0);
-                    }
                     break;
             }
             break;
@@ -204,9 +203,8 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     WCHAR *wszString = Utf8Decode(dbv.pszVal);
                     if (_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
                         iItemNew = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_ADDSTRING, 0, (LPARAM) wszString);
-                        if(iItemNew != LB_ERR) {
+                        if(iItemNew != LB_ERR) 
                             SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETITEMDATA, (WPARAM)iItemNew, (LPARAM)iCounter);
-                        }
                     }
                     DBFreeVariant(&dbv);
                 }
@@ -214,9 +212,8 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                 if (dbv.type == DBVT_ASCIIZ) {
                     if (strncmp(dbv.pszVal, "**free**", CONTAINER_NAMELEN)) {
                         iItemNew = SendDlgItemMessageA(hwndDlg, IDC_CNTLIST, LB_ADDSTRING, 0, (LPARAM) dbv.pszVal);
-                        if(iItemNew != LB_ERR) {
+                        if(iItemNew != LB_ERR) 
                             SendDlgItemMessageA(hwndDlg, IDC_CNTLIST, LB_SETITEMDATA, (WPARAM)iItemNew, (LPARAM)iCounter);
-                        }
                     }
                     DBFreeVariant(&dbv);
                 }
@@ -232,9 +229,8 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                 LRESULT iItem;
 
                 iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) -1, (LPARAM) pContainer->szName);
-                if (iItem != LB_ERR) {
+                if (iItem != LB_ERR) 
                     SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETCURSEL, (WPARAM) iItem, 0);
-                }
             }
         }
         break;

@@ -1178,9 +1178,7 @@ void CreateImageList(BOOL bInitial)
         protoIconData[i].iFirstIconID = iCurIcon;
         for (j = ID_STATUS_OFFLINE; j <= ID_STATUS_OUTTOLUNCH; j++) {
             hIcon = LoadSkinnedProtoIcon(protoIconData[i].szName, j);
-            if (hIcon == 0) {
-                MessageBoxA(0, "Icon failed", 0, 0);
-            } else {
+            if (hIcon != 0) {
                 ImageList_AddIcon(g_hImageList, hIcon);
                 iCurIcon++;
             }

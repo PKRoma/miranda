@@ -345,6 +345,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             HANDLE hContact;
             struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
             DWORD dwOldFlags = pContainer->dwFlags;
+            int iIgnorePerContact;
             
             if(dat) {
                 DWORD dwOldMsgWindowFlags = dat->dwFlags;
@@ -364,6 +365,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
                     break;
             }
+            iIgnorePerContact = DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
+            
             switch(LOWORD(wParam)) {
                 case IDOK:
                     SendMessage(pContainer->hwndActive, WM_COMMAND, wParam, lParam);      // pass the IDOK command to the active child - fixes the "enter not working
@@ -429,6 +432,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     return 0;
                 case ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS:
                     pContainer->dwFlags ^= CNT_ALWAYSREPORTINACTIVE;
+                    return 0;
+                case ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL:
+                    iIgnorePerContact = !iIgnorePerContact;
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", iIgnorePerContact);
                     return 0;
             }
             if(pContainer->dwFlags != dwOldFlags)
@@ -1009,6 +1016,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 }
             }
+            submenu = GetSubMenu(hMenu, 3);
+            if(dat && submenu) {
+                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
+                submenu = GetSubMenu(hMenu, 1);
+                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
+            }
             hMenu = pContainer->hMenu;
             CheckMenuItem(hMenu, ID_VIEW_SHOWMENUBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOMENUBAR ? MF_UNCHECKED : MF_CHECKED);
             CheckMenuItem(hMenu, ID_VIEW_SHOWSTATUSBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOSTATUSBAR ? MF_UNCHECKED : MF_CHECKED);
@@ -1028,13 +1041,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORT ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS, MF_BYCOMMAND | pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? MF_CHECKED : MF_UNCHECKED);
-            
-            submenu = GetSubMenu(hMenu, 3);
-            if(dat && submenu) {
-                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
-                submenu = GetSubMenu(hMenu, 1);
-                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
-            }
+
+            CheckMenuItem(hMenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_CHECKED : MF_UNCHECKED));
             
             break;
         }
