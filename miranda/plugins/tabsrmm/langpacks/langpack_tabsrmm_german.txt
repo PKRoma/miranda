@@ -1,844 +1,816 @@
-;this is a template for translating tabSRMM
-
+Miranda Language Pack Version 1
+Language: German
+Locale: 0809
+Last-Modified-Using: Miranda 0.3.3.0
+Authors: Nightwish
+Author-email: 
+Plugins-included: tabsrmm
 ;
-tabSRMM Version 0.9.9.0 - 2005/01/10
-
 ; global strings
-
+;
 [OK]
-
+OK
 [Ok]
-
+Ok
 [&Cancel]
-
+Abbrechen
 [Cancel]
-
+Abbrechen
 [&Retry]
-
+Wiederh&olen
 [Send &later]
-
+Später senden
 [A message delivery has failed.\nClick to open the message window.]
-
+Eine Nachricht konnte nicht zugestellt werden.\nKlicken Sie hier, um das Nachrictenfenster zu öffnen.
 [Delivery failure: %s]
-
+Zustellungsfehler: %s
 [The message send timed out]
-
+Zeitüberschreitung beim Versenden einer Nachricht
 [A message failed to send successfully.]
-
 [Sending typing notifications disabled.]
-
+Tippbenachrichtigungen werden NICHT gesendet.
 [Sending typing notifications enabled.]
-
+Tippbenachrichtigungen werden gesendet.
 [Retrieving Avatar...]
-
+Avatar wird geladen...
 [MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection.]
-
+Meta Kontakt: Das erzwungene Protokoll (%d) ist offline.\nStandardprotokoll ist nun wieder aktiv.
 [Send queue full]
-
+Die Sendewarteschlange ist voll
 [You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person.]
-
+Sie haben keine Kontakte in der Liste markiert. Markieren Sie Kontakte, indem sie das nebenstehende Kästchen wählen.
 [Send Message]
-
+Nachricht senden
 [Select container for %s]
-
+Wählen Sie einen Container für %s
 [You cannot delete the default container]
-
+Sie können den Standard-Container nicht löschen
 [This name is already in use]
-
+Der gewählte Name wird bereits verwendet
 [You cannot rename the default container]
-
+Sie können den Standard-Container nicht umbenennen.
 [Global]
-
+Global
 [tabSRMM Message (%s)]
-
-
+tabSRMM Nachricht (%s)
 ; ------------------------
 ; ----------------- msgs..c  source code strings
 ; ------------------------
-
 [Message from %s]
-
+Nachricht von %s
 [%s is typing a message]
-
+%s tippt eine Nachricht
 [Typing Notification]
-
+Tippbenachrichtigungen
 [&Message]
-
+&Nachricht
 [Information]
-
+Information
 [Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda.]
-
+Miranda konnte das Nachrichtenmodul nicht laden, weil die riched20.dll auf Ihrem System nicht gefunden werden konnte.
 [Message: Queued Incoming]
-
+Nachricht: Eingehend
 [Message: Incoming]
-
+Nachricht: Eingehend
 [Message: Outgoing]
-
-
-
+Nachricht: Ausgehend
 ; ------------------------
 ; ----------------- container.c  source code strings
 ; ------------------------
-
 [Autoselect]
-
+Automatisch auswählen
 [Use Protocol]
-
+Benutze Protokoll
 [Set Default Protocol]
-
+Standardprotokoll festlegen
 [Meta Contact]
-
+Meta Kontakt
 [(Forced)]
-
+(Erzwungen)
 [Stay on Top]
-
+Immer im Vordergrund bleiben
 [Hide titlebar]
-
+Titelleiste verstecken
 [Don't report if minimized]
-
+Zeige popups, wenn minimiert
 [Container options...]
-
+Container Einstellungen...
 [Container Options...]
-
+Container Einstellungen...
 [&User]
-
+&Benutzer
 [User]
-
+Benutzer
 [Attach to]
-
+Zuordnen zu
 [Do you really want to close this session?]
-
+Wollen sie diese Nachrichtensitzung wirklich schließen?
 ; ------------------------
 ; ----------------- msgdialog.c  source code strings
 ; ------------------------
-
 [has either a wrong size (max 150 x 150) or is not a recognized image file]
-
+hat entweder eine unzulässige Größe (150 x 150 maximum) oder liegt in einem unbekannten Format vor
 [Close session]
-
+Sitzung schließen
 [Save and close session]
-
+Speichern und schließen
 [Add Contact Permanently to List]
-
+Kontakt dauerhaft zur Kontaktliste hinzufügen
 [View User's History]
-
+Zeige Nachrichtenverlauf
 [Message Log Options]
-
+Einstellungen für den Verlauf
 [Send Message to Multiple Users]
-
+Nachricht an mehrere Benutzer schicken
 [Quote Text]
-
-[Avatar options]
-
+Text zitieren
+[Avatar Options]
+Avataroptionen
 [Insert Emoticon]
-
+Emotikon einfügen
 [Send message]
-
+Nachricht senden
 [View User's Details (SHIFT-click to view history)]
-
+Zeige Benutzerdetails
 [Last received on %s at %s]
-
+Letzte Nachricht: am %s um %s
 [signed off (was %s)]
-
+ist nun offline (war %s)
 [signed on (%s)]
-
+ist nun online (war %s)
 [is now %s (was %s)]
-
+ist nun %s (war %s)
 [%s is typing...]
-
+%s tippt...
 [Input locale saved.]
-
+Tastaturlayout gespeichert.
 [ANSI Encoding]
-
+ANSI Kodierung
 [You are %s on %s (MetaContact)]
-
+Sie sind %s auf %s (Meta Kontakt)
 [You are %s on %s]
-
+Sie sind %s auf %s
 ; ------------------------
 ; ----------------- containeroptions.c  source code strings
 ; ------------------------
-
 [Set Options for: %s]
-
+Einstellungen für %s vornehmen
 ; ------------------------
 ; ----------------- msglog.c  source code strings
 ; ------------------------
-
 [Today]
-
+Heute
 [Yesterday]
-
+Gestern
 [Use default codepage]
-
+Standard Kodierung verwenden
 ; ------------------------
 ; ----------------- msgoptions.c  source code strings
 ; ------------------------
-
 [** New contacts **]
-
+** Neue Kontakte **
 [** Unknown contacts **]
-
+** unbekannte Kontakte **
 [Show balloon popup (unsupported system)]
-
+Ballontooltip zeigen
 [as:]
-
+als:
 [based on:]
-
+basiert auf:
 [<none>]
-
+<keine>
 ; ----------------------
 ; -------- option page names
 ; ----------------------
-
 [Message Window]
-
+Nachrichtenfenster
 [Message Sessions]
-
+Nachrichtensitzungen
+[Messaging Log]
+Nachrichtenverlauf
 [Typing Notify]
-
+Tippbenachrichtigungen
+[Message tabs]
+Tabs
+[Message containers]
+Nachrichtencontainer
 [Fonts and colors]
-
-
+Schriftarten und Farben
 ;
 ; -------- option pages ---------
 ;
 ; fonts and color option page.
-
 [Message Window Fonts]
-
+Schriften für das Nachrichtenfenster
 [same]
-
+gleiche(r)
 [Typeface]
-
+Schriftart
 [Size]
-
+Größe
 [Style]
-
+Stil
 [Color]
-
+Farbe
 [as:]
-
+wie:
 [Bold]
-
+Fett
 [Italic]
-
+Kursiv
 [Underline]
-
+Unterstrichen
 [Background Colors]
-
+Hintergrundfarben
 [Default background]
-
+Standard Hintergrund
 [Input area background]
-
+Eingabezeile
 [Outgoing background:]
-
+Ausgehende Nachrichten
 [Incoming background:]
-
-[Horizontal grid lines:]
-
+Eingehende Nachrichten
 [Use multiple background colors]
-
+Verwende unterschiedliche Farben
+[Horizontal grid lines:]
+Horizontale Gitterlinien
 [Extra microspacing at the end of a paragraph]
-
+Extra Zeilenvorschub am Ende von Absätzen
 [Also draw vertical grid lines]
+Vertikale Gitternetzlinien zeichnen
+
 ; ------------------------
 ; ----------------- container options page (global, set container mode and stuff...) ------------
 ; ------------------------
-
 [To set container options, please use the container settings dialog. It is avalable by:\n1. chossing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.]
-
+Um Containeroptionen festzulegen, benutzen Sie bitte den entsprechenden Dialog.
 [Container mode]
-
+Containermodus
 [Use contact list group names for organizing containers]
-
+Kontaktlistgruppen verwenden (ein Container pro Gruppe)
 [Maximum number of tabs per container]
-
+Maximale Anzahl von Sitzungen per container
 [Use single window mode (one container per session)]
-
+Jede Sitzung in einem eigenen Container öffnen
 [Set display name for the default container (instead of just "default")]
-
+Name für den Standardcontainer:
 [Use default container mode (manual contact assignments)]
-
+Standardmodus verwenden (manuelle Zuordnung von Kontakten)
 [Container flashing]
-
+Blinken
 [Global container options]
-
+Globale Containereinstellungen
 [Flash containers]
-
+Blinke Container
 [times]
-
+mal
 [Flash interval]
-
+Blinkintervall
 [milliseconds]
-
+Millisekunden
 [Use the snapping windows plugin]
-
-; option pages titles
-
-[General]
-
-[Tabs and layout]
-
-[Containers]
-
-[Message Log]
+Snapping windows plugin verwenden
 ; ------------------------
 ; ----------------- select container dialog box
 ; ------------------------
-
 [Available containers]
-
+Verfügbare container
 [Create new]
-
+Neu
 [Create a new container]
-
+Einen neuen Container erstellen
 [Delete]
-
+Löschen
 [Rename]
-
+Umbenennen
 ; ------------------------
 ; ----------------- message tab options
 ; ------------------------
-
 [Tab options]
-
+Tab Einstellungen
 [Limit nicknames on tabs to]
-
+Benutzernamen auf
 [characters]
-
+Zeichen kürzen
 [Show status text on tabs]
-
+Statustext auf den tabs
 [Warn on close message tab]
-
+Vor dem Schließen warnen
 [Vertical tab padding]
-
+Rand auf den tabs
 [pixel]
-
+pixel
 [Tab control margins:]
-
+Rahmen
 [inner]
-
+innen
 [outer]
-
+außen
 [pixels]
-
+pixel
 [Create tabs and containers]
-
+Erzeugen von tabs und Containern
 [Create tabs in the background]
-
+Tabs im Hintergrund erzeugen
 [Automatically pop up the window/tab when a message is received]
-
+Fenster automatisch öffnen und auf den Desktop bringen
 [Automatically switch tabs in minimized containers]
-
+In minimierten Fenstern, tabs automatisch umschalten
 [Popup container if minimized]
-
+Minimierte container auf den Desktop
 [Create containers, but leave them minimized]
-
+Container mimimiert in der taskbar erzeugen
 [Setup status modes...]
-
+Statusmodi...
 [Message dialog layout]
-
+Layout des Nachrichtenfensters
 [Use flat buttons]
-
+Flache Schaltflächen
 [Flat message log (no static edge)]
-
+Flache Textbereiche
 [Splitters have static edges]
-
+Splitter haben statische Kanten
 [Miscellaneous options]
-
+Diverse Optionen
 [Activate autolocale support]
-
+Autolocale aktivieren
 [Input history:]
-
+Eingabeverlauf
 [entries]
-
+Einträge
 [Use ESC key for closing sessions]
-
+ESC schließt Sitzung
 [Use global hotkeys for finding message sessions]
-
+Globale Hotkeys verwenden
 [Modifiers]
-
+Modifikatoren
 [Perform version check on Icon DLL]
-
+Versionskontrolle für Symbol DLL
 ; ------------------------
 ; ----------------- typing notify options
 ; ------------------------
-
 [Typing Notification Options]
-
+Einstellungen für Tippbenachrichtigungen
 [Send typing notifications to the following users when you are typing a message to the them:]
-
+Sende Tippbenachrichtungen an die folgenden Benutzer
 [Show typing notifications when a user is typing a message]
-
+Zeige Tippbenachrichtigungen anderer Benutzer
 [Update inactive message window icons when a user is typing]
-
+Symbole von inaktiven Fenstern aktualisieren
 [Show typing notification when no message dialog is open]
-
+Tippbenachrichtigung zeigen, wenn kein Nachrichtenfenster geöffnet ist
 [Flash in the system tray and in the contact list]
-
+Auf der Kontaktliste und im Tray blinken
 [Show balloon popup]
-
+Ballontooltip zeigen
 ; ------------------------
 ; ----------------- message log options
 ; ------------------------
-
 [Items to show]
-
+Sichbare Elemente
 [Show file events]
-
+Dateitransfers zeigen
 [Show url events]
-
+URL Ereignisse
 [Show icons]
-
+Symbole zeigen
 [Use symbols instead of icons]
-
+Textsymbole anstatt Icons
 [Use in/out icons]
-
+Ein/Aus Symbole
 [Show nicknames]
-
+Benutzernamen
 [Show times]
-
+Zeiten
 [Show dates]
-
+Datum
 [Show seconds]
-
+Sekunden
 [Other options]
-
+Andere Einstellungen
 [Enable message log scrolling hotkeys]
-
+Verlauf mit Hotkeys rollen
 [Log status changes]
-
-[Remove trailing empty lines]
-
+Statuswechsel zeigen
 [Ignore per-contact message log settings]
-
+Einstellungen für den Verlauf sind global
 [Simple text formatting (*bold* etc.)]
-
+Einfache Textformatierung (*fett* etc.)
 [Only format whole words]
-
+Nur ganze Wörter formatieren
 [Use IEView as default message log]
-
+IEView als Standard verwenden
 [RTL is default text direction]
-
+RTL ist Standard Textrichtung
 [Formatting options]
-
+Formatierungsoptionen
 [Message body in a new line]
-
+Nachricht in einer neuen Zeile
 [Underline timestamp/nickname]
-
+Name / Zeitstempel unterstreichen
 [Show timestamp after nickname]
-
+Zeitstempel nach dem Benutzernamen
 [Draw grid lines]
-
+Gitterlinien zeigen
 [Indent message body (pixels)]
-
+Nachricht einrücken
 [Left]
-
+Links
 [Right]
-
+Rechts
 [Load History Events]
-
+Laden von alten Nachrichten
 [Load unread events only]
-
+Nur ungelesene
 [Load number of previous events]
-
+Maximale Anzahl von alten Nachrichten
 [Load previous events less than]
-
+Nachrichten nicht älter als
 [minutes old]
-
+Minuten
 [Use Message Grouping]
-
+Nachrichten gruppieren
 [Use relative timestamps]
-
+Relative Zeitstempel
 [Use long date format]
-
+Langes Datumsformat
 [Mark followup messages with timestamps]
-
+Zeitstempel im Gruppenmodus verwenden
 [Attempt to fix "future" timestamps]
-
+Behebe Probleme bei falschem Zeitstempel
 ; ------------------------
 ; ----------------- message dialog options
 ; ------------------------
-
 [Visual options]
-
+Visuelle Einstellungen
 [Avatar options]
-
+Avatareinstellungen
 [Behaviour]
-
+Verhalten
 [Place dividers in inactive sessions]
-
+Trennlinien in inaktiven Sitzungen
 [Use popup configuration for placing dividers]
-
+Verwende Popup - Konfiguration für Trennlinien
 [Minimize the message window on send]
-
+Fenster nach dem Senden minimieren
 [Send message on 'Enter']
-
+'Eingabe' sendet Nachricht
 [Show warning when message has not been received after]
-
+Zeitlimit für Warnung bei unzustellbaren Nachrichten
 [seconds.]
-
+Sekunden
 [Show avatars]
-
+Avatare zeigen
 [Display]
-
+Anzeigemodus
 [Static]
-
+Statisch
 [Dynamically resize]
-
+Dynamische Skalierung
 [Limit to]
-
+Auf
 [pixels in height]
-
+pixel Höhe limitieren
 [Globally on]
-
+Global AN
 [On for protocols with avatar support]
-
+An für Protokolle mit Avatar support
 [Per contact setting]
-
+Manuell (per Kontakt einstellbar)
 [On, if present]
-
+An, wenn vorhanden
 [Globally OFF]
-
+Global AUS
 [Automatically close tabs after]
-
-[minutes of inactivity (0 = disable)]
-
+Schließe Tabs automatisch nach
+[Minuten Inaktivität (0 = niemals)]
 [Also auto-close the last tab and its container]
-
+Auch den letzten Tab und damit das Fenster schließen
 [Send on SHIFT - Enter]
-
+SHIFT + Eingabe sendet Nachricht
 [Enable event API (support for third party plugins)]
-
+Event API aktivieren
 [Delete temporary contacts on close]
-
+Temporäre Kontakte beim Schließen löschen
 [Notifications:]
-
+Benachrichtigungen:
 [None]
-
+Keine
 [Tray notifications]
-
+System tray
 [Popups]
-
+Popups
 [When auto-hiding toolbar buttons:]
-
+Beim Verstecken von toolbar Schaltflächen
 [Hide formatting buttons first]
-
+Verstecke Formatierungselemente zuerst
 [Hide standard buttons first]
-
+Verstecke Standardelemente zuerst
 [Send formatting info]
-
+Formatierungscodes senden
 [Also, allow a hidden send button]
-
+Sendeschaltfläche ebenfalls verstecken
 [Flash contact list and tray icons for new events in unfocused windows]
-
+Neue Nachrichten in inaktiven Sitzungen auf Kontaktliste und im Tray blinken
 [Always keep the button bar at full width]
-
-
-
+Toolbar immer auf voller Breite halten
 ; ------------------------
 ; ----------------- container options page (the per container setting stuff)
 ; ------------------------
-
 [General settings]
-
+Allgemeine Einstellungen
 [Hide title bar]
-
+[Keine Titelleiste]
 [Only show tab bar when it's needed]
-
+[Tabs nur wenn notwendig (mehr als 1)
 [Enable popups if minimized]
-
+[Popups, wenn Fenster minimiert
 [Container stays on top]
-
+[Immer im Vordergrund]
 [Flashing options]
-
+[Blinkoptionen]
 [Use default setting]
-
+[Standardwert]
 [Flash until focused]
-
+[Blinken bis zur Aktivierung]
 [Disable flashing]
-
+[Niemals blinken]
 [Titlebar options]
-
+[Titelzeile]
 [Use static container Icon]
-
+[Festes Symbol verwenden]
 [Show contacts name]
-
+[Kontaktname zeigen]
 [Show contacts status]
-
+[Kontaktstatus zeigen]
 [Show container name in titlebar]
-
+[Name des Containers im Titel
 [Never]
-
+Nie
 [As prefix]
-
+Als Präfix
 [As suffix]
-
+Als Suffix
 [Container transparency]
-
+Transparenz
 [Enable transparency]
-
+Transparenz aktivieren
 [active]
-
+aktiv
 [inactive]
-
+inaktiv
 [Set these values as defaults for new containers]
-
+Diese Werte als Standard für neue container verwenden
 [Load defaults]
-
+Standard laden
 [Apply]
-
+Übernehmen
 [Enable popups if unfocused]
-
+Popups, wenn Fenster inaktiv
 [Always enable popups for]
-
+Popups immer zeigen, wenn
 [inactive tabs]
-
-[only valid if name is also shown]
-
+tab inaktiv ist
 [Layout options]
-
+Layout
 [Single row tab control]
-
+Nur eine Zeile Tabs
 [Sync sounds with popup mode]
-
+Soundeffekte wie popups
 [Hide the status bar]
-
+Statuszeile verbergen
 [Hide the menu bar]
-
+Menuleiste verbergen
 [Tabs at the bottom]
-
+Tabs am unteren Rand
 ;
 ; --------- MENUS -----------
 ;
-
 [&Copy]
-
+&Kopieren
 [Co&py All]
-
+&Alles Kopieren
 [&Select &All]
-
+Alles aus&wählen
 [Clear Log]
-
+Verlauf löschen
 [Open in &new window]
-
+In einem neuem Fenster öffnen
 [&Open in existing window]
-
+In einem existierenden Fenster öffnen
 [&Copy link]
-
+Link kopieren
 [Cut]
-
+Ausschneiden
 [Copy]
-
+Kopieren
 [Paste]
-
+Einfügen
 [Paste formatted Text]
-
+Einfügen mit Formatierung
 [Copy all]
-
+Alles kopieren
 [Select all]
-
+Alles auswählen
 [Close Tab]
-
+Sitzung schließen
 [Switch to next Tab]
-
+Zur nächsten Sitzung
 [Switch to previous Tab]
-
+Zur vorherigen Sitzung
 [Attach to Container...]
-
+Zu container zuordnen...
 [Close Container]
-
+Container schließen
 [Toggle Avatar Display]
-
+Avatar an/aus
 [Reset the Avatar]
-
+Avatar zurücksetzen
 [Load a local Picture as Avatar...]
-
+Bild laden...
 [Load a local Picture as Avatar]
-
+Bild laden...
 [Disable automatic Avatar updates]
-
+Automatische Aktualisierung unterbinden
 [Show Message Icons]
-
+Symbole zeigen
 [Show Nickname]
-
+Name zeigen
 [Display Timestamp after Nickname]
-
+Zeitstempel nach dem Namen
 [Timestamp Settings]
-
+Zeitstempel
 [Show Timestamp]
-
+Zeitstempel zeigen
 [Show Date]
-
+Datum zeigen
 [Show Seconds]
-
+Sekunden zeigen
 [Use relative Timestamps]
-
+Relative Zeitstempel
 [Use long Date Format]
-
+Langes Datumsformat
 [Use Contacts local Time]
-
+Lokale Zeit des Kontakts verwenden
 [Message Log Formatting]
-
+Formatierung des Verlaufs
 [Indent Message Body]
-
+Nachricht einrücken
 [Message Body in a new Line]
-
+Nachricht ein einer neuen Zeile
 [Underline Timestamp and Nickname]
-
-[Export Message Log Settings...]
-
-[Import Message Log Settings...]
-
+Name und Zeitstempel unterstreichen
 [Show grid]
-
+Gitterlinien zeigen
 [Use multiple Background Colors]
-
+Mehrere Hintergrundfarben verwenden
 [Use Message Grouping]
-
+Nachrichten gruppieren
 [Use RTL for this Contact]
-
+RTL für diesen Kontakt verwenden
 [Log Status Changes]
-
+Statuswechsel zeigen
 [Message Log Settings are global]
-
+Verlaufseinstellungen sind global
 [Apply Message Log Settings to all contacts]
-
+Einstellungen auf alle Kontakte anwenden
+[Export Message Log Settings...]
+Verlaufseinstellungen exportieren...
+[Import Message Log Settings...]
+Verlaufseinstellungen importieren...
 [&File]
-
+&Datei
 [Save Message Log As...]
-
+Verlauf speichern als...
 [Close Message Session\tCtrl-W]
-
+Sitzung schließen\tCtrl-W
 [Close Container\tAlt-F4]
-
+Container schließen\tAlt-F4
 [&View]
-
+Ansicht
 [Show Menu Bar]
-
+Zeige Menüleiste
 [Show Status Bar]
-
+Zeige Statuszeile
 [Title Bar]
-
-[Show Nickname]
-
-[Show Status]
-
-[Do not show Container Name]
-
-[Show Container Name as Prefix]
-
-[Show Container Name as Suffix]
-
-[Tabs at Bottom]
-
-[Show Tool Bar]
-
+Titelzeile
 [Vertical maximize]
-
+Vertikal maximieren
+[Show Nickname]
+Zeige Name
+[Show Status]
+Zeige Status
+[Do not show Container Name]
+Containername nicht anzeigen
+[Show Container Name as Prefix]
+Containername als Präfix
+[Show Container Name as Suffix]
+Containername als Suffix
+[Tabs at Bottom]
+Tabs am unteren Rand
+[Show Tool Bar]
+Toolbar zeigen
 [Window Flashing]
-
+Blinken
 [Use default Value]
-
+Standardwert werwenden
 [Flash until focused]
-
+Bis zur Aktivierung blinken
 [Disable Flashing]
-
+Niemals blinken
 [Show Multisend Contact List]
-
+Kontaktliste einbetten
 [Stay on Top]
-
+Immer im Vordergrund
 [&User]
-
+&Benutzer
 [Message &Log]
-
+&Verlauf
 [Log Items to show]
-
+Elemente zeigen
 [Message Icons]
-
+Symbole
 [Nickname]
-
+Nickname
 [Grid Lines]
-
+Gitternetzlinien
 [Log Status Changes]
-
+Statuswechsel zeigen
 [Timestamp Settings]
-
+Zeitstempel
 [Simple Text Formatting]
-
+Einfache Textformatierung
 [&Container]
-
+&Container
 [Event Popups]
-
+Ereignis - Popups
 [Disable all Event Popups]
-
+Alle Popups unterbinden
 [Show Popups if Window is minimized]
-
+Popups wenn Fenster minimiert
 [Show Popups if Window is unfocused]
-
+Popups wenn Fenster inaktiv
 [Show Popups for all inactive sessions]
-
+Popups für alle inaktiven Sitzungen
 [Apply Container Options globally]
-
+Einstellungen für alle Container anwenden
 [Set current Options as Default Values]
-
+Aktuelle Einstellungen als Standard setzen
 [Save current Window Position as Default]
-
+Aktuelle Fensterposition als Standard
 ;
 ; --------- Message Window accerlators
 ;
-
 [tb_&Emoticon]
-
 [tb_&History]
-
 [tb_&Quote]
-
 [tb_&Picmenu]
-
 [tb_&Details]
-
 [tb_&User]
-
 [tb_&Messagelog]
-
 [tb_&ToggleTB]
-
 ;
 ; --------- Send menu
 ;
-
 [Send &Default]
-
+&Standard
 [Send to &multiple Users]
-
+An &mehrere Kontakte senden
 [Send to &Container]
-
+An den &Container senden
 [Force &ANSI]
-
+A&NSI erzwingen
 [Send &Later]
-
+Später senden
 ;
 ; --------- The protocol menu
 ;
-
 [IEView Setting]
-
+IEView Einstellungen
 [Use global Setting]
-
+Globale Einstellung verwenden
 [Force IEView]
-
+IEVIew erzwingen
 [Force Default Message Log]
-
+Standardverlaufe erzwingen
 [Splitter]
-
+Splitter
 [Global]
-
+Globale Position
 [Per Contact]
-
+Für jeden Kontakt einzeln
 [Private]
-
+Immer eigene Position verwenden
 [Autosave on Close]
-
+Automatisch beim Schließen speichern
 [Save Now]
-
+Jetzt speichern
+; option pages titles
+[General]
+Allgemein
+[Tabs and layout]
+Tabs und Layout
+[Containers]
+Containers
+[Message Log]
+Nachrichtenverlauf

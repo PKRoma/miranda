@@ -230,15 +230,15 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Avatar options",IDC_STATIC,0,62,303,52
     LTEXT           "Display",IDC_STATIC,9,72,56,9
-    COMBOBOX        IDC_AVATARDISPLAY,68,69,70,46,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_AVATARDISPLAY,64,69,90,46,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Limit to",IDC_STATIC,146,71,31,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,184,69,35,12,ES_AUTOHSCROLL | 
+    LTEXT           "Limit to",IDC_STATIC,159,71,29,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,197,69,35,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,213,70,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,70,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,229,71,69,11
+    LTEXT           "pixels in height",IDC_STATIC,242,71,56,11
     CONTROL         "Always keep the button bar at full width",
                     IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,8,85,276,10
@@ -260,7 +260,7 @@ BEGIN
                     9,135,280,10
     LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,149,133,
                     8
-    COMBOBOX        IDC_TOOLBARHIDEMODE,147,147,109,46,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_TOOLBARHIDEMODE,147,147,148,46,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Also, allow a hidden send button",
                     IDC_ALLOWSENDBUTTONHIDE,"Button",BS_AUTOCHECKBOX | 

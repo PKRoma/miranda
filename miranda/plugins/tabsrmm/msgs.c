@@ -803,8 +803,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
     DestroyWindow(myGlobals.g_hwndHotkeyHandler);
-    //WindowList_BroadcastAsync(hMessageSendList, WM_CLOSE, 0, 1);
-    //WindowList_BroadcastAsync(hMessageWindowList, WM_CLOSE, 0, 1);
     while(pFirstContainer)
         SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
     return 0;
@@ -1472,7 +1470,7 @@ int SetupIconLibConfig()
         if(myIcons[i].szName == NULL)
             break;
         sid.pszName = myIcons[i].szName;
-        sid.pszDescription = myIcons[i].szDesc;
+        sid.pszDescription = Translate(myIcons[i].szDesc);
         sid.iDefaultIndex = myIcons[i].uId == -IDI_HISTORY ? 0 : myIcons[i].uId;
         CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
     } while(++i);
@@ -1507,6 +1505,11 @@ int LoadFromIconLib()
     WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
     return 0;
 }
+
+/*
+ * load icon theme from either icon pack or IcoLib
+ */
+
 void LoadIconTheme()
 {
     char szFilename[MAX_PATH];
