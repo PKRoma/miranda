@@ -20,6 +20,15 @@ Version 0.9.9.92 - 2005/03/30
         ! fixed broken dialog layout on forward message
         
         ! nicknames may again contain characters like { and }
+        
+        * status bar remembers typing notification state
+        
+        * static avatar code changed. It's now really static, although, internally
+          it is using the dynamic resizing code aswell. Static avatar mode can be
+          selected on the "General" options page, and you can specify a height limit for
+          avatars. Bigger images will be scaled down accordingly. When moving the splitter
+          upwards, the image will be vertically centered within the available space.
+          The splitter position may be adjusted to make enough space for the avatar.
 
 Version 0.9.9.91 - 2005/03/28
 

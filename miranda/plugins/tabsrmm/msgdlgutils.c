@@ -70,53 +70,57 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     
     GetClientRect(hwndDlg, &rc);
     
-    if(myGlobals.m_AvatarDisplayMode != AVATARMODE_DYNAMIC && myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight < myGlobals.m_LimitStaticAvatarHeight && dat->iRealAvatarHeight == 0) {
+    if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
         int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
         RECT rcContainer;
         int cx;
-        if(!dat->showPic)           // don't care if no avatar is visible
+        if(!dat->showPic)           // don't care if no avatar is visible == leave splitter alone...
             return;
         if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
-            return;
-        
+            return;                 // at this stage, the layout is not yet ready...
+
         GetClientRect(dat->pContainer->hwnd, &rcContainer);
         AdjustTabClientRect(dat->pContainer, &rcContainer);
         cx = rcContainer.right - rcContainer.left - 8;
-        picAspect = 1.0;
-        picProjectedWidth = (double)bminfo->bmWidth;
-        if(((cx) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
-            dat->dynaSplitter = bminfo->bmHeight - ((showToolbar != 0) ? 28 : 3);
-            dat->iRealAvatarHeight = bminfo->bmHeight;
+
+        if(dat->iRealAvatarHeight == 0) {               // calc first layout paramaters
+            picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
+            if(myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight > myGlobals.m_LimitStaticAvatarHeight)
+                dat->iRealAvatarHeight = myGlobals.m_LimitStaticAvatarHeight;
+            else
+                dat->iRealAvatarHeight = bminfo->bmHeight;
+
+            picProjectedWidth = (double)dat->iRealAvatarHeight * picAspect;
+            dat->pic.cx = (int)picProjectedWidth + 2*1;
+        }
+        if(dat->splitterY <= dat->bottomOffset + (showToolbar ? 0 : 27))
+            dat->splitterY = dat->bottomOffset + (showToolbar ? 1 : 27);;
+        if(dat->splitterY - 27 > dat->bottomOffset)
+            dat->pic.cy = dat->splitterY - 28;
+        else
+            dat->pic.cy = dat->bottomOffset;
+    }
+    else if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
+        picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
+        picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
+
+        if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
+            dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 30 : 4);
             dat->bottomOffset = dat->dynaSplitter + 100;
         }
         else {
-            dat->dynaSplitter = bminfo->bmHeight - 3;
-            dat->iRealAvatarHeight = bminfo->bmHeight;
+            dat->iRealAvatarHeight = dat->dynaSplitter + 4;
             dat->bottomOffset = -33;
         }
-        dat->splitterY = dat->dynaSplitter + 34;
-        goto ok;
+        aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
+        newWidth = (double)bminfo->bmWidth * aspect;
+        if(newWidth > (double)(rc.right - rc.left) * 0.8)
+            newWidth = (double)(rc.right - rc.left) * 0.8;
+        dat->pic.cy = dat->iRealAvatarHeight + 2*1;
+        dat->pic.cx = (int)newWidth + 2*1;
     }
-    else {
-        picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
-        picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
-    }
-
-    if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
-        dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 30 : 4);
-        dat->bottomOffset = dat->dynaSplitter + 100;
-    }
-    else {
-        dat->iRealAvatarHeight = dat->dynaSplitter + 4;
-        dat->bottomOffset = -33;
-    }
-ok:
-    aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
-    newWidth = (double)bminfo->bmWidth * aspect;
-    if(newWidth > (double)(rc.right - rc.left) * 0.8)
-        newWidth = (double)(rc.right - rc.left) * 0.8;
-    dat->pic.cy = dat->iRealAvatarHeight + 2*1;
-    dat->pic.cx = (int)newWidth + 2*1;
+    else
+        return;
 }
 
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat) 
@@ -814,11 +818,18 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
                 DeleteObject(dat->hContactPic);
             dat->hContactPic = myGlobals.g_hbmUnknown;
         }
+        if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC)
+            dat->iRealAvatarHeight = 0;
         if(dat->hContactPic) {
             dat->showPic = GetAvatarVisibility(hwndDlg, dat);
             if(dat->dynaSplitter == 0 || dat->splitterY == 0)
                 SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
             dat->dynaSplitter = dat->splitterY - 34;
+            if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
+                BITMAP bm;
+                GetObject(dat->hContactPic, sizeof(bm), &bm);
+                CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+            }
             SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
             SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
             ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);

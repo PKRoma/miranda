@@ -64,7 +64,7 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
-                    78,WS_EX_CLIENTEDGE
+                    30,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
     CONTROL         "",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,0,32,16,14,
