@@ -45,6 +45,11 @@ void ClcOptionsChanged(void)
 {
 	WindowList_Broadcast(hClcWindowList,INTM_RELOADOPTIONS,0,0);
 }
+void SortClcByTimer (HWND hwnd)
+{
+	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
+	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",200),NULL);
+}
 
 static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 {
@@ -395,14 +400,16 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		case INTM_CONTACTADDED:
 			AddContactToTree(hwnd,dat,(HANDLE)wParam,1,1);
 			NotifyNewContact(hwnd,(HANDLE)wParam);
-			RecalcScrollBar(hwnd,dat);
-			SortCLC(hwnd,dat,1);
+			//RecalcScrollBar(hwnd,dat);
+			//SortCLC(hwnd,dat,1);
+			SortClcByTimer(hwnd);
 			break;
 
 		case INTM_CONTACTDELETED:
 			DeleteItemFromTree(hwnd,(HANDLE)wParam);
-			SortCLC(hwnd,dat,1);
-			RecalcScrollBar(hwnd,dat);
+			//SortCLC(hwnd,dat,1);
+			SortClcByTimer(hwnd);
+			//RecalcScrollBar(hwnd,dat);
 			break;
 
 		case INTM_HIDDENCHANGED:
@@ -415,8 +422,10 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			}
 			else
 				DeleteItemFromTree(hwnd,(HANDLE)wParam);
-			SortCLC(hwnd,dat,1);
-			RecalcScrollBar(hwnd,dat);
+			
+			//SortCLC(hwnd,dat,1);
+			SortClcByTimer(hwnd);
+			//RecalcScrollBar(hwnd,dat);
 			break;
 		}
 
@@ -440,8 +449,9 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 				dat->NeedResort=1;
 			}
-			SortCLC(hwnd,dat,1);
-			RecalcScrollBar(hwnd,dat);
+			//SortCLC(hwnd,dat,1);
+			SortClcByTimer(hwnd);
+			//RecalcScrollBar(hwnd,dat);
 			break;
 		}
 
@@ -465,7 +475,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			
 			shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN
 			            || !cacheEntry->Hidden)
-					&& (!IsHiddenMode(dat,status)
+					&& (!IsHiddenMode(dat,status)||cacheEntry->noHiddenOffline
 					    || CallService(MS_CLIST_GETCONTACTICON,wParam,0)!=lParam);	//this means an offline msg is flashing, so the contact should be shown
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL)) {				
 				if(shouldShow) {					
@@ -502,7 +512,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 					int oldflags;
 					contact->iImage=(WORD)lParam;
 					oldflags=contact->flags;
-					if(!IsHiddenMode(dat,status)) contact->flags|=CONTACTF_ONLINE;
+					if(!IsHiddenMode(dat,status)||cacheEntry->noHiddenOffline) contact->flags|=CONTACTF_ONLINE;
 					else contact->flags&=~CONTACTF_ONLINE;
 					if (oldflags!=contact->flags)
 					{
@@ -518,9 +528,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			//is sorts list if only icon changed !!! very bad
 			//SortCLC(hwnd,dat,1); 
 			//SortContacts();
-			KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-			SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",200),NULL);
-			InvalidateRect(hwnd,NULL,FALSE);
+			SortClcByTimer(hwnd);
 			if(recalcScrollBar) RecalcScrollBar(hwnd,dat);			
 			break;
 		}
@@ -530,7 +538,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL)) break;
 				lstrcpyn(contact->szText,(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0),sizeof(contact->szText));
 				dat->NeedResort=1;
-				SortCLC(hwnd,dat,1);		
+				//SortCLC(hwnd,dat,1);		
+				SortClcByTimer(hwnd);
 			break;
 		}
 
@@ -785,6 +794,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 #ifdef _DEBUG
 OutputDebugString("Delayed REBUILDAFTER\r\n");
 #endif
+				InvalidateRect(hwnd,NULL,FALSE);
 				SaveStateAndRebuildList(hwnd,dat);
 				break;
 			}
@@ -794,7 +804,9 @@ OutputDebugString("Delayed REBUILDAFTER\r\n");
 #ifdef _DEBUG
 OutputDebugString("Delayed Sort CLC\r\n");
 #endif
+				InvalidateRect(hwnd,NULL,FALSE);
 				SortCLC(hwnd,dat,1);
+				RecalcScrollBar(hwnd,dat);
 				break;
 			}
 			if(wParam==TIMERID_RENAME)
