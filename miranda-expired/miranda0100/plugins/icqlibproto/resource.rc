@@ -108,7 +108,7 @@ BEGIN
             VALUE "FileDescription", "ICQ v5 Protocol\0"
             VALUE "FileVersion", "0.1.1.0\0"
             VALUE "InternalName", "miranda32\0"
-            VALUE "LegalCopyright", "Copyright © 2000-1, Roland Rabien, Tristan Van de Vreede & Richard Hughes\0"
+            VALUE "LegalCopyright", "Copyright © 2000-2, Roland Rabien, Tristan Van de Vreede & Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "icqlibproto.dll\0"
             VALUE "PrivateBuild", "\0"

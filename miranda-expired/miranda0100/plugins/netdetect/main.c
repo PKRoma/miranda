@@ -1,6 +1,6 @@
 /*
 Miranda NetDetect plugin
-Copyright (C) 2001  Richard Hughes
+Copyright (C) 2001-2  Richard Hughes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -34,7 +34,7 @@ PLUGININFO pluginInfo={
 	"Connects and disconnects Miranda according to the presence of your Internet connection",
 	"Richard Hughes",
 	"cyreve@users.sourceforge.net",
-	"© 2001 Richard Hughes",
+	"© 2001-2 Richard Hughes",
 	"http://miranda-icq.sourceforge.net/",
 	0,		//not transient
 	0		//doesn't replace anything built-in

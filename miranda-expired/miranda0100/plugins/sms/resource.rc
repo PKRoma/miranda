@@ -208,7 +208,7 @@ BEGIN
             VALUE "FileDescription", "Miranda SMS plugin\0"
             VALUE "FileVersion", "0.1.2.0\0"
             VALUE "InternalName", "sms\0"
-            VALUE "LegalCopyright", "Copyright © 2001 Richard Hughes\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "sms.dll\0"
             VALUE "PrivateBuild", "\0"
