@@ -17,6 +17,8 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 Changes
 -------
 2.1.0.0
+ - Show user menu by clicking user name
+ - Copy user name by shift clicking username
  - Added ability to compile with unicode support
 
 2.0.0.0

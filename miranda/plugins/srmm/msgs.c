@@ -39,7 +39,7 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 
 	hwndExisting = WindowList_Find(hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
 	newData.hContact = ((CLISTEVENT *) lParam)->hContact;
-	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
+	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 	return 0;
 }
 
@@ -74,7 +74,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP)) {
 		struct NewMessageWindowLParam newData = { 0 };
 		newData.hContact = (HANDLE) wParam;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
+		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 		return 0;
 	}
 
@@ -123,7 +123,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	else {
 		newData.hContact = (HANDLE) wParam;
 		newData.szInitialText = (const char *) lParam;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
+		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 	}
 	return 0;
 }
@@ -231,7 +231,7 @@ static void RestoreUnreadMessageAlerts(void)
 				if (autoPopup && !windowAlreadyExists) {
 					struct NewMessageWindowLParam newData = { 0 };
 					newData.hContact = hContact;
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
+					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 				}
 				else {
 					cle.hContact = hContact;

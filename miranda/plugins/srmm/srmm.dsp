@@ -93,8 +93,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "srmm___Win32_Unicode_Release"
-# PROP Intermediate_Dir "srmm___Win32_Unicode_Release"
+# PROP Output_Dir "Unicode_Release"
+# PROP Intermediate_Dir "Unicode_Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /YX /FD /c
@@ -120,8 +120,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "srmm___Win32_Unicode_Debug"
-# PROP Intermediate_Dir "srmm___Win32_Unicode_Debug"
+# PROP Output_Dir "Unicode_Debug"
+# PROP Intermediate_Dir "Unicode_Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /YX /FD /GZ /c

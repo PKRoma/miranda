@@ -431,9 +431,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 GetWindowText(h, buf, sizeof(buf));
 
                 hdc = GetDC(h);
-                SelectObject(hdc, (HFONT) SendMessage(h, WM_GETFONT, 0, 0));
+                SelectObject(hdc, (HFONT) SendMessage(GetDlgItem(hwndDlg, IDOK), WM_GETFONT, 0, 0));
                 GetTextExtentPoint32(hdc, buf, lstrlen(buf), &textSize);
-                urc->rcItem.right = urc->rcItem.left + textSize.cx;
+                urc->rcItem.right = urc->rcItem.left + textSize.cx + 10;
                 if (dat->showButton && urc->rcItem.right > urc->dlgNewSize.cx - dat->nLabelRight)
                     urc->rcItem.right = urc->dlgNewSize.cx - dat->nLabelRight;
                 ReleaseDC(h, hdc);
@@ -620,7 +620,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			// Make them flat buttons
 			{
 				int i;
-
+				
+				SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONSETASFLATBTN, 0, 0);
 				for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++)
 					SendMessage(GetDlgItem(hwndDlg, buttonLineControls[i]), BUTTONSETASFLATBTN, 0, 0);
 			}
@@ -773,6 +774,41 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 			SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+			break;
+		}
+        case DM_USERNAMETOCLIP:
+		{
+			CONTACTINFO ci;
+			char buf[128];
+			HGLOBAL hData;
+			
+			buf[0] = 0;
+			if(dat->hContact) {
+				char *contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
+				ZeroMemory(&ci, sizeof(ci));
+				ci.cbSize = sizeof(ci);
+				ci.hContact = dat->hContact;
+				ci.szProto = dat->szProto;
+				ci.dwFlag = CNF_UNIQUEID;
+				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+					switch (ci.type) {
+						case CNFT_ASCIIZ:
+							_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+							miranda_sys_free(ci.pszVal);
+							break;
+						case CNFT_DWORD:
+							_snprintf(buf, sizeof(buf), "%u", ci.dVal);
+							break;
+					}
+				}
+				if (!OpenClipboard(hwndDlg) || !lstrlenA(buf)) break;
+				EmptyClipboard();
+				hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(buf) + 1);
+				lstrcpyA(GlobalLock(hData), buf);
+				GlobalUnlock(hData);
+				SetClipboardData(CF_TEXT, hData);
+				CloseClipboard();
+			}
 			break;
 		}
 	case DM_UPDATELASTMESSAGE:
@@ -985,7 +1021,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			urd.hInstance = g_hInst;
 			urd.hwndDlg = hwndDlg;
 			urd.lParam = (LPARAM) dat;
-			urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSGSPLIT);
+			urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSG);
 			urd.pfnResizer = MessageDialogResize;
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
 			// The statusbar sometimes draws over these 2 controls so 
@@ -1234,12 +1270,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				DestroyWindow(hwndDlg);
 				return TRUE;
 			case IDC_USERMENU:
+			case IDC_NAME:
 				{
-					RECT rc;
-					HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
-					GetWindowRect(GetDlgItem(hwndDlg, IDC_USERMENU), &rc);
-					TrackPopupMenu(hMenu, 0, rc.left, rc.bottom, 0, hwndDlg, NULL);
-					DestroyMenu(hMenu);
+					if(GetKeyState(VK_SHIFT) & 0x8000) {    // copy user name
+                            SendMessage(hwndDlg, DM_USERNAMETOCLIP, 0, 0);
+                    }
+					else {
+						RECT rc;
+						HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+						GetWindowRect(GetDlgItem(hwndDlg, LOWORD(wParam)), &rc);
+						TrackPopupMenu(hMenu, 0, rc.left, rc.bottom, 0, hwndDlg, NULL);
+						DestroyMenu(hMenu);
+					}
 				}
 				break;
 			case IDC_HISTORY:

@@ -13,6 +13,7 @@
 #define IDC_DROPUSER                    215
 #define IDD_OPT_MSGDLG                  243
 #define IDD_MSGSPLIT                    244
+#define IDD_MSG                         244
 #define IDD_OPT_MSGLOG                  245
 #define IDI_DOWNARROW                   264
 #define IDI_TYPING                      268

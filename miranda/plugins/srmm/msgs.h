@@ -90,6 +90,7 @@ struct MessageWindowData
 #define DM_TYPING            (WM_USER+20)
 #define DM_UPDATEWINICON     (WM_USER+21)
 #define DM_UPDATELASTMESSAGE (WM_USER+22)
+#define DM_USERNAMETOCLIP    (WM_USER+23)
 
 #define EVENTTYPE_STATUSCHANGE 25368
 
