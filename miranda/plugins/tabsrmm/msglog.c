@@ -435,15 +435,10 @@ int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO * dbei)
         case EVENTTYPE_MESSAGE:
         case EVENTTYPE_STATUSCHANGE:
             return 1;
-            break;
         case EVENTTYPE_URL:
-            if(dat->dwEventIsShown & MWF_SHOW_URLEVENTS)
-                return 1;
-            break;
+            return (dat->dwEventIsShown & MWF_SHOW_URLEVENTS);
         case EVENTTYPE_FILE:
-            if(dat->dwEventIsShown & MWF_SHOW_FILEEVENTS)
-                return 1;
-            break;
+            return(dat->dwEventIsShown & MWF_SHOW_FILEEVENTS);
     }
     return 0;
 }
@@ -600,10 +595,10 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             showColon = 1;
 
         if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[H_MSGFONTID_MYTIME]);
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_YOURTIME]);
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s ", szFinalTimestamp);
             if(dbei.eventType == EVENTTYPE_STATUSCHANGE) {
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[H_MSGFONTID_MYNAME]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_YOURNAME]);
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
             }
             showColon = 0;

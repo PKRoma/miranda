@@ -1132,6 +1132,8 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
         SetFocus(hwndNew);
         RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
         UpdateWindow(pContainer->hwnd);
+        if(GetForegroundWindow() != pContainer->hwnd)
+            SetForegroundWindow(pContainer->hwnd);
         PostMessage(hwndNew, DM_SCROLLLOGTOBOTTOM, 0, 0);
     }
 	return hwndNew;		// return handle of the new dialog

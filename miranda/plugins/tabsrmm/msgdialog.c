@@ -833,8 +833,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 dat->hwnd = hwndDlg;
 
-                dat->stats.started = time(NULL);
-                
                 // input history stuff (initialise it..)
 
                 dat->iHistorySize = DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 10);
@@ -1080,6 +1078,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             }
                     }
                 }
+                dat->stats.started = time(NULL);
                 SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
                 dat->dwFlags &= ~MWF_INITMODE;
                 
@@ -1981,15 +1980,27 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case WM_TIMER:
+            /*
+             * timerid_msgsend is composed like:
+             * for single message sends: basevalue (TIMERID_MSGSEND) + send queue index
+             * for multisend: each send entry (hContact/hSendID pair) has its own timer starting at TIMERID_MSGSEND + NR_SENDJOBS in blocks
+             * of SENDJOBS_MAX_SENDS)
+             */
+           
             if (wParam >= TIMERID_MSGSEND) {
                 int iIndex = wParam - TIMERID_MSGSEND;
-                
-                KillTimer(hwndDlg, wParam);
-                //_DebugPopup(dat->hContact, "timeout for: %d (index: %d)", dat->hContact, iIndex);
-                _snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
-                sendJobs[iIndex].iStatus = SQ_ERROR;
-                if(!(dat->dwFlags & MWF_ERRORSTATE))
-                    HandleQueueError(hwndDlg, dat, iIndex);
+
+                if(iIndex < NR_SENDJOBS) {      // single sendjob timer
+                    KillTimer(hwndDlg, wParam);
+                    //_DebugPopup(dat->hContact, "timeout for: %d (index: %d)", dat->hContact, iIndex);
+                    _snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
+                    sendJobs[iIndex].iStatus = SQ_ERROR;
+                    if(!(dat->dwFlags & MWF_ERRORSTATE))
+                        HandleQueueError(hwndDlg, dat, iIndex);
+                }
+                else {
+                    
+                }
             } else if (wParam == TIMERID_FLASHWND) {
                 if (dat->iTabID == -1) {
                     MessageBoxA(0, "TIMER FLASH Critical: iTabID == -1", "Error", MB_OK);
@@ -2524,7 +2535,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     gtx.lpDefaultChar = 0;
                     gtx.lpUsedDefChar = 0;
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
-                    //GetDlgItemTextW(hwndDlg, IDC_MESSAGE, (TCHAR *) & dat->sendBuffer[bufSize], bufSize);
 #endif
                     if (dat->sendBuffer[0] == 0)
                         break;
@@ -2575,7 +2585,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                  // send the buffer to the contacts msg typing area
 #ifdef _UNICODE
                                  SendDlgItemMessage(contacthwnd, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&dat->sendBuffer[strlen(dat->sendBuffer) + 1]);
-                                 // old RichEdit20W version SetDlgItemTextW(contacthwnd, IDC_MESSAGE, (TCHAR *)&dat->sendBuffer[strlen(dat->sendBuffer) + 1]);
 #else
                                  SetDlgItemTextA(contacthwnd, IDC_MESSAGE, (char*)dat->sendBuffer);
 #endif                                     
@@ -3199,7 +3208,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             goto verify;
                         }
                         else {
-                            _snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "%s", (char *)ack->lParam);
+                            _snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "Delivery failure: %s", (char *)ack->lParam);
                             sendJobs[iFound].iStatus = SQ_ERROR;
                             KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
                             if(!(dat->dwFlags & MWF_ERRORSTATE))

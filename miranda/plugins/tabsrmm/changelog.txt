@@ -79,6 +79,12 @@ Version 0.9.9.5 - 2005/01/XX
           and inserts this character right at the cursor.
           e.g. type "263a" and hit Alt+X - it will insert a little face.
 
+        ! in status change events, the nickname was displayed with the wrong font/color setting
+          (own nickname configuration).
+
+        * changed ACK code - the "per message window" ack handler is now replaced by a global
+          ack dispatcher.
+          
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

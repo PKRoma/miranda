@@ -54,6 +54,7 @@ DWORD WINAPI DoMultiSend(LPVOID param)
     
     for(i = 0; i < sendJobs[iIndex].sendCount; i++) {
         sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i]), SEND_FLAGS, (LPARAM) sendJobs[iIndex].sendBuffer);
+        SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
         Sleep((50 * i) + dwDelay + dwDelayAdd);
         if(i > 2)
             dwDelayAdd = 500;
@@ -87,7 +88,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     char szErrorMsg[512];
     
     dat->iCurrentQueueError = iEntry;
-    _snprintf(szErrorMsg, 500, Translate("Delivery failure: %s"), sendJobs[iEntry].szErrorMsg);
+    _snprintf(szErrorMsg, 500, "%s"), sendJobs[iEntry].szErrorMsg);
     LogErrorMessage(hwndDlg, dat, iEntry, (char *)szErrorMsg);
     RecallFailedMessage(hwndDlg, dat, iEntry);
     ShowErrorControls(hwndDlg, dat, TRUE);
@@ -190,6 +191,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
         sendJobs[iEntry].iAcksNeeded = 1;
+        SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
         //_DebugPopup(dat->hContact, "added to queue with sendid: %d as index: %d", sendJobs[iEntry].hSendId[0], iEntry);
     }
     dat->iOpenJobs++;
@@ -202,8 +204,6 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
 
     HandleIconFeedback(hwndDlg, dat, g_IconSend);
     
-    //create a timeout timer
-    SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
     if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
         SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
     return 0;
