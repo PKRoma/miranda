@@ -43,7 +43,7 @@ BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
             if (lParam) {
                 pszError = (char *) lParam;
-                if (!pszError||!strlen(pszError)
+                if (!pszError||!strlen(pszError))
                     pszError = strdup(Translate("An unknown error has occured."));
                 SetDlgItemTextA(hwndDlg, IDC_ERRORTEXT, pszError);
             }

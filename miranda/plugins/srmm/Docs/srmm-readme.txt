@@ -1,6 +1,6 @@
 
-       SRMM Plugin v1.0.1 for Miranda IM
-       _________________________________
+       SRMM Plugin for Miranda IM
+       __________________________
 
 
 About
