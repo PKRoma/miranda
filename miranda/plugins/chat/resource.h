@@ -84,6 +84,7 @@
 #define IDC_TIMEOUT                     1067
 #define IDC_HIGHLIGHT                   1068
 #define IDC_TEXTO                       1069
+#define IDC_LOGGING                     1069
 #define IDC_COLORTEXT                   1070
 #define ID_MESS                         40001
 #define ID_NEW                          40002

@@ -47,7 +47,7 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,2,0,0),
+	PLUGIN_MAKE_VERSION(0,2,0,1),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX ' m3x",
 	"i_am_matrix@users.sourceforge.net",
@@ -111,7 +111,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	{
 		if(IDYES == MessageBoxA(0,Translate("Miranda could not load the Chat plugin because Microsoft Rich Edit v 3 is missing.\nIf you are using Windows 95/98/NT or WINE please upgrade your Rich Edit control.\n\nDo you want to download an update now?."),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://members.chello.se/matrix/re3/richupd.exe");
-		return 0;
+		FreeLibrary(GetModuleHandleA("riched20.dll"));
+		return 1;
 	}
 
 	LoadIcons();
@@ -121,6 +122,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	HookEvents();
 	CreateServiceFunctions();
 	CreateHookableEvents();
+	OptionsInit();
 
 	/*
 	{ // check sizes of structures in m_chat.h
@@ -164,7 +166,7 @@ int __declspec(dllexport) Unload(void)
 	DestroyMenu(g_hMenu);
 	FreeIcons();
 	OptionsUnInit();
-    FreeLibrary(GetModuleHandleA("riched20"));
+    FreeLibrary(GetModuleHandleA("riched20.dll"));
     OleUninitialize();
 	UnhookEvents();
 	return 0;

@@ -1,6 +1,6 @@
 ;----------------------------oOo----------------------------
 ;
-;                   Chat Plugin v 0.2.0.0
+;                   Chat Plugin v 0.2.0.1
 ;
 ;
 ;                   TRANSLATION TEMPLATE
@@ -43,17 +43,17 @@
 ;[Events]
 ;[Chat Log]
 ;[Popups]
-;[Chat: Incoming message]
-;[Chat: Message is highlighted]
-;[Chat: User has performed an action]
-;[Chat: User has joined]
-;[Chat: User has left]
-;[Chat: User has kicked some other user]
-;[Chat: User´s status was changed]
-;[Chat: User has changed name]
-;[Chat: User has sent a notice]
-;[Chat: User has disconnected]
-;[Chat: The topic has been changed]
+;[Incoming message]
+;[Message is highlighted]
+;[User has performed an action]
+;[User has joined]
+;[User has left]
+;[User has kicked some other user]
+;[User´s status was changed]
+;[User has changed name]
+;[User has sent a notice]
+;[User has disconnected]
+;[The topic has been changed]
 
 ; window.c
 ;[Insert a smiley]
@@ -76,14 +76,14 @@
 ;[Spin1]
 ;[Spin2]
 ;[Custom1]
-;[Enable Highlighting]
+;[Enable highlighting]
+;[Enable logging to disk]
 ;[Use same style as in the message log]
 ;[Use default colours]
 ;[Use custom colours]
 ;[Custom2]
 ;[OK]
 ;[&Send]
-;[...]
 ;[Userlist user indent (pixels):]
 ;[Userlist row distance (pixels):]
 ;[Add new rooms to group:]

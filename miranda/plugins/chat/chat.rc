@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -171,14 +171,14 @@ BEGIN
     EDITTEXT        IDC_INSTAMP,60,126,35,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_TIMESTAMP,118,126,81,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_LOGTIMESTAMP,205,126,81,14,ES_AUTOHSCROLL
-    CONTROL         "Enable Highlighting",IDC_HIGHLIGHT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,153,77,10
+    CONTROL         "Enable highlighting",IDC_HIGHLIGHT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,153,75,10
     EDITTEXT        IDC_LOGLIMIT,248,151,38,14,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS | UDS_HOTTRACK,281,151,11,14
-    EDITTEXT        IDC_HIGHLIGHTWORDS,10,181,276,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_HIGHLIGHTWORDS,10,174,276,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_LOGDIRECTORY,10,212,211,14,ES_AUTOHSCROLL | 
                     ES_READONLY
     PUSHBUTTON      "...",IDC_FONTCHOOSE,221,212,19,14
@@ -201,10 +201,12 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,10,145,276,1
     LTEXT           "Log timestamp",IDC_STATIC,205,118,46,8
     LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,10,
-                    173,276,8
+                    166,228,8
     LTEXT           "Log directory",IDC_STATIC,10,204,211,8
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,176,12,1,88
     PUSHBUTTON      "...",IDC_CHOOSEFONT,148,51,20,14
+    CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,193,85,10
 END
 
 IDD_OPTIONSPOPUP DIALOGEX 0, 0, 277, 177
@@ -275,7 +277,7 @@ BEGIN
         HORZGUIDE, 126
         HORZGUIDE, 146
         HORZGUIDE, 158
-        HORZGUIDE, 181
+        HORZGUIDE, 174
         HORZGUIDE, 212
     END
 
@@ -377,7 +379,7 @@ END
 
 2 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""winres.h""\r\n"
     "\0"
 END
 

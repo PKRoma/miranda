@@ -92,7 +92,30 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
 static void	InitButtons(HWND hwndDlg, CHATWINDOWDATA* dat)
 {
 	MODULE * pInfo = MM_FindModule(dat->pszModule);
-	SendDlgItemMessage(hwndDlg,IDC_SMILEY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[3]);
+
+	/* why the hell does this crash??????
+	//	HICON hSmileyIcon = NULL;
+
+	if(SmileyAddInstalled )
+	{
+		SMADD_GETICON smgi;
+		SMADD_INFO smainfo;
+
+        smainfo.cbSize = sizeof(smainfo);
+        smainfo.Protocolname = "OOBI"; //dat->pszModule;
+        CallService(MS_SMILEYADD_GETINFO, 0, (LPARAM)&smainfo);
+
+		smgi.cbSize = sizeof(smgi);
+		smgi.Protocolname = "OOBI"; //dat->pszModule;
+		smgi.SmileySequence = ":)";
+		smgi.SmileyIcon = NULL;
+		smgi.Smileylength = 0;
+		CallService(MS_SMILEYADD_GETSMILEYICON, 0, (LPARAM)&smgi);
+		if (smgi.SmileyIcon)
+			hSmileyIcon = smgi.SmileyIcon;
+	}
+*/
+	SendDlgItemMessage(hwndDlg,IDC_SMILEY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)/*hSmileyIcon?hSmileyIcon:*/hIcons[3]);
 	SendDlgItemMessage(hwndDlg,IDC_BOLD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[1]);
 	SendDlgItemMessage(hwndDlg,IDC_ITALICS,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[2]);
 	SendDlgItemMessage(hwndDlg,IDC_UNDERLINE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[0]);
@@ -374,11 +397,11 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		case IDC_LOG:
 			urc->rcItem.top = bTop|g_LogOptions.bShowName?27:0;
 			urc->rcItem.right = bNick?urc->dlgNewSize.cx - dat->iSplitterX:urc->dlgNewSize.cx;
-			urc->rcItem.bottom = bFormat?urc->dlgNewSize.cy - dat->iSplitterY:urc->dlgNewSize.cy - dat->iSplitterY+25;
+			urc->rcItem.bottom = bFormat?(urc->dlgNewSize.cy - dat->iSplitterY):(urc->dlgNewSize.cy - dat->iSplitterY+25);
 			return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
 		case IDC_SPLITTERY:
 			urc->rcItem.top = bFormat?urc->dlgNewSize.cy - dat->iSplitterY:urc->dlgNewSize.cy - dat->iSplitterY+25;
-			urc->rcItem.bottom = bFormat?urc->dlgNewSize.cy - dat->iSplitterY+2:urc->dlgNewSize.cy - dat->iSplitterY+27;
+			urc->rcItem.bottom = bFormat?(urc->dlgNewSize.cy - dat->iSplitterY+2):(urc->dlgNewSize.cy - dat->iSplitterY+27);
 			return RD_ANCHORX_WIDTH|RD_ANCHORY_CUSTOM;
 		case IDC_MESSAGE:
 			GetWindowRect(dat->hwndStatus, &rc);
@@ -443,11 +466,11 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
 				break;
 
-			if (wParam == 9 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-i (italics)
+			if (wParam == 9 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-i (italics)
 			{
 				return TRUE;
 			}
-			if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-space (paste clean text)
+			if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-space (paste clean text)
 			{
 				return TRUE;
 			}
@@ -476,7 +499,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			else
 				dat->lastEnterTime = 0;
 
-			if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {      //ctrl-a
+			if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) {      //ctrl-a
 				SendMessage(hwnd, EM_SETSEL, 0, -1);
 				return 0;
 			}
@@ -486,6 +509,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			static int start, end;
  			if (wParam == VK_RETURN) 
 			{
+				dat->szTabSave[0] = '\0';
 				if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) 
 				{
 					return 0;
@@ -496,6 +520,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					{
 						return 0;
 					}
+					break;
 				}
 				break;
 			}
@@ -563,7 +588,9 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			}
 			else
 			{
-				if(dat->szTabSave[0] != '\0' && wParam != VK_RIGHT && wParam != VK_LEFT && wParam != VK_SPACE && wParam != VK_RETURN)
+				if(dat->szTabSave[0] != '\0' && wParam != VK_RIGHT && wParam != VK_LEFT 
+					&& wParam != VK_SPACE && wParam != VK_RETURN && wParam != VK_BACK 
+					&& wParam != VK_DELETE )
 				{
 
 					if(start == 0)
@@ -574,34 +601,34 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				dat->szTabSave[0] = '\0';
 			}
 			}
-			if (wParam == 0x49 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-i (italics)
+			if (wParam == 0x49 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-i (italics)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_ITALICS, IsDlgButtonChecked(GetParent(hwnd), IDC_ITALICS) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_ITALICS, 0), 0);
 				return TRUE;		
 			}			
-			if (wParam == 0x42 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-b (bold)
+			if (wParam == 0x42 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000) ) // ctrl-b (bold)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_BOLD, IsDlgButtonChecked(GetParent(hwnd), IDC_BOLD) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_BOLD, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x55 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-u (paste clean text)
+			if (wParam == 0x55 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-u (paste clean text)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_UNDERLINE, IsDlgButtonChecked(GetParent(hwnd), IDC_UNDERLINE) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_UNDERLINE, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x4b && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-k (paste clean text)
+			if (wParam == 0x4b && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-k (paste clean text)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_COLOR, IsDlgButtonChecked(GetParent(hwnd), IDC_COLOR) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_COLOR, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-space (paste clean text)
+			if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-space (paste clean text)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_BKGCOLOR, BST_UNCHECKED);
 				CheckDlgButton(GetParent(hwnd), IDC_COLOR, BST_UNCHECKED);
@@ -616,46 +643,46 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				return TRUE;
 		
 			}			
-			if (wParam == 0x4c && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-l (paste clean text)
+			if (wParam == 0x4c && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-l (paste clean text)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_BKGCOLOR, IsDlgButtonChecked(GetParent(hwnd), IDC_BKGCOLOR) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_BKGCOLOR, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x46 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-f (paste clean text)
+			if (wParam == 0x46 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-f (paste clean text)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_FILTER, IsDlgButtonChecked(GetParent(hwnd), IDC_FILTER) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_FILTER, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x4e && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-n (paste clean text)
+			if (wParam == 0x4e && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-n (paste clean text)
 			{
 				CheckDlgButton(GetParent(hwnd), IDC_SHOWNICKLIST, IsDlgButtonChecked(GetParent(hwnd), IDC_SHOWNICKLIST) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_SHOWNICKLIST, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x48 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-h (paste clean text)
+			if (wParam == 0x48 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-h (paste clean text)
 			{
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_HISTORY, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x4f && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-o (paste clean text)
+			if (wParam == 0x4f && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-o (paste clean text)
 			{
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHANMGR, 0), 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x56 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-v (paste clean text)
+			if (wParam == 0x56 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-v (paste clean text)
 			{
 				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
 				return TRUE;
 		
 			}			
-			if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-w (close window)
+			if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-w (close window)
 			{
 				PostMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
 				return TRUE;
@@ -668,7 +695,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		        dat->lastEnterTime = 0;
 				return TRUE;
 			}
-			if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000))
+			if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000))
 			{
 			    int iLen;
 				GETTEXTLENGTHEX gtl = {0};
@@ -696,7 +723,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		        dat->lastEnterTime = 0;
 				return TRUE;
 			}
-			if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000))
+			if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000))
 			{
 
 				int iLen;
@@ -1271,7 +1298,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			DBWriteContactSettingString(dat->hContact, dat->pszModule , "Topic", "");
 			DBWriteContactSettingString(dat->hContact, dat->pszModule, "StatusBar", "");
-			DBWriteContactSettingDword(dat->hContact, dat->pszModule, "Count", 0);
+//			DBWriteContactSettingDword(dat->hContact, dat->pszModule, "Count", 0);
 
 			{ //set statusbar
 				int x = 12;
@@ -1639,7 +1666,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 							if(g_LogOptions.FlashWindow)
 								SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
-							if(DBGetContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(WORD) 40071) != 40071)
+							if(DBGetContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(WORD) 0) != 40071)
 								DBWriteContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
 						}
 						if(bHighl)
@@ -1678,11 +1705,15 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}break;
 		case GC_EVENT_CONTROL + WM_USER+500:
 			{
+			NEWEVENTLPARAM *nlu = (NEWEVENTLPARAM *)lParam;
 			switch(wParam) 
 			{
 			case WINDOW_INITDONE:
 				if(DBGetContactSettingByte(NULL, "Chat", "PopupOnJoin", 0)!=0)
-					break;
+				{
+					nlu->dwItemData = 1; // stupid fix
+					return TRUE;
+				}
 				// fall through
 			case WINDOW_VISIBLE:
 				{
@@ -1699,34 +1730,42 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if(bRedrawFlag)
 						SendMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 				}
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			case WINDOW_HIDDEN:
 				ShowWindow(hwndDlg, SW_HIDE); 
 				SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			case WINDOW_MAXIMIZE:
 				ShowWindow(hwndDlg, SW_MAXIMIZE); 
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			case WINDOW_MINIMIZE:
 				ShowWindow(hwndDlg, SW_MINIMIZE); 
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			case WINDOW_CLEARLOG:
 				SetDlgItemText(hwndDlg, IDC_LOG, "");
 				LM_RemoveAll(&dat->pEventListStart, &dat->pEventListEnd);
 				dat->iEventCount = 0;
 				dat->LastTime = 0;
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			case WINDOW_TERMINATE:
 				if(dat->iType == GCW_CHATROOM)
 					PostMessage(hwndDlg, GC_CLOSEWINDOW, 0, 0);
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			case WINDOW_OFFLINE:
 					SendMessage(hwndDlg, GC_NICKLISTREINIT, 0, 0);
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			case WINDOW_ONLINE:
 				SendMessage(dat->hwndStatus, SB_SETICON, 0,(LPARAM)MM_FindModule(dat->pszModule)->hOnlineIcon);
 				DBWriteContactSettingWord(dat->hContact, dat->pszModule, "Status", ID_STATUS_ONLINE);
-				break; 
+				nlu->dwItemData = 1; // stupid fix
+				return TRUE;
 			default:break;
 			}
 
@@ -2561,7 +2600,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			DBWriteContactSettingString(dat->hContact, dat->pszModule , "Topic", "");
 			DBWriteContactSettingString(dat->hContact, dat->pszModule, "StatusBar", "");
-			DBWriteContactSettingDword(dat->hContact, dat->pszModule, "Count", 0);
+//			DBWriteContactSettingDword(dat->hContact, dat->pszModule, "Count", 0);
 
 			DoEventHook(hwndDlg, dat->pszID, dat->pszModule, GC_USER_TERMINATE, NULL, NULL, (DWORD)dat->ItemData);
 

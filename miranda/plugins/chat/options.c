@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "chat.h"
 #include <shlobj.h>
+#include <shlwapi.h>
 
 extern HANDLE	g_hInst;
 extern HBRUSH 	hEditBkgBrush;
@@ -83,7 +84,7 @@ static struct branch_t branch1[] = {
 	{"Send message by pressing the Enter key twice", "SendOnDblEnter", 0,0, NULL},
 	{"Flash window when someone speaks", "FlashWindow", 0,0, NULL},
 	{"Flash window when a word is highlighted", "FlashWindowHighlight", 0,0, NULL},
-	{"Show list of users in a chat room", "ShowNicklist", 0,1, NULL},
+	{"Show list of users in the chat room", "ShowNicklist", 0,1, NULL},
 	{"Show button for sending messages", "ShowSend", 0, 0, NULL},
 	{"Show name of the chat room in the top left of the window", "ShowName", 0,1, NULL},
 	{"Show buttons for controlling the chat room", "ShowTopButtons", 0,1, NULL},
@@ -99,7 +100,6 @@ static struct branch_t branch2[] = {
 	{"Prefix all events with a timestamp", "ShowTimeStamp", 0,1, NULL},
 	{"Only prefix with timestamp if it has changed", "ShowTimeStampIfChanged", 0,0, NULL},
 	{"Indent the second line of a message", "LogIndentEnabled", 0,0, NULL},
-	{"Record all events in the room to a log file", "LoggingEnabled", 0, 0, NULL},
 	{"Strip colors from messages in the log", "StripFormatting", 0, 0, NULL},
 	{"Enable the \'event filter\' for new rooms", "FilterEnabled", 0,0, NULL}
 };
@@ -560,7 +560,10 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		hBkgColourBrush = CreateSolidBrush(SendDlgItemMessage(hwndDlg, IDC_LOGBKG, CPM_GETCOLOUR, 0, 0));
 		CheckDlgButton(hwndDlg, IDC_HIGHLIGHT, g_LogOptions.HighlightEnabled);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), g_LogOptions.HighlightEnabled?TRUE:FALSE);
-
+		CheckDlgButton(hwndDlg, IDC_LOGGING, g_LogOptions.LoggingEnabled);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_LogOptions.LoggingEnabled?TRUE:FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_LogOptions.LoggingEnabled?TRUE:FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), g_LogOptions.LoggingEnabled?TRUE:FALSE);
 
 		{
 			int i;
@@ -648,6 +651,11 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		case IDC_HIGHLIGHT:
 			EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED?TRUE:FALSE);
 
+			break;
+		case IDC_LOGGING:
+			EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
 			break;
 		case IDC_FONTLIST:
 			if (HIWORD(wParam) == LBN_SELCHANGE) {
@@ -835,6 +843,14 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 
 						g_LogOptions.HighlightEnabled = IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED?TRUE:FALSE;
 						DBWriteContactSettingByte(NULL, "Chat", "HighlightEnabled", (BYTE)g_LogOptions.HighlightEnabled);
+
+						g_LogOptions.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE;
+						DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_LogOptions.LoggingEnabled);
+						if(g_LogOptions.LoggingEnabled && g_LogOptions.pszLogDir)
+						{
+							if(!PathIsDirectory(g_LogOptions.pszLogDir))
+								CreateDirectory(g_LogOptions.pszLogDir, NULL);
+						}
 
 						iLen = SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_GETPOS,0,0);
 						DBWriteContactSettingWord(NULL, "Chat", "LogLimit", (WORD)iLen);
@@ -1133,19 +1149,27 @@ int OptionsInit(void)
 	g_hOptions = HookEvent(ME_OPT_INITIALISE, OptionsInitialize);
 	hEditBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW)));
 
-	SkinAddNewSound("ChatMessage", Translate("Chat: Incoming message"), "");
-	SkinAddNewSound("ChatHighlight", Translate("Chat: Message is highlighted"), "");
-	SkinAddNewSound("ChatAction", Translate("Chat: User has performed an action"), "");
-	SkinAddNewSound("ChatJoin", Translate("Chat: User has joined"), "");
-	SkinAddNewSound("ChatPart", Translate("Chat: User has left"), "");
-	SkinAddNewSound("ChatKick", Translate("Chat: User has kicked some other user"), "");
-	SkinAddNewSound("ChatMode", Translate("Chat: User´s status was changed"), "");
-	SkinAddNewSound("ChatNick", Translate("Chat: User has changed name"), "");
-	SkinAddNewSound("ChatNotice", Translate("Chat: User has sent a notice"), "");
-	SkinAddNewSound("ChatQuit", Translate("Chat: User has disconnected"), "");
-	SkinAddNewSound("ChatTopic", Translate("Chat: The topic has been changed"), "");
+	SkinAddNewSoundEx("ChatMessage", "Chat", Translate("Incoming message"));
+	SkinAddNewSoundEx("ChatHighlight", "Chat", Translate("Message is highlighted"));
+	SkinAddNewSoundEx("ChatAction", "Chat", Translate("User has performed an action"));
+	SkinAddNewSoundEx("ChatJoin", "Chat", Translate("User has joined"));
+	SkinAddNewSoundEx("ChatPart", "Chat", Translate("User has left"));
+	SkinAddNewSoundEx("ChatKick", "Chat", Translate("User has kicked some other user"));
+	SkinAddNewSoundEx("ChatMode", "Chat", Translate("User´s status was changed"));
+	SkinAddNewSoundEx("ChatNick", "Chat", Translate("User has changed name"));
+	SkinAddNewSoundEx("ChatNotice", "Chat", Translate("User has sent a notice"));
+	SkinAddNewSoundEx("ChatQuit", "Chat", Translate("User has disconnected"));
+	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
+
+	if(g_LogOptions.LoggingEnabled && g_LogOptions.pszLogDir)
+	{
+		if(!PathIsDirectory(g_LogOptions.pszLogDir))
+			CreateDirectory(g_LogOptions.pszLogDir, NULL);
+	}
+
 	return 0;
 }
+
 
 int OptionsUnInit(void)
 {

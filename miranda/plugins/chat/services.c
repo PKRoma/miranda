@@ -76,7 +76,6 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		SmileyAddInstalled = TRUE;
 	if(ServiceExists(MS_POPUP_ADDPOPUPEX))
 		PopUpInstalled = TRUE;
-	OptionsInit();
 	CList_SetAllOffline(TRUE);
 
  	return 0;
@@ -109,6 +108,7 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 
 	if(gcr->cbSize != SIZEOF_STRUCT_GCREGISTER_V1)
 		return 1;
+
 
 	newModule.pszModule = (char *)gcr->pszModule;
 	newModule.pszModDispName = (char *)gcr->pszModuleDispName;
@@ -187,7 +187,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	if(gcd->pszID || gcd->iType == GC_EVENT_NOTICE || gcd->iType == GC_EVENT_INFORMATION)
 	{
 		int i = WM_SendMessage(gcd->pszID, gcd->pszModule, WM_USER+500+gcd->iType, (WPARAM)wParam, (LPARAM)&nul);
-		if(gcd->iType == GC_EVENT_GETITEMDATA)
+		if(gcd->iType == GC_EVENT_GETITEMDATA || gcd->iType == GC_EVENT_CONTROL)
 			return nul.dwItemData;
 		return i;
 	}

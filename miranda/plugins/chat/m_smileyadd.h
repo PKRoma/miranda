@@ -89,6 +89,27 @@ typedef struct
 #define MS_SMILEYADD_GETSMILEYICON "SmileyAdd/GetSmileyIcon"
 
 
+//get smiley button icon
+//wParam = (WPARAM) 0; not used
+//lParam = (LPARAM) (SMADD_GETINFO*) &smgi;  //pointer to SmAddRicheditStructure
+typedef struct 
+{
+  int cbSize;             //same as in SMADD_RICHEDIT
+  char* Protocolname;     //   "             "
+  HICON ButtonIcon;       //RETURN VALUE: this is filled with the icon handle
+                          //of the smiley that can be used on the button
+                          //do not destroy! NULL if the buttonicon is not defined...
+  int NumberOfVisibleSmileys;    //Number of visible smileys defined.
+  int NumberOfSmileys;    //Number of total smileys defined
+
+} SMADD_INFO;
+
+#define MS_SMILEYADD_GETINFO "SmileyAdd/GetInfo"
+
+
+
+
+
 
 //
 //

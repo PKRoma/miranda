@@ -364,6 +364,10 @@ SOURCE=.\chat_internal.txt
 
 SOURCE=.\Chat_Readme.txt
 # End Source File
+# Begin Source File
+
+SOURCE=.\Chat_Translate.txt
+# End Source File
 # End Group
 # End Target
 # End Project
