@@ -231,9 +231,11 @@ char* MirandaVersionToString(int v)
 	else
 	{
 		if (v == 1)
-			strcpy(szVersion, "Miranda ICQ 0.1.2.0 alpha");
-		else
-			_snprintf(szVersion, 63, "Miranda ICQ %u.%u.%u.%u%s", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+			strcpy(szVersion, "Miranda IM 0.1.2.0 alpha");
+		else if ((v&0x7FFFFFFF) > 0x030301)
+			_snprintf(szVersion, 63, "Miranda IM %u.%u.%u.%u%s", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+    else
+			_snprintf(szVersion, 63, "Miranda IM (ICQ v%u.%u.%u.%u%s)", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
 	}
 
 	return szVersion;
