@@ -185,6 +185,7 @@ typedef struct _globals {
     // static options, initialised when plugin is loading
     HWND g_hwndHotkeyHandler;
     HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
+    HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
     // external plugins
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail;
@@ -196,7 +197,7 @@ typedef struct _globals {
     HICON g_buttonBarIcons[NR_BUTTONBARICONS];
     TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
     int iSendJobCurrent;
-    // dynamic options, may be reloaded
+    // dynamic options, need reload when options change
     int m_SmileyPluginEnabled;
     int m_SendOnShiftEnter;
     int m_SendOnEnter;

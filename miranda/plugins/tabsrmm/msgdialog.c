@@ -40,33 +40,6 @@ $Id$
 #include "sendqueue.h"
 #include "msgdlgutils.h"
 
-#ifdef __MATHMOD_SUPPORT
-//mathMod begin
-#define MTH_SHOW "Math/Show"
-#define MTH_HIDE "Math/Hide"
-#define MTH_RESIZE "Math/Resize"
-#define MTH_SETFORMULA "Math/SetFormula"
-#define MTH_Set_Srmm_HWND "Math/SetSrmmHWND" //übergibt fenster-Handle des aktuellen Message-Dialogs
-#define MTH_GET_PREVIEW_HEIGHT "Math/getPreviewHeight"
-#define MTH_GET_PREVIEW_SHOWN "Math/getPreviewShown"
-#define MTH_SUBSTITUTE_DELIMITER "Math/SubstituteDelimiter"
-
-typedef struct
-{
-    int top;
-	int left;
-	int right;
-	int bottom;
-}	TMathWindowInfo;
-typedef struct
-{
-	HWND EditHandle;
-	char* Substitute;
-}	TMathSubstInfo;
-
-//mathMod end
-#endif
-
 #ifdef __GNUWIN32__
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 #endif
@@ -88,11 +61,9 @@ static void FlashTab(HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, int f
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
 void ReflashContainer(struct ContainerWindowData *pContainer);
 
-extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
-extern HINSTANCE g_hInst, g_hIconDLL;
-extern HANDLE g_hEvent_MsgWin;
+extern HINSTANCE g_hInst;
 
 void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 
@@ -268,14 +239,12 @@ void SetDialogToType(HWND hwndDlg)
         SetDlgItemText(hwndDlg, IDOK, szSendLabel);
     }
 
-// BEGIN MOD#33: Show contact's picture
     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
     GetAvatarVisibility(hwndDlg, dat);
     if (dat->showPic)
         ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC),SW_SHOW);
     else
         ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC),SW_HIDE);
-// END MOD#33
 
     if((showButton || showInfo || showSend))
         ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), SW_SHOW);
@@ -526,7 +495,7 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
             {
                 RECT rc;
                 GetClientRect(hwnd, &rc);
-                SetCursor(rc.right > rc.bottom ? hCurSplitNS : hCurSplitWE);
+                SetCursor(rc.right > rc.bottom ? myGlobals.hCurSplitNS : myGlobals.hCurSplitWE);
                 return TRUE;
             }
         case WM_LBUTTONDOWN:
@@ -706,31 +675,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
-
-#ifdef __MATHMOD_SUPPORT
-//mathMod begin
-void updatePreview(HWND hwndDlg)
-{	
-	TMathWindowInfo mathWndInfo;
-
-	int len=GetWindowTextLengthA( GetDlgItem( hwndDlg, IDC_MESSAGE) );
-	RECT windRect;
-	char * thestr = malloc(len+5);
-	GetWindowTextA( GetDlgItem( hwndDlg, IDC_MESSAGE),(LPTSTR) thestr, len+1);
-	// größe ermitteln:
-	GetWindowRect(hwndDlg,&windRect);
-	mathWndInfo.top=windRect.top;
-	mathWndInfo.left=windRect.left;
-	mathWndInfo.right=windRect.right;
-	mathWndInfo.bottom=windRect.bottom;
-
-	CallService(MTH_Set_Srmm_HWND,0,(LPARAM)hwndDlg); 
-	CallService(MTH_SETFORMULA,0,(LPARAM) thestr);
-	CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-	free(thestr);
-}
-//mathMod end
-#endif
 
 static void NotifyTyping(struct MessageWindowData *dat, int mode)
 {
@@ -1283,11 +1227,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case DM_OPTIONSAPPLIED:
-#ifdef __MATHMOD_SUPPORT            
-            //mathMod begin
-			CallService(MATH_SETBKGCOLOR, 0, (LPARAM)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MATH_BKGCOLOUR, SRMSGDEFSET_MATH_BKGCOLOUR));
-			//mathMod end
-#endif            
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
                 if(myGlobals.m_IgnoreContactSettings) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
@@ -1639,16 +1578,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
                 mmi->ptMinTrackSize.x = rcWindow.right - rcWindow.left - ((rcLog.right - rcLog.left) - dat->minEditBoxSize.cx);
                 mmi->ptMinTrackSize.y = rcWindow.bottom - rcWindow.top - ((rcLog.bottom - rcLog.top) - dat->minEditBoxSize.cy);
-                
-#ifdef __MATHMOD_SUPPORT    			
-                //mathMod begin		// set maximum size, to fit formula-preview on the screen.
-    			if (CallService(MTH_GET_PREVIEW_SHOWN,0,0))	//when preview is shown, fit the maximum size of message-dialog.
-    				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0);//max-height
-    			else
-    				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN);				
-    			//mathMod end 
-#endif                
-            
                 return 0;
             }
         case WM_SIZE:
@@ -1688,44 +1617,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
-#ifdef __MATHMOD_SUPPORT    			
-                //mathMod begin
-    			{
-    						TMathWindowInfo mathWndInfo;
-    												
-    						RECT windRect;
-    						// größe ermitteln:
-    						GetWindowRect(hwndDlg,&windRect);
-    						mathWndInfo.top=windRect.top;
-    						mathWndInfo.left=windRect.left;
-    						mathWndInfo.right=windRect.right;
-    						mathWndInfo.bottom=windRect.bottom;
-    						CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg); 
-    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-    			}
-    			//mathMod end
-#endif                
                 break;
             }
-#ifdef __MATHMOD_SUPPORT    		
-            //mathMod begin
-    		case WM_MOVE:
-    		{
-    			TMathWindowInfo mathWndInfo;
-    
-    			RECT windRect;
-    			// größe ermitteln:
-    			GetWindowRect(hwndDlg,&windRect);
-    			mathWndInfo.top=windRect.top;
-    			mathWndInfo.left=windRect.left;
-    			mathWndInfo.right=windRect.right;
-    			mathWndInfo.bottom=windRect.bottom;
-    			CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg);
-    			CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-    			break;
-    		}
-    		//mathMod end
-#endif            
         case DM_SPLITTERMOVED:
             {
                 POINT pt;
@@ -2895,51 +2788,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     break;
                 case IDC_MESSAGE:
-#ifdef __MATHMOD_SUPPORT					
-                    //mathMod begin
-					if (HIWORD(wParam) == EN_CHANGE)
-					{
-						WINDOWPLACEMENT  cWinPlace;
-						{	// substitute Delimiter:
-						DBVARIANT dbv;
-						TMathSubstInfo substInfo;
-						substInfo.EditHandle = GetDlgItem(hwndDlg,IDC_MESSAGE);
-						if (ServiceExists(MTH_SUBSTITUTE_DELIMITER))
-						{
-							if (DBGetContactSetting(NULL, SRMSGMOD, SRMSGSET_MATH_SUBSTITUTE_DELIMITER, &dbv))
-							{
-								substInfo.Substitute = malloc(50);
-								lstrcpynA(substInfo.Substitute,SRMSGDEFSET_MATH_SUBSTITUTE_DELIMITER , 49);
-								CallService(MTH_SUBSTITUTE_DELIMITER,0,(LPARAM)&substInfo);
-								free(substInfo.Substitute);
-							}
-							else
-							{
-								substInfo.Substitute = dbv.pszVal;
-								CallService(MTH_SUBSTITUTE_DELIMITER,0,(LPARAM)&substInfo);
-							    DBFreeVariant(&dbv);
-							}
-						}
-
-						}
-						updatePreview(hwndDlg);
-						CallService(MTH_SHOW, 0, 0);
-						SetForegroundWindow(hwndDlg);
-						cWinPlace.length=sizeof(WINDOWPLACEMENT);
-						GetWindowPlacement(hwndDlg,&cWinPlace);
-						if (cWinPlace.showCmd == SW_SHOWMAXIMIZED)
-						{
-							RECT rcWindow;
-							GetWindowRect(hwndDlg, &rcWindow);
-							if(CallService(MTH_GET_PREVIEW_SHOWN,0,0))
-								MoveWindow(hwndDlg,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0),1);
-							else
-								MoveWindow(hwndDlg,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN),1);
-						}
-
-					}
-					//mathMod end
-#endif                    
                     if (HIWORD(wParam) == EN_CHANGE) {
                         if(dat->pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);
@@ -3092,7 +2940,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         case EN_LINK:
                             switch (((ENLINK *) lParam)->msg) {
                                 case WM_SETCURSOR:
-                                    SetCursor(hCurHyperlinkHand);
+                                    SetCursor(myGlobals.hCurHyperlinkHand);
                                     SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
                                     return TRUE;
                                 case WM_RBUTTONDOWN:
@@ -3903,13 +3751,6 @@ verify:
             else
                 MessageBoxA(0,"dat == 0 in WM_DESTROY", "Warning", MB_OK);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
-            
-#ifdef __MATHMOD_SUPPORT			
-            //mathMod begin
-			CallService(MTH_Set_Srmm_HWND,0,(LPARAM) 0);	// set srmm-hwnd 0
-			CallService(MTH_HIDE, 0, 0);
-			//mathMod end
-#endif            
             break;
     }
     return FALSE;

@@ -6,8 +6,8 @@ CC   = gcc.exe
 WINDRES = windres.exe
 LIBDIR=c:/dev-cpp/lib
 RES  = tabsrmm_private.res
-OBJ  = Release_MINGW32_UNICODE/ImageDataObject.o Release_MINGW32_UNICODE/sendqueue.o Release_MINGW32_UNICODE/msgdlgutils.o Release_MINGW32_UNICODE/container.o Release_MINGW32_UNICODE/containeroptions.o Release_MINGW32_UNICODE/hotkeyhandler.o Release_MINGW32_UNICODE/msgdialog.o Release_MINGW32_UNICODE/msglog.o Release_MINGW32_UNICODE/msgoptions.o Release_MINGW32_UNICODE/msgs.o Release_MINGW32_UNICODE/selectcontainer.o Release_MINGW32_UNICODE/srmm.o $(RES)
-LINKOBJ  = Release_MINGW32_UNICODE/ImageDataObject.o Release_MINGW32_UNICODE/sendqueue.o Release_MINGW32_UNICODE/msgdlgutils.o Release_MINGW32_UNICODE/container.o Release_MINGW32_UNICODE/containeroptions.o Release_MINGW32_UNICODE/hotkeyhandler.o Release_MINGW32_UNICODE/msgdialog.o Release_MINGW32_UNICODE/msglog.o Release_MINGW32_UNICODE/msgoptions.o Release_MINGW32_UNICODE/msgs.o Release_MINGW32_UNICODE/selectcontainer.o Release_MINGW32_UNICODE/srmm.o $(RES)
+OBJ  = Release_MINGW32_UNICODE/ImageDataObject.o Release_MINGW32_UNICODE/themes.o Release_MINGW32_UNICODE/sendqueue.o Release_MINGW32_UNICODE/msgdlgutils.o Release_MINGW32_UNICODE/container.o Release_MINGW32_UNICODE/containeroptions.o Release_MINGW32_UNICODE/hotkeyhandler.o Release_MINGW32_UNICODE/msgdialog.o Release_MINGW32_UNICODE/msglog.o Release_MINGW32_UNICODE/msgoptions.o Release_MINGW32_UNICODE/msgs.o Release_MINGW32_UNICODE/selectcontainer.o Release_MINGW32_UNICODE/srmm.o $(RES)
+LINKOBJ  = Release_MINGW32_UNICODE/ImageDataObject.o Release_MINGW32_UNICODE/themes.o Release_MINGW32_UNICODE/sendqueue.o Release_MINGW32_UNICODE/msgdlgutils.o Release_MINGW32_UNICODE/container.o Release_MINGW32_UNICODE/containeroptions.o Release_MINGW32_UNICODE/hotkeyhandler.o Release_MINGW32_UNICODE/msgdialog.o Release_MINGW32_UNICODE/msglog.o Release_MINGW32_UNICODE/msgoptions.o Release_MINGW32_UNICODE/msgs.o Release_MINGW32_UNICODE/selectcontainer.o Release_MINGW32_UNICODE/srmm.o $(RES)
 LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)/libgdi32.a $(LIBDIR)/libole32.a $(LIBDIR)/libuser32.a $(LIBDIR)/libcomctl32.a $(LIBDIR)/libuuid.a $(LIBDIR)/libcomdlg32.a  $(LIBDIR)/libstdc++.a -mwindows -s
 INCS =  -I"C:/Dev-Cpp/include"
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
@@ -32,6 +32,9 @@ $(BIN): $(LINKOBJ)
 
 Release_MINGW32_UNICODE/ImageDataObject.o: ImageDataObject.cpp
 	$(CPP) -c ImageDataObject.cpp -o Release_MINGW32_UNICODE/ImageDataObject.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/themes.o: themes.c
+	$(CC) -c themes.c -o Release_MINGW32_UNICODE/themes.o $(CFLAGS)
 
 Release_MINGW32_UNICODE/sendqueue.o: sendqueue.c
 	$(CC) -c sendqueue.c -o Release_MINGW32_UNICODE/sendqueue.o $(CFLAGS)

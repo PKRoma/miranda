@@ -33,13 +33,6 @@ $Id$
 #include "msgs.h"
 #include "m_smileyadd.h"
 
-#ifdef __MATHMOD_SUPPORT
-//mathMod begin
-#define MTH_GET_RTF_BITMAPTEXT "Math/GetRTFBitmapText"
-#define MTH_FREE_RTF_BITMAPTEXT "Math/FreeRTFBitmapText"
-//mathMod end
-#endif
-
 #if defined(RTFBITMAPS)
 static PBYTE pLogIconBmpBits[21];
 static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
@@ -671,62 +664,20 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     //}
                 }
                 else {
-#ifdef __MATHMOD_SUPPORT
-                    if (ServiceExists(MTH_GET_RTF_BITMAPTEXT))
-                    {
-                        char *rtfBmp = 0;
-                        rtfBmp = (char*)CallService(MTH_GET_RTF_BITMAPTEXT,0, (LPARAM)dbei.pBlob);
-                        //MessageBoxA(0,rtfBmp,"ding",0);
-                        if ((rtfBmp != 0) && ((int)rtfBmp != CALLSERVICE_NOTFOUND)) {
-//                            msg = (TCHAR *)alloca(sizeof(TCHAR) * (strlen(rtfBmp) + 1));
-//                            MultiByteToWideChar(CP_ACP, 0, (char *) rtfBmp, -1, msg, (strlen(rtfBmp) + 1));
-                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\uc1%s}", rtfBmp);
-                        }
-                        CallService(MTH_FREE_RTF_BITMAPTEXT,0,(LPARAM) rtfBmp); // free the rtfBmp
-                    }
-                    else  //no MathModule installed - normal handling of message; without math.
-                    {
-                        msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
-                        MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
-                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
-                    }
-#else       // mathmod
                     msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
                     MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
                     if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                         TrimMessage(msg);
                     AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
-#endif      // mathmod
                 }
             }
 #else   // unicode
             msg = (BYTE *) dbei.pBlob;
             if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                 dat->stats.lastReceivedChars = lstrlenA(msg);
-#ifdef __MATHMOD_SUPPORT
-            //mathMod begin
-			// show Math-Formula in Log
-			if (ServiceExists(MTH_GET_RTF_BITMAPTEXT))
-			{
-				char* rtfBmp=0;
-				rtfBmp=(char*)CallService(MTH_GET_RTF_BITMAPTEXT,0, (LPARAM)dbei.pBlob);
-				//MessageBoxA(0,rtfBmp,"ding",0);
-				if ((rtfBmp!=0) && ((int)rtfBmp!=CALLSERVICE_NOTFOUND))
-					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced,rtfBmp);
-				CallService(MTH_FREE_RTF_BITMAPTEXT,0,(LPARAM) rtfBmp); // free the rtfBmp
-			}
-			else  //no MathModule installed - normal handling of message; without math.
-			{
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", msg);
-			}
-
-			// mathMod end
-#else       // mathmod
             if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                 TrimMessage(msg);
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", msg);
-#endif      // mathmod
-
 #endif      // unicode
 
             if(dbei.eventType == EVENTTYPE_ERRMSG) {

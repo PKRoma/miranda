@@ -63,7 +63,6 @@ char *szWarnClose = "Do you really want to close this session?";
 
 extern MYGLOBALS myGlobals;
 
-extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
@@ -90,8 +89,6 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newName);
 void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
-
-int _log(const char *fmt, ...);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -30,18 +30,6 @@ $Id$
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 
-#ifdef __MATHMOD_SUPPORT
-//mathMod begin
-#define QUESTIONMathExists "req_Is_MathModule_Installed"
-#define ANSWERMathExists "automaticAnswer:MathModule_Is_Installed"
-#define REPORTMathModuleInstalled_SERVICENAME "MATHMODULE_SEND_INSTALLED"
-#define MTH_GETBITMAP "Math/GetBitmap"
-#include <windows.h>
-#include "../../SDK/headers_c/m_protomod.h"
-#include "../../SDK/headers_c/m_protosvc.h"
-//mathMod end
-#endif
-
 MYGLOBALS myGlobals;
 
 static void InitREOleCallback(void);
@@ -876,36 +864,8 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-#ifdef __MATHMOD_SUPPORT
-//mathMod begin
-// MathExistsRecvMsg()
-// called by Miranda when a message was received
-// checks if it was an plugin control code, signals an event if so,
-// relays the message to the other protocol plugins if not so.
-//
-int doReportMathModuleInstalledRecvMsg( WPARAM wParam, LPARAM lParam )
-{
-	CCSDATA *pccsd = (CCSDATA *)lParam;
-	PROTORECVEVENT *ppre = ( PROTORECVEVENT * )pccsd->lParam;
-
-	if(strncmp(ppre->szMessage, QUESTIONMathExists, strlen(QUESTIONMathExists)))
-		return CallService( MS_PROTO_CHAINRECV, wParam, lParam );
-	if ( ServiceExists(MTH_GETBITMAP) && (CallContactService(pccsd->hContact, PS_GETSTATUS ,0,0) != ID_STATUS_INVISIBLE) )
-		CallContactService(pccsd->hContact, PSS_MESSAGE, 0, (LPARAM)ANSWERMathExists);
-	return 0;
-
-}
-//mathMod end
-#endif
-
 int LoadSendRecvMessageModule(void)
 {
-#ifdef __MATHMOD_SUPPORT
-//mathMod begin
-   	PROTOCOLDESCRIPTOR pd;
-   	HANDLE hContact;
-//mathMod end
-#endif
     if (LoadLibraryA("riched20.dll") == NULL) {
         if (IDYES !=
             MessageBoxA(0,
@@ -935,26 +895,6 @@ int LoadSendRecvMessageModule(void)
 	HookEvent("SecureIM/Disabled",ContactSecureChanged);
     
     InitAPI();
-    
-#ifdef __MATHMOD_SUPPORT	
-    //mathMod begin
-     // register callback-function for every contact
-
-    	memset( &pd, 0, sizeof( PROTOCOLDESCRIPTOR ));
-    	pd.cbSize = sizeof( PROTOCOLDESCRIPTOR );
-    	pd.szName = REPORTMathModuleInstalled_SERVICENAME;
-    	pd.type = PROTOTYPE_ENCRYPTION - 9;
-    	CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM ) &pd );
-    	CreateServiceFunction(REPORTMathModuleInstalled_SERVICENAME PSR_MESSAGE, doReportMathModuleInstalledRecvMsg );
-    	hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-    	while( hContact )
-    	{
-    		if( !CallService( MS_PROTO_ISPROTOONCONTACT, ( WPARAM )hContact, ( LPARAM )REPORTMathModuleInstalled_SERVICENAME ))
-    			CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact, ( LPARAM )REPORTMathModuleInstalled_SERVICENAME );
-    		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-    	}
-	//mathMod end
-#endif    
     
     SkinAddNewSound("RecvMsg", Translate("Message: Queued Incoming"), "message.wav");
     SkinAddNewSound("AlertMsg", Translate("Message: Incoming"), "messagealert.wav");

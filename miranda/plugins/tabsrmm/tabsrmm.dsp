@@ -250,7 +250,7 @@ SOURCE=msglog.c
 # ADD CPP /nologo /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /GZ /GX 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /Ox /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
+# ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /GX 
@@ -443,11 +443,11 @@ SOURCE=res\Details8.ico
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\res\dragcopy.cur
+SOURCE=..\..\Miranda-IM\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\dragcopy.cur
+SOURCE=..\..\src\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
@@ -483,11 +483,15 @@ SOURCE=.\res\angeli-icons\HistoryXP.ico
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Miranda-IM\res\hyperlin.cur
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\hyperlin.cur
+SOURCE=..\..\src\res\icon1.ico
 # End Source File
 # Begin Source File
 
@@ -564,6 +568,10 @@ SOURCE=.\res\angeli-icons\Pic.ico
 # Begin Source File
 
 SOURCE=.\res\angeli-icons\PicXP.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pulldown.ico
 # End Source File
 # Begin Source File
 
