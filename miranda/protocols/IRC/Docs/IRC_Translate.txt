@@ -1,0 +1,15 @@
+;----------------------------oOo----------------------------
+;
+;               IRC Protocol Plugin v 0.5.0.0
+;
+;  Implementation of IRC RFC-1459, RFC-2812 for Miranda IM
+;
+;
+;                   TRANSLATION TEMPLATE
+;
+;-----------------------------------------------------------
+
+
+
+
+; Everything is changed, I will do this file later
