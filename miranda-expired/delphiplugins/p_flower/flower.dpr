@@ -46,17 +46,15 @@ uses
 
 {$R *.RES}
 
+var
+  PluginInfo:TPluginInfo;
 
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
 //Tell Miranda about this plugin
-var
-  PluginInfo:TPluginInfo;
-  FlowerFrm: TFlowerFrm;
-  Befehl:string;
 begin
   PluginInfo.cbSize:=sizeof(TPLUGININFO);
   PluginInfo.shortName:='Flower Plugin';
-  PluginInfo.version:=PLUGIN_MAKE_VERSION(1,0,0,0);
+  PluginInfo.version:=PLUGIN_MAKE_VERSION(1,0,0,2);
   PluginInfo.description:='This Plugin shows a flower on startup and plays a sound. ;-)';
   PluginInfo.author:='Christian Kästner';
   PluginInfo.authorEmail:='no hatemails please ;-)';
@@ -66,6 +64,16 @@ begin
   PluginInfo.replacesDefaultModule:=0;  //doesn't replace anything built-in
 
   Result:=@PluginInfo;
+end;
+
+
+function Load(link:PPLUGINLINK):Integer;cdecl;
+//load function called by miranda
+var
+  FlowerFrm: TFlowerFrm;
+  Befehl:string;
+begin
+  Result:=0;
 
   FlowerFrm:=TFlowerFrm.Create(nil);
   FlowerFrm.show;
@@ -81,13 +89,6 @@ begin
   FlowerFrm.Update;
 
   FlowerFrm.release;
-end;
-
-
-function Load(link:PPLUGINLINK):Integer;cdecl;
-//load function called by miranda
-begin
-  Result:=0;
 end;
 
 function Unload:Integer;cdecl;
