@@ -97,6 +97,7 @@ static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
 static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_MULTIPLE, IDC_FONTUNDERLINE, IDC_PROTOCOL, -1 };
 static const UINT controlsToHide1[] = { IDOK, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
+static const UINT addControls[] = { IDC_ADDICON, IDC_ADDTEXT, IDC_ADD };
 
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
@@ -179,8 +180,14 @@ void SetDialogToType(HWND hwndDlg)
         ShowMultipleControls(hwndDlg, formatControls, sizeof(formatControls) / sizeof(formatControls[0]), showToolbar ? SW_SHOW : SW_HIDE);
         ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), showToolbar ? SW_SHOW : SW_HIDE);
         
-        if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
-            ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
+        if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
+            dat->bNotOnList = TRUE;
+            ShowMultipleControls(hwndDlg, addControls, 3, SW_SHOW);
+        }
+        else {
+            dat->bNotOnList = FALSE;
+            ShowMultipleControls(hwndDlg, addControls, 3, SW_HIDE);
+        }
     } else {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), SW_HIDE);
         ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), SW_HIDE);
@@ -551,7 +558,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_PROTOCOL:
         case IDC_PROTOMENU:
-        case IDC_ADD:
         case IDC_PIC:
         case IDC_USERMENU:
         case IDC_DETAILS:
@@ -584,6 +590,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, -(dat->pic.cx + 2 + 3), 0);
 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+        case IDC_ADDTEXT:
+        case IDC_ADDICON:
+        case IDC_ADD:
+            urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
+            urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
+            return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_LOG:
             if(dat->dwFlags & MWF_ERRORSTATE)
                 urc->rcItem.top += 38;
@@ -592,6 +604,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (!showToolbar)
                 urc->rcItem.bottom += 24;
+            if(dat->bNotOnList)
+                urc->rcItem.bottom -= 24;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
@@ -600,6 +614,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + 33) && dat->showPic)
                 urc->rcItem.right -= (dat->pic.cx + 4);
+            if(dat->bNotOnList && urc->wId == IDC_SPLITTER5)
+                OffsetRect(&urc->rcItem, 0, -24);
             return RD_ANCHORX_WIDTH | RD_ANCHORY_BOTTOM;
         case IDC_CONTACTPIC:
             urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
@@ -702,11 +718,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 //TranslateDialogDefault(hwndDlg);
                 dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
                 ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
-                if (newData->iTabID >= 0) {
+                if (newData->iTabID >= 0)
                     dat->pContainer = newData->pContainer;
-                } else {      // toplevel
-                    dat->pContainer = NULL;
-                }
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
 
                 dat->wOldStatus = -1;
@@ -766,23 +779,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->bTabFlash = FALSE;
                 dat->mayFlashTab = FALSE;
                 dat->iTabImage = newData->iTabImage;
-                dat->hAckEvent = NULL;
-                dat->dwTickLastEvent = 0;
                 dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
                 
-                dat->hBkgBrush = NULL;
-                dat->hInputBkgBrush = NULL;
-                dat->hDbEventFirst = NULL;
-                dat->sendBuffer = NULL;
                 dat->multiSplitterX = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "multisplit", 150);
-                dat->multiple = 0;
-                dat->nTypeSecs = 0;
-                dat->nLastTyping = 0;
-                dat->showTyping = 0;
                 dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
                 dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
                 SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
-                dat->lastMessage = 0;
                 dat->iLastEventType = 0xffffffff;
                 
                 // load log option flags...
@@ -832,11 +834,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->minEditBoxSize.cx = rc.right - rc.left;
                 dat->minEditBoxSize.cy = rc.bottom - rc.top;
 
-                GetWindowRect(GetDlgItem(hwndDlg, IDC_ADD), &rc);
-
                 WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
 
-                SendDlgItemMessage(hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[0]);
+                SetDlgItemTextA(hwndDlg, IDC_ADDTEXT, Translate("This contact is not on your list"));
+                SetDlgItemTextA(hwndDlg, IDC_ADD, Translate("Add it"));
+                
                 SendDlgItemMessage(hwndDlg, IDC_HISTORY, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[1]);
                 SendDlgItemMessage(hwndDlg, IDC_TIME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[2]);
                 SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[3]);
@@ -845,6 +847,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_PIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[10]);
                 SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[9]);
                 SendDlgItemMessage(hwndDlg, IDC_STATICERRORICON, STM_SETICON, (WPARAM)myGlobals.g_iconErr, 0);
+                SendDlgItemMessage(hwndDlg, IDC_ADDICON, STM_SETICON, (WPARAM)myGlobals.g_buttonBarIcons[0], 0);
                 SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[17]);
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[18]);
@@ -875,7 +878,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwFlags |= MWF_INITMODE;
                 TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
                 
-                SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONADDTOOLTIP, (WPARAM) Translate("Add Contact Permanently to List"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_TIME), BUTTONADDTOOLTIP, (WPARAM) Translate("Message Log Options"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_MULTIPLE), BUTTONADDTOOLTIP, (WPARAM) Translate("Send Message to Multiple Users"), 0);
@@ -2699,7 +2701,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         acs.szProto = 0;
                         CallService(MS_ADDCONTACT_SHOW, (WPARAM) hwndDlg, (LPARAM) & acs);
                         if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
-                            ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), FALSE);
+                            dat->bNotOnList = FALSE;
+                            ShowMultipleControls(hwndDlg, addControls, 3, SW_HIDE);
+                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
                         }
                         break;
                     }
@@ -3551,8 +3555,6 @@ verify:
             if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
                 NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
             }
-            if (dat->hAckEvent)
-                UnhookEvent(dat->hAckEvent);
             if (dat->hBkgBrush)
                 DeleteObject(dat->hBkgBrush);
             if (dat->hInputBkgBrush)

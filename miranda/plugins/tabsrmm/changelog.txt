@@ -165,6 +165,15 @@ Version 0.9.9.5 - 2005/02/17
           formatting controls and the standard buttons. You can also choose if you want the send
           button to be hidden automatically.
 
+        * The "add contact" button is gone from the standard toolbar. For contacts which are not
+          on the contact list, additional controls will be shown "on demand", including a button
+          to add them.
+          
+        * improved formatting code - you can now write something like _this_is_nice_ and the 
+          formatting code will ignore tags within words. Options->message log->Format whole words
+          only. In general, this will ignore formatting "tags" (*/_) within words, which means
+          that you can only format whole words.
+        
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

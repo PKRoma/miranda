@@ -241,6 +241,8 @@
 #define IDC_AVATARSPIN                  1679
 #define IDC_TABLIMITSPIN                1680
 #define IDC_SHOWFORMATTING              1681
+#define IDC_ADDTEXT                     1682
+#define IDC_ADDICON                     1683
 #define IDC_AGGRESSIVEUPDATE            1684
 #define IDC_THINSEPARATORS              1685
 #define IDC_RINDENTSPIN                 1686
@@ -424,6 +426,7 @@
 #define ID_MESSAGEICONS_SHOWICONS       40183
 #define ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS 40184
 #define ID_MESSAGEICONS_USEINCOMING     40185
+#define ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH 40191
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -431,7 +434,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40190
+#define _APS_NEXT_COMMAND_VALUE         40193
 #define _APS_NEXT_CONTROL_VALUE         1712
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -112,7 +112,6 @@ struct MessageWindowData {
 	HANDLE hContact;
     HWND hwnd;
 	HANDLE hDbEventFirst,hDbEventLast;
-	HANDLE hAckEvent;
 	int multiple;
 	HBRUSH hBkgBrush, hInputBkgBrush;
 	int splitterY, originalSplitterY, dynaSplitter;
@@ -170,6 +169,7 @@ struct MessageWindowData {
     BOOL bIsMeta;
     HANDLE hFlashingEvent;
     char uin[80];
+    BOOL bNotOnList;
 };
 
 typedef struct _recentinfo {

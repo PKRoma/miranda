@@ -54,6 +54,11 @@ void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *sz
 char *GetThemeFileName();
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 
+/*
+ * calculates avatar layouting, based on splitter position to find the optimal size
+ * for the avatar w/o disturbing the toolbar too much.
+ */
+
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo)
 {
     RECT rc;
@@ -180,6 +185,8 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         CheckMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
+        EnableMenuItem(submenu, ID_PICMENU_TOGGLEAVATARDISPLAY, MF_BYCOMMAND | (myGlobals.m_AvatarMode == 2 ? MF_ENABLED : MF_GRAYED));
+        CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (myGlobals.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
     }
     return 0;
 }
@@ -230,6 +237,11 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", !iState);
                     return 1;
                 }
+            case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
+                myGlobals.m_AlwaysFullToolbarWidth = !myGlobals.m_AlwaysFullToolbarWidth;
+                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", myGlobals.m_AlwaysFullToolbarWidth);
+                WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+                break;
             case ID_PICMENU_LOADALOCALPICTUREASAVATAR:
                 {
                     char FileName[MAX_PATH];

@@ -31,7 +31,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 IDD_MSGSPLITNEW DIALOGEX 0, 0, 188, 79
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD | 
     WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -51,8 +51,6 @@ BEGIN
     PUSHBUTTON      "Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,1,
                     WS_EX_STATICEDGE
-    CONTROL         "&A",IDC_ADD,"MButtonClass",WS_TABSTOP,68,32,16,14,
-                    0x18000000L
     CONTROL         "&P",IDC_PIC,"MButtonClass",WS_TABSTOP,84,32,16,14,
                     0x18000000L
     CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,100,32,16,14,
@@ -68,13 +66,13 @@ BEGIN
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
                     78,WS_EX_CLIENTEDGE
-    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT
+    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
     CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
                     0x18000000L
     CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,17,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,33,32,8,14,
+    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,33,32,10,14,
                     0x18000000L
     CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,44,32,16,14,
                     0x18000000L
@@ -84,10 +82,6 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,92,32,16,
                     14,0x18000000L
-//    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,108,32,16,14,
-//                    0x18000000L
-//    CONTROL         "",IDC_FONTCOLOR,"MButtonClass",WS_TABSTOP,124,32,16,14,
-//                    0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
                     0x18000000L
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,31,187,1,
@@ -103,6 +97,10 @@ BEGIN
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
                     WS_EX_STATICEDGE
+    LTEXT           "",IDC_ADDTEXT,20,20,124,7
+    ICON            "",IDC_ADDICON,2,18,16,14,SS_CENTERIMAGE
+    CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,135,18,50,14,
+                    0x18000000L
 END
 
 #endif    // Neutral resources

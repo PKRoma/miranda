@@ -254,7 +254,7 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 #endif          // if defined(OLD_FORMATTING)
 
 static WCHAR *formatting_strings_begin[] = { L"%b1 ", L"%i1 ", L"%u1 " };
-static WCHAR *formatting_strings_end[] = { L"%b0", L"%i0", L"%u0" };
+static WCHAR *formatting_strings_end[] = { L"%b0 ", L"%i0 ", L"%u0 " };
 
 /*
  * this translates formatting tags into rtf sequences...
@@ -274,14 +274,14 @@ extern "C" const WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly)
     while((beginmark = message.find_first_of(L"*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
         if(bWordsOnly) {
-            if(beginmark > 0 && !iswspace(message[beginmark - 1])) {
+            if(beginmark > 0 && !iswspace(message[beginmark - 1]) && !iswpunct(message[beginmark - 1])) {
                 beginmark++;
                 continue;
             }
             // search a corresponding endmarker which fulfills the criteria
             unsigned tempmark = beginmark + 1;
             while((endmark = message.find(endmarker, tempmark)) != message.npos) {
-                if(iswspace(message[endmark + 1]) || message[endmark + 1] == 0 || wcschr(L"*/_", message[endmark + 1]) != NULL)
+                if(iswpunct(message[endmark + 1]) || iswspace(message[endmark + 1]) || message[endmark + 1] == 0 || wcschr(L"*/_", message[endmark + 1]) != NULL)
                     goto ok;
                 tempmark = endmark + 1;
             }
@@ -304,8 +304,8 @@ ok:
                 index = 2;
                 break;
         }
-        message.insert(endmark, L"%%");
-        message.replace(endmark, 3, formatting_strings_end[index]);
+        message.insert(endmark, L"%%%");
+        message.replace(endmark, 4, formatting_strings_end[index]);
         message.insert(beginmark, L"%%%");
         message.replace(beginmark, 4, formatting_strings_begin[index]);
     }

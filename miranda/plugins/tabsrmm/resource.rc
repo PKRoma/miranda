@@ -701,6 +701,10 @@ BEGIN
         MENUITEM "Disable automatic Avatar updates", 
                                                 ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
 
+        MENUITEM SEPARATOR
+        MENUITEM "Always keep the button bar at full width", 
+                                                ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
+
     END
     POPUP "Logmenu"
     BEGIN
@@ -853,6 +857,10 @@ BEGIN
 
             MENUITEM "Disable automatic Avatar updates", 
                                                     ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
+
+            MENUITEM SEPARATOR
+            MENUITEM "Always keep the button bar at full width", 
+                                                    ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
 
         END
         MENUITEM SEPARATOR

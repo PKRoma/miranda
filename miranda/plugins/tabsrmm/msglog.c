@@ -232,40 +232,32 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
         if(iFormatting) {
             if(*line == '%' && line[1] != 0) {
                 TCHAR code = line[2];
-                if(code == '0' || code == '1') {
+                if((code == '0' || code == '1') && line[3] == ' ') {
                     int begin = (code == '1');
-                    if(!begin || (begin && line[3] == ' ')) {
-                        switch(line[1]) {
-                            case 'b':
-                                CopyMemory(d, begin ? "\\b " : "\\b0 ", begin ? 3 : 4);
-                                d += (begin ? 3 : 4);
-                                line += (begin ? 3 : 2);
-                                continue;
-                            case 'i':
-                                CopyMemory(d, begin ? "\\i " : "\\i0 ", begin ? 3 : 4);
-                                d += (begin ? 3 : 4);
-                                line += (begin ? 3 : 2);
-                                continue;
-                            case 'u':
-                                CopyMemory(d, begin ? "\\ul " : "\\ul0 ", begin ? 4 : 5);
-                                d += (begin ? 4 : 5);
-                                line += (begin ? 3 : 2);
-                                continue;
-                        }
+                    switch(line[1]) {
+                        case 'b':
+                            CopyMemory(d, begin ? "\\b " : "\\b0 ", begin ? 3 : 4);
+                            d += (begin ? 3 : 4);
+                            line += 3;
+                            continue;
+                        case 'i':
+                            CopyMemory(d, begin ? "\\i " : "\\i0 ", begin ? 3 : 4);
+                            d += (begin ? 3 : 4);
+                            line += 3;
+                            continue;
+                        case 'u':
+                            CopyMemory(d, begin ? "\\ul " : "\\ul0 ", begin ? 4 : 5);
+                            d += (begin ? 4 : 5);
+                            line += 3;
+                            continue;
                     }
                 }
             }
         }
         if (*line == '\r' && line[1] == '\n') {
-// XXX indent mod
-			/*
-			CopyMemory(d, "\\par ", 5);
-            line++;
-            d += 5; */
 			CopyMemory(d,"\\line ",6);
 			line++;
 			d += 6;
-// XXX indent mod
         }
         else if (*line == '\n') {
             CopyMemory(d, "\\line ", 6);
@@ -348,18 +340,9 @@ static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEn
                 *cbBufferAlloced += 1024;
                 *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
             }
-// XXX mod indent            
-			/*
-			MoveMemory(*buffer + i + 5, *buffer + i + 2, *cbBufferEnd - i - 1);
-            CopyMemory(*buffer + i, "\\par ", 5);
-            *cbBufferEnd += 3;
-			*/
-
             MoveMemory(*buffer + i + 6, *buffer +i + 2, *cbBufferEnd - i - 1);
             CopyMemory(*buffer+i,"\\line ",6);
             *cbBufferEnd+=4;
-// XXX end mod
-
         }
         else if ((*buffer)[i] == '\n') {
             if (*cbBufferEnd + 6 > *cbBufferAlloced) {
