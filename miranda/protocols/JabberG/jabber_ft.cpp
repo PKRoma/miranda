@@ -177,7 +177,7 @@ static void JabberFtSiResult(XmlNode *iqNode, void *userdata)
 								jbt->userdata = item->ft;
 								item->ft->type = FT_BYTESTREAM;
 								item->ft->jbt = jbt;
-								JabberForkThread(JabberByteSendThread, 0, jbt);
+								JabberForkThread(( JABBER_THREAD_FUNC )JabberByteSendThread, 0, jbt);
 							}
 						}
 					}
@@ -262,7 +262,7 @@ static void JabberFtSendFinal(BOOL success, void *userdata)
 			jbt->pfnSend = JabberFtSend;
 			jbt->pfnFinal = JabberFtSendFinal;
 			jbt->userdata = ft;
-			JabberForkThread(JabberByteSendThread, 0, jbt);
+			JabberForkThread(( JABBER_THREAD_FUNC )JabberByteSendThread, 0, jbt);
 		}
 		else
 			ProtoBroadcastAck(jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
@@ -418,7 +418,7 @@ BOOL JabberFtHandleBytestreamRequest(XmlNode *iqNode)
 		jbt->pfnFinal = JabberFtReceiveFinal;
 		jbt->userdata = item->ft;
 		item->ft->jbt = jbt;
-		JabberForkThread(JabberByteReceiveThread, 0, jbt);
+		JabberForkThread(( JABBER_THREAD_FUNC )JabberByteReceiveThread, 0, jbt);
 		JabberListRemove(LIST_FTRECV, sid);
 		return TRUE;
 	}

@@ -473,7 +473,7 @@ char *JabberSha1(char *str)
 		return NULL;
 	if (SHA1Reset(&sha))
 		return NULL;
-	if (SHA1Input(&sha, str, strlen(str)))
+	if (SHA1Input(&sha, ( const unsigned __int8* )str, strlen(str)))
 		return NULL;
 	if (SHA1Result(&sha, digest))
 		return NULL;
@@ -531,18 +531,18 @@ char *JabberHttpUrlEncode(const char *str)
 	unsigned char *p, *q, *res;
 
 	if (str == NULL) return NULL;
-	res = (char *) malloc(3*strlen(str) + 1);
-	for (p=(char *)str,q=res; *p!='\0'; p++,q++) {
+	res = (BYTE*) malloc(3*strlen(str) + 1);
+	for (p=(BYTE*)str,q=res; *p!='\0'; p++,q++) {
 		if ((*p>='A' && *p<='Z') || (*p>='a' && *p<='z') || (*p>='0' && *p<='9') || strchr("$-_.+!*'(),", *p)!=NULL) {
 			*q = *p;
 		}
 		else {
-			sprintf(q, "%%%02X", *p);
+			sprintf((char*)q, "%%%02X", *p);
 			q += 2;
 		}
 	}
 	*q = '\0';
-	return res;
+	return ( char* )res;
 }
 
 void JabberHttpUrlDecode(char *str)
@@ -551,9 +551,9 @@ void JabberHttpUrlDecode(char *str)
 	unsigned int code;
 
 	if (str == NULL) return;
-	for (p=q=str; *p!='\0'; p++,q++) {
+	for (p=q=(BYTE*)str; *p!='\0'; p++,q++) {
 		if (*p=='%' && *(p+1)!='\0' && isxdigit(*(p+1)) && *(p+2)!='\0' && isxdigit(*(p+2))) {
-			sscanf(p+1, "%2x", &code);
+			sscanf((char*)p+1, "%2x", &code);
 			*q = (unsigned char) code;
 			p += 2;
 		}
@@ -795,14 +795,15 @@ char *JabberGetVersionText()
 {
 	char filename[MAX_PATH], *fileVersion, *res;
 	DWORD unused;
-	DWORD verInfoSize, blockSize;
+	DWORD verInfoSize;
+	UINT  blockSize;
 	PVOID pVerInfo;
 
 	GetModuleFileName(hInst, filename, sizeof(filename));
 	verInfoSize = GetFileVersionInfoSize(filename, &unused);
 	if ((pVerInfo=malloc(verInfoSize)) != NULL) {
 		GetFileVersionInfo(filename, 0, verInfoSize, pVerInfo);
-		VerQueryValue(pVerInfo, "\\StringFileInfo\\040904b0\\FileVersion", &fileVersion, &blockSize);
+		VerQueryValue(pVerInfo, "\\StringFileInfo\\040904b0\\FileVersion", ( LPVOID* )&fileVersion, &blockSize);
 		if (strstr(fileVersion, "cvs")) {
 			res = (char *) malloc(strlen(fileVersion) + strlen(__DATE__) + 2);
 			sprintf(res, "%s %s", fileVersion, __DATE__);

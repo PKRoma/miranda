@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Yu"jabber.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /FR /Yu"jabber.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -93,111 +93,113 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\jabber.c
+SOURCE=.\jabber.cpp
+# ADD CPP /Yc"Jabber.h"
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_agent.c
+SOURCE=.\jabber_agent.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_byte.c
+SOURCE=.\jabber_byte.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_file.c
+SOURCE=.\jabber_file.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_form.c
+SOURCE=.\jabber_form.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_ft.c
+SOURCE=.\jabber_ft.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_groupchat.c
+SOURCE=.\jabber_groupchat.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_groupchatlog.c
+SOURCE=.\jabber_groupchatlog.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_iq.c
+SOURCE=.\jabber_iq.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_iqid.c
+SOURCE=.\jabber_iqid.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_iqid_muc.c
+SOURCE=.\jabber_iqid_muc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_list.c
+SOURCE=.\jabber_list.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_menu.c
+SOURCE=.\jabber_menu.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_misc.c
+SOURCE=.\jabber_misc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_opt.c
+SOURCE=.\jabber_opt.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_password.c
+SOURCE=.\jabber_password.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_proxy.c
+SOURCE=.\jabber_proxy.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_ssl.c
+SOURCE=.\jabber_ssl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_svc.c
+SOURCE=.\jabber_svc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_thread.c
+SOURCE=.\jabber_thread.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_userinfo.c
+SOURCE=.\jabber_userinfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_util.c
+SOURCE=.\jabber_util.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_vcard.c
+SOURCE=.\jabber_vcard.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_ws.c
+SOURCE=.\jabber_ws.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_xml.c
+SOURCE=.\jabber_xml.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_xmlns.c
+SOURCE=.\jabber_xmlns.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\sha1.c
+SOURCE=.\sha1.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # End Group
 # Begin Group "Header Files"

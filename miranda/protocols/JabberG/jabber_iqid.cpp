@@ -795,7 +795,8 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 					if (/*hContact==NULL &&*/ !hasPhoto && (m=JabberXmlGetChild(n, "TYPE"))!=NULL && m->text!=NULL && (!strcmp(m->text, "image/jpeg") || !strcmp(m->text, "image/gif") || !strcmp(m->text, "image/bmp"))) {
 						if ((o=JabberXmlGetChild(n, "BINVAL"))!=NULL && o->text) {
 							char *buffer;
-							int bufferLen, nWritten;
+							int bufferLen;
+							DWORD nWritten;
 							char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
 							HANDLE hFile;
 							JABBER_LIST_ITEM *item;
@@ -1198,7 +1199,7 @@ void JabberIqResultDiscoClientInfo(XmlNode *iqNode, void *userdata)
 				if ((item->cap&CLIENT_CAP_FILE) && (item->cap&CLIENT_CAP_BYTESTREAM))
 					JabberFtInitiate(item->jid, ft);
 				else
-					JabberForkThread(JabberFileServerThread, 0, ft);
+					JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft);
 			}
 		}
 	}

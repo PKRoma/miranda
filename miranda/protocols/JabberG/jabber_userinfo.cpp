@@ -278,7 +278,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 				unsigned char buffer[3];
 				char szFileName[_MAX_PATH];
 				char *jid;
-				int n;
+				DWORD n;
 
 				if (DBGetContactSetting(photoInfo->hContact, jabberProtoName, "jid", &dbv))
 					break;
@@ -286,12 +286,12 @@ static BOOL CALLBACK JabberUserPhotoDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 				if ((item=JabberListGetItemPtr(LIST_ROSTER, jid)) != NULL) {
 					if ((hFile=CreateFile(item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
 						if (ReadFile(hFile, buffer, 3, &n, NULL) && n==3) {
-							if (!strncmp(buffer, "BM", 2)) {
+							if (!strncmp((char*)buffer, "BM", 2)) {
 								_snprintf(szFilter, sizeof(szFilter), "BMP %s (*.bmp)", Translate("format"));
 								n = strlen(szFilter);
 								strncpy(szFilter+n+1, "*.BMP", sizeof(szFilter)-n-2);
 							}
-							else if (!strncmp(buffer, "GIF", 3)) {
+							else if (!strncmp((char*)buffer, "GIF", 3)) {
 								_snprintf(szFilter, sizeof(szFilter), "GIF %s (*.gif)", Translate("format"));
 								n = strlen(szFilter);
 								strncpy(szFilter+n+1, "*.GIF", sizeof(szFilter)-n-2);

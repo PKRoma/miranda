@@ -307,7 +307,7 @@ void __cdecl JabberFileServerThread(JABBER_FILE_TRANSFER *ft)
 			if ((pFileName=JabberHttpUrlEncode(p)) != NULL) {
 				id = JabberSerialNext();
 				if (ft->iqId) free(ft->iqId);
-				ft->iqId = malloc(strlen(JABBER_IQID)+20);
+				ft->iqId = ( char* )malloc(strlen(JABBER_IQID)+20);
 				sprintf(ft->iqId, JABBER_IQID"%d", id);
 				if ((pDescription=JabberTextEncode(ft->szDescription)) != NULL) {
 					if (DBGetContactSettingByte(NULL, jabberProtoName, "BsDirect", TRUE) && DBGetContactSettingByte(NULL, jabberProtoName, "BsDirectManual", FALSE)) {

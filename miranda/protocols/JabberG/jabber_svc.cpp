@@ -90,7 +90,7 @@ int JabberBasicSearch(WPARAM wParam, LPARAM lParam)
 
 	jsb->hSearch = JabberSerialNext();
 	strncpy(jsb->jid, (char *) lParam, sizeof(jsb->jid));
-	JabberForkThread(JabberBasicSearchThread, 0, jsb);
+	JabberForkThread(( JABBER_THREAD_FUNC )JabberBasicSearchThread, 0, jsb);
 	return jsb->hSearch;
 }
 
@@ -388,7 +388,7 @@ static void JabberConnect(int initialStatus)
 		oldStatus = jabberStatus;
 		jabberStatus = ID_STATUS_CONNECTING;
 		ProtoBroadcastAck(jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, jabberStatus);
-		thread->hThread = (HANDLE) JabberForkThread(JabberServerThread, 0, thread);
+		thread->hThread = (HANDLE) JabberForkThread(( JABBER_THREAD_FUNC )JabberServerThread, 0, thread);
 	}
 }
 
@@ -695,7 +695,7 @@ int JabberFileAllow(WPARAM wParam, LPARAM lParam)
 	ft->szSavePath = _strdup((char *) ccs->lParam);
 	switch (ft->type) {
 	case FT_OOB:
-		JabberForkThread(JabberFileReceiveThread, 0, ft);
+		JabberForkThread(( JABBER_THREAD_FUNC )JabberFileReceiveThread, 0, ft);
 		break;
 	case FT_BYTESTREAM:
 		JabberFtAcceptSiRequest(ft);
@@ -812,7 +812,7 @@ int JabberSendFile(WPARAM wParam, LPARAM lParam)
 		}
 		else {
 			// Use the jabber:iq:oob file transfer
-			JabberForkThread(JabberFileServerThread, 0, ft);
+			JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft);
 		}
 	}
 

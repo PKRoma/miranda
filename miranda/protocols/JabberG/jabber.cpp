@@ -77,7 +77,7 @@ HANDLE hMenuGroupchat;
 HANDLE hMenuRequestAuth;
 HANDLE hMenuGrantAuth;
 // SSL-related global variable
-HANDLE hLibSSL;
+HMODULE hLibSSL;
 PVOID jabberSslCtx;
 
 HWND hwndJabberAgents;
@@ -230,7 +230,7 @@ static void JabberIconInit()
 	};
 
 	for (i=0; i<JABBER_ICON_TOTAL; i++)
-		jabberIcon[i] = LoadImage(hInst, MAKEINTRESOURCE(iconList[i]), IMAGE_ICON, 0, 0, 0);
+		jabberIcon[i] = ( HICON )LoadImage(hInst, MAKEINTRESOURCE(iconList[i]), IMAGE_ICON, 0, 0, 0);
 }
 
 int __declspec(dllexport) Load(PLUGINLINK *link)

@@ -223,7 +223,7 @@ static int JabberByteSendParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char *bu
 				jbt->state = JBT_ERROR;
 			}
 			data[0] = 5;
-			Netlib_Send(hConn, data, 2, MSG_NODUMP);
+			Netlib_Send(hConn, ( char* )data, 2, MSG_NODUMP);
 		}
 		else
 			jbt->state = JBT_ERROR;
@@ -252,7 +252,7 @@ static int JabberByteSendParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char *bu
 				data[1] = (i>=20)?0:2;
 				data[0] = 5;
 				data[3] = 1;
-				Netlib_Send(hConn, data, 10, MSG_NODUMP);
+				Netlib_Send(hConn, ( char* )data, 10, MSG_NODUMP);
 				if (i>=20 && jbt->pfnSend(hConn, jbt->userdata)==TRUE)
 					jbt->state = JBT_DONE;
 				else
@@ -392,7 +392,7 @@ static int JabberByteReceiveParse(HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char 
 			szHash = JabberSha1(text);
 			strncpy((char *)(data+5), szHash, 40);
 			free(szHash);
-			Netlib_Send(hConn, data, 47, MSG_NODUMP);
+			Netlib_Send(hConn, ( char* )data, 47, MSG_NODUMP);
 			jbt->state = JBT_CONNECT;
 		}
 		else

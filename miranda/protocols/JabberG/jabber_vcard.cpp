@@ -604,11 +604,11 @@ static BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 							ListView_GetSubItemRect(nm->nmcd.hdr.hwndFrom, nm->nmcd.dwItemSpec, nm->iSubItem, LVIR_LABEL, &rc);
 							if(nm->nmcd.lItemlParam==(LPARAM)(-1) && nm->iSubItem==3)
-								hIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+								hIcon = ( HICON )LoadImage(hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 							else if (nm->iSubItem==2 && nm->nmcd.lItemlParam!=(LPARAM)(-1))
-								hIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_EDIT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+								hIcon = ( HICON )LoadImage(hInst, MAKEINTRESOURCE(IDI_EDIT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 							else if (nm->iSubItem==3 && nm->nmcd.lItemlParam!=(LPARAM)(-1))
-								hIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+								hIcon = ( HICON )LoadImage(hInst, MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 							else break;
 							DrawIconEx(nm->nmcd.hdc, (rc.left+rc.right-GetSystemMetrics(SM_CXSMICON))/2, (rc.top+rc.bottom-GetSystemMetrics(SM_CYSMICON))/2,hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 							DestroyIcon(hIcon);
@@ -955,7 +955,7 @@ static void SetServerVcard()
 		HANDLE hFile;
 		struct _stat st;
 		char *buffer, *str;
-		int nRead;
+		DWORD nRead;
 
 		JabberLog("Saving picture from %s", szFileName);
 		if (_stat(szFileName, &st) >= 0) {

@@ -782,5 +782,5 @@ void JabberGroupchatProcessInvite(char *roomJid, char *from, char *reason, char 
 	inviteInfo->from = (from!=NULL)?_strdup(from):NULL;
 	inviteInfo->reason = (reason!=NULL)?_strdup(reason):NULL;
 	inviteInfo->password = (password!=NULL)?_strdup(password):NULL;
-	JabberForkThread(JabberGroupchatInviteAcceptThread, 0, (void *) inviteInfo);
+	JabberForkThread(( JABBER_THREAD_FUNC )JabberGroupchatInviteAcceptThread, 0, (void *) inviteInfo);
 }

@@ -345,7 +345,7 @@ char *JabberFormGetData(HWND hwndStatic, XmlNode *xNode)
 							if (SendMessage(hCtrl, LB_GETSEL, j, 0) > 0) {
 								// an entry is selected
 								len = SendMessage(hCtrl, LB_GETTEXTLEN, 0, 0);
-								if ((str=malloc((len+1)*sizeof(TCHAR))) != NULL) {
+								if ((str=(char*)malloc((len+1)*sizeof(TCHAR))) != NULL) {
 									SendMessage(hCtrl, LB_GETTEXT, j, (LPARAM) str);
 									for (k=0; k<n->numChild; k++) {
 										o = n->child[k];

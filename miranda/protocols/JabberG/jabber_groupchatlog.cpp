@@ -1009,7 +1009,7 @@ void JabberGcLogCreate(char *jid)
 			// (it will be set in WM_INITDIALOG)
 			gcInit.jid = roomJid;
 			gcInit.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-			JabberForkThread(JabberGcLogCreateThread, 0, (void *) &gcInit);
+			JabberForkThread(( JABBER_THREAD_FUNC )JabberGcLogCreateThread, 0, (void *) &gcInit);
 			WaitForSingleObject(gcInit.hEvent, INFINITE);
 			free(roomJid);
 		}

@@ -72,7 +72,7 @@ void JabberXmlDestroyState(XmlState *xmlState)
 	if (node->name) free(node->name);
 }
 
-BOOL JabberXmlSetCallback(XmlState *xmlState, int depth, XmlElemType type, void (*callback)(), void *userdata)
+BOOL JabberXmlSetCallback(XmlState *xmlState, int depth, XmlElemType type, JABBER_XML_CALLBACK callback, void *userdata)
 {
 	if (depth==1 && type==ELEM_OPEN) {
 		xmlState->callback1_open = callback;

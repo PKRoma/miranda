@@ -300,7 +300,7 @@ typedef struct {
 } JABBER_GCLOG_INPUT_INFO;
 
 typedef void (*JABBER_FORM_SUBMIT_FUNC)(char *submitStr, void *userdata);
-
+typedef void (__cdecl *JABBER_THREAD_FUNC)(void *);
 /*******************************************************************
  * Global variables
  *******************************************************************/
@@ -310,7 +310,7 @@ extern DWORD jabberMainThreadId;
 extern char *jabberProtoName;
 extern char *jabberModuleName;
 extern HANDLE hNetlibUser;
-extern HANDLE hLibSSL;
+extern HMODULE hLibSSL;
 extern PVOID jabberSslCtx;
 
 extern struct ThreadData *jabberThreadInfo;
@@ -359,6 +359,7 @@ extern HWND hwndMucOwnerList;
 /*******************************************************************
  * Function declarations
  *******************************************************************/
+
 void __cdecl JabberServerThread(struct ThreadData *info);
 // jabber_ws.c
 BOOL JabberWsInit(void);
@@ -395,7 +396,7 @@ char *JabberGetVersionText();
 time_t JabberIsoToUnixTime(char *stamp);
 int JabberCountryNameToId(char *ctry);
 void JabberSendPresenceTo(int status, char *to, char *extra);
-void JabberSendPresence();
+void JabberSendPresence(int);
 char *JabberRtfEscape(char *str);
 void JabberStringAppend(char **str, int *sizeAlloced, const char *fmt, ...);
 char *JabberGetClientJID(char *jid);

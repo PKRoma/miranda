@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#if 0
 #include "jabber.h"
 
 int JabberHttpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr)
@@ -146,5 +145,4 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr, PBYTE buf, int len, int
 	*outBufLen = i;
 	return buf;
 }
-#endif
 #endif

@@ -204,7 +204,7 @@ unsigned long JabberForkThread(
 	fa.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	fa.threadcode = threadcode;
 	fa.arg = arg;
-	rc = _beginthread(forkthread_r, stacksize, &fa);
+	rc = _beginthread(( JABBER_THREAD_FUNC )forkthread_r, stacksize, &fa);
 	if ((unsigned long) -1L != rc) {
 		WaitForSingleObject(fa.hEvent, INFINITE);
 	}

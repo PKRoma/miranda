@@ -44,7 +44,7 @@ static void PrintResource(int index)
 		if (resourceCount <= 0)
 			JabberLog("Resource count is zero");
 		else {
-			if ((str=malloc(resourceCount * 48)) != NULL) {
+			if ((str=( char* )malloc(resourceCount * 48)) != NULL) {
 				p = str;
 				for (i=0; i<resourceCount; i++) {
 					resource = &(lists[index].resource[i]);
@@ -346,7 +346,7 @@ void JabberListRemoveResource(JABBER_LIST list, const char *jid)
 					else {
 						resourceCount--;
 						memmove(r+j, r+j+1, (resourceCount-j)*sizeof(JABBER_RESOURCE_STATUS));
-						r = realloc(r, resourceCount*sizeof(JABBER_RESOURCE_STATUS));
+						r = (JABBER_RESOURCE_STATUS *)realloc(r, resourceCount*sizeof(JABBER_RESOURCE_STATUS));
 					}
 					lists[i].resourceCount--;
 					lists[i].resource = r;

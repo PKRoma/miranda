@@ -43,13 +43,15 @@ typedef struct tagXmlNode {
 	XmlNodeType state;							// internal use by parser
 } XmlNode;
 
+typedef void ( *JABBER_XML_CALLBACK )( XmlNode*, void* );
+
 typedef struct tagXmlState {
 	XmlNode root;			// root is the document (depth = 0);
 	// callback for depth=n element on opening/closing
-	void (*callback1_open)();
-	void (*callback1_close)();
-	void (*callback2_open)();
-	void (*callback2_close)();
+	JABBER_XML_CALLBACK callback1_open;
+	JABBER_XML_CALLBACK callback1_close;
+	JABBER_XML_CALLBACK callback2_open;
+	JABBER_XML_CALLBACK callback2_close;
 	void *userdata1_open;
 	void *userdata1_close;
 	void *userdata2_open;
@@ -68,6 +70,7 @@ void JabberXmlFreeNode(XmlNode *node);
 void JabberXmlDumpAll(XmlState *xmlState);
 void JabberXmlDumpNode(XmlNode *node);
 XmlNode *JabberXmlCopyNode(XmlNode *node);
+BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, JABBER_XML_CALLBACK callback, void *userdata);
 
 #ifdef _DEBUG
 XmlNode *JabberXmlCreateNode(char *name);

@@ -120,7 +120,7 @@ void JabberIqAdd(unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC fun
 
 	if (i>=iqCount && iqCount>=iqAlloced) {
 		iqAlloced = iqCount + 8;
-		iqList = realloc(iqList, sizeof(JABBER_IQ_FUNC)*iqAlloced);
+		iqList = (JABBER_IQ_FUNC *)realloc(iqList, sizeof(JABBER_IQ_FUNC)*iqAlloced);
 	}
 
 	if (iqList != NULL) {
