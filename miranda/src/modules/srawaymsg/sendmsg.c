@@ -108,6 +108,31 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
 				PostMessage(GetParent(hwnd),WM_COMMAND,IDOK,0);
 				return 0;
 			}
+            if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {      //ctrl-a
+                SendMessage(hwnd, EM_SETSEL, 0, -1);
+                return 0;
+            }
+            if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {     // ctrl-w
+                SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+                return 0;
+            }
+            if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {    //ctrl-backspace
+                DWORD start, end;
+                TCHAR *text;
+                int textLen;
+                SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
+                SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
+                SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
+                textLen = GetWindowTextLength(hwnd);
+                text = (TCHAR *) malloc(sizeof(TCHAR) * (textLen + 1));
+                GetWindowText(hwnd, text, textLen + 1);
+                MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
+                SetWindowText(hwnd, text);
+                free(text);
+                SendMessage(hwnd, EM_SETSEL, start, start);
+                SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+                return 0;
+            }
 			break;
 	}
 	return CallWindowProc(OldMessageEditProc,hwnd,msg,wParam,lParam);
@@ -185,6 +210,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDOK:
+				case IDCANCEL:
 					DestroyWindow(hwndDlg);
 					break;
 				case IDC_MSG:
