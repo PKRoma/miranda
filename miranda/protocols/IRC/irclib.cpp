@@ -186,7 +186,7 @@ String CIrcMessage::AsString() const
 }
 
 ////////////////////////////////////////////////////////////////////
-
+#ifdef IRC_SSL
 
 int CSSLSession::SSLInit() 
 {
@@ -281,7 +281,7 @@ int CSSLSession::SSLDisconnect(void) {
 
 	return nSSLret;
 }
-
+#endif
 ////////////////////////////////////////////////////////////////////
 
 CIrcSession::CIrcSession(IIrcSessionMonitor* pMonitor)	
@@ -317,6 +317,8 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 
 		FindLocalIP(con); // get the local ip used for filetransfers etc
 
+#ifdef IRC_SSL
+
 		if(info.iSSL > 0)
 		{
 			sslSession.SSLConnect(con); // Establish SSL connection
@@ -329,7 +331,7 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 				return false;
 			}
 		}
-
+#endif
 
 		m_info = info;
 
@@ -378,15 +380,21 @@ void CIrcSession::Disconnect(void)
 
 
 	int i = 0;
-	while(sslSession.nSSLConnected && sslSession.m_ssl || !sslSession.nSSLConnected && con)
+	while(
+#ifdef IRC_SSL
+		
+		sslSession.nSSLConnected && sslSession.m_ssl || !sslSession.nSSLConnected && 
+#endif		
+		con)
 	{
 		Sleep(50);
 		if (i == 20)
 			break;
 		i++;
 	}
-
+#ifdef IRC_SSL
 	sslSession.SSLDisconnect(); // Close SSL connection
+#endif
 
 	if(con)
 		Netlib_CloseHandle(con);
@@ -414,11 +422,14 @@ void CIrcSession::Notify(const CIrcMessage* pmsg)
 int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 	{
 
+#ifdef IRC_SSL
 		if(sslSession.nSSLConnected == 1) 
 		{
 			return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
 		} 
-		else if (con)
+		else 
+#endif
+			if (con)
 			return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 		return 0;
 
@@ -440,11 +451,13 @@ int CIrcSession::NLSend( const char* fmt, ...)
 int CIrcSession::NLReceive(unsigned char* buf, int cbBuf)
 {
 	int n = 0;
-	if(sslSession.nSSLConnected == 1) {
+#ifdef IRC_SSL
+	if(sslSession.nSSLConnected == 1) 
 		n = pSSL_read(sslSession.m_ssl, buf, cbBuf);
-	} else {
-		n = Netlib_Recv(con, (char*)buf, cbBuf, MSG_DUMPASTEXT);
-	}
+	 else 
+#endif
+		 n = Netlib_Recv(con, (char*)buf, cbBuf, MSG_DUMPASTEXT);
+	
 	return n;
 }
 

@@ -36,7 +36,7 @@ static				HANDLE hMainThread;
 long				lWrongVersion;
 
 //static HMODULE	m_libeay32;
-HMODULE				m_ssleay32;
+HMODULE				m_ssleay32 = NULL;
 	
 
 PLUGININFO			pluginInfo=
@@ -132,7 +132,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	InitializeCriticalSection(&cs);
 	pluginLink=link;
 
+#ifdef IRC_SSL
 	m_ssleay32 = LoadLibrary("ssleay32.dll");
+#endif
 
 	monitor = new CMyMonitor;
 	g_ircSession.AddIrcMonitor(monitor);
