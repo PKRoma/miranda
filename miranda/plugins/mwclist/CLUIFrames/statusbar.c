@@ -36,8 +36,19 @@ void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
 				SIZE textSize;
 				boolean NeedDestroy=FALSE;
 				HICON hIcon;
+				HRGN  hrgn;
+
 
 				if (PD==NULL){return;};					
+				if (dis->hDC==NULL) {return;};
+				
+				//clip it
+
+				hrgn = CreateRectRgn(dis->rcItem.left, dis->rcItem.top, 
+				dis->rcItem.right, dis->rcItem.bottom); 
+				
+				SelectClipRgn(dis->hDC, hrgn);
+
 				szProto=PD->RealName;
 #ifdef _DEBUG
 				{
@@ -96,6 +107,8 @@ void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
 					
 				
 			}
+				SelectClipRgn(dis->hDC, NULL);
+				DeleteObject(hrgn);
 }
 
 void DrawBackGround(HWND hwnd)
@@ -235,6 +248,7 @@ void DrawBackGround(HWND hwnd)
 				ds.rcItem=rc;
 				ds.itemData=(DWORD)PD;
 				ds.itemID=nPanel;
+
 				DrawDataForStatusBar(&ds);
 			};
 		

@@ -24,11 +24,49 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "clc.h"
 #include "clist.h"
+#include "m_metacontacts.h"
 
 //routines for managing adding/removal of items in the list, including sorting
 
 extern int CompareContacts(WPARAM wParam,LPARAM lParam);
 extern void ClearClcContactCache(struct ClcData *dat,HANDLE hContact);
+
+void AddSubcontacts(struct ClcContact * cont)
+{
+	int subcount,i,j;
+	HANDLE hsub;
+	pdisplayNameCacheEntry cacheEntry;
+	cacheEntry=GetContactFullCacheEntry(cont->hContact);
+	OutputDebugString("Proceed AddSubcontacts\r\n");
+	subcount=(int)CallService(MS_MC_GETNUMCONTACTS,(WPARAM)cont->hContact,0);
+	cont->SubExpanded=DBGetContactSettingByte(cont->hContact,"CList","Expanded",0);
+	cont->isSubcontact=0;
+	cont->subcontacts=(struct ClcContact *) mir_alloc(sizeof(struct ClcContact)*subcount);
+	cont->SubAllocated=subcount;
+	i=0;
+	for (j=0; j<subcount; j++)
+	{
+		hsub=(HANDLE)CallService(MS_MC_GETSUBCONTACT,(WPARAM)cont->hContact,j);
+		cacheEntry=GetContactFullCacheEntry(hsub);		
+		if (!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",1) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) )||
+			cacheEntry->status!=ID_STATUS_OFFLINE )
+		{
+			cont->subcontacts[i].hContact=cacheEntry->hContact;
+			cont->subcontacts[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)cacheEntry->hContact,0);
+			memset(cont->subcontacts[i].iExtraImage,0xFF,sizeof(cont->subcontacts[i].iExtraImage));
+			cont->subcontacts[i].proto=cacheEntry->szProto;
+			lstrcpyn(cont->subcontacts[i].szText,cacheEntry->name,sizeof(cont->subcontacts[i].szText));
+			cont->subcontacts[i].type=CLCIT_CONTACT;
+			//cont->flags=0;//CONTACTF_ONLINE;
+			cont->subcontacts[i].isSubcontact=1;
+			i++;
+		}
+		
+	}
+	cont->SubAllocated=i;
+	if (!i) mir_free(cont->subcontacts);
+}
+
 
 static int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 {
@@ -41,6 +79,9 @@ static int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 	group->contact[iAboveItem].flags=0;
 	memset(group->contact[iAboveItem].iExtraImage,0xFF,sizeof(group->contact[iAboveItem].iExtraImage));
 	group->contact[iAboveItem].szText[0]='\0';
+	group->contact[iAboveItem].SubAllocated=0;
+	group->contact[iAboveItem].subcontacts=NULL;
+	group->contact[iAboveItem].SubExpanded=0;
 	
 	ClearRowByIndexCache();
 	return iAboveItem;
@@ -150,7 +191,11 @@ void FreeGroup(struct ClcGroup *group)
 		}
 	}
 	if(group->allocedCount)
+	{	
+		if (group->contact->SubAllocated)
+			mir_free(group->contact->subcontacts);
 		mir_free(group->contact);
+	}
 	group->allocedCount=0;
 	group->contact=NULL;
 	group->contactCount=0;
@@ -183,7 +228,7 @@ int AddInfoItemToGroup(struct ClcGroup *group,int flags,const char *pszText)
 	return i;
 }
 
-static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdisplayNameCacheEntry cacheEntry)
+static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdisplayNameCacheEntry cacheEntry)
 {
 	char *szProto;
 	WORD apparentMode;
@@ -200,7 +245,12 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdispla
 		if(group->contact[i].type!=CLCIT_INFO || !(group->contact[i].flags&CLCIIF_BELOWCONTACTS)) break;
 	i=AddItemToGroup(group,i+1);
 	group->contact[i].type=CLCIT_CONTACT;
+	group->contact[i].SubAllocated=0;
+	group->contact[i].isSubcontact=0;
+	group->contact[i].subcontacts=NULL;
+	
 	group->contact[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
+	cacheEntry=GetContactFullCacheEntry(hContact);
 	group->contact[i].hContact=hContact;
 	
 	//cacheEntry->ClcContact=&(group->contact[i]);
@@ -221,11 +271,13 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdispla
 	group->contact[i].proto = szProto;
 	
 	ClearRowByIndexCache();
+	return &(group->contact[i]);
 }
 
 void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)
 {
 	struct ClcGroup *group;
+	struct ClcContact * cont;
 	pdisplayNameCacheEntry cacheEntry;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	WORD status;
@@ -283,7 +335,14 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 			return;
 		}
 	}
-	AddContactToGroup(dat,group,cacheEntry);
+	cont=AddContactToGroup(dat,group,cacheEntry);
+	if (cont)	
+			if (cont->proto)
+		{	
+			cont->SubAllocated=0;
+			if (strcmp(cont->proto,"MetaContacts")==0)
+				AddSubcontacts(cont);
+		}
 	if(updateTotalCount) group->totalMembers++;
 	ClearRowByIndexCache();
 }
@@ -292,6 +351,7 @@ struct ClcGroup *RemoveItemFromGroup(HWND hwnd,struct ClcGroup *group,struct Clc
 {
 	int iContact;
 	struct ClcData* dat=(struct ClcData*)GetWindowLong(hwnd,0);
+
 	
 	ClearRowByIndexCache();
 	if(contact->type==CLCIT_CONTACT) ClearClcContactCache(dat,contact->hContact);
@@ -357,11 +417,14 @@ void DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 	ClearRowByIndexCache();
 }
 
+
+
 void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 {
 //	char *szProto;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	HANDLE hContact;
+	struct ClcContact * cont;
 	struct ClcGroup *group;
 	//DBVARIANT dbv;
 	int tick=GetTickCount();
@@ -376,39 +439,23 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 	dat->NeedResort=1;
 	dat->selection=-1;
 	dat->HiLightMode=DBGetContactSettingByte(NULL,"CLC","HiLightMode",0);
-
 	{
-		int i,r;
+		int i;
 		char *szGroupName;
 		DWORD groupFlags;
-		
-		
+
 		for(i=1;;i++) {
 			szGroupName=(char*)CallService(MS_CLIST_GROUPGETNAME2,i,(LPARAM)&groupFlags);
 			if(szGroupName==NULL) break;
 			AddGroup(hwnd,dat,szGroupName,groupFlags,i,0);
-			r=i;
 		}
-		/*
-		AddGroup(hwnd,dat,"_____________",groupFlags,r+1,0);
-		r++;
-		
-		for(i=1;;i++) {
-			char buf[256];
-
-			szGroupName=(char*)CallService(MS_CLIST_GROUPGETNAME2,i,(LPARAM)&groupFlags);
-			if(szGroupName==NULL) break;
-			sprintf(buf,"-%s",szGroupName);
-			AddGroup(hwnd,dat,buf,groupFlags,r+i,0);
-		}
-		*/
 	}
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	while(hContact) {
 		
 		pdisplayNameCacheEntry cacheEntry;
-		
+		cont=NULL;
 		cacheEntry=GetContactFullCacheEntry(hContact);
 		//cacheEntry->ClcContact=NULL;
 		ClearClcContactCache(dat,hContact);
@@ -422,21 +469,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 			if(strlen(cacheEntry->szGroup)==0)
 				group=&dat->list;
 			else {
-				/*
-				if (cacheEntry->status==ID_STATUS_OFFLINE)
-				{
-					char buf[256];
-					sprintf(buf,"-%s",cacheEntry->szGroup);
-					group=AddGroup(hwnd,dat,buf,(DWORD)-1,0,0);	
-
-				}else
-				{
-				
-				}
-				*/
-				group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);	
-				
-				
+				group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);
 				//mir_free(dbv.pszVal);
 			}
 
@@ -446,14 +479,21 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 					//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 					if(cacheEntry->szProto==NULL) {
 						if(!IsHiddenMode(dat,ID_STATUS_OFFLINE)||cacheEntry->noHiddenOffline)
-							AddContactToGroup(dat,group,cacheEntry);
+							cont=AddContactToGroup(dat,group,cacheEntry);
 					}
 					else
 						if(!IsHiddenMode(dat,cacheEntry->status)||cacheEntry->noHiddenOffline)
-							AddContactToGroup(dat,group,cacheEntry);
+							cont=AddContactToGroup(dat,group,cacheEntry);
 				}
-				else AddContactToGroup(dat,group,cacheEntry);
+				else cont=AddContactToGroup(dat,group,cacheEntry);
 			}
+		}
+		if (cont)	
+			if (cont->proto)
+		{	
+			cont->SubAllocated=0;
+			if (strcmp(cont->proto,"MetaContacts")==0)
+				AddSubcontacts(cont);
 		}
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
@@ -502,6 +542,10 @@ int GetGroupContentsCount(struct ClcGroup *group,int visibleOnly)
 		if(group->scanIndex==group->contactCount) {
 			if(group==topgroup) break;
 			group=group->parent;
+		}
+		else if (group->contact[group->scanIndex].type==CLCIT_CONTACT && (group->contact[group->scanIndex].SubAllocated>0) && visibleOnly && group->contact[group->scanIndex].SubExpanded)
+		{
+			count+=group->contact[group->scanIndex].SubAllocated;
 		}
 		else if(group->contact[group->scanIndex].type==CLCIT_GROUP && (!visibleOnly || group->contact[group->scanIndex].group->expanded)) {
 			group=group->contact[group->scanIndex].group;
@@ -710,7 +754,7 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 			savedGroup[savedGroupCount-1].expanded=group->expanded;
 			continue;
 		}
-		else if(group->contact[group->scanIndex].type==CLCIT_CONTACT) {
+		else if(group->contact[group->scanIndex].type==CLCIT_CONTACT) {			
 			if(++savedContactCount>savedContactAlloced) {
 				savedContactAlloced+=allocstep;
 				savedContact=(struct SavedContactState_t*)mir_realloc(savedContact,sizeof(struct SavedContactState_t)*savedContactAlloced);
@@ -718,6 +762,21 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 			savedContact[savedContactCount-1].hContact=group->contact[group->scanIndex].hContact;
 			CopyMemory(savedContact[savedContactCount-1].iExtraImage,group->contact[group->scanIndex].iExtraImage,sizeof(group->contact[group->scanIndex].iExtraImage));
 			savedContact[savedContactCount-1].checked=group->contact[group->scanIndex].flags&CONTACTF_CHECKED;
+			if (group->contact[group->scanIndex].SubAllocated>0)
+			{
+				int l;
+				for (l=0; l<group->contact[group->scanIndex].SubAllocated; l++)
+				{
+					if(++savedContactCount>savedContactAlloced) {
+						savedContactAlloced+=allocstep;
+						savedContact=(struct SavedContactState_t*)mir_realloc(savedContact,sizeof(struct SavedContactState_t)*savedContactAlloced);
+					}
+					savedContact[savedContactCount-1].hContact=group->contact[group->scanIndex].subcontacts[l].hContact;
+					CopyMemory(savedContact[savedContactCount-1].iExtraImage ,group->contact[group->scanIndex].subcontacts[l].iExtraImage,sizeof(group->contact[group->scanIndex].iExtraImage));
+					savedContact[savedContactCount-1].checked=group->contact[group->scanIndex].subcontacts[l].flags&CONTACTF_CHECKED;
+				}
+			}
+
 		}
 		else if(group->contact[group->scanIndex].type==CLCIT_INFO) {
 			if(++savedInfoCount>savedInfoAlloced) {
@@ -756,8 +815,19 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 				if(savedContact[i].hContact==group->contact[group->scanIndex].hContact) {
 					CopyMemory(group->contact[group->scanIndex].iExtraImage,savedContact[i].iExtraImage,sizeof(group->contact[group->scanIndex].iExtraImage));
 					if(savedContact[i].checked) group->contact[group->scanIndex].flags|=CONTACTF_CHECKED;
-					break;
+					break;	
 				}
+			if (group->contact[group->scanIndex].SubAllocated>0)
+			{
+				int l;
+				for (l=0; l<group->contact[group->scanIndex].SubAllocated; l++)
+					for(i=0;i<savedContactCount;i++)
+						if(savedContact[i].hContact==group->contact[group->scanIndex].subcontacts[l].hContact) {
+							CopyMemory(group->contact[group->scanIndex].subcontacts[l].iExtraImage,savedContact[i].iExtraImage,sizeof(group->contact[group->scanIndex].iExtraImage));
+							if(savedContact[i].checked) group->contact[group->scanIndex].subcontacts[l].flags|=CONTACTF_CHECKED;
+							break;	
+						}	
+			}
 		}
 		group->scanIndex++;
 	}

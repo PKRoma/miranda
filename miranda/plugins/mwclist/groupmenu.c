@@ -317,10 +317,10 @@ void InitGroupMenus(void)
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
-	mi.position=900000;
+	mi.position=1900000;
 	mi.pszService="CloseAction";
 	mi.pszName=Translate("E&xit");
-	//AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
+	AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);

@@ -314,6 +314,11 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 			pdnce->NotOnList=DBGetContactSettingByte(pdnce->hContact,"CList","NotOnList",0);
 		};		
 
+		if (pdnce->IsExpanded==-1)
+		{
+			pdnce->IsExpanded=DBGetContactSettingByte(pdnce->hContact,"CList","Expanded",0);
+		}
+
 
 	}
 }
@@ -378,6 +383,7 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 				pdnce->NotOnList=-1;
 				pdnce->isUnknown=FALSE;
 				pdnce->noHiddenOffline=-1;
+				pdnce->IsExpanded=-1;
 
 				return;
 			}
@@ -399,6 +405,7 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 				pdnce->NotOnList=-1;
 				pdnce->isUnknown=FALSE;
 				pdnce->noHiddenOffline=-1;
+ 				pdnce->IsExpanded=-1;
 		};
 };
 void InvalidateDisplayNameCacheEntry(HANDLE hContact)
@@ -567,7 +574,8 @@ int InvalidateDisplayName(WPARAM wParam,LPARAM lParam) {
 
 int ContactAdded(WPARAM wParam,LPARAM lParam)
 {
-	ChangeContactIcon((HANDLE)wParam,IconFromStatusMode((char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1);
+	ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1); ///by FYR
+//	ChangeContactIcon((HANDLE)wParam,IconFromStatusMode((char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1);
 	SortContacts();
 	return 0;
 }
@@ -599,7 +607,13 @@ __try
 		if (dbv.pszVal) mir_free(dbv.pszVal);
 		return 0;
 	};
-
+/*
+	if (pdnce)
+	{	char buf[256];
+		sprintf(buf,"CHANGE: hcont: %x, name:%s  module: %s, setting: %s\r\n",pdnce->hContact,pdnce->name,cws->szModule,cws->szSetting);
+		OutputDebugString(buf);
+	}
+*/
 	if (pdnce&&(pdnce->protoNotExists==FALSE)&&pdnce->szProto)
 	{
 		if (!strcmp(cws->szModule,pdnce->szProto))
@@ -616,15 +630,18 @@ __try
 						// User's state is changing, and we are hideOffline-ing
 						
 						if (cws->value.wVal == ID_STATUS_OFFLINE) {
-							ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+							//ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+							ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
 							mir_free(dbv.pszVal);
 							return 0;
 						}
-						ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 1);
+						//ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 1);
+							ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
 					}
 					else
 					{
-						ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+//						ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+						ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
 					}
 					
 				}
@@ -657,7 +674,8 @@ __try
 		InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);		
 			if(cws->value.type==DBVT_DELETED || cws->value.bVal==0) {
 				char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-				ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);
+//				ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);
+				ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);  //by FYR
 			}
 		}
 
@@ -675,7 +693,8 @@ __try
 			InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);	
 			if(cws->value.type==DBVT_DELETED) szProto=NULL;
 			else szProto=cws->value.pszVal;
-			ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0);
+			ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0); //by FYR
+//			ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0);
 		}
 	}
 

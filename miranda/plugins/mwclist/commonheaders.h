@@ -23,12 +23,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _COMMON_HEADERS_H_
 #define _COMMON_HEADERS_H_ 1
 
+//#include "AggressiveOptimize.h"
+
 #include <malloc.h>
 
 #ifdef _DEBUG
-//#	define _CRTDBG_MAP_ALLOC
-//#	include <stdlib.h>
-//#	include <crtdbg.h>
+#	define _CRTDBG_MAP_ALLOC
+#	include <stdlib.h>
+#	include <crtdbg.h>
 #endif
 
 #define _WIN32_WINNT 0x0501
@@ -44,6 +46,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clist.h"
 #include "resource.h"
 #include "forkthread.h"
+#include <win2k.h>
 
 #include <newpluginapi.h>
 #include <m_system.h>
@@ -67,7 +70,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_userinfo.h>
 #include ".\CLUIFrames\cluiframes.h"
 #include ".\CLUIFrames\m_cluiframes.h"
-#include <win2k.h>
+#include  "m_metacontacts.h"
+
 #define CLS_CONTACTLIST 1
 
 // shared vars

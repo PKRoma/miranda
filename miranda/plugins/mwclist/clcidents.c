@@ -165,7 +165,7 @@ void SetClcContactCacheItem(struct ClcData *dat,HANDLE hContact,void *contact)
 
 int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible)
 {
-	int index=0;
+	int index=0, i;
 	int nowVisible=1;
 	struct ClcGroup *group=&dat->list;
 
@@ -243,6 +243,16 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 			if(subgroup) *subgroup=group;
 			return 1;
 		}
+		if (group->contact[group->scanIndex].type==CLCIT_CONTACT &&
+			group->contact[group->scanIndex].SubAllocated>0)
+			for (i=1; i<=group->contact[group->scanIndex].SubAllocated; i++)
+				if (IsHContactContact(hItem)  && group->contact[group->scanIndex].subcontacts[i-1].hContact==hItem)
+				{	
+					if(contact) *contact=&group->contact[group->scanIndex].subcontacts[i-1];
+					if(subgroup) *subgroup=group;
+					return 1;
+				}
+
 		if(group->contact[group->scanIndex].type==CLCIT_GROUP) {
 			group=group->contact[group->scanIndex].group;
 			group->scanIndex=0;
@@ -267,16 +277,16 @@ void ClearRowByIndexCache()
 }
 int GetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup)
 {
-	int index=0;
+	int index=0,i;
 	struct ClcGroup *group=&dat->list;
 
 	if (testindex<0) return (-1);
-	if (FALSE&&(testindex>0)&&testindex<CacheArrSize&&CacheIndex[testindex]!=NULL)
-	{
-					if(contact) *contact=&(CacheIndex[testindex])->contact[group->scanIndex];
-					if(subgroup) *subgroup=(CacheIndex[testindex]);
-					return (testindex);
-	}else
+//	if (FALSE&&(testindex>0)&&testindex<CacheArrSize&&CacheIndex[testindex]!=NULL)
+//	{
+//					if(contact) *contact=&(CacheIndex[testindex])->contact[group->scanIndex];
+//					if(subgroup) *subgroup=(CacheIndex[testindex]);
+//					return (testindex);
+//	}else
 	{
 			group->scanIndex=0;
 			for(;;) {
@@ -297,6 +307,27 @@ int GetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,
 					if(subgroup) *subgroup=group;
 					return index;
 				}
+				
+				if (group->contact[group->scanIndex].type==CLCIT_CONTACT)
+					if (group->contact[group->scanIndex].SubAllocated)
+						if (group->contact[group->scanIndex].SubExpanded)
+					{
+						for (i=0;i<group->contact[group->scanIndex].SubAllocated;i++)
+						{
+							if ((index>0) && (index<CacheArrSize)) 
+							{
+								CacheIndex[index]=group;
+								CacheIndexClear=FALSE;
+							};
+							index++;
+							if(testindex==index) {
+								if(contact) *contact=&group->contact[group->scanIndex].subcontacts[i];
+								if(subgroup) *subgroup=group;
+								return index;
+							}
+						}
+						
+					}
 				index++;
 				if(group->contact[group->scanIndex].type==CLCIT_GROUP && group->contact[group->scanIndex].group->expanded) {
 					group=group->contact[group->scanIndex].group;

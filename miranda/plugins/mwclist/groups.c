@@ -271,6 +271,7 @@ static int SetGroupFlags(WPARAM wParam,LPARAM lParam)
 	DBWriteContactSettingString(NULL,"CListGroups",idstr,dbv.pszVal);
 	DBFreeVariant(&dbv);
 	if((oldval&GROUPF_HIDEOFFLINE)!=(newval&GROUPF_HIDEOFFLINE)) LoadContactTree();
+	OutputDebugString("SetGroupFlags Done\r\n");
 	return 0;
 }
 

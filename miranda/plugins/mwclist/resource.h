@@ -125,6 +125,7 @@
 #define IDI_ICQC8                       276
 #define IDI_EMAIL                       277
 #define IDI_BLANK1                      278
+#define IDD_OPT_META_CLC                279
 #define IDD_DIALOG1                     280
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
@@ -527,8 +528,13 @@
 #define IDC_DISABLEBLINK                1609
 #define IDC_IDLE                        1610
 #define IDC_SBPANELBEVEL                1611
+#define IDC_META                        1611
 #define IDC_DROPSHADOW                  1612
+#define IDC_METADBLCLK                  1612
 #define IDC_NOSCROLLBAR                 1613
+#define IDC_METASUBEXTRA                1614
+#define IDC_METASUBEXTRA_IGN            1615
+#define IDC_METASUB_HIDEOFFLINE         1616
 #define IDC_BUTTON1                     1633
 #define IDC_IDLECHECK                   1636
 #define IDC_IDLEONWINDOWS               1637

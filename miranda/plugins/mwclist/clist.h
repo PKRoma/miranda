@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void LoadContactTree(void);
 int IconFromStatusMode(const char *szProto,int status);
+int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status);
 HTREEITEM GetTreeItemByHContact(HANDLE hContact);
 void TrayIconUpdateWithImageList(int iImage,const char *szNewTip,char *szPreferredProto);
 void SortContacts(void);
@@ -42,12 +43,14 @@ typedef struct  {
 	int	  status;
 	int Hidden;
 	int noHiddenOffline;
+
 	char *szGroup;
 	int i;
 	int ApparentMode;
 	int NotOnList;
 	int IdleTS;
 	void *ClcContact;
+	BYTE IsExpanded;
 	boolean isUnknown;
 
 } displayNameCacheEntry,*pdisplayNameCacheEntry;

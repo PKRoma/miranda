@@ -75,7 +75,7 @@ int hStatusMenuHandlesCnt;
 
 
 extern HANDLE hStatusModeChangeEvent;
-
+extern int GetProtocolVisibility(char * ProtoName);
 
 //mainmenu exec param(ownerdata)
 typedef struct{
@@ -281,7 +281,7 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 	{
 	char buf[256];
-	wsprintf(buf,"%s/%s",(mi->pszContactOwner!=NULL)?mi->pszContactOwner:"",mi->pszService);
+	wsprintf(buf,"%s/%s",mi->pszContactOwner,mi->pszService);
 	op.Value=(int)buf;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 	}
@@ -622,9 +622,32 @@ int freeownerdataformenus()
 return(1);
 };
 
-static int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
+int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 {
-	int i,j,protoCount=0,networkProtoCount;
+	int res=0;
+	int p;
+	char buf[10];
+	char * b2=NULL;
+	/*
+	spcnt=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
+	itoa(Pos+200,buf,10);
+	p=DBGetContactSettingDword(0,"Protocols",buf,-1);
+	*/
+	itoa(Pos,buf,10);
+	b2=DBGetString(NULL,"Protocols",buf);
+	OutputDebugString("GetProtoIndexByPos \r\n");
+	
+	if (b2)
+		for (p=0; p<protoCnt; p++)
+			if (strcmp(proto[p]->szName,b2)==0)
+						return p;
+return -1;
+}
+
+int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
+{
+	int i,j,protoCount=0,networkProtoCount,s;
+	int storedProtoCount;
 	PROTOCOLDESCRIPTOR **proto;
 	DWORD statusFlags=0,flags;
 	TMO_MenuItem tmi;
@@ -667,19 +690,24 @@ static int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	hStatusMainMenuHandles=(HANDLE*)mir_alloc(sizeof(statusModeList));
 	hStatusMainMenuHandlesCnt=sizeof(statusModeList)/sizeof(HANDLE);
+	for(i=0;i<protoCount;i++)
+	{
+		if(proto[i]->type==PROTOTYPE_PROTOCOL && GetProtocolVisibility(proto[i]->szName)!=0) networkProtoCount++;
+	}
 
 	memset(hStatusMainMenuHandles,0,sizeof(statusModeList));
 	hStatusMenuHandles=(tStatusMenuHandles*)mir_alloc(sizeof(tStatusMenuHandles)*protoCount);
 	hStatusMenuHandlesCnt=protoCount;
 
 	memset(hStatusMenuHandles,0,sizeof(tStatusMenuHandles)*protoCount);
+	storedProtoCount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	
-	for(i=0;i<protoCount;i++)
-		if(proto[i]->type==PROTOTYPE_PROTOCOL && CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)!=0) networkProtoCount++;
-
-	
-	for(i=protoCount-1;i>=0;i--) {
-		if(proto[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
+	for(s=0;s<storedProtoCount;s++) {
+		
+		i=GetProtoIndexByPos(proto,protoCount,s);
+		if (i==-1) continue;
+		if((proto[i]->type!=PROTOTYPE_PROTOCOL) || (GetProtocolVisibility(proto[i]->szName)==0)) continue;
+		
 		flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 		if(networkProtoCount>1) {
 			char protoName[128];
@@ -720,7 +748,7 @@ static int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 										lpStatusMenuExecParam smep;
 										smep=(lpStatusMenuExecParam)mir_alloc(sizeof(StatusMenuExecParam));
 										smep->status=statusModeList[j];
-										smep->protoindex=i;
+										smep->protoindex=s;
 										smep->proto=mir_strdup(proto[i]->szName);
 										tmi.ownerdata=smep;
 									};
@@ -741,7 +769,7 @@ static int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					//add to root menu
 					for(j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
 						for(i=0;i<protoCount;i++) {
-							if(proto[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
+							if(proto[i]->type!=PROTOTYPE_PROTOCOL || GetProtocolVisibility(proto[i]->szName)==0) continue;
 							flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 								if(flags&statusModePf2List[j]){
 									//DeleteMenu(hMenu,statusModeList[j],MF_BYCOMMAND)

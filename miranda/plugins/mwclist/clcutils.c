@@ -54,7 +54,7 @@ char *GetGroupCountsText(struct ClcData *dat,struct ClcContact *contact)
 			continue;
 		}
 		else if(group->contact[group->scanIndex].type==CLCIT_CONTACT)
-			if(group->contact[group->scanIndex].flags&CONTACTF_ONLINE) onlineCount++;
+			if(group->contact[group->scanIndex].flags&CONTACTF_ONLINE && !group->contact[group->scanIndex].isSubcontact) onlineCount++;
 		group->scanIndex++;
 	}
 	if(onlineCount==0 && dat->exStyle&CLS_EX_HIDECOUNTSWHENEMPTY) return "";
@@ -67,9 +67,10 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	struct ClcContact *hitcontact;
 	struct ClcGroup *hitgroup;
 	int hit,indent,width,i,cxSmIcon;
-	int checkboxWidth,ic=0;
+	int checkboxWidth, subident,ic;
 	SIZE textSize;
 	HDC hdc;
+	HFONT oldfont;
 	RECT clRect;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 
@@ -95,8 +96,14 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	}
 	if(contact) *contact=hitcontact;
 	if(group) *group=hitgroup;
+	/////////
+	if (hitcontact->type==CLCIT_CONTACT && hitcontact->isSubcontact)
+		subident=dat->rowHeight/2;
+	else
+		subident=0;
+
 	for(indent=0;hitgroup->parent;indent++,hitgroup=hitgroup->parent);
-	if(testx<dat->leftMargin+indent*dat->groupIndent) {
+	if(testx<dat->leftMargin+indent*dat->groupIndent+subident) {
 		if(flags) *flags|=CLCHT_ONITEMINDENT;
 		return hit;
 	}
@@ -104,28 +111,21 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	if(style&CLS_CHECKBOXES && hitcontact->type==CLCIT_CONTACT) checkboxWidth=dat->checkboxSize+2;
 	if(style&CLS_GROUPCHECKBOXES && hitcontact->type==CLCIT_GROUP) checkboxWidth=dat->checkboxSize+2;
 	if(hitcontact->type==CLCIT_INFO && hitcontact->flags&CLCIIF_CHECKBOX) checkboxWidth=dat->checkboxSize+2;
-	if(testx<dat->leftMargin+indent*dat->groupIndent+checkboxWidth) {
+	if(testx<dat->leftMargin+indent*dat->groupIndent+checkboxWidth+subident) {
 		if(flags) *flags|=CLCHT_ONITEMCHECK;
 		return hit;
 	}
-	if(testx<dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace) {
+	if(testx<dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace+subident) {
 		if(flags) *flags|=CLCHT_ONITEMICON;
 		return hit;
 	}
-
-	hdc=GetDC(hwnd);
-	if(hitcontact->type==CLCIT_GROUP) SelectObject(hdc,dat->fontInfo[FONTID_GROUPS].hFont);
-	else SelectObject(hdc,dat->fontInfo[FONTID_CONTACTS].hFont);
-	if (DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1)
-	{
-		if(flags) *flags|=CLCHT_ONITEMLABEL;
-		return hit;
-	}
 	
+	hdc=GetDC(hwnd);
 	GetTextExtentPoint32(hdc,hitcontact->szText,lstrlen(hitcontact->szText),&textSize);
 	width=textSize.cx;
-//extra icons
+
 	cxSmIcon=GetSystemMetrics(SM_CXSMICON);
+
 	for(i=0;i<dat->extraColumnsCount;i++) {
 		int x;
 		if(hitcontact->iExtraImage[i]==0xFF) continue;
@@ -148,9 +148,21 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 			return hit;
 		}
 	}	
+
+
+	if(hitcontact->type==CLCIT_GROUP) 
+		oldfont=SelectObject(hdc,dat->fontInfo[FONTID_GROUPS].hFont);
+	else oldfont=SelectObject(hdc,dat->fontInfo[FONTID_CONTACTS].hFont);
+	if (DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1)
+	{
+		if(flags) *flags|=CLCHT_ONITEMLABEL;
+		SelectObject(hdc,oldfont);
+		ReleaseDC(hwnd,hdc);
+		return hit;
+	}
 	
-	
-	
+	GetTextExtentPoint32(hdc,hitcontact->szText,lstrlen(hitcontact->szText),&textSize);
+	width=textSize.cx;
 	if(hitcontact->type==CLCIT_GROUP) {
 		char *szCounts;
 		szCounts=GetGroupCountsText(dat,hitcontact);
@@ -162,8 +174,9 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 			width+=textSize.cx;
 		}
 	}
+	SelectObject(hdc,oldfont);
 	ReleaseDC(hwnd,hdc);
-	if(testx<dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace+width+4) {
+	if(testx<dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace+width+4+subident) {
 		if(flags) *flags|=CLCHT_ONITEMLABEL;
 		return hit;
 	}
@@ -185,7 +198,7 @@ void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 	}
 	GetClientRect(hwnd,&clRect);
 	rcInvalidate=clRect;
-	maxy=dat->rowHeight*GetGroupContentsCount(&dat->list,1)-clRect.bottom;
+	maxy=dat->rowHeight*GetGroupContentsCount(&dat->list,2)-clRect.bottom;
 	if(desty>maxy) desty=maxy;
 	if(desty<0) desty=0;
 	if(abs(desty-dat->yScroll)<4) noSmooth=1;
@@ -239,24 +252,40 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	SCROLLINFO si={0};
 	RECT clRect;
 	NMCLISTCONTROL nm;
-
 	GetClientRect(hwnd,&clRect);
 	si.cbSize=sizeof(si);
 	si.fMask=SIF_ALL;
 	si.nMin=0;
-	si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,1)-1;
+	si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,2)-1;
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
-
-	if ( GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
-		if ( dat->noVScrollbar==0 ) SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
-	} else SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
-	ScrollTo(hwnd,dat,dat->yScroll,1);
+	
 	nm.hdr.code=CLN_LISTSIZECHANGE;
 	nm.hdr.hwndFrom=hwnd;
 	nm.hdr.idFrom=GetDlgCtrlID(hwnd);
 	nm.pt.y=si.nMax;
 	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
+
+
+	GetClientRect(hwnd,&clRect);
+	si.cbSize=sizeof(si);
+	si.fMask=SIF_ALL;
+	si.nMin=0;
+	si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,2)-1;
+	si.nPage=clRect.bottom;
+	si.nPos=dat->yScroll;
+
+	if ( GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
+		if ( dat->noVScrollbar==0 ) SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
+		//else SetScrollInfo(hwnd,SB_VERT,&si,FALSE);
+	} else SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
+	ScrollTo(hwnd,dat,dat->yScroll,1);
+	//ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
+	//nm.hdr.code=CLN_LISTSIZECHANGE;
+	//nm.hdr.hwndFrom=hwnd;
+	//nm.hdr.idFrom=GetDlgCtrlID(hwnd);
+	//nm.pt.y=si.nMax;
+	//SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }
 
 void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState)
@@ -421,7 +450,7 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 {
 	struct ClcContact *contact;
 	struct ClcGroup *group;
-	int indent,x,y;
+	int indent,x,y,subident;
 	RECT clRect;
 
 	KillTimer(hwnd,TIMERID_RENAME);
@@ -430,9 +459,15 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	dat->selection=GetRowByIndex(dat,dat->selection,&contact,&group);
 	if(dat->selection==-1) return;
 	if(contact->type!=CLCIT_CONTACT && contact->type!=CLCIT_GROUP) return;
+	
+	if (contact->type==CLCIT_CONTACT && contact->isSubcontact)
+		subident=dat->rowHeight/2;
+	else 
+		subident=0;
+	
 	for(indent=0;group->parent;indent++,group=group->parent);
 	GetClientRect(hwnd,&clRect);
-	x=indent*dat->groupIndent+dat->iconXSpace-2;
+	x=indent*dat->groupIndent+dat->iconXSpace-2+subident;
 	y=dat->selection*dat->rowHeight-dat->yScroll;
 	dat->hwndRenameEdit=CreateWindow("EDIT",contact->szText,WS_CHILD|WS_BORDER|ES_AUTOHSCROLL,x,y,clRect.right-x,dat->rowHeight,hwnd,NULL,g_hInst,NULL);
 	OldRenameEditWndProc=(WNDPROC)SetWindowLong(dat->hwndRenameEdit,GWL_WNDPROC,(LONG)RenameEditSubclassProc);
@@ -581,7 +616,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 			SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc,"x",1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
-			//if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
+			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
 		}
 		ReleaseDC(hwnd,hdc);
 	}
@@ -593,7 +628,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 	dat->showIdle=DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE);
 	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
 	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
-//	ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
+	ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
 	if(!dat->bkChanged) {
 		DBVARIANT dbv;
 		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);

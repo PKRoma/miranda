@@ -35,9 +35,15 @@ static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWOR
 extern HIMAGELIST hCListImages;
 extern int currentStatusMenuItem,currentDesiredStatusMode;
 extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
+extern int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
+extern int GetProtocolVisibility(char * ProtoName);
+
 
 static UINT WM_TASKBARCREATED;
 static int cycleTimerId=0,cycleStep=0;
+static int RefreshTimerId=0;   /////by FYR
+static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime); ///// by FYR
+void TrayIconUpdateBase(const char *szChangedProto);///by FYR
 
 struct trayIconInfo_t {
 	int id;
@@ -96,10 +102,10 @@ static char *TrayIconMakeTooltip(const char *szPrefix,const char *szProto)
 		PROTOCOLDESCRIPTOR **protos;
 		int count,netProtoCount,i;
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-		for(i=0,netProtoCount=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL) netProtoCount++;
+		for(i=0,netProtoCount=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[i]->szName)!=0) ) netProtoCount++;
 		if(netProtoCount==1)
-			for(i=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL) return TrayIconMakeTooltip(szPrefix,protos[i]->szName);
-		if(szPrefix && szPrefix[0]) {
+			for(i=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[i]->szName)!=0)) return TrayIconMakeTooltip(szPrefix,protos[i]->szName);
+		if(szPrefix && szPrefix[0]) { 
 			lstrcpyn(szTip,szPrefix,sizeof(szTip));
 			if(!DBGetContactSettingByte(NULL,"CList","AlwaysStatus",SETTING_ALWAYSSTATUS_DEFAULT))
 				return szTip;
@@ -107,7 +113,7 @@ static char *TrayIconMakeTooltip(const char *szPrefix,const char *szProto)
 		else szTip[0]='\0';
 		szTip[sizeof(szTip)-1]='\0';
 		for(i=count-1;i>=0;i--) {
-			if(protos[i]->type!=PROTOTYPE_PROTOCOL) continue;
+			if(protos[i]->type!=PROTOTYPE_PROTOCOL || (GetProtocolVisibility(protos[i]->szName)==0)) continue;
 			CallProtoService(protos[i]->szName,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
 			szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0),0);
 			if(szTip[0]) strncat(szTip,szSeparator,sizeof(szTip)-1-strlen(szTip));
@@ -199,7 +205,7 @@ static int TrayIconInit(HWND hwnd)
 	if(cycleTimerId) {KillTimer(NULL,cycleTimerId); cycleTimerId=0;}
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for(i=0,netProtoCount=0;i<count;i++) {
-		if(protos[i]->type!=PROTOTYPE_PROTOCOL) continue;
+		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (GetProtocolVisibility(protos[i]->szName)==0)) continue;
 		cycleStep=i;
 		netProtoCount++;
 		if(averageMode==0) averageMode=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0);
@@ -210,7 +216,13 @@ static int TrayIconInit(HWND hwnd)
 	if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI &&
 	  (averageMode<=0 || DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))) {
 		int i;
-		for(i=count-1;i>=0;i--) if(protos[i]->type==PROTOTYPE_PROTOCOL) TrayIconAdd(hwnd,protos[i]->szName,NULL,CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0));
+		for(i=count-1;i>=0;i--) 
+		{	
+			int j;
+			j=GetProtoIndexByPos(protos,count,i);
+			if (j>-1)
+				if(protos[j]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[j]->szName)!=0)) TrayIconAdd(hwnd,protos[j]->szName,NULL,CallProtoService(protos[j]->szName,PS_GETSTATUS,0,0));
+		}
 	}
 	else if(averageMode<=0 && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE) {
 		DBVARIANT dbv={DBVT_DELETED};
@@ -282,8 +294,9 @@ static int TrayIconUpdate(HICON hNewIcon,const char *szNewTip,const char *szPref
 		trayIcon[i].isBase=isBase;
 		return i;
 	}
-	//if there wasn't a suitable icon, change all the icons
-	for(i=0;i<trayIconCount;i++) {
+
+	for(i=0;i<trayIconCount;i++) 
+	{
 		if(trayIcon[i].id==0) continue;
 		nid.uID = trayIcon[i].id;
 		if (dviShell.dwMajorVersion>=5) {
@@ -295,9 +308,35 @@ static int TrayIconUpdate(HICON hNewIcon,const char *szNewTip,const char *szPref
 			Shell_NotifyIcon(NIM_MODIFY, &nid);
 		}
 		trayIcon[i].isBase=isBase;
+		if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI ) 
+		{
+			if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
+			RefreshTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,RefreshTimerProc);	// by FYR (Setting timer)
+			return i;	//by FYR (to change only one icon)
+		}		
 	}
 	return -1;
 }
+
+////////////////////////////////////////////////////////////
+///// Need to refresh trays icon  after timely changing/////
+////////////////////////////////////////////////////////////
+static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+{
+	int count,i;
+	PROTOCOLDESCRIPTOR **protos;
+	
+	if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
+
+	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
+	for (i=0; i<count; i++)
+		if(protos[i]->type==PROTOTYPE_PROTOCOL &&
+			(GetProtocolVisibility(protos[i]->szName)!=0))
+			TrayIconUpdateBase(protos[i]->szName);
+
+}
+//////// End by FYR /////////
+
 
 static int TrayIconSetBaseInfo(HICON hIcon,const char *szPreferredProto)
 {
@@ -329,6 +368,7 @@ void TrayIconUpdateWithImageList(int iImage,const char *szNewTip,char *szPreferr
 	DestroyIcon(hIcon);
 }
 
+
 static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
 {
 	int count;
@@ -337,7 +377,7 @@ static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWOR
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for(cycleStep++;;cycleStep++) {
 		if(cycleStep>=count) cycleStep=0;
-		if(protos[cycleStep]->type==PROTOTYPE_PROTOCOL) break;
+		if(protos[cycleStep]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[cycleStep]->szName)!=0)) break;
 	}
 	DestroyIcon(trayIcon[0].hBaseIcon);
 	trayIcon[0].hBaseIcon=ImageList_GetIcon(hCListImages,IconFromStatusMode(protos[cycleStep]->szName,CallProtoService(protos[cycleStep]->szName,PS_GETSTATUS,0,0)),ILD_NORMAL);
@@ -351,11 +391,10 @@ void TrayIconUpdateBase(const char *szChangedProto)
 	PROTOCOLDESCRIPTOR **protos;
 	int averageMode=0;
 	HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
-
 	if(cycleTimerId) {KillTimer(NULL,cycleTimerId); cycleTimerId=0;}
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for(i=0,netProtoCount=0;i<count;i++) {
-		if(protos[i]->type!=PROTOTYPE_PROTOCOL) continue;
+		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (GetProtocolVisibility(protos[i]->szName)==0)) continue;
 		netProtoCount++;
 		if(!lstrcmp(szChangedProto,protos[i]->szName)) cycleStep=i;
 		if(averageMode==0) averageMode=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0);
@@ -381,11 +420,9 @@ void TrayIconUpdateBase(const char *szChangedProto)
 					char *szProto;
 					int status;
 					if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
-					else szProto=mir_strdup (dbv.pszVal);
-					
-					DBFreeVariant(&dbv);
-					
-					
+					else szProto=dbv.pszVal;
+//					changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0)),ILD_NORMAL),NULL);
+
 					status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 					{
@@ -399,6 +436,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 						TrayIconUpdate(hIcon,NULL,NULL,1);
 						
 						DestroyIcon(hIcon);
+						DBFreeVariant(&dbv);
 						break;
 						}
 											
@@ -408,8 +446,10 @@ void TrayIconUpdateBase(const char *szChangedProto)
 					{
 							changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0)),ILD_NORMAL),NULL);
 					}
-					
-					
+
+
+
+					DBFreeVariant(&dbv);
 					break;
 				}
 				case SETTING_TRAYICON_CYCLE:
@@ -432,6 +472,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 	}
 	else 
 	{
+//changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(NULL,averageMode),ILD_NORMAL),NULL);
 
 
 					int status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
@@ -450,12 +491,25 @@ void TrayIconUpdateBase(const char *szChangedProto)
 						//return;
 						}
 					}
-			
-						changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(NULL,averageMode),ILD_NORMAL),NULL);
+			//??
+				changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(NULL,averageMode),ILD_NORMAL),NULL);
+	};
 
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 	if(changed!=-1 && trayIcon[changed].isBase)
-		TrayIconUpdate(trayIcon[changed].hBaseIcon,NULL,trayIcon[changed].szProto,1);
+		TrayIconUpdate(trayIcon[changed].hBaseIcon,NULL,szChangedProto/*trayIcon[changed].szProto*/,1);  // by FYR (No suitable protocol)
 }
 
 void TrayIconSetToBase(char *szPreferredProto)

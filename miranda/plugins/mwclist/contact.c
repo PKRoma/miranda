@@ -101,7 +101,7 @@ void LoadContactTree(void)
 		}
 		status=cacheEntry->status;
 		if((!hideOffline || status!=ID_STATUS_OFFLINE) && !cacheEntry->Hidden)
-			ChangeContactIcon(hContact,IconFromStatusMode((char*)cacheEntry->szProto,status),1);
+			ChangeContactIcon(hContact,ExtIconFromStatusMode(hContact,(char*)cacheEntry->szProto,status),1);
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
 	sortByStatus=DBGetContactSettingByte(NULL,"CList","SortByStatus",SETTING_SORTBYSTATUS_DEFAULT);
@@ -138,7 +138,8 @@ int CompareContacts(WPARAM wParam,LPARAM lParam)
 	if (sortByProto) {
 
 		/* deal with statuses, online contacts have to go above offline */
-		if((statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) {
+		if (sortNoOfflineBottom==0) 
+			if((statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) {
 			return 2*(statusa==ID_STATUS_OFFLINE)-1;
 		}
 		/* both are online, now check protocols */
@@ -194,7 +195,7 @@ int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 		DBDeleteContactSetting((HANDLE)wParam,"CList","Group");
 	else
 		DBWriteContactSettingString((HANDLE)wParam,"CList","Group",(char*)CallService(MS_CLIST_GROUPGETNAME2,lParam,(LPARAM)(int*)NULL));
-	CallService(MS_CLUI_CONTACTADDED,wParam,IconFromStatusMode((char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0),GetContactStatus((HANDLE)wParam)));
+	CallService(MS_CLUI_CONTACTADDED,wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0),GetContactStatus((HANDLE)wParam)));
 	return 0;
 }
 
@@ -207,5 +208,6 @@ int SetHideOffline(WPARAM wParam,LPARAM lParam)
 	}
 	
 	LoadContactTree();
+	OutputDebugString("SetHideOffline Done\r\n");
 	return 0;
 }

@@ -78,6 +78,24 @@ static int protoIconIndexCount;
 static HANDLE hProtoAckHook;
 static HANDLE hSettingChanged;
 
+////////// By FYR/////////////
+int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
+{
+    if (DBGetContactSettingByte(NULL,"CLC","Meta",0)==1)
+        return IconFromStatusMode(szProto,status);
+    if (szProto!=NULL)
+        if (strcmp(szProto,"MetaContacts")==0)      {
+            hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
+            if (hContact!=0)            {
+                szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
+                status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
+            }
+        }
+    return IconFromStatusMode(szProto,status);
+}
+/////////// End by FYR ////////
+
+
 static int SetStatusMode(WPARAM wParam,LPARAM lParam)
 {
 	//todo: check wParam is valid so people can't use this to run random menu items
@@ -225,6 +243,7 @@ static int ContactListModulesLoaded(WPARAM wParam,LPARAM lParam)
 		protoIconIndexCount++;
 	}
 	LoadContactTree();
+	OutputDebugString("ContactListModulesLoaded Done\r\n");
 	return 0;
 }
 

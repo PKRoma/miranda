@@ -7,6 +7,7 @@
 extern HINSTANCE g_hInst;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
 
 struct ProtocolOrderData {
 	int dragging;
@@ -277,6 +278,8 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								count++;
 							}
 							CluiProtocolStatusChanged(0,0);
+							//rebuild status menu
+							MenuModulesLoaded(0,0);
 						}
 					}
 					break;

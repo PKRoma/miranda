@@ -33,7 +33,7 @@ extern int LoadMoveToGroup();
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"MultiWindow Contact List",
-	PLUGIN_MAKE_VERSION(0,3,4,5),
+	PLUGIN_MAKE_VERSION(0,3,4,6),
 	"Display contacts, event notifications, protocol status with MW modifications",
 	"",
 	"bethoven@mailgate.ru" ,
@@ -91,9 +91,11 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	int rc=0;
 	pluginLink=link;
 #ifdef _DEBUG
-//	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 	// get the internal malloc/free()
+OutputDebugString("CListInitialise ClistMW\r\n");
+
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
@@ -113,14 +115,14 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	}
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
 	LoadMoveToGroup();
-
+OutputDebugString("CListInitialise ClistMW...Done\r\n");
 	return rc;
 }
 
 // never called by a newer plugin loader.
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
-	
+	OutputDebugString("Load ClistMW\r\n");
 	MessageBox(0,"You Running Old Miranda, use >30-10-2004 version!","MultiWindow Clist",0);
 	CListInitialise(link);
 	return 1;
@@ -128,7 +130,9 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
+	OutputDebugString("Unloading ClistMW\r\n");
 	if (IsWindow(hwndContactList)) DestroyWindow(hwndContactList);
+	hwndContactList=0;
 	return 0;
 }
 

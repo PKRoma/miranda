@@ -50,12 +50,14 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	char *szStoredName;
 	char buf[10];
 	int toshow;
+	int FirstIconOffset;
 	
 
 	
 	if (hwndStatus==0) return(0);
 	
-	
+	FirstIconOffset=DBGetContactSettingDword(NULL,"CLUI","FirstIconOffset",0);
+
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	if(protoCount==0) return 0;
 
@@ -66,8 +68,8 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	SendMessage(hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
 	
 	SendMessage(hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT)); 
-	OutputDebugStr("StatusBar Recreating\r\n");
-	partWidths=(int*)malloc(storedcount*sizeof(int));
+	partWidths=(int*)malloc((storedcount+1)*sizeof(int));
+	//partWidths[0]=FirstIconOffset;
 	if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
 		RECT rc;
 		int part;

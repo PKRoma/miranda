@@ -418,7 +418,7 @@ int PreCreateCLC(HWND parent)
 					//|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
 					|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
 					|CLS_MULTICOLUMN
-					|DBGetContactSettingByte(NULL,"CLUI","ExtraIconsAlignToLeft",1)?CLS_EX_MULTICOLUMNALIGNLEFT:0
+					//|DBGetContactSettingByte(NULL,"CLUI","ExtraIconsAlignToLeft",1)?CLS_EX_MULTICOLUMNALIGNLEFT:0
 					),
 					0,0,0,0,parent,NULL,g_hInst,NULL);
 	
@@ -1113,8 +1113,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								totcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",0);
 								PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
 								if(PD==NULL){return(0);};
-								menuid=PD->protopos;
-								menuid=totcount-menuid-1;
+								menuid=nPanel;
+								//menuid=PD->protopos;
+								//menuid=totcount-menuid-1;
+								
 								if (menuid<0){break;};
 								hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 								if(GetSubMenu(hMenu,menuid)) hMenu=GetSubMenu(hMenu,menuid);

@@ -40,6 +40,34 @@ extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
 int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
 extern int sortByStatus;
+struct ClcContact * hitcontact=NULL;
+
+
+int GetProtocolVisibility(char * ProtoName)
+{
+    int i;
+    int res=0;
+    DBVARIANT dbv;
+    char buf2[10];
+    int count;
+	count=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
+    for (i=0; i<count; i++)
+    {
+        itoa(i,buf2,10);
+        if (!DBGetContactSetting(NULL,"Protocols",buf2,&dbv))
+        {
+            if (strcmp(ProtoName,dbv.pszVal)==0)
+            {
+                mir_free(dbv.pszVal);
+                itoa(i+400,buf2,10);
+                res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
+                return res;
+            }
+            mir_free(dbv.pszVal);
+        }
+    }
+    return 0;
+}
 
 void ClcOptionsChanged(void)
 {
@@ -54,6 +82,12 @@ void SortClcByTimer (HWND hwnd)
 static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
+
+	if((HANDLE)wParam!=NULL&&!strcmp(cws->szModule,"MetaContacts")&&!strcmp(cws->szSetting,"Handle"))
+	{
+		WindowList_Broadcast(hClcWindowList,INTM_NAMEORDERCHANGED,0,0);	
+	};
+	
 	if((HANDLE)wParam!=NULL&&!strcmp(cws->szModule,"CList")) {
 		if((cws->value.type==DBVT_ASCIIZ||cws->value.type==DBVT_DELETED)&&!strcmp(cws->szSetting,"MyHandle"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
@@ -255,6 +289,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			dat->list.parent=NULL;
 			dat->list.hideOffline=0;
 			dat->NeedResort=1;
+			dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
 			//dat->lCLCContactsCache=
 			InitDisplayNameCache(&dat->lCLCContactsCache);
 
@@ -414,6 +449,9 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 
 		case INTM_HIDDENCHANGED:
 		{	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING*)lParam;
+			if (lParam!=0)
+			{
+			
 			if(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN) break;
 			if(dbcws->value.type==DBVT_DELETED || dbcws->value.bVal==0) {
 				if(FindItem(hwnd,dat,(HANDLE)wParam,NULL,NULL,NULL)) break;
@@ -422,7 +460,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			}
 			else
 				DeleteItemFromTree(hwnd,(HANDLE)wParam);
-			
+			};
+			dat->NeedResort=1;
 			//SortCLC(hwnd,dat,1);
 			SortClcByTimer(hwnd);
 			//RecalcScrollBar(hwnd,dat);
@@ -809,6 +848,22 @@ OutputDebugString("Delayed Sort CLC\r\n");
 				RecalcScrollBar(hwnd,dat);
 				break;
 			}
+
+			if (wParam==TIMERID_SUBEXPAND) 
+			{		
+				KillTimer(hwnd,TIMERID_SUBEXPAND);
+				if (hitcontact)
+				{
+					if (hitcontact->SubExpanded) hitcontact->SubExpanded=0; else hitcontact->SubExpanded=1;
+					DBWriteContactSettingByte(hitcontact->hContact,"CList","Expanded",hitcontact->SubExpanded);
+				}
+				hitcontact=NULL;
+				dat->NeedResort=1;
+				SortCLC(hwnd,dat,1);		
+				RecalcScrollBar(hwnd,dat);
+				break;
+			}			
+			
 			if(wParam==TIMERID_RENAME)
 				BeginRenameSelection(hwnd,dat);
 			else if(wParam==TIMERID_DRAGAUTOSCROLL)
@@ -853,6 +908,8 @@ OutputDebugString("Delayed Sort CLC\r\n");
 			HideInfoTip(hwnd,dat);
 			KillTimer(hwnd,TIMERID_INFOTIP);
 			KillTimer(hwnd,TIMERID_RENAME);
+			KillTimer(hwnd,TIMERID_SUBEXPAND);
+
 			EndRename(hwnd,dat,1);
 			dat->ptDragStart.x=(short)LOWORD(lParam);
 			dat->ptDragStart.y=(short)HIWORD(lParam);
@@ -867,6 +924,19 @@ OutputDebugString("Delayed Sort CLC\r\n");
 					break;
 				}
 			}
+			if(hit!=-1 && contact->type==CLCIT_CONTACT && contact->SubAllocated)
+				if(hitFlags&CLCHT_ONITEMICON) {
+					BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
+					hitcontact=contact;				
+					SetTimer(hwnd,TIMERID_SUBEXPAND,GetDoubleClickTime()*doubleClickExpand,NULL);
+					break;
+				}
+				else
+					hitcontact=NULL;
+
+
+
+
 			if(hit!=-1 && contact->type==CLCIT_GROUP)
 				if(hitFlags&CLCHT_ONITEMICON) {
 					struct ClcGroup *selgroup;
@@ -919,6 +989,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 			}
 			break;
 		}
+
 
 		case WM_MOUSEMOVE:
 			if(dat->iDragItem==-1) {
@@ -1111,6 +1182,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 			HideInfoTip(hwnd,dat);
 			KillTimer(hwnd,TIMERID_RENAME);
 			KillTimer(hwnd,TIMERID_INFOTIP);
+			KillTimer(hwnd,TIMERID_SUBEXPAND);
 			dat->szQuickSearch[0]=0;
 			dat->selection=HitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),&contact,NULL,&hitFlags);
 			InvalidateRect(hwnd,NULL,FALSE);

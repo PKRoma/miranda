@@ -53,6 +53,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_INFOTIP        13
 #define TIMERID_REBUILDAFTER   14
 #define TIMERID_DELAYEDRESORTCLC   15
+#define TIMERID_SUBEXPAND 21
 
 struct ClcGroup;
 
@@ -65,6 +66,10 @@ struct ClcGroup;
 struct ClcContact {
 	BYTE type;
 	BYTE flags;
+	struct ClcContact *subcontacts;
+	BYTE SubAllocated;
+	BYTE SubExpanded;
+	BYTE isSubcontact;
 	union {
 		struct {
 			WORD iImage;
@@ -146,6 +151,8 @@ struct ClcData {
 	int NeedResort;
 	SortedList lCLCContactsCache;
 	BYTE HiLightMode;
+	BYTE doubleClickExpand;
+	int MetaIgnoreEmptyExtra;
 };
 
 //clc.c
