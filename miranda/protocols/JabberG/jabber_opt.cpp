@@ -57,7 +57,6 @@ int JabberOptInit(WPARAM wParam, LPARAM lParam)
 	odp.flags = ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	odp.nIDBottomSimpleControl = 0;
 	JCallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
 	return 0;
 }
 
@@ -386,7 +385,7 @@ static BOOL CALLBACK JabberOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				port = ( WORD )atoi(text);
 				if (port > 100) port = 100;
 				if (port < 0) port = 0;
-				if (JSetWord( NULL, "Priority", 0) != port)
+				if (JGetWord( NULL, "Priority", 0) != port)
 					reconnectRequired = TRUE;
 				JSetWord( NULL, "Priority", ( WORD )port);
 
