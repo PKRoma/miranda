@@ -70,6 +70,7 @@ static int ping_timer = 0;
 extern int poll_loop;
 
 void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
+void yahoo_reset_avatar(HANDLE 	hContact);
 
 char * yahoo_status_code(enum yahoo_status s)
 {
@@ -742,25 +743,15 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
 
 	/* Last thing check the checksum and request new one if we need to */
-	if (!cksum || cksum == -1) {
-        PROTO_AVATAR_INFORMATION AI;
-        
-		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
-		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
-
-		AI.cbSize = sizeof AI;
-		AI.format = PA_FORMAT_BMP;
-		AI.hContact = hContact;
-		AI.filename[0]='\0';
-		
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+	/*if (!cksum || cksum == -1) {
+			//yahoo_reset_avatar(hContact);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
-			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
+			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
 			YAHOO_request_avatar(who);	
 		}
-	}
+	}*/
 }
 
 static HMODULE sttPngLib = NULL;
@@ -935,16 +926,27 @@ static void __cdecl yahoo_recv_avatarthread(struct avatar_info *avt)
 
 void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum)
 {
+	HANDLE 	hContact = 0;
 	struct avatar_info *avt;
+	
 	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d)", who, pic_url, cksum));
 	
-	avt = malloc(sizeof(struct avatar_info));
-	avt->who = _strdup(who);
-	avt->pic_url = _strdup(pic_url);
-	avt->cksum = cksum;
+	hContact = getbuddyH(who);
 	
-	pthread_create(yahoo_recv_avatarthread, (void *) avt);
+	if (!hContact) {
+		LOG(("[ext_yahoo_got_picture] Buddy not on my buddy list?."));
+		return;
+	}
 	
+	if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+		LOG(("[ext_yahoo_got_picture] Checksums don't match. Current: %d, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum));
+		avt = malloc(sizeof(struct avatar_info));
+		avt->who = _strdup(who);
+		avt->pic_url = _strdup(pic_url);
+		avt->cksum = cksum;
+		
+		pthread_create(yahoo_recv_avatarthread, (void *) avt);
+	}
 	LOG(("ext_yahoo_got_picture exiting"));
 }
 
@@ -952,6 +954,7 @@ void yahoo_reset_avatar(HANDLE 	hContact)
 {
     PROTO_AVATAR_INFORMATION AI;
         
+	LOG(("[YAHOO_RESET_AVATAR]"));
 	//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 
@@ -982,8 +985,8 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
         yahoo_reset_avatar(hContact);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
-			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
+			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
 			YAHOO_request_avatar(who);	
 		}
 	}
@@ -1242,7 +1245,7 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 
 	if (buddy_icon == 2) {
 		/* request the buddy image */
-		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+		//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 		YAHOO_request_avatar(who);
 	} 
 }
@@ -1365,7 +1368,7 @@ void ext_yahoo_typing_notify(int id, char *me, char *who, int stat)
     if (!YAHOO_GetByte("DisplayTyping", 1)) return;
 
 	if(ServiceExists( MS_POPUP_ADDPOPUPEX ))
-		YAHOO_ShowPopup( c, Translate( "typing..." ), YAHOO_ALLOW_ENTER + YAHOO_ALLOW_MSGBOX + YAHOO_NOTIFY_POPUP );
+		YAHOO_ShowPopup( c, Translate( "typing..." ), YAHOO_ALLOW_MSGBOX + YAHOO_NOTIFY_POPUP );
 }
 
 void ext_yahoo_game_notify(int id, char *me, char *who, int stat)

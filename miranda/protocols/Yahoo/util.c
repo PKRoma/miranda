@@ -114,50 +114,22 @@ DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const c
 
 LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
-	switch( message )
-	{
+	switch( message ) {
 		case WM_COMMAND:
-			/*void* tData = PUGetPluginData( hWnd );
-			if ( tData != NULL )
-			{
-				DWORD tThreadID;
-				CreateThread( NULL, 0, MsnShowMailThread, hWnd, 0, &tThreadID );
-				PUDeletePopUp( hWnd );
-			}*/
-			if ( HIWORD( wParam ) == STN_CLICKED) 
-				PUDeletePopUp( hWnd );
-			break;
-		
-
-		case WM_CONTEXTMENU:
-			PUDeletePopUp( hWnd ); 
-			break;
-	}
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
-static int CALLBACK YahooMailPopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch( message )
-	{
-		case WM_COMMAND:
+				YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] WM_COMMAND");
 				if ( HIWORD( wParam ) == STN_CLICKED) {
-					char tUrl[ 4096 ];
-					DBVARIANT dbv;
-					if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
-						return 0;
-						
-					_snprintf( tUrl, sizeof( tUrl ), "http://mail.yahoo.com/", dbv.pszVal  );
-					DBFreeVariant( &dbv );
-					CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
-	
+					void* tData = PUGetPluginData( hWnd );
+					if ( tData != NULL ) {
+						CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM ) "http://mail.yahoo.com/");    
+					}
+					
 					PUDeletePopUp( hWnd );
 					return TRUE;
 				}
 				break;
 				
 		case WM_CONTEXTMENU:
+			YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] WM_CONTEXTMENU");
 			PUDeletePopUp( hWnd ); 
 			break;
 
@@ -188,21 +160,23 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 	ppd.colorBack =  YAHOO_GetByte( "UseWinColors", FALSE  ) ? GetSysColor( COLOR_BTNFACE ) : YAHOO_GetDword( "BackgroundColour", STYLE_DEFAULTBGCOLOUR) ;
 	ppd.colorText =  YAHOO_GetByte( "UseWinColors", FALSE  ) ? GetSysColor( COLOR_WINDOWTEXT ) : YAHOO_GetDword( "TextColour", GetSysColor( COLOR_WINDOWTEXT ));
 	ppd.PluginWindowProc = ( WNDPROC )NullWindowProc;
-	ppd.PluginData = ( flags & YAHOO_ALLOW_ENTER ) ? &ppd : NULL;
+	//ppd.PluginData = ( flags & YAHOO_ALLOW_ENTER ) ? &ppd : NULL;
 		
 	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )) {
 		   if (flags & YAHOO_MAIL_POPUP){
+			    ppd.PluginData =  &ppd;
 		        YAHOO_CallService( MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0 );
-                ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;		        
+                //ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;		        
 			}
     } else {	
 	    int tTimeout = 5;   
 	    ppd.iSeconds = YAHOO_GetDword( "PopupTimeoutOther",tTimeout);
 	    if (flags & YAHOO_MAIL_POPUP) {
-             ppd.iSeconds = YAHOO_GetDword( "PopupTimeout", tTimeout );
-             ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;
+			ppd.PluginData =  &ppd;
+            ppd.iSeconds = YAHOO_GetDword( "PopupTimeout", tTimeout );
+            //ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;
 		}
-		
+		YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] Generating a popup for %s", nickname);
 		YAHOO_CallService( MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0 );
      }	
 	
