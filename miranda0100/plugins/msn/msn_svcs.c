@@ -17,19 +17,22 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "msn_global.h"
+#include <process.h>
 //#include "resource.h"
 #include "../../miranda32/protocols/protocols/m_protomod.h"
 #include "../../miranda32/protocols/protocols/m_protosvc.h"
-#include "../../miranda32/database/m_database.h"
 #include "../../miranda32/ui/contactlist/m_clist.h"
 
-extern SOCKET msnSock;
-extern int msnLoggedIn;
+void __cdecl MSNServerThread(struct ThreadData *info);
+
+extern SOCKET msnNSSocket;
+extern volatile LONG msnLoggedIn;
+extern int msnStatusMode,msnDesiredStatus;
 
 static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 {
 	if(wParam==PFLAGNUM_1)
-		return PF1_IM|PF1_BASICSEARCH|PF1_ADDSEARCHRES|PF1_SERVERCLIST;
+		return PF1_IM|PF1_SERVERCLIST;
 	if(wParam==PFLAGNUM_2)
 		return PF2_ONLINE|PF2_SHORTAWAY|PF2_LONGAWAY|PF2_LIGHTDND|PF2_ONTHEPHONE|PF2_OUTTOLUNCH;
 	if(wParam==PFLAGNUM_3)
@@ -51,37 +54,24 @@ static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 
 int MsnSetStatus(WPARAM wParam,LPARAM lParam)
 {
-	if (wParam==ID_STATUS_OFFLINE)
-	{
-			MSN_Logout();
+	msnDesiredStatus=wParam;
+	MSN_DebugLog(MSN_LOG_DEBUG,"PS_SETSTATUS(%d,0)",wParam);
+	if(msnDesiredStatus==ID_STATUS_OFFLINE) {
+		if(msnLoggedIn) MSN_SendPacket(msnNSSocket,"OUT",NULL);
 	}
-	else
-	{
-		if (!msnSock)
-		{
-			if (MSN_Login("messenger.hotmail.com",1863)==FALSE)
-			{ //failed
-				msnSock=0;
-			}
+	else {
+		if(!msnLoggedIn && !(msnStatusMode>=ID_STATUS_CONNECTING && msnStatusMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)) {
+			struct ThreadData *newThread;
+			newThread=(struct ThreadData*)malloc(sizeof(struct ThreadData));
+			strcpy(newThread->server,"messenger.hotmail.com");	//NB: msmsgs 3.60 hardcodes 64.4.13.33
+			newThread->type=SERVER_DISPATCH;
+			ProtoBroadcastAck(MSNPROTONAME,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)msnStatusMode,ID_STATUS_CONNECTING);
+			msnStatusMode=ID_STATUS_CONNECTING;
+			_beginthread(MSNServerThread,0,newThread);
 		}
-		else
-		{//change status
-			char *szMode;
-			int newMode;
-			newMode=wParam;
-			switch(wParam) {
-				case ID_STATUS_NA: szMode="AWY"; break;
-				case ID_STATUS_AWAY: szMode="BRB"; break;
-				case ID_STATUS_DND:	newMode=ID_STATUS_OCCUPIED;
-				case ID_STATUS_OCCUPIED: szMode="BSY"; break;
-				case ID_STATUS_ONTHEPHONE: szMode="PHN"; break;
-				case ID_STATUS_OUTTOLUNCH: szMode="LUN"; break;
-				//"IDL"=idle ???
-				default: szMode="NLN"; newMode=ID_STATUS_ONLINE; break;
-			}
-			if (msnSock && msnLoggedIn) {
-				MSN_SendPacket(msnSock,"CHG",szMode);
-			}
+		else {   //change status
+			if(msnLoggedIn)
+				MSN_SendPacket(msnNSSocket,"CHG",MirandaStatusToMSN(msnDesiredStatus));
 		}
 		
 	}
@@ -90,7 +80,7 @@ int MsnSetStatus(WPARAM wParam,LPARAM lParam)
 
 int MsnGetStatus(WPARAM wParam,LPARAM lParam)
 {
-	return ID_STATUS_OFFLINE; //msnStatusMode;
+	return msnStatusMode;
 }
 
 static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)

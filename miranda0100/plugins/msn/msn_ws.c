@@ -21,130 +21,74 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //WINSOCK FUNCS
 
-	#include "msn_global.h"
+#include "msn_global.h"
 //	#include "resource.h"
-	#include "../../miranda32/ui/contactlist/m_clist.h"
-/*
-#ifndef MODULAR
-	#include "../../core/miranda.h"
+#include "../../miranda32/ui/contactlist/m_clist.h"
 
-	#include "../../global.h"
+BOOL MSN_WS_Init()
+{
+	WSADATA wsd;
+	if (WSAStartup(MAKEWORD(2,2),&wsd)!=0) return FALSE;
+	
+	return TRUE;
+}
 
-    void SetStatusTextEx(char*buff,int slot);
-#endif
-	void MSN_DisconnectAllSessions();
-*/	
-	BOOL MSN_WS_Init()
-	{
-		WSADATA wsd;
-		if (WSAStartup(MAKEWORD(2,2),&wsd)!=0) return FALSE;
-		
-		return TRUE;
+void MSN_WS_CleanUp()
+{
+	WSACleanup();
+}
+
+int MSN_WS_Send(SOCKET s,char*data,int datalen)
+{
+	int rlen;
+	MSN_DebugLog(MSN_LOG_RAWDATA,"SEND:%s",data);
+	if ((rlen=send(s,data,datalen,0))==SOCKET_ERROR)
+	{//should really also check if sendlen is the same as datalen
+		MSN_DebugLog(MSN_LOG_WARNING,"Send failed: %d",WSAGetLastError());
+		return FALSE;
 	}
+	return TRUE;
+}
 
-	void MSN_WS_CleanUp()
-	{
-		WSACleanup();
+unsigned long MSN_WS_ResolveName(char*name,WORD *port,int defaultPort)
+{
+	HOSTENT *lk;
+	char *pcolon,*nameCopy;
+	DWORD ret;
+
+	nameCopy=_strdup(name);
+	if(port!=NULL) *port=defaultPort;
+	pcolon=strchr(nameCopy,':');
+	if(pcolon!=NULL) {
+		if(port!=NULL) *port=atoi(pcolon+1);
+		*pcolon=0;
 	}
-
-	int MSN_WS_SendData(SOCKET s,char*data)
-	{
-		int rlen;
-		if ((rlen=send(s,data,strlen(data),0))==SOCKET_ERROR)
-		{//should really also check if sendlen is the same as datalen
-			return FALSE;
+	if (inet_addr(nameCopy)==INADDR_NONE) {//DNS NAME
+		lk=gethostbyname(nameCopy);
+		if(lk==0) {//bad name, failed
+			MSN_DebugLog(MSN_LOG_ERROR,"Can't resolve name '%s' (%d)",name,WSAGetLastError());
+			return SOCKET_ERROR;	
 		}
-		return TRUE;
+		else {free(nameCopy); return *(u_long*)lk->h_addr_list[0];}
 	}
+	ret=inet_addr(nameCopy);
+	free(nameCopy);
+	return ret;
+}
 
+int MSN_WS_Recv(SOCKET s,char*data,long datalen)
+{
+	int ret;
 
-	unsigned long MSN_WS_ResolveName(char*name)
-	{
-		HOSTENT *lk;
-
-		if (inet_addr(name)==INADDR_NONE)
-		{//DNS NAME
-			lk=gethostbyname(name);
-			if (lk==0)
-			{//bad name, failed
-				MSN_DebugLog("Can't resolve name.");
-				return SOCKET_ERROR;	
-			}
-			else
-			{
-				return *(u_long*)lk->h_addr_list[0];
-			}
-		}
-		else
-		{//IP ADDR
-			return inet_addr(name);
-		}
+	ret=recv(s,data,datalen,0);
+	MSN_DebugLog(MSN_LOG_RAWDATA,"RAW(%d,%d):%*s",ret,WSAGetLastError(),ret,data);
+	if(ret==SOCKET_ERROR) {
+		MSN_DebugLog(MSN_LOG_FATAL,"recv() failed, error=%d",WSAGetLastError());
+		return 0;
 	}
-
-	void MSN_WS_Close(SOCKET *s,BOOL transfering)
-	{
-		shutdown(*s,SB_BOTH);
-		*s=0;
-
-		if (!msnSock && !transfering)
-		{
-			//MSN_DisconnectAllSessions();//make sure all SS cons are killed
-			//CallService(MS_CLIST_MSNSTATUSCHANGED,ID_STATUS_OFFLINE,0);
-		}
+	if(ret==0) {
+		MSN_DebugLog(MSN_LOG_MESSAGE,"Connection closed gracefully");
+		return 0;
 	}
-
-	int MSN_WS_Recv(SOCKET *s,char*data,long datalen)
-	{
-		int rlen;
-		
-		//check for data, return FALSE if no data,other wise return the recv ret
-		struct timeval tv;
-		fd_set readfds;
-
-		tv.tv_sec = 0;
-		tv.tv_usec = 0;
-		FD_ZERO(&readfds);
-		FD_SET(*s, &readfds);
-		if (!select(0, &readfds, 0L, 0L, &tv)>0)
-		{//data not waiting
-			return FALSE;
-		}
-
-		/*if (!FD_ISSET(s,&readfds))
-		{//DATA is NOT waiting
-			return FALSE;
-		}
-		else
-		{	//data there*/
-
-			data[0]=0;
-			if ((rlen=recv(*s,data,datalen-1,0))==SOCKET_ERROR)
-			{
-				DWORD err;
-				err=GetLastError();
-				if (err==10053)
-				{//Connection Aborted, Terminate it
-					MSN_DebugLog("TCP Connection closed\n");
-					MSN_WS_Close(s,FALSE);
-				}
-				else
-				{
-					MSN_DebugLog("TCP Recv failed\n");
-				}
-
-				
-				return FALSE;
-				
-			}
-			else
-			{
-				if (rlen==0) 
-					return FALSE;
-
-				data[rlen]=0;
-				return rlen;
-			}
-		//}
-	}
-
- 
+	return ret;
+}

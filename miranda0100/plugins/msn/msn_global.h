@@ -18,122 +18,158 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include <windows.h>
 #include "../../miranda32/random/plugins/newpluginapi.h"
+#include "../../miranda32/database/m_database.h"
 
 #define MSNPROTONAME  "MSN"
 
 #define MSN_NEWUSERURL "http://login.hotmail.passport.com/cgi-bin/register/default.asp?id=956&ru=http://messenger.msn.com/download/passportdone.asp"
+#define MSN_DEFAULT_PORT  1863
 
 /*
-	//moved to miranda.h
-	#define MSN_UHANDLE_LEN 130
-	#define MSN_NICKNAME_LEN 30	
-	#define MSN_PASSWORD_LEN 30
-	#define MSN_BASEUIN (MAX_GROUPS+1)
+//moved to miranda.h
+#define MSN_UHANDLE_LEN 130
+#define MSN_NICKNAME_LEN 30	
+#define MSN_PASSWORD_LEN 30
+#define MSN_BASEUIN (MAX_GROUPS+1)
 
-	#define MSN_AUTHINF_LEN 30
-	#define MSN_SID_LEN 30
-	#define MSN_SES_MAX_USERS 10 //how many ppl u can chat wiht in one session
-	typedef struct tagMSN_SESSION{
-		SOCKET con;
+#define MSN_AUTHINF_LEN 30
+#define MSN_SID_LEN 30
+#define MSN_SES_MAX_USERS 10 //how many ppl u can chat wiht in one session
+typedef struct tagMSN_SESSION{
+	SOCKET con;
 
-		char authinf[MSN_AUTHINF_LEN];
-		char sid[MSN_SID_LEN];
+	char authinf[MSN_AUTHINF_LEN];
+	char sid[MSN_SID_LEN];
 
-		int usercnt;
-		char users[MSN_SES_MAX_USERS][MSN_UHANDLE_LEN];
-	}MSN_SES;
+	int usercnt;
+	char users[MSN_SES_MAX_USERS][MSN_UHANDLE_LEN];
+}MSN_SES;
 
-	typedef struct tagMSN_INF{
-		BOOL		enabled;
+typedef struct tagMSN_INF{
+	BOOL		enabled;
 
-		int status;
-		char uhandle[MSN_UHANDLE_LEN];
-		char nickname[MSN_NICKNAME_LEN];
-		char password[MSN_PASSWORD_LEN];
+	int status;
+	char uhandle[MSN_UHANDLE_LEN];
+	char nickname[MSN_NICKNAME_LEN];
+	char password[MSN_PASSWORD_LEN];
 
-		SOCKET sDS;
-		SOCKET sNS;
-		//SOCKET sSS;
-		MSN_SES *SS; //each msn session
-		int sscnt; //how many ss instances
+	SOCKET sDS;
+	SOCKET sNS;
+	//SOCKET sSS;
+	MSN_SES *SS; //each msn session
+	int sscnt; //how many ss instances
 
-		BOOL netactive; //a port open, stuff happening
-		BOOL logedin; //have been authed
-	}MSN_INFO;
+	BOOL netactive; //a port open, stuff happening
+	BOOL logedin; //have been authed
+}MSN_INFO;
 
-	//(SUB)STATUS DEFINITONS
-	#define MSN_STATUS_OFFLINE "FLN" 
+//(SUB)STATUS DEFINITONS
+#define MSN_STATUS_OFFLINE "FLN" 
 
-	#define MSN_STATUS_ONLINE "" 
-	#define MSN_STATUS_ONLINE2 "NLN" 
-	#define MSN_STATUS_BUSY "BSY"
-	#define MSN_STATUS_IDLE "IDL"
-	#define MSN_STATUS_BRB "BRB"
-	#define MSN_STATUS_AWAY "AWY"
-	#define MSN_STATUS_PHONE "PHN"
-	#define MSN_STATUS_LUNCH "LUN"
+#define MSN_STATUS_ONLINE "" 
+#define MSN_STATUS_ONLINE2 "NLN" 
+#define MSN_STATUS_BUSY "BSY"
+#define MSN_STATUS_IDLE "IDL"
+#define MSN_STATUS_BRB "BRB"
+#define MSN_STATUS_AWAY "AWY"
+#define MSN_STATUS_PHONE "PHN"
+#define MSN_STATUS_LUNCH "LUN"
 
-	*/
-	//FUNCTION PROTOTYPES
-	BOOL MSN_WS_Init();
-	void MSN_WS_CleanUp();
-	int MSN_WS_SendData(SOCKET s,char*data);
-	int MSN_WS_Recv(SOCKET *s,char*data,long datalen);
-	unsigned long MSN_WS_ResolveName(char*name);
-	void MSN_WS_Close(SOCKET *s,BOOL transfering);//transfering if true will prevent saying 'offline''
-													//used when transfering NS servers
-	
-	void MSN_AddContactByUhandle(HWND hwnd);
-	int MSN_GetIntStatus(char *state);
-	
-	int MSN_Login(char*server,int port); //TRUE/false ret
-	
-	int MSN_SSConnect(char*server,int port,int sesid);
+*/
+//FUNCTION PROTOTYPES
+BOOL MSN_WS_Init();
+void MSN_WS_CleanUp();
+int MSN_WS_Send(SOCKET s,char*data,int datalen);
+int MSN_WS_Recv(SOCKET s,char*data,long datalen);
+unsigned long MSN_WS_ResolveName(char*name,WORD *port,int defaultPort);
 
-	void MSN_Logout();
-	void MSN_Disconnect();
+void MSN_AddContactByUhandle(HWND hwnd);
+int MSN_GetIntStatus(char *state);
 
-	void MSN_ChangeStatus(char*substat);
-	void MSN_RemoveContact(char* uhandle);
-	
-	
-	void MSN_DebugLog(char*msg);
-	void MSN_DebugLogEx(char *msg,char*msg2,char*msg3);
-	void MSN_GetWd(char*src,int wordno,char*out);
+//int MSN_Login(char*server,int port); //TRUE/false ret
 
-	int MSN_SendPacket(SOCKET s,char*cmd,char*params);
+//int MSN_SSConnect(char*server,int port,int sesid);
 
-	void MSN_HandlePacketStream(char*data,SOCKET *replys,BOOL ss,int sesid);
-	void MSN_HandlePacket(char*data,SOCKET *replys);
-	
-	void MSN_HandleSSPacket(char*data,SOCKET *replys,int sesid);//Switch board svr
-	
-	void MSN_main();
+//void MSN_Logout();
+//void MSN_Disconnect();
 
-	int MSN_AddContact(char* uhandle,char*nick); //returns clist ID
-	int MSN_ContactFromHandle(char*uhandle); //get cclist id from Uhandle
-	void MSN_HandleFromContact(unsigned long uin,char*uhandle);
-	int MSN_MSNStatetoICQState(char*state); //	get a ICQ sttae from a msn strate
+void MSN_ChangeStatus(char*substat);
+void MSN_RemoveContact(char* uhandle);
 
-	//sesion stuff
-	BOOL MSN_SendUserMessage(char *destuhandle,char*msg);
-	void MSN_RemoveSession(int id);
-	int MSN_CreateSession();
-	void MSN_KillAllSessions();
-	void MSN_RequestSBSession();
+#define MSN_LOG_FATAL   60
+#define MSN_LOG_ERROR   50
+#define MSN_LOG_WARNING 40
+#define MSN_LOG_MESSAGE 30
+#define MSN_LOG_DEBUG   20
+#define MSN_LOG_PACKETS 10
+#define MSN_LOG_RAWDATA 0
+void MSN_DebugLog(int level,const char *fmt,...);
+LONG MSN_SendPacket(SOCKET s,const char *cmd,const char *params,...);
+char *MirandaStatusToMSN(int status);
+int MSNStatusToMiranda(const char *status);
 
-	//MIMIE FFUNCS
-	void MSN_MIME_GetContentType(char*src,char*ct);
+int MSN_AddContact(char* uhandle,char*nick); //returns clist ID
+int MSN_ContactFromHandle(char*uhandle); //get cclist id from Uhandle
+void MSN_HandleFromContact(unsigned long uin,char*uhandle);
 
+//sesion stuff
+BOOL MSN_SendUserMessage(char *destuhandle,char*msg);
+void MSN_RemoveSession(int id);
+int MSN_CreateSession();
+void MSN_KillAllSessions();
+void MSN_RequestSBSession();
 
-	char *str_to_UTF8(unsigned char *in);
+//MIMIE FFUNCS
+void MSN_MIME_GetContentType(char*src,char*ct);
 
-extern SOCKET msnSock;
+char *str_to_UTF8(unsigned char *in);
 
-	#ifndef _MSN_GLOBAL_H
+#define SERVER_DISPATCH     0
+#define SERVER_NOTIFICATION 1
+#define SERVER_SWITCHBOARD  2
+struct ThreadData {
+	int type;
+	char server[80];
+	SOCKET s;    //filled by thread
+};
 
-		#define _MSN_GLOBAL_H
+int CmdQueue_AddProtoAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
+int CmdQueue_AddDbWriteSetting(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv);
+int CmdQueue_AddDbWriteSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *pszVal);
 
-		extern int		MSN_ccount;
-		
-	#endif
+//MSN error codes
+#define ERR_SYNTAX_ERROR                 200
+#define ERR_INVALID_PARAMETER            201
+#define ERR_INVALID_USER                 205
+#define ERR_FQDN_MISSING                 206
+#define ERR_ALREADY_LOGIN                207
+#define ERR_INVALID_USERNAME             208
+#define ERR_INVALID_FRIENDLY_NAME        209
+#define ERR_LIST_FULL                    210
+#define ERR_ALREADY_THERE                215
+#define ERR_NOT_ON_LIST                  216
+#define ERR_ALREADY_IN_THE_MODE          218
+#define ERR_ALREADY_IN_OPPOSITE_LIST     219
+#define ERR_SWITCHBOARD_FAILED           280
+#define ERR_NOTIFY_XFR_FAILED            281
+#define ERR_REQUIRED_FIELDS_MISSING      300
+#define ERR_NOT_LOGGED_IN                302
+#define ERR_INTERNAL_SERVER              500
+#define ERR_DB_SERVER                    501
+#define ERR_FILE_OPERATION               510
+#define ERR_MEMORY_ALLOC                 520
+#define ERR_SERVER_BUSY                  600
+#define ERR_SERVER_UNAVAILABLE           601
+#define ERR_PEER_NS_DOWN                 602
+#define ERR_DB_CONNECT                   603
+#define ERR_SERVER_GOING_DOWN            604
+#define ERR_CREATE_CONNECTION            707
+#define ERR_BLOCKING_WRITE               711
+#define ERR_SESSION_OVERLOAD             712
+#define ERR_USER_TOO_ACTIVE              713
+#define ERR_TOO_MANY_SESSIONS            714
+#define ERR_NOT_EXPECTED                 715
+#define ERR_BAD_FRIEND_FILE              717
+#define ERR_AUTHENTICATION_FAILED        911
+#define ERR_NOT_ALLOWED_WHEN_OFFLINE     913
+#define ERR_NOT_ACCEPTING_NEW_USERS      920

@@ -16,140 +16,125 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-//MSN Messenger Support for Miranda ICQ
-//Copyright 2000, Tristan Van de Vreede
+#include "msn_global.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include "../../miranda32/ui/contactlist/m_clist.h"
 
-//MISC FUNC
+static LONG transactionId=0;
 
-	#include "msn_global.h"
-	#include <stdio.h>
-/*
-#ifndef MODULAR
-	#include "../../core/miranda.h"
-	#include "../../global.h"
-	#include "../../random/oldplugins/pluginapi.h"
+static LONG WINAPI MyInterlockedIncrement95(PLONG pVal);
+static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal);
+static LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal)=MyInterlockedIncrementInit;
+static CRITICAL_SECTION csInterlocked95;
 
-    int Plugin_NotifyPlugins(long msg,WPARAM wParam,LPARAM lParam);
+//I hate Microsoft.
+static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
+{
+	DWORD ver;			  //there's a possible hole here if too many people call this at the same time, but that doesn't happen
+	ver=GetVersion();
+	if(ver&0x80000000 && LOWORD(ver)==0x0004) InitializeCriticalSection(&csInterlocked95);
+	else MyInterlockedIncrement=InterlockedIncrement;
+	return MyInterlockedIncrement(pVal);
+}
+
+static LONG WINAPI MyInterlockedIncrement95(PLONG pVal)
+{
+	DWORD ret;
+	EnterCriticalSection(&csInterlocked95);
+	ret=++*pVal;
+	LeaveCriticalSection(&csInterlocked95);
+	return ret;
+}
+
+void MSN_DebugLog(int level,const char *fmt,...)
+{
+	char *str;
+	va_list vararg;
+	int strsize;
+
+	va_start(vararg,fmt);
+	str=(char*)malloc(strsize=2048);
+	while(_vsnprintf(str,strsize,fmt,vararg)==-1) str=(char*)realloc(str,strsize+=2048);
+	va_end(vararg);
+	
+	//Plugin_NotifyPlugins(PM_ICQDEBUGMSG,(WPARAM)strlen(tmp),(LPARAM)tmp);
+#ifdef _DEBUG
+	if(level>=MSN_LOG_PACKETS) {
+		char head[64];
+		char *text;
+		wsprintf(head,"[MSN:%x:%d]",GetCurrentThreadId(),level);
+		text=(char*)malloc(strlen(head)+strlen(str)+2);
+		wsprintf(text,"%s%s\n",head,str);
+		OutputDebugString(text);
+	}
 #endif
-*/
-	void MSN_DebugLog(char*msg)
-	{
-		char *tmp;
-		tmp=(char*)malloc(strlen(msg)+10);
-		sprintf(tmp,"[MSN]%s\n",msg);
-		
-		//Send to Plugins
-		//Plugin_NotifyPlugins(PM_ICQDEBUGMSG,(WPARAM)strlen(tmp),(LPARAM)tmp);
-		//send to VC debug wnd
-		OutputDebugString(tmp);
+	free(str);
+}
 
+LONG MSN_SendPacket(SOCKET s,const char *cmd,const char *fmt,...)
+{
+	char *str;
+	int strsize;
+	LONG thisTrid;
 
-		free(tmp);		
+	thisTrid=MyInterlockedIncrement(&transactionId);
+	str=(char*)malloc(strsize=512);
+	if(fmt==NULL || fmt[0]=='\0') {
+		sprintf(str,"%s %d",cmd,thisTrid);
 	}
-	
-	void MSN_DebugLogEx(char *msg,char*msg2,char*msg3)
-	{
-		char *m;
-		long len;
-		len=strlen(msg);
-		if (msg2) len=len+strlen(msg2);
-		if (msg3) len=len+strlen(msg3);
-
-		m=(char*)malloc(len+1);
-
-		strcpy(m,msg);
-		if (msg2)
-			strcat(m,msg2);
-		if (msg3)
-			strcat(m,msg3);
-
-		MSN_DebugLog(m);
-		free(m);
+	else {
+		va_list vararg;
+		int paramStart=sprintf(str,"%s %d ",cmd,thisTrid);
+		va_start(vararg,fmt);
+		while(_vsnprintf(str+paramStart,strsize-paramStart-2,fmt,vararg)==-1) str=(char*)realloc(str,strsize+=512);
+		va_end(vararg);
 	}
-	
-	//RH: a stack overrun waiting to happen. Put a limit on 'out'
-	void MSN_GetWd(char*src,int wordno,char*out)
-	{
-		char *fpos;
-		char *epos;
-		int i=0;
-		long ln;
-		
-		fpos=src;
-		
-		for (;;)
-		{
-			fpos=strchr(fpos,' ')+1;
-			if (fpos)
-			{
-				i++;
-			}
-			else
-			{
-				out[0]=0;
-				return;
-			}
+	MSN_DebugLog(MSN_LOG_PACKETS,"SEND:%s",str);
+	strcat(str,"\r\n");
+	MSN_WS_Send(s,str,strlen(str));
+	free(str);
+	return thisTrid;
+}
 
-			if ((i+1)==wordno)
-				break;
-			
-							
-		}
-
-		//found the start of the wd
-		epos=strchr(fpos,' ');
-		if (!epos)
-		{
-			//end of word is end of the str
-			strcpy(out,fpos);
-			
-			if (strchr(out,13))
-			{//there is a CR in there, assume at the end,strip it
-				out[strlen(out)]=0;
-			}
-
-			return ;
-		}
-
-		ln=epos-src+1;
-		ln=ln-(fpos-src+1);
-		strncpy(out,fpos,ln);
-		out[ln]=0;
-
+char *MirandaStatusToMSN(int status)
+{
+	switch(status) {
+		case ID_STATUS_OFFLINE:	return "FLN";
+		case ID_STATUS_NA: return "AWY";
+		case ID_STATUS_AWAY: return "BRB";
+		case ID_STATUS_DND:
+		case ID_STATUS_OCCUPIED: return "BSY";
+		case ID_STATUS_ONTHEPHONE: return "PHN";
+		case ID_STATUS_OUTTOLUNCH: return "LUN";
+		default: return "NLN";
+		//also: IDL=idle
+		//      HDN=invisible (but can't receive messages, so of questionable usefulness)
 	}
-	/*
+}
 
-	int MSN_GetIntStatus(char *state)
-	{//convert msn status (NLN,AWY) to a int, to store in the contact struct
-		if (stricmp(state,MSN_STATUS_OFFLINE)==0)
-			return MSN_INTSTATUS_OFFLINE;
-		
-		if (stricmp(state,MSN_STATUS_ONLINE)==0)
-			return MSN_INTSTATUS_ONLINE;
-
-		if (stricmp(state,MSN_STATUS_BUSY)==0)
-			return MSN_INTSTATUS_BUSY;
-
-		if (stricmp(state,MSN_STATUS_AWAY)==0)
-			return MSN_INTSTATUS_AWAY;
-
-		if (stricmp(state,MSN_STATUS_BRB)==0)
-			return MSN_INTSTATUS_BRB;
-
-		if (stricmp(state,MSN_STATUS_PHONE)==0)
-			return MSN_INTSTATUS_PHONE;
-		
-		if (stricmp(state,MSN_STATUS_LUNCH)==0)
-			return MSN_INTSTATUS_LUNCH;
+int MSNStatusToMiranda(const char *status)
+{
+	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
+		case ' NDH':
+		case ' NLN': return ID_STATUS_ONLINE;
+		case ' YWA': return ID_STATUS_NA;
+		case ' LDI':
+		case ' BRB': return ID_STATUS_AWAY;
+		case ' YSB': return ID_STATUS_OCCUPIED;
+		case ' NHP': return ID_STATUS_ONTHEPHONE;
+		case ' NUL': return ID_STATUS_OUTTOLUNCH;
+		default: return ID_STATUS_OFFLINE;
 	}
+}
 
-	void MSN_RemoveContact(char* uhandle)
-	{
-		if (opts.MSN.sNS)
-			MSN_SendPacket(opts.MSN.sNS,"REM",uhandle);
+/*
+void MSN_RemoveContact(char* uhandle)
+{
+	if (opts.MSN.sNS)
+		MSN_SendPacket(opts.MSN.sNS,"REM",uhandle);
 
-	}
-
+}
 
 	
 // returned value MUST be freed by the caller
