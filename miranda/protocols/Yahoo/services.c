@@ -938,14 +938,17 @@ int YahooIdleEvent(WPARAM wParam, LPARAM lParam)
 {
 	BOOL bIdle = (lParam & IDF_ISIDLE);
 	
-	//MessageBox(0, "IDLE", "IDLE", MB_OK);
-	YAHOO_DebugLog("YAHOO_IDLE_EVENT Idle: %s", bIdle ?"Yes":"No");
+	YAHOO_DebugLog("[YAHOO_IDLE_EVENT] Idle: %s", bIdle ?"Yes":"No");
 	
 	if ( lParam & IDF_PRIVACY ) 
 		return 0; /* we support Privacy settings */
 
-	/* set me to idle or back */
-	yahoo_set_status(yahooStatus,NULL,(bIdle) ? 2 : 0);
+	if (yahooLoggedIn) {
+		/* set me to idle or back */
+		yahoo_set_status(yahooStatus,NULL,(bIdle) ? 2 : 0);
+	} else {
+		YAHOO_DebugLog("[YAHOO_IDLE_EVENT] WARNING: NOT LOGGED IN???");
+	}
 	
 	return 0;
 }
