@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AA_SHORTSTATUS "ShortStatus"
 #define AA_LONGSTATUS "LongStatus"
 
-static int aa_Status[] = {ID_STATUS_AWAY, ID_STATUS_DND, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH};
+static int aa_Status[] = {ID_STATUS_AWAY, ID_STATUS_DND, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH};
 
 static BOOL CALLBACK DlgProcAutoAwayOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -125,65 +125,45 @@ static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
 	PROTOCOLDESCRIPTOR **proto=0;
 	int protoCount=0;
 	int j;
-	// We might get idle-on/off and other status bits which we might not know
-	// the other thing we do understand is short/long if anything comes in like force
-	// the setting for 'short' will be used
-	int newStatus=ID_STATUS_ONLINE;
-	if ( lParam & IDF_SHORT || lParam & IDF_ONFORCE ) {
-
-		if ( DBGetContactSettingByte(NULL,AA_MODULE,AA_USESHORT,0)==0 ) return 0; 
-		// get the index of the status we should use
-		newStatus = aa_Status[ DBGetContactSettingWord(NULL,AA_MODULE,AA_SHORTSTATUS,0) ];
-
-	} else if ( lParam & IDF_LONG ) {
-
-		if ( DBGetContactSettingByte(NULL,AA_MODULE,AA_USELONG,0)==0 ) return 0; 
-		newStatus = aa_Status[ DBGetContactSettingWord(NULL,AA_MODULE,AA_LONGSTATUS,0) ];
-
-	} else {
-		// no idea what we should do here
-		return 1;
-	}
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-	for (j = 0 ; j < protoCount ; j++) {
-		int caps=0;
-		if ( proto[j]->type != PROTOTYPE_PROTOCOL ) continue;
-		caps = CallProtoService(proto[j]->szName, PS_GETCAPS, PFLAGNUM_2, 0);
-		{
-			int newStatusFlag = Proto_Status2Flag(newStatus);
-			int newStatusTemp = 0;
-			// if it doesn't support online then don't bother
-			if ( !(caps & PF2_ONLINE) ) continue;
-			// does it support the user setting
-			if ( !(caps & newStatusFlag) ) {
-				// no, does it support basic away?
-				if ( !(caps & PF2_SHORTAWAY) ) continue; 
-				// yes, change to that instead
-				newStatus = ID_STATUS_AWAY;
+	int status = 0;
+	if ( DBGetContactSettingWord(NULL,AA_MODULE,AA_USESHORT,0)==0 ) return 0;
+	aa_Status[ DBGetContactSettingWord(NULL,AA_MODULE,AA_SHORTSTATUS, 0) ];	
+	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&proto);
+	for (j=0; j<protoCount; j++) 
+		if ( proto[j]->type == PROTOTYPE_PROTOCOL )  {
+		int statusbits = CallProtoService(proto[j]->szName, PS_GETCAPS, PFLAGNUM_2, 0);
+		int currentstatus = CallProtoService(proto[j]->szName, PS_GETSTATUS, 0, 0);
+		if ( !(statusbits & Proto_Status2Flag(status)) ) {
+			// the protocol doesnt support the given status
+			if ( statusbits & Proto_Status2Flag(ID_STATUS_AWAY) ) status=ID_STATUS_AWAY;
+			else {
+				// the proto doesnt support user mode or even away, bail.
+				continue;
 			}
-			// if idle then use the new mode, otherwise online
-			newStatusTemp = IDF_ISIDLE&lParam ? newStatus : ID_STATUS_ONLINE;
-			// set it only if it isn't already set
-			if ( CallProtoService(proto[j]->szName, PS_GETSTATUS, 0, 0) != newStatusTemp ) { 
-				char * awayMsg=0;
-				awayMsg = (char *) CallService(MS_AWAYMSG_GETSTATUSMSG, (WPARAM)newStatusTemp, 0);
-				CallProtoService(proto[j]->szName, PS_SETSTATUS, newStatusTemp, 0);
-				CallProtoService(proto[j]->szName, PS_SETAWAYMSG, newStatusTemp, (LPARAM) awayMsg);
-			} //if
 		}
-	} //for
-	return 0;
-}
-
-static int AutoAwayShutdown(WPARAM wParam,LPARAM lParam)
-{
+		if ( currentstatus >= ID_STATUS_ONLINE && currentstatus != ID_STATUS_INVISIBLE ) {			
+			if ( (lParam&IDF_ISIDLE) && ( currentstatus == ID_STATUS_ONLINE || currentstatus == ID_STATUS_FREECHAT ))  {								
+				char * awayMsg = (char *) CallService(MS_AWAYMSG_GETSTATUSMSG, (WPARAM) status, 0);				
+				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,1);
+				CallProtoService(proto[j]->szName, PS_SETSTATUS, status, 0);
+				if ( awayMsg != NULL )  {
+					CallProtoService(proto[j]->szName, PS_SETAWAYMSG, status, (LPARAM) awayMsg);
+					miranda_sys_free(awayMsg);
+				}				
+			} else if ( !(lParam&IDF_ISIDLE) && DBGetContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0) ) {
+				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0);
+				CallProtoService(proto[j]->szName, PS_SETSTATUS, ID_STATUS_ONLINE, 0);
+			}			
+		}
+	}
 	return 0;
 }
 
 int LoadAutoAwayModule(void)
 {
 	HookEvent(ME_OPT_INITIALISE,AutoAwayOptInitialise);
-	HookEvent(ME_SYSTEM_SHUTDOWN,AutoAwayShutdown);
 	HookEvent(ME_IDLE_CHANGED, AutoAwayEvent);
 	return 0;
 }
+
+
