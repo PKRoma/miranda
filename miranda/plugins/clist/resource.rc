@@ -148,7 +148,7 @@ END
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 245
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Window",IDC_STWINDOWGROUP,4,4,305,154
     CONTROL         "Always on top",IDC_ONTOP,"Button",BS_AUTOCHECKBOX | 
@@ -212,7 +212,7 @@ END
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Items",IDC_STATIC,2,2,310,114
     CONTROL         "Show divider between online and offline contacts",
@@ -282,7 +282,7 @@ BEGIN
                     WS_BORDER | WS_TABSTOP,165,205,139,30
     CONTROL         "Dim idle contacts",IDC_IDLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,102,153,10
-    CONTROL         "Hide vertical scrollbar",IDC_NOSCROLLBAR,"Button",
+    CONTROL         "Hide vertical scroll bar",IDC_NOSCROLLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,160,140,10
 END
 
@@ -344,38 +344,40 @@ BEGIN
     LTEXT           "Colour:",IDC_STCOLOURTEXT,228,102,37,8,NOT WS_VISIBLE
 END
 
-IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 132
+IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 154
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Contact List Background",IDC_STATIC,4,4,227,124
-    LTEXT           "Background colour:",IDC_STATIC,12,20,72,8,NOT WS_GROUP
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,84,19,32,10
-    LTEXT           "Selection colour:",IDC_STATIC,12,36,72,8
-    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,84,35,32,10
-    CONTROL         "Use background bitmap",IDC_BITMAP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,53,161,10
-    EDITTEXT        IDC_FILENAME,22,67,184,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_BROWSE,208,67,15,11
+    GROUPBOX        "Contact List Background",IDC_STATIC,4,4,227,146
+    LTEXT           "Background colour",IDC_STATIC,59,35,72,8,NOT WS_GROUP
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,22,35,32,10
+    LTEXT           "Selection colour",IDC_STATIC,59,51,72,8
+    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,22,51,32,10
+    CONTROL         "Use background image",IDC_BITMAP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,70,161,10
+    EDITTEXT        IDC_FILENAME,22,88,184,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,208,88,15,11
     CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,84,100,10
+                    WS_TABSTOP,22,105,100,10
     CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,122,84,101,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,122,105,101,10
     CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,97,100,10
+                    WS_TABSTOP,22,118,100,10
     CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,122,97,101,10
+                    WS_TABSTOP,122,118,101,10
     CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,110,100,10
+                    WS_TABSTOP,22,131,100,10
     CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,122,110,101,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,122,131,101,10
+    CONTROL         "Use Windows colours",IDC_WINCOLOUR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,20,156,10
 END
 
 IDD_OPT_SBAR DIALOGEX 0, 0, 178, 212
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Status Bar",IDC_STATIC,4,4,170,204
     CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 
@@ -549,9 +551,9 @@ BEGIN
         VERTGUIDE, 22
         VERTGUIDE, 122
         TOPMARGIN, 4
-        BOTTOMMARGIN, 128
+        BOTTOMMARGIN, 150
         HORZGUIDE, 24
-        HORZGUIDE, 40
+        HORZGUIDE, 35
         HORZGUIDE, 73
         HORZGUIDE, 89
         HORZGUIDE, 102

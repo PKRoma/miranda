@@ -148,6 +148,8 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	int status=GetGeneralisedStatus();
 	int grey=0,groupCountsFontTopShift;
 	HBRUSH hBrushAlternateGrey=NULL;
+	// yes I know about GetSysColorBrush()
+	COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) : dat->bkColour ) : dat->bkColour;
 
 	if(dat->greyoutFlags&ClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
 	else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
@@ -166,13 +168,14 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		GetTextMetrics(hdcMem,&tm);
 		groupCountsFontTopShift-=tm.tmAscent;
 	}
-	if(style&CLS_GREYALTERNATE)
-		hBrushAlternateGrey=CreateSolidBrush(GetNearestColor(hdcMem,RGB(GetRValue(dat->bkColour)-10,GetGValue(dat->bkColour)-10,GetBValue(dat->bkColour)-10)));
+	if(style&CLS_GREYALTERNATE) 
+		hBrushAlternateGrey=CreateSolidBrush(GetNearestColor(hdcMem,RGB(GetRValue(tmpbkcolour)-10,GetGValue(tmpbkcolour)-10,GetBValue(tmpbkcolour)-10)));
+	
 	ChangeToFont(hdcMem,dat,FONTID_CONTACTS,&fontHeight);
 	SetBkMode(hdcMem,TRANSPARENT);
 	{	HBRUSH hBrush,hoBrush;
-
-		hBrush=CreateSolidBrush(dat->bkColour);
+		
+		hBrush=CreateSolidBrush(tmpbkcolour);
 		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
 		FillRect(hdcMem,rcPaint,hBrush);
 		SelectObject(hdcMem,hoBrush);
@@ -370,6 +373,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				else if(group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
 				ImageList_DrawEx(himlCListClc,iImage,hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth,y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
 				*/
+				// this doesnt use CLS_CONTACTLIST since the colour prolly wont match anyway
 				COLORREF colourFg=dat->selBkColour;
 				int mode=ILD_NORMAL;
 				if(hottrack) {colourFg=dat->hotTextColour;}
