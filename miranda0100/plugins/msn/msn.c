@@ -28,7 +28,7 @@ PLUGINLINK *pluginLink;
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
 	"MSN Protocol",
-	PLUGIN_MAKE_VERSION(0,1,0,1),
+	PLUGIN_MAKE_VERSION(0,1,2,0),
 	"Adds support for communicating with users of the MSN Messenger network",
 	"Richard Hughes",
 	"miranda@rhughes.net",
@@ -74,7 +74,7 @@ int __declspec(dllexport) Unload(void)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if(mirandaVersion<PLUGIN_MAKE_VERSION(0,1,1,0)) return NULL;
+	if(mirandaVersion<PLUGIN_MAKE_VERSION(0,1,2,0)) return NULL;
 	return &pluginInfo;
 }
 
