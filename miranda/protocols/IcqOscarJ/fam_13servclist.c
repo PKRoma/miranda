@@ -408,7 +408,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         {
           DWORD dwCookie;
 
-          if (CheckServerID((WORD)(sc->wGroupId+1), 0) || countGroupLevel((WORD)(sc->wGroupId+1)) == 0)
+          if (!CheckServerID((WORD)(sc->wGroupId+1), 0) || countGroupLevel((WORD)(sc->wGroupId+1)) == 0)
           { // is next id an sub-group, if yes, we cannot delete this group
             sc->dwAction = SSA_GROUP_REMOVE;
             sc->wContactId = 0;
@@ -522,8 +522,8 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
           icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, ack->wGroupId, ack->szGroupName, groupData, groupSize);
         }
-        else // the group is empty, delete it
-        {
+        else if (!CheckServerID((WORD)(sc->wGroupId+1), 0) || countGroupLevel((WORD)(sc->wGroupId+1)) == 0)
+        { // the group is empty and is not followed by sub-groups, delete it
           DWORD dwCookie;
           servlistcookie* ack;
 
