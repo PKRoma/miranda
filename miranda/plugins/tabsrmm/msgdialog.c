@@ -4479,3 +4479,4 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_STATUSBARSETTINGS_SHOWTHESTATUSBAR, MF_BYCOMMAND | (iStatusbar == 0) ? MF_CHECKED : MF_UNCHECKED);
     }
 }
+
