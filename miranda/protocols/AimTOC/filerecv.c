@@ -120,19 +120,22 @@ static char *aim_filerecv_fixpath(const char *file)
 }
 
 static int aim_filerecv_openfile(struct aim_filerecv_request *ft) {
-	char *nfname, file[MAX_PATH];
+	char file[MAX_PATH], *szfilename, *szname;
 
-	_snprintf(file, sizeof(file), "%s\\%s%s%s", ft->savepath, ft->filename, ntohs(ft->hdr.totfiles)==1?"":"\\", ntohs(ft->hdr.totfiles)==1?"":ft->hdr.name);
-	nfname = aim_filerecv_fixpath(file);
-	aim_filerecv_mkdir(nfname);
-	ft->fileid = _open(nfname, _O_BINARY | _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+    szfilename = szname = 0;
+    if (ft->filename) szfilename = aim_filerecv_fixpath(ft->filename);
+    if (ft->hdr.name) szname = aim_filerecv_fixpath(ft->hdr.name);
+	_snprintf(file, sizeof(file), "%s\\%s%s%s", ft->savepath, szfilename, ntohs(ft->hdr.totfiles)==1?"":"\\", ntohs(ft->hdr.totfiles)==1?"":szname);
+	XFREE(szfilename);
+    XFREE(szname);
+    aim_filerecv_mkdir(file);
+	ft->fileid = _open(file, _O_BINARY | _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
 	if (ft->fileid < 0) {
-		PLOG(LOG_ERROR, "[%s] Could not open %s", ft->cookie, nfname);
-        free(nfname);
+		PLOG(LOG_ERROR, "[%s] Could not open %s", ft->cookie, file);
 		return 0;
 	}
-	PLOG(LOG_DEBUG, "[%s] Receiving %s", ft->cookie, nfname);
-	ft->cfullname = nfname; // free'd later
+	PLOG(LOG_DEBUG, "[%s] Receiving %s", ft->cookie, file);
+	ft->cfullname = _strdup(file); // free'd later
 	return 1;
 }
 
