@@ -8,6 +8,7 @@
 #define IDI_DBTOOL                      102
 #define IDE_HDRLOGO                     103
 #define IDI_PROFILEGREEN                104
+#define IDR_DEFAULT1                    104
 #define IDI_PROFILEYELLOW               105
 #define IDD_WELCOME                     106
 #define IDI_PROFILERED                  106
@@ -42,7 +43,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
+#define _APS_NEXT_RESOURCE_VALUE        105
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
