@@ -207,14 +207,28 @@ void get_fd(int id, int fd, int error, void *data)
 
 		if(myhFile !=INVALID_HANDLE_VALUE) {
 			PROTOFILETRANSFERSTATUS pfts;
-
+			
 			DWORD lNotify = GetTickCount();
 			LOG(("proto: %s, hContact: %d", yahooProtocolName, sf->hContact));
 			
+			LOG(("Sending file: %s", sf->filename));
 			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
 			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
 			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sf, 0);
 			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, sf, 0);
+						
+			ZeroMemory(&pfts, sizeof(PROTOFILETRANSFERSTATUS));
+			pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
+			pfts.hContact = sf->hContact;
+			pfts.sending = 1;
+			pfts.files = &sf->filename;
+			pfts.totalFiles = 1;
+			pfts.currentFileNumber = 0;
+			pfts.totalBytes = statbuf.st_size;
+			pfts.workingDir = NULL;
+			pfts.currentFile = sf->filename;
+			pfts.currentFileSize = statbuf.st_size; 
+			pfts.currentFileTime = 0;
 			
 			do {
 				ReadFile(myhFile, buf, 1024, &dw, NULL);
@@ -227,19 +241,7 @@ void get_fd(int id, int fd, int error, void *data)
 					if(GetTickCount() >= lNotify + 500 || dw < 1024 || size == statbuf.st_size) {
 						
 					LOG(("DOING UI Notify. Got %d/%d", size, statbuf.st_size));
-					memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
-					pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
-					pfts.hContact = sf->hContact;
-					pfts.sending = 1;
-					pfts.files = &sf->filename;
-					pfts.totalFiles = 1;//ntohs(1);
-					pfts.currentFileNumber = 0;
-					pfts.totalBytes = statbuf.st_size;//sf->size;
 					pfts.totalProgress = size;
-					pfts.workingDir = "C:\\";//sf->filename;//ft->savepath;
-					pfts.currentFile = sf->filename;
-					pfts.currentFileSize = statbuf.st_size; //ntohl(ft->hdr.size);
-					pfts.currentFileTime = statbuf.st_mtime;//ntohl(ft->hdr.modtime);
 					pfts.currentFileProgress = size;
 					
 					ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
@@ -257,7 +259,12 @@ void get_fd(int id, int fd, int error, void *data)
 		}
     }
 
-    ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
+	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
+
+	//sf->state = FR_STATE_DONE;
+    LOG(("File send complete!"));
+
+	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
 
 void YAHOO_SendFile(y_filetransfer *sf)
@@ -277,11 +284,14 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
     char buf[1024];
     int rsize = 0;
 	DWORD dw, c;
-	
+
     if(!error) {
 		 HANDLE myhFile;
 		 
-		 wsprintf(buf, "%s/%s", sf->savepath, sf->filename);
+		 LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
+		 wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
+		 
+		 LOG(("Getting file: %s", buf));
 		 myhFile    = CreateFile(buf,
                                    GENERIC_WRITE,
                                    FILE_SHARE_WRITE,
@@ -290,6 +300,18 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		if(myhFile !=INVALID_HANDLE_VALUE) {
 			PROTOFILETRANSFERSTATUS pfts;
 
+			ZeroMemory(&pfts, sizeof(PROTOFILETRANSFERSTATUS));
+			pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
+			pfts.hContact = sf->hContact;
+			pfts.sending = 0;
+			pfts.files = &sf->filename;
+			pfts.totalFiles = 1;//ntohs(1);
+			pfts.currentFileNumber = 0;
+			pfts.totalBytes = size;//sf->size;
+			pfts.currentFile = _strdup(buf);
+			pfts.workingDir = sf->savepath;//ft->savepath;
+			pfts.currentFileSize = size; //ntohl(ft->hdr.size);
+					
 			DWORD lNotify = GetTickCount();
 			LOG(("proto: %s, hContact: %d", yahooProtocolName, sf->hContact));
 			
@@ -306,18 +328,8 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 					if(GetTickCount() >= lNotify + 500 || dw <= 0 || rsize == size) {
 						
 					LOG(("DOING UI Notify. Got %d/%d", rsize, size));
-					memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
-					pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
-					pfts.hContact = sf->hContact;
-					pfts.sending = 0;
-					pfts.files = &sf->filename;
-					pfts.totalFiles = 1;//ntohs(1);
-					pfts.currentFileNumber = 0;
-					pfts.totalBytes = size;//sf->size;
+					
 					pfts.totalProgress = rsize;
-					pfts.workingDir = sf->savepath;//ft->savepath;
-					pfts.currentFile = sf->filename;
-					pfts.currentFileSize = size; //ntohl(ft->hdr.size);
 					pfts.currentFileTime = time(NULL);//ntohl(ft->hdr.modtime);
 					pfts.currentFileProgress = rsize;
 					
@@ -335,6 +347,8 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 	    CloseHandle(myhFile);
 		}
     }
+	
+    LOG(("File download complete!"));
 
     ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
