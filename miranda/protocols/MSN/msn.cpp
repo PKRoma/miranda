@@ -75,7 +75,7 @@ PLUGININFO pluginInfo =
 	"Adds support for communicating with users of the MSN Messenger network",
 	"George Hazan",
 	"george_hazan@hotmail.com",
-	"© 2001-4 Richard Hughes, George Hazan",
+	"© 2001-5 Richard Hughes, George Hazan",
 	"http://miranda-im.org/download/details.php?action=viewfile&id=702",
 	0,	0
 };
