@@ -1350,8 +1350,8 @@ LBL_InvalidCommand:
 
 			info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0137 MSMSGS %s", tEmail );
 
-			msnProtChallenge = "QHDCY@7R1TB6W?5B";
-			msnProductID = "PROD0058#7IL2{QD";
+			msnProtChallenge = "Q1P7W2E4J9R8U3S5";
+			msnProductID = "msmsgs@msnmsgr.com";
 			break;
 		}
 		case ' RFX':    //******** XFR: sections 7.4 Referral, 8.1 Referral to Switchboard
