@@ -1373,7 +1373,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
             if (!lParam)
-                PostMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+                SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             
             if(dat->pContainer->hwndStatus && dat->hContact)
                 SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));

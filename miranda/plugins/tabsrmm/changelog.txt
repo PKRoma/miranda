@@ -49,6 +49,10 @@ Version 0.9.9.5 - 2005/01/XX
           This is only available in the unicode version of tabSRMM.
           Don't enable it, if you do not experience problems with keyboard input.
           
+          NOTE: the hook code is disabled now, as this message loop problem has been fixed
+          in the core. You need a very recent miranda build (Jan, 29, 2005) to have this fix
+          in the core.
+          
         + merged Ghosts patch for interaction with the SecureIM plugin. See README.SecureIM for
           more information.
           
@@ -61,6 +65,14 @@ Version 0.9.9.5 - 2005/01/XX
           * typing notify (the old typing notify dialog).
           
           Thanks to JdGordon for providing the sample source code :)
+
+        + options->fonts and colors: New setting "Extra microspacing at the end of a paragraph". 
+          Does exactly this. It adds "n" pixels of additional space after a paragraph and 
+          before the grid line (if using them). This is to avoid the rather ugly look with 
+          some fonts, where characters like "j, g, y" etc." are sitting directly ON the 
+          grid line. You have to tweak this setting depending on the font you are using 
+          for displaying messages - some fonts need it, others dont. Set it to 0 to
+          disable the effect.
 
 Version 0.9.9.4 - 2005/01/24
 
