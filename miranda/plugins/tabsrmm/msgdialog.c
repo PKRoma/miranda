@@ -108,6 +108,8 @@ const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, I
 
 struct SendJob sendJobs[NR_SENDJOBS];
 
+static int splitterEdges = TRUE;
+
 #if defined(_STREAMTHREADING)
 
 /*
@@ -260,7 +262,7 @@ void SetDialogToType(HWND hwndDlg)
     GetAvatarVisibility(hwndDlg, dat);
     
     ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-    ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), showToolbar ? SW_SHOW : SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), (showToolbar && splitterEdges) ? SW_SHOW : SW_HIDE);
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
@@ -270,9 +272,10 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
     
     EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
-        
     SendMessage(hwndDlg, DM_UPDATETITLE, 0, 1);
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
+
+    EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
 }
 
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -615,7 +618,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.right -= 40;
             }
             if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 33)))
-                OffsetRect(&urc->rcItem, -(dat->pic.cx + 2 + 3), 0);
+                OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTIPLEICON:
@@ -629,6 +632,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.bottom += 24;
                 urc->rcItem.top += 24;
             }
+            if(!splitterEdges)
+                OffsetRect(&urc->rcItem, 0, 2);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_LOG:
             if(dat->dwFlags & MWF_ERRORSTATE)
@@ -640,14 +645,16 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.bottom += 24;
             if(dat->bNotOnList)
                 urc->rcItem.bottom -= 24;
+            if(!splitterEdges)
+                urc->rcItem.bottom += 2;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
             urc->rcItem.right +=1;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + 33) && dat->showPic)
-                urc->rcItem.right -= (dat->pic.cx + 4);
+            if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + 33) && dat->showPic && showToolbar)
+                urc->rcItem.right -= (dat->pic.cx + 2);
             if(dat->bNotOnList && urc->wId == IDC_SPLITTER5)
                 OffsetRect(&urc->rcItem, 0, -24);
             return RD_ANCHORX_WIDTH | RD_ANCHORY_BOTTOM;
@@ -658,7 +665,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_MESSAGE:
             urc->rcItem.right = urc->dlgNewSize.cx;
             if (dat->showPic)
-                urc->rcItem.right -= dat->pic.cx+4;
+                urc->rcItem.right -= dat->pic.cx+2;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
                 urc->rcItem.left += 26;
@@ -670,18 +677,22 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
 
             if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 33)))
-                OffsetRect(&urc->rcItem, -(dat->pic.cx + 2 + 3), 0);
+                OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
             
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTISPLITTER:
             urc->rcItem.left -= dat->multiSplitterX;
             urc->rcItem.right -= dat->multiSplitterX;
             urc->rcItem.bottom = iClistOffset;
+            if(!splitterEdges)
+                urc->rcItem.bottom += 2;
             return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
         case IDC_CLIST:
             urc->rcItem.left = urc->dlgNewSize.cx - dat->multiSplitterX;
             urc->rcItem.right = urc->dlgNewSize.cx - 3;
             urc->rcItem.bottom = iClistOffset + 3;
+            if(!splitterEdges)
+                urc->rcItem.bottom += 2;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
         case IDC_TYPINGNOTIFY:
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -745,7 +756,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg) {
         case WM_INITDIALOG:
             {
-                RECT rc, rc2;
+                RECT rc;
                 POINT pt;
                 int i;
 
@@ -762,10 +773,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 newData->item.lParam = (LPARAM) hwndDlg;
                 TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
 
+
                 pszIDCSAVE_close = Translate("Close session");
                 pszIDCSAVE_save = Translate("Save and close session");
 
                 dat->hContact = newData->hContact;
+                WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
                 dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
                 dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
                 if(dat->hContact && dat->szProto != NULL)
@@ -799,7 +812,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1)) {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+                    splitterEdges = FALSE;
                 }
+                else
+                    splitterEdges = TRUE;
                 if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0)) {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
@@ -843,8 +859,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 // END MOD#33
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
-                GetWindowRect(hwndDlg, &rc2);
-                dat->nLabelRight = rc2.right - rc.left;
 
                 ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), SW_HIDE);
                 ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), SW_HIDE);
@@ -860,8 +874,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
                 dat->minEditBoxSize.cx = rc.right - rc.left;
                 dat->minEditBoxSize.cy = rc.bottom - rc.top;
-
-                WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
 
                 SetDlgItemTextA(hwndDlg, IDC_ADDTEXT, Translate("This contact is not on your list"));
                 SetDlgItemTextA(hwndDlg, IDC_ADD, Translate("Add it"));
@@ -1059,7 +1071,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     }
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                    SetWindowPos(hwndDlg, HWND_TOP, rc.left + 1, rc.top, (rc.right - rc.left) - 8, (rc.bottom - rc.top) - 2, 0);
+                    SetWindowPos(hwndDlg, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), 0);
                     SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     if(IsIconic(dat->pContainer->hwnd) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
                         DBEVENTINFO dbei = {0};
@@ -1070,7 +1082,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                         dat->mayFlashTab = TRUE;
                         dat->dwTickLastEvent = GetTickCount();
-                        FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
+                        if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
+                            FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
                         SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                         //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                     }
@@ -1840,12 +1853,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
                     
-                    if ((HANDLE) lParam != dat->hDbEventFirst && (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0) == NULL) {
-                        SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
-                        if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
-                            dat->stats.iReceived++;
-                            dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
+                    if ((HANDLE) lParam != dat->hDbEventFirst) {
+                        HANDLE nextEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0);
+                        if(myGlobals.m_FixFutureTimestamps || nextEvent == 0) {
+                            SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
+                            if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
+                                dat->stats.iReceived++;
+                                dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
+                            }
                         }
+                        else
+                            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
                     }
                     else
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -2185,7 +2203,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
                 }
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rcClient);
-                MoveWindow(hwndDlg, rcClient.left +1, rcClient.top, (rcClient.right - rcClient.left) - 8, (rcClient.bottom - rcClient.top) -2, TRUE);
+                MoveWindow(hwndDlg, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
                 if(dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
                     POINT pt = {0};;
                     
@@ -2290,8 +2308,24 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             int iSelection;
             HMENU subMenu;
             int isHandled;
+            RECT rcPicture;
             
+            GetWindowRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), &rcPicture);
             GetCursorPos(&pt);
+            if(dat->hContactPic && dat->showPic != 0 &&  pt.x >= rcPicture.left && pt.x <= rcPicture.right && pt.y >= rcPicture.top && pt.y <= rcPicture.bottom) {
+                int iSelection, isHandled;
+                POINT pt;
+                HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 1);
+
+                GetCursorPos(&pt);
+                MsgWindowUpdateMenu(hwndDlg, dat, submenu, MENU_PICMENU);
+                iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_PICMENU);
+                if(isHandled)
+                    RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
+                break;
+            }
+            
             subMenu = GetSubMenu(dat->pContainer->hMenuContext, 0);
             EnableMenuItem(subMenu, ID_TABMENU_SWITCHTONEXTTAB, dat->pContainer->iChilds > 1 ? MF_ENABLED : MF_GRAYED);
             EnableMenuItem(subMenu, ID_TABMENU_SWITCHTOPREVIOUSTAB, dat->pContainer->iChilds > 1 ? MF_ENABLED : MF_GRAYED);
@@ -2438,6 +2472,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->sendBuffer[0] == 0)
                         break;
 
+                    if (dat->sendMode & SMODE_SENDLATER) {
+#if defined(_UNICODE)
+                        if(ServiceExists("BuddyPounce/AddToPounce")) {
+                            CallService("BuddyPounce/AddToPounce", (WPARAM)dat->hContact, (LPARAM)dat->sendBuffer);
+                            break;
+                        }
+#else
+                        if(ServiceExists("BuddyPounce/AddToPounce")) {
+                            CallService("BuddyPounce/AddToPounce", (WPARAM)dat->hContact, (LPARAM)dat->sendBuffer);
+                            break;
+                        }
+#endif
+                    }
                     if (dat->sendMode & SMODE_CONTAINER && dat->pContainer->hwndActive == hwndDlg && GetForegroundWindow() == dat->pContainer->hwnd) {
                         HWND contacthwnd;
                         TCITEM tci;
@@ -2742,6 +2789,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CheckMenuItem(submenu, ID_SENDMENU_SENDDEFAULT, MF_BYCOMMAND | (dat->sendMode == 0 ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDTOCONTAINER, MF_BYCOMMAND | (dat->sendMode & SMODE_CONTAINER ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_FORCEANSISEND, MF_BYCOMMAND | (dat->sendMode & SMODE_FORCEANSI ? MF_CHECKED : MF_UNCHECKED));
+                    EnableMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (ServiceExists("BuddyPounce/AddToPounce") ? MF_ENABLED : MF_GRAYED));
+                    CheckMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (dat->sendMode & SMODE_SENDLATER ? MF_CHECKED : MF_UNCHECKED));
                     
                     if(lParam)
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
@@ -2760,6 +2809,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             break;
                         case ID_SENDMENU_FORCEANSISEND:
                             dat->sendMode ^= SMODE_FORCEANSI;
+                            break;
+                        case ID_SENDMENU_SENDLATER:
+                            dat->sendMode ^= SMODE_SENDLATER;
                             break;
                     }
                     DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", dat->sendMode & SMODE_FORCEANSI ? 1 : 0);
@@ -3114,16 +3166,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         case WM_CONTEXTMENU:
             if((HWND)wParam == GetDlgItem(hwndDlg, IDC_CONTACTPIC)) {
-                int iSelection, isHandled;
-                POINT pt;
-                HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 1);
-
-                GetCursorPos(&pt);
-                MsgWindowUpdateMenu(hwndDlg, dat, submenu, MENU_PICMENU);
-                iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
-                isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_PICMENU);
-                if(isHandled)
-                    RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
             }
             break;
             /*
@@ -3590,7 +3632,7 @@ verify:
     
                     dat->pContainer->hwndActive = (HWND) item.lParam;
                     SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
-                    SetWindowPos(dat->pContainer->hwndActive, HWND_TOP, rc.left +1, rc.top, (rc.right - rc.left) - 8, (rc.bottom - rc.top) - 2, SWP_SHOWWINDOW);
+                    SetWindowPos(dat->pContainer->hwndActive, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_SHOWWINDOW);
                     ShowWindow((HWND)item.lParam, SW_SHOW);
                     SetForegroundWindow(dat->pContainer->hwndActive);
                     SetFocus(dat->pContainer->hwndActive);

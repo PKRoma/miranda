@@ -49,6 +49,7 @@
 #define SMODE_MULTIPLE 1
 #define SMODE_CONTAINER 2
 #define SMODE_FORCEANSI 4
+#define SMODE_SENDLATER 8
 
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
@@ -68,7 +69,8 @@ struct ContainerWindowData {
     POINT ptLast;
 	DWORD dwTransparency;
     int   iContainerIndex;
-    int   tBorder;
+    int   tBorder, tBorder_outer;
+    RECT  rcClient;                 // where the client window shold be placed...
     HANDLE hContactFrom;
     BOOL  isCloned;
     HMENU hMenu;
@@ -127,7 +129,6 @@ struct MessageWindowData {
 	char *sendBuffer;
     SIZE minEditBoxSize;
 	int showUIElements;
-	int nLabelRight;
 	int nTypeSecs;
 	int nTypeMode;
 	DWORD nLastTyping;
@@ -229,8 +230,16 @@ typedef struct _globals {
     int m_FormatWholeWordsOnly;
     int m_AllowSendButtonHidden;
     int m_ToolbarHideMode;
+    int m_FixFutureTimestamps;
 } MYGLOBALS;
-    
+
+typedef struct _tag_ICONDESC {
+    char *szName;
+    char *szDesc;
+    HICON *phIcon;      // where the handle is saved...
+    int  uId;           // icon ID
+} ICONDESC;
+
 struct InputHistory {
     TCHAR *szText;
     int   lLen;

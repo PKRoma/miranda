@@ -101,11 +101,11 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     }
 
     if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
-        dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2);
+        dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 30 : 4);
         dat->bottomOffset = dat->dynaSplitter + 100;
     }
     else {
-        dat->iRealAvatarHeight = dat->dynaSplitter + 3;
+        dat->iRealAvatarHeight = dat->dynaSplitter + 4;
         dat->bottomOffset = -33;
     }
 ok:

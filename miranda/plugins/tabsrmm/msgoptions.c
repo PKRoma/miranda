@@ -337,6 +337,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_FORMATTING, dwFlags & MWF_LOG_TEXTFORMAT);
             CheckDlgButton(hwndDlg, IDC_SYMBOLS, dwFlags & MWF_LOG_SYMBOLS);
             CheckDlgButton(hwndDlg, IDC_FORMATWHOLEWORDSONLY, DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatwords", 0));
+            CheckDlgButton(hwndDlg, IDC_TSFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 0));
+            
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATWHOLEWORDSONLY), IsDlgButtonChecked(hwndDlg, IDC_FORMATTING));
             
             CheckDlgButton(hwndDlg, IDC_MSGLOGPLUGIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0));
@@ -396,6 +398,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case IDC_FORMATTING:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATWHOLEWORDSONLY), IsDlgButtonChecked(hwndDlg, IDC_FORMATTING));
                     break;
+                case IDC_TSFIX:
+                    if(IsDlgButtonChecked(hwndDlg, IDC_TSFIX))
+                        MessageBoxA(0, "Caution: This attempt to fix the 'future timestamp issue' may have side effects. Also, it only works for events while the session is active, NOT for loading the history", "Warning", MB_OK | MB_ICONHAND);
+                    break;
             }
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
@@ -451,6 +457,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "formatwords", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FORMATWHOLEWORDSONLY));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MSGLOGPLUGIN));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "no_future", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TSFIX));
+                            
                             ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
                             return TRUE;
@@ -635,7 +643,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			CheckDlgButton(hwndDlg, IDC_WARNONCLOSE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0));
 			CheckDlgButton(hwndDlg, IDC_CUT_TABTITLE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0));
 			SetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15), FALSE);
-			CheckDlgButton(hwndDlg, IDC_SHOWTABTIP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabtips", 0));
 			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSONTAB, DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0));
             CheckDlgButton(hwndDlg, IDC_AUTOCREATETABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 0));
             CheckDlgButton(hwndDlg, IDC_POPUPCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "cpopup", 0));
@@ -656,6 +663,10 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0));
             SetDlgItemInt(hwndDlg, IDC_TABBORDER, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0), FALSE);;
 
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(10, 0));
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2));
+            SetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2), FALSE);;
+            
             SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETRANGE, 0, MAKELONG(255, 5));
             SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 0));
             SetDlgItemInt(hwndDlg, IDC_HISTORYSIZE, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 10), FALSE);
@@ -709,7 +720,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_WARNONCLOSE));
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 							DBWriteContactSettingWord(NULL, SRMSGMOD_T, "cut_at", (WORD) GetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, &translated, FALSE));
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tabtips", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWTABTIP));
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSONTAB));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "y-pad", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABPADDING, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autotabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCREATETABS));
@@ -718,6 +728,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nlflat", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATBUTTONS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCREATECONTAINER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDER, &translated, FALSE));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE) GetDlgItemInt(hwndDlg, IDC_HISTORYSIZE, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "escmode", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ESC_MINIMIZE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeymodifier", (BYTE) SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_GETCURSEL, 0, 0));
@@ -1673,4 +1684,5 @@ void ReloadGlobals()
      myGlobals.m_AllowSendButtonHidden = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0);
      myGlobals.m_ToolbarHideMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", 0);
      myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
+     myGlobals.m_FixFutureTimestamps = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 0);
 }

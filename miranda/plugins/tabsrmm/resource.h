@@ -221,7 +221,9 @@
 #define IDC_TABBORDERSPIN               1664
 #define IDC_FLASHINTERVALSPIN           1664
 #define IDC_HIDESBAR                    1665
+#define IDC_TABBORDEROUTER              1665
 #define IDC_CLISTMODE                   1666
+#define IDC_TABBORDERSPINOUTER          1666
 #define IDC_ALWAYSPOPUPSINACTIVE        1667
 #define IDC_HISTORYSIZE                 1668
 #define IDC_HISTORYSIZESPIN             1669
@@ -301,6 +303,7 @@
 #define IDC_CHECK9                      1711
 #define IDC_ALLOWSENDBUTTONHIDE         1711
 #define IDC_VERTICALMAX                 1711
+#define IDC_TSFIX                       1711
 #define IDC_ICONDLLNAME                 1712
 #define IDC_BUTTON2                     1713
 #define IDC_SELECTICONDLL               1713
@@ -445,6 +448,7 @@
 #define ID_IEVIEWSETTING_FORCEIEVIEW    40199
 #define ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG 40200
 #define ID_VIEW_VERTICALMAXIMIZE        40201
+#define ID_SENDMENU_SENDLATER           40202
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -452,7 +456,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40202
+#define _APS_NEXT_COMMAND_VALUE         40203
 #define _APS_NEXT_CONTROL_VALUE         1714
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

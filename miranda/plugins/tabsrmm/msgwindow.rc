@@ -38,12 +38,12 @@ BEGIN
 #if defined(UNICODE)
     CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE |
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,48,144,30,WS_EX_ACCEPTFILES |
+                    WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES |
                     WS_EX_STATICEDGE
 #else
     CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE |
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,48,144,30,WS_EX_ACCEPTFILES |
+                    WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES |
                     WS_EX_STATICEDGE
 #endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,146,32,24,14,
@@ -83,8 +83,8 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,91,32,16,
                     14,0x18000000L
-    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
-                    0x18000000L
+    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25,
+       							BS_NOTIFY
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
                     WS_EX_STATICEDGE
     CONTROL         "&Retry",IDC_RETRY,"MButtonClass",WS_TABSTOP,26,10,35,12

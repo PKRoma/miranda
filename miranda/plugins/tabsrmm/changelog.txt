@@ -33,6 +33,27 @@ Version 0.9.9.9b - 2005/03/22
           
         ! fixed vertical maximize when taskbar is at the top (hope so)
 
+        * the avatar does no longer react on left button clicks. This stops the flickering
+          aswell. Right button click still works and opens the context menu.
+          
+        + added new send mode "send later". Buddypounce plugin is  required for this
+          (otherwise it is disabled). It will just pass the message to buddypounce for
+          later delivery. Note: since buddypounce does not support unicode messages,
+          an implicit "force ansi" send mode is used.
+
+        * dialog layout tweaks. It is now possible to get rid of all borders, including
+          the outer tab control padding. The relevant settings are on the "tabs and
+          layout" option page. You can set inner and outer border/padding values. It's
+          a bit hard to explain what they do - best thing is to play around with them
+          
+        + new options (message log option page). "Attempt to fix future timestamps.
+          CAUTION: may have side effects. What it does is simple: When appending incoming
+          events during a session (while the window is open), it does not check for the
+          timstamps and just appends them to the log. This will fix the issue, that messages
+          with a timestamp "in the future" will always appear at the bottom of the log.
+          It works only wile the window is open, it does not and CAN not work for loading
+          the history.
+          
 Version 0.9.9.9 - 2005/03/19
 
         ! vertical maximize didn't allow to restore the window from the taskbar

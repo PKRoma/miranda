@@ -551,7 +551,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 int i = 0;
                 TCITEM item = {0};
                 POINT pt = {0};
-
+                DWORD menuSep;
+                
                 if(IsIconic(hwndDlg)) {
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
                     break;
@@ -578,13 +579,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->statusBarHeight = 0;
                 
                 GetClientRect(hwndDlg, &rcClient);
-                MoveWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), 0, 0, rcClient.right - rcClient.left, 2, TRUE);
-                
+                //MoveWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), 0, 0, rcClient.right - rcClient.left, 2, TRUE);
+                //menuSep = pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 3;
+                menuSep = 0;
                 if (lParam) {
                     if(pContainer->dwFlags & CNT_TABSBOTTOM)
-                        MoveWindow(hwndTab, 2, 2, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 2, FALSE);
+                        MoveWindow(hwndTab, pContainer->tBorder_outer, pContainer->tBorder_outer + menuSep, (rcClient.right - rcClient.left) - (2 * pContainer->tBorder_outer), (rcClient.bottom - rcClient.top) - menuSep - pContainer->statusBarHeight - ( 2 * pContainer->tBorder_outer), FALSE);
                     else
-                        MoveWindow(hwndTab, 2, 5, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 5, FALSE);
+                        MoveWindow(hwndTab, pContainer->tBorder_outer, pContainer->tBorder_outer + menuSep, (rcClient.right - rcClient.left) - (2 * pContainer->tBorder_outer), (rcClient.bottom - rcClient.top) - menuSep - pContainer->statusBarHeight - (pContainer->tBorder_outer * 2), FALSE);
                 }
                 AdjustTabClientRect(pContainer, &rcClient);
 
@@ -598,7 +600,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     item.mask = TCIF_PARAM;
                     TabCtrl_GetItem(hwndTab, i, &item);
                     if((HWND)item.lParam == pContainer->hwndActive) {
-                        MoveWindow((HWND)item.lParam, rcClient.left +1, rcClient.top, (rcClient.right - rcClient.left) - 8, (rcClient.bottom - rcClient.top) -2, TRUE);
+                        MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
                         RedrawWindow(GetDlgItem((HWND)item.lParam, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
                         if(!(pContainer->dwFlags & CNT_SIZINGLOOP)) {
                             SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
@@ -861,9 +863,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             wchar_t w_contactName[80];
 #endif
 
-                            if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabtips", 0))
-                                break;
-
                             GetCursorPos(&pt);
                             if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
                                 break;
@@ -1067,7 +1066,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     GetClientRect(hwndDlg, &rc);
                     AdjustTabClientRect(pContainer, &rc);
                     pContainer->hwndActive = (HWND) item.lParam;
-                    SetWindowPos(pContainer->hwndActive, HWND_TOP, rc.left + 1, rc.top, (rc.right - rc.left) - 8, (rc.bottom - rc.top) - 2, SWP_NOZORDER | SWP_SHOWWINDOW);
+                    SetWindowPos(pContainer->hwndActive, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_NOZORDER | SWP_SHOWWINDOW);
                     SetFocus(GetDlgItem(pContainer->hwndActive, IDC_LOG));
                     SetFocus(pContainer->hwndActive);
                     //SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
@@ -1236,7 +1235,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			HMENU hSysmenu = GetSystemMenu(hwndDlg, FALSE);
 			HANDLE hContact;
 
-            InvalidateRect(GetDlgItem(hwndDlg, IDC_STATICCONTROL), NULL, TRUE);
+            //InvalidateRect(GetDlgItem(hwndDlg, IDC_STATICCONTROL), NULL, TRUE);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             
             if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
                 pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);      // hide container name in single window mode (not needed)
@@ -1246,6 +1246,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
             pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0);
+            pContainer->tBorder_outer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2);
             
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
 				ex = GetWindowLong(hwndDlg, GWL_EXSTYLE);
@@ -1334,7 +1335,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
                 }
                 SetMenu(hwndDlg, pContainer->hMenu);
-                ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_SHOW);
+                //ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_SHOW);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 DrawMenuBar(hwndDlg);
             }
@@ -1839,35 +1840,37 @@ int GetProtoIconFromList(const char *szProto, int iStatus)
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 {
     HWND hwndTab = GetDlgItem(pContainer->hwnd, IDC_MSGTABS);
-    RECT rcTab;
-
+    RECT rcTab, rcTabOrig;
+    DWORD dwBottom, dwTop;
+    DWORD tBorder = pContainer->tBorder;
+    
     GetClientRect(hwndTab, &rcTab);
+    dwBottom = rcTab.bottom;
+    dwTop = rcTab.top;
     if (pContainer->iChilds > 1 || !(pContainer->dwFlags & CNT_HIDETABS)) {
+        DWORD dwTopPad;
+        rcTabOrig = rcTab;
         TabCtrl_AdjustRect(hwndTab, FALSE, &rcTab);
-        if(!(pContainer->dwFlags & CNT_TABSBOTTOM))
-            rc->top = rcTab.top - 2;
-        rc->top += pContainer->tBorder;
-        rc->left -= 1;
-        rc->right += ((pContainer->tBorder == 0) ? 3 : 2);
-        rc->left += pContainer->tBorder;
-        rc->right -= pContainer->tBorder;
-        if(!(pContainer->dwFlags & CNT_TABSBOTTOM)) {
-            rc->bottom -= (pContainer->statusBarHeight + (pContainer->tBorder == 0 ? 1 : 2));
-            rc->bottom -= (pContainer->tBorder == 0) ? 2 : 4;
-        }
+        dwTopPad = rcTab.top - rcTabOrig.top;
+        
+        rc->left += tBorder;
+        rc->right -= tBorder;
+
+        if(pContainer->dwFlags & CNT_TABSBOTTOM)
+            rc->bottom = rcTab.bottom + 2;
         else {
-            rc->bottom = rcTab.bottom + 4;
-            rc->bottom -= pContainer->tBorder;
+            rc->top += (dwTopPad - 2);;
+            rc->bottom = rcTabOrig.bottom;
         }
+        
+        rc->top += tBorder;
+        rc->bottom -= tBorder;
     } else {
         rc->bottom -= pContainer->statusBarHeight;
-        if(!(pContainer->dwFlags & CNT_TABSBOTTOM))
-            rc->bottom -= 3;
-        else
-            rc->bottom += 1;
-        rc->left -= 1;
-        rc->right +=3;
+        //rc->bottom -= (pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 3);
+        rc->bottom -= (2 * pContainer->tBorder_outer);
     }
+    rc->right -= (2 * pContainer->tBorder_outer);
 }
 
 /*
