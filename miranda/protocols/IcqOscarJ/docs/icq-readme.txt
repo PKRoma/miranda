@@ -14,20 +14,30 @@ Changes
 _______
 
 0.3.4.2
-Improvements
-  Server-side list support rewritten, now uses acking.
+
+Bugfixes:
+  Now correctly add contact without auth if they does not require it
+
+New features:
+  Added Grant authorisation option (send & recognize)
+
+Improvements:
+  Server-side list support rewritten, now uses acking, partly supports groups (without sub-groups for now).
+  Most cookies standardised to imitate icq5 behaviour
+
 
 0.3.4.1
 
-Bugfixes
+Bugfixes:
   Now parses URL send ack correctly, no more timeout
   Now sending ack on contacts receive
+  Many other fixes (see CVS changelog for details)
 
-New features
+New features:
   Added reliable client identification (if not identified, gives appropriate ICQ client)
   Added support for avatar images (downloading only).
 
-Improvements
+Improvements:
   Basic search now automatically removes garbage from text, e.g. it can search by 123-456-789
 
 
@@ -38,7 +48,7 @@ Bugfixes:
   Fixed contact transfer ack
 
 New features:
-  Added full unicode message support (require SRMM Unicode)
+  Added full unicode message support (requires SRMM Unicode)
   Added support for sending and receiving Idle time.
 
 
@@ -141,7 +151,7 @@ Current maintainer is Joe @ Whale, jokusoftware at users.sourceforge.net
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2005 Joe Kucera, Martin berg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2005 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
