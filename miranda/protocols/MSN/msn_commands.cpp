@@ -715,15 +715,15 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 			return true;
 	}	}
 
-	if ( !isFromBoot )
-		return true;
+	if ( isFromBoot ) {
+		MSN_SetGroupNumber( data.grpId, i );
 
-	MSN_SetGroupNumber( data.grpId, i );
-
-	char szNewName[ 128 ];
-	_snprintf( szNewName, sizeof szNewName, "%c%s",  1 | GROUPF_EXPANDED, data.grpName );
-	DBWriteContactSettingString( NULL, "CListGroups", str, szNewName );
-	CallService( MS_CLUI_GROUPADDED, i, 0 );
+		if ( MyOptions.ManageServer ) {
+			char szNewName[ 128 ];
+			_snprintf( szNewName, sizeof szNewName, "%c%s",  1 | GROUPF_EXPANDED, data.grpName );
+			DBWriteContactSettingString( NULL, "CListGroups", str, szNewName );
+			CallService( MS_CLUI_GROUPADDED, i, 0 );
+	}	}
 	return true;
 }
 
