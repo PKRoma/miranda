@@ -558,7 +558,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 			SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc,"x",1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
-			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
+			//if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
 		}
 		ReleaseDC(hwnd,hdc);
 	}
