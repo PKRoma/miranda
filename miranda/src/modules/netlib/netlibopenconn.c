@@ -362,6 +362,7 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 			if ( FD_ISSET(s, &r) ) {
 				// connection was closed
 				rc=SOCKET_ERROR;
+				lasterr=WSAECONNRESET;
 			}
 			if ( FD_ISSET(s, &w) ) {
 				// connection was successful
@@ -369,7 +370,9 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 			}
 			if ( FD_ISSET(s, &e) ) {
 				// connection failed.
+				int len=sizeof(lasterr);
 				rc=SOCKET_ERROR;
+				getsockopt(s,SOL_SOCKET,SO_ERROR,(char*)&lasterr,&len);
 			}
 			goto unblock;
 		} else if ( Miranda_Terminated() ) {
