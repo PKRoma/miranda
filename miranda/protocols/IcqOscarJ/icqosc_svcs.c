@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  High-level code for exported API services
 //
 // -----------------------------------------------------------------------------
 
@@ -49,6 +50,7 @@ extern CRITICAL_SECTION modeMsgsMutex;
 extern WORD wListenPort;
 extern char gpszICQProtoName[MAX_PATH];
 extern BYTE gbSsiEnabled;
+extern BYTE gbAvatarsEnabled;
 extern HANDLE hInst;
 
 
@@ -82,11 +84,14 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 			PF2_FREECHAT;
 		break;
 
+  case PFLAGNUM_4:
+    nReturn = PF4_SUPPORTIDLE;
+    if (gbAvatarsEnabled)
+      nReturn |= PF4_AVATARS;
 #ifdef DBG_CAPMTN
-	case PFLAGNUM_4:
-		nReturn = PF4_SUPPORTTYPING;
-		break;
+		nReturn |= PF4_SUPPORTTYPING;
 #endif
+		break;
 
 	case PFLAG_UNIQUEIDTEXT:
 		nReturn = (int)Translate("User ID");
@@ -151,6 +156,52 @@ int IcqLoadIcon(WPARAM wParam, LPARAM lParam)
 
 }
 
+
+int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
+{
+	int bIdle = (lParam&IDF_ISIDLE);
+	int bPrivacy = (lParam&IDF_PRIVACY);
+
+	if (bPrivacy) return 0;
+
+	icq_setidle(bIdle ? 1 : 0);
+
+	return 0;
+}
+
+
+int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
+{
+  PROTO_AVATAR_INFORMATION* pai = (PROTO_AVATAR_INFORMATION*)lParam;
+  int dwLocalUIN;
+  DBVARIANT dbv;
+
+  if (DBGetContactSetting(pai->hContact, gpszICQProtoName, "AvatarHash", &dbv))
+    return GAIR_NOAVATAR; // we did not found avatar hash - no avatar available
+
+  dwLocalUIN = DBGetContactSettingDword(pai->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+  GetAvatarFileName(dwLocalUIN, pai->filename, MAX_PATH);
+  pai->format = PA_FORMAT_JPEG; // we only support jpeg avatars by now
+
+  if (access(pai->filename, 0) == 0)
+  {
+    DBFreeVariant(&dbv);
+
+    return GAIR_SUCCESS; // we have found the avatar file, whoala
+  }
+
+  if ((wParam&GAIF_FORCE) != 0 && pai->hContact != 0)
+  { // request avatar data
+    GetAvatarData(pai->hContact, dwLocalUIN, dbv.pbVal, dbv.cpbVal, pai->filename);
+    DBFreeVariant(&dbv);
+
+    return GAIR_WAITFOR;
+  }
+
+  DBFreeVariant(&dbv);
+
+  return GAIR_NOAVATAR;
+}
 
 
 int IcqSetStatus(WPARAM wParam, LPARAM lParam)
@@ -330,7 +381,7 @@ int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
 
 	// Free old message
 	if (ppszMsg)
-		SAFE_FREE(*ppszMsg);
+		SAFE_FREE(&(*ppszMsg));
 
 	// Set new message
 	if (lParam)
@@ -452,48 +503,51 @@ static VOID CALLBACK CheekySearchTimerProc(HWND hwnd, UINT uMsg, UINT idEvent, D
 
 int IcqBasicSearch(WPARAM wParam, LPARAM lParam)
 {
+  if (lParam)
+  {
+    char* pszSearch = (char*)lParam;
+    DWORD dwUin;
 
-	if (lParam)
-	{
+    if (strlen(pszSearch))
+    {
+      char pszUIN[0x10];
+      int nHandle = 0;
+      unsigned int i, j;
 
-		char* pszUIN = (char*)lParam;
-		DWORD dwUin;
+      for (i=j=0; (i<strlen(pszSearch)) && (j<0x10); i++)
+      { // we take only numbers
+        if ((pszSearch[i]>=0x30) && (pszSearch[i]<=0x39))
+        {
+          pszUIN[j] = pszSearch[i];
+          j++;
+        }
+      }
+      
+      if (strlen(pszUIN))
+      {
+        dwUin = atoi(pszUIN);
 
+        // Cheeky instant UIN search
+        if (GetKeyState(VK_CONTROL)&0x8000)
+        {
+          cheekySearchId = GenerateCookie(0);
+          cheekySearchUin = dwUin;
+          SetTimer(NULL, 0, 10, CheekySearchTimerProc); // The caller needs to get this return value before the results
+          nHandle = cheekySearchId;
+        }
+        else if (icqOnline)
+        {
+          nHandle = SearchByUin(dwUin);
+        }
 
-		if (IsStringUIN(pszUIN))
-		{
+        // Success
+        return nHandle;
+      }
+    }
+  }
 
-			int nHandle = 0;
-
-
-			dwUin = atoi(pszUIN);
-
-			// Cheeky instant UIN search
-			if (GetKeyState(VK_CONTROL)&0x8000) {
-
-				cheekySearchId = GenerateCookie();
-				cheekySearchUin = dwUin;
-				SetTimer(NULL, 0, 10, CheekySearchTimerProc); // The caller needs to get this return value before the results
-				nHandle = cheekySearchId;
-
-			}
-			else if (icqOnline)
-			{
-
-				nHandle = SearchByUin(dwUin);
-
-			}
-
-			// Success
-			return nHandle;
-
-		}
-
-	}
-
-	// Failure
-	return 0;
-
+  // Failure
+  return 0;
 }
 
 
@@ -571,7 +625,7 @@ int IcqSearchByAdvanced(WPARAM wParam, LPARAM lParam)
 			int result;
 
 			result = icq_sendAdvancedSearchServ(bySearchData, nDataLen);
-			SAFE_FREE(bySearchData);
+			SAFE_FREE(&bySearchData);
 
 			return result; // Success
 
@@ -662,7 +716,7 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 		dbei.pBlob[dbei.cbBlob] = '\0';
 		if (CallService(MS_DB_EVENT_GET, lParam, (LPARAM)&dbei))
 		{
-			SAFE_FREE(dbei.pBlob);
+			SAFE_FREE(&dbei.pBlob);
 			return 0;
 		}
 
@@ -678,7 +732,7 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 			if (pbOffset-dbei.pBlob >= (int)dbei.cbBlob)
 				break;
 		}
-		SAFE_FREE(dbei.pBlob);
+		SAFE_FREE(&dbei.pBlob);
 
 	}
 	else if (dbei.eventType != EVENTTYPE_AUTHREQUEST && dbei.eventType != EVENTTYPE_ADDED)
@@ -996,7 +1050,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 		{
 
 			WORD wRecipientStatus;
-			WORD wCookie;
+			DWORD dwCookie;
 			DWORD dwUin;
 			char* pszText;
 
@@ -1008,18 +1062,18 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 			// Failure scenarios
 			if (dwUin == 0)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("The receiver has an invalid user ID."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("The receiver has an invalid user ID."));
 			}
 			else if (!icqOnline)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("You cannot send messages when you are offline."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("You cannot send messages when you are offline."));
 			}
 			else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlen(pszText) > 450))
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("Messages to offline contacts must be shorter than 450 characters."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("Messages to offline contacts must be shorter than 450 characters."));
 			}
 			// Looks OK
 			else
@@ -1046,7 +1100,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 				if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
 					(wRecipientStatus == ID_STATUS_OFFLINE))
 				{
-					wCookie = icq_SendChannel1Message(dwUin, ccs->hContact, pszText, pCookieData);
+					dwCookie = icq_SendChannel1Message(dwUin, ccs->hContact, pszText, pCookieData);
 				}
 				else
 				{
@@ -1059,23 +1113,23 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 					else
 						wPriority = 0x0021;
 
-					wCookie = icq_SendChannel2Message(dwUin, pszText, strlen(pszText), wPriority, pCookieData);
+					dwCookie = icq_SendChannel2Message(dwUin, pszText, strlen(pszText), wPriority, pCookieData);
 
 				}
 
 				// This will stop the message dialog from waiting for the real message delivery ack
 				if (pCookieData->nAckType == ACKTYPE_NONE)
 				{
-					icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
+					icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
 					// We need to free this here since we will never see the real ack
 					// The actual cookie value will still have to be returned to the message dialog though
-					SAFE_FREE(pCookieData);
-					FreeCookie(wCookie);
+					SAFE_FREE(&pCookieData);
+					FreeCookie(dwCookie);
 				}
 
 			}
 
-			return wCookie; // Success
+			return dwCookie; // Success
 
 		}
 
@@ -1098,7 +1152,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 		{
 
 			WORD wRecipientStatus;
-			WORD wCookie;
+			DWORD dwCookie;
 			DWORD dwUin;
 			wchar_t* pszText;
 
@@ -1115,13 +1169,13 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 			// Failure scenarios
 			if (dwUin == 0)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("The receiver has an invalid user ID."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("The receiver has an invalid user ID."));
 			}
 			else if (!icqOnline)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("You cannot send messages when you are offline."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("You cannot send messages when you are offline."));
 			}
 			// Looks OK
 			else
@@ -1150,7 +1204,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 #endif
 				if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY))
 				{
-					wCookie = icq_SendChannel1MessageW(dwUin, ccs->hContact, pszText, pCookieData);
+					dwCookie = icq_SendChannel1MessageW(dwUin, ccs->hContact, pszText, pCookieData);
 				}
 				else
 				{
@@ -1164,24 +1218,24 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 						wPriority = 0x0021;
 
 					utf8msg = make_utf8_string(pszText);
-					wCookie = icq_SendChannel2MessageW(dwUin, utf8msg, strlen(utf8msg), wPriority, pCookieData);
+					dwCookie = icq_SendChannel2MessageW(dwUin, utf8msg, strlen(utf8msg), wPriority, pCookieData);
 
-					SAFE_FREE(utf8msg);
+					SAFE_FREE(&utf8msg);
 
 				}
 
 				// This will stop the message dialog from waiting for the real message delivery ack
 				if (pCookieData->nAckType == ACKTYPE_NONE)
 				{
-					icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
+					icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
 					// We need to free this here since we will never see the real ack
 					// The actual cookie value will still have to be returned to the message dialog though
-					SAFE_FREE(pCookieData);
-					FreeCookie(wCookie);
+					SAFE_FREE(&pCookieData);
+					FreeCookie(dwCookie);
 				}
 
 			}
-			return wCookie; // Success
+			return dwCookie; // Success
 
 		}
 
@@ -1203,7 +1257,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 		if (ccs->hContact && ccs->lParam)
 		{
 
-			WORD wCookie;
+			DWORD dwCookie;
 			WORD wRecipientStatus;
 			DWORD dwUin;
 
@@ -1214,13 +1268,13 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 			// Failure
 			if (dwUin == 0)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_URL, Translate("The receiver has an invalid user ID."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_URL, Translate("The receiver has an invalid user ID."));
 			}
 			else if (!icqOnline)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_URL, Translate("You cannot send messages when you are offline."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_URL, Translate("You cannot send messages when you are offline."));
 			}
 			// Looks OK
 			else
@@ -1270,7 +1324,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 					wRecipientStatus == ID_STATUS_OFFLINE)
 				{
 
-					wCookie = icq_SendChannel4Message(dwUin, MTYPE_URL,
+					dwCookie = icq_SendChannel4Message(dwUin, MTYPE_URL,
 						(WORD)nBodyLen, szBody, pCookieData);
 
 				}
@@ -1285,27 +1339,27 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 					else
 						wPriority = 0x0021;
 
-					wCookie = icq_SendChannel2Message(dwUin, szBody, nBodyLen, wPriority, pCookieData);
+					dwCookie = icq_SendChannel2Message(dwUin, szBody, nBodyLen, wPriority, pCookieData);
 
 				}
 
 				// Free memory used for body
-				SAFE_FREE(szBody);
+				SAFE_FREE(&szBody);
 
 
 				// This will stop the message dialog from waiting for the real message delivery ack
 				if (pCookieData->nAckType == ACKTYPE_NONE)
 				{
-					icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_SUCCESS, ACKTYPE_URL, NULL);
+					icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_URL, NULL);
 					// We need to free this here since we will never see the real ack
 					// The actual cookie value will still have to be returned to the message dialog though
-					SAFE_FREE(pCookieData);
-					FreeCookie(wCookie);
+					SAFE_FREE(&pCookieData);
+					FreeCookie(dwCookie);
 				}
 
 			}
 
-			return wCookie; // Success
+			return dwCookie; // Success
 
 		}
 
@@ -1335,7 +1389,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 			DWORD dwUin;
 			char* szProto;
 			WORD wRecipientStatus;
-			WORD wCookie;
+			DWORD dwCookie;
 
 
 			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
@@ -1345,18 +1399,18 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 			// Failures
 			if (dwUin == 0)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("The receiver has an invalid user ID."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("The receiver has an invalid user ID."));
 			}
 			else if (!icqOnline)
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("You cannot send messages when you are offline."));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("You cannot send messages when you are offline."));
 			}
 			else if (!hContactsList || (nContacts < 1) || (nContacts > MAX_CONTACTSSEND))
 			{
-				wCookie = GenerateCookie();
-				icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("Bad data (internal error #1)"));
+				dwCookie = GenerateCookie(0);
+				icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("Bad data (internal error #1)"));
 			}
 			// OK
 			else
@@ -1437,7 +1491,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 						if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
 							wRecipientStatus == ID_STATUS_OFFLINE)
 						{
-							wCookie = icq_SendChannel4Message(dwUin, MTYPE_CONTACTS,
+							dwCookie = icq_SendChannel4Message(dwUin, MTYPE_CONTACTS,
 								(WORD)nBodyLength, pBody, pCookieData);
 						}
 						else
@@ -1451,45 +1505,45 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 							else
 								wPriority = 0x0021;
 
-							wCookie = icq_SendChannel2Message(dwUin, pBody, nBodyLength, wPriority, pCookieData);
+							dwCookie = icq_SendChannel2Message(dwUin, pBody, nBodyLength, wPriority, pCookieData);
 						}
 
 
 						// This will stop the message dialog from waiting for the real message delivery ack
 						if (pCookieData->nAckType == ACKTYPE_NONE)
 						{
-							icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
+							icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
 							// We need to free this here since we will never see the real ack
 							// The actual cookie value will still have to be returned to the message dialog though
-							SAFE_FREE(pCookieData);
-							FreeCookie(wCookie);
+							SAFE_FREE(&pCookieData);
+							FreeCookie(dwCookie);
 						}
 
 					}
 					else
 					{
 
-						wCookie = GenerateCookie();
-						icq_SendProtoAck(ccs->hContact, wCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("Bad data (internal error #2)"));
+						dwCookie = GenerateCookie(0);
+						icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("Bad data (internal error #2)"));
 
 					}
 
 					for(i = 0; i < nContacts; i++)
 					{
-						SAFE_FREE(contacts[i].szNick);
+						SAFE_FREE(&contacts[i].szNick);
 					}
 
-					SAFE_FREE(contacts);
+					SAFE_FREE(&contacts);
 
 				}
 				else
 				{
-					wCookie = 0;
+				  dwCookie = 0;
 				}
 
 			}
 
-			return wCookie;
+			return dwCookie;
 
 		}
 
@@ -1569,7 +1623,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 						ft->sending = 1;
 						ft->fileId = -1;
 						ft->iCurrentFile = 0;
-						ft->wCookie = AllocateCookie(dwUin, ft);
+						ft->dwCookie = AllocateCookie(0, dwUin, ft);
 						ft->hConnection = NULL;
 
 						// Send file transfer request
@@ -1601,12 +1655,12 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 								if (ft->nVersion == 7)
 								{
 									Netlib_Logf(ghServerNetlibUser, "Sending v7 file transfer request through server");
-									icq_sendFileSendServv7(dwUin, ft->wCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
+									icq_sendFileSendServv7(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
 								}
 								else
 								{
 									Netlib_Logf(ghServerNetlibUser, "Sending v8 file transfer request through server");
-									icq_sendFileSendServv8(dwUin, ft->wCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
+									icq_sendFileSendServv8(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
 								}
 
 							}
@@ -1850,7 +1904,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 
 	CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
 
-	SAFE_FREE(dbei.pBlob);
+	SAFE_FREE(&dbei.pBlob);
 
 	return 0;
 
@@ -1914,3 +1968,5 @@ int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
 	return 0;
 
 }
+
+
