@@ -42,6 +42,7 @@ extern int gnCurrentStatus;
 extern int icqGoingOnlineStatus;
 extern BYTE gbSsiEnabled;
 extern BYTE gbAvatarsEnabled;
+extern int pendingAvatarsStart;
 extern DWORD dwLocalUIN;
 extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
@@ -803,7 +804,7 @@ void handleServUINSettings(int nPort, int nIP)
 		packDWord(&packet, WEBFRONTPORT);   // Web front port
 		packDWord(&packet, CLIENTFEATURES); // Client features
 		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x80030402);     // Abused timestamp
+		packDWord(&packet, 0x80030403);     // Abused timestamp
 		packDWord(&packet, 0x00000000);     // Timestamp
 		packWord(&packet, 0x0000);          // Unknown
 
@@ -853,6 +854,7 @@ void handleServUINSettings(int nPort, int nIP)
 
     icq_requestnewfamily(0x10, StartAvatarThread);
 
+    pendingAvatarsStart = 1;
     Netlib_Logf(ghServerNetlibUser, "Requesting Avatar family entry point.");
   }
 
