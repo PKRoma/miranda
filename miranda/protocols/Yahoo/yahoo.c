@@ -771,6 +771,8 @@ void ext_yahoo_got_im(int id, char *who, char *msg, long tm, int stat, int utf8)
 			
 	pre.szMessage = tMsgBuf;
 	pre.lParam = 0;
+    // Turn off typing
+    CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 
 }
