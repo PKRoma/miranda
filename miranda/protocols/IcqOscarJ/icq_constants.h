@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Global constants and default settings are defined here
 //
 // -----------------------------------------------------------------------------
 
@@ -48,8 +48,7 @@
 #define DEFAULT_SERVER_PORT     5190
 #define DEFAULT_SERVER_HOST     "login.icq.com"
 #define DEFAULT_SS_ENABLED      1
-#define DEFAULT_SS_ADD          1
-#define DEFAULT_SS_ADDREMOVE    1
+#define DEFAULT_SS_ADDSERVER    1
 #define DEFAULT_SS_LOAD         0
 #define DEFAULT_SS_STORE        1
 
@@ -58,6 +57,7 @@
 #define DEFAULT_CAPS            0
 #define DEFAULT_AVATARS_ENABLED 1
 #define DEFAULT_LOAD_AVATARS    1
+#define DEFAULT_LINK_AVATARS    1
 
 // Database setting names
 #define DBSETTING_CAPABILITIES  "caps"
@@ -210,12 +210,14 @@
 #define ICQ_CLI_REMOVEINVISIBLE     0x0008
 
 /* Subtypes for Avatar Family 0x0010 */
+#define ICQ_AVATAR_ERROR            0x0001
 #define ICQ_AVATAR_UPLOAD_REQUEST   0x0002
 #define ICQ_AVATAR_UPLOAD_ACK       0x0003
 #define ICQ_AVATAR_GET_REQUEST	    0x0006
 #define ICQ_AVATAR_GET_REPLY        0x0007
 
 /* Subtypes for Server Lists Family 0x0013 */
+#define ICQ_LISTS_ERROR             0x0001
 #define ICQ_LISTS_CLI_REQLISTS      0x0002
 #define ICQ_LISTS_SRV_REPLYLISTS    0x0003
 #define ICQ_LISTS_CLI_REQUEST       0x0004
@@ -313,7 +315,7 @@
 #define SSI_ITEM_IGNORE     0x000e  // Ignore list record.
 #define SSI_ITEM_NONICQ     0x0010  // Non-ICQ contact (to send SMS). Name: 1#EXT, 2#EXT, etc
 #define SSI_ITEM_UNKNOWN2   0x0011  // Unknown.
-#define SSI_ITEM_IMPORT     0x0013  // Item that contain roaster import time (name: "Import time")
+#define SSI_ITEM_IMPORT     0x0013  // Item that contain roster import time (name: "Import time")
 #define SSI_ITEM_BUDDYICON  0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
 
 

@@ -183,6 +183,37 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 		handleRecvAdded(pBuffer, wBufferLength);
 		break;
 
+  case ICQ_LISTS_ERROR:
+    if (wBufferLength >= 2)
+    {
+      WORD wError;
+      DWORD dwActUin;
+      servlistcookie* sc;
+
+      unpackWord(&pBuffer, &wError);
+
+      if (FindCookie(pSnacHeader->dwRef, &dwActUin, &sc))
+      { // look for action cookie
+#ifdef _DEBUG
+        Netlib_Logf(ghServerNetlibUser, "Received server list error, action: %d, result: %d", sc->dwAction, wError);
+#endif
+        FreeCookie(pSnacHeader->dwRef); // release cookie
+
+        if (sc->dwAction==SSA_CHECK_ROSTER)
+        { // the serv-list is unavailable turn it off
+          icq_LogMessage(LOG_ERROR, Translate("Server contact list is unavailable, Miranda will use local contact list."));
+          gbSsiEnabled = 0;
+          handleServUINSettings(wListenPort, dwLocalInternalIP);
+        }
+        SAFE_FREE(&sc);
+      }
+      else
+      {
+        Netlib_Logf(ghServerNetlibUser, "Received unrecognized server list error %u", wError);
+      }
+    }
+    break;
+
 	default:
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x13,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
@@ -767,14 +798,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             AddJustAddedContact(hContact);
 
 						DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
-						if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "AddServerNew", DEFAULT_SS_ADD))
-							DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
-
 					}
 					else
 					{
-						// If we should add new contacts and this contact was just added, show it
-						if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AddServerNew", DEFAULT_SS_ADD) && IsContactJustAdded(hContact))
+						// we should add new contacts and this contact was just added, show it
+						if (IsContactJustAdded(hContact))
             {
 							DBWriteContactSettingByte(hContact, "CList", "Hidden", 0);
               bAdded = 1; // we want details for new contacts
@@ -1697,7 +1725,7 @@ void sendAddStart(void)
   packet.wLen = 14;
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART<<0x10);
-  packDWord(&packet, 1<<0x10);
+  packDWord(&packet, 1<<0x10); // TODO: should be optional
   sendServPacket(&packet);
 }
 
