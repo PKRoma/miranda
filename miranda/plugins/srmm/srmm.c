@@ -37,7 +37,7 @@ PLUGININFO pluginInfo = {
     "Send/Receive Messaging",
 #endif
     PLUGIN_MAKE_VERSION(2, 0, 0, 3),
-    "Send and receive instant messages using a split mode or single mode interface.",
+    "Send and receive instant messages",
     "Miranda IM Development Team",
     "info@miranda-im.org",
     "Copyright © 2000-2003 Miranda ICQ/IM Project",

@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma hdrstop
 #include "msgs.h"
 
-extern HANDLE hMessageWindowList, hMessageSendList;
+extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 
 #define FONTF_BOLD   1
@@ -105,32 +105,20 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
             CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
             CheckDlgButton(hwndDlg, IDC_AUTOCLOSE, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE));
-            CheckDlgButton(hwndDlg, IDC_CLOSEONREPLY, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CLOSEONREPLY, SRMSGDEFSET_CLOSEONREPLY));
             CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT));
             CheckDlgButton(hwndDlg, IDC_CASCADE, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CASCADE, SRMSGDEFSET_CASCADE));
             CheckDlgButton(hwndDlg, IDC_SENDONENTER, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER));
             CheckDlgButton(hwndDlg, IDC_SENDONDBLENTER, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER));
-            CheckDlgButton(hwndDlg, IDC_PRESETSPLIT, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT));
-            CheckDlgButton(hwndDlg, IDC_PRESETSINGLE, !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT));
             CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
             CheckDlgButton(hwndDlg, IDC_SHOWSENDBTN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON));
             CheckDlgButton(hwndDlg, IDC_CHARCOUNT, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT));
             msgTimeout = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
             SetDlgItemInt(hwndDlg, IDC_SECONDS, msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN ? msgTimeout / 1000 : SRMSGDEFSET_MSGTIMEOUT / 1000, FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_CLOSEONREPLY), !IsDlgButtonChecked(hwndDlg, IDC_PRESETSPLIT));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWSENDBTN), IsDlgButtonChecked(hwndDlg, IDC_PRESETSPLIT));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_CHARCOUNT), IsDlgButtonChecked(hwndDlg, IDC_PRESETSPLIT));
             return TRUE;
         }
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
-                case IDC_PRESETSPLIT:
-                case IDC_PRESETSINGLE:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_CLOSEONREPLY), !IsDlgButtonChecked(hwndDlg, IDC_PRESETSPLIT));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWSENDBTN), IsDlgButtonChecked(hwndDlg, IDC_PRESETSPLIT));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_CHARCOUNT), IsDlgButtonChecked(hwndDlg, IDC_PRESETSPLIT));
-                    break;
                 case IDC_AUTOMIN:
                     CheckDlgButton(hwndDlg, IDC_AUTOCLOSE, BST_UNCHECKED);
                     break;
@@ -161,7 +149,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                         {
                             DWORD msgTimeout;
 
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_PRESETSPLIT));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONLINE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINFOLINE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
@@ -171,7 +158,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CASCADE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CASCADE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONENTER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONDBLENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONDBLENTER));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CLOSEONREPLY, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CLOSEONREPLY));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STATUSWIN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSENDBTN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CHARCOUNT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CHARCOUNT));
@@ -179,7 +165,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
 
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
-                            WindowList_Broadcast(hMessageSendList, DM_OPTIONSAPPLIED, 0, 0);
                             return TRUE;
                         }
                     }
@@ -429,7 +414,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             FreeMsgLogIcons();
                             LoadMsgLogIcons();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
-                            WindowList_Broadcast(hMessageSendList, DM_OPTIONSAPPLIED, 0, 0);
                             return TRUE;
                     }
                     break;
@@ -586,7 +570,6 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPETRAY));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYTRAY));
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
-                            WindowList_Broadcast(hMessageSendList, DM_OPTIONSAPPLIED, 0, 0);
                         }
                     }
                     break;

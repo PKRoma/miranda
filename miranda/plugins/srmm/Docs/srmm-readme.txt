@@ -17,6 +17,8 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 Changes
 -------
 2.0.0.0
+ - Remove send to multiple "feature"
+ - Remove single message mode
  - Remove file and url events from message log
  - Cache database reads when showing messages in the log
  - Show separate incoming/outgoing icons for messages with "Show Icons" option

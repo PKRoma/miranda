@@ -28,50 +28,45 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 227
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 195
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Messaging Mode",IDC_STATIC,0,0,310,31
-    CONTROL         "Split Mode",IDC_PRESETSPLIT,"Button",BS_AUTORADIOBUTTON | 
-                    BS_PUSHLIKE,95,9,56,16
-    CONTROL         "Single Mode",IDC_PRESETSINGLE,"Button",
-                    BS_AUTORADIOBUTTON | BS_PUSHLIKE,161,9,56,16
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,37,310,187
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,2,310,187
     CONTROL         "Automatically pop up the window when a message is received",
-                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,51,
+                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,16,
                     300,10
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,65,212,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,30,212,10
     CONTROL         "Close the message window on reply",IDC_CLOSEONREPLY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,79,202,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,44,202,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,93,221,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,58,221,10
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    107,273,10
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,72,
+                    273,10
     CONTROL         "Save the window size and location individually for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,121,300,10
+                    8,86,300,10
     CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,137,136,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,102,136,10
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,152,135,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,117,135,10
     CONTROL         "Show username on top row",IDC_SHOWINFOLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,167,138,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,132,138,10
     CONTROL         "Show toolbar buttons on top row",IDC_SHOWBUTTONLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,182,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,147,137,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,137,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,102,137,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,152,137,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,117,137,10
     CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,167,133,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,132,133,10
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,203,211,8
-    EDITTEXT        IDC_SECONDS,223,201,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,203,44,8
+                    IDC_STATIC,8,168,211,8
+    EDITTEXT        IDC_SECONDS,223,166,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,168,44,8
 END
 
 IDD_MSGSENDERROR DIALOGEX 0, 0, 187, 97
@@ -103,69 +98,6 @@ BEGIN
     CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,2,5,
                     12,12
     LTEXT           "",IDC_NAME,16,5,95,9,SS_NOPREFIX | SS_CENTERIMAGE
-    CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,74,2,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,92,2,16,14,
-                    0x18000000L
-    CONTROL         "&D",IDC_DETAILS,"MButtonClass",WS_TABSTOP,110,2,16,14,
-                    0x18000000L
-    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,128,2,16,14,
-                    0x18000000L
-    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,146,2,16,14,
-                    0x18000000L
-    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,164,2,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,181,5,4,89
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,2,30,
-                    60,WS_EX_CLIENTEDGE
-    CONTROL         "",IDC_LOG,"RichEdit20A",WS_VSCROLL | WS_TABSTOP | 0x844,
-                    1,18,181,26,WS_EX_STATICEDGE
-    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,45,183,2
-    PUSHBUTTON      "Read &Next",IDC_READNEXT,123,0,60,15
-    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
-                    WS_VISIBLE | WS_TABSTOP,2,64,12,12
-END
-
-IDD_MSGSINGLE DIALOG DISCARDABLE  0, 0, 183, 68
-STYLE DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
-    WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "%.200s: Message Received"
-FONT 8, "MS Shell Dlg"
-BEGIN
-    DEFPUSHBUTTON   "&Reply",IDOK,33,50,54,15
-    PUSHBUTTON      "Close",IDCANCEL,96,50,54,15
-    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,4,5,
-                    12,12
-    LTEXT           "",IDC_NAME,18,5,95,9,SS_NOPREFIX | SS_CENTERIMAGE
-    CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,93,2,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,111,2,16,14,
-                    0x18000000L
-    CONTROL         "&D",IDC_DETAILS,"MButtonClass",WS_TABSTOP,129,2,16,14,
-                    0x18000000L
-    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,147,2,16,14,
-                    0x18000000L
-    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,165,2,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_LOG,"RichEdit20A",WS_TABSTOP,3,18,177,26
-    PUSHBUTTON      "Read &Next",IDC_READNEXT,118,50,60,15
-    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
-                    WS_VISIBLE | WS_TABSTOP,4,52,12,12
-END
-
-IDD_MSGSEND DIALOG DISCARDABLE  0, 0, 184, 66
-STYLE DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
-    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "%.200s: Send Message"
-FONT 8, "MS Shell Dlg"
-BEGIN
-    EDITTEXT        IDC_MESSAGE,3,20,177,23,ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_WANTRETURN | WS_VSCROLL
-    DEFPUSHBUTTON   "&Send",IDOK,31,48,54,15
-    PUSHBUTTON      "Close",IDCANCEL,94,48,54,15
-    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,2,5,
-                    12,12
-    LTEXT           "",IDC_NAME,16,5,95,9,SS_NOPREFIX | SS_CENTERIMAGE
     CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,92,2,16,14,
                     0x18000000L
     CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,110,2,16,14,
@@ -174,13 +106,13 @@ BEGIN
                     0x18000000L
     CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,146,2,16,14,
                     0x18000000L
-    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,164,2,16,14,
+    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,164,2,16,14,
                     0x18000000L
-    CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,180,0,4,77
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,3,30,
-                    61
+    CONTROL         "",IDC_LOG,"RichEdit20A",WS_VSCROLL | WS_TABSTOP | 0x844,
+                    1,18,181,26,WS_EX_STATICEDGE
+    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,45,183,2
     CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
-                    WS_VISIBLE | WS_TABSTOP,4,51,12,12
+                    WS_VISIBLE | WS_TABSTOP,2,64,12,12
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -271,7 +203,7 @@ BEGIN
         VERTGUIDE, 148
         VERTGUIDE, 295
         VERTGUIDE, 310
-        BOTTOMMARGIN, 224
+        BOTTOMMARGIN, 192
     END
 
     IDD_MSGSENDERROR, DIALOG
@@ -289,24 +221,6 @@ BEGIN
         TOPMARGIN, 5
         HORZGUIDE, 16
         HORZGUIDE, 53
-    END
-
-    IDD_MSGSINGLE, DIALOG
-    BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 178
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 67
-        HORZGUIDE, 16
-    END
-
-    IDD_MSGSEND, DIALOG
-    BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 179
-        VERTGUIDE, 178
-        TOPMARGIN, 5
-        HORZGUIDE, 16
     END
 
     IDD_OPT_MSGLOG, DIALOG
@@ -370,14 +284,12 @@ IDI_USERDETAILS         ICON    DISCARDABLE     "res/Details8.ico"
 IDI_TIMESTAMP           ICON    DISCARDABLE     "res/Clock8.ico"
 IDI_ADDCONTACT          ICON    DISCARDABLE     "../../src/res/addcontact.ico"
 IDI_HISTORY             ICON    DISCARDABLE     "res/History8.ico"
-IDI_MULTISEND           ICON    DISCARDABLE     "res/Multisend8.ico"
 IDI_DOWNARROW           ICON    DISCARDABLE     "res/Downarrow8.ico"
 IDI_TYPING              ICON    DISCARDABLE     "res/Typing8.ico"
 IDI_TIMESTAMP32         ICON    DISCARDABLE     "res/Clock32.ico"
 IDI_TYPING32            ICON    DISCARDABLE     "res/Typing32.ico"
 IDI_DOWNARROW32         ICON    DISCARDABLE     "res/Downarrow32.ico"
 IDI_HISTORY32           ICON    DISCARDABLE     "res/History32.ico"
-IDI_MULTISEND32         ICON    DISCARDABLE     "res/Multisend32.ico"
 IDI_USERDETAILS32       ICON    DISCARDABLE     "res/Details32.ico"
 IDI_INCOMING            ICON    DISCARDABLE     "res\\incoming.ico"
 IDI_OUTGOING            ICON    DISCARDABLE     "res\\outgoing.ico"

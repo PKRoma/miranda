@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct NewMessageWindowLParam {
 	HANDLE hContact;
-	int isSend;
 	const char *szInitialText;
 };
 
@@ -44,15 +43,11 @@ struct MessageWindowData {
 	HANDLE hAckEvent;
 	HANDLE hNewEvent;
 	int showTime;
-	int multiple;
 	HBRUSH hBkgBrush;
 	int splitterY,originalSplitterY;
-	int multiSplitterX;
 	char *sendBuffer;
-	HICON hIcons[7];
+	HICON hIcons[6];
 	SIZE minEditBoxSize;
-	int isSend;
-	int isSplit;
 	int showInfo;
 	int showButton;
 	int lineHeight;
@@ -118,10 +113,8 @@ extern const int msgDlgFontCount;
 #define LOADHISTORY_COUNT     1
 #define LOADHISTORY_TIME      2
 
-#define SRMSGMOD                   "SRMsg"
+#define SRMSGMOD                   "SRMM"
 
-#define SRMSGSET_SPLIT             "Split"
-#define SRMSGDEFSET_SPLIT          1
 #define SRMSGSET_SHOWBUTTONLINE    "ShowButtonLine"
 #define SRMSGDEFSET_SHOWBUTTONLINE 1
 #define SRMSGSET_SHOWINFOLINE      "ShowInfoLine"
@@ -140,8 +133,6 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_SENDONENTER    1
 #define SRMSGSET_SENDONDBLENTER    "SendOnDblEnter"
 #define SRMSGDEFSET_SENDONDBLENTER 0
-#define SRMSGSET_CLOSEONREPLY      "CloseOnReply"
-#define SRMSGDEFSET_CLOSEONREPLY   1
 #define SRMSGSET_STATUSICON        "UseStatusWinIcon"
 #define SRMSGDEFSET_STATUSICON     0
 #define SRMSGSET_SENDBUTTON        "UseSendButton"

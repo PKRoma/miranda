@@ -239,7 +239,7 @@ static char *SetToStyle(int style)
 
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 {
-    if (dbei->flags & DBEF_SENT && !dat->isSplit && dbei->eventType!=EVENTTYPE_MESSAGE)
+    if (dbei->flags & DBEF_SENT && dbei->eventType!=EVENTTYPE_MESSAGE)
         return 0;
     return 1;
 }

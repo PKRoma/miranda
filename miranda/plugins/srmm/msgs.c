@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-HANDLE hMessageWindowList, hMessageSendList;
+HANDLE hMessageWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
@@ -39,20 +39,10 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
     struct NewMessageWindowLParam newData = { 0 };
     HWND hwndExisting;
-    int usingReadNext = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT) ? 0 : 1;
 
     hwndExisting = WindowList_Find(hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
-    if (usingReadNext && hwndExisting != NULL) {
-        ShowWindow(hwndExisting, SW_SHOWNORMAL);
-        SetForegroundWindow(hwndExisting);
-        SetFocus(hwndExisting);
-        SendMessage(hwndExisting, WM_COMMAND, MAKEWPARAM(IDC_READNEXT, BN_CLICKED), (LPARAM) GetDlgItem(hwndExisting, IDC_READNEXT));
-    }
-    else {
-        newData.hContact = ((CLISTEVENT *) lParam)->hContact;
-        newData.isSend = 0;
-        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
-    }
+    newData.hContact = ((CLISTEVENT *) lParam)->hContact;
+    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
     return 0;
 }
 
@@ -63,7 +53,6 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     char *contactName;
     char toolTip[256];
     HWND hwnd;
-    int split = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT);
 
     ZeroMemory(&dbei, sizeof(dbei));
     dbei.cbSize = sizeof(dbei);
@@ -78,20 +67,6 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
     if (hwnd) {
         SkinPlaySound("RecvMsg");
-        // For single mode, the icon is needed or else closing the message window with a new
-        // event means the user can't open the new event
-        if (!split) {
-            ZeroMemory(&cle, sizeof(cle));
-            cle.cbSize = sizeof(cle);
-            cle.hContact = (HANDLE) wParam;
-            cle.hDbEvent = (HANDLE) lParam;
-            cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-            cle.pszService = "SRMsg/ReadMessage";
-            contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-            _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
-            cle.pszTooltip = toolTip;
-            CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
-        }
         return 0;
     }
     /* new message */
@@ -100,7 +75,6 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP)) {
         struct NewMessageWindowLParam newData = { 0 };
         newData.hContact = (HANDLE) wParam;
-        newData.isSend = 0;
         CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
         return 0;
     }
@@ -122,7 +96,6 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd;
     struct NewMessageWindowLParam newData = { 0 };
-    int isSplit = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT);
 
     {
         /* does the HCONTACT's protocol support IM messages? */
@@ -137,7 +110,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         }                       //if
     }
 
-    if (hwnd = WindowList_Find(isSplit ? hMessageWindowList : hMessageSendList, (HANDLE) wParam)) {
+    if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
         if (lParam) {
             HWND hEdit;
             hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
@@ -150,7 +123,6 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
     }
     else {
         newData.hContact = (HANDLE) wParam;
-        newData.isSend = !isSplit;
         newData.szInitialText = (const char *) lParam;
         CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
     }
@@ -161,7 +133,6 @@ static int ForwardMessage(WPARAM wParam, LPARAM lParam)
 {
     struct NewMessageWindowLParam newData = { 0 };
     newData.hContact = NULL;
-    newData.isSend = !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT);
     newData.szInitialText = (const char *) lParam;
     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
     return 0;
@@ -180,15 +151,11 @@ static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 static int TypingMessage(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd;
-    int issplit = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT), foundWin = 0;
+    int foundWin = 0;
 
     if (!DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
         return 0;
     if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
-        SendMessage(hwnd, DM_TYPING, 0, lParam);
-        foundWin = 1;
-    }
-    if (!issplit && (hwnd = WindowList_Find(hMessageSendList, (HANDLE) wParam))) {
         SendMessage(hwnd, DM_TYPING, 0, lParam);
         foundWin = 1;
     }
@@ -233,7 +200,6 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
         return 0;
     WindowList_Broadcast(hMessageWindowList, DM_UPDATETITLE, (WPARAM) cws, 0);
-    WindowList_Broadcast(hMessageSendList, DM_UPDATETITLE, (WPARAM) cws, 0);
     return 0;
 }
 
@@ -242,9 +208,6 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
     HWND hwnd;
 
     if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
-        SendMessage(hwnd, WM_CLOSE, 0, 0);
-    }
-    if (hwnd = WindowList_Find(hMessageSendList, (HANDLE) wParam)) {
         SendMessage(hwnd, WM_CLOSE, 0, 0);
     }
     return 0;
@@ -256,7 +219,6 @@ static void RestoreUnreadMessageAlerts(void)
     DBEVENTINFO dbei = { 0 };
     char toolTip[256];
     int windowAlreadyExists;
-    int usingReadNext = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT) ? 0 : 1;
     int autoPopup = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
     HANDLE hDbEvent, hContact;
 
@@ -273,13 +235,12 @@ static void RestoreUnreadMessageAlerts(void)
             CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
             if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && dbei.eventType == EVENTTYPE_MESSAGE) {
                 windowAlreadyExists = WindowList_Find(hMessageWindowList, hContact) != NULL;
-                if (!usingReadNext && windowAlreadyExists)
+                if (windowAlreadyExists)
                     continue;
 
                 if (autoPopup && !windowAlreadyExists) {
                     struct NewMessageWindowLParam newData = { 0 };
                     newData.hContact = hContact;
-                    newData.isSend = 0;
                     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
                 }
                 else {
@@ -327,7 +288,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
-    WindowList_BroadcastAsync(hMessageSendList, WM_CLOSE, 0, 0);
     WindowList_BroadcastAsync(hMessageWindowList, WM_CLOSE, 0, 0);
     return 0;
 }
@@ -369,7 +329,6 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
     LoadMsgLogIcons();
     WindowList_Broadcast(hMessageWindowList, DM_REMAKELOG, 0, 0);
     // change all the icons
-    WindowList_Broadcast(hMessageSendList, DM_UPDATEWINICON, 0, 0);
     WindowList_Broadcast(hMessageWindowList, DM_UPDATEWINICON, 0, 0);
     return 0;
 }
@@ -388,7 +347,6 @@ int LoadSendRecvMessageModule(void)
     OleInitialize(NULL);
     InitREOleCallback();
     hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
-    hMessageSendList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
     InitOptions();
     hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
     hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
