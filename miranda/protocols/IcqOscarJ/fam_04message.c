@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -317,7 +318,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 							pre.flags = PREF_UNICODE;
 
-							SAFE_FREE(usMsg);
+							SAFE_FREE(&usMsg);
 
 							break;
 						}
@@ -346,7 +347,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 					pre.lParam = 0;
 					CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
-					SAFE_FREE(szMsg);
+					SAFE_FREE(&szMsg);
 
 					Netlib_Logf(ghServerNetlibUser, "Message (format 1) received");
 
@@ -419,7 +420,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
 		if (wCommand == 1)
 		{
 			Netlib_Logf(ghServerNetlibUser, "Cannot handle abort messages yet... :(");
-			SAFE_FREE(pTLV5);
+			SAFE_FREE(&pTLV5);
 			return;
 		}
 
@@ -492,7 +493,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
 		Netlib_Logf(ghServerNetlibUser, "Unsupported TLV (%u) in message (format 2)", wTLVType);
 	}
 
-	SAFE_FREE(pTLV5);
+	SAFE_FREE(&pTLV5);
 
 }
 
@@ -601,7 +602,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 							Netlib_Logf(ghServerNetlibUser, "Ignored strange file message");
 						}
 
-						SAFE_FREE(szMsg);
+						SAFE_FREE(&szMsg);
 						break;
 					}
 
@@ -704,7 +705,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 		wLen -= (WORD)dwDataLen;
 
 		handleFileAck(pDataBuf, wLen, dwUin, wCookie, wStatus, szMsg);
-		SAFE_FREE(szMsg);
+		SAFE_FREE(&szMsg);
 
 	}
 	else if (typeId == MTYPE_FILEREQ && wAckType == 1)
@@ -721,7 +722,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 		wLen -= (WORD)dwDataLen;
 
 		handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
-		SAFE_FREE(szMsg);
+		SAFE_FREE(&szMsg);
 
 	}
 	else if (typeId == MTYPE_CHAT && wAckType == 1)
@@ -738,13 +739,13 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 		wLen -= (WORD)dwDataLen;
 
 //		handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
-		SAFE_FREE(szMsg);
+		SAFE_FREE(&szMsg);
 
 	}
 	else if (typeId)
 	{
 
-		if (typeId == MTYPE_URL)
+		if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
 			icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, (BYTE)typeId, bFlags);
 
 		handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, (BYTE)typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf);
@@ -758,7 +759,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 	}
 
 
-	SAFE_FREE(szPluginName);
+	SAFE_FREE(&szPluginName);
 
 }
 
@@ -813,7 +814,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 		Netlib_Logf(ghServerNetlibUser, "Unsupported TLV in Type 4 message (%u)", wTLVType);
 	}
 
-	SAFE_FREE(pDataBuf);
+	SAFE_FREE(&pDataBuf);
 
 }
 
@@ -921,7 +922,7 @@ static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
 	ProtoBroadcastAck(gpszICQProtoName, NULL,
 		ICQACKTYPE_SMS, ACKRESULT_SUCCESS, NULL, (LPARAM)szInfo);
 
-	SAFE_FREE(szInfo);
+	SAFE_FREE(&szInfo);
 
 }
 
@@ -1092,7 +1093,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 						{
 							if (!strcmp(szMsg, szAnsiMessage))
 							{
-								SAFE_FREE(szMsg);
+								SAFE_FREE(&szMsg);
 								szMsg = szAnsiMessage;
 							}
 							else
@@ -1101,9 +1102,9 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 								memcpy((char*)usMsg, szAnsiMessage, strlen(szAnsiMessage)+1);
 								usMsgW = make_unicode_string(szMsg);
 								memcpy((char*)usMsg+strlen(szAnsiMessage)+1, (char*)usMsgW, (strlen(szAnsiMessage)+1)*sizeof(wchar_t));
-								SAFE_FREE(usMsgW);
-								SAFE_FREE(szAnsiMessage);
-								SAFE_FREE(szMsg);
+								SAFE_FREE(&usMsgW);
+								SAFE_FREE(&szAnsiMessage);
+								SAFE_FREE(&szMsg);
 								szMsg = (char*)usMsg;
 								pre.flags = PREF_UNICODE;
 							}
@@ -1166,7 +1167,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
 			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
-			SAFE_FREE(szBlob);
+			SAFE_FREE(&szBlob);
 
 		}
 		break;
@@ -1301,9 +1302,9 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 			}
 
 			for (i = 0; i < nContacts; i++)
-				SAFE_FREE(isrList[i]);
+				SAFE_FREE(&isrList[i]);
 
-			SAFE_FREE(isrList);
+			SAFE_FREE(&(void*)isrList);
 
 		}
 		break;
@@ -1422,7 +1423,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 	}
 
 
-	SAFE_FREE(szMsg);
+	SAFE_FREE(&szMsg);
 
 }
 
@@ -1582,7 +1583,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 		if (dwCookieUin != dwUin)
 		{
 			Netlib_Logf(ghServerNetlibUser, "SNAC(4.B) Ack UIN does not match Cookie UIN(%u != %u)", dwUin, dwCookieUin);
-			SAFE_FREE(pCookieData); // This could be a bad idea, but I think it is safe
+			SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
 			FreeCookie(wCookie);
 			return;
 		}
@@ -1590,7 +1591,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 		if (hContact == NULL || hContact == INVALID_HANDLE_VALUE)
 		{
 			Netlib_Logf(ghServerNetlibUser, "SNAC(4.B) Message from unknown contact (%u)", dwUin);
-			SAFE_FREE(pCookieData); // This could be a bad idea, but I think it is safe
+			SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
 			FreeCookie(wCookie);
 			return;
 		}
@@ -1748,7 +1749,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 			ProtoBroadcastAck(gpszICQProtoName, hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 		}
 
-		SAFE_FREE(pCookieData);
+		SAFE_FREE(&pCookieData);
 
 		FreeCookie(wCookie);
 
@@ -1784,7 +1785,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 		{
 
 			Netlib_Logf(ghServerNetlibUser, "SNAC(4.1) Received a SENDMSG Error (%u) from invalid contact %u", wError, dwUin);
-			SAFE_FREE(pCookieData);
+			SAFE_FREE(&pCookieData);
 			FreeCookie((WORD)dwSequence);
 
 			return;
@@ -1888,9 +1889,9 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 		FreeCookie((WORD)dwSequence);
 
 		if (pCookieData->bMessageType != MTYPE_FILEREQ)
-			SAFE_FREE(pCookieData);
+			SAFE_FREE(&pCookieData);
 
-		SAFE_FREE(pszErrorMessage);
+		SAFE_FREE(&pszErrorMessage);
 
 	}
 
@@ -1937,7 +1938,7 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 	pszUID[nUIDLen] = '\0';
 	wLen -= nUIDLen;
 	dwUin = atoi(pszUID);
-	SAFE_FREE(pszUID);
+	SAFE_FREE(&pszUID);
 	hContact = HContactFromUIN(dwUin, 0);
 
 
@@ -1960,21 +1961,21 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 				case MTYPE_PLAIN:
 					ProtoBroadcastAck(gpszICQProtoName, hContact,
 						ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwSequence, 0);
-					SAFE_FREE(pCookieData);
+					SAFE_FREE(&pCookieData);
 					FreeCookie((WORD)dwSequence);
 					break;
 
 				case MTYPE_CONTACTS:
 					ProtoBroadcastAck(gpszICQProtoName, hContact,
 						ACKTYPE_CONTACTS, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwSequence, 0);
-					SAFE_FREE(pCookieData);
+					SAFE_FREE(&pCookieData);
 					FreeCookie((WORD)dwSequence);
 					break;
 
 				case MTYPE_URL:
 					ProtoBroadcastAck(gpszICQProtoName, hContact,
 						ACKTYPE_URL, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwSequence, 0);
-					SAFE_FREE(pCookieData);
+					SAFE_FREE(&pCookieData);
 					FreeCookie((WORD)dwSequence);
 					break;
 
@@ -2050,12 +2051,12 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 	if (!IsStringUIN(pszUID))
 	{
 		Netlib_Logf(ghServerNetlibUser, "SNAC(4.A) Invalid UIN 2");
-		SAFE_FREE(pszUID);
+		SAFE_FREE(&pszUID);
 		return;
 	}
 
 	dwUin = atoi(pszUID);
-	SAFE_FREE(pszUID);
+	SAFE_FREE(&pszUID);
 
 	if (wLen < 8)
 		return; // Too short
@@ -2221,7 +2222,7 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 
 
 	// Clean up and return
-	SAFE_FREE(pszUID);
+	SAFE_FREE(&pszUID);
 	return;
 
 }
