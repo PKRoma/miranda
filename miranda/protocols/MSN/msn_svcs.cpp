@@ -32,7 +32,6 @@ void __cdecl MSNServerThread( ThreadData* info );
 void MSN_ChatStart(ThreadData* info);
 
 HANDLE msnSetNicknameMenuItem = NULL;
-extern HANDLE hInitChat;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAddToList - adds contact to the server list
@@ -305,7 +304,7 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if ( !strcmp( cws->szModule, "CList" ) && MyOptions.ManageServer ) {
 		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto == NULL || strcmp( szProto, msnProtocolName )) 
+		if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
 			return 0;
 
 		if ( !strcmp( cws->szSetting, "Group" )) {
@@ -575,10 +574,10 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 	ThreadData* tActiveThreads[ 64 ];
 	int tThreads = MSN_GetActiveThreads( tActiveThreads ), tChosenThread;
 // modified for chat
-		
+
 
 	switch( tThreads ) {
-	case 0:	
+	case 0:
 		MessageBox(NULL, Translate("No active chat session is found."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
 		return 0;
 
@@ -831,7 +830,7 @@ LBL_Error:
 		SetEvent( hEvent );
 		return 999999;
 	}
-	
+
 	int seq;
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread == NULL )
@@ -840,7 +839,7 @@ LBL_Error:
 		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
 			errMsg = MSN_Translate( "MSN protocol does not support offline messages" );
 			goto LBL_Error;
-		}		
+		}
 
 		if ( MsgQueue_CheckContact( ccs->hContact ) == NULL )
 			msnNsThread->sendPacket( "XFR", "SB" );

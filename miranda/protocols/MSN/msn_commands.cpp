@@ -49,7 +49,6 @@ char *rru;
 
 extern int uniqueEventId;
 extern char sttHeaderStart[];
-extern HANDLE hInitChat;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN_ReceiveMessage - receives message or a file from the server
@@ -786,7 +785,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 				hContact = MSN_HContactById( userId );
 			}
 			else {
-				if ( userNick == NULL ) 
+				if ( userNick == NULL )
 					userNick = userEmail;
 
 				int listId = Lists_NameToCode( tWords[0] );
@@ -941,7 +940,7 @@ LBL_InvalidCommand:
 			// this is not in chat session, quit the session when everyone left
 			else if ( personleft == 0 )
 				info->sendPacket("OUT", NULL );
-			
+
 			break;
 		}
 		case ' LAC':    //********* CAL: section 8.3 Inviting Users to a Switchboard Session
@@ -1100,7 +1099,7 @@ LBL_InvalidCommand:
 
 			// only start the chat session after all the IRO messages has been recieved
 			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmp(data.strThisContact, data.totalContacts) ) {
-				if ( info->mChatID[0] == 0 )	
+				if ( info->mChatID[0] == 0 )
 					MSN_ChatStart(info);
 			}
 
@@ -1256,7 +1255,7 @@ LBL_InvalidCommand:
 			}
 
 			if ( sttListedContact != NULL ) {
-				if ( userId  != NULL ) 
+				if ( userId  != NULL )
 					MSN_SetString( sttListedContact, "ID", userId );
 
 				if ( MyOptions.ManageServer ) {
@@ -1369,7 +1368,7 @@ LBL_InvalidCommand:
 				struct { char *list, *serial, *groupId; } data;
 			};
 
-			if ( sttDivideWords( params, 3, tWords ) == 3 ) { // remove from a group 
+			if ( sttDivideWords( params, 3, tWords ) == 3 ) { // remove from a group
 				HANDLE hContact = MSN_HContactById( data.serial );
 				if ( hContact != NULL )
 					DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
