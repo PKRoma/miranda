@@ -348,7 +348,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             
             if(dat) {
                 DWORD dwOldMsgWindowFlags = dat->dwFlags;
-                if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICPENU) == 1)
+                if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICMENU) == 1)
                     break;
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
                     if(dat->dwFlags != dwOldMsgWindowFlags) {
@@ -1028,8 +1028,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? MF_CHECKED : MF_UNCHECKED);
             
             submenu = GetSubMenu(hMenu, 3);
-            if(dat && submenu)
+            if(dat && submenu) {
                 MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
+                submenu = GetSubMenu(hMenu, 1);
+                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
+            }
             
             break;
         }

@@ -171,7 +171,7 @@ struct StreamJob {
 // menu IDS
 
 #define MENU_LOGMENU 1
-#define MENU_PICPENU 2
+#define MENU_PICMENU 2
 #define MENU_TABCONTEXT 3
 
 #define TABSRMM_SMILEYADD_THREADING 25367

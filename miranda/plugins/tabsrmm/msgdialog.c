@@ -580,6 +580,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
                 return 0;
             }
+            /*
             if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {            // ctrl-backspace
                 DWORD start, end;
                 TCHAR *text;
@@ -598,7 +599,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
                 return 0;
             }
-            break;
+            break; */
         case WM_KEYUP:
             break;
         case WM_KEYDOWN:
@@ -1225,6 +1226,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
+                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_CHANGE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 
                 /* OnO: higligh lines to their end */
@@ -1567,10 +1569,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 COLORREF colour = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
                 COLORREF inputcolour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SRMSGDEFSET_BKGCOLOUR);
+                COLORREF inputcharcolor;
+                CHARFORMAT2A cf2 = {0};
+                LOGFONTA lf;
+                
                 dat->hBkgBrush = CreateSolidBrush(colour);
                 dat->hInputBkgBrush = CreateSolidBrush(inputcolour);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, inputcolour);
+                LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, &inputcharcolor);
+                cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_BOLD | CFM_ITALIC;
+                cf2.cbSize = sizeof(cf2);
+                cf2.crTextColor = inputcharcolor;
+                cf2.bCharSet = lf.lfCharSet;
+                strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
+                cf2.dwEffects = (lf.lfItalic ? CFE_ITALIC : 0) | (lf.lfWeight ? CFE_BOLD : 0);
+                SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
             }
             if (dat->dwFlags & MWF_LOG_RTL) {
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
@@ -1583,17 +1597,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if (hwndDlg == dat->pContainer->hwndActive)
                 SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
-            {
-                HFONT hFont;
-                LOGFONTA lf;
-                hFont = (HFONT) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_GETFONT, 0, 0);
-                if (hFont != NULL && hFont != (HFONT) SendDlgItemMessage(hwndDlg, IDOK1, WM_GETFONT, 0, 0))
-                    DeleteObject(hFont);
-                LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, NULL);
-                
-                hFont = CreateFontIndirectA(&lf);
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETFONT, (WPARAM) hFont, MAKELPARAM(TRUE, 0));
-            }
             if (!lParam)
                 SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             
@@ -2573,16 +2576,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 break;
             }
-        case WM_CTLCOLOREDIT:
-            {
-                COLORREF colour;
-                if ((HWND) lParam != GetDlgItem(hwndDlg, IDC_MESSAGE))
-                    break;
-                LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, NULL, &colour);
-                SetTextColor((HDC) wParam, colour);
-                SetBkColor((HDC) wParam, DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SRMSGDEFSET_BKGCOLOUR));
-                return(BOOL) dat->hInputBkgBrush;
-            }
         case WM_MEASUREITEM:
             return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
         case WM_NCHITTEST:
@@ -2938,13 +2931,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         
                         HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 1);
                         GetWindowRect(GetDlgItem(hwndDlg, IDC_PIC), &rc);
-						EnableMenuItem(submenu, ID_PICMENU_ALIGNFORFULL, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
-						EnableMenuItem(submenu, ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
-                        EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
-                        EnableMenuItem(submenu, ID_PICMENU_LOADALOCALPICTUREASAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
-
+                        MsgWindowUpdateMenu(hwndDlg, dat, submenu, MENU_PICMENU);
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-                        isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_PICPENU);
+                        isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_PICMENU);
                         if(isHandled)
                             RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
                     }
@@ -3237,6 +3226,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             break;
                     }
                     break;
+            }
+            break;
+        case WM_CONTEXTMENU:
+            if((HWND)wParam == GetDlgItem(hwndDlg, IDC_CONTACTPIC)) {
+                int iSelection, isHandled;
+                POINT pt;
+                HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 1);
+
+                GetCursorPos(&pt);
+                MsgWindowUpdateMenu(hwndDlg, dat, submenu, MENU_PICMENU);
+                iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_PICMENU);
+                if(isHandled)
+                    RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
             }
             break;
         case HM_EVENTSENT:
@@ -4267,7 +4270,7 @@ static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int 
 
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId)
 {
-    if(menuId == MENU_PICPENU || menuId == MENU_TABCONTEXT) {
+    if(menuId == MENU_PICMENU || menuId == MENU_TABCONTEXT) {
         switch(selection) {
             case ID_TABMENU_SWITCHTONEXTTAB:
                 SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, (WPARAM) DM_SELECT_NEXT, 0);
@@ -4459,10 +4462,17 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_LONGDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_USERELATIVEDATES ? MF_CHECKED : MF_UNCHECKED);
-
+        CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_UNCHECKED : MF_CHECKED);
+        
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_LOADDEFAULTS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_GRAYED : MF_ENABLED);
+    }
+    else if(menuID == MENU_PICMENU) {
+        EnableMenuItem(submenu, ID_PICMENU_ALIGNFORFULL, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PICMENU_LOADALOCALPICTUREASAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
     }
 }
 

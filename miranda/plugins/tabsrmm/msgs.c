@@ -1221,6 +1221,8 @@ void CreateImageList(BOOL bInitial)
 
 }
 
+#if defined(_UNICODE)
+
 void ConvertAllToUTF8()
 {
     DBVARIANT dbv;
@@ -1266,3 +1268,4 @@ void ConvertAllToUTF8()
     }
     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "utf8converted", 1);
 }
+#endif
