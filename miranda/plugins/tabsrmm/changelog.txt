@@ -141,6 +141,14 @@ Version 0.9.9.5 - 2005/02/02
 
         * UIN is now cached for non-metacontacts (saves service calls at every status change and 
           titlebar update.
+          
+        * UIN can now be shown in the status & title bar. The UIN button is gone from the tool-
+          bar.
+
+        * changed toolbar code. Its no longer possible to hide button groups separately. You
+          can now quickly show/hide the toolbar from a menu entry (view->tool bar) or from the
+          container options dialog. Toolbar is also no longer a global, but a "per container"
+          setting, so you can have different configurations in different containers.
 
 Version 0.9.9.4 - 2005/01/24
 

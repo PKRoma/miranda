@@ -126,6 +126,8 @@ struct NewMessageWindowLParam {
 #define CNT_NOMENUBAR 0x2000000
 #define CNT_TABSBOTTOM 0x4000000
 #define CNT_STATICICON 0x8000000
+#define CNT_TITLE_SHOWUIN 0x10000000
+#define CNT_HIDETOOLBAR 0x20000000
 
 #define CNT_FLAGS_DEFAULT (CNT_HIDETABS | CNT_TITLE_SHOWNAME | CNT_TITLE_PREFIX)
 #define CNT_TRANS_DEFAULT 0x00ff00ff
@@ -200,7 +202,7 @@ struct ProtocolData {
 #define DM_PICTURECHANGED    (WM_USER+53)
 #define DM_PROTOACK          (WM_USER+54)
 #define DM_RETRIEVEAVATAR    (WM_USER+55)
-//#define DM_ALIGNSPLITTERMAXLOG (WM_USER+56)
+#define DM_CONFIGURETOOLBAR  (WM_USER+56)
 //#define DM_ALIGNSPLITTERFULL (WM_USER+57)
 #define DM_PICTHREADCOMPLETE (WM_USER+58)
 #define DM_UINTOCLIPBOARD   (WM_USER+59)
@@ -216,7 +218,6 @@ struct ProtocolData {
 #define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
 #define DM_SECURE_CHANGED    (WM_USER+70)
 #define DM_QUERYSTATUS       (WM_USER+71)
-
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 
@@ -283,12 +284,6 @@ extern const int msgDlgFontCount;
 #define LOADHISTORY_COUNT     1
 #define LOADHISTORY_TIME      2
 
-#define SRMSGSET_SPLIT             "Split"
-#define SRMSGDEFSET_SPLIT          1
-#define SRMSGSET_SHOWBUTTONLINE    "ShowButtonLine"
-#define SRMSGDEFSET_SHOWBUTTONLINE 1
-#define SRMSGSET_SHOWINFOLINE      "ShowInfoLine"
-#define SRMSGDEFSET_SHOWINFOLINE   1
 #define SRMSGSET_AUTOPOPUP         "AutoPopup"
 #define SRMSGDEFSET_AUTOPOPUP      0
 #define SRMSGSET_AUTOMIN           "AutoMin"
@@ -297,16 +292,12 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_AUTOCLOSE      0
 #define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
 #define SRMSGDEFSET_SAVEPERCONTACT 0
-#define SRMSGSET_CASCADE           "Cascade"
-#define SRMSGDEFSET_CASCADE        1
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    1
 #define SRMSGSET_CLOSEONREPLY      "CloseOnReply"
 #define SRMSGDEFSET_CLOSEONREPLY   1
 #define SRMSGSET_STATUSICON        "UseStatusWinIcon"
 #define SRMSGDEFSET_STATUSICON     0
-#define SRMSGSET_SENDBUTTON        "UseSendButton"
-#define SRMSGDEFSET_SENDBUTTON     1
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
 #define SRMSGDEFSET_MSGTIMEOUT     10000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)

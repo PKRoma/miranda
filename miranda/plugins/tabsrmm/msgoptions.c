@@ -129,11 +129,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
             TranslateDialogDefault(hwndDlg);
             
-            CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE));
-            CheckDlgButton(hwndDlg, IDC_SHOWINFOLINE, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE));
             CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
             CheckDlgButton(hwndDlg, IDC_SENDONENTER, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER));
-            CheckDlgButton(hwndDlg, IDC_SHOWSENDBTN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON));
 
             SendDlgItemMessageA(hwndDlg, IDC_NOTIFYTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("None"));
             SendDlgItemMessageA(hwndDlg, IDC_NOTIFYTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("Tray notifications"));
@@ -228,12 +225,9 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
                             BOOL translated;
                             
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONLINE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINFOLINE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOMIN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOCLOSE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCLOSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONENTER));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSENDBTN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "debuginfo", (BYTE) SendDlgItemMessage(hwndDlg, IDC_NOTIFYTYPE, CB_GETCURSEL, 0, 0));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usedividers", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USEDIVIDERS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DIVIDERSUSEPOPUPCONFIG));
@@ -632,7 +626,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             CheckDlgButton(hwndDlg, IDC_AUTOCREATECONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", 0));
             CheckDlgButton(hwndDlg, IDC_AUTOLOCALE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0));
             CheckDlgButton(hwndDlg, IDC_FLATBUTTONS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0));
-            CheckDlgButton(hwndDlg, IDC_FULLUSERNAME, DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1));
             CheckDlgButton(hwndDlg, IDC_ESC_MINIMIZE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0));
             CheckDlgButton(hwndDlg, IDC_SPLITTERSTATICEDGES, DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1));
             CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
@@ -706,7 +699,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "cpopup", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_POPUPCONTAINER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "al", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOLOCALE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nlflat", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATBUTTONS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "fulluin", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FULLUSERNAME));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCREATECONTAINER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDER, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE) GetDlgItemInt(hwndDlg, IDC_HISTORYSIZE, &translated, FALSE));
@@ -1637,7 +1629,6 @@ void ReloadGlobals()
      myGlobals.m_MsgLogHotkeys = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0);
      myGlobals.m_AutoLocaleSupport = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0);
      myGlobals.m_IgnoreContactSettings = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
-     myGlobals.m_FullUin = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1);
      myGlobals.m_AutoSwitchTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0);
      myGlobals.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
      myGlobals.m_CutContactNameOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0);

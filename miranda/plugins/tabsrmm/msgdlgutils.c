@@ -59,14 +59,9 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     RECT rc;
     double aspect = 0, newWidth = 0, picAspect = 0;
     double picProjectedWidth = 0;
-    int infospace = 0;
     
     GetClientRect(hwndDlg, &rc);
-    if(dat->showUIElements & MWF_UI_SHOWINFO) {
-        RECT rcname;
-        GetClientRect(GetDlgItem(hwndDlg, IDC_NAME), &rcname);
-        infospace = (rcname.right - rcname.left) + 4;
-    }
+    
     if(myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight < myGlobals.m_LimitStaticAvatarHeight && dat->iRealAvatarHeight == 0) {
         picAspect = 1.0;
         picProjectedWidth = (double)bminfo->bmWidth;
@@ -82,7 +77,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
     }
 
-    if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds + infospace) && !myGlobals.m_AlwaysFullToolbarWidth) {
+    if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
         dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2);
         dat->bottomOffset = dat->dynaSplitter + 100;
     }

@@ -164,36 +164,30 @@ void SetDialogToType(HWND hwndDlg)
     struct MessageWindowData *dat;
     HICON hButtonIcon = 0;
     int nrSmileys = 0;
-    int showInfo, showButton, showSend, showFormat;
+    int showToolbar = 0;
     
     dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-    showInfo = dat->showUIElements & MWF_UI_SHOWINFO;
-    showButton = dat->showUIElements & MWF_UI_SHOWBUTTON;
-    showSend = dat->showUIElements & MWF_UI_SHOWSEND;
-    showFormat = dat->showUIElements & MWF_UI_SHOWFORMAT;
-    
-    if(showFormat)
-        myGlobals.m_FullUin = 0;
+    showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
     
     if (dat->hContact) {
-        ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), showButton ? SW_SHOW : SW_HIDE);
-        ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), showInfo ? SW_SHOW : SW_HIDE);
-        ShowMultipleControls(hwndDlg, formatControls, sizeof(formatControls) / sizeof(formatControls[0]), showFormat ? SW_SHOW : SW_HIDE);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), showButton ? SW_SHOW : SW_HIDE);
+        ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), showToolbar ? SW_SHOW : SW_HIDE);
+        ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), showToolbar ? SW_SHOW : SW_HIDE);
+        ShowMultipleControls(hwndDlg, formatControls, sizeof(formatControls) / sizeof(formatControls[0]), showToolbar ? SW_SHOW : SW_HIDE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), showToolbar ? SW_SHOW : SW_HIDE);
         
         if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
             ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
     } else {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), SW_HIDE);
         ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), SW_HIDE);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), showButton ? SW_SHOW : SW_HIDE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), showToolbar ? SW_SHOW : SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), FALSE);
     }
 
     ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), SW_HIDE);
     
-    if (showButton) {
+    if (showToolbar) {
         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), SW_SHOW);
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), TRUE);
     }
@@ -232,7 +226,7 @@ void SetDialogToType(HWND hwndDlg)
     if(nrSmileys == 0)
         dat->doSmileys = 0;
     
-    ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), (dat->doSmileys && showButton) ? SW_SHOW : SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
     
     if(dat->pContainer->hwndActive == hwndDlg)
@@ -243,19 +237,13 @@ void SetDialogToType(HWND hwndDlg)
 
     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
     GetAvatarVisibility(hwndDlg, dat);
-    if (dat->showPic)
-        ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC),SW_SHOW);
-    else
-        ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC),SW_HIDE);
-
-    if((showButton || showInfo || showSend))
-        ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), SW_SHOW);
-    else
-        ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), SW_HIDE);
+    
+    ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), showToolbar ? SW_SHOW : SW_HIDE);
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
-    ShowWindow(GetDlgItem(hwndDlg, IDOK), showSend ? SW_SHOW : SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDOK), showToolbar ? SW_SHOW : SW_HIDE);
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), dat->multiple ? SW_SHOW : SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), dat->multiple ? SW_SHOW : SW_HIDE);
@@ -266,8 +254,6 @@ void SetDialogToType(HWND hwndDlg)
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
 }
 
-#define EDITMSGQUEUE_PASSTHRUCLIPBOARD  //if set the typing queue won't capture ctrl-C etc because people might want to use them on the read only text
-                                                  //todo: decide if this should be set or not
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct MsgEditSubclassData *dat;
@@ -275,11 +261,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
     dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
     switch (msg) {
-// BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:
 			SendMessage(GetParent(hwnd),WM_DROPFILES,(WPARAM)wParam,(LPARAM)lParam);
 			break;
-// END MOD#11
         case WM_CHAR:
             if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {             // ctrl-w close tab
                 SendMessage(GetParent(hwnd), WM_CLOSE, 1, 0);
@@ -523,23 +507,18 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
 {
-    int showInfo, showButton, showSend, showFormat;
     struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
     int iClistOffset = 0;
     RECT rc, rcButton;
     static int uinWidth;
-    
-    showInfo = dat->showUIElements & MWF_UI_SHOWINFO;
-    showButton = dat->showUIElements & MWF_UI_SHOWBUTTON;
-    showSend = dat->showUIElements & MWF_UI_SHOWSEND;
-    showFormat = dat->showUIElements & MWF_UI_SHOWFORMAT;
+    int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
     
     GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
     GetClientRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), &rcButton);
     
     iClistOffset = rc.bottom;
 
-    if (!showInfo && !showButton) {
+    if (!showToolbar) {
         int i;
         for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
             if (buttonLineControlsNew[i] == urc->wId)
@@ -548,33 +527,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
     switch (urc->wId) {
         case IDC_NAME:
-            {
-                int len;
-                HWND h;
-
-                h = GetDlgItem(hwndDlg, IDC_NAME);
-                len = GetWindowTextLength(h);
-                if (len > 0) {
-                    HDC hdc;
-                    SIZE textSize;
-                    TCHAR buf[256];
-
-                    GetWindowText(h, buf, sizeof(buf));
-                    hdc = GetDC(h);
-                    SelectObject(hdc, (HFONT) SendMessage(GetDlgItem(hwndDlg, IDOK1), WM_GETFONT, 0, 0));
-                    GetTextExtentPoint32(hdc, buf, lstrlen(buf), &textSize);
-                    urc->rcItem.right = urc->rcItem.left + textSize.cx + 12;        // padding
-                    uinWidth = urc->rcItem.right - urc->rcItem.left;
-                    if (showButton && urc->rcItem.right > urc->dlgNewSize.cx - dat->nLabelRight)
-                        urc->rcItem.right = urc->dlgNewSize.cx - dat->nLabelRight;
-                    ReleaseDC(h, hdc);
-                }
-                urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
-                urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-                if(dat->controlsHidden)
-                    OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
-                return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-            }
+            urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
+            urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
+            if(dat->controlsHidden)
+                OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
+             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_SMILEYBTN:
         case IDC_FONTBOLD:
         case IDC_FONTITALIC:
@@ -585,8 +542,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if(!dat->doSmileys)
                 OffsetRect(&urc->rcItem, -22, 0);
-            if(!showFormat && myGlobals.m_FullUin && urc->wId == IDC_SMILEYBTN)
-                OffsetRect(&urc->rcItem, uinWidth - 22, 0);
             if(dat->controlsHidden)
                 OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -613,13 +568,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, 12, 0);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if(!showFormat && myGlobals.m_FullUin && urc->wId == IDC_PROTOMENU)
-                OffsetRect(&urc->rcItem, uinWidth - 26, 0);
             if(dat->controlsHidden && urc->wId == IDC_PROTOMENU)
                 OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
             if (urc->wId == IDC_PROTOCOL || urc->wId == IDC_PROTOMENU)
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-            if (showSend) {
+            if (showToolbar) {
                 urc->rcItem.left -= 40;
                 urc->rcItem.right -= 40;
             }
@@ -633,9 +586,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if (dat->multiple)
                 urc->rcItem.right -= (dat->multiSplitterX + 3);
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if (!showButton && !showSend && !showInfo)
+            if (!showToolbar)
                 urc->rcItem.bottom += 24;
-            //else urc->rcItem.bottom += 1;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
@@ -669,11 +621,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_MULTISPLITTER:
             urc->rcItem.left -= dat->multiSplitterX;
             urc->rcItem.right -= dat->multiSplitterX;
-            if(1) {         // was iClistOffset (bottom edge of the multisplitter)
-                urc->rcItem.bottom = iClistOffset;
-                return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
-            }
-            return RD_ANCHORX_RIGHT | RD_ANCHORY_HEIGHT;
+            urc->rcItem.bottom = iClistOffset;
+            return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
         case IDC_CLIST:
             urc->rcItem.left = urc->dlgNewSize.cx - dat->multiSplitterX;
             urc->rcItem.right = urc->dlgNewSize.cx - 3;
@@ -812,12 +761,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->iTabImage = newData->iTabImage;
                 dat->hAckEvent = NULL;
                 dat->dwTickLastEvent = 0;
-                dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
-                dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
-                dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
-                dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0) ? MWF_UI_SHOWFORMAT : 0;
-                if(dat->showUIElements & MWF_UI_SHOWFORMAT)
-                    myGlobals.m_FullUin = 0;
+                dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
                 
                 dat->hBkgBrush = NULL;
                 dat->hInputBkgBrush = NULL;
@@ -900,6 +844,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[19]);
                 SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[20]);
                 SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
+                SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
 
                 SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONSETASPUSHBTN, 0, 0);
@@ -907,8 +852,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
                 
             // Make them flat buttons
-                if (!myGlobals.m_FullUin)
-                    SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0)) {
                     for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
                         SendMessage(GetDlgItem(hwndDlg, buttonLineControlsNew[i]), BUTTONSETASFLATBTN, 0, 0);
@@ -1250,6 +1193,26 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 break;
             }
+            /*
+             * configures the toolbar only... if lParam != 0, then it also calls
+             * SetDialogToType() to reconfigure the message window
+             */
+            
+        case DM_CONFIGURETOOLBAR:
+            dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+            if(lParam == 1)
+                SetDialogToType(hwndDlg);
+            dat->iButtonBarNeeds = dat->showUIElements ? 66 : 0;
+            dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
+            dat->iButtonBarNeeds += (dat->showUIElements) ? 34 : 0;
+            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? 62 : 0);
+            if(lParam == 1) {
+                SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+            }
+            break;
         case DM_OPTIONSAPPLIED:
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
                 if(myGlobals.m_IgnoreContactSettings) {
@@ -1257,11 +1220,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
                 }
             }
-            dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
-            dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
-            dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
-            dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0) ? MWF_UI_SHOWFORMAT : 0;
 
+            dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+            
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0) ? MWF_SHOW_INOUTICONS : 0;
@@ -1269,11 +1230,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= MWF_SHOW_MICROLF;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             
-            dat->iButtonBarNeeds = (dat->showUIElements & MWF_UI_SHOWSEND) ? 40 : 0;
-            dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWBUTTON ? (dat->doSmileys ? 180 : 154) : 0);
-            dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWINFO) ? 34 : 0;
-            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements & MWF_UI_SHOWFORMAT ? 88 : 0);
-                
             if(dat->dwFlags & MWF_LOG_GRID && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0))
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1,1));     // XXX margins in the log (looks slightly better)
             else
@@ -1284,6 +1240,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
             
             SetDialogToType(hwndDlg);
+            SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
+
             if (dat->hBkgBrush)
                 DeleteObject(dat->hBkgBrush);
             if (dat->hInputBkgBrush)
@@ -1388,13 +1346,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             else
                                 strncpy(newcontactname, contactName, sizeof(newcontactname));
 
-                            if (myGlobals.m_FullUin) {
-                                SetDlgItemTextA(hwndDlg, IDC_NAME, iHasName ? dat->uin : contactName);
-                                SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                            }
-                            else
-                                SendDlgItemMessage(hwndDlg, IDC_NAME, BUTTONADDTOOLTIP, iHasName ? (WPARAM) dat->uin : (WPARAM) contactName, 0);
-
                             szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                             if (strlen(newcontactname) != 0 && szStatus != NULL) {
                                 if (myGlobals.m_StatusOnTabs)
@@ -1409,6 +1360,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         }
+                        SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, (WPARAM) iHasName ? dat->uin : "", 0);
+                        
                     }
                 } else
                     lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
@@ -2654,9 +2607,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 case IDC_NAME:
                 case IDC_USERMENU:
                     {
-                        if(GetKeyState(VK_SHIFT) & 0x8000) {    // copy UIN
+                        if(GetKeyState(VK_SHIFT) & 0x8000)    // copy UIN
                             SendMessage(hwndDlg, DM_UINTOCLIPBOARD, 0, 0);
-                        }
                         else {
                             RECT rc;
                             HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);

@@ -82,6 +82,8 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 HMENU BuildContainerMenu();
 void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
+void ReflashContainer(struct ContainerWindowData *pContainer);
+void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
@@ -383,6 +385,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case ID_VIEW_SHOWSTATUSBAR:
                     pContainer->dwFlags ^= CNT_NOSTATUSBAR;
                     break;
+                case ID_VIEW_SHOWTOOLBAR:
+                    pContainer->dwFlags ^= CNT_HIDETOOLBAR;
+                    break;
                 case ID_VIEW_SHOWMENUBAR:
                     pContainer->dwFlags ^= CNT_NOMENUBAR;
                     break;
@@ -594,13 +599,23 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 TCHAR newtitle[256], oldtitle[256];
                 WORD wStatus = -1;
                 TCHAR tTemp[204];
+                char *dummy = "", *uin;
+                struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+
+                if(dat) {
+                    if(dat->uin && lstrlenA(dat->uin) > 0)
+                        uin = dat->uin;
+                    else
+                        uin = dummy;
+                }
+                else
+                    uin = dummy;
                 
                 if(wParam == 0)             // no hContact given - obtain the hContact for the active tab
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 
-                if(pContainer->dwFlags & CNT_TITLE_SHOWNAME) {
+                if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
                     contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0);
-                }
                 
                 temp[0] = '\0';
                 tTemp[0] = '\0';
@@ -608,15 +623,21 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
                 if (szProto)
                     SendMessage(pContainer->hwndActive, DM_QUERYSTATUS, 0, (LPARAM)&wStatus);
-                if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
-                    szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
-                    if(szStatus != NULL && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS && pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                        _snprintf(temp, sizeof(temp), "%s (%s)", contactName, szStatus);
-                    else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                        _snprintf(temp, sizeof(temp), "%s", contactName);
-                }
-                else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME) {
+
+                if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWUIN)
+                    _snprintf(temp, sizeof(temp), "%s - %s", contactName, uin);
+                else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
                     _snprintf(temp, sizeof(temp), "%s", contactName);
+                else if(pContainer->dwFlags & CNT_TITLE_SHOWUIN)
+                    _snprintf(temp, sizeof(temp), "%s", uin);
+                    
+                if((pContainer->dwFlags & CNT_TITLE_SHOWNAME || pContainer->dwFlags & CNT_TITLE_SHOWUIN) && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
+                    szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
+                    if(szStatus != NULL) {
+                        strncat(temp, " (", sizeof(temp));
+                        strncat(temp, szStatus, sizeof(temp));
+                        strncat(temp, ")", sizeof(temp));
+                    }
                 }
 #if defined (_UNICODE)
                 MultiByteToWideChar(CP_ACP, 0, temp, -1, tTemp, 200);
@@ -1068,6 +1089,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_TITLEBAR_SHOWCONTAINERNAME, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_PREFIX ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_SUFFIX ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_USESTATICCONTAINERICON, MF_BYCOMMAND | pContainer->dwFlags & CNT_STATICICON ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, ID_VIEW_SHOWTOOLBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_HIDETOOLBAR ? MF_UNCHECKED : MF_CHECKED);
+            
             EnableMenuItem(hMenu, ID_TITLEBAR_SHOWSTATUS, pContainer->dwFlags & CNT_TITLE_SHOWNAME);
             CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | dat->multiple ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
@@ -1292,6 +1315,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
             SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
+            BroadCastContainer(pContainer, DM_CONFIGURETOOLBAR, 0, 1);
 			break;
 		}
 
@@ -1488,8 +1512,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     			RemoveContainerFromList(pContainer);
                 if (pContainer)
                     free(pContainer);
-                else
-                    MessageBoxA(0,"pContainer == 0 in WM_DESTROY", "Warning", MB_OK);
     			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
                 return 0;
             }
@@ -2274,5 +2296,26 @@ void ReflashContainer(struct ContainerWindowData *pContainer)
         }
     }
     pContainer->dwFlashingStarted = dwStartTime;
+}
+
+/*
+ * broadcasts a message to all child windows (tabs/sessions)
+ */
+
+void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    int i;
+    TCITEM item;
+    
+    HWND hwndTab = GetDlgItem(pContainer->hwnd, IDC_MSGTABS);
+    ZeroMemory((void *)&item, sizeof(item));
+
+    item.mask = TCIF_PARAM;
+    
+    for(i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
+        TabCtrl_GetItem(hwndTab, i, &item);
+        if(IsWindow((HWND)item.lParam))
+            SendMessage((HWND)item.lParam, message, wParam, lParam);
+    }
 }
 

@@ -37,11 +37,6 @@
 #define MWF_LOG_LONGDATES 64
 #define MWF_LOG_USERELATIVEDATES 1
 
-#define MWF_UI_SHOWBUTTON 1
-#define MWF_UI_SHOWINFO 2
-#define MWF_UI_SHOWSEND 4
-#define MWF_UI_SHOWFORMAT 8
-
 #define MWF_SHOW_URLEVENTS 1
 #define MWF_SHOW_FILEEVENTS 2
 #define MWF_SHOW_INOUTICONS 4
@@ -206,7 +201,6 @@ typedef struct _globals {
     int m_MsgLogHotkeys;
     int m_AutoLocaleSupport;
     int m_IgnoreContactSettings;
-    int m_FullUin;
     int m_AutoSwitchTabs;
     int m_CutContactNameOnTabs;
     int m_CutContactNameTo;

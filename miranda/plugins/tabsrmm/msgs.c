@@ -726,7 +726,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #else
     #define SHORT_MODULENAME "tabSRMsg"
 #endif    
-    DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, 1);
     if(DBGetContactSetting(NULL, "KnownModules", SHORT_MODULENAME, &dbv))
         DBWriteContactSettingString(NULL, "KnownModules", SHORT_MODULENAME, "SRMsg,Tab_SRMsg,TAB_Containers,TAB_ContainersW");
     else

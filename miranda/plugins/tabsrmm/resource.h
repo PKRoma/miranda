@@ -272,6 +272,7 @@
 #define IDC_CHECK7                      1700
 #define IDC_DELETETEMP                  1700
 #define IDC_FORMATTING                  1700
+#define IDC_HIDETOOLBAR                 1700
 #define IDC_CHECK8                      1701
 #define IDC_FLASHCLIST                  1701
 #define IDC_NRFLASH                     1702
@@ -285,6 +286,7 @@
 #define IDC_SYMBOLS                     1708
 #define IDC_CHECK6                      1709
 #define IDC_ALWAYSFULLWIDTHTOOLBAR      1709
+#define IDC_SHOWUIN                     1709
 #define IDC_STATUSGROUP                 1710
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
@@ -424,7 +426,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40189
+#define _APS_NEXT_COMMAND_VALUE         40190
 #define _APS_NEXT_CONTROL_VALUE         1711
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
