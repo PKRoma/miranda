@@ -19,7 +19,7 @@ statstr = 'Generated on ' + time.strftime('%Y/%m/%d at %H:%M:%S') + ' by ' + USE
 notestr = 'No extra information included'
 
 try:
-	n = open('NOTES','r')
+	n = open('DEVELNOTES','r')
 	notestr = n.read()
 	n.close()
 except:
