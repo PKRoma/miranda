@@ -28,6 +28,7 @@ More information:
   Web: http://jabber.au.edu/miranda
   E-mail: keh@au.edu
 
+Copyright (c) 2005 George Hazan (ghazan@postman.ru)
 Copyright (c) 2002-2004 Santithorn Bunchua (keh@au.edu)
 
 Acknowledgement:
