@@ -30,6 +30,10 @@ int MSN_HandleErrors(struct ThreadData *info,char *cmdString)
 			MSN_DebugLog(MSN_LOG_FATAL,"Server Unavailable! (Closing connection) ");
 			CmdQueue_AddProtoAck(NULL,ACKTYPE_LOGIN,ACKRESULT_FAILED,NULL,LOGINERR_NOSERVER);
 			return 1;
+		case ERR_NOT_ALLOWED_WHEN_OFFLINE:
+			MSN_DebugLog(MSN_LOG_ERROR,"913: You're not allowed to send messages when invisible");
+			MessageBox(NULL,"The MSN protocol does not allow you to communicate with others when you are invisible","MSN Protocol",MB_OK);
+			return 0;
 		case ERR_AUTHENTICATION_FAILED:
 			MSN_DebugLog(MSN_LOG_FATAL,"Bad Username or password");
 			MessageBox(NULL,"Your username or password is incorrect","MSN Protocol",MB_OK);
