@@ -984,6 +984,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->nFlash = 0;
                     FlashWindow(hwndDlg, FALSE);
                 }
+                if(GetMenu(hwndDlg) != 0)
+                    DrawMenuBar(hwndDlg);
                 break;
             }
         case WM_ENTERMENULOOP: {

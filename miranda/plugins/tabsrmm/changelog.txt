@@ -47,6 +47,9 @@ Version 0.0.8.99 - 2004/10/22
           
         * New menubar added. It can be hidden (as a per container setting) and contains
           many options which are normally only accessible via various option pages.
+          
+        * input area is now a rich edit control instead of a normal multiline edit box.
+          It was changed to allow future additions like text formatting
 
 Version 0.0.8.98 - 2004/10/17
 

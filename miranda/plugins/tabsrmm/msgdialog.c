@@ -176,9 +176,10 @@ static char *MsgServiceName(HANDLE hContact)
 }
 
 #if defined(_STREAMTHREADING)
+
 /*
- * experimental REMAKELOG dispatcher...
- * dispatches queued dm_remakelog events and tries to avoid a "locked" main thread for a longer period of time.
+ * thread used for dispatching icon and smiley replacements. These are time consuming and would block
+ * the main thread when opening multiple window with lots of history items.
  */
 
 DWORD WINAPI StreamThread(LPVOID param)
@@ -504,12 +505,6 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
 }
 // END MOD#33
 
-struct SavedMessageData {
-    UINT message;
-    WPARAM wParam;
-    LPARAM lParam;
-    DWORD keyStates;            //use MOD_ defines from RegisterHotKey()
-};
 struct MsgEditSubclassData {
     DWORD lastEnterTime;
 };
@@ -552,7 +547,18 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
                 break;
             //for saved msg queue the keyup/keydowns generate wm_chars themselves
-            if (wParam == '\n' || wParam == '\r') {
+            if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {              //ctrl-a
+                SendMessage(hwnd, EM_SETSEL, 0, -1);
+                return 0;
+            }
+            if (wParam == 0x0c && GetKeyState(VK_CONTROL) & 0x8000) {
+                SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
+                return 0;
+            }
+        case WM_KEYUP:
+            break;
+        case WM_KEYDOWN:
+            if(wParam == VK_RETURN) {
                 if (GetKeyState(VK_SHIFT) & 0x8000) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
@@ -570,39 +576,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         return 0;
                     }
                 }
-            } else
-                dat->lastEnterTime = 0;
-            if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {              //ctrl-a
-                SendMessage(hwnd, EM_SETSEL, 0, -1);
-                return 0;
             }
-            if (wParam == 0x0c && GetKeyState(VK_CONTROL) & 0x8000) {
-                SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
-                return 0;
-            }
-            /*
-            if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {            // ctrl-backspace
-                DWORD start, end;
-                TCHAR *text;
-                int textLen;
-                SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
-                SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
-                SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
-                textLen = GetWindowTextLength(hwnd);
-                text = (TCHAR *) malloc(sizeof(TCHAR) * (textLen + 1));
-                GetWindowText(hwnd, text, textLen + 1);
-                MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
-                SendMessage(hwnd, EM_SETSEL, (WPARAM)0, (LPARAM)-1);
-                SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)text);
-                free(text);
-                SendMessage(hwnd, EM_SETSEL, start, start);
-                SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
-                return 0;
-            }
-            break; */
-        case WM_KEYUP:
-            break;
-        case WM_KEYDOWN:
             if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
                 if (wParam == 0x9) {            // ctrl-shift tab
                     SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
@@ -1381,8 +1355,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #if defined ( _UNICODE )
                     if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW", &dbv)) {
                         if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 0)  { // at least the 0x0000 is always there... 
-                            WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
-                            SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)wszTemp);
+                            SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)Utf8Decode(dbv.pszVal));
                         }
 #else
     				if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
@@ -2716,6 +2689,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         MessageBoxA(0, dat->sendBuffer, "ansi", MB_OK);
                     }
                     */
+                    /*
+                    {
+                        CHARFORMAT2 cf2, cf3;
+                        int i;
+                        ZeroMemory((void *)&cf2, sizeof(cf2));
+                        cf2.cbSize = sizeof(cf2);
+                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETREDRAW, FALSE, 0);
+                        cf3 = cf2;
+                        for(i = 0; i < bufSize; i++) {
+                            SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, i, i+1);
+                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
+                            if(memcmp(&cf2, &cf3, sizeof(cf2)) != 0) {
+                            }
+                            cf3 = cf2;
+                        }
+                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETREDRAW, TRUE, 0);
+                    } */
                     AddToSendQueue(hwndDlg, dat, bufSize);
                     return TRUE;
                     }
@@ -2849,7 +2839,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         stream.dwCookie = (DWORD_PTR)dat;
                         stream.dwError = 0;
                         stream.pfnCallback = StreamOut;
-                        SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
+                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
                     }
                     else
                         CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
@@ -3064,6 +3054,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     break;
                 case IDC_LOG:
+                case IDC_MESSAGE:
                     switch (((NMHDR *) lParam)->code) {
                         case EN_MSGFILTER:
                             switch (((MSGFILTER *) lParam)->msg) {
@@ -3093,21 +3084,28 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                         CHARRANGE sel, all = { 0, -1};
                                         int iSelection;
                                         int oldCodepage = dat->codePage;
+                                        int idFrom = ((NMHDR *)lParam)->idFrom;
                                         
                                         hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-                                        hSubMenu = GetSubMenu(hMenu, 0);
+                                        if(idFrom == IDC_LOG)
+                                            hSubMenu = GetSubMenu(hMenu, 0);
+                                        else
+                                            hSubMenu = GetSubMenu(hMenu, 2);
                                         CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
                                         SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
-                                        if (sel.cpMin == sel.cpMax)
+                                        if (sel.cpMin == sel.cpMax) {
                                             EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+                                            if(idFrom == IDC_MESSAGE)
+                                                EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
+                                        }
                                         pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
                                         pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
                                         ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
 #if defined(_UNICODE)
-                                        {
+                                        if(idFrom == IDC_LOG)  {
                                             int i;
-                                            InsertMenuA(hSubMenu, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR) g_hMenuEncoding, Translate("ANSI Encoding"));
-                                            InsertMenuA(hSubMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
+                                            InsertMenuA(hSubMenu, 5, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
+                                            InsertMenuA(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) g_hMenuEncoding, Translate("ANSI Encoding"));
                                             for(i = 0; i < GetMenuItemCount(g_hMenuEncoding); i++)
                                                 CheckMenuItem(g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
                                             if(dat->codePage == CP_ACP)
@@ -3118,11 +3116,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                         }
 #endif                                        
                                         iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
-                                        if(iSelection > 800 && iSelection < 1400) {
+                                        if(iSelection > 800 && iSelection < 1400 && ((NMHDR *)lParam)->idFrom == IDC_LOG) {
                                             dat->codePage = iSelection;
                                             DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
                                         }
-                                        else if(iSelection == 500) {
+                                        else if(iSelection == 500 && ((NMHDR *)lParam)->idFrom == IDC_LOG) {
                                             dat->codePage = CP_ACP;
                                             DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "ANSIcodepage");
                                         }
@@ -3130,6 +3128,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                             switch (iSelection) {
                                                 case IDM_COPY:
                                                     SendMessage(((NMHDR *) lParam)->hwndFrom, WM_COPY, 0, 0);
+                                                    break;
+                                                case IDM_CUT:
+                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, WM_CUT, 0, 0);
+                                                    break;
+                                                case IDM_PASTE:
+                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, WM_PASTE, 0, 0);
                                                     break;
                                                 case IDM_COPYALL:
                                                     SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
@@ -3146,7 +3150,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                             }
                                         }
 #if defined(_UNICODE)
-                                        RemoveMenu(hSubMenu, 0, MF_BYPOSITION);
+                                        if(idFrom == IDC_LOG)
+                                            RemoveMenu(hSubMenu, 0, MF_BYPOSITION);
 #endif                                        
                                         DestroyMenu(hMenu);
                                         if(dat->codePage != oldCodepage)

@@ -34,13 +34,15 @@ STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER |
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 #if defined(UNICODE)
-    CONTROL         "",IDC_MESSAGE,"RichEdit20W", ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_NOHIDESEL | ES_WANTRETURN | NOT WS_BORDER | 
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_STATICEDGE | WS_EX_ACCEPTFILES
+    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
+                    WS_EX_STATICEDGE
 #else
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A", ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_NOHIDESEL | ES_WANTRETURN | NOT WS_BORDER | 
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_STATICEDGE | WS_EX_ACCEPTFILES
+    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
+                    WS_EX_STATICEDGE
 #endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
@@ -622,6 +624,15 @@ BEGIN
         MENUITEM "Open in &new window",         IDM_OPENNEW
         MENUITEM "&Open in existing window",    IDM_OPENEXISTING
         MENUITEM "&Copy link",                  IDM_COPYLINK
+    END
+    POPUP "Editor"
+    BEGIN
+        MENUITEM "Cut",                         IDM_CUT
+        MENUITEM "Copy",                        IDM_COPY
+        MENUITEM "Paste",                       IDM_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy all",                    IDM_COPYALL
+        MENUITEM "Select all",                  IDM_SELECTALL
     END
 END
 
