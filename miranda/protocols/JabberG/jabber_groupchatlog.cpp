@@ -1045,18 +1045,6 @@ void JabberGcLogUpdateMemberStatus( char* jid )
 	}
 }
 
-static VOID CALLBACK JabberGcLogSmileyApcProc( DWORD param )
-{
-	SMADD_RICHEDIT smre;
-
-	//sel.cpMax = GetWindowTextLength( hwndLog );
-	smre.cbSize = sizeof( SMADD_RICHEDIT );
-	smre.hwndRichEditControl = ( HWND ) param;
-	smre.Protocolname = jabberProtoName;
-	smre.rangeToReplace = NULL; //&sel;
-	JCallService( MS_SMILEYADD_REPLACESMILEYS, 0, ( LPARAM )&smre );
-}
-
 void JabberGcLogAppend( char* jid, time_t timestamp, char* str )
 {
 	JABBER_LIST_ITEM *item;
