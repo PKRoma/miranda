@@ -144,13 +144,6 @@ typedef struct {
 	int (*grokHeader) ( char * profile, int * error );
 
 	/*
-	Affect: The database plugin should load the profile and initialise any internal structures, 
-	Returns: 0 on success, non zero on failure
-	Notes: a successful call to getReady() will always result in a call to Unload()
-	*/
-	int (*getReady) ( char * profile );
-
-	/*
 	Affect: Tell the database to create all services/hooks that a 3.xx legecy database might support into link,
 		which is a PLUGINLINK structure
 	Returns: 0 on success, nonzero on failure
