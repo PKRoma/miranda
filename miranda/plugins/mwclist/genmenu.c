@@ -863,10 +863,10 @@ if (rootlevel==-1&&mi->root==-1&&MenuObjects[pimoidx].bUseUserDefinedItems)
 	memset(&dbv,0,sizeof(dbv));
 	if (MenuItems[j].UniqName)
 	{
-		wsprintf(menuItemName,"[%s]",MenuItems[j].UniqName);
+		wsprintf(menuItemName,"{%s}",MenuItems[j].UniqName);
 	}else
 	{
-		wsprintf(menuItemName,"%s",mi->pszName);
+		wsprintf(menuItemName,"{%s}",mi->pszName);
 	};
 		
 	

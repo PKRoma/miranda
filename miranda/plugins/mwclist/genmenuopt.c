@@ -81,10 +81,10 @@ int SaveTree(HWND hwndDlg)
 									//MenuObjects[MenuObjectId].MenuItems[menuitempos].OverrideShow=
 									if (pimo->MenuItems[menuitempos].UniqName)
 									{
-										wsprintf(menuItemName,"[%s]",pimo->MenuItems[menuitempos].UniqName);
+										wsprintf(menuItemName,"{%s}",pimo->MenuItems[menuitempos].UniqName);
 									}else
 									{
-										wsprintf(menuItemName,"%s",pimo->MenuItems[menuitempos].mi.pszName);
+										wsprintf(menuItemName,"{%s}",pimo->MenuItems[menuitempos].mi.pszName);
 									};
 
 
@@ -243,10 +243,10 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 				if (pimo->MenuItems[i].UniqName)
 				{
 
-					wsprintf(menuItemName,"[%s]",pimo->MenuItems[i].UniqName);
+					wsprintf(menuItemName,"{%s}",pimo->MenuItems[i].UniqName);
 				}else
 				{
-					wsprintf(menuItemName,"%s",pimo->MenuItems[i].mi.pszName);
+					wsprintf(menuItemName,"{%s}",pimo->MenuItems[i].mi.pszName);
 				};
 				
 				{
