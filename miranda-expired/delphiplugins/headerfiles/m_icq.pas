@@ -14,7 +14,7 @@ unit m_icq;
 
 interface
 
-uses windows;
+uses windows, m_protosvc;
 
 
 
@@ -26,7 +26,7 @@ uses windows;
 //Results are returned using the same scheme documented in PSS_BASICSEARCH
 type
   ICQSEARCHRESULT=record   //extended search result structure, used for all searches
-    hdr:PROTOSEARCHRESULT;
+    hdr:TPROTOSEARCHRESULT;
     uin:DWORD;
     auth:byte;
   end;
@@ -93,7 +93,7 @@ const
 //LNTS:  a WORD containing the length of the string, followed by the string
 //       itself. No zero terminator.
 const
-  ICQCHANGEINFO_MAIN     =0xEA03;
+  ICQCHANGEINFO_MAIN     =$EA03;
 (* pInfoData points to:
     WORD    datalen
     LNTS    nick
@@ -112,7 +112,7 @@ const
     BYTE    unknown, usually 0
 *)
 const
-  ICQCHANGEINFO_MORE     =0xFD03;
+  ICQCHANGEINFO_MORE     =$FD03;
 (* pInfoData points to:
     WORD    datalen
     BYTE    age
@@ -127,13 +127,13 @@ const
     BYTE    lang3
 *)
 const
-  ICQCHANGEINFO_ABOUT	   =0x0604;
+  ICQCHANGEINFO_ABOUT	   =$0604;
 (* pInfoData points to:
     WORD    datalen
 	LNTS    about
 *)
 const
-  ICQCHANGEINFO_WORK	   =0xF303;
+  ICQCHANGEINFO_WORK	   =$F303;
 (* pInfoData points to:
     WORD    datalen
     LNTS    city
@@ -149,7 +149,7 @@ const
     LNTS    company-web
 *)
 const
-  ICQCHANGEINFO_PASSWORD =0x2E04;
+  ICQCHANGEINFO_PASSWORD =$2E04;
 (* pInfoData points to:
     WORD    datalen
 	LNTS    newpassword
