@@ -409,13 +409,15 @@ bool p2p_connectTo( ThreadData* info )
 bool p2p_listen( ThreadData* info )
 {
 	filetransfer* ft = info->mP2pSession;
+	DWORD ftID = ft->p2p_sessionid;
 
 	switch( WaitForSingleObject( ft->hWaitEvent, 5000 )) {
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
 		MSN_DebugLog( "Incoming connection timed out, closing file transfer" );
-		if ( ft->std.sending )
-			MSN_PingParentThread( info->mParentThread, ft );
+		if (( ft = p2p_getSessionByID( ftID )) != NULL )
+			if ( ft->std.sending )
+				MSN_PingParentThread( info->mParentThread, ft );
 LBL_Error:
 		MSN_DebugLog( "File transfer failed" );
 		return false;
