@@ -46,6 +46,9 @@ static void GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour)
 	SystemParametersInfo(SPI_GETICONTITLELOGFONT,sizeof(LOGFONT),lf,FALSE);
 	*colour=GetSysColor(COLOR_WINDOWTEXT);
 	switch(i) {
+		case FONTID_CONTACTS:
+			lf->lfHeight=8;
+			break;
 		case FONTID_GROUPS:
 			lf->lfWeight=FW_BOLD;
 			break;
