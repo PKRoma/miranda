@@ -32,7 +32,8 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 	WCHAR pszwFilename[MAX_PATH];
 	HDC hdc,hdcMem1,hdcMem2;
 	short picType;
-	const char *szFile=(const char *)lParam, szFilename[MAX_PATH];
+	const char *szFile=(const char *)lParam;
+	char szFilename[MAX_PATH];
 	int filenameLen;
     
     if (!CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
