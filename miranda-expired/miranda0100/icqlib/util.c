@@ -33,6 +33,7 @@
  * When adding new country, please preserve the order!
  */
 icq_ArrayType icq_Countries[] = {
+  {"Unspecified",0},
   {"USA",1},
   {"Russia",7},
   {"Egypt",20},
