@@ -47,6 +47,7 @@ BOOL JabberWsInit( void )
 void JabberWsUninit( void )
 {
 	Netlib_CloseHandle( hNetlibUser );
+	hNetlibUser = NULL;
 }
 
 JABBER_SOCKET JabberWsConnect( char* host, WORD port )

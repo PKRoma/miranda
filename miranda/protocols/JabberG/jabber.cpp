@@ -141,11 +141,11 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	JabberGcLogUninit();
 	UnhookEvent( hEventSettingChanged );
 	UnhookEvent( hEventContactDeleted );
-	JabberWsUninit();
 	JabberSslUninit();
 	JabberListUninit();
 	JabberIqUninit();
 	JabberSerialUninit();
+	JabberWsUninit();
 	DeleteCriticalSection( &modeMsgMutex );
 	DeleteCriticalSection( &mutex );
 	free( modeMsgs.szOnline );
