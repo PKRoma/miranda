@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <fcntl.h>
 #include <sys/stat.h>
 
-struct p2p_threadParams 
+struct p2p_threadParams
 {
 	HANDLE s;
 	filetransfer* ft;
@@ -557,12 +557,13 @@ LBL_Exit:	//filetransfer* anotherFT = p2p_getAnotherContactSession( ft );
 
 void __cdecl p2p_directSendFeedThread( ThreadData* info )
 {
-	HANDLE s = info->s;
+	HANDLE s = info->s; info->s = NULL;
 	filetransfer* ft = info->mP2pSession;
 
 	for ( unsigned long size = 0; size < ft->std.totalBytes; size += 1352 ) {
 		if ( ft->bCanceled ) {
-			;
+			MSN_DebugLog( "File transfer canceled" );
+			return;
 		}
 
 		long portion = 1352;
@@ -695,7 +696,7 @@ static void __cdecl p2p_sendViaServerThread( ThreadData* info )
 {
 	HANDLE s = info->s; info->s = NULL;
 	filetransfer* ft = info->mP2pSession;
-	
+
 	while ( ft->std.currentFileProgress < ft->std.totalBytes ) {
 		ThreadData* T = MSN_GetThreadByConnection( s );
 		if ( T == NULL ) {
@@ -858,7 +859,7 @@ static void sttInitFileTransfer(
 
 	if ( dwAppID == 2 && !strcmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) {
 		WCHAR* wszFileName = ( WCHAR* )&szContext[ 20 ];
-		{	for ( WCHAR* p = wszFileName; *p != 0; p++ ) 
+		{	for ( WCHAR* p = wszFileName; *p != 0; p++ )
 			{	switch( *p ) {
 				case ':': case '?': case '/': case '\\': case '*':
 					*p = '_';
