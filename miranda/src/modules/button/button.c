@@ -149,7 +149,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		if (ctl->flatBtn) {
 			if (ctl->hThemeToolbar) {
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-				if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
+                if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
 					MyDrawThemeParentBackground(ctl->hwnd, hdcPaint, &rcClient);
 				}
 				MyDrawThemeBackground(ctl->hThemeToolbar, hdcPaint, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
@@ -375,9 +375,11 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			if (!bct->pushBtn) break;
 			if (wParam == BST_CHECKED) {
 				bct->pbState = 1;
+                bct->stateId = PBS_PRESSED;
 			}
 			else if (wParam == BST_UNCHECKED) {
 				bct->pbState = 0;
+                bct->stateId = PBS_NORMAL;
 			}
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
