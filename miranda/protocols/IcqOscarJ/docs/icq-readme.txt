@@ -1,4 +1,4 @@
-ï»¿
+
           ICQ protocol plugin for Miranda IM (Joe)
           ________________________________________
 
@@ -13,14 +13,29 @@ instant messenger network and communicate with other ICQ users.
 Changes
 _______
 
+0.3.4.1
+
+Bugfixes
+  Now parses URL send ack correctly, no more timeout
+  Now sending ack on contacts receive
+
+New features
+  Added reliable client identification (if not identified, gives appropriate ICQ client)
+  Added support for avatar images (downloading only).
+
+Improvements
+  Basic search now automatically removes garbage from text, e.g. it can search by 123-456-789
+
+
 0.3.4.0
+
+Bugfixes:  
+  Fixed authorisation reply
+  Fixed contact transfer ack
 
 New features:
   Added full unicode message support (require SRMM Unicode)
   Added support for sending and receiving Idle time.
-Bugfixes:
-  Fixed authorisation reply
-  Fixed contact transfer ack
 
 
 0.3.3.1
@@ -115,14 +130,14 @@ Contact
 _______
 
 Current maintainer is Joe @ Whale, jokusoftware at users.sourceforge.net
-                      Martin berg, strickz at miranda-im.org
+                      Martin Öberg, strickz at miranda-im.org
 
 
 
 License and Copyright
 _____________________
 
-Copyright (C) 2000,2001,2002,2003,2004 Joe Kucera, Martin berg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2005 Joe Kucera, Martin berg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
