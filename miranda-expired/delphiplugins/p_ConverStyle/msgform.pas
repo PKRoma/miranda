@@ -45,6 +45,7 @@ type
     FlashTimer: TTimer;
     SendFiles1: TMenuItem;
     UserSendEMailMenuItem: TMenuItem;
+    TabEnterWorkAroundBtn: TButton;
     //misc frontend
     procedure SendTimerTimer(Sender: TObject);
     procedure HistoryMenuItemClick(Sender: TObject);
@@ -57,8 +58,8 @@ type
     procedure SendWayItemClick(Sender: TObject);
     procedure FlashTimerTimer(Sender: TObject);
     procedure UserSendEMailMenuItemClick(Sender: TObject);
-
-    //keys
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure SendMemoKeyDown(Sender: TObject; var Key: Word;
@@ -72,6 +73,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure TabEnterWorkAroundBtnClick(Sender: TObject);
   private
     HistoryMemo:TWinControl;//basic class for memo, richedit and grid
   private//options
@@ -80,7 +82,6 @@ type
     fHandleIncoming:Integer;
     fDoubleEnter:Boolean;
     fSingleEnter:Boolean;
-    fTabEnter:Boolean;
     fSendTimeout:Integer;
 
     fDisplayMode:TDisplayMode;
@@ -106,6 +107,7 @@ type
     procedure OnMessageSend(var Message: TMessage); message HM_EVENTSENT;
     procedure OnMouseActivate(var Message: TMessage); message WM_MOUSEACTIVATE;
     procedure OnActivate(var Message: TWMActivate); message WM_ACTIVATE;
+    procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
 
 
     procedure pShowMessage(Text: string; time: Cardinal; username:string;incoming:Boolean;isRecent:Boolean=False);
@@ -216,6 +218,7 @@ begin
       TMemo(HistoryMemo).ScrollBars:=ssVertical;
       end;
   end;
+  Twincontrol(HistoryMemo).TabStop:=False;
   SendMemo.Height:=57;
 end;
 
@@ -756,8 +759,6 @@ begin
   fDoubleEnter:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','SingleEnterSend',integer(False));
   fSingleEnter:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','TabEnterSend',integer(True));
-  fTabEnter:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(False));
   fCloseWindowAfterSend:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0);
@@ -1187,19 +1188,10 @@ end;
 
 
 //******************** Shortcuts for message sending (interface stuff) *********
-
-procedure TMsgWindow.FormKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  //STRG+ENTER and STRG+S shortcut for sending
-  if (key in [vk_return,ord('S')]) then
-    if (ssCtrl in Shift) or (ssAlt in Shift) then
-      begin
-      key:=0;
-      if SendBtn.Enabled then
-        SendBtnClick(Sender);
-      end;
-end;
+{Unfortunatly when you make a form from a dll this form won't become the
+normal messages specified by the VCL but only the basic windows messages.
+Therefore neither tabs nor button shortcuts work on this form. As a workaround
+i've make some functions:}
 
 procedure TMsgWindow.SendMemoKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
@@ -1242,15 +1234,72 @@ begin
     if SendBtn.Enabled then
       SendBtnClick(Sender);
     end;
+end;
 
-  if fTabEnter and (fEnterCount=1) and (fTabCount>0) then
+procedure TMsgWindow.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  Mask: Integer;
+begin
+  with Sender as TWinControl do
     begin
-    key:=0;
-    if SendBtn.Enabled then
-      SendBtnClick(Sender);
+      if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
+        Exit;
+      Mask := 0;
+      case Key of
+        VK_TAB:
+          Mask := DLGC_WANTTAB;
+        VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN:
+          Mask := DLGC_WANTARROWS;
+        VK_RETURN, VK_EXECUTE, VK_ESCAPE, VK_CANCEL:
+          Mask := DLGC_WANTALLKEYS;
+      end;
+      if (Mask <> 0)
+        and (Perform(CM_WANTSPECIALKEY, Key, 0) = 0)
+        and (Perform(WM_GETDLGCODE, 0, 0) and Mask = 0)
+        and (Self.Perform(CM_DIALOGKEY, Key, 0) <> 0)
+        then Exit;
     end;
 end;
 
+procedure TMsgWindow.OnCNChar(var Message: TWMChar);
+begin
+  if not (csDesigning in ComponentState) then
+    with Message do
+    begin
+      Result := 1;
+      if (Perform(WM_GETDLGCODE, 0, 0) and DLGC_WANTCHARS = 0) and
+        (GetParentForm(Self).Perform(CM_DIALOGCHAR,
+        CharCode, KeyData) <> 0) then Exit;
+      Result := 0;
+    end;
+end;
+
+
+procedure TMsgWindow.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  //STRG+ENTER and STRG+S shortcut for sending
+  if (ssCtrl in Shift) then
+    if (key in [vk_return,ord('S')]) then
+      begin
+      key:=0;
+      if SendBtn.Enabled then
+        SendBtnClick(Sender);
+      end;
+
+  if (ssAlt in Shift) then
+    begin
+    if key in [ord('s'),Ord('S')] then
+      if SendBtn.Enabled then
+        SendBtnClick(Sender);
+    if key=Ord('U') then
+      UserBtn.Click;
+    if key=Ord('C') then
+      CancelBtn.Click;
+    key:=0;
+    end;
+end;
 
 
 //************************** Misc tool functions *******************************
@@ -1326,5 +1375,14 @@ end;
 
 
 
+
+
+
+procedure TMsgWindow.TabEnterWorkAroundBtnClick(Sender: TObject);
+//just a work around that tabenter and tab space work because the send
+//button cannot get the focus as it is a speedbutton
+begin
+  SendBtn.Click;
+end;
 
 end.

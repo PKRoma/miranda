@@ -66,7 +66,6 @@ type
     SplitLargeMessagesCheck: TCheckBox;
     Label3: TLabel;
     AutoRetryEdit: TEdit;
-    TabEnter: TCheckBox;
     procedure AboutBtnClick(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -126,7 +125,6 @@ begin
   WriteSettingInt(PluginLink,0,'Convers','LoadRecentMsgCount',LoadRecentMsgCountEdit.tag);
   WriteSettingInt(PluginLink,0,'Convers','DoubleEnterSend',Integer(DoubleEnter.Checked));
   WriteSettingInt(PluginLink,0,'Convers','SingleEnterSend',Integer(SingleEnter.Checked));
-  WriteSettingInt(PluginLink,0,'Convers','TabEnterSend',Integer(TabEnter.Checked));
   WriteSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(CloseWindowCheck.Checked));
   WriteSettingInt(PluginLink,0,'Convers','HandleIncoming',HandleIncomingGroup.ItemIndex);
   WriteSettingInt(PluginLink,0,'Convers','SendTimeout',TimeoutEdit.tag);
@@ -176,8 +174,6 @@ begin
   DoubleEnter.Checked:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','SingleEnterSend',integer(False));
   SingleEnter.Checked:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','TabEnterSend',integer(True));
-  TabEnter.Checked:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(False));
   CloseWindowCheck.Checked:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0);

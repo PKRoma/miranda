@@ -88,6 +88,10 @@ For more information, e-mail christian.k@stner.de
 Changes
 -------
 
+0.991 (yes I know this version numbers are mad, but I don't want it to be 1.0 
+       before the options are integrated into miranda options)
+* Better support for shortcuts
+      
 0.99
 ++ 3 Different display styles to choose with many
    options each
