@@ -65,7 +65,7 @@ static int ping_timer = 0;
 
 extern int poll_loop;
 
-void ext_yahoo_got_im(int id, char *who, char *msg, long tm, int stat, int utf8);
+void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8);
 
 char * yahoo_status_code(enum yahoo_status s)
 {
@@ -433,7 +433,7 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8)
 	LOG(("yahoo_send_msg: %s: %s, utf: %d", id, msg, utf8));
     if (YAHOO_GetByte( "DisableUTF8", 0 ) ) {
 		/* need to convert it to ascii argh */
-		char 	*umsg = msg;
+		char 	*umsg = (char *)msg;
 		
 		if (utf8) {
 			wchar_t* tRealBody = NULL;
@@ -552,7 +552,8 @@ void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *
 	char z[1024];
 	
 	_snprintf(z, sizeof(z), "[miranda] Got conference invite to room: %s with msg: %s", room ?room:"", msg ?msg:"");
-	ext_yahoo_got_im(id, who, z, 0, 0, 0);
+	LOG(("[ext_yahoo_got_conf_invite] %s", z));
+	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0);
 }
 
 void ext_yahoo_conf_userdecline(int id, char *who, char *room, char *msg)
@@ -696,14 +697,21 @@ void ext_yahoo_got_ignore(int id, YList * igns)
     LOG(("ext_yahoo_got_ignore"));
 }
 
-void ext_yahoo_got_im(int id, char *who, char *msg, long tm, int stat, int utf8)
+void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8)
 {
-    char *umsg, *c = msg;
-	int oidx = 0;
-	wchar_t* tRealBody = NULL;
-	int      tRealBodyLen = 0;
+    char 		*umsg, *c = msg;
+	int 		oidx = 0;
+	wchar_t* 	tRealBody = NULL;
+	int      	tRealBodyLen = 0;
+	int 		msgLen;
+	char* 		tMsgBuf = NULL;
+	char* 		p = NULL;
+	CCSDATA 		ccs;
+	PROTORECVEVENT 	pre;
+	HANDLE 			hContact;
 
-    LOG(("YAHOO_GOT_IM %s: %s tm:%d stat:%d utf8:%d", who, msg, tm, stat, utf8));
+	
+    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%d stat:%d utf8:%d", me, who, msg, tm, stat, utf8));
    	
 	if(stat == 2) {
 		LOG(("Error sending message to %s", who));
@@ -738,22 +746,27 @@ void ext_yahoo_got_im(int id, char *who, char *msg, long tm, int stat, int utf8)
 	}
 
 	umsg[oidx++]= '\0';
-	
-	
+		
 	/* Need to strip off formatting stuff first. Then do all decoding/converting */
 	if (utf8){	
 		Utf8Decode( umsg, 0, &tRealBody );
 		tRealBodyLen = wcslen( tRealBody );
-	}
+	} 
 
 	LOG(("%s: %s", who, umsg));
 	
 	//if(!strcmp(umsg, "<ding>")) 
 	//	:P("\a");
-	int msgLen = (lstrlen(umsg) + 1) * (sizeof(wchar_t) + 1);
-	char* tMsgBuf = ( char* )alloca( msgLen );
-	char* p = tMsgBuf;
+	
+	if (utf8)
+		msgLen = (lstrlen(umsg) + 1) * (sizeof(wchar_t) + 1);
+	else
+		msgLen = (lstrlen(umsg) + 1);
+	
+	tMsgBuf = ( char* )alloca( msgLen );
+	p = tMsgBuf;
 
+	// MSGBUF Blob:  <ASCII> \0 <UNICODE> \0 
 	strcpy( p, umsg );
 	
 	p += lstrlen(umsg) + 1;
@@ -761,25 +774,22 @@ void ext_yahoo_got_im(int id, char *who, char *msg, long tm, int stat, int utf8)
 	if ( tRealBodyLen != 0 ) {
 		memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
 		free( tRealBody );
-	}
-
-	CCSDATA ccs;
-	PROTORECVEVENT pre;
-	HANDLE hContact;
+	} 
 
 	ccs.szProtoService = PSR_MESSAGE;
 	ccs.hContact = hContact = add_buddy(who, who, PALF_TEMPORARY);
 	ccs.wParam = 0;
-	ccs.lParam = (LPARAM) & pre;
-	pre.flags = PREF_UNICODE;
+	ccs.lParam = (LPARAM) &pre;
+	pre.flags = (utf8) ? PREF_UNICODE : 0;
 	
 	if (tm)
-			pre.timestamp = tm;
+		pre.timestamp = tm;
 	else
-			pre.timestamp = time(NULL);
-			
+		pre.timestamp = time(NULL);
+		
 	pre.szMessage = tMsgBuf;
 	pre.lParam = 0;
+	
     // Turn off typing
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
@@ -888,12 +898,12 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
 }
 
-void ext_yahoo_typing_notify(int id, char *who, int stat)
+void ext_yahoo_typing_notify(int id, char *me, char *who, int stat)
 {
     const char *c;
     HANDLE hContact;
     
-    LOG(("[ext_yahoo_typing_notify] who: '%s' stat: %d ", who, stat));
+    LOG(("[ext_yahoo_typing_notify] me: '%s' who: '%s' stat: %d ", me, who, stat));
 
 	hContact = getbuddyH(who);
 	if (!hContact) return;
@@ -908,9 +918,9 @@ void ext_yahoo_typing_notify(int id, char *who, int stat)
 		YAHOO_ShowPopup( c, Translate( "typing..." ), YAHOO_ALLOW_ENTER + YAHOO_ALLOW_MSGBOX + YAHOO_NOTIFY_POPUP );
 }
 
-void ext_yahoo_game_notify(int id, char *who, int stat)
+void ext_yahoo_game_notify(int id, char *me, char *who, int stat)
 {
-    LOG(("[ext_yahoo_game_notify] id: %d, who: %s, stat: %d", id, who, stat));
+    LOG(("[ext_yahoo_game_notify] id: %d, me: %s, who: %s, stat: %d", id, me, who, stat));
     /* FIXME - Not Implemented - this informs you someone else is playing on Yahoo! Games */
     /* Also Stubbed in Sample Client */
 	
@@ -962,14 +972,14 @@ void ext_yahoo_webcam_data_request(int id, int send)
     LOG(("ext_yahoo_webcam_data_request"));
 }
 
-void ext_yahoo_webcam_invite(int id, char *from)
+void ext_yahoo_webcam_invite(int id, char *me, char *from)
 {
     LOG(("ext_yahoo_webcam_invite"));
 	
-	ext_yahoo_got_im(id, from, "[miranda] Got webcam invite. (not currently supported)", 0, 0, 0);
+	ext_yahoo_got_im(id, me, from, "[miranda] Got webcam invite. (not currently supported)", 0, 0, 0);
 }
 
-void ext_yahoo_webcam_invite_reply(int id, char *from, int accept)
+void ext_yahoo_webcam_invite_reply(int id, char *me, char *from, int accept)
 {
     LOG(("ext_yahoo_webcam_invite_reply"));
 }
@@ -979,7 +989,7 @@ void ext_yahoo_system_message(int id, char *msg)
 	LOG(("Yahoo System Message: %s", msg));
 }
 
-void ext_yahoo_got_file(int id, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize)
+void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize)
 {
     CCSDATA ccs;
     PROTORECVEVENT pre;
@@ -987,7 +997,7 @@ void ext_yahoo_got_file(int id, char *who, char *url, long expires, char *msg, c
 	char *szBlob;
 	y_filetransfer *ft;
 	
-    LOG(("[ext_yahoo_got_file] id: %d, who: %s, url: %s, expires: %d, msg: %s, fname: %s, fsize: %d", id, who, url, expires, msg, fname, fesize));
+    LOG(("[ext_yahoo_got_file] id: %d, ident:%s, who: %s, url: %s, expires: %d, msg: %s, fname: %s, fsize: %d", id, me, who, url, expires, msg, fname, fesize));
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) 
@@ -1167,7 +1177,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	}
 }
 
-void ext_yahoo_error(int id, char *err, int fatal)
+void ext_yahoo_error(int id, char *err, int fatal, int num)
 {
     LOG(("Yahoo Error: %s", err));
     
