@@ -80,7 +80,7 @@ static int UpdateModulesLoaded(WPARAM wParam, LPARAM lParam)
 	nlu.szDescriptiveName=Translate("Miranda Update Check connection");
 	hNetlibUser=(HANDLE)CallService(MS_NETLIB_REGISTERUSER,0,(LPARAM)&nlu);
     if (hNetlibUser) {
-        forkthread(_updatethread, 0, NULL);
+        //forkthread(_updatethread, 0, NULL);
     }
     return 0;
 }
