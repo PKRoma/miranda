@@ -52,7 +52,7 @@ END
 // Dialog
 //
 
-IDD_OPT_JABBER DIALOGEX 0, 0, 258, 226
+IDD_OPT_JABBER DIALOGEX 0, 0, 258, 214
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -81,7 +81,7 @@ BEGIN
     PUSHBUTTON      "Register new user",IDC_BUTTON_REGISTER,165,19,78,13
     CONTROL         "List of public servers",IDC_LINK_PUBLIC_SERVER,
                     "Hyperlink",WS_TABSTOP,165,74,79,11
-    GROUPBOX        "Expert",IDC_STATIC,7,110,244,109
+    GROUPBOX        "Expert",IDC_STATIC,7,108,244,99
     CONTROL         "Manually specify connection host",IDC_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,19,121,223,10
     LTEXT           "Host:",IDC_STATIC,31,134,26,8
@@ -91,16 +91,13 @@ BEGIN
                     WS_DISABLED
     CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,19,146,221,10
-    CONTROL         "Automatically reconnect after unintentional disconnection",
-                    IDC_RECONNECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,
-                    157,221,10
     CONTROL         "Automatically delete contacts not in my roster",
                     IDC_ROSTER_SYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,
-                    168,221,10
-    LTEXT           "User directory:",IDC_JUD_LABEL,19,188,68,8
-    EDITTEXT        IDC_JUD,92,186,103,12,ES_AUTOHSCROLL
-    LTEXT           "Messaging language:",IDC_MSGLANG_LABEL,19,202,70,8
-    COMBOBOX        IDC_MSGLANG,92,200,103,69,CBS_DROPDOWNLIST | CBS_SORT | 
+                    158,221,10
+    LTEXT           "User directory:",IDC_JUD_LABEL,19,175,68,8
+    EDITTEXT        IDC_JUD,92,172,103,12,ES_AUTOHSCROLL
+    LTEXT           "Messaging language:",IDC_MSGLANG_LABEL,19,189,70,8
+    COMBOBOX        IDC_MSGLANG,92,187,103,69,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
 END
 
@@ -608,7 +605,7 @@ BEGIN
         RIGHTMARGIN, 251
         VERTGUIDE, 19
         TOPMARGIN, 7
-        BOTTOMMARGIN, 219
+        BOTTOMMARGIN, 207
     END
 
     IDD_INFO_JABBER, DIALOG

@@ -85,7 +85,6 @@
 #define IDC_SAVEPASSWORD                1048
 #define IDC_MSGLANG                     1049
 #define IDC_PASSWORD                    1050
-#define IDC_RECONNECT                   1050
 #define IDC_JID                         1051
 #define IDC_NEWPASSWD2                  1052
 #define IDC_ROSTER_SYNC                 1052

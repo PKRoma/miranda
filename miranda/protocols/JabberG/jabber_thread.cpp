@@ -95,9 +95,6 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 	int jabberNetworkBufferSize;
 	int socket;
 	int oldStatus;
-	int reconnectMaxTime;
-	int numRetry;
-	int reconnectTime;
 	char* str;
 	CLISTMENUITEM clmi;
 	PVOID ssl;
@@ -131,13 +128,15 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 			JFreeVariant( &dbv );
 		}
 		else {
-			free( info );
+			JabberLog( "Thread ended, login name is not configured" );
+			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+LBL_FatalError:
 			jabberThreadInfo = NULL;
 			oldStatus = jabberStatus;
 			jabberStatus = ID_STATUS_OFFLINE;
 			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
-			JabberLog( "Thread ended, login name is not configured" );
+LBL_Exit:
+			free( info );
 			return;
 		}
 
@@ -146,22 +145,16 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 			JFreeVariant( &dbv );
 		}
 		else {
-			free( info );
-			jabberThreadInfo = NULL;
-			oldStatus = jabberStatus;
-			jabberStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
 			JabberLog( "Thread ended, login server is not configured" );
-			return;
+			goto LBL_FatalError;
 		}
 
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "Resource", &dbv )) {
 			strncpy( info->resource, dbv.pszVal, sizeof( info->resource )-1 );
 			JFreeVariant( &dbv );
 		}
-		else
-			strcpy( info->resource, "Miranda" );
+		else strcpy( info->resource, "Miranda" );
 
 		_snprintf( jidStr, sizeof( jidStr ), "%s@%s/%s", info->username, info->server, info->resource );
 		str = JabberTextEncode( jidStr );
@@ -181,28 +174,18 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 			CloseHandle( hEventPasswdDlg );
 			//if (( p=( char* )DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_PASSWORD ), NULL, JabberPasswordDlgProc, ( LPARAM )jidStr )) != onlinePassword ) {
 			if ( onlinePassword[0] == ( char ) -1 ) {
-				free( info );
-				jabberThreadInfo = NULL;
-				oldStatus = jabberStatus;
-				jabberStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				JabberLog( "Thread ended, password request dialog was canceled" );
-				return;
+				goto LBL_FatalError;
 			}
 			strncpy( info->password, onlinePassword, sizeof( info->password ));
 			info->password[sizeof( info->password )-1] = '\0';
 		}
 		else {
 			if ( DBGetContactSetting( NULL, jabberProtoName, "Password", &dbv )) {
-				free( info );
-				jabberThreadInfo = NULL;
-				oldStatus = jabberStatus;
-				jabberStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				JabberLog( "Thread ended, password is not configured" );
-				return;
+				goto LBL_FatalError;
 			}
 			JCallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
 			strncpy( info->password, dbv.pszVal, sizeof( info->password ));
@@ -218,9 +201,7 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 			}
 			info->port = JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT );
 		}
-		else {
-			info->port = JGetWord( NULL, "Port", JABBER_DEFAULT_PORT );
-		}
+		else info->port = JGetWord( NULL, "Port", JABBER_DEFAULT_PORT );
 
 		info->useSSL = JGetByte( "UseSSL", FALSE );
 	}
@@ -234,11 +215,9 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 		iqIdRegGetReg = -1;
 		iqIdRegSetReg = -1;
 	}
-
 	else {
 		JabberLog( "Thread ended, invalid session type" );
-		free( info );
-		return;
+		goto LBL_Exit;
 	}
 
 	if ( info->manualHost[0] )
@@ -261,282 +240,217 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 		else if ( info->type == JABBER_SESSION_REGISTER ) {
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Not enough memory" ));
 		}
-		free( info );
 		JabberLog( "Thread ended, network buffer cannot be allocated" );
-		return;
+		goto LBL_Exit;
 	}
 
-	reconnectMaxTime = 10;
-	numRetry = 0;
+	info->s = JabberWsConnect( connectHost, info->port );
+	if ( info->s == NULL ) {
+		JabberLog( "Connection failed ( %d )", WSAGetLastError());
+		if ( info->type == JABBER_SESSION_NORMAL ) {
+			if ( jabberThreadInfo == info ) {
+				oldStatus = jabberStatus;
+				jabberStatus = ID_STATUS_OFFLINE;
+				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
+				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+				jabberThreadInfo = NULL;
+		}	}
+		else if ( info->type == JABBER_SESSION_REGISTER )
+			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Cannot connect to the server" ));
 
-	for ( ;; ) {	// Reconnect loop
+		JabberLog( "Thread ended, connection failed" );
+		free( buffer );
+		goto LBL_Exit;
+	}
 
-		info->s = JabberWsConnect( connectHost, info->port );
-		if ( info->s == NULL ) {
-			JabberLog( "Connection failed ( %d )", WSAGetLastError());
-			if ( info->type == JABBER_SESSION_NORMAL ) {
-				if ( jabberThreadInfo == info ) {
-					oldStatus = jabberStatus;
-					jabberStatus = ID_STATUS_OFFLINE;
-					ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-					ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-					if ( JGetByte( "Reconnect", FALSE ) == TRUE ) {
-						reconnectTime = rand() % reconnectMaxTime;
-						JabberLog( "Sleeping %d seconds before automatic reconnecting...", reconnectTime );
-						SleepEx( reconnectTime * 1000, TRUE );
-						if ( reconnectMaxTime < 10*60 )	// Maximum is 10 minutes
-							reconnectMaxTime *= 2;
-						if ( jabberThreadInfo == info ) {	// Make sure this is still the active thread for the main Jabber connection
-							JabberLog( "Reconnecting to the network..." );
-							if ( numRetry < MAX_CONNECT_RETRIES )
-								numRetry++;
-							oldStatus = jabberStatus;
-							jabberStatus = ID_STATUS_CONNECTING + numRetry;
-							ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-							continue;
-						}
-						else {
-							JabberLog( "Thread ended, connection failed" );
-							free( buffer );
-							free( info );
-							return;
-						}
+	// Determine local IP
+	socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
+	if ( info->type==JABBER_SESSION_NORMAL && socket!=INVALID_SOCKET ) {
+		struct sockaddr_in saddr;
+		int len;
+
+		len = sizeof( saddr );
+		getsockname( socket, ( struct sockaddr * ) &saddr, &len );
+		jabberLocalIP = saddr.sin_addr.S_un.S_addr;
+		JabberLog( "Local IP = %s", inet_ntoa( saddr.sin_addr ));
+	}
+
+	sslMode = FALSE;
+	if ( info->useSSL ) {
+		JabberLog( "Intializing SSL connection" );
+		if ( hLibSSL!=NULL && socket!=INVALID_SOCKET ) {
+			JabberLog( "SSL using socket = %d", socket );
+			if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
+				JabberLog( "SSL create context ok" );
+				if ( pfn_SSL_set_fd( ssl, socket ) > 0 ) {
+					JabberLog( "SSL set fd ok" );
+					if ( pfn_SSL_connect( ssl ) > 0 ) {
+						JabberLog( "SSL negotiation ok" );
+						JabberSslAddHandle( info->s, ssl );	// This make all communication on this handle use SSL
+						sslMode = TRUE;		// Used in the receive loop below
+						JabberLog( "SSL enabled for handle = %d", info->s );
 					}
+					else {
+						JabberLog( "SSL negotiation failed" );
+						pfn_SSL_free( ssl );
+				}	}
+				else {
+					JabberLog( "SSL set fd failed" );
+					pfn_SSL_free( ssl );
+		}	}	}
+
+		if ( !sslMode ) {
+			if ( info->type == JABBER_SESSION_NORMAL ) {
+				oldStatus = jabberStatus;
+				jabberStatus = ID_STATUS_OFFLINE;
+				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
+				if ( jabberThreadInfo == info )
 					jabberThreadInfo = NULL;
-				}
 			}
 			else if ( info->type == JABBER_SESSION_REGISTER ) {
 				SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Cannot connect to the server" ));
 			}
-			JabberLog( "Thread ended, connection failed" );
 			free( buffer );
-			free( info );
-			return;
+			if ( !hLibSSL )
+				MessageBox( NULL, JTranslate( "The connection requires an OpenSSL library, which is not installed." ), JTranslate( "Jabber Connection Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+			JabberLog( "Thread ended, SSL connection failed" );
+			goto LBL_Exit;
+	}	}
+
+	// User may change status to OFFLINE while we are connecting above
+	if ( jabberDesiredStatus!=ID_STATUS_OFFLINE || info->type==JABBER_SESSION_REGISTER ) {
+
+		if ( info->type == JABBER_SESSION_NORMAL ) {
+			jabberConnected = TRUE;
+			jabberJID = ( char* )malloc( strlen( info->username )+strlen( info->server )+2 );
+			sprintf( jabberJID, "%s@%s", info->username, info->server );
+			if ( JGetByte( "KeepAlive", 1 ))
+				jabberSendKeepAlive = TRUE;
+			else
+				jabberSendKeepAlive = FALSE;
+			JabberForkThread( JabberKeepAliveThread, 0, info->s );
 		}
 
-		// Determine local IP
-		socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
-		if ( info->type==JABBER_SESSION_NORMAL && socket!=INVALID_SOCKET ) {
-			struct sockaddr_in saddr;
-			int len;
+		JabberXmlInitState( &xmlState );
+		JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
+		JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
+		JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 
-			len = sizeof( saddr );
-			getsockname( socket, ( struct sockaddr * ) &saddr, &len );
-			jabberLocalIP = saddr.sin_addr.S_un.S_addr;
-			JabberLog( "Local IP = %s", inet_ntoa( saddr.sin_addr ));
-		}
+		str = JabberTextEncode( info->server );
+		JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", str );
+		free( str );
 
-		sslMode = FALSE;
-		if ( info->useSSL ) {
-			JabberLog( "Intializing SSL connection" );
-			if ( hLibSSL!=NULL && socket!=INVALID_SOCKET ) {
-				JabberLog( "SSL using socket = %d", socket );
-				if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
-					JabberLog( "SSL create context ok" );
-					if ( pfn_SSL_set_fd( ssl, socket ) > 0 ) {
-						JabberLog( "SSL set fd ok" );
-						if ( pfn_SSL_connect( ssl ) > 0 ) {
-							JabberLog( "SSL negotiation ok" );
-							JabberSslAddHandle( info->s, ssl );	// This make all communication on this handle use SSL
-							sslMode = TRUE;		// Used in the receive loop below
-							JabberLog( "SSL enabled for handle = %d", info->s );
-						}
-						else {
-							JabberLog( "SSL negotiation failed" );
-							pfn_SSL_free( ssl );
-						}
-					}
-					else {
-						JabberLog( "SSL set fd failed" );
-						pfn_SSL_free( ssl );
-					}
-				}
+		JabberLog( "Entering main recv loop" );
+		datalen = 0;
+
+		for ( ;; ) {
+			int recvResult, bytesParsed;
+
+			if ( sslMode )
+				recvResult = pfn_SSL_read( ssl, buffer+datalen, jabberNetworkBufferSize-datalen );
+			else
+				recvResult = JabberWsRecv( info->s, buffer+datalen, jabberNetworkBufferSize-datalen );
+
+			JabberLog( "recvResult = %d", recvResult );
+			if ( recvResult <= 0 )
+				break;
+			datalen += recvResult;
+
+			buffer[datalen] = '\0';
+			JabberLog( "RECV:%s", buffer );
+			if ( sslMode && DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE )==TRUE ) {
+				// Emulate netlib log feature for SSL connection
+				if (( szLogBuffer=( char* )malloc( recvResult+128 )) != NULL ) {
+					strcpy( szLogBuffer, "( SSL ) Data received\n" );
+					memcpy( szLogBuffer+strlen( szLogBuffer ), buffer+datalen-recvResult, recvResult+1 /* also copy \0 */ );
+					Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
+					free( szLogBuffer );
+			}	}
+
+			bytesParsed = JabberXmlParse( &xmlState, buffer, datalen );
+			JabberLog( "bytesParsed = %d", bytesParsed );
+			if ( bytesParsed > 0 ) {
+				if ( bytesParsed < datalen )
+					memmove( buffer, buffer+bytesParsed, datalen-bytesParsed );
+				datalen -= bytesParsed;
 			}
-			if ( !sslMode ) {
-				if ( info->type == JABBER_SESSION_NORMAL ) {
-					oldStatus = jabberStatus;
-					jabberStatus = ID_STATUS_OFFLINE;
-					ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-					ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-					if ( jabberThreadInfo == info )
-						jabberThreadInfo = NULL;
-				}
-				else if ( info->type == JABBER_SESSION_REGISTER ) {
-					SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Cannot connect to the server" ));
-				}
-				free( buffer );
-				free( info );
-				if ( !hLibSSL )
-					MessageBox( NULL, JTranslate( "The connection requires an OpenSSL library, which is not installed." ), JTranslate( "Jabber Connection Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
-				JabberLog( "Thread ended, SSL connection failed" );
-				return;
-			}
-		}
-
-		// User may change status to OFFLINE while we are connecting above
-		if ( jabberDesiredStatus!=ID_STATUS_OFFLINE || info->type==JABBER_SESSION_REGISTER ) {
-
-			if ( info->type == JABBER_SESSION_NORMAL ) {
-				jabberConnected = TRUE;
-				jabberJID = ( char* )malloc( strlen( info->username )+strlen( info->server )+2 );
-				sprintf( jabberJID, "%s@%s", info->username, info->server );
-				if ( JGetByte( "KeepAlive", 1 ))
-					jabberSendKeepAlive = TRUE;
-				else
-					jabberSendKeepAlive = FALSE;
-				JabberForkThread( JabberKeepAliveThread, 0, info->s );
-			}
-
-			JabberXmlInitState( &xmlState );
-			JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
-			JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
-			JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
-
-			str = JabberTextEncode( info->server );
-			JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", str );
-			free( str );
-
-			JabberLog( "Entering main recv loop" );
-			datalen = 0;
-
-			for ( ;; ) {
-				int recvResult, bytesParsed;
-
-				if ( sslMode ) {
-					JabberLog( "Waiting for SSL data..." );
-					recvResult = pfn_SSL_read( ssl, buffer+datalen, jabberNetworkBufferSize-datalen );
-				}
-				else {
-					JabberLog( "Waiting for data..." );
-					recvResult = JabberWsRecv( info->s, buffer+datalen, jabberNetworkBufferSize-datalen );
-				}
-
-				JabberLog( "recvResult = %d", recvResult );
-				if ( recvResult <= 0 )
+			else if ( datalen == jabberNetworkBufferSize ) {
+				jabberNetworkBufferSize += 2048;
+				JabberLog( "Increasing network buffer size to %d", jabberNetworkBufferSize );
+				if (( buffer=( char* )realloc( buffer, jabberNetworkBufferSize+1 )) == NULL ) {
+					JabberLog( "Cannot reallocate more network buffer, go offline now" );
 					break;
-				datalen += recvResult;
-
-				buffer[datalen] = '\0';
-				JabberLog( "RECV:%s", buffer );
-				if ( sslMode && DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE )==TRUE ) {
-					// Emulate netlib log feature for SSL connection
-					if (( szLogBuffer=( char* )malloc( recvResult+128 )) != NULL ) {
-						strcpy( szLogBuffer, "( SSL ) Data received\n" );
-						memcpy( szLogBuffer+strlen( szLogBuffer ), buffer+datalen-recvResult, recvResult+1 /* also copy \0 */ );
-						Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
-						free( szLogBuffer );
-					}
-				}
-
-				bytesParsed = JabberXmlParse( &xmlState, buffer, datalen );
-				JabberLog( "bytesParsed = %d", bytesParsed );
-				if ( bytesParsed > 0 ) {
-					if ( bytesParsed < datalen )
-						memmove( buffer, buffer+bytesParsed, datalen-bytesParsed );
-					datalen -= bytesParsed;
-				}
-				else if ( datalen == jabberNetworkBufferSize ) {
-					jabberNetworkBufferSize += 2048;
-					JabberLog( "Increasing network buffer size to %d", jabberNetworkBufferSize );
-					if (( buffer=( char* )realloc( buffer, jabberNetworkBufferSize+1 )) == NULL ) {
-						JabberLog( "Cannot reallocate more network buffer, go offline now" );
-						break;
-					}
-				}
-				else {
-					JabberLog( "Unknown state: bytesParsed=%d, datalen=%d, jabberNetworkBufferSize=%d", bytesParsed, datalen, jabberNetworkBufferSize );
-				}
-			}
-
-			JabberXmlDestroyState( &xmlState );
-
-			if ( info->type == JABBER_SESSION_NORMAL ) {
-				jabberOnline = FALSE;
-				jabberConnected = FALSE;
-				memset( &clmi, 0, sizeof( CLISTMENUITEM ));
-				clmi.cbSize = sizeof( CLISTMENUITEM );
-				clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
-				JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
-				JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
-				JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
-				if ( hwndJabberChangePassword ) {
-					//DestroyWindow( hwndJabberChangePassword );
-					// Since this is a different thread, simulate the click on the cancel button instead
-					SendMessage( hwndJabberChangePassword, WM_COMMAND, MAKEWORD( IDCANCEL, 0 ), 0 );
-				}
-				WindowList_Broadcast( hWndListGcLog, WM_JABBER_CHECK_ONLINE, 0, 0 );
-				JabberListRemoveList( LIST_CHATROOM );
-				if ( hwndJabberAgents )
-					SendMessage( hwndJabberAgents, WM_JABBER_CHECK_ONLINE, 0, 0 );
-				if ( hwndJabberGroupchat )
-					SendMessage( hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
-				if ( hwndJabberJoinGroupchat )
-					SendMessage( hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
-
-				// Set status to offline
-				oldStatus = jabberStatus;
-				jabberStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-
-				// Set all contacts to offline
-				hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-				while ( hContact != NULL ) {
-					str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-					if( str!=NULL && !strcmp( str, jabberProtoName )) {
-						if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE ) {
-							JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
-						}
-					}
-					hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
-				}
-
-				free( jabberJID );
-				jabberJID = NULL;
-				JabberListWipe();
-				if ( hwndJabberAgents ) {
-					SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )"" );
-					SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-				}
-				if ( hwndJabberVcard ) {
-					SendMessage( hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
-				}
-			}
-			else if ( info->type==JABBER_SESSION_REGISTER && !info->reg_done ) {
-				SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Connection lost" ));
-			}
-		}
-		else {
-			if ( info->type == JABBER_SESSION_NORMAL ) {
-				oldStatus = jabberStatus;
-				jabberStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-			}
+			}	}
+			else JabberLog( "Unknown state: bytesParsed=%d, datalen=%d, jabberNetworkBufferSize=%d", bytesParsed, datalen, jabberNetworkBufferSize );
 		}
 
-		Netlib_CloseHandle( info->s );
+		JabberXmlDestroyState( &xmlState );
 
-		if ( sslMode ) {
-			pfn_SSL_free( ssl );
-			JabberSslRemoveHandle( info->s );
+		if ( info->type == JABBER_SESSION_NORMAL ) {
+			jabberOnline = FALSE;
+			jabberConnected = FALSE;
+			memset( &clmi, 0, sizeof( CLISTMENUITEM ));
+			clmi.cbSize = sizeof( CLISTMENUITEM );
+			clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
+			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
+			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
+			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+			if ( hwndJabberChangePassword ) {
+				//DestroyWindow( hwndJabberChangePassword );
+				// Since this is a different thread, simulate the click on the cancel button instead
+				SendMessage( hwndJabberChangePassword, WM_COMMAND, MAKEWORD( IDCANCEL, 0 ), 0 );
+			}
+			WindowList_Broadcast( hWndListGcLog, WM_JABBER_CHECK_ONLINE, 0, 0 );
+			JabberListRemoveList( LIST_CHATROOM );
+			if ( hwndJabberAgents )
+				SendMessage( hwndJabberAgents, WM_JABBER_CHECK_ONLINE, 0, 0 );
+			if ( hwndJabberGroupchat )
+				SendMessage( hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
+			if ( hwndJabberJoinGroupchat )
+				SendMessage( hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
+
+			// Set status to offline
+			oldStatus = jabberStatus;
+			jabberStatus = ID_STATUS_OFFLINE;
+			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+
+			// Set all contacts to offline
+			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+			while ( hContact != NULL ) {
+				str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+				if ( str != NULL && !strcmp( str, jabberProtoName ))
+					if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
+						JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+
+				hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+			}
+
+			free( jabberJID );
+			jabberJID = NULL;
+			JabberListWipe();
+			if ( hwndJabberAgents ) {
+				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )"" );
+				SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+			}
+			if ( hwndJabberVcard )
+				SendMessage( hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
 		}
+		else if ( info->type==JABBER_SESSION_REGISTER && !info->reg_done ) {
+			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Connection lost" ));
+	}	}
+	else {
+		if ( info->type == JABBER_SESSION_NORMAL ) {
+			oldStatus = jabberStatus;
+			jabberStatus = ID_STATUS_OFFLINE;
+			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+	}	}
 
-		if ( info->type!=JABBER_SESSION_NORMAL || JGetByte( "Reconnect", FALSE )==FALSE )
-			break;
+	Netlib_CloseHandle( info->s );
 
-		if ( jabberThreadInfo != info )	// Make sure this is still the main Jabber connection thread
-			break;
-		reconnectTime = rand() % 10;
-		JabberLog( "Sleeping %d seconds before automatic reconnecting...", reconnectTime );
-		SleepEx( reconnectTime * 1000, TRUE );
-		reconnectMaxTime = 20;
-		if ( jabberThreadInfo != info )	// Make sure this is still the main Jabber connection thread
-			break;
-		JabberLog( "Reconnecting to the network..." );
-		jabberDesiredStatus = oldStatus;	// Reconnect to my last status
-		oldStatus = jabberStatus;
-		jabberStatus = ID_STATUS_CONNECTING;
-		numRetry = 1;
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+	if ( sslMode ) {
+		pfn_SSL_free( ssl );
+		JabberSslRemoveHandle( info->s );
 	}
 
 	JabberLog( "Thread ended: type=%d server='%s'", info->type, info->server );
@@ -548,8 +462,8 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 	}
 
 	free( buffer );
-	free( info );
 	JabberLog( "Exiting ServerThread" );
+	goto LBL_Exit;
 }
 
 static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
@@ -618,8 +532,7 @@ static void JabberProcessProtocol( XmlNode *node, void *userdata )
 			JabberProcessRegIq( node, userdata );
 		else
 			JabberLog( "Invalid top-level tag ( only <iq/> allowed )" );
-	}
-}
+}	}
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
@@ -932,12 +845,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 						item->subscription = SUB_TO;
 						if ( hwndJabberAgents && strchr( from, '@' )==NULL )
 							SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-					}
-				}
-			}
-		}
-	}
-}
+}	}	}	}	}	}
 
 static void JabberProcessIq( XmlNode *node, void *userdata )
 {

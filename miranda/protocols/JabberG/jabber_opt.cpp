@@ -238,7 +238,6 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SetDlgItemInt( hwndDlg, IDC_HOSTPORT, JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT ), FALSE );
 
 			CheckDlgButton( hwndDlg, IDC_KEEPALIVE, JGetByte( "KeepAlive", TRUE ));
-			CheckDlgButton( hwndDlg, IDC_RECONNECT, JGetByte( "Reconnect", FALSE ));
 			CheckDlgButton( hwndDlg, IDC_ROSTER_SYNC, JGetByte( "RosterSync", FALSE ));
 
 			if ( !DBGetContactSetting( NULL, jabberProtoName, "Jud", &dbv )) {
@@ -342,7 +341,6 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			// Fall through
 		case IDC_SAVEPASSWORD:
 		case IDC_KEEPALIVE:
-		case IDC_RECONNECT:
 		case IDC_ROSTER_SYNC:
 			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
@@ -420,7 +418,6 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				JSetByte( "KeepAlive", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE ));
 				jabberSendKeepAlive = IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE );
 
-				JSetByte( "Reconnect", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_RECONNECT ));
 				JSetByte( "RosterSync", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_ROSTER_SYNC ));
 
 				GetDlgItemText( hwndDlg, IDC_JUD, text, sizeof( text ));
