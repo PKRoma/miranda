@@ -282,7 +282,7 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 	LoadMsnServices();
 	Lists_Init();
 	MsgQueue_Init();
-//	P2pSessions_Init();
+	P2pSessions_Init();
 	return 0;
 }
 
@@ -301,7 +301,7 @@ int __declspec( dllexport ) Unload( void )
 	MSN_WS_CleanUp();
 	MsgQueue_Uninit();
 	Lists_Uninit();
-//	P2pSessions_Uninit();
+	P2pSessions_Uninit();
 	Netlib_CloseHandle( hNetlibUser );
 
 	UnloadMsnServices();

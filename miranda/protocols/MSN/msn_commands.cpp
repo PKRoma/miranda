@@ -120,32 +120,37 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP )
 	if ( s != INVALID_SOCKET) {
 		SOCKADDR_IN saddr;
 		int len = sizeof( saddr );
-		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR ) {
+		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
 			localPort = ntohs( saddr.sin_port );
-	}	}
-
-	if ( localPort == 0 ) {
-		MSN_DebugLog( "Unable to determine the local port, file server connection closed." );
-		Netlib_CloseHandle( hNewConnection );
 	}
-	else {
+
+	if ( localPort != 0 ) {
 		ThreadData* T = MSN_GetThreadByPort( localPort );
-		if ( T == NULL || T->ft == NULL ) {
-			MSN_DebugLog( "There's no registered file transfers for incoming port #%d, connection closed", localPort );
-			Netlib_CloseHandle( hNewConnection );
-		}
-		else {
+		if ( T != NULL ) {
 			T->s = hNewConnection;
-			T->ft->mIncomingPort = 0;
-			SetEvent( T->ft->hWaitEvent );
-}	}	}
+			if ( T->mMsnFtp != NULL ) {
+				T->mMsnFtp->mIncomingPort = 0;
+				SetEvent( T->mMsnFtp->hWaitEvent );
+			}
+			else {
+				T->mP2pSession->mIncomingPort = 0;
+				SetEvent( T->mP2pSession->hWaitEvent );
+			}
+			return;
+		}
+		MSN_DebugLog( "There's no registered file transfers for incoming port #%d, connection closed", localPort );
+	}
+	else MSN_DebugLog( "Unable to determine the local port, file server connection closed." );
+
+	Netlib_CloseHandle( hNewConnection );
+}
 
 void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie )
 {
 	if ( strcmpi( Invcommand,"ACCEPT" ))
 		return;
 
-	filetransfer* ft = info->ft; info->ft = NULL;
+	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
 	bool bHasError = false;
 	NETLIBBIND nlb = {0};
 
@@ -186,7 +191,7 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		newThread->mType = SERVER_FILETRANS;
 		newThread->mCaller = 2;
 		newThread->mTotalSend = 0;
-		newThread->ft = ft;
+		newThread->mMsnFtp = ft;
 		newThread->startThread(( pThreadFunc )MSNSendfileThread );
 }	}
 
@@ -318,7 +323,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
 
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
-		filetransfer* ft = info->ft = new filetransfer();
+		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
 		ft->std.currentFile = strdup( Appfile );
@@ -358,7 +363,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 		strcat( newThread->mServer, ":" );
 		strcat( newThread->mServer, Port );
 		newThread->mType = SERVER_FILETRANS;
-		newThread->ft = info->ft; info->ft = NULL;
+		newThread->mMsnFtp = info->mMsnFtp; info->mMsnFtp = NULL;
 		strcpy( newThread->mCookie, AuthCookie );
 
 		MSN_DebugLog( "Connecting to '%s'...", newThread->mServer );
@@ -660,6 +665,7 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static bool sttIsSync = false;
+static int  sttListNumber = 0;
 
 int MSN_HandleCommands( ThreadData* info, char* cmdString )
 {
@@ -951,8 +957,8 @@ LBL_InvalidCommand:
 						free( E.message );
 
 						if ( E.ft != NULL ) {
-							info->ft = E.ft;
-							info->ft->mOwnsThread = true;
+							info->mMsnFtp = E.ft;
+							info->mMsnFtp->mOwnsThread = true;
 						}
 					}
 						while (( tFound = MsgQueue_GetNext( hContact, E )) != 0 );
@@ -987,6 +993,9 @@ LBL_InvalidCommand:
 			};
 
 			int tNumTokens = sttDivideWords( params, 10, tWords );
+
+			if ( --sttListNumber == 0 )
+				MSN_SetServerStatus( msnDesiredStatus );
 
 			if ( msnProtVersion == 10 ) {
 				for ( int i=0; i < tNumTokens; i++ ) {
@@ -1182,11 +1191,17 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' NYS':    //********* SYN: section 7.5 Client User Property Synchronization
+		{
+			char* tWords[ 4 ];
+			int nRequiredWords = ( msnProtVersion == 9 ) ? 3 : 4;
+			if ( sttDivideWords( params, nRequiredWords, tWords ) != nRequiredWords )
+				goto LBL_InvalidCommand;
+
 			Lists_Wipe();
 			sttIsSync = true;
-			MSN_SetServerStatus( msnDesiredStatus );
+			sttListNumber = atol( tWords[ nRequiredWords-2 ] );
 			break;
-
+		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
 			if ( info->mType == SERVER_SWITCHBOARD ) { //(section 8.2)
 				union {
@@ -1288,6 +1303,7 @@ LBL_InvalidCommand:
 						MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tWords[2] );
 					}
 
+					sttListNumber = 0;
 					if ( msnProtVersion == 10 ) {
 						char tOldDate[ 100 ], tNewDate[ 100 ];
 

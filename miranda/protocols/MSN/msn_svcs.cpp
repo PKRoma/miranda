@@ -314,8 +314,8 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-	if ( thread != NULL && thread->ft != NULL ) {
-		if ( ft->p2p_appID == 0 ) {
+	if ( thread != NULL ) {
+		if ( thread->mMsnFtp != NULL && ft->p2p_appID == 0 ) {
 			thread->sendPacket( "MSG",
 				"U %d\r\nMIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
@@ -323,7 +323,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 				"Invitation-Cookie: %s\r\n"
 				"Launch-Application: FALSE\r\n"
 				"Request-Data: IP-Address:\r\n\r\n",
-				172+4+strlen( thread->ft->szInvcookie ), thread->ft->szInvcookie );
+				172+4+strlen( thread->mMsnFtp->szInvcookie ), thread->mMsnFtp->szInvcookie );
 		}
 		else {
 			p2p_sendAck( ft, thread, &ft->p2p_hdr );
@@ -358,8 +358,7 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	if ( ft->p2p_appID != 0 ) {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 		if ( thread != NULL )
-			if ( thread->ft != NULL && thread->ft == ft )
-				p2p_sendStatus( ft, thread, -1 );
+			p2p_sendStatus( ft, thread, -1 );
 	}
 	return 0;
 }
@@ -376,15 +375,15 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-	if ( thread != NULL && thread->ft != NULL ) {
-		if ( ft->p2p_appID == 0 ) {
+	if ( thread != NULL ) {
+		if ( ft->p2p_appID == 0 && thread->mMsnFtp != NULL ) {
 			thread->sendPacket( "MSG",
 				"U %d\r\nMIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 				"Invitation-Command: CANCEL\r\n"
 				"Invitation-Cookie: %s\r\n"
 				"Cancel-Code: REJECT\r\n\r\n",
-				172-33+4+strlen( thread->ft->szInvcookie ), thread->ft->szInvcookie );
+				172-33+4+strlen( ft->szInvcookie ), ft->szInvcookie );
 		}
 		else {
 			p2p_sendAck( ft, thread, &ft->p2p_hdr );
@@ -654,10 +653,10 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		p2p_invite( ccs->hContact, MSN_APPID_FILE, sft );
 	else {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-		if ( thread != NULL ) {
-			thread->ft = sft;
-		}
-		else MSN_SendPacket( msnNSSocket, "XFR", "SB" );
+		if ( thread != NULL )
+			thread->mMsnFtp = sft;
+		else 
+			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
 
 		char* pszFiles = strrchr( *files, '\\' ), msg[ 1024 ];
 		if ( pszFiles )

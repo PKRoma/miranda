@@ -719,7 +719,7 @@ filetransfer::~filetransfer()
 	if ( std.workingDir != NULL ) free( std.workingDir );
 
 	if ( wszFileName != NULL ) free( wszFileName );
-	if ( szInvcookie != NULL )free( szInvcookie );
+	if ( szInvcookie != NULL ) free( szInvcookie );
 }
 
 void filetransfer::close()
@@ -728,6 +728,14 @@ void filetransfer::close()
 		_close( fileId );
 		fileId = -1;
 }	}
+
+void filetransfer::complete()
+{
+	close();
+
+	bCompleted = true;
+	MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, this, 0);
+}
 
 //=======================================================================================
 // TWinErrorCode class

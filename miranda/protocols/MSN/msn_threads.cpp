@@ -58,7 +58,7 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 {
 	char* params = "";
-	filetransfer* ft = info->ft;
+	filetransfer* ft = info->mMsnFtp;
 
 	if ( cmdString[ 3 ] )
 		params = cmdString+4;
@@ -67,7 +67,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 	{
 		case ' EYB':    //********* BYE
 		{
-			MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+			ft->complete();
 			return 1;
 		}
 		case ' LIF':    //********* FIL
@@ -99,7 +99,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			char* sendpacket = ( char* )alloca( 2048 );
 			int wPlace;
 			WORD packetLen;
-			filetransfer* ft = info->ft;
+			filetransfer* ft = info->mMsnFtp;
 
 			info->mCaller = 3;
 			ft->std.currentFileSize = ft->std.totalBytes;
@@ -144,7 +144,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			}
 
 			char tCommand[ 30 ];
-			_snprintf( tCommand, sizeof( tCommand ), "FIL %i\r\n", info->ft->std.totalBytes );
+			_snprintf( tCommand, sizeof( tCommand ), "FIL %i\r\n", info->mMsnFtp->std.totalBytes );
 			MSN_WS_Send( info->s, tCommand, strlen( tCommand ));
 			break;
 		}
@@ -211,10 +211,9 @@ LBL_Error:		ft->close();
 				dataLen |= (*p++ << 8);
 
 				if ( tIsTransitionFinished ) {
-LBL_Success:	ft->bCompleted = true;
-					MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
+LBL_Success:	ft->complete();
 					ft->close();
-
+					
 					static char sttCommand[] = "BYE 16777989\r\n";
 					MSN_WS_Send( info->s, sttCommand, strlen( sttCommand ));
 					return 0;
@@ -413,7 +412,7 @@ void __cdecl MSNSendfileThread( ThreadData* info )
 {
 	MSN_DebugLog( "Waiting for an incoming connection to '%s'...", info->mServer );
 
-	filetransfer* ft = info->ft;
+	filetransfer* ft = info->mMsnFtp;
 
 	switch( WaitForSingleObject( ft->hWaitEvent, 60000 )) {
 	case WAIT_TIMEOUT:
@@ -637,11 +636,16 @@ ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 	for ( int i=0; i < MAX_THREAD_COUNT; i++ )
 	{
 		ThreadData* T = sttThreads[ i ];
-		if ( T == NULL || T->ft == NULL )
+		if ( T == NULL )
 			continue;
 
-		if ( T->ft->mIncomingPort == wPort )
-		{	tResult = T;
+		if ( T->mP2pSession != NULL && T->mP2pSession->mIncomingPort == wPort ) {
+			tResult = T;
+			break;
+		}
+
+		if ( T->mMsnFtp != NULL && T->mMsnFtp->mIncomingPort == wPort ) {
+			tResult = T;
 			break;
 	}	}
 	
@@ -662,8 +666,8 @@ ThreadData::~ThreadData()
 	if ( s != NULL )
 		Netlib_CloseHandle( s );
 
-	if ( ft != NULL )
-		delete ft;
+	if ( mMsnFtp != NULL )
+		delete mMsnFtp;
 }
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )

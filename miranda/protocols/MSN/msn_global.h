@@ -20,14 +20,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <malloc.h>
+
+#ifdef _DEBUG
+	#define _CRTDBG_MAP_ALLOC
+	#include <stdlib.h>
+	#include <crtdbg.h>
+#endif
+
 #define _WIN32_WINNT 0x0400
 #include <windows.h>
 #include <commctrl.h>
 
-#include <malloc.h>
 #include <process.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
 
 #include <newpluginapi.h>
@@ -256,6 +262,7 @@ struct filetransfer
 	~filetransfer( void );
 
 	void close();
+	void complete();
 
 	PROTOFILETRANSFERSTATUS std;
 
@@ -342,7 +349,8 @@ struct ThreadData
 	LONG				mTrid;				// current message ID
 
 	//----| for file transfers only |-----------------------------------------------------
-	filetransfer*  ft;               // file transfer block
+	filetransfer*  mMsnFtp;          // file transfer block
+	filetransfer*  mP2pSession;		// new styled transfer
 	DWORD          mTotalSend;       // number of bytes wriiten
 
 	//----| internal data buffer |--------------------------------------------------------
@@ -387,6 +395,7 @@ void __stdcall p2p_registerSession( filetransfer* ft );
 void __stdcall p2p_unregisterSession( filetransfer* ft );
 
 filetransfer* __stdcall p2p_getSessionByID( long ID );
+filetransfer* __stdcall p2p_getSessionByMsgID( long ID );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );
 
 /////////////////////////////////////////////////////////////////////////////////////////

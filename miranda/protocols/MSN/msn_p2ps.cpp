@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-#include <vector>
-
 static int              sessionCount = 0;
 static filetransfer**   sessionList = NULL;
 static CRITICAL_SECTION sessionLock;
@@ -65,16 +63,45 @@ void __stdcall p2p_unregisterSession( filetransfer* ft )
 
 filetransfer* __stdcall p2p_getSessionByID( long ID )
 {
+	if ( ID == 0 ) 
+		return NULL;
+
 	filetransfer* ft = NULL;
 	EnterCriticalSection( &sessionLock );
 
 	for ( int i=0; i < sessionCount; i++ ) {
-		if ( sessionList[i]->p2p_sessionid == ID ) {
-			ft = sessionList[i];
+		filetransfer* FT = sessionList[i];
+		if ( FT->p2p_sessionid == ID ) {
+			ft = FT;
 			break;
 	}	}
 
 	LeaveCriticalSection( &sessionLock );
+	if ( ft == NULL )
+		MSN_DebugLog( "Ignoring unknown session id %ld", ID );
+
+	return ft;
+}
+
+filetransfer* __stdcall p2p_getSessionByMsgID( long ID )
+{
+	if ( ID == 0 ) 
+		return NULL;
+
+	filetransfer* ft = NULL;
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->p2p_msgid-1 == ID ) {
+			ft = FT;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	if ( ft == NULL )
+		MSN_DebugLog( "Ignoring unknown message id %ld", ID );
+
 	return ft;
 }
 
@@ -97,6 +124,9 @@ filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
 	}	}
 
 	LeaveCriticalSection( &sessionLock );
+	if ( ft == NULL )
+		MSN_DebugLog( "Ignoring unknown session call id %s", CallID );
+
 	return ft;
 }
 
