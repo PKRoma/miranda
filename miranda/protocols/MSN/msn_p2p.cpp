@@ -1194,17 +1194,18 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 		if ( hdrdata->mOffset + hdrdata->mPacketLen > hdrdata->mTotalSize )
 			hdrdata->mPacketLen = DWORD( hdrdata->mTotalSize - hdrdata->mOffset );
 
+		ft->std.totalBytes = ft->std.currentFileSize = ( long )hdrdata->mTotalSize;
+
 		if ( ft->create() == -1 ) {
 			p2p_sendBye( info, ft );
 			p2p_unregisterSession( ft );
 			return;
 		}
 
-		if ( ft->inmemTransfer ) {
+		if ( ft->inmemTransfer )
 			memcpy( ft->fileBuffer + hdrdata->mOffset, msgbody, hdrdata->mPacketLen );
-			ft->std.totalBytes = ( long )hdrdata->mTotalSize;
-		}				
-		else ::_write( ft->fileId, msgbody, hdrdata->mPacketLen );
+		else 
+			::_write( ft->fileId, msgbody, hdrdata->mPacketLen );
 
 		if ( ft->p2p_appID == 2 ) {
 			ft->std.totalProgress += hdrdata->mPacketLen;
