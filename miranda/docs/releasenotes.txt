@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             January 2005 (v0.4)
+                             March 2005 (v0.4rc3)
 
                           http://www.miranda-im.org
 
@@ -29,6 +29,7 @@ to list all the important ones without getting too technical.
 If you want to see the full changelogs, go here:
 http://www.miranda-im.org/testing/
 
+[FINISH THIS SECTION FOR THE RELEASE]
 * New in 0.4
 Bugfixes:
  - Crashes after warning about unsuccessful search
