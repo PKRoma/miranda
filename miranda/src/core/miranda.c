@@ -54,14 +54,15 @@ struct FORK_ARG {
 	void *arg;
 };
 
-void __cdecl forkthread_r(struct FORK_ARG *fa)
+void __cdecl forkthread_r(void * arg)
 {	
+	struct FORK_ARG * fa = (struct FORK_ARG *) arg;
 	void (*callercode)(void*)=fa->threadcode;
-	void *arg=fa->arg;
+	void * cookie=fa->arg;
 	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
 	SetEvent(fa->hEvent);
 	__try {
-		callercode(arg);
+		callercode(cookie);
 	} __finally {
 		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	} 
@@ -87,16 +88,17 @@ unsigned long forkthread (
 	return rc;
 }
 
-unsigned long __stdcall forkthreadex_r(struct FORK_ARG *fa)
+unsigned __stdcall forkthreadex_r(void * arg)
 {
+	struct FORK_ARG *fa=(struct FORK_ARG *)arg;
 	unsigned (__stdcall * threadcode) (void *)=fa->threadcodeex;
-	void *arg=fa->arg;
+	void *cookie=fa->arg;
 	unsigned long rc;
 	
 	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
 	SetEvent(fa->hEvent);
 	__try {
-		rc=threadcode(arg);
+		rc=threadcode(cookie);
 	} __finally {
 		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	}
@@ -117,7 +119,7 @@ unsigned long forkthreadex(
 	fa.threadcodeex=threadcode;
 	fa.arg=arg;
 	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
-	rc=_beginthreadex(sec,stacksize,forkthreadex_r,&fa,0,thraddr);
+	rc=_beginthreadex(sec,stacksize,forkthreadex_r,(void *)&fa,0,thraddr);
 	if (rc) {
 		WaitForSingleObject(fa.hEvent,INFINITE);
 	} 
@@ -392,7 +394,8 @@ static int GetMirandaVersion(WPARAM wParam,LPARAM lParam)
 {
 	char filename[MAX_PATH];
 	DWORD unused;
-	DWORD verInfoSize,blockSize;
+	DWORD verInfoSize;
+	UINT blockSize;
 	PVOID pVerInfo;
 	VS_FIXEDFILEINFO *vsffi;
 	DWORD ver;
@@ -414,14 +417,15 @@ static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 {
 	char filename[MAX_PATH],*productVersion;
 	DWORD unused;
-	DWORD verInfoSize,blockSize;
+	DWORD verInfoSize;
+	UINT blockSize;
 	PVOID pVerInfo;
 
 	GetModuleFileName(NULL,filename,sizeof(filename));
 	verInfoSize=GetFileVersionInfoSize(filename,&unused);
 	pVerInfo=malloc(verInfoSize);
 	GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
-	VerQueryValue(pVerInfo,"\\StringFileInfo\\000004b0\\ProductVersion",&productVersion,&blockSize);
+	VerQueryValue(pVerInfo,"\\StringFileInfo\\000004b0\\ProductVersion",(void*)&productVersion,&blockSize);
 	lstrcpyn((char*)lParam,productVersion,wParam);
 	free(pVerInfo);
 	return 0;
