@@ -808,11 +808,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		
 		if (pAck->hContact!=dat->hContact)
 			return 0;
-		if(pAck->type != ACKTYPE_AVATAR)
+		if (pAck->type != ACKTYPE_AVATAR)
 			return 0;
-		if(pAck->result == ACKRESULT_STATUS) {
-			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
-			ShowAvatar(hwndDlg, dat);
+		if (pAck->result == ACKRESULT_SUCCESS) {
+			if (pai->filename&&strlen(pai->filename)) {
+				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
+				ShowAvatar(hwndDlg, dat);
+			}
+		}
+		else if (pAck->result == ACKRESULT_STATUS) {
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 		}
 		break;
 	}
