@@ -1,21 +1,22 @@
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
-// 
+//
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// 
+// Copyright © 2004,2005 Joe Kucera
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -40,7 +41,7 @@
 static WORD wCookieSeq;
 static icq_cookie_info *cookie = NULL;
 static int cookieCount = 0;
-static CRITICAL_SECTION cookieMutex;
+CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lock
 
 extern BYTE gbSsiEnabled;
 extern char gpszICQProtoName[MAX_PATH];
@@ -156,7 +157,7 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 		_ASSERTE(nMirandaStatus != ID_STATUS_OFFLINE);
 		nIcqStatus = 0;
 		break;
-		
+
 	default:
 		// Online seems to be a good default.
 		// Since it cant be offline, it must be a new type of online status.
@@ -233,16 +234,16 @@ char* MirandaStatusToString(int mirandaStatus)
 char* MirandaVersionToString(int v)
 {
 
-	static char szVersion[23];
-	
+	static char szVersion[64];
+
 	if (!v)
 		strcpy(szVersion, "");
 	else
 	{
 		if (v == 1)
-			strcpy(szVersion, "0.1.2.0 alpha");
+			strcpy(szVersion, "Miranda ICQ 0.1.2.0 alpha");
 		else
-			_snprintf(szVersion, 23, "%u.%u.%u.%u%s", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+			_snprintf(szVersion, 63, "Miranda ICQ %u.%u.%u.%u%s", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
 	}
 
 	return szVersion;
@@ -253,67 +254,59 @@ char* MirandaVersionToString(int v)
 
 void InitCookies(void)
 {
+  InitializeCriticalSection(&cookieMutex);
 
-	InitializeCriticalSection(&cookieMutex);
-	cookieCount = 0;
-	cookie = NULL;
-	wCookieSeq = 2;
-
+  cookieCount = 0;
+  cookie = NULL;
+  wCookieSeq = 2;
 }
 
 
 void UninitCookies(void)
 {
+  SAFE_FREE(&cookie);
 
-	SAFE_FREE(cookie);
-
-	DeleteCriticalSection(&cookieMutex);
-
+  DeleteCriticalSection(&cookieMutex);
 }
 
 
-
-WORD AllocateCookie(DWORD dwUin, void *pvExtra)
+// Generate and allocate cookie
+DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
 {
+  DWORD dwThisSeq;
 
-	WORD wThisSeq;
+  EnterCriticalSection(&cookieMutex);
 
+  dwThisSeq = wCookieSeq++;
+  dwThisSeq |= wIdent<<0x10;
 
-	EnterCriticalSection(&cookieMutex);
+  cookie = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * (cookieCount + 1));
+  cookie[cookieCount].dwCookie = dwThisSeq;
+  cookie[cookieCount].dwUin = dwUin;
+  cookie[cookieCount].pvExtra = pvExtra;
+  cookieCount++;
 
-	wThisSeq = wCookieSeq++;
-	cookie = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * (cookieCount + 1));
-	cookie[cookieCount].wCookie = wThisSeq;
-	cookie[cookieCount].dwUin = dwUin;
-	cookie[cookieCount].pvExtra = pvExtra;
-	cookieCount++;
+  LeaveCriticalSection(&cookieMutex);
 
-	LeaveCriticalSection(&cookieMutex);
-
-	return wThisSeq;
-
+  return dwThisSeq;
 }
 
 
-
-WORD GenerateCookie(void)
+DWORD GenerateCookie(WORD wIdent)
 {
+  DWORD dwThisSeq;
 
-	WORD wThisSeq;
+  EnterCriticalSection(&cookieMutex);
+  dwThisSeq = wCookieSeq++;
+  dwThisSeq |= wIdent<<0x10;
+  LeaveCriticalSection(&cookieMutex);
 
-	EnterCriticalSection(&cookieMutex);
-	wThisSeq = wCookieSeq++;
-	LeaveCriticalSection(&cookieMutex);
-
-	return wThisSeq;
-
+  return dwThisSeq;
 }
 
 
-
-int FindCookie(WORD wCookie, DWORD *pdwUin, void **ppvExtra)
+int FindCookie(DWORD dwCookie, DWORD *pdwUin, void **ppvExtra)
 {
-
 	int i;
 	int nFound = 0;
 
@@ -322,7 +315,7 @@ int FindCookie(WORD wCookie, DWORD *pdwUin, void **ppvExtra)
 
 	for (i = 0; i < cookieCount; i++)
 	{
-		if (wCookie == cookie[i].wCookie)
+		if (dwCookie == cookie[i].dwCookie)
 		{
 			if (pdwUin)
 				*pdwUin = cookie[i].dwUin;
@@ -331,7 +324,7 @@ int FindCookie(WORD wCookie, DWORD *pdwUin, void **ppvExtra)
 
 			// Cookie found, exit loop
 			nFound = 1;
-			break; 
+			break;
 
 		}
 	}
@@ -342,10 +335,8 @@ int FindCookie(WORD wCookie, DWORD *pdwUin, void **ppvExtra)
 }
 
 
-
-int FindCookieByData(void *pvExtra,WORD *pwCookie, DWORD *pdwUin)
+int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin)
 {
-
 	int i;
 	int nFound = 0;
 
@@ -358,12 +349,12 @@ int FindCookieByData(void *pvExtra,WORD *pwCookie, DWORD *pdwUin)
 		{
 			if (pdwUin)
 				*pdwUin = cookie[i].dwUin;
-			if (pwCookie)
-				*pwCookie = cookie[i].wCookie;
+			if (pdwCookie)
+				*pdwCookie = cookie[i].dwCookie;
 
 			// Cookie found, exit loop
 			nFound = 1;
-			break; 
+			break;
 
 		}
 	}
@@ -371,14 +362,11 @@ int FindCookieByData(void *pvExtra,WORD *pwCookie, DWORD *pdwUin)
 	LeaveCriticalSection(&cookieMutex);
 
 	return nFound;
-
 }
 
 
-
-void FreeCookie(WORD wCookie)
+void FreeCookie(DWORD dwCookie)
 {
-
 	int i;
 
 
@@ -386,7 +374,7 @@ void FreeCookie(WORD wCookie)
 
 	for (i = 0; i < cookieCount; i++)
 	{
-		if (wCookie == cookie[i].wCookie)
+		if (dwCookie == cookie[i].dwCookie)
 		{
 			cookieCount--;
 			memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
@@ -398,7 +386,6 @@ void FreeCookie(WORD wCookie)
 	}
 
 	LeaveCriticalSection(&cookieMutex);
-
 }
 
 
@@ -566,13 +553,13 @@ void ResetSettingsOnConnect()
 	{
 
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		
+
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "LogonTS", 0);
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
-			
+
 			// All these values will be restored during the login
 			DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
 			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
@@ -596,7 +583,7 @@ void ResetSettingsOnLoad()
 
 	HANDLE hContact;
 	char *szProto;
-	
+
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -653,7 +640,7 @@ BOOL IsStringUIN(char* pszString)
 
 void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 {
-	
+
 	DWORD dwUin;
 	void* pvExtra;
 
@@ -669,8 +656,8 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 	else if (pArguments->nAckResult == ACKRESULT_FAILED)
 		Netlib_Logf(ghServerNetlibUser, "Message delivery failed");
 
-	SAFE_FREE((char *)pArguments->pszMessage);
-	SAFE_FREE(pArguments);
+	SAFE_FREE(&(char *)pArguments->pszMessage);
+	SAFE_FREE(&pArguments);
 
 	return;
 
@@ -678,23 +665,23 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 
 
 
-void icq_SendProtoAck(HANDLE hContact, WORD wCookie, int nAckResult, int nAckType, char* pszMessage)
+void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage)
 {
 
 	icq_ack_args* pArgs;
 
-	
+
 	pArgs = malloc(sizeof(icq_ack_args)); // This will be freed in the new thread
-	
+
 	pArgs->hContact = hContact;
-	pArgs->hSequence = (HANDLE)wCookie;
+	pArgs->hSequence = (HANDLE)dwCookie;
 	pArgs->nAckResult = nAckResult;
 	pArgs->nAckType = nAckType;
 	if (pszMessage)
 		pArgs->pszMessage = (LPARAM)strdup(pszMessage);
 	else
 		pArgs->pszMessage = (LPARAM)NULL;
-	
+
 	forkthread(icq_ProtocolAckThread, 0, pArgs);
 
 }
@@ -758,7 +745,7 @@ BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, str
 
 	WORD wVal;
 	char *text;
-	
+
 
 	if (*pwLength < 2)
 		return FALSE;
@@ -789,14 +776,14 @@ BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf,
 
 	unpackByte(buf, &byVal);
 	*pwLength -= 1;
-	
+
 	if (byVal != 0)
 		DBWriteContactSettingByte(hContact, gpszICQProtoName, pszSetting, byVal);
 	else
 		DBDeleteContactSetting(hContact, gpszICQProtoName, pszSetting);
 
 	return TRUE;
-	
+
 }
 
 
@@ -807,7 +794,7 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
 	BYTE byVal;
 	char *text;
 
-	
+
 	if (*pwLength < 1)
 		return FALSE;
 
@@ -853,18 +840,18 @@ int GetGMTOffset(void)
 	default:
 		nOffset = 0;
 		break;
-		
+
 	}
 
 	return nOffset;
-	
+
 }
 
 
 
 BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 {
-	
+
 	// Privacy control
 	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyCList", 0))
 	{
@@ -885,18 +872,18 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 			if (wStatus == ID_STATUS_OFFLINE)
 				return FALSE;
 		}
-		
+
 	}
-	
-	
+
+
 	// Dont send messages to people you are hiding from
 	if (hContact != INVALID_HANDLE_VALUE &&
 		DBGetContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", 0) == ID_STATUS_OFFLINE)
 	{
 		return FALSE;
 	}
-	
-	
+
+
 	// Dont respond to request for other statuses than your current one
 	if ((byMessageType == MTYPE_AUTOAWAY && gnCurrentStatus != ID_STATUS_AWAY) ||
 		(byMessageType == MTYPE_AUTOBUSY && gnCurrentStatus != ID_STATUS_OCCUPIED) ||
@@ -906,8 +893,8 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 	{
 		return FALSE;
 	}
-	
+
 	// All OK!
 	return TRUE;
-	
+
 }

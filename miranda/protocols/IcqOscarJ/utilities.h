@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,7 +39,7 @@
 
 typedef struct icq_cookie_info_s
 {
-	WORD wCookie;
+	DWORD dwCookie;
 	DWORD dwUin;
 	void *pvExtra;
 } icq_cookie_info;
@@ -65,11 +66,11 @@ char *MirandaVersionToString(int);
 
 void InitCookies(void);
 void UninitCookies(void);
-WORD AllocateCookie(DWORD dwUin, void *pvExtra);
-int FindCookie(WORD wCookie, DWORD *pdwUin, void **ppvExtra);
-int FindCookieByData(void *pvExtra,WORD *pwCookie, DWORD *pdwUin);
-void FreeCookie(WORD wCookie);
-WORD GenerateCookie(void);
+DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra);
+int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
+int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin);
+void FreeCookie(DWORD wCookie);
+DWORD GenerateCookie(WORD wIdent);
 
 HANDLE HContactFromUIN(DWORD, int);
 //HANDLE HContactFromUID(char* pszUID, int);
@@ -84,7 +85,7 @@ int RandRange(int nLow, int nHigh);
 BOOL IsStringUIN(char* pszString);
 
 void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments);
-void icq_SendProtoAck(HANDLE hContact, WORD wCookie, int nAckResult, int nAckType, char* pszMessage);
+void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
 
 BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength);
 BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);
@@ -98,12 +99,12 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType);
 
 #define icqOnline ((gnCurrentStatus != ID_STATUS_OFFLINE) && (gnCurrentStatus != ID_STATUS_CONNECTING))
 
-static void __inline SAFE_FREE(void* p)
+static void __inline SAFE_FREE(void** p)
 {
-	if (p)
+	if (*p)
 	{
-		free(p);
-		p = NULL;
+		free(*p);
+		*p = NULL;
 	}
 }
 
