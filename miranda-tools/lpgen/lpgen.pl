@@ -3,12 +3,18 @@
 use POSIX;
 use File::Find;
 
-my $rootdir = '';
+$rootdir = '';
 $output = '';
 %hash = ();
+$clines = 0;
 
 #Language Files
 create_langfile('../../Miranda-IM', '../../Miranda-IM/docs/translations/langpack_english.txt', 'English (UK)', '0809', 'Miranda IM Development Team', 'info@miranda-im.org');
+create_langfile('../../Protocols/AIMToc/', '../../Protocols/AIMToc/docs/aim-translation.txt', 'English (UK)', '0809', 'Robert Rainwater', 'info@miranda-im.org');
+create_langfile('../../Protocols/IcqOscar8/', '../../Protocols/IcqOscar8/docs/IcqOscar8-translation.txt', 'English (UK)', '0809', 'Martin Öberg, Richard Hughes, Jon Keating', 'info@miranda-im.org');
+create_langfile('../../Plugins/changeinfo/', '../../Plugins/changeinfo/Docs/changeinfo-translation.txt', 'English (UK)', '0809', 'Richard Hughes', 'info@miranda-im.org');
+create_langfile('../../Plugins/SRMM/', '../../Plugins/SRMM/Docs/srmm-translation.txt', 'English (UK)', '0809', 'Miranda IM Development Team', 'info@miranda-im.org');
+create_langfile('../../Plugins/Import/', '../../Plugins/Import/docs/import-translation.txt', 'English (UK)', '0809', 'Martin Öberg', 'info@miranda-im.org');
 
 sub create_langfile {
     $rootdir = shift(@_);
@@ -18,7 +24,9 @@ sub create_langfile {
     $author = shift(@_);
     $email = shift(@_);
     %hash = ();
+    $clines = 0;
     $output = "";
+    print "Building language file for $rootdir:\n";
     find({ wanted => \&csearch, preprocess => \&pre_dir }, $rootdir);
     find({ wanted => \&rcsearch, preprocess => \&pre_dir }, $rootdir);
     open(WRITE, "> $outfile") or die;
@@ -30,6 +38,7 @@ sub create_langfile {
     print WRITE "Plugins-included:\n\n";
     print WRITE $output;
     close(WRITE);
+    print "  $outfile is complete ($clines)\n\n";
 }
 
 sub pre_dir {
@@ -41,13 +50,14 @@ sub append_str {
     $str = shift(@_);
     $found = shift(@_);
     $str = substr($str, 1, length($str) - 2);
-    if (length($str) gt 0) {
+    if (length($str) gt 0 and $str ne "List1" and $str ne "Tree1") {
         if (!$hash{$str}) {
             if ($found eq 0) {
                 $output .= "; ".$file."\n";
             }
             $output .= ";[".$str."]\n";
             $hash{$str} = 1;
+            $clines += 1;
             return 1;
         }
     }
@@ -55,10 +65,10 @@ sub append_str {
 }
 
 sub csearch {
-    if ( -f $_ and $_ =~ m/\.c\Z/) {
+    if ( -f $_ and $_ =~ m/\.c[pp]*\Z/) {
         $found = 0;
         $file = $_;
-        print "Processing $_... ";
+        print "  Processing $_ ";
 	    open(READ, "< $_") or return;
         $all = "";
 	    while ($lines = <READ>) {
@@ -72,7 +82,7 @@ sub csearch {
         if ($found gt 0) {
             $output .= "\n";
         }
-        print "found $found strings\n";
+        print "($found)\n";
     }
 }
 
@@ -80,7 +90,7 @@ sub rcsearch {
     if ( -f $_ and $_ =~ m/\.rc\Z/) {
         $found = 0;
         $file = $_;
-        print "Processing $_... ";
+        print "  Processing $_ ";
 	    open(READ, "< $_") or return;
         $all = "";
 	    while ($lines = <READ>) {
@@ -112,6 +122,6 @@ sub rcsearch {
         if ($found gt 0) {
             $output .= "\n";
         }
-        print "found $found strings\n";
+        print "($found)\n";
     }
 }
