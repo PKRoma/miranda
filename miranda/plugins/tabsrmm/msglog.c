@@ -482,6 +482,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     if(dat->dwFlags & MWF_DIVIDERWANTED) {
         if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line\\highlight%d", MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
+        else
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", rtfFonts[H_MSGFONTID_DIVIDERS]);
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
@@ -775,7 +777,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     }
 
     //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
+    if(dat->dwEventIsShown & MWF_SHOW_MICROLF)
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
     /* OnO: highlight end */
     //if(dbei.eventType == EVENTTYPE_MESSAGE && dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
       //  AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight0");
@@ -848,11 +851,11 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     // separator strings used for grid lines, message separation and so on...
     
-    strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
+    strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "%s\\sl-1" : "\\par%s\\sl-1"));
     _snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
 
     //strcpy(szSep2, fAppend ? "\\par" : "");
-    strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl0");
+    strcpy(szSep2, fAppend ? "\\par\\sl0" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl0" : "\\par\\sl0"));
     
     ZeroMemory(&ci, sizeof(ci));
     ci.cbSize = sizeof(ci);
@@ -880,8 +883,12 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     if (fAppend) {
         GETTEXTLENGTHEX gtxl = {0};
+#if defined (_UNICODE)
+        gtxl.codepage = 1200;
+#else        
         gtxl.codepage = CP_ACP;
-        gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
+#endif        
+        gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
         
         sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
@@ -901,10 +908,14 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
     dat->hDbEventLast = streamData.hDbEventLast;
     
-    if (fAppend) {
+    if (fAppend && (dat->dwEventIsShown & MWF_SHOW_MICROLF)) {
         GETTEXTLENGTHEX gtxl = {0};
+#if defined (_UNICODE)
+        gtxl.codepage = 1200;
+#else        
         gtxl.codepage = CP_ACP;
-        gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
+#endif        
+        gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
 
         sel.cpMax = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
         sel.cpMin = sel.cpMax - 1;

@@ -309,6 +309,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     ShowWindow(hwndDlg, SW_SHOWNORMAL);
                     SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_TOPMOST : HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
                 }
+                SetTimer(hwndDlg, TIMERID_HEARTBEAT, TIMEOUT_HEARTBEAT, NULL);
                 return TRUE;
             }
 
@@ -653,6 +654,30 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->nFlash = 0;
                     KillTimer(hwndDlg, TIMERID_FLASHWND);
                     pContainer->isFlashing = FALSE;
+                }
+            }
+            else if(wParam == TIMERID_HEARTBEAT) {
+                int i;
+                TCITEM item = {0};
+                DWORD dwTimeout;
+                
+                item.mask = TCIF_PARAM;
+                if((dwTimeout = DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", 0)) > 0) {
+                    int clients = TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS));
+                    HWND *hwndClients = (HWND *)malloc(sizeof(HWND) * ( clients + 1));
+                    for(i = 0; i < clients; i++) {
+                        TabCtrl_GetItem(hwndTab, i, &item);
+                        hwndClients[i] = (HWND)item.lParam;
+                    }
+                    for(i = 0; i < clients; i++) {
+                        if(IsWindow(hwndClients[i])) {
+                            if((HWND)hwndClients[i] != pContainer->hwndActive)
+                                pContainer->bDontSmartClose = TRUE;
+                            SendMessage((HWND)hwndClients[i], DM_CHECKAUTOCLOSE, (WPARAM)(dwTimeout), 0);
+                            pContainer->bDontSmartClose = FALSE;
+                        }
+                    }
+                    free(hwndClients);
                 }
             }
             break;
@@ -1267,9 +1292,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if(pContainer->dwFlags & CNT_NOMENUBAR) {
                 if(pContainer->hMenu) {
                     SetMenu(hwndDlg, NULL);
-                    ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
+                ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             }
             else {
                 if(pContainer->hMenu == 0) {
@@ -1423,6 +1448,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         DestroyWindow((HWND) item.lParam);
                 }
 
+                KillTimer(hwndDlg, TIMERID_HEARTBEAT);
     			pContainer->hwnd = 0;
     			pContainer->hwndActive = 0;
                 pContainer->hMenuContext = 0;

@@ -45,6 +45,7 @@
 #define MWF_SHOW_FILEEVENTS 2
 #define MWF_SHOW_INOUTICONS 4
 #define MWF_SHOW_EMPTYLINEFIX 8
+#define MWF_SHOW_MICROLF 16
 
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
@@ -74,7 +75,8 @@ struct ContainerWindowData {
     int statusBarHeight;
 #if defined(_STREAMTHREADING)
     int volatile pendingStream;
-#endif    
+#endif
+    DWORD dwLastActivity;
 };
 
 struct MessageSendInfo {
@@ -150,6 +152,7 @@ struct MessageWindowData {
     DWORD dwEventIsShown;
     int iRealAvatarHeight;
     int iButtonBarNeeds;
+    DWORD dwLastActivity;
 };
 
 typedef struct _recentinfo {

@@ -200,24 +200,24 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,30,310,194
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,1,310,223
     CONTROL         "Automatically pop up the window when a message is received",
-                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,40,
+                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,11,
                     300,10
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,51,
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,22,
                     273,10
     CONTROL         "Automatically switch tabs in minimized containers",
                     IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,63,262,10
+                    8,34,262,10
     CONTROL         "Use horizontal dividers in inactive sessions",
                     IDC_USEDIVIDERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    74,152,11
+                    46,152,11
     CONTROL         "Use popup configuration for placing dividers",
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,19,85,271,11
+                    WS_TABSTOP,19,57,271,11
     CONTROL         "Show debugging info Popups",IDC_DEBUGPOPUPS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,156,117,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,167,117,11
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,168,135,10
     CONTROL         "Show protocol icon and userID field.",IDC_SHOWINFOLINE,
@@ -233,22 +233,34 @@ BEGIN
     EDITTEXT        IDC_SECONDS,223,201,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,203,44,8
     CONTROL         "Resize Avatar larger than",IDC_LIMITAVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,98,115,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,126,96,38,12,ES_AUTOHSCROLL | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,70,115,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,126,68,38,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,97,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,69,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,191,98,51,11
+    LTEXT           "pixels in height",IDC_STATIC,191,70,51,11
     CONTROL         "Use threaded streaming (RESTART Miranda if you change this)",
                     IDC_STREAMTHREADING,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,144,274,11
-    LTEXT           "Show avatars",IDC_STATIC,20,131,60,10
-    COMBOBOX        IDC_AVATARMODE,75,128,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_TABSTOP,8,155,274,11
+    LTEXT           "Show avatars",IDC_STATIC,20,97,60,10
+    COMBOBOX        IDC_AVATARMODE,75,94,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Dynamically resize avatars depending on splitter position",
                     IDC_AVADYNAMIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    109,202,12
+                    81,202,12
+    LTEXT           "Automatically close tabs after",IDC_STATIC,20,111,105,
+                    11
+    EDITTEXT        IDC_AUTOCLOSETABTIME,121,109,44,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,161,110,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,179,111,
+                    111,11
+    CONTROL         "Also auto-close the last tab and its container",
+                    IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,122,247,10
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -277,12 +289,12 @@ BEGIN
     CONTROL         "Enable hotkeys for scrolling the log",IDC_LOGHOTKEYS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,12,131,13
     CONTROL         "Log status changes",IDC_LOGSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,26,130,13
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,24,130,13
     CONTROL         "Remove trailing empty lines",IDC_EMPTYLINEFIX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,42,143,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,38,143,10
     CONTROL         "Ignore per-contact message log settings",
                     IDC_IGNORECONTACTSETTINGS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,158,56,142,11
+                    WS_TABSTOP,158,50,142,11
     CONTROL         "More aggressive log updates",IDC_AGGRESSIVEUPDATE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,79,118,10
     GROUPBOX        "Formatting options",IDC_STATIC,0,97,305,74
@@ -332,6 +344,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,158,147,102,8
     CONTROL         "Use long date format",IDC_LONGDATES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,158,159,119,10
+    CONTROL         "Use micro linefeeds",IDC_MICROLF,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,67,113,9
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252

@@ -39,6 +39,21 @@ Version 0.0.9.4 - 2004/11/XX
           YOU NEED TO REPLACE smileyadd.dll with the version in the archive, otherwise
           smiley backgrounds in tabsrmm will not work when using the individual background
           colors.
+          
+        + new option - > auto close tab after x seconds of inactivity. Does exactly that.
+          Tabs don't get autoclosed when:
+          a) unread messages are there (the tab icon is flashing)
+          b) the input area contains characters
+          
+          Things, which reset the inactivity timer:
+          
+          a) typing in the input area
+          b) new message arriving
+          c) activating/focusing the tab
+          
+        ! fixed disappearing avatar when applying options
+        
+        ! fixed right-alt-v does no longer paste.
 
 Version 0.0.9.3 - 2004/11/14
 

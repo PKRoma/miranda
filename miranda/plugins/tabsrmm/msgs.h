@@ -194,6 +194,7 @@ struct ProtocolData {
 #define DM_QUERYFLAGS        (WM_USER+63)
 #define DM_STATUSBARCHANGED  (WM_USER+64)
 #define DM_SAVEMESSAGELOG    (WM_USER+65)
+#define DM_CHECKAUTOCLOSE    (WM_USER+66)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
@@ -327,6 +328,8 @@ extern const int msgDlgFontCount;
 
 #define TIMERID_FLASHWND     1
 #define TIMEOUT_FLASHWND     900
+#define TIMERID_HEARTBEAT    2
+#define TIMEOUT_HEARTBEAT    10000
 
 #define SRMSGMOD "SRMsg"
 #define SRMSGMOD_T "Tab_SRMsg"
@@ -374,7 +377,7 @@ struct MsgLogIcon {
     HBRUSH hBkgBrush;
 };
 
-#define NR_LOGICONS 7
+#define NR_LOGICONS 8
 #define NR_BUTTONBARICONS 14
 
 #define IDI_HISTORY 1

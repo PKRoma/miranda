@@ -351,7 +351,8 @@ static void SetDialogToType(HWND hwndDlg)
 
 // BEGIN MOD#33: Show contact's picture
     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-    if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic",0))
+    GetAvatarVisibility(hwndDlg, dat);
+    if (dat->showPic)
         ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC),SW_SHOW);
     else
         ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC),SW_HIDE);
@@ -571,7 +572,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     return 0;
                 }
             }
-            if (GetKeyState(VK_CONTROL) & 0x8000) {
+            if ((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
                 if (wParam == 'V') {
                     SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
                     return 0;
@@ -1439,6 +1440,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                         dat->mayFlashTab = TRUE;
                         dat->dwTickLastEvent = GetTickCount();
+                        //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;
@@ -1451,6 +1453,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                     dat->mayFlashTab = TRUE;
                     dat->dwTickLastEvent = GetTickCount();
+                    //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                 }
                 
                 SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
@@ -1465,6 +1468,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(dat->pContainer->hwnd, DM_RESTOREWINDOWPOS, 0, 0);
                     //SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 }
+                dat->dwLastActivity = GetTickCount();
+                dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 return TRUE;
             }
         case DM_TYPING:
@@ -1550,7 +1555,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0) ? MWF_SHOW_INOUTICONS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 0) ? MWF_SHOW_EMPTYLINEFIX : 0;
-
+            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "microlf", 1) ? MWF_SHOW_MICROLF : 0;
+            
             dat->iButtonBarNeeds = (dat->showUIElements & MWF_UI_SHOWSEND) ? 40 : 0;
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWBUTTON ? (dat->doSmileys ? 180 : 154) : 0);
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWINFO) ? 25 : 0;
@@ -1786,6 +1792,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_SETFOCUS:
             if (dat->iTabID >= 0) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                /* if(dat->pContainer->dwTickLastEvent == dat->dwTickLastEvent)
+                    dat->pContainer->dwTickLastEvent = 0; */
                 dat->dwTickLastEvent = 0;
                 dat->dwFlags &= ~MWF_DIVIDERSET;
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
@@ -1809,6 +1817,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
+                dat->dwLastActivity = GetTickCount();
+                dat->pContainer->dwLastActivity = dat->dwLastActivity;
             }
             return 1;
             break;
@@ -1822,6 +1832,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             } else {
                 dat->dwFlags &= ~MWF_DIVIDERSET;
+                /* if(dat->pContainer->dwTickLastEvent == dat->dwTickLastEvent)
+                    dat->pContainer->dwTickLastEvent = 0; */
                 dat->dwTickLastEvent = 0;
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
                     FlashTab(hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, 0, dat->iTabImage);
@@ -1841,6 +1853,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 
                 UpdateStatusBar(hwndDlg, dat);
+                dat->dwLastActivity = GetTickCount();
+                dat->pContainer->dwLastActivity = dat->dwLastActivity;
             }
             break;
         case WM_GETMINMAXINFO:
@@ -2149,12 +2163,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                         if((GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd)) {
                             dat->dwTickLastEvent = GetTickCount();
+                            //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                             if(!iDividerSet)
                                 SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                         }
                         else {
                             if(dat->pContainer->hwndActive != hwndDlg) {
                                 dat->dwTickLastEvent = GetTickCount();
+                                //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                                 if(!iDividerSet)
                                     SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                             }
@@ -2169,6 +2185,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->iTabID == -1) {
                         MessageBoxA(0, "DBEVENTADDED Critical: iTabID == -1", "Error", MB_OK);
                     }
+                    dat->dwLastActivity = GetTickCount();
+                    dat->pContainer->dwLastActivity = dat->dwLastActivity;
                     // tab flashing
                     if ((IsIconic(dat->pContainer->hwnd) || TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         switch (dbei.eventType) {
@@ -3069,6 +3087,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
 // END MOD#33
 // BEGIN MOD#33: Show contact's picture
+/*                    
                 case IDC_CONTACTPIC:
                     SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
                     if(GetWindowLong(hwndDlg, DWL_MSGRESULT) == 0) {
@@ -3082,6 +3101,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
                     break;
+*/                    
 // END MOD#33
                 case IDM_CLEAR:
                     SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
@@ -3167,7 +3187,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(dat->pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);
                         dat->dwFlags |= MWF_NEEDHISTORYSAVE;
-
+                        dat->dwLastActivity = GetTickCount();
+                        dat->pContainer->dwLastActivity = dat->dwLastActivity;
                         UpdateSaveAndSendButton(hwndDlg, dat);
 
                         if(dat->dwFlags & MWF_SMBUTTONSELECTED) {
@@ -3762,6 +3783,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             break;
         }
+        /*
+         * sent from the containers heartbeat timer
+         * wParam = inactivity timer in seconds
+         */
+        case DM_CHECKAUTOCLOSE:
+        {
+            if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
+                break;              // don't autoclose if message input area contains text
+            if(dat->dwTickLastEvent > dat->dwLastActivity)
+                break;              // don't autoclose if possibly unread message is waiting
+            if(((GetTickCount() - dat->dwLastActivity) / 1000) >= wParam) {
+                if(TabCtrl_GetItemCount(GetParent(hwndDlg)) > 1 || DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocloselast", 0))
+                    SendMessage(hwndDlg, WM_CLOSE, 0, 1);
+            }
+            break;
+        }
 // BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:
 		{	
@@ -3875,8 +3912,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetForegroundWindow(dat->pContainer->hwndActive);
                     SetFocus(dat->pContainer->hwndActive);
                     SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
-                    RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
-                    UpdateWindow(dat->pContainer->hwndActive);
+                    //RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
+                    //UpdateWindow(dat->pContainer->hwndActive);
                 }
                 DestroyWindow(hwndDlg);
                 if(iTabs == 1)
@@ -3924,6 +3961,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 // END MOD#26
 
+            /*
+             * make sure to delete OUR last event...
+             */
+            /* if(dat->pContainer->dwTickLastEvent == dat->dwTickLastEvent)
+                dat->pContainer->dwTickLastEvent = 0; */
+            
             if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
                 NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
             }
@@ -4608,6 +4651,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     DeleteObject(dat->hContactPic);
                 dat->hContactPic = g_hbmUnknown;
                 DBDeleteContactSetting(dat->hContact, "ContactPhoto", "File");
+                SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
                 InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
                 if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR))
                     SendMessage(hwndDlg, DM_ALIGNSPLITTERFULL, 0, 0);
