@@ -493,7 +493,7 @@ void yahoo_logout()
 void yahoo_send_msg(const char *id, const char *msg, int utf8)
 {
 	LOG(("yahoo_send_msg: %s: %s, utf: %d", id, msg, utf8));
-    if (YAHOO_GetByte( "DisableUTF8", 0 ) ) {
+    if (YAHOO_GetByte( "DisableUTF8", 0 ) ) { /* Send ANSI */
 		/* need to convert it to ascii argh */
 		char 	*umsg = (char *)msg;
 		
@@ -507,10 +507,11 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8)
 		} 
 			
 		yahoo_send_im(ylad->id, NULL, id, umsg, 0);
-    } else {
-	    char *tmp;
-
+    } else { /* Send Unicode */
+	    
 		if (!utf8) {
+			char *tmp;
+			
 			utf8_encode(msg, &tmp);
         	//tmp = y_str_to_utf8(msg);
 			yahoo_send_im(ylad->id, NULL, id, tmp, 1);
