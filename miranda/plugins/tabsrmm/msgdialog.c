@@ -2217,7 +2217,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 _snprintf(szErrorMsg, 500, Translate("Delivery failure: %s"), Translate("The message send timed out"));
                 LogErrorMessage(hwndDlg, dat, 0, (char *)szErrorMsg);
-                RecallFailedMessage(hwndDlg, dat);
+                //RecallFailedMessage(hwndDlg, dat);
                 ShowErrorControls(hwndDlg, dat, TRUE);
                 HandleIconFeedback(hwndDlg, dat, g_IconError);
                 
@@ -2848,7 +2848,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         TCHAR *szConverted;
                         int iAlloced = 0;
                         int iSize = 0;
-                        SETTEXTEX stx = {ST_DEFAULT, 1200};
+                        SETTEXTEX stx = {ST_SELECTION, 1200};
                         GETTEXTEX gtx;
 #endif                        
 
@@ -3403,7 +3403,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         KillTimer(hwndDlg, TIMERID_MSGSEND);
                         _snprintf(szErrorMsg, 500, Translate("Delivery failure: %s"), (char *)ack->lParam);
                         LogErrorMessage(hwndDlg, dat, 0, (char *)szErrorMsg);
-                        RecallFailedMessage(hwndDlg, dat);
+                        //RecallFailedMessage(hwndDlg, dat);
                         ShowErrorControls(hwndDlg, dat, TRUE);
                         HandleIconFeedback(hwndDlg, dat, g_IconError);
                         return 0;

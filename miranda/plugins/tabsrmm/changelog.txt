@@ -54,6 +54,9 @@ Version 0.0.9.4 - 2004/11/XX
         ! fixed disappearing avatar when applying options
         
         ! fixed right-alt-v does no longer paste.
+        
+        * quoting does no longer replace the entire typed message. The quoted text is now
+          inserted at the caret location.
 
 Version 0.0.9.3 - 2004/11/14
 

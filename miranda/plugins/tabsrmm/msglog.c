@@ -923,20 +923,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         sel.cpMin = sel.cpMax - 1;
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, FALSE, (LPARAM)_T(""));
-    } else if(fAppend) {
-        CHARRANGE chr;
-        PARAFORMAT2 pf2 = {0};
-        HWND hwndrtf = GetDlgItem(hwndDlg, IDC_LOG);
-
-        chr.cpMin = startAt;
-        chr.cpMax = -1;
-        SendMessage(hwndrtf, EM_EXSETSEL, 0, (LPARAM)&chr);
-        //SendMessage(hwndrtf, EM_REPLACESEL, FALSE, (LPARAM)_T("\n\r"));
-        pf2.cbSize = sizeof(pf2);
-        pf2.dwMask = PFM_LINESPACING | PFM_OFFSETINDENT | PFM_OFFSET | PFM_RIGHTINDENT;
-        SendMessage(hwndrtf, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
-        _DebugPopup(NULL, "%d, %d, %d", pf2.dxOffset, pf2.dxRightIndent, pf2.dxStartIndent);
-        SendMessage(hwndrtf, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
     }
 
 #if defined(_STREAMTHREADING)
