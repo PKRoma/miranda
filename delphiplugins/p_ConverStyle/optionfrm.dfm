@@ -176,14 +176,6 @@ object OptionForm: TOptionForm
         Text = '2'
         OnExit = AutoRetryEditExit
       end
-      object TabEnter: TCheckBox
-        Left = 128
-        Top = 208
-        Width = 81
-        Height = 17
-        Caption = 'Tab + Enter'
-        TabOrder = 6
-      end
     end
     object TabSheet2: TTabSheet
       Caption = 'Memo'

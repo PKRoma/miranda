@@ -20,6 +20,7 @@ object MsgWindow: TMsgWindow
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   OnKeyUp = FormKeyUp
   OnResize = FormResize
   PixelsPerInch = 96
@@ -32,6 +33,15 @@ object MsgWindow: TMsgWindow
     Cursor = crVSplit
     Align = alTop
     Beveled = True
+  end
+  object TabEnterWorkAroundBtn: TButton
+    Left = 160
+    Top = -40
+    Width = 75
+    Height = 25
+    Caption = 'TabEnterWorkAroundBtn'
+    TabOrder = 2
+    OnClick = TabEnterWorkAroundBtnClick
   end
   object SendMemo: TMemo
     Left = 0
