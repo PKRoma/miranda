@@ -265,6 +265,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dbei.timestamp, (LPARAM) & dbtts);
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYTIME : MSGFONTID_YOURTIME));
         AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", str);
+        showColon = 1;
     }
     if (!dat->hideNames && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
         char *szName;
