@@ -581,7 +581,7 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 		opi->odp[opi->pageCount].nExpertOnlyControls=0;
 	}
 	if(odp->cbSize>OPTIONSDIALOGPAGE_V0100_SIZE) {
-		if(odp->pszGroup!=NULL) opi->odp[opi->pageCount].pszGroup=_strdup(odp->pszGroup);
+		if(odp->pszGroup!=NULL) opi->odp[opi->pageCount].pszGroup=_strdup(Translate(odp->pszGroup));
 		else opi->odp[opi->pageCount].pszGroup=NULL;
 		opi->odp[opi->pageCount].groupPosition=odp->groupPosition;
 		opi->odp[opi->pageCount].hGroupIcon=odp->hGroupIcon;
