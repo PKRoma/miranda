@@ -13,7 +13,7 @@ unit m_userinfo;
 
 interface
 
-uses m_options;
+uses m_options,windows,messages;
 
 //show the User Details dialog box
 //wParam=(WPARAM)(HANDLE)hContact
