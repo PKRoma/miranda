@@ -40,7 +40,7 @@ History
  - Show mobile users as 'on the phone'
  - Support Miranda's idle settings for setting idle
  - Extra contacts from server list are added on login (optional)
- - Remove SSI synch support
+ - Remove SSI sync support
  - Removing user from deny list didn't always update mode in Miranda
 
 1.0.9.5
