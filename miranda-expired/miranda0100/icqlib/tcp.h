@@ -44,19 +44,22 @@ void icq_TCPProcessChatPacket(icq_Packet *p, icq_TCPLink *plink);
 void icq_TCPProcessFilePacket(icq_Packet *p, icq_TCPLink *plink);
 
 /* Debugging */
+#if !defined _WIN32 || defined _DEBUG
 /* trace packet process results */
-#undef TCP_PROCESS_TRACE 
+#define TCP_PROCESS_TRACE 
 
 /* trace sent and received icq packets */
-#undef TCP_PACKET_TRACE    
+#define TCP_PACKET_TRACE    
 
 /* trace raw sent and received packet data */
-#undef TCP_RAW_TRACE 
+#define TCP_RAW_TRACE 
 
 /* trace recv buffer in tcplink.c*/
-#undef TCP_BUFFER_TRACE
+#define TCP_BUFFER_TRACE
 
 /* trace queueing operations in list.c */
-#undef TCP_QUEUE_TRACE
+#define TCP_QUEUE_TRACE
+
+#endif /* !defined _WIN32 || defined _DEBUG */
 
 #endif /* _ICQTCP_H */
