@@ -43,6 +43,7 @@ function TranslateDialogDefault(hwndDlg:thandle):integer;
 var
   lptd:TLANGPACKTRANSLATEDIALOG;
 begin
+  Result:=0;
   if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,1,0))<0 then
     Exit;
   lptd.cbSize:=sizeof(lptd);
