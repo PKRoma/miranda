@@ -10,6 +10,7 @@
 #include <windows.h>
 #include <winres.h>
 #include "../../include/statusmodes.h"
+#include "m_tabsrmm.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -29,13 +30,13 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
 //
 
 IDD_MSGSPLITNEW DIALOGEX 0, 0, 188, 79
-STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | 
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER |
     WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
+    CONTROL         "",IDC_MESSAGE,INPUTAREA_CLASS,ES_MULTILINE |
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES |
                     WS_EX_STATICEDGE
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
@@ -61,7 +62,7 @@ BEGIN
                     78,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,2,
                     WS_EX_STATICEDGE
-    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
+    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
     CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
                     0x18000000L
@@ -78,9 +79,9 @@ BEGIN
                     106,10,45,12
     LTEXT           "The message failed to send successfully.",
                     IDC_STATICTEXT,27,1,150,7
-    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
+    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE |
                     WS_GROUP
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL |
                     ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
                     WS_EX_STATICEDGE
 END
@@ -442,7 +443,7 @@ BEGIN
     CONTROL         "",IDC_MSGTABS,"SysTabControl32",TCS_HOTTRACK | 
                     TCS_MULTILINE | TCS_TOOLTIPS | TCS_FOCUSNEVER | 
                     WS_CLIPCHILDREN,7,7,422,219
-    CONTROL         "",IDC_STATICCONTROL,"Static",SS_BLACKFRAME,0,0,435,1,
+    CONTROL         "",IDC_STATICCONTROL,"Static",SS_ENHMETAFILE,0,0,435,1,
                     WS_EX_STATICEDGE
 END
 
@@ -579,6 +580,7 @@ BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\n"
+    "#include ""m_tabsrmm.h""\r\n"
     "\0"
 END
 
@@ -711,16 +713,11 @@ BEGIN
         MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
 
         MENUITEM SEPARATOR
-        MENUITEM "Always use global Splitter Position", 
-                                                ID_LOGMENU_ALWAYSUSEGLOBALSPLITTERPOSITION
+        MENUITEM "Message Log Settings are global", 
+                                                ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL
 
-        MENUITEM "Save Splitter Position as global Default", 
-                                                ID_LOGMENU_SAVESPLITTERPOSITIONASGLOBALDEFAULT
-
-        MENUITEM SEPARATOR
-        MENUITEM "Load Defaults",               ID_LOGMENU_LOADDEFAULTS
-        MENUITEM "Save these Settings as default Values", 
-                                                ID_LOGMENU_SAVETHESESETTINGSASDEFAULTVALUES
+        MENUITEM "Apply Message Log Settings to all contacts", 
+                                                ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
 
     END
 END
@@ -923,6 +920,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Message Log Settings are global", 
                                                 ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL
+
+        MENUITEM "Apply Message Log Settings to all contacts", 
+                                                ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
 
     END
     POPUP "Container"

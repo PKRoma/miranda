@@ -347,7 +347,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             HANDLE hContact;
             struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
             DWORD dwOldFlags = pContainer->dwFlags;
-            int iIgnorePerContact;
             
             if(dat) {
                 DWORD dwOldMsgWindowFlags = dat->dwFlags;
@@ -367,7 +366,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
                     break;
             }
-            iIgnorePerContact = DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
             
             switch(LOWORD(wParam)) {
                 case IDOK:
@@ -414,8 +412,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     return 0;
                 case ID_VIEW_SHOWMULTISENDCONTACTLIST:
-                    CheckDlgButton(pContainer->hwndActive, IDC_MULTIPLE, !dat->multiple);
-                    PostMessage(pContainer->hwndActive, WM_COMMAND, IDC_MULTIPLE, 0);
+                    CheckDlgButton(pContainer->hwndActive, IDC_MULTIPLE, dat->multiple ? BST_UNCHECKED : BST_CHECKED);
+                    SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_MULTIPLE, BN_CLICKED), 0);
+                    RedrawWindow(GetDlgItem(pContainer->hwndActive, IDC_MULTIPLE), NULL, NULL, RDW_INVALIDATE);
+//                    PostMessage(pContainer->hwndActive, WM_COMMAND, IDC_MULTIPLE, 0);
                     break;
                 case ID_VIEW_STAYONTOP:
                     SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_STAYONTOP, 0);
@@ -445,10 +445,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     return 0;
                 case ID_WINDOWFLASHING_USEDEFAULTVALUES:
                     pContainer->dwFlags &= ~(CNT_NOFLASH | CNT_FLASHALWAYS);
-                    return 0;
-                case ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL:
-                    iIgnorePerContact = !iIgnorePerContact;
-                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", iIgnorePerContact);
                     return 0;
                 case ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY:
                 {
@@ -1084,8 +1080,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_WINDOWFLASHING_DISABLEFLASHING, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOFLASH ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_WINDOWFLASHING_FLASHUNTILFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_FLASHALWAYS ? MF_CHECKED : MF_UNCHECKED);
             
-            CheckMenuItem(hMenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_CHECKED : MF_UNCHECKED));
-            
             submenu = GetSubMenu(hMenu, 3);
             if(dat && submenu) {
                 MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
@@ -1190,6 +1184,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DWORD ws, wsold, ex = 0, exold = 0;
 			HMENU hSysmenu = GetSystemMenu(hwndDlg, FALSE);
 			HANDLE hContact;
+
+            if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1))
+                SetWindowLong(GetDlgItem(hwndDlg, IDC_STATICCONTROL), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_STATICCONTROL), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 
             if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
                 pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);      // hide container name in single window mode (not needed)
