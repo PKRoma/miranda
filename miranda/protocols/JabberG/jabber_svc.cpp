@@ -73,9 +73,16 @@ static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 	jsr.hdr.nick = "";
 	jsr.hdr.firstName = "";
 	jsr.hdr.lastName = "";
-	jsr.hdr.email = jsb->jid;
-	strncpy( jsr.jid, jsb->jid, sizeof( jsr.jid ));
-	jsr.jid[sizeof( jsr.jid )-1] = '\0';
+	jsr.hdr.email = jsr.jid;
+	if ( strchr( jsb->jid, '@' ) == NULL ) {
+		char szServer[ 100 ];
+		if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
+			strcpy( szServer, "jabber.org" );
+
+		_snprintf( jsr.jid, sizeof jsr.jid, "%s@%s", jsb->jid, szServer );
+	}
+	else strncpy( jsr.jid, jsb->jid, sizeof( jsr.jid ));
+	jsr.jid[ sizeof( jsr.jid )-1 ] = '\0';
 	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
 	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
 	free( jsb );
