@@ -509,6 +509,7 @@ typedef struct
 	BOOL		AwayAsBrb;
 	BOOL		SlowSend;
 	BOOL		ManageServer;
+	BOOL     EnableAvatars;
 }
 	MYOPTIONS;
 

@@ -467,6 +467,9 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 
 static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
+	if ( !MyOptions.EnableAvatars )
+		return GAIR_NOAVATAR;
+
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
 	char szContext[ MAX_PATH ];

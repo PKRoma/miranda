@@ -145,26 +145,26 @@ BOOL CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				strcpy( tBuffer, "N" );
 			SetDlgItemText( hwndDlg, IDC_MSN_MOBILE, tBuffer );
 
-			MSN_GetAvatarFileName(( HANDLE )lParam, tBuffer, sizeof tBuffer );
+			if ( MyOptions.EnableAvatars ) {
+				MSN_GetAvatarFileName(( HANDLE )lParam, tBuffer, sizeof tBuffer );
 
-			if ( access( tBuffer, 0 )) {
-LBL_Reread:
-				DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File", tBuffer );
-				p2p_invite( pData->hContact, MSN_APPID_AVATAR );
-				return TRUE;
-			}
+				if ( access( tBuffer, 0 )) {
+LBL_Reread:		DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File", tBuffer );
+					p2p_invite( pData->hContact, MSN_APPID_AVATAR );
+					return TRUE;
+				}
 
-			char tSavedContext[ 256 ], tNewContext[ 256 ];
-			if ( MSN_GetStaticString( "PictContext", pData->hContact, tNewContext, sizeof( tNewContext )) ||
-				  MSN_GetStaticString( "PictSavedContext", pData->hContact, tSavedContext, sizeof( tSavedContext )))
-				goto LBL_Reread;
+				char tSavedContext[ 256 ], tNewContext[ 256 ];
+				if ( MSN_GetStaticString( "PictContext", pData->hContact, tNewContext, sizeof( tNewContext )) ||
+					  MSN_GetStaticString( "PictSavedContext", pData->hContact, tSavedContext, sizeof( tSavedContext )))
+					goto LBL_Reread;
 
-			if ( stricmp( tNewContext, tSavedContext ))
-				goto LBL_Reread;
-
-			SendDlgItemMessage( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
-				( LPARAM )LoadImage( ::GetModuleHandle(NULL), tBuffer, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
-		}
+				if ( stricmp( tNewContext, tSavedContext ))
+					goto LBL_Reread;
+	
+				SendDlgItemMessage( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
+					( LPARAM )LoadImage( ::GetModuleHandle(NULL), tBuffer, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
+		}	}
 		return TRUE;
 
 	case HM_REBIND_AVATAR:
@@ -199,7 +199,7 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 	if (( szProto == NULL || strcmp( szProto, msnProtocolName )) && hContact )
 		return 0;
 
-	if ( !MSN_GetByte( "EnableAvatars", 0 ))
+	if ( !MyOptions.EnableAvatars )
 		return 0;
 
 	if ( !MSN_GetDword( hContact, "FlagBits", 0 ))

@@ -707,17 +707,18 @@ void __stdcall LoadOptions()
 	MyOptions.TextColour =
 		DBGetContactSettingDword( NULL, ModuleName, "TextColour", GetSysColor( COLOR_WINDOWTEXT ));
 
-	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
+	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
+	MyOptions.DisableMenu = MSN_GetByte( "DisableSetNickname", FALSE );
+	MyOptions.EnableAvatars = MSN_GetByte( "EnableAvatars", FALSE );
+	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
+	MyOptions.ManageServer = MSN_GetByte( "ManageServer", FALSE );
 	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );
 	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );
-	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
-	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
-	MyOptions.DisableMenu = MSN_GetByte( "DisableSetNickname", FALSE );
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );
-	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
-	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
 	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE );
-	MyOptions.ManageServer = MSN_GetByte( "ManageServer", FALSE );
+	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
+	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
+	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
