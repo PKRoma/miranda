@@ -225,9 +225,10 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 	WORD status;
 	char *szProto;
 	
-	
+	if (FindItem(hwnd,dat,hContact,NULL,NULL,NULL)==1){return;};	
 	cacheEntry=GetContactFullCacheEntry(hContact);
 	szProto=cacheEntry->szProto;
+
 
 	//char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 	
