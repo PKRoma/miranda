@@ -339,7 +339,7 @@ start:
     char *szMsg = gg_getstatusmsg(ggDesiredStatus);
     p.status = status_m2gg(ggDesiredStatus, szMsg != NULL);
     p.status_descr = szMsg;
-    p.image_size = 128;
+    p.image_size = 512;
 
 #ifdef DEBUGMODE
     gg_netlog("gg_mainthread(): Connecting with number %d, status %d and description \"%s\".", p.uin, ggDesiredStatus,
