@@ -109,7 +109,7 @@ void icq_TCPLinkOnConnectTimeout(icq_TCPLink *plink);
 
 unsigned long icq_TCPLinkSendSeq(icq_TCPLink *plink, icq_Packet *p,
   unsigned long sequence);
-void icq_TCPLinkSend(icq_TCPLink *plink, icq_Packet *p);
+int icq_TCPLinkSend(icq_TCPLink *plink, icq_Packet *p);
 
 void icq_TCPLinkProcessReceived(icq_TCPLink *plink);
 
