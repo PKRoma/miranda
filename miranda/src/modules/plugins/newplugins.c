@@ -262,7 +262,7 @@ static int PluginsEnum(WPARAM wParam, LPARAM lParam)
 		} else if ( rc == DBPE_HALT ) return 1;
 		x = x->nextclass;
 	} // while
-	return 1;
+	return pluginListDb != NULL ? 1 : -1;
 }
 
 
