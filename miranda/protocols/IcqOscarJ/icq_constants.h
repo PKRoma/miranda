@@ -181,7 +181,7 @@
 
 /* Subtypes for Location Family 0x0002 */
 #define SRV_LOCATION_RIGHTS_REPLY   0x0003
-#define ICQ_CLIENT_SET_USER_INFO    0x0004
+#define ICQ_LOCATION_SET_USER_INFO  0x0004
 
 /* Subtypes for Buddy Family 0x0003 */
 #define ICQ_USER_CLI_REQBUDDY       0x0002
@@ -331,7 +331,7 @@
 #define URL_FORGOT_PASSWORD         "https://web.icq.com/secure/password"
 #define URL_REGISTER                "http://lite.icq.com/register"
 #define FLAP_MARKER                 0x2a
-#define CLIENT_ID_STRING            "ICQ Inc. - Product of ICQ (TM).2003b.5.56.1.3916.85"
+#define CLIENT_ID_STRING            "ICQBasic"
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
 
