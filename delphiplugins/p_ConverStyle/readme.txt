@@ -64,6 +64,13 @@ I recomment renaming the unused plugin to
 splitmsgdialogs.dl_ or convers.dl_
 
 
+Source
+------
+
+The full source for this plugin can be found in the Miranda CVS
+at Sourceforge.
+
+
 License
 -------
 
