@@ -4,7 +4,7 @@
 // 
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004,2005 Martin Öberg, Sam Kothari, Robert Rainwater
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -62,7 +62,7 @@ PLUGININFO pluginInfo = {
 	"Support for ICQ network",
 	"Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"info@miranda-im.org",
-	"© 2000-2004 M.Öberg, R.Hughes, J.Keating",
+	"© 2000-2005 M.Öberg, R.Hughes, J.Keating",
 	"http://www.miranda-im.org/download/details.php?action=viewfile&id=729",
 	0,		//not transient
 	0		//doesn't replace anything built-in

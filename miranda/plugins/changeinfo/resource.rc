@@ -156,7 +156,7 @@ BEGIN
             VALUE "FileDescription", "Miranda IM - Change ICQ details plugin\0"
             VALUE "FileVersion", "0.3.3\0"
             VALUE "InternalName", "changeinfo\0"
-            VALUE "LegalCopyright", "Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2005 Richard Hughes, Martin Öberg\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "changeinfo.dll\0"
             VALUE "PrivateBuild", "\0"

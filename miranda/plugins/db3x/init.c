@@ -149,7 +149,7 @@ static PLUGININFO pluginInfo = {
 	"Provides profile support for 3.xx profiles: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
 	"egodust@users.sourceforge.net",
-	"Copyright 2000-2004 Miranda-IM project",
+	"Copyright 2000-2005 Miranda-IM project",
 	"",
 	0,
 	DEFMOD_DB

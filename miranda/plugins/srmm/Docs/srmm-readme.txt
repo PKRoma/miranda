@@ -78,7 +78,7 @@ E-mail: rianwater at miranda-im.org
 
 License and Copyright
 ---------------------
-Copyright (C) 2001,2002,2003,2004 Robert Rainwater, Martin Öberg, Richard Hughes
+Copyright (C) 2001-2005 Robert Rainwater, Martin Öberg, Richard Hughes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

@@ -2,7 +2,7 @@
 
 Import plugin for Miranda IM
 
-Copyright (C) 2001,2002,2003,2004 Martin Öberg, Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (C) 2001-2005 Martin Öberg, Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -63,7 +63,7 @@ PLUGININFO pluginInfo = {
 		"Imports contacts and messages from Mirabilis ICQ and Miranda IM.",
 		"Martin Öberg",
 		"info at miranda-im.org",
-		"© 2000-2004 Martin Öberg, Richard Hughes",
+		"© 2000-2005 Martin Öberg, Richard Hughes",
 		"http://www.miranda-im.org",
 		0,
 		0

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project, 
+Copyright 2000-2005 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -35,7 +35,7 @@ PLUGININFO pluginInfo = {
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
 	"egodust@users.sourceforge.net",
-	"Copyright 2000-2004 Miranda-IM project",
+	"Copyright 2000-2005 Miranda-IM project",
 	"http://www.miranda-im.org",
 	0,
 	DEFMOD_CLISTALL

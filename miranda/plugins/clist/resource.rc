@@ -718,7 +718,7 @@ BEGIN
             VALUE "FileDescription", "Miranda IM Contact List\0"
             VALUE "FileVersion", "0.3.4 alpha\0"
             VALUE "InternalName", "clist\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
+            VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "clist.dll\0"
             VALUE "PrivateBuild", "\0"
