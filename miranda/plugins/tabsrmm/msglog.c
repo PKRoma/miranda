@@ -506,7 +506,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             return NULL;
         }
     }
-
     dat->stats.lastReceivedChars = 0;
     
     dat->isHistory = (dbei.timestamp < (DWORD)dat->stats.started && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
@@ -757,8 +756,7 @@ nounicode:
             msg = (BYTE *) dbei.pBlob;
             if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                 dat->stats.lastReceivedChars = lstrlenA(msg);
-            if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
-                TrimMessage(msg);
+            TrimMessage(msg);
             if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
                 char *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
                 AppendToBufferWithRTF(1, &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
@@ -866,7 +864,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 #if defined(_UNICODE)
         event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
 #else
-        event.dwFlags = ((dat->dwFlags ? MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
+        event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
 #endif        
         if (!fAppend) {
             event.iType = IEE_CLEAR_LOG;

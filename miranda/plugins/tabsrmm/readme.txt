@@ -6,7 +6,7 @@ Support Forum: http://hell.at.eu.org/forums/
 
 ----------------------------------------------------------
 				
-Version: 1.0.0.0
+Version: 0.9.9.9
 Created: March 2004
 
 1. Overview

@@ -15,12 +15,20 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.9b - 2005/03/25
+Version 0.9.9.91 - 2005/03/28
 
         * non-unicode version now sets the IEEF_NO_UNICODE flag for IEview. That may
           resolve some crash problems.
           
         * some fixes related to the new icon loading stuff (ico lib).
+        
+        * rich edit max size fix for the message log
+        
+        * more aggressivly obeys the maxmessagelen flag returned by a 
+          protocol to set the maximum allowed size of a message typed into the input
+          area.
+
+        ! fixed typing notify icon in contact list and tray (did appear as blank).
         
 Version 0.9.9.9 - 2005/03/24
 

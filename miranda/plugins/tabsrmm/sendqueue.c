@@ -391,7 +391,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 return TRUE;
             }
             break;
-        case WM_RBUTTONUP:
+        case WM_CONTEXTMENU:
         {
 			PUDeletePopUp(hWnd);
 			return TRUE;

@@ -643,7 +643,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.right -= (dat->multiSplitterX + 3);
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (!showToolbar)
-                urc->rcItem.bottom += 24;
+                urc->rcItem.bottom += (splitterEdges ? 24 : 26);
             if(dat->bNotOnList)
                 urc->rcItem.bottom -= 24;
             if(!splitterEdges)
@@ -953,13 +953,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (hItem)
                         SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
                     
+                    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, 0x80000000);
                     if (dat->szProto) {
                         int nMax;
                         nMax = CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM) dat->hContact);
                         if (nMax)
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
                         else
-                            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, (LPARAM)7500);
+                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)7500);
                         pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
                         if(pCaps & PF4_AVATARS)
                             SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);

@@ -343,7 +343,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             
             CheckDlgButton(hwndDlg, IDC_MSGLOGPLUGIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0));
             
-            CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1));
             CheckDlgButton(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1));
             EnableWindow(GetDlgItem(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP), IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE));
             
@@ -453,7 +452,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", (DWORD) GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "logstatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LOGSTATUS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_INOUTICONS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EMPTYLINEFIX));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "formatwords", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FORMATWHOLEWORDSONLY));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MSGLOGPLUGIN));
