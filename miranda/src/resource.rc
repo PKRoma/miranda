@@ -1532,6 +1532,16 @@ BEGIN
     LTEXT           "minute(s)",IDC_STATIC,241,168,54,9
 END
 
+IDD_NETLIBLOG DIALOG DISCARDABLE  0, 0, 262, 159
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+CAPTION "Miranda Network Log"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_LOG,2,2,256,154,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    WS_VSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2055,6 +2065,14 @@ BEGIN
     IDD_OPT_IDLE, DIALOG
     BEGIN
         BOTTOMMARGIN, 238
+    END
+
+    IDD_NETLIBLOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 258
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 156
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -26,7 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#define alloca(a) _alloca((a))
 
 extern HANDLE hConnectionHeaderMutex;
+static HWND hwndLog = NULL;
 
+#define DM_CLEARLOG (WM_USER+1)
+#define DM_LOG      (WM_USER+2)
 #define TIMEFORMAT_NONE         0
 #define TIMEFORMAT_HHMMSS       1
 #define TIMEFORMAT_MILLISECONDS 2
@@ -49,41 +52,108 @@ static const char *szTimeFormats[]={"No times","Standard hh:mm:ss times","Times 
 
 static int IsConsoleVisible(void)
 {
-	char szTitle[MAX_PATH];
-	return GetConsoleTitle(szTitle,sizeof(szTitle));
+	if (hwndLog) {
+        return IsWindowVisible(hwndLog)?1:0;
+    }
+    else {
+        return 0;
+    }
+}
+
+static int ConsoleResizeProc(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc) 
+{
+    switch(urc->wId) {
+        case IDC_LOG:
+            return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
+    }
+    return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+}
+
+static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    static UINT uLen = 0;
+
+	switch (msg)
+	{
+		case WM_INITDIALOG:
+        {
+            HFONT hFont = CreateFont(14,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FIXED_PITCH|FF_DONTCARE,"Courier New");
+            SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETFONT, (WPARAM)hFont, 0);
+            SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_HELP)));
+            Utils_RestoreWindowPosition(hwndDlg,NULL,"Netlib","log");
+            ShowWindow(hwndDlg, SW_SHOWNORMAL);
+            return TRUE;
+        }
+        case DM_CLEARLOG:
+            SetDlgItemText(hwndDlg, IDC_LOG, "");
+            uLen = 0;
+            break;
+        case DM_LOG:
+        {
+            char *str = (char*)wParam;
+            if (!str) break;
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, uLen, uLen);
+            uLen += lstrlen(str);
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, 0, (WPARAM)str);
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SCROLLCARET, 0, 0);
+            break;
+        }
+		case WM_SIZE:
+		{	
+            UTILRESIZEDIALOG urd;
+
+			if(IsIconic(hwndDlg)) break;
+			ZeroMemory(&urd, sizeof(urd));
+			urd.cbSize = sizeof(urd);
+			urd.hInstance = GetModuleHandle(NULL);
+			urd.hwndDlg = hwndDlg;
+			urd.lpTemplate = MAKEINTRESOURCE(IDD_NETLIBLOG);
+			urd.pfnResizer = ConsoleResizeProc;
+			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+			break;
+		}
+		case WM_GETMINMAXINFO:
+		{	
+            MINMAXINFO *mmi = (MINMAXINFO*)lParam;
+			mmi->ptMinTrackSize.x = 200;
+			mmi->ptMinTrackSize.y = 100;
+			return 0;
+		}
+        case WM_DESTROY:
+            Utils_SaveWindowPosition(hwndDlg,NULL,"Netlib","log");
+            break;
+    }
+    return FALSE;
+}
+
+static void ClearConsole(void) 
+{
+    if (hwndLog) {
+        SendMessage(hwndLog, DM_CLEARLOG, 0, 0);
+    }
+}
+
+static void SendConsoleMessage(char *msg) 
+{
+    if (hwndLog) {
+        SendMessage(hwndLog, DM_LOG, (WPARAM)msg, 0);
+    }
 }
 
 static void ShowConsole(void)
 {
-	HWND hwndConsole;
-	MSG msg;
-	
-	if(IsConsoleVisible()) return;
-	AllocConsole();
-	SetConsoleTitle("676d4af7-970d-4808-b7f6-cb182ff60297");
-	/*
-		ShowConsole() maybe called at point where Miranda's message loop
-		hasn't been created.
+    if (hwndLog) {
+        ShowWindow(hwndLog, SW_SHOWNORMAL);
+    }
+    else {
+        hwndLog = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_NETLIBLOG), NULL, DlgConsole);
+    }
+}
 
-		SetConsoleTitle() uses Windows defined messages and needs the message
-		loop to actually work, because the title is never set, FindWindow()
-		will fail and the code below to remove the menu will also fail, enabling
-		the 'close button on the console window which will exit the message loop
-		if pressed.
-
-		The mini message loop here let's Window's actually set the console title
-		and so everything works okay when the message loop hasn't yet been created.
-
-		Also, the message ID's range from 49303.. to 49309 but I haven't hard
-		coded those to be flushed since it maybe Windows version dependant.
-	*/
-	while (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-	hwndConsole=FindWindow(NULL,"676d4af7-970d-4808-b7f6-cb182ff60297");
-	SetConsoleTitle("Miranda Netlib Log");
-	if(hwndConsole) DeleteMenu(GetSystemMenu(hwndConsole,FALSE),SC_CLOSE,MF_BYCOMMAND);
+static void HideConsole(void)
+{
+    if (hwndLog) {
+        ShowWindow(hwndLog, SW_HIDE);
+    }
 }
 
 static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
@@ -148,7 +218,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 				case IDC_SHOWCONSOLE:
 					if(IsConsoleVisible()) {
 						SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Show console"));
-						FreeConsole();
+						HideConsole();
 					}
 					else {
 						SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Hide console"));
@@ -156,14 +226,8 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					}
 					break;
 				case IDC_CLEARCONSOLE:
-				{	COORD topLeft={0,0};
-					DWORD charsWritten;
-					CONSOLE_SCREEN_BUFFER_INFO csbi;
-					GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
-					FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE),' ',csbi.dwSize.X*csbi.dwSize.Y,topLeft,&charsWritten);
-					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),topLeft);
+					ClearConsole();
 					break;
-				}
 				case IDC_SHOWCONSOLEATSTART:
 					DBWriteContactSettingByte(NULL,"Netlib","ShowConsoleAtStart",(BYTE)IsDlgButtonChecked(hwndDlg,LOWORD(wParam)));
 					break;
@@ -341,13 +405,12 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 	if(logOptions.showUser) lstrcat(szTime," ");
 	szLine=(char*)malloc(lstrlen(pszMsg)+lstrlen(nlu->user.szSettingsModule)+5+lstrlen(szTime));
 	if(logOptions.timeFormat || logOptions.showUser)
-		sprintf(szLine,"[%s%s] %s\n",szTime,logOptions.showUser?nlu->user.szSettingsModule:"",pszMsg);
+		sprintf(szLine,"[%s%s] %s\r\n",szTime,logOptions.showUser?nlu->user.szSettingsModule:"",pszMsg);
 	else
-		sprintf(szLine,"%s\n",pszMsg);
+		sprintf(szLine,"%s\r\n",pszMsg);
 	EnterCriticalSection(&logOptions.cs);
 	if(logOptions.toConsole) {
-		DWORD charsWritten;
-		WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE),szLine,lstrlen(szLine),&charsWritten,NULL);
+        SendConsoleMessage(szLine);
 	}
 	if(logOptions.toOutputDebugString) OutputDebugString(szLine);
 	if(logOptions.toFile && logOptions.szFile[0]) {
@@ -414,7 +477,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
 	nlu = nlc ? nlc->nlu : NULL;
-	titleLineLen = sprintf(szTitleLine, "(%p:%u) Data %s%s\n", nlc, nlc?nlc->s:0, sent?"sent":"received", flags & MSG_DUMPPROXY?" (proxy)":"");
+	titleLineLen = sprintf(szTitleLine, "(%p:%u) Data %s%s\r\n", nlc, nlc?nlc->s:0, sent?"sent":"received", flags & MSG_DUMPPROXY?" (proxy)":"");
 	ReleaseMutex(hConnectionHeaderMutex);
 
 	// Text data
@@ -452,6 +515,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 				*pszBuf++ = buf[line+col]<' '?'.':(char)buf[line+col];
 			if (len-line<=16)
 				break;
+            *pszBuf++ = '\r'; // End each line with a break
 			*pszBuf++ = '\n'; // End each line with a break
 		}
 		*pszBuf = '\0';
@@ -511,4 +575,5 @@ void NetlibLogShutdown(void)
 	if(logOptions.hwndOpts) DestroyWindow(logOptions.hwndOpts);
 	DeleteCriticalSection(&logOptions.cs);
 	if(logOptions.szFile) free(logOptions.szFile);
+    if(hwndLog) DestroyWindow(hwndLog);
 }
