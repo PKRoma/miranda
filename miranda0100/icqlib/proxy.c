@@ -59,24 +59,32 @@ void icq_SetProxy(icq_Link *icqlink, const char *phost, unsigned short pport,
     free(icqlink->icq_ProxyName);
   if(icqlink->icq_ProxyPass)
     free(icqlink->icq_ProxyPass);
-  if(strlen(pname)>255)
-  {
-    icq_FmtLog(icqlink, ICQ_LOG_ERROR, "[SOCKS] User name greater than 255 chars\n");
-    icqlink->icq_UseProxy = 0;
-    return;
-  }
-  if(strlen(ppass)>255)
-  {
-    icq_FmtLog(icqlink, ICQ_LOG_ERROR, "[SOCKS] User password greater than 255 chars\n");
-    icqlink->icq_UseProxy = 0;
-    return;
+  if(pauth) {
+	if(strlen(pname)>255)
+	{
+	  icq_FmtLog(icqlink, ICQ_LOG_ERROR, "[SOCKS] User name greater than 255 chars\n");
+	  icqlink->icq_UseProxy = 0;
+	  return;
+	}
+	if(strlen(ppass)>255)
+	{
+	  icq_FmtLog(icqlink, ICQ_LOG_ERROR, "[SOCKS] User password greater than 255 chars\n");
+	  icqlink->icq_UseProxy = 0;
+	  return;
+	}
   }
   icqlink->icq_UseProxy = 1;
   icqlink->icq_ProxyHost = strdup(phost);
   icqlink->icq_ProxyPort = pport;
   icqlink->icq_ProxyAuth = pauth;
-  icqlink->icq_ProxyName = strdup(pname);
-  icqlink->icq_ProxyPass = strdup(ppass);
+  if(pauth) {
+    icqlink->icq_ProxyName = strdup(pname);
+	icqlink->icq_ProxyPass = strdup(ppass);
+  }
+  else {
+    icqlink->icq_ProxyName = strdup("");
+	icqlink->icq_ProxyPass = strdup("");
+  }
 }
 
 void icq_UnsetProxy(icq_Link *icqlink)
