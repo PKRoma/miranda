@@ -101,7 +101,7 @@ HANDLE __stdcall YAHOO_CreateProtoServiceFunction(
 
 int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 
-void __stdcall	YAHOO_DebugLog( const char *fmt, ... );
+void __stdcall	YAHOO_DebugLog( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));;
 
 DWORD __stdcall YAHOO_GetByte( const char* valueName, int parDefltValue );
 DWORD __stdcall YAHOO_SetByte( const char* valueName, int parValue );
