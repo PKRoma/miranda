@@ -32,6 +32,7 @@ typedef enum {
 HBITMAP hPattern;
 HBITMAP hAsSeenOnDesk;
 
+/*
 void GetWallpaperPattern()
 {
 	// \Control Panel\Desktop
@@ -52,4 +53,4 @@ void GetWallpaperStyle()
 	RegOpenKeyEx(HKEY_CURRENT_USER,"\\Control Panel\\Desktop",0,KEY_READ,&regk);
 	RegQueryValueEx(regk,"OriginalWallpaper",0,NULL,&buff,256);
 	MessageBox(0,buff,"",0);
-}
+}*/

@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
+#ifndef SPI_GETDESKWALLPAPER
+#define SPI_GETDESKWALLPAPER 115
+#endif
 //loads of stuff that didn't really fit anywhere else
 
 extern HANDLE hHideInfoTipEvent;
@@ -531,6 +534,7 @@ void NotifyNewContact(HWND hwnd,HANDLE hContact)
 	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }
 
+
 void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 {
 	dat->rowHeight=DBGetContactSettingByte(NULL,"CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
@@ -541,17 +545,20 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 		for(i=0;i<=FONTID_MAX;i++) {
 			if(!dat->fontInfo[i].changed) DeleteObject(dat->fontInfo[i].hFont);
 			GetFontSetting(i,&lf,&dat->fontInfo[i].colour);
-			if (0) {
+			{
+				LONG height;
 				HDC hdc=GetDC(NULL);
+				height=lf.lfHeight;
 				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 				ReleaseDC(NULL,hdc);				
+				dat->fontInfo[i].hFont=CreateFontIndirect(&lf);
+				lf.lfHeight=height;
 			}
-			dat->fontInfo[i].hFont=CreateFontIndirect(&lf);
 			dat->fontInfo[i].changed=0;
 			SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc,"x",1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
-			if(fontSize.cy+2>dat->rowHeight) dat->rowHeight=fontSize.cy+2;
+			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
 		}
 		ReleaseDC(hwnd,hdc);
 	}
@@ -567,15 +574,15 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 		DBVARIANT dbv;
 		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
 		if(dat->hBmpBackground) {DeleteObject(dat->hBmpBackground); dat->hBmpBackground=NULL;}
-		if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) {			
+		if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
-					dat->hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+				dat->hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
 				mir_free(dbv.pszVal);
 			}
 		}
 		dat->backgroundBmpUse=DBGetContactSettingWord(NULL,"CLC","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 	}
-	
+
 	if ( DBGetContactSettingByte(NULL,"CLCExt","EXBK_FillWallpaper",0) )
 	{			
 		char wpbuf[MAX_PATH];
@@ -585,41 +592,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 		// we have a wallpaper string
 		if (strlen(wpbuf)>0)
 		{		
-			dat->hBmpBackground = LoadImage(NULL,wpbuf,IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
-				/*
-			HDC hDC;
-			int horzRes, vertRes;
-			BITMAP bmpWPInfo;
-			HBITMAP hWallpaper;
-			
-			hDC = GetDC(hwnd);
-
-			horzRes = GetDeviceCaps(hDC,HORZRES);
-			vertRes = GetDeviceCaps(hDC,VERTRES);
-				
-			hWallpaper = LoadImage(NULL,wpbuf,IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
-
-			if (GetObject(hWallpaper, sizeof(BITMAP), (LPSTR)&bmpWPInfo)) 
-			{
-				HBITMAP hbmPrev;
-				HDC WallpaperDC, BackgroundDC;
-				
-				WallpaperDC = CreateCompatibleDC(hDC);
-				BackgroundDC = CreateCompatibleDC(hDC);
-				
-				dat->hBmpBackground = CreateCompatibleBitmap(GetDC(NULL),horzRes,vertRes);
-
-				hbmPrev = (HBITMAP) SelectObject(WallpaperDC, hWallpaper);
-				SelectObject(BackgroundDC, dat->hBmpBackground);	
-
-				StretchBlt(BackgroundDC,0,0,horzRes,vertRes,WallpaperDC,0,0,bmpWPInfo.bmWidth,bmpWPInfo.bmHeight,SRCCOPY);
-
-				SelectObject(BackgroundDC,hbmPrev);
-				DeleteObject(hbmpBackground);
-				ReleaseDC(0,BackgroundDC);
-				DeleteDC(WallpaperDC);
-			}
-			ReleaseDC(hwnd,hDC);*/
+			dat->hBmpBackground = LoadImage(NULL,wpbuf,IMAGE_BITMAP,0,0,LR_LOADFROMFILE);				
 		}	
 	}
 
@@ -697,5 +670,6 @@ void InvalidateItem(HWND hwnd,struct ClcData *dat,int iItem)
 	GetClientRect(hwnd,&rc);
 	rc.top=iItem*dat->rowHeight-dat->yScroll;
 	rc.bottom=rc.top+dat->rowHeight;
-	InvalidateRect(hwnd,&rc,FALSE);
+	//InvalidateRect(hwnd,&rc,FALSE);
+	InvalidateRect(hwnd,NULL,FALSE); // workaround
 }

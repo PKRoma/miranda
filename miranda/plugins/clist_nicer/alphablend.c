@@ -22,8 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-
+#define AC_SRC_ALPHA 0x01
 #define M_PI 3.1
+
 //#define SEGMENTS 70
 #define REVCOLREF(colref) ( RGB(GetBValue(colref),GetGValue(colref),GetRValue(colref)) )
 #define ARGB_FROM_COLA(col,alpha)( (BYTE)((float)(((float)alpha)/100)*255) <<24| col)
@@ -108,7 +109,7 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 
 	holdbitmap=SelectObject(hdc, hbitmap);
 
-	// convert basecolor to RGB and then marge alpha so its ARGB
+	// convert basecolor to RGB and then merge alpha so its ARGB
 	basecolor = ARGB_FROM_COLA(REVCOLREF(basecolor),alpha);
 	basecolor2 = ARGB_FROM_COLA(REVCOLREF(basecolor2),alpha);
 
@@ -271,12 +272,12 @@ void gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFi
 			fSolidMulti = 1-fInvSolidMulti;
 		}
 
-		*ubRedFinal =	(UCHAR) (((float)ubRed * (float)fSolidMulti))
-			+	(((float)ubRed2 * (float)fInvSolidMulti));
-		*ubGreenFinal =  (UCHAR) (UCHAR) (((float)ubGreen * (float)fSolidMulti))
-			+	(((float)ubGreen2 * (float)fInvSolidMulti));
-		*ubBlueFinal =	(UCHAR) (((float)ubBlue * (float)fSolidMulti))
-			+	(UCHAR)(((float)ubBlue2 * (float)fInvSolidMulti));
+		*ubRedFinal =	(UCHAR) (((float)ubRed * (float)fInvSolidMulti))
+			+	(((float)ubRed2 * (float)fSolidMulti));
+		*ubGreenFinal =  (UCHAR) (UCHAR) (((float)ubGreen * (float)fInvSolidMulti))
+			+	(((float)ubGreen2 * (float)fSolidMulti));
+		*ubBlueFinal =	(UCHAR) (((float)ubBlue * (float)fInvSolidMulti))
+			+	(UCHAR)(((float)ubBlue2 * (float)fSolidMulti));
 
 		*ubAlpha = 0xFF;
 	}
@@ -294,6 +295,7 @@ void gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal
 		*ubAlpha = (UCHAR)((float)y /(float)ulBitmapHeight * 255);				
 		*ubAlpha = FLG_GRADIENT&GRADIENT_BT?0xFF-*ubAlpha:*ubAlpha;
 		*ubRedFinal=ubRed; *ubGreenFinal=ubGreen; *ubBlueFinal=ubBlue;
+
 	}
 	else // solid to solid2
 	{
@@ -308,12 +310,12 @@ void gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal
 			fSolidMulti = 1-fInvSolidMulti;
 		}							
 
-		*ubRedFinal =	(UCHAR) (((float)ubRed * (float)fSolidMulti))
-			+	(((float)ubRed2 * (float)fInvSolidMulti));
-		*ubGreenFinal =  (UCHAR) (UCHAR) (((float)ubGreen * (float)fSolidMulti))
-			+	(((float)ubGreen2 * (float)fInvSolidMulti));
-		*ubBlueFinal =	(UCHAR) (((float)ubBlue * (float)fSolidMulti))
-			+	(UCHAR)(((float)ubBlue2 * (float)fInvSolidMulti));
+		*ubRedFinal =	(UCHAR) (((float)ubRed * (float)fInvSolidMulti))
+			+	(((float)ubRed2 * (float)fSolidMulti));
+		*ubGreenFinal =  (UCHAR) (UCHAR) (((float)ubGreen * (float)fInvSolidMulti))
+			+	(((float)ubGreen2 * (float)fSolidMulti));
+		*ubBlueFinal =	(UCHAR) (((float)ubBlue * (float)fInvSolidMulti))
+			+	(UCHAR)(((float)ubBlue2 * (float)fSolidMulti));
 
 		*ubAlpha = 0xFF;
 	}

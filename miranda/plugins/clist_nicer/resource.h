@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
 #define IDC_AUTHICON                    1
@@ -546,6 +546,7 @@
 #define IDC_MRGN_RIGHT                  1706
 #define IDC_GRADIENT_BT                 1707
 #define IDC_BASECOLOUR2                 1708
+#define IDC_TEXTCOLOUR                  1709
 #define IDC_CORNER_TL                   1710
 #define IDC_CORNER_TR                   1711
 #define IDC_CORNER_BR                   1712
@@ -556,6 +557,7 @@
 #define IDC_IGNORE                      1717
 #define IDC_COLOR2LABLE                 1718
 #define IDC_COLOR2_TRANSPARENT          1719
+#define IDC_TEXTCOLOURLABLE             1720
 #define IDC_IGNORESELFORGROUPS          1722
 #define IDC_CHECK1                      1723
 #define IDI_SEARCHALL                   32548

@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+//Microsoft Developer Studio generated resource script.
 //
 #include "resource.h"
 
@@ -15,7 +15,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// German (Germany) resources
+// Deutsch (Deutschland) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
 #ifdef _WIN32
@@ -29,9 +29,9 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 //
 
 IDD_OPT_EXTBKG DIALOGEX 0, 0, 314, 240
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_SYSMENU
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Contactlist Items",IDC_STATIC,4,18,305,162
     CONTROL         "ignore this item completely",IDC_IGNORE,"Button",
@@ -94,8 +94,8 @@ BEGIN
     LTEXT           "Color 1",IDC_COLORLABLE,157,106,24,8,WS_DISABLED
     LTEXT           "% Alpha",IDC_ALPHALABLE,166,147,28,8,WS_DISABLED
     LTEXT           "Margins (px)",IDC_MARGINLABLE,239,121,41,8,WS_DISABLED
-    PUSHBUTTON      "Import",IDC_IMPORT,0,0,57,15
-    PUSHBUTTON      "Export",IDC_EXPORT,62,0,50,15
+    PUSHBUTTON      "Import",IDC_IMPORT,0,0,45,15
+    PUSHBUTTON      "Export",IDC_EXPORT,53,0,45,15
     CONTROL         "",IDC_BASECOLOUR2,"ColourPicker",WS_DISABLED | 
                     WS_TABSTOP,189,105,22,10
     LTEXT           "Color 2",IDC_COLOR2LABLE,219,106,24,8,WS_DISABLED
@@ -106,6 +106,9 @@ BEGIN
                     BS_MULTILINE | WS_TABSTOP,4,223,222,10
     LISTBOX         IDC_ITEMS,10,31,109,142,LBS_NOINTEGRALHEIGHT | 
                     LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_TEXTCOLOUR,"ColourPicker",WS_DISABLED | 
+                    WS_TABSTOP,129,127,22,10
+    LTEXT           "Textcolor",IDC_TEXTCOLOURLABLE,157,128,37,8,WS_DISABLED
 END
 
 
@@ -115,7 +118,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
     IDD_OPT_EXTBKG, DIALOG
     BEGIN
@@ -139,12 +142,12 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // German (Germany) resources
+#endif    // Deutsch (Deutschland) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -158,8 +161,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | 
-    DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Delete Contact"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -178,7 +181,7 @@ BEGIN
 END
 
 IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -206,7 +209,7 @@ BEGIN
 END
 
 IDD_OPT_CLIST DIALOGEX 0, 0, 314, 204
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -265,7 +268,7 @@ BEGIN
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 245
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -329,7 +332,7 @@ BEGIN
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -352,8 +355,8 @@ BEGIN
                     WS_TABSTOP,11,88,179,10
     LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,10,112,8
     CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
-                    WS_TABSTOP | 0x4000,191,20,112,86
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
+                    WS_BORDER | WS_TABSTOP,191,20,112,86
     GROUPBOX        "Groups",IDC_STATIC,2,120,148,121
     CONTROL         "Draw a line alongside group names",IDC_LINEWITHGROUPS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,
@@ -397,8 +400,8 @@ BEGIN
     CONTROL         "Grey out entire list when:",IDC_GREYOUT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,195,139,10
     CONTROL         "Tree1",IDC_GREYOUTOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
-                    WS_TABSTOP | 0x4000,165,205,139,30
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
+                    WS_BORDER | WS_TABSTOP,165,205,139,30
     CONTROL         "Dim idle contacts",IDC_IDLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,102,153,10
     CONTROL         "Hide vertical scroll bar",IDC_NOSCROLLBAR,"Button",
@@ -406,7 +409,7 @@ BEGIN
 END
 
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 240
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -466,7 +469,7 @@ BEGIN
 END
 
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 292, 142
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -494,7 +497,7 @@ BEGIN
 END
 
 IDD_OPT_SBAR DIALOGEX 0, 0, 178, 212
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -520,7 +523,7 @@ BEGIN
 END
 
 IDD_OPT_CLCTEXTSIMPLE DIALOGEX 0, 0, 277, 240
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -575,7 +578,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
     IDD_DELETECONTACT, DIALOG
     BEGIN
@@ -723,12 +726,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
@@ -736,7 +739,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "\r\n"
     "\0"
@@ -752,25 +755,25 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_RENAME              ICON                    "res\\rename.ico"
-IDI_BLANK               ICON                    "res\\blank.ico"
-IDI_DELETE              ICON                    "res\\delete.ico"
+IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
+IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
+IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR                  "res\\hyperlin.cur"
-IDC_DROP                CURSOR                  "res\\DRAGCOPY.CUR"
-IDC_DROPUSER            CURSOR                  "res\\dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res\\hyperlin.cur"
+IDC_DROP                CURSOR  DISCARDABLE     "res\\DRAGCOPY.CUR"
+IDC_DROPUSER            CURSOR  DISCARDABLE     "res\\dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_CLISTMENU MENU 
+IDR_CLISTMENU MENU DISCARDABLE 
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -792,7 +795,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU 
+IDR_CONTEXT MENU DISCARDABLE 
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -822,6 +825,7 @@ BEGIN
 END
 
 
+#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -844,15 +848,15 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", " "
-            VALUE "FileDescription", "Miranda IM Contact List"
-            VALUE "FileVersion", "0.3.4 alpha"
-            VALUE "InternalName", "clist"
-            VALUE "LegalCopyright", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim"
-            VALUE "OriginalFilename", "clist.dll"
-            VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.3.4 alpha"
+            VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
+            VALUE "CompanyName", " \0"
+            VALUE "FileDescription", "Miranda IM Contact List\0"
+            VALUE "FileVersion", "0.3.4 alpha\0"
+            VALUE "InternalName", "clist\0"
+            VALUE "LegalCopyright", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
+            VALUE "OriginalFilename", "clist.dll\0"
+            VALUE "ProductName", "Miranda IM Contact List\0"
+            VALUE "ProductVersion", "0.3.4 alpha\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -861,7 +865,9 @@ BEGIN
     END
 END
 
-#endif    // English (U.S.) resources
+#endif    // !_MAC
+
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

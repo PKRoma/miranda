@@ -671,7 +671,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						HFONT hFont=CreateFontIndirect(&lf);
 						hdc=GetDC(hwndDlg);
 						SelectObject(hdc,hFont);
-						GetTextExtentPoint32(hdc,"x",1,&size);
+						GetTextExtentPoint32(hdc,"_W",2,&size);
 						ReleaseDC(hwndDlg,hdc);
 						DeleteObject(hFont);
 						fontSettings[fontId].size=(char)size.cy;
@@ -694,7 +694,6 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendDlgItemMessage(hwndDlg,IDC_HOTCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_HOTTEXTCOLOUR);
 			SendDlgItemMessage(hwndDlg,IDC_HOTCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_HOTTEXTCOLOUR));
 			CheckDlgButton(hwndDlg,IDC_GAMMACORRECT,DBGetContactSettingByte(NULL,"CLC","GammaCorrect",CLCDEFAULT_GAMMACORRECT)?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_IGNORESELFORGROUPS,DBGetContactSettingByte(NULL,"CLC","IgnoreSelforGroups",0)?BST_CHECKED:BST_UNCHECKED);
 			SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELTEXTCOLOUR);
 			SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR));
 			SendDlgItemMessage(hwndDlg,IDC_QUICKCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_QUICKSEARCHCOLOUR);
@@ -787,7 +786,12 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SendDlgItemMessage(hwndDlg,IDC_SAMPLE,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDC_FONTID,WM_GETFONT,0,0),0);
 				DeleteObject(hFontSample);
 			}
-			lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);
+			lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);			
+			{
+				HDC hdc=GetDC(NULL);				
+				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+				ReleaseDC(NULL,hdc);				
+			}
 			lf.lfWidth=lf.lfEscapement=lf.lfOrientation=0;
 			lf.lfWeight=IsDlgButtonChecked(hwndDlg,IDC_BOLD)?FW_BOLD:FW_NORMAL;
 			lf.lfItalic=IsDlgButtonChecked(hwndDlg,IDC_ITALIC);
@@ -836,11 +840,12 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
 		{	int i;
-			int minHeight=1;//GetSystemMetrics(SM_CYSMICON);
+			int minHeight=GetSystemMetrics(SM_CYSMICON) + 1;
 			for(i=0;i<=FONTID_MAX;i++)
-				if(fontSettings[i].size+2>minHeight) minHeight=fontSettings[i].size+2;
+				if(fontSettings[i].size>minHeight) minHeight=fontSettings[i].size;
 			i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
-			if(i<minHeight) SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
+			//if(i<minHeight) 
+				SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
 			SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETRANGE,0,MAKELONG(255,minHeight));
 			break;
 		}
@@ -976,7 +981,6 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							}
 							DBWriteContactSettingByte(NULL,"CLC","RowHeight",(BYTE)SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0));
 							DBWriteContactSettingByte(NULL,"CLC","GammaCorrect",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_GAMMACORRECT));
-							DBWriteContactSettingByte(NULL,"CLC","IgnoreSelforGroups",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_IGNORESELFORGROUPS));
 							ClcOptionsChanged();
 							return TRUE;
 						case PSN_EXPERTCHANGED:
