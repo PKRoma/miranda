@@ -102,20 +102,16 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	
-	switch (msg)
-	{
-		
-	case WM_INITDIALOG:
-		{
-			
-			DBVARIANT dbv;
-			
-			
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    {
+      DBVARIANT dbv;
+
 			TranslateDialogDefault(hwndDlg);
-			
+
 			SetDlgItemInt(hwndDlg, IDC_ICQNUM, DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0), FALSE);
-			
+
 			if (!DBGetContactSetting(NULL, gpszICQProtoName, "Password", &dbv))
 			{
 				//bit of a security hole here, since it's easy to extract a password from an edit box
@@ -237,52 +233,40 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 static void ppackByte(PBYTE *buf,int *buflen,BYTE b)
 {
-
-	*buf=(PBYTE)realloc(*buf,1+*buflen);
-	*(*buf+*buflen)=b;
-	++*buflen;
-
+  *buf=(PBYTE)realloc(*buf,1+*buflen);
+  *(*buf+*buflen)=b;
+  ++*buflen;
 }
 
 
 
 static void ppackWord(PBYTE *buf,int *buflen,WORD w)
 {
-
-	*buf=(PBYTE)realloc(*buf,2+*buflen);
-	*(PWORD)(*buf+*buflen)=w;
-	*buflen+=2;
-
+  *buf=(PBYTE)realloc(*buf,2+*buflen);
+  *(PWORD)(*buf+*buflen)=w;
+  *buflen+=2;
 }
 
 
 
 static void ppackLNTS(PBYTE *buf, int *buflen, const char *szSetting)
 {
+  DBVARIANT dbv;
 
-	DBVARIANT dbv;
+  if (DBGetContactSetting(NULL, gpszICQProtoName, szSetting, &dbv))
+  {
+    ppackWord(buf,buflen,0);
+  }
+  else
+  {
+    WORD len = strlen(dbv.pszVal);
 
-	
-	if (DBGetContactSetting(NULL, gpszICQProtoName, szSetting, &dbv))
-	{
-
-		ppackWord(buf,buflen,0);
-
-	}
-	else
-	{
-
-		WORD len = strlen(dbv.pszVal);
-
-
-		ppackWord(buf,buflen,len);
-		*buf=(PBYTE)realloc(*buf,*buflen+len);
-		memcpy(*buf+*buflen,dbv.pszVal,len);
-		*buflen+=len;
-		DBFreeVariant(&dbv);
-
-	}
-
+    ppackWord(buf,buflen,len);
+    *buf=(PBYTE)realloc(*buf,*buflen+len);
+    memcpy(*buf+*buflen,dbv.pszVal,len);
+    *buflen+=len;
+    DBFreeVariant(&dbv);
+  }
 }
 
 
@@ -458,82 +442,86 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 
 
-static const UINT icqContactsControls[] = {IDC_ADDNEW,IDC_ADDREMOVE,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW};
-static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS};
+static const UINT icqContactsControls[] = {IDC_ADDSERVER,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW};
+static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS,IDC_LINKAVATARS};
 static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
-	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
-		CheckDlgButton(hwndDlg, IDC_ENABLE, DBGetContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",DEFAULT_SS_ENABLED));
-		CheckDlgButton(hwndDlg, IDC_ADDNEW, DBGetContactSettingByte(NULL,gpszICQProtoName,"AddServerNew",DEFAULT_SS_ADD));
-		CheckDlgButton(hwndDlg, IDC_ADDREMOVE, DBGetContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",DEFAULT_SS_ADDREMOVE));
-		CheckDlgButton(hwndDlg, IDC_LOADFROMSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",DEFAULT_SS_LOAD));
-		CheckDlgButton(hwndDlg, IDC_SAVETOSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",DEFAULT_SS_STORE));
-		CheckDlgButton(hwndDlg, IDC_ENABLEAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",DEFAULT_AVATARS_ENABLED));
-		CheckDlgButton(hwndDlg, IDC_AUTOLOADAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",DEFAULT_LOAD_AVATARS));
-		
-		if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED))
-			icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), TRUE);
-		else 
-			icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), FALSE);
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    TranslateDialogDefault(hwndDlg);
+    CheckDlgButton(hwndDlg, IDC_ENABLE, DBGetContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",DEFAULT_SS_ENABLED));
+    CheckDlgButton(hwndDlg, IDC_ADDSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",DEFAULT_SS_ADDSERVER));
+    CheckDlgButton(hwndDlg, IDC_LOADFROMSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",DEFAULT_SS_LOAD));
+    CheckDlgButton(hwndDlg, IDC_SAVETOSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",DEFAULT_SS_STORE));
+    CheckDlgButton(hwndDlg, IDC_ENABLEAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",DEFAULT_AVATARS_ENABLED));
+    CheckDlgButton(hwndDlg, IDC_AUTOLOADAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",DEFAULT_LOAD_AVATARS));
+    CheckDlgButton(hwndDlg, IDC_LINKAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLink",DEFAULT_LINK_AVATARS));
+
+    if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED))
+      icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), TRUE);
+    else 
+      icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), FALSE);
     if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED))
       icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), TRUE);
     else
       icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), FALSE);
-		if (icqOnline) {
-			ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLE), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEAVATARS), FALSE);
-		}
-		else {
-			EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
-		}
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case IDC_UPLOADNOW:
-			ShowUploadContactsDialog();
-			return TRUE;
-		case IDC_ENABLE:
-			icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLE));
-			if (icqOnline) ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
-			else EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
-			break;
+    if (icqOnline)
+    {
+      ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLE), FALSE);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEAVATARS), FALSE);
+    }
+    else
+    {
+      EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
+    }
+    return TRUE;
+
+  case WM_COMMAND:
+    switch (LOWORD(wParam))
+    {
+    case IDC_UPLOADNOW:
+      ShowUploadContactsDialog();
+      return TRUE;
+    case IDC_ENABLE:
+      icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLE));
+      if (icqOnline) ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
+      else EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
+      break;
     case IDC_ENABLEAVATARS:
       icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLEAVATARS));
       break;
-		}
-		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-		break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->code)
-			{
-			case PSN_APPLY:
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLE));
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"AddServerNew",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDNEW));
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDREMOVE));
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOADFROMSERVER));
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SAVETOSERVER));
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLEAVATARS));
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOLOADAVATARS));
-				if(IsDlgButtonChecked(hwndDlg,IDC_ENABLE) && IsDlgButtonChecked(hwndDlg,IDC_ADDNEW)) {
-					HANDLE hContact;
-					char *szProto;
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-					while (hContact)
-					{
-						szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-						if (szProto && !strcmp(szProto, gpszICQProtoName) && DBGetContactSettingWord(hContact,gpszICQProtoName,"ServerId",0))
-							DBDeleteContactSetting(hContact,"CList","Hidden");
-						hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-					}
-				}
-				return TRUE;
-			}
-			break;
-	}
-	return FALSE;
+    }
+    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+    break;
+
+  case WM_NOTIFY:
+    switch (((LPNMHDR)lParam)->code)
+    {
+    case PSN_APPLY:
+      DBWriteContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLE));
+      DBWriteContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDSERVER));
+      DBWriteContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOADFROMSERVER));
+      DBWriteContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SAVETOSERVER));
+      DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLEAVATARS));
+      DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOLOADAVATARS));
+      DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLink",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LINKAVATARS));
+/*      if(IsDlgButtonChecked(hwndDlg,IDC_ENABLE) && IsDlgButtonChecked(hwndDlg,IDC_ADDNEW)) {
+        HANDLE hContact;
+				char *szProto;
+				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+				while (hContact)
+				{
+					szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+					if (szProto && !strcmp(szProto, gpszICQProtoName) && DBGetContactSettingWord(hContact,gpszICQProtoName,"ServerId",0))
+						DBDeleteContactSetting(hContact,"CList","Hidden");
+					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+				} // showed all server contacts - superfluous already
+			}*/
+      return TRUE;
+    }
+    break;
+  }
+  return FALSE;
 }

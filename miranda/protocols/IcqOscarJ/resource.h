@@ -85,8 +85,8 @@
 #define IDC_IGNORE                      1528
 #define IDC_ENABLE                      1529
 #define IDC_LOADFROMSERVER              1530
-#define IDC_ADDNEW                      1531
-#define IDC_ADDREMOVE                   1532
+#define IDC_LINKAVATARS                 1531
+#define IDC_ADDSERVER                   1532
 #define IDC_SAVETOSERVER                1533
 #define IDC_ENABLEAVATARS               1536
 #define IDC_AUTOLOADAVATARS             1537
@@ -105,7 +105,7 @@
 #define IDC_STATIC_CLIST                1558
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        108
