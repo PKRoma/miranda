@@ -27,7 +27,7 @@ static void InitREOleCallback(void);
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 HANDLE hMessageWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
-HANDLE *hMsgMenuItem = NULL;
+HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
 int hMsgMenuItemCount = 0;
 
 extern HINSTANCE g_hInst;
@@ -125,15 +125,6 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         newData.szInitialText = (const char *) lParam;
         CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
     }
-    return 0;
-}
-
-static int ForwardMessage(WPARAM wParam, LPARAM lParam)
-{
-    struct NewMessageWindowLParam newData = { 0 };
-    newData.hContact = NULL;
-    newData.szInitialText = (const char *) lParam;
-    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLIT), NULL, DlgProcMessage, (LPARAM) & newData);
     return 0;
 }
 
@@ -332,6 +323,11 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
+{
+    return PLUGIN_MAKE_VERSION(0,0,0,1);
+}
+
 int LoadSendRecvMessageModule(void)
 {
     if (LoadLibraryA("riched20.dll") == NULL) {
@@ -355,9 +351,10 @@ int LoadSendRecvMessageModule(void)
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
     CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
-    CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
+    CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
     CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
     CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
+    hHookWinEvt=CreateHookableEvent(ME_MSG_WINDOWEVENT);
     SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
     SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
     SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));

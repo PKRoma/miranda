@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SB_CHAR_WIDTH        45;
 
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-extern HANDLE hMessageWindowList;
+extern HANDLE hMessageWindowList, hHookWinEvt;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
 
@@ -42,6 +42,18 @@ static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_NAME };
 static const UINT buttonLineControls[] = { IDC_ADD, IDC_USERMENU, IDC_DETAILS, IDC_HISTORY, IDC_TIME };
 static const UINT sendControls[] = { IDC_MESSAGE };
+
+void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
+    MessageWindowEventData mwe = { 0 };
+
+    if (hContact==NULL || hwnd==NULL) return;
+    mwe.cbSize = sizeof(mwe);
+    mwe.hContact = hContact;
+    mwe.hwndWindow = hwnd;
+    mwe.szModule = SRMMMOD;
+    mwe.uType = type;
+    NotifyEventHooks(hHookWinEvt, 0, (LPARAM)&mwe);
+}
 
 static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
 {
@@ -503,6 +515,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
             {
                 dat->hContact = newData->hContact;
+				NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
                 if (newData->szInitialText) {
                     int len;
                     SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
@@ -706,6 +719,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
             }
             ShowWindow(hwndDlg, SW_SHOWNORMAL);
+            NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
             return TRUE;
         }
         case WM_CONTEXTMENU:
@@ -1448,6 +1462,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         }
         case WM_DESTROY:
+            NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
             if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
                 NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
             }
@@ -1502,6 +1517,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
                 }
             }
+            NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
             free(dat);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
             break;
