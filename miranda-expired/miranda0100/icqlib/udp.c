@@ -406,6 +406,7 @@ void icq_UDPAck(icq_Link *icqlink, int seq) /* V5 */
 
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Acking\n");
   icq_UDPSockWriteDirect(icqlink, p);
+  icq_PacketDelete(p);		//rcdh: somebody should be mutilated for missing this out
 }
 
 /***************************************************
