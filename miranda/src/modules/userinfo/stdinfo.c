@@ -193,9 +193,16 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					SetDlgItemText(hwndDlg,IDC_LOCALTIME,Translate("<not specified>"));
 				}
 				else {
+                    TIME_ZONE_INFORMATION tzi;
+
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),TRUE);
 					timezone=(char)timezone;
 					GetSystemTimeAsFileTime(&ft);
+                    switch (GetTimeZoneInformation(&tzi)) {
+                        case TIME_ZONE_ID_DAYLIGHT:
+                            timezone+=tzi.DaylightBias;
+                            break;
+                    }
 					lift.QuadPart=*(__int64*)&ft;
 					lift.QuadPart-=(__int64)timezone*30i64*60i64*10000000i64;
 					*(__int64*)&ft=lift.QuadPart;
