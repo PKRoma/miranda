@@ -109,7 +109,7 @@ void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
     struct StreamJob StreamJobs[NR_STREAMJOBS + 2];
     int volatile g_StreamJobCurrent = 0;
     CRITICAL_SECTION sjcs;
-    void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt);
+    void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
 #endif
 
 HICON g_buttonBarIcons[NR_BUTTONBARICONS];
@@ -192,11 +192,11 @@ DWORD WINAPI StreamThread(LPVOID param)
             SuspendThread(g_hStreamThread);                 // nothing to do...
             continue;
         }
-        ReplaceIcons(StreamJobs[0].hwndOwner, StreamJobs[0].dat, StreamJobs[0].startAt);
+        ReplaceIcons(StreamJobs[0].hwndOwner, StreamJobs[0].dat, StreamJobs[0].startAt, StreamJobs[0].fAppend);
         EnterCriticalSection(&sjcs);
         StreamJobs[0].dat->pendingStream--;
         StreamJobs[0].dat->pContainer->pendingStream--;
-        MoveMemory(&StreamJobs[0],  &StreamJobs[1], (g_StreamJobCurrent - 1) * sizeof(StreamJobs[0]));
+        MoveMemory(&StreamJobs[0], &StreamJobs[1], (g_StreamJobCurrent - 1) * sizeof(StreamJobs[0]));
         g_StreamJobCurrent--;
         LeaveCriticalSection(&sjcs);
     } while ( g_StreamThreadRunning );
@@ -775,7 +775,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     showButton = dat->showUIElements & MWF_UI_SHOWBUTTON;
     showSend = dat->showUIElements & MWF_UI_SHOWSEND;
 
-    if(dat->dwFlags & MWF_CLISTMODE) {
+    if((dat->dwFlags & MWF_CLISTMODE) || dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
         RECT rc;
         GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
         iClistOffset = rc.bottom;
@@ -1331,10 +1331,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             }
                     }
                 }
-                if(newData->iActivate) {
-                    SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
-                    dat->dwFlags &= ~MWF_INITMODE;
-                }
+                SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
+                dat->dwFlags &= ~MWF_INITMODE;
                 
                 
                 if (dat->hContact == NULL) {
@@ -1778,8 +1776,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_ADDDIVIDER:
             {
                 if(!(dat->dwFlags & MWF_DIVIDERSET) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0)) {
-                    dat->dwFlags |= MWF_DIVIDERWANTED;
-                    dat->dwFlags |= MWF_DIVIDERSET;
+                    if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG)) > 0) {
+                        dat->dwFlags |= MWF_DIVIDERWANTED;
+                        dat->dwFlags |= MWF_DIVIDERSET;
+                    }
                 }
                 break;
             }
@@ -1866,6 +1866,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_SIZE:
             {
                 UTILRESIZEDIALOG urd;
+                BITMAP bminfo;
+
                 if (IsIconic(hwndDlg))
                     break;
                 ZeroMemory(&urd, sizeof(urd));
@@ -1875,7 +1877,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 urd.lParam = (LPARAM) dat;
                 urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSGSPLITNEW);
                 urd.pfnResizer = MessageDialogResize;
-                BITMAP bminfo;
 
                 if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR && dat->hContactPic != 0) {
                     GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
@@ -2037,7 +2038,38 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             break;
         case DM_APPENDTOLOG:   //takes wParam=hDbEvent
+#if defined(_STREAMTHREADING)
+            if(g_StreamThreadRunning) {
+                if(dat->pendingStream > 0) {
+                    if(dat->addedEvents == NULL)
+                        dat->addedEvents = (HANDLE *)malloc(sizeof(HANDLE) * ADDEDEVENTSQUEUESIZE);
+                    else {
+                        if(dat->iAddedEvents >= ADDEDEVENTSQUEUESIZE)
+                            dat->addedEvents = (HANDLE *)realloc(dat->addedEvents, sizeof(HANDLE) * (dat->iAddedEvents + 1));
+                    }
+                    dat->addedEvents[dat->iAddedEvents++] = (HANDLE) wParam;
+                    _DebugPopup(dat->hContact, "adding event - %d", wParam);
+                }
+                else {
+                    if(dat->iAddedEvents > 0) {
+                        int i;
+                        _DebugPopup(dat->hContact, "handling queue - %d entries", dat->iAddedEvents);
+                        for(i = 0; i < dat->iAddedEvents; i++)
+                            StreamInEvents(hwndDlg, dat->addedEvents[i], 1, 1, NULL);
+                        dat->iAddedEvents = 0;
+                        if(dat->addedEvents) {
+                            free(dat->addedEvents);
+                            dat->addedEvents = NULL;
+                        }
+                    }
+                    StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
+                }
+            }
+            else
+                StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
+#else
             StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
+#endif            
             break;
         case DM_SCROLLLOGTOBOTTOM:
             {
@@ -2447,7 +2479,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 dat->dwFlags &= ~MWF_NEEDCHECKSIZE;
                 if(dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
-                    SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
+                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
                     dat->dwFlags &= ~MWF_INITMODE;
                     if(dat->lastMessage)
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);

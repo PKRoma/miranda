@@ -32,6 +32,14 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
+Version 0.0.9.4 - 2004/11/XX
+
+        * small change in smileyadd and tabSRMM's interface to smileyadd as an attempt
+          to fix a rare bug with smiley background color in chat.dll windows.
+          YOU NEED TO REPLACE smileyadd.dll with the version in the archive, otherwise
+          smiley backgrounds in tabsrmm will not work when using the individual background
+          colors.
+
 Version 0.0.9.3 - 2004/11/14
 
         * unified the unsent and charcounter displays on the statusbar. The new format
@@ -49,13 +57,20 @@ Version 0.0.9.3 - 2004/11/14
           will never completely disappear because of the avatar taking all the available
           space. Note that this may corrupt the aspect ratio of an avatar picture.
 
-        * fixed severr bug with avatars (messing up contacts handle)
+        ! fixed severe bug with avatars (messing up contacts handle)
 
         * added smart avatar resizing - when using the dynamic avatar resizing option,
           the layouting code will now take care that the avatar won't take too much space
           of the button bar. it will try to keep all the button visible.
                   
-Version 0.0.9.2 - 2004/11/13
+        * threaded streaming (icon + smiley replacement) is now only used for filling the
+          initial message log. For adding single messages to the log, the threading stuff
+          is a waste because of its overhead.
+
+        ! a divider should not appear at the very beginning of the message log, even if the
+          session qualifies for a divider because of its unfocused state.
+        
+ Version 0.0.9.2 - 2004/11/13
 
         * various avatar layouting fixes.
         

@@ -403,3 +403,4 @@ struct MsgLogIcon {
 
 WCHAR *Utf8Decode(const char *str);
 char *Utf8Encode(const WCHAR *str);
+

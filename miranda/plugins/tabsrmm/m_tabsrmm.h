@@ -137,8 +137,7 @@ struct MessageWindowData {
     UINT codePage;
 #if defined(_STREAMTHREADING)
     int volatile pendingStream;
-    int remakeInProgress;
-    HANDLE addedEvents[100];
+    HANDLE *addedEvents;
     int iAddedEvents;
 #endif    
     struct SendJob sendJobs[NR_SENDJOBS];
@@ -168,6 +167,7 @@ struct StreamJob {
     HWND hwndOwner;
     LONG startAt;
     struct MessageWindowData *dat;
+    int  fAppend;
 };
 
 // menu IDS
@@ -177,6 +177,9 @@ struct StreamJob {
 #define MENU_TABCONTEXT 3
 
 #define TABSRMM_SMILEYADD_THREADING 25367
+#define TABSRMM_SMILEYADD_BKGCOLORMODE 0x10000000
+
+#define ADDEDEVENTSQUEUESIZE 100
 
 //Checks if there is a message window opened
 //wParam=(LPARAM)(HANDLE)hContact  - handle of the contact for which the window is searched. ignored if lParam

@@ -42,7 +42,7 @@ $Id$
 
 int _log(const char *fmt, ...);
 static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak);
-void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt);
+void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
 extern int g_SmileyAddAvail;
 
 #if defined(_STREAMTHREADING)
@@ -913,7 +913,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     }
 
 #if defined(_STREAMTHREADING)
-    if(g_StreamThreadRunning) {
+    if(g_StreamThreadRunning && !fAppend) {
         if(!fAppend) {
             SendMessage(hwndrtf, WM_SETREDRAW, TRUE, 0);
         }
@@ -921,6 +921,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         StreamJobs[g_StreamJobCurrent].dat = dat;
         StreamJobs[g_StreamJobCurrent].hwndOwner = hwndDlg;
         StreamJobs[g_StreamJobCurrent].startAt = startAt;
+        StreamJobs[g_StreamJobCurrent].fAppend = fAppend;
         g_StreamJobCurrent++;
         dat->pendingStream++;
         dat->pContainer->pendingStream++;
@@ -928,16 +929,16 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         ResumeThread(g_hStreamThread);
     }
     else
-        ReplaceIcons(hwndDlg, dat, startAt);
+        ReplaceIcons(hwndDlg, dat, startAt, fAppend);
 #else
-    ReplaceIcons(hwndDlg, dat, startAt);
+    ReplaceIcons(hwndDlg, dat, startAt, fAppend);
 #endif    
     
     if(ci.pszVal)
         miranda_sys_free(ci.pszVal);
 }
 
-void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt)
+void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend)
 {
     FINDTEXTEXA fi;
     CHARFORMAT2 cf2;
@@ -951,7 +952,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt)
     fi.chrg.cpMin = startAt;
 
 #if defined(_STREAMTHREADING)
-    if(startAt == 0 && g_StreamThreadRunning) {
+    if(!fAppend && g_StreamThreadRunning) {
         InvalidateRect(hwndrtf, NULL, FALSE);
         SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 0);
         SendMessage(hwndrtf, WM_SETREDRAW, FALSE, 0);
@@ -989,7 +990,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt)
             }
 
 #if defined(_STREAMTHREADING)
-            if(g_StreamThreadRunning)
+            if(g_StreamThreadRunning && !fAppend)
                 SendMessage(hwndDlg, DM_INSERTICON, (WPARAM)ole, (LPARAM)msgLogIcons[bIconIndex].hBmp);
             else
                 ImageDataInsertBitmap(ole, msgLogIcons[bIconIndex].hBmp);
@@ -1023,10 +1024,10 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt)
         smadd.disableRedraw = TRUE;
         if(dat->doSmileys) {
 #if defined(_STREAMTHREADING)
-            if(g_StreamThreadRunning)
-                CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_THREADING, (LPARAM)&smadd);
+            if(g_StreamThreadRunning && !fAppend)
+                CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE | TABSRMM_SMILEYADD_THREADING, (LPARAM)&smadd);
             else
-                CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&smadd);
+                CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
 #else
             CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&smadd);
 #endif            

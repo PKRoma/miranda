@@ -677,6 +677,7 @@ int SplitmsgShutdown(void)
 	FreeLibrary(GetModuleHandleA("user32"));
     if(g_hIconDLL)
         FreeLibrary(g_hIconDLL);
+    
     OleUninitialize();
     if (hMsgMenuItem) {
         free(hMsgMenuItem);
@@ -1274,3 +1275,5 @@ void ConvertAllToUTF8()
     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "utf8converted", 1);
 }
 #endif
+
+
