@@ -191,7 +191,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 				}
 				UrlDecode(userEmail); UrlDecode(userNick);
 				listId=Lists_NameToCode(list);
-				if(listId==LIST_FL)	 //'forward list' aka contact list
+				if(listId==LIST_FL) //'forward list' aka contact list
 					MSN_HContactFromEmail(userEmail,userNick,1,0);
 				else if(IsValidListCode(listId)) {
 					Lists_Add(listId,userEmail,userNick);

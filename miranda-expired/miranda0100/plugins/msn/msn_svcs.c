@@ -246,8 +246,25 @@ static int MsnRecvMessage(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static int MsnContactDeleted(WPARAM wParam,LPARAM lParam)
+{
+	char *szProto;
+	DBVARIANT dbv;
+
+	if(!msnLoggedIn) return 0;    //should never happen for MSN contacts
+	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
+	if(szProto==NULL || strcmp(szProto,MSNPROTONAME)) return 0;
+	if(!DBGetContactSetting((HANDLE)wParam,MSNPROTONAME,"e-mail",&dbv)) {
+		MSN_SendPacket(msnNSSocket,"REM","FL %s",dbv.pszVal);
+		//are we supposed to remove them from al/bl as well?
+		DBFreeVariant(&dbv);
+	}
+	return 0;
+}
+
 int LoadMsnServices(void)
 {
+	HookEvent(ME_DB_CONTACT_DELETED,MsnContactDeleted);
 	CreateServiceFunction(MSNPROTONAME PS_GETCAPS,MsnGetCaps);
 	CreateServiceFunction(MSNPROTONAME PS_GETNAME,MsnGetName);
 	CreateServiceFunction(MSNPROTONAME PS_LOADICON,MsnLoadIcon);
