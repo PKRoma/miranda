@@ -1659,7 +1659,7 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = gpszICQProtoName;
 	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
+	dbei.flags = (pre->flags&PREF_CREATEREAD) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.cbBlob = strlen(pre->szMessage) + 1;
 	dbei.pBlob = (PBYTE)pre->szMessage;
@@ -1689,7 +1689,7 @@ int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = gpszICQProtoName;
 	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
+	dbei.flags = (pre->flags&PREF_CREATEREAD) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_URL;
 	dbei.cbBlob = strlen(pre->szMessage) + strlen(szDesc) + 2;
 	dbei.pBlob = (PBYTE)pre->szMessage;
@@ -1725,7 +1725,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = gpszICQProtoName;
 	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
+	dbei.flags = (pre->flags&PREF_CREATEREAD) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_CONTACTS;
 	dbei.pBlob = (PBYTE)malloc(dbei.cbBlob);
 	for (i = 0, pBlob = dbei.pBlob; i < pre->lParam; i++)
@@ -1764,7 +1764,7 @@ int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = gpszICQProtoName;
 	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
+	dbei.flags = (pre->flags&PREF_CREATEREAD) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_FILE;
 	dbei.cbBlob = sizeof(DWORD) + strlen(szFile) + strlen(szDesc) + 2;
 	dbei.pBlob = (PBYTE)pre->szMessage;
@@ -1791,7 +1791,7 @@ int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = gpszICQProtoName;
 	dbei.timestamp = pre->timestamp;
-	dbei.flags=pre->flags & (PREF_CREATEREAD?DBEF_READ:0);
+	dbei.flags=(pre->flags&PREF_CREATEREAD) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 	dbei.cbBlob = pre->lParam;
 	dbei.pBlob = (PBYTE)pre->szMessage;
