@@ -1006,7 +1006,8 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HFONT hFontSample;
-
+    BOOL translated;
+    
 	switch (msg)
 	{
 		case WM_INITDIALOG:
@@ -1062,6 +1063,11 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                 CheckDlgButton(hwndDlg, IDC_USEINDIVIDUALBKG, dwFlags & MWF_LOG_INDIVIDUALBKG);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), dwFlags & MWF_LOG_INDIVIDUALBKG);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), dwFlags & MWF_LOG_INDIVIDUALBKG);
+
+                SetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), FALSE);
+                SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETRANGE, 0, MAKELONG(5, 0));
+                SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
+                
                 
 				SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_SETCURSEL,0,0);
 				for(i=0;i<sizeof(fontSizes)/sizeof(fontSizes[0]);i++)
@@ -1341,6 +1347,8 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inbg", SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "outbg", SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
+                                
                                 UncacheMsgLogIcons();
                                 CacheMsgLogIcons();
                                 CacheLogFonts();

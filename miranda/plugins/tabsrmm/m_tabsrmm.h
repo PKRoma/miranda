@@ -143,10 +143,7 @@ struct MessageWindowData {
 	int showPic;
     int bottomOffset;
     UINT uMinHeight;
-// BEGIN MOD#32: Use different fonts for old history events
 	BOOL isHistory;
-	int isHistoryCount;
-// END MOD#32
     DWORD dwFlags;
     int   iFlashIcon;
     POINT ptLast;

@@ -59,7 +59,10 @@ extern int g_SmileyAddAvail;
 #endif
 // ole Icon stuff...
 
-char szSep0[40], szSep1[152], szSep2[40];
+char szSep0[40], szSep1[152], szSep2[40], szMicroLf[128];
+char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
+DWORD dwExtraLf = 0;
+
 int g_groupBreak = TRUE;
 static char *szMyName, *szYourName;
 static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
@@ -91,8 +94,10 @@ static char szToday[22], szYesterday[22];
 
 struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
-static PBYTE pLogIconBmpBits[3];
-static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
+#if defined(RTFBITMAPS)
+    static PBYTE pLogIconBmpBits[3];
+    static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
+#endif    
 
 #define STREAMSTAGE_HEADER  0
 #define STREAMSTAGE_EVENTS  1
@@ -473,13 +478,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     dat->stats.lastReceivedChars = 0;
     
 // BEGIN MOD#32: Use different fonts for old history events
-	// Not working for outgoing messages in History
-	// dat->isHistory=(dbei.flags&DBEF_READ) ? TRUE : FALSE;
-	if(dat->isHistoryCount>0) {
-		dat->isHistoryCount--;
-		dat->isHistory=TRUE;
-	}
-	else dat->isHistory=FALSE;
+    dat->isHistory = (dbei.timestamp < (DWORD)dat->stats.started && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
 // END MOD#32
 
     isSent = (dbei.flags & DBEF_SENT);
@@ -511,6 +510,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     }
     else {
         if (prefixParaBreak) {
+            if(dwExtraLf)
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-%d\\highlight%d \\par", dwExtraLf * 15, MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
             // separators after message simulating the "grid". draw an empty line (one space) using a 1 pixel font and minimum linespacing.
             // this uses the default background color.
             if(dat->dwFlags & MWF_LOG_GRID) {
@@ -588,7 +589,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 						contact_gmt_diff = contact_gmt_diff>128 ? 256-contact_gmt_diff : 0-contact_gmt_diff;
 						diff=(int)local_gmt_diff-(int)contact_gmt_diff*60*60/2;
                         final_time = dbei.timestamp - diff;
-						//dbei.timestamp-=diff;
 					}
 				}
 			}
@@ -678,13 +678,13 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 // XXX end mod
     if (showColon) {
         if(dat->dwFlags & MWF_LOG_INDENT)
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->dwFlags & MWF_LOG_INDENTWITHTABS ? ":\\tab " : ": ");
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMsgPrefixColon);
         else
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, ": ");
     }
     else {
         if(dat->dwFlags & MWF_LOG_INDENT)
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->dwFlags &  MWF_LOG_INDENTWITHTABS ? "\\tab " : " ");
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMsgPrefixNoColon);
         else
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");
     }
@@ -813,9 +813,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob + sizeof(DWORD));
             break;
     }
-
-    if(dat->dwEventIsShown & MWF_SHOW_MICROLF)
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
+    //if(dat->dwEventIsShown & MWF_SHOW_MICROLF)
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf);
     
     /* OnO: highlight end */
     //if(dbei.eventType == EVENTTYPE_MESSAGE && dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
@@ -890,11 +889,17 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     // separator strings used for grid lines, message separation and so on...
     
-    strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "%s\\sl-1" : "\\par%s\\sl-1"));
+    strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
+    
     _snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
+    strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
+    _snprintf(szMicroLf, sizeof(szMicroLf), "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
+    
+    strcpy(szMsgPrefixColon, dat->dwFlags & MWF_LOG_INDENTWITHTABS ? ":\\tab " : ": ");
+    strcpy(szMsgPrefixNoColon, dat->dwFlags & MWF_LOG_INDENTWITHTABS ? "\\tab " : " ");
 
-    strcpy(szSep2, fAppend ? "\\par\\sl0" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl1000" : "\\par\\sl1000"));
-
+    dwExtraLf = DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0);
+    
     ZeroMemory(&ci, sizeof(ci));
     ci.cbSize = sizeof(ci);
     ci.hContact = NULL;
@@ -946,7 +951,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
     dat->hDbEventLast = streamData.hDbEventLast;
     
-    if (fAppend && (dat->dwEventIsShown & MWF_SHOW_MICROLF)) {
+    if (fAppend) { // && !DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0)) {
         GETTEXTLENGTHEX gtxl = {0};
 #if defined(_UNICODE)
         gtxl.codepage = 1200;
@@ -983,8 +988,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     ReplaceIcons(hwndDlg, dat, startAt, fAppend);
 #endif    
 
-    if(!fAppend)
-        _DebugPopup(dat->hContact, "streaming ready");
     if(ci.pszVal)
         miranda_sys_free(ci.pszVal);
 }

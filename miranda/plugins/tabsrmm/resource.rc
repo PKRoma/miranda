@@ -283,31 +283,31 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Items to show",IDC_STMSGLOGGROUP,0,0,150,94
     CONTROL         "Show file events",IDC_SHOWFILES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,14,137,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,10,137,10
     CONTROL         "Show url events",IDC_SHOWURLS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,27,136,10
+                    WS_TABSTOP,10,21,136,10
     CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,39,65,12
+                    WS_TABSTOP,10,32,65,10
     CONTROL         "Use in/out icons",IDC_INOUTICONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,77,39,70,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,77,32,70,10
     CONTROL         "Show nicknames",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,53,138,10
+                    WS_TABSTOP,10,43,138,10
     CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,66,135,10
+                    WS_TABSTOP,10,55,135,10
     CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,17,78,61,10
+                    WS_TABSTOP,20,66,61,10
     CONTROL         "Show seconds",IDC_SHOWSECONDS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,85,77,63,11
+                    WS_TABSTOP,88,66,59,10
     GROUPBOX        "Other options",IDC_STATIC,154,0,149,94
     CONTROL         "Enable message log scrolling hotkeys",IDC_LOGHOTKEYS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,12,142,13
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,10,142,10
     CONTROL         "Log status changes",IDC_LOGSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,24,130,13
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,22,130,10
     CONTROL         "Remove trailing empty lines",IDC_EMPTYLINEFIX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,38,143,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,35,143,10
     CONTROL         "Ignore per-contact message log settings",
                     IDC_IGNORECONTACTSETTINGS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,158,50,142,11
+                    WS_TABSTOP,158,47,142,10
     GROUPBOX        "Formatting options",IDC_STATIC,0,95,303,76
     CONTROL         "Message body in a new line",IDC_SHOW_EVENTS_NL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,106,127,9
@@ -318,9 +318,9 @@ BEGIN
     CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,136,142,9
     CONTROL         "Use relative timestamps",IDC_RELATIVEDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,146,140,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,149,140,9
     CONTROL         "Use long date format",IDC_LONGDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,156,140,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,159,140,9
     CONTROL         "Indent message body (pixels)",IDC_INDENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,158,104,141,10
     LTEXT           "Left",IDC_STATIC,158,118,29,12
@@ -517,7 +517,7 @@ IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message Window Fonts",IDC_STATIC,0,4,303,125
+    GROUPBOX        "Message Window Fonts",IDC_STATIC,0,4,303,151
     COMBOBOX        IDC_FONTID,27,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "same",IDC_STSAMETEXT,34,32,45,10,SS_CENTERIMAGE
@@ -547,16 +547,23 @@ BEGIN
     CONTROL         "",IDC_COLOUR,"ColourPicker",WS_TABSTOP,221,87,59,12
     EDITTEXT        IDC_SAMPLE,78,104,151,16,ES_CENTER | ES_READONLY | NOT 
                     WS_TABSTOP
-    GROUPBOX        "Background Colors",IDC_STATIC,0,135,303,87
-    LTEXT           "Default background",IDC_STATIC,15,159,81,8
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,102,158,39,10
-    LTEXT           "Input area background",IDC_STATIC,15,174,80,10
-    CONTROL         "",IDC_INPUTBKG,"ColourPicker",WS_TABSTOP,102,173,39,10
-    LTEXT           "Outgoing background:",IDC_STATIC,172,158,81,8
-    CONTROL         "",IDC_BKGOUTGOING,"ColourPicker",WS_TABSTOP,258,157,39,
+    LTEXT           "Extra microspacing at the end of a paragraph",
+                    IDC_STATIC,28,126,157,10
+    EDITTEXT        IDC_EXTRAMICROLF,199,124,36,13,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "",IDC_EXTRALFSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,235,125,
+                    12,11
+    GROUPBOX        "Background Colors",IDC_STATIC,0,159,303,63
+    LTEXT           "Default background",IDC_STATIC,15,170,81,8
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,102,169,39,10
+    LTEXT           "Input area background",IDC_STATIC,15,185,80,10
+    CONTROL         "",IDC_INPUTBKG,"ColourPicker",WS_TABSTOP,102,184,39,10
+    LTEXT           "Outgoing background:",IDC_STATIC,172,169,81,8
+    CONTROL         "",IDC_BKGOUTGOING,"ColourPicker",WS_TABSTOP,258,168,39,
                     10
-    LTEXT           "Incoming background:",IDC_STATIC,172,172,81,8
-    CONTROL         "",IDC_BKGINCOMING,"ColourPicker",WS_TABSTOP,258,171,39,
+    LTEXT           "Incoming background:",IDC_STATIC,172,183,81,8
+    CONTROL         "",IDC_BKGINCOMING,"ColourPicker",WS_TABSTOP,258,182,39,
                     10
     CONTROL         "Use multiple background colors",IDC_USEINDIVIDUALBKG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,197,128,12

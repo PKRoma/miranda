@@ -242,6 +242,7 @@
 #define IDC_RELATIVEDATES               1690
 #define IDC_AVADYNAMIC                  1690
 #define IDC_USESNAPPING                 1690
+#define IDC_EXTRAMICROLF                1690
 #define IDC_LONGDATES                   1691
 #define IDC_CHECK3                      1692
 #define IDC_CNTNOSTATUSBAR              1692
@@ -269,6 +270,7 @@
 #define IDC_STATIC111                   1706
 #define IDC_TAB1                        1706
 #define IDC_OPTIONSTAB                  1706
+#define IDC_EXTRALFSPIN                 1707
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -401,7 +403,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        312
 #define _APS_NEXT_COMMAND_VALUE         40177
-#define _APS_NEXT_CONTROL_VALUE         1707
+#define _APS_NEXT_CONTROL_VALUE         1708
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1024,9 +1024,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     int historyMode = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
                 // This finds the first message to display, it works like shit
                     dat->hDbEventFirst = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) dat->hContact, 0);
-// BEGIN MOD#32: Use different fonts for old history events
-                    dat->isHistoryCount=0;
-// END MOD#32
                     switch (historyMode) {
                         case LOADHISTORY_COUNT:
                             {
@@ -1046,9 +1043,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
                                     if (!DbEventIsShown(dat, &dbei))
                                         i++;
-// BEGIN MOD#32: Use different fonts for old history events
-                                    dat->isHistoryCount++;
-// END MOD#32
                                 }
                                 break;
                             }
@@ -1076,17 +1070,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     if (dbei.timestamp < firstTime)
                                         break;
                                     dat->hDbEventFirst = hPrevEvent;
-// BEGIN MOD#32: Use different fonts for old history events
-                                    dat->isHistoryCount++;
-// END MOD#32
                                 }
                                 break;
                             }
                         default:
                             {
-// BEGIN MOD#32: Use different fonts for old history events
-                                dat->isHistoryCount=0;
-// END MOD#32
                                 break;
                             }
                     }
@@ -1385,7 +1373,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
             if (!lParam)
-                SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+                PostMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             
             if(dat->pContainer->hwndStatus && dat->hContact)
                 SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
