@@ -223,5 +223,9 @@ SOURCE=.\res\profiley.ico
 SOURCE=.\resource.rc
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\readme.txt
+# End Source File
 # End Target
 # End Project
