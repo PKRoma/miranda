@@ -57,7 +57,7 @@ typedef struct {
 	unsigned int minutes;	// user setting, number of minutes of inactivity to wait for
 	POINT mousepos;
 	unsigned int mouseidle;
-    unsigned short aastatus;
+    int aastatus;
 } IdleObject;
 
 static int aa_Status[] = {ID_STATUS_AWAY, ID_STATUS_DND, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH};
@@ -164,6 +164,14 @@ static BOOL IsScreenSaverRunning()
 	return rc;
 }
 
+int IdleGetStatusIndex(WORD status) {
+    int j;
+    for (j = 0; j<sizeof(aa_Status)/sizeof(aa_Status[0]) ;j++) {
+        if (aa_Status[j]==status) return j;
+    }
+    return 0;
+}
+
 static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) {
@@ -185,7 +193,8 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             for (j = 0; j<sizeof(aa_Status)/sizeof(aa_Status[0]) ;j++) {
 				SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, (LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0) );
 			}
-            SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_SETCURSEL, DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0), 0);
+            j = IdleGetStatusIndex(DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0));
+            SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_SETCURSEL, j, 0);
 			SendMessage(hwndDlg, WM_USER+1, 0, 0);
 			return TRUE;
 		}
