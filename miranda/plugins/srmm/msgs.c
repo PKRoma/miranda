@@ -63,7 +63,9 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     /* does a window for the contact exist? */
     hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
     if (hwnd) {
-        SkinPlaySound("RecvMsg");
+        if (GetForegroundWindow()==hwnd)
+            SkinPlaySound("RecvMsgActive");
+        else SkinPlaySound("RecvMsgInactive");
         return 0;
     }
     /* new message */
@@ -356,8 +358,9 @@ int LoadSendRecvMessageModule(void)
     CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
     CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
     CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
-    SkinAddNewSoundEx("RecvMsg", Translate("Messages"), Translate("Queued Incoming"));
-    SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming"));
+    SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
+    SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
+    SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
     SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
     hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
     hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
