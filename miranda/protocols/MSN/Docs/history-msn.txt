@@ -10,12 +10,13 @@ Version 0.1.7.9
 [+] Contact's phone numbers support was added
 [+] Options dialog was changed to allow a user to see his own avatar.
 Main menu item 'Set my own avatar' was deleted.
-[*] MSN protocol v.9 support code was removed
+[-] MSN protocol v.9 support code was removed
 [!] Option 'File Transfers -> If a file already exists  ->  Rename'
 doesn't work for MSN P2P transfers.
 [!] Bug #0000092 fixed: 'User Is Typing' event delay is too slow.
 [!] Bug #0000444 fixed: the passive P2P transfer fails if MSN Messenger
 returns bad IP address
+[*] Translation file modification.
 
 Version 0.1.7.8
 ===============
