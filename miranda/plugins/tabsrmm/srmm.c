@@ -80,6 +80,15 @@ int __declspec(dllexport) Unload(void)
     return SplitmsgShutdown();
 }
 
+/*
+ * output a notification message.
+ * may accept a hContact to include the contacts nickname in the notification message...
+ * the actual message is using printf() rules for formatting and passing the arguments...
+ *
+ * can display the message either as systray notification (baloon popup) or using the
+ * popup plugin.
+ */
+
 int _DebugPopup(HANDLE hContact, const char *fmt, ...)
 {
     POPUPDATA ppd;
@@ -98,7 +107,10 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
         ZeroMemory((void *)&ppd, sizeof(ppd));
         ppd.lchContact = hContact;
         ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        strncpy(ppd.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0), MAX_CONTACTNAME);
+        if(hContact != 0)
+            strncpy(ppd.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0), MAX_CONTACTNAME);
+        else
+            strncpy(ppd.lpzContactName, Translate("Global"), MAX_CONTACTNAME);
         strcpy(ppd.lpzText, "tabSRMM: ");
         strncat(ppd.lpzText, debug, MAX_SECONDLINE - 20);
         ppd.colorText = RGB(0,0,0);
@@ -112,7 +124,7 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
             
             tn.szProto = NULL;
             tn.cbSize = sizeof(tn);
-            _snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Message (%s)"), (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+            _snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Message (%s)"), (hContact != 0) ? (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0) : Translate("Global"));
             tn.szInfoTitle = szTitle;
             tn.szInfo = debug;
             tn.dwInfoFlags = NIIF_INFO;

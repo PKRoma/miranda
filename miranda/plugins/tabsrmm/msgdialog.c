@@ -1246,9 +1246,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_CHANGE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_RETRY), Translate("Retry"));
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_CANCELSEND), Translate("Cancel"));
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), Translate("Send later"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_RETRY), Translate("&Retry"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_CANCELSEND), Translate("&Cancel"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), Translate("Send &later"));
                 
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
@@ -3820,7 +3820,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 char szTemp[64];
                 _snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
                 if(DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0) == ID_STATUS_OFFLINE) {
-                    _DebugPopup(dat->hContact, "MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection.", isForced);
+                    _DebugPopup(dat->hContact, Translate("MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection."), isForced);
                     CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
                     DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
                 }
@@ -4029,7 +4029,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 // free send queue jobs
                 for(i = 0; i < NR_SENDJOBS; i++) {
                     if(dat->sendJobs[i].sendBuffer) {
-                        //_DebugPopup(dat->hContact, "sendqueue free: %s (%d total)", dat->sendJobs[i].sendBuffer, dat->iSendJobMax);
                         free(dat->sendJobs[i].sendBuffer);
                     }
                     if(dat->sendJobs[i].sendInfo)
@@ -4225,7 +4224,7 @@ static int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
     int iLength = 0;
     
     if(dat->iSendJobCurrent >= NR_SENDJOBS) {
-        _DebugPopup(dat->hContact, "send queue full");
+        _DebugPopup(dat->hContact, Translate("Send queue full"));
         return 0;
     }
     iLength = iLen;
@@ -4456,7 +4455,7 @@ static void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
         ppd.lchContact = dat->hContact;
         ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
         strncpy(ppd.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0), MAX_CONTACTNAME);
-        strcpy(ppd.lpzText, "A message delivery has failed.\nClick to open the message window.");
+        strcpy(ppd.lpzText, Translate("A message delivery has failed.\nClick to open the message window."));
         ppd.colorText = RGB(0,0,0);
         ppd.colorBack = RGB(255,0,0);
         ppd.PluginData = hwndDlg;

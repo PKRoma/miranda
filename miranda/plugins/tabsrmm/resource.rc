@@ -229,15 +229,6 @@ BEGIN
     LTEXT           "Show avatars",IDC_STATIC,20,97,60,10
     COMBOBOX        IDC_AVATARMODE,75,94,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Automatically close tabs after",IDC_STATIC,20,111,100,
-                    11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,121,109,44,12,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,161,110,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,179,111,
-                    122,11
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     20,122,280,10
@@ -268,6 +259,15 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,148,190,153,10
     EDITTEXT        IDC_SECONDS,223,200,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,202,44,8
+    LTEXT           "Automatically close tabs after",IDC_STATIC,20,111,100,
+                    11
+    EDITTEXT        IDC_AUTOCLOSETABTIME,121,109,44,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,161,110,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,179,111,
+                    122,11
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -315,16 +315,15 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,146,140,9
     CONTROL         "Use long date format",IDC_LONGDATES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,156,140,9
-    CONTROL         "Indent events",IDC_INDENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,158,104,61,10
-    LTEXT           "(pixels)",IDC_STATIC,231,104,31,9
-    LTEXT           "Left",IDC_STATIC,158,118,20,12
-    EDITTEXT        IDC_INDENTAMOUNT,182,116,35,12,ES_AUTOHSCROLL
+    CONTROL         "Indent message body (pixels)",IDC_INDENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,104,141,10
+    LTEXT           "Left",IDC_STATIC,158,118,29,12
+    EDITTEXT        IDC_INDENTAMOUNT,188,116,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_HOTTRACK,215,117,10,11
-    LTEXT           "Right",IDC_STATIC,230,118,24,9
-    EDITTEXT        IDC_RIGHTINDENT,254,116,35,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Right",IDC_STATIC,230,118,26,9
+    EDITTEXT        IDC_RIGHTINDENT,259,116,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_RINDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,289,116,
                     10,11
@@ -338,20 +337,20 @@ BEGIN
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,138,10
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
                     BS_AUTORADIOBUTTON,10,199,138,10
-    EDITTEXT        IDC_LOADCOUNTN,148,197,33,12,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_LOADCOUNTN,170,197,33,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,181,196,
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,203,196,
                     10,14
     CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",
                     BS_AUTORADIOBUTTON,10,212,138,10
-    EDITTEXT        IDC_LOADTIMEN,148,211,33,12,ES_RIGHT | ES_NUMBER | 
+    EDITTEXT        IDC_LOADTIMEN,170,211,33,12,ES_RIGHT | ES_NUMBER | 
                     WS_DISABLED
     CONTROL         "Spin1",IDC_LOADTIMESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
-                    WS_DISABLED,178,209,10,14
-    LTEXT           "minutes old",IDC_STMINSOLD,185,212,90,8,WS_DISABLED
+                    WS_DISABLED,200,209,10,14
+    LTEXT           "minutes old",IDC_STMINSOLD,207,212,90,8,WS_DISABLED
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
@@ -415,31 +414,31 @@ BEGIN
     CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,123,133,11
     CONTROL         "Show full UIN on toolbar",IDC_FULLUSERNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,136,133,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,134,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,135,152,11
-    LTEXT           "Tab control border",IDC_STATIC,154,148,74,12
-    EDITTEXT        IDC_TABBORDER,233,146,28,13,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,133,152,11
+    LTEXT           "Tab control border",IDC_STATIC,154,123,74,12
+    EDITTEXT        IDC_TABBORDER,233,121,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,143,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,122,
                     11,13
-    LTEXT           "pixel",IDC_STATIC,268,148,35,10
+    LTEXT           "pixel",IDC_STATIC,268,123,35,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,311,62
     CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,171,141,12
-    LTEXT           "Input history:",IDC_STATIC,155,173,74,10
-    EDITTEXT        IDC_HISTORYSIZE,238,171,28,12,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,173,141,12
+    LTEXT           "Input history:",IDC_STATIC,155,175,74,10
+    EDITTEXT        IDC_HISTORYSIZE,238,173,28,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,170,
                     12,13
-    LTEXT           "entries",IDC_STATIC,272,173,31,10
+    LTEXT           "entries",IDC_STATIC,272,175,31,10
     CONTROL         "Use ESC key for closing sessions",IDC_ESC_MINIMIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,183,300,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,185,300,11
     CONTROL         "Use global hotkeys for finding message sessions",
                     IDC_HOTKEYSAREGLOBAL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,195,295,9
-    LTEXT           "Modifiers",IDC_STATIC,5,209,36,11
-    COMBOBOX        IDC_MODIFIERS,42,207,84,50,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_TABSTOP,5,197,295,9
+    LTEXT           "Modifiers",IDC_STATIC,17,210,66,11
+    COMBOBOX        IDC_MODIFIERS,87,208,84,50,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
 END
 
@@ -648,7 +647,7 @@ IDR_TABCONTEXT MENU
 BEGIN
     POPUP "Tabmenu"
     BEGIN
-        MENUITEM "Close tab",                   ID_TABMENU_CLOSETAB
+        MENUITEM "Close Tab",                   ID_TABMENU_CLOSETAB
         MENUITEM SEPARATOR
         MENUITEM "Switch to next Tab",          ID_TABMENU_SWITCHTONEXTTAB
         MENUITEM "Switch to previous Tab",      ID_TABMENU_SWITCHTOPREVIOUSTAB
@@ -970,4 +969,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

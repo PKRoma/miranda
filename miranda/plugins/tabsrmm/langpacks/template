@@ -9,11 +9,192 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Ok]
 
-[Cancel]
+[&Cancel]
 
-[Retry]
+[&Retry]
 
-[Send later]
+[Send &later]
+
+[A message delivery has failed.\nClick to open the message window.]
+
+[Delivery failure: %s]
+
+[The message send timed out]
+
+[Sending typing notifications disabled.]
+
+[Sending typing notifications enabled.]
+
+[Retrieving Avatar...]
+
+[MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection.]
+
+[Send queue full]
+
+[You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person.]
+
+[Send Message]
+
+[Select container for %s]
+
+[You cannot delete the default container]
+
+[This name is already in use]
+
+[You cannot rename the default container]
+
+[Global]
+
+[tabSRMM Message (%s)]
+
+
+; ------------------------
+; ----------------- msgs..c  source code strings
+; ------------------------
+
+[Message from %s]
+
+[%s is typing a message]
+
+[Typing Notification]
+
+[&Message]
+
+[Information]
+
+[Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda.]
+
+[Message: Queued Incoming]
+
+[Message: Incoming]
+
+[Message: Outgoing]
+
+
+
+; ------------------------
+; ----------------- container.c  source code strings
+; ------------------------
+
+[Autoselect]
+
+[Use Protocol]
+
+[Set Default Protocol]
+
+[Meta Contact]
+
+[(Forced)]
+
+[Stay on Top]
+
+[Hide titlebar]
+
+[Don't report if minimized]
+
+[Container options...]
+
+[User]
+
+[Attach to]
+
+[Do you really want to close this session?]
+
+; ------------------------
+; ----------------- msgdialog.c  source code strings
+; ------------------------
+
+[has either a wrong size (max 150 x 150) or is not a recognized image file]
+
+[Close session]
+
+[Save and close session]
+
+[Add Contact Permanently to List]
+
+[View User's History]
+
+[Message Log Options]
+
+[Send Message to Multiple Users]
+
+[Quote Text]
+
+[Avatar Options]
+
+[Insert Emoticon]
+
+[Send message]
+
+[View User's Details]
+
+[Last received on %s at %s]
+
+[signed off (was %s)]
+
+[signed on (%s)]
+
+[is now %s (was %s)]
+
+[%s is typing...]
+
+[Input locale saved.]
+
+[ANSI Encoding]
+
+[You are %s on %s (MetaContact)]
+
+[You are %s on %s]
+
+; ------------------------
+; ----------------- containeroptions.c  source code strings
+; ------------------------
+
+[Set Options for: %s]
+
+; ------------------------
+; ----------------- msglog.c  source code strings
+; ------------------------
+
+[Today]
+
+[Yesterday]
+
+[Use default codepage]
+
+; ------------------------
+; ----------------- msgoptions.c  source code strings
+; ------------------------
+
+[** New contacts **]
+
+[** Unknown contacts **]
+
+[Show balloon popup (unsupported system)]
+
+[as:]
+
+[based on:]
+
+[<none>]
+
+; ----------------------
+; -------- option page names
+; ----------------------
+
+[Messaging]
+
+[Message Sessions]
+
+[Messaging Log]
+
+[Typing Notify]
+
+[Message tabs]
+
+[Message containers]
+
+[Fonts and colors]
 
 
 ;
@@ -199,9 +380,7 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Draw grid lines]
 
-[Indent message body]
-
-[(pixels)]
+[Indent message body (pixels)]
 
 [Left]
 
@@ -365,4 +544,179 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Tabs at the bottom]
 
+;
+; --------- MENUS -----------
+;
+
+[&Copy]
+
+[Co&py All]
+
+[&Select &All]
+
+[Clear Log]
+
+[Open in &new window]
+
+[&Open in existing window]
+
+[&Copy link]
+
+[Cut]
+
+[Copy]
+
+[Paste]
+
+[Paste formatted Text]
+
+[Copy all]
+
+[Select all]
+
+[Close Tab]
+
+[Switch to next Tab]
+
+[Switch to previous Tab]
+
+[Attach to Container...]
+
+[Close Container]
+
+[Toggle Avatar Display]
+
+[Reset the Avatar]
+
+[Load a local Picture as Avatar...]
+
+[Disable automatic Avatar updates]
+
+[Align for maximum Log Size]
+
+[Align for full Width Button Bar]
+
+[Show Message Icons]
+
+[Show Nickname]
+
+[Display Timestamp after Nickname]
+
+[Timestamp Settings]
+
+[Show Timestamp]
+
+[Show Date]
+
+[Show Seconds]
+
+[Use relative Timestamps]
+
+[Use long Date Format]
+
+[Use Contacts local Time]
+
+[Message Log Formatting]
+
+[Indent Message Body]
+
+[Message Body in a new Line]
+
+[Underline Timestamp and Nickname]
+
+[Show grid]
+
+[Use multiple Background Colors]
+
+[Use Message Grouping]
+
+[Use RTL for this Contact]
+
+[Log Status Changes]
+
+[Message Log Settings are global]
+
+[Apply Message Log Settings to all contacts]
+
+[&File]
+
+[Save Message Log As...]
+
+[Close Message Session\tCtrl-W]
+
+[Close Container\tAlt-F4]
+
+[View]
+
+[Show Menu Bar]
+
+[Show Status Bar]
+
+[Show Title Bar]
+
+[Show Nickname]
+
+[Show Status]
+
+[Do not show Container Name]
+
+[Show Container Name as Prefix]
+
+[Show Container Name as Suffix]
+
+[Tabs at Bottom]
+
+[Toolbar]
+
+[Send Button]
+
+[User Information]
+
+[Extra Buttons]
+
+[Window Flashing]
+
+[Use default Value]
+
+[Flash until focused]
+
+[Disable Flashing]
+
+[Show Multisend Contact List]
+
+[Stay on Top]
+
+[&User]
+
+[Message Log]
+
+[Log Items to show]
+
+[Message Icons]
+
+[Nickname]
+
+[Grid Lines]
+
+[Log Status Changes]
+
+[Timestamp Settings]
+
+[Container]
+
+[Event Popups]
+
+[Disable all Event Popups]
+
+[Show Popups if Window is minimized]
+
+[Show Popups if Window is unfocused]
+
+[Show Popups for all inactive sessions]
+
+[Apply Container Options globally]
+
+[Set current Options as Default Values]
+
+[Save current Window Position as Default]
 
