@@ -43,6 +43,7 @@ History
  - Remove SSI sync support
  - Removing user from deny list didn't always update mode in Miranda
  - Fixed file transfers with Mac users
+ - Fixed possible crash
 
 1.0.9.5
  - Problems with some character escape sequences
