@@ -99,11 +99,11 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
         if (szProto) {
             if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
-                return 0;
+                return 1;
         }
         else {
             /* unknown contact */
-            return 0;
+            return 1;
         }                       //if
     }
 
