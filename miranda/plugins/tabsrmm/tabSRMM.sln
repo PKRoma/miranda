@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "srmm", "srmm.vcproj", "{8954217B-1306-4250-854D-6BF6BE5E57C9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "srmm", "tabsrmm.vcproj", "{8954217B-1306-4250-854D-6BF6BE5E57C9}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
