@@ -32,7 +32,7 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
-Version 0.9.9.5 - 2005/01/XX
+Version 0.9.9.5 - 2005/02/02
 
         First, this requires a new tabsrmm_icons.dll format. Icons have been added , so you'll
         need to upgrade your icon packs. You can use the provided .DLL files as a template
@@ -116,6 +116,8 @@ Version 0.9.9.5 - 2005/01/XX
           as status changes did. The new font setting is appended to the font list, so you don't
           need to reconfigure everything this time :)
           
+        * unified all eventhooks - finally. 
+        
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

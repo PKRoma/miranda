@@ -88,6 +88,7 @@ int GetProtoIconFromList(const char *szProto, int iStatus);
 void CreateImageList(BOOL bInitial);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iNum);
+void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread);
 
 // the cached message log icons
 void CacheMsgLogIcons();
@@ -259,6 +260,74 @@ int MessageWindowOpened(WPARAM wParam, LPARAM lParam)
         return 0;
 }
 
+        /*
+         * this is the global ack dispatcher. It handles both ACKTYPE_MESSAGE and ACKTYPE_AVATAR events
+         * for ACKTYPE_MESSAGE it searches the corresponding send job in the queue and, if found, dispatches
+         * it to the owners window
+         */
+
+static int ProtoAck(WPARAM wParam, LPARAM lParam)
+{
+    ACKDATA *pAck = (ACKDATA *) lParam;
+    PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *) pAck->hProcess;
+    HWND hwndDlg = 0;
+    int i, j, iFound = NR_SENDJOBS;
+    
+    if(pAck->type == ACKTYPE_MESSAGE) {
+        for(j = 0; j < NR_SENDJOBS; j++) {
+            for (i = 0; i < sendJobs[j].sendCount; i++) {
+                //_DebugPopup(dat->hContact, "index: %d - hcontact[%d]: %d, sendid[%d]: %d", j, i, sendJobs[j].hContact[i], i, sendJobs[j].hSendId[i]);
+                if (pAck->hProcess == sendJobs[j].hSendId[i] && pAck->hContact == sendJobs[j].hContact[i]) {
+                    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(sendJobs[j].hwndOwner, GWL_USERDATA);
+                    if(dat) {
+                        if(dat->hContact == sendJobs[j].hOwner) {
+                            iFound = j;
+                            break;
+                        }
+                        
+                    }
+                }
+            }
+            if (iFound == NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
+                continue;
+            else
+                break;
+        }
+        if(iFound == NR_SENDJOBS)               // no matching send info found in the queue
+            return 0;
+        else {                                  // the job was found
+            SendMessage(sendJobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
+            return 0;
+        }
+    }
+    if(pAck->type != ACKTYPE_AVATAR)
+        return 0;
+    
+    hwndDlg = WindowList_Find(hMessageWindowList, (HANDLE)pAck->hContact);
+    if(hwndDlg) {
+        struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS) {
+            PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
+        }
+        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_SUCCESS) {
+            if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
+                DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
+                DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
+                ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
+                    SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                    SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                }
+            }
+        }
+        return 0;
+    }
+    return 0;
+}
+
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
     struct NewMessageWindowLParam newData = { 0 };
@@ -266,15 +335,11 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
     HANDLE hContact = ((CLISTEVENT *) lParam)->hContact;
     struct ContainerWindowData *pContainer = 0;
     
-	// int usingReadNext = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT) ? 0 : 1;
-
     hwndExisting = WindowList_Find(hMessageWindowList, hContact);
     
     if (hwndExisting != NULL) {
         SendMessage(hwndExisting, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
 		ActivateExistingTab(pContainer, hwndExisting);
-        // if (usingReadNext)
-           // SendMessage(hwndExisting, WM_COMMAND, MAKEWPARAM(IDC_READNEXT, BN_CLICKED), (LPARAM) GetDlgItem(hwndExisting, IDC_READNEXT));
     }
     else {
         TCHAR szName[CONTAINER_NAMELEN + 1];
@@ -304,30 +369,42 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     dbei.cbBlob = 0;
     CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
-    if (dbei.flags & (DBEF_SENT | DBEF_READ) || dbei.eventType != EVENTTYPE_MESSAGE)
-        return 0;
-	
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
-    /* does a window for the contact exist? */
     hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
     if (hwnd) {
         struct ContainerWindowData *pTargetContainer = 0;
         int iPlay = 0;
-        SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
-        if (pTargetContainer) {
-            DWORD dwFlags = pTargetContainer->dwFlags;
-            if(dwFlags & CNT_NOSOUND)
-                iPlay = FALSE;
-            else if(dwFlags & CNT_SYNCSOUNDS) {
-                iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
-            }
-            else
-                iPlay = TRUE;
+        
+        if(dbei.flags & DBEF_SENT) {
+            SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
+            return 0;
         }
-        if (iPlay)
-            SkinPlaySound("RecvMsg");
+        if(dbei.eventType == EVENTTYPE_MESSAGE) {
+            SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
+            if (pTargetContainer) {
+                DWORD dwFlags = pTargetContainer->dwFlags;
+                if(dwFlags & CNT_NOSOUND)
+                    iPlay = FALSE;
+                else if(dwFlags & CNT_SYNCSOUNDS) {
+                    iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
+                }
+                else
+                    iPlay = TRUE;
+            }
+            if (iPlay)
+                SkinPlaySound("RecvMsg");
+        }
+        SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
         return 0;
     }
+
+    /*
+     * if no window is open, we are not interested in anything else but unread message events
+     */
+    
+    if (dbei.flags & (DBEF_SENT | DBEF_READ) || dbei.eventType != EVENTTYPE_MESSAGE)
+        return 0;
+    
     /* new message */
     SkinPlaySound("AlertMsg");
 
@@ -440,10 +517,8 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
             SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
             SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
         }
-// XXX mod tab support (hide current, select the tab for this window...)
         SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
 		ActivateExistingTab(pContainer, hwnd);
-// XXX mod end
     }
     else {
         TCHAR szName[CONTAINER_NAMELEN + 1];
@@ -545,8 +620,17 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 {
     DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
     char *szProto;
-    HWND hwndTarget = 0;
-    
+
+    HANDLE hwnd = WindowList_Find(hMessageWindowList,(HANDLE)wParam);
+
+    if(hwnd == 0)       // we are not interested in this event if there is no open message window/tab
+        return 0;       // for the hContact.
+
+    if(!strncmp(cws->szModule, "ContactPhoto", 12)) {
+        SendMessage(hwnd, DM_PICTURECHANGED, 0, 0);
+        return 0;
+    }
+
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
     if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
         return 0;
@@ -556,9 +640,8 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     if(!lstrcmpA(cws->szModule, "MetaContacts") && !lstrcmpA(cws->szSetting, "Nick"))       // filter out this setting to avoid infinite loops while trying to obtain the most online contact
         return 0;
     
-    hwndTarget = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
-    if(hwndTarget)
-        SendMessage(hwndTarget, DM_UPDATETITLE, 0, 0);
+    if(hwnd)
+        SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
     
     return 0;
 }
@@ -579,7 +662,6 @@ static void RestoreUnreadMessageAlerts(void)
     DBEVENTINFO dbei = { 0 };
     char toolTip[256];
     int windowAlreadyExists;
-    // int usingReadNext = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT) ? 0 : 1;
     int usingReadNext = 0;
     
     int autoPopup = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
@@ -855,6 +937,7 @@ int LoadSendRecvMessageModule(void)
     HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
     HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
+    HookEvent(ME_PROTO_ACK, ProtoAck);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
 
 	HookEvent("SecureIM/Established",ContactSecureChanged);

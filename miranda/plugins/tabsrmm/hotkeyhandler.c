@@ -46,20 +46,18 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
 
-static HANDLE g_hSettingChanged = 0;
-static HANDLE g_hAckEvent = 0;
-static HANDLE g_hNewEvent = 0;
-
-void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread);
+//static HANDLE g_hSettingChanged = 0;
+//static HANDLE g_hAckEvent = 0;
+//static HANDLE g_hNewEvent = 0;
 
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg) {
         case WM_INITDIALOG:
             SendMessage(hwndDlg, DM_REGISTERHOTKEYS, 0, 0);
-            g_hSettingChanged = HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED, hwndDlg, DM_CONTACTSETTINGCHANGED);
-            g_hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PROTOACK);
-            g_hNewEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
+            //g_hSettingChanged = HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED, hwndDlg, DM_CONTACTSETTINGCHANGED);
+            //g_hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PROTOACK);
+            //g_hNewEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
             g_hotkeyHwnd = hwndDlg;
             return TRUE;
 
@@ -80,7 +78,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 if(cli != NULL) {
                     if(strncmp(cli->pszService, "SRMsg/TypingMessage", strlen(cli->pszService))) {
                         CallService(cli->pszService, 0, (LPARAM)cli);
-                        //CallServiceSync(MS_CLIST_REMOVEEVENT, (WPARAM)cli->hContact, (LPARAM)cli->hDbEvent);
                         break;
                     }
                 }
@@ -127,6 +124,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
+        /*
         case HM_DBEVENTADDED:
             if(wParam) {
                 HWND hwndTarget = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
@@ -134,6 +132,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     SendMessage(hwndTarget, HM_DBEVENTADDED, wParam, lParam);
             }
             break;
+        */
         case DM_REGISTERHOTKEYS:
             {
                 int iWantHotkeys = DBGetContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", 0);
@@ -170,6 +169,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
              * would slow down things a lot when many settings are commited to the
              * database.
              */
+        /*
         case DM_CONTACTSETTINGCHANGED:
         {
             DBCONTACTWRITESETTING *dbcws = (DBCONTACTWRITESETTING *)lParam;
@@ -187,87 +187,22 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             SendMessage(hwnd, DM_PICTURECHANGED, 0, 0);
             return 0;
         }
-        /*
-         * this is called whenever avatar info changes. the protocol notifies us by sending ACKTYPE_STATUS
-         * so we can then force a avtar reload. ACKTYPE_SUCCESS is sent by the proto once the download
-         * process is complete and we have a valid avatar to display.
-         */
-
-        case DM_PROTOACK:
-        {
-            ACKDATA *pAck = (ACKDATA *) lParam;
-            PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *) pAck->hProcess;
-            HWND hwndDlg = 0;
-            int i, j, iFound = NR_SENDJOBS;
-            
-            if(pAck->type == ACKTYPE_MESSAGE) {
-                for(j = 0; j < NR_SENDJOBS; j++) {
-                    for (i = 0; i < sendJobs[j].sendCount; i++) {
-                        //_DebugPopup(dat->hContact, "index: %d - hcontact[%d]: %d, sendid[%d]: %d", j, i, sendJobs[j].hContact[i], i, sendJobs[j].hSendId[i]);
-                        if (pAck->hProcess == sendJobs[j].hSendId[i] && pAck->hContact == sendJobs[j].hContact[i]) {
-                            struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(sendJobs[j].hwndOwner, GWL_USERDATA);
-                            if(dat) {
-                                if(dat->hContact == sendJobs[j].hOwner) {
-                                    iFound = j;
-                                    break;
-                                }
-                                
-                            }
-                        }
-                    }
-                    if (iFound == NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
-                        continue;
-                    else
-                        break;
-                }
-                if(iFound == NR_SENDJOBS)               // no matching send info found in the queue
-                    break;
-                else {                                  // the job was found
-                    SendMessage(sendJobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
-                    break;
-                }
-            }
-            if(pAck->type != ACKTYPE_AVATAR)
-                return 0;
-
-            hwndDlg = WindowList_Find(hMessageWindowList, (HANDLE)pAck->hContact);
-            if(hwndDlg) {
-                struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-                if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS) {
-                    PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
-                }
-                if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_SUCCESS) {
-                    if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
-                        DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
-                        DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
-                        ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
-                        if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-                            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                        }
-                    }
-                }
-                return 0;
-            }
-            break;
-        }
+        */
+        
         case DM_FORCEUNREGISTERHOTKEYS:
             UnregisterHotKey(hwndDlg, 0xc001);
             UnregisterHotKey(hwndDlg, 0xc002);
             g_hotkeysEnabled = FALSE;
             break;
         case WM_DESTROY:
-            if (g_hSettingChanged)
-                UnhookEvent(g_hSettingChanged);
+            //if (g_hSettingChanged)
+            //    UnhookEvent(g_hSettingChanged);
             if(g_hotkeysEnabled)
                 SendMessage(hwndDlg, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
-            if(g_hAckEvent)
-                UnhookEvent(g_hAckEvent);
-            if(g_hNewEvent)
-                UnhookEvent(g_hNewEvent);
+            //if(g_hAckEvent)
+            //    UnhookEvent(g_hAckEvent);
+            //if(g_hNewEvent)
+            //    UnhookEvent(g_hNewEvent);
             break;
     }
     return FALSE;
