@@ -1054,7 +1054,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 KillTimer(hwndDlg, wParam);
                 ShowWindow(hwndDlg, SW_SHOWNORMAL);
                 EnableWindow(hwndDlg, FALSE);
-                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) Translate("The message send timed out."));
+                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup(Translate("The message send timed out.")));
             }
             else if (wParam == TIMERID_FLASHWND) {
                 FlashWindow(hwndDlg, TRUE);

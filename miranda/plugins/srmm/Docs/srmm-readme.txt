@@ -27,6 +27,8 @@ Changes
  - Close message dialog with Ctrl+w
  - Fixed some focus/flash issues
  - Added option to delete temporary contacts on window close
+ - Support window api v0.0.0.1
+ - Retry dialog caused crash
 
 1.0.4.2
  - Typing Notify options didn't enable/disable correctly
