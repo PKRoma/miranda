@@ -146,8 +146,10 @@ void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	if (szProto) CallProtoService(szProto,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
 	else {
-		for(i=0;i<protoCount;i++)
-			CallProtoService(proto[i]->szName,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
+		for(i=0;i<protoCount;i++) {
+			if (CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
+				CallProtoService(proto[i]->szName,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
+		}
 	}
 }
 
@@ -246,7 +248,7 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 			return 0;
 	}
 	// If its a single protocol check the PFLAGNUM_3 for the single protocol
-	else if (!(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_3,0)&Proto_Status2Flag(wParam)))
+	else if (!(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)||!(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_3,0)&Proto_Status2Flag(wParam)))
 		return 0;
 	SystemParametersInfo(SPI_GETSCREENSAVERRUNNING,0,&bScreenSaverRunning,FALSE);
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"Ignore"),0)) {

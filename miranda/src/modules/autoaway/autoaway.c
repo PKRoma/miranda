@@ -55,7 +55,8 @@ static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
 				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,1);
 				CallProtoService(proto[j]->szName, PS_SETSTATUS, status, 0);
 				if ( awayMsg != NULL )  {
-					CallProtoService(proto[j]->szName, PS_SETAWAYMSG, status, (LPARAM) awayMsg);
+					if (CallProtoService(proto[j]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
+						CallProtoService(proto[j]->szName, PS_SETAWAYMSG, status, (LPARAM) awayMsg);
 					miranda_sys_free(awayMsg);
 				}				
 			} else if ( !(lParam&IDF_ISIDLE) && DBGetContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0) ) {
