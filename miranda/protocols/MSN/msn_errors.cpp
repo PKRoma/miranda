@@ -43,7 +43,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		return 1;
 
 	case ERR_SERVER_UNAVAILABLE:
-		MSN_DebugLog( "Server Unavailable! (Closing connection) " );
+		MSN_ShowError( "MSN Services are too busy, please try to connect later" );
 		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 		return 1;
 
