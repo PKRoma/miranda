@@ -860,7 +860,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 if(dat->hContact) {
                     dat->codePage = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
-                    dat->dwFlags |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) ? MWF_LOG_RTL : 0;
+                    dat->dwFlags |= (myGlobals.m_RTLDefault == 0 ? (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) ? MWF_LOG_RTL : 0) : (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1) ? MWF_LOG_RTL : 0));
                 }
                 dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
 // BEGIN MOD#33: Show contact's picture
@@ -1079,7 +1079,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (newData->iActivate) {
                     if(!dat->hThread) {
                         ShowPicture(hwndDlg,dat,FALSE,TRUE, TRUE);
-                        SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                        LoadSplitter(hwndDlg, dat);
                     }
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), 0);
@@ -1270,7 +1270,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1) ? MWF_SHOW_EMPTYLINEFIX : 0;
             dat->dwEventIsShown |= MWF_SHOW_MICROLF;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
-
+            dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
+            
             dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
             
             if(dat->dwFlags & MWF_LOG_GRID && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0))
@@ -1625,7 +1626,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     if (dat->splitterY < MINSPLITTERY) {
                         if(dat->showPic)
-                            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                            LoadSplitter(hwndDlg, dat);
                     }
                 }
 
@@ -2241,7 +2242,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(!dat->hThread)
                         ShowPicture(hwndDlg,dat,FALSE,TRUE, TRUE);
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
-                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                    LoadSplitter(hwndDlg, dat);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
@@ -2294,18 +2295,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
             break;
-        case DM_LOADSPLITTERPOS:
-            {
-                if(myGlobals.m_IgnoreContactSettings)
-                    dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
-                else
-                    dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150));
-                if(dat->splitterY < MINSPLITTERY || dat->splitterY == -1) {
-                    if(!dat->showPic)
-                        dat->splitterY = MINSPLITTERY;
-                }
-                break;
-            }
         case WM_LBUTTONDBLCLK:
             if(GetKeyState(VK_CONTROL) & 0x8000) {
                 SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
@@ -2775,6 +2764,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_USEGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 0 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEIEVIEW, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1 ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (myGlobals.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
+
+                        CheckMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | ((myGlobals.m_SplitterMode == 0 && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_MODE_PERCONTACT, MF_BYCOMMAND | ((myGlobals.m_SplitterMode == 1 && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_MODE_PRIVATE, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_CHECKED : MF_UNCHECKED));
+
+                        EnableMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_GRAYED : MF_ENABLED));
+                        EnableMenuItem(submenu, ID_MODE_PERCONTACT, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_GRAYED : MF_ENABLED));
                         
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                         switch(iSelection) {
@@ -2786,6 +2783,25 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 break;
                             case ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG:
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", -1);
+                                break;
+                            case ID_SPLITTER_AUTOSAVEONCLOSE:
+                                myGlobals.m_SplitterSaveOnClose ^= 1;
+                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", myGlobals.m_SplitterSaveOnClose);
+                                break;
+                            case ID_SPLITTER_SAVENOW:
+                                SaveSplitter(hwndDlg, dat);
+                                break;
+                            case ID_MODE_GLOBAL:
+                                myGlobals.m_SplitterMode = 0;
+                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 0);
+                                break;
+                            case ID_MODE_PERCONTACT:
+                                myGlobals.m_SplitterMode = 1;
+                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 1);
+                                break;
+                            case ID_MODE_PRIVATE:
+                                dat->dwEventIsShown ^= MWF_SHOW_SPLITTEROVERRIDE;
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", (BYTE)(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE));
                                 break;
                         }
                         iNewIEView = GetIEViewMode(hwndDlg, dat);
@@ -3337,12 +3353,8 @@ verify:
              */
         case DM_SAVEPERCONTACT:
             if (dat->hContact) {
-                if(!myGlobals.m_IgnoreContactSettings) {
-                    DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
+                if(!myGlobals.m_IgnoreContactSettings)
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
-                }
-                else
-                    DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
             }
             DBWriteContactSettingDword(NULL, SRMSGMOD, "multisplit", dat->multiSplitterX);
             break;
@@ -3779,6 +3791,8 @@ verify:
             
             WindowList_Remove(hMessageWindowList, hwndDlg);
             SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);
+            if(myGlobals.m_SplitterSaveOnClose)
+                SaveSplitter(hwndDlg, dat);
             if(!dat->stats.bWritten) {
                 WriteStatsOnClose(hwndDlg, dat);
                 dat->stats.bWritten = TRUE;

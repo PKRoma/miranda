@@ -92,13 +92,24 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 
             picProjectedWidth = (double)dat->iRealAvatarHeight * picAspect;
             dat->pic.cx = (int)picProjectedWidth + 2*1;
+            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
         }
-        if(dat->splitterY <= dat->bottomOffset + (showToolbar ? 0 : 27))
-            dat->splitterY = dat->bottomOffset + (showToolbar ? 1 : 27);;
-        if(dat->splitterY - 27 > dat->bottomOffset)
-            dat->pic.cy = dat->splitterY - 28;
-        else
-            dat->pic.cy = dat->bottomOffset;
+        if(cx - dat->pic.cx > dat->iButtonBarNeeds && !myGlobals.m_AlwaysFullToolbarWidth) {
+            if(dat->splitterY <= dat->bottomOffset + (showToolbar ? 0 : 27))
+                dat->splitterY = dat->bottomOffset + (showToolbar ? 1 : 27);;
+            if(dat->splitterY - 27 > dat->bottomOffset)
+                dat->pic.cy = dat->splitterY - 28;
+            else
+                dat->pic.cy = dat->bottomOffset;
+        }
+        else {
+            if(dat->splitterY <= dat->bottomOffset + 27 + (showToolbar ? 0 : 27))
+                dat->splitterY = dat->bottomOffset + 27 + (showToolbar ? 1 : 27);;
+                if(dat->splitterY - 27 > dat->bottomOffset)
+                    dat->pic.cy = dat->splitterY - 28;
+                else
+                    dat->pic.cy = dat->bottomOffset;
+        }
     }
     else if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
         picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
@@ -172,7 +183,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 {
     if(menuID == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
-        int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
+        int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
         CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
@@ -290,7 +301,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
     }
     else if(menuId == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
-        int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
+        int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
         int iIgnorePerContact = myGlobals.m_IgnoreContactSettings;
 
@@ -321,7 +332,10 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 iRtl ^= 1;
                 dat->dwFlags = iRtl ? dat->dwFlags | MWF_LOG_RTL : dat->dwFlags & ~MWF_LOG_RTL;
                 if(dat->hContact) {
-                    DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", (BYTE) iRtl);
+                    if(iRtl != myGlobals.m_RTLDefault)
+                        DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", (BYTE) iRtl);
+                    else
+                        DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "RTL");
                     SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
                 }
                 return 1;
@@ -823,7 +837,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
         if(dat->hContactPic) {
             dat->showPic = GetAvatarVisibility(hwndDlg, dat);
             if(dat->dynaSplitter == 0 || dat->splitterY == 0)
-                SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                LoadSplitter(hwndDlg, dat);
             dat->dynaSplitter = dat->splitterY - 34;
             if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
                 BITMAP bm;
@@ -1391,5 +1405,26 @@ void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
             {
                 break;
             }
+    }
+}
+
+void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(myGlobals.m_SplitterMode || dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)
+        DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
+    else
+        DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
+}
+
+void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(!myGlobals.m_SplitterMode && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
+        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
+    else
+        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150));
+
+    if(dat->splitterY < MINSPLITTERY || dat->splitterY == -1) {
+        if(!dat->showPic)
+            dat->splitterY = MINSPLITTERY;
     }
 }

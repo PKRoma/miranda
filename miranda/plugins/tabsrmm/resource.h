@@ -230,6 +230,7 @@
 #define IDC_HISTORYSIZESPIN             1669
 #define IDC_HOTKEYSAREGLOBAL            1670
 #define IDC_SINGLEROWTAB                1671
+#define IDC_STREAMTHREADING             1672
 #define IDC_COMBO1                      1674
 #define IDC_MODIFIERS                   1674
 #define IDC_AVATARMODE                  1674
@@ -239,7 +240,6 @@
 #define IDC_TOOLBARHIDEMODE             1676
 #define IDC_EMPTYLINEFIX                1677
 #define IDC_SPLITTERSTATICEDGES         1677
-#define IDC_STREAMTHREADING             1672
 #define IDC_AVATARDISPLAY               1677
 #define IDC_MAXAVATARHEIGHT             1678
 #define IDC_TABLIMIT                    1678
@@ -309,6 +309,7 @@
 #define IDC_ICONDLLNAME                 1712
 #define IDC_BUTTON2                     1713
 #define IDC_SELECTICONDLL               1713
+#define IDC_RTLDEFAULT                  1714
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -451,6 +452,12 @@
 #define ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG 40200
 #define ID_VIEW_VERTICALMAXIMIZE        40201
 #define ID_SENDMENU_SENDLATER           40202
+#define ID_PROTOMENU_SPLITTER           40203
+#define ID_SPLITTER_AUTOSAVEONCLOSE     40204
+#define ID_SPLITTER_SAVENOW             40205
+#define ID_MODE_GLOBAL                  40207
+#define ID_MODE_PERCONTACT              40208
+#define ID_MODE_PRIVATE                 40209
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -458,8 +465,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40203
-#define _APS_NEXT_CONTROL_VALUE         1714
+#define _APS_NEXT_COMMAND_VALUE         40212
+#define _APS_NEXT_CONTROL_VALUE         1715
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -44,6 +44,7 @@
 #define MWF_SHOW_MICROLF 16
 #define MWF_SHOW_MARKFOLLOWUPTS 32
 #define MWF_SHOW_FLASHCLIST 64
+#define MWF_SHOW_SPLITTEROVERRIDE 128
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -236,6 +237,9 @@ typedef struct _globals {
     int m_ToolbarHideMode;
     int m_FixFutureTimestamps;
     int m_AvatarDisplayMode;
+    int m_RTLDefault;
+    int m_SplitterSaveOnClose;
+    int m_SplitterMode;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

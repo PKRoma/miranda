@@ -321,6 +321,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,58,128,10
     CONTROL         "Use IEView as default message log",IDC_MSGLOGPLUGIN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,70,142,10
+    CONTROL         "RTL is default text direction",IDC_RTLDEFAULT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,82,142,10
     GROUPBOX        "Formatting options",IDC_STATIC,0,95,303,76
     CONTROL         "Message body in a new line",IDC_SHOW_EVENTS_NL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,105,127,9
@@ -812,6 +814,17 @@ BEGIN
             MENUITEM "Force Default Message Log",   ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
 
         END
+        MENUITEM SEPARATOR
+        POPUP "Splitter"
+        BEGIN
+            MENUITEM "Global",                      ID_MODE_GLOBAL
+            MENUITEM "Per Contact",                 ID_MODE_PERCONTACT
+            MENUITEM "Private",                     ID_MODE_PRIVATE
+            MENUITEM SEPARATOR
+            MENUITEM "Autosave on Close",           ID_SPLITTER_AUTOSAVEONCLOSE
+
+            MENUITEM "Save Now",                    ID_SPLITTER_SAVENOW
+        END
     END
 END
 
@@ -1027,8 +1040,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,91
- PRODUCTVERSION 0,9,9,91
+ FILEVERSION 0,9,9,92
+ PRODUCTVERSION 0,9,9,92
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -1044,13 +1057,13 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 91"
+            VALUE "FileVersion", "0, 9, 9, 92"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 91"
+            VALUE "ProductVersion", "0, 9, 9, 92"
             VALUE "SpecialBuild", "A"
         END
     END
