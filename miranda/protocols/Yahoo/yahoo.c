@@ -1182,7 +1182,8 @@ int ext_yahoo_connect(char *h, int p)
     
 	LOG(("ext_yahoo_connect %s:%d", h, p));
 	
-    ncon.cbSize = sizeof(ncon);
+    //ncon.cbSize = sizeof(ncon); !!!! THIS BROKE IN 0.4!!! NEED TO USE OLDER CRAP!
+	ncon.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
     ncon.szHost = h;
     ncon.wPort = p;
     ncon.flags = 0;
