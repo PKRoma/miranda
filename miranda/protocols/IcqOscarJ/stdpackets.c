@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -50,7 +51,7 @@ extern CRITICAL_SECTION modeMsgsMutex;
 extern BYTE gbSsiEnabled;
 extern char gpszICQProtoName[MAX_PATH];
 
-WORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersOnly);
+DWORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersOnly);
 
 
 
@@ -219,18 +220,38 @@ static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimesta
  *
  */
 
+void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen))
+{
+  icq_packet packet;
+  DWORD wIdent;
+  familyrequest_rec* request;
+
+  request = (familyrequest_rec*)malloc(sizeof(familyrequest_rec));
+  request->wFamily = wFamily;
+  request->familyhandler = familyhandler;
+
+  wIdent = AllocateCookie(4, 0, request); // generate and alloc cookie
+
+  packet.wLen = 12;
+  write_flap(&packet, 2);
+  packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_NEW_SERVICE, 0, wIdent);
+  packWord(&packet, wFamily);
+
+  sendServPacket(&packet);
+}
+
 
 void icq_setidle(int bAllow)
 {
-	icq_packet packet;
+  icq_packet packet;
 
-	if (bAllow!=gbIdleAllow)
-	{
+  if (bAllow!=gbIdleAllow)
+  {
 
 		/* SNAC 1,11 */
 		packet.wLen = 14;
 		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, 0x11, 0, 0x11);
+		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE);
 		if (bAllow==1)
 		{
 			packDWord(&packet, 0x0000003C);
@@ -291,18 +312,18 @@ void icq_setstatus(WORD wStatus)
 
 
 
-WORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData)
+DWORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData)
 {
 
 	icq_packet packet;
 	WORD wMessageLen;
-	WORD wCookie;
+	DWORD dwCookie;
 	WORD wPacketLength;
 	DWORD dwID1, dwID2;
 
 
 	wMessageLen = strlen(pszText);
-	wCookie = AllocateCookie(dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 	dwID1 = time(NULL);
 	dwID2 = RandRange(0, 0x00FF);
 
@@ -312,7 +333,7 @@ WORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, messag
 		wPacketLength = 21;
 
 	// Pack the standard header
-	packServMsgSendHeader(&packet, (DWORD)wCookie, dwID1, dwID2, dwUin, 1, (WORD)(wPacketLength + wMessageLen));
+	packServMsgSendHeader(&packet, dwCookie, dwID1, dwID2, dwUin, 1, (WORD)(wPacketLength + wMessageLen));
 
 	// Pack first TLV
 	packWord(&packet, 0x0002); // TLV(2)
@@ -343,17 +364,17 @@ WORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, messag
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
-WORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData)
+DWORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData)
 {
 
 	icq_packet packet;
 	WORD wMessageLen;
-	WORD wCookie;
+	DWORD dwCookie;
 	WORD wPacketLength;
 	DWORD dwID1, dwID2;
 	wchar_t* ppText;
@@ -361,7 +382,7 @@ WORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, me
 
 
 	wMessageLen = wcslen(pszText)*sizeof(wchar_t);
-	wCookie = AllocateCookie(dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 	dwID1 = time(NULL);
 	dwID2 = RandRange(0, 0x00FF);
 
@@ -371,7 +392,7 @@ WORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, me
 		wPacketLength = 22;
 
 	// Pack the standard header
-	packServMsgSendHeader(&packet, (DWORD)wCookie, dwID1, dwID2, dwUin, 1, (WORD)(wPacketLength + wMessageLen));
+	packServMsgSendHeader(&packet, dwCookie, dwID1, dwID2, dwUin, 1, (WORD)(wPacketLength + wMessageLen));
 
 	// Pack first TLV
 	packWord(&packet, 0x0002); // TLV(2)
@@ -408,22 +429,22 @@ WORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, me
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
-WORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData)
+DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 
 
-	wCookie = AllocateCookie(dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
 	// Pack the standard header
-	packServChannel2Header(&packet, dwUin, (WORD)(nBodyLen+11), wCookie, pCookieData->bMessageType, 0,
+	packServChannel2Header(&packet, dwUin, (WORD)(nBodyLen+11), dwCookie, pCookieData->bMessageType, 0,
 		wPriority, 0, 0, (BYTE)((pCookieData->nAckType == ACKTYPE_SERVER)?1:0));
 
 	packLEWord(&packet, (WORD)(nBodyLen+1));	        // Length of message
@@ -440,22 +461,22 @@ WORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, W
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
-WORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData)
+DWORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 
 
-	wCookie = AllocateCookie(dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
 	// Pack the standard header
-	packServChannel2Header(&packet, dwUin, (WORD)(nBodyLen+53), wCookie, pCookieData->bMessageType, 0,
+	packServChannel2Header(&packet, dwUin, (WORD)(nBodyLen+53), dwCookie, pCookieData->bMessageType, 0,
 		wPriority, 0, 0, (BYTE)((pCookieData->nAckType == ACKTYPE_SERVER)?1:0));
 
 	packLEWord(&packet, (WORD)(nBodyLen+1));	        // Length of message
@@ -483,22 +504,22 @@ WORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLen, 
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
-WORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData)
+DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData)
 {
 
 	icq_packet packet;
 	DWORD dwID1;
 	DWORD dwID2;
 	WORD wPacketLength;
-	WORD wCookie;
+	DWORD dwCookie;
 
 
-	wCookie = AllocateCookie(dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
 	if (pCookieData->nAckType == ACKTYPE_SERVER)
 		wPacketLength = 28;
@@ -509,7 +530,7 @@ WORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const cha
 	dwID2 = RandRange(0, 0x00FF);
 
 	// Pack the standard header
-	packServMsgSendHeader(&packet, wCookie, dwID1, dwID2, dwUin, 4, (WORD)(wPacketLength + wMsgLen));
+	packServMsgSendHeader(&packet, dwCookie, dwID1, dwID2, dwUin, 4, (WORD)(wPacketLength + wMsgLen));
 
 	// Pack first TLV
 	packWord(&packet, 0x05);                 // TLV(5)
@@ -535,7 +556,7 @@ WORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const cha
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
@@ -545,15 +566,15 @@ void sendOwnerInfoRequest(void)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
 
 
 	pCookieData = malloc(sizeof(fam15_cookie_data));
 	pCookieData->bRequestType = REQUESTTYPE_OWNER;
-	wCookie = AllocateCookie(dwLocalUIN, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwLocalUIN, (void*)pCookieData);
 
-	packServIcqExtensionHeader(&packet, 6, 0x07D0, wCookie);
+	packServIcqExtensionHeader(&packet, 6, 0x07D0, dwCookie);
 	packLEWord(&packet, 0x04D0);
 	packLEDWord(&packet, dwLocalUIN);
 
@@ -567,15 +588,15 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
 
 
 	pCookieData = malloc(sizeof(fam15_cookie_data));
 	pCookieData->bRequestType = REQUESTTYPE_USERAUTO;
-	wCookie = AllocateCookie(dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
-	packServIcqExtensionHeader(&packet, 6, 0x07D0, wCookie);
+	packServIcqExtensionHeader(&packet, 6, 0x07D0, dwCookie);
 	packLEWord(&packet, 0x04BA);
 	packLEDWord(&packet, dwUin);
 
@@ -585,18 +606,18 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 
 
 
-WORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
+DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
 
 
 	pCookieData = malloc(sizeof(fam15_cookie_data));
-	wCookie = AllocateCookie(dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
-	packServIcqExtensionHeader(&packet, 6, CLI_META_INFO_REQ, wCookie);
+	packServIcqExtensionHeader(&packet, 6, CLI_META_INFO_REQ, dwCookie);
 	if (bMinimal)
 	{
 		pCookieData->bRequestType = REQUESTTYPE_USERMINIMAL;
@@ -611,27 +632,27 @@ WORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
 
-WORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
+DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 
 
-	wCookie = GenerateCookie();
+	dwCookie = GenerateCookie(0);
 
-	packServChannel2Header(&packet, dwUin, 3, wCookie, (BYTE)type, 3, 1, 0, 0, 0);
+	packServChannel2Header(&packet, dwUin, 3, dwCookie, (BYTE)type, 3, 1, 0, 0, 0);
 	packLEWord(&packet, 1);	/* length of message */
 	packByte(&packet, 0);      /* message */
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
@@ -971,12 +992,12 @@ void icq_sendFileAcceptServ(DWORD dwUin, filetransfer* ft)
 
 	if (ft->nVersion >= 8)
 	{
-		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->wCookie, ft->szFilename, ft->szDescription, ft->dwTotalSize, wListenPort, TRUE);
+		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, ft->szDescription, ft->dwTotalSize, wListenPort, TRUE);
 		Netlib_Logf(ghServerNetlibUser, "Sent file accept v8 through server, port %u", wListenPort);
 	}
 	else
 	{
-		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->wCookie, ft->szFilename, ft->szDescription, ft->dwTotalSize, wListenPort, TRUE);
+		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, ft->szDescription, ft->dwTotalSize, wListenPort, TRUE);
 		Netlib_Logf(ghServerNetlibUser, "Sent file accept v7 through server, port %u", wListenPort);
 	}
 
@@ -987,12 +1008,12 @@ void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason)
 
 	if (ft->nVersion >= 8)
 	{
-		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->wCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE);
+		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE);
 		Netlib_Logf(ghServerNetlibUser, "Sent file deny v8 through server, port %u", wListenPort);
 	}
 	else
 	{
-		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->wCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE);
+		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE);
 		Netlib_Logf(ghServerNetlibUser, "Sent file deny v7 through server, port %u", wListenPort);
 	}
 
@@ -1054,10 +1075,11 @@ void icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, 
 
 // Searches
 
-WORD SearchByUin(DWORD dwUin)
+DWORD SearchByUin(DWORD dwUin)
 {
 
-	WORD wCookie, wInfoLen = 0;
+	DWORD dwCookie;
+  WORD wInfoLen = 0;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
 	                    // I should be ashamed! ;)
 
@@ -1076,19 +1098,20 @@ WORD SearchByUin(DWORD dwUin)
 	packLEDWord(&pBuffer, dwUin);
 
 	// Send it off for further packing
-	wCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
-	SAFE_FREE(pBuffer.pData);
+	dwCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
+	SAFE_FREE(&pBuffer.pData);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
 
-WORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
+DWORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
 {
 
-	WORD wCookie, wInfoLen = 0;
+	DWORD dwCookie;
+  WORD wInfoLen = 0;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
 	                    // I should be ashamed! ;)
 
@@ -1139,20 +1162,20 @@ WORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
 
 
 	// Send it off for further packing
-	wCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
-	SAFE_FREE(pBuffer.pData);
+	dwCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
+	SAFE_FREE(&pBuffer.pData);
 
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
 
-WORD SearchByEmail(char* pszEmail)
+DWORD SearchByEmail(char* pszEmail)
 {
 
-	WORD wCookie;
+	DWORD dwCookie;
 	WORD wInfoLen = 0;
 	WORD wEmailLen;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
@@ -1181,30 +1204,30 @@ WORD SearchByEmail(char* pszEmail)
 		packByte(&pBuffer, 0);
 
 		// Send it off for further packing
-		wCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
-		SAFE_FREE(pBuffer.pData);
+		dwCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
+		SAFE_FREE(&pBuffer.pData);
 	}
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
 
-WORD sendTLVSearchPacket(char* pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersOnly)
+DWORD sendTLVSearchPacket(char* pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersOnly)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 
 	_ASSERTE(pSearchDataBuf);
 	_ASSERTE(wInfoLen >= 4);
 
 
-	wCookie = GenerateCookie();
+	dwCookie = GenerateCookie(0);
 
 	// Pack headers
-	packServIcqExtensionHeader(&packet, (WORD)(wInfoLen + 7), CLI_META_INFO_REQ, wCookie);
+	packServIcqExtensionHeader(&packet, (WORD)(wInfoLen + 7), CLI_META_INFO_REQ, dwCookie);
 
 	// Pack search type
 	packLEWord(&packet, 0x055f);
@@ -1224,59 +1247,59 @@ WORD sendTLVSearchPacket(char* pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersO
 	// Go!
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
 
-WORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
+DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 
 
-	wCookie = GenerateCookie();
+	dwCookie = GenerateCookie(0);
 
-	packServIcqExtensionHeader(&packet, (WORD)(2 + bufferLen), CLI_META_INFO_REQ, wCookie);
+	packServIcqExtensionHeader(&packet, (WORD)(2 + bufferLen), CLI_META_INFO_REQ, dwCookie);
 	packWord(&packet, 0x3305);		   /* subtype: full search */
 	packBuffer(&packet, (const char*)fieldsBuffer, (WORD)bufferLen);
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
 
-WORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDataLen)
+DWORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDataLen)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 
 
-	wCookie = GenerateCookie();
+	dwCookie = GenerateCookie(0);
 
-	packServIcqExtensionHeader(&packet, (WORD)(wDataLen + 2), 0x07D0, wCookie);
+	packServIcqExtensionHeader(&packet, (WORD)(wDataLen + 2), 0x07D0, dwCookie);
 	packWord(&packet, type);
 	packBuffer(&packet, pData, wDataLen);
 
 	sendServPacket(&packet);
 
-	return wCookie;
+	return dwCookie;
 
 }
 
 
 
-WORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
+DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 {
 
 	icq_packet packet;
-	WORD wCookie;
+	DWORD dwCookie;
 	WORD wBufferLen;
 	char* szBuffer = NULL;
 	char* szMyNick = NULL;
@@ -1324,9 +1347,9 @@ WORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 			"</icq_sms_message>",
 			szPhoneNumber, szMsg, dwLocalUIN, szMyNick, szTime);
 
-		wCookie = GenerateCookie();
+		dwCookie = GenerateCookie(0);
 
-		packServIcqExtensionHeader(&packet, (WORD)(wBufferLen + 27), 0x07D0, wCookie);
+		packServIcqExtensionHeader(&packet, (WORD)(wBufferLen + 27), 0x07D0, dwCookie);
 		packWord(&packet, 0x8214);	   /* send sms */
 		packWord(&packet, 1);
 		packWord(&packet, 0x16);
@@ -1343,15 +1366,15 @@ WORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 	}
 	else
 	{
-		wCookie = 0;
+		dwCookie = 0;
 	}
 
 
-	SAFE_FREE(szMyNick);
-	SAFE_FREE(szBuffer);
+	SAFE_FREE(&szMyNick);
+	SAFE_FREE(&szBuffer);
 
 
-	return wCookie;
+	return dwCookie;
 
 }
 

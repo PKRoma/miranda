@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -62,11 +63,12 @@ typedef struct fam15_cookie_data_s
 #define REQUESTTYPE_USERMINIMAL 2
 #define REQUESTTYPE_USERDETAILED 3
 
+void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen));
 
 void icq_setidle(int bAllow);
 void icq_setstatus(WORD wStatus);
-WORD icq_sendGetInfoServ(DWORD, int);
-WORD icq_sendGetAwayMsgServ(DWORD, int);
+DWORD icq_sendGetInfoServ(DWORD, int);
+DWORD icq_sendGetAwayMsgServ(DWORD, int);
 void icq_sendFileSendServv7(DWORD dwUin, WORD wCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize);
 void icq_sendFileSendServv8(DWORD dwUin, WORD wCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize);
 
@@ -76,14 +78,14 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, WORD wCookie, c
 
 void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason);
 
-WORD icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
-WORD icq_changeUserDetailsServ(WORD, const unsigned char *, WORD);
+DWORD icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
+DWORD icq_changeUserDetailsServ(WORD, const unsigned char *, WORD);
 void icq_sendNewContact(DWORD);
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add);
 void icq_sendEntireVisInvisList(int);
 void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, BYTE, const char **);
 void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
-WORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
+DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
 void icq_sendAuthReqServ(DWORD dwUin,char *szMsg);
 void icq_sendAuthResponseServ(DWORD,int,char *);
@@ -92,15 +94,15 @@ void icq_sendYouWereAddedServ(DWORD,DWORD);
 void sendOwnerInfoRequest(void);
 void sendUserInfoAutoRequest(DWORD dwUin);
 
-WORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
-WORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
-WORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData);
-WORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData); // UTF-8
-WORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
+DWORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
+DWORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
+DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData);
+DWORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData); // UTF-8
+DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
 
-WORD SearchByUin(DWORD dwUin);
-WORD SearchByNames(char *pszNick, char *pszFirstName, char *pszLastName);
-WORD SearchByEmail(char *pszEmail);
+DWORD SearchByUin(DWORD dwUin);
+DWORD SearchByNames(char *pszNick, char *pszFirstName, char *pszLastName);
+DWORD SearchByEmail(char *pszEmail);
 
 
 #endif /* __STDPACKETS_H */
