@@ -167,6 +167,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case M_CREATECLC:
 		hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,"",
 			WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN
+			| CLS_CONTACTLIST
 			|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
 			|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
 			|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0),
@@ -197,6 +198,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_SYSCOLORCHANGE:
 		SendMessage(hwndContactTree,msg,wParam,lParam);
 		SendMessage(hwndStatus,msg,wParam,lParam);
+		// XXX: only works with 4.71 with 95, IE4.
+		SendMessage(hwndStatus,SB_SETBKCOLOR, 0, GetSysColor(COLOR_3DFACE));
 		break;
 		
 	case WM_SIZE:
