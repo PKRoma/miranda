@@ -128,7 +128,6 @@ DWORD WINAPI StreamThread(LPVOID param)
         g_StreamJobCurrent--;
         LeaveCriticalSection(&sjcs);
     } while ( g_StreamThreadRunning );
-    
 	return 0;
 }
 
@@ -329,7 +328,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTUNDERLINE, IDC_MESSAGE), 0);
                         return 0;
                     case 19:
-                        PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDMENU, 0);
+                        PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDMENU, (LPARAM)GetDlgItem(GetParent(hwnd), IDC_SENDMENU));
                         return 0;
                 }
                 break;
@@ -834,8 +833,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                 }
-                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0))
+                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0)) {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+                    if(dat->hwndLog)
+                        SetWindowLong(dat->hwndLog, GWL_EXSTYLE, GetWindowLong(dat->hwndLog, GWL_EXSTYLE) & ~(WS_EX_STATICEDGE | WS_EX_CLIENTEDGE));
+                }
                 
                 SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                 dat->bTabFlash = FALSE;
@@ -3725,7 +3727,7 @@ verify:
                 
                 ZeroMemory((void *)&item, sizeof(item));
                 item.mask = TCIF_PARAM;
-
+		
                 i = GetTabIndexFromHWND(hwndTab, hwndDlg);
                 if (i >= 0) {
                     TabCtrl_DeleteItem(hwndTab, i);

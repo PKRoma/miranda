@@ -46,10 +46,6 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
 
-//static HANDLE g_hSettingChanged = 0;
-//static HANDLE g_hAckEvent = 0;
-//static HANDLE g_hNewEvent = 0;
-
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg) {
@@ -60,7 +56,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             //g_hNewEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
             g_hotkeyHwnd = hwndDlg;
             return TRUE;
-
         case WM_HOTKEY:
             {
                 struct ContainerWindowData *pCurrent = pFirstContainer, *pTargetContainer = 0;
@@ -73,7 +68,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 
                 ZeroMemory((void *)&ri, sizeof(ri));
                 ri.iFirstIndex = ri.iMostRecent = -1;
-                
                 cli = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, (WPARAM)INVALID_HANDLE_VALUE, (LPARAM)0);
                 if(cli != NULL) {
                     if(strncmp(cli->pszService, "SRMsg/TypingMessage", strlen(cli->pszService))) {

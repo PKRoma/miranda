@@ -322,9 +322,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 dat->dwFlags ^= MWF_LOG_SHOWSECONDS;
                 return 1;
             case ID_MESSAGEICONS_SHOWICONS:
-            case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
                 dat->dwFlags ^= MWF_LOG_SHOWICONS;
+                dat->dwFlags = dat->dwFlags & MWF_LOG_SHOWICONS ? dat->dwFlags & ~MWF_LOG_SYMBOLS : dat->dwFlags;
+                return 1;
+            case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
                 dat->dwFlags ^= MWF_LOG_SYMBOLS;
+                dat->dwFlags = dat->dwFlags & MWF_LOG_SYMBOLS ? dat->dwFlags & ~MWF_LOG_SHOWICONS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_USEINCOMING:
                 dat->dwEventIsShown ^= MWF_SHOW_INOUTICONS;
