@@ -130,7 +130,10 @@ char *str_to_UTF8(unsigned char *in);
 struct ThreadData {
 	int type;
 	char server[80];
-	SOCKET s;    //filled by thread
+    //the rest is filled by thread
+	SOCKET s;
+	char data[1024];
+	int bytesInData;
 };
 
 int CmdQueue_AddProtoAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);

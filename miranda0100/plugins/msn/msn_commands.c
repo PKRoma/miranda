@@ -44,7 +44,10 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 	switch((*(PDWORD)msg&0x00FFFFFF)|0x20000000) {
 		case ' REV':		   //VER: section 7.1 Protocol Versioning
 			{	char protocol1[6];
-				sscanf(params,"%5s",protocol1);
+				if(sscanf(params,"%5s",protocol1)<1) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid VER command, ignoring");
+					break;
+				}
 				if(!strcmp(protocol1,"MSNP2"))
 					MSN_SendPacket(info->s,"INF","");  //INF: section 7.2 Server Policy Information
 				else {
@@ -60,7 +63,10 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 			break;
 		case ' FNI':	//INF: section 7.2 Server Policy Information
 			{	char security1[10];
-				sscanf(params,"%9s",security1);	  //can be more security packages on the end, comma delimited
+				if(sscanf(params,"%9s",security1)<1) {	  //can be more security packages on the end, comma delimited
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid INF command, ignoring");
+					break;
+				}
 				if(!strcmp(security1,"MD5")) {
 					//SEND USR I packet, section 7.3 Authentication
 					DBVARIANT dbv;
@@ -81,10 +87,16 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 			break;
 		case ' RSU':	//USR: section 7.3 Authentication
 			{	char security[10];
-				sscanf(params,"%9s",security);
+				if(sscanf(params,"%9s",security)<1) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR command, ignoring");
+					break;
+				}
 				if(!strcmp(security,"MD5")) {
 					char sequence,authChallengeInfo[130];
-					sscanf(params,"%*s %c %129s",&sequence,authChallengeInfo);
+					if(sscanf(params,"%*s %c %129s",&sequence,authChallengeInfo)<2) {
+						MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR S command, ignoring");
+						break;
+					}
 					if(sequence=='S') {
 						//send Md5 pass
 						MD5_CTX context;
@@ -114,7 +126,10 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 				}
 				else if(!strcmp(security,"OK")) {
 					char userHandle[130],userFriendlyName[130];
-					sscanf(params,"%*s %129s %129s",userHandle,userFriendlyName);
+					if(sscanf(params,"%*s %129s %129s",userHandle,userFriendlyName)<2) {
+						MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR OK command, ignoring");
+						break;
+					}
 					MSN_DebugLog(MSN_LOG_MESSAGE,"Logged in as '%s', name is '%s'",userHandle,userFriendlyName);
 					CmdQueue_AddDbWriteSettingString(NULL,MSNPROTONAME,"Nick",userFriendlyName);
 					MSN_SendPacket(info->s,"SYN","0");	 //FIXME: this is the sequence ID representing the data we have stored
@@ -143,7 +158,10 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 			break;
 		case ' RFX':    //XFR: section 7.4 Referral
 			{	char type[10],newServer[130];
-				sscanf(params,"%9s %129s",type,newServer);
+				if(sscanf(params,"%9s %129s",type,newServer)<2) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid XFR command, ignoring");
+					break;
+				}
 				if(!strcmp(type,"NS")) {	  //notification server
 					struct ThreadData *newThread;
 
@@ -193,6 +211,29 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 				else
 					MSN_DebugLog(MSN_LOG_ERROR,"Unknown referral server: %s",type);
 			}
+		case ' GSM':    //MSG: section 8.8 Receiving an Instant Message
+			{	char fromEmail[130],fromNick[130];
+				int msgBytes,bytesFromData;
+				char *msg;
+				if(sscanf(params,"%129s %129s %d",fromEmail,fromNick,&msgBytes)<3) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid MSG command, ignoring");
+					break;
+				}
+				msg=(char*)malloc(msgBytes+1);
+				bytesFromData=min(info->bytesInData,msgBytes);
+				memcpy(msg,info->data,bytesFromData);
+				info->bytesInData-=bytesFromData;
+				memmove(info->data,info->data+bytesFromData,info->bytesInData);
+				if(bytesFromData<msgBytes) {
+					int recvResult;
+					recvResult=MSN_WS_Recv(info->s,msg+bytesFromData,msgBytes-bytesFromData);
+					if(!recvResult) break;
+				}
+				msg[msgBytes]=0;
+				MSN_DebugLog(MSN_LOG_PACKETS,"Message:\n%s",msg);
+				free(msg);
+			}
+			break;
 	}
 	return 0;
 	
