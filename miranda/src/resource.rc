@@ -1426,7 +1426,7 @@ END
 IDD_OPT_FILETRANSFER DIALOGEX 0, 0, 313, 228
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Receiving files",IDC_STATIC,0,0,313,80
     LTEXT           "Received files folder:",IDC_STATIC,8,15,82,8
@@ -1502,9 +1502,12 @@ BEGIN
     COMBOBOX        IDC_AASTATUS,128,195,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,26,196,101,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,196,101,11
     LTEXT           "Change status when Miranda becomes idle?",IDC_STATIC,16,
                     181,255,10
+    CONTROL         "Do not set status back to online when returning from idle",
+                    IDC_IDLESTATUSLOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    35,213,246,10
 END
 
 
