@@ -1276,7 +1276,6 @@ void ConvertAllToUTF8()
 
 void InitAPI()
 {
-    HANDLE hEvent;
     /*
      * common services (SRMM style)
      */

@@ -806,7 +806,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
                             SetFocus(pContainer->hwndActive);
-                            dat = GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                            dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                             if(dat)
                                 TABSRMM_FireEvent(dat->hContact, pContainer->hwndActive, MSG_WINDOW_EVT_CUSTOM);
                         }
@@ -868,7 +868,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     case NM_CLICK: {
                             FILETIME ft;
                             POINT pt, pt1;
-                            TCITEM item;
 
                             GetCursorPos(&pt);
                             pt1 = pt;

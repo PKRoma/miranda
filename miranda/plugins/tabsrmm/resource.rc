@@ -418,9 +418,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,123,110,11
     CONTROL         "Show full UIN on toolbar",IDC_FULLUSERNAME,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,136,111,11
-    CONTROL         "Multisend CLIST splits message history only",
-                    IDC_CLISTMODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,
-                    123,157,8
     LTEXT           "Tab Control border",IDC_STATIC,168,148,66,12
     EDITTEXT        IDC_TABBORDER,233,146,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 

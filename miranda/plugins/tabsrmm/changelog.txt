@@ -68,6 +68,8 @@ Version 0.0.9.4 - 2004/12/02
         + added the new event api also found in SRMM to support external plugins.
           
         + added new option to delete temporary contacts when closing a session.
+        
+        + SHIFT-INS now behaves like CTRL-V and pastes plain text.
           
 Version 0.0.9.3 - 2004/11/14
 

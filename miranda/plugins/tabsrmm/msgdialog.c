@@ -778,16 +778,14 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     int showInfo, showButton, showSend;
     struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
     int iClistOffset = 0;
+    RECT rc;
 
     showInfo = dat->showUIElements & MWF_UI_SHOWINFO;
     showButton = dat->showUIElements & MWF_UI_SHOWBUTTON;
     showSend = dat->showUIElements & MWF_UI_SHOWSEND;
 
-    if((dat->dwFlags & MWF_CLISTMODE) || dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-        RECT rc;
-        GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
-        iClistOffset = rc.bottom;
-    }
+    GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
+    iClistOffset = rc.bottom;
 
     if (!showInfo && !showButton) {
         int i;
@@ -1579,7 +1577,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3,3));     // XXX margins in the message area as well
             
             dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
-            dat->dwFlags = DBGetContactSettingByte(NULL, SRMSGMOD_T, "clistmode", 0) ? dat->dwFlags | MWF_CLISTMODE : dat->dwFlags & ~MWF_CLISTMODE;
             
             SetDialogToType(hwndDlg);
             if (dat->hBkgBrush)
@@ -2226,7 +2223,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 _snprintf(szErrorMsg, 500, Translate("Delivery failure: %s"), Translate("The message send timed out"));
                 LogErrorMessage(hwndDlg, dat, 0, (char *)szErrorMsg);
-                //RecallFailedMessage(hwndDlg, dat);
+                RecallFailedMessage(hwndDlg, dat);
                 ShowErrorControls(hwndDlg, dat, TRUE);
                 HandleIconFeedback(hwndDlg, dat, g_IconError);
                 
@@ -3414,7 +3411,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         KillTimer(hwndDlg, TIMERID_MSGSEND);
                         _snprintf(szErrorMsg, 500, Translate("Delivery failure: %s"), (char *)ack->lParam);
                         LogErrorMessage(hwndDlg, dat, 0, (char *)szErrorMsg);
-                        //RecallFailedMessage(hwndDlg, dat);
+                        RecallFailedMessage(hwndDlg, dat);
                         ShowErrorControls(hwndDlg, dat, TRUE);
                         HandleIconFeedback(hwndDlg, dat, g_IconError);
                         return 0;
@@ -3911,7 +3908,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 // BEGIN MOD#26: Autosave notsent message (by Corsario & bi0)
 			if(dat->hContact) {
 				TCHAR *AutosaveMessage;
+#ifdef _UNICODE
                 GETTEXTEX gtx;
+#endif                
                 
 				int bufSize = GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE));
                 if (bufSize) {
