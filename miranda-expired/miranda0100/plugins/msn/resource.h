@@ -2,6 +2,7 @@
 // Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
+#define IDI_MSN                         1
 #define IDD_OPT_MSN                     185
 #define IDC_PASSWORD                    1020
 #define IDC_HANDLE                      1022

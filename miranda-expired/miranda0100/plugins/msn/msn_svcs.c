@@ -18,13 +18,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "msn_global.h"
 #include <process.h>
-//#include "resource.h"
+#include "resource.h"
 #include "../../miranda32/protocols/protocols/m_protomod.h"
 #include "../../miranda32/protocols/protocols/m_protosvc.h"
 #include "../../miranda32/ui/contactlist/m_clist.h"
 
 void __cdecl MSNServerThread(struct ThreadData *info);
 
+extern HINSTANCE hInst;
 extern SOCKET msnNSSocket;
 extern volatile LONG msnLoggedIn;
 extern int msnStatusMode,msnDesiredStatus;
@@ -48,8 +49,13 @@ static int MsnGetName(WPARAM wParam,LPARAM lParam)
 
 static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 {
-	//this function returns completely wrong icons. Major icon fixage required
-	return 0;
+	UINT id;
+
+	switch(wParam) {
+		case PLI_PROTOCOL: id=IDI_MSN; break;
+		default: return (int)(HICON)NULL;	
+	}
+	return (int)LoadImage(hInst,MAKEINTRESOURCE(id),IMAGE_ICON,GetSystemMetrics(wParam&PLIF_SMALL?SM_CXSMICON:SM_CXICON),GetSystemMetrics(wParam&PLIF_SMALL?SM_CYSMICON:SM_CYICON),0);
 }
 
 int MsnSetStatus(WPARAM wParam,LPARAM lParam)
