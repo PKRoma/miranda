@@ -65,7 +65,7 @@ optimizeLevel=4
 
 // linker
 libraryPath=
-outputFilename=Release\Yahoo.dll
+outputFilename=..\..\Bin\Release\Plugins\Yahoo.dll
 libraries=
 extraLinkerOptions=-Wl,-Map,Release\\yahoo.map
 ignoreStartupFile=0
@@ -114,6 +114,7 @@ extraResourceOptions=
 13=libyahoo2\yahoo_list.h
 14=libyahoo2\yahoo_util.h
 15=libyahoo2\yahoo_fn.h
+16=version.h
 [Resource]
 1=Yahoo.rc
 [Other]
@@ -125,17 +126,13 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-yahoo.c,38727
-libyahoo2\libyahoo2.c,72118
-libyahoo2\yahoo_debug.h,2032
-libyahoo2\yahoo2_callbacks.h,6449
-libyahoo2\Docs\README,4556
-services.c,31128
-yahoo.h,6489
-libyahoo2\yahoo_httplib.c,8227
-Yahoo.rc,2644
-resource.h,1968
-util.c,4771
-options.c,3488
+services.c,31344
+yahoo.c,24365
+yahoo.h,994
+Yahoo.rc,4881
+resource.h,1941
+util.c,4759
+options.c,3447
 pthread.c,0
-server.c,3894
+server.c,3885
+version.h,138
