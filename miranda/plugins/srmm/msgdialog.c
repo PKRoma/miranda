@@ -94,7 +94,7 @@ static void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDCANCEL), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
     ShowWindow(GetDlgItem(hwndDlg, IDOK), dat->showSend ? SW_SHOW : SW_HIDE);
-    EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
+    EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))?TRUE:FALSE);
     SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
     pl.length = sizeof(pl);
@@ -836,7 +836,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             else
                 lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
-            GetWindowTextA(hwndDlg, oldtitle, sizeof(oldtitle));
+            GetWindowText(hwndDlg, oldtitle, sizeof(oldtitle));
             if (lstrcmpA(newtitle, oldtitle)) { //swt() flickers even if the title hasn't actually changed
                 SetWindowTextA(hwndDlg, newtitle);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -1102,7 +1102,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         //this is a 'send' button
                         int bufSize, flags = 0;
 
-                        bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
+                        bufSize = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
                         dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
                         GetDlgItemText(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
                         if (dat->sendBuffer[0] == 0)
