@@ -447,12 +447,13 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 	if(logOptions.showUser) lstrcat(szTime," ");
 	szLine=(char*)malloc(lstrlen(pszMsg)+lstrlen(nlu->user.szSettingsModule)+5+lstrlen(szTime));
 	if(logOptions.timeFormat || logOptions.showUser)
-		sprintf(szLine,"[%s%s] %s\r\n",szTime,logOptions.showUser?nlu->user.szSettingsModule:"",pszMsg);
+		sprintf(szLine,"[%s%s] %s\n",szTime,logOptions.showUser?nlu->user.szSettingsModule:"",pszMsg);
 	else
-		sprintf(szLine,"%s\r\n",pszMsg);
+		sprintf(szLine,"%s\n",pszMsg);
 	EnterCriticalSection(&logOptions.cs);
 	if(logOptions.toConsole) {
-        //CallServiceSync(MS_NETLIB_LOGWIN, (WPARAM)szLine, 0);
+		//DWORD charsWritten;
+		//WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE),szLine,lstrlen(szLine),&charsWritten,NULL);
 	}
 	if(logOptions.toOutputDebugString) OutputDebugString(szLine);
 	if(logOptions.toFile && logOptions.szFile[0]) {
@@ -519,7 +520,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
 	nlu = nlc ? nlc->nlu : NULL;
-	titleLineLen = sprintf(szTitleLine, "(%p:%u) Data %s%s\r\n", nlc, nlc?nlc->s:0, sent?"sent":"received", flags & MSG_DUMPPROXY?" (proxy)":"");
+	titleLineLen = _snprintf(szTitleLine,sizeof(szTitleLine), "(%p:%u) Data %s%s\n", nlc, nlc?nlc->s:0, sent?"sent":"received", flags & MSG_DUMPPROXY?" (proxy)":"");
 	ReleaseMutex(hConnectionHeaderMutex);
 
 	// Text data
@@ -557,7 +558,6 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 				*pszBuf++ = buf[line+col]<' '?'.':(char)buf[line+col];
 			if (len-line<=16)
 				break;
-            *pszBuf++ = '\r'; // End each line with a break
 			*pszBuf++ = '\n'; // End each line with a break
 		}
 		*pszBuf = '\0';
