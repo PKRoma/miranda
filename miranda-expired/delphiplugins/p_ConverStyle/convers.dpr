@@ -162,6 +162,7 @@ begin
   //alloc memory for message
   blobsize:=PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,lParam{hDbEvent},0);
   getmem(dbei.pBlob,blobsize);
+  try
   dbei.cbBlob:=BlobSize;
   //getmessage
   PluginLink.CallService(MS_DB_EVENT_GET,lParam{hdbEvent},DWord(@dbei));
@@ -214,6 +215,9 @@ begin
 
     SkinPlaySound(PluginLink,'RecvMsg');
     end;
+  finally
+  freemem()
+  end;
 end;
 
 function OnUserSettingChage(wParam{hContact},lParam{DBCONTACTWRITESETTING}:DWord):integer;cdecl;
