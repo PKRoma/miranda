@@ -22,8 +22,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //LOGIN TO A DS Server
 
 
-	#include "MSN_global.h"
+#include "MSN_global.h"
+#include "../../miranda32/protocols/protocols/m_protomod.h"
 //	#include "resource.h"
+
+HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded)
+{
+	HANDLE hContact;
+	DBVARIANT dbv;
+
+	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
+	while(hContact!=NULL) {
+		if(!strcmp(MSNPROTONAME,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0))) {
+			if(!DBGetContactSetting(hContact,MSNPROTONAME,"e-mail",&dbv)) {
+				if(!strcmpi(msnEmail,dbv.pszVal)) {
+					DBFreeVariant(&dbv);
+					return hContact;
+				}
+				DBFreeVariant(&dbv);
+			}
+		}
+		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+	}
+	if(addIfNeeded) {
+		CmdQueue_AddDbCreateContact(msnEmail,msnNick);
+		Sleep(300);   //give it a chance to create
+		//FIXME: when msn_coord.c is properly fixed this sleep can be reduced dramatically
+	}
+	return NULL;
+}
+
 /*
 #ifndef MODULAR
 	#include "../../core/miranda.h"
