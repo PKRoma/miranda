@@ -170,21 +170,22 @@ int	CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam)
 					if (IsWindowVisible(hWindow))
 					{
 						ShowWindow(hWindow, SW_HIDE);	
-						SendMessage(hWindow, WM_SETREDRAW, FALSE, 0);
+//						SendMessage(hWindow, WM_SETREDRAW, FALSE, 0);
 					}
 					else
 					{
 						if(!IsWindowVisible(hWindow))
 							 bRedrawFlag = TRUE;
-						SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
+						
 						if (IsIconic(hWindow))
 							ShowWindow(hWindow, SW_NORMAL);
-						SendMessage(hWindow, WM_SIZE, 0, 0);
 						ShowWindow(hWindow, SW_SHOW);
+						SendMessage(hWindow, WM_SIZE, 0, 0);
 						if(bRedrawFlag)
 						{
-							InvalidateRect(hWindow, NULL, TRUE);
-							SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+//							SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
+//							InvalidateRect(hWindow, NULL, TRUE);
+							PostMessage(hWindow, GC_REDRAWLOG, 0, 0);
 						}
 						SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 						SetForegroundWindow(hWindow);
@@ -194,15 +195,15 @@ int	CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam)
 				{
 					if(!IsWindowVisible(hWindow))
 						bRedrawFlag = TRUE;
-					SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 					if (IsIconic(hWindow))
-						ShowWindow(hWindow, SW_NORMAL);
-					SendMessage(hWindow, WM_SIZE, 0, 0);
+						ShowWindow(hWindow, SW_SHOWNORMAL);
 					ShowWindow(hWindow, SW_SHOW);
+					SendMessage(hWindow, WM_SIZE, 0, 0);
 					if(bRedrawFlag)
 					{
-						InvalidateRect(hWindow, NULL, TRUE);
-						SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+//						SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
+//						InvalidateRect(hWindow, NULL, TRUE);
+						PostMessage(hWindow, GC_REDRAWLOG, 0, 0);
 					}
 					SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 					SetForegroundWindow(hWindow);

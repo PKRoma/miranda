@@ -193,7 +193,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 				else if(p1[1] == '\\' || p1[1] == '{' || p1[1] == '}' ) // escaped characters
 				{
 					bTextHasStarted = TRUE;
-					bJustRemovedRTF = TRUE;
+					bJustRemovedRTF = FALSE;
 					iRemoveChars = 2;
 					_snprintf(InsertThis, sizeof(InsertThis), "%c", p1[1]);
 

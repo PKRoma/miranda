@@ -282,7 +282,7 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, "%s", streamData->lin->pszText);break;
 		case GC_EVENT_ACTION:
 			if(streamData->lin->pszNick && streamData->lin->pszText)
-				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, Translate("*%s %s*"), streamData->lin->pszNick, streamData->lin->pszText);break;
+				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, Translate("%s %s"), streamData->lin->pszNick, streamData->lin->pszText);break;
 		case GC_EVENT_JOIN:
 			if(pszNick)
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, Translate("%s has joined"), pszNick);break;
@@ -536,7 +536,7 @@ static BOOL LogToFile(LOGSTREAMDATA * streamData)
 	_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
 
 
-	hFile = fopen(szFile,"a+");
+	hFile = fopen(szFile,"at+");
 	if(hFile)
 	{
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", MakeTimeStamp(g_LogOptions.pszTimeStampLog, streamData->lin->time));
@@ -557,7 +557,7 @@ static BOOL LogToFile(LOGSTREAMDATA * streamData)
 			Log_Append(&buffer, &bufferEnd, &bufferAlloced, " ");
 		}
 		else
-			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "** ");
+			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "> ");
 
 		AddEventToBuffer(&buffer, &bufferEnd, &bufferAlloced, streamData);	
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\n");
@@ -575,18 +575,34 @@ static BOOL LogToFile(LOGSTREAMDATA * streamData)
 			if (dwSize > trimlimit)
 			{
 				BYTE * pBuffer = 0;
+				BYTE * pBufferTemp = 0;
 				int read = 0;
 
-				pBuffer = (BYTE *)malloc(g_LogOptions.LoggingLimit*1024);
+				pBuffer = (BYTE *)malloc(g_LogOptions.LoggingLimit*1024+1);
+				pBuffer[g_LogOptions.LoggingLimit*1024] = '\0';
 				fseek(hFile,-g_LogOptions.LoggingLimit*1024,SEEK_END);
 				read = fread(pBuffer, 1, g_LogOptions.LoggingLimit*1024, hFile);
 				fclose(hFile); 
 				hFile = NULL;
-				hFile = fopen(szFile,"wb");
-				if(hFile && pBuffer && read)
+
+				// trim to whole lines, should help with broken log files I hope.
+				pBufferTemp = strchr(pBuffer, '\n');
+				if(pBufferTemp)
 				{
-					fwrite(pBuffer, 1, read, hFile);
-					fclose(hFile); hFile = NULL;
+					pBufferTemp++;
+					read = read - (pBufferTemp - pBuffer);
+				}
+				else
+					pBufferTemp = pBuffer;
+
+				if(read > 0)
+				{
+					hFile = fopen(szFile,"wt");
+					if(hFile )
+					{
+						fwrite(pBufferTemp, 1, read, hFile);
+						fclose(hFile); hFile = NULL;
+					}
 				}
 				if(pBuffer)
 					free(pBuffer);

@@ -72,6 +72,13 @@ void CreateHookableEvents(void)
 
 int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
+	{ //add as a known module in DB Editor ++
+	   DBVARIANT dbv; 
+	   if (DBGetContactSetting(NULL, "KnownModules", "Chat", &dbv)) 
+		  DBWriteContactSettingString(NULL, "KnownModules", "Chat","Chat,ChatFonts"); 
+	   DBFreeVariant(&dbv); 
+	} 
+
 	if(ServiceExists(MS_SMILEYADD_SHOWSELECTION))
 		SmileyAddInstalled = TRUE;
 	if(ServiceExists(MS_POPUP_ADDPOPUPEX))

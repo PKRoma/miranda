@@ -1239,7 +1239,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat=(CHATWINDOWDATA*)malloc(sizeof(CHATWINDOWDATA));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 
-			SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
+//			SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
 			OldSplitterProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWL_WNDPROC,(LONG)SplitterSubclassProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERY),GWL_WNDPROC,(LONG)SplitterSubclassProc);
 			OldNicklistProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_NICKLIST),GWL_WNDPROC,(LONG)NicklistSubclassProc);
@@ -1265,7 +1265,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat->iLogFilterFlags = (int)DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0xFFFF);
 			dat->iType = newData->iType;
 			dat->iEventCount = 0;
-			dat->nFlash = 0;
 			dat->pStatusList = NULL;
 			dat->pUserList = NULL;
 			dat->pEventListStart = NULL;
@@ -1376,7 +1375,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 
 			LoadGlobalSettings();
-			dat->nFlashMax = DBGetContactSettingByte(NULL, "Chat", "FlashMax", 4);
 			SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_SETBKGNDCOLOR , 0, g_LogOptions.crLogBackground);
 
 			{ //nicklist
@@ -1563,7 +1561,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if(!LM_AddEvent(&dat->pEventListStart, &dat->pEventListEnd, nlu->pszName, uMsg, nlu->pszText, nlu->pszStatus, nlu->pszUserInfo, nlu->bIsMe, FALSE, nlu->time, &dat->iEventCount, g_LogOptions.iEventLimit))
 					PostMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 				Log_StreamInEvent(hwndDlg, dat->pEventListStart, dat, FALSE); 
-				SkinPlaySound("ChatJoin");
+				if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+					SkinPlaySound("ChatJoin");
 				DoPopupAndTrayIcon(hwndDlg, uMsg-WM_USER-500, dat, nlu);
 			}
 			return TRUE;
@@ -1588,11 +1587,20 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SendMessage(hwndDlg, GC_UPDATEWINDOW, 0, 0);
 				if( nlu->bAddLog) {
 					if(uMsg == GC_EVENT_PART + WM_USER+500)
-						SkinPlaySound("ChatPart");
+					{
+						if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+							SkinPlaySound("ChatPart");
+					}
 					else if(uMsg == GC_EVENT_QUIT + WM_USER+500)
-						SkinPlaySound("ChatQuit");
+					{
+						if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+							SkinPlaySound("ChatQuit");
+					}
 					else
-						SkinPlaySound("ChatKick");
+					{
+						if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+							SkinPlaySound("ChatKick");
+					}
 					if(!LM_AddEvent(&dat->pEventListStart, &dat->pEventListEnd, nlu->pszName, uMsg, nlu->pszText, nlu->pszStatus, nlu->pszUserInfo, nlu->bIsMe, FALSE, nlu->time, &dat->iEventCount, g_LogOptions.iEventLimit))
 						PostMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 					Log_StreamInEvent(hwndDlg, dat->pEventListStart, dat, FALSE); 
@@ -1623,9 +1631,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if(!LM_AddEvent(&dat->pEventListStart, &dat->pEventListEnd, nlu->pszName, uMsg, nlu->pszText, nlu->pszStatus, nlu->pszUserInfo, nlu->bIsMe, FALSE, nlu->time, &dat->iEventCount, g_LogOptions.iEventLimit))
 					PostMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 				Log_StreamInEvent(hwndDlg, dat->pEventListStart, dat, FALSE); 
-				SkinPlaySound("ChatTopic");
+				if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+					SkinPlaySound("ChatTopic");
 				DoPopupAndTrayIcon(hwndDlg, uMsg-WM_USER-500, dat, nlu);
-				DBWriteContactSettingString(dat->hContact, dat->pszModule , "Topic", dat->pszTopic);
+				DBWriteContactSettingString(dat->hContact, dat->pszModule , "Topic", RemoveFormatting(dat->pszTopic));
 			}
 			return TRUE;
 			}break;
@@ -1637,7 +1646,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if(!LM_AddEvent(&dat->pEventListStart, &dat->pEventListEnd, nlu->pszName, uMsg, nlu->pszText, nlu->pszStatus, nlu->pszUserInfo, nlu->bIsMe, FALSE, nlu->time, &dat->iEventCount, g_LogOptions.iEventLimit))
 					PostMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 				Log_StreamInEvent(hwndDlg, dat->pEventListStart, dat, FALSE); 
-				SkinPlaySound("ChatNotice");
+				if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+					SkinPlaySound("ChatNotice");
 				DoPopupAndTrayIcon(hwndDlg, uMsg-WM_USER-500, dat, nlu);
 			}
 			return TRUE;
@@ -1657,7 +1667,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if(!nlu->bIsMe)
 				{
 					if(bHighl)
-						SkinPlaySound("ChatHighlight");
+					{
+						if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+							SkinPlaySound("ChatHighlight");
+					}
 
 					if(GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
 					{
@@ -1665,7 +1678,16 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						{
 
 							if(g_LogOptions.FlashWindow)
-								SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+							{
+								FLASHWINFO fi;
+								fi.cbSize = sizeof(FLASHWINFO);
+								fi.hwnd = hwndDlg;
+								fi.dwFlags = FLASHW_TIMERNOFG|FLASHW_ALL;  
+								fi.uCount = 3;  
+								fi.dwTimeout = 0;
+								FlashWindowEx(&fi);
+
+							}
 							if(DBGetContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(WORD) 0) != 40071)
 								DBWriteContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
 						}
@@ -1676,13 +1698,18 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							SendMessage(hwndDlg, GC_HIGHLIGHT, 0, (LPARAM)&szTemp);
 						}
 						else
-							SkinPlaySound("ChatMessage");
-
+						{
+							if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+								SkinPlaySound(uMsg==(GC_EVENT_MESSAGE+WM_USER+500)?"ChatMessage":"ChatAction");
+						}
 					}
 				}
 				else
 					if(!nlu->bIsMe)
-						SkinPlaySound("ChatAction");
+					{
+						if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+							SkinPlaySound("ChatAction");
+					}
 				uMsg -= WM_USER;
 				uMsg -= 500;
 				if (bHighl)
@@ -1721,14 +1748,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					SetActiveChatWindow(dat->pszID, dat->pszModule);
 					if(!IsWindowVisible(hwndDlg))
 						bRedrawFlag = TRUE;
-					SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
 					if (IsIconic(hwndDlg))
 						ShowWindow(hwndDlg, SW_NORMAL);
-					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					ShowWindow(hwndDlg, SW_SHOW);
+					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					if(bRedrawFlag)
 					{
-						InvalidateRect(hwndDlg, NULL, TRUE);
+//						SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
+//						InvalidateRect(hwndDlg, NULL, TRUE);
 						SendMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 					}
 					SetWindowPos(hwndDlg, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
@@ -1739,7 +1766,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				return TRUE;
 			case WINDOW_HIDDEN:
 				ShowWindow(hwndDlg, SW_HIDE); 
-				SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
+//				SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
 				nlu->dwItemData = 1; // stupid fix
 				return TRUE;
 			case WINDOW_MAXIMIZE:
@@ -1832,7 +1859,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if(!LM_AddEvent(&dat->pEventListStart, &dat->pEventListEnd, nlu->pszName, uMsg, nlu->pszText, nlu->pszStatus, nlu->pszUserInfo, nlu->bIsMe, FALSE, nlu->time, &dat->iEventCount, g_LogOptions.iEventLimit))
 						PostMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 					Log_StreamInEvent(hwndDlg, dat->pEventListStart, dat, FALSE); 
-					SkinPlaySound("ChatNick");
+					if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+						SkinPlaySound("ChatNick");
 					DoPopupAndTrayIcon(hwndDlg, uMsg-WM_USER-500, dat, nlu);
 				}
 				return TRUE;
@@ -1910,7 +1938,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if(!LM_AddEvent(&dat->pEventListStart, &dat->pEventListEnd, nlu->pszName, uMsg, nlu->pszText, nlu->pszStatus, nlu->pszUserInfo, nlu->bIsMe, FALSE, nlu->time, &dat->iEventCount, g_LogOptions.iEventLimit))
 						PostMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 					Log_StreamInEvent(hwndDlg, dat->pEventListStart, dat, FALSE); 
-					SkinPlaySound("ChatMode");
+					if(!g_LogOptions.SoundsFocus || GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)
+						SkinPlaySound("ChatMode");
 					DoPopupAndTrayIcon(hwndDlg, uMsg-WM_USER-500, dat, nlu);
 				}
 				return TRUE;
@@ -1918,7 +1947,18 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}break;
 		case GC_HIGHLIGHT:
 			if(DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0)
-				SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+			{
+				FLASHWINFO fi;
+				fi.cbSize = sizeof(FLASHWINFO);
+				fi.hwnd = hwndDlg;
+				fi.dwFlags = FLASHW_TIMERNOFG|FLASHW_ALL;  
+				fi.uCount = 3;  
+				fi.dwTimeout = 0;
+				FlashWindowEx(&fi);
+
+			}
+			if(DBGetContactSettingByte(dat->hContact, "CList", "Hidden", 0) != 0)
+				DBDeleteContactSetting(dat->hContact, "CList", "Hidden");
 			break;
 
 		case GC_SPLITTERMOVED:
@@ -2030,17 +2070,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			}break;
 		
-        case WM_TIMER:
-			if (wParam == TIMERID_FLASHWND) {
-				FlashWindow(hwndDlg, TRUE);
-				if (dat->nFlash > dat->nFlashMax) {
-					KillTimer(hwndDlg, TIMERID_FLASHWND);
-					FlashWindow(hwndDlg, FALSE);
-					dat->nFlash = 0;
-				}
-				dat->nFlash++;
-			}break;
-		case WM_ACTIVATE:
+ 		case WM_ACTIVATE:
 		{
 			if (LOWORD(wParam) != WA_ACTIVE)
 				break;
@@ -2056,8 +2086,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM) & sel);
 
 			SetFocus(GetDlgItem(hwndDlg,IDC_MESSAGE));
-			if (KillTimer(hwndDlg, TIMERID_FLASHWND))
-				FlashWindow(hwndDlg, FALSE);
 			SetActiveChatWindow(dat->pszID, dat->pszModule);
 			if(DBGetContactSettingWord(dat->hContact, dat->pszModule ,"ApparentMode", 0) != 0)
 				DBWriteContactSettingWord(dat->hContact, dat->pszModule ,"ApparentMode",(LPARAM) 0);
@@ -2148,6 +2176,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						switch (uID) 
 						{
 						case 0:
+							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
 							break;
                          case ID_COPYALL:
 							{
@@ -2589,7 +2618,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case WM_CLOSE:
 		{
 			ShowWindow(hwndDlg, SW_HIDE);
-			SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
+//			SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
 		} break;
 
 		case GC_CLOSEWINDOW:

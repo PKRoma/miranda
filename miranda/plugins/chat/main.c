@@ -47,7 +47,7 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,2,0,2),
+	PLUGIN_MAKE_VERSION(0,2,1,0),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX ' m3x",
 	"i_am_matrix@users.sourceforge.net",
@@ -66,13 +66,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,3,3,0)) return NULL;
+	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0)) return NULL;
 	return &pluginInfo;
 }
 
 int __declspec(dllexport) Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
+	HINSTANCE hDll;
 
 	#ifndef NDEBUG //mem leak detector :-) Thanks Tornado!
 	int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
@@ -82,31 +83,29 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	pluginLink = link;
 
-	if(LoadLibraryA("riched20.dll")) 
+	hDll = LoadLibraryA("riched20.dll");
+
+	if(hDll)
 	{
-		HMODULE hDll = GetModuleHandle("riched20.dll");
-
-		if(hDll)
+		CHAR modulePath[MAX_PATH];
+		if (GetModuleFileName(hDll, modulePath, sizeof(modulePath)))
 		{
-			CHAR modulePath[MAX_PATH];
-			if (GetModuleFileName(hDll, modulePath, sizeof(modulePath)))
-			{
-				DWORD dummy;
-				VS_FIXEDFILEINFO* vsInfo;
-				UINT vsInfoSize;
-				DWORD size = GetFileVersionInfoSize(modulePath, &dummy);
-				BYTE* buffer = (BYTE*) malloc(size);
+			DWORD dummy;
+			VS_FIXEDFILEINFO* vsInfo;
+			UINT vsInfoSize;
+			DWORD size = GetFileVersionInfoSize(modulePath, &dummy);
+			BYTE* buffer = (BYTE*) malloc(size);
 
-				GetFileVersionInfo(modulePath, 0, size, buffer);
-				VerQueryValue(buffer, "\\", (LPVOID*) &vsInfo, &vsInfoSize);
-				if(LOWORD(vsInfo->dwFileVersionMS) != 0)
-					bFlag= TRUE;
+			GetFileVersionInfo(modulePath, 0, size, buffer);
+			VerQueryValue(buffer, "\\", (LPVOID*) &vsInfo, &vsInfoSize);
+			if(LOWORD(vsInfo->dwFileVersionMS) != 0)
+				bFlag= TRUE;
 
-				free(buffer);
-			}
+			free(buffer);
 		}
 
 	}
+
 	if (!bFlag)
 	{
 		if(IDYES == MessageBoxA(0,Translate("Miranda could not load the Chat plugin because Microsoft Rich Edit v 3 is missing.\nIf you are using Windows 95/98/NT or WINE please upgrade your Rich Edit control.\n\nDo you want to download an update now?."),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))

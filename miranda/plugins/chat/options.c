@@ -93,6 +93,7 @@ static struct branch_t branch1[] = {
 	{"Show lines in the userlist", "ShowLines", 0,1, NULL},
 	{"Show new windows cascaded", "CascadeWindows", 0,1, NULL},
 	{"Save the size and position of chat rooms individually", "SavePosition", 0,0, NULL},
+	{"Do not play sounds when the chat room is focused", "SoundsFocus", 0, 0, NULL},
 	{"Do not pop up the window when joining a chat room", "PopupOnJoin", 0,0, NULL},
 	{"Toggle the visible state when double clicking in the contact list", "ToggleVisibility", 0,0, NULL}
 };
@@ -1042,6 +1043,7 @@ void LoadGlobalSettings(void)
 	lstrcat(szTemp, "\\Logs");
 
 	g_LogOptions.ShowTime = DBGetContactSettingByte(NULL, "Chat", "ShowTimeStamp", 1);
+	g_LogOptions.SoundsFocus = DBGetContactSettingByte(NULL, "Chat", "SoundsFocus", 0);
 	g_LogOptions.ShowTimeIfChanged = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTimeStampIfChanged", 0);
 	g_LogOptions.iEventLimit = DBGetContactSettingWord(NULL, "Chat", "LogLimit", 100);
 	g_LogOptions.dwIconFlags = DBGetContactSettingDword(NULL, "Chat", "IconFlags", 0xFFFF);

@@ -90,8 +90,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define EM_UNSUBCLASSED			(WM_USER+201)
 #define EM_ACTIVATE				(WM_USER+202)
 
-#define TIMERID_FLASHWND    1
-
 #define GC_EVENT_HIGHLIGHT		0x1000
 
 // special service for tweaking performance
@@ -200,9 +198,7 @@ typedef struct  {
 	BOOL		windowWasCascaded;
 	BOOL		bFGSet;
 	BOOL		bBGSet;
-	int			nFlash;
 	int			nUsersInNicklist;
-	int			nFlashMax;
 	int			iLogFilterFlags;
 	int			iType;
 	char*		pszModule;
@@ -235,6 +231,7 @@ typedef struct GlobalLogSettings_t {
 	BOOL		HighlightEnabled;
 	BOOL		LogIndentEnabled;
 	BOOL		StripFormat;
+	BOOL		SoundsFocus;
 	BOOL		PopUpInactiveOnly;
 	BOOL		TrayIconInactiveOnly;
 	BOOL		AddColonToAutoComplete;

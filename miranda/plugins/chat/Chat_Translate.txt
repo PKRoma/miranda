@@ -1,6 +1,6 @@
 ;----------------------------oOo----------------------------
 ;
-;                   Chat Plugin v 0.2.0.2
+;                   Chat Plugin v 0.2.1.0
 ;
 ;
 ;                   TRANSLATION TEMPLATE
@@ -147,7 +147,7 @@
 ;[Send message by pressing the Enter key twice]
 ;[Flash window when someone speaks]
 ;[Flash window when a word is highlighted]
-;[Show list of users in a chat room]
+;[Show list of users in the chat room]
 ;[Show button for sending messages]
 ;[Show name of the chat room in the top left of the window]
 ;[Show buttons for controlling the chat room]
@@ -156,6 +156,7 @@
 ;[Show lines in the userlist]
 ;[Show new windows cascaded]
 ;[Save the size and position of chat rooms individually]
+;[Do not play sounds when the chat room is focused]
 ;[Do not pop up the window when joining a chat room]
 ;[Toggle the visible state when double clicking in the contact list]
 ;[Prefix all events with a timestamp]

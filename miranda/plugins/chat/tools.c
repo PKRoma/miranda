@@ -34,14 +34,14 @@ int GetRichTextLength(HWND hwnd)
 }
 char * RemoveFormatting(char * pszWord)
 {
-	static char szTemp[1000];
+	static char szTemp[10000];
 	int i = 0;
 	int j = 0;
 
 	if(pszWord == 0 || lstrlen(pszWord) == 0)
 		return NULL;
 
-	while(j < 999 && i <= lstrlen(pszWord))
+	while(j < 9999 && i <= lstrlen(pszWord))
 	{
 		if(pszWord[i] == '%')
 		{
@@ -98,6 +98,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				HWND hWindow;
 				BOOL bRedrawFlag = FALSE;
 
+
 				hWindow = (HWND)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd,(LPARAM)0);
 
 				if ((int)hWindow < 1)
@@ -105,15 +106,15 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 				if(!IsWindowVisible(hWindow))
 					bRedrawFlag = TRUE;
-				SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 				if (IsIconic(hWindow))
 					ShowWindow(hWindow, SW_NORMAL);
-				SendMessage(hWindow, WM_SIZE, 0, 0);
 				ShowWindow(hWindow, SW_SHOW);
+				SendMessage(hWindow, WM_SIZE, 0, 0);
 				if(bRedrawFlag)
 				{
-					InvalidateRect(hWindow, NULL, TRUE);
-					SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+//					SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
+//					InvalidateRect(hWindow, NULL, TRUE);
+					PostMessage(hWindow, GC_REDRAWLOG, 0, 0);
 				}
 				SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 				SetForegroundWindow(hWindow);
@@ -260,14 +261,16 @@ BOOL DoPopupAndTrayIcon(HWND hWnd, int iEvent, CHATWINDOWDATA * dat, NEWEVENTLPA
 				switch (iEvent)
 				{			
 				case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
-				case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
 					ShowPopup(dat->hContact, hWnd, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), dat->pszModule, dat->pszName, aFonts[16].color, nlu->bBroadcasted, "%s says: %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
+					break;
+				case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
+					ShowPopup(dat->hContact, hWnd, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), dat->pszModule, dat->pszName, aFonts[16].color, nlu->bBroadcasted, "%s %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_MESSAGE :
 					ShowPopup(dat->hContact, hWnd, hIcons[17], dat->pszModule, dat->pszName, aFonts[9].color, nlu->bBroadcasted, "%s says: %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_ACTION:
-					ShowPopup(dat->hContact, hWnd, hIcons[23], dat->pszModule, dat->pszName, aFonts[15].color, nlu->bBroadcasted, "*%s %s*", nlu->pszName, RemoveFormatting(nlu->pszText)); 
+					ShowPopup(dat->hContact, hWnd, hIcons[23], dat->pszModule, dat->pszName, aFonts[15].color, nlu->bBroadcasted, "%s %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_JOIN:
 					ShowPopup(dat->hContact, hWnd, hIcons[11], dat->pszModule, dat->pszName, aFonts[3].color, nlu->bBroadcasted, "%s has joined", nlu->pszName); 

@@ -1,8 +1,8 @@
 ----------------------------oOo----------------------------
 
-                      Chat v 0.2.0.2
+                      Chat v 0.2.1.0
 
-        Released 2004-05-26, last updated 2004-11-21
+        Released 2004-05-26, last updated 2005-03-23
 
 -----------------------------------------------------------
 
@@ -18,7 +18,7 @@ information on how to get it working.
 
 Who?
 ----  
-My name is Jörgen Persson, also known as Matrix or m3x, and I am a 27 years old 
+My name is Jörgen Persson, also known as Matrix or m3x, and I am a 28 years old 
 Swedish student at 'Stockholm School of Economics'. I have no background in 
 coding apart from a few courses I took while studying 'Engineering Physics' at 
 'Chalmers' in Gothenburg. I have been using Miranda IM now since 2001 and so 
