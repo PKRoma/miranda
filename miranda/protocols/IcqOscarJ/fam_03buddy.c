@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Handles packets from Buddy family
 //
 // -----------------------------------------------------------------------------
 
@@ -45,6 +46,7 @@ extern DWORD dwLocalDirectConnCookie;
 extern HANDLE ghServerNetlibUser;
 extern char gpszICQProtoName[MAX_PATH];
 
+extern byte gbAvatarsEnabled;
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -53,15 +55,15 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 	switch (pSnacHeader->wSubtype)
 	{
 
-	case SRV_USERONLINE:
+	case ICQ_USER_ONLINE:
 		handleUserOnline(pBuffer, wBufferLength);
 		break;
 
-	case SRV_USEROFFLINE:
+	case ICQ_USER_OFFLINE:
 		handleUserOffline(pBuffer, wBufferLength);
 		break;
 
-	case SRV_REPLYBUDDY:
+	case ICQ_USER_SRV_REPLYBUDDY:
 		handleReplyBuddy(pBuffer, wBufferLength);
 		break;
 
@@ -73,6 +75,39 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 
 }
 
+typedef unsigned char capstr[0x10];
+
+capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize)
+{
+  while (bufsize>0) // search the buffer for a capability
+  {
+    if (!memcmp(buf, cap, capsize))
+    {
+      return (capstr*)buf; // give found capability for version info
+    }
+    else
+    {
+      buf += 0x10;
+      bufsize -= 0x10;
+    }
+  }
+  return 0;
+}
+
+const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
+const capstr capTrilNew   = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
+const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
+const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
+const capstr capSimOld    = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x00};
+const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', 0, 0, 0, 0};
+const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
+const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
+const capstr capRichText  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
+const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
+const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
+const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
+const capstr capXtraz     = {0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0};
+const capstr capIcq5Extra = {0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_SENDFILE
 
 
 // TLV(1) Unknown (x50)
@@ -84,6 +119,7 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 // TLV(C) DC Info
 // TLV(D) Capabilities
 // TLV(F) Session timer (in seconds)
+// TLV(1D) Avatar Hash (20 bytes)
 static void handleUserOnline(BYTE* buf, WORD wLen)
 {
 
@@ -93,7 +129,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	DWORD dwIP;
 	DWORD dwUIN;
 	DWORD dwDirectConnCookie;
-	DWORD dwMirVer = 0;
+//	DWORD dwMirVer = 0;
+	DWORD dwFT1, dwFT2, dwFT3;
+	LPSTR szClient = 0;
+	char szClientBuf[64];
+	DWORD dwClientId = 0;
 	WORD wVersion;
 	WORD wTLVCount;
 	WORD wWarningLevel;
@@ -128,12 +168,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		if (!IsStringUIN(pszUID))
 		{
 			Netlib_Logf(ghServerNetlibUser, "SNAC(3.B) Invalid UIN 2");
-			SAFE_FREE(pszUID);
+			SAFE_FREE(&pszUID);
 			return;
 		}
 
 		dwUIN = atoi(pszUID);
-		SAFE_FREE(pszUID);
+		SAFE_FREE(&pszUID);
 	}
 
 
@@ -178,7 +218,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		if (pTLV && (pTLV->wLen >= 15))
 		{
 			unsigned char* pBuffer;
-			DWORD dwMirandaSignature;
 
 			pBuffer = pTLV->pData;
 			unpackDWord(&pBuffer, &dwRealIP);
@@ -189,13 +228,73 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 			pBuffer += 4; // Web front port
 			pBuffer += 4; // Client features
 
-			// Is this a Miranda IM client?
-			unpackDWord(&pBuffer, &dwMirandaSignature);
-			if (dwMirandaSignature == 0xffffffff)
-			{
-				// Yes, get the version info
-				unpackDWord(&pBuffer, &dwMirVer);
-			}
+      // Get faked time signatures, used to identify clients
+      if (pTLV->wLen >= 0x23)
+      {
+        unpackDWord(&pBuffer, &dwFT1);
+        unpackDWord(&pBuffer, &dwFT2);
+        unpackDWord(&pBuffer, &dwFT3);
+      }
+      else
+      {  // just for the case the timestamps are not there
+        dwFT1 = dwFT2 = dwFT3 = 0;
+      }
+
+      // Is this a Miranda IM client?
+      if (dwFT1 == 0xffffffff)
+      {
+        if (dwFT2 == 0xffffffff)
+			  { // This is Gaim not Miranda
+          szClient = "Gaim";
+        } else 
+        { // Yes this is most probably Miranda, get the version info
+				  szClient = MirandaVersionToString(dwFT2);
+				  dwClientId = 1; // Miranda does not use Tick as msgId
+			  }
+      }
+      else if ((dwFT1 & 0xFF7F0000) == 0x7D800000)
+      { // This is probably an Licq client
+        DWORD ver = dwFT1 & 0xFFFF;
+        if (ver % 10){
+          _snprintf(szClientBuf, 64, "Licq %u.%u.%u", ver / 1000, (ver / 10) % 100, ver % 10);
+        }
+        else
+        {
+          _snprintf(szClientBuf, 64, "Licq %u.%u", ver / 1000, (ver / 10) % 100);
+        }
+        if (dwFT1 & 0x00800000)
+          strcat(szClientBuf, "/SSL");
+
+        szClient = szClientBuf;
+      }
+      else if (dwFT1 == 0xffffff8f)
+      {
+        szClient = "StrICQ";
+      }
+      else if (dwFT1 == 0xffffff42)
+      {
+        szClient = "mICQ";
+      }
+      else if (dwFT1 == 0xffffffbe)
+      {
+        szClient = "alicq";
+      }
+      else if (dwFT1 == 0xFFFFFF7F)
+      {
+        szClient = "&RQ";
+      }
+      else if (dwFT1 == 0xFFFFFFAB)
+      {
+        szClient = "YSM";
+      }
+      else if ((dwFT1 == 0x3AA773EE) && (dwFT2 == 0x3AA66380))
+      {
+        szClient = "libicq2000";
+      }
+      else if (dwFT1 == 0xFFFFFFFE && dwFT3 == 0xFFFFFFFE)
+      {
+        szClient = "mobicq/JIMM";
+      }
 		}
 		else
 		{
@@ -205,7 +304,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 			nTCPFlag = 0;
 			wVersion = 0;
 			dwDirectConnCookie = 0;
-			dwMirVer = 0;
 		}
 
 
@@ -260,6 +358,92 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 			wOldStatus = DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 
+			// Get Avatar Hash TLV
+			pTLV = getTLV(pChain, 0x1D, 1);
+			if (pTLV && (pTLV->wLen >= 0x14))
+			{
+        DBCONTACTWRITESETTING cws;
+        DBVARIANT dbv;
+        int dummy;
+        int dwJob = 0;
+
+        if (gbAvatarsEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLoad", 1))
+        { // check settings, should we request avatar immediatelly
+
+          if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
+          { // we not found old hash, i.e. get new avatar
+            dwJob = 1;
+          }
+          else
+          { // we found hash check if it changed or not
+            if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
+            { // the hash is different, request new avatar
+              dwJob = 1;
+            }
+            DBFreeVariant(&dbv);
+          }
+
+          if (dwJob)
+          {
+            char szAvatar[256];
+
+            ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+
+            Netlib_Logf(ghServerNetlibUser, "User has Avatar, new hash stored.");
+
+            cws.szModule = gpszICQProtoName;
+				    cws.szSetting = "AvatarHash";
+				    cws.value.type = DBVT_BLOB;
+				    cws.value.pbVal = pTLV->pData;
+				    cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
+				    dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
+
+            GetAvatarFileName(dwUIN, szAvatar, 255);
+            if (GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar)) 
+            { // avatar request sent
+              DBWriteContactSettingString(hContact, "ContactPhoto", "File", szAvatar);
+            } 
+          }
+          else
+          {
+            Netlib_Logf(ghServerNetlibUser, "User has Avatar.");
+          }
+        }
+        else
+        { // we should not request the avatar, so eventually save the hash and go on
+
+          if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
+          { // we not found old hash, i.e. store avatar hash
+            dwJob = 1;
+          }
+          else
+          { // we found hash check if it changed or not
+            if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
+            { // the hash is different, store new avatar hash
+              dwJob = 1;
+            }
+            DBFreeVariant(&dbv);
+          }
+
+          if (dwJob)
+          {
+            ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+
+            Netlib_Logf(ghServerNetlibUser, "User has Avatar, hash stored.");
+
+            cws.szModule = gpszICQProtoName;
+				    cws.szSetting = "AvatarHash";
+				    cws.value.type = DBVT_BLOB;
+				    cws.value.pbVal = pTLV->pData;
+				    cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
+				    dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
+          }
+          else
+          {
+            Netlib_Logf(ghServerNetlibUser, "User has Avatar.");
+          }
+        }
+			}
 
 			// Update the contact's capabilities
 			if (wOldStatus == ID_STATUS_OFFLINE)
@@ -273,7 +457,93 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 				if (pTLV && (pTLV->wLen >= 16))
 				{
+          capstr* capId;
+
 					AddCapabilitiesFromBuffer(hContact, pTLV->pData, pTLV->wLen);
+          // check capabilities for client identification
+          if (MatchCap(pTLV->pData, pTLV->wLen, &capTrillian, 0x10) || MatchCap(pTLV->pData, pTLV->wLen, &capTrilCrypt, 0x10))
+          { // this is Trillian, check for new version
+            if (MatchCap(pTLV->pData, pTLV->wLen, &capTrilNew, 0x10))
+              szClient = "Trillian v3";
+            else
+              szClient = "Trillian";
+          }
+          else if ((capId = MatchCap(pTLV->pData, pTLV->wLen, &capSimOld, 0xF)) && ((*capId)[0xF] != 0x92 && (*capId)[0xF] >= 0x20 || (*capId)[0xF] == 0))
+          {
+            int hiVer = (((*capId)[0xF]) >> 6) - 1;
+            unsigned loVer = (*capId)[0xF] & 0x1F;
+            if ((hiVer < 0) || ((hiVer == 0) && (loVer == 0))) 
+              szClient = "Kopete";
+            else
+            {
+              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
+              szClient = szClientBuf;
+            }
+          }
+          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capSim, 0xC))
+          {
+            unsigned ver1 = (*capId)[0xC];
+            unsigned ver2 = (*capId)[0xD];
+            unsigned ver3 = (*capId)[0xE];
+            if (ver3) 
+              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
+            else  
+              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
+            if ((*capId)[0xF] & 0x80) 
+              strcat(szClientBuf,"/Win32");
+            else if ((*capId)[0xF] & 0x40) 
+              strcat(szClientBuf,"/MacOS X");
+            szClient = szClientBuf;
+          }
+          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capLicq, 0xC))
+          {
+            unsigned ver1 = (*capId)[0xC];
+            unsigned ver2 = (*capId)[0xD];
+            unsigned ver3 = (*capId)[0xE];
+            if (ver3) 
+              _snprintf(szClientBuf, sizeof(szClientBuf), "Licq %u.%u.%u", ver1, ver2, ver3);
+            else  
+              _snprintf(szClientBuf, sizeof(szClientBuf), "Licq %u.%u", ver1, ver2);
+            if ((*capId)[0xF]) 
+              strcat(szClientBuf,"/SSL");
+            szClient = szClientBuf;
+          }
+          else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))
+          {
+            szClient = "ICQ for Mac";
+          }
+          else // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
+          {
+            if (wVersion == 8 && MatchCap(pTLV->pData, pTLV->wLen, &capStr20012, 0x10))
+            { // try to determine 2001-2003 versions
+              if (MatchCap(pTLV->pData, pTLV->wLen, &capIs2001, 0x10))
+                if (!dwFT1 && !dwFT2 && !dwFT3)
+                  szClient = "ICQ for Pocket PC";
+                else
+                  szClient = "ICQ 2001";
+              else if (MatchCap(pTLV->pData, pTLV->wLen, &capIs2002, 0x10))
+                szClient = "ICQ 2002";
+              else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
+                szClient = "ICQ 2003a";
+            }
+            else if (wVersion == 9)
+            { // try to determine lite versions
+              if (MatchCap(pTLV->pData, pTLV->wLen, &capXtraz, 0x10))
+                if (MatchCap(pTLV->pData, pTLV->wLen, &capIcq5Extra, 0x10))
+                  szClient = "icq5";
+                else
+                  szClient = "ICQ Lite v4";
+            }
+            else if (wVersion == 7)
+              if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
+                szClient = "GnomeICU"; // this is an exception
+              else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
+                szClient = "ICQ 2000";
+              else if (CheckContactCapabilities(hContact, CAPF_TYPING))
+                szClient = "Icq2Go! (Java)";
+              else 
+                szClient = "Icq2Go!";
+          }
 				}
 				else
 				{
@@ -294,6 +564,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 				}
 
 			}
+      else
+        if (szClient == 0) szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
 
 		}
 
@@ -302,15 +574,48 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		disposeChain(&pChain);
 	}
 
+  if (szClient == 0)
+  {
+    Netlib_Logf(ghServerNetlibUser, "No client identification, put default ICQ client for protocol.");
 
+    switch (wVersion)
+    {  // client detection failed, provide default clients
+      case 1: 
+        szClient = "ICQ 1.x";
+        break;
+      case 2: 
+        szClient = "ICQ 2.x";
+        break;
+      case 4:
+        szClient = "ICQ98";
+        break;
+      case 6:
+        szClient = "ICQ99";
+        break;
+      case 7:
+        szClient = "ICQ 2000/Icq2Go";
+        break;
+      case 8: 
+        szClient = "ICQ 2001-2003a";
+        break;
+      case 9: 
+        szClient = "ICQ Lite";
+        break;
+      case 0xA:
+        szClient = "ICQ 2003b";
+    }
+  }
+  else
+  {
+    if (szClient != (char*)-1)
+      Netlib_Logf(ghServerNetlibUser, "Client identified as %s", szClient);
+  }
 
 	// Save contacts details in database
-	if (hContact != NULL)
-	{
-		if (dwMirVer)
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "ClientID", 1);
-		else
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "ClientID", 0);
+  if (hContact != NULL)
+  {
+    if (szClient == 0) szClient = ""; // if no detection, set uknown
+    DBWriteContactSettingDword(hContact,  gpszICQProtoName, "ClientID",     dwClientId);
 
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "LogonTS",      dwOnlineSince);
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "IP",           dwIP);
@@ -318,7 +623,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "DirectCookie", dwDirectConnCookie);
 		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "UserPort",     (WORD)(dwPort & 0xffff));
 		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "Version",      wVersion);
-		DBWriteContactSettingString(hContact, gpszICQProtoName, "MirVer",       MirandaVersionToString(dwMirVer));
+		if (szClient != (char*)-1) DBWriteContactSettingString(hContact, gpszICQProtoName, "MirVer",       szClient);
 		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "Status",       (WORD)IcqStatusToMiranda(wStatus));
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "IdleTS",       tIdleTS);
 
@@ -371,12 +676,12 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
 		if (!IsStringUIN(pszUID))
 		{
 			Netlib_Logf(ghServerNetlibUser, "SNAC(3.C) Invalid UIN 2");
-			SAFE_FREE(pszUID);
+			SAFE_FREE(&pszUID);
 			return;
 		}
 
 		dwUIN = atoi(pszUID);
-		SAFE_FREE(pszUID);
+		SAFE_FREE(&pszUID);
 	}
 
 
@@ -388,6 +693,7 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
 		Netlib_Logf(ghServerNetlibUser, "%u went offline.", dwUIN);
 		DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 		DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
+		DBDeleteContactSetting(hContact, gpszICQProtoName, "AvatarHash");  // is this really necessary ?
 	}
 
 }
