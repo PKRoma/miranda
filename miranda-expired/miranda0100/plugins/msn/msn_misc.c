@@ -133,8 +133,8 @@ int MSNStatusToMiranda(const char *status)
 static int SingleHexToDecimal(char c)
 {
 	if(c>='0' && c<='9') return c-'0';
-	if(c>='a' && c<='f') return c-'a';
-	if(c>='A' && c<='F') return c-'A';
+	if(c>='a' && c<='f') return c-'a'+10;
+	if(c>='A' && c<='F') return c-'A'+10;
 	return 0;
 }
 
@@ -160,6 +160,7 @@ void UrlEncode(const char *src,char *dest,int cbDest)
 			if(iDest>=cbDest-4) break;
 			dest[iDest++]='%';
 			_itoa((unsigned char)src[iSrc],dest+iDest,16);
+			iDest+=2;
 		}
 		else {
 			dest[iDest++]=src[iSrc];
