@@ -75,9 +75,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	case ICQ_LISTS_ACK: // UPDATE_ACK
 		if (wBufferLength >= 2)
 		{
-
 			WORD wError;
-
 
 			unpackWord(&pBuffer, &wError);
 			Netlib_Logf(ghServerNetlibUser, "Received server list ack %u", wError);
@@ -682,6 +680,20 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			}
 			break;
 
+    case SSI_ITEM_BUDDYICON:
+      if (wGroupId == 0)
+      {
+        /* our avatar MD5-hash */
+        /* pszRecordName is "1" */
+        /* data is TLV(D5) hash */
+        /* we ignore this, just save the id */
+        /* cause we get the hash again after login */
+        ReserveServerID(wItemId);
+        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", wItemId);
+        Netlib_Logf(ghServerNetlibUser, "SSI Avatar item");
+      }
+      break;
+
 		case SSI_ITEM_UNKNOWN1:
 		default:
 			Netlib_Logf(ghServerNetlibUser, "SSI unhandled item %2x", wTlvType);
@@ -1087,14 +1099,13 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
 
 
 	// Pack packet header
-	dwSequence = GenerateCookie(0);
+	dwSequence = GenerateCookie(ICQ_LISTS_UPDATEGROUP);
 	packet.wLen = nUinLen + 20;
 	if (nNickLen > 0)
 		packet.wLen += 4 + nNickLen;
 	if (bAuthRequired)
 		packet.wLen += 4;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	// TODO:
 	// The sequence we pack here should be a combination of ICQ_LISTS_UPDATEGROUP & wSequence.
 	// For example, ICQ2003b sends 0x00030009
 	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_UPDATEGROUP, 0, dwSequence);
