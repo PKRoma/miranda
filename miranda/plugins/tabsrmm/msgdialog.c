@@ -1518,7 +1518,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dbtts.cbDest = sizeof(time);
                     dbtts.szDest = time;
                     CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-                    _snprintf(fmt, sizeof(fmt), Translate("Last message received on %s at %s"), date, time);
+                    _snprintf(fmt, sizeof(fmt), Translate("Last received on %s at %s"), date, time);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
                 } else {
@@ -2265,7 +2265,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         char szBuf[256];
                         char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
-                        _snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
+                        _snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), szContactName);
                         dat->nTypeSecs--;
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
                             SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
