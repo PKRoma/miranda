@@ -153,7 +153,8 @@ void SortContacts(void)
 	sortByStatus=DBGetContactSettingByte(NULL,"CList","SortByStatus",SETTING_SORTBYSTATUS_DEFAULT);
 	sortByProto=DBGetContactSettingByte(NULL,"CList","SortByProto",SETTING_SORTBYPROTO_DEFAULT);
 	if(resortTimerId) KillTimer(NULL,resortTimerId);
-	resortTimerId=SetTimer(NULL,0,50,SortContactsTimer);
+	// setting this to a higher delay causes shutdown waits.
+	resortTimerId=SetTimer(NULL,0,500,SortContactsTimer);
 }
 
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
