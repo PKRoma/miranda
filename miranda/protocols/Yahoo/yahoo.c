@@ -819,7 +819,8 @@ struct avatar_info{
 
 void get_picture(int id, int fd, int error,	const char *filename, unsigned long size, void *data) 
 {
-    char buf[4096];
+    PROTO_AVATAR_INFORMATION AI;
+	char buf[4096];
     int rsize = 0;
 	DWORD dw, c;
 	HANDLE 	hContact = 0;
@@ -867,11 +868,10 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				return;
 
 			BITMAPINFOHEADER* pDib;
-			if ( !png2dibConvertor( pBuff, rsize, &pDib ))
+			if ( !png2dibConvertor( pBuff, rsize, &pDib )) {
+				FREE(pBuff);
 				return;
-
-
-
+			}
 
 			GetAvatarFileName(hContact, buf, 1024);
 			LOG(("Saving file: %s size: %d", buf, size));
@@ -888,17 +888,16 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				WriteFile(myhFile, &tHeader, sizeof( tHeader ), &c, NULL);
 				WriteFile(myhFile, pDib, sizeof( BITMAPINFOHEADER ), &c, NULL );
 				WriteFile(myhFile, pDib+1, pDib->biSizeImage, &c, NULL );
-				//fclose( out );
-				
-				//WriteFile(myhFile, pBuff, rsize, &c, NULL);
 				CloseHandle(myhFile);
 			} else {
 				LOG(("Can not open file for writing: %s", buf));
 			}
+			
+			GlobalFree( pDib );
 	}
 
 	FREE(pBuff);
-	PROTO_AVATAR_INFORMATION AI;
+	
 	AI.cbSize = sizeof AI;
 	AI.format = PA_FORMAT_BMP;
 	AI.hContact = hContact;
