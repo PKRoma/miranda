@@ -102,6 +102,7 @@ const capstr capSimOld    = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xa
 const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', 0, 0, 0, 0};
 const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
 const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, 'R', '.', 'K', ' ', '.', ' ', 0, 0, 0, 0};
+const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capRichText  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
@@ -556,8 +557,22 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             szClient = szClientBuf;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capmIcq, 0xC))
-          { // TODO: detect version
-            szClient = "mICQ";
+          { 
+            unsigned ver1 = (*capId)[0xC];
+            unsigned ver2 = (*capId)[0xD];
+            unsigned ver3 = (*capId)[0xE];
+            unsigned ver4 = (*capId)[0xF];
+            if (ver4) 
+              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+            else if (ver3) 
+              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
+            else
+              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
+            szClient = szClientBuf;
+          }
+          else if (MatchCap(pTLV->pData, pTLV->wLen, &capIm2, 0x10))
+          {
+            szClient = "IM2";
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))
           {
