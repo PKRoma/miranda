@@ -80,6 +80,10 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define NOWIN2K
 #endif
 
+#if WINVER >= 0x500
+#define NOWIN2K
+#endif
+
 // SDK isn't present or some older VC compiler was used, include missing things.
 #if !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
