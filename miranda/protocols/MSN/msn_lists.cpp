@@ -334,7 +334,7 @@ BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_DESTROY:
-		HIMAGELIST hIml=(HIMAGELIST)SendDlgItemMessage(hwndDlg,IDC_LIST,LVM_GETIMAGELIST,0,0);
+		HIMAGELIST hIml=(HIMAGELIST)SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_GETEXTRAIMAGELIST,0,0);
 		ImageList_Destroy(hIml);
 		break;
 	}
