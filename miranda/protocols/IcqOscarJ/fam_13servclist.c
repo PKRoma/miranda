@@ -37,6 +37,7 @@
 #include "icqoscar.h"
 
 
+extern void ResetSettingsOnListReload();
 
 extern HANDLE ghServerNetlibUser;
 extern int gnCurrentStatus;
@@ -63,37 +64,105 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	switch (pSnacHeader->wSubtype)
 	{
 
-	case ICQ_LISTS_LIST: // SRV_REPLYROSTER
-		bIsSyncingCL = TRUE;
-		handleServerCList(pBuffer, wBufferLength, pSnacHeader->wFlags);
-		break;
+  case ICQ_LISTS_ACK: // UPDATE_ACK
+    if (wBufferLength >= 2)
+    {
+      WORD wError;
+      DWORD dwActUin;
+      servlistcookie* sc;
 
-	case ICQ_LISTS_SRV_REPLYLISTS:
-		Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x03) - SRV_REPLYLISTS");
-		break;
+      unpackWord(&pBuffer, &wError);
 
-	case ICQ_LISTS_ACK: // UPDATE_ACK
-		if (wBufferLength >= 2)
-		{
-			WORD wError;
-
-			unpackWord(&pBuffer, &wError);
-			Netlib_Logf(ghServerNetlibUser, "Received server list ack %u", wError);
-			ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_SERVERCLIST, wError?ACKRESULT_FAILED:ACKRESULT_SUCCESS, (HANDLE)pSnacHeader->dwRef, wError);
+      if (FindCookie(pSnacHeader->dwRef, &dwActUin, &sc))
+      { // look for action cookie
+#ifdef _DEBUG
+        Netlib_Logf(ghServerNetlibUser, "Received expected server list ack, action: %d, result: %d", sc->dwAction, wError);
+#endif
+        FreeCookie(pSnacHeader->dwRef); // release cookie
+        switch (sc->dwAction)
+        {
+        case 1:  // TODO: parse all events and show icq errors
+          {
+            if (wError)
+              Netlib_Logf(ghServerNetlibUser, "Server visibility update failed, error %d", wError);
+            break;
+          }
+        default:
+          Netlib_Logf(ghServerNetlibUser, "Server ack cookie type (%d) not recognized.", sc->dwAction);
+        }
+        SAFE_FREE(&sc); // free the memory
+      }
+      else
+      {
+        Netlib_Logf(ghServerNetlibUser, "Received unexpected server list ack %u", wError);
+        // TODO: remove; this is used only in upload ui
+			  ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_SERVERCLIST, wError?ACKRESULT_FAILED:ACKRESULT_SUCCESS, (HANDLE)pSnacHeader->dwRef, wError);
+      }
 
 		}
-		// Todo: We will receive rename and move acks too, so it could be a good idea to reset
-		// a future 'in sync' contact flag here.
 		break;
+
+  case ICQ_LISTS_SRV_REPLYLISTS:
+    /* received list rights, we just skip them */
+    /* as the structure is not yet fully understood */
+    Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x03) - SRV_REPLYLISTS");
+    break;
+
+  case ICQ_LISTS_LIST: // SRV_REPLYROSTER
+  {
+    servlistcookie* sc;
+    BOOL blWork;
+
+    blWork = bIsSyncingCL;
+    bIsSyncingCL = TRUE; // this is not used if cookie takes place
+
+    if (FindCookie(pSnacHeader->dwRef, NULL, &sc))
+    { // we do it by reliable cookie
+      if (!sc->dwUin)
+      { // is this first packet ?
+        ResetSettingsOnListReload();
+        sc->dwUin = 1;
+      }
+      handleServerCList(pBuffer, wBufferLength, pSnacHeader->wFlags);
+      if (!(pSnacHeader->wFlags & 0x0001))
+      { // was that last packet ?
+        FreeCookie(pSnacHeader->dwRef); // yes, release cookie
+        SAFE_FREE(&sc);
+      }
+    }
+    else
+    { // use old fake
+      if (!blWork)
+      { // this can fail on some crazy situations
+        ResetSettingsOnListReload();
+      }
+      handleServerCList(pBuffer, wBufferLength, pSnacHeader->wFlags);
+    }
+    break;
+  }
 
 	case SRV_SSI_UPTODATE: // SRV_REPLYROSTEROK
+  {
+    servlistcookie* sc;
+
 		bIsSyncingCL = FALSE;
-		Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x0F) - SRV_REPLYROSTEROK");
+
+    if (FindCookie(pSnacHeader->dwRef, NULL, &sc))
+    { // we requested servlist check
+#ifdef _DEBUG
+		  Netlib_Logf(ghServerNetlibUser, "Server stated roster is ok.");
+#endif
+      FreeCookie(pSnacHeader->dwRef);
+      SAFE_FREE(&sc);
+    }
+    else
+		  Netlib_Logf(ghServerNetlibUser, "Server sent unexpected SNAC(x13,x0F) - SRV_REPLYROSTEROK");
 
 		// This will activate the server side list
-		sendRosterAck();
+		sendRosterAck(); // this must be here, cause of failures during cookie alloc
 		handleServUINSettings(wListenPort, dwLocalInternalIP);
 		break;
+  }
 
 	case ICQ_LISTS_CLI_MODIFYSTART:
 		Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x11) - Server is modifying contact list");
@@ -635,22 +704,20 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			break;
 
 
-		case SSI_ITEM_VISIBILITY: /* My visibility settings */
-			{
+    case SSI_ITEM_VISIBILITY: /* My visibility settings */
+      {
+        BYTE bVisibility;
 
-				BYTE bVisibility;
+        ReserveServerID(wItemId);
 
-
-				ReserveServerID(wItemId);
-
-				// Look for visibility TLV
-				if (bVisibility = getByteFromChain(pChain, 0x00CA, 1))
-				{
-					DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wItemId);
-					Netlib_Logf(ghServerNetlibUser, "Visibility is %u, ID is %u", bVisibility, wItemId);
-				}
-			}
-			break;
+        // Look for visibility TLV
+        if (bVisibility = getByteFromChain(pChain, 0x00CA, 1))
+        { // found it, store the id, we do not need current visibility - we do not rely on it
+          DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wItemId);
+          Netlib_Logf(ghServerNetlibUser, "Visibility is %u, ID is %u", bVisibility, wItemId);
+        }
+      }
+      break;
 
 		case SSI_ITEM_IGNORE:
 			/* item on ignore list */
@@ -690,7 +757,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         /* cause we get the hash again after login */
         ReserveServerID(wItemId);
         DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", wItemId);
-        Netlib_Logf(ghServerNetlibUser, "SSI Avatar item");
+        Netlib_Logf(ghServerNetlibUser, "SSI Avatar item recognized");
       }
       break;
 
@@ -955,49 +1022,61 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 //
 void updateServVisibilityCode(BYTE bCode)
 {
+  icq_packet packet;
+  WORD wVisibilityID;
+  WORD wCommand;
 
-	icq_packet packet;
-	WORD wVisibilityID;
-	WORD wCommand;
+  if ((bCode > 0) && (bCode < 6))
+  {
+    servlistcookie* ack;
+    DWORD dwCookie;
+    BYTE bVisibility = DBGetContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
 
+    if (bVisibility == bCode) // if no change was made, not necescary to update that
+      return;
+    DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", bCode);
 
-	if ((bCode > 0) && (bCode < 6))
-	{
+    // Do we have a known server visibility ID? We should, unless we just subscribed to the serv-list for the first time
+    if ((wVisibilityID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0)) == 0)
+    {
+      // No, create a new random ID
+      wVisibilityID = GenerateServerId();
+      DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wVisibilityID);
+      wCommand = ICQ_LISTS_ADDTOLIST;
+      Netlib_Logf(ghServerNetlibUser, "Made new srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
+    }
+    else
+    {
+      Netlib_Logf(ghServerNetlibUser, "Reused srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
+      wCommand = ICQ_LISTS_UPDATEGROUP;
+    }
 
-		// Do we have a known server visibility ID?
-		if ((wVisibilityID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0)) == 0)
-		{
-			// No, create a new random ID
-			wVisibilityID = GenerateServerId();
-			DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wVisibilityID);
-			wCommand = ICQ_LISTS_ADDTOLIST;
-			Netlib_Logf(ghServerNetlibUser, "Made new srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
-		}
-		else
-		{
-			Netlib_Logf(ghServerNetlibUser, "Reused srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
-			wCommand = ICQ_LISTS_UPDATEGROUP;
-		}
+    ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+    if (!ack) 
+    {
+      Netlib_Logf(ghServerNetlibUser, "Cookie alloc failure.");
+      return; // out of memory, go away
+    }
+    ack->dwAction = 1; // update visibility
+    ack->dwUin = 0; // this is ours
+    dwCookie = AllocateCookie(wCommand, 0, ack); // take cookie
 
-
-		// Build and send packet
-		packet.wLen = 25;
-		write_flap(&packet, ICQ_DATA_CHAN);
-		packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, wCommand<<0x10);
-		packWord(&packet, 0);                   // Name (null)
-		packWord(&packet, 0);                   // GroupID (0 if not relevant)
-		packWord(&packet, wVisibilityID);       // EntryID
-		packWord(&packet, SSI_ITEM_VISIBILITY); // EntryType
-		packWord(&packet, 5);                   // Length in bytes of following TLV
-		packWord(&packet, 0xCA);                // TLV Type
-		packWord(&packet, 0x1);                 // TLV Length
-		packByte(&packet, bCode);               // TLV Value (visibility code)
-		sendServPacket(&packet);
-		// There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
-		// ICQ_LISTS_CLI_MODIFYEND when modifying the visibility code
-
-	}
-
+    // Build and send packet
+    packet.wLen = 25;
+    write_flap(&packet, ICQ_DATA_CHAN);
+    packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
+    packWord(&packet, 0);                   // Name (null)
+    packWord(&packet, 0);                   // GroupID (0 if not relevant)
+    packWord(&packet, wVisibilityID);       // EntryID
+    packWord(&packet, SSI_ITEM_VISIBILITY); // EntryType
+    packWord(&packet, 5);                   // Length in bytes of following TLV
+    packWord(&packet, 0xCA);                // TLV Type
+    packWord(&packet, 0x1);                 // TLV Length
+    packByte(&packet, bCode);               // TLV Value (visibility code)
+    sendServPacket(&packet);
+    // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
+    // ICQ_LISTS_CLI_MODIFYEND when modifying the visibility code
+  }
 }
 
 
@@ -1006,15 +1085,12 @@ void updateServVisibilityCode(BYTE bCode)
 // modifications are done, call sendAddEnd().
 void sendAddStart(void)
 {
+  icq_packet packet;
 
-	icq_packet packet;
-
-
-	packet.wLen = 10;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART<<0x10);
-	sendServPacket(&packet);
-
+  packet.wLen = 10;
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART<<0x10);
+  sendServPacket(&packet);
 }
 
 
@@ -1023,15 +1099,12 @@ void sendAddStart(void)
 // the server that we are done.
 void sendAddEnd(void)
 {
+  icq_packet packet;
 
-	icq_packet packet;
-
-
-	packet.wLen = 10;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYEND, 0, ICQ_LISTS_CLI_MODIFYEND<<0x10);
-	sendServPacket(&packet);
-
+  packet.wLen = 10;
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYEND, 0, ICQ_LISTS_CLI_MODIFYEND<<0x10);
+  sendServPacket(&packet);
 }
 
 
@@ -1163,17 +1236,14 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
 // Sent when the last roster packet has been received
 void sendRosterAck(void)
 {
+  icq_packet packet;
 
-	icq_packet packet;
-
-
-	packet.wLen = 10;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GOTLIST, 0, ICQ_LISTS_GOTLIST<<0x10);
-	sendServPacket(&packet);
+  packet.wLen = 10;
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GOTLIST, 0, ICQ_LISTS_GOTLIST<<0x10);
+  sendServPacket(&packet);
 
 #ifdef _DEBUG
-	Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x07) - CLI_ROSTERACK");
+  Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x07) - CLI_ROSTERACK");
 #endif
-
 }

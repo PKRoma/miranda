@@ -130,6 +130,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     {
       DWORD dwLastUpdate;
       WORD wRecordCount;
+      servlistcookie* ack;
+      DWORD dwCookie;
+
       dwLastUpdate = DBGetContactSettingDword(NULL, gpszICQProtoName, "SrvLastUpdate", 0);
       wRecordCount = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0);
 
@@ -143,15 +146,21 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #endif
       packet.wLen = 16;
       write_flap(&packet, ICQ_DATA_CHAN);
-      // TODO: allocate cookie to pair this with reply
-      packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, (ICQ_LISTS_CLI_CHECK<<0x10|0x01));
-      // Sending 0 here forces the server to send the complete roster
-      // everytime. This makes sure that we always receive the visibility
-      // ID.  // TODO: do not use this, why it is neccessary ?
-      packDWord(&packet, 0);  // last saved time
-      packWord(&packet, 0);   // number of records saved
-//      packDWord(&packet, dwLastUpdate);  // last saved time
-//      packWord(&packet, wRecordCount);   // number of records saved
+      ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+      if (ack)
+      { // we try to use standalone cookie if available
+        ack->dwAction = 0; // loading list
+        ack->dwUin = 0; // init content
+        dwCookie = AllocateCookie(ICQ_LISTS_CLI_CHECK, 0, ack);
+      }
+      else // if not use, that old fake
+        dwCookie = ICQ_LISTS_CLI_CHECK<<0x10;
+
+      packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, dwCookie);
+      // check if it was not changed elsewhere (force reload, set that setting to zero)
+      packDWord(&packet, dwLastUpdate);  // last saved time
+      packWord(&packet, wRecordCount);   // number of records saved
+
       sendServPacket(&packet);
     }
 

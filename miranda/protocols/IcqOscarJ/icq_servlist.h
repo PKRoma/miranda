@@ -34,6 +34,19 @@
 //
 // -----------------------------------------------------------------------------
 
+#ifndef __ICQ_SERVLIST_H
+#define __ICQ_SERVLIST_H
+
+// actions:
+// 0 = request serv-list
+// 1 = update visibility
+// cookie struct for SSI actions
+typedef struct servlistcookie_t
+{
+  DWORD dwUin;
+  HANDLE hContact;
+  int dwAction; 
+} servlistcookie;
 
 
 DWORD icq_sendUploadContactServ(DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, int authRequired, WORD wItemType);
@@ -50,3 +63,5 @@ void ReserveServerID(WORD wID);
 void FreeServerID(WORD wID);
 BOOL CheckServerID(WORD wID, int wCount);
 void FlushServerIDs();
+
+#endif /* __ICQ_SERVLIST_H */

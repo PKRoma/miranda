@@ -318,6 +318,7 @@ static int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
     ar->pData = (char*)malloc(datalen);
     if (!ar->pData)
     { // alloc failed
+      LeaveCriticalSection(&cookieMutex);
       SAFE_FREE(&ar);
       return 0;
     }
@@ -385,6 +386,8 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
         {
           avatarrequest* reqdata = pendingRequests;
           pendingRequests = reqdata->pNext;
+
+          Netlib_Logf(ghServerNetlibUser, "Picked up the %d request from queue.", reqdata->dwUin);
 
           switch (reqdata->type)
           {
@@ -711,10 +714,10 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         pBuffer += (ac->hashlen<<1) + 1;
         unpackWord(&pBuffer, &datalen);
 
-        Netlib_Logf(ghServerNetlibUser, "Received user avatar, storing (%d bytes).", datalen);
-
         if (datalen)
         { // store to file...
+          Netlib_Logf(ghServerNetlibUser, "Received user avatar, storing (%d bytes).", datalen);
+
           out = fopen(ac->szFile, "wb");
 			    if (out) 
           {
@@ -726,6 +729,8 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         }
         else
         { // the avatar is empty, delete the file
+          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, file deleted.", datalen);
+
           DeleteFile(ac->szFile);
           // there was probably some error, delete the hash too
           DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash");
