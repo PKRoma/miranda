@@ -282,7 +282,7 @@ int aim_toc_parse(char *buf, int len)
                 aim_util_statusupdate();
         }
         aim_userinfo_send();
-        aim_buddy_updateconfig();
+        aim_buddy_updateconfig(0);
         _snprintf(snd, sizeof(snd), "toc_init_done");
         aim_toc_sflapsend(snd, -1, TYPE_DATA);
         _snprintf(snd, sizeof(snd), "toc_set_caps %s %s %s", UID_ICQ_SUPPORT, UID_AIM_CHAT, UID_AIM_FILE_RECV);

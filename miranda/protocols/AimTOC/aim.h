@@ -162,6 +162,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_AL		"AIMLinks"       // aim: links support
 #define AIM_KEY_PM      "PasswordMenu"   // Show password menu
 #define AIM_KEY_UU      "Homepage"       // User info url
+#define AIM_KEY_LL      "InSSIList"      // In the SSI
 
 #define WinVerMajor()			LOBYTE(LOWORD(GetVersion()))
 #define WinVerMinor()			HIBYTE(LOWORD(GetVersion()))

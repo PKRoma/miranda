@@ -177,6 +177,7 @@ void aim_buddy_offlineall()
             DBWriteContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE);
             DBWriteContactSettingDword(hContact, AIM_PROTO, AIM_KEY_OT, 0);     // reset online time
             DBWriteContactSettingDword(hContact, AIM_PROTO, AIM_KEY_IT, 0);     // reset idle time
+            DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0);
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
@@ -310,6 +311,9 @@ void aim_buddy_parseconfig(char *config)
                     if (!aim_buddy_delaydeletecheck(nm)) {
                         LOG(LOG_DEBUG, "Parsed buddy from server config (%s) in %s", nm, group);
                         hContact = aim_buddy_get(nm, 1, 1, 0, group);
+                        if (hContact) {
+                            DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 1);
+                        }
                     }
                 }
                 else if (*c == 'd') {
@@ -341,10 +345,11 @@ void aim_buddy_parseconfig(char *config)
                 }
             } while ((c = strtok(NULL, "\n")));
         }
+        aim_buddy_updateconfig(1);
     }
 }
 
-void aim_buddy_updateconfig()
+void aim_buddy_updateconfig(int ssilist)
 {
     HANDLE hContact;
     char *szProto;
@@ -368,19 +373,21 @@ void aim_buddy_updateconfig()
                 && !DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_DU, 0) // User is being deleted, don't add
                 && !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)
                 && !aim_buddy_delaydeletecheck(dbv.pszVal)) {
-                if (strlen(dbv.pszVal) + n + 32 > MSG_LEN) {
-                    aim_toc_sflapsend(buf, -1, TYPE_DATA);
-                    n = _snprintf(buf, sizeof(buf), "toc_add_buddy");
-                }
-                if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0)) {
-                    LOG(LOG_DEBUG, "Setting deny mode for %s", dbv.pszVal);
-                    if (strlen(dbv.pszVal) + m + 32 > MSG_LEN) {
-                        aim_toc_sflapsend(dbuf, -1, TYPE_DATA);
-                        m = _snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
+                if (!ssilist||!DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0)) {
+                    if (strlen(dbv.pszVal) + n + 32 > MSG_LEN) {
+                        aim_toc_sflapsend(buf, -1, TYPE_DATA);
+                        n = _snprintf(buf, sizeof(buf), "toc_add_buddy");
                     }
-                    m += _snprintf(dbuf + m, sizeof(dbuf) - m, " %s", dbv.pszVal);
+                    if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0)) {
+                        LOG(LOG_DEBUG, "Setting deny mode for %s", dbv.pszVal);
+                        if (strlen(dbv.pszVal) + m + 32 > MSG_LEN) {
+                            aim_toc_sflapsend(dbuf, -1, TYPE_DATA);
+                            m = _snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
+                        }
+                        m += _snprintf(dbuf + m, sizeof(dbuf) - m, " %s", dbv.pszVal);
+                    }
+                    n += _snprintf(buf + n, sizeof(buf) - n, " %s", dbv.pszVal);
                 }
-                n += _snprintf(buf + n, sizeof(buf) - n, " %s", dbv.pszVal);
             }
             if (dbv.pszVal)
                 DBFreeVariant(&dbv);

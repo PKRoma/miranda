@@ -29,7 +29,7 @@ void aim_buddy_offlineall();
 void aim_buddy_delete(HANDLE hContact);
 void aim_buddy_update(char *nick, int online, int type, int idle, int evil, time_t signon, time_t idle_time);
 void aim_buddy_parseconfig(char *config);
-void aim_buddy_updateconfig();
+void aim_buddy_updateconfig(int ssilist);
 int aim_buddy_cfglen();
 void aim_buddy_delaydeletefree();
 
