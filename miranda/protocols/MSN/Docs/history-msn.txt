@@ -4,6 +4,11 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.1.7.11
+================
+[!] Bug #0000761 fixed: apply button in options->popups->msn enabled on
+first showing of page
+
 Version 0.1.7.10
 ================
 [!] Multiple bugfixes for gateways & P2P file transfers
@@ -19,6 +24,8 @@ using the dbtool, that's why the MSN folder may have the same
 avatars several times.
 [!] Bug #0000437 fixed: expert must have an option  to  choose  the
 needed status translation schema for Away, BRB & N/A statuses.
+[!] Bug #0000541 fixed: if Miranda asks to overwrite a file
+during the f/t, a crash can occur when user cancels it.
 [*] Translation file modification.
 
 Version 0.1.7.9a
