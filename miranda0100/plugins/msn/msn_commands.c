@@ -58,6 +58,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 			break;
 		case ' EYB':    //********* BYE: section 8.5 Session Participant Changes
 			{	char *userEmail=params;
+				UrlDecode(userEmail);
 				MSN_DebugLog(MSN_LOG_MESSAGE,"Contact left channel: %s",userEmail);
 				if(Switchboards_ContactLeft(MSN_HContactFromEmail(userEmail,NULL,0,0))==0)
 					//nobody left in, we might as well leave too
@@ -76,6 +77,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 			break;
 		case ' NLF':    //********* FLN: section 7.9 Notification Messages
 			{	HANDLE hContact;
+				UrlDecode(params);
 				if((hContact=MSN_HContactFromEmail(params,NULL,0,0))!=NULL)
 					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",ID_STATUS_OFFLINE);
 			}
@@ -92,7 +94,9 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					//SEND USR I packet, section 7.3 Authentication
 					DBVARIANT dbv;
 					if(!DBGetContactSetting(NULL,MSNPROTONAME,"e-mail",&dbv)) {
-						MSN_SendPacket(info->s,"USR","MD5 I %s",dbv.pszVal);
+						char *encoded=(char*)malloc(strlen(dbv.pszVal)*3);
+						UrlEncode(dbv.pszVal,encoded,strlen(dbv.pszVal)*3);
+						MSN_SendPacket(info->s,"USR","MD5 I %s",encoded);
 						DBFreeVariant(&dbv);
 					}
 					else MSN_SendPacket(info->s,"USR","MD5 I ");   //this will fail, of course
@@ -116,6 +120,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid ILN/NLN command, ignoring");
 					break;
 				}
+				UrlDecode(userEmail); UrlDecode(userNick);
 				if((hContact=MSN_HContactFromEmail(userEmail,userNick,0,0))!=NULL) {
 					CmdQueue_AddDbWriteSettingString(hContact,MSNPROTONAME,"Nick",userNick);
 					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",(WORD)MSNStatusToMiranda(userStatus));
@@ -129,6 +134,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid IRO command, ignoring");
 					break;
 				}
+				UrlDecode(userEmail); UrlDecode(userNick);
 				MSN_DebugLog(MSN_LOG_MESSAGE,"New channel: member %d/%d: %s %s",thisContact,totalContacts,userEmail,userNick);
 				Switchboards_ContactJoined(MSN_HContactFromEmail(userEmail,userNick,1,1));
 			}
@@ -143,6 +149,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid JOI command, ignoring");
 					break;
 				}
+				UrlDecode(userEmail); UrlDecode(userNick);
 				Switchboards_ChangeStatus(SBSTATUS_CONNECTED);
 				MSN_DebugLog(MSN_LOG_MESSAGE,"New contact in channel %s %s",userEmail,userNick);
 				hContact=MSN_HContactFromEmail(userEmail,userNick,1,1);
@@ -166,6 +173,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid LST command, ignoring");
 					break;
 				}
+				UrlDecode(userEmail); UrlDecode(userNick);
 				if(!strcmp(list,"FL")) {	 //'forward list' aka contact list
 					HANDLE hContact=MSN_HContactFromEmail(userEmail,userNick,1,0);
 				}
@@ -182,6 +190,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid MSG command, ignoring");
 					break;
 				}
+				UrlDecode(fromEmail); UrlDecode(fromNick);
 				msg=(char*)malloc(msgBytes+1);
 				bytesFromData=min(info->bytesInData,msgBytes);
 				memcpy(msg,info->data,bytesFromData);
@@ -269,6 +278,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid RNG command, ignoring");
 					break;
 				}
+				UrlDecode(newServer); UrlDecode(callerEmail); UrlDecode(callerNick);
 				if(strcmp(security,"CKI")) {
 					MSN_DebugLog(MSN_LOG_ERROR,"Unknown security package in RNG command");
 					break;
@@ -295,6 +305,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR command (SB), ignoring");
 					break;
 				}
+				UrlDecode(userHandle); UrlDecode(friendlyName);
 				if(strcmp(status,"OK")) {
 					MSN_DebugLog(MSN_LOG_ERROR,"Unknown status to USR command (SB): '%s'",status);
 					break;
@@ -311,7 +322,11 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					MSN_SendPacket(info->s,"OUT","");
 					break;
 				}
-				MSN_SendPacket(info->s,"CAL","%s",dbv.pszVal);
+				{	char *encoded=(char*)malloc(strlen(dbv.pszVal)*3);
+					UrlEncode(dbv.pszVal,encoded,strlen(dbv.pszVal)*3);
+					MSN_SendPacket(info->s,"CAL","%s",encoded);
+					free(encoded);
+				}
 				DBFreeVariant(&dbv);
 			}
 			else {	   //dispatch or notification server (section 7.3)
@@ -361,6 +376,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 						MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR OK command, ignoring");
 						break;
 					}
+					UrlDecode(userHandle); UrlDecode(userFriendlyName);
 					MSN_DebugLog(MSN_LOG_MESSAGE,"Logged in as '%s', name is '%s'",userHandle,userFriendlyName);
 					CmdQueue_AddDbWriteSettingString(NULL,MSNPROTONAME,"Nick",userFriendlyName);
 					MSN_SendPacket(info->s,"SYN","0");	 //FIXME: this is the sequence ID representing the data we have stored
@@ -410,6 +426,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 						MSN_DebugLog(MSN_LOG_WARNING,"Invalid XFR NS command, ignoring");
 						break;
 					}
+					UrlDecode(newServer);
 					newThread=(struct ThreadData*)malloc(sizeof(struct ThreadData));
 					strcpy(newThread->server,newServer);
 					newThread->type=SERVER_NOTIFICATION;
@@ -426,6 +443,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 						MSN_DebugLog(MSN_LOG_WARNING,"Invalid XFR SB command, ignoring");
 						break;
 					}
+					UrlDecode(newServer);
 					if(strcmp(security,"CKI")) {
 						MSN_DebugLog(MSN_LOG_ERROR,"Unknown XFR SB security package '%s'",security);
 						break;

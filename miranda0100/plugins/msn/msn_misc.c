@@ -132,6 +132,45 @@ int MSNStatusToMiranda(const char *status)
 	}
 }
 
+static int SingleHexToDecimal(char c)
+{
+	if(c>='0' && c<='9') return c-'0';
+	if(c>='a' && c<='f') return c-'a';
+	if(c>='A' && c<='F') return c-'A';
+	return 0;
+}
+
+void UrlDecode(char *str)
+{
+	char *pstr;
+	int len=strlen(str);
+	if(len<3) return;
+	for(pstr=str;len>=3;pstr++,len--) {
+		if(*pstr=='%') {
+			*pstr=(SingleHexToDecimal(pstr[1])<<4)|SingleHexToDecimal(pstr[2]);
+			len-=2;
+			memmove(pstr+1,pstr+3,len);
+		}
+	}
+}
+
+void UrlEncode(const char *src,char *dest,int cbDest)
+{
+	int iSrc,iDest;
+	for(iSrc=iDest=0;src[iSrc];iSrc++) {
+		if(src[iSrc]<=' ') {
+			if(iDest>=cbDest-4) break;
+			dest[iDest++]='%';
+			_itoa((unsigned char)src[iSrc],dest+iDest,16);
+		}
+		else {
+			dest[iDest++]=src[iSrc];
+			if(iDest==cbDest-1) break;
+		}
+	}
+	dest[iDest]='\0';
+}
+
 /*
 void MSN_RemoveContact(char* uhandle)
 {

@@ -109,7 +109,6 @@ void __cdecl MSNServerThread(struct ThreadData *info)
 				MSN_DebugLog(MSN_LOG_ERROR,"Invalid command name");
 				continue;
 			}
-			//TODO? URL-decoding
 			if(isdigit(msg[0]) && isdigit(msg[1]) && isdigit(msg[2]))   //all error messages
 				handlerResult=MSN_HandleErrors(info,msg);
 			else
