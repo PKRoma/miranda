@@ -2302,6 +2302,8 @@ BEGIN
                     IDC_STATIC,7,49,212,17
     LTEXT           "e.g. 3.xx profile",IDC_STATIC,131,73,77,11,WS_DISABLED
     LTEXT           "Driver",IDC_STATIC,20,74,23,9
+    LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",
+                    IDC_NODBDRIVERS,7,113,212,22,NOT WS_VISIBLE
 END
 
 IDD_OPT_PLUGINS DIALOG DISCARDABLE  0, 0, 315, 235
