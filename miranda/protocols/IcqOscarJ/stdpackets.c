@@ -170,7 +170,6 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD 
 
 static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wLen)
 {
-
 	unsigned char szUin[10];
 	unsigned char nUinLen;
 
@@ -180,7 +179,7 @@ static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimesta
 
 	p->wLen = nUinLen + 74 + wLen;
 	write_flap(p, ICQ_DATA_CHAN);
-	packFNACHeader(p, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE);
+	packFNACHeader(p, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE<<0x10 | (wCookie & 0x7FFF));
 	packLEDWord(p, dwTimestamp);   // Msg ID part 1
 	packLEDWord(p, dwTimestamp2);  // Msg ID part 2
 	packWord(p, 0x02);			   // Channel
@@ -207,7 +206,6 @@ static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimesta
 	packLEWord(p, 0);        // Ack status code ( 0 = accepted, this is hardcoded because
 	                         //                   it is only used this way yet)
 	packLEWord(p, 0);        // Unused priority field
-
 }
 
 
@@ -509,7 +507,6 @@ DWORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLen,
 
 DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData)
 {
-
 	icq_packet packet;
 	DWORD dwID1;
 	DWORD dwID2;
@@ -555,14 +552,12 @@ DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const ch
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
 
 void sendOwnerInfoRequest(void)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
@@ -577,14 +572,12 @@ void sendOwnerInfoRequest(void)
 	packLEDWord(&packet, dwLocalUIN);
 
 	sendServPacket(&packet);
-
 }
 
 
 
 void sendUserInfoAutoRequest(DWORD dwUin)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
@@ -599,7 +592,6 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 	packLEDWord(&packet, dwUin);
 
 	sendServPacket(&packet);
-
 }
 
 
@@ -1055,18 +1047,15 @@ void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2
 
 void icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags)
 {
+  icq_packet packet;
 
-	icq_packet packet;
+  packServAdvancedMsgReply(&packet, dwUin, dwTimestamp, dwTimestamp2, wCookie, bMsgType, bMsgFlags, 11);
+  packLEWord(&packet, 1);	          // Status message length
+  packByte(&packet, 0);	          // Status message
+  packLEDWord(&packet, 0x00000000); // Foreground colour
+  packLEDWord(&packet, 0x00FFFFFF); // Background colour
 
-
-	packServAdvancedMsgReply(&packet, dwUin, dwTimestamp, dwTimestamp2, wCookie, bMsgType, bMsgFlags, 11);
-	packLEWord(&packet, 1);	          // Status message length
-	packByte(&packet, 0);	          // Status message
-	packLEDWord(&packet, 0x00000000); // Foreground colour
-	packLEDWord(&packet, 0x00FFFFFF); // Background colour
-
-	sendServPacket(&packet);
-
+  sendServPacket(&packet);
 }
 
 
@@ -1274,7 +1263,6 @@ DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 
 DWORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDataLen)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 
@@ -1288,14 +1276,12 @@ DWORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDat
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
 
 DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 	WORD wBufferLen;
@@ -1373,14 +1359,12 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 
 
 	return dwCookie;
-
 }
 
 
 
 void icq_sendNewContact(DWORD dwUin)
 {
-
 	icq_packet packet;
 	char szUin[10];
 	int nUinLen;
@@ -1395,7 +1379,6 @@ void icq_sendNewContact(DWORD dwUin)
 	packBuffer(&packet, szUin, (BYTE)nUinLen);
 
 	sendServPacket(&packet);
-
 }
 
 
@@ -1432,7 +1415,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
       }
 
       // Add
-      wContactId = GenerateServerId();
+      wContactId = GenerateServerId(SSIT_ITEM);
 
       if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
       { // cookie failed, use old fake
@@ -1440,7 +1423,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
       }
       else
       {
-        ack->dwAction = 0xA; // add privacy item
+        ack->dwAction = SSA_PRIVACY_ADD;
         ack->dwUin = dwUin;
         ack->hContact = hContact;
         ack->wGroupId = 0;
@@ -1460,62 +1443,35 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
     {
       // Remove
       if (wType == SSI_ITEM_DENY)
-      {
         wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
-
-        if (wContactId)
-        {
-          servlistcookie* ack;
-          DWORD dwCookie;
-
-          if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
-          { // cookie failed, use old fake
-            dwCookie = GenerateCookie(ICQ_LISTS_ADDTOLIST);
-          }
-          else
-          {
-            ack->dwAction = 0xB; // remove privacy item
-            ack->dwUin = dwUin;
-            ack->hContact = hContact;
-            ack->wGroupId = 0;
-            ack->wContactId = wContactId;
-
-            dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
-          }
-
-          icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, 0, wContactId, NULL, NULL, 0, SSI_ITEM_DENY);
-        }
-
-        DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvDenyId");
-      }
       else
-      {
         wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
 
-        if (wContactId)
-        {
-          servlistcookie* ack;
-          DWORD dwCookie;
+      if (wContactId)
+      {
+        servlistcookie* ack;
+        DWORD dwCookie;
 
-          if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
-          { // cookie failed, use old fake
-            dwCookie = GenerateCookie(ICQ_LISTS_ADDTOLIST);
-          }
-          else
-          {
-            ack->dwAction = 0xB; // remove privacy item
-            ack->dwUin = dwUin;
-            ack->hContact = hContact;
-            ack->wGroupId = 0;
-            ack->wContactId = wContactId;
-
-            dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
-          }
-
-          icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, 0, wContactId, NULL, NULL, 0, SSI_ITEM_PERMIT);
+        if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
+        { // cookie failed, use old fake
+          dwCookie = GenerateCookie(ICQ_LISTS_REMOVEFROMLIST);
         }
+        else
+        {
+          ack->dwAction = SSA_PRIVACY_REMOVE; // remove privacy item
+          ack->dwUin = dwUin;
+          ack->hContact = hContact;
+          ack->wGroupId = 0;
+          ack->wContactId = wContactId;
 
-        DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvPermitId");
+          dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+        }
+        icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, 0, wContactId, NULL, NULL, 0, wType);
+
+        if (wType == SSI_ITEM_DENY)
+          DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvDenyId");
+        else
+          DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvPermitId");
       }
     }
   }
@@ -1523,12 +1479,10 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
 	// Notify server that we have changed
 	// our client side visibility list
 	{
-
 		int nUinLen;
 		char szUin[10];
 		icq_packet packet;
 		WORD wSnac;
-
 
 		if (list && gnCurrentStatus == ID_STATUS_INVISIBLE)
 			return;
@@ -1557,21 +1511,17 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
 		packBuffer(&packet, szUin, (BYTE)nUinLen);
 
 		sendServPacket(&packet);
-
 	}
-
 }
 
 
 
 void icq_sendEntireVisInvisList(int list)
 {
-
 	if (list)
 		sendEntireListServ(9, 7, 7, BUL_INVISIBLE);
 	else
 		sendEntireListServ(9, 5, 7, BUL_VISIBLE);
-
 }
 
 
