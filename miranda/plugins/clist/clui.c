@@ -258,13 +258,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return DefWindowProc(hwnd,msg,wParam,lParam);
 			
 		case WM_SETCURSOR:
+			/*
 			if(DBGetContactSettingByte(NULL,"CList","Transparent",SETTING_TRANSPARENT_DEFAULT)) {
 				if (!transparentFocus && GetForegroundWindow()!=hwnd && MySetLayeredWindowAttributes) {
 					MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), LWA_ALPHA);
 					transparentFocus=1;
 					SetTimer(hwnd, TM_AUTOALPHA,250,NULL);
 				}
-			}
+			}*/
 			return DefWindowProc(hwnd,msg,wParam,lParam);
 			
 		case WM_NCHITTEST:
