@@ -1227,12 +1227,15 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 	//
 	// Show Error Message
 	//
-	if (YAHOO_GetByte( "ShowErrors", 1 )) {
-		if (!YAHOO_ShowPopup("Yahoo Error", buff, YAHOO_NOTIFY_POPUP)) {
-			if (YAHOO_hasnotification())
-				YAHOO_shownotification("Yahoo Error", buff, NIIF_ERROR);
-			else
-				MessageBox(NULL, buff, "Yahoo Error", MB_OK | MB_ICONINFORMATION);
+	if (yahooStatus != ID_STATUS_OFFLINE) {
+		// Show error only if we are not offline. [manual status changed]
+		if (YAHOO_GetByte( "ShowErrors", 1 )) {
+			if (!YAHOO_ShowPopup("Yahoo Error", buff, YAHOO_NOTIFY_POPUP)) {
+				if (YAHOO_hasnotification())
+					YAHOO_shownotification("Yahoo Error", buff, NIIF_ERROR);
+				else
+					MessageBox(NULL, buff, "Yahoo Error", MB_OK | MB_ICONINFORMATION);
+			}
 		}
 	}
 
