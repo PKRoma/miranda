@@ -75,6 +75,7 @@
 #define IDC_NOTIFYTRAY                  1606
 #define IDC_NOTIFYBALLOON               1607
 #define IDC_CTRLSUPPORT                 1608
+#define IDC_DELTEMP                     1609
 #define IDM_COPY                        40001
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
@@ -89,7 +90,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        283
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1609
+#define _APS_NEXT_CONTROL_VALUE         1610
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

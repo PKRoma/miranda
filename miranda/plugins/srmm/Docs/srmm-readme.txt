@@ -25,6 +25,8 @@ Changes
  - Show status changes in the message window
  - Message area supports Ctrl+Up/Down to scroll through past messages
  - Close message dialog with Ctrl+w
+ - Fixed some focus/flash issues
+ - Added option to delete temporary contacts on window close
 
 1.0.4.2
  - Typing Notify options didn't enable/disable correctly
