@@ -720,7 +720,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 		if ( DBGetContactSetting( NULL, "CListGroups", str, &dbv ))
 			break;
 
-		bool result = (dbv.pszVal[0] != 0 && !stricmp( dbv.pszVal+1, data.grpName ));
+		bool result = !stricmp( dbv.pszVal+1, data.grpName );
 		MSN_FreeVariant( &dbv );
 		if ( result ) {
 			MSN_SetGroupNumber( data.grpId, i );
@@ -1248,8 +1248,6 @@ LBL_InvalidCommand:
 				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );
 				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
 			}
-			else if ( listId & LIST_FL )
-				DBDeleteContactSetting( sttListedContact, "CList", "Hidden" );
 
 			if ( listId & LIST_PL ) {
 				if ( !Lists_IsInList( LIST_RL, userEmail )) {
