@@ -291,6 +291,7 @@ of shutting down
 		not exist and therefore the build is before 2004-09-30
 	Returns: zero on success, non zero on failure
 	Version: 0.3.4a+ (2004/09/30)
+	DEFUNCT: This service was removed on 0.3.4.3+ (2004/11/19) use APILEVEL
 */
 #define MS_SYSTEM_GETBUILDSTRING "Miranda/GetBuildString"
 
