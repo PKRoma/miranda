@@ -277,6 +277,7 @@ static void handleSignonError(WORD wError)
 	case 0x05:
 	case 0x06:
 	case 0x07:
+		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 		_snprintf(msg, 250, Translate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
@@ -329,9 +330,12 @@ static void handleRuntimeError(WORD wError)
 	switch (wError)
 	{
 
-	case 0x01:
-		icq_LogMessage(LOG_FATAL, Translate("You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number."));
+	case 0x01: 
+	{
+		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
+		icq_LogMessage(LOG_FATAL, Translate("You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number."));		
 		break;
+	}		
 		
 	default:
 		_snprintf(msg, 50, Translate("Unknown runtime error: 0x%02x"), wError);
