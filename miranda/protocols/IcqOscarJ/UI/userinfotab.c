@@ -362,7 +362,6 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
               char* ihash = malloc(0x14);
               if (ihash)
               { // upload hash to server
-//                DBCONTACTWRITESETTING cws;
                 ihash[0] = 0;    //unknown
                 ihash[1] = 1;    //hash type
                 ihash[2] = 1;    //hash status
@@ -370,12 +369,6 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 memcpy(ihash+4, hash, 0x10);
                 updateServAvatarHash(ihash+2);
 
-/*                cws.szModule = gpszICQProtoName;
-                cws.szSetting = "AvatarHash";
-                cws.value.type = DBVT_BLOB;
-                cws.value.pbVal = ihash;
-                cws.value.cpbVal = 0x14;
-                if (CallService(MS_DB_CONTACT_WRITESETTING, 0, (LPARAM)&cws))*/
                 if (DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", ihash, 0x14))
                 {
                   Netlib_Logf(ghServerNetlibUser, "Failed to save avatar hash.");
