@@ -41,11 +41,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //wparam=0
 //lparam=(WPARAM)(MessageWindowEventData*)hWindowEvent;
 //Event types
-#define MSG_WINDOW_EVT_OPENING 1 //window is about to be opened (uType is not used)
-#define MSG_WINDOW_EVT_OPEN    2 //window has been opened (uType is not used)
-#define MSG_WINDOW_EVT_CLOSING 3 //window is about to be closed (uType is not used)
-#define MSG_WINDOW_EVT_CLOSE   4 //window has been closed (uType is not used)
-#define MSG_WINDOW_EVT_CUSTOM  5 //custom event for message plugins to use (uType may be used)
+#define MSG_WINDOW_EVT_OPENING 1 //window is about to be opened (uFlags is not used)
+#define MSG_WINDOW_EVT_OPEN    2 //window has been opened (uFlags is not used)
+#define MSG_WINDOW_EVT_CLOSING 3 //window is about to be closed (uFlags is not used)
+#define MSG_WINDOW_EVT_CLOSE   4 //window has been closed (uFlags is not used)
+#define MSG_WINDOW_EVT_CUSTOM  5 //custom event for message plugins to use (uFlags may be used)
 
 typedef struct {
    int cbSize;
