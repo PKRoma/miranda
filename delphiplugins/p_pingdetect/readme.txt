@@ -73,3 +73,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 For more information, e-mail christian.k@stner.de
+
+
+Known bugs
+----------
+
+It may freeze Miranda for a second in when it pings the host.
+In this case give an IP instead of an URL, decrease the timeout
+and increase the interval.
