@@ -145,7 +145,7 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_STATUSICON        "UseStatusWinIcon"
 #define SRMSGDEFSET_STATUSICON     0
 #define SRMSGSET_SENDBUTTON        "UseSendButton"
-#define SRMSGDEFSET_SENDBUTTON     1
+#define SRMSGDEFSET_SENDBUTTON     0
 #define SRMSGSET_CHARCOUNT         "ShowCharCount"
 #define SRMSGDEFSET_CHARCOUNT      0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
@@ -162,7 +162,7 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SHOWLOGICONS      "ShowLogIcon"
 #define SRMSGDEFSET_SHOWLOGICONS   1
 #define SRMSGSET_HIDENAMES         "HideNames"
-#define SRMSGDEFSET_HIDENAMES      0
+#define SRMSGDEFSET_HIDENAMES      1
 #define SRMSGSET_SHOWTIME          "ShowTime"
 #define SRMSGDEFSET_SHOWTIME       0
 #define SRMSGSET_SHOWDATE          "ShowDate"

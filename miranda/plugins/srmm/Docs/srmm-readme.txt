@@ -46,6 +46,7 @@ Todo:
  - Font size fixes (muldiv, http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_1wmq.asp)
  - Cache fonts
  - Add "old" event fonts
+ - Change default fonts
  - Avatar support
 
 Support and bug reporting

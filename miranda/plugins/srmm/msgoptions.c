@@ -42,15 +42,15 @@ struct FontOptionsList
     char size;
 }
 static fontOptionsList[] = {
-    {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-    {"Incoming messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-    {"Outgoing name", RGB(50, 56, 114), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
+    {"Outgoing messages", RGB(106, 106, 106), "Arial", DEFAULT_CHARSET, 0, -12},
+    {"Incoming messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12},
+    {"Outgoing name", RGB(89, 89, 89), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
     {"Outgoing time", RGB(0, 0, 0), "Terminal", DEFAULT_CHARSET, FONTF_BOLD, -9},
-    {"Outgoing colon", RGB(50, 56, 114), "Arial", DEFAULT_CHARSET, 0, -11},
+    {"Outgoing colon", RGB(89, 89, 89), "Arial", DEFAULT_CHARSET, 0, -11},
     {"Incoming name", RGB(215, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
     {"Incoming time", RGB(0, 0, 0), "Terminal", DEFAULT_CHARSET, FONTF_BOLD, -9},
     {"Incoming colon", RGB(215, 0, 0), "Arial", DEFAULT_CHARSET, 0, -11},
-    {"Message Area", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
+    {"Message Area", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12},
 };
 const int msgDlgFontCount = sizeof(fontOptionsList) / sizeof(fontOptionsList[0]);
 
