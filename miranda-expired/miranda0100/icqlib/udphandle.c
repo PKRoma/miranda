@@ -629,7 +629,7 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
     switch(cmd)
     {
       case UDP_SRV_ACK:
-        icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "The server acknowledged the command\n");
+        icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "The server acknowledged the command (%d)\n",seq);
         invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq, ICQ_NOTIFY_ACK, 0, 0);
         invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq, ICQ_NOTIFY_SUCCESS, 0, 0);
         icq_UDPQueueDelSeq(icqlink, seq);

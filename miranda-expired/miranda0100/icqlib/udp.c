@@ -231,6 +231,7 @@ void icq_SendGotMessages(icq_Link *icqlink) /* V5 */
 {
   icq_Packet *p = icq_UDPCreateStdPacket(icqlink, UDP_CMD_ACK_MESSAGES);
   icq_PacketAppend32(p, rand());
+  icq_FmtLog(icqlink,ICQ_LOG_MESSAGE,"Sending got messages (seq=%d,%d)\n",*(short*)&p->data[16],*(short*)&p->data[18]);
   icq_UDPSockWrite(icqlink, p);
 }
 
