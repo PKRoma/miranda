@@ -118,6 +118,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_SET_AVATAR    "/SetAvatar"
 #define MS_VIEW_STATUS   "/ViewMsnStatus"
 
+#define MSN_SET_NICKNAME  "/SetNickname"
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
@@ -277,7 +279,8 @@ struct filetransfer
 	};
 
 	bool			mOwnsThread,	// thread was created specifically for that file transfer
-					mIsDirect;
+					mIsDirect,		// set for P2P direct transfers
+					mIsFirst;		//	set for the first transfer for a contact
 
 	WORD			mIncomingPort;
 	HANDLE		mIncomingBoundPort;
@@ -288,7 +291,6 @@ struct filetransfer
 	long			p2p_acksessid;	// acknowledged session id
 	int			p2p_ackID;		// number of ack's state
 	int			p2p_appID;		// application id: 1 = avatar, 2 = file transfer
-	P2P_Header	p2p_hdr;			// saved header
 	char*			p2p_branch;		// header Branch: field
 	char*			p2p_callID;		// header Call-ID: field
 	char*			p2p_dest;		// destination e-mail address
@@ -389,6 +391,7 @@ void			__stdcall MSN_PingParentThread( ThreadData*, filetransfer* ft );
 #define MSN_APPID_AVATAR 1
 #define MSN_APPID_FILE   2
 
+void __stdcall p2p_ackOtherFiles( ThreadData* info );
 void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
 void __stdcall p2p_processMsg( ThreadData* info, char* msgbody );
 void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
@@ -400,6 +403,8 @@ long __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T );
 void __stdcall p2p_registerSession( filetransfer* ft );
 void __stdcall p2p_unregisterSession( filetransfer* ft );
 
+filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft );
+filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact );
 filetransfer* __stdcall p2p_getSessionByID( long ID );
 filetransfer* __stdcall p2p_getSessionByMsgID( long ID );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );

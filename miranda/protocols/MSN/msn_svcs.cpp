@@ -317,10 +317,8 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 				172+4+strlen( ft->szInvcookie ), ft->szInvcookie );
 		}
 		else {
-			p2p_sendAck( ft, thread, &ft->p2p_hdr );
-			ft->p2p_msgid -= 3;
-
 			//---- send 200 OK Message 
+//			if ( ft->mIsFirst )
 			p2p_sendStatus( ft, thread, 200 );
 	}	}
 
@@ -377,9 +375,6 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 				172-33+4+strlen( ft->szInvcookie ), ft->szInvcookie );
 		}
 		else {
-			p2p_sendAck( ft, thread, &ft->p2p_hdr );
-			ft->p2p_msgid -= 3;
-
 			//---- send 603 DECLINE Message 
 			p2p_sendStatus( ft, thread, 603 );
 	}	}
@@ -828,6 +823,17 @@ static int MsnSetApparentMode(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+//	SetNickname - sets a nick name without UI
+
+static int MsnSetNickName( WPARAM wParam, LPARAM lParam )
+{
+	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail ));
+	MSN_SendNickname( tEmail, ( char* )lParam );
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 //	SetNicknameCommand - sets nick name
 
 static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1116,6 +1122,8 @@ int LoadMsnServices( void )
 	MSN_CreateProtoServiceFunction( PSS_MESSAGE"W",			MsnSendMessageW );
 	MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,  MsnSetApparentMode );
 	MSN_CreateProtoServiceFunction( PSS_USERISTYPING,     MsnUserIsTyping );
+
+	MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,		MsnSetNickName );
 	return 0;
 }
 

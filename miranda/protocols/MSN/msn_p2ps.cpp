@@ -32,8 +32,18 @@ static CRITICAL_SECTION sessionLock;
 void __stdcall p2p_registerSession( filetransfer* ft )
 {
 	EnterCriticalSection( &sessionLock );
+
+	bool bIsFirst = true;
+	for ( int i=0; i < sessionCount; i++ ) {
+		if ( sessionList[i]->std.hContact == ft->std.hContact ) {
+			bIsFirst = false;
+			break;
+	}	}
+
 	sessionList = ( filetransfer** )realloc( sessionList, sizeof( void* ) * ( sessionCount+1 ));
 	sessionList[ sessionCount++ ] = ft;
+	ft->mIsFirst = bIsFirst;
+
 	LeaveCriticalSection( &sessionLock );
 }
 
@@ -105,6 +115,38 @@ filetransfer* __stdcall p2p_getSessionByMsgID( long ID )
 	return ft;
 }
 
+filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft )
+{
+   filetransfer* result = NULL;
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->std.hContact == ft->std.hContact && FT != ft ) {
+			result = FT;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	return result;
+}
+
+filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact )
+{
+   filetransfer* result = NULL;
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->std.hContact == hContact && FT->mIsFirst ) {
+			result = FT;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	return result;
+}
+
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
 {
 	if ( CallID == NULL )
@@ -128,6 +170,23 @@ filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
 		MSN_DebugLog( "Ignoring unknown session call id %s", CallID );
 
 	return ft;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// push another file transfers
+
+void __stdcall p2p_ackOtherFiles( ThreadData* info )
+{
+	filetransfer* ft = info->mP2pSession;
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->std.hContact == ft->std.hContact && FT != ft )
+			p2p_sendStatus( FT, info->mParentThread, 200 );
+	}
+
+	LeaveCriticalSection( &sessionLock );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -448,15 +448,12 @@ LBL_Error:
 
 void p2p_receiveFile( ThreadData* info )
 {
-	filetransfer* ft = info->mP2pSession;
 	BYTE* p;
 	P2P_Header reply;
 	HReadBuffer buf( info, 0 );
+	filetransfer* ft;
 
-	if ( ft->create() == -1 ) {
-		p2p_sendBye( info, ft );
-		return;
-	}
+	//p2p_ackOtherFiles( info );
 
 	while( true ) {
 		if (( p = buf.surelyRead( info->s, 4 )) == NULL ) {
@@ -473,6 +470,24 @@ LBL_Error:
 		sttLogHeader( H );
 		
 		if ( H->mFlags == 0x01000030 ) {
+			ft = p2p_getSessionByID( H->mSessionID );
+			if ( ft == NULL )
+				continue;
+
+			if ( ft->bCanceled ) {
+LBL_Exit:	filetransfer* anotherFT = p2p_getAnotherContactSession( ft );
+				p2p_unregisterSession( ft );
+				if ( anotherFT != NULL )
+					continue;
+
+				return;
+			}
+
+			if ( ft->create() == -1 ) {
+				p2p_sendBye( info, ft );
+				goto LBL_Exit;
+			}
+
 			::write( ft->fileId, p, H->mPacketLen );
 
 			ft->std.totalProgress += H->mPacketLen;
@@ -488,12 +503,25 @@ LBL_Error:
 				reply.mAckSessionID = H->mID;
 				reply.mAckUniqueID = ft->p2p_acksessid;
 				sttSendPacket( info->s, reply );
-		}	}
+			}
+			continue;
+		}
 
-		if ( H->mFlags == 2 && ft->bCanceled )
-			break;
+		if ( H->mFlags == 2 ) {
+			ft = p2p_getSessionByID( H->mSessionID );
+			if ( ft != NULL && ft->bCanceled )
+				goto LBL_Exit;
+		}
 
-		if ( H->mFlags == 0x40 || ( H->mFlags == 0 && !memcmp( p, "BYE MSNMSGR:", 12 ))) {
+		if ( H->mFlags == 0 && !memcmp( p, "BYE MSNMSGR:", 12 )) {
+			MimeHeaders tHeaders;
+			tHeaders.readFromBuffer(( char* )p );
+			ft = p2p_getSessionByCallID( tHeaders["Call-ID"] );
+			if ( ft == NULL )
+				continue;
+
+			ft->complete();
+
 			memset( &reply, 0, sizeof P2P_Header );
 			reply.mID = ft->p2p_msgid++;
 			reply.mFlags = 2;
@@ -504,12 +532,10 @@ LBL_Error:
 
 			if ( ft->std.totalProgress < ft->std.totalBytes )
 				goto LBL_Error;
-			break;
-	}	}
 
-	MSN_DebugLog( "File transfer succeeded" );
-	ft->complete();
-}
+			MSN_DebugLog( "File transfer succeeded" );
+			goto LBL_Exit;
+}	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendFileDirectly - sends a file via MSN P2P protocol
@@ -603,19 +629,17 @@ void __cdecl p2p_fileActiveRecvThread( ThreadData* info )
 {
 	MSN_DebugLog( "p2p_fileActiveRecvThread() started: connecting to '%s'", info->mServer );
 
-	if ( p2p_connectTo( info )) {
+	if ( p2p_connectTo( info ))
 		p2p_receiveFile( info );
-		p2p_unregisterSession( info->mP2pSession );
-}	}
+}
 
 void __cdecl p2p_filePassiveRecvThread( ThreadData* info )
 {
 	MSN_DebugLog( "p2p_filePassiveRecvThread() started: listening" );
 
-	if ( p2p_listen( info )) {
+	if ( p2p_listen( info ))
 		p2p_receiveFile( info );
-		p2p_unregisterSession( info->mP2pSession );
-}	}
+}
 
 void __cdecl p2p_fileActiveSendThread( ThreadData* info )
 {
@@ -778,8 +802,11 @@ static void sttInitFileTransfer(
 
 		//---- send 200 OK Message 
 		p2p_sendStatus( ft, info, 200 );
+		p2p_registerSession( ft );
+		return;
 	}
-	else if ( dwAppID == 2 && !strcmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) {
+	
+	if ( dwAppID == 2 && !strcmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) {
 		WCHAR* wszFileName = ( WCHAR* )&szContext[ 20 ];
 		char szFileName[ MAX_PATH ];
 		WideCharToMultiByte( CP_ACP, 0, wszFileName, -1, szFileName, MAX_PATH, 0, 0 );
@@ -792,7 +819,17 @@ static void sttInitFileTransfer(
 		ft->std.currentFile = strdup( szFileName );
 		ft->std.totalBytes =	ft->std.currentFileSize = *( long* )&szContext[ 8 ];
 		ft->std.totalFiles = 1;
-		ft->p2p_hdr = *hdrdata;
+
+		p2p_registerSession( ft );
+
+		if ( !ft->mIsFirst ) {
+			filetransfer* parentFt = p2p_getFirstSession( ft->std.hContact );
+			if ( parentFt != NULL )
+				ft->p2p_acksessid = parentFt->p2p_acksessid;
+		}
+
+		p2p_sendAck( ft, info, hdrdata );
+		ft->p2p_msgid -= 3;
 
 		int tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
@@ -814,14 +851,11 @@ static void sttInitFileTransfer(
 		ccs.wParam = 0;
 		ccs.lParam = ( LPARAM )&pre;
 		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
-	}
-	else {
-		delete ft;
-		MSN_DebugLog( "Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid );
 		return;
 	}
 
-	p2p_registerSession( ft );
+	delete ft;
+	MSN_DebugLog( "Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid );
 }
 
 static void sttInitDirectTransfer( 
