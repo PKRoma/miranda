@@ -641,7 +641,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &dat->minEditInit);
-			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			dat->hwndStatus = NULL;
 			dat->hIcons[0] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 			dat->hIcons[1] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IsWinVerXPPlus()? IDI_USERDETAILS32 : IDI_USERDETAILS), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -780,10 +780,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 
 			}
-			
 			dat->hAvatarAck = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_AVATARACK);
-			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			return TRUE;
 		}
@@ -859,7 +858,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dat->minEditBoxSize.cy<=dat->avatarHeight)
 				dat->minEditBoxSize.cy = dat->avatarHeight;
 		}
-		
 		GetWindowRect(GetDlgItem(hwndDlg, IDC_ADD), &rc);
 		dat->lineHeight = rc.bottom - rc.top + 3;
 		break;
@@ -868,7 +866,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		RECT rc;
 		GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
-
 		if (rc.bottom-rc.top<dat->minEditBoxSize.cy) {
 			SendMessage(hwndDlg, DM_SPLITTERMOVED, rc.top-(rc.bottom-rc.top-dat->minEditBoxSize.cy-4), (LPARAM) GetDlgItem(hwndDlg, IDC_SPLITTER));
 		}
