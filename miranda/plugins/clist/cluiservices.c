@@ -46,7 +46,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 		RECT rc;
 		int part;
 		GetClientRect(hwndStatus,&rc);
-		rc.right-=borders[0]*2+GetSystemMetrics(SM_CXVSCROLL);
+		rc.right-=borders[0]*2+(DBGetContactSettingByte(NULL,"CLUI","ShowGrip",1)?GetSystemMetrics(SM_CXVSCROLL):0);
 		for(partCount=0,i=protoCount-1;i>=0;i--)
 			if(proto[i]->type==PROTOTYPE_PROTOCOL && CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)!=0) partCount++;
 		for(part=0,i=0;i<protoCount;i++) {
