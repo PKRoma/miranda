@@ -206,7 +206,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	int  UnreadMessages = -1, UnreadFolders = -1;
 
 	replaceStr( passport, "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=%L" );
-	replaceStr( rru, "/cgi-bin/HoTMaiL" ); 
+	replaceStr( rru, "/cgi-bin/HoTMaiL" );
 
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer( msgBody );
@@ -248,11 +248,13 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 		if ( UnreadMessages == 0 && UnreadFolders == 0 )
 			return;
 
+		char* dest;
 		if ( tIsPopup ) {
-			_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("Hotmail" ));
-			_snprintf( tBuffer2, sizeof( tBuffer2 ), MSN_Translate("Unread mail is available." ));
+			_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( "Hotmail" ));
+			dest = tBuffer2;
 		}
-		else _snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("Unread mail is available." ));
+		else dest = tBuffer;
+		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages in %d folders." ), UnreadMessages, UnreadFolders );
 	}
 
 	// Disable to notify receiving hotmail

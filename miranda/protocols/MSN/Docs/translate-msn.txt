@@ -9,7 +9,7 @@
 [A new mail has come from %s (title: %s).]
 [A new mail has come from %s (%s) (title: %s).]
 [Subject: %s]
-[Unread mail is available.]
+[Unread mail is available: %d messages in %d folders.]
 [Test: Arrival Hotmail]
 [A New Hotmail has come!]
 
