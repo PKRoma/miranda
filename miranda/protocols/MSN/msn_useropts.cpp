@@ -135,12 +135,20 @@ BOOL CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			pData->hEventHook = HookEventMessage( ME_PROTO_ACK, hwndDlg, HM_REBIND_AVATAR );
 			SetWindowLong( hwndDlg, GWL_USERDATA, LONG( pData ));
 
-			char tFileName[ MAX_PATH ];
-			MSN_GetAvatarFileName(( HANDLE )lParam, tFileName, sizeof tFileName );
+			char tBuffer[ MAX_PATH ];
+			if ( MSN_GetStaticString( "OnMobile", pData->hContact, tBuffer, sizeof tBuffer ))
+				strcpy( tBuffer, "N" );
+			SetDlgItemText( hwndDlg, IDC_MOBILE, tBuffer );
 
-			if ( access( tFileName, 0 )) {
+			if ( MSN_GetStaticString( "OnMsnMobile", pData->hContact, tBuffer, sizeof tBuffer ))
+				strcpy( tBuffer, "N" );
+			SetDlgItemText( hwndDlg, IDC_MSN_MOBILE, tBuffer );
+
+			MSN_GetAvatarFileName(( HANDLE )lParam, tBuffer, sizeof tBuffer );
+
+			if ( access( tBuffer, 0 )) {
 LBL_Reread:
-				DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File", tFileName );
+				DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File", tBuffer );
 				p2p_invite( pData->hContact, MSN_APPID_AVATAR );
 				return TRUE;
 			}
@@ -154,7 +162,7 @@ LBL_Reread:
 				goto LBL_Reread;
 
 			SendDlgItemMessage( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
-				( LPARAM )LoadImage( ::GetModuleHandle(NULL), tFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
+				( LPARAM )LoadImage( ::GetModuleHandle(NULL), tBuffer, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
 		}
 		return TRUE;
 	

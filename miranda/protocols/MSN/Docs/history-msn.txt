@@ -6,6 +6,7 @@ Legend:
 
 Version 0.1.7.9
 ===============
+[+] Contact's phone numbers support was added
 [+] Options dialog was changed to allow a user to see his own avatar.
 Main menu item 'Set my own avatar' was deleted.
 [*] MSN protocol v.9 support code was removed

@@ -664,8 +664,27 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 //	MSN_HandleCommands - process commands from the server
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static bool sttIsSync = false;
-static int  sttListNumber = 0;
+static bool		sttIsSync = false;
+static int		sttListNumber = 0;
+static HANDLE	sttListedContact = NULL;
+static long		sttListedContactMask;
+
+static void sttDeleteUnusedSetting( long mask, const char* settingName )
+{	if (( sttListedContactMask & mask ) == 0 )
+		DBDeleteContactSetting( sttListedContact, msnProtocolName, settingName );
+}
+
+static void sttProcessListedContactMask()
+{
+	if ( sttListedContact == NULL )
+		return;
+
+	sttDeleteUnusedSetting( 0x0001, "Phone" );
+	sttDeleteUnusedSetting( 0x0002, "CompanyPhone" );
+	sttDeleteUnusedSetting( 0x0004, "Cellular" );
+	sttDeleteUnusedSetting( 0x0008, "OnMobile" );
+	sttDeleteUnusedSetting( 0x0010, "OnMsnMobile" );
+}
 
 int MSN_HandleCommands( ThreadData* info, char* cmdString )
 {
@@ -754,8 +773,35 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' RPB':	//********* BPR:
-			break;
+		{
+			char* tWords[ 2 ];
+			if ( sttDivideWords( params, 2, tWords ) != 2 )
+				goto LBL_InvalidCommand;
 
+			if ( sttListedContact != NULL ) {
+				UrlDecode( tWords[1] );
+				if ( !strcmp( tWords[0], "PHH" )) {
+					MSN_SetString( sttListedContact, "Phone", tWords[1] );
+					sttListedContactMask |= 0x0001;
+				}
+				else if ( !strcmp( tWords[0], "PHW" )) {
+					MSN_SetString( sttListedContact, "CompanyPhone", tWords[1] );
+					sttListedContactMask |= 0x0002;
+				}
+				else if ( !strcmp( tWords[0], "PHM" )) {
+					MSN_SetString( sttListedContact, "Cellular", tWords[1] );
+					sttListedContactMask |= 0x0004;
+				}
+				else if ( !strcmp( tWords[0], "MOB" )) {
+					MSN_SetString( sttListedContact, "OnMobile", tWords[1] );
+					sttListedContactMask |= 0x0008;
+				}
+				else if ( !strcmp( tWords[0], "MBE" )) {
+					MSN_SetString( sttListedContact, "OnMsnMobile", tWords[1] );
+					sttListedContactMask |= 0x0010;
+			}	}
+			break;
+		}
 		case ' EYB':   //********* BYE: section 8.5 Session Participant Changes
 		{
 			union {
@@ -1025,35 +1071,34 @@ LBL_InvalidCommand:
 			Lists_Add( listId, userEmail, userNick );
 
 			// add user if it wasn't included into a contact list
-			HANDLE hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 0 );
+			sttProcessListedContactMask();
+			sttListedContact = MSN_HContactFromEmail( userEmail, userNick, 1, 0 );
 
 			if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == LIST_BL ) {
-				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-				DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );
+				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
 			}
 
 			if ( listId & LIST_PL ) {
 				if ( !Lists_IsInList( LIST_RL, userEmail )) {
-					MSN_AddUser( hContact, userEmail, LIST_PL + LIST_REMOVE );
-					MSN_AddUser( hContact, userEmail, LIST_RL );
+					MSN_AddUser( sttListedContact, userEmail, LIST_PL + LIST_REMOVE );
+					MSN_AddUser( sttListedContact, userEmail, LIST_RL );
 				}
 
 				if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == 0 )
-					MSN_AddAuthRequest( hContact, userEmail, userNick );
+					MSN_AddAuthRequest( sttListedContact, userEmail, userNick );
 			}
 
 			if ( listId & ( LIST_BL | LIST_AL )) {
-				hContact = MSN_HContactFromEmail( userEmail, userNick, 0, 0 );
-				if ( hContact != NULL ) {
-					WORD tApparentMode = MSN_GetWord( hContact, "ApparentMode", 0 );
-					if (( listId & LIST_BL ) && tApparentMode == 0 )
-						MSN_SetWord( hContact, "ApparentMode", ID_STATUS_OFFLINE );
-					else if (( listId & LIST_AL ) && tApparentMode != 0 )
-						MSN_SetWord( hContact, "ApparentMode", 0 );
-			}	}
+				WORD tApparentMode = MSN_GetWord( sttListedContact, "ApparentMode", 0 );
+				if (( listId & LIST_BL ) && tApparentMode == 0 )
+					MSN_SetWord( sttListedContact, "ApparentMode", ID_STATUS_OFFLINE );
+				else if (( listId & LIST_AL ) && tApparentMode != 0 )
+					MSN_SetWord( sttListedContact, "ApparentMode", 0 );
+			}
 
-			if ( hContact != NULL && userId != NULL )
-				MSN_SetString( hContact, "ID", userId );
+			if ( sttListedContact != NULL && userId != NULL )
+				MSN_SetString( sttListedContact, "ID", userId );
 			break;
 		}
 		case ' GSM':   //********* MSG: sections 8.7 Instant Messages, 8.8 Receiving an Instant Message
@@ -1089,6 +1134,7 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' YRQ':   //********* QRY:
+			sttProcessListedContactMask();
 			break;
 
 		case ' GNQ':	//********* QNG: reply to PNG
@@ -1172,6 +1218,7 @@ LBL_InvalidCommand:
 			Lists_Wipe();
 			sttIsSync = true;
 			sttListNumber = atol( tWords[ 2 ] );
+			sttListedContact = NULL;
 			break;
 		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
