@@ -308,8 +308,8 @@ static int NetlibGetSocket(WPARAM wParam,LPARAM lParam)
 static char szHexDigits[]="0123456789ABCDEF";
 int NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam)
 {
-	char *szOutput,*szInput=(char*)lParam;
-	char *pszIn,*pszOut;
+	unsigned char *szOutput,*szInput=(unsigned char*)lParam;
+	unsigned char *pszIn,*pszOut;
 	int outputLen;
 
 	if(szInput==NULL) {
@@ -320,10 +320,10 @@ int NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam)
 		if(isalnum(*pszIn) || *pszIn==' ') outputLen++;
 		else outputLen+=3;
 	}
-	szOutput=(char*)HeapAlloc(GetProcessHeap(),0,outputLen+1);
+	szOutput=(unsigned char*)HeapAlloc(GetProcessHeap(),0,outputLen+1);
 	if(szOutput==NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
-		return (int)(char*)NULL;
+		return (int)(unsigned char*)NULL;
 	}
 	for(pszOut=szOutput,pszIn=szInput;*pszIn;pszIn++) {
 		if(isalnum(*pszIn)) *pszOut++=*pszIn;
@@ -451,8 +451,6 @@ static int NetlibModulesLoaded(WPARAM wParam, LPARAM lParam)
 int LoadNetlibModule(void)
 {
 	WSADATA wsadata;
-
-	SetConsoleCtrlHandler(NULL,TRUE); /* kill evil ctrl+c */
 
 	//HookEvent(ME_SYSTEM_SHUTDOWN,NetlibShutdown); // hooked later to be called last after plugins
 	HookEvent(ME_SYSTEM_MODULESLOADED, NetlibModulesLoaded);
