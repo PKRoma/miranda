@@ -73,7 +73,7 @@
 			</p>
 			
 			<p>
-			It may contain useful information that you might of wish you have read before installing an alpha.
+			It may contain useful information that you might of wished you had of read before installing an alpha.
 			</p>
 			
 			<div class="tx">Archive</div>
