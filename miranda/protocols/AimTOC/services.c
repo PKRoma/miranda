@@ -28,8 +28,6 @@ static int aim_getcaps(WPARAM wParam, LPARAM lParam)
     switch (wParam) {
         case PFLAGNUM_1:
             ret = PF1_IM | PF1_BASICSEARCH | PF1_SEARCHBYNAME | PF1_SEARCHBYEMAIL | PF1_MODEMSGSEND | PF1_VISLIST | PF1_FILERECV;
-            if (hServerSideList)
-                ret |= PF1_SERVERCLIST;
             break;
         case PFLAGNUM_2:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_ONTHEPHONE;

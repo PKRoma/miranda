@@ -90,7 +90,6 @@ int aim_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
                 if (szProto && !strcmp(szProto, AIM_PROTO)) {
                     DBDeleteContactSetting((HANDLE) wParam, AIM_PROTO, AIM_KEY_DU);
                     aim_buddy_updateconfig();
-                    aim_buddy_setconfig();
                 }
             }
         }

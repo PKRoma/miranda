@@ -142,8 +142,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_AM      "ApparentMode"   // Apparent mode
 #define AIM_KEY_SA		"ServerAddr"     // Server Address
 #define AIM_KEY_PR		"Profile"        // Profile Info
-#define AIM_KEY_SS		"SSSupport"      // Support server-side list
-#define AIM_KEY_SG      "SSGroup"        // Server-side list group of contact
+#define AIM_KEY_SS		"SSExtra"        // Support server-side list
 #define AIM_KEY_SM      "SSMode"         // Mode
 #define AIM_KEY_SE      "ShowErrors"     // Show error popups
 #define AIM_KEY_GC      "GroupChatPos"   // Group chat size keys
@@ -161,7 +160,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_GT		"GroupMin2Tray"  // Minimize to tray
 #define AIM_KEY_AL		"AIMLinks"       // aim: links support
 #define AIM_KEY_PM      "PasswordMenu"   // Show password menu
-#define AIM_KEY_IL      "ImportedList"   // Imported List
 #define AIM_KEY_UU      "Homepage"       // User info url
 
 #define WinVerMajor()			LOBYTE(LOWORD(GetVersion()))

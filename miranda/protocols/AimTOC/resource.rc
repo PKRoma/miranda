@@ -63,7 +63,7 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg"
 BEGIN
 	GROUPBOX        "AIM Contact Options",IDC_STATIC,4,7,273,90
-	CONTROL         "Enable server-side contact list support",IDC_DOWNLOADCTCS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,23,255,10
+	CONTROL         "Add extra contacts from server list to my list",IDC_DOWNLOADCTCS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,23,255,10
 	CONTROL         "Notify me when I have been warned by another user",IDC_OPTWARNNOTIFY,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,36,255,10
 	CONTROL         "Enable Warn User menu item for contacts",IDC_OPTWARNMENU,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,49,255,10
 	CONTROL         "Auto-reply to users with your status message while away",IDC_AWAYRESPONSE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,62,255,10

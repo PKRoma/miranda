@@ -45,7 +45,7 @@ void aim_group_create(char *group)
     strncpy(name + 1, group, sizeof(name) - 1);
     name[strlen(group) + 1] = '\0';
     DBWriteContactSettingString(NULL, "CListGroups", str, name);
-    CallService(MS_CLUI_GROUPADDED, i + 1, 0);
+    CallServiceSync(MS_CLUI_GROUPADDED, i + 1, 0);
 }
 
 void aim_group_adduser(HANDLE hContact, char *group)

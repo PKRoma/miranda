@@ -25,27 +25,8 @@ typedef struct
 }
 TTOCUserDeleted;
 
-typedef struct
-{
-    char *szUser;
-    int deny;
-    int permit;
-}
-TTOCUser;
-
-typedef struct
-{
-    char *szGroup;
-    int cCount;
-    TTOCUser *hChild;
-}
-TTOCGroup;
-
 pthread_mutex_t buddyMutex;
 int hServerSideList = 0;
-static int hSetConfig = 0;
-static TTOCGroup *hGroup = NULL;
-static int hGroupCount = 0;
 static int hMode = 1;
 static TTOCUserDeleted *hUserDeleted = NULL;
 static int hUserDeletedCount = 0;
@@ -154,10 +135,6 @@ HANDLE aim_buddy_get(char *nick, int create, int inlist, int noadd, char *group)
 
         _snprintf(buf, sizeof(buf), "toc_add_buddy %s", sn);
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
-        if (hSetConfig) {
-            SleepEx(500, FALSE);
-            aim_buddy_setconfig();
-        }
     }
     pthread_mutex_unlock(&buddyMutex);
     return hContact;
@@ -181,8 +158,6 @@ void aim_buddy_updatemode(HANDLE hContact)
                 _snprintf(buf, sizeof(buf), "toc_add_permit %s", dbv.pszVal);
             }
             aim_toc_sflapsend(buf, -1, TYPE_DATA);
-            if (hSetConfig)
-                aim_buddy_setconfig();
             DBFreeVariant(&dbv);
         }
     }
@@ -206,7 +181,6 @@ void aim_buddy_offlineall()
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
     aimStatus = ID_STATUS_OFFLINE;
-    hSetConfig = 0;
 }
 
 void aim_buddy_delete(HANDLE hContact)
@@ -228,9 +202,6 @@ void aim_buddy_delete(HANDLE hContact)
                 aim_buddy_delaydelete(dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-        }
-        else if (hSetConfig) {
-            aim_buddy_setconfig();
         }
     }
 }
@@ -317,16 +288,11 @@ void aim_buddy_parseconfig(char *config)
     LOG(LOG_DEBUG, "aim_buddy_parseconfig: Parsing configuation from server if using server-side lists");
     if (!config)
         return;
-    if (hServerSideList && (aim_buddy_cfglen() > MSG_LEN || strlen(config) > (MSG_LEN - strlen("CONFIG:")))) {
-        hServerSideList = 0;
-        LOG(LOG_WARN, "List too big, turning off server-side list support");
-    }
-    if (hServerSideList || !DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_IL, 0)) {
+    if (hServerSideList) {
         char *c, group[256];
         HANDLE hContact;
 
         group[0] = '\0';
-        DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_IL, 1);
         if (config != NULL) {
             c = strtok(config, "\n");
             do {
@@ -346,9 +312,7 @@ void aim_buddy_parseconfig(char *config)
                         hContact = aim_buddy_get(nm, 1, 1, 1, group);
                         if (hContact) {
                             // reset permission for user, gets set back on d and p items if present
-                            DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0);
-                            LOG(LOG_DEBUG, "Setting server-side list group for %s (%s)", nm, group);
-                            DBWriteContactSettingString(hContact, AIM_PROTO, AIM_KEY_SG, group);
+                            DBWriteContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0);
                         }
                     }
                 }
@@ -382,7 +346,6 @@ void aim_buddy_parseconfig(char *config)
             } while ((c = strtok(NULL, "\n")));
         }
     }
-    aim_buddy_setconfig();
     aim_buddy_updateconfig();
 }
 
@@ -433,212 +396,4 @@ void aim_buddy_updateconfig()
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
     if (m > lstrlen("toc_add_deny"))
         aim_toc_sflapsend(dbuf, -1, TYPE_DATA);
-}
-
-static int aim_buddy_cfgaddgroup(char *szGroup)
-{
-    int i;
-    for (i = 0; i < hGroupCount; i++) {
-        if (!strcmp(hGroup[i].szGroup, szGroup))
-            return i;
-    }
-    hGroup = (TTOCGroup *) realloc(hGroup, sizeof(TTOCGroup) * (hGroupCount + 1));
-    hGroup[i].szGroup = _strdup(szGroup);
-    hGroup[i].cCount = 0;
-    hGroup[i].hChild = NULL;
-    hGroupCount++;
-    LOG(LOG_DEBUG, "CONFIG: Added group (%s)", szGroup);
-    return hGroupCount - 1;
-}
-
-static void aim_buddy_cfgadduser(char *szUser, char *szGroup, int deny, int permit)
-{
-    int i;
-
-    i = aim_buddy_cfgaddgroup(szGroup);
-    hGroup[i].hChild = (TTOCUser *) realloc(hGroup[i].hChild, sizeof(TTOCUser) * (hGroup[i].cCount + 1));
-    hGroup[i].hChild[hGroup[i].cCount].szUser = _strdup(szUser);
-    hGroup[i].hChild[hGroup[i].cCount].deny = deny;
-    hGroup[i].hChild[hGroup[i].cCount].permit = permit;
-    hGroup[i].cCount++;
-    if (permit)
-        hMode = 3;
-    else if (deny)
-        hMode = 4;
-    LOG(LOG_DEBUG, "CONFIG: Added user (%s)", szUser);
-}
-
-static void toc_buddy_cfgfree()
-{
-    int i, j;
-
-    for (i = 0; i < hGroupCount; i++) {
-        LOG(LOG_DEBUG, "CONFIG: Freeing group (%s)", hGroup[i].szGroup);
-        free(hGroup[i].szGroup);
-        for (j = 0; j < hGroup[i].cCount; j++) {
-            LOG(LOG_DEBUG, "CONFIG: Freeing user (%s)", hGroup[i].hChild[j].szUser);
-            free(hGroup[i].hChild[j].szUser);
-        }
-    }
-    free(hGroup);
-    hGroup = NULL;
-    hGroupCount = 0;
-    hMode = 1;
-}
-
-static void aim_buddy_cfgbuild(char *buf, int len)
-{
-    int pos = 0, i, j;
-    int smode = DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SM, 1);
-
-    LOG(LOG_DEBUG, "aim_buddy_cfgbuild: Loading config data into toc_set_config");
-    pos += _snprintf(&buf[pos], len - pos, "m %d\n", smode > 1 ? smode : hMode);
-    for (i = 0; i < hGroupCount && len > pos; i++) {
-        pos += _snprintf(&buf[pos], len - pos, "g %s\n", hGroup[i].szGroup);
-        for (j = 0; j < hGroup[i].cCount && len > pos; j++) {
-            pos += _snprintf(&buf[pos], len - pos, "b %s\n", hGroup[i].hChild[j].szUser);
-        }
-    }
-    for (i = 0; i < hGroupCount && len > pos; i++) {
-        for (j = 0; j < hGroup[i].cCount && len > pos; j++) {
-            if (hGroup[i].hChild[j].deny)
-                pos += _snprintf(&buf[pos], len - pos, "d %s\n", hGroup[i].hChild[j].szUser);
-        }
-    }
-    for (i = 0; i < hGroupCount && len > pos; i++) {
-        for (j = 0; j < hGroup[i].cCount && len > pos; j++) {
-            if (hGroup[i].hChild[j].permit)
-                pos += _snprintf(&buf[pos], len - pos, "p %s\n", hGroup[i].hChild[j].szUser);
-        }
-    }
-}
-
-int aim_buddy_cfglen()
-{
-    int len = 0, i, j;
-
-    {
-        HANDLE hContact;
-        char *szProto;
-        DBVARIANT dbv;
-        DBVARIANT dbvg;
-        int deny;
-        int permit;
-
-        hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-        while (hContact) {
-            szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-            if (szProto != NULL && !strcmp(szProto, AIM_PROTO)) {
-                ZeroMemory(&dbv, sizeof(dbv));
-                if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)
-                    && !DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_DU, 0)     // User is being deleted, don't add
-                    && !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)
-                    && !DBGetContactSettingByte(hContact, "CList", "Hidden", 0)
-                    && !aim_buddy_delaydeletecheck(dbv.pszVal)) {
-                    deny = 0;
-                    permit = 0;
-                    if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0))
-                        deny = 1;
-                    if (ID_STATUS_ONLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0))
-                        permit = 1;
-                    if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_SG, &dbvg)) {
-                        aim_buddy_cfgadduser(dbv.pszVal, dbvg.pszVal, deny, permit);
-                        DBFreeVariant(&dbvg);
-                    }
-                    else {
-                        // Add the user to the default group
-                        aim_buddy_cfgadduser(dbv.pszVal, AIM_SERVERSIDE_GROUP, deny, permit);
-                    }
-                }
-                if (dbv.pszVal)
-                    DBFreeVariant(&dbv);
-            }
-            hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-        }
-    }
-    len += 4;                   // "m %d\n"
-    for (i = 0; i < hGroupCount; i++) {
-        len += 3 + strlen(hGroup[i].szGroup);   // "g %s\n"
-        for (j = 0; j < hGroup[i].cCount; j++) {
-            len += 3 + strlen(hGroup[i].hChild[j].szUser);      // "b %s\n"
-        }
-    }
-    for (i = 0; i < hGroupCount; i++) {
-        for (j = 0; j < hGroup[i].cCount; j++) {
-            if (hGroup[i].hChild[j].deny)
-                len += 3 + strlen(hGroup[i].hChild[j].szUser);  // "d %s\n"
-        }
-    }
-    for (i = 0; i < hGroupCount; i++) {
-        for (j = 0; j < hGroup[i].cCount; j++) {
-            if (hGroup[i].hChild[j].permit)
-                len += 3 + strlen(hGroup[i].hChild[j].szUser);  // "p %s\n"
-        }
-    }
-    toc_buddy_cfgfree();
-    return len + strlen("toc_set_config \\{\\}");
-}
-
-void aim_buddy_setconfig()
-{
-    // Check to see if we are using ss lists (if not just skip update)
-    if (hServerSideList && aim_buddy_cfglen() > MSG_LEN) {
-        hServerSideList = 0;
-        LOG(LOG_WARN, "List too big, turning off server-side list support");
-    }
-    if (!hServerSideList)
-        return;
-    hSetConfig = 1;
-    LOG(LOG_DEBUG, "aim_buddy_setconfig: Building list configuration");
-    // Retrieve contacts/groups
-    {
-        HANDLE hContact;
-        char *szProto;
-        DBVARIANT dbv;
-        DBVARIANT dbvg;
-        int deny;
-        int permit;
-
-        hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-        while (hContact) {
-            szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-            if (szProto != NULL && !strcmp(szProto, AIM_PROTO)) {
-                ZeroMemory(&dbv, sizeof(dbv));
-                if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)
-                    && !DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_DU, 0)     // User is being deleted, don't add
-                    && !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)
-                    && !DBGetContactSettingByte(hContact, "CList", "Hidden", 0)
-                    && !aim_buddy_delaydeletecheck(dbv.pszVal)) {
-                    deny = 0;
-                    permit = 0;
-                    if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0))
-                        deny = 1;
-                    if (ID_STATUS_ONLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0))
-                        permit = 1;
-                    if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_SG, &dbvg)) {
-                        aim_buddy_cfgadduser(dbv.pszVal, dbvg.pszVal, deny, permit);
-                        DBFreeVariant(&dbvg);
-                    }
-                    else {
-                        // Add the user to the default group
-                        aim_buddy_cfgadduser(dbv.pszVal, AIM_SERVERSIDE_GROUP, deny, permit);
-                    }
-                }
-                if (dbv.pszVal)
-                    DBFreeVariant(&dbv);
-            }
-            hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-        }
-    }
-
-    // build list
-    {
-        char buf[MSG_LEN], snd[MSG_LEN * 2];
-
-        aim_buddy_cfgbuild(buf, sizeof(buf) - strlen("toc_set_config \\{\\}"));
-        _snprintf(snd, MSG_LEN, "toc_set_config {%s}", buf);
-        aim_toc_sflapsend(snd, -1, TYPE_DATA);
-    }
-    toc_buddy_cfgfree();
-    aim_buddy_delaydeletefree();
 }

@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_AR_DEF	0       // Send autoresponse off by default
 #define AIM_KEY_KA_DEF	1       // Keep-alive on by default
 #define AIM_KEY_AC_DEF	1       // Only auto-response to clist users by default
-#define AIM_KEY_SS_DEF  0       // Use server-side lists by default
+#define AIM_KEY_SS_DEF  1       // Use server-side lists by default
 #define AIM_KEY_SE_DEF  1       // Show error messages
 #define AIM_KEY_GF_DEF  1       // Flash group chat window by default
 #define AIM_KEY_GD_DEF  1       // Show time in groupchat
