@@ -191,7 +191,7 @@ static HANDLE AddToListByJID(const char* newJid, DWORD flags)
 		JabberLog("Add new jid to contact jid=%s", jid);
 		hContact = (HANDLE) JCallService(MS_DB_CONTACT_ADD, 0, 0);
 		JCallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) jabberProtoName);
-		DBWriteContactSettingString(hContact, jabberProtoName, "jid", jid);
+		JSetString( hContact, "jid", jid);
 		if ((nick=JabberNickFromJID(newJid)) == NULL)
 			nick = _strdup(newJid);
 		DBWriteContactSettingString(hContact, "CList", "MyHandle", nick);

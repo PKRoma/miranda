@@ -456,7 +456,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 					if (n->text != NULL) {
 						hasFn = TRUE;
 						nText = JabberTextDecode(n->text);
-						DBWriteContactSettingString(hContact, jabberProtoName, "FullName", nText);
+						JSetString( hContact, "FullName", nText);
 						free(nText);
 					}
 				}
@@ -464,7 +464,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 					if (n->text != NULL) {
 						hasNick = TRUE;
 						nText = JabberTextDecode(n->text);
-						DBWriteContactSettingString(hContact, jabberProtoName, "Nick", nText);
+						JSetString( hContact, "Nick", nText);
 						free(nText);
 					}
 				}
@@ -474,19 +474,19 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						if ((m=JabberXmlGetChild(n, "GIVEN"))!=NULL && m->text!=NULL) {
 							hasGiven = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "FirstName", mText);
+							JSetString( hContact, "FirstName", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "FAMILY"))!=NULL && m->text!=NULL) {
 							hasFamily = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "LastName", mText);
+							JSetString( hContact, "LastName", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "MIDDLE"))!=NULL && m->text!=NULL) {
 							hasMiddle = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "MiddleName", mText);
+							JSetString( hContact, "MiddleName", mText);
 							free(mText);
 						}
 					}
@@ -505,7 +505,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						else
 							sprintf(text, "e-mail%d", nEmail);
 						mText = JabberTextDecode(m->text);
-						DBWriteContactSettingString(hContact, jabberProtoName, text, mText);
+						JSetString( hContact, text, mText);
 						free(mText);
 						if (hContact == NULL) {
 							sprintf(text, "e-mailFlag%d", nEmail);
@@ -577,17 +577,17 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 								else
 									strncpy(text, mText, sizeof(text));
 								text[sizeof(text)-1] = '\0';
-								DBWriteContactSettingString(hContact, jabberProtoName, "Street", text);
+								JSetString( hContact, "Street", text);
 							}
 							else {
-								DBWriteContactSettingString(hContact, jabberProtoName, "Street", mText);
+								JSetString( hContact, "Street", mText);
 								if ((m=JabberXmlGetChild(n, "EXTADR")) == NULL)
 									m = JabberXmlGetChild(n, "EXTADD");
 								if (m!=NULL && m->text!=NULL) {
 									hasHomeStreet2 = TRUE;
 									free(mText);
 									mText = JabberTextDecode(m->text);
-									DBWriteContactSettingString(hContact, jabberProtoName, "Street2", mText);
+									JSetString( hContact, "Street2", mText);
 								}
 							}
 							free(mText);
@@ -595,19 +595,19 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						if ((m=JabberXmlGetChild(n, "LOCALITY"))!=NULL && m->text!=NULL) {
 							hasHomeLocality = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "City", mText);
+							JSetString( hContact, "City", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "REGION"))!=NULL && m->text!=NULL) {
 							hasHomeRegion = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "State", mText);
+							JSetString( hContact, "State", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "PCODE"))!=NULL && m->text!=NULL) {
 							hasHomePcode = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "ZIP", mText);
+							JSetString( hContact, "ZIP", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "CTRY"))==NULL || m->text==NULL)	// Some bad client use <COUNTRY/> instead of <CTRY/>
@@ -618,7 +618,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 							if (hContact != NULL)
 								JSetWord( hContact, "Country", ( WORD )JabberCountryNameToId(mText));
 							else
-								DBWriteContactSettingString(hContact, jabberProtoName, "CountryName", mText);
+								JSetString( hContact, "CountryName", mText);
 							free(mText);
 						}
 					}
@@ -643,17 +643,17 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 								else
 									strncpy(text, mText, sizeof(text));
 								text[sizeof(text)-1] = '\0';
-								DBWriteContactSettingString(hContact, jabberProtoName, "CompanyStreet", text);
+								JSetString( hContact, "CompanyStreet", text);
 							}
 							else {
-								DBWriteContactSettingString(hContact, jabberProtoName, "CompanyStreet", mText);
+								JSetString( hContact, "CompanyStreet", mText);
 								if ((m=JabberXmlGetChild(n, "EXTADR")) == NULL)
 									m = JabberXmlGetChild(n, "EXTADD");
 								if (m!=NULL && m->text!=NULL) {
 									hasWorkStreet2 = TRUE;
 									free(mText);
 									mText = JabberTextDecode(m->text);
-									DBWriteContactSettingString(hContact, jabberProtoName, "CompanyStreet2", mText);
+									JSetString( hContact, "CompanyStreet2", mText);
 								}
 							}
 							free(mText);
@@ -661,19 +661,19 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						if ((m=JabberXmlGetChild(n, "LOCALITY"))!=NULL && m->text!=NULL) {
 							hasWorkLocality = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "CompanyCity", mText);
+							JSetString( hContact, "CompanyCity", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "REGION"))!=NULL && m->text!=NULL) {
 							hasWorkRegion = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "CompanyState", mText);
+							JSetString( hContact, "CompanyState", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "PCODE"))!=NULL && m->text!=NULL) {
 							hasWorkPcode = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "CompanyZIP", mText);
+							JSetString( hContact, "CompanyZIP", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "CTRY"))==NULL || m->text==NULL)	// Some bad client use <COUNTRY/> instead of <CTRY/>
@@ -684,7 +684,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 							if (hContact != NULL)
 								JSetWord( hContact, "CompanyCountry", ( WORD )JabberCountryNameToId(mText));
 							else
-								DBWriteContactSettingString(hContact, jabberProtoName, "CompanyCountryName", mText);
+								JSetString( hContact, "CompanyCountryName", mText);
 							free(mText);
 						}
 					}
@@ -696,11 +696,11 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						if (hContact != NULL) {
 							if (!hasFax && JabberXmlGetChild(n, "FAX")!=NULL) {
 								hasFax = TRUE;
-								DBWriteContactSettingString(hContact, jabberProtoName, "Fax", mText);
+								JSetString( hContact, "Fax", mText);
 							}
 							if (!hasCell && JabberXmlGetChild(n, "CELL")!=NULL) {
 								hasCell = TRUE;
-								DBWriteContactSettingString(hContact, jabberProtoName, "Cellular", mText);
+								JSetString( hContact, "Cellular", mText);
 							}
 							if (!hasPhone &&
 								(JabberXmlGetChild(n, "HOME")!=NULL ||
@@ -716,13 +716,13 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 								  JabberXmlGetChild(n, "ISDN")==NULL &&
 								  JabberXmlGetChild(n, "PCS")==NULL))) {
 								hasPhone = TRUE;
-								DBWriteContactSettingString(hContact, jabberProtoName, "Phone", mText);
+								JSetString( hContact, "Phone", mText);
 							}
 						}
 						else {
 							sprintf(text, "Phone%d", nPhone);
 
-							DBWriteContactSettingString(NULL, jabberProtoName, text, mText);
+							JSetString( NULL, text, mText);
 							sprintf(text, "PhoneFlag%d", nPhone);
 							nFlag = 0;
 							if (JabberXmlGetChild(n, "HOME") != NULL) nFlag |= JABBER_VCTEL_HOME;
@@ -748,7 +748,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 					if (!hasUrl && n->text!=NULL) {
 						hasUrl = TRUE;
 						nText = JabberTextDecode(n->text);
-						DBWriteContactSettingString(hContact, jabberProtoName, "Homepage", nText);
+						JSetString( hContact, "Homepage", nText);
 						free(nText);
 					}
 				}
@@ -757,13 +757,13 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 						if ((m=JabberXmlGetChild(n, "ORGNAME"))!=NULL && m->text!=NULL) {
 							hasOrgname = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "Company", mText);
+							JSetString( hContact, "Company", mText);
 							free(mText);
 						}
 						if ((m=JabberXmlGetChild(n, "ORGUNIT"))!=NULL && m->text!=NULL) {	// The real vCard can have multiple <ORGUNIT/> but we will only display the first one
 							hasOrgunit = TRUE;
 							mText = JabberTextDecode(m->text);
-							DBWriteContactSettingString(hContact, jabberProtoName, "CompanyDepartment", mText);
+							JSetString( hContact, "CompanyDepartment", mText);
 							free(mText);
 						}
 					}
@@ -772,7 +772,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 					if (!hasRole && n->text!=NULL) {
 						hasRole = TRUE;
 						nText = JabberTextDecode(n->text);
-						DBWriteContactSettingString(hContact, jabberProtoName, "Role", nText);
+						JSetString( hContact, "Role", nText);
 						free(nText);
 					}
 				}
@@ -780,7 +780,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 					if (!hasTitle && n->text!=NULL) {
 						hasTitle = TRUE;
 						nText = JabberTextDecode(n->text);
-						DBWriteContactSettingString(hContact, jabberProtoName, "CompanyPosition", nText);
+						JSetString( hContact, "CompanyPosition", nText);
 						free(nText);
 					}
 				}
@@ -788,7 +788,7 @@ void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata)
 					if (!hasDesc && n->text!=NULL) {
 						hasDesc = TRUE;
 						nText = JabberTextDecode(n->text);
-						DBWriteContactSettingString(hContact, jabberProtoName, "About", nText);
+						JSetString( hContact, "About", nText);
 						free(nText);
 					}
 				}

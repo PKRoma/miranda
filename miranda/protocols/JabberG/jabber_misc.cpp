@@ -41,12 +41,12 @@ void JabberDBAddAuthRequest(char* jid, char* nick)
 	if ((hContact=JabberHContactFromJID(jid)) == NULL) {
 		hContact = (HANDLE) JCallService(MS_DB_CONTACT_ADD, 0, 0);
 		JCallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) jabberProtoName);
-		DBWriteContactSettingString(hContact, jabberProtoName, "jid", s);
+		JSetString( hContact, "jid", s);
 	}
 	else {
 		DBDeleteContactSetting(hContact, jabberProtoName, "Hidden");
 	}
-	DBWriteContactSettingString(hContact, jabberProtoName, "Nick", nick);
+	JSetString( hContact, "Nick", nick);
 
 	//blob is: uin(DWORD), hContact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)
 	//blob is: 0(DWORD), hContact(HANDLE), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
@@ -113,9 +113,9 @@ HANDLE JabberDBCreateContact(char* jid, char* nick, BOOL temporary, BOOL stripRe
 	if (hContact == NULL) {
 		hContact = (HANDLE) JCallService(MS_DB_CONTACT_ADD, 0, 0);
 		JCallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) jabberProtoName);
-		DBWriteContactSettingString(hContact, jabberProtoName, "jid", s);
+		JSetString( hContact, "jid", s);
 		if (nick!=NULL && nick[0]!='\0')
-			DBWriteContactSettingString(hContact, jabberProtoName, "Nick", nick);
+			JSetString( hContact, "Nick", nick);
 		if (temporary)
 			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 		JabberLog("Create Jabber contact jid=%s, nick=%s", s, nick);

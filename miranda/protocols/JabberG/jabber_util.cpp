@@ -167,7 +167,7 @@ HANDLE __stdcall JabberHContactFromJID(const char* jid)
 				if (p && (int)strlen(p)>=len && (p[len]=='\0'||p[len]=='/') && !strncmp(p, s2, len)) {
 					JFreeVariant(&dbv);
 					// Update with the utf8 format
-					DBWriteContactSettingString(hContact, jabberProtoName, "jid", s);
+					JSetString( hContact, "jid", s);
 					free(s);
 					free(s2);
 					return hContact;

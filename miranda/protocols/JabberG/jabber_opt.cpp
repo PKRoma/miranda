@@ -593,7 +593,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				if (fontChanged) {
 					for (i=0; i<JABBER_GCLOG_NUM_FONT; i++) {
 						sprintf(key, "GcLogFont%dFace", i);
-						DBWriteContactSettingString(NULL, jabberProtoName, key, lf.lfFaceName);
+						JSetString( NULL, key, lf.lfFaceName);
 						sprintf(key, "GcLogFont%dSize", i);
 						JSetByte( key, (BYTE) MulDiv(abs(lf.lfHeight), 72, GetDeviceCaps(GetDC(NULL), LOGPIXELSY)));
 						sprintf(key, "GcLogFont%dCharset", i);

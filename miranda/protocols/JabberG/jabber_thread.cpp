@@ -1015,7 +1015,7 @@ static void JabberProcessIq(XmlNode *node, void *userdata)
 											hContact = JabberDBCreateContact(jid, nick, FALSE, TRUE);
 										}
 										else
-											DBWriteContactSettingString(hContact, jabberProtoName, "jid", jid);
+											JSetString( hContact, "jid", jid);
 										DBWriteContactSettingString(hContact, "CList", "MyHandle", nick);
 										if (item->group) free(item->group);
 										if ((groupNode=JabberXmlGetChild(itemNode, "group"))!=NULL && groupNode->text!=NULL) {

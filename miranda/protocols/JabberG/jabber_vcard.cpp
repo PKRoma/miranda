@@ -414,7 +414,7 @@ static BOOL CALLBACK EditEmailDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 				GetDlgItemText(hwndDlg, IDC_EMAIL, text, sizeof(text));
 				wsprintf(idstr, "e-mail%d", id);
-				DBWriteContactSettingString(NULL, jabberProtoName, idstr, text);
+				JSetString( NULL, idstr, text);
 				nFlag = 0;
 				if (IsDlgButtonChecked(hwndDlg, IDC_HOME)) nFlag |= JABBER_VCEMAIL_HOME;
 				if (IsDlgButtonChecked(hwndDlg, IDC_WORK)) nFlag |= JABBER_VCEMAIL_WORK;
@@ -484,7 +484,7 @@ static BOOL CALLBACK EditPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 				GetDlgItemText(hwndDlg, IDC_PHONE, text, sizeof(text));
 				wsprintf(idstr, "Phone%d", id);
-				DBWriteContactSettingString(NULL, jabberProtoName, idstr, text);
+				JSetString( NULL, idstr, text);
 				nFlag = 0;
 				if (IsDlgButtonChecked(hwndDlg, IDC_HOME)) nFlag |= JABBER_VCTEL_HOME;
 				if (IsDlgButtonChecked(hwndDlg, IDC_WORK)) nFlag |= JABBER_VCTEL_WORK;
@@ -658,7 +658,7 @@ static BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								wsprintf(idstr, szIdTemplate, i+1);
 								if (DBGetContactSetting(NULL, jabberProtoName, idstr, &dbv)) break;
 								wsprintf(idstr,szIdTemplate,i);
-								DBWriteContactSettingString(NULL, jabberProtoName, idstr, dbv.pszVal);
+								JSetString( NULL, idstr, dbv.pszVal);
 								wsprintf(idstr, szFlagTemplate, i+1);
 								JFreeVariant(&dbv);
 								nFlag = JGetWord( NULL, idstr, 0 );

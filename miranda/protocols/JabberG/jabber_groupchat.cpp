@@ -167,7 +167,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 				for (i=0; i<GC_SERVER_LIST_SIZE; i++) {
 					_snprintf(text, sizeof(text), "GcServerLast%d", i);
 					if (!DBGetContactSetting(NULL, jabberProtoName, text, &dbv)) {
-						DBWriteContactSettingString(NULL, jabberProtoName, text, server);
+						JSetString( NULL, text, server);
 						if (!stricmp(dbv.pszVal, ( char* )lParam)) {
 							JFreeVariant(&dbv);
 							break;
@@ -176,7 +176,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 						JFreeVariant(&dbv);
 					}
 					else {
-						DBWriteContactSettingString(NULL, jabberProtoName, text, server);
+						JSetString( NULL, text, server);
 						break;
 					}
 				}
