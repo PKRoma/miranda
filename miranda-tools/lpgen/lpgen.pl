@@ -79,7 +79,7 @@ sub append_str {
 }
 
 sub csearch {
-    if ( -f $_ and $_ =~ m/\.c[pp]*\Z/) {
+    if ( -f $_ and ($_ =~ m/\.c[pp]*\Z/ or $_ =~ m/\.h*\Z/)) {
         $found = 0;
         $file = $_;
         print "  Processing $_ ";
