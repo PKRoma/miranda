@@ -662,10 +662,32 @@ start:
 				gg_dccconnect(e->event.msg.sender);
 			}
             // Check if not conference and block
-			else if(!e->event.msg.recipients_count || !DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF))
+			else if(!e->event.msg.recipients_count || ggGCEnabled)
 			{
+                // Check if groupchat
+                if(e->event.msg.recipients_count && ggGCEnabled && !DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF))
+                {
+                    char *chat = gg_gc_getchat(e->event.msg.sender, e->event.msg.recipients, e->event.msg.recipients_count);
+                    if(chat)
+                    {
+                        char id[32]; UIN2ID(e->event.msg.sender, id);
+                        GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_MESSAGE};
+                        GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+                        gcevent.pszUID = id;
+                        gcevent.pszText = e->event.msg.message;
+                        gcevent.pszNick = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(e->event.msg.sender, 1, 0, NULL), 0);
+                        time_t t = time(NULL);
+                        gcevent.time = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
+                        gcevent.bAddToLog = 1;
+#ifdef DEBUGMODE
+                        gg_netlog("gg_mainthread(): Conference message to room %s & id %s.", chat, id);
+#endif
+                        CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+                    }
+                }
 	            // Check if not empty message ( who needs it? )
-	            if ( strlen(e->event.msg.message) ) {
+	            else if(!e->event.msg.recipients_count && strlen(e->event.msg.message))
+                {
 					time_t t = time(NULL);
 					ccs.szProtoService = PSR_MESSAGE;
 					ccs.hContact = gg_getcontact(e->event.msg.sender, 1, 0, NULL);
@@ -794,12 +816,25 @@ int gg_userdeleted(WPARAM wParam, LPARAM lParam)
 {
     if ((HANDLE) wParam == NULL)
         return 0;
-    if (!gg_isonline())
-        return 0;
 
-    uin_t uin = (uin_t)DBGetContactSettingDword((HANDLE) wParam, GG_PROTO, GG_KEY_UIN, 0);
+    HANDLE hContact = (HANDLE) wParam;
+    uin_t uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
+    int type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
+    DBVARIANT dbv;
+	if(type && !DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv) && ggGCEnabled)
+	{
+        GCEVENT gce;
+        GCDEST gcd;
+        gce.cbSize = sizeof(GCEVENT);
+        gcd.iType = GC_EVENT_CONTROL;
+        gcd.pszModule = GG_PROTO;
+        gce.pDest = &gcd;
+        gcd.pszID = dbv.pszVal;
+        CallService(MS_GC_EVENT, WINDOW_TERMINATE, (LPARAM)&gce);
 
-    gg_remove_notify_ex(ggSess, uin, GG_USER_NORMAL);
+		DBFreeVariant(&dbv);
+	}
+    if(uin && gg_isonline()) gg_remove_notify_ex(ggSess, uin, GG_USER_NORMAL);
     return 0;
 }
 
@@ -818,6 +853,41 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
     if (!strcmp(cws->szModule, "Ignore") && !strcmp(cws->szSetting, "Mask1"))
     {
         gg_notifyuser((HANDLE) wParam, 1);
+    }
+
+    // Renamed
+    if (ggGCEnabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, "Nick") && cws->value.pszVal)
+    {
+        DBVARIANT dbv; HANDLE hContact = (HANDLE) wParam;
+        int type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
+        // Change window name
+        if(type && !DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv))
+        {
+            // Most important... check redundancy (fucking cascading)
+            static int cascade = 0;
+            if(!cascade)
+            {
+                GCEVENT gce;
+                GCDEST gcd;
+                gce.cbSize = sizeof(GCEVENT);
+                gcd.iType = GC_EVENT_CHWINNAME;
+                gcd.pszModule = GG_PROTO;
+                gce.pDest = &gcd;
+                gcd.pszID = dbv.pszVal;
+                gce.pszText = cws->value.pszVal;
+#ifdef DEBUGMODE
+                gg_netlog("gg_dbsettingchanged(): Conference %s was renamed to %s.", dbv.pszVal, cws->value.pszVal);
+#endif
+                cascade = 1;
+                if(dbv.pszVal) CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+
+                DBFreeVariant(&dbv);
+            }
+            else
+                cascade = 0;
+        }
+        // Change contact name on all chats
+        else gg_gc_changenick(hContact, cws->value.pszVal);
     }
 
     // Blocked icon
@@ -995,7 +1065,8 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
         if (szProto != NULL && !strcmp(szProto, GG_PROTO))
         {
-            if ((uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0) == uin)
+            if ((uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0) == uin
+                && DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0) == 0)
             {
                 if (inlist)
                 {

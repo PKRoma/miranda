@@ -271,7 +271,13 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_FRIENDSONLY, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_FRIENDSONLY, GG_KEYDEF_FRIENDSONLY));
             CheckDlgButton(hwndDlg, IDC_SHOWINVISIBLE, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWINVISIBLE, GG_KEYDEF_SHOWINVISIBLE));
             CheckDlgButton(hwndDlg, IDC_LEAVESTATUSMSG, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_LEAVESTATUSMSG, GG_KEYDEF_LEAVESTATUSMSG));
-            CheckDlgButton(hwndDlg, IDC_IGNORECONF, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF));
+            if(ggGCEnabled)
+                CheckDlgButton(hwndDlg, IDC_IGNORECONF, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF));
+            else
+            {
+                EnableWindow(GetDlgItem(hwndDlg, IDC_IGNORECONF), FALSE);
+                CheckDlgButton(hwndDlg, IDC_IGNORECONF, TRUE);
+            }
             CheckDlgButton(hwndDlg, IDC_POPUPIMG, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, GG_KEYDEF_POPUPIMG));
             CheckDlgButton(hwndDlg, IDC_SHOWNOTONMYLIST, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, GG_KEYDEF_SHOWNOTONMYLIST));
 
@@ -450,7 +456,8 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_FRIENDSONLY, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FRIENDSONLY));
                     DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWINVISIBLE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINVISIBLE));
                     DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_LEAVESTATUSMSG, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LEAVESTATUSMSG));
-                    DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORECONF));
+                    if(ggGCEnabled)
+                        DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORECONF));
                     DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_POPUPIMG));
                     DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTONMYLIST));
 

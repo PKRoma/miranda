@@ -42,6 +42,7 @@
 #define IDI_IMAGE           	262
 #define IDI_DELETE           	263
 #define IDI_SAVE           		264
+#define IDI_CONFERENCE     		265
 
 #define IDD_OPT_GG				301
 #define IDD_INFO_GG             302
@@ -54,6 +55,7 @@
 #define IDD_CHEMAIL             309
 #define IDD_OPT_GG_ADVANCED		310
 #define IDD_TOKEN				311
+#define IDD_CONFERENCE			312
 
 #define IDD_IMAGE_RECV          314
 #define IDD_IMAGE_SEND          315
@@ -126,3 +128,4 @@
 #define IDC_IMG_IMAGE           1017
 #define IDC_IMG_NAME            1018
 
+#define IDC_CLIST               1200

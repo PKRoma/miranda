@@ -55,6 +55,11 @@
 #include <m_userinfo.h>
 #include <m_clui.h>
 #include <m_button.h>
+#include <m_clc.h>
+#include <m_message.h>
+
+// Groupchat (chat.dll) plugin
+#include "../../plugins/chat/m_chat.h"
 
 // Plugin headers
 #include "pthread.h"
@@ -150,7 +155,7 @@ extern char *ggProtoError;
 #define GG_KEYDEF_SHOWINVISIBLE	0
 
 #define GG_KEY_IGNORECONF	    "IgnoreConf"    // Ignore incoming conference messages
-#define GG_KEYDEF_IGNORECONF	1
+#define GG_KEYDEF_IGNORECONF	0
 
 #define GG_KEY_POPUPIMG	        "PopupImg"      // Popup image window automatically
 #define GG_KEYDEF_POPUPIMG	    1
@@ -223,6 +228,7 @@ extern char *ggProtoError;
 /////////////////////////////////////////////////
 
 extern HINSTANCE hInstance;
+extern DWORD gMirandaVersion;
 extern int ggStatus;
 extern int ggDesiredStatus;
 extern int ggRunning;
@@ -248,6 +254,7 @@ struct gg_status_msgs
 extern struct gg_status_msgs ggModeMsg;
 extern uin_t nextUIN;
 extern int ggListRemove;
+extern int ggGCEnabled;
 
 // Screen saver
 #ifndef SPI_GETSCREENSAVERRUNNING
@@ -304,6 +311,11 @@ int gg_img_sendimage(WPARAM wParam, LPARAM lParam);
 int gg_img_sendonrequest(struct gg_event* e);
 BOOL gg_img_opened(uin_t uin);
 void *__stdcall gg_img_dlgthread(void *empty);
+int gg_gc_load();
+int gg_gc_unload();
+char * gg_gc_getchat(uin_t sender, uin_t *recipients, int recipients_count);
+int gg_gc_changenick(HANDLE hContact, char *pszNick);
+#define UIN2ID(uin,id) itoa(uin,id,10)
 
 // Debug functions
 #ifdef DEBUGMODE

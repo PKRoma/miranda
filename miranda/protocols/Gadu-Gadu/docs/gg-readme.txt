@@ -40,6 +40,7 @@ connections.
             the same proto and name is case insensitive.
  - 1st user mail & phone used for import/export
  - SSL/TLS secure connections
+ - Groupchat/conferencing (Miranda IM version 0.4 or higher)
 
 Note: For secure connections this plugin requires OpenSSL DLL
       libraries to be present in system folder or Miranda folder.
@@ -51,7 +52,6 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 4. Todo
 -------
- - Groupchat
  - Use a list of GG servers instead of one address when connecting
  - Show ignored contacts that they are blocked (aka org. GG client blocking)
  - Animated GIFs support (image sending)
@@ -190,6 +190,9 @@ Note: For secure connections this plugin requires OpenSSL DLL
  - Fix: Notification list should be sent in one piece gg_notify_ex(*uinlist),
    not one by one gg_add_notify_ex(uin)
  - Fix: GG.dll uses now internal Miranda safe thread registering
+0.0.2.7: 2004-12-26
+ - Gadu-Gadu conferencing support trough chat.dll groupchat plugin
+   (requires > Miranda 0.4)
 
 6. Latest development version:
 ------------------------------

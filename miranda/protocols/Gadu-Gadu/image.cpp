@@ -64,7 +64,7 @@ typedef struct
 } GGIMAGEDLGDATA;
 
 // List of image windows
-list_t gg_imagedlgs;
+list_t gg_imagedlgs = NULL;
 
 HICON hIcons[5]; // icon handles
 

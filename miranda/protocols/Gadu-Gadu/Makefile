@@ -43,7 +43,8 @@ CFILES = 	gg.c \
 			userutils.c \
 			filetransfer.c \
 			ssl.c \
-			core.c
+			core.c \
+			groupchat.c
 CPPFILES = 	token.cpp \
 			image.cpp
 

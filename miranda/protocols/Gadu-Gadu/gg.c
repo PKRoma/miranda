@@ -25,7 +25,7 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 2, 6),
+    PLUGIN_MAKE_VERSION(0, 0, 2, 7),
     "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
@@ -152,8 +152,10 @@ const char *http_error_string(int h)
 
 //////////////////////////////////////////////////////////
 // gets plugin info
+DWORD gMirandaVersion = 0;
 __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
+    gMirandaVersion = mirandaVersion;
     return &pluginInfo;
 }
 
@@ -214,6 +216,7 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
     gg_initimport();
     gg_initchpass();
     gg_img_load();
+    gg_gc_load();
 
 	// Make error message
 	char *error = Translate("Error");
@@ -293,6 +296,8 @@ int __declspec(dllexport) Unload()
 #endif
     //gg_destroyuserinfo();
     gg_destroykeepalive();
+    gg_img_unload();
+    gg_gc_unload();
     pthread_mutex_destroy(&modeMsgsMutex);
     pthread_mutex_destroy(&connectionHandleMutex);
     pthread_mutex_destroy(&dccWatchesMutex);
@@ -316,8 +321,6 @@ int __declspec(dllexport) Unload()
 	if(ggProtoName) free(ggProtoName);
 	if(ggProtoError) free(ggProtoError);
 
-   // Close mutex handles
-   gg_img_unload();
 	// Uninit SSL library
 	gg_ssl_uninit();
     // Cleanup WinSock
