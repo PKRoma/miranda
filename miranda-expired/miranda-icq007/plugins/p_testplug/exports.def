@@ -1,0 +1,5 @@
+LIBRARY 'testplug'
+EXPORTS
+	Load
+	Unload
+	Notify
