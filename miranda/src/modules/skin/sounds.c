@@ -38,7 +38,7 @@ static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
 	soundList=(struct SoundItem*)realloc(soundList,sizeof(struct SoundItem)*(soundCount+1));
 	soundList[soundCount].name=_strdup(ssd->pszName);
 	soundList[soundCount].description=_strdup(ssd->pszDescription);
-	soundList[soundCount].section=_strdup( ssd->cbSize==sizeof(SKINSOUNDDESCEX) ? ssd->pszSection : "Other" );
+	soundList[soundCount].section=_strdup( ssd->cbSize==sizeof(SKINSOUNDDESCEX) ? ssd->pszSection : Translate("Other") );
 	soundList[soundCount].tempFile=NULL;
     if (ssd->pszDefaultFile) {
         DBVARIANT dbv;
