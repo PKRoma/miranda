@@ -75,7 +75,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         dat->bottomOffset = dat->dynaSplitter + 100;
     }
     else {
-        dat->iRealAvatarHeight = dat->dynaSplitter;
+        dat->iRealAvatarHeight = dat->dynaSplitter + 3;
         dat->bottomOffset = -33;
     }
 

@@ -273,7 +273,8 @@ void FreeMsgLogIcons(void);
 #define H_MSGFONTID_STATUSCHANGES 17
 #define H_MSGFONTID_DIVIDERS 18
 #define MSGFONTID_ERROR 19
-#define MSGFONTID_SYMBOLS 20
+#define MSGFONTID_SYMBOLS_IN 20
+#define MSGFONTID_SYMBOLS_OUT 21
 
 void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
 extern const int msgDlgFontCount;
@@ -423,7 +424,7 @@ struct MsgLogIcon {
 
 #define IDB_UNKNOWNAVATAR 100
 
-#define MSGDLGFONTCOUNT 21
+#define MSGDLGFONTCOUNT 22
 
 TCHAR *Utf8Decode(const char *str);
 char *Utf8Encode(const WCHAR *str);

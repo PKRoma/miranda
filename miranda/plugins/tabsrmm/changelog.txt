@@ -135,6 +135,8 @@ Version 0.9.9.5 - 2005/02/02
           useful if you have enabled the formatting buttons, because they will increase the
           space needed on the toolbar significantly.
 
+        ! fixed dividers screwing up linespacing sometimes.
+        
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

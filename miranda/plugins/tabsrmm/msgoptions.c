@@ -102,7 +102,7 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
         wsprintfA(str, "Font%d", i);
-        if(i == MSGFONTID_SYMBOLS)
+        if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
             lstrcpyA(lf->lfFaceName, "Webdings");
         else {
             if (DBGetContactSetting(NULL, SRMSGMOD_T, str, &dbv))
@@ -145,11 +145,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_EVENTAPI, DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1));
             CheckDlgButton(hwndDlg, IDC_DELETETEMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0));
             CheckDlgButton(hwndDlg, IDC_FLASHCLIST, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0));
-#if defined(_UNICODE)
             CheckDlgButton(hwndDlg, IDC_SHOWFORMATTING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0));
-#else
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWFORMATTING), FALSE);
-#endif            
             
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Globally on"));
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("On for protocols with avatar support"));
@@ -336,11 +332,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_LONGDATES, dwFlags & MWF_LOG_LONGDATES);
             CheckDlgButton(hwndDlg, IDC_RELATIVEDATES, dwFlags & MWF_LOG_USERELATIVEDATES);
             CheckDlgButton(hwndDlg, IDC_INDENTWITHTABS, dwFlags & MWF_LOG_INDENTWITHTABS);
-#if defined (_UNICODE)
             CheckDlgButton(hwndDlg, IDC_FORMATTING, dwFlags & MWF_LOG_TEXTFORMAT);
-#else
-            EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATTING), FALSE);
-#endif            
             CheckDlgButton(hwndDlg, IDC_SYMBOLS, dwFlags & MWF_LOG_SYMBOLS);
             
             CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1));
@@ -862,7 +854,8 @@ static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
         "* Status changes",
         "* Dividers",
         "* Error and warning Messages",
-        "* Symbols"};
+        "* Symbols (incoming)",
+        "* Symbols (outgoing)"};
 
 #define FONTS_TO_CONFIG MSGDLGFONTCOUNT
 
@@ -903,7 +896,8 @@ static int fontListOrder[MSGDLGFONTCOUNT + 1] = {
     H_MSGFONTID_STATUSCHANGES,
     H_MSGFONTID_DIVIDERS,
     MSGFONTID_ERROR,
-    MSGFONTID_SYMBOLS};
+    MSGFONTID_SYMBOLS_IN,
+    MSGFONTID_SYMBOLS_OUT};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
 #define M_REMAKESAMPLE       (WM_USER+11)

@@ -33,8 +33,6 @@ Unicode version by Nightwish
 License: GPL
 */
 
-#if defined(UNICODE)
-
 #define __TSR_CXX
 #include "commonheaders.h"
 
@@ -47,7 +45,9 @@ License: GPL
 #include <fstream>
 
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
-                     
+
+#if defined(UNICODE)
+
 unsigned FormatSpan(HWND REdit, const std::wstring &text, unsigned npos, wchar_t prech)
 {
 	wchar_t empty[] = L"";
@@ -136,7 +136,6 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
     SendMessageW(REdit, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&buf[0]);
     
     //SendMessageW(REdit, EM_GETTEXTRANGE, 0, (LPARAM) &tr);
-    //MessageBoxW(0, &buf[0], L"foo", 0);
 
 	std::wstring old_text(buf.begin(), buf.end()-1);
 
@@ -247,6 +246,190 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 #else
 
 // ansi version
+
+unsigned FormatSpan(HWND REdit, const std::string &text, unsigned npos, char prech)
+{
+	char empty[] = "";
+
+	// skip escaped section, remove the backslash
+	if (prech == '\\') {
+		SendMessage(REdit, EM_SETSEL, npos-1, npos);
+		SendMessage(REdit, EM_REPLACESEL, FALSE, (LPARAM) empty);
+		return text.size() - 1;
+	}
+
+	std::string new_text = text, stripped_chars;
+	unsigned osize = text.size();
+
+	CHARFORMAT fmt;
+	fmt.cbSize = sizeof fmt;
+	fmt.dwMask = 0;
+	fmt.dwEffects = 0;
+
+	while (new_text.size() >= 3 && strchr("_*/", new_text[0])
+		&& new_text[0] == new_text[new_text.size()-1]) {
+
+		char ch = new_text[0];
+		stripped_chars += ch;
+
+		new_text.erase(0, 1);
+		new_text.erase(new_text.size()-1);
+
+		if (ch == '*') {
+			fmt.dwMask |= CFM_BOLD;
+			fmt.dwEffects |= CFE_BOLD;
+		} else if (ch == '/') {
+			fmt.dwMask |= CFM_ITALIC;
+			fmt.dwEffects |= CFE_ITALIC;
+		} else if (ch == '_') {
+			fmt.dwMask |= CFM_UNDERLINE;
+			fmt.dwEffects |= CFE_UNDERLINE;
+		}
+	}
+
+	SendMessage(REdit, EM_SETSEL, npos+osize-stripped_chars.size(), npos+osize);
+	SendMessage(REdit, EM_REPLACESEL, FALSE, (LPARAM) empty);
+	SendMessage(REdit, EM_SETSEL, npos, npos+stripped_chars.size());
+	SendMessage(REdit, EM_REPLACESEL, FALSE, (LPARAM) empty);
+
+	unsigned p, pos = 0;
+	while ((p = new_text.find_first_of(stripped_chars)) != new_text.npos) {
+		new_text[p] = ' ';
+		char str[] = " ";
+		SendMessage(REdit, EM_SETSEL, npos+p, npos+p+1);
+		SendMessage(REdit, EM_REPLACESEL, FALSE, (LPARAM) str);
+	}
+
+	SendMessage(REdit, EM_SETSEL, npos, npos + new_text.size());
+	SendMessage(REdit, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM) &fmt);
+
+	return new_text.size();
+}
+
+extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
+{
+	GETTEXTLENGTHEX gtl;
+	gtl.codepage = CP_ACP;
+	gtl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
+	int textlen = SendMessage(REdit, EM_GETTEXTLENGTHEX, (WPARAM) &gtl, 0);
+//	if (textlen > maxlength)
+//		textlen = maxlength;
+	int nleft = textlen-npos;
+	if (nleft <= 0) // _should_ never happen
+		return -1;
+	std::vector<char> buf(nleft+1);
+	TEXTRANGE tr;
+	tr.lpstrText = &buf[0];
+	tr.chrg.cpMin = npos;
+	tr.chrg.cpMax = textlen;
+
+	SendMessage(REdit, EM_GETTEXTRANGE, 0, (LPARAM) &tr);
+
+	std::string old_text(buf.begin(), buf.end()-1);
+
+	const char * const pre_chars = " \t\n\r\"'!?;:,.-=()[]{}@$%&#\\<>|+^~";
+	const char * const post_chars = pre_chars;
+#define invalidating_chars "\01 \r\n\t"
+
+	unsigned p, opos = 0;
+	while ((p = old_text.find_first_of("/_*", opos)) != old_text.npos) {
+
+		std::string t_(old_text.c_str(), p);
+		const char *what = t_.c_str();
+
+		char sep = old_text[p];
+
+		// can't start in the last two chars
+		if (p >= old_text.size()-2)
+			break;
+
+		// check preceeding char
+		if (p != 0 && !(strchr(pre_chars, old_text[p-1]) || !isprint(old_text[p-1])))
+			goto miss;
+
+		// search for end
+		char searchfor[] = invalidating_chars;
+		searchfor[0] = sep;
+		unsigned searchoffs = p, epos;
+//		int countdown = 50;
+		bool space_seen = false, sep_seen = false;
+		for (;; searchoffs = epos) {
+//			if (!--countdown)
+//				goto miss;
+
+			epos = old_text.find_first_of(searchfor, searchoffs+1);
+			if (epos == old_text.npos)
+				goto miss;
+
+			char found = old_text[epos];
+
+			if (found == sep || found == ' ') {
+				if (epos == old_text.size()-1) // end of stream
+					goto ok;
+				char next = old_text[epos+1];
+				if (found == sep && strchr(post_chars, next)) // single word or end of sequence
+					goto ok;
+
+				if (found == sep) {
+//					countdown = 10;
+					sep_seen = true;
+					if (space_seen)
+						goto miss;
+					continue;
+				} else if (found == ' ') {
+					space_seen = true;
+					if (sep_seen)
+						goto miss;
+					continue;
+				} else
+					goto miss;
+			} else
+				goto miss;
+		}
+
+	ok: {
+		std::string oldsub(old_text, p, epos-p+1);
+
+		unsigned first = oldsub.find_first_not_of("_*/");
+		if (first == oldsub.npos || oldsub[first] == ' ')
+			goto miss;
+		unsigned last = oldsub.find_last_not_of("_*/");
+		if (last == oldsub.npos || oldsub[last] == ' ')
+			goto miss;
+
+		if (oldsub.find("**") != oldsub.npos)
+			goto miss;
+		if (oldsub.find("__") != oldsub.npos)
+			goto miss;
+		if (oldsub.find("//") != oldsub.npos)
+			goto miss;
+		unsigned skipped = p - opos;
+
+		//if (g_ignores.count(oldsub))
+		//	goto miss;
+
+		npos += skipped;
+		unsigned newlen;
+		if (p == 0)
+			newlen = FormatSpan(REdit, oldsub, npos, ' ');
+		else
+			newlen = FormatSpan(REdit, oldsub, npos, old_text[p-1]);
+
+		npos += newlen;
+		opos += skipped + oldsub.size();
+		continue;
+		}
+	miss: {
+		unsigned skipped = p - opos;
+		npos += skipped+1;
+		opos += skipped+1;
+		}
+	}
+
+	npos += old_text.size() - opos;
+
+	return npos;
+}
 
 #endif
 

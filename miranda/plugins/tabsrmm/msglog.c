@@ -390,18 +390,10 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
         int rIndent = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0) * 15;
         
         if(iIndent) {
-            if(dat->dwFlags & MWF_LOG_RTL) {
-                if(dat->dwFlags & MWF_LOG_INDENTWITHTABS)
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent);
-                else
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u", iIndent + 30, iIndent, rIndent);
-            }
-            else {
-                if(dat->dwFlags & MWF_LOG_INDENTWITHTABS)
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent);
-                else
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u", iIndent + 30, iIndent, rIndent);
-            }
+            if(dat->dwFlags & MWF_LOG_RTL)
+                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
+            else
+                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
         }
 	}
     else {
@@ -481,10 +473,10 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     
     if(dat->dwFlags & MWF_DIVIDERWANTED) {
         if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line\\highlight%d", MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\highlight%d", MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
         else
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", rtfFonts[H_MSGFONTID_DIVIDERS]);
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\tab", rtfFonts[H_MSGFONTID_DIVIDERS]);
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
     }
@@ -560,9 +552,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     c = 0x72;;
             }
         }
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %c%s ", rtfFonts[MSGFONTID_SYMBOLS], c, rtfFonts[H_MSGFONTID_DIVIDERS]);
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %c%s ", isSent ? rtfFonts[MSGFONTID_SYMBOLS_OUT] : rtfFonts[MSGFONTID_SYMBOLS_IN], c, rtfFonts[H_MSGFONTID_DIVIDERS]);
     }
-        //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[H_MSGFONTID_DIVIDERS]);
     
 // underline
 	if(dat->dwFlags & MWF_LOG_UNDERLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG)
@@ -998,10 +989,8 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
      * do text formatting...
      */
 
-#if defined(_UNICODE)
     if(dat->dwFlags & MWF_LOG_TEXTFORMAT)
         FormatText(hwndrtf, startAt, 0);
-#endif
     
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);

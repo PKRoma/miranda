@@ -98,13 +98,15 @@ extern "C" void DeleteCachedIcon(struct MsgLogIcon *theIcon)
 bool CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap)
 {
     SCODE sc;
-
+    BITMAP bminfo;
+    
     // Get the image data object
     //
     CImageDataObject *pods = new CImageDataObject;
     LPDATAOBJECT lpDataObject;
     pods->QueryInterface(IID_IDataObject, (void **)&lpDataObject);
 
+    GetObject(hBitmap, sizeof(bminfo), &bminfo);
     pods->SetBitmap(hBitmap);
 
     // Get the RichEdit container site
@@ -165,7 +167,7 @@ bool CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap)
     reobject.poleobj = pOleObject;
     reobject.polesite = pOleClientSite;
     reobject.pstg = pStorage;
-    reobject.dwFlags = REO_BELOWBASELINE;
+    reobject.dwFlags = bminfo.bmHeight <= 12 ? 0 : REO_BELOWBASELINE;
 
     // Insert the bitmap at the current location in the richedit control
     //
