@@ -120,7 +120,11 @@ void ReadThemeFromINI(const char *szIniFilename)
     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
 }
 
-char *GetThemeFileName()
+/*
+ * iMode = 0 - GetOpenFilename, otherwise, GetSaveAs...
+ */
+
+char *GetThemeFileName(int iMode)
 {
     static char szFilename[MAX_PATH];
     OPENFILENAMEA ofn={0};
@@ -136,9 +140,17 @@ char *GetThemeFileName()
     ofn.nMaxFile = MAX_PATH;
     ofn.Flags = OFN_HIDEREADONLY;
     ofn.lpstrDefExt = "tabsrmm";
-    if (GetOpenFileNameA(&ofn))
-        return szFilename;
-    else
-        return NULL;
+    if(!iMode) {
+        if (GetOpenFileNameA(&ofn))
+            return szFilename;
+        else
+            return NULL;
+    }
+    else {
+        if (GetSaveFileNameA(&ofn))
+            return szFilename;
+        else
+            return NULL;
+    }
 }
 

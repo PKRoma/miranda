@@ -51,7 +51,7 @@ extern HANDLE hMessageWindowList;
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
 void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *szIniFilename);
-char *GetThemeFileName();
+char *GetThemeFileName(int iMode);
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 
@@ -387,14 +387,14 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 }
             case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
                 {
-                    char *szFilename = GetThemeFileName();
+                    char *szFilename = GetThemeFileName(1);
                     if(szFilename != NULL)
                         WriteThemeToINI(szFilename);
                     return 1;
                 }
             case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
                 {
-                    char *szFilename = GetThemeFileName();
+                    char *szFilename = GetThemeFileName(0);
                     if(szFilename != NULL) {
                         ReadThemeFromINI(szFilename);
                         UncacheMsgLogIcons();

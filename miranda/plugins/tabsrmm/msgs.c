@@ -746,7 +746,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
         g_StreamThreadRunning = 0;
 #endif
 
-    if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS) || ServiceExists(MS_IEVIEW_SHOWSMILEYSELECTION)) 
+    if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
         myGlobals.g_SmileyAddAvail = 1;
 
     myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0);

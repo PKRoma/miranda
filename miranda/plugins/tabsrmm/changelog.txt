@@ -13,6 +13,14 @@ SF.NET Project Page: http://www.sourceforge.net/projects/tabsrmm/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.6 - 2005/03/01
+
+        ! re-enabled the "show multisend" menu bar item.
+        
+        ! export/import themes now show the appropriate file selection window (open/save as)
+
+        ! fixed send on shift enter.
+        
 Version 0.9.9.6 - 2005/02/23
 
         ! flicker-free formatting button update

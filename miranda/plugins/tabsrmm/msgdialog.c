@@ -218,6 +218,8 @@ void SetDialogToType(HWND hwndDlg)
     if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled && dat->hwndLog == 0) {
         nrSmileys = CheckValidSmileyPack(dat->szProto, &hButtonIcon);
 
+        dat->doSmileys = 1;
+        
         if(hButtonIcon == 0) {
             SMADD_GETICON smadd_iconinfo;
 
@@ -336,14 +338,24 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             break;
         case WM_KEYDOWN:
             if(wParam == VK_RETURN) {
-                if ((GetKeyState(VK_SHIFT) & 0x8000) && myGlobals.m_SendOnShiftEnter) {
+                if (GetKeyState(VK_SHIFT) & 0x8000) {
+                    if(myGlobals.m_SendOnShiftEnter) {
+                        PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+                        return 0;
+                    }
+                    else
+                        break;
+                }
+                if (((GetKeyState(VK_CONTROL) & 0x8000) != 0 && !(GetKeyState(VK_SHIFT) & 0x8000)) ^ (0 != myGlobals.m_SendOnEnter)) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
                 }
-                if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != myGlobals.m_SendOnEnter)) {
+                if(myGlobals.m_SendOnEnter) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
                 }
+                else 
+                    break;
             }
             if(wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
                 SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
@@ -839,8 +851,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 // load log option flags...
                 dat->dwFlags = (DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL);
 
-                dat->doSmileys = myGlobals.m_SmileyPluginEnabled;
-                
                 if(!myGlobals.m_IgnoreContactSettings) {
                     DWORD dwLocalFlags = 0;
                     int dwLocalSmAdd = 0;
@@ -854,8 +864,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dat->doSmileys = dwLocalSmAdd;
                     }
                 }
-                if(!myGlobals.g_SmileyAddAvail)
-                    dat->doSmileys = 0;
                 
                 if(dat->hContact) {
                     dat->codePage = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
@@ -2453,16 +2461,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #else                    
                     streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
                     if(streamOut != NULL) {
-                        //MessageBoxA(0, streamOut, "too", MB_OK);
-                        //decoded = Utf8Decode(streamOut);
                         converted = (TCHAR *)malloc((lstrlenA(streamOut) + 2)* sizeof(TCHAR));
                         if(converted != NULL) {
                             _tcscpy(converted, streamOut);
                             if(myGlobals.m_SendFormat) {
                                 DoRtfToTags(converted, dat);
-                                DoTrimMessage(streamOut);
+                                DoTrimMessage(converted);
                             }
-                            //MessageBoxA(0, converted, "conv", MB_OK);
                             bufSize = lstrlenA(converted) + 1;
                             dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * sizeof(char));
                             CopyMemory(dat->sendBuffer, converted, bufSize);
@@ -2665,7 +2670,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) dat->hContact, 0);
                     break;
                 case IDC_SMILEYBTN:
-                    if(dat->doSmileys && myGlobals.g_SmileyAddAvail) {
+                    if(dat->doSmileys && (myGlobals.g_SmileyAddAvail || dat->hwndLog != 0)) {
                         SMADD_SHOWSEL smaddInfo;
                         HICON hButtonIcon = 0;
                         RECT rc;
@@ -2714,13 +2719,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     RECT rc;
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 3);
                     int iSelection;
-                    
+
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_SENDMENU), &rc);
                     CheckMenuItem(submenu, ID_SENDMENU_SENDTOMULTIPLEUSERS, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDDEFAULT, MF_BYCOMMAND | (dat->sendMode == 0 ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDTOCONTAINER, MF_BYCOMMAND | (dat->sendMode & SMODE_CONTAINER ? MF_CHECKED : MF_UNCHECKED));
                     
-                    iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                    if(lParam)
+                        iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                    else
+                        iSelection = HIWORD(wParam);
                     
                     switch(iSelection) {
                         case ID_SENDMENU_SENDTOMULTIPLEUSERS:
@@ -2733,7 +2741,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dat->sendMode ^= SMODE_CONTAINER;
                             break;
                     }
-                    //dat->multiple = IsDlgButtonChecked(hwndDlg, IDC_MULTIPLE);
                     if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
                         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
                     else
