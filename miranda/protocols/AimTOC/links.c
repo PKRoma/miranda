@@ -191,22 +191,22 @@ static void aim_links_register()
         RegCloseKey(hkey);
     }
     else {
-        LOG(LOG_DEBUG, "Links: unregister - unable to create registry key)");
+        LOG(LOG_DEBUG, "Links: unregister - unable to create registry key");
     }
 }
 
 void aim_links_unregister()
 {
-    LOG(LOG_DEBUG, "Links: unregister)");
+    LOG(LOG_DEBUG, "Links: unregister");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim");
 }
 
 void aim_links_init()
 {
-    LOG(LOG_DEBUG, "Links: init)");
+    LOG(LOG_DEBUG, "Links: init");
     if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AL, AIM_KEY_AL_DEF)) {
-        LOG(LOG_DEBUG, "Links: init - links support is on)");
+        LOG(LOG_DEBUG, "Links: init - links support is on");
         aim_links_register();
         aim_links_regwatcher();
     }
@@ -214,7 +214,7 @@ void aim_links_init()
 
 void aim_links_destroy()
 {
-    LOG(LOG_DEBUG, "Links: destroy)");
+    LOG(LOG_DEBUG, "Links: destroy");
     aim_links_unregwatcher();
 }
 

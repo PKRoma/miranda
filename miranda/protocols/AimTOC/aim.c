@@ -96,6 +96,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
         }
         CharUpper(AIM_PROTO);
     }
+    log_init();
     LoadLibrary("riched20.dll");
     aim_firstrun_check();
     hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, aim_modulesloaded);
@@ -138,5 +139,6 @@ int __declspec(dllexport) Unload()
     Netlib_CloseHandle(hNetlib);
     Netlib_CloseHandle(hNetlibPeer);
     FreeLibrary(GetModuleHandle("riched20"));
+    log_destroy();
     return 0;
 }
