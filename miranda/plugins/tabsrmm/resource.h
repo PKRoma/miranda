@@ -233,6 +233,7 @@
 #define IDC_CHECK1                      1690
 #define IDC_SYNCSOUNDS                  1690
 #define IDC_RELATIVEDATES               1690
+#define IDC_AVADYNAMIC                  1690
 #define IDC_LONGDATES                   1691
 #define IDC_CHECK3                      1692
 #define IDC_CNTNOSTATUSBAR              1692

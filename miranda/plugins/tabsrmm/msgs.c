@@ -50,6 +50,7 @@ HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
 HWND g_hwndHotkeyHandler;
 HICON g_iconIn, g_iconOut, g_iconErr;
+HBITMAP g_hbmUnknown = 0;
 
 extern HINSTANCE g_hInst;
 HMODULE hDLL;
@@ -699,6 +700,8 @@ int SplitmsgShutdown(void)
     DestroyIcon(g_iconErr);
     for (i = 0; i < NR_BUTTONBARICONS; i++)
         DestroyIcon(g_buttonBarIcons[i]);
+    if(g_hbmUnknown)
+        DeleteObject(g_hbmUnknown);
     return 0;
 }
 
@@ -1133,6 +1136,8 @@ void CreateImageList(BOOL bInitial)
         if(g_hIconDLL == NULL)
             MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "b", MB_OK);
         else {
+            g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+            
             g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
             g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
             g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);

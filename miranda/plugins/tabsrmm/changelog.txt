@@ -41,6 +41,10 @@ Version 0.0.9.0 - 2004/11/08
         * If you're using per-contact message log settings, you can now apply the current
           log formatting options to all your contacts by choosing the option from the menu.
 
+        * 2 new options for globally setting avatar display mode:
+          * On, if present -> show avatar if there is a valid one
+          * Globally off. Never show any avatar. No exceptions.
+          
 Version 0.0.8.99 - 2004/11/07
 
         * the unicode version now uses utf-8 encoding to store various unicode settings

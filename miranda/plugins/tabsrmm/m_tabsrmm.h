@@ -20,7 +20,7 @@
 #define MWF_LOG_UNDERLINE 65536
 #define MWF_LOG_SWAPNICK 131072
 #define MWF_LOG_SHOWICONS 262144
-#define MWF_FREEEEEEEEEEEEE 524288
+#define MWF_LOG_DYNAMICAVATAR 524288
 
 #define MWF_SPLITTERSHRUNK 1048576
 #define MWF_CLISTMODE 0x200000
@@ -97,7 +97,7 @@ struct MessageWindowData {
 	HANDLE hAckEvent;
 	int multiple;
 	HBRUSH hBkgBrush, hInputBkgBrush;
-	int splitterY,originalSplitterY;
+	int splitterY, originalSplitterY, dynaSplitter;
 	int multiSplitterX;
 	char *sendBuffer;
     SIZE minEditBoxSize;
@@ -149,6 +149,7 @@ struct MessageWindowData {
     int iLastEventType;
     time_t lastEventTime;
     DWORD dwEventIsShown;
+    int iRealAvatarHeight;
 };
 
 typedef struct _recentinfo {
@@ -174,12 +175,6 @@ struct StreamJob {
 #define MENU_PICMENU 2
 #define MENU_TABCONTEXT 3
 
-#if defined(UNICODE)
-    #define INPUTAREA_CLASS "RichEdit20W"
-#else
-    #define INPUTAREA_CLASS "RichEdit20A"
-#endif
-    
 #define TABSRMM_SMILEYADD_THREADING 25367
 
 //Checks if there is a message window opened

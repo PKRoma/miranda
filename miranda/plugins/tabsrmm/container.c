@@ -1287,6 +1287,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             else {
                 if(pContainer->hMenu == 0) {
                     pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+                    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
                 }
                 SetMenu(hwndDlg, pContainer->hMenu);
                 DrawMenuBar(hwndDlg);
