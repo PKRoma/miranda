@@ -281,6 +281,7 @@ File List Cancel:
 	YAHOO_SERVICE_PICTURE = 0xbe,
 	YAHOO_SERVICE_PICTURE_UPDATE = 0xc1,
 	YAHOO_SERVICE_PICTURE_UPLOAD = 0xc2,
+	YAHOO_SERVICE_YAHOO6_STATUS_INVIS = 0xc5,
 	YAHOO_SERVICE_YAHOO6_STATUS_UPDATE = 0xc6,
 	YAHOO_SERVICE_AVATAR_UPDATE = 0xc7,
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
@@ -3994,48 +3995,71 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
-	int service;
+	//int service;
 	char s[4];
+	enum yahoo_status cs;
 
 	if(!yid)
 		return;
 
 	yd = yid->yd;
 
-	LOG(("yahoo_set_away: state: %d, msg: %s, away: %d", state, msg, away));
+	if (yd->current_status == state)
+		return;
 	
-	if (msg) {
-		yd->current_status = YAHOO_STATUS_CUSTOM;
-	} else {
+	cs = yd->current_status;
+	
+	if (state == YAHOO_STATUS_INVISIBLE) {
+		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_INVIS, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		yahoo_packet_hash(pkt, 13, "2");
 		yd->current_status = state;
-	}
-
-	if (yd->current_status == YAHOO_STATUS_AVAILABLE)
-		service = YAHOO_SERVICE_ISBACK;
-	else
-		service = YAHOO_SERVICE_ISAWAY;
-	 
-	if ((away == 2) && (yd->current_status == YAHOO_STATUS_AVAILABLE)) {
-		pkt = yahoo_packet_new(YAHOO_SERVICE_ISAWAY, YAHOO_STATUS_BRB, yd->session_id);
-		yahoo_packet_hash(pkt, 10, "999");
-		yahoo_packet_hash(pkt, 47, "2");
-	}else {
-		pkt = yahoo_packet_new(service, YAHOO_STATUS_AVAILABLE, yd->session_id);
-		snprintf(s, sizeof(s), "%d", yd->current_status);
-		yahoo_packet_hash(pkt, 10, s);
-		if (yd->current_status == YAHOO_STATUS_CUSTOM) {
-			yahoo_packet_hash(pkt, 19, msg);
-			yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
+	} else {
+		LOG(("yahoo_set_away: state: %d, msg: %s, away: %d", state, msg, away));
+		
+		if (msg) {
+			yd->current_status = YAHOO_STATUS_CUSTOM;
 		} else {
-			yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
+			yd->current_status = state;
+		}
+	
+		//if (yd->current_status == YAHOO_STATUS_AVAILABLE)
+		//	service = YAHOO_SERVICE_ISBACK;
+		//else
+		//	service = YAHOO_SERVICE_ISAWAY;
+		 
+		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		if ((away == 2) && (yd->current_status == YAHOO_STATUS_AVAILABLE)) {
+			//pkt = yahoo_packet_new(YAHOO_SERVICE_ISAWAY, YAHOO_STATUS_BRB, yd->session_id);
+			yahoo_packet_hash(pkt, 10, "999");
+			yahoo_packet_hash(pkt, 47, "2");
+		}else {
+			//pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+			snprintf(s, sizeof(s), "%d", yd->current_status);
+			yahoo_packet_hash(pkt, 10, s);
+			if (yd->current_status == YAHOO_STATUS_CUSTOM) {
+				yahoo_packet_hash(pkt, 19, msg);
+				yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
+			} else {
+				yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
+			}
+			
+			
+			
 		}
 		
-		
-		
 	}
-
+	
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
+	
+	if (cs == YAHOO_STATUS_INVISIBLE){
+		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_INVIS, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		yahoo_packet_hash(pkt, 13, "1");
+		yd->current_status = state;
+
+		yahoo_send_packet(yid, pkt, 0);
+		yahoo_packet_free(pkt);
+	} 
 }
 
 void yahoo_set_stealth(int id, const char *buddy, int add)
