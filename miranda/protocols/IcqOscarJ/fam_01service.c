@@ -435,6 +435,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         case 0x41: // request to upload avatar data
         case 0x81:
         { // request to re-upload avatar data
+          Netlib_Logf(ghServerNetlibUser, "We are requested to post our avatar data.");
           break;
         }
       }
