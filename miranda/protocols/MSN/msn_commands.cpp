@@ -1131,12 +1131,12 @@ LBL_InvalidCommand:
 				int tFound = MsgQueue_GetNext( hContact, E );
 				if ( tFound != 0 ) {
 					do {
-						if ( E.msgSize == 0 )
+						if ( E.msgSize == 0 ) {
 							info->sendMessage( E.message, 0 );
-						else
-							info->sendRawMessage(( E.msgSize == -1 ) ? 'N' : 'D', E.message, E.msgSize );
+							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+						}
+						else info->sendRawMessage(( E.msgSize == -1 ) ? 'N' : 'D', E.message, E.msgSize );
 
-						MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						free( E.message );
 
 						if ( E.ft != NULL ) {
