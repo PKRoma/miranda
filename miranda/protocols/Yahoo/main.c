@@ -208,6 +208,9 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	// Add support for Plugin Uninstaller
 	//DBWriteContactSettingString(NULL, "Uninstall", "Yahoo", yahooProtocolName);
 
+	//add as a known module in DB Editor ++
+	CallService("DBEditorpp/RegisterSingleModule",(WPARAM)yahooProtocolName, 0);
+	
 	yahoo_convert_legacy();
 
 	start_timer();
