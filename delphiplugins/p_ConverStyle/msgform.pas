@@ -14,7 +14,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls,Placemnt,globals,m_clist,clisttools,statusmodes,skintools,
+  StdCtrls, ExtCtrls,globals,m_clist,clisttools,statusmodes,skintools,
   m_skin,databasetools,m_icq,m_database, Menus,m_history,newpluginapi,
   m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email,optionfrm;
 
@@ -586,12 +586,13 @@ var
 begin
   SendTimer.Enabled:=False;
 
+{ //0.1.1.0+ disable retry
   if fAutoRetry>0 then
     begin//autoretry
     Dec(fAutoRetry);
     SendMessageFromSendQueue(True);
     end
-  else
+  else}
     begin//ask what to do...
 
     //get message text
@@ -1105,6 +1106,7 @@ begin
       FlashTimer.Enabled:=True;
       end;
     3://blink on contact list
+      if not Self.Visible then
       begin
       cle.cbSize:=sizeof(cle);
       cle.hContact:=Self.hContact;
