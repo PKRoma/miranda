@@ -2,7 +2,7 @@ About
 -----
 
 Conversation Style Messaging Plugin 
-Version 0.99
+Version 0.996
 by Christian Kästner (christian.k@stner.de)
 for Miranda ICQ 0.1
 written with Delphi 5 Pro
@@ -64,6 +64,13 @@ I recomment renaming the unused plugin to
 splitmsgdialogs.dl_ or convers.dl_
 
 
+Source
+------
+
+The full source for this plugin can be found in the Miranda CVS
+at Sourceforge.
+
+
 License
 -------
 
@@ -88,6 +95,33 @@ For more information, e-mail christian.k@stner.de
 Changes
 -------
 
+0.996
+* Fixed multiple flashing on contactlist
+* Fixed shortcuts (including beep)
+* Minor fixes
++ Added Support for encryption plugins
+
+0.995
+* Fixed crash in 0.1.0.1 or earlier
+
+0.994
++ Added langpack support for the frontend (not options dialog)
+* Fixed storing of position when not setting per user
+
+0.993
+* fixed that Alt-Gr (right alt key) is not used for shortcuts
+* increased timeout by default, because retry is handled now by Miranda
+
+0.992
+* fixed arrow keys
+* tab enter focus fixed
+* typo fixed
+* don't flash active window
+
+0.991 (yes I know this version numbers are mad, but I don't want it to be 1.0 
+       before the options are integrated into miranda options)
+* Better support for shortcuts
+      
 0.99
 ++ 3 Different display styles to choose with many
    options each

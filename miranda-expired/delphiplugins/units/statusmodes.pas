@@ -13,11 +13,18 @@ unit statusmodes;
 
 interface
 
-uses m_skin;
+uses m_skin,langpacktools;
 
 const
-  //Status modes used for Icons
+  //add 1 to ID_STATUS_CONNECTING to mark retries (v0.1.0.1+)
+  //eg ID_STATUS_CONNECTING+2 is the third connection attempt, or the second retry
   ID_STATUS_CONNECTING	  =1;
+  //max retries is just a marker so that the clist knows what numbers represent
+  //retries. It does not set any kind of limit on the number of retries you can
+  //and/or should do.
+  MAX_CONNECT_RETRIES     =  10000;
+
+  //Status modes used for Icons
   ID_STATUS_OFFLINE         =      40071;
   ID_STATUS_ONLINE          =      40072;
   ID_STATUS_AWAY            =      40073;
@@ -40,18 +47,20 @@ const
   STATUS_FREE_CHAT  = $0020;
   STATUS_INVISIBLE  = $0100;
 
-resourcestring
-  statusstr_offline='offline';
-  statusstr_online='online';
-  statusstr_away='away';
-  statusstr_na='na';
-  statusstr_occupied='occupied';
-  statusstr_dnd='dnd';
-  statusstr_invisible='invisible';
+const//translated internally
+  statusstr_connecting='Connecting';
+  statusstr_offline='Offline';
+  statusstr_online='Online';
+  statusstr_away='Away';
+  statusstr_na='NA';
+  statusstr_occupied='Occupied';
+  statusstr_dnd='DND';
+  statusstr_invisible='Invisible';
   statusstr_freeforchat='Free For Chat';
 
 
-function icq_ConvertStatus2Str(status:Word):string;
+function Miranda_ConvertStatus2Str(mirandastatus:Word):string;
+function ICQ_ConvertStatus2Str(status:Word):string;
 function ICQStatusToMiranda(icqStatus:Word):Word;
 function MirandaStatusToIcq(mirandaStatus:Word):Word;
 function MirandaStatusToIconID(MirandaStatus:Word):Word;
@@ -93,28 +102,60 @@ end;
 function icq_ConvertStatus2Str(status:Word):string;
 begin
   if status = STATUS_OFFLINE then
-    Result:=statusstr_offline
+    Result:=translate(statusstr_offline)
   else
   if (status and STATUS_INVISIBLE)=STATUS_INVISIBLE then
-    Result:=statusstr_invisible
+    Result:=translate(statusstr_invisible)
   else
   if (status and STATUS_FREE_CHAT)=STATUS_FREE_CHAT then
-    Result:=statusstr_freeforchat
+    Result:=translate(statusstr_freeforchat)
   else
   if (status and STATUS_DND)=STATUS_DND then
-    Result:=statusstr_DND
+    Result:=translate(statusstr_DND)
   else
   if (status and STATUS_NA)=STATUS_NA then
-    Result:=statusstr_na
+    Result:=translate(statusstr_na)
   else
   if (status and STATUS_AWAY)=STATUS_AWAY then
-    Result:=statusstr_away
+    Result:=translate(statusstr_away)
   else
   if (status and STATUS_OCCUPIED)=STATUS_OCCUPIED then
-    Result:=statusstr_occupied
+    Result:=translate(statusstr_occupied)
   else
   if (status and $01FF)=0 then
-    Result:=statusstr_online
+    Result:=translate(statusstr_online)
+  else
+    Result:='Error';
+end;
+
+function Miranda_ConvertStatus2Str(mirandastatus:Word):string;
+begin
+  if mirandastatus = ID_STATUS_CONNECTING then
+    Result:=translate(statusstr_connecting)
+  else
+  if mirandastatus = ID_STATUS_OFFLINE then
+    Result:=translate(statusstr_offline)
+  else
+  if mirandastatus=ID_STATUS_INVISIBLE then
+    Result:=translate(statusstr_invisible)
+  else
+  if mirandastatus=ID_STATUS_FREECHAT then
+    Result:=translate(statusstr_freeforchat)
+  else
+  if mirandastatus=ID_STATUS_DND then
+    Result:=translate(statusstr_DND)
+  else
+  if mirandastatus=ID_STATUS_NA then
+    Result:=translate(statusstr_na)
+  else
+  if mirandastatus=ID_STATUS_AWAY then
+    Result:=translate(statusstr_away)
+  else
+  if mirandastatus=ID_STATUS_OCCUPIED then
+    Result:=translate(statusstr_occupied)
+  else
+  if mirandastatus=ID_STATUS_ONLINE then
+    Result:=translate(statusstr_online)
   else
     Result:='Error';
 end;

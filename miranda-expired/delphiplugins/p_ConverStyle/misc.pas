@@ -14,14 +14,15 @@ unit misc;
 interface
 
 uses
-  windows, messages, graphics;
+  windows, messages, graphics,Controls,forms;
 
 
-resourcestring
+
+const
   text_chard='Char: %d';
   text_TextTooLong='Text too long. Enable splitting messages, send direct or shorten message.';
 const
-  DEFAULT_TIMEOUT_MSGSEND=8000;//8sec timeout for message sending (doesnt matter if direct or through server)
+  DEFAULT_TIMEOUT_MSGSEND=40000;//8sec timeout for message sending (doesnt matter if direct or through server)
   MaxMessageLength=450;
 
 const
@@ -88,10 +89,36 @@ const
     );
 
 
-var
-  blinkid:integer;//id uses for message blinking on contactlist
+const
+  blinkid=123456;//random identifier used to flash an icon for "incoming message" on contact list
+
+
+procedure StartWait;
+procedure StopWait;
 
 
 implementation
+
+const
+  WaitCursor: TCursor = crHourGlass;
+  WaitCount: Integer = 0;
+  SaveCursor: TCursor = crDefault;
+
+procedure StartWait;
+begin
+  if WaitCount = 0 then begin
+    SaveCursor := Screen.Cursor;
+    Screen.Cursor := WaitCursor;
+  end;
+  Inc(WaitCount);
+end;
+
+procedure StopWait;
+begin
+  if WaitCount > 0 then begin
+    Dec(WaitCount);
+    if WaitCount = 0 then Screen.Cursor := SaveCursor;
+  end;
+end;
 
 end.

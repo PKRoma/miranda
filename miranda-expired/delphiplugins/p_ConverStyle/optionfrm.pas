@@ -15,9 +15,10 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, globals, clisttools, Menus, TB97Ctls,
-  ComCtrls,misc;
+  ComCtrls,misc,optionsd,commctrl;
 
 type
+  TOptionType = (otAll, otMisc, otSend, otMemo, otRich, otGrid);
   TOptionForm = class(TForm)
     OKBtn: TButton;
     CancelBtn: TButton;
@@ -64,9 +65,6 @@ type
     Label2: TLabel;
     CloseWindowCheck: TCheckBox;
     SplitLargeMessagesCheck: TCheckBox;
-    Label3: TLabel;
-    AutoRetryEdit: TEdit;
-    TabEnter: TCheckBox;
     procedure AboutBtnClick(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -86,7 +84,6 @@ type
     procedure Button1Click(Sender: TObject);
     procedure r_changefontClick(Sender: TObject);
     procedure TimeoutEditExit(Sender: TObject);
-    procedure AutoRetryEditExit(Sender: TObject);
   private
     richsettings:TRichEditSettings;
     gridsettings:TGridEditSettings;
@@ -98,6 +95,7 @@ type
 
 implementation
 
+uses windowmanager;
 
 {$R *.DFM}
 
@@ -116,7 +114,6 @@ var
   val:integer;
 begin
   TimeoutEditExit(Self);
-  AutoRetryEditExit(Self);
   LoadRecentMsgCountEditExit(Self);
 
   //misc
@@ -126,11 +123,9 @@ begin
   WriteSettingInt(PluginLink,0,'Convers','LoadRecentMsgCount',LoadRecentMsgCountEdit.tag);
   WriteSettingInt(PluginLink,0,'Convers','DoubleEnterSend',Integer(DoubleEnter.Checked));
   WriteSettingInt(PluginLink,0,'Convers','SingleEnterSend',Integer(SingleEnter.Checked));
-  WriteSettingInt(PluginLink,0,'Convers','TabEnterSend',Integer(TabEnter.Checked));
   WriteSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(CloseWindowCheck.Checked));
   WriteSettingInt(PluginLink,0,'Convers','HandleIncoming',HandleIncomingGroup.ItemIndex);
   WriteSettingInt(PluginLink,0,'Convers','SendTimeout',TimeoutEdit.tag);
-  WriteSettingInt(PluginLink,0,'Convers','AutoRetry',AutoRetryEdit.tag);
 
   //displaytype
   Val:=integer(dmmemo);
@@ -176,8 +171,6 @@ begin
   DoubleEnter.Checked:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','SingleEnterSend',integer(False));
   SingleEnter.Checked:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','TabEnterSend',integer(True));
-  TabEnter.Checked:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(False));
   CloseWindowCheck.Checked:=Boolean(val);
   val:=ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0);
@@ -185,9 +178,6 @@ begin
   val:=ReadSettingInt(PluginLink,0,'Convers','SendTimeout',DEFAULT_TIMEOUT_MSGSEND);
   TimeoutEdit.Text:=IntToStr(val);
   TimeoutEdit.tag:=val;
-  val:=ReadSettingInt(PluginLink,0,'Convers','AutoRetry',2);
-  AutoRetryEdit.Text:=IntToStr(val);
-  AutoRetryEdit.tag:=val;
 
   //load display type
   val:=ReadSettingInt(PluginLink,0,'Convers','DisplayType',Integer(DefaultDisplayMode));
@@ -418,19 +408,10 @@ begin
   end;
 end;
 
-procedure TOptionForm.AutoRetryEditExit(Sender: TObject);
-var
-  v:integer;
+function Checked(c:Boolean):Cardinal;
+//converts boolean value to  BST_CHECKED
 begin
-  try
-  v:=StrToInt(AutoRetryEdit.Text);
-  if v>=0 then
-    AutoRetryEdit.tag:=v
-  else
-    ShowMessage(AutoRetryEdit.Text+' is not a valid entry.');
-  except
-  ShowMessage('"'+AutoRetryEdit.text+'" is not a valid number.');
-  end;
+  if c then Result:=BST_CHECKED	else Result:=BST_UNCHECKED;
 end;
 
 end.

@@ -2,7 +2,7 @@ library convers;
 
 {
 Conversation Style Messaging Plugin 
-Version 0.99
+Version 0.99.4
 by Christian Kästner
 for Miranda ICQ 0.1
 written with Delphi 5 Pro
@@ -53,12 +53,11 @@ uses
   misc in 'misc.pas',
   m_options in '..\headerfiles\m_options.pas',
   timeoutfrm in 'timeoutfrm.pas' {TimeoutForm},
-  m_email in '..\headerfiles\m_email.pas';
-
-var
-  windowmgr:twindowmanager;
-
-
+  m_email in '..\headerfiles\m_email.pas',
+  optionsd in 'optionsd.pas',
+  m_langpack in '..\headerfiles\m_langpack.pas',
+  langpacktools in '..\units\langpacktools.pas',
+  m_crypt in '..\headerfiles\m_crypt.pas';
 
 {$R *.RES}
 
@@ -73,7 +72,7 @@ begin
   ZeroMemory(@PluginInfo,SizeOf(PluginInfo));
   PluginInfo.cbSize:=sizeof(TPLUGININFO);
   PluginInfo.shortName:='Conversation Style Messaging';
-  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,0,0);
+  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,6,0);
   PluginInfo.description:='This plugin offers a conversation style messaging ability for Miranda ICQ. Like most instant message programs you see the history above the input field. Additionally it has a 3 different display stiles and couple of nice features and options.';
   PluginInfo.author:='Christian Kästner';
   PluginInfo.authorEmail:='christian.k@stner.de';
@@ -81,7 +80,7 @@ begin
   PluginInfo.homepage:='http://www.kaestnerpro.de/convers.zip';
   PluginInfo.isTransient:=0;
   PluginInfo.replacesDefaultModule:=DEFMOD_SRMESSAGE;
-  PluginInfoVersion:='0.99';
+  PluginInfoVersion:='0.996';
 
   Result:=@PluginInfo;
 end;
@@ -95,7 +94,6 @@ begin
   PluginLink:=link^;
 
   windowmgr:=twindowmanager.Create;
-  blinkid:=0;
 
   //init history functions later
   PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
@@ -124,19 +122,21 @@ begin
 
   msgwindow.Show;
   msgwindow.BringWindowToFront;
+  msgwindow.SetFocus;
 
   Result:=0;
 end;
 
-function OnReadBlinkMessage(wParam{Contact},lParam{BlinkID}:DWord):integer;cdecl;
+function OnReadBlinkMessage(wParam{hwndContactList},lParam{PCLISTEVENT}:DWord):integer;cdecl;
 //brings to front a hided dialog when incoming messages blink only on contactlist
 var
   msgwindow:TMsgWindow;
 begin
-  msgwindow:=LaunchMessageWindow(PCLISTEVENT(lParam)^.hContact);
+  msgwindow:=LaunchMessageWindow(PCLISTEVENT(lParam).hContact);
 
   msgwindow.Show;
   msgwindow.BringWindowToFront;
+  msgwindow.SetFocus;
 
   Result:=0;
 end;
@@ -152,15 +152,17 @@ var
   dbei:TDBEVENTINFO;
 
   icqmessage:TIcqMessage;
+
+  cm:TCRYPTMESSAGE;
+  blob:pchar;
 begin
   Result:=0;
-  if blinkid=0 then
-    blinkid:=lParam;
 
   dbei.cbSize:=sizeof(dbei);
   //alloc memory for message
   blobsize:=PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,lParam{hDbEvent},0);
   getmem(dbei.pBlob,blobsize);
+  try
   dbei.cbBlob:=BlobSize;
   //getmessage
   PluginLink.CallService(MS_DB_EVENT_GET,lParam{hdbEvent},DWord(@dbei));
@@ -179,14 +181,38 @@ begin
     begin
     //mark read
     PluginLink.CallService(MS_DB_EVENT_MARKREAD,wParam{hContact},lParam{hDbEvent});
-    //remove flashing icon for incoming message at the contact list
-    PluginLink.CallService(MS_CLIST_REMOVEEVENT,wParam{hContact},lParam{hDbEvent});
-    end;
+    end
+  else
+    Exit;
+
   //if incoming message
   if (dbei.flags and DBEF_SENT=0) then
     icqmessage.hContact:=wParam{hContact}
   else//if outgoing message
     icqmessage.hContact:=0;
+
+  //decrypt message
+  if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,0,1))>=0 then//0.1.0.1+
+    begin
+    GetMem(blob,strlen(PChar(dbei.pBlob))+1);//backup text
+    strcopy(blob,PChar(dbei.pBlob));
+    cm.cbSize:=sizeof(TCRYPTMESSAGE);
+    cm.hContact:=wParam;
+    cm.pMessage:=PChar(dbei.pBlob);
+    cm.cchMessage:=strlen(PChar(dbei.pBlob));
+    cm.cchMessageMax:=0;
+    cm.messageType:=CMTF_MESSAGE;
+    PluginLink.CallService(MS_CRYPT_DECRYPT,0,dword(@cm));
+    //use more memory?
+    if (cm.cchMessageMax>=strlen(blob)+1) then
+      begin
+      FreeMem(dbei.pBlob);
+      GetMem(dbei.pBlob,cm.cchMessageMax+1);
+      strcopy(PChar(dbei.pBlob),Blob);
+      end;
+    PluginLink.CallService(MS_CRYPT_DECRYPT,0,dword(@cm));
+    FreeMem(blob);
+    end;
 
   icqmessage.Msg:=string(PChar(dbei.pBlob));
 
@@ -213,6 +239,9 @@ begin
 
     SkinPlaySound(PluginLink,'RecvMsg');
     end;
+  finally
+  freemem(dbei.pBlob)
+  end;
 end;
 
 function OnUserSettingChage(wParam{hContact},lParam{DBCONTACTWRITESETTING}:DWord):integer;cdecl;

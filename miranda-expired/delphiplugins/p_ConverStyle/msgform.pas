@@ -14,9 +14,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls,Placemnt,globals,m_clist,clisttools,statusmodes,skintools,
+  StdCtrls, ExtCtrls,globals,m_clist,clisttools,statusmodes,skintools,
   m_skin,databasetools,m_icq,m_database, Menus,m_history,newpluginapi,
-  m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email;
+  m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email,optionfrm,
+  langpacktools,m_crypt;
 
 
 
@@ -45,6 +46,7 @@ type
     FlashTimer: TTimer;
     SendFiles1: TMenuItem;
     UserSendEMailMenuItem: TMenuItem;
+    TabEnterWorkAroundBtn: TButton;
     //misc frontend
     procedure SendTimerTimer(Sender: TObject);
     procedure HistoryMenuItemClick(Sender: TObject);
@@ -57,8 +59,8 @@ type
     procedure SendWayItemClick(Sender: TObject);
     procedure FlashTimerTimer(Sender: TObject);
     procedure UserSendEMailMenuItemClick(Sender: TObject);
-
-    //keys
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure SendMemoKeyDown(Sender: TObject; var Key: Word;
@@ -72,6 +74,10 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure TabEnterWorkAroundBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure WMMenuChar(var MessageRec: TWMMenuChar);message WM_MENUCHAR;
   private
     HistoryMemo:TWinControl;//basic class for memo, richedit and grid
   private//options
@@ -80,7 +86,6 @@ type
     fHandleIncoming:Integer;
     fDoubleEnter:Boolean;
     fSingleEnter:Boolean;
-    fTabEnter:Boolean;
     fSendTimeout:Integer;
 
     fDisplayMode:TDisplayMode;
@@ -106,6 +111,7 @@ type
     procedure OnMessageSend(var Message: TMessage); message HM_EVENTSENT;
     procedure OnMouseActivate(var Message: TMessage); message WM_MOUSEACTIVATE;
     procedure OnActivate(var Message: TWMActivate); message WM_ACTIVATE;
+    procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
 
 
     procedure pShowMessage(Text: string; time: Cardinal; username:string;incoming:Boolean;isRecent:Boolean=False);
@@ -119,6 +125,7 @@ type
     hContact:THandle;
     fCloseWindowAfterSend:Boolean;
     WindowManager:Pointer;
+    fFlashingContactList:Boolean;
     function UIN:integer;
 
     procedure LoadRecentMessages(ExceptLast:Boolean=False);
@@ -130,7 +137,7 @@ type
     procedure BringWindowToFront;
 
     procedure LoadOptions;
-    procedure ReloadOptions;
+    procedure ReloadOptions(optiontype:TOptionType=otAll);
     procedure SaveOptions;
     procedure SavePos;
     procedure LoadPos;
@@ -142,7 +149,7 @@ function ServiceExists(PluginLink:TPluginLink;ServiceName:PChar):Boolean;
 
 implementation
 
-uses windowmanager,optionfrm;
+uses windowmanager;
 
 {$R *.DFM}
 
@@ -160,6 +167,7 @@ begin
   fCloseWindowAfterSend:=False;
   fGridSettings.InclTime:=True;
   fSendTimeout:=DEFAULT_TIMEOUT_MSGSEND;
+  fFlashingContactList:=False;
 
   LoadOptions;
 
@@ -193,14 +201,14 @@ begin
       TStringAlignGrid(HistoryMemo).DefaultRowHeight:=16;
       TStringAlignGrid(HistoryMemo).FixedCols:=0;
       if not fGridSettings.InclTime then
-        TStringAlignGrid(HistoryMemo).cells[0,0]:='Message'
+        TStringAlignGrid(HistoryMemo).cells[0,0]:=Translate('Message')
       else
         begin
-        TStringAlignGrid(HistoryMemo).cells[1,0]:='Message';
+        TStringAlignGrid(HistoryMemo).cells[1,0]:=Translate('Message');
         if fGridSettings.InclDate then
-          TStringAlignGrid(HistoryMemo).cells[0,0]:='Date/Time'
+          TStringAlignGrid(HistoryMemo).cells[0,0]:=Translate('Date/Time')
         else
-          TStringAlignGrid(HistoryMemo).cells[0,0]:='Time';
+          TStringAlignGrid(HistoryMemo).cells[0,0]:=Translate('Time');
         end;
       TStringAlignGrid(HistoryMemo).AllowCutnPaste:=True;
       TStringAlignGrid(HistoryMemo).Font.Assign(SendMemo.Font);
@@ -216,6 +224,7 @@ begin
       TMemo(HistoryMemo).ScrollBars:=ssVertical;
       end;
   end;
+  Twincontrol(HistoryMemo).TabStop:=False;
   SendMemo.Height:=57;
 end;
 
@@ -226,9 +235,9 @@ var
 begin
   //add menuitems to system menu
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, $F201, '-');
-  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F210, '&Options...');
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F210, Translatep('&Options...'));
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, $F201, '-');
-  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F200, 'Plugin &Info...');
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, $F200, Translatep('Plugin &Info...'));
 
   //init message queue
   SendMessageQueue:=TList.Create;
@@ -262,9 +271,9 @@ procedure TMsgWindow.FormCloseQuery(Sender: TObject;
 //ask if really close when there are still messages in the msgqueue.
 begin
   if SendMessageQueue.Count=1 then
-    CanClose:=MessageDlg('There is still a messages in the message queue. This message wont be send if you close the message window.'#13#10'Close message window nevertheless?',mtWarning,[mbyes,mbno],0)=idyes;
+    CanClose:=MessageDlg(StringReplace(Translate('There is still a messages in the message queue. This message wont be send if you close the message window.\nClose message window nevertheless?'),'\n',#13#10,[rfReplaceAll]),mtWarning,[mbyes,mbno],0)=idyes;
   if SendMessageQueue.Count>1 then
-    CanClose:=MessageDlg(format('There are still %d messages in the message queue. These messages wont be send if you close the message window.'#13#10'Close message window nevertheless?',[SendMessageQueue.Count]),mtWarning,[mbyes,mbno],0)=idyes;
+    CanClose:=MessageDlg(Format(StringReplace(Translate('There are still %d messages in the message queue. These messages wont be send if you close the message window.\nClose message window nevertheless?'),'\n',#13#10,[rfReplaceAll]),[SendMessageQueue.Count]),mtWarning,[mbyes,mbno],0)=idyes;
 end;
 
 procedure TMsgWindow.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -490,6 +499,10 @@ var
   iMaxMessageLength:integer;
 begin
   Assert(Sendmemo.Lines.Text<>'','No text inserted');
+  StartWait;
+  try
+
+  Self.ActiveControl:=SendMemo;
 
   Text:=Sendmemo.Lines.Text;
   Text:=trimright(Text);
@@ -509,7 +522,7 @@ begin
 
   if not FSplitLargeMessages and (Length(text)>iMaxMessageLength) then
     begin
-    dialogs.ShowMessage(text_texttoolong);
+    dialogs.ShowMessage(translate(text_texttoolong));
     Exit;
     end;
 
@@ -535,18 +548,50 @@ begin
   //if fCloseWindowAfterSend then minimize window and close when sent
   if fCloseWindowAfterSend then
     WindowState:=wsMinimized;
+
+  finally
+  StopWait;
+  end;
 end;
 
 procedure TMsgWindow.AddMessageToSendQueue(text:PChar;SendWay:Integer=ISMF_ROUTE_DEFAULT);
 //Add new message to messagequeue for later sending
 var
   p:PICQSENDMESSAGE;
+  cm:TCRYPTMESSAGE;
 begin
   New(p);
   p^.cbSize:=SizeOf(p^);
   p^.uin:=uin;
+
+  //copy text
   GetMem(p^.pszMessage,strlen(Text)+1);
   strcopy(p^.pszMessage,Text);
+
+  //encryption
+  if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,0,1))>=0 then//0.1.0.1+
+    begin
+    StartWait;
+    try
+    cm.cbSize:=sizeof(TCRYPTMESSAGE);
+    cm.hContact:=Self.hContact;
+    cm.pMessage:=p^.pszMessage;
+    cm.cchMessage:=strlen(p^.pszMessage);
+    cm.cchMessageMax:=0;
+    cm.messageType:=CMTF_MESSAGE;
+    PluginLink.CallService(MS_CRYPT_ENCRYPT,0,dword(@cm));
+    //use more memory?
+    if (cm.cchMessageMax>=strlen(p^.pszMessage)+1) then
+      begin
+      FreeMem(p^.pszMessage);
+      GetMem(p^.pszMessage,cm.cchMessageMax+1);
+      strcopy(p^.pszMessage,Text);
+      end;
+    PluginLink.CallService(MS_CRYPT_ENCRYPT,0,dword(@cm));
+    finally
+    StopWait;
+    end;
+    end;
 
   //send way (by default use miranda settings)
   p^.routeOverride:=SendWay;
@@ -559,18 +604,20 @@ end;
 procedure TMsgWindow.OnMessageSend(var Message: TMessage);
 //Event called by Miranda (ICQ Module) when the message was send successfully
 begin
-  if message.lParam=0 then
-    if message.wParam=fLastSendID then
-      begin
-      //disable timeout timer
-      SendTimer.Enabled:=False;
+  if message.wParam<>fLastSendID then
+    Exit;
 
-      //message done
-      SendedFirstSendMessageQueueItem;
-      DeleteFirstSendMessageQueueItem;
-      //send next message if still some in queue
-      SendMessageFromSendQueue;
-      end;
+  if message.lParam<>ICQ_NOTIFY_SUCCESS then
+    Exit;
+
+  //disable timeout timer
+  SendTimer.Enabled:=False;
+
+  //message done
+  SendedFirstSendMessageQueueItem;
+  DeleteFirstSendMessageQueueItem;
+  //send next message if still some in queue
+  SendMessageFromSendQueue;
 end;
 
 procedure TMsgWindow.SendTimerTimer(Sender: TObject);
@@ -581,12 +628,13 @@ var
 begin
   SendTimer.Enabled:=False;
 
+{ //0.1.1.0+ disable retry
   if fAutoRetry>0 then
     begin//autoretry
     Dec(fAutoRetry);
     SendMessageFromSendQueue(True);
     end
-  else
+  else}
     begin//ask what to do...
 
     //get message text
@@ -598,6 +646,7 @@ begin
       except
       end;
 
+    try
     case MessageTimeout(mtext) of
       taRetry:
         //just send first event in message again
@@ -611,6 +660,8 @@ begin
         DeleteFirstSendMessageQueueItem;
         SendMessageFromSendQueue;
         end;
+    end;
+    except
     end;
     end;
 end;
@@ -737,9 +788,23 @@ begin
   else
     SendDefaultWayItem.default:=true;
   end;
+
+  //language
+  CancelBtn.Caption:=translate('Cancel');
+  SendBtn.Caption:=translate('&Send');
+  UserBtn.Caption:=translate('&User');
+  HistoryMenuItem.Caption:=translate('View &History');
+  UserDetailsMenuItem.Caption:=translate('User &Details');
+  AddUserMenuItem.Caption:=translate('&Add permanently to list');
+//  SendFiles1.Caption:=translate('Send files');
+  UserSendEMailMenuItem.Caption:=translate('Send e-mail');
+  SendDefaultWayItem.Caption:=translate('Send using default way');
+  SendThroughServerItem.Caption:=translate('Send through server');
+  SendDirectItem.Caption:=translate('Send direct');
+  SendBestWayItem.Caption:=translate('Send using best way');
 end;
 
-procedure TMsgWindow.ReloadOptions;
+procedure TMsgWindow.ReloadOptions(optiontype:TOptionType=otAll);
 //once at start and any time the options change
 var
   val:integer;
@@ -748,75 +813,94 @@ var
   it:Boolean;
 begin
   //misc
-  val:=ReadSettingInt(PluginLink,0,'Convers','SplitLargeMessages',integer(False));
-  SplitLargeMessages:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','StorePositions',integer(True));
-  fSavePosition:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','DoubleEnterSend',integer(False));
-  fDoubleEnter:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','SingleEnterSend',integer(False));
-  fSingleEnter:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','TabEnterSend',integer(True));
-  fTabEnter:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(False));
-  fCloseWindowAfterSend:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0);
-  fHandleIncoming:=val;
-  val:=ReadSettingInt(PluginLink,0,'Convers','SendTimeout',DEFAULT_TIMEOUT_MSGSEND);
-  fSendTimeout:=val;
+  if optiontype in [otAll,otMisc] then
+    begin
+    val:=ReadSettingInt(PluginLink,0,'Convers','StorePositions',integer(True));
+    fSavePosition:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0);
+    fHandleIncoming:=val;
+    //recent only onces
+    end;
+
+  //sendmessage
+  if optiontype in [otAll,otSend] then
+    begin
+    val:=ReadSettingInt(PluginLink,0,'Convers','SplitLargeMessages',integer(False));
+    SplitLargeMessages:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','DoubleEnterSend',integer(False));
+    fDoubleEnter:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','SingleEnterSend',integer(False));
+    fSingleEnter:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(False));
+    fCloseWindowAfterSend:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','SendTimeout',DEFAULT_TIMEOUT_MSGSEND);
+    fSendTimeout:=val;
+    end;
 
 
 
   //font for sendmemo
-  s:=SizeOf(LogFont);
-  ReadSettingBlob(PluginLink,0,'Convers','Font',s, p);
-  if Assigned(p) then
+  if optiontype in [otAll,otMemo,otRich,otGrid] then
     begin
-    SendMemo.Font.Handle:=CreateFontIndirect(PLogFont(p)^);
-    SendMemo.Font.Color:=TColor(ReadSettingInt(PluginLink,0,'Convers','FontCol',Integer(clBlack)));
-    FreeSettingBlob(PluginLink,s, p);
+    s:=SizeOf(LogFont);
+    ReadSettingBlob(PluginLink,0,'Convers','Font',s, p);
+    if Assigned(p) then
+      begin
+      SendMemo.Font.Handle:=CreateFontIndirect(PLogFont(p)^);
+      SendMemo.Font.Color:=TColor(ReadSettingInt(PluginLink,0,'Convers','FontCol',Integer(clBlack)));
+      FreeSettingBlob(PluginLink,s, p);
+      end;
     end;
 
   //load settings for memo
-  fMemoTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','MemoTextPattern','%NAME% (%TIME%): %TEXT%'));
+  if optiontype in [otAll,otMemo] then
+    begin
+    fMemoTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','MemoTextPattern','%NAME% (%TIME%): %TEXT%'));
+    end;
 
   //load rich settings
-  fRichTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','RichTextPattern','%NAME% (%TIME%): %TEXT%'));
+  if optiontype in [otAll,otRich] then
+    begin
+    fRichTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','RichTextPattern','%NAME% (%TIME%): %TEXT%'));
 
-  s:=SizeOf(fRichSettings);
-  ReadSettingBlob(PluginLink,0,'Convers','RichSettings',s, p);
-  if Assigned(p) then
-    begin
-    fRichSettings:=PRichEditSettings(p)^;
-    FreeSettingBlob(PluginLink,s, p);
-    end
-  else
-    fRichSettings:=DefaultRichEditSettings;
-  if fDisplayMode=dmRich then
-    begin
-    SendMemo.Font.Color:=fRichSettings.RichStyles[0].Color;
-    if fRichSettings.RichStyles[0].Bold then
-      SendMemo.Font.Style:=SendMemo.Font.Style+[fsBold]
+    s:=SizeOf(fRichSettings);
+    ReadSettingBlob(PluginLink,0,'Convers','RichSettings',s, p);
+    if Assigned(p) then
+      begin
+      fRichSettings:=PRichEditSettings(p)^;
+      FreeSettingBlob(PluginLink,s, p);
+      end
     else
-      SendMemo.Font.Style:=SendMemo.Font.Style-[fsBold];
-    if fRichSettings.RichStyles[0].Italic then
-      SendMemo.Font.Style:=SendMemo.Font.Style+[fsItalic]
-    else
-      SendMemo.Font.Style:=SendMemo.Font.Style-[fsItalic];
+      fRichSettings:=DefaultRichEditSettings;
+    if fDisplayMode=dmRich then
+      begin
+      SendMemo.Font.Color:=fRichSettings.RichStyles[0].Color;
+      if fRichSettings.RichStyles[0].Bold then
+        SendMemo.Font.Style:=SendMemo.Font.Style+[fsBold]
+      else
+        SendMemo.Font.Style:=SendMemo.Font.Style-[fsBold];
+      if fRichSettings.RichStyles[0].Italic then
+        SendMemo.Font.Style:=SendMemo.Font.Style+[fsItalic]
+      else
+        SendMemo.Font.Style:=SendMemo.Font.Style-[fsItalic];
+      end;
     end;
 
   //load grid settings (except incltime! incltime only load one time!)
-  it:=fGridSettings.InclTime;
-  s:=SizeOf(fGridSettings);
-  ReadSettingBlob(PluginLink,0,'Convers','GridSettings',s, p);
-  if Assigned(p) then
+  if optiontype in [otAll,otGrid] then
     begin
-    fGridSettings:=PGridEditSettings(p)^;
-    FreeSettingBlob(PluginLink,s, p);
-    end
-  else
-    fGridSettings:=DefaultGridEditSettings;
-  fGridSettings.InclTime:=it;
+    it:=fGridSettings.InclTime;
+    s:=SizeOf(fGridSettings);
+    ReadSettingBlob(PluginLink,0,'Convers','GridSettings',s, p);
+    if Assigned(p) then
+      begin
+      fGridSettings:=PGridEditSettings(p)^;
+      FreeSettingBlob(PluginLink,s, p);
+      end
+    else
+      fGridSettings:=DefaultGridEditSettings;
+    fGridSettings.InclTime:=it;
+    end;
 end;
 
 procedure TMsgWindow.SaveOptions;
@@ -844,26 +928,27 @@ procedure TMsgWindow.LoadPos;
 //load save position from message window
 var
   val:integer;
-  uin_identifier:string;
+var
+  hC:THandle;
 begin
-  uin_identifier:='';
+  hC:=0;
   if fSavePosition then
-    uin_identifier:=IntToStr(UIN);
+    hC:=hContact;
 
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'l'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','posl',maxint);
   if val<>MaxInt then
     Self.Left:=val;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'t'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','post',maxint);
   if val<>MaxInt then
     Self.Top:=val;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'r'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','posr',maxint);
   if val<>MaxInt then
     Self.Width:=val-Self.Left;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'b'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','posb',maxint);
   if val<>MaxInt then
     if val-Self.Top>100 then
       Self.Height:=val-Self.Top;
-  val:=ReadSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'hm'),maxint);
+  val:=ReadSettingInt(PluginLink,hc,'Convers','poshm',maxint);
   if val<>MaxInt then
     begin
     if (val>Self.Height) or (val<10) then
@@ -875,17 +960,17 @@ end;
 procedure TMsgWindow.SavePos;
 //save message window position
 var
-  uin_identifier:string;
+  hC:THandle;
 begin
-  uin_identifier:='';
+  hC:=0;
   if fSavePosition then
-    uin_identifier:=IntToStr(UIN);
+    hC:=hContact;
 
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'l'),Self.left);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'t'),Self.Top);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'r'),Self.Left+Self.Width);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'b'),Self.Top+Self.Height);
-  WriteSettingInt(PluginLink,hContact,'Convers',pchar('pos'+uin_identifier+'hm'),HistoryMemo.Height);
+  WriteSettingInt(PluginLink,hC,'Convers','posl',Self.left);
+  WriteSettingInt(PluginLink,hC,'Convers','post',Self.Top);
+  WriteSettingInt(PluginLink,hC,'Convers','posr',Self.Left+Self.Width);
+  WriteSettingInt(PluginLink,hC,'Convers','posb',Self.Top+Self.Height);
+  WriteSettingInt(PluginLink,hC,'Convers','poshm',HistoryMemo.Height);
 end;
 
 
@@ -1006,7 +1091,7 @@ begin
   if fDoubleEnter or fSingleEnter then
     Text:=trimright(Text);
   textlength:=Length(text);
-  CharCountLabel.Caption:=Format(text_chard,[textlength]);
+  CharCountLabel.Caption:=Format(translate(text_chard),[textlength]);
   ShowSplit(textlength>MaxMessageLength);
   SendBtn.Enabled:=SendMemo.Enabled and (textlength<>0);
 end;
@@ -1054,12 +1139,16 @@ var
 const
   FlashInterval=400;
 begin
+  if Self.Visible and Self.Active then
+    exit;
+    
   case fHandleIncoming of
     0://popup steal focus
       begin
       Self.Visible:=True;
       ShowWindow(Self.Handle,SW_SHOWNORMAL);
       Self.BringToFront;
+      Self.SetFocus;
       end;
     1://show but without focus
       begin
@@ -1077,15 +1166,20 @@ begin
       FlashTimer.Enabled:=True;
       end;
     3://blink on contact list
+      if not Self.Visible then
       begin
-      cle.cbSize:=sizeof(cle);
-      cle.hContact:=Self.hContact;
-      cle.hDbEvent:=blinkid;
-      cle.lParam:=blinkid;
-      cle.hIcon:=LoadSkinnedIcon(PluginLink,SKINICON_EVENT_MESSAGE);
-      cle.pszService:=PluginService_ReadBlinkMessage;
-      cle.pszTooltip:=pchar('Message from '+GetUserNick(Self.hContact));
-      PluginLink.CallService(MS_CLIST_ADDEVENT,blinkid,dword(@cle));
+      if not fFlashingContactList then
+        begin
+        cle.cbSize:=sizeof(cle);
+        cle.hContact:=Self.hContact;
+        cle.hDbEvent:=blinkid;
+        cle.lParam:=blinkid;
+        cle.hIcon:=LoadSkinnedIcon(PluginLink,SKINICON_EVENT_MESSAGE);
+        cle.pszService:=PluginService_ReadBlinkMessage;
+        cle.pszTooltip:=pchar(format(translate('Message from %s'),[GetUserNick(Self.hContact)]));
+        PluginLink.CallService(MS_CLIST_ADDEVENT,blinkid,dword(@cle));
+        fFlashingContactList:=True;
+        end;
       end;
   end;
 end;
@@ -1132,7 +1226,7 @@ begin
       try
       hContact:=Self.hContact;
       ShowModal;
-      TWindowManager(WindowManager).ReloadOptions;
+      TWindowManager(WindowManager).ReloadOptions(otall);
       finally
       Free;
       end;
@@ -1187,19 +1281,10 @@ end;
 
 
 //******************** Shortcuts for message sending (interface stuff) *********
-
-procedure TMsgWindow.FormKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  //STRG+ENTER and STRG+S shortcut for sending
-  if (key in [vk_return,ord('S')]) then
-    if (ssCtrl in Shift) or (ssAlt in Shift) then
-      begin
-      key:=0;
-      if SendBtn.Enabled then
-        SendBtnClick(Sender);
-      end;
-end;
+{Unfortunatly when you make a form from a dll this form won't become the
+normal messages specified by the VCL but only the basic windows messages.
+Therefore neither tabs nor button shortcuts work on this form. As a workaround
+i've make some functions:}
 
 procedure TMsgWindow.SendMemoKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
@@ -1231,7 +1316,7 @@ procedure TMsgWindow.SendMemoKeyUp(Sender: TObject; var Key: Word;
 begin
   if fSingleEnter and (fEnterCount=1) then
     begin
-    key:=0;
+    key:=0;                                                           
     if SendBtn.Enabled then
       SendBtnClick(Sender);
     end;
@@ -1242,15 +1327,121 @@ begin
     if SendBtn.Enabled then
       SendBtnClick(Sender);
     end;
+end;
 
-  if fTabEnter and (fEnterCount=1) and (fTabCount>0) then
+var
+  lSetKeyNull:Boolean;//to avoid the beep
+
+procedure TMsgWindow.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  Mask: Integer;
+begin
+  lSetKeyNull:=False;
+
+  //STRG+ENTER and STRG+S shortcut for sending
+  if ((key in [ord('s'),ord('S')]) and (ssCtrl in Shift)) or
+    ((key = vk_return) and ((ssCtrl in Shift) or (ssAlt in Shift))) then
+    begin
+    key:=0;
+    lSetKeyNull:=True;
+    if SendBtn.Enabled then
+      SendBtnClick(Sender);
+    end;
+
+  //ALT Shortcuts
+  if (ssAlt in Shift) then
+    begin
+    if key in [ord('s'),ord('S')] then
+      if SendBtn.Enabled then
+        SendBtnClick(Sender);
+    if key in [ord('u'),ord('U')] then
+      UserBtn.Click;
+    if key in [ord('c'),ord('C')] then
+      CancelBtn.Click;
+    key:=0;
+    lSetKeyNull:=True;
+    end;
+
+
+  with Sender as TWinControl do
+    begin
+      if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
+        Exit;
+      Mask := 0;
+      case Key of
+        VK_TAB:
+          Mask := DLGC_WANTTAB;
+        VK_RETURN, VK_EXECUTE, VK_ESCAPE, VK_CANCEL:
+          Mask := DLGC_WANTALLKEYS;
+      end;
+      if (Mask <> 0)
+        and (Perform(CM_WANTSPECIALKEY, Key, 0) = 0)
+        and (Perform(WM_GETDLGCODE, 0, 0) and Mask = 0)
+        and (Self.Perform(CM_DIALOGKEY, Key, 0) <> 0)
+        then Exit;
+    end;
+end;
+
+//both routines to kill the beep
+procedure TMsgWindow.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  If lSetKeyNull then
+          begin
+          Key:= #0;
+          lSetKeyNull:= False;
+          end;
+end;
+procedure TMsgWindow.WMMenuChar(var MessageRec: TWMMenuChar);
+begin
+  inherited;
+  if lSetKeyNull then begin
+    MessageRec.Result := MakeLong(0, 1);
+    lSetKeyNull := false;
+  end;
+end;
+
+
+
+procedure TMsgWindow.OnCNChar(var Message: TWMChar);
+begin
+  if not (csDesigning in ComponentState) then
+    with Message do
+    begin
+      Result := 1;
+      if (Perform(WM_GETDLGCODE, 0, 0) and DLGC_WANTCHARS = 0) and
+        (GetParentForm(Self).Perform(CM_DIALOGCHAR,
+        CharCode, KeyData) <> 0) then Exit;
+      Result := 0;
+    end;
+end;
+
+
+procedure TMsgWindow.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+{  //STRG+ENTER and STRG+S shortcut for sending
+  if ((key = ord('S')) and (Shift=[ssCtrl])) or
+    ((key = vk_return) and ((ssCtrl in Shift) or (ssAlt in Shift))) then
     begin
     key:=0;
     if SendBtn.Enabled then
       SendBtnClick(Sender);
     end;
-end;
 
+  if key in [ord('s'),Ord('S')] then
+    if Shift=[ssAlt] then
+    begin
+    if key in [ord('s'),Ord('S')] then
+      if SendBtn.Enabled then
+        SendBtnClick(Sender);
+    if key=Ord('U') then
+      UserBtn.Click;
+    if key=Ord('C') then
+      CancelBtn.Click;
+    key:=0;
+    end;   }
+end;
 
 
 //************************** Misc tool functions *******************************
@@ -1325,6 +1516,32 @@ end;
 
 
 
+
+
+
+
+procedure TMsgWindow.TabEnterWorkAroundBtnClick(Sender: TObject);
+//just a work around that tabenter and tab space work because the send
+//button cannot get the focus as it is a speedbutton
+begin
+  SendBtn.Click;
+end;
+
+
+function DlgProcIgnoreOpts(Dialog: HWnd; Message, WParam: LongWord;
+  LParam: Longint): Boolean; export;
+begin
+  Result:=True;
+end;
+
+
+
+procedure TMsgWindow.FormShow(Sender: TObject);
+begin
+  //remove flashing icon for incoming message at the contact list
+  PluginLink.CallService(MS_CLIST_REMOVEEVENT,dword(hContact),dword(blinkid));
+  fFlashingContactList:=False;
+end;
 
 
 end.

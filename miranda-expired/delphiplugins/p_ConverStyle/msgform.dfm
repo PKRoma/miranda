@@ -20,8 +20,11 @@ object MsgWindow: TMsgWindow
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  OnKeyPress = FormKeyPress
   OnKeyUp = FormKeyUp
   OnResize = FormResize
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter: TSplitter
@@ -32,6 +35,15 @@ object MsgWindow: TMsgWindow
     Cursor = crVSplit
     Align = alTop
     Beveled = True
+  end
+  object TabEnterWorkAroundBtn: TButton
+    Left = 160
+    Top = -40
+    Width = 75
+    Height = 25
+    Caption = 'TabEnterWorkAroundBtn'
+    TabOrder = 2
+    OnClick = TabEnterWorkAroundBtnClick
   end
   object SendMemo: TMemo
     Left = 0
@@ -83,7 +95,7 @@ object MsgWindow: TMsgWindow
     object UserBtn: TToolbarButton97
       Left = 92
       Top = 6
-      Width = 53
+      Width = 61
       Height = 23
       DropdownArrowWidth = 12
       DropdownMenu = UserMenu

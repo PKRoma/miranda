@@ -14,7 +14,7 @@ unit windowmanager;
 interface
 
 uses
-  classes, windows, forms, misc, msgform;
+  classes, windows, forms, misc, msgform,optionfrm;
 
 type
   TWindowManager=class
@@ -28,10 +28,18 @@ type
     constructor Create;
     destructor Destroy;override;
   public
-    procedure ReloadOptions;
+    procedure ReloadOptions(optiontype:TOptionType);
   end;
 
+
+
+var
+  windowmgr:twindowmanager;
+
+
+
 implementation
+
 
 { TWindowManager }
 
@@ -88,7 +96,7 @@ var
 begin
   for widx:=0 to windowlist.count-1 do
     if Assigned(windowlist[widx]) then
-      tmsgwindow(windowlist[widx]).reloadoptions;
+      tmsgwindow(windowlist[widx]).reloadoptions(optiontype);
 end;
 
 end.
