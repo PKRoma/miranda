@@ -228,10 +228,6 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendDlgItemMessage(hwndDlg,IDC_GROUPINDENTSPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"CLC","GroupIndent",CLCDEFAULT_GROUPINDENT),0));
 			CheckDlgButton(hwndDlg,IDC_GREYOUT,DBGetContactSettingDword(NULL,"CLC","GreyoutFlags",CLCDEFAULT_GREYOUTFLAGS)?BST_CHECKED:BST_UNCHECKED);
 
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==0?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE1,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE2,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==2?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE3,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==3?BST_CHECKED:BST_UNCHECKED);
 			
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SMOOTHTIME),IsDlgButtonChecked(hwndDlg,IDC_NOTNOSMOOTHSCROLLING));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_GREYOUTOPTS),IsDlgButtonChecked(hwndDlg,IDC_GREYOUT));
@@ -295,15 +291,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							DBWriteContactSettingWord(NULL,"CLC","ScrollTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_SMOOTHTIMESPIN,UDM_GETPOS,0,0));
 							DBWriteContactSettingByte(NULL,"CLC","GroupIndent",(BYTE)SendDlgItemMessage(hwndDlg,IDC_GROUPINDENTSPIN,UDM_GETPOS,0,0));
 							DBWriteContactSettingByte(NULL,"CLC","NoVScrollBar",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_NOSCROLLBAR)?1:0));
-							{
-								int hil=0;
-							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE1))  hil=1;
-							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE2))  hil=2;
-							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE3))  hil=3;
 
-							DBWriteContactSettingByte(NULL,"CLC","HiLightMode",(BYTE)hil);
-
-							}
 
 							ClcOptionsChanged();
 							return TRUE;
@@ -333,9 +321,22 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{	DBVARIANT dbv;
 				if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
 					SetDlgItemText(hwndDlg,IDC_FILENAME,dbv.pszVal);
+                    if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
+                        char szPath[MAX_PATH];
+
+                        if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPath))
+                            SetDlgItemText(hwndDlg,IDC_FILENAME,szPath);
+                    }
+                    else 
 					mir_free(dbv.pszVal);
 				}
 			}
+
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==0?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE1,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE2,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==2?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE3,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==3?BST_CHECKED:BST_UNCHECKED);
+
 			{	WORD bmpUse=DBGetContactSettingWord(NULL,"CLC","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 				CheckDlgButton(hwndDlg,IDC_STRETCHH,bmpUse&CLB_STRETCHH?BST_CHECKED:BST_UNCHECKED);
 				CheckDlgButton(hwndDlg,IDC_STRETCHV,bmpUse&CLB_STRETCHV?BST_CHECKED:BST_UNCHECKED);
@@ -419,6 +420,16 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								if(IsDlgButtonChecked(hwndDlg,IDC_PROPORTIONAL)) flags|=CLBF_PROPORTIONAL;
 								DBWriteContactSettingWord(NULL,"CLC","BkBmpUse",flags);
 							}
+							{
+								int hil=0;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE1))  hil=1;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE2))  hil=2;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE3))  hil=3;
+
+							DBWriteContactSettingByte(NULL,"CLC","HiLightMode",(BYTE)hil);
+
+							}
+
 							ClcOptionsChanged();
 							return TRUE;
 					}
@@ -447,7 +458,7 @@ struct {
 } static fontSettings[FONTID_MAX+1];
 #include <poppack.h>
 static WORD fontSameAsDefault[FONTID_MAX+1]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02};
-static char *fontSizes[]={"8","10","14","16","18","20","24","28"};
+static char *fontSizes[]={"7","8","10","14","16","18","20","24","28"};
 static int fontListOrder[FONTID_MAX+1]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_GROUPS,FONTID_GROUPCOUNTS,FONTID_DIVIDERS};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
@@ -553,7 +564,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						HFONT hFont=CreateFontIndirect(&lf);
 						hdc=GetDC(hwndDlg);
 						SelectObject(hdc,hFont);
-						GetTextExtentPoint32(hdc,"x",1,&size);
+						GetTextExtentPoint32(hdc,"_W",2,&size);
 						ReleaseDC(hwndDlg,hdc);
 						DeleteObject(hFont);
 						fontSettings[fontId].size=(char)size.cy;
@@ -668,7 +679,12 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SendDlgItemMessage(hwndDlg,IDC_SAMPLE,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDC_FONTID,WM_GETFONT,0,0),0);
 				DeleteObject(hFontSample);
 			}
-			lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);
+			lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);			
+			{
+				HDC hdc=GetDC(NULL);				
+				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+				ReleaseDC(NULL,hdc);				
+			}
 			lf.lfWidth=lf.lfEscapement=lf.lfOrientation=0;
 			lf.lfWeight=IsDlgButtonChecked(hwndDlg,IDC_BOLD)?FW_BOLD:FW_NORMAL;
 			lf.lfItalic=IsDlgButtonChecked(hwndDlg,IDC_ITALIC);
@@ -717,14 +733,16 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
 		{	int i;
-			int minHeight=1;//GetSystemMetrics(SM_CYSMICON);
+			int minHeight=GetSystemMetrics(SM_CYSMICON) +1;
 			for(i=0;i<=FONTID_MAX;i++)
-				if(fontSettings[i].size+2>minHeight) minHeight=fontSettings[i].size+2;
+				if(fontSettings[i].size>minHeight) minHeight=fontSettings[i].size;
 			i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
-			if(i<minHeight) SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
+			//if(i<minHeight) 
+				SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
 			SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETRANGE,0,MAKELONG(255,minHeight));
 			break;
 		}
+
 		case M_LOADFONT:	//load font wParam into the controls
 			SetDlgItemText(hwndDlg,IDC_TYPEFACE,fontSettings[wParam].szFace);
 			SendMessage(hwndDlg,M_FILLSCRIPTCOMBO,wParam,0);

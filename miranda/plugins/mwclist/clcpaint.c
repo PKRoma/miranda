@@ -139,7 +139,7 @@ static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
 
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
-void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
+void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
 	HDC hdcMem;
 	RECT clRect;
@@ -150,6 +150,9 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	int status=GetGeneralisedStatus();
 	int grey=0,groupCountsFontTopShift;
 	HBRUSH hBrushAlternateGrey=NULL;
+	// yes I know about GetSysColorBrush()
+	COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( /*dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) :*/ dat->bkColour ) : dat->bkColour;
+
 
 	if(dat->greyoutFlags&ClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
 	else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
@@ -169,12 +172,12 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		groupCountsFontTopShift-=tm.tmAscent;
 	}
 	if(style&CLS_GREYALTERNATE)
-		hBrushAlternateGrey=CreateSolidBrush(GetNearestColor(hdcMem,RGB(GetRValue(dat->bkColour)-10,GetGValue(dat->bkColour)-10,GetBValue(dat->bkColour)-10)));
+		hBrushAlternateGrey=CreateSolidBrush(GetNearestColor(hdcMem,RGB(GetRValue(tmpbkcolour)-10,GetGValue(tmpbkcolour)-10,GetBValue(tmpbkcolour)-10)));
 	ChangeToFont(hdcMem,dat,FONTID_CONTACTS,&fontHeight);
 	SetBkMode(hdcMem,TRANSPARENT);
 	{	HBRUSH hBrush,hoBrush;
 
-		hBrush=CreateSolidBrush(dat->bkColour);
+		hBrush=CreateSolidBrush(tmpbkcolour);
 		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
 		FillRect(hdcMem,rcPaint,hBrush);
 		SelectObject(hdcMem,hoBrush);
@@ -185,6 +188,10 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			int x,y;
 			int maxx,maxy;
 			int destw,desth;
+
+			// XXX: Halftone isnt supported on 9x, however the scretch problems dont happen on 98.
+			SetStretchBltMode(hdcMem, HALFTONE);
+
 
 			GetObject(dat->hBmpBackground,sizeof(bmp),&bmp);
 			hdcBmp=CreateCompatibleDC(hdcMem);
@@ -533,3 +540,13 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	}
 	DeleteObject(hBmpOsb);
 }
+
+void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
+{
+	if (SED.cbSize==sizeof(SED)&&SED.PaintClc!=NULL)
+	{
+		SED.PaintClc(hwnd,dat,hdc,rcPaint,hClcProtoCount,clcProto,himlCListClc);
+		return;
+	}
+	InternalPaintClc(hwnd,dat,hdc,rcPaint);
+};

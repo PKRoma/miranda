@@ -309,7 +309,8 @@ struct ClcGroup *RemoveItemFromGroup(HWND hwnd,struct ClcGroup *group,struct Clc
 		int i;
 		if(group->parent==NULL) return group;
 		for(i=0;i<group->parent->contactCount;i++)
-			if(group->parent->contact[i].groupId==group->groupId) break;
+			if(group->parent->contact[i].type==CLCIT_GROUP 
+				&& group->parent->contact[i].groupId==group->groupId) break;
 		if(i==group->parent->contactCount) return group;  //never happens
 		return RemoveItemFromGroup(hwnd,group->parent,&group->parent->contact[i],0);
 	}

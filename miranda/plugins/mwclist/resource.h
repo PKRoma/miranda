@@ -5,6 +5,10 @@
 #define IDC_AUTHICON                    1
 #define IDC_NOTOALL                     3
 #define IDC_APPLY                       3
+#define MIM_V1                          10
+#define MIM_V2                          20
+#define MIM_V3                          30
+#define MIM_V4                          30
 #define IDI_MIRANDA                     102
 #define IDD_ABOUT                       103
 #define IDI_SMS                         103
@@ -23,6 +27,7 @@
 #define IDI_INVISIBLE                   130
 #define IDI_NA                          131
 #define IDD_OPT_SOUND                   134
+#define IDD_OPT_HOTKEYS                 134
 #define IDI_SENDURL                     135
 #define IDI_RECVMSG                     136
 #define IDI_SENDMSG                     137
@@ -133,6 +138,7 @@
 #define IDC_NAME                        1009
 #define IDC_PROXYTYPE                   1009
 #define IDC_STATIC23                    1010
+#define IDC_NAMEVAL                     1010
 #define IDC_SPECIFYPORTS                1013
 #define IDC_ST_ENTERMSG                 1013
 #define IDC_ST_ENTERURL                 1014
@@ -534,10 +540,19 @@
 #define IDC_AALONGSTATUS                1652
 #define IDC_AALONGIDLE                  1656
 #define IDC_NOOFFLINEMOVE               1657
+#define IDC_HOTKEYTREE                  1657
 #define IDC_HILIGHTMODE                 1658
 #define IDC_HILIGHTMODE2                1659
+#define IDC_LOCATION                    1659
 #define IDC_HILIGHTMODE1                1660
+#define IDC_SGROUP                      1660
 #define IDC_HILIGHTMODE3                1661
+#define IDC_SLOC                        1661
+#define IDC_ONDESKTOP                   1662
+#define IDC_SETHOTKEY                   1759
+#define IDC_HKTITLE                     1760
+#define IDC_CHECK1                      1761
+#define IDC_USECONNECTINGICON           1761
 #define IDD_OPT_GENMENU                 11267
 #define IDC_MENUITEMS                   11710
 #define IDC_MENUOBJECTS                 11711
@@ -578,7 +593,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        278
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1659
+#define _APS_NEXT_CONTROL_VALUE         1762
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -35,6 +35,7 @@ void TrayIconIconsChanged(void);
 
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
 int CListOptInit(WPARAM wParam,LPARAM lParam)
@@ -53,7 +54,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.expertOnlyControls=expertOnlyControls;
 	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
+/*
 	odp.position=-900000000;
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_HOTKEY);
 	odp.pszTitle=Translate("Hotkeys");
@@ -63,6 +64,15 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.nExpertOnlyControls=0;
 	odp.expertOnlyControls=NULL;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+*/
+    odp.cbSize=sizeof(odp);
+    odp.pszGroup=Translate("Events");
+    odp.position=-200000000;
+    odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_HOTKEYS);
+    odp.pszTitle=Translate("Hotkeys2");
+    odp.pfnDlgProc=DlgProcHotKeyOpts2;
+    odp.flags=ODPF_BOLDGROUPS;
+    CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }
 

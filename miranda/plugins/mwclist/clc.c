@@ -268,6 +268,15 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		case WM_THEMECHANGED:
 			InvalidateRect(hwnd, NULL, FALSE);
 			break;
+		case INTM_SCROLLBARCHANGED:
+		{
+			if ( GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
+				if ( dat->noVScrollbar ) ShowScrollBar(hwnd,SB_VERT,FALSE);
+				else RecalcScrollBar(hwnd,dat);
+			}
+			break;
+		}
+
 		case WM_SIZE:
 			EndRename(hwnd,dat,1);
 			KillTimer(hwnd,TIMERID_INFOTIP);

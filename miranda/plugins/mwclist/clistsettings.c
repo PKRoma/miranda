@@ -174,6 +174,11 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 		if (pdnce->name==NULL)
 		{
 			pdnce->name=(char *)GetNameForContact(pdnce->hContact,0);
+			{
+				char buf[256];
+				sprintf(buf,"LoadCacheDispEntry %x %s\r\n",pdnce,(pdnce->name?pdnce->name:""));
+				OutputDebugString(buf);
+			}		
 			//pdnce->NameHash=NameHashFunction(pdnce->name);
 		}
 		if (pdnce->szProto==NULL&&pdnce->protoNotExists==FALSE)
@@ -265,11 +270,18 @@ void InvalidateDisplayNameCacheEntry(HANDLE hContact)
 		FreeDisplayNameCache(&lContactsCache);
 		InitDisplayNameCache(&lContactsCache);
 		SendMessage(hwndContactTree,CLM_AUTOREBUILD,0,0);
+		OutputDebugString("InvDisNmCaEn full\r\n");
 	}
 	else {
 		pdisplayNameCacheEntry pdnce=GetDisplayNameCacheEntry(hContact);
 		if (pdnce)
 		{
+			{
+				char buf[256];
+				sprintf(buf,"InvDisNmCaEn %x %s\r\n",pdnce,(pdnce->name?pdnce->name:""));
+				OutputDebugString(buf);
+			}
+			
 			if (pdnce->name) mir_free(pdnce->name);
 			pdnce->name=NULL;
 			//if (pdnce->szProto) mir_free(pdnce->szProto); proto is system string
@@ -426,17 +438,30 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
 	DBVARIANT dbv;
+	pdisplayNameCacheEntry pdnce;
+	char buf[256];
 
 	// Early exit
 	if ((HANDLE)wParam == NULL)
 		return 0;
 
 	dbv.pszVal = NULL;
-	if (!DBGetContactSetting((HANDLE)wParam, "Protocol", "p", &dbv))
+	pdnce=GetDisplayNameCacheEntry((HANDLE)wParam);
+//		if (pdnce)
+//!DBGetContactSetting((HANDLE)wParam, "Protocol", "p", &dbv)
+	if (pdnce&&(pdnce->protoNotExists==FALSE)&&pdnce->szProto)
 	{
-		if (!strcmp(cws->szModule,dbv.pszVal))
+		if (!strcmp(cws->szModule,pdnce->szProto))
 		{
-			InvalidateDisplayNameCacheEntry((HANDLE)wParam);
+			{
+				
+				sprintf(buf,"CHANGE: inproto setting:%s\r\n",cws->szSetting);
+			
+			}
+				OutputDebugString(buf);
+				InvalidateDisplayNameCacheEntry((HANDLE)wParam);
+
+			
 			if (!strcmp(cws->szSetting,"UIN") || !strcmp(cws->szSetting,"Nick") || !strcmp(cws->szSetting,"FirstName") || !strcmp(cws->szSetting,"LastName") || !strcmp(cws->szSetting,"e-mail"))
 			{
 				CallService(MS_CLUI_CONTACTRENAMED,wParam, 0);
@@ -445,6 +470,9 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				if (!DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0)) {
 					if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT))	{
 						// User's state is changing, and we are hideOffline-ing
+						
+						//OutputDebugString(buf);
+						//InvalidateDisplayNameCacheEntry((HANDLE)wParam);
 						if (cws->value.wVal == ID_STATUS_OFFLINE) {
 							ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
 							CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
@@ -467,6 +495,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	}
 
 	if(!strcmp(cws->szModule,"CList")) {
+		OutputDebugString("CHANGE: module:CList\r\n");
 		InvalidateDisplayNameCacheEntry((HANDLE)wParam);
 
 		if(!strcmp(cws->szSetting,"Hidden")) {		
@@ -485,6 +514,9 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	if(!strcmp(cws->szModule,"Protocol")) {
 		if(!strcmp(cws->szSetting,"p")) {
 			char *szProto;
+
+			OutputDebugString("CHANGE: proto\r\n");
+			InvalidateDisplayNameCacheEntry((HANDLE)wParam);	
 			if(cws->value.type==DBVT_DELETED) szProto=NULL;
 			else szProto=cws->value.pszVal;
 			ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0);

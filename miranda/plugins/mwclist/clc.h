@@ -45,6 +45,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define INTM_RELOADOPTIONS   (WM_USER+21)
 #define INTM_NAMEORDERCHANGED (WM_USER+22)
 #define INTM_IDLECHANGED         (WM_USER+23)
+#define INTM_SCROLLBARCHANGED (WM_USER+24)
+#define INTM_PROTOCHANGED (WM_USER+25)
 
 #define TIMERID_RENAME         10
 #define TIMERID_DRAGAUTOSCROLL 11
@@ -236,5 +238,23 @@ char *GetContactCachedProtocol(HANDLE hContact);
 #define CLCDEFAULT_GAMMACORRECT  1
 #define CLCDEFAULT_SHOWIDLE      0
 
+#define CLUI_SetDrawerService "CLUI/SETDRAWERSERVICE"
+typedef struct {
+	int cbSize;
+	char *PluginName;
+	char *Comments;
+	char *GetDrawFuncsServiceName;
+
+} DrawerServiceStruct,*pDrawerServiceStruct ;
+
+#define CLUI_EXT_FUNC_PAINTCLC	1
+
+typedef struct {
+	int cbSize;
+	void (*PaintClc)(HWND,struct ClcData *,HDC,RECT *,int ,ClcProtoStatus *,HIMAGELIST);
+
+} ExternDrawer,*pExternDrawer ;
+
+ExternDrawer SED;
 
 #endif _CLC_H_

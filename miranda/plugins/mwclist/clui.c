@@ -37,6 +37,7 @@ HMENU hMenuMain;
 static HANDLE hContactDraggingEvent,hContactDroppedEvent,hContactDragStopEvent;
 HWND hwndContactTree;
 UINT hMsgGetProfile=0;
+UINT uMsgProcessProfile;
 
 extern boolean canloadstatusbar;
 
@@ -268,7 +269,7 @@ static void DisconnectAll()
 int PreCreateCLC(HWND parent)
 {
 			hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,"",
-					WS_CHILD|WS_CLIPCHILDREN
+					WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
 					|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
 					|CLS_HIDEOFFLINE
 					//|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
@@ -363,6 +364,25 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	if(CallService(MS_CLIST_HOTKEYSPROCESSMESSAGE,(WPARAM)&m,(LPARAM)&result))
 		return result;
 	}
+
+	if ( msg == uMsgProcessProfile ) {
+		char profile[MAX_PATH];
+		int rc;
+		// wParam = (ATOM)hProfileAtom, lParam = 0
+		if ( GlobalGetAtomName((ATOM)wParam, profile, sizeof(profile)) ) {
+			char path[MAX_PATH];
+			char file[MAX_PATH];
+			char p[MAX_PATH];
+			CallService(MS_DB_GETPROFILEPATH,sizeof(path),(LPARAM)&path);
+			CallService(MS_DB_GETPROFILENAME,sizeof(file),(LPARAM)&file);
+			_snprintf(p,sizeof(p),"%s\\%s",path,file);
+			rc=lstrcmp(profile,p) == 0;
+			ReplyMessage(rc);
+			if ( rc ) ShowWindowAsync(hwnd,SW_SHOW);
+		}
+		return 0;
+	};
+
 	/*
 	This registers a window message with RegisterWindowMessage() and then waits for such a message,
 	if it gets it, it tries to open a file mapping object and then maps it to this process space,
@@ -476,6 +496,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_SYSCOLORCHANGE:
 		SendMessage(hwndContactTree,msg,wParam,lParam);
 		SendMessage(hwndStatus,msg,wParam,lParam);
+		// XXX: only works with 4.71 with 95, IE4.
+		SendMessage(hwndStatus,SB_SETBKCOLOR, 0, GetSysColor(COLOR_3DFACE));
 		break;
 		
 	case WM_SIZE:
@@ -544,11 +566,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		case WM_SETFOCUS:
 				{	
 				boolean isfloating;
-				isfloating=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLOATING,hFrameContactTree),0);
-				if (isfloating==FALSE)
-				{
-					SetFocus(hwndContactTree);
-				};
+				if (hFrameContactTree)
+						{					
+							isfloating=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLOATING,hFrameContactTree),0);
+							if (isfloating==FALSE)
+							{
+								SetFocus(hwndContactTree);
+							};
+						}
 				}
 			//SetFocus(hwndContactTree);
 			return 0;
@@ -840,7 +865,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						//	break;
 						}
 						lastreqh=nmc->pt.y;
-						newHeight=max(nmc->pt.y,3)+3+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
+						newHeight=max(nmc->pt.y,3)+1+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
 						if (newHeight==(rcWindow.bottom-rcWindow.top)) break;
 
 						if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
@@ -1044,7 +1069,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					HICON hIcon;
 					char buf [256];
 					
-					if (status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 					{
 						int b;
 						
@@ -1285,6 +1310,8 @@ int LoadCLUIModule(void)
 		MySetLayeredWindowAttributes = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
 		MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(hUserDll,"AnimateWindow");
 	}
+	uMsgProcessProfile=RegisterWindowMessage("Miranda::ProcessProfile");
+
 	HookEvent(ME_SYSTEM_MODULESLOADED,CluiModulesLoaded);
 	HookEvent(ME_SKIN_ICONSCHANGED,CluiIconsChanged);
 	HookEvent(ME_OPT_INITIALISE,CluiOptInit);
@@ -1319,7 +1346,7 @@ int LoadCLUIModule(void)
 	hwndContactList= CreateWindowEx(DBGetContactSettingByte(NULL,"CList","ToolWindow",SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0,
 						  MIRANDACLASS,
 						  titleText,
-						  (DBGetContactSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT)?WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX:0)|WS_POPUPWINDOW|WS_THICKFRAME|WS_CLIPCHILDREN,
+						  (DBGetContactSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT)?WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX:0)|WS_POPUPWINDOW|WS_THICKFRAME|WS_CLIPCHILDREN,							  
 						  (int)DBGetContactSettingDword(NULL,"CList","x",50),
 						  (int)DBGetContactSettingDword(NULL,"CList","y",50),
 						  (int)DBGetContactSettingDword(NULL,"CList","Width",150),
@@ -1328,6 +1355,13 @@ int LoadCLUIModule(void)
 						  NULL,
 						  g_hInst,
 						  NULL);
+
+	if ( DBGetContactSettingByte(NULL,"CList","OnDesktop",0) )
+	{
+		HWND hProgMan=FindWindow("Progman",NULL);
+		if (IsWindow(hProgMan)) SetParent(hwndContactList,hProgMan);
+	}
+
 
 	laster=GetLastError();
 	PreCreateCLC(hwndContactList);

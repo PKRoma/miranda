@@ -175,7 +175,7 @@ static VOID CALLBACK SortContactsTimer(HWND hwnd,UINT message,UINT idEvent,DWORD
 {
 	KillTimer(NULL,resortTimerId);
 	resortTimerId=0;
-	//CallService(MS_CLUI_SORTLIST,0,0);
+	CallService(MS_CLUI_SORTLIST,0,0);
 }
 
 void SortContacts(void)

@@ -32,7 +32,7 @@ extern HWND hwndContactList;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"MultiWindow Contact List",
-	PLUGIN_MAKE_VERSION(0,3,4,1),
+	PLUGIN_MAKE_VERSION(0,3,4,5),
 	"Display contacts, event notifications, protocol status with MW modifications",
 	"",
 	"bethoven@mailgate.ru" ,
@@ -69,6 +69,21 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+int SetDrawer(WPARAM wParam,LPARAM lParam)
+{
+	pDrawerServiceStruct DSS=(pDrawerServiceStruct)wParam;
+	if (DSS->cbSize!=sizeof(*DSS)) return -1;
+	if (DSS->PluginName==NULL) return -1;
+	if (DSS->PluginName==NULL) return -1;
+	if (!ServiceExists(DSS->GetDrawFuncsServiceName)) return -1;
+
+	
+	SED.cbSize=sizeof(SED);
+	SED.PaintClc=(void (__cdecl *)(HWND,struct ClcData *,HDC,RECT *,int ,ClcProtoStatus *,HIMAGELIST))CallService(DSS->GetDrawFuncsServiceName,CLUI_EXT_FUNC_PAINTCLC,0);
+	if (!SED.PaintClc) return -1;
+	return 0;
+}
+
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
@@ -81,6 +96,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
+	
+	memset(&SED,0,sizeof(SED));
+	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
 
 	__try
 	{

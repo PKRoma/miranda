@@ -112,7 +112,8 @@ void ClearClcContactCache(struct ClcData *dat,HANDLE hContact)
 
 		if (hContact==INVALID_HANDLE_VALUE)
 		{
-			int i;
+			int i,tick;
+			tick=GetTickCount();
 
 			for(i=0;i<(dat->lCLCContactsCache.realCount);i++)
 			{
@@ -122,7 +123,12 @@ void ClearClcContactCache(struct ClcData *dat,HANDLE hContact)
 			};		
 		//FreeDisplayNameCache(&dat->lCLCContactsCache);
 		//InitDisplayNameCache(&dat->lCLCContactsCache);			
-		OutputDebugString("Clear full cache\r\n");
+		tick=GetTickCount()-tick;
+		
+		{ char buf[256];
+			sprintf	(buf,"Clear full cache %d ms\r\n",tick);
+			OutputDebugString(buf);		
+		}
 		}
 		if(!IsHContactGroup(hContact)&&!IsHContactInfo(hContact))
 		{
@@ -137,6 +143,8 @@ void ClearClcContactCache(struct ClcData *dat,HANDLE hContact)
 				cacheEntry->ClcContact=NULL;
 			};
 		};
+
+
 
 }
 void SetClcContactCacheItem(struct ClcData *dat,HANDLE hContact,void *contact)

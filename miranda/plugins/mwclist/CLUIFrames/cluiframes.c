@@ -1,5 +1,5 @@
 /*
-Miranda IM: the free IM client for Microsoft* Windows*
+MirandaPluginInfo IM: the free IM client for Microsoft* Windows*
 
 Copyright 2000-2003 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
@@ -69,6 +69,11 @@ static int sortfunc(const void *a,const void *b)
 
 //============
 #define CLUIFRAMESSETALIGN				"CLUIFramesSetAlign"
+
+#define CLUIFRAMESSETALIGNALTOP				"CLUIFramesSetAlignalTop"
+#define CLUIFRAMESSETALIGNALCLIENT				"CLUIFramesSetAlignalClient"
+#define CLUIFRAMESSETALIGNALBOTTOM				"CLUIFramesSetAlignalBottom"
+
 #define CLUIFRAMESMOVEUPDOWN			"CLUIFramesMoveUpDown"
 typedef struct tagMenuHandles
 {
@@ -820,7 +825,7 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
 		mi.popupPosition=frameid;
 		mi.position=popuppos++;
 		mi.pszName=Translate("&Top");
-		mi.pszService=CLUIFRAMESSETALIGN;
+		mi.pszService=CLUIFRAMESSETALIGNALTOP;
 		mi.pszContactOwner=(char *)alTop;
 		menuid=(HANDLE)CallService(addservice,0,(LPARAM)&mi);
 		if(frameid==-1) contMIAlignTop=menuid;
@@ -830,7 +835,7 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
 		//align client
 		mi.position=popuppos++;
 		mi.pszName=Translate("&Client");
-		mi.pszService=CLUIFRAMESSETALIGN;
+		mi.pszService=CLUIFRAMESSETALIGNALCLIENT;
 		mi.pszContactOwner=(char *)alClient;
 		menuid=(HANDLE)CallService(addservice,0,(LPARAM)&mi);
 		if(frameid==-1) contMIAlignClient=menuid;
@@ -839,7 +844,7 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
 		//align bottom
 		mi.position=popuppos++;
 		mi.pszName=Translate("&Bottom");
-		mi.pszService=CLUIFRAMESSETALIGN;
+		mi.pszService=CLUIFRAMESSETALIGNALBOTTOM;
 		mi.pszContactOwner=(char *)alBottom;
 		menuid=(HANDLE)CallService(addservice,0,(LPARAM)&mi);
 		if(frameid==-1) contMIAlignBottom=menuid;
@@ -925,15 +930,15 @@ static int CLUIFramesModifyContextMenuForFrame(WPARAM wParam,LPARAM lParam)
 
 
 
-		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
 		if(Frames[pos].align&alTop) mi.flags|=CMIF_CHECKED;
 		ModifyMItem((WPARAM)contMIAlignTop,(LPARAM)&mi);
 
-		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|CMIF_GRAYED;
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
 		if(Frames[pos].align&alClient) mi.flags|=CMIF_CHECKED;
 		ModifyMItem((WPARAM)contMIAlignClient,(LPARAM)&mi);
 
-		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
 		if(Frames[pos].align&alBottom) mi.flags|=CMIF_CHECKED;
 		ModifyMItem((WPARAM)contMIAlignBottom,(LPARAM)&mi);
 
@@ -983,17 +988,32 @@ int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
 		if((Frames[pos].UseBorder)) mi.flags|=CMIF_CHECKED;
 		CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIBorder,(LPARAM)&mi);
 
-		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
 		if(Frames[pos].align&alTop) mi.flags|=CMIF_CHECKED;
 		CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignTop,(LPARAM)&mi);
 
-		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|CMIF_GRAYED;
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
 		if(Frames[pos].align&alClient) mi.flags|=CMIF_CHECKED;
 		CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignClient,(LPARAM)&mi);
 
-		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
 		if(Frames[pos].align&alBottom) mi.flags|=CMIF_CHECKED;
 		CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignBottom,(LPARAM)&mi);
+
+/*
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
+		if(Frames[pos].align&alTop) mi.flags|=CMIF_CHECKED;
+		ModifyMItem((WPARAM)contMIAlignTop,(LPARAM)&mi);
+
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|CMIF_GRAYED;
+		if(Frames[pos].align&alClient) mi.flags|=CMIF_CHECKED;
+		ModifyMItem((WPARAM)contMIAlignClient,(LPARAM)&mi);
+
+		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
+		if(Frames[pos].align&alBottom) mi.flags|=CMIF_CHECKED;
+		ModifyMItem((WPARAM)contMIAlignBottom,(LPARAM)&mi);
+
+*/
 
 
 		
@@ -1183,6 +1203,12 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 			}
 
 		case FO_ALIGN:
+			if (!(lParam&alTop||lParam&alBottom||lParam&alClient))
+			{
+				OutputDebugString("Wrong align option \r\n");
+				return (-1);
+			};
+
 			if((lParam&alClient)&&(CLUIFramesGetalClientFrame()>=0)) {	//only one alClient frame possible
 				alclientFrame=-1;//recalc it
 				ulockfrm();
@@ -1320,6 +1346,8 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
 	return(0);
 };
 
+
+
 //wparam=frameid
 //lparam=alignment
 int CLUIFramesSetAlign(WPARAM wParam,LPARAM lParam)
@@ -1328,6 +1356,19 @@ int CLUIFramesSetAlign(WPARAM wParam,LPARAM lParam)
 	CLUIFramesOnClistResize((WPARAM)hwndContactList,0);		
 	return(0);
 }
+int CLUIFramesSetAlignalTop(WPARAM wParam,LPARAM lParam)
+{
+	return CLUIFramesSetAlign(wParam,alTop);
+}
+int CLUIFramesSetAlignalBottom(WPARAM wParam,LPARAM lParam)
+{
+	return CLUIFramesSetAlign(wParam,alBottom);
+}
+int CLUIFramesSetAlignalClient(WPARAM wParam,LPARAM lParam)
+{
+	return CLUIFramesSetAlign(wParam,alClient);
+}
+
 
 //wparam=frameid
 int CLUIFramesLockUnlockFrame(WPARAM wParam,LPARAM lParam)
@@ -1417,11 +1458,26 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
 		if(!CLUIFramesFitInSize()) {
 			//cant collapse,we can resize only for height<alclient frame height
 			int alfrm=CLUIFramesGetalClientFrame();
-			Frames[FrameId].collapsed=FALSE;
+			
 			if(alfrm!=-1) {
+				Frames[FrameId].collapsed=FALSE;
 				if(Frames[alfrm].height>2*UNCOLLAPSED_FRAME_SIZE) {
 					oldHeight=Frames[alfrm].height-UNCOLLAPSED_FRAME_SIZE;
 					Frames[FrameId].collapsed=TRUE;
+				}
+			}else
+				{
+						int i,sumheight=0;
+						for(i=0;i<nFramescount;i++) {
+								if((Frames[i].align!=alClient)&&(!Frames[i].floating)&&(Frames[i].visible)&&(!Frames[i].needhide)) {
+									sumheight+=(Frames[i].height)+(TitleBarH*btoint(Frames[i].TitleBar.ShowTitleBar))+2;
+									return FALSE;
+								}
+								if(sumheight>ContactListHeight-0-2)
+								{
+									Frames[FrameId].height=(ContactListHeight-0-2)-sumheight;
+								}
+
 				}
 			}
 		
@@ -1977,7 +2033,7 @@ int CLUIFramesResize(const RECT newsize)
 			Frames[i].wndSize.top=Frames[i].wndSize.bottom-Frames[i].height;
 			Frames[i].prevvisframe=prevframe;
 			prevframe=i;
-			prevframebottomline=Frames[i].wndSize.top-1-curfrmtbh;
+			prevframebottomline=Frames[i].wndSize.top/*-1*/-curfrmtbh;
 			if(prevframebottomline>newheight) {
 				//prevframebottomline-=Frames[i].height+(curfrmtbh+1);
 				//Frames[i].needhide=TRUE;
@@ -3002,6 +3058,11 @@ int LoadCLUIFramesModule(void)
 	CreateServiceFunction(CLUIFRAMESSETALIGN,CLUIFramesSetAlign);
 	CreateServiceFunction(CLUIFRAMESMOVEUPDOWN,CLUIFramesMoveUpDown);
 
+
+		CreateServiceFunction(CLUIFRAMESSETALIGNALTOP,CLUIFramesSetAlignalTop);
+		CreateServiceFunction(CLUIFRAMESSETALIGNALCLIENT,CLUIFramesSetAlignalClient);
+		CreateServiceFunction(CLUIFRAMESSETALIGNALBOTTOM,CLUIFramesSetAlignalBottom);
+
 	CreateServiceFunction("Set_Floating",CLUIFrameSetFloat);
 	hWndExplorerToolBar	=FindWindowEx(0,0,"Shell_TrayWnd",NULL);
 	return 0;
@@ -3025,6 +3086,7 @@ int UnLoadCLUIFramesModule(void)
 	if (Frames[i].name!=NULL) free(Frames[i].name);
 	if (Frames[i].TitleBar.tbname!=NULL) free(Frames[i].TitleBar.tbname);
 	}
+	nFramescount=0;
 	UnregisterClass(CLUIFrameTitleBarClassName,g_hInst);
 	DeleteObject(TitleBarFont);
 	ulockfrm();

@@ -258,11 +258,13 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.position=mi->position;
 	tmi.pszName=mi->pszName;
 	tmi.root=(int)mi->pszPopupName;
+
 	if(!(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)) {
 		//old system
 		tmi.flags|=CMIF_CHILDPOPUP;
 		tmi.root=-1;
 	};
+
 
 	{
 		//owner data
@@ -346,7 +348,7 @@ int ContactMenuCheckService(WPARAM wParam,LPARAM lParam) {
 	if (bcp==NULL){return(FALSE);};
 
 	cmep=pcpp->MenuItemOwnerData;
-	if (cmep==NULL){return(FALSE);};
+	if (cmep==NULL){return(TRUE);};//this is root...build it
 
 	if(cmep->pszContactOwner!=NULL) {
 		if(bcp->szProto==NULL) return(FALSE);

@@ -212,6 +212,8 @@ BEGIN
                     UDS_HOTTRACK,177,109,11,12
     CONTROL         "Dont move offline user to bottom",IDC_NOOFFLINEMOVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,25,131,10
+    CONTROL         "Pin to desktop",IDC_ONDESKTOP,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,120,128,15
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 232
@@ -290,7 +292,7 @@ END
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Items",IDC_STATIC,2,2,310,114
     CONTROL         "Show divider between online and offline contacts",
@@ -312,7 +314,7 @@ BEGIN
     LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,10,112,8
     CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",
                     TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,191,20,112,43
+                    WS_BORDER | WS_TABSTOP,191,20,112,80
     GROUPBOX        "Groups",IDC_STATIC,2,120,148,121
     CONTROL         "Draw a line alongside group names",IDC_LINEWITHGROUPS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,
@@ -362,14 +364,6 @@ BEGIN
                     WS_TABSTOP,11,102,153,10
     CONTROL         "Hide vertical scrollbar",IDC_NOSCROLLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,160,140,10
-    CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
-                    197,71,39,10
-    CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
-                    BS_AUTORADIOBUTTON,197,91,61,10
-    CONTROL         "Full selection",IDC_HILIGHTMODE1,"Button",
-                    BS_AUTORADIOBUTTON,197,81,57,10
-    CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
-                    BS_AUTORADIOBUTTON,198,101,55,10
 END
 
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 240
@@ -433,7 +427,7 @@ END
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 132
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Contact List Background",IDC_STATIC,4,4,227,124
     LTEXT           "Background colour:",IDC_STATIC,12,20,72,8,NOT WS_GROUP
@@ -456,6 +450,14 @@ BEGIN
                     WS_TABSTOP,22,110,100,10
     CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,122,110,101,10
+    CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
+                    150,15,39,10
+    CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
+                    BS_AUTORADIOBUTTON,150,35,61,10
+    CONTROL         "Full selection",IDC_HILIGHTMODE1,"Button",
+                    BS_AUTORADIOBUTTON,150,25,57,10
+    CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
+                    BS_AUTORADIOBUTTON,150,45,55,10
 END
 
 IDD_OPT_CLCTEXTSIMPLE DIALOGEX 0, 0, 277, 240
@@ -503,6 +505,30 @@ BEGIN
     LTEXT           "Quicksearch text:",IDC_STATIC,12,218,65,8
     CONTROL         "",IDC_QUICKCOLOUR,"ColourPicker",WS_TABSTOP,77,216,29,
                     12
+END
+
+IDD_OPT_HOTKEYS DIALOGEX 0, 0, 285, 240
+STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "HotKeys",IDC_STATIC,4,4,277,154
+    PUSHBUTTON      "&Change...",IDC_CHANGE,16,213,50,14
+    PUSHBUTTON      "&Preview",IDC_PREVIEW,70,213,50,14
+    CONTROL         "Download more sounds",IDC_GETMORE,"Hyperlink",
+                    WS_TABSTOP | 0x2,127,216,137,8
+    CONTROL         "Tree1",IDC_HOTKEYTREE,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | WS_BORDER | 
+                    WS_TABSTOP,12,15,261,137
+    GROUPBOX        "HotKey Information",IDC_SGROUP,4,162,277,71
+    LTEXT           "Location:",IDC_SLOC,140,190,40,9
+    LTEXT           "",IDC_LOCATION,180,190,75,18
+    LTEXT           "Name:",IDC_NAME,17,174,39,9
+    LTEXT           "",IDC_NAMEVAL,64,174,209,9
+    CONTROL         "HotKey1",IDC_SETHOTKEY,"msctls_hotkey32",WS_BORDER | 
+                    WS_TABSTOP,60,190,80,14
+    LTEXT           "Hotkey",IDC_HKTITLE,15,190,40,8
 END
 
 
@@ -637,6 +663,16 @@ BEGIN
         HORZGUIDE, 190
         HORZGUIDE, 206
         HORZGUIDE, 222
+    END
+
+    IDD_OPT_HOTKEYS, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 281
+        VERTGUIDE, 12
+        VERTGUIDE, 273
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 236
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -861,7 +897,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 IDD_OPT_SBAR DIALOGEX 0, 0, 178, 181
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Status Bar",IDC_STATIC,4,4,170,171
     CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 
@@ -873,18 +909,20 @@ BEGIN
     CONTROL         "Show status text",IDC_SHOWSTATUS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,59,142,10
     CONTROL         "Right click opens status menu",IDC_RIGHTSTATUS,"Button",
-                    BS_AUTORADIOBUTTON,20,100,142,10
-    CONTROL         "Right click opens Miranda menu",IDC_RIGHTMIRANDA,"Button",
                     BS_AUTORADIOBUTTON,20,111,142,10
+    CONTROL         "Right click opens Miranda menu",IDC_RIGHTMIRANDA,"Button",
+                    BS_AUTORADIOBUTTON,20,122,142,10
     CONTROL         "Make sections equal width",IDC_EQUALSECTIONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,130,142,10
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,100,150,32,10
-    LTEXT           "Background colour:",IDC_STATIC,20,150,72,8,NOT WS_GROUP
-    PUSHBUTTON      "-",IDC_DEFBKCOLOR,135,150,6,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,141,142,10
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,100,161,32,10
+    LTEXT           "Background colour:",IDC_STATIC,20,161,72,8,NOT WS_GROUP
+    PUSHBUTTON      "-",IDC_DEFBKCOLOR,135,161,6,10
     CONTROL         "Show size grip",IDC_SHOWSIZEGRIP,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,72,142,10
     CONTROL         "Show bevel effect on panels",IDC_SBPANELBEVEL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,86,107,10
+    CONTROL         "Use connecting Icon",IDC_USECONNECTINGICON,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,97,82,10
 END
 
 

@@ -124,6 +124,12 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	hdc=GetDC(hwnd);
 	if(hitcontact->type==CLCIT_GROUP) SelectObject(hdc,dat->fontInfo[FONTID_GROUPS].hFont);
 	else SelectObject(hdc,dat->fontInfo[FONTID_CONTACTS].hFont);
+	if (DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1)
+	{
+		if(flags) *flags|=CLCHT_ONITEMLABEL;
+		return hit;
+	}
+	
 	GetTextExtentPoint32(hdc,hitcontact->szText,lstrlen(hitcontact->szText),&textSize);
 	width=textSize.cx;
 	if(hitcontact->type==CLCIT_GROUP) {
@@ -219,10 +225,13 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	si.cbSize=sizeof(si);
 	si.fMask=SIF_ALL;
 	si.nMin=0;
-	si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,1);
+	si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,1)-1;
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
-	if (dat->noVScrollbar==0) SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
+
+	if ( GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
+		if ( dat->noVScrollbar==0 ) SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
+	} else SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
 	ScrollTo(hwnd,dat,dat->yScroll,1);
 	nm.hdr.code=CLN_LISTSIZECHANGE;
 	nm.hdr.hwndFrom=hwnd;
@@ -434,8 +443,8 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	if(hit==-1 || hitFlags&CLCHT_ONITEMEXTRA) return DROPTARGET_ONNOTHING;
 
 	if(movecontact->type==CLCIT_GROUP) {
-		struct ClcContact *bottomcontact,*topcontact;
-		struct ClcGroup *topgroup;
+		struct ClcContact *bottomcontact=NULL,*topcontact=NULL;
+		struct ClcGroup *topgroup=NULL;
 		int topItem=-1,bottomItem;
 		int ok=0;
 		if(pt.y+dat->yScroll<hit*dat->rowHeight+dat->insertionMarkHitHeight) {
@@ -540,17 +549,20 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 		for(i=0;i<=FONTID_MAX;i++) {
 			if(!dat->fontInfo[i].changed) DeleteObject(dat->fontInfo[i].hFont);
 			GetFontSetting(i,&lf,&dat->fontInfo[i].colour);
-			if (0) {
+			{
+				LONG height;
 				HDC hdc=GetDC(NULL);
+				height=lf.lfHeight;
 				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 				ReleaseDC(NULL,hdc);				
+				dat->fontInfo[i].hFont=CreateFontIndirect(&lf);
+				lf.lfHeight=height;
 			}
-			dat->fontInfo[i].hFont=CreateFontIndirect(&lf);
 			dat->fontInfo[i].changed=0;
 			SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc,"x",1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
-			if(fontSize.cy+2>dat->rowHeight) dat->rowHeight=fontSize.cy+2;
+			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
 		}
 		ReleaseDC(hwnd,hdc);
 	}
@@ -561,7 +573,8 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 	dat->gammaCorrection=DBGetContactSettingByte(NULL,"CLC","GammaCorrect",CLCDEFAULT_GAMMACORRECT);
 	dat->showIdle=DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE);
 	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
-	ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
+	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
+//	ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
 	if(!dat->bkChanged) {
 		DBVARIANT dbv;
 		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
