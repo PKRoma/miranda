@@ -13,7 +13,7 @@ unit m_icq;
 
 interface
 
-uses windows;
+uses windows,m_protosvc;
 
 const
   ICQEVENTTYPE_YOUWEREADDED  =1000;
@@ -53,8 +53,8 @@ const
 //This never replies, the information is just updated in the database.
 //Users should hook db/contact/settingchanged if they want to know when the
 //information arrives
-const
-  MS_ICQ_UPDATECONTACTINFO  ='ICQ/UpdateContactInfo';
+//const
+//  MS_ICQ_UPDATECONTACTINFO  ='ICQ/UpdateContactInfo';
   
 
 //send a request to the server to get the extended information about a user
@@ -65,8 +65,8 @@ const
 //This never replies, the information is just updated in the database.
 //Users should hook db/contact/settingchanged if they want to know when the
 //information arrives
-const
-  MS_ICQ_UPDATECONTACTINFOEXT  ='ICQ/UpdateContactInfoExt';
+//const
+//  MS_ICQ_UPDATECONTACTINFOEXT  ='ICQ/UpdateContactInfoExt';
   
 
 //send a message
@@ -83,10 +83,13 @@ type
     routeOverride:Integer;
   end;
 const
-  ISMF_ROUTE_DEFAULT   = 0;
-  ISMF_ROUTE_DIRECT    = 1;
-  ISMF_ROUTE_THRUSERVER =2;
-  ISMF_ROUTE_BESTWAY    =3;
+  //new
+  PIMF_ROUTE_DEFAULT    =0     ;
+  PIMF_ROUTE_DIRECT     =$10000;
+  PIMF_ROUTE_THRUSERVER =$20000;
+  PIMF_ROUTE_BESTWAY    =$30000;
+  PIMF_ROUTE_MASK       =$30000;
+
 const
   MS_ICQ_SENDMESSAGE        ='ICQ/SendMessage';
   
@@ -103,16 +106,16 @@ type
     pszUrl:PChar;
     pszDescription:PChar;
   end;
-const
-  MS_ICQ_SENDURL        ='ICQ/SendURL';
+//const
+//  MS_ICQ_SENDURL        ='ICQ/SendURL';
   
 
 //allow somebody to add you to their contact list
 //wParam=uin of requester
 //lParam=0
 //returns 0 on success, nonzero otherwise
-const
-  MS_ICQ_AUTHORIZE      ='ICQ/Authorize';
+//const
+//  MS_ICQ_AUTHORIZE      ='ICQ/Authorize';
   
 
 //start a search of all ICQ users by e-mail. results are returned with
@@ -170,8 +173,8 @@ type
     icqSeq:DWord;
     pszWorkingDir:PChar;
   end;
-const
-  MS_ICQ_ACCEPTFILEREQUEST  ='ICQ/AcceptFileRequest';
+//const
+//  MS_ICQ_ACCEPTFILEREQUEST  ='ICQ/AcceptFileRequest';
   
 
 //refuse an incoming file request
@@ -181,8 +184,8 @@ const
 //this event
 //ism has the uin to send to, and the decline message to send
 //returns 0 on success, nonzero otherwise
-const
-  MS_ICQ_REFUSEFILEREQUEST  ='ICQ/RefuseFileRequest';
+//const
+//  MS_ICQ_REFUSEFILEREQUEST  ='ICQ/RefuseFileRequest';
   
 
 //close a handle returned by icq/acceptfilerequest that has finished receiving
@@ -190,8 +193,8 @@ const
 //lParam=0
 //returns 0 on success, nonzero otherwise
 //NOTE: I have no idea when/if this function is supposed to be called
-const
-  MS_ICQ_CLOSEFILETRANSFERHANDLE ='ICQ/CloseFileTransferHandle';
+//const
+//  MS_ICQ_CLOSEFILETRANSFERHANDLE ='ICQ/CloseFileTransferHandle';
   
 
 //send a set of files
@@ -207,8 +210,8 @@ type
     hSession:THandle;	        //output: handle to the file session, to be closed when
                                 //done
   end;
-const
-  MS_ICQ_SENDFILETRANSFER     ='ICQ/SendFileTransfer';
+//const
+//  MS_ICQ_SENDFILETRANSFER     ='ICQ/SendFileTransfer';
   
 
 //gets a load of information about the state of an active file transfer
@@ -242,8 +245,8 @@ type
     currentFileProgress:LongWord;
     currentSpeed:Integer;	  //0-100
   end;
-const
-  MS_ICQ_GETFILETRANSFERSTATUS='ICQ/GetFileTransferStatus';
+//const
+//  MS_ICQ_GETFILETRANSFERSTATUS='ICQ/GetFileTransferStatus';
   
 
 //a logging message was sent from icqlib
