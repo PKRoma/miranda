@@ -109,14 +109,30 @@ void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
   if (dwUin != 0) 
   {
     ltoa(dwUin, pszDest + tPathLen, 10);
-    if (dwFormat == PA_FORMAT_JPEG)
-      strcat(pszDest + tPathLen, ".jpg");
-    else if (dwFormat == PA_FORMAT_XML)
-      strcat(pszDest + tPathLen, ".xml");
-    else
-      strcat(pszDest + tPathLen, ".dat");
   }
-  else strcpy(pszDest + tPathLen, "avatar.jpg" );
+  else 
+  {
+    char szBuf[MAX_PATH];
+
+    if (CallService(MS_DB_GETPROFILENAME, 250 - tPathLen, (LPARAM)szBuf))
+      strcpy(pszDest + tPathLen, "avatar" );
+    else 
+    {
+      char* szLastDot = strstr(szBuf, ".");
+      if (szLastDot) while (strstr(szLastDot+1, ".")) szLastDot = strstr(szLastDot+1, ".");
+      if (szLastDot) szLastDot[0] = '\0';
+      strcpy(pszDest + tPathLen, szBuf);
+      strcat(pszDest + tPathLen, "_avt");
+    }
+  }
+  if (dwFormat == PA_FORMAT_JPEG)
+    strcat(pszDest + tPathLen, ".jpg");
+  else if (dwFormat == PA_FORMAT_GIF)
+    strcat(pszDest + tPathLen, ".gif");
+  else if (dwFormat == PA_FORMAT_XML)
+    strcat(pszDest + tPathLen, ".xml");
+  else
+    strcat(pszDest + tPathLen, ".dat");
 }
 
 
