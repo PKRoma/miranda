@@ -1,11 +1,11 @@
 Protocol for the Miranda IM for communicating with users of
 the MSN Messenger protocol.
 
-Copyright (C) 2003-4 George Hazan (ghazan@postman.ru)
+Copyright (C) 2003-5 George Hazan (ghazan@postman.ru)
 Copyright (C) 2001-3 Richard Hughes (original version),
 
 Miranda IM: the free icq client for MS Windows
-Copyright (C) 2002-4  Martin Oberg, Robert Rainwater, Sam Kothari, Lyon Lim
+Copyright (C) 2002-5  Martin Oberg, Robert Rainwater, Sam Kothari, Lyon Lim
 Copyright (C) 2000-2  Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
