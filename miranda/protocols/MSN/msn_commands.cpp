@@ -823,7 +823,6 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' LAC':    //********* CAL: section 8.3 Inviting Users to a Switchboard Session
-			info->sendPacket( "PNG", NULL );
 			break;
 
 		case ' GHC':    //********* CHG: section 7.7 Client States
