@@ -590,9 +590,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			{ // avatar stuff
 				dat->avatarPic = 0;
 				dat->showAvatar = 0;
+				dat->limitAvatarH = 0;
 				if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
 					dat->avatarPic = g_hbmUnknown;
-					dat->showAvatar = 1;
+					dat->showAvatar = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, SRMSGDEFSET_AVATARENABLE);
+					dat->limitAvatarH = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT)?DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT):0;
 				}
 				SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
 			}
@@ -835,8 +837,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
 		}
 		GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
-		dat->avatarWidth=bminfo.bmWidth+2;
-        dat->avatarHeight=bminfo.bmHeight+2;
+		if (dat->limitAvatarH) {
+			double aspect = 0;
+
+			aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
+			dat->avatarWidth = (int)(bminfo.bmWidth * aspect + 2); 
+			dat->avatarHeight = dat->limitAvatarH + 2;
+		}
+		else {
+			dat->avatarWidth=bminfo.bmWidth+2;
+			dat->avatarHeight=bminfo.bmHeight+2;
+		}
 		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_SHOW);
 		break;
 	}
@@ -989,6 +1000,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			COLORREF colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 			dat->hBkgBrush = CreateSolidBrush(colour);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
+		}
+		{ // avatar stuff
+			dat->avatarPic = 0;
+			dat->showAvatar = 0;
+			dat->limitAvatarH = 0;
+			if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
+				dat->avatarPic = g_hbmUnknown;
+				dat->showAvatar = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, SRMSGDEFSET_AVATARENABLE);
+				dat->limitAvatarH = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT)?DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT):0;
+			}
+			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
+			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 		}
 		dat->showTime = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTIME, SRMSGDEFSET_SHOWTIME);
 		dat->showIcons = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWLOGICONS, SRMSGDEFSET_SHOWLOGICONS);
@@ -1370,8 +1393,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					{
 						HDC hdcMem = CreateCompatibleDC(dis->hDC);
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->avatarPic);
+						
+						if (dat->limitAvatarH) {
+							double aspect = 0, w = 0;
 
-						BitBlt(dis->hDC, 1, 1, bminfo.bmWidth, bminfo.bmHeight, hdcMem, 0, 0, SRCCOPY);
+							aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
+							w = (double)bminfo.bmWidth * aspect; 
+							SetStretchBltMode(dis->hDC, HALFTONE);
+                            StretchBlt(dis->hDC, 1, 1, (int)w, dat->limitAvatarH, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+						}
+						else
+							BitBlt(dis->hDC, 1, 1, bminfo.bmWidth, bminfo.bmHeight, hdcMem, 0, 0, SRCCOPY);
 						DeleteObject(hbmMem);
                         DeleteDC(hdcMem);
 					}

@@ -28,12 +28,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 178
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 209
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,0,310,175
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,0,310,206
     CONTROL         "Automatically pop up the window when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,16,
                     300,10
@@ -50,27 +50,34 @@ BEGIN
     CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,76,136,10
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,113,135,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,144,135,10
     CONTROL         "Show username on top row",IDC_SHOWINFOLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,126,138,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,157,138,10
     CONTROL         "Show toolbar buttons on top row",IDC_SHOWBUTTONLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,139,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,170,137,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,113,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,144,137,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,126,137,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,157,137,10
     CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,139,133,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,170,133,10
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,155,211,8
-    EDITTEXT        IDC_SECONDS,223,153,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,155,44,8
+                    IDC_STATIC,8,186,211,8
+    EDITTEXT        IDC_SECONDS,223,184,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,186,44,8
     CONTROL         "Support control up/down in message area to show previously sent messages",
                     IDC_CTRLSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
                     88,298,10
     CONTROL         "Delete temporary contacts when closing message window",
                     IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,100,
                     287,10
+    CONTROL         "Enable avatar support in the message window",
+                    IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,113,279,10
+    CONTROL         "Limit avatar height to ",IDC_LIMITAVATARH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,127,106,10
+    EDITTEXT        IDC_AVATARHEIGHT,148,126,28,13,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_STATIC,181,128,35,8
 END
 
 IDD_MSGSENDERROR DIALOGEX 0, 0, 187, 97
@@ -93,7 +100,7 @@ STYLE DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
     WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
 CAPTION "Message Session"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_MESSAGE,1,49,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL
@@ -212,7 +219,7 @@ BEGIN
         VERTGUIDE, 148
         VERTGUIDE, 300
         VERTGUIDE, 310
-        BOTTOMMARGIN, 175
+        BOTTOMMARGIN, 206
     END
 
     IDD_MSGSENDERROR, DIALOG

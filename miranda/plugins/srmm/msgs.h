@@ -67,6 +67,7 @@ struct MessageWindowData
 	int showAvatar;
 	int avatarWidth;
 	int avatarHeight;
+	int limitAvatarH;
 	HBITMAP avatarPic;
 	DWORD nLastTyping;
 	int showTyping;
@@ -207,6 +208,13 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SHOWTYPINGCLIST    "ShowTypingClist"
 #define SRMSGDEFSET_SHOWTYPINGCLIST 1
 
+
+#define SRMSGSET_AVATARENABLE       "AvatarEnable"
+#define SRMSGDEFSET_AVATARENABLE    1
+#define SRMSGSET_LIMITAVHEIGHT      "AvatarLimitHeight"
+#define SRMSGDEFSET_LIMITAVHEIGHT   1
+#define SRMSGSET_AVHEIGHT          "AvatarHeight"
+#define SRMSGDEFSET_AVHEIGHT        60
 #define SRMSGSET_AVATAR             "Avatar"
 
 #endif
