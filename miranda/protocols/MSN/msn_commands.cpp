@@ -254,7 +254,8 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			dest = tBuffer2;
 		}
 		else dest = tBuffer;
-		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages in %d folders." ), UnreadMessages, UnreadFolders );
+		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages in %d folders." ), 
+			UnreadMessages, ( UnreadFolders == 0 ) ? 1 : UnreadFolders );
 	}
 
 	// Disable to notify receiving hotmail
