@@ -360,7 +360,7 @@ void aim_buddy_parseconfig(char *config)
                 while(n) {
                     un = (char*)n->data;
                     if (un&&strlen(un)&&(buflen+strlen(un)+1<MSG_LEN*2)) {
-                        strcat(mbuf, un);
+                        strcat(mbuf, aim_util_normalize(un));
                         strcat(mbuf, " ");
                         buflen = strlen(mbuf);
                     }
