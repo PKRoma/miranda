@@ -819,6 +819,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		else if (pAck->result == ACKRESULT_STATUS) {
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 		}
+		else if (pAck->result == ACKRESULT_FAILED) {
+			DBDeleteContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR);
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
+		}
 		break;
 	}
 	case DM_AVATARCALCSIZE:
