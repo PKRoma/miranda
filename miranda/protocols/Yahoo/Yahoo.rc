@@ -114,3 +114,5 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,102,34,50,14
 END
 
+#include "version.rc"
+

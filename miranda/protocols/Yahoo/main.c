@@ -13,6 +13,7 @@
 #include <windows.h>
 #include "yahoo.h"
 #include "http_gateway.h"
+#include "version.h"
 
 #include <m_system.h>
 #include <m_langpack.h>
@@ -44,7 +45,7 @@ pthread_mutex_t connectionHandleMutex;
 PLUGININFO pluginInfo={
 		sizeof(PLUGININFO),
 		"Yahoo Protocol",
-		PLUGIN_MAKE_VERSION(0, 3, 0, 4),
+		__VERSION_DWORD,
 		"Yahoo Protocol support via libyahoo2 library.",
 		"Gennady Feldman",
 		"gennady_feldman at gena01.com",
