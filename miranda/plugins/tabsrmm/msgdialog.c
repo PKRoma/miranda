@@ -207,8 +207,8 @@ void SetDialogToType(HWND hwndDlg)
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 		ShowWindow (GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
-        if(DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01)
-            EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), FALSE);
+        //if(DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01)
+        //    EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), FALSE);
             
 	} else
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
@@ -3316,39 +3316,20 @@ verify:
             break;
         case DM_UINTOCLIPBOARD:
             {
-                CONTACTINFO ci;
-                int hasName = 0;
-                char buf[128];
                 HGLOBAL hData;
 
                 if(dat->hContact) {
-                    char *contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
-                    ZeroMemory(&ci, sizeof(ci));
-                    ci.cbSize = sizeof(ci);
-                    ci.hContact = dat->hContact;
-                    ci.szProto = dat->szProto;
-                    ci.dwFlag = CNF_UNIQUEID;
-                    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-                        switch (ci.type) {
-                            case CNFT_ASCIIZ:
-                                hasName = 1;
-                                _snprintf(buf, sizeof(buf), "%s", ci.pszVal);
-                                miranda_sys_free(ci.pszVal);
-                                break;
-                            case CNFT_DWORD:
-                                hasName = 1;
-                                _snprintf(buf, sizeof(buf), "%u", ci.dVal);
-                                break;
-                        }
-                    }
                     if (!OpenClipboard(hwndDlg))
                         break;
+                    if(lstrlenA(dat->uin) == 0)
+                        break;
                     EmptyClipboard();
-                    hData = GlobalAlloc(GMEM_MOVEABLE, hasName ? lstrlenA(buf) + 1 : lstrlenA(contactName) + 1);
-                    lstrcpyA(GlobalLock(hData), hasName ? buf : contactName);
+                    hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(dat->uin) + 1);
+                    lstrcpyA(GlobalLock(hData), dat->uin);
                     GlobalUnlock(hData);
                     SetClipboardData(CF_TEXT, hData);
                     CloseClipboard();
+                    GlobalFree(hData);
                 }
                 break;
             }

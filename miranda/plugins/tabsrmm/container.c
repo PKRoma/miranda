@@ -2345,6 +2345,7 @@ void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WP
 
 void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
 {
+    return;
     if(dat->pContainer->hMenu == 0)
         return;
     
