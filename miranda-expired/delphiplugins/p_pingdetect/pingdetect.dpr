@@ -44,7 +44,11 @@ uses
   m_database in '..\headerfiles\m_database.pas',
   m_icq in '..\headerfiles\m_icq.pas',
   options in 'options.pas',
-  m_options in '..\headerfiles\m_options.pas';
+  m_options in '..\headerfiles\m_options.pas',
+  langpacktools in '..\units\langpacktools.pas',
+  m_langpack in '..\headerfiles\m_langpack.pas',
+  m_protosvc in '..\headerfiles\m_protosvc.pas',
+  m_protocols in '..\headerfiles\m_protocols.pas';
 
 {$R *.RES}
 
@@ -92,25 +96,33 @@ begin
   Result:=0;
 end;
 
+const
+  newstatus:integer=-1;
+
 procedure PingReadyEvent(Sender:TObject);
 var
   currentstatus:integer;
+  status:integer;
+  conn:Boolean;
 begin
   if not Assigned(Sender) then
     Exit;
 
   currentstatus:=PluginLink.CallService(MS_CLIST_GETSTATUSMODE,0,0);
+  conn:=Tpingobject(Sender).Success>=0.6;//min 60% success
 
-  if Tpingobject(Sender).Success>=0.6 then//min 60% success
+  if (currentstatus=ID_STATUS_OFFLINE) and conn then
     begin
-    if currentstatus=ID_STATUS_OFFLINE then
-      PluginLink.CallService(MS_CLIST_SETSTATUSMODE,ID_STATUS_ONLINE,0);
+    status:=ReadSettingWord(PluginLink,0,'CList','Status',ID_STATUS_OFFLINE);
+    if status<>ID_STATUS_OFFLINE then
+      PluginLink.CallService(MS_CLIST_SETSTATUSMODE,status,0);
     end
   else
-    begin
-    if currentstatus<>ID_STATUS_OFFLINE then
+    if (currentstatus<>ID_STATUS_OFFLINE) and not conn then
+      begin
       PluginLink.CallService(MS_CLIST_SETSTATUSMODE,ID_STATUS_OFFLINE,0);
-    end;
+      WriteSettingInt(PluginLink,0,'CList','Status',CurrentStatus);
+      end;
 end;
 
 procedure TimerProc(Wnd: HWnd; Msg, TimerID, SysTime: Longint);stdcall;
