@@ -730,6 +730,10 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
     icq_FmtLog(icqlink, ICQ_LOG_WARNING, "Unhandled protocol version! Message %04x, Version: %x, "
                "Sequence: %04x, Size: %d\n", cmd, icq_PacketReadUDPInVer(p),
                seq, p->length);
+	if(icq_PacketReadUDPInVer(p)==3 && cmd==0x3c00) {
+		//I *think* this is a bad password, only a guess, though
+        invoke_callback(icqlink,icq_WrongPassword)(icqlink);
+	}
 /*    icq_UDPAck(icqlink, seq);  DO NOT ACK unhandled protocol version! */
   }
 }
