@@ -931,24 +931,50 @@ void gg_notifyall()
 {
     HANDLE hContact;
     char *szProto;
-    int count = 0;
-    uin_t uin;
+    int count = 0, cc = 0;
+    uin_t *uins;
+    char *types;
 
 #ifdef DEBUGMODE
     gg_netlog("gg_notifyall(): Subscribing notification to all users");
 #endif
-    // Readup uins
+    // Readup count
     hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
     while (hContact)
     {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-        if (szProto != NULL && !strcmp(szProto, GG_PROTO))
+        if (szProto != NULL && !strcmp(szProto, GG_PROTO)) count ++;
+        hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+    }
+
+    // Readup list
+    if(count == 0) return;
+    uins = calloc(sizeof(uin_t), count);
+    types = calloc(sizeof(char), count);
+
+    hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+    while (hContact && cc < count)
+    {
+        szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+        if (szProto != NULL && !strcmp(szProto, GG_PROTO) && (uins[cc] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
         {
-            // Notify user
-            gg_notifyuser(hContact, 0);
+            if(DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE)
+                types[cc] = GG_USER_OFFLINE;
+            else if(DBGetContactSettingDword(hContact, "Ignore", "Mask1", (DWORD)0 ) & IGNOREEVENT_MESSAGE)
+                types[cc] = GG_USER_BLOCKED;
+            else
+                types[cc] = GG_USER_NORMAL;
+            cc ++;
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
+    if(cc < count) count = cc;
+
+    // Send notification
+    gg_notify_ex(ggSess, uins, types, count);
+
+    // Free variables
+    free(uins); free(types);
 }
 
 ////////////////////////////////////////////////////////////
@@ -1127,17 +1153,19 @@ int status_gg2m(int status)
 // Called when contact status is changed
 void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version)
 {
-    HANDLE hContact;
-    DBWriteContactSettingWord(hContact = gg_getcontact(uin, 1, 0, NULL), GG_PROTO, GG_KEY_STATUS, status_gg2m(status));
+    HANDLE hContact = gg_getcontact(uin, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, GG_KEYDEF_SHOWNOTONMYLIST) ? 1 : 0, 0, NULL);
 
-	// Check if contact is on list
+    // Check if contact is on list
 	if(!hContact) return;
+
+    // Write contact status
+    DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, status_gg2m(status));
 
 	// Check if there's description and if it's not empty
     if(idescr && *idescr != '\n' && *idescr != 0)
     {
 #ifdef DEBUGMODE
-        gg_netlog("gg_getcontact(): Saving for %d status desct \"%s\".", uin, idescr);
+        gg_netlog("gg_changecontactstatus(): Saving for %d status desct \"%s\".", uin, idescr);
 #endif
         DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_STATUSDESCR, idescr);
     }
