@@ -1761,7 +1761,6 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 {
   DBCONTACTWRITESETTING* cws = (DBCONTACTWRITESETTING*)lParam;
 
-
   // We can't upload changes to NULL contact
   if ((HANDLE)wParam == NULL)
     return 0;
@@ -1770,6 +1769,16 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
   if (!icqOnline || !gbSsiEnabled || bIsSyncingCL)
     return 0;
 
+  { // only our contacts will be handled
+    char* szProto;
+
+    szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
+    if (szProto && !strcmp(szProto, gpszICQProtoName))
+      ;// our contact, fine; otherwise return
+    else 
+      return 0;
+  }
+  
   if (!strcmp(cws->szModule, "CList"))
   {
     // Has a temporary contact just been added permanently?
@@ -1777,14 +1786,12 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
       DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
     {
-      char* szProto;
       DWORD dwUin;
 
       dwUin = DBGetContactSettingDword((HANDLE)wParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
-      szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
 			
-      // Is this a ICQ contact and does it have a UIN?
-      if (szProto && !strcmp(szProto, gpszICQProtoName) && dwUin)
+      // Does this contact have a UIN?
+      if (dwUin)
       {
         char *pszNick;
         char *pszGroup;
