@@ -864,8 +864,6 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
     //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
     ft->savepath = _strdup((char *) ccs->lParam);
 	
-    //ft->state = FR_STATE_RECEIVING;
-    //aim_filerecv_accept(ft->user, ft->cookie);
     pthread_create(yahoo_recv_filethread, (void *) ft);
     return ccs->wParam;
 }
