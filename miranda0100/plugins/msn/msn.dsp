@@ -141,6 +141,10 @@ SOURCE=.\msn_errors.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_lists.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_md5c.c
 # End Source File
 # Begin Source File

@@ -32,7 +32,7 @@ extern int msnStatusMode,msnDesiredStatus;
 static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 {
 	if(wParam==PFLAGNUM_1)
-		return PF1_IM|PF1_SERVERCLIST|PF1_AUTHREQ;
+		return PF1_IM|PF1_SERVERCLIST|PF1_AUTHREQ|PF1_BASICSEARCH|PF1_ADDSEARCHRES;
 	if(wParam==PFLAGNUM_2)
 		return PF2_ONLINE|PF2_SHORTAWAY|PF2_LONGAWAY|PF2_LIGHTDND|PF2_ONTHEPHONE|PF2_OUTTOLUNCH;
 	if(wParam==PFLAGNUM_3)
@@ -91,37 +91,75 @@ int MsnGetStatus(WPARAM wParam,LPARAM lParam)
 	return msnStatusMode;
 }
 
-static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
+static int searchId=-1;
+static char searchEmail[130];
+static VOID CALLBACK BasicSearchTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 {
-	return 1;
+	PROTOSEARCHRESULT psr;
+
+	KillTimer(hwnd,idEvent);
+	memset(&psr,0,sizeof(psr));
+	psr.cbSize=sizeof(psr);
+	psr.nick="";
+	psr.firstName="";
+	psr.lastName="";
+	psr.email=searchEmail;
+	ProtoBroadcastAck(MSNPROTONAME,NULL,ACKTYPE_SEARCH,ACKRESULT_DATA,(HANDLE)searchId,(LPARAM)&psr);
+	ProtoBroadcastAck(MSNPROTONAME,NULL,ACKTYPE_SEARCH,ACKRESULT_SUCCESS,(HANDLE)searchId,0);
+	searchId=-1;
 }
 
-static HANDLE AddToListByUin(DWORD uin,DWORD flags)
+static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
 {
-	/*HANDLE hContact;
+	if(searchId!=-1) return 0;   //only one search at a time
+	searchId=1;
+	lstrcpyn(searchEmail,(char*)lParam,sizeof(searchEmail));
+	SetTimer(NULL,0,10,BasicSearchTimerProc);  //the caller needs to get this return value before the results
+	return searchId;
+}
 
+static HANDLE AddToListByEmail(const char *email,DWORD flags)
+{
+	HANDLE hContact;
+	char *szProto;
+	DBVARIANT dbv;
+	char urlEmail[130];
+
+	UrlEncode(email,urlEmail,sizeof(urlEmail));
+	//check not already on list
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	while(hContact!=NULL) {
-		if(!strcmp((char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0),MSNPROTONAME)) {
-			if(DBGetContactSettingDword(hContact,ICQPROTONAME,"UIN",0)==uin) {
-				if((!flags&PALF_TEMPORARY)) {
-					DBDeleteContactSetting(hContact,"CList","NotOnList");
-					DBDeleteContactSetting(hContact,"CList","Hidden");
+		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+		if(szProto!=NULL && !strcmp(szProto,MSNPROTONAME)) {
+			if(!DBGetContactSetting(hContact,MSNPROTONAME,"e-mail",&dbv)) {
+				if(!strcmp(dbv.pszVal,email)) {
+					if((!flags&PALF_TEMPORARY) && DBGetContactSettingByte(hContact,"CList","NotOnList",1)) {
+						DBDeleteContactSetting(hContact,"CList","NotOnList");
+						DBDeleteContactSetting(hContact,"CList","Hidden");
+						if(msnLoggedIn) MSN_SendPacket(msnNSSocket,"ADD","FL %s %s",urlEmail,urlEmail);
+						else hContact=NULL;
+					}
+					DBFreeVariant(&dbv);
+					return hContact;
 				}
-				return hContact;
+				DBFreeVariant(&dbv);
 			}
 		}
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
+	//not already there: add
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
-	CallService(MS_PROTO_ADDTOCONTACT,(WPARAM)hContact,(LPARAM)ICQPROTONAME);
-	DBWriteContactSettingDword(hContact,ICQPROTONAME,"UIN",uin);
+	CallService(MS_PROTO_ADDTOCONTACT,(WPARAM)hContact,(LPARAM)MSNPROTONAME);
+	DBWriteContactSettingString(hContact,MSNPROTONAME,"e-mail",email);
 	if(flags&PALF_TEMPORARY) {
 		DBWriteContactSettingByte(hContact,"CList","NotOnList",1);
 		DBWriteContactSettingByte(hContact,"CList","Hidden",1);
 	}
-	return hContact;*/
-	return 0;
+	else {
+		if(msnLoggedIn) MSN_SendPacket(msnNSSocket,"ADD","FL %s %s",urlEmail,urlEmail);
+		else hContact=NULL;
+	}
+	return hContact;
 }
 
 static int MsnAddToList(WPARAM wParam,LPARAM lParam)
@@ -129,7 +167,7 @@ static int MsnAddToList(WPARAM wParam,LPARAM lParam)
 	PROTOSEARCHRESULT *psr=(PROTOSEARCHRESULT*)lParam;
 
 	if(psr->cbSize!=sizeof(PROTOSEARCHRESULT)) return (int)(HANDLE)NULL;
-	return 0;
+	return (int)AddToListByEmail(psr->email,wParam);
 }
 
 static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
