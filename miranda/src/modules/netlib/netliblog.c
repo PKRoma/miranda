@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#define alloca(a) _alloca((a))
 
 extern HANDLE hConnectionHeaderMutex;
-static HWND hwndLog = NULL;
 
 #define DM_CLEARLOG (WM_USER+1)
 #define DM_LOG      (WM_USER+2)
@@ -38,6 +37,7 @@ static HWND hwndLog = NULL;
 #define TIMEFORMAT_MICROSECONDS 3
 struct {
 	HWND hwndOpts;
+    HWND hwndLog;
 	int toConsole;
 	int toOutputDebugString;
 	int toFile;
@@ -54,8 +54,8 @@ static const char *szTimeFormats[]={"No times","Standard hh:mm:ss times","Times 
 
 static int IsConsoleVisible(void)
 {
-	if (hwndLog) {
-        return IsWindowVisible(hwndLog)?1:0;
+	if (IsWindow(logOptions.hwndLog)) {
+        return IsWindowVisible(logOptions.hwndLog)?1:0;
     }
     else {
         return 0;
@@ -78,8 +78,8 @@ static void UpdateConsoleOpts(void)
     }
 }
 
+static UINT uLen = 0;
 static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static UINT uLen = 0;
 
 	switch (msg)
 	{
@@ -88,8 +88,27 @@ static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
             HFONT hFont = CreateFont(14,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FIXED_PITCH|FF_DONTCARE,"Courier New");
             SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETFONT, (WPARAM)hFont, 0);
             SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL)));
-            Utils_RestoreWindowPosition(hwndDlg,NULL,"Netlib","log");
-            ShowWindow(hwndDlg, SW_SHOW);
+            {
+                int x, y, w, h;
+
+                x = DBGetContactSettingDword(NULL, "Netlib", "logx", -1);
+                y = DBGetContactSettingDword(NULL, "Netlib", "logy", -1);
+                w = DBGetContactSettingDword(NULL, "Netlib", "logwidth", -1);
+                h = DBGetContactSettingDword(NULL, "Netlib", "logheight", -1);
+                if (x!=-1 && y!=-1 && w!=-1 && h!=-1) {
+                    WINDOWPLACEMENT wp;
+
+                    GetWindowPlacement(hwndDlg, &wp);
+		            wp.rcNormalPosition.left = x;
+		            wp.rcNormalPosition.top = y;
+		            wp.rcNormalPosition.right = wp.rcNormalPosition.left + w;
+		            wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + h;
+                    wp.flags = 0;
+                    wp.showCmd = SW_HIDE;
+                    SetWindowPlacement(hwndDlg, &wp);
+                }
+                else ShowWindow(hwndDlg, SW_HIDE);
+            }
             return TRUE;
         }
         case DM_CLEARLOG:
@@ -147,32 +166,29 @@ static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 static void ClearConsole(void) 
 {
-    if (hwndLog) {
-        SendMessage(hwndLog, DM_CLEARLOG, 0, 0);
+    if (IsWindow(logOptions.hwndLog)) {
+        SendMessage(logOptions.hwndLog, DM_CLEARLOG, 0, 0);
     }
 }
 
 static void SendConsoleMessage(char *msg) 
 {
-    if (hwndLog) {
-        SendMessage(hwndLog, DM_LOG, (WPARAM)msg, 0);
+    if (IsWindow(logOptions.hwndLog)) {
+        SendMessage(logOptions.hwndLog, DM_LOG, (WPARAM)msg, 0);
     }
 }
 
 static void ShowConsole(void)
 {
-    if (hwndLog) {
-        ShowWindow(hwndLog, SW_SHOW);
-    }
-    else {
-        hwndLog = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_NETLIBLOG), NULL, DlgConsole);
+    if (IsWindow(logOptions.hwndLog)) {
+        ShowWindow(logOptions.hwndLog, SW_SHOW);
     }
 }
 
 static void HideConsole(void)
 {
-    if (hwndLog) {
-        ShowWindow(hwndLog, SW_HIDE);
+    if (IsWindow(logOptions.hwndLog)) {
+        ShowWindow(logOptions.hwndLog, SW_HIDE);
     }
 }
 
@@ -578,6 +594,7 @@ void NetlibLogInit(void)
 	logOptions.toConsole=DBGetContactSettingByte(NULL,"Netlib","ToConsole",0);
 	logOptions.toOutputDebugString=DBGetContactSettingByte(NULL,"Netlib","ToOutputDebugString",0);
 	logOptions.toFile=DBGetContactSettingByte(NULL,"Netlib","ToFile",0);
+    logOptions.hwndLog = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_NETLIBLOG), NULL, DlgConsole);
 	if(!DBGetContactSetting(NULL,"Netlib","File",&dbv)) {
 		logOptions.szFile=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -617,7 +634,7 @@ void NetlibLogInit(void)
 void NetlibLogShutdown(void)
 {
 	if(logOptions.hwndOpts) DestroyWindow(logOptions.hwndOpts);
+    if(logOptions.hwndLog) DestroyWindow(logOptions.hwndLog);
 	DeleteCriticalSection(&logOptions.cs);
 	if(logOptions.szFile) free(logOptions.szFile);
-    if(hwndLog) DestroyWindow(hwndLog);
 }
