@@ -75,6 +75,7 @@ static void ConvertBackslashes(char *str)
 			switch(pstr[1]) {
 				case 'n': *pstr='\n'; break;
 				case 't': *pstr='\t'; break;
+				case 'r': *pstr='\r'; break;
 				default: *pstr=pstr[1]; break;
 			}
 			MoveMemory(pstr+1,pstr+2,lstrlen(pstr+2)+1);
