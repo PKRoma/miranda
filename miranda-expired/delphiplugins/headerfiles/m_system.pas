@@ -44,7 +44,7 @@ const
 //wParam=lParam=0
 //if everyone acknowleges OK to exit then returns true, otherwise false
 const
-  MS_SYSTEM_OKTOEXIT  ='Miranda/System/OkToExit" 
+  MS_SYSTEM_OKTOEXIT  ='Miranda/System/OkToExit'; 
 
 //gets the version number of Miranda encoded as a DWORD     v0.1.0.1+
 //wParam=lParam=0
