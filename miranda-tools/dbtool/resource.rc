@@ -26,7 +26,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // 24
 //
 
-1            24      DISCARDABLE     "dbtool.exe.manifest"
+1                       24      DISCARDABLE     "dbtool.exe.manifest"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -103,16 +103,16 @@ END
 IDD_SELECTDB DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "whiterect",IDC_STATIC,0,0,262,30
+    LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Select Miranda Profile",IDC_STATIC,11,6,206,8,WS_BORDER
     CONTROL         "",IDC_HDRLOGO,"Static",SS_ENHMETAFILE,234,3,25,25
     LTEXT           "You can choose the Miranda profile database to compact or repair.",
                     IDC_STATIC,20,14,197,16
     LTEXT           "Select the &profile database from the list below. If the database you wish to use is not listed here then click Other to browse your computer.",
                     IDC_STATIC,23,38,226,16
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
     CONTROL         "List1",IDC_DBLIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
                     LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
@@ -125,14 +125,14 @@ END
 IDD_OPENERROR DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "whiterect",IDC_STATIC,0,0,262,30
+    LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Error Opening Database",IDC_STATIC,11,6,206,8,WS_BORDER
     CONTROL         "",IDC_HDRLOGO,"Static",SS_ENHMETAFILE,234,3,25,25
     LTEXT           "There was an error opening the profile database given.",
                     IDC_STATIC,20,14,197,16
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
     LTEXT           "",IDC_ERRORTEXT,23,38,226,16,SS_NOPREFIX | WS_BORDER
     LTEXT           "Click Next to try opening the file again, or click Back to select a new profile database to manipulate.",
                     IDC_STATIC,23,67,226,16
@@ -144,14 +144,14 @@ END
 IDD_FILEACCESS DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "whiterect",IDC_STATIC,0,0,262,30
+    LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "File Access Options",IDC_STATIC,11,6,206,8,WS_BORDER
     CONTROL         "",IDC_HDRLOGO,"Static",SS_ENHMETAFILE,234,3,25,25
     LTEXT           "You can select low level options to determine how the database is processed.",
                     IDC_STATIC,20,14,197,16
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
     CONTROL         "Create backup",IDC_BACKUP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,69,226,10,WS_EX_CLIENTEDGE
     LTEXT           "Creates a backup copy of the database before any of the requested changes are made.",
@@ -171,14 +171,14 @@ END
 IDD_CLEANING DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "whiterect",IDC_STATIC,0,0,262,30
+    LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Cleaning Options",IDC_STATIC,11,6,206,8,WS_BORDER
     CONTROL         "",IDC_HDRLOGO,"Static",SS_ENHMETAFILE,234,3,25,25
     LTEXT           "You can choose to remove information from the database while it is being processed.",
                     IDC_STATIC,20,14,197,16
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
     CONTROL         "Erase all histories",IDC_ERASEHISTORY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,23,38,226,10,
                     WS_EX_CLIENTEDGE
@@ -194,14 +194,14 @@ END
 IDD_PROGRESS DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "whiterect",-1,0,0,262,30
+    LTEXT           "whiterect",-1,0,0,262,32
     LTEXT           "Working...",-1,11,6,206,8,WS_BORDER
     CONTROL         "",IDC_HDRLOGO,"Static",SS_ENHMETAFILE,234,3,25,25
     LTEXT           "Please wait while the requested operations are being performed.",
                     -1,20,14,197,16
-    CONTROL         "",-1,"Static",SS_ETCHEDHORZ,-1,30,264,1
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ,-1,32,264,1
     CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",PBS_SMOOTH | 
                     WS_BORDER,20,38,222,11
     LISTBOX         IDC_STATUS,20,52,222,84,NOT LBS_NOTIFY | 
@@ -213,13 +213,13 @@ END
 IDD_FINISHED DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "whiterect",IDC_STATIC,0,0,262,30
+    LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Finished!",IDC_STATIC,11,6,206,8,WS_BORDER
     CONTROL         "",IDC_HDRLOGO,"Static",SS_ENHMETAFILE,234,3,25,25
     LTEXT           "All tasks have been completed.",IDC_STATIC,20,14,197,16
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
     CONTROL         "Launch Miranda with this profile",IDC_LAUNCHMIRANDA,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,87,226,10,
                     WS_EX_CLIENTEDGE
