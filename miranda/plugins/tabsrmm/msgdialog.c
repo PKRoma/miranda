@@ -3150,32 +3150,35 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
             }
             break;
+            /*
+             * this is now *only* called from the global ME_PROTO_ACK handler in hotkeyhandler.c (the hidden window)
+             * it receives:
+             * wParam = index of the sendjob in the queue in the low word, index of the found sendID in the high word
+                        (normally 0, but if its a multisend job, then the sendjob may contain more than one hContact/hSendId
+                        pairs.)
+             * lParam = the original ackdata
+             *
+             * the "per message window" ACK hook is gone, the global ack handler cares about all types of ack's (currently
+             * *_MESSAGE and *_AVATAR and dispatches them to the owner windows).
+             */
         case HM_EVENTSENT:
             {
                 ACKDATA *ack = (ACKDATA *) lParam;
                 DBEVENTINFO dbei = { 0};
                 HANDLE hNewEvent;
-                int i, iFound = NR_SENDJOBS, j, iNextFailed;
+                int i, iFound = NR_SENDJOBS, iNextFailed;
 
-                if (ack->type != ACKTYPE_MESSAGE)
+                iFound = (int)(LOWORD(wParam));
+                i = (int)(HIWORD(wParam));
+                
+                if(iFound < 0 || iFound >= NR_SENDJOBS || i < 0 || i >= SENDJOBS_MAX_SENDS) {       // sanity checks (unlikely to happen).
+                    _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT with invalid data (sq-index = %d, sendId-index = %d", iFound, i);
                     break;
-
-                for(j = 0; j < NR_SENDJOBS; j++) {
-                    for (i = 0; i < sendJobs[j].sendCount; i++) {
-                        //_DebugPopup(dat->hContact, "index: %d - hcontact[%d]: %d, sendid[%d]: %d", j, i, sendJobs[j].hContact[i], i, sendJobs[j].hSendId[i]);
-                        if (ack->hProcess == sendJobs[j].hSendId[i] && ack->hContact == sendJobs[j].hContact[i] && dat->hContact == sendJobs[j].hOwner) {
-                            //_DebugPopup(dat->hContact, "found: %d", i);
-                            iFound = j;
-                            break;
-                        }
-                    }
-                    if (iFound == NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
-                        continue;
-                    else
-                        break;
                 }
-                if(iFound == NR_SENDJOBS)               // no matching send info found in the queue
-                    break;
+                if (ack->type != ACKTYPE_MESSAGE) {
+                    _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT received unknown/invalid ACKTYPE (%d)", ack->type);
+                    break;                                       // should not happen, but who knows...
+                }
 
                 if(sendJobs[iFound].iStatus == SQ_ERROR) {       // received ack for a job which is already in error state...
                     if(dat->iCurrentQueueError == iFound) {

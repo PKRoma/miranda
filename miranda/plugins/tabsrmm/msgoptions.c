@@ -159,7 +159,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 #else
             EnableWindow(GetDlgItem(hwndDlg, IDC_USEKBDHOOK), FALSE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_USEKBDHOOK), SW_HIDE);
-            ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC111, SW_HIDE);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC111), SW_HIDE);
 #endif
             
             SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0), 0);

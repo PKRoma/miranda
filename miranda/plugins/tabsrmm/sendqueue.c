@@ -148,9 +148,10 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
 {
     DWORD dwThreadId;
     
+    /*
     if(dat->hAckEvent == 0)
         dat->hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_EVENTSENT);
-    
+    */
     if (dat->multiple) {            // implement multiple later...
         HANDLE hContact, hItem;
         ClearSendJob(iEntry);
@@ -230,10 +231,11 @@ void ClearSendJob(int iIndex)
 void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat->iOpenJobs == 0) {
+        /*
         if(dat->hAckEvent) {
             UnhookEvent(dat->hAckEvent);
             dat->hAckEvent = NULL;
-        }
+        } */
         HandleIconFeedback(hwndDlg, dat, -1);
     }
     else

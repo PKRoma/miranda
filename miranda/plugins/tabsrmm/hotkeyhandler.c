@@ -40,6 +40,7 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 
 extern struct ContainerWindowData *pFirstContainer;
 extern HANDLE hMessageWindowList;
+extern struct SendJob sendJobs[NR_SENDJOBS];
 
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
@@ -57,7 +58,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         case WM_INITDIALOG:
             SendMessage(hwndDlg, DM_REGISTERHOTKEYS, 0, 0);
             g_hSettingChanged = HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED, hwndDlg, DM_CONTACTSETTINGCHANGED);
-            g_hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PICTUREACK);
+            g_hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PROTOACK);
             g_hNewEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
             g_hotkeyHwnd = hwndDlg;
             return TRUE;
@@ -192,12 +193,40 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
          * process is complete and we have a valid avatar to display.
          */
 
-        case DM_PICTUREACK:
+        case DM_PROTOACK:
         {
             ACKDATA *pAck = (ACKDATA *) lParam;
             PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *) pAck->hProcess;
             HWND hwndDlg = 0;
+            int i, j, iFound = NR_SENDJOBS;
             
+            if(pAck->type == ACKTYPE_MESSAGE) {
+                for(j = 0; j < NR_SENDJOBS; j++) {
+                    for (i = 0; i < sendJobs[j].sendCount; i++) {
+                        //_DebugPopup(dat->hContact, "index: %d - hcontact[%d]: %d, sendid[%d]: %d", j, i, sendJobs[j].hContact[i], i, sendJobs[j].hSendId[i]);
+                        if (pAck->hProcess == sendJobs[j].hSendId[i] && pAck->hContact == sendJobs[j].hContact[i]) {
+                            struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(sendJobs[j].hwndOwner, GWL_USERDATA);
+                            if(dat) {
+                                if(dat->hContact == sendJobs[j].hOwner) {
+                                    iFound = j;
+                                    break;
+                                }
+                                
+                            }
+                        }
+                    }
+                    if (iFound == NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
+                        continue;
+                    else
+                        break;
+                }
+                if(iFound == NR_SENDJOBS)               // no matching send info found in the queue
+                    break;
+                else {                                  // the job was found
+                    SendMessage(sendJobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
+                    break;
+                }
+            }
             if(pAck->type != ACKTYPE_AVATAR)
                 return 0;
 
