@@ -97,6 +97,9 @@ Changes
 
 0.992
 * fixed arrow keys
+* tab enter focus fixed
+* typo fixed
+* don't flash active window
 
 0.991 (yes I know this version numbers are mad, but I don't want it to be 1.0 
        before the options are integrated into miranda options)
