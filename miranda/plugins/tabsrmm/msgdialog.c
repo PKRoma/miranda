@@ -196,8 +196,9 @@ void SetDialogToType(HWND hwndDlg)
     }
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLETOOLBAR), SW_HIDE);
     
-#if defined(_RELEASE_BUILD)
+#if defined(FOO)
     EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), FALSE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), SW_HIDE);
 #endif
@@ -791,27 +792,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 GetContactUIN(hwndDlg, dat);
                 dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+                dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", 0) ? SMODE_FORCEANSI : 0;
                 
                 dat->hwnd = hwndDlg;
-                // IEVIew MOD Begin
-                if (myGlobals.g_WantIEView) {
-                    IEVIEWWINDOW ieWindow;
-                    ieWindow.cbSize = sizeof(IEVIEWWINDOW);
-                    ieWindow.iType = IEW_CREATE;
-                    ieWindow.dwFlags = 0;
-                    ieWindow.dwMode = IEWM_TABSRMM;
-                    ieWindow.parent = hwndDlg;
-                    ieWindow.x = 0;
-                    ieWindow.y = 0;
-                    ieWindow.cx = 200;
-                    ieWindow.cy = 300;
-                    CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
-                    dat->hwndLog = ieWindow.hwnd;
-                }
-                else
-                    dat->hwndLog = 0;
-                // IEVIew MOD End
-
+                SetMessageLog(hwndDlg, dat);
 
                 // input history stuff (initialise it..)
 
@@ -904,6 +888,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 // translate hotkeys...
 
                 SetDlgItemTextA(hwndDlg, IDC_SMILEYBTN, Translate("tb_&Emoticon"));
+                SetDlgItemTextA(hwndDlg, IDC_HISTORY, Translate("tb_&History"));
+                SetDlgItemTextA(hwndDlg, IDC_QUOTE, Translate("tb_&Quote"));
+                SetDlgItemTextA(hwndDlg, IDC_PIC, Translate("tb_&Picmenu"));
+                SetDlgItemTextA(hwndDlg, IDC_PROTOCOL, Translate("tb_&Details"));
+                SetDlgItemTextA(hwndDlg, IDC_NAME, Translate("tb_&User"));
+                SetDlgItemTextA(hwndDlg, IDC_TIME, Translate("tb_&Messagelog"));
+                SetDlgItemTextA(hwndDlg, IDC_TOGGLETOOLBAR, Translate("tb_&ToggleTB"));
                 
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONSETASPUSHBTN, 0, 0);
@@ -988,65 +979,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
 
-                if (dat->hContact) {
-                    int historyMode = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
-                // This finds the first message to display, it works like shit
-                    dat->hDbEventFirst = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) dat->hContact, 0);
-                    switch (historyMode) {
-                        case LOADHISTORY_COUNT:
-                            {
-                                int i;
-                                HANDLE hPrevEvent;
-                                DBEVENTINFO dbei = { 0};
-                                dbei.cbSize = sizeof(dbei);
-                                for (i = DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT); i > 0; i--) {
-                                    if (dat->hDbEventFirst == NULL)
-                                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
-                                    else
-                                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) dat->hDbEventFirst, 0);
-                                    if (hPrevEvent == NULL)
-                                        break;
-                                    dbei.cbBlob = 0;
-                                    dat->hDbEventFirst = hPrevEvent;
-                                    CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
-                                    if (!DbEventIsShown(dat, &dbei))
-                                        i++;
-                                }
-                                break;
-                            }
-                        case LOADHISTORY_TIME:
-                            {
-                                HANDLE hPrevEvent;
-                                DBEVENTINFO dbei = { 0};
-                                DWORD firstTime;
-
-                                dbei.cbSize = sizeof(dbei);
-                                if (dat->hDbEventFirst == NULL)
-                                    dbei.timestamp = time(NULL);
-                                else
-                                    CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
-                                firstTime = dbei.timestamp - 60 * DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME);
-                                for (;;) {
-                                    if (dat->hDbEventFirst == NULL)
-                                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
-                                    else
-                                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) dat->hDbEventFirst, 0);
-                                    if (hPrevEvent == NULL)
-                                        break;
-                                    dbei.cbBlob = 0;
-                                    CallService(MS_DB_EVENT_GET, (WPARAM) hPrevEvent, (LPARAM) & dbei);
-                                    if (dbei.timestamp < firstTime)
-                                        break;
-                                    dat->hDbEventFirst = hPrevEvent;
-                                }
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
-                    }
-                }
+                if (dat->hContact)
+                    FindFirstEvent(hwndDlg, dat);
                 dat->stats.started = time(NULL);
                 SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
                 dat->dwFlags &= ~MWF_INITMODE;
@@ -2113,7 +2047,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             for (i = 0; i < sendJobs[dat->iCurrentQueueError].sendCount; i++) {
                                 if (sendJobs[dat->iCurrentQueueError].hSendId[i] == NULL && sendJobs[dat->iCurrentQueueError].hContact[i] == NULL)
                                     continue;
-                                sendJobs[dat->iCurrentQueueError].hSendId[i] = (HANDLE) CallContactService(sendJobs[dat->iCurrentQueueError].hContact[i], MsgServiceName(sendJobs[dat->iCurrentQueueError].hContact[i]), SEND_FLAGS, (LPARAM) sendJobs[dat->iCurrentQueueError].sendBuffer);
+                                sendJobs[dat->iCurrentQueueError].hSendId[i] = (HANDLE) CallContactService(sendJobs[dat->iCurrentQueueError].hContact[i], MsgServiceName(sendJobs[dat->iCurrentQueueError].hContact[i], dat), dat->sendMode & SMODE_FORCEANSI ? 0 : SEND_FLAGS, (LPARAM) sendJobs[dat->iCurrentQueueError].sendBuffer);
                                 resent++;
                             }
                         }
@@ -2722,6 +2656,56 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     break;
                 }
+                case IDC_PROTOMENU: {
+                    RECT rc;
+                    HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 4);
+                    int iSelection;
+
+                    if(dat->hContact) {
+                        unsigned int iOldIEView = GetIEViewMode(hwndDlg, dat);
+                        unsigned int iNewIEView = 0;
+                        GetWindowRect(GetDlgItem(hwndDlg, IDC_PROTOMENU), &rc);
+
+                        EnableMenuItem(submenu, 0, MF_BYPOSITION | (ServiceExists(MS_IEVIEW_WINDOW) ? MF_ENABLED : MF_GRAYED));
+                        
+                        CheckMenuItem(submenu, ID_IEVIEWSETTING_USEGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 0 ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEIEVIEW, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1 ? MF_CHECKED : MF_UNCHECKED));
+                        
+                        iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                        switch(iSelection) {
+                            case ID_IEVIEWSETTING_USEGLOBAL:
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0);
+                                break;
+                            case ID_IEVIEWSETTING_FORCEIEVIEW:
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 1);
+                                break;
+                            case ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG:
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", -1);
+                                break;
+                        }
+                        iNewIEView = GetIEViewMode(hwndDlg, dat);
+                        if(iNewIEView != iOldIEView) {
+                            if(iNewIEView) {            // switch from rtf to IEview
+                                SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
+                                ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
+                                SetMessageLog(hwndDlg, dat);
+                            }
+                            else                      // switch from IEView to rtf
+                                SetMessageLog(hwndDlg, dat);
+                            SetDialogToType(hwndDlg);
+                            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                        }
+                    }
+                    break;
+                }
+                case IDC_TOGGLETOOLBAR:
+                    dat->pContainer->dwFlags ^= CNT_HIDETOOLBAR;
+                    SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+                    SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                    break;
                 case IDC_SENDMENU: {
                     RECT rc;
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 3);
@@ -2731,6 +2715,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CheckMenuItem(submenu, ID_SENDMENU_SENDTOMULTIPLEUSERS, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDDEFAULT, MF_BYCOMMAND | (dat->sendMode == 0 ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDTOCONTAINER, MF_BYCOMMAND | (dat->sendMode & SMODE_CONTAINER ? MF_CHECKED : MF_UNCHECKED));
+                    CheckMenuItem(submenu, ID_SENDMENU_FORCEANSISEND, MF_BYCOMMAND | (dat->sendMode & SMODE_FORCEANSI ? MF_CHECKED : MF_UNCHECKED));
                     
                     if(lParam)
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
@@ -2747,7 +2732,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         case ID_SENDMENU_SENDTOCONTAINER:
                             dat->sendMode ^= SMODE_CONTAINER;
                             break;
+                        case ID_SENDMENU_FORCEANSISEND:
+                            dat->sendMode ^= SMODE_FORCEANSI;
+                            break;
                     }
+                    DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", dat->sendMode & SMODE_FORCEANSI ? 1 : 0);
                     if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
                         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
                     else

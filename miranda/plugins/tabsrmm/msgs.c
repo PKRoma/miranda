@@ -1387,8 +1387,12 @@ void LoadIconTheme()
     char szFilename[MAX_PATH];
     DBVARIANT dbv;
     HANDLE hFile;
+    char szIDString[256];
+    int i;
     int cxIcon = GetSystemMetrics(SM_CXSMICON);
     int cyIcon = GetSystemMetrics(SM_CYSMICON);
+
+    g_hIconDLL = 0;
 
     if(DBGetContactSetting(NULL, SRMSGMOD_T, "icondll", &dbv))
         strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
@@ -1402,12 +1406,25 @@ void LoadIconTheme()
     else
         CloseHandle(hFile);
 
+    for(i = 0; i < NR_BUTTONBARICONS; i++)
+        myGlobals.g_buttonBarIcons[i] = 0;
     
     g_hIconDLL = LoadLibraryA(szFilename);
 
     if(g_hIconDLL == NULL)
         MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
     else {
+        if(LoadStringA(g_hIconDLL, IDS_IDENTIFY, szIDString, sizeof(szIDString)) == 0) {
+            if(MessageBoxA(0, "ICONPACK: unknown version, load anyway?", "tabSRMM", MB_YESNO) == IDNO)
+                goto failure;
+        }
+        else {
+            if(strcmp(szIDString, "__tabSRMM_ICONPACK 1.0__")) {
+                if(MessageBoxA(0, "ICONPACK: unknown version, load anyway?", "tabSRMM", MB_YESNO) == IDNO)
+                    goto failure;
+            }
+        }
+        
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
 
         myGlobals.g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
@@ -1441,6 +1458,12 @@ void LoadIconTheme()
         myGlobals.g_buttonBarIcons[19] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTUNDERLINE), IMAGE_ICON, cxIcon, cyIcon, 0);
         myGlobals.g_buttonBarIcons[20] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTFACE), IMAGE_ICON, cxIcon, cyIcon, 0);
         myGlobals.g_buttonBarIcons[21] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTCOLOR), IMAGE_ICON, cxIcon, cyIcon, 0);
+        return;
+    }
+failure:
+    if(g_hIconDLL) {
+        FreeLibrary(g_hIconDLL);
+        g_hIconDLL = 0;
     }
 }
 
@@ -1449,8 +1472,10 @@ void UnloadIconTheme()
     int i;
     
     for(i = 0; i < NR_BUTTONBARICONS; i++) {
-        if(myGlobals.g_buttonBarIcons[i] != 0)
+        if(myGlobals.g_buttonBarIcons[i] != 0) {
             DestroyIcon(myGlobals.g_buttonBarIcons[i]);
+            myGlobals.g_buttonBarIcons[i] = 0;
+        }
     }
     DestroyIcon(myGlobals.g_iconIn);
     DestroyIcon(myGlobals.g_iconOut);

@@ -52,13 +52,13 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,1,
                     WS_EX_STATICEDGE
-    CONTROL         "&P",IDC_PIC,"MButtonClass",WS_TABSTOP,90,32,16,14,
+    CONTROL         "",IDC_PIC,"MButtonClass",WS_TABSTOP,90,32,16,14,
                     0x18000000L
-    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,106,32,16,14,
+    CONTROL         "",IDC_HISTORY,"MButtonClass",WS_TABSTOP,106,32,16,14,
                     0x18000000L
-    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,122,32,16,14,
+    CONTROL         "",IDC_TIME,"MButtonClass",WS_TABSTOP,122,32,16,14,
                     0x18000000L
-    CONTROL         "&Q",IDC_QUOTE,"MButtonClass",WS_TABSTOP,138,32,16,14,
+    CONTROL         "",IDC_QUOTE,"MButtonClass",WS_TABSTOP,138,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_SAVE,"MButtonClass",WS_TABSTOP,154,32,16,14,
                     0x18000000L
@@ -67,13 +67,15 @@ BEGIN
                     78,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
-    CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,0,32,16,14,
+    CONTROL         "",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,0,32,16,14,
                     0x18000000L
-    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,16,32,16,14,
+    CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,16,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,32,32,10,14,
                     0x18000000L
-    CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,43,32,16,14,
+    CONTROL         "",IDC_TOGGLETOOLBAR,"MButtonClass",WS_TABSTOP,32,32,2,2,
+                    0x18000000L
+    CONTROL         "",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,43,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_FONTBOLD,"MButtonClass",WS_TABSTOP,59,32,16,14,
                     0x18000000L

@@ -548,9 +548,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - (myGlobals.g_SecureIMAvail ? 20 : 0);
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - (myGlobals.g_SecureIMAvail ? 20 : 0);
-                    statwidths[2] = rcs.right - rcs.left - 35 - (myGlobals.g_SecureIMAvail ? 20 : 0);
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 15 - (myGlobals.g_SecureIMAvail ? 23 : 0);
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 15 - (myGlobals.g_SecureIMAvail ? 23 : 0);
+                    statwidths[2] = rcs.right - rcs.left - 35 - (myGlobals.g_SecureIMAvail ? 23 : 0);
                     statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
@@ -1291,9 +1291,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - myGlobals.g_SecureIMAvail ? 20 : 0;
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - myGlobals.g_SecureIMAvail ? 20 : 0;
-                    statwidths[2] = rcs.right - rcs.left - 35 - myGlobals.g_SecureIMAvail ? 20 : 0;
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 18 - myGlobals.g_SecureIMAvail ? 23 : 0;
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 18 - myGlobals.g_SecureIMAvail ? 23 : 0;
+                    statwidths[2] = rcs.right - rcs.left - 35 - myGlobals.g_SecureIMAvail ? 23 : 0;
                     statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);

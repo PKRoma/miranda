@@ -111,6 +111,7 @@
 #define IDC_TYPING                      1581
 #define IDC_TYPINGNOTIFY                1581
 #define IDC_PROTOMENU                   1582
+#define IDC_TOGGLETOOLBAR               1583
 #define IDC_ERRORTEXT                   1596
 #define IDC_SHOWNOTIFY                  1600
 #define IDC_STATUSWIN                   1601
@@ -436,6 +437,11 @@
 #define ID_SENDMENU_SENDDEFAULT         40193
 #define ID_SENDMENU_SENDTOMULTIPLEUSERS 40194
 #define ID_SENDMENU_SENDTOCONTAINER     40195
+#define ID_SENDMENU_FORCEANSISEND       40196
+#define ID_PROTOMENU_IEVIEWSETTING      40197
+#define ID_IEVIEWSETTING_USEGLOBAL      40198
+#define ID_IEVIEWSETTING_FORCEIEVIEW    40199
+#define ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG 40200
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -443,7 +449,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40196
+#define _APS_NEXT_COMMAND_VALUE         40201
 #define _APS_NEXT_CONTROL_VALUE         1714
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

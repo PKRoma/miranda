@@ -64,5 +64,5 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 
 static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-char *MsgServiceName(HANDLE hContact);
+char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat);
 

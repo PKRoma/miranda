@@ -1,37 +1,50 @@
-				Modified SRMM plugin for Miranda IM 0.3.3+
+				tabbed  SRMM plugin for Miranda IM 0.3.3+
 				------------------------------------------
 				
-Version: 0.0.2a
-Created: Jul 2004
+Version: 1.0.0.0
+Created: March 2004
 
 1. Intro:
 ---------
 
-This is a modified version of the standard SRMM plugin for the Miranda Instant 
-messenger. It is based on the latest SRMM code (07/01) and it may only work with
-recent versions of Miranda IM. It's only tested with the stable 0.3.3.1 and recent 
-nightly builds. It will probably NOT work with older miranda builds.
-
-CAUTION: This should be considered "alpha" quality software. You should expect bugs
-		 and other problems. I take absolutely no responsibility for any damage
-		 caused by this piece of software, including, but not limited to corrupted
-		 databases or other loss of data.
-		 
-		 This plugin is provided on an "as is" basis, but without ANY warranty.
+tabSRMM is an advanced messaging module for Miranda IM (version 0.3.3 or later 
+required). It adds many new options and features to make instant messaging more
+enjoyable and allows you to tweak almost every aspect of the message window to
+fit your needs.
 
 HOW TO INSTALL
 --------------
 
+First, tabSRMM is only supported on Windows 2000 or later. The unicode version 
+does NOT work under older versions of Windows and probably never will. The 
+non-unicode version runs, but you have to accept some minor problems. Since I
+have abandoned Win 9x as a development system a long time ago, I have no way
+to develop and test my work under Windows 9x/ME. 
+
+The archive contains 2 .DLLs:
+
+1. tabsrmm.dll - ANSI version, can not send or receive unicode messages.
+2. tabsrmm_unicode.dll - unicode aware.
+
 copy one of the .dll files (unicode or non-unicode) to your plugins folder and
-thats it. PLEASE NOTE THAT THIS PLUGIN NEEDS AT LEAST MIRANDA VERSION 0.3.3 and
+PLEASE NOTE THAT THIS PLUGIN NEEDS AT LEAST MIRANDA VERSION 0.3.3 and
 will NOT WORK with older releases.
 
-If you use the popup plugins and want working event notifications with tabSRMM,
-you need to copy the NewEventNotify.dll to your Plugins folder as well, replacing
-any other version.
+INSTALLING THE ICON PACK - IMPORTANT !!
+---------------------------------------
+
+You need to copy ONE of the included tabsrmm_icons.dll into the plugins folder
+aswell. If you don't, you'll receive an error message about a missing resource
+dll, and you won't see any icons on the toolbar and elsewhere.
+
+You can later change the icon pack at runtime (there is an option on the "tabs
+and layout" option page to load another icon pack).
+
+In general, there is no need to use the non-unicode version - the unicode release
+is far more tested and works with all known protocols.
 
 
-2. Features:
+Some features:
 ------------
 
 * "tabbed messaging". All message dialog windows are now opened within a "container"
@@ -41,39 +54,19 @@ any other version.
    to implement multiple container windows and the ability to attach or detach
    message windows to these containers.
    
-*  A few  new options for the message history. You can find them on the "message log"
-   option page. First, you can decide wheter you want to display the events (the
-   actual message text) in a new line (ICQ style)
+*  Lots of options to tweak the look of your message log.
 
-   You can also display the timestamp including seconds, display the 
-   timestamp/nickname underlined and specify an indent value for the 
-   actual message.
-      
-   Some code for these features was partially ripped from the srmm_mod 
-   plugin, which is also a SRMM modification written by kreisquadratur.
+*  Works with the external IEView plugin to give you a fully customizable message log
+   using HTML templates and CSS.
    
-3. Future, TODO etc...
-----------------------
-
-- More sophisticated tab containers. I like the way in which they are implemented
-  in Trillian, and this is probably the way I will implement them here.
-
-- bug fixes
-
-- more cosmetic changes for the message log (maybe separator lines, borders etc..)
-
-- redesigned message dialogue. Maybe a quote button and some layout changes.
-
+*  Avatar support (for protocols which can do it). You can also set a local "user picture"
+   for each contact.
+      
 
 4. Known bugs
 -------------
 
-* Window flashing is slightly broken. Tab flashing should work fine, but 
-  the container window sometimes flashes when it actually should NOT. 
-  
-* tabs may not display correctly with some visual styles. I have tested
-  a few themes and the plugin did work fine with all but one of them.
-
+*  some minor glitches under Windows 9x/ME, mostly graphical.
   
 5. FAQ
 ------
@@ -86,16 +79,38 @@ A: copy the dll to your plugin folder. Make sure, that no other plugin
 Q: How can I close a tab?
 A: Hit ESC or click the close button (red X) in the top right corner.
 
-6. Credits:
------------
 
-The Miranda-IM development team and all contributors for making the best
-IM client on this planet (and probably in the entire universe :) )
+6. Credits and thanks:
+----------------------
 
-sryo (teodalton@yahoo.com) for the minimal icons. 
+Lots of people provided useful suggestions, feature requests and bug reports during
+the development phase. I cannot name you all here, because it's just too many.
+
+* The Miranda-IM development team and all contributors for making the best
+  IM client on this planet (and probably in the entire universe :) )
+
+* sryo (teodalton@yahoo.com) for the minimal icons. 
+
+* Faith Healer for making icon packs, lots of suggestions, testing and
+  feedback.
+  
+* the members on my own forum (http://hell.at.eu.org/forums/) for a lot of bug
+  reports, feature suggestions and testing every new snapshot.
+
+* Angeli-Ka
+Many members of the Miranda community at http://www.miranda-im.org for suggestions,
+bug reports, testing and other contributions.
+
+
+
+
+
+
+
 
 License: GPL
-Contact me at:         mailto: bof@hell.at.eu.org
-				       ICQ:    7769309
-                       MSN:    alex_nw@hotmail.com
+
+Contact me at:         mailto: silvercircle@gmail.com
+			       ICQ:    7769309
+                       MSN:    silvercircle@gmail.com
 		 

@@ -321,9 +321,9 @@ BEGIN
     CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,136,142,9
     CONTROL         "Use relative timestamps",IDC_RELATIVEDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,149,140,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,149,135,9
     CONTROL         "Use long date format",IDC_LONGDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,159,140,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,159,135,9
     CONTROL         "Indent message body (pixels)",IDC_INDENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,158,104,141,10
     LTEXT           "Left",IDC_STATIC,158,118,29,12
@@ -792,6 +792,19 @@ BEGIN
         MENUITEM "Send to &multiple Users",     ID_SENDMENU_SENDTOMULTIPLEUSERS
 
         MENUITEM "Send to &Container",          ID_SENDMENU_SENDTOCONTAINER
+        MENUITEM "Force &ANSI send",            ID_SENDMENU_FORCEANSISEND
+    END
+    POPUP "Protomenu"
+    BEGIN
+        POPUP "IEView Setting"
+        BEGIN
+            MENUITEM "Use global Setting",          ID_IEVIEWSETTING_USEGLOBAL
+
+            MENUITEM "Force IEView",                ID_IEVIEWSETTING_FORCEIEVIEW
+
+            MENUITEM "Force Default Message Log",   ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
+
+        END
     END
 END
 

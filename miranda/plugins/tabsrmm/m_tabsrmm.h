@@ -48,6 +48,7 @@
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
 #define SMODE_CONTAINER 2
+#define SMODE_FORCEANSI 4
 
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;

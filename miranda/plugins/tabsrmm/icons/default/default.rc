@@ -1,11 +1,11 @@
-// In Microsoft Visual C++ generiertes Ressourcenskript.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
-// Von der Ressource TEXTINCLUDE 2 generiert.
+// Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
 
@@ -13,49 +13,18 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch Ressourcen (U.S.)
+// Deutsch (Deutschland) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-LANGUAGE 7, 1
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 #pragma code_page(1252)
+#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
 //
-
-#define IDI_HISTORY 1
-#define IDI_TIMESTAMP 2
-#define IDI_ADDCONTACT 3
-#define IDI_MULTISEND 4
-#define IDI_TYPING 5
-#define IDI_QUOTE 6
-#define IDI_SAVE 7
-#define IDI_CHECK 8
-#define IDI_CONTACTPIC 9
-#define IDI_CLOSEMSGDLG 10
-#define IDI_USERMENU 11
-#define IDI_MSGERROR 12
-#define IDI_ICONIN 13
-#define IDI_ICONOUT 14
-#define IDI_SMILEYICON 15
-#define IDI_SELFTYPING_ON 16
-#define IDI_SELFTYPING_OFF 17
-#define IDI_CONTAINER 18
-#define IDI_SECUREIM_DISABLED 19
-#define IDI_SECUREIM_ENABLED 20
-#define IDI_STATUSCHANGE 21
-#define IDI_FONTBOLD 22
-#define IDI_FONTITALIC 23
-#define IDI_FONTUNDERLINE 24
-#define IDI_FONTFACE 25
-#define IDI_FONTCOLOR 26
-#define IDI_RESERVED7 27
-#define IDI_RESERVED8 28
-#define IDI_RESERVED9 29
-#define IDI_RESERVED10 30
-
-#define IDB_UNKNOWNAVATAR 100
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
@@ -74,23 +43,28 @@ IDI_CLOSEMSGDLG         ICON                    "..\\..\\res\\angeli-icons\\Clos
 IDI_ICONIN              ICON                    "..\\..\\res\\angeli-icons\\Incom.ico"
 IDI_ICONOUT             ICON                    "..\\..\\res\\angeli-icons\\outg.ico"
 IDI_SMILEYICON          ICON                    "..\\..\\res\\smbutton.ico"
-IDI_SELFTYPING_ON		ICON					"..\\..\\res\\typing8.ico"
-IDI_SELFTYPING_OFF		ICON					"..\\..\\res\\delete.ico"
-IDI_CONTAINER			ICON					"..\\..\\res\\Logo.ico"
-IDI_SECUREIM_ENABLED	ICON					"..\\..\\res\\secureim_on.ico"
-IDI_SECUREIM_DISABLED	ICON					"..\\..\\res\\secureim_off.ico"
-IDI_STATUSCHANGE		ICON					"..\\..\\res\\statuschange.ico"
-IDI_FONTBOLD			ICON					"..\\..\\res\\button.bold.ico"
-IDI_FONTITALIC			ICON					"..\\..\\res\\button.italic.ico"
-IDI_FONTUNDERLINE		ICON					"..\\..\\res\\button.underline.ico"
-IDI_FONTFACE			ICON					"..\\..\\res\\button.fontface.ico"
-IDI_FONTCOLOR			ICON					"..\\..\\res\\button.textcolor.ico"
-IDI_RESERVED7			ICON					"..\\..\\res\\empty.ico"
-IDI_RESERVED8			ICON					"..\\..\\res\\empty.ico"
-IDI_RESERVED9			ICON					"..\\..\\res\\empty.ico"
-IDI_RESERVED10			ICON					"..\\..\\res\\empty.ico"
+IDI_SELFTYPING_ON       ICON                    "..\\..\\res\\typing8.ico"
+IDI_SELFTYPING_OFF      ICON                    "..\\..\\res\\delete.ico"
+IDI_CONTAINER           ICON                    "..\\..\\res\\Logo.ico"
+IDI_SECUREIM_ENABLED    ICON                    "..\\..\\res\\secureim_on.ico"
+IDI_SECUREIM_DISABLED   ICON                    "..\\..\\res\\secureim_off.ico"
+IDI_STATUSCHANGE        ICON                    "..\\..\\res\\statuschange.ico"
+IDI_FONTBOLD            ICON                    "..\\..\\res\\button.bold.ico"
+IDI_FONTITALIC          ICON                    "..\\..\\res\\button.italic.ico"
+IDI_FONTUNDERLINE       ICON                    "..\\..\\res\\button.underline.ico"
+IDI_FONTFACE            ICON                    "..\\..\\res\\button.fontface.ico"
+IDI_FONTCOLOR           ICON                    "..\\..\\res\\button.textcolor.ico"
+IDI_RESERVED7           ICON                    "..\\..\\res\\empty.ico"
+IDI_RESERVED8           ICON                    "..\\..\\res\\empty.ico"
+IDI_RESERVED9           ICON                    "..\\..\\res\\empty.ico"
+IDI_RESERVED10          ICON                    "..\\..\\res\\empty.ico"
 
-IDB_UNKNOWNAVATAR		BITMAP					"..\\..\\res\\unknown.bmp"
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_UNKNOWNAVATAR       BITMAP                  "..\\..\\res\\unknown.bmp"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -98,18 +72,18 @@ IDB_UNKNOWNAVATAR		BITMAP					"..\\..\\res\\unknown.bmp"
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE  
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE  
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -117,7 +91,30 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Englische Ressourcen (U.S.)
+#endif    // Deutsch (Deutschland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Deutsch (Österreich) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_IDENTIFY            "__tabSRMM_ICONPACK 1.0__"
+END
+
+#endif    // Deutsch (Österreich) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -125,10 +122,10 @@ END
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
-// Von der Ressource TEXTINCLUDE 3 generiert.
+// Generated from the TEXTINCLUDE 3 resource.
 //
 
 
 /////////////////////////////////////////////////////////////////////////////
-#endif    // nicht APSTUDIO_INVOKED
+#endif    // not APSTUDIO_INVOKED
 

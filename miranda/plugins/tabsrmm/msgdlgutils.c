@@ -42,6 +42,8 @@ $Id$
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
+#include "m_ieview.h"
+
 #include <math.h>
 
 extern MYGLOBALS myGlobals;
@@ -1263,4 +1265,105 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
     }
     else
         dat->uin[0] = 0;
+}
+
+unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    int iWantIEView = 0;
+
+    iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 && ServiceExists(MS_IEVIEW_WINDOW));
+    iWantIEView = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1) ? 0 : iWantIEView;
+
+    return iWantIEView;
+}
+void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    unsigned int iWantIEView = GetIEViewMode(hwndDlg, dat);
+
+    if (iWantIEView && dat->hwndLog == 0) {
+        IEVIEWWINDOW ieWindow;
+        ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+        ieWindow.iType = IEW_CREATE;
+        ieWindow.dwFlags = 0;
+        ieWindow.dwMode = IEWM_TABSRMM;
+        ieWindow.parent = hwndDlg;
+        ieWindow.x = 0;
+        ieWindow.y = 0;
+        ieWindow.cx = 200;
+        ieWindow.cy = 300;
+        CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+        dat->hwndLog = ieWindow.hwnd;
+    }
+    else if(!iWantIEView) {
+        if(dat->hwndLog) {
+            IEVIEWWINDOW ieWindow;
+            ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+            ieWindow.iType = IEW_DESTROY;
+            ieWindow.hwnd = dat->hwndLog;
+            CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+        }
+        ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_SHOW);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), TRUE);
+        dat->hwndLog = 0;
+    }
+}
+
+void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    int historyMode = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
+    dat->hDbEventFirst = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) dat->hContact, 0);
+    switch (historyMode) {
+        case LOADHISTORY_COUNT:
+            {
+                int i;
+                HANDLE hPrevEvent;
+                DBEVENTINFO dbei = { 0};
+                dbei.cbSize = sizeof(dbei);
+                for (i = DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT); i > 0; i--) {
+                    if (dat->hDbEventFirst == NULL)
+                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
+                    else
+                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) dat->hDbEventFirst, 0);
+                    if (hPrevEvent == NULL)
+                        break;
+                    dbei.cbBlob = 0;
+                    dat->hDbEventFirst = hPrevEvent;
+                    CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
+                    if (!DbEventIsShown(dat, &dbei))
+                        i++;
+                }
+                break;
+            }
+        case LOADHISTORY_TIME:
+            {
+                HANDLE hPrevEvent;
+                DBEVENTINFO dbei = { 0};
+                DWORD firstTime;
+
+                dbei.cbSize = sizeof(dbei);
+                if (dat->hDbEventFirst == NULL)
+                    dbei.timestamp = time(NULL);
+                else
+                    CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
+                firstTime = dbei.timestamp - 60 * DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME);
+                for (;;) {
+                    if (dat->hDbEventFirst == NULL)
+                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
+                    else
+                        hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) dat->hDbEventFirst, 0);
+                    if (hPrevEvent == NULL)
+                        break;
+                    dbei.cbBlob = 0;
+                    CallService(MS_DB_EVENT_GET, (WPARAM) hPrevEvent, (LPARAM) & dbei);
+                    if (dbei.timestamp < firstTime)
+                        break;
+                    dat->hDbEventFirst = hPrevEvent;
+                }
+                break;
+            }
+        default:
+            {
+                break;
+            }
+    }
 }

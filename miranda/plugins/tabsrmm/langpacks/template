@@ -322,7 +322,9 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Use flat buttons]
 
-[Show full UIN on toolbar]
+[Flat message log (no static edge)]
+
+[Icon DLL]
 
 [Tab control border]
 
@@ -391,6 +393,10 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Ignore per-contact message log settings]
 
 [Simple text formatting (*bold etc.)]
+
+[Only format whole words]
+
+[Activate support for external log]
 
 [Formatting options]
 
@@ -743,4 +749,37 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Set current Options as Default Values]
 
 [Save current Window Position as Default]
+
+;
+; --------- Message Window accerlators
+;
+
+[tb_&Emoticon]
+
+[tb_&History]
+
+[tb_&Quote]
+
+[tb_&Picmenu]
+
+[tb_&Details]
+
+[tb_&User]
+
+[tb_&Messagelog]
+
+[tb_&ToggleTB]
+
+;
+; --------- Send menu
+;
+
+[Send &Default]
+
+[Send to &multiple Users]
+
+[Send to &Container]
+
+[Force &ANSI send]
+
 

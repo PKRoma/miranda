@@ -417,6 +417,7 @@ struct MsgLogIcon {
 #define IDI_RESERVED10 30
 
 #define IDB_UNKNOWNAVATAR 100
+#define IDS_IDENTIFY 101
 
 #define MSGDLGFONTCOUNT 22
 

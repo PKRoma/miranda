@@ -47,6 +47,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat);
 void DoTrimMessage(TCHAR *msg);
 void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat);
+void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat);
+unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat);
+void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

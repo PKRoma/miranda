@@ -13,7 +13,19 @@ SF.NET Project Page: http://www.sourceforge.net/projects/tabsrmm/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.6 - 2005/03/01
+Version 0.9.9.8 - 2005/03/04
+
+        + added icon pack version information. Valid icon packs need to contain a string
+          identifier ("__tabSRMM_ICONPACK 1.0__") in order to be recognized. You can stil
+          load icon packs without this identifier, but you'll get a warning message.
+          This was added to avoid problems when specifiyng a DLL which is, in fact, not
+          a valid icon pack for tabSRMM. In such cases, the plugin could even crash badly
+          on startup, which can be a very annoying (and hard to find) bug.
+          
+          When you edit an iconpack, DO NOT change the string table identifier. The ordinal
+          number for the string identifier is 101.
+
+Version 0.9.9.7 - 2005/03/04
 
         ! re-enabled the "show multisend" menu bar item.
         
@@ -24,11 +36,34 @@ Version 0.9.9.6 - 2005/03/01
         ! "Flat message log" now tries to remove static edges from ieview and message input 
           area aswell.
 
-        ! detecting IEView didn't work with some configurations. 
+        ! detecting IEView on startup didn't work with some configurations. 
         
         ! When "send formatting info" was active in the non-unicode version, additional
           linefeeds were sent at the end of each message.
+          
+        ! new send mode - force ANSI. When enabled, messages will be sent as pure ansi,
+          using the current codepage. Useful when the client of your buddy has troubles
+          receiving unicode messages. This setting is a "per contact" OVERRIDE and WILL
+          STICK even if you close the message window until you deactivate it.
+          This has only an effect in the unicode version of tabSRMM - the non-unicode always
+          sends ANSI.
 
+        + the protocol menu is back. At the moment, it has only one submenu for configuring
+          the message log. It is now possible to switch between rich edit and IEView "on the
+          fly" while the message window is open. Please note, that these settings are saved
+          to the contacts db record, so you can now override the message log being in use
+          on a "per contact" basis.
+          Example: You have set the default option to use the IEView plugin (message log
+                   options). You can now override this setting for a specific contact and force
+                   the default message log.
+                   (or vice versa, of course).
+                   
+        + made hotkeys translateable. Please refer to the translation template included in the
+          archive to figure out which strings need to be translated. The hotkeys are at the 
+          very end of this file.
+          
+        + new hotkey - Alt-T (default). Toggles toolbar quickly.
+                   
 Version 0.9.9.6 - 2005/02/23
 
         ! flicker-free formatting button update

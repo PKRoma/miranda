@@ -26,7 +26,7 @@ extern const UINT errorControls[5];
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
 
-char *MsgServiceName(HANDLE hContact)
+char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat)
 {
 #ifdef _UNICODE
     char szServiceName[100];
@@ -34,6 +34,9 @@ char *MsgServiceName(HANDLE hContact)
     if (szProto == NULL)
         return PSS_MESSAGE;
 
+    if(dat->sendMode & SMODE_FORCEANSI)
+        return PSS_MESSAGE;
+    
     _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
     if (ServiceExists(szServiceName))
         return PSS_MESSAGE "W";
@@ -53,7 +56,7 @@ DWORD WINAPI DoMultiSend(LPVOID param)
     int i;
     
     for(i = 0; i < sendJobs[iIndex].sendCount; i++) {
-        sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i]), SEND_FLAGS, (LPARAM) sendJobs[iIndex].sendBuffer);
+        sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat), dat->sendMode & SMODE_FORCEANSI ? 0 : SEND_FLAGS, (LPARAM) sendJobs[iIndex].sendBuffer);
         SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, myGlobals.m_MsgTimeout, NULL);
         Sleep((50 * i) + dwDelay + dwDelayAdd);
         if(i > 2)
@@ -186,7 +189,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         
         sendJobs[iEntry].sendCount = 1;
         sendJobs[iEntry].hContact[0] = dat->hContact;
-        sendJobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) sendJobs[iEntry].sendBuffer);
+        sendJobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat), dat->sendMode & SMODE_FORCEANSI ? 0 : SEND_FLAGS, (LPARAM) sendJobs[iEntry].sendBuffer);
         sendJobs[iEntry].hOwner = dat->hContact;
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
