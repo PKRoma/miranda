@@ -196,7 +196,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 	char sizeBuf[64];
 	LVITEM item;
 	int iItem=0;	
-	char * p = strchr(profile, '.');	
+	char * p = strrchr(profile, '.');	
 	strcpy(sizeBuf, "0 KB");
 	if ( p != NULL ) *p=0;
 	ZeroMemory(&item,sizeof(item));
