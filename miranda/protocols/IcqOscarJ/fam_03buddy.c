@@ -113,6 +113,12 @@ const capstr capXtraz     = {0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9
 const capstr capIcq5Extra = {0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_SENDFILE
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
 
+char* cliLibicq2k  = "libicq2000";
+char* cliLicqVer   = "Licq %u.%u";
+char* cliLicqVerL  = "Licq %u.%u.%u";
+char* cliCentericq = "Centericq";
+char* cliIcyJuice  = "IcyJuice";
+
 
 // TLV(1) Unknown (x50)
 // TLV(2) Member since (not sent)
@@ -260,11 +266,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       { // This is probably an Licq client
         DWORD ver = dwFT1 & 0xFFFF;
         if (ver % 10){
-          _snprintf(szClientBuf, 64, "Licq %u.%u.%u", ver / 1000, (ver / 10) % 100, ver % 10);
+          _snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
         }
         else
         {
-          _snprintf(szClientBuf, 64, "Licq %u.%u", ver / 1000, (ver / 10) % 100);
+          _snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
         }
         if (dwFT1 & 0x00800000)
           strcat(szClientBuf, "/SSL");
@@ -305,7 +311,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       }
       else if ((dwFT1 == 0x3AA773EE) && (dwFT2 == 0x3AA66380))
       {
-        szClient = "libicq2000";
+        szClient = cliLibicq2k;
       }
       else if (dwFT1 == 0xFFFFFFFE && dwFT3 == 0xFFFFFFFE)
       {
@@ -564,9 +570,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver2 = (*capId)[0xD] % 100;
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Licq %u.%u.%u", ver1, ver2, ver3);
+              _snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
             else  
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Licq %u.%u", ver1, ver2);
+              _snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
             if ((*capId)[0xF]) 
               strcat(szClientBuf,"/SSL");
             szClient = szClientBuf;
@@ -625,7 +631,15 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           { // this is what I really hate, but as it seems to me, there is no other way to detect libgaim
             szClient = "libgaim";
           }
-          else // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
+          else if (szClient == cliLibicq2k)
+          { // try to determine which client is behind libicq2000
+            if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
+              szClient = cliCentericq; // centericq added rtf capability to libicq2000
+            else if (CheckContactCapabilities(hContact, CAPF_UTF))
+              szClient = cliIcyJuice; // IcyJuice added unicode capability to libicq2000
+            // others - like jabber transport uses unmodified library, thus cannot be detected
+          }
+          else if (szClient == NULL) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
           {
             if (wVersion == 8 && MatchCap(pTLV->pData, pTLV->wLen, &capStr20012, 0x10))
             { // try to determine 2001-2003 versions
