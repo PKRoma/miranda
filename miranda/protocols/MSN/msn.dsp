@@ -23,7 +23,7 @@ CFG=msn - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda32/Protocols/MSN", ABEAAAAA"
+# PROP Scc_ProjName ""$/Miranda32/miranda/Protocols/MSN", ABEAAAAA"
 # PROP Scc_LocalPath "."
 CPP=cl.exe
 MTL=midl.exe
