@@ -851,11 +851,9 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     // separator strings used for grid lines, message separation and so on...
     
-    //strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "%s\\sl-1" : "\\par%s\\sl-1"));
     strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "%s\\sl-1" : "\\par%s\\sl-1"));
     _snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
 
-    //strcpy(szSep2, fAppend ? "\\par\\sl0" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl0" : "\\par\\sl0"));
     strcpy(szSep2, fAppend ? "\\par\\sl0" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl1000" : "\\par\\sl1000"));
 
     ZeroMemory(&ci, sizeof(ci));

@@ -67,7 +67,7 @@ BEGIN
                     0x18000000L
     CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,18,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,33,24,
+    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
                     0x18000000L
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
                     WS_EX_STATICEDGE
