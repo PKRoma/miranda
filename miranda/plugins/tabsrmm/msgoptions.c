@@ -52,7 +52,7 @@ struct FontOptionsList
     char size;
 }
 static fontOptionsList[] = {
-    {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12}};
+    {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -10}};
     
 TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
 
@@ -64,7 +64,7 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
 
     if (colour) {
         wsprintfA(str, "Font%dCol", i);
-        *colour = DBGetContactSettingDword(NULL, SRMSGMOD, str, fontOptionsList[0].defColour);
+        *colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, str, fontOptionsList[0].defColour);
     }
     if (lf) {
         HDC hdc = GetDC(NULL);
@@ -72,7 +72,7 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
         if(i == H_MSGFONTID_DIVIDERS)
             lf->lfHeight = 5;
         else {
-            lf->lfHeight = (char) DBGetContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[0].defSize);
+            lf->lfHeight = (char) DBGetContactSettingByte(NULL, SRMSGMOD_T, str, fontOptionsList[0].defSize);
             lf->lfHeight=-MulDiv(lf->lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
         }
 
@@ -82,19 +82,19 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
         wsprintfA(str, "Font%dSty", i);
-        style = DBGetContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[0].defStyle);
+        style = DBGetContactSettingByte(NULL, SRMSGMOD_T, str, fontOptionsList[0].defStyle);
         lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
         lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
         lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
         lf->lfStrikeOut = 0;
         wsprintfA(str, "Font%dSet", i);
-        lf->lfCharSet = DBGetContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[0].defCharset);
+        lf->lfCharSet = DBGetContactSettingByte(NULL, SRMSGMOD_T, str, fontOptionsList[0].defCharset);
         lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
         wsprintfA(str, "Font%d", i);
-        if (DBGetContactSetting(NULL, SRMSGMOD, str, &dbv))
+        if (DBGetContactSetting(NULL, SRMSGMOD_T, str, &dbv))
             lstrcpyA(lf->lfFaceName, fontOptionsList[0].szDefFace);
         else {
             lstrcpynA(lf->lfFaceName, dbv.pszVal, sizeof(lf->lfFaceName));
@@ -726,32 +726,26 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
         ">> Outgoing messages", 
-        ">> Outgoing URLs",
-        ">> Outgoing files",
+        ">> Outgoing misc events",
         "<< Incoming messages",
-        "<< Incoming URLs",
-        "<< Incoming files",
+        "<< Incoming misc events",
         ">> Outgoing name",
-        ">> Outgoing time",
-        ">> Outgoing colon",
+        ">> Outgoing timestamp",
         "<< Incoming name",
-        "<< Incoming time",
-        "<< Incoming colon",
-        "* Message Input Area",
+        "<< Incoming timestamp",
         ">> Outgoing messages (old)",
-        ">> Outgoing URLs (old)",
-        ">> Outgoing files (old)",
+        ">> Outgoing misc events (old)",
         "<< Incoming messages (old)",
-        "<< Incoming URLs (old)",
-        "<< Incoming files (old)",
+        "<< Incoming misc events (old)",
         ">> Outgoing name (old)",
         ">> Outgoing time (old)",
-        ">> Outgoing colon (old)",
         "<< Incoming name (old)",
         "<< Incoming time (old)",
-        "<< Incoming colon (old)",
+        "* Message Input Area",
         "* Status changes",
         "* Dividers"};
+
+#define FONTS_TO_CONFIG MSGDLGFONTCOUNT
 
 #define SAMEASF_FACE   1
 #define SAMEASF_SIZE   2
@@ -767,34 +761,26 @@ struct {
 	char szFace[LF_FACESIZE];
 } static fontSettings[MSGDLGFONTCOUNT + 1];
 #include <poppack.h>
-static WORD fontSameAsDefault[MSGDLGFONTCOUNT + 2]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x0B00,0x0104,0x0D00,0x0B02};
+static WORD fontSameAsDefault[MSGDLGFONTCOUNT + 2]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x00FF,0x0B00,0x0F00};
 static char *fontSizes[]={"8","9","10","11","12","13","14","15","18"};
 static int fontListOrder[MSGDLGFONTCOUNT + 1] = {
     MSGFONTID_MYMSG,
-    MSGFONTID_MYURL,
-    MSGFONTID_MYFILE,     
+    MSGFONTID_MYMISC,
     MSGFONTID_YOURMSG,    
-    MSGFONTID_YOURURL,    
-    MSGFONTID_YOURFILE,   
+    MSGFONTID_YOURMISC,    
     MSGFONTID_MYNAME,     
     MSGFONTID_MYTIME,     
-    MSGFONTID_MYCOLON,    
     MSGFONTID_YOURNAME,   
     MSGFONTID_YOURTIME,   
-    MSGFONTID_YOURCOLON,  
-    MSGFONTID_MESSAGEAREA,
     H_MSGFONTID_MYMSG,
-    H_MSGFONTID_MYURL,   
-    H_MSGFONTID_MYFILE,   
+    H_MSGFONTID_MYMISC,   
     H_MSGFONTID_YOURMSG,  
-    H_MSGFONTID_YOURURL,  
-    H_MSGFONTID_YOURFILE, 
+    H_MSGFONTID_YOURMISC,  
     H_MSGFONTID_MYNAME,
     H_MSGFONTID_MYTIME,
-    H_MSGFONTID_MYCOLON,  
     H_MSGFONTID_YOURNAME, 
     H_MSGFONTID_YOURTIME,
-    H_MSGFONTID_YOURCOLON,
+    MSGFONTID_MESSAGEAREA,
     H_MSGFONTID_STATUSCHANGES,
     H_MSGFONTID_DIVIDERS};
 
@@ -892,7 +878,7 @@ static void GetDefaultFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 	}
 }
 
-#define SRFONTSETTINGMODULE "SRMsg"
+#define SRFONTSETTINGMODULE "Tab_SRMsg"
 
 void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 {
@@ -945,7 +931,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 				char str[32];
                 DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
-				for(i=0;i<MSGDLGFONTCOUNT;i++) {
+				for(i=0;i<FONTS_TO_CONFIG;i++) {
 					fontId=fontListOrder[i];
 					GetFontSetting(fontId,&lf,&colour);
 					sprintf(str,"Font%dAs",fontId);
@@ -1002,7 +988,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 				SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_SETITEMDATA,itemId,0xFF);
 				if(0xFF==fontSettings[i].sameAs)
 					SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_SETCURSEL,itemId,0);
-				for(j=0;j<MSGDLGFONTCOUNT;j++) {
+				for(j=0;j<FONTS_TO_CONFIG;j++) {
 					SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETLBTEXT,j,(LPARAM)szText);
 					id=SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETITEMDATA,j,0);
 					if(id==i) continue;
@@ -1114,7 +1100,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 			break;
 		case M_RECALCOTHERFONTS:	//recalculate the 'same as' settings for all fonts but wParam
 		{	int i;
-			for(i=0;i<MSGDLGFONTCOUNT;i++) {
+			for(i=0;i<FONTS_TO_CONFIG;i++) {
 				if(i==(int)wParam) continue;
 				SendMessage(hwndDlg,M_RECALCONEFONT,i,0);
 			}
@@ -1133,7 +1119,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
 		{	int i;
 			int minHeight=1;//GetSystemMetrics(SM_CYSMICON);
-			for(i=0;i<MSGDLGFONTCOUNT;i++)
+			for(i=0;i<FONTS_TO_CONFIG;i++)
 				if(fontSettings[i].size+2>minHeight) minHeight=fontSettings[i].size+2;
 			break;
 		}
@@ -1243,7 +1229,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 								char str[20];
                                 DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
-								for(i=0;i<MSGDLGFONTCOUNT;i++) {
+								for(i=0;i<FONTS_TO_CONFIG;i++) {
 									sprintf(str,"Font%d",i);
 									DBWriteContactSettingString(NULL,SRFONTSETTINGMODULE,str,fontSettings[i].szFace);
 									sprintf(str,"Font%dSet",i);

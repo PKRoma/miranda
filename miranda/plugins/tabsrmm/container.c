@@ -67,7 +67,7 @@ extern  HIMAGELIST g_hImageList;
 extern struct ProtocolData *protoIconData;
 extern int g_nrProtos;
 
-HMENU g_hMenuContext, g_hMenuContainer = 0, g_hMenuEncoding = 0, g_ContainerMenu = 0;
+HMENU g_hMenuContext, g_hMenuContainer = 0, g_hMenuEncoding = 0;
 
 #define DEFAULT_CONTAINER_POS 0x00400040
 #define DEFAULT_CONTAINER_SIZE 0x019001f4
@@ -1058,7 +1058,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     GetCursorPos(&pt);
                     TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
                     DestroyMenu(hMenu);
-                    break;
                 }
             }
             hMenu = pContainer->hMenu;
@@ -1289,8 +1288,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
             }
             else {
-                if(pContainer->hMenu == 0)
-                    pContainer->hMenu = g_ContainerMenu;
+                if(pContainer->hMenu == 0) {
+                    pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+                }
                 SetMenu(hwndDlg, pContainer->hMenu);
                 DrawMenuBar(hwndDlg);
             }
@@ -1442,6 +1442,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SetMenu(hwndDlg, NULL);
                 if(pContainer->hwndStatus)
                     DestroyWindow(pContainer->hwndStatus);
+                if(pContainer->hMenu)
+                    DestroyMenu(pContainer->hMenu);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
     			DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);

@@ -55,7 +55,7 @@ extern HINSTANCE g_hInst;
 HMODULE hDLL;
 PSLWA pSetLayeredWindowAttributes;
 extern TCHAR g_szDefaultContainerName[];
-extern HMENU g_hMenuContext, g_ContainerMenu;
+extern HMENU g_hMenuContext;
 extern struct ContainerWindowData *pFirstContainer;
 
 struct ProtocolData *protoIconData = NULL;
@@ -608,7 +608,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) g_hMenuContext, 0);   
     BuildContainerMenu();
-    g_ContainerMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
     
 #if defined(_UNICODE)
     #define SHORT_MODULENAME "tabSRMsgW (unicode)"
@@ -683,7 +682,6 @@ int SplitmsgShutdown(void)
     ImageList_RemoveAll(g_hImageList);
     ImageList_Destroy(g_hImageList);
     DestroyMenu(g_hMenuContext);
-    DestroyMenu(g_ContainerMenu);
     UncacheMsgLogIcons();
 #if defined(_STREAMTHREADING)
     if(g_StreamThreadRunning != 0) {

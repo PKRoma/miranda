@@ -755,18 +755,18 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         }
         case EVENTTYPE_URL:
             if (dat->isHistory)
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? H_MSGFONTID_MYURL : H_MSGFONTID_YOURURL]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? H_MSGFONTID_MYMISC : H_MSGFONTID_YOURMISC]);
             else
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYURL : MSGFONTID_YOURURL]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC : MSGFONTID_YOURMISC]);
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob);
             if ((dbei.pBlob + lstrlenA(dbei.pBlob) + 1) != NULL && lstrlenA(dbei.pBlob + lstrlenA(dbei.pBlob) + 1))
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, " (%s)", dbei.pBlob + lstrlenA(dbei.pBlob) + 1);
             break;
         case EVENTTYPE_FILE:
             if (dat->isHistory)
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? H_MSGFONTID_MYFILE : H_MSGFONTID_YOURFILE]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? H_MSGFONTID_MYMISC : H_MSGFONTID_YOURMISC]);
             else
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYFILE : MSGFONTID_YOURFILE]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC : MSGFONTID_YOURMISC]);
             if ((dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1) != NULL && lstrlenA(dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1))
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s (%s)", dbei.pBlob + sizeof(DWORD), dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1);
             else

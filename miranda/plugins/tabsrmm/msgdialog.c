@@ -267,10 +267,9 @@ static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cContr
 static void SetDialogToType(HWND hwndDlg)
 {
     struct MessageWindowData *dat;
-    WINDOWPLACEMENT pl = { 0};
     int iWantStatusbar = 0;
     HICON hButtonIcon = 0;
-    int nrSmileys;
+    int nrSmileys = 0;
     int showInfo, showButton, showSend;
     
     dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -279,17 +278,13 @@ static void SetDialogToType(HWND hwndDlg)
     showSend = dat->showUIElements & MWF_UI_SHOWSEND;
     
     if (dat->hContact) {
-        ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), showInfo ? SW_SHOW : SW_HIDE);
-    } else
-        ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), SW_HIDE);
-    if (dat->hContact) {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), showButton ? SW_SHOW : SW_HIDE);
-
+        ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), showInfo ? SW_SHOW : SW_HIDE);
         if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
             ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
     } else {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), SW_HIDE);
-
+        ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), SW_HIDE);
         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), showButton ? SW_SHOW : SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), FALSE);
     }
@@ -376,13 +371,6 @@ static void SetDialogToType(HWND hwndDlg)
         
     SendMessage(hwndDlg, DM_UPDATETITLE, 0, 1);
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
-    /*
-    pl.length = sizeof(pl);
-    GetWindowPlacement(hwndDlg, &pl);
-    if (!IsWindowVisible(hwndDlg))
-        pl.showCmd = SW_HIDE;
-    SetWindowPlacement(hwndDlg, &pl);   //in case size is smaller than new minimum
-    */
 }
 
 // BEGIN MOD#33: Show contact's picture
@@ -532,6 +520,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             dat->lastEnterTime = 0;
             return 0;
         case WM_CHAR:
+            if (wParam == 22 && GetKeyState(VK_CONTROL) & 0x8000) {
+                SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+                return 0;
+            }
             if (wParam == 21 && GetKeyState(VK_CONTROL) & 0x8000) {             // ctrl-U next unread tab
                 SendMessage(GetParent(hwnd), DM_QUERYPENDING, DM_QUERY_NEXT, 0);
                 return 0;
@@ -586,6 +578,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 if (wParam == VK_F4) {
                     SendMessage(GetParent(hwnd), WM_CLOSE, 1, 0);
                     return 0;
+                }
+                if (wParam == VK_V) {
                 }
                 if (!(GetKeyState(VK_SHIFT) & 0x8000) && (wParam == VK_UP || wParam == VK_DOWN)) {          // input history scrolling (ctrl-up / down)
                     if(mwdat) {
@@ -3136,7 +3130,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                                     SendMessage(((NMHDR *) lParam)->hwndFrom, WM_CUT, 0, 0);
                                                     break;
                                                 case IDM_PASTE:
-                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, WM_PASTE, 0, 0);
+                                                    if(idFrom == IDC_MESSAGE)
+                                                        SendMessage(((NMHDR *) lParam)->hwndFrom, EM_PASTESPECIAL, CF_TEXT, 0);
                                                     break;
                                                 case IDM_COPYALL:
                                                     SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
@@ -3154,7 +3149,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                         }
 #if defined(_UNICODE)
                                         if(idFrom == IDC_LOG)
-                                            RemoveMenu(hSubMenu, 0, MF_BYPOSITION);
+                                            RemoveMenu(hSubMenu, 6, MF_BYPOSITION);
 #endif                                        
                                         DestroyMenu(hMenu);
                                         if(dat->codePage != oldCodepage)
@@ -4481,5 +4476,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_LOADALOCALPICTUREASAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
     }
+    return 0;
 }
 
