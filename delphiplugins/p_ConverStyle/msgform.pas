@@ -1087,6 +1087,7 @@ begin
       Self.Visible:=True;
       ShowWindow(Self.Handle,SW_SHOWNORMAL);
       Self.BringToFront;
+      Self.SetFocus;
       end;
     1://show but without focus
       begin
