@@ -3,7 +3,6 @@
 
 // Force 512 byte section alignment in the PE file
 #pragma comment(linker, "/OPT:NOWIN98")
-#pragma comment(linker, "/FIXED")
 
 BOOL WINAPI DllMainTiny(HANDLE hDllHandle,DWORD dwReason,LPVOID lpreserved)
 {

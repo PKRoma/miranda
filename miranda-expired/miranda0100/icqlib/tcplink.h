@@ -1,4 +1,27 @@
 /* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+
+/*
+ * $Id$
+ *
+ * Copyright (C) 1998-2001, Denis V. Dmitrienko <denis@null.net> and
+ *                          Bill Soudan <soudan@kde.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+
 #ifndef _TCP_LINK_H_
 #define _TCP_LINK_H_
 
@@ -9,14 +32,13 @@
 #ifdef _WIN32
 #include <winsock.h>
 #else
+#include <sys/socket.h>
 #include <netinet/in.h>
 #endif
 
-#include <time.h>
-
 #include "icq.h"
 #include "icqpacket.h"
-#include "list.h"
+#include "timeout.h"
 
 /* link mode bitfield values */
 #define TCP_LINK_MODE_RAW             1
@@ -38,10 +60,10 @@
 #define icq_TCPLinkBufferSize 4096
 #define TCP_LINK_CONNECT_TIMEOUT 30
 
-typedef struct icq_TCPLink_s
-{
+struct icq_TCPLink_s {
+
    /* icq_TCPLink ICQLINK, type, mode, and session */
-   ICQLINK *icqlink;
+   icq_Link *icqlink;
    int type;
    int mode;
    int proxy_status;
@@ -57,8 +79,8 @@ typedef struct icq_TCPLink_s
    int buffer_count;
 
    /* packet queues */
-   list *received_queue;
-   list *send_queue;
+   icq_List *received_queue;
+   icq_List *send_queue;
 
    /* icq specific data, initialized by hello packet */
    unsigned long id;
@@ -66,23 +88,24 @@ typedef struct icq_TCPLink_s
    unsigned long remote_uin;
    char flags;
 
-   /* connect timer */
-   time_t connect_time;
+   /* timeout for connect operation */
+   icq_Timeout *connect_timeout;
 
-} icq_TCPLink;
+};
 
-icq_TCPLink *icq_TCPLinkNew(ICQLINK *link);
+icq_TCPLink *icq_TCPLinkNew(icq_Link *icqlink);
 void icq_TCPLinkDelete(void *p);
 void icq_TCPLinkClose(icq_TCPLink *p);
-void icq_TCPLinkNodeDelete(list_node *p);
+void icq_TCPLinkNodeDelete(icq_ListNode *p);
 
 int icq_TCPLinkConnect(icq_TCPLink *plink, DWORD uin, int port);
 icq_TCPLink *icq_TCPLinkAccept(icq_TCPLink *plink);
 int icq_TCPLinkListen(icq_TCPLink *plink);
 
-int icq_TCPLinkOnDataReceived(icq_TCPLink *plink);
+void icq_TCPLinkOnDataReceived(icq_TCPLink *plink);
 void icq_TCPLinkOnPacketReceived(icq_TCPLink *plink, icq_Packet *p);
 void icq_TCPLinkOnConnect(icq_TCPLink *plink);
+void icq_TCPLinkOnConnectTimeout(icq_TCPLink *plink);
 
 unsigned long icq_TCPLinkSendSeq(icq_TCPLink *plink, icq_Packet *p,
   unsigned long sequence);
@@ -90,7 +113,7 @@ void icq_TCPLinkSend(icq_TCPLink *plink, icq_Packet *p);
 
 void icq_TCPLinkProcessReceived(icq_TCPLink *plink);
 
-icq_TCPLink *icq_FindTCPLink(ICQLINK *link, unsigned long uin, int type);
+icq_TCPLink *icq_FindTCPLink(icq_Link *icqlink, unsigned long uin, int type);
 
 void icq_ChatRusConv_n(const char to[4], char *t_in, int t_len);
 

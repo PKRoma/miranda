@@ -54,6 +54,11 @@
 # include <machine/endian.h>
 #endif
 
+/* hpux way */
+#ifdef hpux
+#include <arpa/nameser.h>
+#endif
+
 /*
  * Kind of portable way. this common header, at least I found it on BSD and Solaris.
  * On Solaris this is only place where endiannes is defined.
@@ -75,8 +80,6 @@ extern unsigned long bswap_32(unsigned long v);
 extern unsigned short bswap_16(unsigned short v);
 # endif
 #endif
-
-#define BYTE_ORDER_LITTLE_ENDIAN 
 
 #ifdef BYTE_ORDER_LITTLE_ENDIAN
 # define htoicql(x)   (x)

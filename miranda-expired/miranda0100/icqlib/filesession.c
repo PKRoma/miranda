@@ -1,7 +1,29 @@
+/* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+
+/*
+ * $Id$
+ *
+ * Copyright (C) 1998-2001, Denis V. Dmitrienko <denis@null.net> and
+ *                          Bill Soudan <soudan@kde.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+
 #include <stdlib.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/stat.h>
 
 #ifdef _MSVC_
@@ -12,12 +34,11 @@
 #define write _write
 #endif
 
+#include "icqlib.h"
 #include "filesession.h"
-#include "list.h"
-#include "icqpacket.h"
 #include "stdpackets.h"
 
-icq_FileSession *icq_FileSessionNew(ICQLINK *icqlink)
+icq_FileSession *icq_FileSessionNew(icq_Link *icqlink)
 {
   icq_FileSession *p=(icq_FileSession *)malloc(sizeof(icq_FileSession));
 
@@ -26,7 +47,7 @@ icq_FileSession *icq_FileSessionNew(ICQLINK *icqlink)
     p->status=0;
     p->id=0L;
     p->icqlink=icqlink;
-	p->tcplink=NULL;
+    p->tcplink=NULL;
     p->current_fd=-1;
     p->current_file_num=0;
     p->current_file_progress=0;
@@ -37,7 +58,8 @@ icq_FileSession *icq_FileSessionNew(ICQLINK *icqlink)
     p->total_files=0;
     p->total_transferred_bytes=0;
     p->working_dir[0]=0;
-    list_insert(icqlink->icq_FileSessions, 0, p);
+    p->user_data=NULL;
+    icq_ListInsert(icqlink->d->icq_FileSessions, 0, p);
   }
 	
   return p;
@@ -46,6 +68,9 @@ icq_FileSession *icq_FileSessionNew(ICQLINK *icqlink)
 void icq_FileSessionDelete(void *pv)
 {
   icq_FileSession *p=(icq_FileSession *)pv;
+
+  invoke_callback(p->icqlink, icq_FileNotify)(p, FILE_NOTIFY_CLOSE, 0, 
+    NULL);
 
   if(p->files) {
     char **p2=p->files;
@@ -72,10 +97,10 @@ int _icq_FindFileSession(void *p, va_list data)
 
 }
 
-icq_FileSession *icq_FindFileSession(ICQLINK *icqlink, DWORD uin,
+icq_FileSession *icq_FindFileSession(icq_Link *icqlink, DWORD uin,
   unsigned long id)
 {
-  return list_traverse(icqlink->icq_FileSessions, _icq_FindFileSession, 
+  return icq_ListTraverse(icqlink->d->icq_FileSessions, _icq_FindFileSession, 
     uin, id);
 }
 
@@ -84,9 +109,14 @@ void icq_FileSessionSetStatus(icq_FileSession *p, int status)
   if(status!=p->status)
   {
     p->status=status;
-    if(p->id && p->icqlink->icq_RequestNotify)
-      (*p->icqlink->icq_RequestNotify)(p->icqlink, p->id, ICQ_NOTIFY_FILE,
-       status, 0);
+    if(p->id)
+      invoke_callback(p->icqlink, icq_FileNotify)(p, FILE_NOTIFY_STATUS,
+        status, NULL);
+    if (status == FILE_STATUS_SENDING)
+      icq_SocketSetHandler(p->tcplink->socket, ICQ_SOCKET_WRITE,
+        icq_FileSessionSendData, p);
+    else
+      icq_SocketSetHandler(p->tcplink->socket, ICQ_SOCKET_WRITE, NULL, NULL);
   }
 }
 
@@ -97,7 +127,7 @@ void icq_FileSessionSetHandle(icq_FileSession *p, const char *handle)
 
 void icq_FileSessionSetCurrentFile(icq_FileSession *p, const char *filename)
 {
-  struct _stat file_status;
+  struct stat file_status;
   char file[1024];
 
   strcpy(file, p->working_dir);
@@ -112,7 +142,7 @@ void icq_FileSessionSetCurrentFile(icq_FileSession *p, const char *filename)
   p->current_file_progress=0;
 
   /* does the file already exist? */
-  if (_stat(file, &file_status)==0) {
+  if (stat(file, &file_status)==0) {
     p->current_file_progress=file_status.st_size;
     p->total_transferred_bytes+=file_status.st_size;
 #ifdef _WIN32
@@ -150,14 +180,14 @@ void icq_FileSessionPrepareNextFile(icq_FileSession *p)
   }
 
   if(*files) {
-    struct _stat file_status;
+    struct stat file_status;
 
     if (p->current_fd>-1) {
        close(p->current_fd);
        p->current_fd=-1;
     }
 
-    if (_stat(*files, &file_status)==0) {
+    if (stat(*files, &file_status)==0) {
        char *basename=*files;
 #ifdef _WIN32
        char *pos=strrchr(basename, '\\');
@@ -169,7 +199,7 @@ void icq_FileSessionPrepareNextFile(icq_FileSession *p)
        p->current_file_progress=0;
        p->current_file_size=file_status.st_size;
 #ifdef _WIN32
-       p->current_fd=open(*files, O_RDONLY|_O_BINARY);
+       p->current_fd=open(*files, O_RDONLY | O_BINARY);
 #else
        p->current_fd=open(*files, O_RDONLY);
 #endif
@@ -193,10 +223,9 @@ void icq_FileSessionSendData(icq_FileSession *p)
       p->total_transferred_bytes+=count;
       p->current_file_progress+=count;
       icq_FileSessionSetStatus(p, FILE_STATUS_SENDING);
-      
-      if (p->icqlink->icq_RequestNotify)
-        (*p->icqlink->icq_RequestNotify)(p->icqlink, p->id,
-          ICQ_NOTIFY_FILEDATA, count, NULL); 
+
+      invoke_callback(p->icqlink, icq_FileNotify)(p, FILE_NOTIFY_DATAPACKET,
+        count, buffer);
   }
 
   /* done transmitting if read returns less that 2048 bytes */
@@ -229,14 +258,15 @@ void icq_FileSessionClose(icq_FileSession *p)
     icq_TCPLinkClose(plink);
   }
 
-  list_remove(p->icqlink->icq_FileSessions, p);		
+  //rcdh: swapped these two lines round
+  icq_ListRemove(p->icqlink->d->icq_FileSessions, p);		
 
   icq_FileSessionDelete(p);
 }   
 
 void icq_FileSessionSetWorkingDir(icq_FileSession *p, const char *dir)
 {
-  strncpy(p->working_dir, dir, sizeof(((icq_FileSession*)0)->working_dir));
+  strncpy(p->working_dir, dir, 512);
 }  
 
 void icq_FileSessionSetFiles(icq_FileSession *p, char **files)

@@ -1,22 +1,32 @@
+/* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+
+/*
+ * $Id$
+ *
+ * Copyright (C) 1998-2001, Denis V. Dmitrienko <denis@null.net> and
+ *                          Bill Soudan <soudan@kde.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
 
 #ifndef _CHAT_SESSION_H
 #define _CHAT_SESSION_H
 
 #include "icq.h"
 #include "icqtypes.h"
-
-/* chat session statuses- request receiver */
-#define CHAT_STATUS_LISTENING    1
-#define CHAT_STATUS_CONNECTED    3
-#define CHAT_STATUS_WAIT_NAME    4
-#define CHAT_STATUS_WAIT_FONT    6
-
-/* chat session statuses- request sender */
-#define CHAT_STATUS_CONNECTING   2
-#define CHAT_STATUS_WAIT_ALLINFO 5
-
-/* once negotiation is complete, both sides enter ready state */
-#define CHAT_STATUS_READY        7
 
 /* chat session states:
 
@@ -60,21 +70,9 @@
 			ICQ_NOTIFY_SUCCESS
 */
 
-typedef struct icq_ChatSession_s {
-
-  DWORD id;
-  int status;
-  ICQLINK *icqlink;
-
-  DWORD remote_uin;
-  char *remote_handle;
-
-} icq_ChatSession;
-
-icq_ChatSession *icq_ChatSessionNew(ICQLINK *);
+icq_ChatSession *icq_ChatSessionNew(icq_Link *);
 void icq_ChatSessionDelete(void *);
-void icq_ChatSessionClose(icq_ChatSession *);
 void icq_ChatSessionSetStatus(icq_ChatSession *, int);
-icq_ChatSession *icq_FindChatSession(ICQLINK *, DWORD);
+icq_ChatSession *icq_FindChatSession(icq_Link *, DWORD);
 
 #endif
