@@ -121,6 +121,10 @@ SOURCE=.\icq_advsearch.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_avatar.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_constants.h
 # End Source File
 # Begin Source File
@@ -325,11 +329,11 @@ SOURCE=".\docs\icq-readme.txt"
 # End Source File
 # Begin Source File
 
-SOURCE=".\docs\IcqOscar8-db settings.txt"
+SOURCE=".\docs\IcqOscarJ-db settings.txt"
 # End Source File
 # Begin Source File
 
-SOURCE=".\docs\IcqOscar8-translation.txt"
+SOURCE=".\docs\IcqOscarJ-translation.txt"
 # End Source File
 # End Group
 # Begin Group "UI"
@@ -371,6 +375,10 @@ SOURCE=.\forkthread.c
 # Begin Source File
 
 SOURCE=.\i18n.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\icq_avatar.c
 # End Source File
 # Begin Source File
 
