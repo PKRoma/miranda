@@ -179,11 +179,10 @@ void DestroyingModularEngine(void)
 
 		EnterCriticalSection(&csHooks);
 		for (i=0; i<hookCount; i++) {
-			THookList *h=&hook[i];
-			log_printf("<b>hook</b> \"%s\", hash=0x%08x",h->name,h->hookHash);
-			if (h->subscriberCount) {
-				for (j=0;j<h->subscriberCount;j++) {
-					void *pfnHook=h->subscriber[j].pfnHook;
+			log_printf("<b>hook</b> \"%s\", ",hook[i].name,hook[i].hookHash);
+			if (hook[i].subscriberCount) {
+				for (j=0;j<hook[i].subscriberCount;j++) {
+					void *pfnHook=hook[i].subscriber[j].pfnHook;
 					int badhook=0;
 					/*
 						hooks are checked again before shutdown because the caller
@@ -199,7 +198,7 @@ void DestroyingModularEngine(void)
 							badhook=1;
 						} //if
 					} __except (DumpErrorInformation(GetExceptionInformation())) {
-						h->subscriber[j].pfnHook=NULL;
+						hook[i].subscriber[j].pfnHook=NULL;
 						badhook=1;
 					} //try
 					if (!badhook && !log_modulefromaddress(hSnap,pfnHook,&moduleInfo)) {
@@ -340,7 +339,7 @@ HANDLE CreateHookableEvent(const char *name)
 	hookCount++;
 	ret=(HANDLE)hookCount;
 	LeaveCriticalSection(&csHooks);
-	log_printf("CreateHookableEvent success, created \"%s\" with handle (%d)",name,(DWORD)ret);
+	log_printf("CreateHookableEvent success, created \"%s\" with handle (%d), hash 0x%08x",name,(DWORD)ret,(DWORD)Hash);
 	return ret;
 }
 
