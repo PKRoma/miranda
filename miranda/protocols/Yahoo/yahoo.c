@@ -609,20 +609,15 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		LOG(("Buddy %d", hContact));
 	}
 	
-	LOG(("Before Setting Status"));
 	if (!mobile)
 		YAHOO_SetWord(hContact, "Status", yahoo_to_miranda_status(stat,away));
 	else
 		YAHOO_SetWord(hContact, "Status", ID_STATUS_ONTHEPHONE);
 	
-	LOG(("After Setting Status"));
 	YAHOO_SetWord(hContact, "YStatus", stat);
-	LOG(("Before away flag"));
 	YAHOO_SetWord(hContact, "YAway", away);
-	LOG(("Before mobile"));
 	YAHOO_SetWord(hContact, "Mobile", mobile);
 
-	LOG(("About to set the status message for my buddy."));
 	if(msg) {
 		LOG(("%s custom message '%s'", who, msg));
 		YAHOO_SetString(hContact, "YMsg", msg);
@@ -631,10 +626,8 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	}
 
 	
-	
-	
 	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
-		if (idle > 0 || stat > 0) {
+		if (stat > 0) {
 			LOG(("%s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60));
 			
 			time(&idlets);
