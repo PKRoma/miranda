@@ -1066,7 +1066,7 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 	  }
 	  *pszBuf='\0';
 
-	  Netlib_Logf(hDirectNetlibUser, szBuf);
+    CallService(MS_NETLIB_LOG,(WPARAM)hDirectNetlibUser, (LPARAM)szBuf);
 
 	  SAFE_FREE(&szBuf);
 
