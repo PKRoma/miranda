@@ -61,7 +61,7 @@ uses
 
 
 {$R *.RES}
-{ $R optdlgs.res}
+{$R optdlgs.res}
 
 
 
@@ -239,14 +239,28 @@ function OnOptInitialise(wParam{addinfo},lParam{0}:DWord):integer;cdecl;
 var
   odp:TOPTIONSDIALOGPAGE;
 begin
-{ ZeroMemory(@odp,sizeof(odp));
+  ZeroMemory(@odp,sizeof(odp));
   odp.cbSize:=sizeof(odp);
   odp.Position:=900000000;
   odp.hInstance:=hInstance;
   odp.pszTemplate:='DLG_MISCOPTIONS';
-  odp.pszTitle:='Convers. Plugin';
+  odp.pszTitle:='Convers';
+  odp.groupPosition:=1;
   odp.pfnDlgProc:=@optionfrm.DlgProcMiscOptions;
-  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));}
+  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
+
+
+  ZeroMemory(@odp,sizeof(odp));
+  odp.cbSize:=sizeof(odp);
+  odp.Position:=900000001;
+  odp.hInstance:=hInstance;
+  odp.pszTemplate:='DLG_SENDOPTIONS';
+  odp.pszGroup:='Convers';
+  odp.groupPosition:=2;
+  odp.pszTitle:='Send Options';
+  odp.pfnDlgProc:=@optionfrm.DlgProcSendOptions;
+  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
+
   Result:=0;
 end;
 
