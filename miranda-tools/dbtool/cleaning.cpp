@@ -30,10 +30,11 @@ BOOL CALLBACK CleaningDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 	switch(message) {
 		case WM_INITDIALOG:
 			CheckDlgButton(hdlg,IDC_ERASEHISTORY,opts.bEraseHistory);
+			EnableWindow(GetDlgItem(hdlg,IDC_ERASEHISTORY),!opts.bAggressive);
 			CheckDlgButton(hdlg,IDC_MARKREAD,opts.bMarkRead);
 			return TRUE;
 		case WZN_PAGECHANGING:
-			opts.bEraseHistory=IsDlgButtonChecked(hdlg,IDC_ERASEHISTORY);
+			opts.bEraseHistory=IsDlgButtonChecked(hdlg,IDC_ERASEHISTORY)&&!opts.bAggressive;
 			opts.bMarkRead=IsDlgButtonChecked(hdlg,IDC_MARKREAD);
 			break;
 		case WM_COMMAND:
