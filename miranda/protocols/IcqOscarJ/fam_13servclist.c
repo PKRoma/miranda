@@ -37,8 +37,6 @@
 #include "icqoscar.h"
 
 
-extern void ResetSettingsOnListReload();
-
 extern HANDLE ghServerNetlibUser;
 extern int gnCurrentStatus;
 extern char gpszICQProtoName[MAX_PATH];
@@ -557,6 +555,25 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         setServerGroupID(makeGroupPath(sc->wGroupId), sc->wGroupId);
       }
       RemoveGroupRename(sc->wGroupId);
+      break;
+    }
+  case SSA_SETAVATAR:
+    {
+      if (wError)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Uploading of avatar hash failed.");
+      }
+      break;
+    }
+  case SSA_REMOVEAVATAR:
+    {
+      if (wError)
+        Netlib_Logf(ghServerNetlibUser, "Removing of avatar hash failed.");
+      else
+      {
+        DBDeleteContactSetting(NULL, gpszICQProtoName, "SrvAvatarID");
+        FreeServerID(sc->wContactId);
+      }
       break;
     }
   case SSA_SERVLIST_ACK:
@@ -1140,7 +1157,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
     case SSI_ITEM_IGNORE: // item on ignore list 
       /* pszRecordName is the UIN */
-      /* TODO: Give sense */
 
       if (!IsStringUIN(pszRecordName))
         Netlib_Logf(ghServerNetlibUser, "Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
@@ -1572,6 +1588,101 @@ void updateServVisibilityCode(BYTE bCode)
     sendServPacket(&packet);
     // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
     // ICQ_LISTS_CLI_MODIFYEND when modifying the visibility code
+  }
+}
+
+
+
+// Updates the avatar hash used while in SSI mode. If a server ID is
+// not stored in the local DB, a new ID will be added to the server list.
+void updateServAvatarHash(char* pHash)
+{
+  icq_packet packet;
+  WORD wAvatarID;
+  WORD wCommand;
+
+  if (pHash)
+  {
+    servlistcookie* ack;
+    DWORD dwCookie;
+
+    // Do we have a known server avatar ID? We should, unless we just subscribed to the serv-list for the first time
+    if ((wAvatarID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0)) == 0)
+    {
+      // No, create a new random ID
+      wAvatarID = GenerateServerId();
+      DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", wAvatarID);
+      wCommand = ICQ_LISTS_ADDTOLIST;
+      Netlib_Logf(ghServerNetlibUser, "Made new srvAvatarID, id is %u", wAvatarID);
+    }
+    else
+    {
+      Netlib_Logf(ghServerNetlibUser, "Reused srvAvatarID, id is %u", wAvatarID);
+      wCommand = ICQ_LISTS_UPDATEGROUP;
+    }
+
+    ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+    if (!ack) 
+    {
+      Netlib_Logf(ghServerNetlibUser, "Cookie alloc failure.");
+      return; // out of memory, go away
+    }
+    ack->dwAction = SSA_SETAVATAR; // update avatar hash
+    ack->dwUin = 0; // this is ours
+    dwCookie = AllocateCookie(wCommand, 0, ack); // take cookie
+
+    // Build and send packet
+    packet.wLen = 46;
+    write_flap(&packet, ICQ_DATA_CHAN);
+    packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
+    packWord(&packet, 1);                   // Name length
+    packByte(&packet, '1');                 // Name
+    packWord(&packet, 0);                   // GroupID (0 if not relevant)
+    packWord(&packet, wAvatarID);           // EntryID
+    packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
+    packWord(&packet, 0x1A);                // Length in bytes of following TLV
+    packWord(&packet, 0x131);               // TLV Type (Name)
+    packWord(&packet, 0);                   // TLV Length (empty)
+    packWord(&packet, 0xD5);                // TLV Type
+    packWord(&packet, 0x12);                // TLV Length
+    packBuffer(&packet, pHash, 0x12);       // TLV Value (avatar hash)
+    sendServPacket(&packet);
+    // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
+    // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash
+  }
+  else
+  {
+    servlistcookie* ack;
+    DWORD dwCookie;
+
+    // Do we have a known server avatar ID?
+    if ((wAvatarID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0)) == 0)
+    {
+      return;
+    }
+    ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+    if (!ack) 
+    {
+      Netlib_Logf(ghServerNetlibUser, "Cookie alloc failure.");
+      return; // out of memory, go away
+    }
+    ack->dwAction = SSA_REMOVEAVATAR; // update avatar hash
+    ack->dwUin = 0; // this is ours
+    ack->wContactId = wAvatarID;
+    dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, ack); // take cookie
+
+    // Build and send packet
+    packet.wLen = 20;
+    write_flap(&packet, ICQ_DATA_CHAN);
+    packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, dwCookie);
+    packWord(&packet, 0);                   // Name (null)
+    packWord(&packet, 0);                   // GroupID (0 if not relevant)
+    packWord(&packet, wAvatarID);           // EntryID
+    packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
+    packWord(&packet, 0);                   // Length in bytes of following TLV
+    sendServPacket(&packet);
+    // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
+    // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash
   }
 }
 

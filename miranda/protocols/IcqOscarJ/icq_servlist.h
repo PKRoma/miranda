@@ -54,6 +54,8 @@
 #define SSA_GROUP_REMOVE      0x16  // delete group
 #define SSA_GROUP_UPDATE      0x17  // update group
 #define SSA_SERVLIST_ACK      0x20  // send proto ack only (UploadUI)
+#define SSA_SETAVATAR         0x30
+#define SSA_REMOVEAVATAR      0x31
 
 typedef void (*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
 
