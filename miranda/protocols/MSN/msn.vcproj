@@ -118,7 +118,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
-				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
@@ -656,6 +655,9 @@
 				RelativePath="Icos\msn.ico">
 			</File>
 			<File
+				RelativePath=".\msn.rc">
+			</File>
+			<File
 				RelativePath="Icos\msnblock.ico">
 			</File>
 			<File
@@ -665,17 +667,17 @@
 				RelativePath="Icos\profile.ico">
 			</File>
 			<File
-				RelativePath="resource.rc">
+				RelativePath=".\resource.h">
 			</File>
 			<File
 				RelativePath=".\Icos\services.ico">
 			</File>
+			<File
+				RelativePath=".\version.rc">
+			</File>
 		</Filter>
 		<File
 			RelativePath="msn.def">
-		</File>
-		<File
-			RelativePath=".\resource.h">
 		</File>
 	</Files>
 	<Globals>
