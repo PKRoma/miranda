@@ -45,6 +45,7 @@ struct MessageWindowData
 	struct MessageSendInfo *sendInfo;
 	int sendCount;
 	HANDLE hAckEvent;
+	HANDLE hAvatarAck;
 	HANDLE hNewEvent;
 	int showTime;
 	HBRUSH hBkgBrush;
@@ -52,6 +53,7 @@ struct MessageWindowData
 	char *sendBuffer;
 	HICON hIcons[6];
 	SIZE minEditBoxSize;
+	RECT minEditInit;
 	int showInfo;
 	int showButton;
 	int lineHeight;
@@ -62,6 +64,10 @@ struct MessageWindowData
 	int nTypeSecs;
 	int nTypeMode;
 	int showSend;
+	int showAvatar;
+	int avatarWidth;
+	int avatarHeight;
+	HBITMAP avatarPic;
 	DWORD nLastTyping;
 	int showTyping;
 	int showTypingWin;
@@ -91,6 +97,11 @@ struct MessageWindowData
 #define DM_UPDATEWINICON     (WM_USER+21)
 #define DM_UPDATELASTMESSAGE (WM_USER+22)
 #define DM_USERNAMETOCLIP    (WM_USER+23)
+#define DM_AVATARSIZECHANGE  (WM_USER+24)
+#define DM_AVATARCALCSIZE    (WM_USER+25)
+#define DM_GETAVATAR         (WM_USER+26)
+#define DM_UPDATESIZEBAR     (WM_USER+27)
+#define HM_AVATARACK         (WM_USER+28)
 
 #define EVENTTYPE_STATUSCHANGE 25368
 
@@ -195,5 +206,7 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_SHOWTYPINGNOWIN 0
 #define SRMSGSET_SHOWTYPINGCLIST    "ShowTypingClist"
 #define SRMSGDEFSET_SHOWTYPINGCLIST 1
+
+#define SRMSGSET_AVATAR             "Avatar"
 
 #endif

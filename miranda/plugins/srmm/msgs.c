@@ -29,6 +29,7 @@ HANDLE hMessageWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
 int hMsgMenuItemCount = 0;
+HBITMAP g_hbmUnknown;
 
 extern HINSTANCE g_hInst;
 
@@ -298,6 +299,7 @@ int SplitmsgShutdown(void)
 		hMsgMenuItem = NULL;
 		hMsgMenuItemCount = 0;
 	}
+	DeleteObject(g_hbmUnknown);
 	return 0;
 }
 
@@ -339,6 +341,7 @@ int LoadSendRecvMessageModule(void)
 			return 1;
 		return 0;
 	}
+	g_hbmUnknown = LoadImage(g_hInst, MAKEINTRESOURCE(IDB_UNKNOWN), IMAGE_BITMAP, 0, 0, 0);
 	OleInitialize(NULL);
 	InitREOleCallback();
 	hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);

@@ -26,6 +26,7 @@
 #define IDI_INCOMING                    276
 #define IDI_OUTGOING                    277
 #define IDI_NOTICE                      282
+#define IDB_UNKNOWN                     283
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003
@@ -77,6 +78,7 @@
 #define IDC_NOTIFYBALLOON               1607
 #define IDC_CTRLSUPPORT                 1608
 #define IDC_DELTEMP                     1609
+#define IDC_AVATAR                      1610
 #define IDM_COPY                        40001
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
@@ -89,9 +91,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        283
+#define _APS_NEXT_RESOURCE_VALUE        284
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1610
+#define _APS_NEXT_CONTROL_VALUE         1611
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

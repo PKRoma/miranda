@@ -41,6 +41,7 @@ extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList, hHookWinEvt;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
+extern HBITMAP g_hbmUnknown;
 
 static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus);
 
@@ -460,6 +461,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         {
             if (!dat->showSend)
                 urc->rcItem.right = urc->dlgNewSize.cx - urc->rcItem.left;
+			if (dat->showAvatar) {
+				urc->rcItem.left = dat->avatarWidth+4;
+			}
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             if (!dat->showSend)
                 return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
@@ -471,6 +475,10 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_TYPINGNOTIFY:
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
+		case IDC_AVATAR:
+            urc->rcItem.top=urc->rcItem.bottom-(dat->avatarHeight + 2);
+            urc->rcItem.right=urc->rcItem.left+(dat->avatarWidth + 2);
+            return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
 }
@@ -483,6 +491,39 @@ static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 
 		_sntprintf(buf, sizeof(buf), _T("%d"), len);
 		SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
+	}
+}
+
+void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
+	DBVARIANT dbv;
+
+	if (dat->avatarPic!=g_hbmUnknown) {
+		DeleteObject(dat->avatarPic);
+        dat->avatarPic=NULL;
+	}
+	if (DBGetContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
+		dat->avatarPic=g_hbmUnknown;
+		SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
+		SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
+		SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
+	}
+	else {
+		HANDLE hFile;
+
+		if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
+			dat->avatarPic=g_hbmUnknown;
+			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
+			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
+			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
+		}
+		else {
+			dat->avatarPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
+			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
+			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
+			CloseHandle(hFile);
+		}
+		DBFreeVariant(&dbv);
 	}
 }
 
@@ -546,6 +587,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 			dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+			{ // avatar stuff
+				dat->avatarPic = 0;
+				dat->showAvatar = 0;
+				if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
+					dat->avatarPic = g_hbmUnknown;
+					dat->showAvatar = 1;
+					SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
+				}
+			}
 			if (dat->hContact && dat->szProto != NULL)
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
 			else
@@ -590,19 +640,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->splitterY == -1)
 					dat->splitterY = dat->originalSplitterY + 60;
 			}
-			{
-				RECT rc;
-
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
-				dat->minEditBoxSize.cx = rc.right - rc.left;
-				dat->minEditBoxSize.cy = rc.bottom - rc.top;
-
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_ADD), &rc);
-				dat->lineHeight = rc.bottom - rc.top + 3;
-			}
-
 			WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
-
+			GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &dat->minEditInit);
+			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 			dat->hwndStatus = NULL;
 			dat->hIcons[0] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 			dat->hIcons[1] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IsWinVerXPPlus()? IDI_USERDETAILS32 : IDI_USERDETAILS), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -741,6 +781,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 
 			}
+			
+			dat->hAvatarAck = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_AVATARACK);
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			return TRUE;
@@ -757,6 +800,95 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 		}
+	case HM_AVATARACK:
+	{
+		ACKDATA *pAck = (ACKDATA *)lParam;
+		PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *)pAck->hProcess;
+		HWND hwnd = 0;
+		
+		if (pAck->hContact!=dat->hContact)
+			return 0;
+		if(pAck->type != ACKTYPE_AVATAR)
+			return 0;
+		if(pAck->result == ACKRESULT_STATUS) {
+			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
+			ShowAvatar(hwndDlg, dat);
+		}
+		break;
+	}
+	case DM_AVATARCALCSIZE:
+	{
+		BITMAP bminfo;
+
+		if (dat->avatarPic==0||dat->showAvatar==0) {
+			dat->avatarWidth=50;
+			dat->avatarHeight=50;
+			ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
+		}
+		GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
+		dat->avatarWidth=bminfo.bmWidth+2;
+        dat->avatarHeight=bminfo.bmHeight+2;
+		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_SHOW);
+		break;
+	}
+	case DM_UPDATESIZEBAR:
+	{
+		RECT rc;
+
+		dat->minEditBoxSize.cx = dat->minEditInit.right - dat->minEditInit.left;
+		dat->minEditBoxSize.cy = dat->minEditInit.bottom - dat->minEditInit.top;
+		if (dat->showAvatar) {
+			if (dat->minEditBoxSize.cy<=dat->avatarHeight)
+				dat->minEditBoxSize.cy = dat->avatarHeight;
+		}
+		
+		GetWindowRect(GetDlgItem(hwndDlg, IDC_ADD), &rc);
+		dat->lineHeight = rc.bottom - rc.top + 3;
+		break;
+	}
+	case DM_AVATARSIZECHANGE:
+	{
+		RECT rc;
+		GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
+
+		if (rc.bottom-rc.top<dat->minEditBoxSize.cy) {
+			SendMessage(hwndDlg, DM_SPLITTERMOVED, rc.top-(rc.bottom-rc.top-dat->minEditBoxSize.cy-4), (LPARAM) GetDlgItem(hwndDlg, IDC_SPLITTER));
+		}
+		SendMessage(hwndDlg, WM_SIZE, 0, 0);
+		break;
+	}
+	case DM_GETAVATAR:
+	{
+		PROTO_AVATAR_INFORMATION pai;
+		int caps = 0, result;
+		
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
+        if (dat->showAvatar==0) {
+			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
+			return 0;
+		}
+		if(DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) {
+			ShowAvatar(hwndDlg, dat);
+			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
+			return 0;
+		}
+		ZeroMemory((void *)&pai, sizeof(pai));
+		pai.cbSize = sizeof(pai);
+		pai.hContact = dat->hContact;
+		pai.format = PA_FORMAT_BMP;
+		strcpy(pai.filename, "");
+		result = CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai);
+		if (result==GAIR_SUCCESS) {
+			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
+			ShowAvatar(hwndDlg, dat);
+		}
+		else if (result==GAIR_NOAVATAR) {
+			DBDeleteContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR);
+			ShowAvatar(hwndDlg, dat);
+		}
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
+		break;
+	}
 	case DM_TYPING:
 		{
 			dat->nTypeSecs = (int) lParam > 0 ? (int) lParam : 0;
@@ -1217,6 +1349,24 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
 					DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, dat->hIcons[5], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 				}
+				else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR) && dat->avatarPic && dat->showAvatar) {
+					BITMAP bminfo;
+					HPEN hPen;
+
+                    hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
+                    SelectObject(dis->hDC, hPen);
+                    Rectangle(dis->hDC, 0, 0, dat->avatarWidth, dat->avatarHeight);
+                    DeleteObject(hPen);
+					GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
+					{
+						HDC hdcMem = CreateCompatibleDC(dis->hDC);
+                        HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->avatarPic);
+
+						BitBlt(dis->hDC, 1, 1, bminfo.bmWidth, bminfo.bmHeight, hdcMem, 0, 0, SRCCOPY);
+						DeleteObject(hbmMem);
+                        DeleteDC(hdcMem);
+					}
+				}
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 			}
 		case WM_COMMAND:
@@ -1549,6 +1699,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			free(dat->sendBuffer);
 		if (dat->hwndStatus)
 			DestroyWindow(dat->hwndStatus);
+		if (dat->hAvatarAck)
+			UnhookEvent(dat->hAvatarAck);
+		if (dat->avatarPic&&dat->avatarPic!=g_hbmUnknown)
+			DeleteObject(dat->avatarPic);
 		{
 			int i;
 			for (i = 0; i < sizeof(dat->hIcons) / sizeof(dat->hIcons[0]); i++)

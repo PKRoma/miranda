@@ -19,6 +19,7 @@ Changes
 2.1.0.0
  - Show user menu by clicking user name
  - Copy user name by shift clicking username
+ - Avatar support
 
 2.0.0.0
  - Remove send to multiple "feature"

@@ -93,7 +93,7 @@ STYLE DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
     WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
 CAPTION "Message Session"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_MESSAGE,1,49,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL
@@ -118,6 +118,8 @@ BEGIN
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,45,183,2
     CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
                     WS_VISIBLE | WS_TABSTOP,2,64,12,12
+    CONTROL         "",IDC_AVATAR,"Button",BS_OWNERDRAW,1,50,1,13,
+                    0x18000000L
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -171,7 +173,7 @@ END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x348,18,42,248,
@@ -334,6 +336,13 @@ BEGIN
     END
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_UNKNOWN             BITMAP  DISCARDABLE     "res\\unknown.bmp"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -322,6 +322,10 @@ SOURCE=.\res\Typing8.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\unknown.bmp
+# End Source File
+# Begin Source File
+
 SOURCE="..\..\Miranda-IM\res\viewdetails.ico"
 # End Source File
 # End Group
