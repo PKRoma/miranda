@@ -5,6 +5,7 @@
  *
  * Author      : Christian Kästner
  * Date        : 28.04.2001
+ * Last Change : 22.12.2001
  *
  * Copyright © 2001 by Christian Kästner (christian.k@stner.de)
  ****************************************************************}
@@ -29,9 +30,13 @@ const
   DEFMOD_RNDICQIMPORT	 =	13;
   DEFMOD_RNDAUTOAWAY	 =	14;
   DEFMOD_RNDUSERONLINE	 =      15;
-  DEFMOD_RNDCRYPT        =      16;
+  DEFMOD_RNDCRYPT        =      16;   //v0.1.0.1+
+  DEFMOD_SRAWAY          =      17;	 //v0.1.0.1+
+  DEFMOD_RNDIGNORE       =      18;	 //v0.1.0.1+
+  DEFMOD_UIVISIBILITY    =      19;   //v0.1.1.0+, options page only
+  DEFMOD_UICLUI          =      20;   //v0.1.1.0+
 
-  DEFMOD_HIGHEST         =      16;
+  DEFMOD_HIGHEST         =      20;
 
 //plugins/getdisabledefaultarray
 //gets an array of the modules that the plugins report they want to replace

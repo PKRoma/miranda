@@ -5,6 +5,7 @@
  *
  * Author      : Christian Kästner
  * Date        : 28.04.2001
+ * Last Change : 22.12.2001
  *
  * Copyright © 2001 by Christian Kästner (christian.k@stner.de)
  ****************************************************************}
@@ -13,255 +14,153 @@ unit m_icq;
 
 interface
 
-uses windows,m_protosvc;
-
-const
-  ICQEVENTTYPE_YOUWEREADDED  =1000;
-  ICQEVENTTYPE_AUTHREQUEST   =1001;
-  ICQEVENTTYPE_FILE          =1002;
+uses windows;
 
 
-//triggered when the server acknowledges that a message or url or whatever has
-//gone, sent loads of times during file transfers
-//wParam=event id, returned when you initiated the send
-//lParam=message type, see icq_notify_* in icq.h
 
-const
-  ICQ_NOTIFY_SUCCESS        =0;
-  ICQ_NOTIFY_FAILED         =1;
-  ICQ_NOTIFY_CONNECTING     =2;
-  ICQ_NOTIFY_CONNECTED      =3;
-  ICQ_NOTIFY_SENT           =4;
-  ICQ_NOTIFY_ACK            =5;
 
-  ICQ_NOTIFY_CHAT           =6;
-  ICQ_NOTIFY_CHATDATA       =7;
-
-  ICQ_NOTIFY_FILE           =10;
-  ICQ_NOTIFY_FILESESSION    =11;
-  ICQ_NOTIFY_FILEDATA       =12;
-
-const
-  ME_ICQ_EVENTSENT    ='ICQ/EventSent';
-  
-
-//send a request to the server to get the information about a user
-//wParam=(WPARAM)(HANDLE)hContact
-//lParam=0
-//returns 0 if hContact is a valid ICQ contact, nonzero otherwise, or if
-//you are offline
-//This never replies, the information is just updated in the database.
-//Users should hook db/contact/settingchanged if they want to know when the
-//information arrives
-//const
-//  MS_ICQ_UPDATECONTACTINFO  ='ICQ/UpdateContactInfo';
-  
-
-//send a request to the server to get the extended information about a user
-//wParam=(WPARAM)(HANDLE)hContact
-//lParam=0
-//returns 0 if hContact is a valid ICQ contact, nonzero otherwise, or if
-//you are offline
-//This never replies, the information is just updated in the database.
-//Users should hook db/contact/settingchanged if they want to know when the
-//information arrives
-//const
-//  MS_ICQ_UPDATECONTACTINFOEXT  ='ICQ/UpdateContactInfoExt';
-  
-
-//send a message
+//start a search of all ICQ users by e-mail
 //wParam=0
-//lParam=(LPARAM)(ICQSENDMESSAGE* )ism
-//hook icq/eventsent to check that the message went
-//returns an id that should correspond to wParam of icq/eventsent
+//lParam=(LPARAM)(const char*)email
+//returns a handle to the search on success, NULL on failure
+//Results are returned using the same scheme documented in PSS_BASICSEARCH
 type
-  PICQSENDMESSAGE=^TICQSENDMESSAGE;
-  TICQSENDMESSAGE=record
-    cbSize:Integer;
-    uin:DWord;
-    pszMessage:PChar;
-    routeOverride:Integer;
+  ICQSEARCHRESULT=record   //extended search result structure, used for all searches
+    hdr:PROTOSEARCHRESULT;
+    uin:DWORD;
+    auth:byte;
   end;
-const
-  //new
-  PIMF_ROUTE_DEFAULT    =0     ;
-  PIMF_ROUTE_DIRECT     =$10000;
-  PIMF_ROUTE_THRUSERVER =$20000;
-  PIMF_ROUTE_BESTWAY    =$30000;
-  PIMF_ROUTE_MASK       =$30000;
-
-const
-  MS_ICQ_SENDMESSAGE        ='ICQ/SendMessage';
-  
-
-//send a URL
-//wParam=0
-//lParam=(LPARAM)(ICQSENDURL* )isu
-//hook icq/eventsent to check that the message went
-//returns an id that should correspond to wParam of icq/eventsent
-type
-  TICQSENDURL=record
-    cbSize:integer;
-    uin:DWord;
-    pszUrl:PChar;
-    pszDescription:PChar;
-  end;
-//const
-//  MS_ICQ_SENDURL        ='ICQ/SendURL';
-  
-
-//allow somebody to add you to their contact list
-//wParam=uin of requester
-//lParam=0
-//returns 0 on success, nonzero otherwise
-//const
-//  MS_ICQ_AUTHORIZE      ='ICQ/Authorize';
-  
-
-//start a search of all ICQ users by e-mail. results are returned with
-//icq/searchresult and icq/searchdone events
-//wParam=0
-//lParam=(LPARAM)(const char* )email
-//returns 0 on success, nonzero otherwise
 const
   MS_ICQ_SEARCHBYEMAIL  ='ICQ/SearchByEmail';
-  
 
-//start a search of all ICQ users by details. results are returned with
-//icq/searchresult and icq/searchdone events
+//start a search of all ICQ users by details
 //wParam=0
-//lParam=(LPARAM)(ICQSEARCHRESULT* )&isr
-//returns 0 on success, nonzero otherwise
-//uin, email and auth fields of the structure are ignored
+//lParam=(LPARAM)(ICQDETAILSSEARCH*)&ids
+//returns a handle to the search on success, NULL on failure
+//Results are returned using the same scheme documented in PSS_BASICSEARCH
 type
-  TICQSEARCHRESULT=record
-    uin:DWord;
-    nick:PChar;
-    firstName:PChar;
-    lastName:PChar;
-    email:PChar;
-    auth:Byte;
+  ICQDETAILSSEARCH=record
+    nick:PCHAR;
+    firstName:PCHAR;
+    lastName:PCHAR;
   end;
 const
   MS_ICQ_SEARCHBYDETAILS  ='ICQ/SearchByDetails';
-  
 
-//triggered when the server sends a search result
-//wParam=0
-//lParam=(LPARAM)(ICQSEARCHRESULT* )&isr
+//Send an SMS via the ICQ network
+//wParam=(WPARAM)(const char*)szPhoneNumber
+//lParam=(LPARAM)(const char*)szMessage
+//Returns a HANDLE to the send on success, or NULL on failure
+//szPhoneNumber should be the full number with international code and preceeded
+//by a +
+
+//When the server acks the send, an ack will be broadcast:
+// type=ICQACKTYPE_SMS, result=ACKRESULT_SENTREQUEST, lParam=(LPARAM)(char*)szInfo
+//At this point the message is queued to be delivered. szInfo contains the raw
+//XML data of the ack. Here's what I got when I tried:
+//"<sms_response><source>airbornww.com</source><deliverable>Yes</deliverable><network>BT Cellnet, United Kingdom</network><message_id>[my uin]-1-1955988055-[destination phone#, without +]</message_id><messages_left>0</messages_left></sms_response>\r\n';
+
+//Now the hProcess has been deleted. The only way to track which receipt
+//corresponds with which response is to parse the <message_id> field.
+
+//At a (possibly much) later time the SMS will have been delivered. An ack will
+//be broadcast:
+// type=ICQACKTYPE_SMS, result=ACKRESULT_SUCCESS, hProcess=NULL, lParam=(LPARAM)(char*)szInfo
+//Note that the result will always be success even if the send failed, just to
+//save needing to have an attempt at an XML parser in the ICQ module.
+//Here's the szInfo for a success:
+//"<sms_delivery_receipt><message_id>[my uin]-1--1461632229-[dest phone#, without +]</message_id><destination>[dest phone#, without +]</destination><delivered>Yes</delivered><text>[first 20 bytes of message]</text><submition_time>Tue, 30 Oct 2001 22:35:16 GMT</submition_time><delivery_time>Tue, 30 Oct 2001 22:34:00 GMT</delivery_time></sms_delivery_receipt>';
+//And here's a failure:
+//"<sms_delivery_receipt><message_id>[my uin]-1-1955988055-[destination phone#, without leading +]</message_id><destination>[destination phone#, without leading +]</destination><delivered>No</delivered><submition_time>Tue, 23 Oct 2001 23:17:02 GMT</submition_time><error_code>999999</error_code><error><id>15</id><params><param>0</param><param>Multiple message submittion failed</param></params></error></sms_delivery_receipt>';
+
+//SMSes received from phones come through this same ack, again to avoid having
+//an XML parser in the protocol module. Here's one I got:
+//"<sms_message><source>MTN</source><destination_UIN>[UIN of recipient, ie this account]</destination_UIN><sender>[sending phone number, without +]</sender><senders_network>[contains one space, because I sent from ICQ]</senders_network><text>[body of the message]</text><time>Fri, 16 Nov 2001 03:12:33 GMT</time></sms_message>';
+CONST
+  ICQACKTYPE_SMS      =1001;
+  ICQEVENTTYPE_SMS    =2001;	  //database event type
 const
-  ME_ICQ_SEARCHRESULT   ='ICQ/SearchResult';
-  
+  MS_ICQ_SENDSMS     ='ICQ/SendSMS';
 
-//triggered when a search has finished
-//wParam=lParam=0
+//Changing user info:
+//See documentation of PS_CHANGEINFO
+//The changing user info stuff built into the protocol is purposely extremely
+//thin, to the extent that your data is passed as-is to the server without
+//verification. Don't mess up.
+//Everything is byte-aligned
+//WORD:  2 bytes, little-endian (that's x86 order)
+//DWORD: 4 bytes, little-endian
+//LNTS:  a WORD containing the length of the string, followed by the string
+//       itself. No zero terminator.
 const
-  ME_ICQ_SEARCHDONE	  ='ICQ/SearchDone';
-  
-
-//accept an incoming file transfer request and begin the transfer
-//wParam=0
-//lParam=(LPARAM)(ICQACCEPTFILES* )ias
-//icqSeq is the sequence number put in the first DWORD of the database blob for
-//this event
-//pszWorkingDir is the path to put the files in, with trailing backslash
-//returns a handle to the file transfer, to be used in some other functions
-type
-  TICQACCEPTFILES=record
-    cbSize:Integer;
-    hContact:THandle;
-    icqSeq:DWord;
-    pszWorkingDir:PChar;
-  end;
-//const
-//  MS_ICQ_ACCEPTFILEREQUEST  ='ICQ/AcceptFileRequest';
-  
-
-//refuse an incoming file request
-//wParam=(WPARAM)icqSeq
-//lParam=(LPARAM)(ICQSENDMESSAGE* )ism
-//icqSeq is the sequence number put in the first DWORD of the database blob for
-//this event
-//ism has the uin to send to, and the decline message to send
-//returns 0 on success, nonzero otherwise
-//const
-//  MS_ICQ_REFUSEFILEREQUEST  ='ICQ/RefuseFileRequest';
-  
-
-//close a handle returned by icq/acceptfilerequest that has finished receiving
-//wParam=(WPARAM)(HANDLE)hTransfer
-//lParam=0
-//returns 0 on success, nonzero otherwise
-//NOTE: I have no idea when/if this function is supposed to be called
-//const
-//  MS_ICQ_CLOSEFILETRANSFERHANDLE ='ICQ/CloseFileTransferHandle';
-  
-
-//send a set of files
-//wParam=0
-//lParam=(LPARAM)(ICQFILEREQUEST* )&ifr
-//returns the sequence ID that this transfer will use. Hook icq/eventsent.
-type
-  TICQFILEREQUEST=record
-    cbSize:Integer;		//size of this struct in bytes
-    uin:DWord;			//UIN to send files to
-    pszMessage:PChar;	        //description to send
-    files:^PChar;//??		//array of ASCIIZ filenames, NULL-terminated
-    hSession:THandle;	        //output: handle to the file session, to be closed when
-                                //done
-  end;
-//const
-//  MS_ICQ_SENDFILETRANSFER     ='ICQ/SendFileTransfer';
-  
-
-//gets a load of information about the state of an active file transfer
-//wParam=(WPARAM)(HANDLE)hTransfer
-//lParam=(LPARAM)(ICQFILETRANSFERSTATUS* )&ifts
-//returns 0 for success, nonzero on error
-//ifts.cbSize should be filled by the caller before calling this service.
-//note that icqlib is very agressive about closing transfer handles, so callers
-//should be very careful about calling this only during file transfer
-//notifications.
+  ICQCHANGEINFO_MAIN     =0xEA03;
+(* pInfoData points to:
+    WORD    datalen
+    LNTS    nick
+    LNTS    first
+    LNTS    last
+    LNTS    email
+    LNTS    city
+    LNTS    state
+    LNTS    phone
+    LNTS    fax
+    LNTS    street
+    LNTS    cellular (if SMS-able string contains an ending ' SMS')
+    LNTS    zip
+    WORD    country
+    BYTE    gmt
+    BYTE    unknown, usually 0
+*)
 const
-  FILE_STATUS_SENDING      =8;
+  ICQCHANGEINFO_MORE     =0xFD03;
+(* pInfoData points to:
+    WORD    datalen
+    BYTE    age
+    BYTE    0
+    BYTE    sex
+    LNTS    homepage
+    WORD    birth-year
+    BYTE    birth-month
+    BYTE    birth-day
+    BYTE    lang1
+    BYTE    lang2
+    BYTE    lang3
+*)
 const
-  FILE_STATUS_RECEIVING    =9;
-type
-  TICQFILETRANSFERSTATUS=record
-//conversion questions: char **x = ^PChar??? unsigned long = LongWord???
-    cbSize:Integer;		   //fill before calling
-    status:Integer;		   //see the icq_notify_* at the top of this file
-    direction:Integer;	   //one of the file_status_*ing above
-    remoteUin:LongWord;
-    remoteNick:PChar;
-    files:^PChar;//??
-    totalFiles:Integer;
-    currentFileNumber:Integer;
-    totalBytes:LongWord;
-    totalProgress:LongWord;
-    workingDir:PChar;
-    currentFile:PChar;
-    currentFileSize:LongWord;
-    currentFileProgress:LongWord;
-    currentSpeed:Integer;	  //0-100
-  end;
-//const
-//  MS_ICQ_GETFILETRANSFERSTATUS='ICQ/GetFileTransferStatus';
-  
-
-//a logging message was sent from icqlib
-//wParam=(WPARAM)(BYTE)level
-//lParam=(LPARAM)(char* )pszMsg
-//level is a detail level as defined by icqlib
+  ICQCHANGEINFO_ABOUT	   =0x0604;
+(* pInfoData points to:
+    WORD    datalen
+	LNTS    about
+*)
 const
-  ME_ICQ_LOG          ='ICQ/Log';
+  ICQCHANGEINFO_WORK	   =0xF303;
+(* pInfoData points to:
+    WORD    datalen
+    LNTS    city
+    LNTS    state
+    DWORD   0
+    LNTS    street
+    LNTS    zip
+    WORD    country
+    LNTS    company-name
+    LNTS    company-dept
+    LNTS    company-position
+    WORD    0
+    LNTS    company-web
+*)
+const
+  ICQCHANGEINFO_PASSWORD =0x2E04;
+(* pInfoData points to:
+    WORD    datalen
+	LNTS    newpassword
+*)
 
 
-//all the missing events that you were expecting to see here are elsewhere.
-//incoming messages, urls, etc are added straight to the database so you should
-//pick up db/event/added
-//online status changes are also added to the database, but as contact settings
-//so db/contact/settingchanged events are sent
+
+
+
+
+
 
 
 implementation

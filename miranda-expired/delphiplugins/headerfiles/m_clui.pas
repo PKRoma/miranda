@@ -1,25 +1,17 @@
+{***************************************************************
+ * Project     : Miranda Plugin API for Delphi
+ * Unit Name   : m_clui
+ * Description : Converted Headerfile
+ *
+ * Author      : Christian Kästner
+ * Date        : 22.12.2001
+ *
+ * Copyright © 2001 by Christian Kästner
+ ****************************************************************}
+
 unit m_clui;
 
 interface
-
-(*
-Miranda ICQ: the free icq client for MS Windows
-Copyright (C) 2000-1  Richard Hughes, Roland Rabien & Tristan Van de Vreede
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*)
 
 //this module was created in 0.1.1.0
 //you probably shouldn't need to call anything in here. Look in
@@ -133,7 +125,48 @@ const
 //needs to be re-sorted many times rapidly.
 const
   MS_CLUI_SORTLIST='CLUI/SortList';
-  
+
+
+
+//Gets a load of capabilities for the loaded CLUI    v0.1.2.1+
+//wParam=capability, CLUICAPS_*
+//lParam=0
+//returns the requested value, 0 if wParam is an unknown value
+//If this service is not implemented, it is assumed to return 0 to all input
+const
+  CLUICAPS_FLAGS1  = 0;
+  CLUIF_HIDEEMPTYGROUPS  = 1;   //the clist has a checkbox in its options
+          //to set this, which will be hidden if this flag is not set. It is
+		  //up to the CLUI to provide support for it, but it just seemed insane
+		  //to me to have hide offline and hide empty in different pages.
+		  //The setting is='CList"/"HideEmptyGroups", a byte. A complete list
+		  //reload is sent whenever the user changes it.
+  CLUIF_DISABLEGROUPS    = 2;   //can show list without groups. Adds option
+		  //to change='CList"/"UseGroups", a byte.
+const
+  MS_CLUI_GETCAPS        ='CLUI/GetCaps';
+
+//a contact is being dragged outside the main window     v0.1.2.0+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=MAKELPARAM(screenX,screenY)
+//return nonzero to make the cursor a 'can drop here', or zero for 'no'
+const
+  ME_CLUI_CONTACTDRAGGING    ='CLUI/ContactDragging';
+
+//a contact has just been dropped outside the main window   v0.1.2.0+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=MAKELPARAM(screenX,screenY)
+//return nonzero if your hook processed this, so no other hooks get it
+const
+  ME_CLUI_CONTACTDROPPED     ='CLUI/ContactDropped';
+
+//a contact that was being dragged outside the main window has gone back in to
+//the main window.                                          v0.1.2.1+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=0
+//return zero
+const
+  ME_CLUI_CONTACTDRAGSTOP    ='CLUI/ContactDragStop';
 
 implementation
 
