@@ -269,13 +269,13 @@ void __stdcall p2p_sendSlp(
 
 	if ( ft->mIsDirect ) {
 		DWORD tLen = int( p - buf );
-		MSN_WS_Send( info->s, ( char* )&tLen, sizeof( DWORD ));
-		MSN_WS_Send( info->s, buf, tLen );
+		info->send(( char* )&tLen, sizeof( DWORD ));
+		info->send( buf, tLen );
 	}
 	else {
 		if ( info == NULL ) {
 			MsgQueue_Add( ft->std.hContact, buf, int( p - buf ), NULL );
-			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
+			msnNsThread->sendPacket( "XFR", "SB" );
 		}
 		else info->sendRawMessage( 'D', buf, int( p - buf ));
 }	}
@@ -325,11 +325,11 @@ void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus 
 
 static char p2p_greeting[8] = { 4, 0, 0, 0, 'f', 'o', 'o', 0  };
 
-static void sttSendPacket( HANDLE s, P2P_Header& hdr )
+static void sttSendPacket( ThreadData* T, P2P_Header& hdr )
 {
 	DWORD len = sizeof P2P_Header;
-	MSN_WS_Send( s, ( char* )&len, sizeof DWORD );
-	MSN_WS_Send( s, ( char* )&hdr, sizeof P2P_Header );
+	T->send(( char* )&len, sizeof DWORD );
+	T->send(( char* )&hdr, sizeof P2P_Header );
 }
 
 bool p2p_connectTo( ThreadData* info )
@@ -362,7 +362,7 @@ bool p2p_connectTo( ThreadData* info )
 		return false;
 	}
 
-	MSN_WS_Send( info->s, p2p_greeting, sizeof p2p_greeting );
+	info->send( p2p_greeting, sizeof p2p_greeting );
 
 	memset( &reply, 0, sizeof P2P_Header );
 	reply.mID = ft->p2p_msgid++;
@@ -371,18 +371,18 @@ bool p2p_connectTo( ThreadData* info )
 	strdel( info->mCookie, 1 );
 	info->mCookie[ strlen( info->mCookie )-1 ] = 0;
 	UuidFromString(( BYTE* )info->mCookie, ( UUID* )&reply.mAckSessionID );
-	sttSendPacket( info->s, reply );
+	sttSendPacket( info, reply );
 
 	long cbPacketLen;
 	HReadBuffer buf( info, 0 );
 	BYTE* p;
-	if (( p = buf.surelyRead( info->s, 4 )) == NULL ) {
+	if (( p = buf.surelyRead( 4 )) == NULL ) {
 		MSN_DebugLog( "Error reading data, closing filetransfer" );
 		return false;
 	}
 
 	cbPacketLen = *( long* )p;
-	if (( p = buf.surelyRead( info->s, cbPacketLen )) == NULL )
+	if (( p = buf.surelyRead( cbPacketLen )) == NULL )
 		return false;
 
 	ft->mIsDirect = true;
@@ -410,7 +410,7 @@ LBL_Error:
 	HReadBuffer buf( info, 0 );
 	BYTE* p;
 
-	if (( p = buf.surelyRead( info->s, 8 )) == NULL )
+	if (( p = buf.surelyRead( 8 )) == NULL )
 		goto LBL_Error;
 
 	if ( memcmp( p, p2p_greeting, 8 ) != NULL ) {
@@ -418,13 +418,13 @@ LBL_Error:
 		goto LBL_Error;
 	}
 
-	if (( p = buf.surelyRead( info->s, 4 )) == NULL ) {
+	if (( p = buf.surelyRead( 4 )) == NULL ) {
 		MSN_DebugLog( "Error reading data, closing filetransfer" );
 		goto LBL_Error;
 	}
 
 	long cbPacketLen = *( long* )p;
-	if (( p = buf.surelyRead( info->s, cbPacketLen )) == NULL )
+	if (( p = buf.surelyRead( cbPacketLen )) == NULL )
 		goto LBL_Error;
 
 	UUID uuidCookie;
@@ -440,7 +440,7 @@ LBL_Error:
 
 	ft->mIsDirect = true;
 	pCookie->mID = ft->p2p_msgid++;
-	sttSendPacket( info->s, *pCookie );
+	sttSendPacket( info, *pCookie );
 	return true;
 }
 
@@ -457,14 +457,14 @@ void p2p_receiveFile( ThreadData* info )
 	//p2p_ackOtherFiles( info );
 
 	while( true ) {
-		if (( p = buf.surelyRead( info->s, 4 )) == NULL ) {
+		if (( p = buf.surelyRead( 4 )) == NULL ) {
 LBL_Error:
 			MSN_DebugLog( "File transfer failed" );
 			return;
 		}
 
 		long cbPacketLen = *( long* )p;
-		if (( p = buf.surelyRead( info->s, cbPacketLen )) == NULL )
+		if (( p = buf.surelyRead( cbPacketLen )) == NULL )
 			goto LBL_Error;
 
 		P2P_Header* H = ( P2P_Header* )p; p += sizeof( P2P_Header );
@@ -503,7 +503,7 @@ LBL_Exit:	filetransfer* anotherFT = p2p_getAnotherContactSession( ft );
 				reply.mTotalSize = reply.mAckDataSize = H->mTotalSize;
 				reply.mAckSessionID = H->mID;
 				reply.mAckUniqueID = ft->p2p_acksessid;
-				sttSendPacket( info->s, reply );
+				sttSendPacket( info, reply );
 			}
 			continue;
 		}
@@ -529,7 +529,7 @@ LBL_Exit:	filetransfer* anotherFT = p2p_getAnotherContactSession( ft );
 			reply.mTotalSize = reply.mAckDataSize = H->mPacketLen;
 			reply.mAckSessionID = H->mID;
 			reply.mAckUniqueID = ft->p2p_acksessid;
-			sttSendPacket( info->s, reply );
+			sttSendPacket( info, reply );
 
 			if ( ft->std.totalProgress < ft->std.totalBytes )
 				goto LBL_Error;
@@ -573,13 +573,13 @@ void p2p_sendFileDirectly( ThreadData* info )
 		::read( ft->fileId, databuf + sizeof( P2P_Header ), portion );
 		portion += sizeof( P2P_Header );
 
-		if ( !MSN_WS_Send( info->s, (char*)&portion, 4 )) {
+		if ( !info->send( (char*)&portion, 4 )) {
 LBL_Error:
 			MSN_DebugLog( "File transfer failed" );
 			return;
 		}
 
-		if ( !MSN_WS_Send( info->s, databuf, portion ))
+		if ( !info->send( databuf, portion ))
 			goto LBL_Error;
 
 		ft->std.totalProgress += H->mPacketLen;
@@ -589,11 +589,11 @@ LBL_Error:
 
 	HReadBuffer buf( info, 0 );
 	while( true ) {
-		if (( p = buf.surelyRead( info->s, 4 )) == NULL )
+		if (( p = buf.surelyRead( 4 )) == NULL )
 			goto LBL_Error;
 
 		long cbPacketLen = *( long* )p;
-		if (( p = buf.surelyRead( info->s, cbPacketLen )) == NULL )
+		if (( p = buf.surelyRead( cbPacketLen )) == NULL )
 			goto LBL_Error;
 
 		P2P_Header* H = ( P2P_Header* )p; p += sizeof( P2P_Header );
@@ -606,7 +606,7 @@ LBL_Error:
 			reply.mTotalSize = reply.mAckDataSize = H->mPacketLen;
 			reply.mAckSessionID = H->mID;
 			reply.mAckUniqueID = ft->p2p_acksessid;
-			sttSendPacket( info->s, reply );
+			sttSendPacket( info, reply );
 
 			if ( ft->std.totalProgress < ft->std.totalBytes )
 				goto LBL_Error;

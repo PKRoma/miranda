@@ -463,7 +463,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 	while ( bytesFromData < msgBytes ) {
 		int recvResult;
-		recvResult = MSN_WS_Recv( info->s, msg + bytesFromData, msgBytes - bytesFromData );
+		recvResult = info->recv( msg + bytesFromData, msgBytes - bytesFromData );
 		if ( !recvResult )
 			return;
 
@@ -606,7 +606,7 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 	HANDLE hContact = NULL;
 
 	if ( trid == msnSearchID ) {
-		MSN_SendPacket( msnNSSocket, "REM", "BL %s", userEmail );
+		msnNsThread->sendPacket( "REM", "BL %s", userEmail );
 
 		PROTOSEARCHRESULT isr;
 		memset( &isr, 0, sizeof( isr ));

@@ -80,8 +80,8 @@ PLUGININFO pluginInfo =
 	0,	0
 };
 
-volatile bool		msnLoggedIn;
-volatile HANDLE	msnNSSocket;
+bool			volatile msnLoggedIn = false;
+ThreadData*	volatile msnNsThread = NULL;
 
 int				msnStatusMode,
 					msnDesiredStatus;
@@ -278,7 +278,7 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 int __declspec( dllexport ) Unload( void )
 {
 	if ( msnLoggedIn )
-		MSN_SendPacket( msnNSSocket, "OUT", NULL );
+		msnNsThread->sendPacket( "OUT", NULL );
 
 	if ( hHookOnUserInfoInit )
 		UnhookEvent( hHookOnUserInfoInit );

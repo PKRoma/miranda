@@ -53,7 +53,7 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 
 		if ( msnLoggedIn && !MyOptions.UseGateway )
 			if ( MSN_GetByte( "KeepAlive", 0 ))
-				MSN_WS_Send( msnNSSocket, "PNG\r\n", 5 );
+				msnNsThread->send( "PNG\r\n", 5 );
 }	}
 
 //=======================================================================================
@@ -82,7 +82,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				goto LBL_InvalidCommand;
 
 			info->mCaller = 1;
-			MSN_WS_Send( info->s, "TFR\r\n", 5 );
+			info->send( "TFR\r\n", 5 );
 			_chdir( ft->std.workingDir );
 
 			char filefull[ 1024 ];
@@ -127,7 +127,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				sendpacket[ wPlace++ ] = ( packetLen & 0xff00 ) >> 8;
 				_read( ft->fileId, &sendpacket[wPlace], packetLen );
 
-				MSN_WS_Send( info->s, &sendpacket[0], packetLen+3 );
+				info->send( &sendpacket[0], packetLen+3 );
 
 				ft->std.totalProgress += packetLen;
 				ft->std.currentFileProgress += packetLen;
@@ -150,7 +150,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 
 			char tCommand[ 30 ];
 			_snprintf( tCommand, sizeof( tCommand ), "FIL %i\r\n", info->mMsnFtp->std.totalBytes );
-			MSN_WS_Send( info->s, tCommand, strlen( tCommand ));
+			info->send( tCommand, strlen( tCommand ));
 			break;
 		}
 		case ' REV':    //********* VER
@@ -180,12 +180,12 @@ LBL_InvalidCommand:
 					{
 						char tCommand[ MSN_MAX_EMAIL_LEN + 50 ];
 						_snprintf( tCommand, sizeof( tCommand ), "USR %s %s\r\n", dbv.pszVal, info->mCookie );
-						MSN_WS_Send( info->s, tCommand, strlen( tCommand ));
+						info->send( tCommand, strlen( tCommand ));
 					}
 					else if ( info->mCaller == 2 )  //send
 					{
 						static char sttCommand[] = "VER MSNFTP\r\n";
-						MSN_WS_Send( info->s, sttCommand, strlen( sttCommand ));
+						info->send( sttCommand, strlen( sttCommand ));
 					}
 
 					MSN_FreeVariant( &dbv );
@@ -199,12 +199,12 @@ LBL_InvalidCommand:
 			while ( true )
 			{
 				if ( ft->bCanceled )
-				{	MSN_WS_Send( info->s, "CCL\r\n", 5 );
+				{	info->send( "CCL\r\n", 5 );
 					close( ft->fileId );
 					return 0;
 				}
 
-				BYTE* p = tBuf.surelyRead( info->s, 3 );
+				BYTE* p = tBuf.surelyRead( 3 );
 				if ( p == NULL ) {
 LBL_Error:		ft->close();
 					MSN_ShowError( "file transfer is canceled by remote host" );
@@ -220,11 +220,11 @@ LBL_Success:	ft->complete();
 					ft->close();
 
 					static char sttCommand[] = "BYE 16777989\r\n";
-					MSN_WS_Send( info->s, sttCommand, strlen( sttCommand ));
+					info->send( sttCommand, strlen( sttCommand ));
 					return 0;
 				}
 
-				p = tBuf.surelyRead( info->s, dataLen );
+				p = tBuf.surelyRead( dataLen );
 				if ( p == NULL )
 					goto LBL_Error;
 
@@ -304,7 +304,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", tEmail, info->mCookie );
 	}
 	else if ( info->mType == SERVER_FILETRANS && info->mCaller == 0 ) {
-		MSN_WS_Send( info->s, "VER MSNFTP\r\n", 12 );
+		info->send( "VER MSNFTP\r\n", 12 );
 	}
 
 	bool tIsMainThread = false;
@@ -316,7 +316,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( tIsMainThread ) {
 		MSN_EnableMenuItems( TRUE );
 
-		msnNSSocket = info->s;
+		msnNsThread = info;
 		msnLoggedIn = true;
 
 		ThreadData* newThread = new ThreadData;
@@ -329,7 +329,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	while ( TRUE ) {
 		int handlerResult;
 
-		int recvResult = MSN_WS_Recv( info->s, info->mData + info->mBytesInData, sizeof( info->mData ) - info->mBytesInData );
+		int recvResult = info->recv( info->mData + info->mBytesInData, sizeof( info->mData ) - info->mBytesInData );
 		if ( recvResult == SOCKET_ERROR ) {
 			MSN_DebugLog( "Connection %08p [%d] was abortively closed", info->s, GetCurrentThreadId());
 			break;
@@ -403,7 +403,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	Netlib_CloseHandle( info->s );
 
 	if ( tIsMainThread )
-		msnNSSocket = NULL;
+		msnNsThread = NULL;
 
 	MSN_DebugLog( "Thread ending now" );
 }
@@ -429,7 +429,7 @@ void __cdecl MSNSendfileThread( ThreadData* info )
 	{
 		int handlerResult;
 
-		int recvResult = MSN_WS_Recv( info->s, info->mData+info->mBytesInData, 1000 - info->mBytesInData );
+		int recvResult = info->recv( info->mData+info->mBytesInData, 1000 - info->mBytesInData );
 		if ( recvResult == SOCKET_ERROR || !recvResult )
 			break;
 
@@ -823,7 +823,7 @@ HReadBuffer::~HReadBuffer()
 		memmove( owner->mData, owner->mData + startOffset, owner->mBytesInData );
 }
 
-BYTE* HReadBuffer::surelyRead( HANDLE s, int parBytes )
+BYTE* HReadBuffer::surelyRead( int parBytes )
 {
 	if ( startOffset + parBytes > totalDataSize )
 	{
@@ -845,7 +845,7 @@ BYTE* HReadBuffer::surelyRead( HANDLE s, int parBytes )
 
 	while( totalDataSize - startOffset < parBytes )
 	{
-		int recvResult = MSN_WS_Recv( s, ( char* )buffer + totalDataSize, bufferSize - totalDataSize );
+		int recvResult = owner->recv(( char* )buffer + totalDataSize, bufferSize - totalDataSize );
 		if ( recvResult <= 0 )
 			return NULL;
 

@@ -270,7 +270,7 @@ LBL_Continue:
 
 			BYTE tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {
-				MSN_SendPacket( msnNSSocket, "BLP", ( tValue ) ? "BL" : "AL" );
+				msnNsThread->sendPacket( "BLP", ( tValue ) ? "BL" : "AL" );
 				break;
 			}
 

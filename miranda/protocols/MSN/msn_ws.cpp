@@ -32,19 +32,16 @@ static char sttGatewayHeader[] =
 
 //=======================================================================================
 
-int __stdcall MSN_WS_Send( HANDLE s, char* data, int datalen )
+int ThreadData::send( char* data, int datalen )
 {
+	if ( this == NULL )
+		return 0;
+
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
-	if ( MyOptions.UseGateway ) {
-		ThreadData* T = MSN_GetThreadByConnection( s );
-		if ( T == NULL ) {
-			MSN_DebugLog( "Send failed: no owning thread" );
-			return FALSE;
-		}
-
+	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS && mP2pSession != NULL )) {
 		if ( datalen != 5 && memcmp( data, "PNG\r\n", 5 ) != 0 )
-			T->mGatewayTimeout = 2;
+			mGatewayTimeout = 2;
 
 		if ( !MyOptions.UseProxy ) {
 			TQueueItem* tNewItem = ( TQueueItem* )malloc( datalen + sizeof( void* ) + sizeof( int ) + 1 );
@@ -52,20 +49,20 @@ int __stdcall MSN_WS_Send( HANDLE s, char* data, int datalen )
 			memcpy( tNewItem->data, data, datalen );
 			tNewItem->data[datalen] = 0;
 
-			TQueueItem* p = T->mFirstQueueItem;
+			TQueueItem* p = mFirstQueueItem;
 			if ( p != NULL ) {
 				while ( p->next != NULL )
 					p = p->next;
 
 				p ->next = tNewItem;
 			}
-			else T->mFirstQueueItem = tNewItem;
+			else mFirstQueueItem = tNewItem;
 
 			tNewItem->next = NULL;
 			return TRUE;
 		}
 
-		MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), T->mGatewayTimeout );
+		MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), mGatewayTimeout );
 	}
 
 	int rlen = MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
@@ -82,21 +79,17 @@ int __stdcall MSN_WS_Send( HANDLE s, char* data, int datalen )
 // Receving data
 //=======================================================================================
 
-static int MSN_WS_DG_Recv( HANDLE s, char* data, long datalen )
+int ThreadData::recv_dg( char* data, long datalen )
 {
-	ThreadData* T = MSN_GetThreadByConnection( s );
-	if ( T == NULL )
-		return 0;
-
-	if ( T->mReadAheadBuffer != NULL ) {
-		int tBytesToCopy = ( datalen >= T->mEhoughData ) ? T->mEhoughData : datalen;
-		memcpy( data, T->mReadAheadBuffer, tBytesToCopy );
-		T->mEhoughData -= tBytesToCopy;
-		if ( T->mEhoughData == 0 ) {
-			free( T->mReadAheadBuffer );
-			T->mReadAheadBuffer = NULL;
+	if ( mReadAheadBuffer != NULL ) {
+		int tBytesToCopy = ( datalen >= mEhoughData ) ? mEhoughData : datalen;
+		memcpy( data, mReadAheadBuffer, tBytesToCopy );
+		mEhoughData -= tBytesToCopy;
+		if ( mEhoughData == 0 ) {
+			free( mReadAheadBuffer );
+			mReadAheadBuffer = NULL;
 		}
-		else memmove( T->mReadAheadBuffer, T->mReadAheadBuffer + tBytesToCopy, T->mEhoughData );
+		else memmove( mReadAheadBuffer, mReadAheadBuffer + tBytesToCopy, mEhoughData );
 
 		return tBytesToCopy;
 	}
@@ -111,17 +104,17 @@ LBL_RecvAgain:
 		tSelect.dwTimeout = 1000;
 		tSelect.hReadConns[ 0 ] = ( HANDLE )s;
 
-		for ( int i=0; i < T->mGatewayTimeout; i++ ) {
+		for ( int i=0; i < mGatewayTimeout; i++ ) {
 			if ( bCanPeekMsg ) {
-				TQueueItem* QI = T->mFirstQueueItem;
+				TQueueItem* QI = mFirstQueueItem;
 				if ( QI != NULL )
 				{
 					char szHttpPostUrl[300];
-					T->getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), QI->datalen == 0 );
+					getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), QI->datalen == 0 );
 
 					char* tBuffer = ( char* )alloca( QI->datalen+400 );
 					int cbBytes = _snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
-						szHttpPostUrl, MSN_USER_AGENT, T->mGatewayIP, QI->datalen, "" );
+						szHttpPostUrl, MSN_USER_AGENT, mGatewayIP, QI->datalen, "" );
 					memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
 					cbBytes += QI->datalen;
 					tBuffer[ cbBytes ] = 0;
@@ -133,7 +126,7 @@ LBL_RecvAgain:
 						return 0;
 					}
 
-					T->mFirstQueueItem = QI->next;
+					mFirstQueueItem = QI->next;
 					free( QI );
 
 					ret = 1;
@@ -148,16 +141,16 @@ LBL_RecvAgain:
 	bCanPeekMsg = false;
 
 	if ( ret == 0 ) {
-		T->mGatewayTimeout *= 2;
-		if ( T->mGatewayTimeout > 30 )
-			T->mGatewayTimeout = 30;
+		mGatewayTimeout *= 2;
+		if ( mGatewayTimeout > 30 )
+			mGatewayTimeout = 30;
 
 		char szHttpPostUrl[300];
-		T->getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), true );
+		getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), true );
 
 		char szCommand[ 400 ];
 		int cbBytes = _snprintf( szCommand, sizeof( szCommand ),
-			sttGatewayHeader, szHttpPostUrl, MSN_USER_AGENT, T->mGatewayIP, 0, "" );
+			sttGatewayHeader, szHttpPostUrl, MSN_USER_AGENT, mGatewayIP, 0, "" );
 
 		NETLIBBUFFER nlb = { szCommand, cbBytes, 0 };
 		MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
@@ -177,13 +170,16 @@ LBL_RecvAgain:
 	}
 
 	char* p = strstr( data, "\r\n" );
-	if ( p != NULL )
-	{	int status = 0;
-		sscanf( data, "HTTP/1.1 %d", &status );
-		if ( status == 100 )
-			goto LBL_RecvAgain;
+	if ( p == NULL ) {
+		MSN_DebugLog( "ACHTUNG! it's not a valid header: '%s'", data );
+		goto LBL_RecvAgain;
 	}
 
+	int status = 0;
+	sscanf( data, "HTTP/1.1 %d", &status );
+	if ( status == 100 )
+		goto LBL_RecvAgain;
+	
 	bool  tIsSessionClosed = false;
 	int   tContentLength = 0, hdrLen;
 	{
@@ -202,7 +198,7 @@ LBL_RecvAgain:
 					break;
 				}
 
-				T->processSessionData( H.value );
+				processSessionData( H.value );
 			}
 
 			if ( stricmp( H.name, "Content-Length" ) == 0 )
@@ -230,17 +226,17 @@ LBL_RecvAgain:
 	if ( tContentLength > ret ) {
 		tContentLength -= ret;
 
-		T->mReadAheadBuffer = ( char* )calloc( tContentLength+1, 1 );
-		T->mReadAheadBuffer[ tContentLength ] = 0;
-		T->mEhoughData = tContentLength;
-		nlb.buf = T->mReadAheadBuffer;
+		mReadAheadBuffer = ( char* )calloc( tContentLength+1, 1 );
+		mReadAheadBuffer[ tContentLength ] = 0;
+		mEhoughData = tContentLength;
+		nlb.buf = mReadAheadBuffer;
 
 		while ( tContentLength > 0 ) {
 			nlb.len = tContentLength;
 			int ret2 = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );
 			if ( ret2 <= 0 )
-			{	free( T->mReadAheadBuffer );
-				T->mReadAheadBuffer = NULL;
+			{	free( mReadAheadBuffer );
+				mReadAheadBuffer = NULL;
 				return ret2;
 			}
 
@@ -251,10 +247,11 @@ LBL_RecvAgain:
 	return ret;
 }
 
-int __stdcall MSN_WS_Recv( HANDLE s, char* data, long datalen )
+int ThreadData::recv( char* data, long datalen )
 {
 	if ( MyOptions.UseGateway && !MyOptions.UseProxy )
-		return MSN_WS_DG_Recv( s, data, datalen );
+		if ( mType != SERVER_FILETRANS || mP2pSession == 0 )
+			return recv_dg( data, datalen );
 
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 

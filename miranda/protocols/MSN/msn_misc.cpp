@@ -114,15 +114,15 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 
 			char id[ MSN_GUID_LEN ];
 			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof id ))
-				msgid = MSN_SendPacket( msnNSSocket, "REM", "%s %s", listName, id );
+				msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, id );
 		}
-		else msgid = MSN_SendPacket( msnNSSocket, "ADC", "%s N=%s F=%s", listName, email, email );
+		else msgid = msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, email );
 	}
 	else {
 		if ( flags & LIST_REMOVE )
-			msgid = MSN_SendPacket( msnNSSocket, "REM", "%s %s", listName, email );
+			msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, email );
 		else
-			msgid = MSN_SendPacket( msnNSSocket, "ADC", "%s N=%s", listName, email );
+			msgid = msnNsThread->sendPacket( "ADC", "%s N=%s", listName, email );
 	}
 
 	return msgid;
@@ -228,7 +228,7 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 void __stdcall	MSN_GoOffline()
 {
 	if ( msnLoggedIn )
-		MSN_SendPacket( msnNSSocket, "OUT", NULL );
+		msnNsThread->sendPacket( "OUT", NULL );
 
 	int msnOldStatus = msnStatusMode; msnStatusMode = ID_STATUS_OFFLINE;
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
@@ -322,7 +322,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 	int nBytes = _snprintf( buf, 100, "MSG %d %c %d\r\n%s",
 		thisTrid, msgType, datLen + sizeof(sttHeaderStart)-1, sttHeaderStart );
 	memcpy( buf + nBytes, data, datLen );
-	MSN_WS_Send( s, buf, nBytes + datLen );
+	send( buf, nBytes + datLen );
 
 	return thisTrid;
 }
@@ -337,7 +337,7 @@ int __stdcall MSN_SendNickname(char *email, char *nickname)
 
 	char urlNick[ 387 ];
 	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
-	MSN_SendPacket( msnNSSocket, "PRP", "MFN %s", urlNick );
+	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
 
 	free( nickutf );
 	return 0;
@@ -347,28 +347,16 @@ int __stdcall MSN_SendNickname(char *email, char *nickname)
 // MSN_SendPacket - sends a packet accordingly to the MSN protocol
 //=======================================================================================
 
-LONG __stdcall	MSN_SendPacket( HANDLE s, const char* cmd, const char* fmt,...)
+LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 {
-	ThreadData* T = MSN_GetThreadByConnection( s );
-	if ( T == NULL )
+	if ( this == NULL )  // :)
 		return 0;
 
 	va_list vararg;
 	va_start( vararg, fmt );
-	return T->vsendPacket( cmd, fmt, vararg );
-}
 
-LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
-{
-	va_list vararg;
-	va_start( vararg, fmt );
-	return vsendPacket( cmd, fmt, vararg );
-}
-
-LONG ThreadData::vsendPacket( const char* cmd, const char* fmt, va_list vararg )
-{
 	int strsize = 512;
-	char* str = (char*)malloc( strsize );
+	char* str = ( char* )malloc( strsize );
 
 	LONG thisTrid = MyInterlockedIncrement( &mTrid );
 
@@ -383,7 +371,7 @@ LONG ThreadData::vsendPacket( const char* cmd, const char* fmt, va_list vararg )
 	if (( strncmp( str, "MSG", 3 ) !=0 ) && ( strncmp( str, "QRY", 3 ) != 0 ))
 		strcat( str,"\r\n" );
 
-	MSN_WS_Send( s, str, strlen( str ));
+	send( str, strlen( str ));
 	free( str );
 	return thisTrid;
 }
@@ -404,9 +392,9 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof szMsnObject ))
 			szMsnObject[ 0 ] = 0;
 
-		MSN_SendPacket( msnNSSocket, "CHG", "%s 805306404 %s", szStatusName, szMsnObject );
+		msnNsThread->sendPacket( "CHG", "%s 805306404 %s", szStatusName, szMsnObject );
 	}
-	else MSN_SendPacket( msnNSSocket, "CHG", szStatusName );
+	else msnNsThread->sendPacket( "CHG", szStatusName );
 }
 
 //=======================================================================================

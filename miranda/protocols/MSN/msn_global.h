@@ -126,9 +126,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
-int		__stdcall	MSN_WS_Send( HANDLE, char* data, int datalen );
-int		__stdcall	MSN_WS_Recv( HANDLE, char* data, long datalen );
-
 #define	MSN_ALLOW_MSGBOX		1
 #define	MSN_ALLOW_ENTER		2
 #define	MSN_HOTMAIL_POPUP		4
@@ -261,7 +258,7 @@ struct HReadBuffer
 	HReadBuffer( ThreadData*, int );
 	~HReadBuffer();
 
-	BYTE* surelyRead( HANDLE s, int parBytes );
+	BYTE* surelyRead( int parBytes );
 
 	ThreadData* owner;
 	BYTE*			buffer;
@@ -379,9 +376,12 @@ struct ThreadData
 	void				processSessionData( const char* );
 	void           startThread( pThreadFunc );
 
+	int				send( char* data, int datalen );
+	int				recv( char* data, long datalen );
+	int				recv_dg( char* data, long datalen );
+
 	LONG				sendMessage( const char* msg, int parFlags );
 	LONG				sendRawMessage( int msgType, const char* data, int datLen );
-	LONG				vsendPacket( const char* cmd, const char* fmt, va_list vararg );
 	LONG				sendPacket( const char* cmd, const char* fmt, ... );
 };
 
@@ -503,8 +503,8 @@ struct TWinErrorCode
 /////////////////////////////////////////////////////////////////////////////////////////
 //	External variables
 
-extern	volatile		HANDLE	msnNSSocket;
-extern	volatile		bool		msnLoggedIn;
+extern	ThreadData*	volatile msnNsThread;
+extern	bool			volatile msnLoggedIn;
 
 extern	char*	         msnProtocolName;
 extern	HANDLE         msnMenuItems[ MENU_ITEMS_COUNT ];

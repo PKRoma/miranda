@@ -212,7 +212,7 @@ static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
 	}	}
 
 	UrlEncode(( char* )lParam, tEmail, sizeof( tEmail ));
-	return msnSearchID = MSN_SendPacket( msnNSSocket, "ADC", "BL N=%s", tEmail );
+	return msnSearchID = msnNsThread->sendPacket( "ADC", "BL N=%s", tEmail );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -480,7 +480,6 @@ static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
 
 	CCSDATA *ccs=(CCSDATA*)lParam;
 	msnGetInfoContact = ccs->hContact;
-	MSN_WS_Send( msnNSSocket, "PNG\r\n", 5 );
 	return 1;
 }
 
@@ -579,7 +578,7 @@ int MsnRecvFile( WPARAM wParam, LPARAM lParam )
 
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread == NULL )
-	{	MSN_SendPacket( msnNSSocket, "XFR", "SB" );
+	{	msnNsThread->sendPacket( "XFR", "SB" );
 		return 0;
 	}
 
@@ -666,7 +665,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		if ( thread != NULL )
 			thread->mMsnFtp = sft;
 		else
-			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
+			msnNsThread->sendPacket( "XFR", "SB" );
 
 		char* pszFiles = strrchr( *files, '\\' ), msg[ 1024 ];
 		if ( pszFiles )
@@ -764,7 +763,7 @@ LBL_Error:
 		}		
 
 		if ( MsgQueue_CheckContact( ccs->hContact ) == NULL )
-			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
+			msnNsThread->sendPacket( "XFR", "SB" );
 
 		seq = MsgQueue_Add( ccs->hContact, msg, 0, 0 );
 	}
@@ -995,7 +994,7 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 	if ( T == NULL ) {
 		if ( MsgQueue_CheckContact( hContact ) == NULL ) {
 			MsgQueue_Add( hContact, tCommand, -1 );
-			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
+			msnNsThread->sendPacket( "XFR", "SB" );
 		}
 	}
 	else T->sendMessage( tCommand, MSG_DISABLE_HDR );
