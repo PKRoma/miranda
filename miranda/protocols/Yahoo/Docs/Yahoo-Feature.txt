@@ -30,7 +30,7 @@ plugin'
 [D]         Buddy status updates
 [-]         Group renaming
 
-[ ]     Yahoo Address book support
+[P]     Yahoo Address book support
 
 [D]     Changing Status:
 [D]         Regular status messages
@@ -53,10 +53,11 @@ plugin'
 [-]         Support for viewing other people's webcams
 [-]         Support for broadcasting webcam images
 
-[ ]     File Transfer:
-[ ]         Send file via Yahoo file transfer server
-[ ]         Receive files via Yahoo file transfer server
-[ ]         Receive files directly from another client
+[P]     File Transfer:
+[ ]	    Send file directly to another client
+[D]         Send file via Yahoo file transfer server
+[D]         Receive files via Yahoo file transfer server
+[D]         Receive files directly from another client
 
 [D]     Mail Notification
 

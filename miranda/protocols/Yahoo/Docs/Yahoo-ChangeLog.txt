@@ -231,3 +231,163 @@
     
 ****** 26/apr/2004 *******
 Getting ready for releasing the plugin on the web site.
+
+[D] - gena01 - 3/21/04
+	Fixing sending typing notification. Adding proper logging. Should now work properly.
+
+[D] - gena01 - 3/21/04
+	Fixing idle again.
+
+[D] - gena01 - 3/21/04
+	Fixing the starting status, so we can login in Away or N/A mode.
+
+[D] - gena01 - 3/23/04
+	Fixing a really small bug which was preventing NSN and possibly others from working.
+
+[D] - gena01 - 3/28/04
+	Cleanup, memory leak fixes and optimizations.
+
+[D] - gena01 - 4/21/04
+	Change the value back. send keep alive every min.
+
+[D] - gena01 - 5/9/04
+	Strip out ALT tag from IM
+
+[D] - gena01 - 8/3/04
+	Code cleanup. removing libyahoo2 buddy lists, adding miranda DB, adding search results code. This is work in Progress. More cleanup to follow.
+
+[D] - gena01 - 8/4/04
+	Adding abortive closer of our socket handling.. instead of showing -1 stupid notify..
+
+[D] - gena01 - 8/5/04
+	Code cleanup. adding connection handling code/vars
+
+[D] - gena01 - 8/9/04
+	Code cleanup. Removing old sleep/wait. Adding experimental file transfer support. [send and recv]
+
+[D] - gena01 - 8/11/04
+	Fix a possible crash when adding buddies.
+
+[D] - gena01 - 9/2/04
+	Fixing progress meters for file transfer, also don't dump the files we transfering and trying to fix the weird disconnect issue when connecting to yahoo w/ a state that's different from online.
+
+[D] - gena01 - 9/4/04
+	Fixing yahoo file receive crash. Argh.. Please upgrade if you running nightlies!!!
+
+[D] - gena01 - 9/10/04
+	Don't connect and fetch YAB, if it's disabled in options.
+
+[D] - gena01 - 9/10/04
+	Cleaning up keepalive timer startup/shutdown.
+
+[D] - gena01 - 9/13/04
+	Add an option to turn off error messages.
+
+[D] - gena01 - 9/15/04
+	Adding better debug login support.. and adding mobile user detection code.
+
+[D] - gena01 - 9/15/04
+	convert invites to IMs so at least the user knows he got something.
+	
+[D] - egodust - 9/20/04
+	use _snprintf() instead of wsprintf() and prototype ext_yahoo_got_im() so it doesnt choke
+
+[D] - gena01 - 10/6/04
+	removing old utf8 code adding new one based on MSN. This should be way better.
+
+[D] - gena01 - 10/7/04
+	Trying to fix disconect by the yahoo server when connecting in Away state.. adding ping packet handler, seems like the last packet sent, we should try to change the status after we get this one.. this should improve things.. keeping YAB as part of the loading and after getting cookies..
+
+[D] - gena01 - 10/9/04
+	Adding Yahoo Unicode send support, also replaces some strlen w/ lstrlen to reduce the dll size a lil.
+
+[D] - gena01 - 10/9/04
+	Adding Idle sending support.. also idle receive and other small fixes.
+
+[D] - gena01 - 10/12/04
+	Code cleanup and idle fix.
+
+
+[D] - gena01 - 11/9/04
+	Fixing Bug #0000408 and 0000409
+
+[D] - egodust - 11/19/04
+	yahoo broke the idle hook if it privacy bit was set
+
+[D] - egodust - 12/3/04
+	OPENCONNECTION wasnt fully initalised, gah
+
+[D] - gena01 - 12/3/04
+	File transfer UI, miranda cleanup and fixes. Fixing download virus-scan and open file issues.
+
+[D] - rainwater - 12/3/04
+	Bug 471 (Yahoo): Turn off typing notifications when recv msg
+
+[D] - gena01 - 12/24/04
+	Commenting out the line. Should resolve the weird disconnects, and that line doesn't need to be there.
+
+[D] - gena01 - 1/20/05				
+	Put some safety checks around idle event handling.
+
+[D] - gena01 - 1/20/05				
+	Fixing add buddy permanently crash.
+	
+[D] - gena01 - 1/20/05				
+	Adding a safecheck attribute. Thank you EgoDust! :)
+
+[D] - gena01 - 1/20/05				
+	Updated ping reply parsing. Apparently Yahoo changed something on their end. Thanks Lotedelere for the network log.
+
+[D] - gena01 - 1/20/05				
+	Updating version number, date and download link.
+	
+[D] - gena01 - 1/20/05				
+	Small code cleanup. Added right click handler in one place for the Popup. Also preparation for another cleanup set.
+
+[D] - gena01 - 1/20/05			
+	Fixing translation stuff.
+
+[D] - gena01 - 1/21/05			
+	Fixing idle misdetection, and changed Ping Error into a Popup from a tray baloon...
+
+[D] - gena01 - 1/21/05			
+	Fixing idle again. Also removed some debug msgs.
+	
+[D] - gena01 - 1/24/05			
+	Don't popup MessageBoxes on ping error. Will still use other options like Popup and Baloon. Still investigating what those ping errors mean.
+
+[D] - egodust - 1/24/05			
+	Yahoo was sending _NEXTFILE acks after the transfer had completed, wiping the filename in the UI
+
+[D] - gena01 - 1/25/05		
+	Fixing for 0.3.x cause of netlib changes, forgot to do this before...
+
+[D] - gena01 - 1/25/05		
+	Fixing the <ALT stripping code.
+	
+[D] - gena01 - 1/26/05		
+	Stupid Yahoo can't handle messages >800 characters
+
+[D] - gena01 - 1/26/05	
+	Landing libyahoo2 identity changes as well as a fix for non utf8 text that wasn't working 
+	right w/ tabsrmm-unicode.
+
+[D] - gena01 - 1/26/05	
+	Message limit check added.
+
+[D] - gena01 - 1/26/05	
+	Added auto-decline to conference invite since we don't support that yet. Added error 
+	reporting on various yahoo error scenarios. Switched to Popup then baloon then MessageBox 
+	for error reporting.
+
+[D] - gena01 - 2/4/05	
+	Don't pop the connection reset popup when we offline.
+
+[D] - gena01 - 2/9/05
+	Fixing bug #746 Make the custom status more than 28, increasing to 255 characters.
+	
+[D] - gena01 - 2/24/05
+	Adding File Resume Dialog support for receving files.
+	
+	
+	

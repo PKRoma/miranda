@@ -1,7 +1,7 @@
 Protocol for the Miranda IM for communicating with users of
 the Yahoo Messenger protocol.
 
-Copyright (C) 2003-4 Gennady Feldman (aka Gena01)
+Copyright (C) 2003-5 Gennady Feldman (aka Gena01)
 Copyright (C) 2003-4 Laurent Marechal (aka Peorth)
 
 Thanks to Robert Rainwater and George Hazan for their code and support.
@@ -29,15 +29,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 I- Information
-    This is a plug-in for Miranda IM. It provide the Yahoo protocol using the 
+    This is a plug-in for Miranda IM. It provides the Yahoo protocol using the 
     Libyahoo2 library.
 
 
 II- Requirement for compilation
     Mingw32 v3.2 min 
-    It might work with other compilator, but you might need to make some change.
+    It might work with other compiler, but you might need to make some change.
     Miranda SDK
-    Some features requiere the popup plugins.
+    Some features require popup plugin.
 
 
 III- Installation
