@@ -1377,7 +1377,7 @@ LBL_InvalidCommand:
 			else { // remove a user from a list
 				int listId = Lists_NameToCode( data.list );
 				if ( IsValidListCode( listId )) {
-					if ( listId == LIST_FL || listId == LIST_RL ) {
+					if ( listId == LIST_FL ) {
 						HANDLE hContact = MSN_HContactById( data.serial );
 						if ( hContact != NULL ) {
 							char tEmail[ MSN_MAX_EMAIL_LEN ];
