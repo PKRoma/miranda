@@ -612,6 +612,8 @@
 				RelativePath=".\selectcontainer.c">
 			</File>
 			<File
+				RelativePath="sendqueue.c"/>
+			<File
 				RelativePath="srmm.c">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -686,6 +688,8 @@
 			<File
 				RelativePath="resource.h">
 			</File>
+			<File
+				RelativePath="sendqueue.h"/>
 		</Filter>
 		<Filter
 			Name="Resource Files"

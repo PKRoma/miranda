@@ -39,13 +39,7 @@ $Id$
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 
-#define TIMERID_MSGSEND      0
-#define TIMERID_ANTIBOMB     2
-#define TIMERID_TYPE         3
-#define TIMEOUT_ANTIBOMB     4000       // multiple-send bombproofing: send max 3 messages every 4 seconds
-#define ANTIBOMB_COUNT       3
-#define TIMEOUT_TYPEOFF      10000      // send type off after 10 seconds of inactivity
-#define SB_CHAR_WIDTH        45
+#include "sendqueue.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -82,7 +76,6 @@ extern int g_hotkeyHwnd;
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
 int CutContactName(char *old, char *new, int size);
-int GetProtoIconFromList(const char *szProto, int iStatus);
 TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes);
 DWORD _DBGetContactSettingDword(HANDLE hContact, char *pszSetting, char *pszValue, DWORD dwDefault, int iIgnoreMode);
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, const wchar_t *value);
@@ -116,31 +109,12 @@ void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 HICON g_buttonBarIcons[NR_BUTTONBARICONS];
 extern int g_SmileyAddAvail, g_MetaContactsAvail;
 
-extern int g_IconEmpty, g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconError, g_IconSend;
-extern HICON g_iconErr;
-extern HBITMAP g_hbmUnknown;
-
 extern char *szWarnClose;
 extern HMENU g_hMenuEncoding;
 
-static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat);
 static int CheckValidSmileyPack(char *szProto, HICON *icon);
 static void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode);
-static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon);
 
-// sending queue stuff
-
-static int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen);
-static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat);
-static void ShiftSendQueueDown(HWND hwndDlg, struct MessageWindowData *dat);
-static void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat);
-static void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg);
-static void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat);
-static void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat);
-static void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat);
-static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-static void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd);
-static void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat);
 static void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat);
 static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
@@ -156,7 +130,6 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigne
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 static void CreateSmileyIcon(struct MessageWindowData *dat, HICON hIcon);
 
 struct ContainerWindowData *FindContainerByName(const TCHAR *name);
@@ -168,32 +141,10 @@ static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_NAME};
 static const UINT buttonLineControlsNew[] = { IDC_ADD, IDC_SMILEYBTN, IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_MULTIPLE, IDC_QUOTE, IDC_SAVE};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
-static const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
+const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
-/*
- * send flags
- */
-
-#if defined(_UNICODE)
-    #define SEND_FLAGS PREF_UNICODE
-#else
-    #define SEND_FLAGS 0
-#endif
-    
-static char *MsgServiceName(HANDLE hContact)
-{
-#ifdef _UNICODE
-    char szServiceName[100];
-    char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-    if (szProto == NULL)
-        return PSS_MESSAGE;
-
-    _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
-    if (ServiceExists(szServiceName))
-        return PSS_MESSAGE "W";
-#endif
-    return PSS_MESSAGE;
-}
+struct SendJob sendJobs[NR_SENDJOBS];
+int iSendJobCurrent;
 
 #if defined(_STREAMTHREADING)
 
@@ -277,7 +228,7 @@ static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilenam
 }
 // END MOD#11
 
-static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
+void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
 {
     int i;
     for (i = 0; i < cControls; i++)
@@ -943,13 +894,13 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
 
-static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
+void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) == 4) {
         TCHAR buf[128];
         int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
-        _sntprintf(buf, sizeof(buf), _T("%d/%d"), dat->iSendJobCurrent, len);
+        _sntprintf(buf, sizeof(buf), _T("%d/%d"), dat->iOpenJobs, len);
         SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
     }
 }
@@ -1091,13 +1042,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->history[dat->iHistorySize].szText = (TCHAR *)malloc((HISTORY_INITIAL_ALLOCSIZE + 1) * sizeof(TCHAR));
                 dat->history[dat->iHistorySize].lLen = HISTORY_INITIAL_ALLOCSIZE;
 
-                // send jobs
-                for(i = 0; i < NR_SENDJOBS; i++) {
-                    dat->sendJobs[i].sendBuffer = NULL;
-                    dat->sendJobs[i].sendInfo = NULL;
-                    dat->sendJobs[i].dwLen = 0;
-                }
-                
                 if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1)) {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER5), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
@@ -2223,37 +2167,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case WM_TIMER:
-            if (wParam == TIMERID_MSGSEND) {
-                char szErrorMsg[512];
+            if (wParam >= TIMERID_MSGSEND) {
+                int iIndex = wParam - TIMERID_MSGSEND;
+                
                 KillTimer(hwndDlg, wParam);
-                
-                _snprintf(szErrorMsg, 500, Translate("Delivery failure: %s"), Translate("The message send timed out"));
-                LogErrorMessage(hwndDlg, dat, 0, (char *)szErrorMsg);
-                RecallFailedMessage(hwndDlg, dat);
-                ShowErrorControls(hwndDlg, dat, TRUE);
-                HandleIconFeedback(hwndDlg, dat, g_IconError);
-                
+                _DebugPopup(dat->hContact, "timeout for: %d (index: %d)", dat->hContact, iIndex);
+                _snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
+                sendJobs[iIndex].iStatus = SQ_ERROR;
+                if(!(dat->dwFlags & MWF_ERRORSTATE))
+                    HandleQueueError(hwndDlg, dat, iIndex);
             } else if (wParam == TIMERID_FLASHWND) {
                 if (dat->iTabID == -1) {
                     MessageBoxA(0, "TIMER FLASH Critical: iTabID == -1", "Error", MB_OK);
                 } else {
                     if (dat->mayFlashTab)
                         FlashTab(hwndTab, dat->iTabID, &dat->bTabFlash, TRUE, dat->iFlashIcon, dat->iTabImage);
-                }
-            } else if (wParam == TIMERID_ANTIBOMB) {
-                int sentSoFar = 0, i;
-                KillTimer(hwndDlg, wParam);
-                for (i = 0; i < dat->sendJobs[0].sendCount; i++) {
-                    if (dat->sendJobs[0].sendInfo[i].hContact == NULL)
-                        continue;
-                    if (sentSoFar >= ANTIBOMB_COUNT) {
-                        KillTimer(hwndDlg, TIMERID_MSGSEND);
-                        SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
-                        SetTimer(hwndDlg, TIMERID_ANTIBOMB, TIMEOUT_ANTIBOMB, NULL);
-                        break;
-                    }
-                    dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
-                    sentSoFar++;
                 }
             } else if (wParam == TIMERID_TYPE) {
                 if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && GetTickCount() - dat->nLastTyping > TIMEOUT_TYPEOFF) {
@@ -2321,6 +2249,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             switch (wParam) {
                 case MSGERROR_CANCEL:
                 case MSGERROR_SENDLATER:
+                {
+                    int iNextFailed;
+                    
                     if(wParam == MSGERROR_SENDLATER) {
                         if(ServiceExists(BUDDYPOUNCE_SERVICENAME)) {
                             int iLen = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -2357,7 +2288,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 SendMessage(hwndDlg, DM_SAVEINPUTHISTORY, 0, 0);
                                 EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 
-                                SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                                 if(dat->pContainer->hwndActive == hwndDlg)
                                     UpdateReadChars(hwndDlg, dat);
                                 SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[6]);
@@ -2367,22 +2297,28 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             }
                         }
                     }
-                    if(dat->sendJobs[0].sendInfo) {
-                        free(dat->sendJobs[0].sendInfo);
-                        dat->sendJobs[0].sendInfo = NULL;
-                    }
+                    dat->iOpenJobs--;
+                    iSendJobCurrent--;
+                    if(dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < NR_SENDJOBS)
+                        ClearSendJob(dat->iCurrentQueueError);
+                    else
+                        _DebugPopup(dat->hContact, "iCurrentQueueError out of bounds (%d)", dat->iCurrentQueueError);
+                    dat->iCurrentQueueError = -1;
                     ShowErrorControls(hwndDlg, dat, FALSE);
-                    HandleIconFeedback(hwndDlg, dat, -1);
+                    SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                     CheckSendQueue(hwndDlg, dat);
+                    if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0)
+                        HandleQueueError(hwndDlg, dat, iNextFailed);
                     break;
+                }
                 case MSGERROR_RETRY:
                     {
                         int i;
 
-                        for (i = 0; i < dat->sendJobs[0].sendCount; i++) {
-                            if (dat->sendJobs[0].sendInfo[i].hSendId == NULL && dat->sendJobs[0].sendInfo[i].hContact == NULL)
+                        for (i = 0; i < sendJobs[0].sendCount; i++) {
+                            if (sendJobs[0].hSendId[i] == NULL && sendJobs[0].hContact[i] == NULL)
                                 continue;
-                            dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
+                            //sendJobs[0].hSendId[i] = (HANDLE) CallContactService(sendJobs[0].hContact[i], MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
                         }
                     }
                     SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
@@ -3394,70 +3330,89 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 ACKDATA *ack = (ACKDATA *) lParam;
                 DBEVENTINFO dbei = { 0};
                 HANDLE hNewEvent;
-                int i;
+                int i, iFound = NR_SENDJOBS, j, iNextFailed;
 
                 if (ack->type != ACKTYPE_MESSAGE)
                     break;
 
+                for(j = 0; j < NR_SENDJOBS; j++) {
+                    for (i = 0; i < sendJobs[j].sendCount; i++) {
+                        //_DebugPopup(dat->hContact, "index: %d - hcontact[%d]: %d, sendid[%d]: %d", j, i, sendJobs[j].hContact[i], i, sendJobs[j].hSendId[i]);
+                        if (ack->hProcess == sendJobs[j].hSendId[i] && ack->hContact == sendJobs[j].hContact[i] && dat->hContact == sendJobs[j].hOwner) {
+                            //_DebugPopup(dat->hContact, "found: %d", i);
+                            iFound = j;
+                            break;
+                        }
+                    }
+                    if (iFound == NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
+                        continue;
+                    else
+                        break;
+                }
+                if(iFound == NR_SENDJOBS)               // no matching send info found in the queue
+                    break;
+
                 switch (ack->result) {
                     case ACKRESULT_FAILED: {
-                        char szErrorMsg[512];
-                        
-                        KillTimer(hwndDlg, TIMERID_MSGSEND);
-                        _snprintf(szErrorMsg, 500, Translate("Delivery failure: %s"), (char *)ack->lParam);
-                        LogErrorMessage(hwndDlg, dat, 0, (char *)szErrorMsg);
-                        RecallFailedMessage(hwndDlg, dat);
-                        ShowErrorControls(hwndDlg, dat, TRUE);
-                        HandleIconFeedback(hwndDlg, dat, g_IconError);
+                        _DebugPopup(dat->hContact, "(%d) ACK_FAILED with: %d, %d - index: %d", dat->hContact, ack->hContact, ack->hProcess, iFound);
+                        if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
+                            char szErrMsg[256];
+                            char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
+                            _snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", contactName);
+                            LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
+                            goto verify;
+                        }
+                        else {
+                            _snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "%s", (char *)ack->lParam);
+                            sendJobs[iFound].iStatus = SQ_ERROR;
+                            KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
+                            if(!(dat->dwFlags & MWF_ERRORSTATE))
+                                HandleQueueError(hwndDlg, dat, iFound);
+                        }
                         return 0;
                     }
                 }                   //switch
 
-                for (i = 0; i < dat->sendJobs[0].sendCount; i++)
-                    if (ack->hProcess == dat->sendJobs[0].sendInfo[i].hSendId && ack->hContact == dat->sendJobs[0].sendInfo[i].hContact)
-                        break;
-                if (i == dat->sendJobs[0].sendCount)
-                    break;
-
+                //_DebugPopup(dat->hContact, "(Owner %d) ACK_for: hC: %d, sendid: %d - index: %d (%d)", sendJobs[iFound].hOwner, sendJobs[iFound].hContact[i], sendJobs[iFound].hSendId[i], iFound, i);
+                //_DebugPopup(dat->hContact, "(Owner %d) ACK_for: hC: %d, sendid: %d - index: %d (%d)", sendJobs[iFound].hOwner, ack->hContact, ack->hProcess, iFound, i);
                 dbei.cbSize = sizeof(dbei);
                 dbei.eventType = EVENTTYPE_MESSAGE;
                 dbei.flags = DBEF_SENT;
-                dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->sendJobs[0].sendInfo[i].hContact, 0);
+                dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) sendJobs[iFound].hContact[i], 0);
                 dbei.timestamp = time(NULL);
-                dbei.cbBlob = lstrlenA(dat->sendJobs[0].sendBuffer) + 1;
+                dbei.cbBlob = lstrlenA(sendJobs[iFound].sendBuffer) + 1;
                 dat->stats.iSentBytes += (dbei.cbBlob - 1);
                 dat->stats.iSent++;
                 
 #if defined( _UNICODE )
                 dbei.cbBlob *= sizeof(TCHAR) + 1;
 #endif
-                dbei.pBlob = (PBYTE) dat->sendJobs[0].sendBuffer;
-                hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->sendJobs[0].sendInfo[i].hContact, (LPARAM) & dbei);
+                dbei.pBlob = (PBYTE) sendJobs[iFound].sendBuffer;
+                hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) sendJobs[iFound].hContact[i], (LPARAM) & dbei);
                 SkinPlaySound("SendMsg");
-                if (dat->sendJobs[0].sendInfo[i].hContact == dat->hContact) {
+                if (sendJobs[iFound].hContact[i] == dat->hContact) {
                     if (dat->hDbEventFirst == NULL) {
                         dat->hDbEventFirst = hNewEvent;
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
                     }
                 }
-                dat->sendJobs[0].sendInfo[i].hSendId = NULL;
-                dat->sendJobs[0].sendInfo[i].hContact = NULL;
-                for (i = 0; i < dat->sendJobs[0].sendCount; i++)
-                    if (dat->sendJobs[0].sendInfo[i].hContact || dat->sendJobs[0].sendInfo[i].hSendId)
+verify:                
+                sendJobs[iFound].hSendId[i] = NULL;
+                sendJobs[iFound].hContact[i] = NULL;
+                for (i = 0; i < sendJobs[iFound].sendCount; i++)
+                    if (sendJobs[iFound].hContact[i] || sendJobs[iFound].hSendId[i])
                         break;
-                if (i == dat->sendJobs[0].sendCount) {
-                //all messages sent
-                    
-                    if(dat->sendJobs[0].sendCount > 1)          // re-enable sending if it was a multisend with more than 1 entry
+                if (i == sendJobs[iFound].sendCount) {              //all messages sent
+                    if(sendJobs[iFound].sendCount > 1)
                         EnableSending(hwndDlg, dat, TRUE);
-                    
-                    dat->sendJobs[0].sendCount = 0;
-                    free(dat->sendJobs[0].sendInfo);
-                    dat->sendJobs[0].sendInfo = NULL;
-                    KillTimer(hwndDlg, TIMERID_MSGSEND);
-
-                    CheckSendQueue(hwndDlg, dat);
+                    ClearSendJob(iFound);
+                    KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
+                    dat->iOpenJobs--;
+                    iSendJobCurrent--;
                 }
+                CheckSendQueue(hwndDlg, dat);
+                if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0)
+                    HandleQueueError(hwndDlg, dat, iNextFailed);
                 break;
             }
             /*
@@ -3612,6 +3567,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
+            }
+            break;
+        case DM_MULTISENDTHREADCOMPLETE:
+            if(dat->hMultiSendThread) {
+                CloseHandle(dat->hMultiSendThread);
+                dat->hMultiSendThread = 0;
+                _DebugPopup(dat->hContact, "multisend thread has ended");
             }
             break;
         case DM_UINTOCLIPBOARD:
@@ -3866,7 +3828,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     return TRUE;
                 }
                 
-                if(dat->iSendJobCurrent > 0)
+                if(dat->iOpenJobs > 0)
                     return TRUE;
                 
 #if defined(_STREAMTHREADING)
@@ -3990,14 +3952,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
                     free(dat->history);
-                }
-                // free send queue jobs
-                for(i = 0; i < NR_SENDJOBS; i++) {
-                    if(dat->sendJobs[i].sendBuffer) {
-                        free(dat->sendJobs[i].sendBuffer);
-                    }
-                    if(dat->sendJobs[i].sendInfo)
-                        free(dat->sendJobs[i].sendInfo);
                 }
             }
             
@@ -4181,281 +4135,6 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 }
 
 /*
- * add a message to the sending queue.
- * iLen = length of the message in dat->sendBuffer
- */
-static int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
-{
-    int iLength = 0;
-    
-    if(dat->iSendJobCurrent >= NR_SENDJOBS) {
-        _DebugPopup(dat->hContact, Translate("Send queue full"));
-        return 0;
-    }
-    iLength = iLen;
-    if(iLength > 0) {
-        if(iLength > (int)dat->sendJobs[dat->iSendJobCurrent].dwLen) {
-            if(dat->sendJobs[dat->iSendJobCurrent].sendBuffer == NULL) {
-                if(iLength < HISTORY_INITIAL_ALLOCSIZE)
-                    iLength = HISTORY_INITIAL_ALLOCSIZE;
-                dat->sendJobs[dat->iSendJobCurrent].sendBuffer = (char *)malloc((iLength + 1) * (sizeof(TCHAR) + 1));
-            }
-            else
-                dat->sendJobs[dat->iSendJobCurrent].sendBuffer = (char *)realloc(dat->sendJobs[dat->iSendJobCurrent].sendBuffer, (iLength + 1) * (sizeof(TCHAR) + 1));
-            dat->sendJobs[dat->iSendJobCurrent].dwLen = iLength;
-        }
-        MoveMemory(dat->sendJobs[dat->iSendJobCurrent].sendBuffer, dat->sendBuffer, iLen * (sizeof(TCHAR) + 1));
-        //_DebugPopup(dat->hContact, "Added: %s (entry: %d)", dat->sendJobs[dat->iSendJobCurrent].sendBuffer, dat->iSendJobCurrent);
-        dat->iSendJobCurrent++;
-        dat->iSendJobMax = dat->iSendJobCurrent > dat->iSendJobMax ? dat->iSendJobCurrent : dat->iSendJobMax;
-    }
-
-    SendMessage(hwndDlg, DM_SAVEINPUTHISTORY, 0, 0);
-    SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-    EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
-    SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-
-    if(dat->pContainer->hwndActive == hwndDlg)
-        UpdateReadChars(hwndDlg, dat);
-
-    UpdateSaveAndSendButton(hwndDlg, dat);
-    
-    if(dat->iSendJobCurrent == 1)
-        SendQueuedMessage(hwndDlg, dat);
-
-    return 0;
-}
-
-static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    if(dat->hAckEvent == 0)
-        dat->hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_EVENTSENT);
-    
-    if (dat->multiple) {
-        HANDLE hContact, hItem;
-        int sentSoFar = 0;
-        dat->sendJobs[0].sendCount = 0;
-        hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-        do {
-            hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
-            if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0)) {
-                dat->sendJobs[0].sendCount++;
-                dat->sendJobs[0].sendInfo = (struct MessageSendInfo *) realloc(dat->sendJobs[0].sendInfo, sizeof(struct MessageSendInfo) * dat->sendJobs[0].sendCount);
-                dat->sendJobs[0].sendInfo[dat->sendJobs[0].sendCount - 1].hContact = hContact;
-                if (sentSoFar < ANTIBOMB_COUNT) {
-                    dat->sendJobs[0].sendInfo[dat->sendJobs[0].sendCount - 1].hSendId = (HANDLE) CallContactService(hContact, MsgServiceName(hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
-                    sentSoFar++;
-                } else
-                    dat->sendJobs[0].sendInfo[dat->sendJobs[0].sendCount - 1].hSendId = NULL;
-            }
-        } while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
-        if (dat->sendJobs[0].sendCount == 0) {
-            MessageBoxA(hwndDlg, Translate("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."), Translate("Send Message"), MB_OK);
-            CheckSendQueue(hwndDlg, dat);
-            return 0;
-        }
-        if (sentSoFar < dat->sendJobs[0].sendCount)
-            SetTimer(hwndDlg, TIMERID_ANTIBOMB, TIMEOUT_ANTIBOMB, NULL);
-        
-        if(dat->sendJobs[0].sendCount > 1)              // disable queuing more messages in multisend mode...
-            EnableSending(hwndDlg, dat, FALSE);
-        
-    } else {
-        if (dat->hContact == NULL)
-            return 0;  //never happens
-        
-        dat->sendJobs[0].sendCount = 1;
-        if(dat->sendJobs[0].sendInfo == NULL)
-            dat->sendJobs[0].sendInfo = (struct MessageSendInfo *) malloc(sizeof(struct MessageSendInfo) * dat->sendJobs[0].sendCount);
-        else
-            dat->sendJobs[0].sendInfo = (struct MessageSendInfo *) realloc(dat->sendJobs[0].sendInfo, sizeof(struct MessageSendInfo) * dat->sendJobs[0].sendCount);
-        dat->sendJobs[0].sendInfo[0].hContact = dat->hContact;
-        dat->sendJobs[0].sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
-    }
-
-    // give icon feedback...
-
-    HandleIconFeedback(hwndDlg, dat, g_IconSend);
-    
-    //create a timeout timer
-    SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
-    if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
-        SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-
-    return 0;
-}
-
-static void ShiftSendQueueDown(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    struct SendJob sendJobTemp;
-
-    if(dat->iSendJobCurrent > 0) {
-        sendJobTemp = dat->sendJobs[0];             // recycle the already allocated pointer (AddToSendQueue() will care about realloc'ing it if necessary)
-        MoveMemory((void *)&dat->sendJobs[0], (void *)&dat->sendJobs[1], (NR_SENDJOBS - 1) * sizeof(struct SendJob));
-        dat->iSendJobCurrent--;
-        dat->sendJobs[dat->iSendJobMax - 1] = sendJobTemp;
-    }
-    else
-        _DebugPopup(dat->hContact, "Warning: shiftsendqueue with no pending events");
-
-    if(dat->pContainer->hwndActive == hwndDlg)
-        UpdateReadChars(hwndDlg, dat);
-}
-
-/*
- * this is called when:
- *
- * ) a delivery has completed successfully
- * ) user decided to cancel a failed send
- * it removes the completed / canceled send job from the queue and schedules the next job to send (if any)
- */
-
-static void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    ShiftSendQueueDown(hwndDlg, dat);
-    if(dat->iSendJobCurrent == 0) {
-        if(dat->hAckEvent) {
-            UnhookEvent(dat->hAckEvent);
-            dat->hAckEvent = NULL;
-        }
-        HandleIconFeedback(hwndDlg, dat, -1);
-    }
-    else
-        SendQueuedMessage(hwndDlg, dat);        // trigger send
-}
-
-static void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg)
-{
-    DBEVENTINFO dbei = {0};
-    int iMsgLen;
-    iMsgLen = lstrlenA(dat->sendJobs[iSendJobIndex].sendBuffer) + 1;
-#if defined(_UNICODE)
-    iMsgLen *= 3;
-#endif
-    dbei.eventType = EVENTTYPE_ERRMSG;
-    dbei.cbSize = sizeof(dbei);
-    dbei.pBlob = (BYTE *)dat->sendJobs[iSendJobIndex].sendBuffer;
-    dbei.cbBlob = iMsgLen;
-    dbei.timestamp = time(NULL);
-    dbei.szModule = szErrMsg;
-    StreamInEvents(hwndDlg, NULL, 1, 1, &dbei);
-}
-
-static void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
-{
-    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, (WPARAM) iMode ? FALSE : TRUE, 0);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_CLIST), iMode ? TRUE : FALSE);
-    EnableWindow(GetDlgItem(hwndDlg, IDOK), iMode);
-}
-
-static void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
-{
-    if(showCmd) {
-        dat->dwFlags |= MWF_ERRORSTATE;
-        dat->iTabImage = g_IconError;
-    }
-    else {
-        dat->dwFlags &= ~MWF_ERRORSTATE;
-        dat->iTabImage = GetProtoIconFromList(dat->szProto, dat->wStatus);
-    }
-
-#if defined(_STREAMTHREADING)
-    SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_SETREDRAW, TRUE, 0);
-    InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
-    SendMessage(hwndDlg, WM_SIZE, 0, 0);
-#endif    
-    ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), showCmd ? SW_SHOW : SW_HIDE);
-
-    SendMessage(hwndDlg, WM_SIZE, 0, 0);
-    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-    
-    if(dat->sendJobs[0].sendCount > 1)
-        EnableSending(hwndDlg, dat, TRUE);
-}
-
-static void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    int iLen = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
-    NotifyDeliveryFailure(hwndDlg, dat);
-    if(iLen == 0) {                     // message area is empty, so we can recall the failed message...
-#if defined(_UNICODE)
-        SETTEXTEX stx = {ST_DEFAULT,1200};
-        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&dat->sendJobs[0].sendBuffer[lstrlenA(dat->sendJobs[0].sendBuffer) + 1]);
-        //SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)&dat->sendJobs[0].sendBuffer[lstrlenA(dat->sendJobs[0].sendBuffer) + 1]);
-#else
-        SetDlgItemTextA(hwndDlg, IDC_MESSAGE, (char *)dat->sendJobs[0].sendBuffer);
-#endif
-        UpdateSaveAndSendButton(hwndDlg, dat);
-    }
-}
-static void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-    
-    if(len && !IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
-        EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
-    else if(len == 0 && IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
-        EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
-
-    if (len) {          // looks complex but avoids flickering on the button while typing.
-        if (!(dat->dwFlags & MWF_SAVEBTN_SAV)) {
-            SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[7]);
-            SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_save, 0);
-            dat->dwFlags |= MWF_SAVEBTN_SAV;
-        }
-    } else {
-        SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[6]);
-        SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
-        dat->dwFlags &= ~MWF_SAVEBTN_SAV;
-    }
-}
-
-static void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    POPUPDATA ppd;
-    int     ibsize = 1023;
-
-    if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
-        ZeroMemory((void *)&ppd, sizeof(ppd));
-        ppd.lchContact = dat->hContact;
-        ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        strncpy(ppd.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0), MAX_CONTACTNAME);
-        strcpy(ppd.lpzText, Translate("A message delivery has failed.\nClick to open the message window."));
-        ppd.colorText = RGB(0,0,0);
-        ppd.colorBack = RGB(255,0,0);
-        ppd.PluginData = hwndDlg;
-        ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
-        ppd.lchIcon = g_iconErr;
-        CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
-    }
-}
-
-static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch(message) {
-        case WM_COMMAND:
-            if (HIWORD(wParam) == STN_CLICKED) {
-                HWND hwnd;
-                struct MessageWindowData *dat;
-                
-                hwnd = (HWND)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd,(LPARAM)&hwnd);
-                dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
-                if(dat) {
-                    ActivateExistingTab(dat->pContainer, hwnd);
-                }
-                return TRUE;
-            }
-            break;
-        case WM_LBUTTONDOWN: {
-            break;
-        }
-        default:
-            break;
-    }
-    return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
-/*
  * checks, if there is a valid smileypack installed for the given protocol
  */
 
@@ -4579,7 +4258,7 @@ static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         UpdateStatusBarTooltips(hwndDlg, dat);
     }
 }
-static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)
+void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)
 {
     TCITEM item = {0};
     int iOldIcon;

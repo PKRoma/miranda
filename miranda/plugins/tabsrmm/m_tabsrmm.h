@@ -1,5 +1,5 @@
 #define CONTAINER_NAMELEN 25
-#define NR_SENDJOBS 20
+#define NR_SENDJOBS 2
 
 #define MWF_SAVEBTN_SAV 2
 
@@ -81,16 +81,24 @@ struct ContainerWindowData {
     HICON hIcon;                // current window icon
 };
 
+/*
 struct MessageSendInfo {
 	HANDLE hContact;
 	HANDLE hSendId;
-};
+};*/
+
+#define SENDJOBS_MAX_SENDS 20
 
 struct SendJob {
-    struct MessageSendInfo *sendInfo;
+    HANDLE hContact[SENDJOBS_MAX_SENDS];
+    HANDLE hSendId[SENDJOBS_MAX_SENDS];
     char *sendBuffer;
     DWORD dwLen;        // actual buffer langth (checked for reallocs()
     int sendCount;
+    HANDLE hOwner;
+    HWND hwndOwner;
+    unsigned int iStatus;
+    char szErrorMsg[128];
 };
 
 struct MessageSessionStats {
@@ -149,8 +157,6 @@ struct MessageWindowData {
 #if defined(_STREAMTHREADING)
     int volatile pendingStream;
 #endif    
-    struct SendJob sendJobs[NR_SENDJOBS];
-    int iSendJobCurrent, iSendJobMax;
     HBITMAP hSmileyIcon;
     char *szProto;
     WORD wStatus;
@@ -162,6 +168,9 @@ struct MessageWindowData {
     DWORD dwLastActivity;
     HICON hProtoIcon;
     struct MessageSessionStats stats;
+    int iOpenJobs;
+    int iCurrentQueueError;
+    HANDLE hMultiSendThread;
 };
 
 typedef struct _recentinfo {

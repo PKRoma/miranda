@@ -65,6 +65,11 @@ extern TCHAR g_szDefaultContainerName[];
 extern HMENU g_hMenuContext;
 extern struct ContainerWindowData *pFirstContainer;
 
+// send jobs...
+
+extern struct SendJob sendJobs[NR_SENDJOBS];
+extern int iSendJobCurrent, iSendJobMax;
+
 struct ProtocolData *protoIconData = NULL;
 int g_nrProtos = 0;
 HIMAGELIST g_hImageList = 0;
@@ -661,6 +666,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     // nls stuff
     CacheLogFonts();
     BuildCodePageList();
+    ZeroMemory((void *)sendJobs, sizeof(struct SendJob) * NR_SENDJOBS);
     return 0;
 }
 

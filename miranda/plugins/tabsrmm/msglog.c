@@ -600,10 +600,12 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
             showColon = 0;
             if(dbei.eventType == EVENTTYPE_ERRMSG) {
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "\r\n %s\r\n", dbei.szModule);
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
+                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s", dbei.szModule);
+                if(dbei.cbBlob != 0) {
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
+                }
             }
         }
         else {
@@ -676,8 +678,11 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 #else
             BYTE *msg;
 #endif
-            if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG)
+            if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
+                if(dbei.eventType == EVENTTYPE_ERRMSG && dbei.cbBlob == 0)
+                    break;
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? H_MSGFONTID_STATUSCHANGES : H_MSGFONTID_STATUSCHANGES]);
+            }
             else {
                 if (dat->isHistory)
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? H_MSGFONTID_MYMSG : H_MSGFONTID_YOURMSG]);
