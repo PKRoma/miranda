@@ -101,7 +101,7 @@
 			</p>
 			
 			<p>
-			Miranda's <a href="http://miranda-icq.sourceforge.net/bugs/">Bug Tracker</a> is the best
+			Miranda's <a href="http://dev.miranda-im.org/bugs/">Bug Tracker</a> is the best
 			place to report bugs. Please make sure you include all information to regenerate the error, and include which
 			plugins you were using at the time if required.
 			</p>
