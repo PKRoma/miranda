@@ -154,6 +154,10 @@ SOURCE=.\cmdlist.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\globals.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\msgdialog.c
 # End Source File
 # Begin Source File
@@ -187,6 +191,10 @@ SOURCE=.\cmdlist.h
 # Begin Source File
 
 SOURCE=.\commonheaders.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\globals.h
 # End Source File
 # Begin Source File
 

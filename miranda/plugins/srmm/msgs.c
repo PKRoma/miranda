@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-HANDLE hMessageWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
 int hMsgMenuItemCount = 0;
@@ -37,7 +36,7 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 	struct NewMessageWindowLParam newData = { 0 };
 	HWND hwndExisting;
 
-	hwndExisting = WindowList_Find(hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
+	hwndExisting = WindowList_Find(g_dat->hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
 	newData.hContact = ((CLISTEVENT *) lParam)->hContact;
 	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 	return 0;
@@ -61,7 +60,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 	/* does a window for the contact exist? */
-	hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
+	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
 	if (hwnd) {
 		if (GetForegroundWindow()==hwnd)
 			SkinPlaySound("RecvMsgActive");
@@ -109,7 +108,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 		}                       //if
 	}
 
-	if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
 		if (lParam) {
 			HWND hEdit;
 			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
@@ -143,17 +142,17 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	HWND hwnd;
 	int foundWin = 0;
 
-	if (!DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
+	if (!(g_dat->flags&SMF_SHOWTYPING))
 		return 0;
-	if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
 		SendMessage(hwnd, DM_TYPING, 0, lParam);
 		foundWin = 1;
 	}
-	if ((int) lParam && !foundWin && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGNOWIN, SRMSGDEFSET_SHOWTYPINGNOWIN)) {
+	if ((int) lParam && !foundWin && (g_dat->flags&SMF_SHOWTYPINGTRAY)) {
 		char szTip[256];
 
 		_snprintf(szTip, sizeof(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
-		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
+		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !(g_dat->flags&SMF_SHOWTYPINGCLIST)) {
 			MIRANDASYSTRAYNOTIFY tn;
 			tn.szProto = NULL;
 			tn.cbSize = sizeof(tn);
@@ -171,7 +170,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 			cle.hContact = (HANDLE) wParam;
 			cle.hDbEvent = (HANDLE) 1;
 			cle.flags = CLEF_ONLYAFEW;
-			cle.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IsWinVerXPPlus()? IDI_TYPING32 : IDI_TYPING));
+			cle.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
 			cle.pszService = "SRMsg/TypingMessage";
 			cle.pszTooltip = szTip;
 			CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -189,7 +188,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 	if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
 		return 0;
-	WindowList_Broadcast(hMessageWindowList, DM_UPDATETITLE, (WPARAM) cws, 0);
+	WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATETITLE, (WPARAM) cws, 0);
 	return 0;
 }
 
@@ -197,7 +196,7 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 
-	if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
 		SendMessage(hwnd, WM_CLOSE, 0, 0);
 	}
 	return 0;
@@ -224,7 +223,7 @@ static void RestoreUnreadMessageAlerts(void)
 			dbei.cbBlob = 0;
 			CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
 			if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && dbei.eventType == EVENTTYPE_MESSAGE) {
-				windowAlreadyExists = WindowList_Find(hMessageWindowList, hContact) != NULL;
+				windowAlreadyExists = WindowList_Find(g_dat->hMessageWindowList, hContact) != NULL;
 				if (windowAlreadyExists)
 					continue;
 
@@ -278,7 +277,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
-	WindowList_BroadcastAsync(hMessageWindowList, WM_CLOSE, 0, 0);
+	WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
 	return 0;
 }
 
@@ -298,6 +297,7 @@ int SplitmsgShutdown(void)
 		hMsgMenuItem = NULL;
 		hMsgMenuItemCount = 0;
 	}
+	FreeGlobals();
 	return 0;
 }
 
@@ -317,9 +317,9 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 	}
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
-	WindowList_Broadcast(hMessageWindowList, DM_REMAKELOG, 0, 0);
+	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
 	// change all the icons
-	WindowList_Broadcast(hMessageWindowList, DM_UPDATEWINICON, 0, 0);
+	WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATEWINICON, 0, 0);
 	return 0;
 }
 
@@ -339,9 +339,9 @@ int LoadSendRecvMessageModule(void)
 			return 1;
 		return 0;
 	}
+	InitGlobals();
 	OleInitialize(NULL);
 	InitREOleCallback();
-	hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	InitOptions();
 	hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
 	hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);

@@ -281,7 +281,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	if (prefixParaBreak) {
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 	}
-	if (dat->showIcons) {
+	if (g_dat->flags&SMF_SHOWICONS) {
 		int i;
 
 		switch (dbei.eventType) {
@@ -304,11 +304,11 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		CopyMemory(buffer + bufferEnd, pLogIconBmpBits[i], logIconBmpSize[i]);
 		bufferEnd += logIconBmpSize[i];
 	}
-	if (dat->showTime) {
+	if (g_dat->flags&SMF_SHOWTIME) {
 		DBTIMETOSTRING dbtts;
 		char str[64];
 
-		dbtts.szFormat = dat->showDate ? "d t" : "s";
+		dbtts.szFormat = g_dat->flags&SMF_SHOWDATE ? "d t" : "s";
 		dbtts.cbDest = sizeof(str);
 		dbtts.szDest = str;
 		CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dbei.timestamp, (LPARAM) & dbtts);
@@ -316,7 +316,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", str);
 		showColon = 1;
 	}
-	if (!dat->hideNames && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
+	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
 		char *szName;
 		CONTACTINFO ci;
 		ZeroMemory(&ci, sizeof(ci));

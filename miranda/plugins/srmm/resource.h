@@ -12,7 +12,6 @@
 #define IDC_HYPERLINKHAND               214
 #define IDC_DROPUSER                    215
 #define IDD_OPT_MSGDLG                  243
-#define IDD_MSGSPLIT                    244
 #define IDD_MSG                         244
 #define IDD_OPT_MSGLOG                  245
 #define IDI_DOWNARROW                   264
@@ -26,13 +25,12 @@
 #define IDI_INCOMING                    276
 #define IDI_OUTGOING                    277
 #define IDI_NOTICE                      282
-#define IDB_UNKNOWN                     283
+#define IDD_CORE                        284
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003
 #define IDC_AUTOCLOSE                   1004
 #define IDC_AUTOMIN                     1005
-#define IDC_TIME                        1006
 #define IDC_NAME                        1009
 #define IDC_SPLITTER                    1017
 #define IDC_SHOWNAMES                   1024
@@ -94,7 +92,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        284
+#define _APS_NEXT_RESOURCE_VALUE        285
 #define _APS_NEXT_COMMAND_VALUE         40019
 #define _APS_NEXT_CONTROL_VALUE         1614
 #define _APS_NEXT_SYMED_VALUE           101

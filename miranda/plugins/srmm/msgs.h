@@ -44,18 +44,11 @@ struct MessageWindowData
 	HANDLE hDbEventFirst, hDbEventLast;
 	struct MessageSendInfo *sendInfo;
 	int sendCount;
-	HANDLE hAckEvent;
-	HANDLE hAvatarAck;
-	HANDLE hNewEvent;
-	int showTime;
 	HBRUSH hBkgBrush;
-	int splitterY, originalSplitterY;
+	int splitterPos, originalSplitterPos;
 	char *sendBuffer;
-	HICON hIcons[6];
 	SIZE minEditBoxSize;
 	RECT minEditInit;
-	int showInfo;
-	int showButton;
 	int lineHeight;
 	int windowWasCascaded;
 	int nFlash;
@@ -63,20 +56,14 @@ struct MessageWindowData
 	int nLabelRight;
 	int nTypeSecs;
 	int nTypeMode;
-	int showSend;
-	int showAvatar;
 	int avatarWidth;
 	int avatarHeight;
 	int limitAvatarH;
 	HBITMAP avatarPic;
 	DWORD nLastTyping;
 	int showTyping;
-	int showTypingWin;
 	HWND hwndStatus;
 	DWORD lastMessage;
-	int showIcons;
-	int showDate;
-	int hideNames;
 	char *szProto;
 	WORD wStatus;
 	WORD wOldStatus;
@@ -103,6 +90,7 @@ struct MessageWindowData
 #define DM_GETAVATAR         (WM_USER+26)
 #define DM_UPDATESIZEBAR     (WM_USER+27)
 #define HM_AVATARACK         (WM_USER+28)
+#define HM_ACKEVENT          (WM_USER+29)
 
 #define EVENTTYPE_STATUSCHANGE 25368
 
@@ -173,6 +161,8 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
 #define SRMSGDEFSET_MSGTIMEOUT     10000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
+#define SRMSGSET_FLASHCOUNT        "FlashMax"
+#define SRMSGDEFSET_FLASHCOUNT     5
 
 #define SRMSGSET_LOADHISTORY       "LoadHistory"
 #define SRMSGDEFSET_LOADHISTORY    LOADHISTORY_UNREAD

@@ -31,7 +31,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 209
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Options",IDC_STATIC,0,0,310,206
     CONTROL         "Automatically pop up the window when a message is received",
@@ -110,15 +110,13 @@ BEGIN
                     12,12
     CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,15,2,95,14,
                     0x18000000L
-    CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,92,2,16,14,
+    CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,110,2,16,14,
                     0x18000000L
-    CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,110,2,16,14,
+    CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,128,2,16,14,
                     0x18000000L
-    CONTROL         "&D",IDC_DETAILS,"MButtonClass",WS_TABSTOP,128,2,16,14,
+    CONTROL         "&D",IDC_DETAILS,"MButtonClass",WS_TABSTOP,146,2,16,14,
                     0x18000000L
-    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,146,2,16,14,
-                    0x18000000L
-    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,164,2,16,14,
+    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,164,2,16,14,
                     0x18000000L
     CONTROL         "",IDC_LOG,"RichEdit20A",WS_VSCROLL | WS_TABSTOP | 0x844,
                     1,18,181,26,WS_EX_STATICEDGE
@@ -202,6 +200,13 @@ BEGIN
                     BS_AUTORADIOBUTTON,44,231,206,10
 END
 
+IDD_CORE DIALOG DISCARDABLE  0, 0, 233, 51
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "SRMM.  So fly, it has wings."
+FONT 8, "MS Shell Dlg"
+BEGIN
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -256,6 +261,14 @@ BEGIN
         RIGHTMARGIN, 276
         TOPMARGIN, 7
         BOTTOMMARGIN, 245
+    END
+
+    IDD_CORE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 226
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 44
     END
 END
 #endif    // APSTUDIO_INVOKED
