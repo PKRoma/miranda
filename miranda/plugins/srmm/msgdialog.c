@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ANTIBOMB_COUNT       3
 #define TIMEOUT_TYPEOFF      10000      //send type off after 10 seconds of inactivity
 #define SB_CHAR_WIDTH        45;
+#define VALID_AVATAR(x)      (x==PA_FORMAT_PNG||x==PA_FORMAT_JPEG||x==PA_FORMAT_ICON||x==PA_FORMAT_BMP||x==PA_FORMAT_GIF)
 
 #if defined(_UNICODE)
 	#define SEND_FLAGS PREF_UNICODE
@@ -809,7 +810,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (pAck->type != ACKTYPE_AVATAR)
 			return 0;
 		if (pAck->result == ACKRESULT_SUCCESS) {
-			if (pai->filename&&strlen(pai->filename)) {
+			if (pai->filename&&strlen(pai->filename)&&VALID_AVATAR(pai->format)) {
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
 				ShowAvatar(hwndDlg, dat);
 			}
@@ -895,11 +896,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		ZeroMemory((void *)&pai, sizeof(pai));
 		pai.cbSize = sizeof(pai);
 		pai.hContact = dat->hContact;
-		pai.format = PA_FORMAT_BMP;
+		pai.format = PA_FORMAT_UNKNOWN;
 		strcpy(pai.filename, "");
 		result = CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai);
 		if (result==GAIR_SUCCESS) {
-			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
+			if (VALID_AVATAR(pai.format))
+				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
+			else DBDeleteContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR);
 			ShowAvatar(hwndDlg, dat);
 		}
 		else if (result==GAIR_NOAVATAR) {
