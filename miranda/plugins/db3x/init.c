@@ -143,7 +143,7 @@ static int UnloadDatabase(int wasLoaded)
 
 static int getFriendlyName( char * buf, size_t cch, int shortName )
 {
-	_snprintf(buf,cch, shortName ? "3.xx profile" : "Database support for 0.3.x.x profiles");
+	strncpy(buf,shortName ? "3.xx profile" : "Database support for 0.3.x.x profiles",cch);
 	return 0;
 }
 
