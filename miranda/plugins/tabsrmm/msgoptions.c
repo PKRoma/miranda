@@ -294,8 +294,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_LONGDATES, dwFlags & MWF_LOG_LONGDATES);
             CheckDlgButton(hwndDlg, IDC_RELATIVEDATES, dwFlags & MWF_LOG_USERELATIVEDATES);
             
-            CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 0));
-            CheckDlgButton(hwndDlg, IDC_MICROLF, DBGetContactSettingByte(NULL, SRMSGMOD_T, "microlf", 1));
+            CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1));
             CheckDlgButton(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1));
             EnableWindow(GetDlgItem(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP), IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE));
             
@@ -393,7 +392,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "logstatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LOGSTATUS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_INOUTICONS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EMPTYLINEFIX));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "microlf", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MICROLF));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP));
                             
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);

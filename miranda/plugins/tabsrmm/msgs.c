@@ -52,7 +52,11 @@ int hMsgMenuItemCount = 0;
 HWND g_hwndHotkeyHandler;
 HICON g_iconIn, g_iconOut, g_iconErr;
 HBITMAP g_hbmUnknown = 0;
-int g_isMetaContactsAvail = 0;
+
+// external plugins
+
+int g_MetaContactsAvail = 0, g_SmileyAddAvail = 0;
+
 
 extern HINSTANCE g_hInst;
 HMODULE hDLL;
@@ -104,7 +108,6 @@ HMENU BuildContainerMenu();
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern HICON g_buttonBarIcons[];
-int g_SmileyAddAvail = 0;
 
 HMODULE g_hIconDLL = 0;
 // nls stuff...
@@ -498,6 +501,11 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
         return 0;
     
+    // metacontacts support
+
+    if(!lstrcmpA(cws->szModule, "MetaContacts") && !lstrcmpA(cws->szSetting, "Nick"))       // filter out this setting to avoid infinite loops while trying to obtain the most online contact
+        return 0;
+    
     hwndTarget = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
     if(hwndTarget)
         SendMessage(hwndTarget, DM_UPDATETITLE, 0, 0);
@@ -641,9 +649,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
     if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
         g_SmileyAddAvail = 1;
-    else
-        g_SmileyAddAvail = 0;
 
+    if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
+        g_MetaContactsAvail = 1;
+    
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
 
@@ -1301,9 +1310,6 @@ void InitAPI()
      */
 
     g_hEvent_MsgWin = CreateHookableEvent(ME_MSG_WINDOWEVENT);
-
-    if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
-        g_isMetaContactsAvail = TRUE;
 }
 
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType) {

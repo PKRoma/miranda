@@ -152,6 +152,7 @@ struct MessageWindowData {
     int iRealAvatarHeight;
     int iButtonBarNeeds;
     DWORD dwLastActivity;
+    HICON hProtoIcon;
 };
 
 typedef struct _recentinfo {

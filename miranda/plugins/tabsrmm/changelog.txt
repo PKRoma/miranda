@@ -32,6 +32,33 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
+Version 0.9.9.0 - 2005/01/08 - BETA
+
+        This is the first official "BETA" version of tabSRMM. It will be released on
+        Mirandas plugin page as well as my sourceforge project site. There are a few
+        known bugs left, but otherwise the plugin works fine and has lots of new options
+        and features since the last "official" release which was 0.0.8.
+
+        * removed debugging option to disable micro linefeeds
+        
+        * minor layout changes (avatar field alignment)
+        
+        * removed obsolete code for layouting the multisend splitter in the old way.
+
+        * reviewed all dialog boxes and maxed the horizontal space for most
+          configuration options (checkboxes mainly) to make translation into other
+          languages easier.
+          
+        * included new version of NewEventNotify which should help against double
+          popups when using the metacontacts plugin.
+          
+        * the option "Remove trailing empty lines" is now on by default.
+        
+        + added basic support for the metacontacts plugin. There is a new status
+          bar indicator showing the protocol in use. It is there for all contacts,
+          but for metacontacts it opens a context menu if you click the protocol
+          icon with your right mouse button.
+          
 Version 0.0.9.5 - 2005/01/04
 
         ! fixed close tab on double click

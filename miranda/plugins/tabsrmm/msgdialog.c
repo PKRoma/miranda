@@ -115,7 +115,7 @@ void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 #endif
 
 HICON g_buttonBarIcons[NR_BUTTONBARICONS];
-extern int g_SmileyAddAvail;
+extern int g_SmileyAddAvail, g_MetaContactsAvail;
 
 extern int g_IconEmpty, g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconError, g_IconSend;
 extern HICON g_iconErr;
@@ -144,10 +144,13 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 static void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd);
 static void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat);
+static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
+static char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat);
+static void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
+int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
+
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId);
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
-static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
-void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigned int subType);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -850,8 +853,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
             if(urc->wId != IDC_PROTOCOL)
                 OffsetRect(&urc->rcItem, 9, 0);
-            if (dat->multiple && !iClistOffset && (urc->wId != IDC_PROTOCOL))
-                OffsetRect(&urc->rcItem, -(dat->multiSplitterX + 3), 0);        // fix multisplitter clipping /w some visual styles
+            //if (dat->multiple && !iClistOffset && (urc->wId != IDC_PROTOCOL))
+            //    OffsetRect(&urc->rcItem, -(dat->multiSplitterX + 3), 0);        // fix multisplitter clipping /w some visual styles
 
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
@@ -885,8 +888,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
             urc->rcItem.right +=1;
-            if (dat->multiple && !iClistOffset)
-                urc->rcItem.right -= (dat->multiSplitterX + 3);
+            //if (dat->multiple && !iClistOffset)
+            //    urc->rcItem.right -= (dat->multiSplitterX + 3);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
@@ -902,28 +905,28 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
             urc->rcItem.left=urc->rcItem.right-(dat->pic.cx +2);
 
-            if (dat->multiple && !iClistOffset ) {
-                urc->rcItem.left-=(dat->multiSplitterX +2);
-                urc->rcItem.right-=(dat->multiSplitterX +2);
-            }
+            //if (dat->multiple && !iClistOffset ) {
+            //    urc->rcItem.left-=(dat->multiSplitterX +2);
+            //    urc->rcItem.right-=(dat->multiSplitterX +2);
+            //}
             return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
         case IDC_MESSAGE:
             {
                 urc->rcItem.right = urc->dlgNewSize.cx;
                 if (dat->showPic)
                     urc->rcItem.right -= dat->pic.cx+4;
-                if (dat->multiple && !iClistOffset) {
-                    urc->rcItem.right -= (dat->multiSplitterX + 3);
-                }
+                // if (dat->multiple && !iClistOffset) {
+                //     urc->rcItem.right -= (dat->multiSplitterX + 3);
+                // }
                 urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             }
         case IDOK:
             OffsetRect(&urc->rcItem, 9, 0);
-            if (dat->multiple && !iClistOffset) {
-                urc->rcItem.left -= (dat->multiSplitterX +3);      // fix multisplitter clipping /w some visual styles...
-                urc->rcItem.right -= (dat->multiSplitterX +3);     // dito
-            }
+            // if (dat->multiple && !iClistOffset) {
+            //     urc->rcItem.left -= (dat->multiSplitterX +3);      // fix multisplitter clipping /w some visual styles...
+            //     urc->rcItem.right -= (dat->multiSplitterX +3);     // dito
+            // }
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
 
@@ -940,7 +943,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_MULTISPLITTER:
             urc->rcItem.left -= dat->multiSplitterX;
             urc->rcItem.right -= dat->multiSplitterX;
-            if(iClistOffset) {
+            if(1) {         // was iClistOffset (bottom edge of the multisplitter)
                 urc->rcItem.bottom = iClistOffset;
                 return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
             }
@@ -948,7 +951,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_CLIST:
             urc->rcItem.left = urc->dlgNewSize.cx - dat->multiSplitterX;
             urc->rcItem.right = urc->dlgNewSize.cx - 3;
-            if(iClistOffset) {
+            if(1) {         // was iClistOffset (bottom edge of the multisplitter)
                 urc->rcItem.bottom = iClistOffset + 3;
                 return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
             }
@@ -1079,9 +1082,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 dat->hContact = newData->hContact;
                 dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
-                
-                if(dat->hContact && dat->szProto != NULL)
+                if(dat->hContact && dat->szProto != NULL) {
                     dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+                    if(!IsMetaContact(hwndDlg, dat))
+                        dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(dat->szProto, ID_STATUS_ONLINE);
+                    else {
+                        dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
+                    }
+                }
                 else
                     dat->wStatus = ID_STATUS_OFFLINE;
                 
@@ -1571,8 +1579,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0) ? MWF_SHOW_INOUTICONS : 0;
-            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 0) ? MWF_SHOW_EMPTYLINEFIX : 0;
-            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "microlf", 1) ? MWF_SHOW_MICROLF : 0;
+            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1) ? MWF_SHOW_EMPTYLINEFIX : 0;
+            dat->dwEventIsShown |= MWF_SHOW_MICROLF;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             
             dat->iButtonBarNeeds = (dat->showUIElements & MWF_UI_SHOWSEND) ? 40 : 0;
@@ -1771,6 +1779,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             }
                         }
                     }
+
                     dat->iOldHash = iHash;
                     dat->wOldStatus = dat->wStatus;
 #ifdef _UNICODE
@@ -1794,6 +1803,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->pContainer->hwndActive == hwndDlg)
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 }
+                // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
+
+                if(IsMetaContact(hwndDlg, dat))
+                    PostMessage(hwndDlg, DM_UPDATEMETACONTACTINFO, 0, 0);
+
                 break;
             }
         case DM_ADDDIVIDER:
@@ -3787,6 +3801,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             break;
         }
+
+        // metacontact support
+        
+        case DM_UPDATEMETACONTACTINFO:      // update the icon in the statusbar for the "most online" protocol
+        {
+            dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
+            if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0)
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)dat->hProtoIcon);
+
+            break;
+        }
+
 // BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:
 		{	
@@ -4537,6 +4563,8 @@ static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
         UpdateReadChars(hwndDlg, dat);
         UpdateUnsentDisplay(hwndDlg, dat);
+        if(dat->hProtoIcon)
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)dat->hProtoIcon);
     }
 }
 static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)
@@ -4822,7 +4850,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     return 0;
 }
 
-void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo)
+static void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo)
 {
     RECT rc;
     double aspect = 0, newWidth = 0, picAspect = 0;
@@ -4853,5 +4881,28 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         newWidth = (double)(rc.right - rc.left) * 0.8;
     dat->pic.cy = dat->iRealAvatarHeight + 2*1;
     dat->pic.cx = (int)newWidth + 2*1;
+}
+
+int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat) 
+{
+    if(dat->hContact == 0 || dat->szProto == NULL)
+       return 0;
+    
+    return (g_MetaContactsAvail && !strcmp(dat->szProto, "MetaContacts"));
+}
+static char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    HANDLE hSubContact = 0;
+    
+    if(IsMetaContact(hwndDlg, dat)) {
+        hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
+        if(hSubContact)
+            return (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hSubContact, 0);
+        else
+            return dat->szProto;
+    }
+    else {
+        return NULL;
+    }
 }
 

@@ -363,13 +363,14 @@
 #define IDM_PASTEFORMATTED              40168
 #define ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS 40169
 #define ID_LOGMENU_MESSAGELOGSETTINGSAREGLOBAL 40170
+#define ID_USER                         40173
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         40173
+#define _APS_NEXT_COMMAND_VALUE         40174
 #define _APS_NEXT_CONTROL_VALUE         1701
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
