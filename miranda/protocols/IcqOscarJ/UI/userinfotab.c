@@ -149,8 +149,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               }
               else
               {
-                SetValue(hwndDlg, IDC_IP, hContact, (char*)DBVT_DWORD, (char*)dwLocalInternalIP, SVS_IP);
-                SetValue(hwndDlg, IDC_REALIP, hContact, (char*)DBVT_DWORD, (char*)dwLocalExternalIP, SVS_IP);
+                SetValue(hwndDlg, IDC_IP, hContact, (char*)DBVT_DWORD, (char*)dwLocalExternalIP, SVS_IP);
+                SetValue(hwndDlg, IDC_REALIP, hContact, (char*)DBVT_DWORD, (char*)dwLocalInternalIP, SVS_IP);
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)8, SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda ICQ", SVS_ZEROISUNSPEC);
