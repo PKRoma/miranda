@@ -217,14 +217,41 @@ void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrd
 	tHdr->mAckSessionID = hdrdata->mID;
 	tHdr->mAckUniqueID = hdrdata->mAckSessionID;
 	*( long* )p = 0; p += sizeof( long );
-	info->sendRawMessage( 'D', buf, int( p - buf ));
+
+	if ( info->mType == SERVER_P2P_DIRECT ) {
+		DWORD pktLen = sizeof P2P_Header;
+		info->send(( char* )&pktLen, sizeof( DWORD ));
+		info->send(( char* )tHdr, pktLen );
+	}
+	else info->sendRawMessage( 'D', buf, int( p - buf ));
 }
 
-static int sttDigits( long iNumber )
+/////////////////////////////////////////////////////////////////////////////////////////
+// p2p_sendEndSession - sends MSN P2P file transfer end packet
+
+static void __stdcall p2p_sendEndSession( ThreadData* info, filetransfer* ft )
 {
-	char tBuffer[ 20 ];
-	ltoa( iNumber, tBuffer, 10 );
-	return strlen( tBuffer );
+	if ( ft == NULL || info == NULL ) {
+		MSN_DebugLog( sttVoidSession );
+		return;
+	}
+
+	char* buf = ( char* )alloca( 1000 + strlen( ft->p2p_dest ));
+	char* p = buf + sprintf( buf, sttP2Pheader, ft->p2p_dest );
+
+	P2P_Header* tHdr = ( P2P_Header* )p; p += sizeof( P2P_Header );
+	memset( tHdr, 0, sizeof P2P_Header );
+	tHdr->mSessionID = ft->p2p_sessionid;
+	tHdr->mID = ft->p2p_msgid++;
+	tHdr->mFlags = 0x40;
+	tHdr->mAckSessionID = 0;
+
+	if ( info->mType == SERVER_P2P_DIRECT ) {
+		DWORD pktLen = sizeof P2P_Header;
+		info->send(( char* )&pktLen, sizeof( DWORD ));
+		info->send(( char* )tHdr, pktLen );
+	}
+	else info->sendRawMessage( 'D', buf, int( p - buf ));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -463,7 +490,6 @@ LBL_Error:
 void p2p_receiveFile( ThreadData* info )
 {
 	BYTE* p;
-	P2P_Header reply;
 	HReadBuffer buf( info, 0 );
 	filetransfer* ft;
 
@@ -517,16 +543,8 @@ LBL_Exit:	//filetransfer* anotherFT = p2p_getAnotherContactSession( ft );
 			if ( ft->p2p_appID != 1 )
 				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 
-			if ( ft->std.currentFileProgress >= H->mTotalSize ) {
-				memset( &reply, 0, sizeof P2P_Header );
-				reply.mSessionID = H->mSessionID;
-				reply.mID = ft->p2p_msgid++;
-				reply.mFlags = 2;
-				reply.mTotalSize = reply.mAckDataSize = H->mTotalSize;
-				reply.mAckSessionID = H->mID;
-				reply.mAckUniqueID = ft->p2p_acksessid;
-				sttSendPacket( info, reply );
-			}
+			if ( ft->std.currentFileProgress >= H->mTotalSize )
+				p2p_sendAck( ft, info, H );
 			continue;
 		}
 
@@ -547,14 +565,7 @@ LBL_Exit:	//filetransfer* anotherFT = p2p_getAnotherContactSession( ft );
 				continue;
 
 			ft->complete();
-
-			memset( &reply, 0, sizeof P2P_Header );
-			reply.mID = ft->p2p_msgid++;
-			reply.mFlags = 2;
-			reply.mTotalSize = reply.mAckDataSize = H->mPacketLen;
-			reply.mAckSessionID = H->mID;
-			reply.mAckUniqueID = ft->p2p_acksessid;
-			sttSendPacket( info, reply );
+			p2p_sendAck( ft, info, H );
 
 			if ( ft->std.totalProgress < ft->std.totalBytes )
 				goto LBL_Error;
@@ -617,7 +628,6 @@ void p2p_sendFileDirectly( ThreadData* info )
 {
 	filetransfer* ft = info->mP2pSession;
 	BYTE* p;
-	P2P_Header reply;
 
 	ThreadData* newThread = new ThreadData;
 	newThread->mType = SERVER_FILETRANS;
@@ -641,13 +651,7 @@ LBL_Error:
 		sttLogHeader( H );
 
 		if ( H->mFlags == 0x40 || ( H->mFlags == 0 && sttIsCancelCommand( p ))) {
-			memset( &reply, 0, sizeof P2P_Header );
-			reply.mID = ft->p2p_msgid++;
-			reply.mFlags = 2;
-			reply.mTotalSize = reply.mAckDataSize = H->mPacketLen;
-			reply.mAckSessionID = H->mID;
-			reply.mAckUniqueID = ft->p2p_acksessid;
-			sttSendPacket( info, reply );
+			p2p_sendAck( ft, info, H );
 
 			if ( ft->std.totalProgress < ft->std.totalBytes )
 				goto LBL_Error;
