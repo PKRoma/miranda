@@ -39,8 +39,12 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 {
 	while( TRUE )
 	{
-		if ( SleepEx( 60000, TRUE ) == WAIT_IO_COMPLETION ) 
-			break;
+		for ( int i=0; i < 60; i++ ) {
+			if ( Miranda_Terminated() )
+				return;
+
+			Sleep( 1000 );
+		}
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
