@@ -58,6 +58,7 @@ Bugfixes:
  - ICQ: Fixed crash on receiving long message through P2P
  - MSN: Connection/login fixes
  - IRC: Many bug fixes
+ - Yahoo: Much cleaner/better/stable code
 
 Enhancements:
  - Database and contact list control moved to plugins
@@ -85,6 +86,13 @@ Enhancements:
  - IRC: Support for CTCP and DCC filetransfers and chats
  - IRC: New graphical user interface using Chat plugin
  - Jabber: Unicode support
+ - Yahoo: Better Unicode support
+ - Yahoo: New Buddy Search
+ - Yahoo: File Transfer support
+ - Yahoo: Stealth support (Yahoo v6 visibility list)
+ - Yahoo: Idle support
+ - Yahoo: Avatar support (retrieval only)
+
 
 * New in 0.3.3
 
