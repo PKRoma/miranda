@@ -2212,7 +2212,7 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 		break;
 
 	case MTN_BEGUN:
-		CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)10);
+		CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)60);
 		Netlib_Logf(ghServerNetlibUser, "%u is typing a message (ch %u).", dwUin, wChannel);
 		break;
 
@@ -2233,7 +2233,6 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 
 void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 {
-
 	icq_packet p;
 	unsigned char pszUin[10];
 	BYTE byUinlen;
@@ -2257,5 +2256,4 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 	packWord(&p, wMTNCode);           // Notification type
 
 	sendServPacket(&p);
-
 }
