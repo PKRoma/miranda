@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Build is a cvs build
 //
 // If defined, the build will add cvs info to the plugin info
-#define AIM_CVSBUILD
+//#define AIM_CVSBUILD
 
 // Default Values
 //   
