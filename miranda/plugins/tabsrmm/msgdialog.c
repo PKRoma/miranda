@@ -1997,9 +1997,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     sendJobs[iIndex].iStatus = SQ_ERROR;
                     if(!(dat->dwFlags & MWF_ERRORSTATE))
                         HandleQueueError(hwndDlg, dat, iIndex);
+                    break;
                 }
-                else {
-                    
+                else if(wParam >= TIMERID_MULTISEND_BASE) {
+                    int iJobIndex = (wParam - TIMERID_MULTISEND_BASE) / SENDJOBS_MAX_SENDS;
+                    int iSendIndex = (wParam - TIMERID_MULTISEND_BASE) % SENDJOBS_MAX_SENDS;
+                    KillTimer(hwndDlg, wParam);
+                    _DebugPopup(dat->hContact, "MULTISEND timeout: %d, %d", iJobIndex, iSendIndex);
+                    break;
                 }
             } else if (wParam == TIMERID_FLASHWND) {
                 if (dat->iTabID == -1) {

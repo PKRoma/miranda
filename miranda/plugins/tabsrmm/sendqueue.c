@@ -88,7 +88,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     char szErrorMsg[512];
     
     dat->iCurrentQueueError = iEntry;
-    _snprintf(szErrorMsg, 500, "%s"), sendJobs[iEntry].szErrorMsg);
+    _snprintf(szErrorMsg, 500, "%s", sendJobs[iEntry].szErrorMsg);
     LogErrorMessage(hwndDlg, dat, iEntry, (char *)szErrorMsg);
     RecallFailedMessage(hwndDlg, dat, iEntry);
     ShowErrorControls(hwndDlg, dat, TRUE);
@@ -155,8 +155,8 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     */
     if (dat->multiple) {            // implement multiple later...
         HANDLE hContact, hItem;
-        ClearSendJob(iEntry);
-        _DebugMessage(hwndDlg, dat, "Multisend is temporarily disabled because of drastic changes to the send queue system");
+        //ClearSendJob(iEntry);
+        //_DebugMessage(hwndDlg, dat, "Multisend is temporarily disabled because of drastic changes to the send queue system");
         return 0;
         sendJobs[iEntry].sendCount = 0;
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
