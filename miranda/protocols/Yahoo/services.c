@@ -77,6 +77,10 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
         case PFLAG_UNIQUEIDSETTING:
             ret = (int) YAHOO_LOGINID;
             break;
+        case PFLAG_MAXLENOFMESSAGE:
+            ret = 800; /* STUPID YAHOO!!! */
+            break;
+	
     }
     return ret;
 		
