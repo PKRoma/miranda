@@ -124,6 +124,56 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
 	return rc;
 }
 
+// returns 1 if something that looks like a profile is there
+static int getProfileCmdLineArgs(char * szProfile, size_t cch)
+{
+	char *szCmdLine=GetCommandLine();
+	char *szEndOfParam;
+	char szThisParam[1024];
+	int firstParam=1;
+
+	while(szCmdLine[0]) {
+		if(szCmdLine[0]=='"') {
+			szEndOfParam=strchr(szCmdLine+1,'"');
+			if(szEndOfParam==NULL) break;
+			lstrcpyn(szThisParam,szCmdLine+1,min(sizeof(szThisParam),szEndOfParam-szCmdLine));
+			szCmdLine=szEndOfParam+1;
+		}
+		else {
+			szEndOfParam=szCmdLine+strcspn(szCmdLine," \t");
+			lstrcpyn(szThisParam,szCmdLine,min(sizeof(szThisParam),szEndOfParam-szCmdLine+1));
+			szCmdLine=szEndOfParam;
+		}
+		while(*szCmdLine && *szCmdLine<=' ') szCmdLine++;
+		if(firstParam) {firstParam=0; continue;}   //first param is executable name
+		if(szThisParam[0]=='/' || szThisParam[0]=='-') continue;  //no switches supported
+		ExpandEnvironmentStrings(szThisParam,szProfile,cch);
+		return 1;
+	}
+	return 0;
+}
+
+// returns 1 if a valid filename (incl. dat) is found, includes fully qualified path
+static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
+{
+	char buf[MAX_PATH];
+	HANDLE hFile;
+	int rc;
+	if ( getProfileCmdLineArgs(buf,sizeof(buf)) ) {
+		// have something that looks like a .dat, with or without .dat in the filename
+		if ( !isValidProfileName(buf) ) _snprintf(buf,sizeof(buf)-5,"%s.dat",buf);
+		if ( !isValidProfileName(buf) ) return 0;
+		// this filename might not exist at all!
+		_snprintf(szProfile,cch,"%s\\%s",profiledir,buf);
+		// if it can't be opened, we didn't see it.
+		hFile=CreateFile(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);	
+		rc = hFile != INVALID_HANDLE_VALUE;
+		CloseHandle(hFile);
+		return rc;
+	}
+	return 0;
+}
+
 // returns 1 if the profile manager should be shown
 static int showProfileManager(void)
 {
@@ -143,7 +193,7 @@ static int getProfile(char * szProfile, size_t cch)
 	PROFILEMANAGERDATA pd;
 	ZeroMemory(&pd,sizeof(pd));
 	getProfilePath(profiledir,sizeof(profiledir));
-	
+	if ( getProfileCmdLine(szProfile, cch, profiledir) ) return 1;
 	if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
 	else {
 		pd.szProfile=szProfile;
@@ -245,8 +295,13 @@ int LoadDatabaseModule(void)
 		dbe.lParam=(LPARAM)szProfile;
 		// find a driver to support the given profile
 		if ( CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe) != 0 ) {
+			HANDLE hFile;
 			// no enumeration took place
-			MessageBox(0,Translate("Could not load the profile, no driver found to understand it."),szProfile,MB_ICONERROR);
+			hFile=CreateFile(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);			
+			MessageBox(0,Translate(hFile == INVALID_HANDLE_VALUE ? "Sorry, It appears that the selected profile is already in use, please select another." 
+				: "Miranda was unable to find any way of loading selected profile, make sure you have dbx_3x.dll!"), 
+				Translate("Problem with that profile"), MB_ICONINFORMATION);
+			CloseHandle(hFile);
 			return 1;
 		}
 	} else {
