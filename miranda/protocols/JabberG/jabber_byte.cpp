@@ -278,7 +278,6 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 	char* from, *sid, *szHost, *szPort, *szId, *str;
 	int i;
 	WORD port;
-	NETLIBOPENCONNECTION nloc;
 	HANDLE hConn;
 	char data[3];
 	char* buffer;
@@ -317,10 +316,13 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 				jbt->streamhostJID = _strdup( str );
 
 				JabberLog( "bytestream_recv connecting to %s:%d", szHost, port );
-				nloc.cbSize = sizeof( NETLIBOPENCONNECTION );
+				NETLIBOPENCONNECTION nloc = { 0 };
+				if ( jabberOldCoreVersion )
+					nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+				else
+					nloc.cbSize = sizeof( nloc );
 				nloc.szHost = szHost;
 				nloc.wPort = port;
-				nloc.flags = 0;
 				hConn = ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
 				if ( hConn == NULL ) {
 					JabberLog( "bytestream_recv_connection connection failed ( %d ), try next streamhost", WSAGetLastError());

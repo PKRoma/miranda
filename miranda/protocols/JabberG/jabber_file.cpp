@@ -60,7 +60,6 @@ void JabberFileFreeFt( JABBER_FILE_TRANSFER *ft )
 
 void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 {
-	NETLIBOPENCONNECTION nloc;
 	char* buffer;
 	int datalen;
 	JABBER_SOCKET s;
@@ -76,10 +75,14 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 		return;
 	}
 
+	NETLIBOPENCONNECTION nloc = { 0 };
+	if ( jabberOldCoreVersion )
+		nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+	else
+		nloc.cbSize = sizeof( nloc );
 	nloc.cbSize = sizeof( NETLIBOPENCONNECTION );
 	nloc.szHost = ft->httpHostName;
 	nloc.wPort = ft->httpPort;
-	nloc.flags = 0;
 	s = ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
 	if ( s == NULL ) {
 		JabberLog( "Connection failed ( %d ), thread ended", WSAGetLastError());

@@ -31,20 +31,6 @@ extern UINT jabberCodePage;
 static CRITICAL_SECTION serialMutex;
 static unsigned int serial;
 
-static struct
-{
-	int   charFrom;
-	int   replLen;
-	char* replStr;
-}
-	sttUrlChars[] = {
-		{ '&',  5, "&amp;" },
-		{ '\'', 6, "&apos;" },
-		{ '>',  4, "&gt;" },
-		{ '<',  4, "&lt;" },
-		{ '"',  6, "&quot;" }
-	};
-
 void __stdcall JabberSerialInit( void )
 {
 	InitializeCriticalSection( &serialMutex );

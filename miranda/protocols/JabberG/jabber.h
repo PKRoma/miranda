@@ -316,6 +316,7 @@ extern char* streamId;
 extern DWORD jabberLocalIP;
 extern BOOL jabberConnected;
 extern BOOL jabberOnline;
+extern BOOL jabberOldCoreVersion;
 extern int jabberStatus;
 extern int jabberDesiredStatus;
 //extern char* jabberModeMsg;
