@@ -54,7 +54,6 @@ uses
   m_options in '..\headerfiles\m_options.pas',
   timeoutfrm in 'timeoutfrm.pas' {TimeoutForm},
   m_email in '..\headerfiles\m_email.pas',
-  optionsd in 'optionsd.pas',
   m_langpack in '..\headerfiles\m_langpack.pas',
   langpacktools in '..\units\langpacktools.pas',
   m_crypt in '..\headerfiles\m_crypt.pas';

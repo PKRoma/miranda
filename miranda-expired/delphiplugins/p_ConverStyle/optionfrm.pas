@@ -15,7 +15,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, globals, clisttools, Menus, TB97Ctls,
-  ComCtrls,misc,optionsd,commctrl;
+  ComCtrls,misc,commctrl;
 
 type
   TOptionType = (otAll, otMisc, otSend, otMemo, otRich, otGrid);
