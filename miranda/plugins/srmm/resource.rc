@@ -101,8 +101,7 @@ BEGIN
     PUSHBUTTON      "Close",IDCANCEL,129,0,54,15,NOT WS_VISIBLE
     CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,2,5,
                     12,12
-    //LTEXT           "",IDC_NAME,16,5,95,9,SS_NOPREFIX | SS_CENTERIMAGE
-    CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,16,2,95,14,
+    CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,15,2,95,14,
                     0x18000000L
     CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,92,2,16,14,
                     0x18000000L

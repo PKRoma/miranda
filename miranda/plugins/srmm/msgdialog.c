@@ -784,7 +784,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			
 			buf[0] = 0;
 			if(dat->hContact) {
-				char *contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 				ZeroMemory(&ci, sizeof(ci));
 				ci.cbSize = sizeof(ci);
 				ci.hContact = dat->hContact;
@@ -880,10 +879,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dat->hContact) {
 				if (dat->szProto) {
 					CONTACTINFO ci;
-					int hasName = 0;
 					char buf[128];
 					int statusIcon = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
-
+					
+					buf[0] = 0;
 					dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
 					contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 					ZeroMemory(&ci, sizeof(ci));
@@ -894,17 +893,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 						switch (ci.type) {
 						case CNFT_ASCIIZ:
-							hasName = 1;
 							_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 							miranda_sys_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
-							hasName = 1;
 							_snprintf(buf, sizeof(buf), "%u", ci.dVal);
 							break;
 						}
 					}
-					SetDlgItemTextA(hwndDlg, IDC_NAME, hasName ? buf : contactName);
+					SetDlgItemTextA(hwndDlg, IDC_NAME, buf[0] ? buf : contactName);
 					szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE), 0);
 					if (statusIcon)
 						_snprintf(newtitle, sizeof(newtitle), "%s - %s", contactName, Translate(pszNewTitleEnd));
