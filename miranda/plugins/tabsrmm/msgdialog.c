@@ -724,7 +724,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 int i;
 
                 struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
-                //TranslateDialogDefault(hwndDlg);
                 dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
                 ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
                 if (newData->iTabID >= 0)
@@ -1205,21 +1204,26 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 if (dat->pContainer->hwndActive != hwndDlg)
                     break;
-                if (dat->lastMessage) {
+                if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
                     DBTIMETOSTRING dbtts;
                     char date[64], time[64], fmt[128];
 
-                    dbtts.szFormat = "d";
-                    dbtts.cbDest = sizeof(date);
-                    dbtts.szDest = date;
-                    CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-                    if(lstrlenA(date) > 6)
-                        date[lstrlenA(date) - 5] = 0;
-                    dbtts.szFormat = "t";
-                    dbtts.cbDest = sizeof(time);
-                    dbtts.szDest = time;
-                    CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-                    _snprintf(fmt, sizeof(fmt), Translate("%s, last msg: %s, %s"), dat->uin, date, time);
+                    if(!(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)) {
+                        dbtts.szFormat = "d";
+                        dbtts.cbDest = sizeof(date);
+                        dbtts.szDest = date;
+                        CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
+                        if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR && lstrlenA(date) > 6)
+                            date[lstrlenA(date) - 5] = 0;
+                        dbtts.szFormat = "t";
+                        dbtts.cbDest = sizeof(time);
+                        dbtts.szDest = time;
+                        CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
+                    }
+                    if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
+                        _snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
+                    else
+                        _snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
                 } else {
@@ -1359,6 +1363,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 if (dat->hContact) {
                     int iHasName;
+                    char fulluin[128];
                     if (dat->szProto) {
 
                         if(dat->bIsMeta)                    // update uin for metacontacts (may change at any time)
@@ -1395,7 +1400,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         }
-                        SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)dat->uin : (WPARAM)"", 0);
+                        _snprintf(fulluin, sizeof(fulluin), Translate("UIN: %s (SHIFT click copies it to the clipboard)"), iHasName ? dat->uin : Translate("No UIN"));
+                        SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)fulluin : (WPARAM)"", 0);
                         
                     }
                 } else
@@ -1465,8 +1471,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
-                if(dat->bIsMeta)
+                if(dat->bIsMeta) {
                     PostMessage(hwndDlg, DM_UPDATEMETACONTACTINFO, 0, 0);
+                    if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
+                        PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+                }
 
                 break;
             }
@@ -2405,19 +2414,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
                     
 #if defined( _UNICODE )
-                    /*  old code, not used anymore because of rtf streaming and formatting code translation
-                    gtx.cb = bufSize * sizeof(TCHAR);
-                    gtx.codepage = 1200;
-                    gtx.flags = GT_USECRLF;
-                    gtx.lpDefaultChar = 0;
-                    gtx.lpUsedDefChar = 0;
-                    
-                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
-                    */
                     streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
                     if(streamOut != NULL) {
                         decoded = Utf8Decode(streamOut);
-                        converted = (TCHAR *)malloc((lstrlenW(decoded) + 2)* sizeof(TCHAR));
+                        converted = (TCHAR *)malloc((lstrlenW(decoded) + 2) * sizeof(TCHAR));
                         if(converted != NULL) {
                             _tcscpy(converted, decoded);
                             if(myGlobals.m_SendFormat) {
@@ -2427,8 +2427,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             bufSize = WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, 0, 0, 0);
                             dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
                             WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, bufSize, 0, 0);
-                            CopyMemory(&dat->sendBuffer[bufSize], converted, (lstrlenW(converted) + 1)* sizeof(WCHAR));
-                            //_DebugPopup(dat->hContact, "required mbcs len: %d (wstring: %d)", bufSize, lstrlenW(converted));
+                            CopyMemory(&dat->sendBuffer[bufSize], converted, (lstrlenW(converted) + 1) * sizeof(WCHAR));
                             free(converted);
                         }
                         free(streamOut);
@@ -2436,7 +2435,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #else                    
                     streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
                     if(streamOut != NULL) {
-                        MessageBoxA(0, streamOut, "too", MB_OK);
+                        //MessageBoxA(0, streamOut, "too", MB_OK);
                         //decoded = Utf8Decode(streamOut);
                         converted = (TCHAR *)malloc((lstrlenA(streamOut) + 2)* sizeof(TCHAR));
                         if(converted != NULL) {
@@ -2445,7 +2444,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 DoRtfToTags(converted, dat);
                                 DoTrimMessage(streamOut);
                             }
-                            MessageBoxA(0, converted, "conv", MB_OK);
+                            //MessageBoxA(0, converted, "conv", MB_OK);
                             bufSize = lstrlenA(converted) + 1;
                             dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * sizeof(char));
                             CopyMemory(dat->sendBuffer, converted, bufSize);

@@ -505,14 +505,14 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 
 #endif // OLD_FORMATTING
 
-static char *formatting_strings_begin[] = { "%b1", "%i1", "%u1" };
-static char *formatting_strings_end[] = { "%b0", "%i0", "%u0" };
+static char *formatting_strings_begin[] = { "%b1 ", "%i1 ", "%u1 " };
+static char *formatting_strings_end[] = { "%b0 ", "%i0 ", "%u0 " };
 
 /*
  * this translates formatting tags into rtf sequences...
  */
 
-extern "C" const char *FormatRaw(const char *msg)
+extern "C" const char *FormatRaw(const char *msg, int bWordsOnly)
 {
     static std::string message(msg);
     unsigned beginmark = 0, endmark = 0, index;
@@ -521,10 +521,25 @@ extern "C" const char *FormatRaw(const char *msg)
     
     while((beginmark = message.find_first_of("*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
-        if((endmark = message.find_first_of(endmarker, beginmark + 1)) == message.npos)
+        if(bWordsOnly) {
+            if(beginmark > 0 && !isspace(message[beginmark - 1]) && !ispunct(message[beginmark - 1])) {
+                beginmark++;
+                continue;
+            }
+            // search a corresponding endmarker which fulfills the criteria
+            unsigned tempmark = beginmark + 1;
+            while((endmark = message.find(endmarker, tempmark)) != message.npos) {
+                if(ispunct(message[endmark + 1]) || isspace(message[endmark + 1]) || message[endmark + 1] == 0 || strchr("*/_", message[endmark + 1]) != NULL)
+                    goto ok;
+                tempmark = endmark + 1;
+            }
             break;
-        //wsprintf(debug, L"found: pair %d, %d", beginmark, endmark);
-        //MessageBoxW(0, debug, L"foo", MB_OK);
+        }
+        else {
+            if((endmark = message.find(endmarker, beginmark + 1)) == message.npos)
+                break;
+        }
+ok:        
         index = 0;
         switch(endmarker) {
             case '*':
@@ -537,12 +552,11 @@ extern "C" const char *FormatRaw(const char *msg)
                 index = 2;
                 break;
         }
-        message.insert(endmark, "%%");
-        message.replace(endmark, 3, formatting_strings_end[index]);
-        message.insert(beginmark, "%%");
-        message.replace(beginmark, 3, formatting_strings_begin[index]);
+        message.insert(endmark, "%%%");
+        message.replace(endmark, 4, formatting_strings_end[index]);
+        message.insert(beginmark, "%%%");
+        message.replace(beginmark, 4, formatting_strings_begin[index]);
     }
-    //MessageBoxW(0, message.c_str(), L"foo", MB_OK);
     return(message.c_str());
 }
 

@@ -69,7 +69,7 @@ extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 #if defined(_UNICODE)
     extern WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly);
 #else
-    extern char *FormatRaw(const char *msg);
+    extern char *FormatRaw(const char *msg, int bWordsOnly);
 #endif
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
@@ -310,7 +310,7 @@ static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEn
         if(iFormatting) {
             if((*buffer)[i] == '%' && (*buffer)[i + 1] != 0) {
                 char code = (*buffer)[i + 2];
-                if(code == '0' || code == '1') {
+                if((code == '0' || code == '1') && (*buffer)[i + 3] == ' '){
                     int begin = (code == '1');
 
                     if (*cbBufferEnd + 5 > *cbBufferAlloced) {
@@ -319,19 +319,15 @@ static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEn
                     }
                     switch((*buffer)[i + 1]) {
                         case 'b':
-                            MoveMemory(*buffer + i + 1, *buffer + i + 1, *cbBufferEnd - i);
                             CopyMemory(*buffer + i, begin ? "\\b1 " : "\\b0 ", 4);
-                            *cbBufferEnd += 1;
                             continue;
                         case 'i':
-                            MoveMemory(*buffer + i + 1, *buffer + i + 1, *cbBufferEnd - i);
                             CopyMemory(*buffer + i, begin ? "\\i1 " : "\\i0 ", 4);
-                            *cbBufferEnd += 1;
                             continue;
                         case 'u':
                             MoveMemory(*buffer + i + 2, *buffer + i + 1, *cbBufferEnd - i);
                             CopyMemory(*buffer + i, begin ? "\\ul1 " : "\\ul0 ", 5);
-                            *cbBufferEnd += 2;
+                            *cbBufferEnd += 1;
                             continue;
                     }
                 }
@@ -659,7 +655,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             showColon = 0;
             if(dbei.eventType == EVENTTYPE_ERRMSG) {
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_ERROR]);
-                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "\r\n%s", dbei.szModule);
+                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", dbei.szModule);
                 if(dbei.cbBlob != 0) {
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
@@ -751,7 +747,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
                 TrimMessage(msg);
             if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
-                char *formatted = FormatRaw(msg);
+                char *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
                 AppendToBufferWithRTF(1, &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
             }
             else

@@ -512,7 +512,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 pContainer->dwFlags &= ~CNT_SIZINGLOOP;
                 break;
             }
@@ -585,7 +584,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         MoveWindow((HWND)item.lParam, rcClient.left +1, rcClient.top, (rcClient.right - rcClient.left) - 8, (rcClient.bottom - rcClient.top) -2, TRUE);
                         RedrawWindow(GetDlgItem((HWND)item.lParam, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
                         if(!(pContainer->dwFlags & CNT_SIZINGLOOP)) {
-                            SendDlgItemMessage((HWND)item.lParam, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                             SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                         }
                     }
@@ -598,6 +596,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
                 RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+                if (pContainer->hwndStatus)
+                    RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
                 break; 
             } 
         case DM_UPDATETITLE: {

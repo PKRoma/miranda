@@ -67,17 +67,17 @@ static fontOptionsList[] = {
     
 void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
 {
-    char str[32];
+    char str[20];
     int style;
     DBVARIANT dbv;
 
     if (colour) {
-        wsprintfA(str, "Font%dCol", i);
+        _snprintf(str, sizeof(str), "Font%dCol", i);
         *colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, str, GetSysColor(COLOR_WINDOWTEXT));
     }
     if (lf) {
         HDC hdc = GetDC(NULL);
-        wsprintfA(str, "Font%dSize", i);
+        _snprintf(str, sizeof(str), "Font%dSize", i);
         if(i == H_MSGFONTID_DIVIDERS)
             lf->lfHeight = 5;
         else {
@@ -90,28 +90,28 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
         lf->lfWidth = 0;
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
-        wsprintfA(str, "Font%dSty", i);
+        _snprintf(str, sizeof(str), "Font%dSty", i);
         style = DBGetContactSettingByte(NULL, SRMSGMOD_T, str, fontOptionsList[0].defStyle);
         lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
         lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
         lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
         lf->lfStrikeOut = 0;
-        wsprintfA(str, "Font%dSet", i);
+        _snprintf(str, sizeof(str), "Font%dSet", i);
         lf->lfCharSet = DBGetContactSettingByte(NULL, SRMSGMOD_T, str, fontOptionsList[0].defCharset);
         lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-        wsprintfA(str, "Font%d", i);
+        _snprintf(str, sizeof(str), "Font%d", i);
         if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) {
-            lstrcpyA(lf->lfFaceName, "Webdings");
+            lstrcpynA(lf->lfFaceName, "Webdings", LF_FACESIZE);
             lf->lfCharSet = SYMBOL_CHARSET;
         }
         else {
             if (DBGetContactSetting(NULL, SRMSGMOD_T, str, &dbv))
-                lstrcpyA(lf->lfFaceName, fontOptionsList[0].szDefFace);
+                lstrcpynA(lf->lfFaceName, fontOptionsList[0].szDefFace, LF_FACESIZE);
             else {
-                lstrcpynA(lf->lfFaceName, dbv.pszVal, sizeof(lf->lfFaceName));
+                lstrcpynA(lf->lfFaceName, dbv.pszVal, LF_FACESIZE);
                 DBFreeVariant(&dbv);
             }
         }
@@ -1004,27 +1004,27 @@ static void GetDefaultFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 {
 	DBVARIANT dbv;
-	char idstr[10];
+	char idstr[12];
 	BYTE style;
 
 	GetDefaultFontSetting(i,lf,colour);
-	sprintf(idstr,"Font%d",i);
+	_snprintf(idstr, sizeof(idstr), "Font%d",i);
 	if(!DBGetContactSetting(NULL,SRFONTSETTINGMODULE,idstr,&dbv)) {
 		lstrcpyA(lf->lfFaceName,dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
-	sprintf(idstr,"Font%dCol",i);
+	_snprintf(idstr, sizeof(idstr), "Font%dCol",i);
 	*colour=DBGetContactSettingDword(NULL,SRFONTSETTINGMODULE,idstr,*colour);
-	sprintf(idstr,"Font%dSize",i);
+	_snprintf(idstr, sizeof(idstr), "Font%dSize",i);
 	lf->lfHeight=(char)DBGetContactSettingByte(NULL,SRFONTSETTINGMODULE,idstr,lf->lfHeight);
-	sprintf(idstr,"Font%dSty",i);
+	_snprintf(idstr, sizeof(idstr), "Font%dSty",i);
 	style=(BYTE)DBGetContactSettingByte(NULL,SRFONTSETTINGMODULE,idstr,(lf->lfWeight==FW_NORMAL?0:DBFONTF_BOLD)|(lf->lfItalic?DBFONTF_ITALIC:0)|(lf->lfUnderline?DBFONTF_UNDERLINE:0));
 	lf->lfWidth=lf->lfEscapement=lf->lfOrientation=0;
 	lf->lfWeight=style&DBFONTF_BOLD?FW_BOLD:FW_NORMAL;
 	lf->lfItalic=(style&DBFONTF_ITALIC)!=0;
 	lf->lfUnderline=(style&DBFONTF_UNDERLINE)!=0;
 	lf->lfStrikeOut=0;
-	sprintf(idstr,"Font%dSet",i);
+	_snprintf(idstr, sizeof(idstr), "Font%dSet",i);
 	lf->lfCharSet=DBGetContactSettingByte(NULL,SRFONTSETTINGMODULE,idstr,lf->lfCharSet);
 	lf->lfOutPrecision=OUT_DEFAULT_PRECIS;
 	lf->lfClipPrecision=CLIP_DEFAULT_PRECIS;

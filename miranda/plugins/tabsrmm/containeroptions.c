@@ -42,7 +42,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
         case WM_INITDIALOG:
             {
                 TCHAR szNewTitle[128], szTemplate[30];
-                RECT rc, rcParent;
+                //RECT rc, rcParent;
                 struct ContainerWindowData *pContainer = 0;
 				DWORD dwFlags = 0;
 
@@ -58,10 +58,10 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				_sntprintf(szNewTitle, 127, szTemplate, pContainer->szName);
 				SetWindowText(hwndDlg, szNewTitle);
 				
-                GetWindowRect(hwndDlg, &rc);
-                GetWindowRect(GetParent(hwndDlg), &rcParent);
-                SetWindowPos(hwndDlg, HWND_TOP, (rcParent.left + rcParent.right - (rc.right - rc.left)) / 2, (rcParent.top + rcParent.bottom - (rc.bottom - rc.top)) / 2, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
-
+                //GetWindowRect(hwndDlg, &rc);
+                //GetWindowRect(GetParent(hwndDlg), &rcParent);
+                //SetWindowPos(hwndDlg, HWND_TOP, (rcParent.left + rcParent.right - (rc.right - rc.left)) / 2, (rcParent.top + rcParent.bottom - (rc.bottom - rc.top)) / 2, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+                ShowWindow(hwndDlg, SW_SHOWNORMAL);
 				dwFlags = pContainer->dwFlags;
                 SendMessage(hwndDlg, DM_SC_INITDIALOG, (WPARAM)dwFlags, (LPARAM)pContainer->dwTransparency);
 				return TRUE;
@@ -160,6 +160,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             CheckDlgButton(hwndDlg, IDC_STATICICON, dwFlags & CNT_STATICICON);
             CheckDlgButton(hwndDlg, IDC_SHOWUIN, dwFlags & CNT_TITLE_SHOWUIN);
             CheckDlgButton(hwndDlg, IDC_HIDETOOLBAR, dwFlags & CNT_HIDETOOLBAR);
+            CheckDlgButton(hwndDlg, IDC_UINSTATUSBAR, dwFlags & CNT_UINSTATUSBAR);
             
             if (LOBYTE(LOWORD(GetVersion())) >= 5 ) {
                 CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
@@ -203,6 +204,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                          (IsDlgButtonChecked(hwndDlg, IDC_STATICICON) ? CNT_STATICICON : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_SHOWUIN) ? CNT_TITLE_SHOWUIN : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_HIDETOOLBAR) ? CNT_HIDETOOLBAR : 0) |
+                         (IsDlgButtonChecked(hwndDlg, IDC_UINSTATUSBAR) ? CNT_UINSTATUSBAR : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_SHOWCONTACTNAME) ? CNT_TITLE_SHOWNAME : 0);
 
             if (IsDlgButtonChecked(hwndDlg, IDC_O_FLASHDEFAULT))
