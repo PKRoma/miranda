@@ -99,6 +99,15 @@ SOURCE=.\cyrillic.c
 # Begin Source File
 
 SOURCE=.\filesession.c
+
+!IF  "$(CFG)" == "icqlib - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "icqlib - Win32 Debug"
+
+# SUBTRACT CPP /FA<none>
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -155,15 +164,6 @@ SOURCE=.\udp.c
 # Begin Source File
 
 SOURCE=.\udphandle.c
-
-!IF  "$(CFG)" == "icqlib - Win32 Release"
-
-# SUBTRACT CPP /FA<none>
-
-!ELSEIF  "$(CFG)" == "icqlib - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
