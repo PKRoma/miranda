@@ -73,6 +73,7 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 void CacheMsgLogIcons();
 void UncacheMsgLogIcons();
 void CacheLogFonts();
+void ConvertAllToUTF8();
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
@@ -635,6 +636,9 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     else
         g_SmileyAddAvail = 0;
 
+#if defined(_UNICODE)
+    ConvertAllToUTF8();
+#endif    
     // nls stuff
     CacheLogFonts();
     BuildCodePageList();
@@ -1215,4 +1219,44 @@ void CreateImageList(BOOL bInitial)
     ImageList_AddIcon(g_hImageList, 0);             // empty (end of list)
     g_IconEmpty = iCurIcon;
 
+}
+
+void ConvertAllToUTF8()
+{
+    DBVARIANT dbv;
+    char szCounter[10];
+    int counter = 0;
+    char *utf8string;
+    HANDLE hContact;
+    
+    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "utf8converted", 0))
+        return;
+
+    do {
+        _snprintf(szCounter, 8, "%d", counter);
+        if(DBGetContactSetting(NULL, "TAB_ContainersW", szCounter, &dbv))
+            break;
+        utf8string = Utf8Encode((WCHAR *)dbv.pbVal);
+        DBWriteContactSettingString(NULL, "TAB_ContainersW", szCounter, utf8string);
+        free(utf8string);
+        DBFreeVariant(&dbv);
+        counter++;
+    } while ( TRUE );
+
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+
+    while(hContact) {
+        if(!DBGetContactSetting(hContact, SRMSGMOD_T, "containerW", &dbv)) {
+            if(dbv.type == DBVT_BLOB && dbv.cpbVal > 0) {
+                MessageBoxW(0, dbv.pbVal, "b", MB_OK);
+                utf8string = Utf8Encode((WCHAR *)dbv.pbVal);
+                DBDeleteContactSetting(hContact, SRMSGMOD_T, "containerW");
+                DBWriteContactSettingString(hContact, SRMSGMOD_T, "containerW", utf8string);
+                free(utf8string);
+            }
+            DBFreeVariant(&dbv);
+        }
+        hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    }
+    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "utf8converted", 1);
 }

@@ -1124,3 +1124,93 @@ static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int g
     return szResult;
 }   
 
+WCHAR *Utf8Decode(const char *str)
+{
+	int i, len;
+	char *p;
+	WCHAR *wszTemp;
+	//WCHAR *szOut;
+
+	if (str == NULL) return NULL;
+
+	len = strlen(str);
+
+	// Convert utf8 to unicode
+	if ((wszTemp=(WCHAR *) malloc(sizeof(WCHAR) * (len + 1))) == NULL)
+		return NULL;
+	p = (char *) str;
+	i = 0;
+	while (*p) {
+		if ((*p & 0x80) == 0)
+			wszTemp[i++] = *(p++);
+		else if ((*p & 0xe0) == 0xe0) {
+			wszTemp[i] = (*(p++) & 0x1f) << 12;
+			wszTemp[i] |= (*(p++) & 0x3f) << 6;
+			wszTemp[i++] |= (*(p++) & 0x3f);
+		}
+		else {
+			wszTemp[i] = (*(p++) & 0x3f) << 6;
+			wszTemp[i++] |= (*(p++) & 0x3f);
+		}
+	}
+	wszTemp[i] = '\0';
+
+	// Convert unicode to local codepage
+    /*
+    if ((len=WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, NULL, 0, NULL, NULL)) == 0)
+		return NULL;
+	if ((szOut=(char *) malloc(len)) == NULL)
+		return NULL;
+	WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, szOut, len, NULL, NULL); */
+    
+	return wszTemp;
+}
+
+char *Utf8Encode(const WCHAR *str)
+{
+	unsigned char *szOut;
+	int len, i;
+	WCHAR *wszTemp, *w;
+
+	if (str == NULL) return NULL;
+
+	//len = strlen(str);
+    len = lstrlenW(str);
+	// Convert local codepage to unicode
+    /*
+	if ((wszTemp=(WCHAR *) malloc(sizeof(WCHAR) * (len + 1))) == NULL) return NULL;
+	MultiByteToWideChar(CP_ACP, 0, str, -1, wszTemp, len + 1);
+    */
+    wszTemp = str;
+
+	// Convert unicode to utf8
+	len = 0;
+	for (w=wszTemp; *w; w++) {
+		if (*w < 0x0080) len++;
+		else if (*w < 0x0800) len += 2;
+		else len += 3;
+	}
+
+	if ((szOut=(unsigned char *) malloc(len + 1)) == NULL)
+		return NULL;
+
+	i = 0;
+	for (w=wszTemp; *w; w++) {
+		if (*w < 0x0080)
+			szOut[i++] = (unsigned char) *w;
+		else if (*w < 0x0800) {
+			szOut[i++] = 0xc0 | ((*w) >> 6);
+			szOut[i++] = 0x80 | ((*w) & 0x3f);
+		}
+		else {
+			szOut[i++] = 0xe0 | ((*w) >> 12);
+			szOut[i++] = 0x80 | (((*w) >> 6) & 0x3f);
+			szOut[i++] = 0x80 | ((*w) & 0x3f);
+		}
+	}
+	szOut[i] = '\0';
+
+	//free(wszTemp);
+
+	return (char *) szOut;
+}

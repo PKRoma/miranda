@@ -57,7 +57,7 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
-                    62,WS_EX_CLIENTEDGE
+                    78,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,2,
                     WS_EX_STATICEDGE
     CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
@@ -687,14 +687,6 @@ BEGIN
 
             MENUITEM SEPARATOR
             MENUITEM "Use Message Grouping",        ID_MESSAGELOGFORMATTING_GROUPMESSAGES
-
-        END
-        MENUITEM SEPARATOR
-        POPUP "Status Bar Settings"
-        BEGIN
-            MENUITEM "Show the Status Bar",         ID_STATUSBARSETTINGS_SHOWTHESTATUSBAR
-
-            MENUITEM "Hide the Status Bar",         ID_STATUSBARSETTINGS_HIDETHESTATUSBAR
 
         END
         MENUITEM SEPARATOR

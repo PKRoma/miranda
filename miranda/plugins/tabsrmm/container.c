@@ -150,14 +150,16 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
                     break;
                 } else {
     #if defined (_UNICODE)
-                    if (dbv.type == DBVT_BLOB) {
-                        if(!_tcsncmp((TCHAR *)dbv.pbVal, name, CONTAINER_NAMELEN)) {
+                    if (dbv.type == DBVT_ASCIIZ) {
+                        WCHAR *wszString = Utf8Decode(dbv.pszVal);
+                        if(!_tcsncmp(wszString, name, CONTAINER_NAMELEN)) {
                             pContainer->iContainerIndex = i;
                             iFound = TRUE;
                         }
-                        else if (!_tcsncmp((TCHAR *)dbv.pbVal, _T("**free**"), CONTAINER_NAMELEN)) {
+                        else if (!_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
                             iFirstFree =  i;
                         }
+                        free(wszString);
                     }
     #else
                     if (dbv.type == DBVT_ASCIIZ) {
@@ -346,10 +348,17 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             DWORD dwOldFlags = pContainer->dwFlags;
             
             if(dat) {
+                DWORD dwOldMsgWindowFlags = dat->dwFlags;
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICPENU) == 1)
                     break;
-                if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1)
+                if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
+                    if(dat->dwFlags != dwOldMsgWindowFlags) {
+                        WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)pContainer->hwndActive, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
+                        if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0))
+                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+                    }
                     break;
+                }
             }
             SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
             if(hContact) {
@@ -380,21 +389,26 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 case ID_TITLEBAR_SHOWNICNAME:
                     pContainer->dwFlags ^= CNT_TITLE_SHOWNAME;
-                    break;
+                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    return 0;
                 case ID_TITLEBAR_SHOWSTATUS:
                     pContainer->dwFlags ^= CNT_TITLE_SHOWSTATUS;
-                    break;
+                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    return 0;
                 case ID_TITLEBAR_SHOWCONTAINERNAME:
                     pContainer->dwFlags |= CNT_TITLE_PREFIX;
                     pContainer->dwFlags &= ~CNT_TITLE_SUFFIX;
-                    break;
+                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    return 0;
                 case ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX:
                     pContainer->dwFlags &= ~CNT_TITLE_PREFIX;
                     pContainer->dwFlags |= CNT_TITLE_SUFFIX;
-                    break;
+                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    return 0;
                 case ID_TITLEBAR_DONOTSHOWCONTAINERNAME:
                     pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);
-                    break;
+                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    return 0;
                 case ID_VIEW_SHOWMULTISENDCONTACTLIST:
                     CheckDlgButton(pContainer->hwndActive, IDC_MULTIPLE, !dat->multiple);
                     PostMessage(pContainer->hwndActive, WM_COMMAND, IDC_MULTIPLE, 0);
@@ -402,6 +416,21 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case ID_VIEW_STAYONTOP:
                     SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_STAYONTOP, 0);
                     break;
+                case ID_CONTAINER_CONTAINEROPTIONS:
+                    SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_MOREOPTIONS, 0);
+                    break;
+                case ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS:
+                    pContainer->dwFlags &= ~(CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE);
+                    return 0;
+                case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED:
+                    pContainer->dwFlags ^= CNT_DONTREPORT;
+                    return 0;
+                case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED:
+                    pContainer->dwFlags ^= CNT_DONTREPORTUNFOCUSED;
+                    return 0;
+                case ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS:
+                    pContainer->dwFlags ^= CNT_ALWAYSREPORTINACTIVE;
+                    return 0;
             }
             if(pContainer->dwFlags != dwOldFlags)
                 SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 0);
@@ -822,7 +851,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 if(iSelection - IDM_CONTAINERMENU >= 0) {
                                     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined (_UNICODE)
-                                        SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pbVal);
+                                        WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
+                                        SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
+                                        if(wszTemp)
+                                            free(wszTemp);
 #else
                                         SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
 #endif
@@ -991,6 +1023,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | dat->multiple ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
 
+            CheckMenuItem(hMenu, ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS, MF_BYCOMMAND | pContainer->dwFlags & (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE) ? MF_UNCHECKED : MF_CHECKED);
+            CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORT ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS, MF_BYCOMMAND | pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? MF_CHECKED : MF_UNCHECKED);
+            
             submenu = GetSubMenu(hMenu, 3);
             if(dat && submenu)
                 MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
@@ -1720,9 +1757,11 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
         return 0;
     }
 #if defined (_UNICODE)
-    if (dbv.type == DBVT_BLOB) {
-        _tcsncpy(szName, (TCHAR *)dbv.pbVal, iNameLen);
+    if (dbv.type == DBVT_ASCIIZ) {
+        WCHAR *wszString = Utf8Decode(dbv.pszVal);
+        _tcsncpy(szName, wszString, iNameLen);
         DBFreeVariant(&dbv);
+        free(wszString);
         return dbv.cpbVal;
     }
 #else
@@ -1762,34 +1801,47 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
             break;      // end of loop...
         else {        // found...
             iCounter++;
-            if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_BLOB) {
+            if (dbv.type == DBVT_ASCIIZ) {
 #if defined(_UNICODE)
-                if(!_tcsncmp((TCHAR *)dbv.pbVal, _T("**free**"), lstrlenW((TCHAR *)dbv.pbVal))) {
+                WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
+                if(!_tcsncmp(wszTemp, _T("**free**"), lstrlenW(wszTemp))) {
 #else                    
                 if(!strncmp(dbv.pszVal, "**free**", strlen(dbv.pszVal))) {
 #endif                    
                     DBFreeVariant(&dbv);
+#if defined(_UNICODE)
+                    if(wszTemp)
+                        free(wszTemp);
+#endif                    
                     continue;
                 }
                 if (dwAction & CNT_ENUM_DELETE) {
 #if defined (_UNICODE)
-                    if(!_tcsncmp((TCHAR *)dbv.pbVal, szTarget, lstrlenW((TCHAR *)dbv.pbVal)) && lstrlenW((TCHAR *)dbv.pbVal) == lstrlenW(szTarget)) {
+                    if(!_tcsncmp(wszTemp, szTarget, lstrlenW(wszTemp)) && lstrlenW(wszTemp) == lstrlenW(szTarget)) {
 #else                        
                     if(!strncmp(dbv.pszVal, szTarget, strlen(dbv.pszVal)) && strlen(dbv.pszVal) == strlen(szTarget)) {
 #endif                        
                         DeleteContainer(iCounter - 1);
                         DBFreeVariant(&dbv);
+#if defined(_UNICODE)
+                        if(wszTemp)
+                            free(wszTemp);
+#endif                    
                         break;
                     }
                 }
                 if (dwAction & CNT_ENUM_RENAME) {
 #if defined (_UNICODE)
-                    if(!_tcsncmp((TCHAR *)dbv.pbVal, szTarget, lstrlenW((TCHAR *)dbv.pbVal)) && lstrlenW((TCHAR *)dbv.pbVal) == lstrlenW(szTarget)) {
+                    if(!_tcsncmp(wszTemp, szTarget, lstrlenW(wszTemp)) && lstrlenW(wszTemp) == lstrlenW(szTarget)) {
 #else                    
                     if(!strncmp(dbv.pszVal, szTarget, strlen(dbv.pszVal)) && strlen(dbv.pszVal) == strlen(szTarget)) {
 #endif                        
                         RenameContainer(iCounter - 1, szNew);
                         DBFreeVariant(&dbv);
+#if defined(_UNICODE)
+                        if(wszTemp)
+                            free(wszTemp);
+#endif                    
                         break;
                     }
                 }
@@ -1800,6 +1852,10 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
                     _snprintf(szSetting, CONTAINER_NAMELEN + 15, "%s%d_Trans", szSettingP, iCounter - 1);
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, szSetting, dwExtinfoEx);
                 }
+#if defined(_UNICODE)
+                if(wszTemp)
+                    free(wszTemp);
+#endif                    
             }
             DBFreeVariant(&dbv);
         }
@@ -1835,6 +1891,7 @@ void DeleteContainer(int iIndex)
 #if defined (_UNICODE)
     char *szKey = "TAB_ContainersW";
     char *szSettingP = "CNTW_";
+    WCHAR *wszContainerName;
 #else    
     char *szSettingP = "CNT_";
     char *szKey = "TAB_ContainersW";
@@ -1842,9 +1899,11 @@ void DeleteContainer(int iIndex)
     HANDLE hhContact;
     _snprintf(szIndex, 8, "%d", iIndex);
     
+    
     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
-        if(dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_BLOB) {
+        if(dbv.type == DBVT_ASCIIZ) {
 #if defined (_UNICODE)
+            wszContainerName = Utf8Decode(dbv.pszVal);
             _DBWriteContactSettingWString(NULL, szKey, szIndex, _T("**free**"));
 #else
             DBWriteContactSettingString(NULL, szKey, szIndex, "**free**");
@@ -1854,7 +1913,8 @@ void DeleteContainer(int iIndex)
                 DBVARIANT dbv_c;
 #if defined (_UNICODE)
                 if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "containerW", &dbv_c)) {
-                    if(_tcscmp((TCHAR *)dbv_c.pbVal, (TCHAR *)dbv.pbVal) && lstrlenW((TCHAR *)dbv_c.pbVal) == lstrlenW((TCHAR *)dbv.pbVal)) {
+                    WCHAR *wszString = Utf8Decode(dbv_c.pszVal);
+                    if(_tcscmp(wszString, wszContainerName) && lstrlenW(wszString) == lstrlenW(wszContainerName)) {
                         DBDeleteContactSetting(hhContact, SRMSGMOD_T, "containerW");
 #else                    
                 if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "container", &dbv_c)) {
@@ -1862,6 +1922,10 @@ void DeleteContainer(int iIndex)
                         DBDeleteContactSetting(hhContact, SRMSGMOD_T, "container");
 #endif                    
                     }
+#if defined(_UNICODE)
+                    if(wszString)
+                        free(wszString);
+#endif                    
                     DBFreeVariant(&dbv_c);
                 }
                 hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
@@ -1878,6 +1942,10 @@ void DeleteContainer(int iIndex)
             DBDeleteContactSetting(NULL, SRMSGMOD_T, szSetting);
             _snprintf(szSetting, CONTAINER_NAMELEN + 15, "%s%dy", szSettingP, iIndex);
             DBDeleteContactSetting(NULL, SRMSGMOD_T, szSetting);
+#if defined(_UNICODE)
+            if(wszContainerName)
+                free(wszContainerName);
+#endif            
         }
         DBFreeVariant(&dbv);
     }
@@ -1889,6 +1957,7 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
 #if defined (_UNICODE)
     char *szKey = "TAB_ContainersW";
     char *szSettingP = "CNTW_";
+    WCHAR *wszContainerName;
 #else    
     char *szSettingP = "CNT_";
     char *szKey = "TAB_ContainersW";
@@ -1899,6 +1968,9 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
 
     _snprintf(szIndex, 8, "%d", iIndex);
      if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
+#if defined(_UNICODE)
+        wszContainerName = Utf8Decode(dbv.pszVal);
+#endif        
         if (szNew != NULL) {
             if (_tcslen(szNew) != 0)
 #if defined(_UNICODE)
@@ -1912,7 +1984,8 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
             DBVARIANT dbv_c;
 #if defined(_UNICODE)
             if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "containerW", &dbv_c)) {
-                if(!_tcscmp((TCHAR *)dbv.pbVal, (TCHAR *)dbv_c.pbVal) && lstrlenW((TCHAR *)dbv.pbVal) == lstrlenW((TCHAR *)dbv_c.pbVal)) {
+                WCHAR *wszTemp = Utf8Decode(dbv_c.pszVal);
+                if(!_tcscmp(wszContainerName, wszTemp) && lstrlenW(wszContainerName) == lstrlenW(wszTemp)) {
                     if(szNew != NULL) {
                         if(lstrlenW(szNew) != 0)
                             _DBWriteContactSettingWString(hhContact, SRMSGMOD_T, "containerW", (wchar_t *)szNew);
@@ -1925,24 +1998,36 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
 #endif                        
                     }
                 }
+#if defined(_UNICODE)
+                if(wszTemp)
+                    free(wszTemp);
+#endif                
                 DBFreeVariant(&dbv_c);
             }
             hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
         }
+#if defined(_UNICODE)
+        if(wszContainerName)
+            free(wszContainerName);
+#endif        
         DBFreeVariant(&dbv);
     }
 }
 
 void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value)
 {
-    DBCONTACTWRITESETTING dbcws = { 0 };
+    char *utf8string = Utf8Encode(value);
+    DBWriteContactSettingString(hContact, szKey, szSetting, utf8string);
+    free(utf8string);
+    
+    /*    DBCONTACTWRITESETTING dbcws = { 0 };
     
     dbcws.szModule = szKey;
     dbcws.szSetting = szSetting;
     dbcws.value.type = DBVT_BLOB;
     dbcws.value.pbVal = (BYTE *) value;
     dbcws.value.cpbVal = (WORD)((lstrlenW(value) + 1) * sizeof(TCHAR));
-    CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM) hContact, (LPARAM)&dbcws);
+    CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM) hContact, (LPARAM)&dbcws);*/
 }
 
 HMENU BuildContainerMenu()
@@ -1976,9 +2061,10 @@ HMENU BuildContainerMenu()
             break;
 
 #if defined (_UNICODE)
-        if (dbv.type == DBVT_BLOB) {
-            if (_tcsncmp((TCHAR *)dbv.pbVal, _T("**free**"), CONTAINER_NAMELEN)) {
-                AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, (TCHAR *)dbv.pbVal);
+        if (dbv.type == DBVT_ASCIIZ) {
+            WCHAR *wszString = Utf8Decode(dbv.pszVal);
+            if (_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
+                AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, wszString);
             }
         }
 #else

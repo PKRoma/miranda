@@ -200,13 +200,15 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                 if (DBGetContactSetting(NULL, szKey, szValue, &dbv))
                     break;          // end of list
 #if defined(_UNICODE)
-                if (dbv.type == DBVT_BLOB) {
-                    if (_tcsncmp((TCHAR *)dbv.pbVal, _T("**free**"), CONTAINER_NAMELEN)) {
-                        iItemNew = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_ADDSTRING, 0, (LPARAM) dbv.pbVal);
+                if (dbv.type == DBVT_ASCIIZ) {
+                    WCHAR *wszString = Utf8Decode(dbv.pszVal);
+                    if (_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
+                        iItemNew = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_ADDSTRING, 0, (LPARAM) wszString);
                         if(iItemNew != LB_ERR) {
                             SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETITEMDATA, (WPARAM)iItemNew, (LPARAM)iCounter);
                         }
                     }
+                    free(wszString);
                     DBFreeVariant(&dbv);
                 }
 #else

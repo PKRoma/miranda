@@ -1378,8 +1378,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     				DBVARIANT dbv;
 #if defined ( _UNICODE )
                     if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW", &dbv)) {
-                        if(dbv.cpbVal > 2)  // at least the 0x0000 is always there...
-                            SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)dbv.pbVal);
+                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 1)  { // at least the 0x0000 is always there... 
+                            WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
+                            SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)wszTemp);
+                            free(wszTemp);
+                        }
 #else
     				if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
                         if(dbv.cchVal > 0)
@@ -2543,11 +2546,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 _snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
                 if(iSelection - IDM_CONTAINERMENU >= 0) {
                     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
-#if defined (_UNICODE)
-                        SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pbVal);
-#else
+#if defined(_UNICODE)
+                        WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
+                        SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
+                        if(wszTemp)
+                            free(wszTemp);
+#else                        
                         SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
-#endif
+#endif                        
                         DBFreeVariant(&dbv);
                     }
                 }
@@ -2885,14 +2891,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 case IDC_TIME: {
                     RECT rc;
-                    DWORD dwOldFlags;
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 2);
                     int iSelection, isHandled;
-
+                    DWORD dwOldFlags = dat->dwFlags;
+                    
                     MsgWindowUpdateMenu(hwndDlg, dat, submenu, MENU_LOGMENU);
                     
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_TIME), &rc);
-                    dwOldFlags = dat->dwFlags;
 
                     iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                     isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_LOGMENU);
@@ -3379,9 +3384,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_CONTAINERSELECTED:
             {
                 struct ContainerWindowData *pNewContainer = 0;
-                TCHAR *szNewName = (TCHAR *) lParam;
+                TCHAR *szNewName = (TCHAR *)lParam;
                 int iOldItems = TabCtrl_GetItemCount(hwndTab);
-
                 if (!_tcsncmp(dat->pContainer->szName, szNewName, CONTAINER_NAMELEN))
                     break;
                 pNewContainer = FindContainerByName(szNewName);
@@ -4028,10 +4032,10 @@ static void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSe
 static void UpdateUnsentDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 2) {
-        TCHAR buf[128];
+        char buf[128];
 
-        _sntprintf(buf, sizeof(buf), _T("%d Unsent"), dat->iSendJobCurrent);
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
+        _snprintf(buf, sizeof(buf), Translate("%d Unsent"), dat->iSendJobCurrent);
+        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
     }
 }
 
@@ -4336,8 +4340,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
     else if(menuId == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
-        int iStatusbar = (dat->pContainer->dwFlags & CNT_NOSTATUSBAR) ? 1 : 0;
         int iNeverLogStatus = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) == 0;
+        DWORD dwOldFlags = dat->dwFlags;
+
         switch(selection) {
 
             case ID_LOGMENU_SHOWTIMESTAMP:
@@ -4427,18 +4432,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS:
                 dat->dwFlags ^= MWF_LOG_USERELATIVEDATES;
                 return 1;
-            case ID_STATUSBARSETTINGS_SHOWTHESTATUSBAR:
-                if(!dat->pContainer->hwndStatus) {
-                    dat->pContainer->dwFlags &= ~CNT_NOSTATUSBAR;
-                    SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
-                }
-                return 1;
-            case ID_STATUSBARSETTINGS_HIDETHESTATUSBAR:
-                if(dat->pContainer->hwndStatus) {
-                    dat->pContainer->dwFlags |= CNT_NOSTATUSBAR;
-                    SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
-                }
-                return 1;
         }
     }
     return 0;
@@ -4449,7 +4442,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     if(menuID == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
-        int iStatusbar = (dat->pContainer->dwFlags & CNT_NOSTATUSBAR) ? 1 : 0;
         int iNeverLogStatus = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) == 0;
 
         CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
@@ -4474,9 +4466,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_LOADDEFAULTS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_GRAYED : MF_ENABLED);
-
-        CheckMenuItem(submenu, ID_STATUSBARSETTINGS_HIDETHESTATUSBAR, MF_BYCOMMAND | (iStatusbar == 1) ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_STATUSBARSETTINGS_SHOWTHESTATUSBAR, MF_BYCOMMAND | (iStatusbar == 0) ? MF_CHECKED : MF_UNCHECKED);
     }
 }
 

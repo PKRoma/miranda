@@ -397,3 +397,5 @@ struct MsgLogIcon {
 
 #define MSGDLGFONTCOUNT 27
 
+WCHAR *Utf8Decode(const char *str);
+char *Utf8Encode(const WCHAR *str);
