@@ -67,8 +67,25 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 {
 	switch (msg)
 	{
+		case WM_USER+1:
+		{
+			HANDLE hContact=(HANDLE)wParam;
+			DBCONTACTWRITESETTING * ws = (DBCONTACTWRITESETTING *)lParam;
+			if ( hContact == NULL && ws != NULL && ws->szModule != NULL && ws->szSetting != NULL
+				&& lstrcmpi(ws->szModule,"CList")==0 && lstrcmpi(ws->szSetting,"UseGroups")==0
+				&& IsWindowVisible(hwndDlg) ) {
+				CheckDlgButton(hwndDlg,IDC_DISABLEGROUPS,ws->value.bVal == 0);
+			}
+			break;
+		}
+		case WM_DESTROY: 
+		{
+			UnhookEvent( (HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA) );
+			break;
+		}
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED,hwndDlg,WM_USER+1));
 			CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_HIDEOFFLINE, DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_HIDEEMPTYGROUPS, DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
