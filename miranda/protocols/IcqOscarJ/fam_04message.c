@@ -830,9 +830,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 int TypeStringToTypeId(const char* pszType)
 {
-
-	int nTypeID = 0;
-
+  int nTypeID = 0;
 
 	if (!strcmp(pszType, "Web Page Address (URL)") ||
 		!strcmp(pszType, "Send Web Page Address (URL)") ||
@@ -1817,6 +1815,10 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 			pszErrorMessage = strdup(Translate("The receiving client does not support this type of message.\nSNAC(4.1) Error x09"));
 			break;
 
+    case 0x000A:     // Refused by client
+      pszErrorMessage = strdup(Translate("You sent too long message. The receiving client does not support it.\nSNAC(4.1) Error x0A"));
+      break;
+
 		case 0x000E:     // Incorrect SNAC format
 			pszErrorMessage = strdup(Translate("The SNAC format was rejected by the server.\nSNAC(4.1) Error x0E"));
 			break;
@@ -1830,7 +1832,6 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 		case 0x0006:     // Requested service not defined
 		case 0x0007:     // You sent obsolete SNAC
 		case 0x0008:     // Not supported by server
-		case 0x000A:     // Refused by client
 		case 0x000B:     // Reply too big
 		case 0x000C:     // Responses lost
 		case 0x000D:     // Request denied
@@ -1877,9 +1878,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 		default:
 			nMessageType = MTYPE_UNKNOWN;
 			break;
-
 		}
-
 
 		if (nMessageType != MTYPE_UNKNOWN)
 		{
@@ -1887,16 +1886,13 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 				nMessageType, ACKRESULT_FAILED, (HANDLE)(WORD)dwSequence, (LPARAM)pszErrorMessage);
 		}
 
-
 		FreeCookie((WORD)dwSequence);
 
 		if (pCookieData->bMessageType != MTYPE_FILEREQ)
 			SAFE_FREE(&pCookieData);
 
 		SAFE_FREE(&pszErrorMessage);
-
 	}
-
 }
 
 
