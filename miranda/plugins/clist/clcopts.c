@@ -445,7 +445,7 @@ struct {
 } static fontSettings[FONTID_MAX+1];
 #include <poppack.h>
 static WORD fontSameAsDefault[FONTID_MAX+1]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02};
-static char *fontSizes[]={"6","8","10","14","16","18","20","24","28"};
+static char *fontSizes[]={"7","8","10","14","16","18","20","24","28"};
 static int fontListOrder[FONTID_MAX+1]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_GROUPS,FONTID_GROUPCOUNTS,FONTID_DIVIDERS};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
@@ -720,7 +720,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
 		{	int i;
-			int minHeight=5;//GetSystemMetrics(SM_CYSMICON);
+			int minHeight=GetSystemMetrics(SM_CYSMICON) + 1;
 			for(i=0;i<=FONTID_MAX;i++)
 				if(fontSettings[i].size>minHeight) minHeight=fontSettings[i].size;
 			i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
