@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <set>
 
 #ifdef IRC_SSL
-#include "../../../openssl-0.9.7d/include/openssl/ssl.h"
+#include <openssl/ssl.h>
 //#include "../../openssl-0.9.7d/include/openssl/err.h"
 #endif
 
