@@ -283,6 +283,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
     ack = (avatarcookie*)malloc(sizeof(avatarcookie));
     if (!ack) return 0; // out of memory, go away
     ack->hContact = hContact;
+    ack->dwUin = 0;
     ack->cbData = datalen;
 
     dwCookie = AllocateCookie(2, 0, ack);
