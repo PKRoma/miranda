@@ -25,11 +25,11 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 2, 4),
-    "Provides support for Gadu-Gadu Messenger",
+    PLUGIN_MAKE_VERSION(0, 0, 2, 5),
+    "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
-    "Copyright © 2003 Adam Strzelecki",
+    "Copyright © 2003-2004 Adam Strzelecki",
     "http://www.miranda.kom.pl/",
     0,
     0
@@ -142,12 +142,12 @@ const char *http_error_string(int h)
 		case GG_ERROR_CONNECTING:
 			return Translate("HTTP failed connecting");
 		case GG_ERROR_READING:
-			return Translate("HTTP failed ceading");
+			return Translate("HTTP failed reading");
 		case GG_ERROR_WRITING:
 			return Translate("HTTP failed writing");
 	}
 
-	return "Unknown HTTP error";
+	return Translate("Unknown HTTP error");
 }
 
 //////////////////////////////////////////////////////////
