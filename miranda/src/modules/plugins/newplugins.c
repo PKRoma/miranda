@@ -542,7 +542,6 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	switch (msg) {
 		case WM_INITDIALOG:
 		{
-			pluginEntry * p = pluginListHead.first;
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);
 			LVCOLUMN col;			
 			TranslateDialogDefault(hwndDlg);
