@@ -41,8 +41,8 @@ int getProfilePath(char * buf, size_t cch)
 	if ( p != 0 ) *p=0;
 	// change to this location, or "." wont expand properly
 	_chdir(buf);
-	// get the string containing envars and maybe relative paths
 	GetPrivateProfileString("Database", "ProfileDir", ".", profiledir, sizeof(profiledir), mirandabootini);
+	// get the string containing envars and maybe relative paths
 	// get rid of the vars 
 	ExpandEnvironmentStrings(profiledir, exprofiledir, sizeof(exprofiledir));
 	if ( _fullpath(profiledir, exprofiledir, sizeof(profiledir)) != 0 ) {
@@ -124,6 +124,18 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
 	return rc;
 }
 
+// returns 1 if the profile manager should be shown
+static int showProfileManager(void)
+{
+	char Mgr[32];
+	// is control pressed?
+	if (GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
+	// wanna show it?
+	GetPrivateProfileString("Database", "ShowProfileMgr", "never", Mgr, sizeof(Mgr), mirandabootini);
+	if ( strcmp(Mgr,"yes") == 0 ) return 1;
+	return 0;
+}
+
 // returns 1 if a profile was selected
 static int getProfile(char * szProfile, size_t cch)
 {
@@ -131,8 +143,9 @@ static int getProfile(char * szProfile, size_t cch)
 	PROFILEMANAGERDATA pd;
 	ZeroMemory(&pd,sizeof(pd));
 	getProfilePath(profiledir,sizeof(profiledir));
-	if ( getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
-	else {		
+	
+	if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
+	else {
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;
 		return getProfileManager(&pd);
