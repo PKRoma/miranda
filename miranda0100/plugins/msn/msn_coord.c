@@ -172,7 +172,9 @@ int CmdQueue_AddChainRecv(CCSDATA *ccs)
 
 	dat=(PBYTE)malloc(sizeof(CCSDATA)+sizeof(PROTORECVEVENT)+strlen(pre->szMessage)+1);
 	memcpy(dat,ccs,sizeof(CCSDATA));
+	((CCSDATA*)dat)->lParam=(LPARAM)(dat+sizeof(CCSDATA));
 	memcpy(dat+sizeof(CCSDATA),pre,sizeof(PROTORECVEVENT));
+	((PROTORECVEVENT*)(dat+sizeof(CCSDATA)))->szMessage=(char*)dat+sizeof(CCSDATA)+sizeof(PROTORECVEVENT);
 	strcpy(dat+sizeof(CCSDATA)+sizeof(PROTORECVEVENT),pre->szMessage);
 	return CmdQueue_Add(CMDQUEUE_CHAINRECV,dat);
 }
