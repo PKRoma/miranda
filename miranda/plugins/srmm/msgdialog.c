@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_MSGSEND      0
 #define TIMERID_FLASHWND     1
 #define TIMERID_TYPE         2
+#define TIMERID_AVATAR       3
 #define TIMEOUT_FLASHWND     900
 #define TIMEOUT_ANTIBOMB     4000       //multiple-send bombproofing: send max 3 messages every 4 seconds
 #define ANTIBOMB_COUNT       3
@@ -123,7 +124,6 @@ static void SetDialogToType(HWND hwndDlg)
 		SendMessage(dat->hwndStatus, SB_SETPARTS, 1, (LPARAM) statwidths);
 	}
 	UpdateReadChars(hwndDlg, dat->hwndStatus);
-	ShowWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDCANCEL), SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDOK), (g_dat->flags&SMF_SENDBTN) ? SW_SHOW : SW_HIDE);
@@ -477,8 +477,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDOK:
             urc->rcItem.top -= dat->splitterPos - dat->originalSplitterPos;
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
-        case IDC_TYPINGNOTIFY:
-            return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 		case IDC_AVATAR:
             urc->rcItem.top=urc->rcItem.bottom-(dat->avatarHeight + 2);
             urc->rcItem.right=urc->rcItem.left+(dat->avatarWidth + 2);
@@ -586,6 +584,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 			dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_LOG));
 			{ // avatar stuff
 				dat->avatarPic = 0;
 				dat->limitAvatarH = 0;
@@ -653,7 +652,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOCOL), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
 			/* duh, how come we didnt use this from the start? */
@@ -726,12 +724,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					}
 				}
 			}
-			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
+			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 1, 0);
 			{
 				int savePerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
-				if (Utils_RestoreWindowPosition(hwndDlg, savePerContact ? dat->hContact : NULL, SRMMMOD, "split")) {
+				if (Utils_RestoreWindowPosition(hwndDlg, savePerContact ? dat->hContact : NULL, SRMMMOD, "")) {
 					if (savePerContact) {
-						if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMMMOD, "split"))
+						if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMMMOD, ""))
 							SetWindowPos(hwndDlg, 0, 0, 0, 450, 300, SWP_NOZORDER | SWP_NOMOVE);
 					}
 					else
@@ -763,6 +761,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
+			SetTimer(hwndDlg, TIMERID_AVATAR, 2000, NULL);
 			return TRUE;
 		}
 	case WM_CONTEXTMENU:
@@ -854,12 +853,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		int caps = 0, result;
 		
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
-        if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
+		//Disable avatars
+        //if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
 			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
 			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
 			return 0;
-		}
+		//}
 		if(DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) {
 			ShowAvatar(hwndDlg, dat);
 			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
@@ -978,7 +978,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
 				dat->limitAvatarH = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT)?DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT):0;
 			}
-			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
+			if (!wParam) SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 		}
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
 		{
@@ -1277,6 +1277,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 		}
+		else if (wParam == TIMERID_AVATAR) {
+			KillTimer(hwndDlg, wParam);
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
+		}
 		break;
 	case DM_ERRORDECIDED:
 		EnableWindow(hwndDlg, TRUE);
@@ -1334,9 +1338,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							else DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 						}
 					}
-				}
-				else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
-					DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, g_dat->hIcons[SMF_ICON_TYPING], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 				}
 				else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR) && dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
 					BITMAP bminfo;
@@ -1704,11 +1705,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			wp.length = sizeof(wp);
 			GetWindowPlacement(hwndDlg, &wp);
 			if (!dat->windowWasCascaded) {
-				DBWriteContactSettingDword(hContact, SRMMMOD, "splitx", wp.rcNormalPosition.left);
-				DBWriteContactSettingDword(hContact, SRMMMOD, "splity", wp.rcNormalPosition.top);
+				DBWriteContactSettingDword(hContact, SRMMMOD, "x", wp.rcNormalPosition.left);
+				DBWriteContactSettingDword(hContact, SRMMMOD, "y", wp.rcNormalPosition.top);
 			}
-			DBWriteContactSettingDword(hContact, SRMMMOD, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-			DBWriteContactSettingDword(hContact, SRMMMOD, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+			DBWriteContactSettingDword(hContact, SRMMMOD, "width", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+			DBWriteContactSettingDword(hContact, SRMMMOD, "height", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
 		}
 		if (dat->avatarPic)
 			DeleteObject(dat->avatarPic);

@@ -178,6 +178,10 @@ SOURCE=.\msgtimedout.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\richutil.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\srmm.c
 # End Source File
 # End Group
@@ -203,6 +207,10 @@ SOURCE=.\msgs.h
 # Begin Source File
 
 SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\richutil.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

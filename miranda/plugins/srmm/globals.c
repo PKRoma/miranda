@@ -51,7 +51,6 @@ void ReloadGlobals() {
 		g_dat->flags |= SMF_SHOWICONS;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTIME, SRMSGDEFSET_SHOWTIME))
 		g_dat->flags |= SMF_SHOWTIME;
-	//fix avatars
 	//if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, SRMSGDEFSET_AVATARENABLE))
 	//	g_dat->flags |= SMF_AVATAR;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE))
