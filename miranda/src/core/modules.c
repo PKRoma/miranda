@@ -67,13 +67,6 @@ static DWORD mainThreadId;
 static HANDLE hMainThread;
 extern HANDLE hShutdownEvent;
 
-#ifdef _ALPHA_FUSE_	
-#include <m_fuse.h>
-HINSTANCE hFuseCore=NULL;
-int (*fuse_ctrl)(DWORD,void*);
-FUSE_LINK fuseLink;
-#endif // _ALPHA_FUSE_
-
 int LoadSystemModule(void);		// core: m_system.h services
 int LoadNewPluginsModuleInfos(void); // core: preloading plugins
 int LoadNewPluginsModule(void);	// core: N.O. plugins
@@ -156,22 +149,6 @@ static int LoadDefaultModules(void)
 
 int InitialiseModularEngine(void)
 {
-	#ifdef _ALPHA_FUSE_
-		hFuseCore=LoadLibrary("fuse.dll");
-		if (hFuseCore) {			
-			fuse_ctrl=(void*)GetProcAddress(hFuseCore,"fuse_ctrl");
-			if (fuse_ctrl) {
-				int rc;
-				fuseLink.cbSize=sizeof(FUSE_LINK);
-				fuse_ctrl(FUSE_INIT,&fuseLink);
-				rc=LoadDefaultModules();
-				fuse_ctrl(FUSE_DEFMOD,&rc);
-				return rc;
-			} else {
-				FreeLibrary(hFuseCore); hFuseCore=NULL;
-			} //if
-		}; //if
-	#endif
 	hookCount=serviceCount=0;
 	hook=NULL;
 	service=NULL;
@@ -187,27 +164,12 @@ int InitialiseModularEngine(void)
 
 void DestroyingModularEngine(void)
 {
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			fuse_ctrl(FUSE_DEATH,NULL);
-			return;
-		} //if
-	#endif
 	return;
 }
 
 void DestroyModularEngine(void)
 {
 	int i;
-	#ifdef _ALPHA_FUSE_
-		if (hFuseCore) {
-			if (fuse_ctrl) {
-				fuse_ctrl(FUSE_DEINIT,NULL); fuse_ctrl=NULL;
-			} //if
-			FreeLibrary(hFuseCore); hFuseCore=NULL;
-			return;
-		} //if
-	#endif
 	for(i=0;i<hookCount;i++)
 		if(hook[i].subscriberCount) free(hook[i].subscriber);
 	if(hookCount) free(hook);
@@ -217,9 +179,14 @@ void DestroyModularEngine(void)
 	CloseHandle(hMainThread);
 }
 
+
+#if __GNUC__
+#define NOINLINEASM
+#endif
+
 DWORD NameHashFunction(const char *szStr)
 {
-#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK
+#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined NOINLINEASM
 	__asm {		   //this breaks if szStr is empty
 		xor  edx,edx
 		xor  eax,eax
@@ -280,12 +247,6 @@ HANDLE CreateHookableEvent(const char *name)
 	DWORD Hash = NameHashFunction(name);
 	HANDLE ret;
 
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.CreateHookableEvent(name);
-		} //if
-	#endif
-
 	EnterCriticalSection(&csHooks);
 	//if(FindHookByName(name)!=-1) {LeaveCriticalSection(&csHooks); return NULL;}
 	if (FindHookByHashAndName(Hash, name) != -1) 
@@ -308,13 +269,6 @@ HANDLE CreateHookableEvent(const char *name)
 int DestroyHookableEvent(HANDLE hEvent)
 {
 	int hookId=(int)hEvent-1;
-
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.DestroyHookableEvent(hEvent);
-		} //if
-	#endif
-
 	EnterCriticalSection(&csHooks);
 	if(hookId>=hookCount || hookId<0) {LeaveCriticalSection(&csHooks); return 1;}
 	if(hook[hookId].name[0]==0) {LeaveCriticalSection(&csHooks); return 1;}
@@ -348,10 +302,12 @@ static int CallHookSubscribers(int hookId,WPARAM wParam,LPARAM lParam)
 		//NOTE: We've got the critical section while all this lot are called. That's mostly safe, though.
 		for(i=0;i<hook[hookId].subscriberCount;i++) {
 			if(hook[hookId].subscriber[i].pfnHook!=NULL) {
-				if(returnVal=hook[hookId].subscriber[i].pfnHook(wParam,lParam)) break;
+				returnVal=hook[hookId].subscriber[i].pfnHook(wParam,lParam);
+				if( returnVal ) break;
 			}
 			else if(hook[hookId].subscriber[i].hwnd!=NULL) {
-				if(returnVal=SendMessage(hook[hookId].subscriber[i].hwnd,hook[hookId].subscriber[i].message,wParam,lParam)) break;
+				returnVal=SendMessage(hook[hookId].subscriber[i].hwnd,hook[hookId].subscriber[i].message,wParam,lParam);
+				if( returnVal ) break;
 			}//if
 		}//for
 		// check for no hooks and call the default hook if any
@@ -374,12 +330,6 @@ int NotifyEventHooks(HANDLE hEvent,WPARAM wParam,LPARAM lParam)
 {
 
 	extern HWND hAPCWindow;
-
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.NotifyEventHooks(hEvent,wParam,lParam);
-		} //if
-	#endif
 
 	if(GetCurrentThreadId()!=mainThreadId) {
 		THookToMainThreadItem item;
@@ -404,17 +354,13 @@ HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc)
 	int hookId;
 	HANDLE ret;
 
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.HookEvent(name,hookProc);
-		} //if
-	#endif
-
 	EnterCriticalSection(&csHooks);
 	hookId=FindHookByName(name);
 	if(hookId==-1) {
 #ifdef _DEBUG
-		MessageBox(NULL,"Attempt to hook non-existant event",name,MB_OK);
+		OutputDebugString("Attempt to hook: \t");
+		OutputDebugString(name);
+		OutputDebugString("\n");
 #endif
 		LeaveCriticalSection(&csHooks);
 		return NULL;
@@ -432,12 +378,6 @@ HANDLE HookEventMessage(const char *name,HWND hwnd,UINT message)
 {
 	int hookId;
 	HANDLE ret;
-
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.HookEventMessage(name,hwnd,message);
-		} //if
-	#endif
 
 	EnterCriticalSection(&csHooks);
 	hookId=FindHookByName(name);
@@ -462,12 +402,6 @@ int UnhookEvent(HANDLE hHook)
 {
 	int hookId=(int)hHook>>16;
 	int subscriberId=((int)hHook&0xFFFF)-1;
-
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.UnhookEvent(hHook);
-		} //if
-	#endif
 
 	EnterCriticalSection(&csHooks);
 	if(hookId>=hookCount || hookId<0) {LeaveCriticalSection(&csHooks); return 1;}
@@ -565,11 +499,6 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 	if (name==NULL) return NULL;
 #endif
 	hash=NameHashFunction(name);	
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.CreateServiceFunction(name,serviceProc);
-		} //if
-	#endif
 	EnterCriticalSection(&csServices);
 	i=FindHashForService(hash,&shift);
 	if (i==-1) {
@@ -591,12 +520,6 @@ int DestroyServiceFunction(HANDLE hService)
 	TServiceList *pService;
 	int i;
 
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.DestroyServiceFunction(hService);
-		} //if
-	#endif
-
 	EnterCriticalSection(&csServices);
 	pService=FindServiceByHash((DWORD)hService);
 	if(pService==NULL) {LeaveCriticalSection(&csServices); return 1;}
@@ -609,11 +532,6 @@ int DestroyServiceFunction(HANDLE hService)
 int ServiceExists(const char *name)
 {
 	int ret;
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.ServiceExists(name);
-		} //if
-	#endif
 	EnterCriticalSection(&csServices);
 	ret=FindServiceByName(name)!=NULL;
 	LeaveCriticalSection(&csServices);
@@ -635,11 +553,6 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 	if (name==NULL) return CALLSERVICE_NOTFOUND;
 #endif
 
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.CallService(name,wParam,lParam);
-		} //if
-	#endif
 	EnterCriticalSection(&csServices);
 	pService=FindServiceByName(name);
 	if(pService==NULL) {
@@ -669,11 +582,6 @@ int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 
 	extern HWND hAPCWindow;
 
-	#ifdef _ALPHA_BASE_
-		if (hFuseCore && fuse_ctrl)  {
-			return fuseLink.CallServiceSync(name,wParam,lParam);
-		} //if
-	#endif
 	if (name==NULL) return CALLSERVICE_NOTFOUND;
 	// the service is looked up within the main thread, since the time it takes
 	// for the APC queue to clear the service being called maybe removed.
@@ -703,3 +611,4 @@ int CallFunctionAsync( void (__stdcall *func)(void *), void *arg)
 	PostMessage(hAPCWindow,WM_NULL,0,0);
 	return r;
 }
+
