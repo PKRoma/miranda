@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLS_NOHIDEOFFLINE   0x0080	 //overrides CLS_HIDEOFFLINE and the per-group hideoffline setting
 #define CLS_GREYALTERNATE   0x0100   //make every other line slightly grey
 #define CLS_GROUPCHECKBOXES 0x0200   //put checkboxes on groups too (managed by CLC)
+#define CLS_CONTACTLIST		0x0400   //this control will be the main contact list (v. 0.3.4.3+ 2004/11/02)
 
 #define CLS_EX_DISABLEDRAGDROP     0x00000001
 #define CLS_EX_EDITLABELS          0x00000002
