@@ -162,7 +162,7 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 // returns true if the given file is <anything>.dll exactly
 static int valid_library_name(char * name)
 {
-	char * dot = strchr(name, '.');
+	char * dot = strrchr(name, '.');
 	if ( dot != NULL && lstrcmpi(dot+1,"dll") == 0) {
 		if ( dot[4] == 0 ) return 1;
 	}
