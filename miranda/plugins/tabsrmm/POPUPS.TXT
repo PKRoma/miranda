@@ -5,10 +5,10 @@ tabSRMM, POPUP and NewEventNotify, how it works all together...
 This document will try to explain how this stuff works and what you can 
 configure in conjunction with it.
 
-First, you need to use the NewEventNotify.DLL which comes with the tabSRMM 
-distribution. Standard NewEventNotify will not work at all, because it was 
-not written with tabs in mind and assumes that each message session has 
-its own toplevel window.
+First, you need to use a recent NewEventNotify plugin. The old versions
+cannot work with tabbed chat windows at all.
+
+I suggest using this version: http://www.miranda-im.org/download/details.php?action=viewfile&id=1719
 
 If you want typing notify popups, you can safely use the 
 TypingNotify plugin by BiO, because it is already written to use the 

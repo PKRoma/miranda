@@ -502,7 +502,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
             HWND hEdit;
             hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
             SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
-            SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
+            SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
         }
         SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
 		ActivateExistingTab(pContainer, hwnd);
@@ -523,8 +523,12 @@ static int ForwardMessage(WPARAM wParam, LPARAM lParam)
 	HWND hwndNew, hwndOld;
 	RECT rc;
     struct ContainerWindowData *pContainer = 0;
+    int iS = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0);
 
+    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0);        // temporarily disable single window mode for forwarding...
     pContainer = FindContainerByName(_T("default"));
+    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", (BYTE)iS);
+    
     if (pContainer == NULL)
         pContainer = CreateContainer(_T("default"), FALSE, 0);
     
@@ -1087,7 +1091,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
         return 0;
     }
     // if we have a max # of tabs/container set and want to open something in the default container...
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
+    if(hContact != 0 && DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
         if((pContainer = FindMatchingContainer(_T("default"), hContact)) == NULL) {
             TCHAR szName[CONTAINER_NAMELEN + 1];
 

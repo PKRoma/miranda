@@ -1,6 +1,6 @@
-<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/9.1/vpj.dtd">
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
 <Project
-	Version="9.1"
+	Version="10.0"
 	VendorName="SlickEdit"
 	WorkingDir="."
 	AssociatedFile="ICONSXP.vcproj"
@@ -284,5 +284,6 @@
 	</Config>
 	<CompatibleVersions>
 		<PrevVersion VersionNumber="9.0"/>
+		<PrevVersion VersionNumber="9.1"/>
 	</CompatibleVersions>
 </Project>

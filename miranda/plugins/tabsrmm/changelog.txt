@@ -17,6 +17,9 @@ Support: http://hell.at.eu.org/forums/
 
 Version 0.9.9.92 - 2005/03/31
 
+        * plugins like HTTPServer (and all others which try to feed text into the message 
+          input area) should now work with the unicode version of tabsrmm.
+        
         ! fixed broken dialog layout on forward message
         
         ! nicknames may again contain characters like { and } w/o messing up the message
@@ -59,6 +62,9 @@ Version 0.9.9.92 - 2005/03/31
           when a tab is closed. "Save now" does exactly this - it saves the splitter position
           depending on the current mode (global, per contact, private).
                              
+        ! fixed some issues with forwarding and non-standard container modes (single window, 
+          limited # of tabs/container).
+          
 Version 0.9.9.91 - 2005/03/28
 
         * non-unicode version now sets the IEEF_NO_UNICODE flag for IEview. That may
