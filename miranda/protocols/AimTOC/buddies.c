@@ -77,7 +77,7 @@ HANDLE aim_buddy_get(char *nick, int create, int inlist, int noadd, char *group)
     char *sn = aim_util_normalize(nick);
 
     pthread_mutex_lock(&buddyMutex);
-    if (!strcmp(sn, "pleaseupgrade000") || !strcmp(sn, "pleaseupgrade001") || !strcmp(sn, "pleaseupgrade002")) {
+    if (!strncmp(sn, "pleaseupgrade", strlen("pleaseupgrade"))) {
         pthread_mutex_unlock(&buddyMutex);
         return NULL;
     }
