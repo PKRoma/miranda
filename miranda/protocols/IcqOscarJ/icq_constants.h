@@ -1,21 +1,22 @@
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
-// 
+//
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// 
+// Copyright © 2004,2005 Joe Kucera
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -44,37 +45,41 @@
 
 
 /* Some default settings */
-#define DEFAULT_SERVER_PORT  5190
-#define DEFAULT_SERVER_HOST  "login.icq.com"
-#define DEFAULT_SS_ENABLED   1
-#define DEFAULT_SS_ADD       1
-#define DEFAULT_SS_NICKS     1
-#define DEFAULT_SS_ADDREMOVE 1
-#define DEFAULT_AIM_ENABLED  0
-#define DEFAULT_MTN_ENABLED  0
-#define DEFAULT_CAPS         0
+#define DEFAULT_SERVER_PORT     5190
+#define DEFAULT_SERVER_HOST     "login.icq.com"
+#define DEFAULT_SS_ENABLED      1
+#define DEFAULT_SS_ADD          1
+#define DEFAULT_SS_ADDREMOVE    1
+#define DEFAULT_SS_LOAD         0
+#define DEFAULT_SS_STORE        1
+
+#define DEFAULT_AIM_ENABLED     0
+#define DEFAULT_MTN_ENABLED     0
+#define DEFAULT_CAPS            0
+#define DEFAULT_AVATARS_ENABLED 1
+#define DEFAULT_LOAD_AVATARS    1
 
 // Database setting names
-#define DBSETTING_CAPABILITIES "caps"
+#define DBSETTING_CAPABILITIES  "caps"
 
 
 // Status FLAGS (used to determine status of other users)
-#define ICQ_STATUSF_ONLINE			0x0000
-#define ICQ_STATUSF_AWAY			0x0001
-#define ICQ_STATUSF_DND				0x0002
-#define ICQ_STATUSF_NA				0x0004
-#define ICQ_STATUSF_OCCUPIED		0x0010
-#define ICQ_STATUSF_FFC				0x0020
-#define ICQ_STATUSF_INVISIBLE		0x0100
+#define ICQ_STATUSF_ONLINE      0x0000
+#define ICQ_STATUSF_AWAY        0x0001
+#define ICQ_STATUSF_DND         0x0002
+#define ICQ_STATUSF_NA          0x0004
+#define ICQ_STATUSF_OCCUPIED    0x0010
+#define ICQ_STATUSF_FFC         0x0020
+#define ICQ_STATUSF_INVISIBLE   0x0100
 
 // Status values (used to set own status)
-#define ICQ_STATUS_ONLINE			0x0000
-#define ICQ_STATUS_AWAY				0x0001
-#define ICQ_STATUS_NA				0x0005
-#define ICQ_STATUS_OCCUPIED			0x0011
-#define ICQ_STATUS_DND				0x0013
-#define ICQ_STATUS_FFC				0x0020
-#define ICQ_STATUS_INVISIBLE		0x0100
+#define ICQ_STATUS_ONLINE       0x0000
+#define ICQ_STATUS_AWAY         0x0001
+#define ICQ_STATUS_NA           0x0005
+#define ICQ_STATUS_OCCUPIED     0x0011
+#define ICQ_STATUS_DND          0x0013
+#define ICQ_STATUS_FFC          0x0020
+#define ICQ_STATUS_INVISIBLE    0x0100
 
 #define STATUS_WEBAWARE             0x0001 // Status webaware flag
 #define STATUS_SHOWIP               0x0002 // Status show ip flag
@@ -94,8 +99,8 @@
 
 
 // Ascii Capability IDs
-#define CAP_RTFMSGS  	"{97B12751-243C-4334-AD22-D6ABF73F1492}"
-#define CAP_UTF8MSGS  	"{0946134E-4C7F-11D1-8222-444553540000}"
+#define CAP_RTFMSGS  	  "{97B12751-243C-4334-AD22-D6ABF73F1492}"
+#define CAP_UTF8MSGS    "{0946134E-4C7F-11D1-8222-444553540000}"
 
 // Binary Capability IDs
 #define BINARY_CAP_SIZE 16
@@ -134,78 +139,83 @@
 
 
 /* Channels */
-#define	ICQ_LOGIN_CHAN				0x01
+#define	ICQ_LOGIN_CHAN			0x01
 #define ICQ_DATA_CHAN				0x02
-#define ICQ_ERROR_CHAN				0x03
-#define ICQ_CLOSE_CHAN				0x04
-#define ICQ_PING_CHAN               0x05
+#define ICQ_ERROR_CHAN			0x03
+#define ICQ_CLOSE_CHAN			0x04
+#define ICQ_PING_CHAN				0x05
 
 /* Families */
-#define ICQ_SERVICE_FAMILY			0x0001
-#define ICQ_LOCATION_FAMILY			0x0002
+#define ICQ_SERVICE_FAMILY		0x0001
+#define ICQ_LOCATION_FAMILY		0x0002
 #define ICQ_BUDDY_FAMILY			0x0003
 #define ICQ_MSG_FAMILY				0x0004
 #define ICQ_BOS_FAMILY				0x0009
 #define ICQ_STATUS_FAMILY			0x000b
-#define ICQ_LISTS_FAMILY            0x0013
-#define ICQ_EXTENSIONS_FAMILY		0x0015
+#define ICQ_AVATAR_FAMILY			0x0010
+#define ICQ_LISTS_FAMILY			0x0013
+#define ICQ_EXTENSIONS_FAMILY	0x0015
 
-/* Subtypes for Family 0x0001 */
-#define ICQ_ERROR					0x0001
-#define ICQ_CLIENT_READY			0x0002
-#define ICQ_SERVER_READY			0x0003
-#define ICQ_CLIENT_NEW_SERVICE		0x0004
-#define ICQ_SERVER_REDIRECT			0x0005
-#define ICQ_CLIENT_REQ_RATE_INFO	0x0006
-#define ICQ_SERVER_RATE_INFO		0x0007
-#define ICQ_CLIENT_RATE_ACK			0x0008
-#define ICQ_SERVER_RATE_CHANGE		0x000a
-#define ICQ_SERVER_PAUSE			0x000b
+/* Subtypes for Service Family 0x0001 */
+#define ICQ_ERROR                   0x0001
+#define ICQ_CLIENT_READY            0x0002
+#define ICQ_SERVER_READY            0x0003
+#define ICQ_CLIENT_NEW_SERVICE      0x0004
+#define ICQ_SERVER_REDIRECT_SERVICE 0x0005
+#define ICQ_CLIENT_REQ_RATE_INFO    0x0006
+#define ICQ_SERVER_RATE_INFO        0x0007
+#define ICQ_CLIENT_RATE_ACK         0x0008
+#define ICQ_SERVER_RATE_CHANGE      0x000a
+#define ICQ_SERVER_PAUSE            0x000b
 #define ICQ_CLIENT_PAUSE_ACK        0x000c
-#define ICQ_SERVER_RESUME			0x000d
+#define ICQ_SERVER_RESUME           0x000d
 #define ICQ_CLIENT_REQINFO          0x000e
-#define ICQ_SERVER_NAME_INFO		0x000f
+#define ICQ_SERVER_NAME_INFO        0x000f
+#define ICQ_CLIENT_SET_IDLE         0x0011
 #define ICQ_SERVER_MIGRATIONREQ     0x0012
 #define ICQ_SERVER_MOTD             0x0013
-#define ICQ_CLIENT_FAMILIES			0x0017
-#define ICQ_SERVER_FAMILIES2		0x0018
-#define ICQ_CLIENT_SET_STATUS		0x001e
+#define ICQ_CLIENT_FAMILIES         0x0017
+#define ICQ_SERVER_FAMILIES2        0x0018
+#define ICQ_CLIENT_SET_STATUS       0x001e
+#define ICQ_SERVER_EXTSTATUS        0x0021
 
-/* Subtypes for Family 0x0002 */
+/* Subtypes for Location Family 0x0002 */
 #define SRV_LOCATION_RIGHTS_REPLY   0x0003
-#define ICQ_CLIENT_SET_USER_INFO	0x0004
+#define ICQ_CLIENT_SET_USER_INFO    0x0004
 
-/* Subtypes for Family 0x0003 */
+/* Subtypes for Buddy Family 0x0003 */
+#define ICQ_USER_CLI_REQBUDDY       0x0002
+#define ICQ_USER_SRV_REPLYBUDDY     0x0003
 #define ICQ_USER_ADDTOLIST          0x0004
-#define ICQ_USER_ONLINE				0x000b
+#define ICQ_USER_REMOVEFROMLIST     0x0005
+#define ICQ_USER_ONLINE             0x000b
 #define ICQ_USER_OFFLINE            0x000c
 
-#define CLI_REQBUDDY                0x0002
-#define SRV_REPLYBUDDY              0x0003
-#define CLI_ADDCONTACT              0x0004
-#define CLI_REMOVECONTACT           0x0005
-#define SRV_USERONLINE              0x000b
-#define SRV_USEROFFLINE             0x000c
-
-
-/* Subtypes for Family 0x0004 */
+/* Subtypes for Message Family 0x0004 */
 #define ICQ_MSG_SRV_ERROR           0x0001
+#define ICQ_MSG_CLI_REQICBM         0x0004
 #define ICQ_MSG_SRV_REPLYICBM       0x0005
-#define ICQ_MSG_SRV_SEND			0x0006
-#define ICQ_MSG_SRV_RECV			0x0007
+#define ICQ_MSG_SRV_SEND            0x0006
+#define ICQ_MSG_SRV_RECV            0x0007
 #define SRV_MISSED_MESSAGE          0x000A
 #define ICQ_MSG_RESPONSE            0x000B
 #define ICQ_MSG_SRV_ACK             0x000C
 #define ICQ_MTN                     0x0014
 
-/* Subtypes for Family 0x0009 */
+/* Subtypes for Privacy Family 0x0009 */
 #define SRV_PRIVACY_RIGHTS_REPLY    0x0003
 #define ICQ_CLI_ADDVISIBLE          0x0005
 #define ICQ_CLI_REMOVEVISIBLE       0x0006
 #define ICQ_CLI_ADDINVISIBLE        0x0007
 #define ICQ_CLI_REMOVEINVISIBLE     0x0008
 
-/* Subtypes for Family 0x0013 */
+/* Subtypes for Avatar Family 0x0010 */
+#define ICQ_AVATAR_UPLOAD_REQUEST   0x0002
+#define ICQ_AVATAR_UPLOAD_ACK       0x0003
+#define ICQ_AVATAR_GET_REQUEST	    0x0006
+#define ICQ_AVATAR_GET_REPLY        0x0007
+
+/* Subtypes for Server Lists Family 0x0013 */
 #define ICQ_LISTS_CLI_REQLISTS      0x0002
 #define ICQ_LISTS_SRV_REPLYLISTS    0x0003
 #define ICQ_LISTS_CLI_REQUEST       0x0004
@@ -220,14 +230,14 @@
 #define ICQ_LISTS_CLI_MODIFYSTART   0x0011
 #define ICQ_LISTS_CLI_MODIFYEND     0x0012
 #define ICQ_LISTS_YOUWEREADDED      0x0015
-#define ICQ_LISTS_REQUESTAUTH		0x0018
+#define ICQ_LISTS_REQUESTAUTH       0x0018
 #define ICQ_LISTS_AUTHREQUEST       0x0019
-#define ICQ_LISTS_AUTHRESPONSE		0x001A
-#define ICQ_LISTS_AUTHRESPONSE2		0x001B
+#define ICQ_LISTS_AUTHRESPONSE      0x001A
+#define ICQ_LISTS_AUTHRESPONSE2     0x001B
 #define ICQ_LISTS_YOUWEREADDED2     0x001C
 
-// SNACS for Family 0x0015
-#define SRV_ICQEXT_ERROR			0x0001
+// SNACS for ICQ Extensions Family 0x0015
+#define SRV_ICQEXT_ERROR            0x0001
 #define CLI_META_REQ                0x0002
 #define SRV_META_REPLY              0x0003
 
@@ -308,9 +318,9 @@
 
 
 // Internal Constants
-#define ICQ_VERSION					8
+#define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
-#define MAX_NICK_SIZE				32
+#define MAX_NICK_SIZE               32
 #define MAX_CONTACTSSEND            15
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
