@@ -116,7 +116,7 @@ int __stdcall YAHOO_SendBroadcast( HANDLE hContact, int type, int result, HANDLE
 
 DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const char* parValue );
 
-void __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags );
+int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags );
 
 #define YAHOO_hasnotification() ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)
 

@@ -116,7 +116,6 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	switch( message )
 	{
 		case WM_COMMAND:
-		{
 			/*void* tData = PUGetPluginData( hWnd );
 			if ( tData != NULL )
 			{
@@ -124,8 +123,10 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				CreateThread( NULL, 0, MsnShowMailThread, hWnd, 0, &tThreadID );
 				PUDeletePopUp( hWnd );
 			}*/
+			if ( HIWORD( wParam ) == STN_CLICKED) 
+				PUDeletePopUp( hWnd );
 			break;
-		}
+		
 
 		case WM_CONTEXTMENU:
 			PUDeletePopUp( hWnd ); 
@@ -140,37 +141,39 @@ static int CALLBACK YahooMailPopupDlgProc(HWND hWnd, UINT message, WPARAM wParam
 	switch( message )
 	{
 		case WM_COMMAND:
-		{
-    			if ( HIWORD( wParam ) == STN_CLICKED) 
-    			{
-	char tUrl[ 4096 ];
-	DBVARIANT dbv;
-	if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
-		return 0;
-		
-	_snprintf( tUrl, sizeof( tUrl ), "http://mail.yahoo.com/", dbv.pszVal  );
-	DBFreeVariant( &dbv );
-	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
-
-				PUDeletePopUp( hWnd );
-				return TRUE;
+				if ( HIWORD( wParam ) == STN_CLICKED) {
+					char tUrl[ 4096 ];
+					DBVARIANT dbv;
+					if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
+						return 0;
+						
+					_snprintf( tUrl, sizeof( tUrl ), "http://mail.yahoo.com/", dbv.pszVal  );
+					DBFreeVariant( &dbv );
+					CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
+	
+					PUDeletePopUp( hWnd );
+					return TRUE;
 				}
+				break;
+				
+		case WM_CONTEXTMENU:
+			PUDeletePopUp( hWnd ); 
 			break;
-		}
+
 	}
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 
-void __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags )
+int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags )
 {
 	if ( !ServiceExists( MS_POPUP_ADDPOPUP ))
 	{	
 		if ( flags & YAHOO_ALLOW_MSGBOX )
 			MessageBox( NULL, msg, "Yahoo Protocol", MB_OK | MB_ICONINFORMATION );
 
-		return;
+		return 0;
 	}
 
 	POPUPDATAEX ppd;
@@ -187,21 +190,22 @@ void __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags
 	ppd.PluginData = ( flags & YAHOO_ALLOW_ENTER ) ? &ppd : NULL;
 		
 	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )) {
-		   if (flags & YAHOO_MAIL_POPUP)
-		        {
+		   if (flags & YAHOO_MAIL_POPUP){
 		        YAHOO_CallService( MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0 );
                 ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;		        
-		        }
+			}
     } else {	
 	    int tTimeout = 5;   
 	    ppd.iSeconds = YAHOO_GetDword( "PopupTimeoutOther",tTimeout);
-	    if (flags & YAHOO_MAIL_POPUP)	         
-	         {
+	    if (flags & YAHOO_MAIL_POPUP) {
              ppd.iSeconds = YAHOO_GetDword( "PopupTimeout", tTimeout );
              ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;
-             }
+		}
+		
 		YAHOO_CallService( MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0 );
      }	
+	
+	return 1;
 }
 
 int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
