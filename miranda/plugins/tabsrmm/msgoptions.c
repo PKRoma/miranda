@@ -535,9 +535,8 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
             switch (LOWORD(wParam)) {
                 case IDC_TYPETRAY:
 					if (IsDlgButtonChecked(hwndDlg, IDC_TYPETRAY)) {
-						if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
-							EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), TRUE);
-						}
+						if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY))
+							EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), FALSE);
 						else {
 							EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), TRUE);
 							EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), TRUE);

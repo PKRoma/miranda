@@ -67,4 +67,4 @@ Release_MINGW32_UNICODE/srmm.o: srmm.c
 	$(CC) -c srmm.c -o Release_MINGW32_UNICODE/srmm.o $(CFLAGS)
 
 tabsrmm_private.res: tabsrmm_private.rc
-	$(WINDRES) -i tabsrmm_private.rc -I rc -o tabsrmm_private.res -O coff -D__GNUWIN32__
+	$(WINDRES) -i tabsrmm_private.rc -I rc -o tabsrmm_private.res -O coff -D__GNUWIN32__ -DUNICODE

@@ -40,6 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FLASHW_CAPTION 0x00000001
 #define FLASHW_ALL (FLASHW_TRAY | FLASHW_CAPTION)
 #define FLASHW_TIMERNOFG 0x0000000C
+#define FLASHW_TIMER 0x00000004
 
 typedef struct __gettextex
 {

@@ -699,6 +699,9 @@
 				RelativePath="resource.h">
 			</File>
 			<File
+				RelativePath=".\resrc1.h">
+			</File>
+			<File
 				RelativePath="sendqueue.h">
 			</File>
 		</Filter>
@@ -739,10 +742,10 @@
 				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur">
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+				RelativePath="..\..\src\res\dropuser.cur">
 			</File>
 			<File
 				RelativePath=".\res\error.ico">
@@ -763,10 +766,10 @@
 				RelativePath=".\res\angeli-icons\HistoryXP.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur">
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath=".\res\in.ico">
@@ -776,6 +779,9 @@
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\Info.ico">
+			</File>
+			<File
+				RelativePath=".\msgwindow.rc">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\Multi.ico">
@@ -832,7 +838,7 @@
 				RelativePath="..\..\Miranda-IM\res\rename.ico">
 			</File>
 			<File
-				RelativePath="resource.rc">
+				RelativePath=".\resource.rc">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\Save.ico">

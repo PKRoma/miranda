@@ -646,8 +646,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (!showButton && !showSend && !showInfo)
                 urc->rcItem.bottom += 24;
-            else
-                urc->rcItem.bottom -= 1;
+            else urc->rcItem.bottom += 1;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
@@ -984,7 +983,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEDITSTYLE, SES_USEAIMM, SES_USEAIMM);
+//                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEDITSTYLE, SES_USEAIMM, SES_USEAIMM);
                 
                 /* duh, how come we didnt use this from the start? */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
