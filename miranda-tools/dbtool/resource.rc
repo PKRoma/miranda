@@ -103,7 +103,7 @@ END
 IDD_SELECTDB DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Select Miranda Profile",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -125,7 +125,7 @@ END
 IDD_OPENERROR DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Error Opening Database",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -144,7 +144,7 @@ END
 IDD_FILEACCESS DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "File Access Options",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -171,7 +171,7 @@ END
 IDD_CLEANING DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Cleaning Options",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -194,7 +194,7 @@ END
 IDD_PROGRESS DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",-1,0,0,262,32
     LTEXT           "Working...",-1,11,6,206,8,WS_BORDER
@@ -213,7 +213,7 @@ END
 IDD_FINISHED DIALOGEX 0, 0, 262, 143
 STYLE DS_3DLOOK | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "whiterect",IDC_STATIC,0,0,262,32
     LTEXT           "Finished!",IDC_STATIC,11,6,206,8,WS_BORDER
@@ -339,8 +339,8 @@ IDI_PROFILERED          ICON    DISCARDABLE     "res\\profiler.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,1,0
- PRODUCTVERSION 0,3,1,0
+ FILEVERSION 0,3,3,0
+ PRODUCTVERSION 0,3,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -358,14 +358,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", " \0"
             VALUE "FileDescription", "Miranda IM Database Tool\0"
-            VALUE "FileVersion", "0.3.1\0"
+            VALUE "FileVersion", "0.3.3\0"
             VALUE "InternalName", "dbtool\0"
             VALUE "LegalCopyright", "Copyright © 2001-3 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "dbtool.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Miranda Database Tool\0"
-            VALUE "ProductVersion", "0.3.1\0"
+            VALUE "ProductVersion", "0.3.3\0"
             VALUE "SpecialBuild", "\0"
         END
     END
