@@ -67,14 +67,14 @@ void *list_add_sorted(list_t *list, void *data, int alloc_size, int (*comparisio
 			tmp->next = new;
 		} else {
 			list_t prev = NULL;
-			
+
 			while (comparision(new->data, tmp->data) > 0) {
 				prev = tmp;
 				tmp = tmp->next;
 				if (!tmp)
 					break;
 			}
-			
+
 			if (!prev) {
 				tmp = *list;
 				*list = new;
@@ -112,7 +112,7 @@ int list_remove(list_t *list, void *data, int free_data)
 {
 	list_t tmp, last = NULL;
 
-	if (!list) {
+	if (!list || !*list) {
 		errno = EFAULT;
 		return -1;
 	}
@@ -165,7 +165,7 @@ int list_count(list_t list)
 int list_destroy(list_t list, int free_data)
 {
 	list_t tmp;
-	
+
 	while (list) {
 		if (free_data)
 			free(list->data);
@@ -191,10 +191,10 @@ int list_destroy(list_t list, int free_data)
 static void string_realloc(string_t s, int count)
 {
 	char *tmp;
-	
+
 	if (s->str && count + 1 <= s->size)
 		return;
-	
+
 	tmp = realloc(s->str, count + 81);
 	if (!s->str)
 		*tmp = 0;
@@ -202,7 +202,7 @@ static void string_realloc(string_t s, int count)
 	s->size = count + 81;
 	s->str = tmp;
 }
-	
+
 /*
  * string_append_c()
  *
@@ -218,7 +218,7 @@ int string_append_c(string_t s, char c)
 		errno = EFAULT;
 		return -1;
 	}
-	
+
 	string_realloc(s, s->len + 1);
 
 	s->str[s->len + 1] = 0;
@@ -265,7 +265,7 @@ int string_append(string_t s, const char *str)
  * string_insert_n()
  *
  * wstawia tekst w podane miejsce bufora.
- *  
+ *
  *  - s - ci±g znaków,
  *  - index - miejsce, gdzie mamy wpisaæ (liczone od 0),
  *  - str - tekst do dopisania,
@@ -281,7 +281,7 @@ void string_insert_n(string_t s, int index, const char *str, int count)
 
 	if (index > s->len)
 		index = s->len;
-	
+
 	string_realloc(s, s->len + count);
 
 	memmove(s->str + index + count, s->str + index, s->len + 1 - index);
@@ -387,7 +387,7 @@ const char *ditoa(long int i)
 
 	if (index > 9)
 		index = 0;
-	
+
 	snprintf(tmp, 16, "%ld", i);
 
 	return tmp;
@@ -425,7 +425,7 @@ char **array_make(const char *string, const char *sep, int max, int trim, int qu
 
 		if (max && items >= max - 1)
 			last = 1;
-		
+
 		if (trim) {
 			while (*p && strchr(sep, *p))
 				p++;
@@ -447,14 +447,14 @@ char **array_make(const char *string, const char *sep, int max, int trim, int qu
 
 			if ((token = calloc(1, len + 1))) {
 				char *r = token;
-			
+
 				for (q = p + 1; *q; q++, r++) {
 					if (*q == '\\') {
 						q++;
-						
+
 						if (!*q)
 							break;
-						
+
 						switch (*q) {
 							case 'n':
 								*r = '\n';
@@ -470,13 +470,13 @@ char **array_make(const char *string, const char *sep, int max, int trim, int qu
 						}
 					} else if (*q == sep) {
 						break;
-					} else 
+					} else
 						*r = *q;
 				}
-				
+
 				*r = 0;
 			}
-			
+
 			p = (*q) ? q + 1 : q;
 
 		} else {
@@ -486,7 +486,7 @@ char **array_make(const char *string, const char *sep, int max, int trim, int qu
 			token[len] = 0;
 			p = q;
 		}
-		
+
 		result = realloc(result, (items + 2) * sizeof(char*));
 		result[items] = token;
 		result[++items] = NULL;
@@ -524,7 +524,7 @@ int array_count(char **array)
 	return result;
 }
 
-/* 
+/*
  * array_add()
  *
  * dodaje element do tablicy.
@@ -594,7 +594,7 @@ int array_contains(char **array, const char *string, int casesensitive)
 
 	return 0;
 }
-	
+
 /*
  * array_free()
  *

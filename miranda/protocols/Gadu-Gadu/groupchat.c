@@ -110,7 +110,7 @@ int gg_gc_unload()
         gg_gc_chat *chat = (gg_gc_chat *)l->data;
         if(chat->recipients) free(chat->recipients);
     }
-	list_destroy(chats, 0);
+    list_destroy(chats, 1); chats = NULL;
     LocalEventUnhook(hHookGCUserEvent);
     LocalEventUnhook(hHookGCMenuBuild);
     if(hEventGGGetChat) DestroyHookableEvent(hEventGGGetChat);
@@ -125,7 +125,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 {
     GCHOOK *gch = (GCHOOK *)lParam;
     if(!gch) return 0;
-    gg_gc_chat *chat = (gg_gc_chat *)gch->dwData;
+    gg_gc_chat *chat = NULL;
 
     uin_t uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
 
@@ -144,10 +144,10 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
     }
 
     // Window terminated
-    if(gch->pDest && (gch->pDest->iType == GC_USER_TERMINATE) && chat)
+    if(gch->pDest && (gch->pDest->iType == GC_USER_TERMINATE) && gch->pDest->pszID)
     {
 #ifdef DEBUGMODE
-        gg_netlog("gg_gc_event(): Terminating window and chat %x, id %s...", chat, chat->id);
+        gg_netlog("gg_gc_event(): Terminating window and chat %x, id %s...", chat, gch->pDest->pszID);
 #endif
         // Remove contact from contact list (duh!) should be done by chat.dll !!
         HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -156,13 +156,16 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
             DBVARIANT dbv;
             if(!DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv))
             {
-                if(dbv.pszVal && !strcmp(chat->id, dbv.pszVal))
+                if(dbv.pszVal && !strcmp(gch->pDest->pszID, dbv.pszVal))
                     CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
             }
             hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
         }
-        free(chat->recipients);
-        list_remove(&chats, chat, 1);
+        if(chat)
+        {
+            free(chat->recipients);
+            list_remove(&chats, chat, 1);
+        }
         return 1;
     }
 
@@ -187,7 +190,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
         gcevent.bIsMe = 1;
         gcevent.bAddToLog = 1;
 #ifdef DEBUGMODE
-        gg_netlog("gg_gc_event(): Sending conference message to room %s, \"%s\".", chat->id, gch->pszText);
+        gg_netlog("gg_gc_event(): Sending conference message to room %s, \"%s\".", gch->pDest->pszID, gch->pszText);
 #endif
         CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
         if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
