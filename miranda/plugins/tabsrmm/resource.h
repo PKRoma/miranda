@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by resource.rc
+// Used by msgwindow.rc
 //
 #define IDC_READNEXT                    3
 #define IDC_APPLY                       3

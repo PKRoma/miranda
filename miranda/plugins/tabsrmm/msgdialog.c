@@ -1116,10 +1116,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #if defined ( _UNICODE )
                     if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW", &dbv)) {
                         SETTEXTEX stx = {ST_DEFAULT, 1200};
-                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 0)  { // at least the 0x0000 is always there... 
+                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 0) // at least the 0x0000 is always there... 
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)Utf8Decode(dbv.pszVal));
-                            // old richedit20W version SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)Utf8Decode(dbv.pszVal));
-                        }
 #else
     				if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
                         if(dbv.cchVal > 0)
@@ -1142,9 +1140,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(len)
                         EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
                 }
-            /*
-             * set locale if saved to contact
-             */
+                /*
+                 * set locale if saved to contact
+                 */
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0) {
                     DBVARIANT dbv;
                     int res;
@@ -1172,7 +1170,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
                     }
                 }
-            // XXX autolocale
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
                 if (newData->iActivate) {
                     if(!dat->hThread) {
@@ -1183,10 +1180,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left + 1, rc.top, (rc.right - rc.left) - 8, (rc.bottom - rc.top) - 2, 0);
                     SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     if(IsIconic(dat->pContainer->hwnd) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0)) {
+                        DBEVENTINFO dbei = {0};
+
+                        dbei.flags = 0;
+                        dbei.eventType = EVENTTYPE_MESSAGE;
                         dat->iFlashIcon = g_IconMsgEvent;
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                         dat->mayFlashTab = TRUE;
                         dat->dwTickLastEvent = GetTickCount();
+                        FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
+                        SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                         //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
@@ -1208,6 +1211,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                     SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                     FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
+                    if(GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd)
+                        FlashContainer(dat->pContainer, 1, 0);
                     //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                 }
                 SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
@@ -1574,7 +1579,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
-                // XXX autolocale stuff
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0) && dat->hContact != 0)
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -1731,7 +1735,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     pt.x = wParam;
                     pt.y = 0;
                     ScreenToClient(hwndDlg, &pt);
-
                     oldSplitterX = dat->multiSplitterX;
                     dat->multiSplitterX = rc.right - pt.x;
                     if (dat->multiSplitterX < 25)
@@ -1981,7 +1984,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
         case WM_TIMER:
             /*
-             * timerid_msgsend is composed like:
+             * timer id for message timeouts is composed like:
              * for single message sends: basevalue (TIMERID_MSGSEND) + send queue index
              * for multisend: each send entry (hContact/hSendID pair) has its own timer starting at TIMERID_MSGSEND + NR_SENDJOBS in blocks
              * of SENDJOBS_MAX_SENDS)
@@ -2275,7 +2278,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                     //SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                 }
                 else {
@@ -3201,27 +3204,27 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                
-                switch (ack->result) {
-                    case ACKRESULT_FAILED: {
-                        //_DebugPopup(dat->hContact, "(%d) ACK_FAILED with: %d, %d - index: %d", dat->hContact, ack->hContact, ack->hProcess, iFound);
-                        if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
-                            char szErrMsg[256];
-                            char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
-                            _snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", contactName);
-                            LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
-                            sendJobs[iFound].iAcksNeeded--;
-                            goto verify;
-                        }
-                        else {
-                            _snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "Delivery failure: %s", (char *)ack->lParam);
-                            sendJobs[iFound].iStatus = SQ_ERROR;
-                            KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
-                            if(!(dat->dwFlags & MWF_ERRORSTATE))
-                                HandleQueueError(hwndDlg, dat, iFound);
-                        }
-                        return 0;
+                if(ack->result == ACKRESULT_FAILED) {
+                    /*
+                     * "hard" errors are handled differently in multisend. There is no option to retry - once failed, they
+                     * are discarded and the user is notified with a small log message.
+                     */
+                    if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
+                        char szErrMsg[256];
+                        char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
+                        _snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", contactName);
+                        LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
+                        goto verify;
                     }
-                }                   //switch
+                    else {
+                        _snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "Delivery failure: %s", (char *)ack->lParam);
+                        sendJobs[iFound].iStatus = SQ_ERROR;
+                        KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
+                        if(!(dat->dwFlags & MWF_ERRORSTATE))
+                            HandleQueueError(hwndDlg, dat, iFound);
+                    }
+                    return 0;
+                }
 
                 //_DebugPopup(dat->hContact, "(Owner %d) ACK_for: hC: %d, sendid: %d - index: %d (%d)", sendJobs[iFound].hOwner, sendJobs[iFound].hContact[i], sendJobs[iFound].hSendId[i], iFound, i);
                 //_DebugPopup(dat->hContact, "(Owner %d) ACK_for: hC: %d, sendid: %d - index: %d (%d)", sendJobs[iFound].hOwner, ack->hContact, ack->hProcess, iFound, i);
@@ -3233,13 +3236,26 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dbei.cbBlob = lstrlenA(sendJobs[iFound].sendBuffer) + 1;
                 dat->stats.iSentBytes += (dbei.cbBlob - 1);
                 dat->stats.iSent++;
-                
+
 #if defined( _UNICODE )
                 dbei.cbBlob *= sizeof(TCHAR) + 1;
 #endif
                 dbei.pBlob = (PBYTE) sendJobs[iFound].sendBuffer;
                 hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) sendJobs[iFound].hContact[i], (LPARAM) & dbei);
                 SkinPlaySound("SendMsg");
+
+                /*
+                 * if this is a multisend job, AND the ack was from a different contact (not the session "owner" hContact)
+                 * then we print a small message telling the user that the message has been delivered to *foo*
+                 */
+
+                if(sendJobs[iFound].hContact[i] != sendJobs[iFound].hOwner) {
+                    char szErrMsg[256];
+                    char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
+                    _snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", contactName);
+                    LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
+                }
+
                 if (sendJobs[iFound].hContact[i] == dat->hContact) {
                     if (dat->hDbEventFirst == NULL) {
                         dat->hDbEventFirst = hNewEvent;
@@ -3251,11 +3267,6 @@ verify:
                 sendJobs[iFound].hContact[i] = NULL;
                 sendJobs[iFound].iAcksNeeded--;
                 
-                /*
-                 for (i = 0; i < sendJobs[iFound].sendCount; i++)
-                    if (sendJobs[iFound].hContact[i] || sendJobs[iFound].hSendId[i])
-                        break; */
-                //if (i == sendJobs[iFound].sendCount) {              //all messages sent
                 if(sendJobs[iFound].iAcksNeeded == 0) {               // everything sent
                     if(sendJobs[iFound].sendCount > 1)
                         EnableSending(hwndDlg, dat, TRUE);

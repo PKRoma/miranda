@@ -87,7 +87,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 int GetProtoIconFromList(const char *szProto, int iStatus);
 void CreateImageList(BOOL bInitial);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
-void FlashContainer(struct ContainerWindowData *pContainer, int iMode);
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iNum);
 
 // the cached message log icons
 void CacheMsgLogIcons();
@@ -1125,16 +1125,16 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
             if(pContainer->dwFlags & CNT_NOFLASH)
                 SendMessage(pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
             else
-                FlashContainer(pContainer, 1);
+                FlashContainer(pContainer, 1, 0);
         }
     }
     if (bActivateTab) {
         SetFocus(hwndNew);
         RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
         UpdateWindow(pContainer->hwnd);
-        if(GetForegroundWindow() != pContainer->hwnd)
+        if(GetForegroundWindow() != pContainer->hwnd && bPopupContainer == TRUE)
             SetForegroundWindow(pContainer->hwnd);
-        PostMessage(hwndNew, DM_SCROLLLOGTOBOTTOM, 0, 0);
+        //PostMessage(hwndNew, DM_SCROLLLOGTOBOTTOM, 0, 0);
     }
 	return hwndNew;		// return handle of the new dialog
 }

@@ -157,7 +157,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         HANDLE hContact, hItem;
         //ClearSendJob(iEntry);
         //_DebugMessage(hwndDlg, dat, "Multisend is temporarily disabled because of drastic changes to the send queue system");
-        return 0;
+        //return 0;
         sendJobs[iEntry].sendCount = 0;
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
         do {

@@ -85,6 +85,14 @@ Version 0.9.9.5 - 2005/01/XX
         * changed ACK code - the "per message window" ack handler is now replaced by a global
           ack dispatcher.
           
+        + multisend is back, still EXPERIMENTAL though. Use with care and be warned that some
+          stuff, like error handling, doesn't work as it should. Multisend is currently limited
+          to 20 contacts/send - this may or may not change in the future, depending on how well
+          it works.
+          
+        ! when creating tabs minimized in the background, the container didn't always flash as
+          it should.
+          
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

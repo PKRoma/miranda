@@ -9,6 +9,7 @@
 //
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "windows.h"
+#include "richedit.h"
 #undef APSTUDIO_HIDDEN_SYMBOLS
 #include "winres.h"
 #include "..\..\include\statusmodes.h"
@@ -31,19 +32,19 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 IDD_MSGSPLITNEW DIALOGEX 0, 0, 188, 79
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD | 
     WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 #if defined(UNICODE)
-    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES |
+    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
 #else
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES |
+    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
 #endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
@@ -91,7 +92,8 @@ BEGIN
                     WS_GROUP
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
-                    WS_EX_RTLREADING | WS_EX_STATICEDGE
+					WS_EX_STATICEDGE
+                   
 END
 
 #endif    // Neutral resources
@@ -122,6 +124,7 @@ END
 BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
+    "#include ""richedit.h""\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""winres.h""\r\n"
     "#include ""..\\..\\include\\statusmodes.h""\r\n"
