@@ -4,9 +4,19 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.2.0.2
+===============
+[+] search by JID now verifies the user's presense, without confirming any
+input
+[!] bug #0000298 fixed: search by nickname instead of a full JID resulted
+to the auth process stuck.
+[!] bug #0000691 fixed: Jabber writes to MyHandle instead of a NickName
+[!] bug #0000715 fixed: Link to list of public servers is broken
+[!] another crash-on-exit fixed
+
 Version 0.2.0.1
 ===============
-[!] 0000818: Jabber disconnects when sending message that contains ampersand 
+[!] bug #0000818 fixed: Jabber disconnects when sending message that contains ampersand
 [!] bugfix: fixed GPF on logging off
 [!] bugfix: if an attempt is made to login while plugin is connecting, mode is set to online
 
