@@ -12,8 +12,8 @@ LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)
 INCS =  -I"C:/Dev-Cpp/include"
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
 BIN  = Release_MINGW32_UNICODE/tabsrmmW.dll
-CXXFLAGS = $(CXXINCS) -DBUILDING_DLL=1   -fexpensive-optimizations -O2 -mwindows
-CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -DUNICODE   -fexpensive-optimizations -O2 -mwindows
+CXXFLAGS = $(CXXINCS) -DBUILDING_DLL=1   -fexpensive-optimizations -O2 -mwindows -fno-exceptions -fno-rtti
+CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -DUNICODE  -fno-exceptions -O2 -mwindows
 
 .PHONY: all all-before all-after clean clean-custom
 

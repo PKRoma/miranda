@@ -1867,9 +1867,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (dat->uMinHeight > 0 && HIWORD(lParam) >= dat->uMinHeight) {
                     if (dat->splitterY > HIWORD(lParam) - MINLOGHEIGHT) {
                         dat->splitterY = HIWORD(lParam) - MINLOGHEIGHT;
+                        if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
+                            dat->dynaSplitter = dat->splitterY - 34;
+                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                        }
                     }
                     if (dat->splitterY < MINSPLITTERY) {
-                        if(dat->showPic)
+                        if(dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR))
                             SendMessage(hwndDlg, DM_ALIGNSPLITTERMAXLOG, 0, 0);
                         else
                             SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
@@ -1955,11 +1960,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  * attempt to fix splitter troubles..
                  * hardcoded limits... better solution is possible, but this works for now
                  */
-                    if (dat->splitterY > ((rc.bottom - rc.top) - 50))    // splitter top limit
-                        dat->splitterY = oldSplitterY;
                     if (dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
                         int iOffset = (dat->showUIElements == 0) ? 28 : 0;
                         if (dat->splitterY < (dat->bottomOffset + iOffset) || dat->splitterY < MINSPLITTERY)
+                            dat->splitterY = oldSplitterY;
+                        if (dat->splitterY > ((rc.bottom - rc.top) - 50))    // splitter top limit
                             dat->splitterY = oldSplitterY;
                     } else {
                         // handle dynamic resizing of picture while splitter is moving...
@@ -4445,6 +4450,7 @@ static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
         UpdateReadChars(hwndDlg, dat->pContainer->hwndStatus);
+        UpdateUnsentDisplay(hwndDlg, dat);
     }
 }
 static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)

@@ -197,7 +197,7 @@ struct ProtocolData {
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 
-#define MINSPLITTERY         45
+#define MINSPLITTERY         50
 #define MINLOGHEIGHT         30
 
 // wParam values for DM_SELECTTAB
