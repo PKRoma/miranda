@@ -894,16 +894,20 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 							}
 						}
 					}
-					else if (GetWord(mess.c_str(), 5) != "") // ... or try another method of separating the dcc command
+					else if (GetWord(mess.c_str(), type == "chat"?4:5) != "") // ... or try another method of separating the dcc command
 					{
-						int index = 5;
+						int index = type == "chat"?4:5;
 						bool bFlag = false;
 
 						// look for the part of the ctcp command that contains adress, port and size
 						while (!bFlag && GetWord(mess.c_str(), index) != "")
 						{
-							String sTemp = GetWord(mess.c_str(), index-2) + GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
+							String sTemp;
 							
+							if(type == "chat")
+								sTemp = GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
+							else	
+								sTemp = GetWord(mess.c_str(), index-2) + GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
 							// if all characters are number it indicates we have found the adress, port and size parameters
 							int ind = 0;
 
@@ -913,7 +917,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 									break;
 								ind++;
 							}
-							if(sTemp[ind] == '\0' && GetWord(mess.c_str(), index + 2) == "")
+							if(sTemp[ind] == '\0' && GetWord(mess.c_str(), index + ((type == "chat")?1:2)) == "")
 								bFlag = true;
 							index++;
 						}
@@ -922,21 +926,26 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 							char * p1 = strdup(GetWordAddress(mess.c_str(), 2));
 							char * p2 = GetWordAddress(p1, index-5);
 							
-							if(p2 > p1)
+							if(type == "send")
 							{
-								p2--;
-								while( p2 != p1 && *p2 == ' ')
+								if(p2 > p1)
 								{
-									*p2 = '\0';
 									p2--;
+									while( p2 != p1 && *p2 == ' ')
+									{
+										*p2 = '\0';
+										p2--;
+									}
+									sFile = p1;
 								}
-								sFile = p1;
 							}
+							else
+								sFile = "chat";
 
 							delete [] p1;
 
-							dwAdr = atoi(GetWord(mess.c_str(), index-3).c_str());
-							iPort = atoi(GetWord(mess.c_str(), index-2).c_str());
+							dwAdr = atoi(GetWord(mess.c_str(), index- (type == "chat"?2:3)).c_str());
+							iPort = atoi(GetWord(mess.c_str(), index-(type == "chat"?1:2)).c_str());
 							dwSize = atoi(GetWord(mess.c_str(), index-1).c_str());
 							sToken = GetWord(mess.c_str(), index);
 										

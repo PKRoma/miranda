@@ -79,8 +79,6 @@ BOOL CALLBACK MessageboxWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPar
 		
 		case WM_CLOSE:
 		{
-			if(pdci)
-				delete pdci;
 			DestroyWindow(hwndDlg);
 		} break;
 		
