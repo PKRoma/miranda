@@ -139,32 +139,7 @@ static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 
 
-char *GetConCatNickname(HDC dc, char *nickname, int maxwidth, PRECT arect)
-{	
-	DrawText(dc,nickname,lstrlen(nickname),arect, DT_CALCRECT|DT_SINGLELINE);
-	
-	if (arect->right-arect->left > maxwidth) 
-	{		
-		int n;
-		BOOL bFits = FALSE;
 
-		for (n=lstrlen(nickname)-3;n>0;n--)
-		{		
-			char buf[512];
-			strncpy(buf,nickname,n);
-			buf[n]='\0';
-			strcat(buf,"...");
-						
-			DrawText(dc,buf,lstrlen(buf),arect, DT_CALCRECT|DT_SINGLELINE);
-			if (arect->right-arect->left <= maxwidth)
-			{
-				strcpy(nickname,buf);
-				return nickname;
-			}
-		}
-	} 
-	return nickname;
-}
 
 void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
@@ -622,16 +597,25 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			}
 			else
 			{
-				char buf[512];
-				RECT arect = clRect;
-				strcpy(buf,group->contact[group->scanIndex].szText);
-				if ( GetConCatNickname(hdcMem, buf, clRect.right - (dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace),&arect ) )
-					TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),buf,lstrlen(buf));
-			}
+				char * szText = group->contact[group->scanIndex].szText;
+				RECT rc;					
+				rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
+				rc.top=y+((dat->rowHeight-fontHeight)>>1);
+				rc.right=(clRect.right - clRect.left) - ( rc.left >> 1 );
+				rc.bottom=rc.top;
+				DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_EDITCONTROL | DT_HIDEPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+			}			
 			if(selected) {
 				if(group->contact[group->scanIndex].type!=CLCIT_DIVIDER) {
-					SetTextColor(hdcMem,dat->quickSearchColour);
-					TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(dat->szQuickSearch));
+					char * szText = group->contact[group->scanIndex].szText;
+					RECT rc;
+					int qlen=lstrlen(dat->szQuickSearch);
+					SetTextColor(hdcMem,dat->quickSearchColour);				
+					rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
+					rc.top=y+((dat->rowHeight-fontHeight)>>1);
+					rc.right=(clRect.right - clRect.left) - ( rc.left >> 1 );
+					rc.bottom=rc.top;
+					if ( qlen ) DrawText(hdcMem, szText, qlen, &rc, DT_EDITCONTROL | DT_HIDEPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
 				}
 			}
 
