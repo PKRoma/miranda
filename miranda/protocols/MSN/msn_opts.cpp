@@ -87,9 +87,10 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))
 			SetDlgItemText( hwndDlg, IDC_HANDLE2, tBuffer );
 
-		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU,	MSN_GetByte( "DisableSetNickname", 0 ));
-		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,		MSN_GetByte( "SendFontInfo", 1 ));
-		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,	MSN_GetByte( "NeverUpdateNickname", 0 ));
+		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU, MSN_GetByte( "DisableSetNickname", 0 ));
+		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
+		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
+		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
 
 		int tValue = MSN_GetByte( "RunMailerOnHotmail", 0 );
 		CheckDlgButton( hwndDlg, IDC_RUN_APP_ON_HOTMAIL, tValue );
@@ -166,6 +167,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			case IDC_DISABLE_MAIN_MENU:			case IDC_SENDFONTINFO:
 			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
+			case IDC_AWAY_AS_BRB:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
@@ -300,6 +302,7 @@ LBL_Del:			DeleteFile( tFileName );
 			MSN_SetByte( "RunMailerOnHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL ));
 			MSN_SetByte( "NeverUpdateNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_OWN_NICKNAME ));
 			MSN_SetByte( "DisableSetNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAIN_MENU ));
+			MSN_SetByte( "AwayAsBrb", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AWAY_AS_BRB ));
 
 			GetDlgItemText( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
 			MSN_SetString( NULL, "MailerPath", screenStr );
@@ -307,6 +310,7 @@ LBL_Del:			DeleteFile( tFileName );
 			if ( reconnectRequired && msnLoggedIn )
 				MessageBox( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
 
+			LoadOptions();
 			return TRUE;
 		}
 		break;
@@ -669,6 +673,7 @@ void __stdcall LoadOptions()
 	MyOptions.DisableMenu = MSN_GetByte( "DisableSetNickname", FALSE );
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
+	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

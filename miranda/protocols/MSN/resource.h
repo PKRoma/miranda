@@ -50,6 +50,7 @@
 #define IDC_BGCOLOUR                    1026
 #define IDC_KEEPALIVE                   1027
 #define IDC_TEXTCOLOUR                  1028
+#define IDC_AWAY_AS_BRB                 1029
 #define IDC_PREVIEW                     1030
 #define IDC_PREVIEW2                    1031
 #define IDC_SENDFONTINFO                1046
@@ -79,7 +80,7 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        131

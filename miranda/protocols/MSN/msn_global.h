@@ -480,6 +480,7 @@ typedef struct
 	BOOL		UseProxy;
 	BOOL		KeepConnectionAlive;
 	BOOL		ShowErrorsAsPopups;
+	BOOL		AwayAsBrb;
 }
 	MYOPTIONS;
 

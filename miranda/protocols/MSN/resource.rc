@@ -63,25 +63,28 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,98,192,10
     CONTROL         "Send message font color/size info inside messages",
                     IDC_SENDFONTINFO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,112,193,10
+                    12,110,193,10
     CONTROL         "Disable all contacts not included into my contact list",
                     IDC_DISABLE_ANOTHER_CONTACTS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,126,195,10
-    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,225,96,86,10
+                    WS_TABSTOP,12,122,195,10
     CONTROL         "Never update your nickname from server",
                     IDC_USE_OWN_NICKNAME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,140,190,10
+                    WS_TABSTOP,12,134,190,10
+    CONTROL         "Treat Away status as 'Be Right Back'",
+                    IDC_AWAY_AS_BRB,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,12,146,195,10
     CONTROL         "Run the following application when new Hotmail is arrived",
                     IDC_RUN_APP_ON_HOTMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,155,194,10
-    EDITTEXT        IDC_MAILER_APP,24,166,163,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,191,166,15,12
+                    WS_TABSTOP,12,158,194,10
+    EDITTEXT        IDC_MAILER_APP,24,172,163,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,191,172,15,12
     CONTROL         "Create a new MSN messenger account using the MSN website",
                     IDC_NEWMSNACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,68,208,8
     GROUPBOX        "Avatars",IDC_STATIC,218,84,102,112
     CONTROL         "",IDC_AVATAR,"Static",SS_BITMAP | NOT WS_VISIBLE,237,
                     111,15,13
+    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,225,96,86,10
     PUSHBUTTON      "Set",IDC_SETAVATAR,232,177,34,13
     PUSHBUTTON      "Delete",IDC_DELETEAVATAR,271,177,34,13
 END
