@@ -66,12 +66,14 @@ typedef struct {
 } pluginEntryList;
 
 PLUGINLINK pluginCoreLink;
+char mirandabootini[MAX_PATH];
 static DWORD mirandaVersion;
 static pluginEntryList pluginListHead;
 static pluginEntry * pluginListDb;
 static pluginEntry * pluginListUI;
 static HANDLE hPluginListHeap = NULL;
 static pluginEntry * pluginDefModList[DEFMOD_HIGHEST+1]; // do not free this memory
+static int askAboutIgnoredPlugins;
 
 #define PLUGINDISABLELIST "PluginDisable"
 
@@ -377,16 +379,26 @@ int LoadNewPluginsModuleInfos(void)
 	return 0;
 }
 
-// returns 1 if the plugin should be enabled within this profile, filename is always lower case
-static int isPluginOnWhiteList(char * pluginname)
-{
-	return DBGetContactSettingByte(NULL, PLUGINDISABLELIST, pluginname, 0) == 0;
-}
-
 static void SetPluginOnWhiteList(char * pluginname, int allow)
 {
 	DBWriteContactSettingByte(NULL, PLUGINDISABLELIST, pluginname, allow ? 0 : 1);
 }
+
+// returns 1 if the plugin should be enabled within this profile, filename is always lower case
+static int isPluginOnWhiteList(char * pluginname)
+{
+	int rc = DBGetContactSettingByte(NULL, PLUGINDISABLELIST, pluginname, 0);
+	if ( rc != 0 && askAboutIgnoredPlugins ) {
+		char buf[256];
+		_snprintf(buf,sizeof(buf),Translate("'%s' is disabled, re-enable?"),pluginname);
+		if ( MessageBox(NULL,buf,Translate("Re-enable Miranda plugin?"),MB_YESNO|MB_ICONQUESTION) == IDYES ) {
+			SetPluginOnWhiteList(pluginname, 1);
+			return 1;
+		}
+	}
+	return rc == 0;
+}
+
 
 // used within LoadNewPluginsModule as an exception handler
 int CListFailed(int result)
@@ -409,6 +421,10 @@ int LoadNewPluginsModule(void)
 	GetModuleFileName(NULL, exe, sizeof(exe));
 	slice=strrchr(exe, '\\');
 	if ( slice != NULL ) *slice=0;
+	// remember where the boot.ini goes
+	_snprintf(mirandabootini, sizeof(mirandabootini), "%s\\mirandaboot.ini", exe);
+	// remember some useful options
+	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt("PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
 	// first load the clist cos alot of plugins need that to be present at Load()
 	p=pluginListUI;
 	if ( p == NULL ) {
@@ -417,7 +433,7 @@ int LoadNewPluginsModule(void)
 	while ( p != NULL )
 	{
 		_snprintf(slice, &exe[sizeof(exe)] - slice, "\\Plugins\\%s", p->pluginname);
-		CharLower(p->pluginname);		
+		CharLower(p->pluginname);
 		if ( isPluginOnWhiteList(p->pluginname) ) {
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
 				p->bpi = bpi;
