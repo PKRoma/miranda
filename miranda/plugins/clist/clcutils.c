@@ -578,6 +578,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 	dat->selTextColour=DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
 	dat->hotTextColour=DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_HOTTEXTCOLOUR);
 	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR);
+	dat->useWindowsColours=DBGetContactSettingByte(NULL,"CLC","UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
 	{	NMHDR hdr;
 		hdr.code=CLN_OPTIONSCHANGED;
 		hdr.hwndFrom=hwnd;
