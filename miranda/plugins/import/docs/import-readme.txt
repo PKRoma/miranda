@@ -96,7 +96,7 @@ forum at: http://forums.miranda-im.org and we will try to assist you. Remember t
 everyone involved in this project are unpaid volounteers, so keep it friendly.
 
 If you want to report a bug, do so in the official bug tracker at:
-http://dev.miranda-im.org/bugs/
+http://bugs.miranda-im.org/
 
 
 

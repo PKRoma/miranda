@@ -97,7 +97,7 @@ If the help page does answer your question, visit the Miranda support forum at:
 http://forums.miranda-im.org/ and we will try to assist you.
 
 If you want to report a bug, please do so in the official bugtracker at:
-http://dev.miranda-im.org/bugs/
+http://bugs.miranda-im.org/
 
 
 

@@ -51,7 +51,7 @@ static int WebsiteCommand(WPARAM wParam,LPARAM lParam)
 
 static int BugCommand(WPARAM wParam,LPARAM lParam)
 {
-	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://dev.miranda-im.org/bugs/");
+	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://bugs.miranda-im.org/");
 	return 0;
 }
 

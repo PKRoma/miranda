@@ -65,7 +65,7 @@ If the help page does answer your question, visit the Miranda IM support forum a
 http://forums.miranda-im.org and we will try to assist you.
 
 If you want to report a bug, please do so in the official bugtracker at:
-http://dev.miranda-im.org/bugs/
+http://bugs.miranda-im.org/
 
 
 

@@ -106,7 +106,7 @@ VI- Bug
     you are using. You can use the 'Version Information' plugin available on the
     Miranda download section for that.
     Bug report should be sent to the bug tracker. You can report the bug here :
-	http://dev.miranda-im.org/bugs/main_page.php
+	http://bugs.miranda-im.org/
 
 
 VII- Support

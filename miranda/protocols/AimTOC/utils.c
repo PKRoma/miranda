@@ -331,14 +331,23 @@ static void __cdecl aim_util_parseurlthread(void *url)
     }
     if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_SA, &dbv)) {
         NETLIBHTTPREQUEST nlhr, *nlreply;
+        NETLIBHTTPHEADER headers[4];
         char szURL[256];
 
         ZeroMemory(&nlhr, sizeof(nlhr));
-        _snprintf(szURL, 256, "http://%s/%s", dbv.pszVal, (char *) url);
+        _snprintf(szURL, 256, "http://%s/%s", AIM_TOC_HOST, (char *) url);
         nlhr.cbSize = sizeof(nlhr);
         nlhr.requestType = REQUEST_GET;
         nlhr.flags = NLHRF_DUMPASTEXT;
         nlhr.szUrl = szURL;
+        nlhr.headersCount=3;
+		nlhr.headers=headers;
+		headers[0].szName="User-Agent";
+		headers[0].szValue="Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)";
+		headers[1].szName="Host";
+		headers[1].szValue=AIM_TOC_HOST;
+		headers[2].szName="Accept";
+		headers[2].szValue="*/*";
         nlreply = (NETLIBHTTPREQUEST *) CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM) hNetlib, (LPARAM) & nlhr);
         if (nlreply) {
             if (nlreply->resultCode >= 200 && nlreply->resultCode < 300 && nlreply->dataLength) {
