@@ -177,11 +177,10 @@ void DestroyModularEngine(void)
 					for (j=0;j<hook[i].subscriberCount;j++) {
 						THookSubscriber *sub=&hook[i].subscriber[j];
 						if (sub->pfnHook) {
-							log_printf("\thook-address\t: %x",sub->pfnHook);
+							log_printf("\thook-address\t: 0x%x",sub->pfnHook);
 						} else {
-							log_printf("\thook-window\t: %x, message=%x",sub->hwnd,sub->message);
-							if (!IsWindow(sub->hwnd)) {
-								log_printf("\tdubious:\t: window handle is invalid.");
+							if (IsWindow(sub->hwnd)) {
+								log_printf("\thook-window\t: 0x%x, message=0x%x",sub->hwnd,sub->message);
 							} //if
 						} //if
 					} //for
@@ -268,7 +267,7 @@ HANDLE CreateHookableEvent(const char *name)
 	if (FindHookByHashAndName(Hash, name) != -1) 
 	{
 		LeaveCriticalSection(&csHooks);
-		log_printf("CreateHookableEvent failure, tried to create \"%s\" but it already existed",name);
+		log_printf("<font color=red>CreateHookableEvent failure, tried to create \"%s\" but it already existed</font>",name);
 		return NULL;
 	}
 	hook=(THookList*)realloc(hook,sizeof(THookList)*(hookCount+1));
@@ -291,12 +290,12 @@ int DestroyHookableEvent(HANDLE hEvent)
 	if(hookId>=hookCount || hookId<0) 
 	{
 		LeaveCriticalSection(&csHooks); 
-		log_printf("DestroyHookableEvent: tried to delete %d event, but it was invalid",(DWORD)hEvent);
+		log_printf("<font color=red>DestroyHookableEvent: tried to delete %d event, but it was invalid</font>",(DWORD)hEvent);
 		return 1;
 	}
 	if(hook[hookId].name[0]==0) {
 		LeaveCriticalSection(&csHooks); 
-		log_printf("DestroyHookableEvent: tried to redelete hook with %d (hook name unknown)",(DWORD)hEvent);
+		log_printf("<font color=red>DestroyHookableEvent: tried to redelete hook with %d (hook name unknown)</font>",(DWORD)hEvent);
 		return 1;
 	}
 	log_printf("DestroyHookableEvent: deleting \"%s\" by request from %d", hook[hookId].name,(DWORD)hEvent);
@@ -333,7 +332,7 @@ __try {
 	}
 } __except (DumpErrorInformation(GetExceptionInformation())) {
 	if (isValidHook) {
-		log_printf("CallHookSubscribers: exception while calling \"%s\" with wParam=0x%x,lParam=0x%x",hook[hookId].name,wParam,lParam);
+		log_printf("<font color=red>CallHookSubscribers: exception while calling \"%s\" with wParam=0x%x,lParam=0x%x</font>",hook[hookId].name,wParam,lParam);
 		log_flush();
 	} //if
 } //if
@@ -387,7 +386,7 @@ HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc)
 	hookId=FindHookByName(name);
 	if(hookId==-1) {
 		LeaveCriticalSection(&csHooks);
-		log_printf("HookEvent: hook \"%s\" not found, address=%x",name,(DWORD)hookProc);
+		log_printf("<font color=red>HookEvent: hook \"%s\" not found, address=%x</font>",name,(DWORD)hookProc);
 		return NULL;
 	}
 	hook[hookId].subscriber=(THookSubscriber*)realloc(hook[hookId].subscriber,sizeof(THookSubscriber)*(hook[hookId].subscriberCount+1));
@@ -409,8 +408,10 @@ HANDLE HookEventMessage(const char *name,HWND hwnd,UINT message)
 	hookId=FindHookByName(name);
 	if(hookId==-1) {
 		LeaveCriticalSection(&csHooks);
+		log_printf("<font color=red>HookEventMessage: hooking %s with window (0x%x) message callback failed.</font>",name,hwnd);
 		return NULL;
 	}
+	log_printf("HookEventMessage: creating %s window 0x%x hook for message callback using 0x%x message-id",name,hwnd,message);
 	hook[hookId].subscriber=(THookSubscriber*)realloc(hook[hookId].subscriber,sizeof(THookSubscriber)*(hook[hookId].subscriberCount+1));
 	hook[hookId].subscriber[hook[hookId].subscriberCount].pfnHook=NULL;
 	hook[hookId].subscriber[hook[hookId].subscriberCount].hwnd=hwnd;
@@ -429,18 +430,18 @@ int UnhookEvent(HANDLE hHook)
 	EnterCriticalSection(&csHooks);
 	if(hookId>=hookCount || hookId<0) {
 		LeaveCriticalSection(&csHooks); 
-		log_printf("UnhookEvent: tried to unhook with (%d) handle, out of range",hHook);
+		log_printf("<font color=red>UnhookEvent: tried to unhook with (%d) handle, out of range</font>",hHook);
 		DebugBreak();
 		return 1;
 	}
 	if(hook[hookId].name[0]==0) {
 		LeaveCriticalSection(&csHooks);
-		log_printf("UnhookEvent: tried to unhook with (%d) handle, hook does not exist",hHook);
+		log_printf("<font color=red>UnhookEvent: tried to unhook with (%d) handle, hook does not exist</font>",hHook);
 		DebugBreak();
 		return 1;
 	}
 	if(subscriberId>=hook[hookId].subscriberCount || subscriberId<0) {
-		log_printf("UnhookEvent: tried to unhook from \"%s\" with invalid handle (%d)",hook[hookId].name,hHook);
+		log_printf("<font color=red>UnhookEvent: tried to unhook from \"%s\" with invalid handle (%d)</font>",hook[hookId].name,hHook);
 		LeaveCriticalSection(&csHooks); 		
 		DebugBreak();
 		return 1;
@@ -492,7 +493,7 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 	EnterCriticalSection(&csServices);
 	if (FindServiceByHash(hash) != NULL) {
 		LeaveCriticalSection(&csServices);
-		log_printf("CreateServiceFunction: tried to create duplicate service \"%s\" for %x ",name,(DWORD)serviceProc);
+		log_printf("<font color=red>CreateServiceFunction: tried to create duplicate service \"%s\" for %x </font>",name,(DWORD)serviceProc);
 		return NULL;
 	}
 	__try {
@@ -526,7 +527,7 @@ int DestroyServiceFunction(HANDLE hService)
 	pService=FindServiceByHash((DWORD)hService);
 	if(pService==NULL) {
 		LeaveCriticalSection(&csServices); 
-		log_printf("DestroyServiceFunction: Tried to destroy service with handle (%d)",(DWORD)hService);
+		log_printf("<font color=red>DestroyServiceFunction: Tried to destroy service with handle (%d)</font>",(DWORD)hService);
 		return 1;
 	}
 	i=(int)(pService-service);
