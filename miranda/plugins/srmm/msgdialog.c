@@ -831,7 +831,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
 			}
 			else {
-				SendMessageA(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) "");
+				SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
 				SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
 			}
 			break;
@@ -1144,7 +1144,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 					_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
 					dat->nTypeSecs--;
-					SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
+					SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
 					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) dat->hIcons[5]);
 					if (dat->showTypingWin && GetForegroundWindow() != hwndDlg)
 						SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) dat->hIcons[5]);
