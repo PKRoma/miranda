@@ -547,6 +547,10 @@ extern "C" const char *FormatRaw(const char *msg, int bWordsOnly)
                 break;
         }
 ok:        
+        if((endmark - beginmark) < 2) {
+            beginmark++;
+            continue;
+        }
         index = 0;
         switch(endmarker) {
             case '*':

@@ -101,6 +101,7 @@ static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
 static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_PROTOCOL, IDC_FONTUNDERLINE, IDC_HISTORY, -1 };
 static const UINT controlsToHide1[] = { IDOK, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
+static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADDICON, IDC_ADDTEXT, IDC_ADD };
 
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
@@ -199,11 +200,6 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLETOOLBAR), SW_HIDE);
     
-#if defined(FOO)
-    EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), FALSE);
-    ShowWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), SW_HIDE);
-#endif
-    
 // IEVIew MOD Begin
     EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), TRUE);
     
@@ -218,6 +214,9 @@ void SetDialogToType(HWND hwndDlg)
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
 // IEVIew MOD End
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), dat->dwFlags & MWF_ERRORSTATE ? SW_SHOW : SW_HIDE);
+
+    if(!myGlobals.m_SendFormat)
+        ShowMultipleControls(hwndDlg, &formatControls[1], 3, SW_HIDE);
     
 // smileybutton stuff...
     
@@ -227,29 +226,12 @@ void SetDialogToType(HWND hwndDlg)
         dat->doSmileys = 1;
         
         if(hButtonIcon == 0) {
-            SMADD_GETICON smadd_iconinfo;
-
-            ZeroMemory((void *)&smadd_iconinfo, sizeof(smadd_iconinfo));
-            smadd_iconinfo.cbSize = sizeof(smadd_iconinfo);
-            smadd_iconinfo.Protocolname = dat->szProto;
-            smadd_iconinfo.SmileySequence = ":)";
-            smadd_iconinfo.Smileylength = 0;
-            CallService(MS_SMILEYADD_GETSMILEYICON, 0, (LPARAM)&smadd_iconinfo);
-
-            if(dat->hSmileyIcon)
-                DeleteObject(dat->hSmileyIcon);
-
-            if(smadd_iconinfo.SmileyIcon) {
-                CreateSmileyIcon(dat, smadd_iconinfo.SmileyIcon);
-                SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)dat->hSmileyIcon);
-            }
-            else {
-                dat->hSmileyIcon = 0;
-                SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
-            }
+            dat->hSmileyIcon = 0;
+            SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
         }
         else {
             SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
+            dat->hSmileyIcon = 0;
         }
     }
     else if(dat->hwndLog != 0) {
@@ -1197,6 +1179,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetDialogToType(hwndDlg);
             dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
             dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
+            if(!myGlobals.m_SendFormat)
+                dat->iButtonBarNeeds -= 78;
+            
             dat->iButtonBarNeeds += (dat->showUIElements) ? 28 : 0;
             dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 122 : 82) : 0);
             if(lParam == 1) {
@@ -1624,6 +1609,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 if(dat->showUIElements != 0) {
                     const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
+                    if(!myGlobals.m_SendFormat)
+                        hideThisControls = controlsToHide2;
                     for(i = 0;;i++) {
                         if(hideThisControls[i] == -1)
                             break;

@@ -24,7 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MS_IEVIEW_WINDOW  "IEVIEW/NewWindow"
 #define MS_IEVIEW_EVENT	  "IEVIEW/Event"
+#define MS_IEVIEW_UTILS   "IEVIEW/Utils"
 #define MS_IEVIEW_SHOWSMILEYSELECTION  "IEVIEW/ShowSmileySelection"
+
+#define ME_IEVIEW_NOTIFICATION  "IEVIEW/Notification"
 
 #define IEW_CREATE  1               // create new window (control)
 #define IEW_DESTROY 2               // destroy control
@@ -32,7 +35,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IEWM_SRMM     0             // regular SRMM
 #define IEWM_TABSRMM  1             // TabSRMM-compatible HTML builder
-#define IEWM_HTML     2             // HTML - unsupported at the moment
+#define IEWM_HTML     2             // HTML 
+#define IEWM_SCRIVER  3             // HTML
 
 typedef struct {
 	int			cbSize;             // size of the strusture
@@ -59,6 +63,39 @@ typedef struct {
 	HANDLE 		hDbEventFirst;      // first event to log
 	int 		count;              // number of events to log
 } IEVIEWEVENT;
+
+
+#define IEN_SETTINGS_CHANGED	1            
+
+typedef struct {
+	int			cbSize;             // size of the strusture
+	int			iType;				// one of IEN_* values
+} IEVIEWNOTIFICATION;
+
+#define IEU_QUOTE				1
+
+typedef struct {
+	int			cbSize;             // size of the strusture
+	int			iType;				// one of IEN_* values
+} IEVIEWUTILS;
+
+
+typedef struct {
+	int cbSize;                //size of the structure
+	const char* Protocolname;  //protocol to use... if you have defined a protocol, u can
+                             //use your own protocol name. Smiley add wil automatically
+                             //select the smileypack that is defined for your protocol.
+                             //Or, use "Standard" for standard smiley set. Or "ICQ", "MSN"
+                             //if you prefer those icons.
+                             //If not found or NULL: "Standard" will be used
+	int xPosition;             //Postition to place the selectwindow
+	int yPosition;             // "
+	int Direction;             //Direction (i.e. size upwards/downwards/etc) of the window 0, 1, 2, 3
+  	HWND hwndTarget;           //Window, where to send the message when smiley is selected.
+	UINT targetMessage;        //Target message, to be sent.
+	LPARAM targetWParam;       //Target WParam to be sent (LParam will be char* to select smiley)
+                             //see the example file.
+} IEVIEWSHOWSMILEYSEL;
 
 #endif
 

@@ -246,14 +246,18 @@ int MessageWindowOpened(WPARAM wParam, LPARAM lParam)
 static int ProtoAck(WPARAM wParam, LPARAM lParam)
 {
     ACKDATA *pAck = (ACKDATA *) lParam;
-    PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *) pAck->hProcess;
+    PROTO_AVATAR_INFORMATION *pai;
     HWND hwndDlg = 0;
     int i, j, iFound = NR_SENDJOBS;
+
+    if(lParam == 0)
+        return 0;
     
+    pai = (PROTO_AVATAR_INFORMATION *) pAck->hProcess;
+
     if(pAck->type == ACKTYPE_MESSAGE) {
         for(j = 0; j < NR_SENDJOBS; j++) {
             for (i = 0; i < sendJobs[j].sendCount; i++) {
-                //_DebugPopup(dat->hContact, "index: %d - hcontact[%d]: %d, sendid[%d]: %d", j, i, sendJobs[j].hContact[i], i, sendJobs[j].hSendId[i]);
                 if (pAck->hProcess == sendJobs[j].hSendId[i] && pAck->hContact == sendJobs[j].hContact[i]) {
                     struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(sendJobs[j].hwndOwner, GWL_USERDATA);
                     if(dat) {
@@ -279,17 +283,28 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
     }
     if(pAck->type != ACKTYPE_AVATAR)
         return 0;
-    
+
     hwndDlg = WindowList_Find(hMessageWindowList, (HANDLE)pAck->hContact);
     if(hwndDlg) {
         struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS) {
-            PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
+        if(pai == NULL) {
+            _DebugPopup(dat->hContact, "PAI == 0 in avatar ACK handler");
+            return 0;
         }
+        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS)
+            PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
         if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_SUCCESS) {
             if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
                 DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
+                ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+            }
+        }
+        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_FAILED) {
+            _DebugPopup(dat->hContact, "avatar failed");
+            if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
+                DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", "");
+                DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", "");
                 ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
             }
         }
@@ -1408,8 +1423,13 @@ void LoadIconTheme()
         g_hIconDLL = 0;
     }
     
-    if(DBGetContactSetting(NULL, SRMSGMOD_T, "icondll", &dbv))
+    if(DBGetContactSetting(NULL, SRMSGMOD_T, "icondll", &dbv)) {
         strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
+        if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+            strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
+        else
+            CloseHandle(hFile);
+    }
     else {
         strncpy(szFilename, dbv.pszVal, MAX_PATH);
         DBFreeVariant(&dbv);

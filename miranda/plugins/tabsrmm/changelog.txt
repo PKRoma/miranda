@@ -28,6 +28,14 @@ Version 0.9.9.8 - 2005/03/13
           
         * vertical maximize can now be set quickly from the menu bar (view menu).
                   
+        + added handler for ACKTYPE_FAILED (possibly used by "delete avatar" feature(s)
+        
+        * changed smileybutton icon handling - if no button smiley is available in the
+          smileypack, the icon from the icons.DLL is now used by default.
+
+        * when "send formatting info is disabled", formatting buttons are hidden from the
+          toolbar.
+          
 Version 0.9.9.8 - 2005/03/04
 
         + added icon pack version information. Valid icon packs need to contain a string
