@@ -17,7 +17,7 @@ uses
   StdCtrls, ExtCtrls,globals,m_clist,clisttools,statusmodes,skintools,
   m_skin,databasetools,m_icq,m_database, Menus,m_history,newpluginapi,
   m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email,optionfrm,
-  langpacktools;
+  langpacktools,m_crypt;
 
 
 
@@ -494,6 +494,8 @@ var
   iMaxMessageLength:integer;
 begin
   Assert(Sendmemo.Lines.Text<>'','No text inserted');
+  StartWait;
+  try
 
   Self.ActiveControl:=SendMemo;
 
@@ -541,18 +543,50 @@ begin
   //if fCloseWindowAfterSend then minimize window and close when sent
   if fCloseWindowAfterSend then
     WindowState:=wsMinimized;
+
+  finally
+  StopWait;
+  end;
 end;
 
 procedure TMsgWindow.AddMessageToSendQueue(text:PChar;SendWay:Integer=ISMF_ROUTE_DEFAULT);
 //Add new message to messagequeue for later sending
 var
   p:PICQSENDMESSAGE;
+  cm:TCRYPTMESSAGE;
 begin
   New(p);
   p^.cbSize:=SizeOf(p^);
   p^.uin:=uin;
+
+  //copy text
   GetMem(p^.pszMessage,strlen(Text)+1);
   strcopy(p^.pszMessage,Text);
+
+  //encryption
+  if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,0,1))>=0 then//0.1.0.1+
+    begin
+    StartWait;
+    try
+    cm.cbSize:=sizeof(TCRYPTMESSAGE);
+    cm.hContact:=Self.hContact;
+    cm.pMessage:=p^.pszMessage;
+    cm.cchMessage:=strlen(p^.pszMessage);
+    cm.cchMessageMax:=0;
+    cm.messageType:=CMTF_MESSAGE;
+    PluginLink.CallService(MS_CRYPT_ENCRYPT,0,dword(@cm));
+    //use more memory?
+    if (cm.cchMessageMax>=strlen(p^.pszMessage)+1) then
+      begin
+      FreeMem(p^.pszMessage);
+      GetMem(p^.pszMessage,cm.cchMessageMax+1);
+      strcopy(p^.pszMessage,Text);
+      end;
+    PluginLink.CallService(MS_CRYPT_ENCRYPT,0,dword(@cm));
+    finally
+    StopWait;
+    end;
+    end;
 
   //send way (by default use miranda settings)
   p^.routeOverride:=SendWay;
@@ -565,18 +599,20 @@ end;
 procedure TMsgWindow.OnMessageSend(var Message: TMessage);
 //Event called by Miranda (ICQ Module) when the message was send successfully
 begin
-  if message.lParam=0 then
-    if message.wParam=fLastSendID then
-      begin
-      //disable timeout timer
-      SendTimer.Enabled:=False;
+  if message.wParam<>fLastSendID then
+    Exit;
 
-      //message done
-      SendedFirstSendMessageQueueItem;
-      DeleteFirstSendMessageQueueItem;
-      //send next message if still some in queue
-      SendMessageFromSendQueue;
-      end;
+  if message.lParam<>ICQ_NOTIFY_SUCCESS then
+    Exit;
+
+  //disable timeout timer
+  SendTimer.Enabled:=False;
+
+  //message done
+  SendedFirstSendMessageQueueItem;
+  DeleteFirstSendMessageQueueItem;
+  //send next message if still some in queue
+  SendMessageFromSendQueue;
 end;
 
 procedure TMsgWindow.SendTimerTimer(Sender: TObject);

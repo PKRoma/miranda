@@ -14,7 +14,7 @@ unit misc;
 interface
 
 uses
-  windows, messages, graphics;
+  windows, messages, graphics,Controls,forms;
 
 
 
@@ -93,6 +93,32 @@ var
   blinkid:integer;//id uses for message blinking on contactlist
 
 
+procedure StartWait;
+procedure StopWait;
+
+
 implementation
+
+const
+  WaitCursor: TCursor = crHourGlass;
+  WaitCount: Integer = 0;
+  SaveCursor: TCursor = crDefault;
+
+procedure StartWait;
+begin
+  if WaitCount = 0 then begin
+    SaveCursor := Screen.Cursor;
+    Screen.Cursor := WaitCursor;
+  end;
+  Inc(WaitCount);
+end;
+
+procedure StopWait;
+begin
+  if WaitCount > 0 then begin
+    Dec(WaitCount);
+    if WaitCount = 0 then Screen.Cursor := SaveCursor;
+  end;
+end;
 
 end.
