@@ -244,14 +244,14 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		
 		case WM_WINDOWPOSCHANGING:
 		{
-			if ( dat->noVScrollbar ) {
+			if ( dat->noVScrollbar && GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
 				ShowScrollBar(hwnd, SB_VERT, FALSE);
 			} else {
 				// only show the scrollbar if it needs to be shown
 				SCROLLINFO si;
 				si.cbSize=sizeof(si);
 				si.fMask=SIF_ALL;
-				if ( GetScrollInfo(hwnd, SB_VERT, &si) && si.nPage < si.nMax ) {
+				if ( GetScrollInfo(hwnd, SB_VERT, &si) && si.nPage < (UINT)si.nMax ) {
 					ShowScrollBar(hwnd, SB_VERT, TRUE);
 				}
 			}
@@ -287,7 +287,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				hBmpMask=CreateBitmap(rc.right,rc.bottom,1,1,NULL);
 				hdcMem=CreateCompatibleDC(hdc);
 				hoBmp=(HBITMAP)SelectObject(hdcMem,hBmp);
-				hBrush=CreateSolidBrush(dat->selBkColour);
+				hBrush=CreateSolidBrush( dat->useWindowsColours ? GetSysColor(COLOR_HIGHLIGHT) : dat->selBkColour);
 				FillRect(hdcMem,&rc,hBrush);
 				DeleteObject(hBrush);
 
