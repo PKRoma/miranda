@@ -94,14 +94,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", " \0"
             VALUE "FileDescription", "Miranda MSN Messenger plugin\0"
-            VALUE "FileVersion", "0.1.2.0\0"
+            VALUE "FileVersion", "0.1.2.1\0"
             VALUE "InternalName", "msn\0"
             VALUE "LegalCopyright", "Copyright © 2001-2 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "msn.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Miranda\0"
-            VALUE "ProductVersion", "0.1.2.0\0"
+            VALUE "ProductVersion", "0.1.2.1\0"
             VALUE "SpecialBuild", "\0"
         END
     END
