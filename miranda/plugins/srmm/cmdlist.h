@@ -20,15 +20,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SRMM_CMDLIST_H
 #define SRMM_CMDLIST_H
 
+#ifdef _UNICODE
+	#define CMDCHAR TCHAR
+#else
+	#define CMDCHAR char
+#endif
+
 typedef struct _TCmdList {
 	struct _TCmdList *next;
 	struct _TCmdList *prev;
+#ifdef _UNICODE
+	wchar_t *szCmd;
+#else
 	char *szCmd;
-    unsigned long hash;
+#endif
+	unsigned long hash;
 } TCmdList;
 
-TCmdList *tcmdlist_append(TCmdList *list, char *data);
-TCmdList *tcmdlist_remove(TCmdList *list, char *data);
+TCmdList *tcmdlist_append(TCmdList *list, CMDCHAR *data);
+TCmdList *tcmdlist_remove(TCmdList *list, CMDCHAR *data);
 int tcmdlist_len(TCmdList *list);
 TCmdList *tcmdlist_last(TCmdList *list);
 void tcmdlist_free(TCmdList * list);

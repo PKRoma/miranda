@@ -29,52 +29,52 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct NewMessageWindowLParam
 {
-    HANDLE hContact;
-    const char *szInitialText;
+	HANDLE hContact;
+	const char *szInitialText;
 };
 
 struct MessageSendInfo
 {
-    HANDLE hSendId;
+	HANDLE hSendId;
 };
 
 struct MessageWindowData
 {
-    HANDLE hContact;
-    HANDLE hDbEventFirst, hDbEventLast;
-    struct MessageSendInfo *sendInfo;
-    int sendCount;
-    HANDLE hAckEvent;
-    HANDLE hNewEvent;
-    int showTime;
-    HBRUSH hBkgBrush;
-    int splitterY, originalSplitterY;
-    char *sendBuffer;
-    HICON hIcons[6];
-    SIZE minEditBoxSize;
-    int showInfo;
-    int showButton;
-    int lineHeight;
-    int windowWasCascaded;
-    int nFlash;
-    int nFlashMax;
-    int nLabelRight;
-    int nTypeSecs;
-    int nTypeMode;
-    int showSend;
-    DWORD nLastTyping;
-    int showTyping;
-    int showTypingWin;
-    HWND hwndStatus;
-    DWORD lastMessage;
-    int showIcons;
-    int showDate;
-    int hideNames;
-    char *szProto;
-    WORD wStatus;
-    WORD wOldStatus;
-    TCmdList *cmdList;
-    TCmdList *cmdListCurrent;
+	HANDLE hContact;
+	HANDLE hDbEventFirst, hDbEventLast;
+	struct MessageSendInfo *sendInfo;
+	int sendCount;
+	HANDLE hAckEvent;
+	HANDLE hNewEvent;
+	int showTime;
+	HBRUSH hBkgBrush;
+	int splitterY, originalSplitterY;
+	char *sendBuffer;
+	HICON hIcons[6];
+	SIZE minEditBoxSize;
+	int showInfo;
+	int showButton;
+	int lineHeight;
+	int windowWasCascaded;
+	int nFlash;
+	int nFlashMax;
+	int nLabelRight;
+	int nTypeSecs;
+	int nTypeMode;
+	int showSend;
+	DWORD nLastTyping;
+	int showTyping;
+	int showTypingWin;
+	HWND hwndStatus;
+	DWORD lastMessage;
+	int showIcons;
+	int showDate;
+	int hideNames;
+	char *szProto;
+	WORD wStatus;
+	WORD wOldStatus;
+	TCmdList *cmdList;
+	TCmdList *cmdListCurrent;
 };
 
 #define HM_EVENTSENT         (WM_USER+10)
@@ -90,15 +90,16 @@ struct MessageWindowData
 #define DM_TYPING            (WM_USER+20)
 #define DM_UPDATEWINICON     (WM_USER+21)
 #define DM_UPDATELASTMESSAGE (WM_USER+22)
+#define DM_USERNAMETOCLIP    (WM_USER+23)
 
 #define EVENTTYPE_STATUSCHANGE 25368
 
 struct CREOleCallback
 {
-    IRichEditOleCallbackVtbl *lpVtbl;
-    unsigned refCount;
-    IStorage *pictStg;
-    int nextStgId;
+	IRichEditOleCallbackVtbl *lpVtbl;
+	unsigned refCount;
+	IStorage *pictStg;
+	int nextStgId;
 };
 
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
