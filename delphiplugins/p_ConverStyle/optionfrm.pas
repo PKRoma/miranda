@@ -92,9 +92,6 @@ type
   end;
 
 
-function DlgProcMiscOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
-function DlgProcSendOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
-
 
 implementation
 
@@ -415,120 +412,6 @@ function Checked(c:Boolean):Cardinal;
 //converts boolean value to  BST_CHECKED
 begin
   if c then Result:=BST_CHECKED	else Result:=BST_UNCHECKED;
-end;
-
-function DlgProcMiscOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
-var
-  str:string;
-  pc:PChar;
-  val:integer;
-begin
-  Result:=False;
-
-  case message of
-    WM_INITDIALOG:
-      begin
-      //load options
-      CheckDlgButton(dialog, IDC_LOADRECENT, Checked(ReadSettingBool(PluginLink,0,'Convers','LoadRecentMsgs',false)));
-      str:=IntToStr(ReadSettingInt(PluginLink,0,'Convers','LoadRecentMsgCount',10));pc:=PChar(str);
-      SendDlgItemMessage(dialog,IDC_RECENTCOUNT,CB_ADDSTRING,0,integer(pc));
-      if IsDlgButtonChecked(Dialog,IDC_LOADRECENT)<>BST_CHECKED then
-        EnableWindow(GetDlgItem(Dialog,IDC_RECENTCOUNT),FALSE);
-      CheckDlgButton(dialog, IDC_STOREPOS, Checked(ReadSettingBool(PluginLink,0,'Convers','StorePositions',True)));
-
-      case ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0) of
-        0:CheckDlgButton(Dialog,IDC_STEALFOCUS,BST_CHECKED);
-        1:CheckDlgButton(Dialog,IDC_SHOWINACTIVE,BST_CHECKED);
-        3:CheckDlgButton(Dialog,IDC_FLASHTRAY,BST_CHECKED);
-        else
-          CheckDlgButton(Dialog,IDC_FLASHWINDOW,BST_CHECKED);
-      end;
-
-      //make sure we can save the dialog...
-      SendMessage(GetParent(dialog), PSM_CHANGED, 0, 0);
-
-      Result:=True;
-      end;
-    WM_COMMAND:
-      begin
-      if (LOWORD(wParam)=IDC_LOADRECENT) then
-        begin
-        EnableWindow(GetDlgItem(Dialog,IDC_RECENTCOUNT),IsDlgButtonChecked(dialog,IDC_LOADRECENT)=BST_CHECKED);
-        SendMessage(GetParent(dialog), PSM_CHANGED, 0, 0);
-        end;
-      end;
-    WM_NOTIFY:
-      begin
-      if PNMHdr(lParam)^.code = PSN_KILLACTIVE then//check if all values are ok
-        if IsDlgButtonChecked(Dialog,IDC_LOADRECENT)=BST_CHECKED then
-          try
-          setlength(str,256);pc:=PChar(str);
-          GetDlgItemText(dialog,IDC_RECENTCOUNT,pc,sizeof(str));
-          val:=StrToInt(str);
-          if val<0 then
-            raise Exception.Create('');
-          except
-            MessageDlg('Invalid value for recent messages count.', mtError, [mbOK], 0);
-            SetWindowLong(dialog,DWL_MSGRESULT,integer(true));
-            Result:=true
-          end;
-      if PNMHdr(lParam)^.code = PSN_APPLY then//save settings
-        begin
-        WriteSettingBool(PluginLink,0,'Convers','LoadRecentMsgs',IsDlgButtonChecked(Dialog,IDC_LOADRECENT)=BST_CHECKED);
-        WriteSettingBool(PluginLink,0,'Convers','StorePositions',IsDlgButtonChecked(Dialog,IDC_STOREPOS)=BST_CHECKED);
-
-        if IsDlgButtonChecked(Dialog,IDC_LOADRECENT)=BST_CHECKED then
-          try
-          setlength(str,256);pc:=PChar(str);
-          GetDlgItemText(dialog,IDC_RECENTCOUNT,pc,sizeof(str));
-          val:=StrToInt(str);
-          WriteSettingInt(PluginLink,0,'Convers','LoadRecentMsgCount',val);
-          except end;
-
-        if IsDlgButtonChecked(dialog,IDC_STEALFOCUS)=BST_CHECKED then WriteSettingInt(PluginLink,0,'Convers','HandleIncoming',0);
-        if IsDlgButtonChecked(dialog,IDC_SHOWINACTIVE)=BST_CHECKED then WriteSettingInt(PluginLink,0,'Convers','HandleIncoming',1);
-        if IsDlgButtonChecked(dialog,IDC_FLASHWINDOW)=BST_CHECKED then WriteSettingInt(PluginLink,0,'Convers','HandleIncoming',2);
-        if IsDlgButtonChecked(dialog,IDC_FLASHTRAY)=BST_CHECKED then WriteSettingInt(PluginLink,0,'Convers','HandleIncoming',3);
-
-        Result:=True;
-
-        windowmgr.ReloadOptions(otMisc);
-        end;
-      end;
-   end;
-end;
-
-function DlgProcSendOptions(Dialog: HWnd; Message, wParam, lParam: DWord): Boolean; cdecl;
-//var
-//  str:string;
-begin
-  Result:=False;
-
-  case message of
-    WM_INITDIALOG:
-      begin
-      //load options
-
-      //make sure we can save the dialog...
-      SendMessage(GetParent(dialog), PSM_CHANGED, 0, 0);
-
-      Result:=True;
-      end;
-    WM_COMMAND:
-      begin
-      end;
-    WM_NOTIFY:
-      begin
-      if PNMHdr(lParam)^.code = PSN_KILLACTIVE then//check if all values are ok
-        ;
-      if PNMHdr(lParam)^.code = PSN_APPLY then//save settings
-        begin
-        Result:=True;
-
-        windowmgr.ReloadOptions(otSend);
-        end;
-      end;
-   end;
 end;
 
 end.
