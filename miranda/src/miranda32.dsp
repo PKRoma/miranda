@@ -601,14 +601,6 @@ SOURCE=.\modules\srurl\url.h
 SOURCE=.\modules\srurl\urldialogs.c
 # End Source File
 # End Group
-# Begin Group "updatecheck"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\modules\updatecheck\updatecheck.c
-# End Source File
-# End Group
 # Begin Group "userinfo"
 
 # PROP Default_Filter ""
