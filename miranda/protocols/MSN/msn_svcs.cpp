@@ -321,7 +321,7 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			return 0;
 		}
 
-		if ( !strcmp( cws->szSetting, "MyHandle" )) {
+		if ( !strcmp( cws->szSetting, "MyHandle" ) && cws->value.pszVal[0] != 0 ) {
 			char szContactID[ 100 ], szNewNick[ 387 ];
 			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID )) {
 				char* p = Utf8Encode( cws->value.pszVal );
