@@ -106,7 +106,7 @@ BEGIN
                     ES_WANTRETURN | WS_VSCROLL
     DEFPUSHBUTTON   "&Send",IDOK,143,48,39,15
     PUSHBUTTON      "Close",IDCANCEL,129,0,54,15,NOT WS_VISIBLE
-    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,2,5,
+    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW,2,5,
                     12,12
     CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,15,2,95,14,
                     0x18000000L
@@ -122,7 +122,7 @@ BEGIN
                     1,18,181,26,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,45,183,2
     CONTROL         "",IDC_AVATAR,"Button",BS_OWNERDRAW | NOT WS_VISIBLE,1,
-                    50,1,13,0x18000000L
+                    50,1,13
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229

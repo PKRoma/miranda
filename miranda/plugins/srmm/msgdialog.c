@@ -641,6 +641,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOCOL), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATAR), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
 			/* duh, how come we didnt use this from the start? */
