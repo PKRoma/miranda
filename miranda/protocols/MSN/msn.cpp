@@ -332,6 +332,9 @@ int __declspec( dllexport ) Unload( void )
 	if ( hHookOnUserInfoInit )
 		UnhookEvent( hHookOnUserInfoInit );
 
+	if ( hInitChat )
+		DestroyHookableEvent( hInitChat );
+
 	if ( hChatEvent ) UnhookEvent( hChatEvent );
 	if ( hChatMenu  ) UnhookEvent( hChatMenu );
 
