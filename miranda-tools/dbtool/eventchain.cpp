@@ -39,8 +39,14 @@ static void FinishUp(DWORD ofsLast,DBContact *dbc)
 		AddToStatus(STATUS_WARNING,"Event count marked wrongly: correcting");
 	dbc->eventCount=eventCount;
 	dbc->ofsLastEvent=ofsLast;
-	dbc->ofsFirstUnreadEvent=ofsFirstUnread;
-	dbc->timestampFirstUnread=timestampFirstUnread;
+	if(opts.bMarkRead) {
+		dbc->ofsFirstUnreadEvent=0;
+		dbc->timestampFirstUnread=0;
+	}
+	else {
+		dbc->ofsFirstUnreadEvent=ofsFirstUnread;
+		dbc->timestampFirstUnread=timestampFirstUnread;
+	}
 }
 
 int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
@@ -93,12 +99,12 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		dbeOld.flags&=DBEF_FIRST|DBEF_READ|DBEF_SENT;
 	}
 	if(!(dbeOld.flags&(DBEF_READ|DBEF_SENT))) {
-		if(ofsFirstUnread==0) {
+		if(opts.bMarkRead) dbeOld.flags|=DBEF_READ;
+		else if(ofsFirstUnread==0) {
 			if(dbc->ofsFirstUnreadEvent!=ofsThisEvent || dbc->timestampFirstUnread!=dbeOld.timestamp)
 				AddToStatus(STATUS_WARNING,"First unread event marked wrong: fixing");
-			if(!opts.bMarkRead) isUnread=1;
+			isUnread=1;
 		}
-		if(opts.bMarkRead) dbeOld.flags|=DBEF_READ;
 	}
 	if(dbeOld.cbBlob>1024*1024 || dbeOld.cbBlob==0) {
 		AddToStatus(STATUS_ERROR,"Infeasibly large event blob: skipping");

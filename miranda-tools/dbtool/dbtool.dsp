@@ -95,11 +95,19 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\aggressive.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\contactchain.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\eventchain.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\finaltasks.cpp
 # End Source File
 # Begin Source File
 
@@ -128,6 +136,10 @@ SOURCE=.\cleaning.cpp
 # Begin Source File
 
 SOURCE=.\fileaccess.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\finished.cpp
 # End Source File
 # Begin Source File
 
@@ -173,6 +185,10 @@ SOURCE=..\miranda32\database\database.h
 # Begin Source File
 
 SOURCE=.\dbtool.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\miranda32\database\m_database.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

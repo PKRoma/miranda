@@ -134,16 +134,16 @@ BEGIN
                     IDC_STATIC,20,14,197,16
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
     CONTROL         "Create backup",IDC_BACKUP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,23,69,92,10,WS_EX_CLIENTEDGE
+                    WS_TABSTOP,23,69,226,10,WS_EX_CLIENTEDGE
     LTEXT           "Creates a backup copy of the database before any of the requested changes are made.",
                     IDC_STBACKUP,37,80,212,16
     CONTROL         "Aggressively find corruption",IDC_AGGRESSIVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,100,120,10,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,23,100,226,10,
                     WS_EX_CLIENTEDGE
     LTEXT           "Scans the database for data that is not linked to any other data. This requires more disk space and more time, so is only required if you suspect corruption.",
                     IDC_STATIC,37,111,212,24
     CONTROL         "Check consistency only",IDC_CHECKONLY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,38,97,10,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,23,38,226,10,
                     WS_EX_CLIENTEDGE
     LTEXT           "Just checks that the database is valid, without writing anything to the disk.",
                     IDC_STATIC,37,49,212,16
@@ -161,12 +161,12 @@ BEGIN
                     IDC_STATIC,20,14,197,16
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
     CONTROL         "Erase all histories",IDC_ERASEHISTORY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,38,92,10,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,23,38,226,10,
                     WS_EX_CLIENTEDGE
     LTEXT           "Removes all the saved history for all contacts in the database.",
                     IDC_STATIC,37,49,212,8
     CONTROL         "Mark all events read",IDC_MARKREAD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,62,92,10,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,23,62,226,10,
                     WS_EX_CLIENTEDGE
     LTEXT           "Marks all the history events as read. This will rectify any problems with old messages always appearing in the message window log box.",
                     IDC_STATIC,37,73,212,24
@@ -202,7 +202,7 @@ BEGIN
     LTEXT           "All tasks have been completed.",IDC_STATIC,20,14,197,16
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,30,264,1
     CONTROL         "Launch Miranda with this profile",IDC_LAUNCHMIRANDA,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,87,123,10,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,87,226,10,
                     WS_EX_CLIENTEDGE
     LTEXT           "Launches Miranda with the profile that was just worked on.",
                     IDC_STATIC,37,98,212,8
