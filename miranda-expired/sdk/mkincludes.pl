@@ -38,6 +38,9 @@ sub filesearch {
             if ( $line =~ m/\#include/ and $line =~ m/m_options.h/ ) {
                 print WRITE "\#include \"m_options.h\"\n";
             }
+            elsif ( $line =~ m/\#include/ and $line =~ m/statusmodes.h/ ) {
+                print WRITE "\#include \"statusmodes.h\"\n";
+            }
             else {
                 print WRITE "$line";
             }
