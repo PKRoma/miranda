@@ -1,21 +1,21 @@
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
-// 
+//
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -42,20 +42,38 @@ extern char gpszICQProtoName[MAX_PATH];
 
 static const char *szLevelDescr[] = {"ICQ Note", "ICQ Warning", "ICQ Error", "ICQ Fatal"};
 
+typedef struct {
+    char *szMsg;
+    char *szTitle;
+} LogMessageInfo;
 
+static void __cdecl icq_LogMessageThread(void* arg) {
+    LogMessageInfo *err = (LogMessageInfo*)arg;
+    if (!err) return;
+    if (err->szMsg&&err->szTitle)
+        MessageBox(NULL, err->szMsg, err->szTitle, MB_OK);
+    if (err->szMsg) free(err->szMsg);
+    if (err->szTitle) free(err->szTitle);
+    free(err);
+}
 
 void icq_LogMessage(int level, const char *szMsg)
 {
 
 	int displayLevel;
 
-	
+
 	Netlib_Logf(ghServerNetlibUser, "%s", szMsg);
-	
+
 	displayLevel = DBGetContactSettingByte(NULL, gpszICQProtoName, "ShowLogLevel", LOG_FATAL);
 	if (level >= displayLevel)
-		MessageBox(NULL, szMsg, Translate(szLevelDescr[level]), MB_OK);
-	
+	{
+		LogMessageInfo *lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
+		lmi->szMsg = _strdup(szMsg);
+		lmi->szTitle = _strdup(Translate(szLevelDescr[level]));
+		forkthread(icq_LogMessageThread, 0, lmi);
+	}
+
 }
 
 
@@ -103,7 +121,7 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 		default:
 			if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, szErrorMsg, sizeof(szErrorMsg), NULL))
 				pszErrorMsg = szErrorMsg;
-			else 
+			else
 				pszErrorMsg = "";
 			break;
 	}
