@@ -82,7 +82,9 @@ extern struct MM_INTERFACE memoryManagerInterface;
 
 __inline char * mir_strdup(const char * src)
 {
-	char * p = mir_alloc( strlen(src)+1 );
+	char * p = 0;
+	if ( src == NULL ) return NULL;
+	p=mir_alloc( strlen(src)+1 );
 	strcpy(p, src);
 	return p;
 }
