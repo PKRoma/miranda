@@ -1777,14 +1777,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			DBWriteContactSettingDword(hContact, SRMMMOD, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
 			DBWriteContactSettingDword(hContact, SRMMMOD, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
 		}
+		if (dat->avatarPic)
+			DeleteObject(dat->avatarPic);
+		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		if (dat->hContact&&DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP)) {
 			if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
 			}
 		}
-		if (dat->avatarPic)
-			DeleteObject(dat->avatarPic);
-		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		free(dat);
 		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 		break;
