@@ -472,6 +472,7 @@ void		__stdcall Lists_Wipe( void );
 //	MSN server groups
 
 bool   MSN_AddGroup( const char* pName, const char* pId );
+void   MSN_AddServerGroup( const char* pszGroupName );
 void   MSN_DeleteGroup( const char* pId );
 void	 MSN_FreeGroups( void );
 LPCSTR MSN_GetGroupById( const char* pId );

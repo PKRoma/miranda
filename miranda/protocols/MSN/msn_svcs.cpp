@@ -283,12 +283,8 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 				}
 				else MSN_SetGroupNumber( oldId, iNumber );
 		}	}
-		else if ( cws->value.type == DBVT_ASCIIZ ) {
-			char* p = Utf8Encode( cws->value.pszVal+1 ), szNewName[ 200 ];
-			UrlEncode( p, szNewName, sizeof szNewName );
-			msnNsThread->sendPacket( "ADG", "%s", szNewName );
-			free( p );
-		}
+		else if ( cws->value.type == DBVT_ASCIIZ )
+			MSN_AddServerGroup( cws->value.pszVal+1 );
 
 		return 0;
 	}
@@ -315,8 +311,13 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		if ( !strcmp( cws->szSetting, "Group" )) {
 			if ( cws->value.type == DBVT_DELETED )
 				MSN_MoveContactToGroup( hContact, NULL );
-			else if ( cws->value.type == DBVT_ASCIIZ )
+			else if ( cws->value.type == DBVT_ASCIIZ ) {
+				LPCSTR p = MSN_GetGroupByName( cws->value.pszVal );
+				if ( p == NULL )
+					MSN_AddServerGroup( cws->value.pszVal );
+
 				MSN_MoveContactToGroup( hContact, cws->value.pszVal );
+			}
 			return 0;
 		}
 

@@ -72,19 +72,8 @@ static void __cdecl sttUploadGroups( void* )
 			DBVARIANT dbv;
 			if ( !DBGetContactSetting( hContact, "CList", "Group", &dbv )) {
 				LPCSTR szId = MSN_GetGroupByName( dbv.pszVal );
-				if ( szId == NULL ) {
-					char* szGrpName = Utf8Encode( dbv.pszVal );
-					char szGroup[ 200 ];
-					UrlEncode( szGrpName, szGroup, sizeof szGroup );
-
-					if ( hGroupAddEvent == NULL )
-						hGroupAddEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-
-					msnNsThread->sendPacket( "ADG", "%s", szGroup );
-					free( szGrpName );
-
-					WaitForSingleObject( hGroupAddEvent, INFINITE );
-				}
+				if ( szId == NULL )
+					MSN_AddServerGroup( dbv.pszVal );
 
 				MSN_MoveContactToGroup( hContact, dbv.pszVal );
 				MSN_FreeVariant( &dbv );

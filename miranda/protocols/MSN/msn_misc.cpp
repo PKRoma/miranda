@@ -154,6 +154,24 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MSN_AddServerGroup - adds a group to the server list
+
+void MSN_AddServerGroup( const char* pszGroupName )
+{
+	char* p = Utf8Encode( pszGroupName ), szBuf[ 200 ];
+	UrlEncode( p, szBuf, sizeof szBuf );
+
+	if ( hGroupAddEvent == NULL )
+		hGroupAddEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+
+	msnNsThread->sendPacket( "ADG", "%s", szBuf );
+	free( p );
+
+	WaitForSingleObject( hGroupAddEvent, INFINITE );
+	CloseHandle( hGroupAddEvent ); hGroupAddEvent = NULL;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_DebugLog - writes a line of comments to the network log
 
 void __stdcall	MSN_DebugLog( const char *fmt, ... )
