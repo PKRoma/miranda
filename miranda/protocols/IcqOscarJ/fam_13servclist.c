@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -318,7 +319,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 					if (pChain)
 					{
-						// Look for nickname TLV and copy it to the db is necessary
+						// Look for nickname TLV and copy it to the db if necessary
 						if (pTLV = getTLV(pChain, 0x0131, 1))
 						{
 							if (pTLV->pData && (pTLV->wLen > 0))
@@ -344,7 +345,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 									// Convert to ansi
 									if (utf8_decode(pszNick, &pszTempNick))
 									{
-										SAFE_FREE(pszNick);
+										SAFE_FREE(&pszNick);
 										pszNick = pszTempNick;
 										Netlib_Logf(ghServerNetlibUser, "Nickname is '%s'", pszNick);
 									}
@@ -354,7 +355,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 									}
 
 									// Write nickname to database
-									if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerNicks", DEFAULT_SS_NICKS))
+									if (DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD))
 									{
 										DBVARIANT dbv;
 
@@ -376,7 +377,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 										}
 									}
 
-									SAFE_FREE(pszNick);
+									SAFE_FREE(&pszNick);
 
 								}
 
@@ -387,6 +388,70 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							}
 						}
 
+						// Look for comment TLV and copy it to the db if necessary
+						if (pTLV = getTLV(pChain, 0x013C, 1))
+						{
+							if (pTLV->pData && (pTLV->wLen > 0))
+							{
+
+								char* pszComment;
+								WORD wCommentLength;
+
+
+								wCommentLength = pTLV->wLen;
+
+								pszComment = (char*)malloc(wCommentLength + 1);
+								if (pszComment)
+								{
+
+									char* pszTempComment = NULL; // Used for UTF-8 conversion
+
+
+									// Copy buffer to utf-8 buffer
+									memcpy(pszComment, pTLV->pData, wCommentLength);
+									pszComment[wCommentLength] = 0; // Terminate string
+
+									// Convert to ansi
+									if (utf8_decode(pszComment, &pszTempComment))
+									{
+										SAFE_FREE(&pszComment);
+										pszComment = pszTempComment;
+										Netlib_Logf(ghServerNetlibUser, "Comment is '%s'", pszComment);
+									}
+									else
+									{
+										Netlib_Logf(ghServerNetlibUser, "Failed to convert Comment '%s' from UTF-8", pszComment);
+									}
+
+									// Write nickname to database
+									if (DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD))
+									{
+										DBVARIANT dbv;
+
+										if (!DBGetContactSetting(hContact,"UserInfo","MyNotes",&dbv))
+										{
+											if ((lstrcmp(dbv.pszVal, pszComment)) && (strlen(pszComment) > 0))
+											{
+												DBWriteContactSettingString(hContact, "UserInfo", "MyNotes", pszComment);
+											}
+											DBFreeVariant(&dbv);
+										}
+										else if (strlen(pszComment) > 0)
+										{
+											DBWriteContactSettingString(hContact, "UserInfo", "MyNotes", pszComment);
+										}
+									}
+
+									SAFE_FREE(&pszComment);
+
+								}
+
+							}
+							else
+							{
+								Netlib_Logf(ghServerNetlibUser, "Invalid comment");
+							}
+						}
 
 						// Look for need-authorization TLV
 						if (pTLV = getTLV(pChain, 0x0066, 1))
@@ -632,7 +697,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 	Netlib_Logf(ghServerNetlibUser, "Bytes left: %u", wLen);
 
-	SAFE_FREE(pszRecordName);
+	SAFE_FREE(&pszRecordName);
 
 	if (wDefaultGroupId)
 	{
@@ -860,8 +925,8 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 		break;
 
 	}
-	SAFE_FREE(szNick);
-	SAFE_FREE(szReason);
+	SAFE_FREE(&szNick);
+	SAFE_FREE(&szReason);
 }
 
 
@@ -894,11 +959,11 @@ void updateServVisibilityCode(BYTE bCode)
 			wVisibilityID = GenerateServerId();
 			DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wVisibilityID);
 			wCommand = ICQ_LISTS_ADDTOLIST;
-			Netlib_Logf(ghServerNetlibUser, "Made new srvvisID, id is %u, code is %u", wVisibilityID, bCode);
+			Netlib_Logf(ghServerNetlibUser, "Made new srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
 		}
 		else
 		{
-			Netlib_Logf(ghServerNetlibUser, "Reused srvvisID, id is %u, code is %u", wVisibilityID, bCode);
+			Netlib_Logf(ghServerNetlibUser, "Reused srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
 			wCommand = ICQ_LISTS_UPDATEGROUP;
 		}
 
@@ -906,7 +971,7 @@ void updateServVisibilityCode(BYTE bCode)
 		// Build and send packet
 		packet.wLen = 25;
 		write_flap(&packet, ICQ_DATA_CHAN);
-		packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, wCommand);
+		packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, wCommand<<0x10);
 		packWord(&packet, 0);                   // Name (null)
 		packWord(&packet, 0);                   // GroupID (0 if not relevant)
 		packWord(&packet, wVisibilityID);       // EntryID
@@ -935,7 +1000,7 @@ void sendAddStart(void)
 
 	packet.wLen = 10;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART);
+	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART<<0x10);
 	sendServPacket(&packet);
 
 }
@@ -952,7 +1017,7 @@ void sendAddEnd(void)
 
 	packet.wLen = 10;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYEND, 0, ICQ_LISTS_CLI_MODIFYEND);
+	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYEND, 0, ICQ_LISTS_CLI_MODIFYEND<<0x10);
 	sendServPacket(&packet);
 
 }
@@ -961,7 +1026,7 @@ void sendAddEnd(void)
 
 // Is called when a contact has been renamed locally to update
 // the server side nick name.
-WORD renameServContact(HANDLE hContact, const char *pszNick)
+DWORD renameServContact(HANDLE hContact, const char *pszNick)
 {
 
 	icq_packet packet;
@@ -972,7 +1037,7 @@ WORD renameServContact(HANDLE hContact, const char *pszNick)
 	int nUinLen;
 	int nNickLen = 0;
 	char* pszUtfNick = NULL;
-	WORD wSequence = 0;
+	DWORD dwSequence = 0;
 	BOOL bAuthRequired;
 
 
@@ -1022,7 +1087,7 @@ WORD renameServContact(HANDLE hContact, const char *pszNick)
 
 
 	// Pack packet header
-	wSequence = GenerateCookie();
+	dwSequence = GenerateCookie(0);
 	packet.wLen = nUinLen + 20;
 	if (nNickLen > 0)
 		packet.wLen += 4 + nNickLen;
@@ -1032,7 +1097,7 @@ WORD renameServContact(HANDLE hContact, const char *pszNick)
 	// TODO:
 	// The sequence we pack here should be a combination of ICQ_LISTS_UPDATEGROUP & wSequence.
 	// For example, ICQ2003b sends 0x00030009
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_UPDATEGROUP, 0, wSequence);
+	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_UPDATEGROUP, 0, dwSequence);
 	packWord(&packet, (WORD)nUinLen);
 	packBuffer(&packet, szUin, (WORD)nUinLen);
 	packWord(&packet, wGroupID);
@@ -1072,13 +1137,13 @@ WORD renameServContact(HANDLE hContact, const char *pszNick)
 	sendServPacket(&packet);
 
 	if (nNickLen > 0)
-		Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x09) - CLI_UPDATEGROUP, renaming %u to %s (seq: %u)", dwUin, pszNick, wSequence);
+		Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x09) - CLI_UPDATEGROUP, renaming %u to %s (seq: %u)", dwUin, pszNick, dwSequence);
 	else
-		Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x09) - CLI_UPDATEGROUP, removed nickname for %u (seq: %u)", dwUin, wSequence);
+		Netlib_Logf(ghServerNetlibUser, "Sent SNAC(x13,x09) - CLI_UPDATEGROUP, removed nickname for %u (seq: %u)", dwUin, dwSequence);
 
-	SAFE_FREE(pszUtfNick);
+	SAFE_FREE(&pszUtfNick);
 
-	return wSequence;
+	return dwSequence;
 
 }
 
@@ -1093,7 +1158,7 @@ void sendRosterAck(void)
 
 	packet.wLen = 10;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GOTLIST, 0, ICQ_LISTS_GOTLIST);
+	packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GOTLIST, 0, ICQ_LISTS_GOTLIST<<0x10);
 	sendServPacket(&packet);
 
 #ifdef _DEBUG
