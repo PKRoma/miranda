@@ -153,8 +153,22 @@ rc = cvs_module_compile('changeinfo', 'Debug')
 if rc != 0:
 	print "Problem: failed to compile changeinfo [Debug], status ::",rc
 	sys.exit(rc)
+	
+os.chdir('../srmm')				# move out of changeinfo, into srmm
 
-os.chdir('../../')				# move out of changeinfo/plugins back to root
+# build srmm plugin (release)
+rc = cvs_module_compile('srmm','Release')
+if rc != 0:
+	print "Problem: failed to compile srmm [Release], status ::",rc
+	sys.exit(rc)
+
+# build srmm plugin (debug)
+rc = cvs_module_compile('srmm', 'Debug')
+if rc != 0:
+	print "Problem: failed to compile srmm [Debug], status ::",rc
+	sys.exit(rc)
+
+os.chdir('../../')				# move out of srmm back to root
 
 # now build the packages
 
