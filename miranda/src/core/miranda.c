@@ -346,13 +346,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if ( msg.message != WM_QUIT ) {
 				HWND h=GetForegroundWindow();
 				DWORD pid = 0;
+				checkIdle(&msg);
 				if ( h != NULL && GetWindowThreadProcessId(h,&pid) && pid==myPid 
 					&& GetClassLong(h, GCW_ATOM)==32770 ) {
 					if ( IsDialogMessage(h, &msg) ) continue;
 				}
 				TranslateMessage(&msg);
-				DispatchMessage(&msg);		
-				checkIdle(&msg);
+				DispatchMessage(&msg);						
 				if ( SetIdleCallback != NULL ) 
 					SetIdleCallback();
 			} else if ( !dying ) {
