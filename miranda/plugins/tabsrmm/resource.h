@@ -256,6 +256,7 @@
 #define IDC_MICROLF                     1699
 #define IDC_EVENTAPI                    1699
 #define IDC_STATICICON                  1699
+#define IDC_INDENTWITHTABS              1699
 #define IDC_CHECK7                      1700
 #define IDC_DELETETEMP                  1700
 #define IDC_CHECK8                      1701
@@ -387,13 +388,14 @@
 #define ID_LOGMENU_MESSAGELOGSETTINGSAREGLOBAL 40170
 #define ID_USER                         40173
 #define ID_TITLEBAR_USESTATICCONTAINERICON 40174
+#define ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT 40176
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        311
-#define _APS_NEXT_COMMAND_VALUE         40175
+#define _APS_NEXT_COMMAND_VALUE         40177
 #define _APS_NEXT_CONTROL_VALUE         1705
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -110,7 +110,7 @@ void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 HICON g_buttonBarIcons[NR_BUTTONBARICONS];
 extern char *szWarnClose;
 extern HMENU g_hMenuEncoding;
-extern int g_SmileyAddAvail, g_MetaContactsAvail;
+extern int g_SmileyAddAvail, g_MetaContactsAvail, g_SecureIMAvail;
 
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigned int subType);
 struct ContainerWindowData *FindContainerByName(const TCHAR *name);
@@ -3601,11 +3601,16 @@ verify:
             }
             dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
             if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0) {
-                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)dat->hProtoIcon);
-                UpdateStatusBarTooltips(hwndDlg, dat);
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
+                UpdateStatusBarTooltips(hwndDlg, dat, -1);
             }
             break;
         }
+		case DM_SECURE_CHANGED:
+		{
+			UpdateStatusBar(hwndDlg, dat);
+			break;
+		}
 
 // BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:

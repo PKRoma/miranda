@@ -43,7 +43,7 @@ $Id$
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
 
-extern int g_SmileyAddAvail, g_MetaContactsAvail;
+extern int g_SmileyAddAvail, g_MetaContactsAvail, g_SecureIMAvail;
 extern HMODULE g_hInst;
 extern HBITMAP g_hbmUnknown;
 extern HANDLE hMessageWindowList;
@@ -155,10 +155,12 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_LONGDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_USERELATIVEDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_CHECKED : MF_UNCHECKED));
-
+        CheckMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENTWITHTABS ? MF_CHECKED : MF_UNCHECKED);
+        
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_GRAYED : MF_ENABLED);
+        EnableMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, dat->dwFlags & MWF_LOG_INDENT ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
         EnableMenuItem(submenu, ID_PICMENU_ALIGNFORFULL, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) ? MF_ENABLED : MF_GRAYED));
@@ -274,6 +276,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_LOGMENU_INDENTMESSAGEBODY:
                 dat->dwFlags ^= MWF_LOG_INDENT;
                 return 1;
+            case ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT:
+                dat->dwFlags ^= MWF_LOG_INDENTWITHTABS;
+                return 1;
             case ID_LOGMENU_ACTIVATERTL:
                 iRtl ^= 1;
                 dat->dwFlags = iRtl ? dat->dwFlags | MWF_LOG_RTL : dat->dwFlags & ~MWF_LOG_RTL;
@@ -347,7 +352,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
     return 0;
 }
 
-void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat)
+void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iSecIMStatus)
 {
     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
         char szTipText[256], *szProto = NULL;
@@ -368,16 +373,20 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat)
                 _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s (MetaContact)"), ci.pszVal, szProto);
             else
                 _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s"), ci.pszVal, szProto); 
-            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
         }
         if(ci.pszVal)
             miranda_sys_free(ci.pszVal);
+        if(g_SecureIMAvail && iSecIMStatus >= 0) {
+            _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? "enabled" : "disabled");
+            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
+        }
     }
 }
 
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) == 4) {
+    if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 4) {
         TCHAR buf[128];
         int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
@@ -389,13 +398,19 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
-
+        int iSecIMStatus = 0;
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+        if(g_SecureIMAvail) {
+            if((iSecIMStatus = CallService("SecureIM/IsContactSecured", (WPARAM)dat->hContact, 0)) != 0)
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)g_buttonBarIcons[14]);
+            else
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)g_buttonBarIcons[15]);
+        }
         UpdateReadChars(hwndDlg, dat);
         if(dat->hProtoIcon)
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)dat->hProtoIcon);
-        UpdateStatusBarTooltips(hwndDlg, dat);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
+        UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
     }
 }
 

@@ -68,7 +68,7 @@ extern HINSTANCE g_hInst;
 
 extern  HIMAGELIST g_hImageList;
 extern struct ProtocolData *protoIconData;
-extern int g_nrProtos;
+extern int g_nrProtos, g_SecureIMAvail;
 
 extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionchanged, g_hEvent_Beforesend;
 extern HICON g_buttonBarIcons[], g_iconContainer;
@@ -548,16 +548,17 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 if (pContainer->hwndStatus) {
                     RECT rcs;
-                    int statwidths[4];
+                    int statwidths[5];
                     
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14;
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14;
-                    statwidths[2] = rcs.right - rcs.left - 35;
-                    statwidths[3] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - (g_SecureIMAvail ? 20 : 0);
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - (g_SecureIMAvail ? 20 : 0);
+                    statwidths[2] = rcs.right - rcs.left - 35 - (g_SecureIMAvail ? 20 : 0);
+                    statwidths[3] = g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
+                    statwidths[4] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                 }
                 else
@@ -1266,15 +1267,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 if(pContainer->hwndStatus) {
                     RECT rcs;
-                    int statwidths[4];
+                    int statwidths[5];
 
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14;
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14;
-                    statwidths[2] = rcs.right - rcs.left - 35;
-                    statwidths[3] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 14 - g_SecureIMAvail ? 20 : 0;
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 14 - g_SecureIMAvail ? 20 : 0;
+                    statwidths[2] = rcs.right - rcs.left - 35 - g_SecureIMAvail ? 20 : 0;
+                    statwidths[3] = g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
+                    statwidths[4] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
                     SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);
@@ -1378,7 +1380,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     HMENU hMenu;
                     RECT rcPanel;
                     
-                    SendMessage(pContainer->hwndStatus, SB_GETRECT, 2, (LPARAM)&rcPanel);
+                    SendMessage(pContainer->hwndStatus, SB_GETRECT, g_SecureIMAvail ? 3 : 2, (LPARAM)&rcPanel);
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     if(hContact) {
                         GetCursorPos(&pt);

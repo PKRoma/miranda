@@ -55,7 +55,7 @@ HBITMAP g_hbmUnknown = 0;
 
 // external plugins
 
-int g_MetaContactsAvail = 0, g_SmileyAddAvail = 0;
+int g_MetaContactsAvail = 0, g_SmileyAddAvail = 0, g_SecureIMAvail = 0;
 
 
 extern HINSTANCE g_hInst;
@@ -121,6 +121,17 @@ HMODULE g_hIconDLL = 0;
 // nls stuff...
 
 void BuildCodePageList();
+
+static int ContactSecureChanged(WPARAM wParam, LPARAM lParam)
+{
+    HWND hwnd;
+
+    if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam))
+	{
+        SendMessage(hwnd, DM_SECURE_CHANGED, 0, 0);
+    }
+    return 0;
+}
 
 /*
  * service function. retrieves the message window data for a given hcontact or window
@@ -285,7 +296,6 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
         }
         if (iPlay)
             SkinPlaySound("RecvMsg");
-    
         return 0;
     }
     /* new message */
@@ -664,6 +674,9 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     
     if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
         g_MetaContactsAvail = 1;
+
+    if(ServiceExists("SecureIM/IsContactSecured"))
+        g_SecureIMAvail = 1;
     
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
@@ -806,6 +819,10 @@ int LoadSendRecvMessageModule(void)
     HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+
+	HookEvent("SecureIM/Established",ContactSecureChanged);
+	HookEvent("SecureIM/Disabled",ContactSecureChanged);
+    
     InitAPI();
     
 #ifdef __MATHMOD_SUPPORT	
@@ -1174,6 +1191,8 @@ void CreateImageList(BOOL bInitial)
             g_buttonBarIcons[11] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SMILEYICON), IMAGE_ICON, cxIcon, cyIcon, 0);
             g_buttonBarIcons[12] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_ON), IMAGE_ICON, cxIcon, cyIcon, 0);
             g_buttonBarIcons[13] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_OFF), IMAGE_ICON, cxIcon, cyIcon, 0);
+            g_buttonBarIcons[14] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_ENABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
+            g_buttonBarIcons[15] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_DISABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
         }
     }
     else

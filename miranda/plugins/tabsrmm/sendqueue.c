@@ -386,8 +386,10 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 return TRUE;
             }
             break;
-        case WM_LBUTTONDOWN: {
-            break;
+        case WM_RBUTTONUP:
+        {
+			PUDeletePopUp(hWnd);
+			return TRUE;
         }
         default:
             break;

@@ -32,6 +32,17 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
+Version 0.9.9.5 - 2005/01/XX
+
+        + merged std's patch for improved indenting with tabstops. This option works best
+          with the following msg log settings:
+          *) grouping enabled
+          *) message body in a new line
+          *) mark followup messages with timestamps
+          
+          It is a new message log option, available either as global or per-contact option
+          (depending on the message log option mode - global or per-contact).
+
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

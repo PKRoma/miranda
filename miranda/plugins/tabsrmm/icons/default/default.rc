@@ -39,10 +39,21 @@ LANGUAGE 7, 1
 #define IDI_ICONIN 13
 #define IDI_ICONOUT 14
 #define IDI_SMILEYICON 15
-#define IDI_RESERVED1 16
-#define IDI_RESERVED2 17
+#define IDI_SELFTYPING_ON 16
+#define IDI_SELFTYPING_OFF 17
 #define IDI_CONTAINER 18
-#define IDI_RESERVED4 19
+#define IDI_SECUREIM_ENABLED 19
+#define IDI_SECUREIM_DISABLED 20
+#define IDI_RESERVED1 21
+#define IDI_RESERVED2 22
+#define IDI_RESERVED3 23
+#define IDI_RESERVED4 24
+#define IDI_RESERVED5 25
+#define IDI_RESERVED6 26
+#define IDI_RESERVED7 27
+#define IDI_RESERVED8 28
+#define IDI_RESERVED9 29
+#define IDI_RESERVED10 30
 
 #define IDB_UNKNOWNAVATAR 100
 
@@ -63,10 +74,21 @@ IDI_CLOSEMSGDLG         ICON                    "..\\..\\res\\angeli-icons\\Clos
 IDI_ICONIN              ICON                    "..\\..\\res\\angeli-icons\\Incom.ico"
 IDI_ICONOUT             ICON                    "..\\..\\res\\angeli-icons\\outg.ico"
 IDI_SMILEYICON          ICON                    "..\\..\\res\\smbutton.ico"
-IDI_RESERVED1			ICON					"..\\..\\res\\typing8.ico"
-IDI_RESERVED2			ICON					"..\\..\\res\\delete.ico"
+IDI_SELFTYPING_ON		ICON					"..\\..\\res\\typing8.ico"
+IDI_SELFTYPING_OFF		ICON					"..\\..\\res\\delete.ico"
 IDI_CONTAINER			ICON					"..\\..\\res\\Logo.ico"
+IDI_SECUREIM_ENABLED	ICON					"..\\..\\res\\secureim_on.ico"
+IDI_SECUREIM_DISABLED	ICON					"..\\..\\res\\secureim_off.ico"
+IDI_RESERVED1			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED2			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED3			ICON					"..\\..\\res\\empty.ico"
 IDI_RESERVED4			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED5			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED6			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED7			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED8			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED9			ICON					"..\\..\\res\\empty.ico"
+IDI_RESERVED10			ICON					"..\\..\\res\\empty.ico"
 
 IDB_UNKNOWNAVATAR		BITMAP					"..\\..\\res\\unknown.bmp"
 

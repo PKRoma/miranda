@@ -386,11 +386,19 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 		int iIndent = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0) * 15;
         int rIndent = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0) * 15;
         
-		if(iIndent) {
-            if(dat->dwFlags & MWF_LOG_RTL)
-                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u", iIndent, iIndent, rIndent);
-            else
-                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u", iIndent, iIndent, rIndent);
+        if(iIndent) {
+            if(dat->dwFlags & MWF_LOG_RTL) {
+                if(dat->dwFlags & MWF_LOG_INDENTWITHTABS)
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent, iIndent, rIndent, iIndent);
+                else
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u", iIndent, iIndent, rIndent);
+            }
+            else {
+                if(dat->dwFlags & MWF_LOG_INDENTWITHTABS)
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent, iIndent, rIndent, iIndent);
+                else
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u", iIndent, iIndent, rIndent);
+            }
         }
 	}
     else {
@@ -663,10 +671,18 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	if(dat->dwFlags & MWF_LOG_UNDERLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG)
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ul0");
 // XXX end mod
-    if (showColon)
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, ": ");
-    else
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");
+    if (showColon) {
+        if(dat->dwFlags & MWF_LOG_INDENT)
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->dwFlags & MWF_LOG_INDENTWITHTABS ? ":\\tab " : ": ");
+        else
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, ": ");
+    }
+    else {
+        if(dat->dwFlags & MWF_LOG_INDENT)
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->dwFlags &  MWF_LOG_INDENTWITHTABS ? "\\tab " : " ");
+        else
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");
+    }
         
 // XXX mod: show events in a new line
 	if(dat->dwFlags & MWF_LOG_NEWLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG && g_groupBreak == TRUE)

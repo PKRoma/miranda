@@ -32,7 +32,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
 void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon);
 void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat);
-void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat);
+void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iSecIMStatus);
 void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode);
 int CheckValidSmileyPack(char *szProto, HICON *hButtonIcon);
 void CreateSmileyIcon(struct MessageWindowData *dat, HICON hIcon);

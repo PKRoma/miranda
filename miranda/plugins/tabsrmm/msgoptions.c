@@ -301,6 +301,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_GROUPMODE, dwFlags & MWF_LOG_GROUPMODE);
             CheckDlgButton(hwndDlg, IDC_LONGDATES, dwFlags & MWF_LOG_LONGDATES);
             CheckDlgButton(hwndDlg, IDC_RELATIVEDATES, dwFlags & MWF_LOG_USERELATIVEDATES);
+            CheckDlgButton(hwndDlg, IDC_INDENTWITHTABS, dwFlags & MWF_LOG_INDENTWITHTABS);
             
             CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1));
             CheckDlgButton(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1));
@@ -379,6 +380,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                       (IsDlgButtonChecked(hwndDlg, IDC_RELATIVEDATES) ? MWF_LOG_USERELATIVEDATES : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_LONGDATES) ? MWF_LOG_LONGDATES : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG) ? MWF_LOG_INDIVIDUALBKG : 0) |
+                                      (IsDlgButtonChecked(hwndDlg, IDC_INDENTWITHTABS) ? MWF_LOG_INDENTWITHTABS : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_SWAPTIMESTAMP) ? MWF_LOG_SWAPNICK : 0);
                             
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LOGHOTKEYS));
