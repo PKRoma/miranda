@@ -30,10 +30,12 @@ HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfN
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
+	char *szProto;
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	while(hContact!=NULL) {
-		if(!strcmp(MSNPROTONAME,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0))) {
+		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+		if(szProto!=NULL && !strcmp(MSNPROTONAME,szProto)) {
 			if(!DBGetContactSetting(hContact,MSNPROTONAME,"e-mail",&dbv)) {
 				if(!strcmpi(msnEmail,dbv.pszVal)) {
 					DBFreeVariant(&dbv);

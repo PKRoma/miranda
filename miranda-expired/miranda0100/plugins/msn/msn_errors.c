@@ -22,8 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int MSN_HandleErrors(struct ThreadData *info,char *cmdString)
 {
+	int error=atoi(cmdString);
+
 	MSN_DebugLog(MSN_LOG_ERROR,"Server error:%s",cmdString);
-	switch(atoi(cmdString)) {
+	switch(error) {
 		case ERR_SERVER_UNAVAILABLE:
 			MSN_DebugLog(MSN_LOG_FATAL,"Server Unavailable! (Closing connection) ");
 			CmdQueue_AddProtoAck(NULL,ACKTYPE_LOGIN,ACKRESULT_FAILED,NULL,LOGINERR_NOSERVER);
@@ -35,6 +37,11 @@ int MSN_HandleErrors(struct ThreadData *info,char *cmdString)
 			return 1;
 		default:
 			MSN_DebugLog(MSN_LOG_WARNING,"Unprocessed error: %s",cmdString);
+			if(error>=500) {     //all these errors look fatal-ish
+				char str[256];
+				wsprintf(str,"Unrecognised error %d. The server has closed our connection",error);
+				MessageBox(NULL,str,"MSN Protocol",MB_OK);
+			}
 			break;
 	}
 	return 0;
