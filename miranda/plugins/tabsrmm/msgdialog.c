@@ -2524,7 +2524,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(iSelection - IDM_CONTAINERMENU >= 0) {
                     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined(_UNICODE)
-                        WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
+                        WCHAR wszTemp[CONTAINER_NAMELEN + 2];
+                        _tcsncpy(wszTemp, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
                         SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
 #else                        
                         SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
@@ -4469,7 +4470,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_LONGDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_USERELATIVEDATES ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_UNCHECKED : MF_CHECKED);
         
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);

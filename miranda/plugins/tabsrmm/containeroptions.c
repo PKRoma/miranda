@@ -29,7 +29,7 @@ containeroptions.c  dialog implementaion for setting the container options.
 #include "msgs.h"
 
 int _log(const char *fmt, ...); // XXX debuglog
-int EnumContainers(HANDLE hContact, DWORD dwAction, const char *szTarget, const char *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
+int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 extern struct ContainerWindowData *pFirstContainer;
 
 BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

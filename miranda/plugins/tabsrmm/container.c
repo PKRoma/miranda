@@ -83,6 +83,8 @@ HMENU BuildContainerMenu();
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
+
+int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newName);
 void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId);
@@ -433,10 +435,52 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS:
                     pContainer->dwFlags ^= CNT_ALWAYSREPORTINACTIVE;
                     return 0;
+                case ID_WINDOWFLASHING_DISABLEFLASHING:
+                    pContainer->dwFlags |= CNT_NOFLASH;
+                    pContainer->dwFlags &= ~CNT_FLASHALWAYS;
+                    return 0;
+                case ID_WINDOWFLASHING_FLASHUNTILFOCUSED:
+                    pContainer->dwFlags |= CNT_FLASHALWAYS;
+                    pContainer->dwFlags &= ~CNT_NOFLASH;
+                    return 0;
+                case ID_WINDOWFLASHING_USEDEFAULTVALUES:
+                    pContainer->dwFlags &= ~(CNT_NOFLASH | CNT_FLASHALWAYS);
+                    return 0;
                 case ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL:
                     iIgnorePerContact = !iIgnorePerContact;
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", iIgnorePerContact);
                     return 0;
+                case ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY:
+                {
+                    struct ContainerWindowData *pCurrent = pFirstContainer;
+                    while(pCurrent) {
+                        if(pCurrent != pContainer) {
+                            pCurrent->dwFlags = pContainer->dwFlags;
+                            pCurrent->dwTransparency = pContainer->dwTransparency;
+                            SendMessage(pCurrent->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+                        }
+                        pCurrent = pCurrent->pNextContainer;
+                    }
+                    EnumContainers(NULL, CNT_ENUM_WRITEFLAGS, NULL, NULL, pContainer->dwFlags, pContainer->dwTransparency);
+                    return 0;
+                }
+                case ID_OPTIONS_SETCURRENTOPTIONSASDEFAULTVALUES:
+                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", pContainer->dwFlags);
+                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containertrans", pContainer->dwTransparency);
+                    return 0;
+                case ID_OPTIONS_SAVECURRENTWINDOWPOSITIONASDEFAULT:
+                {
+                    WINDOWPLACEMENT wp = {0};
+
+                    wp.length = sizeof(wp);
+                    if(GetWindowPlacement(hwndDlg, &wp)) {
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+                    }
+                    return 0;
+                }
             }
             if(pContainer->dwFlags != dwOldFlags)
                 SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 0);
@@ -859,7 +903,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 if(iSelection - IDM_CONTAINERMENU >= 0) {
                                     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined (_UNICODE)
-                                        WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
+                                        WCHAR wszTemp[CONTAINER_NAMELEN + 2];
+                                        _tcsncpy(wszTemp, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
                                         SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
 #else
                                         SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
@@ -1016,12 +1061,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 }
             }
-            submenu = GetSubMenu(hMenu, 3);
-            if(dat && submenu) {
-                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
-                submenu = GetSubMenu(hMenu, 1);
-                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
-            }
             hMenu = pContainer->hMenu;
             CheckMenuItem(hMenu, ID_VIEW_SHOWMENUBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOMENUBAR ? MF_UNCHECKED : MF_CHECKED);
             CheckMenuItem(hMenu, ID_VIEW_SHOWSTATUSBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOSTATUSBAR ? MF_UNCHECKED : MF_CHECKED);
@@ -1042,8 +1081,18 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS, MF_BYCOMMAND | pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? MF_CHECKED : MF_UNCHECKED);
 
+            CheckMenuItem(hMenu, ID_WINDOWFLASHING_USEDEFAULTVALUES, MF_BYCOMMAND | (pContainer->dwFlags & (CNT_NOFLASH | CNT_FLASHALWAYS)) ? MF_UNCHECKED : MF_CHECKED);
+            CheckMenuItem(hMenu, ID_WINDOWFLASHING_DISABLEFLASHING, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOFLASH ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, ID_WINDOWFLASHING_FLASHUNTILFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_FLASHALWAYS ? MF_CHECKED : MF_UNCHECKED);
+            
             CheckMenuItem(hMenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0) ? MF_CHECKED : MF_UNCHECKED));
             
+            submenu = GetSubMenu(hMenu, 3);
+            if(dat && submenu) {
+                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
+                submenu = GetSubMenu(hMenu, 1);
+                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
+            }
             break;
         }
         case DM_CLOSETABATMOUSE:
@@ -1142,7 +1191,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DWORD ws, wsold, ex = 0, exold = 0;
 			HMENU hSysmenu = GetSystemMenu(hwndDlg, FALSE);
 			HANDLE hContact;
-            
+
+            if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
+                pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);      // hide container name in single window mode (not needed)
+
 			ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
 			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ws & ~WS_CAPTION : ws | WS_CAPTION;
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
@@ -1153,9 +1205,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				ex = GetWindowLong(hwndDlg, GWL_EXSTYLE);
 				ex = (pContainer->dwFlags & CNT_TRANSPARENCY) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
 				SetWindowLong(hwndDlg , GWL_EXSTYLE , ex);
-				if (pContainer->dwFlags & CNT_TRANSPARENCY) {
+				if (pContainer->dwFlags & CNT_TRANSPARENCY)
     				pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)LOWORD(pContainer->dwTransparency), LWA_ALPHA);
-				}
 				
 				RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
@@ -1802,7 +1853,7 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
     char *szSettingP = "CNTW_";
 #else    
     char *szSettingP = "CNT_";
-    char *szKey = "TAB_ContainersW";
+    char *szKey = "TAB_Containers";
 #endif    
     HANDLE hhContact = 0;
 
@@ -1860,7 +1911,7 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
     if(dwAction & CNT_ENUM_WRITEFLAGS) {        // write the flags to the *local* container settings for each hContact
         HANDLE hContact;
 #if defined(_UNICODE)
-        char *szFlags = "CNTW__FLags";
+        char *szFlags = "CNTW__Flags";
         char *szTrans = "CNTW__Trans";
 #else
         char *szFlags = "CNT__Flags";
