@@ -351,8 +351,12 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     return 0;
                 }
                 if(myGlobals.m_SendOnEnter) {
-                    PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-                    return 0;
+                    if(GetKeyState(VK_CONTROL) & 0x8000)
+                        break;
+                    else {
+                        PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+                        return 0;
+                    }
                 }
                 else 
                     break;
@@ -776,17 +780,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->hContact = newData->hContact;
                 dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
                 dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
-                if(dat->hContact && dat->szProto != NULL) {
+                if(dat->hContact && dat->szProto != NULL)
                     dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-                    if(!dat->bIsMeta)
-                        dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(dat->szProto, ID_STATUS_ONLINE);
-                    else {
-                        DWORD dwForcedContactNum = 0;
-                        CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
-                        DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", dwForcedContactNum);
-                        dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
-                    }
-                }
                 else
                     dat->wStatus = ID_STATUS_OFFLINE;
                 
@@ -1078,7 +1073,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left + 1, rc.top, (rc.right - rc.left) - 8, (rc.bottom - rc.top) - 2, 0);
                     SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    if(IsIconic(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
+                    if(IsIconic(dat->pContainer->hwnd) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
                         DBEVENTINFO dbei = {0};
 
                         dbei.flags = 0;
@@ -1232,6 +1227,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
 
+            if(dat->hContact && dat->szProto != NULL) {
+                if(!dat->bIsMeta)
+                    dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(dat->szProto, ID_STATUS_ONLINE);
+                else {
+                    DWORD dwForcedContactNum = 0;
+                    CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
+                    DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", dwForcedContactNum);
+                    dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
+                }
+            }
+            
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
             
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
@@ -1258,6 +1264,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if (dat->hInputBkgBrush)
                 DeleteObject(dat->hInputBkgBrush);
             {
+                char *szStreamOut = NULL;
+                SETTEXTEX stx = {ST_DEFAULT,CP_UTF8};
+                
                 COLORREF colour = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
                 COLORREF inputcolour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SRMSGDEFSET_BKGCOLOUR);
                 COLORREF inputcharcolor;
@@ -1266,7 +1275,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 HDC hdc = GetDC(NULL);
                 int logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
                 ReleaseDC(NULL, hdc);
-                
+
+                if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
+                    szStreamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
+
                 dat->hBkgBrush = CreateSolidBrush(colour);
                 dat->hInputBkgBrush = CreateSolidBrush(inputcolour);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
@@ -1282,27 +1294,34 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 cf2.bPitchAndFamily = lf.lfPitchAndFamily;
                 cf2.yHeight = abs(lf.lfHeight) * 15;
                 SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
-            }
-            if (dat->dwFlags & MWF_LOG_RTL) {
-                PARAFORMAT2 pf2;
-                ZeroMemory((void *)&pf2, sizeof(pf2));
-                pf2.cbSize = sizeof(pf2);
-                pf2.dwMask = PFM_RTLPARA;
-                pf2.wEffects = PFE_RTLPARA;
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
-                SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
-            } else {
-                PARAFORMAT2 pf2;
-                ZeroMemory((void *)&pf2, sizeof(pf2));
-                pf2.cbSize = sizeof(pf2);
-                pf2.dwMask = PFM_RTLPARA;
-                pf2.wEffects = 0;
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-                SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+                
+                if (dat->dwFlags & MWF_LOG_RTL) {
+                    PARAFORMAT2 pf2;
+                    ZeroMemory((void *)&pf2, sizeof(pf2));
+                    pf2.cbSize = sizeof(pf2);
+                    pf2.dwMask = PFM_RTLPARA;
+                    pf2.wEffects = PFE_RTLPARA;
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
+                    SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
+                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+                } else {
+                    PARAFORMAT2 pf2;
+                    ZeroMemory((void *)&pf2, sizeof(pf2));
+                    pf2.cbSize = sizeof(pf2);
+                    pf2.dwMask = PFM_RTLPARA;
+                    pf2.wEffects = 0;
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+                    SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
+                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+    
+                }
+                
+                if(szStreamOut != NULL) {
+                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szStreamOut);
+                    free(szStreamOut);
+                }
             }
 // END MOD#23
             if (hwndDlg == dat->pContainer->hwndActive)
@@ -1729,6 +1748,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 return 0;
             }
         case DM_REMAKELOG:
+            dat->iLastEventType = 0;
+            dat->iLastEventType = 0;
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             break;
         case DM_APPENDTOLOG:
@@ -1868,7 +1889,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      * never switch for status changes...
                      */
                     if(!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
-                        if(IsIconic(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && dat->pContainer->hwndActive != hwndDlg) {
+                        if(IsIconic(dat->pContainer->hwnd) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && dat->pContainer->hwndActive != hwndDlg) {
                             int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
                             if (iItem >= 0) {
                                 TabCtrl_SetCurSel(GetParent(hwndDlg), iItem);

@@ -292,6 +292,10 @@ extern "C" const WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly)
                 break;
         }
 ok:        
+        if((endmark - beginmark) < 2) {
+            beginmark++;
+            continue;
+        }
         index = 0;
         switch(endmarker) {
             case '*':

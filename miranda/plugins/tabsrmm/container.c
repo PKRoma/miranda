@@ -517,14 +517,24 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_GETMINMAXINFO: {
                 RECT rc;
                 POINT pt;
-
+                RECT rcContainer;
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
+
+                GetWindowRect(hwndDlg, &rcContainer);
                 mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
                 mmi->ptMinTrackSize.x = 280;
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 pt.y = rc.top;
                 TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
                 mmi->ptMinTrackSize.y += ((rc.top - pt.y) + 10);
+                if(pContainer->dwFlags & CNT_VERTICALMAX) {
+                    RECT rcDesktop;
+                    SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDesktop, 0);
+                    mmi->ptMaxSize.x = rcContainer.right - rcContainer.left;
+                    mmi->ptMaxSize.y = rcDesktop.bottom - rcDesktop.top;
+                    mmi->ptMaxPosition.x = rcContainer.left;
+                    mmi->ptMaxPosition.y = 0;
+                }
                 return 0;
             }
 

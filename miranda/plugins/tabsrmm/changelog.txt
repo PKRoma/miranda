@@ -24,7 +24,25 @@ Version 0.9.9.8 - 2005/03/04
           
           When you edit an iconpack, DO NOT change the string table identifier. The ordinal
           number for the string identifier is 101.
+          
+          The version check can be disabled on the "tabs and layout" page (just below the
+          option to load a new icon pack at runtime).
+          
+        + added option to "vertical maximize" a container (per container setting). If enabled,
+          a container is maximized only in its vertical dimension, so that the window will
+          take the entire screen *height*, but will keep its current width. When disabled,
+          the container will show default maximize behaviour (taking entire screen).
+          
+        ! fixed bug with soft line feeds (SHIFT-Enter) when sending formatting info is enabled.
 
+        * changing message log or other option will no longer wipe the text from the input
+          area.
+     
+        ! reset last eventtype and timestamp (for grouping messages) before rebuilding the log
+        
+        ! ctrl-enter inserts linefeed when "send on enter" is active. I broke that a few
+          versions ago.
+          
 Version 0.9.9.7 - 2005/03/04
 
         ! re-enabled the "show multisend" menu bar item.

@@ -68,16 +68,16 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             }
 
 		case WM_HSCROLL:
-			if (LOWORD(wParam) == TB_THUMBTRACK || LOWORD(wParam) == TB_THUMBPOSITION || LOWORD(wParam) == TB_PAGEDOWN || LOWORD(wParam) == TB_PAGEUP) {
-				char szBuf[20];
-				DWORD dwPos = SendMessage((HWND) lParam, TBM_GETPOS, 0, 0);
-				_snprintf(szBuf, 10, "%d", dwPos);
-				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE))
-					SetWindowTextA(GetDlgItem(hwndDlg, IDC_TLABEL_ACTIVE), szBuf);
-				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TRANSPARENCY_INACTIVE))
-					SetWindowTextA(GetDlgItem(hwndDlg, IDC_TLABEL_INACTIVE), szBuf);
+            if((HWND)lParam == GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE) || (HWND)lParam == GetDlgItem(hwndDlg, IDC_TRANSPARENCY_INACTIVE)) {
+                char szBuf[20];
+                DWORD dwPos = SendMessage((HWND) lParam, TBM_GETPOS, 0, 0);
+                _snprintf(szBuf, 10, "%d", dwPos);
+                if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE))
+                    SetWindowTextA(GetDlgItem(hwndDlg, IDC_TLABEL_ACTIVE), szBuf);
+                if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TRANSPARENCY_INACTIVE))
+                    SetWindowTextA(GetDlgItem(hwndDlg, IDC_TLABEL_INACTIVE), szBuf);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
-			}
+            }
 			break;
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
@@ -161,6 +161,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             CheckDlgButton(hwndDlg, IDC_SHOWUIN, dwFlags & CNT_TITLE_SHOWUIN);
             CheckDlgButton(hwndDlg, IDC_HIDETOOLBAR, dwFlags & CNT_HIDETOOLBAR);
             CheckDlgButton(hwndDlg, IDC_UINSTATUSBAR, dwFlags & CNT_UINSTATUSBAR);
+            CheckDlgButton(hwndDlg, IDC_VERTICALMAX, dwFlags & CNT_VERTICALMAX);
             
             if (LOBYTE(LOWORD(GetVersion())) >= 5 ) {
                 CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
@@ -205,6 +206,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                          (IsDlgButtonChecked(hwndDlg, IDC_SHOWUIN) ? CNT_TITLE_SHOWUIN : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_HIDETOOLBAR) ? CNT_HIDETOOLBAR : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_UINSTATUSBAR) ? CNT_UINSTATUSBAR : 0) |
+                         (IsDlgButtonChecked(hwndDlg, IDC_VERTICALMAX) ? CNT_VERTICALMAX : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_SHOWCONTACTNAME) ? CNT_TITLE_SHOWNAME : 0);
 
             if (IsDlgButtonChecked(hwndDlg, IDC_O_FLASHDEFAULT))

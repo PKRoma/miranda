@@ -48,7 +48,7 @@ BEGIN
 #endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,146,32,24,14,
                     0x18000000L
-    CONTROL         "",IDC_SENDMENU,"MButtonClass",WS_TABSTOP,170,32,10,14,
+    CONTROL         "",IDC_SENDMENU,"MButtonClass",WS_TABSTOP,170,32,9,14,
                     0x18000000L
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,1,
                     WS_EX_STATICEDGE
@@ -71,7 +71,7 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,16,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,32,32,10,14,
+    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,32,32,9,14,
                     0x18000000L
     CONTROL         "",IDC_TOGGLETOOLBAR,"MButtonClass",WS_TABSTOP,32,32,2,2,
                     0x18000000L

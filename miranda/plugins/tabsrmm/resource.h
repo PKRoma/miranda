@@ -264,6 +264,7 @@
 #define IDC_CNTNOSTATUSBAR              1692
 #define IDC_AUTOCLOSELAST               1692
 #define IDC_MARKFOLLOWUPTIMESTAMP       1692
+#define IDC_CHECKICONDLL                1692
 #define IDC_HIDEMENUBAR                 1693
 #define IDC_TABSATBOTTOM                1694
 #define IDC_STATICCONTROL               1695
@@ -299,6 +300,7 @@
 #define IDC_STATUSGROUP                 1710
 #define IDC_CHECK9                      1711
 #define IDC_ALLOWSENDBUTTONHIDE         1711
+#define IDC_VERTICALMAX                 1711
 #define IDC_ICONDLLNAME                 1712
 #define IDC_BUTTON2                     1713
 #define IDC_SELECTICONDLL               1713

@@ -133,28 +133,28 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "   "
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "General settings",IDC_STATIC,7,7,138,34
+    GROUPBOX        "General settings",IDC_STATIC,7,7,138,44
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,16,129,10
     CONTROL         "Container stays on top",IDC_O_STICKY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,27,124,10
-    GROUPBOX        "Popup configuration",IDC_STATIC,7,47,138,64
+    GROUPBOX        "Popup configuration",IDC_STATIC,7,51,138,60
     CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,59,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,61,124,10
     CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,70,110,10
-    LTEXT           "inactive tabs",IDC_STATIC,26,89,74,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,71,110,10
+    LTEXT           "inactive tabs",IDC_STATIC,26,90,74,8
     CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,98,121,9
-    GROUPBOX        "Titlebar options",IDC_STATIC,7,111,138,55
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,99,121,9
+    GROUPBOX        "Titlebar options",IDC_STATIC,7,112,138,54
     CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,120,121,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,121,121,10
     CONTROL         "Show contacts name",IDC_SHOWCONTACTNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,130,125,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,131,125,11
     CONTROL         "Show UIN",IDC_SHOWUIN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,142,121,8
+                    WS_TABSTOP,14,143,121,8
     CONTROL         "Show contacts status",IDC_SHOWSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,24,151,118,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,24,152,118,12
     GROUPBOX        "Flashing options",IDC_STATIC,152,7,122,46
     CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP,166,16,101,11
@@ -205,9 +205,11 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,169,245,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,225,245,50,14,WS_DISABLED
     CONTROL         "Always enable popups for",IDC_ALWAYSPOPUPSINACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,80,122,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,81,122,10
     CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,168,126,11
+    CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,40,119,8
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -418,7 +420,7 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,33,11,
                     13
     LTEXT           "pixel",IDC_STATIC,267,34,28,11
-    GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,64
+    GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,62
     CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,81,127,11
     CONTROL         "Popup container if minimized",IDC_POPUPCONTAINER,"Button",
@@ -426,11 +428,11 @@ BEGIN
     CONTROL         "Create containers, but leave them minimized",
                     IDC_AUTOCREATECONTAINER,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,137,81,156,11
-    GROUPBOX        "Message dialog layout",IDC_STATIC,0,126,303,36
+    GROUPBOX        "Message dialog layout",IDC_STATIC,0,122,303,40
     CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,138,133,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,130,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,149,145,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,150,144,11
     LTEXT           "Tab control border",IDC_STATIC,148,47,74,11
     EDITTEXT        IDC_TABBORDER,226,44,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -461,12 +463,14 @@ BEGIN
                     154,14
     CONTROL         "Automatically switch tabs in minimized containers",
                     IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    6,110,289,10
+                    6,109,289,9
     CONTROL         "Flat message log (no static edge)",IDC_FLATMSGLOG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,150,133,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,140,140,10
     LTEXT           "Icon DLL",IDC_STATIC,153,134,39,11
     EDITTEXT        IDC_ICONDLLNAME,187,132,79,13,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_SELECTICONDLL,271,132,26,13
+    CONTROL         "Perform version check on Icon DLL",IDC_CHECKICONDLL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,148,144,11
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147

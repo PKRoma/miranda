@@ -849,14 +849,10 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
             CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
         }
     }
-    //FreeMsgLogIcons();
-    //LoadMsgLogIcons();
-    WindowList_Broadcast(hMessageWindowList, DM_REMAKELOG, 0, 0);
-    // change all the icons
-    WindowList_Broadcast(hMessageWindowList, DM_UPDATEWINICON, 0, 0);
-
     LoadIconTheme();
     CreateImageList(FALSE);
+    WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+    WindowList_Broadcast(hMessageWindowList, DM_UPDATEWINICON, 0, 0);
     return 0;
 }
 
@@ -1427,14 +1423,16 @@ void LoadIconTheme()
     if(g_hIconDLL == NULL)
         MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
     else {
-        if(LoadStringA(g_hIconDLL, IDS_IDENTIFY, szIDString, sizeof(szIDString)) == 0) {
-            if(MessageBoxA(0, "ICONPACK: unknown version, load anyway?", "tabSRMM", MB_YESNO) == IDNO)
-                goto failure;
-        }
-        else {
-            if(strcmp(szIDString, "__tabSRMM_ICONPACK 1.0__")) {
+        if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "v_check", 1)) {
+            if(LoadStringA(g_hIconDLL, IDS_IDENTIFY, szIDString, sizeof(szIDString)) == 0) {
                 if(MessageBoxA(0, "ICONPACK: unknown version, load anyway?", "tabSRMM", MB_YESNO) == IDNO)
                     goto failure;
+            }
+            else {
+                if(strcmp(szIDString, "__tabSRMM_ICONPACK 1.0__")) {
+                    if(MessageBoxA(0, "ICONPACK: unknown version, load anyway?", "tabSRMM", MB_YESNO) == IDNO)
+                        goto failure;
+                }
             }
         }
         UnloadIconTheme();
@@ -1473,6 +1471,7 @@ void LoadIconTheme()
         myGlobals.g_buttonBarIcons[19] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTUNDERLINE), IMAGE_ICON, cxIcon, cyIcon, 0);
         myGlobals.g_buttonBarIcons[20] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTFACE), IMAGE_ICON, cxIcon, cyIcon, 0);
         myGlobals.g_buttonBarIcons[21] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTCOLOR), IMAGE_ICON, cxIcon, cyIcon, 0);
+        WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
         return;
     }
 failure:

@@ -1008,6 +1008,13 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					iRemoveChars = 4;
 					//_sntprintf(InsertThis, sizeof(InsertThis), _T("\n"));
 				}
+                else if(p1 == _tcsstr(p1, _T("\\line")))    // soft line break;
+                {
+                    bTextHasStarted = TRUE;
+                    bJustRemovedRTF = TRUE;
+                    iRemoveChars = 5;
+                    _sntprintf(InsertThis, sizeof(InsertThis), _T("\n"));
+                }
 				else if(p1 == _tcsstr(p1, _T("\\b"))) //bold
 				{
 					bTextHasStarted = TRUE;
