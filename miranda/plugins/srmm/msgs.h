@@ -133,7 +133,7 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_SHOWBUTTONLINE 1
 #define SRMSGSET_SHOWINFOLINE      "ShowInfoLine"
 #define SRMSGDEFSET_SHOWINFOLINE   1
-#define SRMSGSET_AUTOPOPUP         "AutoPopup"
+#define SRMSGSET_AUTOPOPUP         "AutoPopupMsg"
 #define SRMSGDEFSET_AUTOPOPUP      0
 #define SRMSGSET_AUTOMIN           "AutoMin"
 #define SRMSGDEFSET_AUTOMIN        0
