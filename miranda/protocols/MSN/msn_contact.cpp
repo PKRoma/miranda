@@ -53,3 +53,22 @@ HANDLE __stdcall MSN_HContactFromEmail( const char* msnEmail, const char* msnNic
 
 	return NULL;
 }
+
+HANDLE __stdcall MSN_HContactById( const char* szGuid )
+{
+	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL )
+	{
+		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
+		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+			char tId[ 100 ];
+			if ( !MSN_GetStaticString( "ID", hContact, tId, sizeof tId ))
+				if ( !strcmpi( szGuid, tId ))
+					return hContact;
+		}
+
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+	}
+
+	return NULL;
+}

@@ -41,6 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <m_clc.h>
 #include <m_clist.h>
+#include <m_clui.h>
 #include <m_message.h>
 #include <m_options.h>
 #include <m_protocols.h>
@@ -144,6 +145,8 @@ char*		__stdcall	Utf8Encode( const char* src );
 char*    __stdcall	Utf8EncodeUcs2( const wchar_t* src );
 
 HANDLE	__stdcall	MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
+HANDLE	__stdcall	MSN_HContactById( const char* szGuid );
+
 int		__stdcall	MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
 int		__stdcall	MSN_AddUser( HANDLE hContact, const char* email, int flags );
 void		__stdcall	MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
@@ -466,6 +469,19 @@ void		__stdcall Lists_Remove( int list, const char* email );
 void		__stdcall Lists_Wipe( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////
+//	MSN server groups
+
+bool   MSN_AddGroup( const char* pName, const char* pId );
+void   MSN_DeleteGroup( const char* pId );
+void	 MSN_FreeGroups( void );
+LPCSTR MSN_GetGroupById( const char* pId );
+LPCSTR MSN_GetGroupByName( const char* pName );
+LPCSTR MSN_GetGroupByNumber( int pNumber );
+void   MSN_MoveContactToGroup( HANDLE hContact, const char* grpName );
+void   MSN_SetGroupName( const char* pId, const char* pName );
+void   MSN_SetGroupNumber( const char* pId, int pNumber );
+
+/////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin options
 
 typedef struct
@@ -486,6 +502,7 @@ typedef struct
 	BOOL		ShowErrorsAsPopups;
 	BOOL		AwayAsBrb;
 	BOOL		SlowSend;
+	BOOL		ManageServer;
 }
 	MYOPTIONS;
 
@@ -511,30 +528,32 @@ struct TWinErrorCode
 extern	ThreadData*	volatile msnNsThread;
 extern	bool			volatile msnLoggedIn;
 
-extern	char*	         msnProtocolName;
-extern	HANDLE         msnMenuItems[ MENU_ITEMS_COUNT ];
-extern	int            msnSearchID;
-extern	char*          msnExternalIP;
-extern	int				msnStatusMode,
-								msnDesiredStatus;
+extern	char*	      msnProtocolName;
+extern	HANDLE      msnMenuItems[ MENU_ITEMS_COUNT ];
+extern	int         msnSearchID;
+extern	char*       msnExternalIP;
+extern	int			msnStatusMode,
+							msnDesiredStatus;
 
-extern	char*          msnProtChallenge;
-extern	char*          msnProductID;
+extern	char*       msnProtChallenge;
+extern	char*       msnProductID;
 
 
-extern	char*			   ModuleName;
-extern	char*	         mailsoundname;
-extern	HANDLE         msnGetInfoContact;
+extern	char*			ModuleName;
+extern	char*	      mailsoundname;
+extern	HANDLE      msnGetInfoContact;
 
-extern	char*          sid;
-extern	char*          kv;
-extern	char*          passport;
-extern	char*          MSPAuth;
+extern	char*       sid;
+extern	char*       kv;
+extern	char*       passport;
+extern	char*       MSPAuth;
 
-extern	HANDLE		   hNetlibUser;
-extern	HINSTANCE	   hInst;
-extern	int				msnOtherContactsBlocked;
+extern	HANDLE		hNetlibUser;
+extern	HINSTANCE	hInst;
+extern	int			msnOtherContactsBlocked;
 
-extern   bool				msnRunningUnderNT;
-extern	bool				msnRunningUnderOldCore;
-extern	bool				msnHaveChatDll;
+extern   bool			msnRunningUnderNT;
+extern	bool			msnRunningUnderOldCore;
+extern	bool			msnHaveChatDll;
+
+extern	HANDLE		hGroupAddEvent;

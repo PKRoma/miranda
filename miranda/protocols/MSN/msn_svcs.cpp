@@ -263,8 +263,35 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	HANDLE hContact = ( HANDLE )wParam;
 	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;
 
-	if ( hContact == NULL || !msnLoggedIn )
+	if ( !msnLoggedIn )
 		return 0;
+
+	if ( hContact == NULL && MyOptions.ManageServer && !strcmp( cws->szModule, "CListGroups" )) {
+		int iNumber = atol( cws->szSetting );
+		LPCSTR szId = MSN_GetGroupByNumber( iNumber );
+		if ( szId != NULL ) {
+			if ( cws->value.type == DBVT_DELETED ) {
+				msnNsThread->sendPacket( "RMG", szId );
+			}
+			else if ( cws->value.type == DBVT_ASCIIZ ) {
+				LPCSTR oldId = MSN_GetGroupByName( cws->value.pszVal+1 );
+				if ( oldId == NULL ) {
+					char* p = Utf8Encode( cws->value.pszVal+1 ), szNewName[ 200 ];
+					UrlEncode( p, szNewName, sizeof szNewName );
+					msnNsThread->sendPacket( "REG", "%s %s", szId, szNewName );
+					free( p );
+				}
+				else MSN_SetGroupNumber( oldId, iNumber );
+		}	}
+		else if ( cws->value.type == DBVT_ASCIIZ ) {
+			char* p = Utf8Encode( cws->value.pszVal+1 ), szNewName[ 200 ];
+			UrlEncode( p, szNewName, sizeof szNewName );
+			msnNsThread->sendPacket( "ADG", "%s", szNewName );
+			free( p );
+		}
+
+		return 0;
+	}
 
 	if ( !strcmp( cws->szSetting, "ApparentMode" )) {
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
@@ -278,6 +305,29 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			else if ( isBlocked && cws->value.wVal == 0 ) {
 				MSN_AddUser( hContact, tEmail, LIST_BL + LIST_REMOVE );
 				MSN_AddUser( hContact, tEmail, LIST_AL );
+	}	}	}
+
+	if ( !strcmp( cws->szModule, "CList" ) && MyOptions.ManageServer ) {
+		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( szProto == NULL || strcmp( szProto, msnProtocolName )) 
+			return 0;
+
+		if ( !strcmp( cws->szSetting, "Group" )) {
+			if ( cws->value.type == DBVT_DELETED )
+				MSN_MoveContactToGroup( hContact, NULL );
+			else if ( cws->value.type == DBVT_ASCIIZ )
+				MSN_MoveContactToGroup( hContact, cws->value.pszVal );
+			return 0;
+		}
+
+		if ( !strcmp( cws->szSetting, "MyHandle" )) {
+			char szContactID[ 100 ], szNewNick[ 387 ];
+			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID )) {
+				char* p = Utf8Encode( cws->value.pszVal );
+				UrlEncode( p, szNewNick, sizeof szNewNick );
+				msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
+				free( p );
+				return 0;
 	}	}	}
 
 	return 0;

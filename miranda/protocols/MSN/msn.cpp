@@ -53,6 +53,7 @@ char*    msnExternalIP = NULL;
 HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
+HANDLE   hGroupAddEvent = NULL;
 bool     msnRunningUnderNT = false;
 bool		msnRunningUnderOldCore = false;
 bool		msnHaveChatDll = false;
@@ -334,6 +335,7 @@ int __declspec( dllexport ) Unload( void )
 	if ( hChatEvent ) UnhookEvent( hChatEvent );
 	if ( hChatMenu  ) UnhookEvent( hChatMenu );
 
+	MSN_FreeGroups();
 	Threads_Uninit();
 	MsgQueue_Uninit();
 	Lists_Uninit();

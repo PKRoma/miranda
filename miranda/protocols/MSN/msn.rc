@@ -46,12 +46,12 @@ IDI_AVATAR              ICON                    "Icos\\avatar.ico"
 // Dialog
 //
 
-IDD_OPT_MSN DIALOGEX 0, 0, 324, 201
+IDD_OPT_MSN DIALOGEX 0, 0, 323, 201
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "MSN",IDC_STMSNGROUP,5,4,315,80,WS_GROUP
+    GROUPBOX        "MSN",IDC_STMSNGROUP,5,4,307,80,WS_GROUP
     RTEXT           "Full e-mail:",IDC_STATIC,16,20,52,8
     EDITTEXT        IDC_HANDLE,72,18,100,12,ES_AUTOHSCROLL
     RTEXT           "Password:",IDC_STATIC,16,36,52,8
@@ -60,32 +60,34 @@ BEGIN
     EDITTEXT        IDC_HANDLE2,72,50,100,12,ES_AUTOHSCROLL
     GROUPBOX        "Expert",IDC_STATIC,5,84,208,112
     CONTROL         "Disable main menu",IDC_DISABLE_MAIN_MENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,98,192,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,96,192,10
     CONTROL         "Send message font color/size info inside messages",
                     IDC_SENDFONTINFO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,110,193,10
+                    12,107,192,10
     CONTROL         "Disable all contacts not included into my contact list",
                     IDC_DISABLE_ANOTHER_CONTACTS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,122,195,10
+                    WS_TABSTOP,12,118,192,10
     CONTROL         "Never update your nickname from server",
                     IDC_USE_OWN_NICKNAME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,134,190,10
+                    WS_TABSTOP,12,129,192,10
     CONTROL         "Treat Away status as 'Be Right Back'",IDC_AWAY_AS_BRB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,146,195,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,140,192,10
+    CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button", 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,151,192,10
     CONTROL         "Run the following application when new Hotmail is arrived",
                     IDC_RUN_APP_ON_HOTMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,158,194,10
-    EDITTEXT        IDC_MAILER_APP,24,172,163,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,191,172,15,12
+                    WS_TABSTOP,12,162,194,10
+    EDITTEXT        IDC_MAILER_APP,24,176,161,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,190,176,15,12
     CONTROL         "Create a new MSN messenger account using the MSN website",
                     IDC_NEWMSNACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,68,208,8
-    GROUPBOX        "Avatars",IDC_STATIC,218,84,102,112
-    CONTROL         "",IDC_AVATAR,"Static",SS_BITMAP | NOT WS_VISIBLE,237,
+    GROUPBOX        "Avatars",IDC_STATIC,217,84,95,112
+    CONTROL         "",IDC_AVATAR,"Static",SS_BITMAP | NOT WS_VISIBLE,234,
                     111,15,13
     CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,225,96,86,10
-    PUSHBUTTON      "Set",IDC_SETAVATAR,232,177,34,13
-    PUSHBUTTON      "Delete",IDC_DELETEAVATAR,271,177,34,13
+    PUSHBUTTON      "Set",IDC_SETAVATAR,229,176,34,13
+    PUSHBUTTON      "Delete",IDC_DELETEAVATAR,269,176,34,13
 END
 
 IDD_OPT_MSN_CONN DIALOGEX 0, 0, 296, 153
@@ -236,7 +238,7 @@ BEGIN
     IDD_OPT_MSN, DIALOG
     BEGIN
         LEFTMARGIN, 5
-        RIGHTMARGIN, 320
+        RIGHTMARGIN, 312
         TOPMARGIN, 4
         BOTTOMMARGIN, 196
     END

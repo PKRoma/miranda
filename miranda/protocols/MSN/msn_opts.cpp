@@ -64,6 +64,35 @@ static void sttSetAvatar( HWND hwndDlg )
 	InvalidateRect( hwndDlg, NULL, TRUE );
 }
 
+static void __cdecl sttUploadGroups( void* )
+{
+	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL ) {
+		if ( !lstrcmp( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
+			DBVARIANT dbv;
+			if ( !DBGetContactSetting( hContact, "CList", "Group", &dbv )) {
+				LPCSTR szId = MSN_GetGroupByName( dbv.pszVal );
+				if ( szId == NULL ) {
+					char* szGrpName = Utf8Encode( dbv.pszVal );
+					char szGroup[ 200 ];
+					UrlEncode( szGrpName, szGroup, sizeof szGroup );
+
+					if ( hGroupAddEvent == NULL )
+						hGroupAddEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+
+					msnNsThread->sendPacket( "ADG", "%s", szGroup );
+					free( szGrpName );
+
+					WaitForSingleObject( hGroupAddEvent, INFINITE );
+				}
+
+				MSN_MoveContactToGroup( hContact, dbv.pszVal );
+				MSN_FreeVariant( &dbv );
+		}	}
+
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
+}	}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN Options dialog procedure
 
@@ -94,6 +123,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
+		CheckDlgButton( hwndDlg, IDC_MANAGEGROUPS,      MSN_GetByte( "ManageServer", 0 ));
 
 		int tValue = MSN_GetByte( "RunMailerOnHotmail", 0 );
 		CheckDlgButton( hwndDlg, IDC_RUN_APP_ON_HOTMAIL, tValue );
@@ -103,10 +133,11 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		if ( !MSN_GetStaticString( "MailerPath", NULL, tBuffer, sizeof( tBuffer )))
 			SetDlgItemText( hwndDlg, IDC_MAILER_APP, tBuffer );
 
-		if ( !msnLoggedIn )
+		if ( !msnLoggedIn ) {
+			EnableWindow( GetDlgItem( hwndDlg, IDC_MANAGEGROUPS ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS ), FALSE );
-		else
-			CheckDlgButton( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS, msnOtherContactsBlocked );
+		}
+		else CheckDlgButton( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS, msnOtherContactsBlocked );
 
 		// avatar preparation code
 		pDib = NULL;
@@ -174,6 +205,15 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
+
+			case IDC_MANAGEGROUPS:
+				if ( IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ))
+					if ( IDYES == MessageBox( hwndDlg, 
+											MSN_Translate( "Your contact groups layout may be corrupted after next login. "
+																"Do you want to upload your current groups to the server?" ),
+											MSN_Translate( "MSN Protocol" ), MB_YESNOCANCEL ))
+						(new ThreadData())->startThread( sttUploadGroups );
+				goto LBL_Apply;
 
 			case IDC_SETAVATAR:
 				sttSetAvatar( hwndDlg );
@@ -305,6 +345,7 @@ LBL_Del:			DeleteFile( tFileName );
 			MSN_SetByte( "NeverUpdateNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_OWN_NICKNAME ));
 			MSN_SetByte( "DisableSetNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAIN_MENU ));
 			MSN_SetByte( "AwayAsBrb", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AWAY_AS_BRB ));
+			MSN_SetByte( "ManageServer", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ));
 
 			GetDlgItemText( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
 			MSN_SetString( NULL, "MailerPath", screenStr );
@@ -684,6 +725,7 @@ void __stdcall LoadOptions()
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
 	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
 	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE );
+	MyOptions.ManageServer = MSN_GetByte( "ManageServer", FALSE );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

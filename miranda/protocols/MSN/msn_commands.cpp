@@ -630,8 +630,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 {
-	HANDLE hContact = NULL;
-
 	if ( trid == msnSearchID ) {
 		msnNsThread->sendPacket( "REM", "BL %s", userEmail );
 
@@ -644,19 +642,19 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE )msnSearchID, 0 );
 
 		msnSearchID = -1;
+		return NULL;
 	}
-	else {
-		UrlDecode( userEmail ); UrlDecode( userNick );
-		if ( !IsValidListCode( listId ))
-			return NULL;
 
-		Utf8Decode( userNick );
-		int mask = Lists_Add( listId, userEmail, userNick );
+	UrlDecode( userEmail ); UrlDecode( userNick );
+	if ( !IsValidListCode( listId ))
+		return NULL;
 
-		hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 1 );
-		if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
-			MSN_AddAuthRequest( hContact, userEmail, userNick );
-	}
+	Utf8Decode( userNick );
+	int mask = Lists_Add( listId, userEmail, userNick );
+
+	HANDLE hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 1 );
+	if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
+		MSN_AddAuthRequest( hContact, userEmail, userNick );
 
 	return hContact;
 }
@@ -685,6 +683,48 @@ static void sttProcessListedContactMask()
 	sttDeleteUnusedSetting( 0x0004, "Cellular" );
 	sttDeleteUnusedSetting( 0x0008, "OnMobile" );
 	sttDeleteUnusedSetting( 0x0010, "OnMsnMobile" );
+}
+
+static bool sttAddGroup( char* params, bool isFromBoot )
+{
+	union {
+		char* tWords[ 2 ];
+		struct { char *grpName, *grpId; } data;
+	};
+
+	if ( sttDivideWords( params, 2, tWords ) != 2 )
+		return false;
+
+	UrlDecode( data.grpName );   Utf8Decode( data.grpName );
+	MSN_AddGroup( data.grpName, data.grpId );
+	if ( hGroupAddEvent != NULL )
+		SetEvent( hGroupAddEvent );
+
+	int i;
+	char str[ 10 ];
+
+	for ( i=0; true; i++ ) {
+		ltoa( i, str, 10 );
+
+		DBVARIANT dbv;
+		if ( DBGetContactSetting( NULL, "CListGroups", str, &dbv ))
+			break;
+
+		if ( dbv.pszVal[0] != 0 && !stricmp( dbv.pszVal+1, data.grpName )) {
+			MSN_SetGroupNumber( data.grpId, i );
+			return true;
+	}	}
+
+	if ( !isFromBoot )
+		return true;
+
+	MSN_SetGroupNumber( data.grpId, i );
+
+	char szNewName[ 128 ];
+	_snprintf( szNewName, sizeof szNewName, "%c%s",  1 | GROUPF_EXPANDED, data.grpName );
+	DBWriteContactSettingString( NULL, "CListGroups", str, szNewName );
+	CallService( MS_CLUI_GROUPADDED, i, 0 );
+	return true;
 }
 
 int MSN_HandleCommands( ThreadData* info, char* cmdString )
@@ -722,7 +762,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 		case ' CDA':	// ADC - MSN v10 addition command
 		{
 			char* tWords[ 10 ];
-			char *userNick = NULL, *userEmail = NULL, *userID = NULL;
+			char *userNick = NULL, *userEmail = NULL, *userId = NULL, *groupId = NULL;
 			int nTerms = sttDivideWords( params, 10, tWords );
 			if ( nTerms < 2 )
 				goto LBL_InvalidCommand;
@@ -734,16 +774,29 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 				else if ( *p == 'N' && p[1] == '=' )
 					userEmail = p+2;
 				else if ( *p == 'C' && p[1] == '=' )
-					userID = p+2;
+					userId = p+2;
+				else
+					groupId = p;
 			}
 
-			if ( userEmail == NULL ) goto LBL_InvalidCommand;
-			if ( userNick == NULL ) userNick = userEmail;
+			HANDLE hContact;
+			if ( userEmail == NULL ) {
+				if ( userId == NULL || groupId == NULL )
+					goto LBL_InvalidCommand;
+				hContact = MSN_HContactById( userId );
+			}
+			else {
+				if ( userNick == NULL ) 
+					userNick = userEmail;
 
-			int listId = Lists_NameToCode( tWords[0] );
-			HANDLE hContact = sttProcessAdd( trid, listId, userEmail, userNick );
-			if ( hContact != NULL && userID != NULL )
-				MSN_SetString( hContact, "ID", userID );
+				int listId = Lists_NameToCode( tWords[0] );
+				hContact = sttProcessAdd( trid, listId, userEmail, userNick );
+			}
+
+			if ( hContact != NULL ) {
+				if ( userId  != NULL ) MSN_SetString( hContact, "ID", userId );
+				if ( groupId != NULL ) MSN_SetString( hContact, "GroupID", groupId );
+			}
 			break;
 		}
 		case ' DDA':    //********* ADD: section 7.8 List Modifications
@@ -762,6 +815,11 @@ LBL_InvalidCommand:
 			sttProcessAdd( trid, Lists_NameToCode( data.list ), data.userEmail, data.userNick );
 			break;
 		}
+		case ' GDA':    //********* ADG: group addition
+			if ( !sttAddGroup( params, false ))
+				goto LBL_InvalidCommand;
+			break;
+
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
 			break;
 
@@ -1119,17 +1177,20 @@ LBL_InvalidCommand:
 			}	}
 			return 0;
 		}
-		case ' GSL':	//********* LSG: something strange ;)
+
+		case ' GSL':    //********* LSG: lists existing groups
+			if ( !sttAddGroup( params, true ))
+				goto LBL_InvalidCommand;
 			break;
 
 		case ' TSL':	//********* LST: section 7.6 List Retrieval And Property Management
 		{
 			int	listId;
-			char *userEmail = NULL, *userNick = NULL, *userId = NULL;
+			char *userEmail = NULL, *userNick = NULL, *userId = NULL, *groupId = NULL;
 
 			union	{
 				char* tWords[ 10 ];
-				struct { char *userEmail, *userNick, *list, *smth; } data;
+				struct { char *userEmail, *userNick, *list, *groupid; } data;
 			};
 
 			int tNumTokens = sttDivideWords( params, 10, tWords );
@@ -1147,6 +1208,8 @@ LBL_InvalidCommand:
 					userId = p+2;
 				else {
 					listId = atol( p );
+					if ( i < tNumTokens-1 )
+						groupId = tWords[i+1];
 					break;
 			}	}
 
@@ -1191,8 +1254,32 @@ LBL_InvalidCommand:
 					MSN_SetWord( sttListedContact, "ApparentMode", 0 );
 			}
 
-			if ( sttListedContact != NULL && userId != NULL )
-				MSN_SetString( sttListedContact, "ID", userId );
+			if ( sttListedContact != NULL ) {
+				if ( userId  != NULL ) 
+					MSN_SetString( sttListedContact, "ID", userId );
+
+				if ( MyOptions.ManageServer ) {
+					if ( groupId != NULL ) {
+						char* p = strchr( groupId, ',' );
+						if ( p != NULL )
+							*p = 0;
+
+						MSN_SetString( sttListedContact, "GroupID", groupId );
+
+						if (( p = ( char* )MSN_GetGroupById( groupId )) != NULL ) {
+							DBVARIANT dbv;
+							if ( !DBGetContactSetting( sttListedContact, "CList", "Group", &dbv )) {
+								if ( strcmp( dbv.pszVal, p ))
+									DBWriteContactSettingString( sttListedContact, "CList", "Group", p );
+							}
+							else DBWriteContactSettingString( sttListedContact, "CList", "Group", p );
+
+							MSN_FreeVariant( &dbv );
+					}	}
+					else {
+						DBDeleteContactSetting( sttListedContact, "CList", "Group" );
+						DBDeleteContactSetting( sttListedContact, msnProtocolName, "GroupID" );
+			}	}	}
 			break;
 		}
 		case ' GSM':   //********* MSG: sections 8.7 Instant Messages, 8.8 Receiving an Instant Message
@@ -1260,21 +1347,51 @@ LBL_InvalidCommand:
 				MSN_SetString( NULL, "Nick", data.userNick );
 			break;
 		}
+		case ' GER':   //********* REG: rename group
+		{
+			union {
+				char* tWords[ 2 ];
+				struct { char *id, *groupName; } data;
+			};
+
+			if ( sttDivideWords( params, 2, tWords ) != 2 )
+				goto LBL_InvalidCommand;
+
+			UrlDecode( data.groupName );	Utf8Decode( data.groupName );
+			MSN_SetGroupName( data.id, data.groupName );
+			break;
+		}
 		case ' MER':   //********* REM: section 7.8 List Modifications
 		{
 			union {
 				char* tWords[ 3 ];
-				struct { char *list, *serial, *userEmail; } data;
+				struct { char *list, *serial, *groupId; } data;
 			};
 
-			if ( sttDivideWords( params, 3, tWords ) == 2 )
-				data.userEmail = data.serial;
-
-			UrlDecode( data.userEmail );
-
-			int listId = Lists_NameToCode( data.list );
-			if ( IsValidListCode( listId ))
-				Lists_Remove( listId, data.userEmail );
+			if ( sttDivideWords( params, 3, tWords ) == 3 ) { // remove from a group 
+				HANDLE hContact = MSN_HContactById( data.serial );
+				if ( hContact != NULL )
+					DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+			}
+			else { // remove a user from a list
+				int listId = Lists_NameToCode( data.list );
+				if ( IsValidListCode( listId )) {
+					if ( listId == LIST_FL || listId == LIST_RL ) {
+						HANDLE hContact = MSN_HContactById( data.serial );
+						if ( hContact != NULL ) {
+							char tEmail[ MSN_MAX_EMAIL_LEN ];
+							if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof tEmail ))
+								Lists_Remove( listId, tEmail );
+					}	}
+					else {
+                  UrlDecode( data.serial );
+						Lists_Remove( listId, data.serial );
+			}	}	}
+			break;
+		}
+		case ' GMR':    //********* RMG: remove a group
+		{
+			MSN_DeleteGroup( params );
 			break;
 		}
 		case ' GNR':    //********* RNG: section 8.4 Getting Invited to a Switchboard Session
@@ -1306,6 +1423,9 @@ LBL_InvalidCommand:
 			newThread->startThread(( pThreadFunc )MSNServerThread );
 			break;
 		}
+		case ' PBS':    //********* SBP: Server Property was changed
+			break;
+
 		case ' NYS':    //********* SYN: section 7.5 Client User Property Synchronization
 		{
 			char* tWords[ 4 ];

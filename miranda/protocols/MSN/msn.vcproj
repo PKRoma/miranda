@@ -454,6 +454,9 @@
 				RelativePath=".\msn_p2ps.cpp">
 			</File>
 			<File
+				RelativePath=".\msn_srv.cpp">
+			</File>
+			<File
 				RelativePath="msn_ssl.cpp">
 				<FileConfiguration
 					Name="Release|Win32">

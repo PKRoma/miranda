@@ -171,6 +171,10 @@ SOURCE=.\msn_p2ps.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_srv.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_ssl.cpp
 # End Source File
 # Begin Source File

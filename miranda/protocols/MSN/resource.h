@@ -54,7 +54,8 @@
 #define IDC_PREVIEW                     1030
 #define IDC_PREVIEW2                    1031
 #define IDC_CHECK1                      1032
-#define IDC_SLOWSEND                    1032
+#define IDC_SLOWSEND                    1033
+#define IDC_MANAGEGROUPS                1034
 #define IDC_SENDFONTINFO                1046
 #define IDC_NOTIFY_USERTYPE             1047
 #define IDC_NICKNAME                    1048
@@ -82,12 +83,12 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        131
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1033
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
