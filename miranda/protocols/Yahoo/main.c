@@ -44,12 +44,13 @@ pthread_mutex_t connectionHandleMutex;
 PLUGININFO pluginInfo={
 		sizeof(PLUGININFO),
 		"Yahoo Protocol",
-		PLUGIN_MAKE_VERSION(0, 3, 0, 1),
+		PLUGIN_MAKE_VERSION(0, 3, 0, 2),
 		"Yahoo Protocol support via libyahoo2 library.",
 		"Gennady Feldman",
 		"gennady_feldman at gena01.com",
-		"© 2003-2004 G.Feldman",
-		"http://www.coincoins.net/index.php?id=59",
+		"© 2003-2005 G.Feldman",
+		//"http://www.coincoins.net/index.php?id=59",
+		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
 		0,
 		0 //DEFMOD_PROTOCOLYAHOO
 };
