@@ -49,6 +49,7 @@ int CLUIFrameResizeFloatingFrame(int framepos);
 extern int ProcessCommandProxy(WPARAM wParam,LPARAM lParam);
 extern int InitFramesMenus(void);
 extern int UnitFramesMenu();
+int GapBetweenTitlebar;
 
 boolean FramesSysNotStarted=TRUE;
 
@@ -1874,7 +1875,7 @@ int CLUIFrameMoveResize(const wndFrame *Frame)
 					Frame->wndSize.bottom-Frame->wndSize.top,SWP_NOZORDER|SWP_NOREDRAW);
 	// set titlebar position
 	if(Frame->TitleBar.ShowTitleBar) {
-		SetWindowPos(Frame->TitleBar.hwnd,NULL,Frame->wndSize.left,Frame->wndSize.top-TitleBarH-1,
+		SetWindowPos(Frame->TitleBar.hwnd,NULL,Frame->wndSize.left,Frame->wndSize.top-TitleBarH-GapBetweenTitlebar,
 					Frame->wndSize.right-Frame->wndSize.left,
 					TitleBarH,SWP_NOZORDER|SWP_NOREDRAW	);
 	}
@@ -1949,17 +1950,22 @@ int CLUIFramesResize(const RECT newsize)
 	int i,j;
 	int sepw=GapBetweenFrames;
 	SortData *sdarray;
+	
+	
+	GapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
 
 	if(nFramescount<1) return 0; 
 
+	
 	newheight=newsize.bottom-newsize.top;
 
 	
+
 	// search for alClient frame and get the titlebar's height
 	tbh=0;
 	clientfrm=CLUIFramesGetalClientFrame();
 	if(clientfrm!=-1)
-		tbh=(TitleBarH+1)*btoint(Frames[clientfrm].TitleBar.ShowTitleBar);
+		tbh=(TitleBarH+GapBetweenTitlebar)*btoint(Frames[clientfrm].TitleBar.ShowTitleBar);
 	
 	for(i=0;i<nFramescount;i++)
 	{
@@ -1990,7 +1996,7 @@ int CLUIFramesResize(const RECT newsize)
 		for(i=0;i<nFramescount;i++)	{
 			if(((Frames[i].align!=alClient))&&(!Frames[i].floating)&&(Frames[i].visible)&&(!Frames[i].needhide)) {
 				drawitems++;
-				curfrmtbh=(TitleBarH+1)*btoint(Frames[i].TitleBar.ShowTitleBar);
+				curfrmtbh=(TitleBarH+GapBetweenTitlebar)*btoint(Frames[i].TitleBar.ShowTitleBar);
 				sumheight+=(Frames[i].height)+curfrmtbh+sepw;
 				if(sumheight>newheight-tbh) {
 					sumheight-=(Frames[i].height)+curfrmtbh+sepw;
@@ -2008,7 +2014,7 @@ int CLUIFramesResize(const RECT newsize)
 		//move all alTop frames
 		i=sdarray[j].realpos;
 		if((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alTop)) {
-			curfrmtbh=(TitleBarH+1)*btoint(Frames[i].TitleBar.ShowTitleBar);
+			curfrmtbh=(TitleBarH+GapBetweenTitlebar)*btoint(Frames[i].TitleBar.ShowTitleBar);
 			Frames[i].wndSize.top=prevframebottomline+sepw+(curfrmtbh);
 			Frames[i].wndSize.bottom=Frames[i].height+Frames[i].wndSize.top;
 			Frames[i].prevvisframe=prevframe;
@@ -2051,7 +2057,7 @@ int CLUIFramesResize(const RECT newsize)
 		//move all alBottom frames
 		i=sdarray[j].realpos;
 		if((Frames[i].visible)&&(!Frames[i].floating)&&(!Frames[i].needhide)&&(Frames[i].align==alBottom)) {
-			curfrmtbh=(TitleBarH+1)*btoint(Frames[i].TitleBar.ShowTitleBar);
+			curfrmtbh=(TitleBarH+GapBetweenTitlebar)*btoint(Frames[i].TitleBar.ShowTitleBar);
 
 			Frames[i].wndSize.bottom=prevframebottomline-sepw;
 			Frames[i].wndSize.top=Frames[i].wndSize.bottom-Frames[i].height;
