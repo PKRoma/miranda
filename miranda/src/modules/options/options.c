@@ -581,8 +581,12 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 		opi->odp[opi->pageCount].nExpertOnlyControls=0;
 	}
 	if(odp->cbSize>OPTIONSDIALOGPAGE_V0100_SIZE) {
-		if(odp->pszGroup!=NULL) opi->odp[opi->pageCount].pszGroup=_strdup(Translate(odp->pszGroup));
-		else opi->odp[opi->pageCount].pszGroup=NULL;
+		if(odp->pszGroup!=NULL) { 
+			// translate the group, if the pointer is the same as what ->pszGroup is, then its translated already
+			// if its not, use the translated string
+			char * p = Translate(odp->pszGroup);
+			opi->odp[opi->pageCount].pszGroup=_strdup( p != odp->pszGroup ? p : odp->pszGroup );
+		} else opi->odp[opi->pageCount].pszGroup=NULL;
 		opi->odp[opi->pageCount].groupPosition=odp->groupPosition;
 		opi->odp[opi->pageCount].hGroupIcon=odp->hGroupIcon;
 		opi->odp[opi->pageCount].hIcon=odp->hIcon;
