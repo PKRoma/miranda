@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msn_global.h"
 #include <stdio.h>
 #include <process.h>
+#include <time.h>
 #include "msn_md5.h"
 #include "../../miranda32/protocols/protocols/m_protomod.h"
 #include "../../miranda32/protocols/protocols/m_protosvc.h"
@@ -27,41 +28,61 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void __cdecl MSNServerThread(struct ThreadData *info);
 extern int msnStatusMode,msnDesiredStatus;
 
-int MSN_HandleCommands(struct ThreadData *info,char *msg)
+struct MimeHeader {
+	char *name,*value;
+};
+
+int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 {
 	char *params;
 	int trid;
 
 	trid=-1;
 	params="";
-	if(msg[3]) {
-		if(isdigit(msg[4])) {
-			trid=strtol(msg+4,&params,10);
+	if(cmdString[3]) {
+		if(isdigit(cmdString[4])) {
+			trid=strtol(cmdString+4,&params,10);
 			while(*params==' ' || *params=='\t') params++;
 		}
-		else params=msg+4;
+		else params=cmdString+4;
 	}
-	switch((*(PDWORD)msg&0x00FFFFFF)|0x20000000) {
-		case ' REV':		   //VER: section 7.1 Protocol Versioning
-			{	char protocol1[6];
-				if(sscanf(params,"%5s",protocol1)<1) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid VER command, ignoring");
-					break;
-				}
-				if(!strcmp(protocol1,"MSNP2"))
-					MSN_SendPacket(info->s,"INF","");  //INF: section 7.2 Server Policy Information
-				else {
-					MSN_DebugLog(MSN_LOG_FATAL,"Server has requested an unknown protocol set (%s)",params);
-					if(info->type==SERVER_NOTIFICATION || info->type==SERVER_DISPATCH) {
-						CmdQueue_AddProtoAck(NULL,ACKTYPE_LOGIN,ACKRESULT_FAILED,NULL,LOGINERR_WRONGPROTOCOL);
-						CmdQueue_AddProtoAck(NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)msnStatusMode,ID_STATUS_OFFLINE);
-						msnStatusMode=ID_STATUS_OFFLINE;
-					}
-					return 1;
-				}
+	switch((*(PDWORD)cmdString&0x00FFFFFF)|0x20000000) {
+		//I'm gonna list these in alphabetical order
+		case ' KCA':    //********* ACK: section 8.7 Instant Messages
+			break;
+		case ' DDA':    //********* ADD: section 7.8 List Modifications
+			break;
+		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
+			break;
+		case ' PLB':    //********* BLP: section 7.6 List Retrieval And Property Management
+			break;
+		case ' EYB':    //********* BYE: section 8.5 Session Participant Changes
+			{	char *userEmail=params;
+				MSN_DebugLog(MSN_LOG_MESSAGE,"Contact left channel: %s",userEmail);
+				if(Switchboards_ContactLeft(MSN_HContactFromEmail(userEmail,NULL,0,0))==0)
+					//nobody left in, we might as well leave too
+					MSN_SendPacket(info->s,"OUT","");
 			}
 			break;
-		case ' FNI':	//INF: section 7.2 Server Policy Information
+		case ' LAC':    //********* CAL: section 8.3 Inviting Users to a Switchboard Session
+			//doesn't seem to be any point in dealing with this command
+			break;
+		case ' GHC':    //********* CHG: section 7.7 Client States
+			{	int newMode=MSNStatusToMiranda(params);
+				CmdQueue_AddProtoAck(NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)msnStatusMode,newMode);
+				msnStatusMode=newMode;
+			}
+			MSN_DebugLog(MSN_LOG_MESSAGE,"Status change acknowledged: %s",params);
+			break;
+		case ' NLF':    //********* FLN: section 7.9 Notification Messages
+			{	HANDLE hContact;
+				if((hContact=MSN_HContactFromEmail(params,NULL,0,0))!=NULL)
+					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",ID_STATUS_OFFLINE);
+			}
+			break;
+		case ' CTG':    //********* GTC: section 7.6 List Retrieval And Property Management
+			break;
+		case ' FNI':	//********* INF: section 7.2 Server Policy Information
 			{	char security1[10];
 				if(sscanf(params,"%9s",security1)<1) {	  //can be more security packages on the end, comma delimited
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid INF command, ignoring");
@@ -85,10 +106,216 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 				}
 			}
 			break;
-		case ' RSU':	//USR: section 7.3 Authentication
-			{	char security[10];
+		case ' NLI':
+		case ' NLN':    //********* ILN/NLN: section 7.9 Notification Messages
+			{	char userStatus[10],userEmail[130],userNick[130];
+				HANDLE hContact;
+				if(sscanf(params,"%9s %129s %129s",userStatus,userEmail,userNick)<3) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid ILN/NLN command, ignoring");
+					break;
+				}
+				if((hContact=MSN_HContactFromEmail(userEmail,userNick,0,0))!=NULL) {
+					CmdQueue_AddDbWriteSettingString(hContact,MSNPROTONAME,"Nick",userNick);
+					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",(WORD)MSNStatusToMiranda(userStatus));
+				}
+			}
+			break;
+		case ' ORI':    //********* IRO: section 8.4 Getting Invited to a Switchboard Session
+			{	char userEmail[130],userNick[130];
+				int thisContact,totalContacts;
+				if(sscanf(params,"%d %d %129s %129s",&thisContact,&totalContacts,userEmail,userNick)<4) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid IRO command, ignoring");
+					break;
+				}
+				MSN_DebugLog(MSN_LOG_MESSAGE,"New channel: member %d/%d: %s %s",thisContact,totalContacts,userEmail,userNick);
+				Switchboards_ContactJoined(MSN_HContactFromEmail(userEmail,userNick,1,1));
+			}
+			break;
+		case ' IOJ':    //********* JOI: section 8.5 Session Participant Changes
+			{	char userEmail[130],userNick[130];
+				HANDLE hContact;
+				char *msg;
+				DWORD flags;
+				int seq;
+				if(sscanf(params,"%129s %129s",userEmail,userNick)<2) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid JOI command, ignoring");
+					break;
+				}
+				Switchboards_ChangeStatus(SBSTATUS_CONNECTED);
+				MSN_DebugLog(MSN_LOG_MESSAGE,"New contact in channel %s %s",userEmail,userNick);
+				hContact=MSN_HContactFromEmail(userEmail,userNick,1,1);
+				if(Switchboards_ContactJoined(hContact)==1) {
+					//just one person in here: are we supposed to be sending them anything?
+					msg=MsgQueue_GetNext(hContact,&flags,&seq);
+					if(msg!=NULL) {		//section 8.7/sending
+						//ack modes don't work (according to spec) to just assume it works
+						//TODO? UTF-8 encoding
+						MSN_SendPacket(info->s,"MSG","U %d\r\nContent-Type: text/plain\r\n\r\n%s",strlen(msg)+28,msg);
+						free(msg);
+						CmdQueue_AddProtoAck(hContact,ACKTYPE_MESSAGE,ACKRESULT_SUCCESS,(HANDLE)seq,0);
+					}
+				}
+			}
+			break;
+		case ' TSL':    //********* LST: section 7.6 List Retrieval And Property Management
+			{	char list[5],userEmail[130],userNick[130];
+				int serialNumber,thisItem,totalItems;
+				if(sscanf(params,"%4s %d %d %d %129s %129s",list,&serialNumber,&thisItem,&totalItems,userEmail,userNick)<6) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid LST command, ignoring");
+					break;
+				}
+				if(!strcmp(list,"FL")) {	 //'forward list' aka contact list
+					HANDLE hContact=MSN_HContactFromEmail(userEmail,userNick,1,0);
+				}
+			}
+			break;
+		case ' GSM':    //********* MSG: sections 8.7 Instant Messages, 8.8 Receiving an Instant Message
+			{	char fromEmail[130],fromNick[130];
+				int msgBytes,bytesFromData;
+				char *msg,*msgBody;
+				struct MimeHeader *headers;
+				int headerCount;
+
+				if(sscanf(params,"%129s %129s %d",fromEmail,fromNick,&msgBytes)<3) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid MSG command, ignoring");
+					break;
+				}
+				msg=(char*)malloc(msgBytes+1);
+				bytesFromData=min(info->bytesInData,msgBytes);
+				memcpy(msg,info->data,bytesFromData);
+				info->bytesInData-=bytesFromData;
+				memmove(info->data,info->data+bytesFromData,info->bytesInData);
+				if(bytesFromData<msgBytes) {
+					int recvResult;
+					recvResult=MSN_WS_Recv(info->s,msg+bytesFromData,msgBytes-bytesFromData);
+					if(!recvResult) break;
+				}
+				msg[msgBytes]=0;
+				MSN_DebugLog(MSN_LOG_PACKETS,"Message:\n%s",msg);
+
+				//doobrie to pull off and store all the MIME headers.
+				{	char line[2048],*peol;
+					msgBody=msg;
+					headers=NULL;	
+					for(headerCount=0;;) {
+						lstrcpyn(line,msgBody,sizeof(line));
+						peol=strchr(line,'\r');
+						if(peol==NULL) break;
+						msgBody=peol;
+						if(*++msgBody=='\n') msgBody++;
+						if(line[0]=='\r') break;
+						*peol='\0';
+						peol=strchr(line,':');
+						if(peol==NULL) {
+							MSN_DebugLog(MSN_LOG_WARNING,"MSG: Invalid MIME header: '%s'",line);
+							continue;
+						}
+						*peol='\0'; peol++;
+						while(*peol==' ' || *peol=='\t') peol++;
+						headers=(struct MimeHeader*)realloc(headers,sizeof(struct MimeHeader)*(headerCount+1));
+						headers[headerCount].name=_strdup(line);
+						headers[headerCount].value=_strdup(peol);
+						MSN_DebugLog(MSN_LOG_DEBUG,"MIME%d: '%s': '%s'",headerCount,line,peol);
+						headerCount++;
+					}
+				}
+				//TODO? UTF-8 decoding
+
+				if(strchr(fromEmail,'@')==NULL) {   //message from the server (probably)
+				}
+				else {
+					int i;
+					CCSDATA ccs;
+					PROTORECVEVENT pre;
+
+					for(i=0;i<headerCount;i++)
+						if(!strcmpi(headers[i].name,"Content-Type") && !strnicmp(headers[i].value,"text/plain",10)) {
+							ccs.hContact=MSN_HContactFromEmail(fromEmail,fromNick,1,1);
+							ccs.szProtoService=PSR_MESSAGE;
+							ccs.wParam=0;
+							ccs.lParam=(LPARAM)&pre;
+							pre.flags=0;
+							pre.timestamp=(DWORD)time(NULL);
+							pre.szMessage=(char*)msgBody;
+							pre.lParam=0;
+							CmdQueue_AddChainRecv(&ccs);
+							break;
+						}
+				}
+
+				if(headers!=NULL) {
+					int i;
+					for(i=0;i<headerCount;i++) {free(headers[i].name); free(headers[i].value);}
+					free(headers);
+				}
+				free(msg);
+			}
+			break;
+		case ' KAN':    //********* NAK: section 8.7 Instant Messages
+			MSN_DebugLog(MSN_LOG_ERROR,"Message send failed (trid=%d)",trid);
+			break;
+		//case ' NLN':     SEE ILN
+		case ' TUO':    //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
+			return 1;
+		case ' MER':    //********* REM: section 7.8 List Modifications
+			break;
+		case ' GNR':    //********* RNG: section 8.4 Getting Invited to a Switchboard Session
+			//note: unusual message encoding: trid==sessionid
+			{	char newServer[130],security[10],authChallengeInfo[130],callerEmail[130],callerNick[130];
+				struct ThreadData *newThread;
+				if(sscanf(params,"%129s %9s %129s %129s %129s",newServer,security,authChallengeInfo,callerEmail,callerNick)<5) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid RNG command, ignoring");
+					break;
+				}
+				if(strcmp(security,"CKI")) {
+					MSN_DebugLog(MSN_LOG_ERROR,"Unknown security package in RNG command");
+					break;
+				}
+				newThread=(struct ThreadData*)malloc(sizeof(struct ThreadData));
+				strcpy(newThread->server,newServer);
+				newThread->type=SERVER_SWITCHBOARD;
+				newThread->caller=0;
+				newThread->hContact=MSN_HContactFromEmail(callerEmail,callerNick,1,1);
+				sprintf(newThread->cookie,"%s %d",authChallengeInfo,trid);
+
+				MSN_DebugLog(MSN_LOG_MESSAGE,"Opening caller's switchboard server '%s'...",newServer);
+				_beginthread(MSNServerThread,0,newThread);
+			}
+			break;
+		case ' NYS':    //********* SYN: section 7.5 Client User Property Synchronization
+			break;
+		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
+			if(info->type==SERVER_SWITCHBOARD) {    //(section 8.2)
+				char status[10],userHandle[130],friendlyName[130];
+				HANDLE hContact;
+				DBVARIANT dbv;
+				if(sscanf(params,"%9s %129s %129s",status,userHandle,friendlyName)<3) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR command (SB), ignoring");
+					break;
+				}
+				if(strcmp(status,"OK")) {
+					MSN_DebugLog(MSN_LOG_ERROR,"Unknown status to USR command (SB): '%s'",status);
+					break;
+				}
+				Switchboards_ChangeStatus(SBSTATUS_CONNECTED);
+				hContact=MsgQueue_GetNextRecipient();
+				if(hContact==NULL) {    //can happen if both parties send first message at the same time
+					MSN_DebugLog(MSN_LOG_ERROR,"USR (SB) internal: thread created for no reason");
+					MSN_SendPacket(info->s,"OUT","");
+					break;
+				}
+				if(DBGetContactSetting(hContact,MSNPROTONAME,"e-mail",&dbv)) {
+					MSN_DebugLog(MSN_LOG_ERROR,"USR (SB) internal: Contact is not MSN");
+					MSN_SendPacket(info->s,"OUT","");
+					break;
+				}
+				MSN_SendPacket(info->s,"CAL","%s",dbv.pszVal);
+				DBFreeVariant(&dbv);
+			}
+			else {	   //dispatch or notification server (section 7.3)
+				char security[10];
 				if(sscanf(params,"%9s",security)<1) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid USR command (NS), ignoring");
 					break;
 				}
 				if(!strcmp(security,"MD5")) {
@@ -146,25 +373,39 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 				}
 			}
 			break;
-		case ' NYS':    //SYN: section 7.5 Client User Property Synchronization
-			//TODO
-			break;
-		case ' GHC':    //CHG: section 7.7 Client States
-			{	int newMode=MSNStatusToMiranda(params);
-				CmdQueue_AddProtoAck(NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)msnStatusMode,newMode);
-				msnStatusMode=newMode;
+		case ' REV':	//******** VER: section 7.1 Protocol Versioning
+			{	char protocol1[6];
+				if(sscanf(params,"%5s",protocol1)<1) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid VER command, ignoring");
+					break;
+				}
+				if(!strcmp(protocol1,"MSNP2"))
+					MSN_SendPacket(info->s,"INF","");  //INF: section 7.2 Server Policy Information
+				else {
+					MSN_DebugLog(MSN_LOG_FATAL,"Server has requested an unknown protocol set (%s)",params);
+					if(info->type==SERVER_NOTIFICATION || info->type==SERVER_DISPATCH) {
+						CmdQueue_AddProtoAck(NULL,ACKTYPE_LOGIN,ACKRESULT_FAILED,NULL,LOGINERR_WRONGPROTOCOL);
+						CmdQueue_AddProtoAck(NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)msnStatusMode,ID_STATUS_OFFLINE);
+						msnStatusMode=ID_STATUS_OFFLINE;
+					}
+					return 1;
+				}
 			}
-			MSN_DebugLog(MSN_LOG_MESSAGE,"Status change acknowledged: %s",params);
 			break;
-		case ' RFX':    //XFR: section 7.4 Referral
-			{	char type[10],newServer[130];
-				if(sscanf(params,"%9s %129s",type,newServer)<2) {
+		case ' RFX':    //******** XFR: sections 7.4 Referral, 8.1 Referral to Switchboard
+			{	char type[10];
+				struct ThreadData *newThread;
+				if(sscanf(params,"%9s",type)<1) {
 					MSN_DebugLog(MSN_LOG_WARNING,"Invalid XFR command, ignoring");
 					break;
 				}
 				if(!strcmp(type,"NS")) {	  //notification server
-					struct ThreadData *newThread;
+					char newServer[130];
 
+					if(sscanf(params,"%*s %129s",newServer)<1) {
+						MSN_DebugLog(MSN_LOG_WARNING,"Invalid XFR NS command, ignoring");
+						break;
+					}
 					newThread=(struct ThreadData*)malloc(sizeof(struct ThreadData));
 					strcpy(newThread->server,newServer);
 					newThread->type=SERVER_NOTIFICATION;
@@ -175,398 +416,32 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 					return 1;  //kill the old thread
 				}
 				else if(!strcmp(type,"SB")) {	   //switchboard server
-					//char server[80];
-					//char *portpos;
-					//int iport;
-					//int sesid;
+					char newServer[130],security[10],authChallengeInfo[130];
 
-					//assumed CKI sec
-
-					/*RHsesid=MSN_CreateSession();
-					opts.MSN.SS[sesid].con=0;
-					MSN_GetWd(params,4,opts.MSN.SS[sesid].authinf);
-					opts.MSN.SS[sesid].authinf[strlen(opts.MSN.SS[sesid].authinf)]=0;
-
-					if (MSN_SSConnect(server,iport,sesid))
-					{//connection worked
-						char *prm;
-						
-						//MSN_DebugLog("Connected to SB server.");
-
-						prm=(char*)malloc(strlen(opts.MSN.SS[sesid].authinf)+strlen(opts.MSN.uhandle)+2);
-						sprintf(prm,"%s %s",opts.MSN.uhandle,opts.MSN.SS[sesid].authinf);
-						if (!MSN_SendPacket(opts.MSN.SS[sesid].con,"USR",prm))
-						{
-							MSN_DebugLog("SEND FAIL");
-								
-						}
-						free(prm);
-
+					if(sscanf(params,"%*s %129s %9s %129s",newServer,security,authChallengeInfo)<3) {
+						MSN_DebugLog(MSN_LOG_WARNING,"Invalid XFR SB command, ignoring");
+						break;
 					}
-					else
-					{
-						MSN_DebugLog("Failed to connected to SB server.");
-					}*/
+					if(strcmp(security,"CKI")) {
+						MSN_DebugLog(MSN_LOG_ERROR,"Unknown XFR SB security package '%s'",security);
+						break;
+					}
+					newThread=(struct ThreadData*)malloc(sizeof(struct ThreadData));
+					strcpy(newThread->server,newServer);
+					newThread->type=SERVER_SWITCHBOARD;
+					newThread->caller=1;
+					strcpy(newThread->cookie,authChallengeInfo);
+
+					MSN_DebugLog(MSN_LOG_MESSAGE,"Opening switchboard server '%s'...",newServer);
+					_beginthread(MSNServerThread,0,newThread);
 				}
 				else
 					MSN_DebugLog(MSN_LOG_ERROR,"Unknown referral server: %s",type);
 			}
 			break;
-		case ' TSL':    //LST: section 7.6 List Retrieval And Property Management
-			{	char list[5],userEmail[130],userNick[130];
-				int serialNumber,thisItem,totalItems;
-				if(sscanf(params,"%4s %d %d %d %129s %129s",list,&serialNumber,&thisItem,&totalItems,userEmail,userNick)<6) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid LST command, ignoring");
-					break;
-				}
-				if(!strcmp(list,"FL")) {	 //'forward list' aka contact list
-					HANDLE hContact=MSN_HContactFromEmail(userEmail,userNick,1);
-				}
-			}
-			break;
-		case ' NLI':
-		case ' NLN':    //ILN/NLN: section 7.9 Notification Messages
-			{	char userStatus[10],userEmail[130],userNick[130];
-				HANDLE hContact;
-				if(sscanf(params,"%9s %129s %129s",userStatus,userEmail,userNick)<3) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid ILN/NLN command, ignoring");
-					break;
-				}
-				if((hContact=MSN_HContactFromEmail(userEmail,userNick,0))!=NULL) {
-					CmdQueue_AddDbWriteSettingString(hContact,MSNPROTONAME,"Nick",userNick);
-					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",(WORD)MSNStatusToMiranda(userStatus));
-				}
-			}
-			break;
-		case ' NLF':    //FLN: section 7.9 Notification Messages
-			{	HANDLE hContact;
-				if((hContact=MSN_HContactFromEmail(params,NULL,0))!=NULL)
-					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",ID_STATUS_OFFLINE);
-			}
-			break;
-		case ' GSM':    //MSG: section 8.8 Receiving an Instant Message
-			{	char fromEmail[130],fromNick[130];
-				int msgBytes,bytesFromData;
-				char *msg;
-				if(sscanf(params,"%129s %129s %d",fromEmail,fromNick,&msgBytes)<3) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid MSG command, ignoring");
-					break;
-				}
-				msg=(char*)malloc(msgBytes+1);
-				bytesFromData=min(info->bytesInData,msgBytes);
-				memcpy(msg,info->data,bytesFromData);
-				info->bytesInData-=bytesFromData;
-				memmove(info->data,info->data+bytesFromData,info->bytesInData);
-				if(bytesFromData<msgBytes) {
-					int recvResult;
-					recvResult=MSN_WS_Recv(info->s,msg+bytesFromData,msgBytes-bytesFromData);
-					if(!recvResult) break;
-				}
-				msg[msgBytes]=0;
-				MSN_DebugLog(MSN_LOG_PACKETS,"Message:\n%s",msg);
-				free(msg);
-			}
+		default:
+			MSN_DebugLog(MSN_LOG_WARNING,"Unrecognised message: %s",cmdString);
 			break;
 	}
 	return 0;
-	
-	/*
-	else if (stricmp(cmd,"REM")==0)
-	{//someone was removed, 
-		
-	}
-	else if (stricmp(cmd,"OUT")==0)
-	{//QUITING, either we asked to, or the server is kicking us (param will tell us which)
-		MSN_Disconnect();
-
-	}
-	else if (stricmp(cmd,"SYN")==0)
-	{//CONTACT LIST VER
-		
-	}
-	else if (stricmp(cmd,"LST")==0)
-	{//we are being sent a fl/rl etc list
-		if (strnicmp("FL",params,2)==0)
-		{//contact list
-			char *nick;
-			char uhandle[MSN_UHANDLE_LEN];
-			char *hpos;
-			char *hepos;
-			
-			int pos;
-			
-			nick=strrchr(params,' ');
-			nick++; 
-
-			//do 4 times to get to user handle
-			hpos=strchr(params,' ')+1;hpos=strchr(hpos,' ')+1;hpos=strchr(hpos,' ')+1;hpos=strchr(hpos,' ')+1;
-			hepos=strchr(hpos,' ');//find end
-			pos=(hepos-params+1)-(hpos-params+1);
-			
-			strncpy(uhandle,hpos,pos);			
-			
-
-			MSN_AddContact(uhandle,nick);
-
-		}
-		else if (strnicmp("RL",params,2)==0)
-		{//rev list. who is allowed to see our status
-
-		}
-		else if (strnicmp("AL",params,2)==0)
-		{//allow list, who can talk to use etc
-
-		}
-		else if (strnicmp("BL",params,2)==0)
-		{//blok list, who CANT talk to use
-
-		}
-	}
-
-	else if (stricmp(cmd,"ILN")==0)
-	{//same as NLN, but ref to a CHG or ADD cmd
-		char sbstate[4];
-		char uhandle[MSN_UHANDLE_LEN];
-		
-		strncpy(sbstate,params,3);
-		
-		strcpy(uhandle,params+4);
-		*strchr(uhandle,' ')=0;	
-		MSN_ChangeContactStatus(uhandle,sbstate);
-		
-	}
-	
-	else if (stricmp(cmd,"NLN")==0)
-	{//user is online/sub state of online
-		char uhandle[MSN_UHANDLE_LEN];
-		char sbstate[4];
-
-		strcpy(uhandle,params);
-		*strchr(uhandle,' ')=0;
-		sbstate[0]=0;
-		strncpy(sbstate,data+4,3);
-		
-		MSN_ChangeContactStatus(uhandle,sbstate);
-	}
-	else if (stricmp(cmd,"FLN")==0)
-	{//user went offline
-		char *uhandle;
-		char *uh;
-
-		uhandle=&data[4];
-		
-		uh=(char*)malloc(strlen(uhandle));
-		uh=strdup(uhandle);
-		//*strchr(uh,'\r')=0;
-
-		MSN_ChangeContactStatus(uh,MSN_STATUS_OFFLINE);
-
-		free(uh);
-	}
-	else if (stricmp(cmd,"RNG")==0)
-	{//someone wants to chat with us
-		*//*int ln;
-		ln++;*//*
-		int sesid;
-		
-		char svr[40];
-		char sport[10];
-		int iport;
-				
-		char *tmp;
-		char ruhandle[MSN_UHANDLE_LEN];
-
-		sesid=MSN_CreateSession();
-		opts.MSN.SS[sesid].con=0;
-
-		
-		MSN_GetWd(data,2,opts.MSN.SS[sesid].sid);
-		
-		MSN_GetWd(data,3,svr);
-
-		//NOTE: assuming auth is CKI
-
-		MSN_GetWd(data,5,opts.MSN.SS[sesid].authinf);
-		
-		MSN_GetWd(data,6,ruhandle);
-
-		if ((tmp=strchr(svr,':')))
-		{//servr:port
-			strcpy(sport,tmp+1);		   //RH: this looks like a stack overrun
-			tmp[0]=0;
-			iport=atoi(sport);
-		}
-		else
-		{
-			iport=1863;
-		}
-		if (MSN_SSConnect(svr,iport,sesid))
-		{//connected, issue answer
-			char *prm;
-			prm=(char*)malloc(strlen(opts.MSN.uhandle)+strlen(opts.MSN.SS[sesid].authinf)+strlen(opts.MSN.SS[sesid].sid)+5);
-			
-			sprintf(prm,"%s %s %s",opts.MSN.uhandle,opts.MSN.SS[sesid].authinf,opts.MSN.SS[sesid].sid);
-			MSN_SendPacket(opts.MSN.SS[sesid].con,"ANS",prm);
-			
-			free(prm);
-		}
-
-	}*/
 }
-/*
-void MSN_HandleSSPacket(char*data,SOCKET *replys,int sesid)
-{
-	char cmd[3];
-	char *params;
-
-	MSN_DebugLogEx("IN (SB): ",data,NULL);
-
-	strncpy(cmd,data,3);
-	cmd[3]=0;
-	params=strchr(data+5,' ')+1;
-
-	if (stricmp(cmd,"IRO")==0)
-	{//a user in the chat
-		
-		char uhandle[MSN_UHANDLE_LEN];
-		MSN_GetWd(params,3,uhandle);
-		uhandle[strlen(uhandle)]=0;//strip crlf
-		strcpy(opts.MSN.SS[sesid].users[opts.MSN.SS[sesid].usercnt],uhandle);
-		opts.MSN.SS[sesid].usercnt++;
-
-	}
-	else if (stricmp(cmd,"JOI")==0)
-	{//someone else joined
-		char uhandle[MSN_UHANDLE_LEN];
-		MSN_GetWd(data,2,uhandle);
-		strcpy(opts.MSN.SS[sesid].users[opts.MSN.SS[sesid].usercnt],uhandle);
-		opts.MSN.SS[sesid].usercnt++;
-
-		if (opts.MSN.SS[sesid].pendingsend)
-		{//notify send wnd of client join
-			PostMessage(opts.MSN.SS[sesid].pendingsend,TI_MSN_TRYAGAIN,0,0);
-			
-			opts.MSN.SS[sesid].pendingsend=NULL;
-		}
-
-	}
-	else if (stricmp(cmd,"BYE")==0)
-	{//someone left(/dropped)
-		int i;
-		int b;
-		char uhandle[MSN_UHANDLE_LEN];
-		
-		MSN_GetWd(data,2,uhandle);
-		uhandle[strlen(uhandle)]=0;
-
-		for (i=0;i<opts.MSN.SS[sesid].usercnt;i++)
-		{
-			if (stricmp(uhandle,opts.MSN.SS[sesid].users[i])==0)
-			{//this is the person
-
-				//shift everyone down
-				for (b=i;b>(opts.MSN.SS[sesid].usercnt-1);b++)
-				{
-					strcpy(opts.MSN.SS[sesid].users[b],opts.MSN.SS[sesid].users[b+1]);
-				}
-				opts.MSN.SS[sesid].usercnt--;
-			}
-		}
-
-		if (opts.MSN.SS[sesid].usercnt==0)
-		{//session is empty/dead, kill it
-			MSN_RemoveSession(sesid);
-		}
-	}
-	else if (stricmp(cmd,"ANS")==0)
-	{
-		if (stricmp(params,"OK")==0)
-		{//JUST an OK from the server
-
-		}
-	}
-	else if (stricmp(cmd,"USR")==0)
-	{//response to usr cmd 
-		//MSN_DebugLog("PARAMS of USR:",params);
-		if (strnicmp("OK",params,2)==0)
-		{//accepted, now call in our friend
-			//find the send msgwindow that is pending a session
-						
-			int i;
-			//MSN_DebugLog("Session created, finding user...");
-			for (i=0;i<opts.ccount;i++)
-			{
-				if (opts.clist[i].id==CT_MSN && opts.clistrto[i].MSN_PENDINGSEND)
-				{
-					char uhandle[MSN_UHANDLE_LEN];
-
-					//MSN_DebugLog("Found pending user");
-					opts.MSN.SS[sesid].pendingsend=(HWND)CheckForDupWindow(opts.clist[i].uin,WT_SENDMSG);
-					if (opts.MSN.SS[sesid].pendingsend==NULL)
-					{//the wnd is gone, probably pressed cancel
-
-					}
-					opts.clistrto[i].MSN_PENDINGSEND=FALSE;
-
-					MSN_HandleFromContact(opts.clist[i].uin,uhandle);
-					//finially we have out uhandle, invite them
-					//MSN_DebugLog("Inviting user ",uhandle, " into session...");
-					MSN_SendPacket(*replys,"CAL",uhandle);
-					break;
-				}
-			}
-
-			
-
-		}
-
-	}
-	else if (stricmp(cmd,"MSG")==0)
-	{//got msg
-		char *smsg;
-		char ruhandle[MSN_UHANDLE_LEN];
-		int id;
-		struct tm *ct;
-		time_t t=time(0);
-		char conttype[50];
-
-		MSN_GetWd(data,2,ruhandle);
-
-		id=MSN_ContactFromHandle(ruhandle);
-		smsg=strchr(data,'\n')+1;
-	
-		MSN_MIME_GetContentType(smsg,conttype);
-		if (strnicmp("text/plain",conttype,10)==0)
-		{//normal msg
-			
-			*//*
-			//NOTE: should NOT be case sensitive!!
-			if (strstr(conttype,"charset=UTF-8"))
-			{//UTF-8 enc
-				char *tmp;
-				tmp=str_to_UTF8(smsg);
-				strcpy(smsg,tmp);
-				free(tmp);
-			}*//*
-
-			ct=localtime(&t);
-			
-			smsg=strstr(smsg,"\r\n\r\n")+4;
-			CbRecvMsg (NULL,opts.clist[id].uin,(BYTE)ct->tm_hour,(BYTE)ct->tm_min,(BYTE)ct->tm_mday,(BYTE)(ct->tm_mon+1),(WORD)(ct->tm_year+1900),smsg);
-		}
-	}
-	else if (stricmp(cmd,"CAL")==0)
-	{//the other person is being invited
-
-	}
-	else if (stricmp(cmd,"NAK")==0)
-	{//the msg failed to be delivered
-		MSN_DebugLog("Warning! Message was not sent!");
-	}
-	else
-	{
-		MSN_DebugLogEx("Unhandled Message (",cmd,")");
-	}
-
-}
-*/

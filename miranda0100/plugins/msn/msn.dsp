@@ -145,19 +145,19 @@ SOURCE=.\msn_md5c.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_mime.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\msn_misc.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_ss.c
+SOURCE=.\msn_msgqueue.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\msn_svcs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_switchboard.c
 # End Source File
 # Begin Source File
 

@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "msn_global.h"
 #include "../../miranda32/ui/contactlist/m_clist.h"
-#include "../../miranda32/protocols/protocols/m_protomod.h"
+#include "../../miranda32/protocols/protocols/m_protosvc.h"
 
 extern volatile LONG msnLoggedIn;
 extern int msnStatusMode,msnDesiredStatus;
@@ -34,8 +34,16 @@ static CRITICAL_SECTION csCmdQueue;
 static int cmdQueueCount,cmdQueueAlloced;
 static struct CmdQueueEntry *cmdQueue;
 #define CMDQUEUE_PROTOACK        1
-#define CMDQUEUE_DBWRITESETTING  2
-#define CMDQUEUE_DBCREATECONTACT 3
+#define CMDQUEUE_CHAINRECV       2
+#define CMDQUEUE_DBWRITESETTING  3
+#define CMDQUEUE_DBCREATECONTACT 4
+
+struct CmdQueueData_DbCreateContact {
+	int temporary;
+	HANDLE hWaitEvent;
+	HANDLE *phContact;
+	char emailAndNick[1];
+};
 
 /* NOTE:
 This should really be done with core/m_system.h:MS_SYSTEM_WAITONHANDLE, but
@@ -55,17 +63,28 @@ VOID CALLBACK MSNMainTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 			case CMDQUEUE_PROTOACK:
 				CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)entry.data);
 				break;
+			case CMDQUEUE_CHAINRECV:
+				CallService(MS_PROTO_CHAINRECV,0,(LPARAM)entry.data);
+				break;
 			case CMDQUEUE_DBWRITESETTING:
 				CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)*(HANDLE*)entry.data,(LPARAM)((PBYTE)entry.data+sizeof(HANDLE)));
 				break;
 			case CMDQUEUE_DBCREATECONTACT:
 				{	HANDLE hContact;
+					struct CmdQueueData_DbCreateContact *dat=(struct CmdQueueData_DbCreateContact*)entry.data;
 					char *nick;
-					hContact=(HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
-					CallService(MS_PROTO_ADDTOCONTACT,(WPARAM)hContact,(LPARAM)MSNPROTONAME);
-					DBWriteContactSettingString(hContact,MSNPROTONAME,"e-mail",(char*)entry.data);
-					nick=(char*)entry.data+strlen((char*)entry.data)+1;
-					if(nick[0]) DBWriteContactSettingString(hContact,MSNPROTONAME,"Nick",nick);
+					//somebody else could have created it in the meantime
+					if((hContact=MSN_HContactFromEmail(dat->emailAndNick,NULL,0,0))==NULL) {
+						hContact=(HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
+						CallService(MS_PROTO_ADDTOCONTACT,(WPARAM)hContact,(LPARAM)MSNPROTONAME);
+						DBWriteContactSettingString(hContact,MSNPROTONAME,"e-mail",dat->emailAndNick);
+						nick=dat->emailAndNick+strlen(dat->emailAndNick)+1;
+						if(nick[0]) DBWriteContactSettingString(hContact,MSNPROTONAME,"Nick",nick);
+						if(dat->temporary)
+							DBWriteContactSettingByte(hContact,"CList","NotOnList",1);
+					}
+					*dat->phContact=hContact;
+					SetEvent(dat->hWaitEvent);
 				}
 				break;
 		}
@@ -119,6 +138,18 @@ int CmdQueue_AddProtoAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPA
 	return CmdQueue_Add(CMDQUEUE_PROTOACK,ack);
 }
 
+int CmdQueue_AddChainRecv(CCSDATA *ccs)
+{
+	PBYTE dat;
+	PROTORECVEVENT *pre=(PROTORECVEVENT*)ccs->lParam;
+
+	dat=(PBYTE)malloc(sizeof(CCSDATA)+sizeof(PROTORECVEVENT)+strlen(pre->szMessage)+1);
+	memcpy(dat,ccs,sizeof(CCSDATA));
+	memcpy(dat+sizeof(CCSDATA),pre,sizeof(PROTORECVEVENT));
+	strcpy(dat+sizeof(CCSDATA)+sizeof(PROTORECVEVENT),pre->szMessage);
+	return CmdQueue_Add(CMDQUEUE_CHAINRECV,dat);
+}
+
 int CmdQueue_AddDbWriteSetting(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv)
 {
 	int bytesReqd,ofs;
@@ -139,8 +170,8 @@ int CmdQueue_AddDbWriteSetting(HANDLE hContact,const char *szModule,const char *
 	cws->szSetting=pBuf+ofs;
 	ofs+=strlen(szSetting)+1;
 	memcpy(&cws->value,dbv,sizeof(DBVARIANT));
-	if(dbv->type==DBVT_BLOB) memcpy(pBuf+ofs,dbv->pbVal,dbv->cpbVal);
-	else if(dbv->type==DBVT_ASCIIZ) strcpy(pBuf+ofs,dbv->pszVal);
+	if(dbv->type==DBVT_BLOB) {memcpy(pBuf+ofs,dbv->pbVal,dbv->cpbVal); cws->value.pbVal=pBuf+ofs;}
+	else if(dbv->type==DBVT_ASCIIZ) {strcpy(pBuf+ofs,dbv->pszVal); cws->value.pszVal=pBuf+ofs;}
 	return CmdQueue_Add(CMDQUEUE_DBWRITESETTING,pBuf);
 }
 
@@ -160,11 +191,14 @@ int CmdQueue_AddDbWriteSettingWord(HANDLE hContact,const char *szModule,const ch
 	return CmdQueue_AddDbWriteSetting(hContact,szModule,szSetting,&dbv);
 }
 
-int CmdQueue_AddDbCreateContact(const char *email,const char *nick)
+int CmdQueue_AddDbCreateContact(const char *email,const char *nick,int temporary,HANDLE hWaitEvent,HANDLE *phContact)
 {
-	char *dat;
-	dat=(char*)malloc(strlen(email)+strlen(nick)+2);
-	strcpy(dat,email);
-	strcpy(dat+strlen(dat)+1,nick);
+	struct CmdQueueData_DbCreateContact *dat;
+	dat=(struct CmdQueueData_DbCreateContact*)malloc(strlen(email)+strlen(nick)+1+sizeof(struct CmdQueueData_DbCreateContact));
+	dat->temporary=temporary;
+	dat->hWaitEvent=hWaitEvent;
+	dat->phContact=phContact;
+	strcpy(dat->emailAndNick,email);
+	strcpy(dat->emailAndNick+strlen(email)+1,nick);
 	return CmdQueue_Add(CMDQUEUE_DBCREATECONTACT,dat);
 }

@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../miranda32/protocols/protocols/m_protomod.h"
 //	#include "resource.h"
 
-HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded)
+HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded,int temporary)
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
@@ -45,9 +45,12 @@ HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfN
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
 	if(addIfNeeded) {
-		CmdQueue_AddDbCreateContact(msnEmail,msnNick);
-		Sleep(300);   //give it a chance to create
-		//FIXME: when msn_coord.c is properly fixed this sleep can be reduced dramatically
+		HANDLE hWaitEvent;
+		hWaitEvent=CreateEvent(NULL,TRUE,FALSE,NULL);
+		CmdQueue_AddDbCreateContact(msnEmail,msnNick,temporary,hWaitEvent,&hContact);
+		WaitForSingleObject(hWaitEvent,INFINITE);
+		CloseHandle(hWaitEvent);
+		return hContact;
 	}
 	return NULL;
 }

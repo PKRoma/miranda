@@ -133,8 +133,38 @@ static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
 static int MsnSendMessage(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA *ccs=(CCSDATA*)lParam;
+	SOCKET s;
+	int seq;
 
-	return 0;//seq;
+	s=Switchboards_SocketFromHContact(ccs->hContact);
+	if(s==SOCKET_ERROR) {
+		MSN_SendPacket(msnNSSocket,"XFR","SB");
+		return MsgQueue_Add(ccs->hContact,(char*)ccs->lParam,ccs->wParam);
+	}
+	seq=MsgQueue_AllocateUniqueSeq();
+	//TODO? UTF-8 encoding
+	MSN_SendPacket(s,"MSG","U %d\r\nContent-Type: text/plain\r\n\r\n%s",strlen((char*)ccs->lParam)+28,(char*)ccs->lParam);
+	CmdQueue_AddProtoAck(ccs->hContact,ACKTYPE_MESSAGE,ACKRESULT_SUCCESS,(HANDLE)seq,0);  //need a delay so caller gets seq before ack
+	return seq;
+}
+
+static int MsnRecvMessage(WPARAM wParam,LPARAM lParam)
+{
+	DBEVENTINFO dbei;
+	CCSDATA *ccs=(CCSDATA*)lParam;
+	PROTORECVEVENT *pre=(PROTORECVEVENT*)ccs->lParam;
+
+	DBDeleteContactSetting(ccs->hContact,"CList","Hidden");
+	ZeroMemory(&dbei,sizeof(dbei));
+	dbei.cbSize=sizeof(dbei);
+	dbei.szModule=MSNPROTONAME;
+	dbei.timestamp=pre->timestamp;
+	dbei.flags=pre->flags&PREF_CREATEREAD?DBEF_READ:0;
+	dbei.eventType=EVENTTYPE_MESSAGE;
+	dbei.cbBlob=strlen(pre->szMessage)+1;
+	dbei.pBlob=(PBYTE)pre->szMessage;
+	CallService(MS_DB_EVENT_ADD,(WPARAM)ccs->hContact,(LPARAM)&dbei);
+	return 0;
 }
 
 int LoadMsnServices(void)
@@ -148,5 +178,6 @@ int LoadMsnServices(void)
 	CreateServiceFunction(MSNPROTONAME PS_ADDTOLIST,MsnAddToList);
 	CreateServiceFunction(MSNPROTONAME PSS_GETINFO,MsnGetInfo);
 	CreateServiceFunction(MSNPROTONAME PSS_MESSAGE,MsnSendMessage);
+	CreateServiceFunction(MSNPROTONAME PSR_MESSAGE,MsnRecvMessage);
 	return 0;
 }
