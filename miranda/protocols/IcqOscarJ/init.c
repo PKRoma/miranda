@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,6 +44,7 @@ char gpszICQProtoName[MAX_PATH];
 HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
+HANDLE hHookIdleEvent = NULL;
 static HANDLE hUserMenu = NULL;
 
 extern HANDLE hServerConn;
@@ -60,10 +62,10 @@ PLUGININFO pluginInfo = {
 	"ICQ Oscar v8 / Joe",
 	PLUGIN_MAKE_VERSION(0,3,4,0),
 	"Support for ICQ network, slightly enhanced.",
-	"Joe Kucera, Martin ™berg, Richard Hughes, Jon Keating, etc",
+	"Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
-	"(C) 2000-2004 M.™berg, R.Hughes, J.Keating",
-	"Modified by Joe @ Whale.",
+	"(C) 2000-2005 M.Öberg, R.Hughes, J.Keating, J.Kucera",
+	"Built and Maintained by Joe @ Whale.",
 	0,		//not transient
 	0		//doesn't replace anything built-in
 };
@@ -239,6 +241,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		CreateServiceFunction(pszServiceName, IcqSendYouWereAdded);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PSS_USERISTYPING);
 		CreateServiceFunction(pszServiceName, IcqSendUserIsTyping);
+    strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_GETAVATARINFO);
+    CreateServiceFunction(pszServiceName, IcqGetAvatarInfo);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, ME_ICQ_STATUSMSGREQ);
 		hsmsgrequest=CreateHookableEvent(pszServiceName);
 	}
@@ -311,11 +315,11 @@ int __declspec(dllexport) Unload(void)
 	DeleteCriticalSection(&modeMsgsMutex);
 	DeleteCriticalSection(&localSeqMutex);
 	DeleteCriticalSection(&connectionHandleMutex);
-	SAFE_FREE(modeMsgs.szAway);
-	SAFE_FREE(modeMsgs.szNa);
-	SAFE_FREE(modeMsgs.szOccupied);
-	SAFE_FREE(modeMsgs.szDnd);
-	SAFE_FREE(modeMsgs.szFfc);
+	SAFE_FREE(&modeMsgs.szAway);
+	SAFE_FREE(&modeMsgs.szNa);
+	SAFE_FREE(&modeMsgs.szOccupied);
+	SAFE_FREE(&modeMsgs.szDnd);
+	SAFE_FREE(&modeMsgs.szFfc);
 
 
 	if (hHookUserInfoInit)
@@ -330,6 +334,8 @@ int __declspec(dllexport) Unload(void)
 	if (hHookUserMenu)
 		UnhookEvent(hHookUserMenu);
 
+	if (hHookIdleEvent)
+		UnhookEvent(hHookIdleEvent);
 
 	return 0;
 
@@ -368,6 +374,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 	hHookOptionInit = HookEvent(ME_OPT_INITIALISE, IcqOptInit);
 	hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
 
+	hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
+
 	return 0;
 
 }
@@ -401,5 +409,6 @@ void UpdateGlobalSettings()
 
 	gbAimEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AimEnabled", DEFAULT_AIM_ENABLED);
 	gbSsiEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED);
+  gbAvatarsEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
 
 }
