@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_addcontact.h>
 #include "clist.h"
 
+void InitGroupMenus(void);
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int AddMainMenuItem(WPARAM wParam,LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam,LPARAM lParam);
@@ -424,6 +425,8 @@ int LoadContactListModule(void)
 	InitCustomMenus();
 	InitGroupServices();	
 	InitTray();
+	InitGroupMenus();
+
 	{	CLISTMENUITEM mi;
 		ZeroMemory(&mi,sizeof(mi));
 		mi.cbSize=sizeof(mi);

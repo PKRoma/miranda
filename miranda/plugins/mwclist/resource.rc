@@ -40,6 +40,40 @@ IDI_ICQC6               ICON    DISCARDABLE     "res\\6.ico"
 IDI_ICQC7               ICON    DISCARDABLE     "res\\7.ico"
 IDI_ICQC8               ICON    DISCARDABLE     "res\\8.ico"
 IDI_EMAIL               ICON    DISCARDABLE     "res\\sendmail.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 #endif    // Russian resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -802,7 +836,7 @@ BEGIN
             VALUE "FileDescription", "Miranda IM Contact List\0"
             VALUE "FileVersion", "0.3.4 alpha\0"
             VALUE "InternalName", "mwclist\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
+            VALUE "LegalCopyright", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Oberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "mwclist.dll\0"
             VALUE "PrivateBuild", "\0"

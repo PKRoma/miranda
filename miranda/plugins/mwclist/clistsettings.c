@@ -35,9 +35,11 @@ static displayNameCacheEntry *displayNameCache;
 static int displayNameCacheSize;
 
 SortedList lContactsCache;
-int GetNameForContact(HANDLE hContact,int flag);
+int GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown);
 char *GetProtoForContact(HANDLE hContact);
 int GetStatusForContact(HANDLE hContact,char *szProto);
+char *UnknownConctactTranslatedName;
+extern boolean OnModulesLoadedCalled;
 
 static int DumpElem( pdisplayNameCacheEntry pdnce )
 {
@@ -169,25 +171,90 @@ DWORD NameHashFunction(const char *szStr)
 
 void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 {
+	boolean getedname=FALSE;
+
 	if (pdnce!=NULL)
 	{
-		if (pdnce->name==NULL)
-		{
-			pdnce->name=(char *)GetNameForContact(pdnce->hContact,0);
+/*
 			{
 				char buf[256];
-				sprintf(buf,"LoadCacheDispEntry %x %s\r\n",pdnce,(pdnce->name?pdnce->name:""));
+				sprintf(buf,"LoadCacheDispEntry %x \r\n",pdnce);
 				OutputDebugString(buf);
-			}		
-			//pdnce->NameHash=NameHashFunction(pdnce->name);
-		}
+			}
+*/
 		if (pdnce->szProto==NULL&&pdnce->protoNotExists==FALSE)
 		{
 			pdnce->szProto=GetProtoForContact(pdnce->hContact);
-			if (pdnce->szProto==NULL) pdnce->protoNotExists=TRUE;
+			if (pdnce->szProto==NULL) 
+			{
+				pdnce->protoNotExists=TRUE;
+			}else
+			{
+				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto)==(int)NULL)
+				{
+					pdnce->protoNotExists=TRUE;
+				}
+			}
 
-			//pdnce->ProtoHash=NameHashFunction(pdnce->szProto);
+			{
+				char buf[256];
+				sprintf(buf,"LoadCacheDispEntry_Proto %x %s ProtoIsLoaded: %s\r\n",pdnce,(pdnce->szProto?pdnce->szProto:"NoProtocol"),(pdnce->protoNotExists)?"NO":"FALSE/UNKNOWN");
+				OutputDebugString(buf);
+			}
+			
 		}
+
+		if (pdnce->name==NULL)
+		{			
+			getedname=TRUE;
+			if (pdnce->protoNotExists)
+			{
+				pdnce->name=mir_strdup(Translate("_NoProtocol_"));
+			}else
+			{
+				if (OnModulesLoadedCalled)
+				{
+					pdnce->name=(char *)GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
+				}else
+				{
+					pdnce->name=(char *)GetNameForContact(pdnce->hContact,0,NULL);
+				}
+				
+			}	
+						
+			//pdnce->NameHash=NameHashFunction(pdnce->name);
+		}else
+		{
+			if (pdnce->isUnknown&&pdnce->szProto&&pdnce->protoNotExists==TRUE&&OnModulesLoadedCalled)
+			{
+				
+				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto)==(int)NULL)
+				{
+					pdnce->protoNotExists=FALSE;						
+	
+						{
+							char buf[256];
+							sprintf(buf,"LoadCacheDispEntry_Proto %x %s Now Loaded !!! \r\n",pdnce,(pdnce->szProto?pdnce->szProto:"NoProtocol"));
+							OutputDebugString(buf);
+						}
+
+					pdnce->name=(char *)GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
+					getedname=TRUE;
+				}
+
+			}
+
+		}
+
+			{
+				if (getedname)
+				{				
+				char buf[256];
+				sprintf(buf,"LoadCacheDispEntry_GetedName %x %s isUnknown: %x\r\n",pdnce,(pdnce->name?pdnce->name:""),pdnce->isUnknown);
+				OutputDebugString(buf);
+				}
+			}		
+
 
 		if (pdnce->status==0)
 		{
@@ -230,7 +297,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 	}
 }
 
-static pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact)
+pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact)
 {
 	{
 	displayNameCacheEntry dnce, *pdnce,*pdnce2;
@@ -263,7 +330,53 @@ static pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact)
 
 	}
 }
+void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType)
+{
+	if (hContact==NULL) return;
+	if (pdnce==NULL) return;
+		if (pdnce)
+		{
+			{
+				char buf[256];
+				sprintf(buf,"InvDisNmCaEn %x %s SettingType: %x\r\n",pdnce,(pdnce->name?pdnce->name:""),SettingType);
+				OutputDebugString(buf);
+			}
+			if (SettingType==-1||SettingType==DBVT_DELETED)
+			{		
+				if (pdnce->name) mir_free(pdnce->name);
+				pdnce->name=NULL;
+				if (pdnce->szGroup) mir_free(pdnce->szGroup);
+				pdnce->szGroup=NULL;
 
+				pdnce->Hidden=-1;
+				pdnce->protoNotExists=FALSE;
+				pdnce->szProto=NULL;
+				pdnce->status=0;
+				pdnce->IdleTS=-1;
+				pdnce->ApparentMode=-1;
+				pdnce->NotOnList=-1;
+				pdnce->isUnknown=FALSE;
+				return;
+			}
+			if (SettingType==DBVT_ASCIIZ||SettingType==DBVT_BLOB)
+			{
+				if (pdnce->name) mir_free(pdnce->name);
+				pdnce->name=NULL;
+				if (pdnce->szGroup) mir_free(pdnce->szGroup);
+				pdnce->szGroup=NULL;
+				pdnce->szProto=NULL;
+				return;
+			}
+			// in other cases clear all binary cache
+				pdnce->Hidden=-1;
+				pdnce->protoNotExists=FALSE;
+				pdnce->status=0;
+				pdnce->IdleTS=-1;
+				pdnce->ApparentMode=-1;
+				pdnce->NotOnList=-1;
+				pdnce->isUnknown=FALSE;
+		};
+};
 void InvalidateDisplayNameCacheEntry(HANDLE hContact)
 {
 	if(hContact==INVALID_HANDLE_VALUE) {
@@ -274,28 +387,7 @@ void InvalidateDisplayNameCacheEntry(HANDLE hContact)
 	}
 	else {
 		pdisplayNameCacheEntry pdnce=GetDisplayNameCacheEntry(hContact);
-		if (pdnce)
-		{
-			{
-				char buf[256];
-				sprintf(buf,"InvDisNmCaEn %x %s\r\n",pdnce,(pdnce->name?pdnce->name:""));
-				OutputDebugString(buf);
-			}
-			
-			if (pdnce->name) mir_free(pdnce->name);
-			pdnce->name=NULL;
-			//if (pdnce->szProto) mir_free(pdnce->szProto); proto is system string
-			if (pdnce->szGroup) mir_free(pdnce->szGroup);
-			pdnce->szGroup=NULL;
-			pdnce->Hidden=-1;
-			pdnce->protoNotExists=FALSE;
-			pdnce->szProto=NULL;
-			pdnce->status=0;
-			pdnce->IdleTS=-1;
-			pdnce->ApparentMode=-1;
-			pdnce->NotOnList=-1;
-
-		};
+		InvalidateDisplayNameCacheEntryByPDNE(hContact,pdnce,-1);
 	}
 }
 char *GetContactCachedProtocol(HANDLE hContact)
@@ -308,9 +400,21 @@ char *GetContactCachedProtocol(HANDLE hContact)
 };
 char *GetProtoForContact(HANDLE hContact)
 {
-		char *szProto=NULL;
-		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-		if (szProto==NULL) return(NULL);
+	char *szProto=NULL;
+		//szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+	DBVARIANT dbv;
+	DBCONTACTGETSETTING dbcgs;
+	char name[32];
+
+	dbv.type=DBVT_ASCIIZ;
+	dbv.pszVal=name;
+	dbv.cchVal=sizeof(name);
+	dbcgs.pValue=&dbv;
+	dbcgs.szModule="Protocol";
+	dbcgs.szSetting="p";
+	if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)hContact,(LPARAM)&dbcgs)) return NULL;
+	szProto=mir_strdup(dbcgs.pValue->pszVal);
+	if (szProto==NULL) return(NULL);
 		return((szProto));
 };
 
@@ -324,15 +428,25 @@ int GetStatusForContact(HANDLE hContact,char *szProto)
 	return (status);
 }
 
-int GetNameForContact(HANDLE hContact,int flag)
+int GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)
 {
 	CONTACTINFO ci;
 	char *buffer;
 
+	if (UnknownConctactTranslatedName==NULL) UnknownConctactTranslatedName=(Translate("'(Unknown Contact)'"));
+	
 	ZeroMemory(&ci,sizeof(ci));
+	if (isUnknown) *isUnknown=FALSE;
 	ci.cbSize = sizeof(ci);
 	ci.hContact = (HANDLE)hContact;
 	if (ci.hContact==NULL) ci.szProto = "ICQ";
+				
+				{
+				
+				char buf[256];
+				sprintf(buf,"GetNameForContactutf hcont:%x isunk:%x \r\n",ci.hContact,isUnknown);
+				OutputDebugString(buf);
+				}
 
 	if (TRUE)
 	{
@@ -343,6 +457,11 @@ int GetNameForContact(HANDLE hContact,int flag)
 				buffer = (char*)mir_alloc(strlen(ci.pszVal)+1);
 				_snprintf(buffer,strlen(ci.pszVal)+1,"%s",ci.pszVal);
 				mir_free(ci.pszVal);
+				//!!! need change
+				if (isUnknown&&!strcmp(buffer,UnknownConctactTranslatedName))
+				{
+					*isUnknown=TRUE;
+				}
 				return (int)buffer;
 		}
 		if (ci.type==CNFT_DWORD) {
@@ -354,7 +473,8 @@ int GetNameForContact(HANDLE hContact,int flag)
 	}
 	}
 	CallContactService((HANDLE)hContact,PSS_GETINFO,SGIF_MINIMAL,0);
-	buffer=Translate("(Unknown Contact)");
+	if (isUnknown) *isUnknown=TRUE;
+	buffer=Translate("'(Unknown Contact)'");
 	return (int)mir_strdup(buffer);
 }
 
@@ -413,7 +533,7 @@ int GetContactDisplayName(WPARAM wParam,LPARAM lParam)
 		//cacheEntry=NULL;
 		//if(displayNameCache[cacheEntry].name) return (int)displayNameCache[cacheEntry].name;
 	}
-	return (GetNameForContact((HANDLE)wParam,lParam));
+	return (GetNameForContact((HANDLE)wParam,lParam,NULL));
 }
 
 int InvalidateDisplayName(WPARAM wParam,LPARAM lParam) {
@@ -447,46 +567,45 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	dbv.pszVal = NULL;
 	pdnce=GetDisplayNameCacheEntry((HANDLE)wParam);
-//		if (pdnce)
-//!DBGetContactSetting((HANDLE)wParam, "Protocol", "p", &dbv)
+
+	if (pdnce==NULL)
+	{
+		OutputDebugString("!!! Very bad pdnce not found.");
+		if (dbv.pszVal) mir_free(dbv.pszVal);
+		return 0;
+	};
+
 	if (pdnce&&(pdnce->protoNotExists==FALSE)&&pdnce->szProto)
 	{
 		if (!strcmp(cws->szModule,pdnce->szProto))
 		{
-			{
-				
+			{				
 				sprintf(buf,"CHANGE: inproto setting:%s\r\n",cws->szSetting);
-			
-			}
 				OutputDebugString(buf);
-				InvalidateDisplayNameCacheEntry((HANDLE)wParam);
+			}			
+				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
 
-			
-			if (!strcmp(cws->szSetting,"UIN") || !strcmp(cws->szSetting,"Nick") || !strcmp(cws->szSetting,"FirstName") || !strcmp(cws->szSetting,"LastName") || !strcmp(cws->szSetting,"e-mail"))
-			{
-				CallService(MS_CLUI_CONTACTRENAMED,wParam, 0);
-			}
-			else if (!strcmp(cws->szSetting, "Status")) {
-				if (!DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0)) {
+				if (!strcmp(cws->szSetting, "Status")) {				
+				if (!(pdnce->Hidden==1)) {
 					if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT))	{
 						// User's state is changing, and we are hideOffline-ing
 						
-						//OutputDebugString(buf);
-						//InvalidateDisplayNameCacheEntry((HANDLE)wParam);
 						if (cws->value.wVal == ID_STATUS_OFFLINE) {
 							ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
-							CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
 							mir_free(dbv.pszVal);
 							return 0;
 						}
 						ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 1);
 					}
-					ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+					else
+					{
+						ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+					}
+					
 				}
 			}
 			else
 			{
-			
 				DBFreeVariant(&dbv);
 				return 0;
 			}
@@ -495,19 +614,25 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	}
 
 	if(!strcmp(cws->szModule,"CList")) {
-		OutputDebugString("CHANGE: module:CList\r\n");
-		InvalidateDisplayNameCacheEntry((HANDLE)wParam);
+		/*
+		sprintf(buf,"CHANGE: module:CList setting:%s %s\r\n",cws->szSetting,cws->value.pszVal);
+		OutputDebugString(buf);
+		*/
+
+		//name is null or (setting is myhandle and names are different)
+		if(pdnce->name==NULL||(!strcmp(cws->szSetting,"MyHandle")&&strcmp(cws->value.pszVal,pdnce->name)) ) {
+		InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
+		}
+
+		if((!strcmp(cws->szSetting,"Group")) ) {
+		InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
+		}
 
 		if(!strcmp(cws->szSetting,"Hidden")) {		
 			if(cws->value.type==DBVT_DELETED || cws->value.bVal==0) {
 				char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 				ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);
 			}
-			else
-				CallService(MS_CLUI_CONTACTDELETED,wParam,0);
-		}
-		if(!strcmp(cws->szSetting,"MyHandle")) {
-			InvalidateDisplayNameCacheEntry((HANDLE)wParam);
 		}
 	}
 
@@ -516,7 +641,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 			char *szProto;
 
 			OutputDebugString("CHANGE: proto\r\n");
-			InvalidateDisplayNameCacheEntry((HANDLE)wParam);	
+			InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);	
 			if(cws->value.type==DBVT_DELETED) szProto=NULL;
 			else szProto=cws->value.pszVal;
 			ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0);

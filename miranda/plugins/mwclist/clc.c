@@ -36,7 +36,7 @@ static HANDLE hAckHook;
 static HANDLE hSettingChanged1;
 static HANDLE hSettingChanged2;
 extern void InitDisplayNameCache(SortedList *list);
-
+extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
 int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
 
@@ -47,34 +47,42 @@ void ClcOptionsChanged(void)
 
 static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 {
-	char *szProto;
 	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-	if(!strcmp(cws->szModule,"CList")) {
-		if(!strcmp(cws->szSetting,"MyHandle"))
+	if((HANDLE)wParam!=NULL&&!strcmp(cws->szModule,"CList")) {
+		if(cws->value.type==DBVT_ASCIIZ&&!strcmp(cws->szSetting,"MyHandle"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
-		else if(!strcmp(cws->szSetting,"Group"))
+		else if(cws->value.type==DBVT_ASCIIZ&&!strcmp(cws->szSetting,"Group"))
 			WindowList_Broadcast(hClcWindowList,INTM_GROUPCHANGED,wParam,lParam);
-		else if(!strcmp(cws->szSetting,"Hidden"))
+		else if(cws->value.type==DBVT_BYTE&&!strcmp(cws->szSetting,"Hidden"))
 			WindowList_Broadcast(hClcWindowList,INTM_HIDDENCHANGED,wParam,lParam);
-		else if(!strcmp(cws->szSetting,"NotOnList"))
+		else if(cws->value.type==DBVT_BYTE&&!strcmp(cws->szSetting,"NotOnList"))
 			WindowList_Broadcast(hClcWindowList,INTM_NOTONLISTCHANGED,wParam,lParam);
-		else if(!strcmp(cws->szSetting,"Status"))
+		else if(cws->value.type==DBVT_WORD&&!strcmp(cws->szSetting,"Status"))
 			WindowList_Broadcast(hClcWindowList,INTM_INVALIDATE,0,0);
-		else if(!strcmp(cws->szSetting,"NameOrder"))
+		else if(cws->value.type==DBVT_BLOB&&!strcmp(cws->szSetting,"NameOrder"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMEORDERCHANGED,0,0);
 	}
 	else if(!strcmp(cws->szModule,"CListGroups")) {
 		WindowList_Broadcast(hClcWindowList,INTM_GROUPSCHANGED,wParam,lParam);
 	}
 	else {
-		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-		if(szProto==NULL || strcmp(szProto,cws->szModule)) return 0;
-		if(!strcmp(cws->szSetting,"Nick") || !strcmp(cws->szSetting,"FirstName") || !strcmp(cws->szSetting,"e-mail") || !strcmp(cws->szSetting,"LastName") || !strcmp(cws->szSetting,"UIN"))
-			WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
-		else if(!strcmp(cws->szSetting,"ApparentMode"))
-			WindowList_Broadcast(hClcWindowList,INTM_APPARENTMODECHANGED,wParam,lParam);
-		else if(!strcmp(cws->szSetting,"IdleTS"))
-			WindowList_Broadcast(hClcWindowList,INTM_IDLECHANGED,wParam,lParam);
+		if ((HANDLE)wParam!=NULL)
+		{
+		pdisplayNameCacheEntry pdnce =(pdisplayNameCacheEntry)GetDisplayNameCacheEntry((HANDLE)wParam);
+			if (pdnce!=NULL)
+			{					
+					if(pdnce->szProto==NULL || strcmp(pdnce->szProto,cws->szModule)) return 0;
+
+					if(cws->value.type==DBVT_DWORD&&(!strcmp(cws->szSetting,"UIN")) )
+						WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
+					else if(cws->value.type==DBVT_ASCIIZ&&(!strcmp(cws->szSetting,"Nick") || !strcmp(cws->szSetting,"FirstName") || !strcmp(cws->szSetting,"e-mail") || !strcmp(cws->szSetting,"LastName") || !strcmp(cws->szSetting,"JID")) )
+						WindowList_Broadcast(hClcWindowList,INTM_NAMECHANGED,wParam,lParam);
+					else if(!strcmp(cws->szSetting,"ApparentMode"))
+						WindowList_Broadcast(hClcWindowList,INTM_APPARENTMODECHANGED,wParam,lParam);
+					else if(!strcmp(cws->szSetting,"IdleTS"))
+						WindowList_Broadcast(hClcWindowList,INTM_IDLECHANGED,wParam,lParam);
+			};
+		};
 	}
 	return 0;
 }
@@ -515,9 +523,9 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		case INTM_NAMECHANGED:
 		{	struct ClcContact *contact;
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL)) break;
-			lstrcpyn(contact->szText,(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0),sizeof(contact->szText));
-			dat->NeedResort=1;
-			SortCLC(hwnd,dat,1);
+				lstrcpyn(contact->szText,(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0),sizeof(contact->szText));
+				dat->NeedResort=1;
+				SortCLC(hwnd,dat,1);		
 			break;
 		}
 
@@ -1128,9 +1136,11 @@ OutputDebugString("Delayed Sort CLC\r\n");
 
 			if(dat->selection!=-1 && hitFlags&(CLCHT_ONITEMICON|CLCHT_ONITEMCHECK|CLCHT_ONITEMLABEL)) {
 				if(contact->type==CLCIT_GROUP) {
-					hMenu=GetSubMenu(LoadMenu(g_hInst,MAKEINTRESOURCE(IDR_CONTEXT)),2);
-					CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hMenu,0);
-					CheckMenuItem(hMenu,POPUP_GROUPHIDEOFFLINE,contact->group->hideOffline?MF_CHECKED:MF_UNCHECKED);
+					hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP,(WPARAM)contact->group,0);
+					ClientToScreen(hwnd,&pt);
+					TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON,pt.x,pt.y,0,(HWND)CallService(MS_CLUI_GETHWND,0,0),NULL);
+					return 0;
+					//CheckMenuItem(hMenu,POPUP_GROUPHIDEOFFLINE,contact->group->hideOffline?MF_CHECKED:MF_UNCHECKED);
 				}
 				else if(contact->type==CLCIT_CONTACT)
 					hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)contact->hContact,0);
@@ -1138,7 +1148,8 @@ OutputDebugString("Delayed Sort CLC\r\n");
 			else
 			{
 				//call parent for new group/hide offline menu
-				SendMessage(GetParent(hwnd),WM_CONTEXTMENU,wParam,lParam);
+				PostMessage(GetParent(hwnd),WM_CONTEXTMENU,wParam,lParam);
+				return 0;
 			}
 			if(hMenu!=NULL) {
 				ClientToScreen(hwnd,&pt);

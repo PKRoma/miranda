@@ -28,6 +28,7 @@ PLUGINLINK * pluginLink;
 struct MM_INTERFACE memoryManagerInterface;
 static HANDLE hCListShutdown = 0;
 extern HWND hwndContactList;
+extern int LoadMoveToGroup();
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
@@ -36,7 +37,7 @@ PLUGININFO pluginInfo = {
 	"Display contacts, event notifications, protocol status with MW modifications",
 	"",
 	"bethoven@mailgate.ru" ,
-	"Copyright 2000-2004 Miranda-IM project ["__DATE__" "__TIME__"]",
+	"Copyright 2000-2005 Miranda-IM project ["__DATE__" "__TIME__"]",
 	"http://www.miranda-im.org",
 	0,
 	DEFMOD_CLISTALL
@@ -111,6 +112,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		int i=1;
 	}
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
+	LoadMoveToGroup();
 
 	return rc;
 }

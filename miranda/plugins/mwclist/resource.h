@@ -122,6 +122,7 @@
 #define IDI_ICQC7                       275
 #define IDI_ICQC8                       276
 #define IDI_EMAIL                       277
+#define IDD_DIALOG1                     278
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -563,8 +564,7 @@
 #define IDC_GENMENU_SET                 11718
 #define IDC_GENMENU_SET2                11719
 #define IDC_GENMENU_DEFAULT             11719
-#define IDC_ICONBLINK					11720
-
+#define IDC_ICONBLINK                   11720
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -593,7 +593,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        278
+#define _APS_NEXT_RESOURCE_VALUE        279
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1762
 #define _APS_NEXT_SYMED_VALUE           101

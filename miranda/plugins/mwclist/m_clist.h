@@ -64,6 +64,60 @@ plugin may add different menu items with some service.
 				(pszPopupName=(char *)hMenuItem - for make child of popup)
 */
 
+// SubGroup MENU
+//remove a item from SubGroup menu
+//wParam=hMenuItem returned by MS_CLIST_ADDSubGroupMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+#define MS_CLIST_REMOVESUBGROUPMENUITEM					"CList/RemoveSubGroupMenuItem"
+
+//builds the SubGroup menu
+//wParam=lParam=0
+//returns a HMENU identifying the menu.
+#define MS_CLIST_MENUBUILDSUBGROUP							"CList/MenuBuildSubGroup"
+
+//add a new item to the SubGroup menus
+//wParam=lpGroupMenuParam, params to call when exec menuitem
+//lParam=(LPARAM)(CLISTMENUITEM*)&mi
+#define MS_CLIST_ADDSUBGROUPMENUITEM						"CList/AddSubGroupMenuItem"
+
+//the SubGroup menu is about to be built
+//wParam=lParam=0
+#define ME_CLIST_PREBUILDSUBGROUPMENU						"CList/PreBuildSubGroupMenu"
+
+// SubGroup MENU
+
+
+
+// Group MENU
+typedef struct{
+int wParam;
+int lParam;
+}GroupMenuParam,*lpGroupMenuParam;
+
+//remove a item from Group menu
+//wParam=hMenuItem returned by MS_CLIST_ADDGroupMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+#define MS_CLIST_REMOVEGROUPMENUITEM					"CList/RemoveGroupMenuItem"
+
+//builds the Group menu
+//wParam=lParam=0
+//returns a HMENU identifying the menu.
+#define MS_CLIST_MENUBUILDGROUP							"CList/MenuBuildGroup"
+
+//add a new item to the Group menus
+//wParam=lpGroupMenuParam, params to call when exec menuitem
+//lParam=(LPARAM)(CLISTMENUITEM*)&mi
+#define MS_CLIST_ADDGROUPMENUITEM						"CList/AddGroupMenuItem"
+
+//the Group menu is about to be built
+//wParam=lParam=0
+#define ME_CLIST_PREBUILDGROUPMENU						"CList/PreBuildGroupMenu"
+
+// Group MENU
+
+
 // TRAY MENU
 //remove a item from tray menu
 //wParam=hMenuItem returned by MS_CLIST_ADDTRAYMENUITEM

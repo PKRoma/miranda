@@ -47,6 +47,7 @@ typedef struct  {
 	int NotOnList;
 	int IdleTS;
 	void *ClcContact;
+	boolean isUnknown;
 
 } displayNameCacheEntry,*pdisplayNameCacheEntry;
 
