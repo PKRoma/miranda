@@ -316,7 +316,14 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendMessage(hwndDlg,WM_USER+11,0,0);
 			{	DBVARIANT dbv;
 				if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
-					SetDlgItemText(hwndDlg,IDC_FILENAME,dbv.pszVal);
+                    SetDlgItemText(hwndDlg,IDC_FILENAME,dbv.pszVal);
+                    if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
+                        char szPath[MAX_PATH];
+
+                        if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPath))
+                            SetDlgItemText(hwndDlg,IDC_FILENAME,szPath);
+                    }
+                    else 
 					mir_free(dbv.pszVal);
 				}
 			}
@@ -392,9 +399,14 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								else DBWriteContactSettingDword(NULL,"CLC","SelBkColour",col);
 								DBWriteContactSettingByte(NULL,"CLC","UseWinColours", IsDlgButtonChecked(hwndDlg,IDC_WINCOLOUR));
 							}
-							{	char str[MAX_PATH];
+							{	char str[MAX_PATH],strrel[MAX_PATH];
 								GetDlgItemText(hwndDlg,IDC_FILENAME,str,sizeof(str));
-								DBWriteContactSettingString(NULL,"CLC","BkBitmap",str);
+                                if (ServiceExists(MS_UTILS_PATHTORELATIVE)) {
+                                    if (CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)strrel))
+                                        DBWriteContactSettingString(NULL,"CLC","BkBitmap",strrel);
+                                    else DBWriteContactSettingString(NULL,"CLC","BkBitmap",str);
+                                }
+                                else DBWriteContactSettingString(NULL,"CLC","BkBitmap",str);
 							}
 							{	WORD flags=0;
 								if(IsDlgButtonChecked(hwndDlg,IDC_STRETCHH)) flags|=CLB_STRETCHH;
