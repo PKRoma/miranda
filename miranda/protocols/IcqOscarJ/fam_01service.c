@@ -439,7 +439,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_EXTSTATUS: // our avatar
   {
-    DBCONTACTWRITESETTING cws;
+//    DBCONTACTWRITESETTING cws;
 
     Netlib_Logf(ghServerNetlibUser, "Received our avatar hash & status.");
 
@@ -449,13 +449,14 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       {
         case 1: // our avatar is on the server, store hash
         {
-          int dummy;
+/*          int dummy;
           cws.szModule = gpszICQProtoName;
           cws.szSetting = "AvatarHash";
           cws.value.type = DBVT_BLOB;
           cws.value.pbVal = pBuffer;
           cws.value.cpbVal = 0x14;
-          dummy = CallService(MS_DB_CONTACT_WRITESETTING, 0, (LPARAM)&cws);
+          dummy = CallService(MS_DB_CONTACT_WRITESETTING, 0, (LPARAM)&cws);*/
+          DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", pBuffer, 0x14);
           
           // TODO: here we need to find a file, check its hash, if invalid get avatar from server
           // TODO: check if we had set any avatar if yes set our, if not download from server

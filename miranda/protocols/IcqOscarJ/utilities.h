@@ -112,5 +112,6 @@ static void __inline SAFE_FREE(void** p)
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
 void ContactPhotoSettingChanged(HANDLE hContact);
 
+int DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *szSetting,const char *val, const int cbVal);
 
 #endif /* __UTILITIES_H */

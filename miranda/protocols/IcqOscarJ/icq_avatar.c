@@ -736,7 +736,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           out = fopen(ac->szFile, "wb");
 			    if (out) 
           {
-            DBCONTACTWRITESETTING cws;
+//            DBCONTACTWRITESETTING cws;
             DBVARIANT dbv;
 
             fwrite(pBuffer, datalen, 1, out);
@@ -744,12 +744,13 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 
             if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
             {
-              cws.szModule = gpszICQProtoName; // set saved hash
+/*              cws.szModule = gpszICQProtoName; // set saved hash
               cws.value.type = DBVT_BLOB;
               cws.value.pbVal = dbv.pbVal;
               cws.value.cpbVal = dbv.cpbVal; 
               cws.szSetting = "AvatarSaved";
-              if (CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)ac->hContact, (LPARAM)&cws))
+              if (CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)ac->hContact, (LPARAM)&cws))*/
+              if (DBWriteContactSettingBlob(ac->hContact, gpszICQProtoName, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
                 Netlib_Logf(ghServerNetlibUser, "Failed to set file hash.");
 
               DBFreeVariant(&dbv);

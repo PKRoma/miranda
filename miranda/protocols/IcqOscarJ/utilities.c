@@ -999,3 +999,17 @@ void ContactPhotoSettingChanged(HANDLE hContact)
     bNoChanging = 0;
   }
 }
+
+
+
+int DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *szSetting,const char *val, const int cbVal)
+{
+  DBCONTACTWRITESETTING cws;
+
+  cws.szModule=szModule;
+  cws.szSetting=szSetting;
+  cws.value.type=DBVT_BLOB;
+  cws.value.pbVal=(char*)val;
+  cws.value.cpbVal = cbVal;
+  return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
+}
