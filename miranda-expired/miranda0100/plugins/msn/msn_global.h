@@ -109,6 +109,8 @@ void MSN_DebugLog(int level,const char *fmt,...);
 LONG MSN_SendPacket(SOCKET s,const char *cmd,const char *params,...);
 char *MirandaStatusToMSN(int status);
 int MSNStatusToMiranda(const char *status);
+void UrlDecode(char *str);
+void UrlEncode(const char *src,char *dest,int cbDest);
 
 HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded,int temporary);
 int MSN_AddContact(char* uhandle,char*nick); //returns clist ID
