@@ -47,7 +47,7 @@ static int transparentFocus=1;
 static byte oldhideoffline;
 static int lastreqh=0,requr=0,disableautoupd=1;
 HANDLE hFrameContactTree;
-
+BYTE showOpts;//for statusbar
 
 typedef struct{
 int CycleStartTick;
@@ -78,6 +78,7 @@ extern int CreateStatusBarFrame();
 extern int LoadProtocolOrderModule(void);
 extern int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam);
 extern int ExtraToColumnNum(int extra);
+extern void TrayIconUpdateBase(const char *szChangedProto);
 
 #define M_CREATECLC  (WM_USER+1)
 
@@ -135,7 +136,7 @@ static HICON ExtractIconFromPath(const char *path)
 	{
 		char buf[512];
 		sprintf(buf,"LoadIcon %s\r\n",path);
-	OutputDebugString(buf);
+	//OutputDebugString(buf);
 	}
 	lstrcpyn(file,path,sizeof(file));
 	comma=strrchr(file,',');
@@ -147,7 +148,7 @@ static HICON ExtractIconFromPath(const char *path)
 	{
 		char buf[512];
 		sprintf(buf,"LoadIconFull %d %s\r\n",n,fileFull);
-	OutputDebugString(buf);
+	//OutputDebugString(buf);
 	}
 #endif
 
@@ -157,10 +158,10 @@ static HICON ExtractIconFromPath(const char *path)
 }
 
 
-HICON GetConnectingIconForProto(char *szProto,int b,int status)
+HICON GetConnectingIconForProto(char *szProto,int b)
 {
 		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
-		HICON hIcon;
+		HICON hIcon=NULL;
 
 		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
 		str=strrchr(szPath,'\\');
@@ -174,10 +175,9 @@ HICON GetConnectingIconForProto(char *szProto,int b,int status)
 		{
 		char buf [256];
 		sprintf(buf,"IconNotFound %s %d\r\n",szProto,b);
-		OutputDebugString(buf);
+	//	OutputDebugString(buf);
 		}
 #endif
-
 
 	if (!strcmp(szProto,"ICQ"))
 	{
@@ -190,12 +190,66 @@ HICON GetConnectingIconForProto(char *szProto,int b,int status)
 		return(LoadIcon(g_hInst,(LPCSTR)(IDI_ICQC1+b)));
 	}
 
-	hIcon=LoadSkinnedProtoIcon(szProto,status);	
+	
 		return(hIcon);
 }
+//wParam = szProto
+int GetConnectingIconService(WPARAM wParam,LPARAM lParam)
+{
+						int b;						
+						ProtoTicks *pt=NULL;
+						HICON hIcon=NULL;
+
+						char *szProto=(char *)wParam;
+						if (!szProto) return 0;
+
+						pt=GetProtoTicksByProto(szProto);
+
+						if (pt!=NULL)
+						{
+						
+						if (pt->CycleStartTick!=0) 
+						{					
+								b=((GetTickCount()-pt->CycleStartTick)/(CycleTimeInterval/CycleIconCount))%CycleIconCount;
+								hIcon=GetConnectingIconForProto(szProto,b);
+						};
+						}
+						
+						return (int)hIcon;
+};
 
 
+int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
+{
 
+	int status=(int)wParam;
+	char *szProto=(char *)lParam;					
+	if (!szProto) return (0);
+	if (!status) return (0);
+				
+				if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+					{
+			
+						ProtoTicks *pt=NULL;
+
+						pt=GetProtoTicksByProto(szProto);
+						if (pt!=NULL)
+						{
+						
+						if (pt->CycleStartTick==0) 
+						{					
+						//	sprintf(buf,"SetTimer %d\r\n",pt->n);
+						//	OutputDebugString(buf);
+
+							KillTimer(hwndContactList,TM_STATUSBARUPDATE+pt->n);
+							SetTimer(hwndContactList,TM_STATUSBARUPDATE+pt->n,(int)(CycleTimeInterval/CycleIconCount)/1,0);
+							pt->TimerCreated=1;
+							pt->CycleStartTick=GetTickCount();
+						};
+					};
+				}
+				return 0;
+}
 // Restore protocols to the last global status.
 // Used to reconnect on restore after standby.
 static void RestoreMode()
@@ -212,10 +266,20 @@ static void RestoreMode()
 
 int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 {
-	
-	if (wParam==0){return(0);};
+DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
+	if (wParam==0)
 	{
-		DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
+		if ((dbcws->value.type==DBVT_BYTE)&&!strcmp(dbcws->szModule,"CLUI"))
+		{
+			if (!strcmp(dbcws->szSetting,"SBarShow"))
+			{	
+				showOpts=dbcws->value.bVal;	
+				return(0);
+			};
+		}
+	}
+	else
+	{		
 		if (dbcws==NULL){return(0);};
 		
 		if (!strcmp(dbcws->szSetting,"e-mail"))
@@ -422,7 +486,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_CREATE:
 		CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)GetMenu(hwnd),0);
 		DrawMenuBar(hwnd);
-		
+		showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);		
+
 		//create the status wnd
 		//hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);
 		CluiProtocolStatusChanged(0,0);
@@ -527,26 +592,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			return(0);
 		}
-/*
-		if(IsZoomed(hwnd)) ShowWindow(hwnd,SW_SHOWNORMAL);
-			{	RECT rect,rcStatus;
-			GetClientRect(hwnd, &rect);
-			if(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)) {
-				SetWindowPos(hwndStatus, NULL, 0, rect.bottom - 20, rect.right - rect.left, 20, SWP_NOZORDER);
-				GetWindowRect(hwndStatus,&rcStatus);
-				CluiProtocolStatusChanged(0,0);
-			}
-			else rcStatus.top=rcStatus.bottom=0;
-			SetWindowPos(hwndContactTree, NULL, 0, 0, rect.right, rect.bottom-(rcStatus.bottom-rcStatus.top), SWP_NOZORDER);
-			}
-			if(wParam==SIZE_MINIMIZED) {
-				if(DBGetContactSettingByte(NULL,"CList","Min2Tray",SETTING_MIN2TRAY_DEFAULT)) {
-					ShowWindow(hwnd, SW_HIDE);
-					DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
-				}
-				else DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_MINIMIZED);
-			}
-*/
 			// drop thru
 		case WM_MOVE:
 			if(!IsIconic(hwnd)) {
@@ -641,15 +686,22 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					}
 
 					};
-				//RedrawWindow(hwndStatus,NULL,NULL,RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
-				//UpdateWindow(hwndStatus);
+
 					pt=&CycleStartTick[wParam-TM_STATUSBARUPDATE];
 					{
 					RECT rc;
 					GetStatsuBarProtoRect(hwndStatus,pt->szProto,&rc);
-					rc.right=rc.left+GetSystemMetrics(SM_CXSMICON);
+					rc.right=rc.left+GetSystemMetrics(SM_CXSMICON)+1;
+#ifdef _DEBUG
+				{
+					//char buf[512];
+					//sprintf(buf,"Invalidate left: %d right: %d\r\n",rc.left,rc.right);
+					//OutputDebugString(buf);
+				}
+#endif
 
-					InvalidateRect(hwndStatus,&rc,TRUE);
+					if(IsWindowVisible(hwndStatus)) InvalidateRect(hwndStatus,&rc,TRUE);
+					TrayIconUpdateBase(pt->szProto);
 					}
 					//SendMessage(hwndStatus,WM_PAINT,0,0);
 					UpdateWindow(hwndStatus);
@@ -1045,71 +1097,45 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				char *szProto=(char*)dis->itemData;
 				int status,x;
 				SIZE textSize;
-				BYTE showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);
+				boolean NeedDestroy=FALSE;
+				HICON hIcon;
 
-				if (PD==NULL){break;};			
-
-				
+				if (PD==NULL){break;};					
 				szProto=PD->RealName;
-//				Sleep(200);
-				//FillRect(dis->hDC,dis->rcItem,
-				//dis->rcItem
 #ifdef _DEBUG
 				{
-					char buf[512];
-					sprintf(buf,"proto: %s\r\n",szProto);
-					OutputDebugString(buf);
+					//char buf[512];
+					//sprintf(buf,"proto: %s draw at pos: %d\r\n",szProto,dis->rcItem.left);
+					//OutputDebugString(buf);
 				}
 #endif
 				
 				status=CallProtoService(szProto,PS_GETSTATUS,0,0);
 				SetBkMode(dis->hDC,TRANSPARENT);
 				x=dis->rcItem.left;
+
 				if(showOpts&1) {
-					HICON hIcon;
-					char buf [256];
+					
+					//char buf [256];
 					
 					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
-					{
-						int b;
-						
-						ProtoTicks *pt=NULL;
-						pt=GetProtoTicksByProto(szProto);
-						if (pt!=NULL)
 						{
-						
-						if (pt->CycleStartTick==0) 
-						{					
-							sprintf(buf,"SetTimer %d\r\n",pt->n);
-							OutputDebugString(buf);
+						hIcon=(HICON)GetConnectingIconService((WPARAM)szProto,0);
 
-							KillTimer(hwnd,TM_STATUSBARUPDATE+pt->n);
-							SetTimer(hwnd,TM_STATUSBARUPDATE+pt->n,(int)(CycleTimeInterval/CycleIconCount)/1,0);
-							pt->TimerCreated=1;
-							pt->CycleStartTick=GetTickCount();
-						};
-						
-						b=((GetTickCount()-pt->CycleStartTick)/(CycleTimeInterval/CycleIconCount))%CycleIconCount;
-						
-						hIcon=GetConnectingIconForProto(szProto,b,status);
-						//hIcon=LoadSkinnedProtoIcon(szProto,status);
-						}else
-						{
-							//OutputDebugString("Cyclestart=0\r\n");
-							hIcon=LoadSkinnedProtoIcon(szProto,status);
-						}
-						
-					}else
-					
+							if (hIcon)
+							{
+									NeedDestroy=TRUE;
+							}else
+							{
+								hIcon=LoadSkinnedProtoIcon(szProto,status);
+							}
+							
+					}else					
 					{				
-
 					hIcon=LoadSkinnedProtoIcon(szProto,status);
-					{
-					//OutputDebugString("status!=Connecting\r\n");
-					}
-
 					}
 					DrawIconEx(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-GetSystemMetrics(SM_CYSMICON))>>1,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+ 					if (NeedDestroy) DestroyIcon(hIcon);
 					x+=GetSystemMetrics(SM_CXSMICON)+2;
 				}
 				else x+=2;
@@ -1130,8 +1156,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					if (!szStatus) szStatus="";
 					GetTextExtentPoint32(dis->hDC,szStatus,lstrlen(szStatus),&textSize);
 					TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szStatus,lstrlen(szStatus));
+					
 				}
-
 
 			}
 			else if(dis->CtlType==ODT_MENU) {
@@ -1193,29 +1219,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			
 			return FALSE;
 		case WM_DESTROY:
-/*
-			if(!IsIconic(hwnd)) {
-				RECT rc;
-				GetWindowRect(hwnd, &rc);
-				
-				if(!CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
-				{ //if docked, dont remember pos (except for width)
-					DBWriteContactSettingDword(NULL,"CList","Height",(DWORD)(rc.bottom - rc.top));
-					DBWriteContactSettingDword(NULL,"CList","x",(DWORD)rc.left);
-					DBWriteContactSettingDword(NULL,"CList","y",(DWORD)rc.top);
-				}
-				DBWriteContactSettingDword(NULL,"CList","Width",(DWORD)(rc.right - rc.left));
-			}
-			
-			// Disconnect all protocols
-			DisconnectAll();
-			
-			ShowWindow(hwnd,SW_HIDE);
-			DestroyWindow(hwndContactTree);
-			ImageList_Destroy(himlMirandaIcon);
-			FreeLibrary(hUserDll);
-			PostQuitMessage(0);
-	*/
 			{
 			
 			//saving state
@@ -1319,6 +1322,8 @@ int LoadCLUIModule(void)
 	hContactDroppedEvent=CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
 	hContactDragStopEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	LoadCluiServices();
+
+	CreateServiceFunction("CLUI/GetConnectingIconForProtocol",GetConnectingIconService);
 
     wndclass.style         = ( IsWinVerXPPlus() && DBGetContactSettingByte(NULL,"CList", "WindowShadow",0) == 1 ? CS_DROPSHADOW : 0) ;
     wndclass.lpfnWndProc   = ContactListWndProc;

@@ -331,7 +331,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				EnableWindow(GetDlgItem(hwndDlg,IDC_EQUALSECTIONS),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SBPANELBEVEL),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWSIZEGRIP),FALSE);
-
+				EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),FALSE);
 			}
 			return TRUE;
 		case WM_COMMAND:
@@ -344,7 +344,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				EnableWindow(GetDlgItem(hwndDlg,IDC_EQUALSECTIONS),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SBPANELBEVEL),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWSIZEGRIP),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
-			
+				EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));	
 			}
 			if (LOWORD(wParam)==IDC_DEFBKCOLOR)
 			{

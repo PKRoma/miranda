@@ -379,10 +379,37 @@ void TrayIconUpdateBase(const char *szChangedProto)
 				case SETTING_TRAYICON_SINGLE:
 				{	DBVARIANT dbv={DBVT_DELETED};
 					char *szProto;
+					int status;
 					if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
-					else szProto=dbv.pszVal;
-					changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0)),ILD_NORMAL),NULL);
+					else szProto=mir_strdup (dbv.pszVal);
+					
 					DBFreeVariant(&dbv);
+					
+					
+					status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
+					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+					{
+						//
+						HICON hIcon;
+
+						hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+						if (hIcon)
+						{
+						changed=TrayIconSetBaseInfo(hIcon,NULL);						
+						TrayIconUpdate(hIcon,NULL,NULL,1);
+						
+						DestroyIcon(hIcon);
+						break;
+						}
+											
+						//return;
+					}
+					else
+					{
+							changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0)),ILD_NORMAL),NULL);
+					}
+					
+					
 					break;
 				}
 				case SETTING_TRAYICON_CYCLE:
@@ -403,7 +430,30 @@ void TrayIconUpdateBase(const char *szChangedProto)
 			}
 		}
 	}
-	else changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(NULL,averageMode),ILD_NORMAL),NULL);
+	else 
+	{
+
+
+					int status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
+					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+					{
+						//
+						HICON hIcon;
+
+						hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+						if (hIcon)
+						{
+						changed=TrayIconSetBaseInfo(hIcon,NULL);						
+						TrayIconUpdate(hIcon,NULL,NULL,1);					
+
+						DestroyIcon(hIcon);
+						//return;
+						}
+					}
+			
+						changed=TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(NULL,averageMode),ILD_NORMAL),NULL);
+
+	}
 	if(changed!=-1 && trayIcon[changed].isBase)
 		TrayIconUpdate(trayIcon[changed].hBaseIcon,NULL,trayIcon[changed].szProto,1);
 }

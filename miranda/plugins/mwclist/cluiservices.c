@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HWND hwndContactTree,hwndContactList,hwndStatus;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
+extern int CreateTimerForConnectingIcon(WPARAM,LPARAM);
 
 static int GetHwndTree(WPARAM wParam,LPARAM lParam)
 {
@@ -53,6 +54,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 
 	
 	if (hwndStatus==0) return(0);
+	
 	
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	if(protoCount==0) return 0;
@@ -183,6 +185,9 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 		}
 		partCount++;
 	}
+
+		CreateTimerForConnectingIcon(wParam,lParam);
+	
 	return 0;
 }
 
