@@ -159,9 +159,11 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 		// Close the packet receiver (connection may still be open)
 		Netlib_CloseHandle(hServerPacketRecver);
+		hServerPacketRecver = 0;
 
 		// Close DC port
 		Netlib_CloseHandle(hDirectBoundPort);
+		hDirectBoundPort = 0;
 
 	}
 

@@ -165,6 +165,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
     Netlib_CloseHandle(hServerPacketRecver);
     Netlib_CloseHandle(hServerConn);
     hServerPacketRecver = NULL; // clear the variable
+	hServerConn = 0;
     Netlib_Logf(ghServerNetlibUser, "Closed connection to login server");
   }
 
