@@ -33,6 +33,11 @@ extern HINSTANCE g_hInst;
 extern HWND g_hwndHotkeyHandler;
 extern int g_wantSnapping;
 
+#if defined(_UNICODE)
+    extern HHOOK g_hMsgHook;
+    extern LRESULT CALLBACK GetMsgHookProc(int iCode, WPARAM wParam, LPARAM lParam);
+#endif
+
 HMENU BuildContainerMenu();
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 
@@ -148,6 +153,12 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Globally OFF"));
             CheckDlgButton(hwndDlg, IDC_AVADYNAMIC, DBGetContactSettingByte(NULL, SRMSGMOD_T, "dynamicavatarsize", 0));
             
+#if defined(_UNICODE)
+            CheckDlgButton(hwndDlg, IDC_USEKBDHOOK, DBGetContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", 0));
+#else
+            EnableWindow(GetDlgItem(hwndDlg, IDC_USEKBDHOOK), FALSE);
+#endif
+            
             SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0), 0);
             
 #if defined(_STREAMTHREADING)
@@ -225,7 +236,19 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "eventapi", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EVENTAPI));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELETETEMP));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flashcl", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLASHCLIST));
-                            
+#if defined(_UNICODE)
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USEKBDHOOK));
+                            if(IsDlgButtonChecked(hwndDlg, IDC_USEKBDHOOK)) {
+                                if(g_hMsgHook == 0)
+                                    g_hMsgHook = SetWindowsHookEx(WH_GETMESSAGE, GetMsgHookProc, 0, GetCurrentThreadId());
+                            }
+                            else {
+                                if(g_hMsgHook != 0) {
+                                    UnhookWindowsHookEx(g_hMsgHook);
+                                    g_hMsgHook = 0;
+                                }
+                            }
+#endif                            
                             if(IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARS))
                                 dwFlags |= MWF_LOG_LIMITAVATARHEIGHT;
                             else

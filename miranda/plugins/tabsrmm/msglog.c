@@ -389,20 +389,20 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
         if(iIndent) {
             if(dat->dwFlags & MWF_LOG_RTL) {
                 if(dat->dwFlags & MWF_LOG_INDENTWITHTABS)
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent, iIndent, rIndent, iIndent);
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent);
                 else
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u", iIndent, iIndent, rIndent);
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u", iIndent + 30, iIndent, rIndent);
             }
             else {
                 if(dat->dwFlags & MWF_LOG_INDENTWITHTABS)
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent, iIndent, rIndent, iIndent);
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent);
                 else
-                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u", iIndent, iIndent, rIndent);
+                   AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u", iIndent + 30, iIndent, rIndent);
             }
         }
 	}
     else {
-        AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\ri%u\\fi-%u", 3*15, 3*15, 3*15);
+        AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\ri%u\\fi%u", 2*15, 2*15, 0);
     }
 // XXX mod end
 
@@ -547,10 +547,10 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     break;
             }
         }
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s   #~#%01d%c%s  ", rtfFonts[MSGDLGFONTCOUNT], i, isSent ? '>' : '<', rtfFonts[H_MSGFONTID_DIVIDERS]);
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s  #~#%01d%c%s  ", rtfFonts[MSGDLGFONTCOUNT], i, isSent ? '>' : '<', rtfFonts[H_MSGFONTID_DIVIDERS]);
     }
-    else
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s  ", rtfFonts[H_MSGFONTID_DIVIDERS]);
+    //else;
+        //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[H_MSGFONTID_DIVIDERS]);
     
 // XXX underline
 	if(dat->dwFlags & MWF_LOG_UNDERLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG)

@@ -78,6 +78,9 @@ HIMAGELIST g_hImageList = 0;
 int g_IconMsgEvent = 0, g_IconTypingEvent = 0, g_IconError = 0, g_IconEmpty = 0, g_IconFileEvent = 0, g_IconUrlEvent  = 0, g_IconSend = 0;
 
 HANDLE g_hEvent_MsgWin;
+#if defined(_UNICODE)
+HHOOK g_hMsgHook = 0;
+#endif
 
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer);
@@ -121,6 +124,31 @@ HMODULE g_hIconDLL = 0;
 // nls stuff...
 
 void BuildCodePageList();
+
+/*
+ * installed as a WH_GETMESSAGE hook in order to process unicode messages.
+ * without this, the rich edit control does NOT accept input for all languages.
+ */
+
+#if defined(_UNICODE)
+LRESULT CALLBACK GetMsgHookProc(int iCode, WPARAM wParam, LPARAM lParam)
+{
+    MSG *msg = (MSG *)lParam;
+    if(iCode < 0)
+        return CallNextHookEx(g_hMsgHook, iCode, wParam, lParam);
+
+    if(wParam == PM_REMOVE) {
+        if(IsWindowUnicode(msg->hwnd)) {
+            if(msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) {
+                TranslateMessage(msg);
+                DispatchMessageW(msg);
+                msg->message = WM_NULL;
+            }
+        }
+    }
+    return CallNextHookEx(g_hMsgHook, iCode, wParam, lParam);
+}
+#endif
 
 static int ContactSecureChanged(WPARAM wParam, LPARAM lParam)
 {
@@ -180,19 +208,21 @@ static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
 
 /*
  * service function finds a message session 
- * wParam = contact handle for which we want the open window
- * thanks to bio for suggestions how to implement this
+ * wParam = contact handle for which we want the window handle
+ * thanks to bio for the suggestion of this service
  * if wParam == 0, then lParam is considered to be a valid window handle and 
  * the function tests the popup mode of the target container
 
- * returns 1 if there is an open window or tab for the given hcontact (wParam)
- * 0 if there is none.
+ * returns the hwnd if there is an open window or tab for the given hcontact (wParam),
+ * or (if lParam was specified) the hwnd if the window exists.
+ * 0 if there is none (or the popup mode of the target container was configured to "hide"
+ * the window..
  */
 
 int MessageWindowOpened(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd = 0;
-	struct ContainerWindowData *pContainer;
+	struct ContainerWindowData *pContainer = NULL;
 
     if(wParam)
         hwnd = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
@@ -677,7 +707,11 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
     if(ServiceExists("SecureIM/IsContactSecured"))
         g_SecureIMAvail = 1;
-    
+
+#if defined(_UNICODE)
+    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", 0))
+        g_hMsgHook = SetWindowsHookEx(WH_GETMESSAGE, GetMsgHookProc, 0, GetCurrentThreadId());
+#endif    
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
 
@@ -701,7 +735,11 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 int SplitmsgShutdown(void)
 {
     int i;
-    
+
+#if defined(_UNICODE)
+    if(g_hMsgHook != 0)
+        UnhookWindowsHookEx(g_hMsgHook);
+#endif    
     DestroyCursor(hCurSplitNS);
     DestroyCursor(hCurHyperlinkHand);
     DestroyCursor(hCurSplitWE);

@@ -29,7 +29,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 IDD_CHOOSESTATUSMODES DIALOGEX 0, 0, 226, 154
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -59,51 +59,14 @@ BEGIN
                     20,99,82,11
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_CHOOSESTATUSMODES, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Neutral (Standard) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
-#ifdef _WIN32
-LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
 IDD_MSGSPLITNEW DIALOGEX 0, 0, 188, 79
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD | 
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
     WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
+    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE |
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES |
                     WS_EX_STATICEDGE
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
@@ -150,6 +113,20 @@ BEGIN
                     WS_GROUP
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
+                    WS_EX_RTLREADING | WS_EX_STATICEDGE
+END
+
+IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
+    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_MSGTABS,"SysTabControl32",TCS_HOTTRACK | 
+                    TCS_MULTILINE | TCS_TOOLTIPS | TCS_FOCUSNEVER | 
+                    WS_CLIPCHILDREN,7,7,422,219
+    CONTROL         "",IDC_STATICCONTROL,"Static",SS_ENHMETAFILE,0,0,435,1,
                     WS_EX_STATICEDGE
 END
 
@@ -162,6 +139,14 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_CHOOSESTATUSMODES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+
     IDD_MSGSPLITNEW, DIALOG
     BEGIN
         RIGHTMARGIN, 187
@@ -169,7 +154,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Neutral (Standard) resources
+#endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -278,27 +263,24 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,23,295,11
     CONTROL         "Use popup configuration for placing dividers",
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,19,35,271,11
+                    WS_TABSTOP,19,34,271,11
     CONTROL         "Resize avatar larger than",IDC_LIMITAVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,70,115,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,126,68,38,12,ES_AUTOHSCROLL | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,50,115,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,126,48,38,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,69,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,49,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,191,70,85,11
+    LTEXT           "pixels in height",IDC_STATIC,191,50,85,11
     CONTROL         "Dynamically resize avatars depending on splitter position",
                     IDC_AVADYNAMIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    81,294,12
-    LTEXT           "Show avatars",IDC_STATIC,20,97,60,10
-    COMBOBOX        IDC_AVATARMODE,75,94,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
+                    61,294,12
+    LTEXT           "Show avatars",IDC_STATIC,20,77,60,10
+    COMBOBOX        IDC_AVATARMODE,75,74,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    20,122,280,10
-    CONTROL         "Use threaded streaming (RESTART Miranda if you change this)",
-                    IDC_STREAMTHREADING,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,147,274,11
+                    20,102,280,10
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,159,135,10
     CONTROL         "Show protocol icon and userID field.",IDC_SHOWINFOLINE,
@@ -323,18 +305,21 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,148,190,153,10
     EDITTEXT        IDC_SECONDS,223,200,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,202,44,8
-    LTEXT           "Automatically close tabs after",IDC_STATIC,20,111,100,
-                    11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,121,109,44,12,ES_AUTOHSCROLL | 
+    LTEXT           "Automatically close tabs after",IDC_STATIC,20,91,100,11
+    EDITTEXT        IDC_AUTOCLOSETABTIME,121,89,44,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,161,110,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,179,111,
+                    UDS_ARROWKEYS,161,90,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,179,91,
                     122,11
     CONTROL         "Flash contact list and tray icons for new events in unfocused windows",
                     IDC_FLASHCLIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    137,263,9
+                    117,263,9
+    CONTROL         "Use hook to translate keyboard input",IDC_USEKBDHOOK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,128,279,11
+    LTEXT           "CAUTON: only enable this, if you experience troubles with keyboard input\nwith some languages.",
+                    IDC_STATIC111,19,138,274,18
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -511,20 +496,6 @@ BEGIN
                     300,10
     PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,142,99,
                     154,14
-END
-
-IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
-STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
-    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-EXSTYLE WS_EX_APPWINDOW
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_MSGTABS,"SysTabControl32",TCS_HOTTRACK | 
-                    TCS_MULTILINE | TCS_TOOLTIPS | TCS_FOCUSNEVER | 
-                    WS_CLIPCHILDREN,7,7,422,219
-    CONTROL         "",IDC_STATICCONTROL,"Static",SS_ENHMETAFILE,0,0,435,1,
-                    WS_EX_STATICEDGE
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147

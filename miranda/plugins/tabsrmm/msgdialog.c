@@ -513,6 +513,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 }
                 break;
             }
+        case WM_INPUTLANGCHANGE:
+            return DefWindowProc(hwnd, WM_INPUTLANGCHANGE, wParam, lParam);
     }
     return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -982,6 +984,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
+                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEDITSTYLE, SES_USEAIMM, SES_USEAIMM);
                 
                 /* duh, how come we didnt use this from the start? */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
@@ -2270,7 +2273,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-                    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
+                    _DebugPopup(dat->hContact, "scroll from backgroundcreate");
+                    //SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -3611,6 +3615,8 @@ verify:
 			UpdateStatusBar(hwndDlg, dat);
 			break;
 		}
+        case WM_INPUTLANGCHANGE:
+            return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
 
 // BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:
