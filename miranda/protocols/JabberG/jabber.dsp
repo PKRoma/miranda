@@ -29,7 +29,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$( CFG)" == "jabberg - Win32 Release"
+!IF  "$(CFG)" == "jabberg - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -56,7 +56,7 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib /nologo /base:"0x32500000" /dll /map /machine:I386 /out:"../../bin/release/plugins/jabber.dll" /ALIGN:4096 /ignore:4108
 # SUBTRACT LINK32 /pdb:none
 
-!ELSEIF  "$( CFG)" == "jabberg - Win32 Debug"
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
