@@ -351,6 +351,9 @@ int LoadSendRecvMessageModule(void)
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
     CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
+#if defined(_UNICODE)
+    CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand);
+#endif
     CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
     CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
     CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);

@@ -43,7 +43,7 @@ static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_NAME };
 static const UINT buttonLineControls[] = { IDC_ADD, IDC_USERMENU, IDC_DETAILS, IDC_HISTORY, IDC_TIME };
 static const UINT sendControls[] = { IDC_MESSAGE };
 
-void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
+static void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
     MessageWindowEventData mwe = { 0 };
 
     if (hContact==NULL || hwnd==NULL) return;
@@ -53,6 +53,21 @@ void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
     mwe.szModule = SRMMMOD;
     mwe.uType = type;
     NotifyEventHooks(hHookWinEvt, 0, (LPARAM)&mwe);
+}
+
+static char *MsgServiceName(HANDLE hContact)
+{
+#ifdef _UNICODE
+    char szServiceName[100];
+    char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+    if (szProto == NULL)
+        return PSS_MESSAGE;
+
+    _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
+    if (ServiceExists(szServiceName))
+        return PSS_MESSAGE "W";
+#endif
+    return PSS_MESSAGE;
 }
 
 static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
@@ -319,7 +334,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     }
                     else {
                         pdat->cmdListCurrent = 0;
-                        SetWindowText(hwnd, "");
+                        SetWindowTextA(hwnd, "");
                     }
                 }
                 EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
@@ -1112,15 +1127,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 case MSGERROR_RETRY:
                 {
-                    int i;
+                    int i, flags = 0;
                     for (i = 0; i < dat->sendCount; i++) {
                         if (dat->sendInfo[i].hSendId == NULL && dat->hContact == NULL)
                             continue;
-                        dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->hContact, PSS_MESSAGE, 0, (LPARAM) dat->sendBuffer);
+                        #if defined( _UNICODE )
+                        flags = PREF_UNICODE;
+                        #endif
+                        dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) dat->sendBuffer);
                     }
                 }
-                    SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
-                    break;
+                SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
+                break;
             }
             break;
         case WM_CTLCOLOREDIT:
@@ -1177,7 +1195,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                         bufSize = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
                         dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
-                        GetDlgItemText(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
+                        GetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR*)dat->sendBuffer, bufSize);
+                        #if defined( _UNICODE )
+                        flags = PREF_UNICODE;
+                        #endif
                         if (dat->sendBuffer[0] == 0)
                             break;
                         dat->cmdList = tcmdlist_append(dat->cmdList, dat->sendBuffer);
@@ -1191,7 +1212,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             break;      //never happens
                         dat->sendCount = 1;
                         dat->sendInfo = (struct MessageSendInfo *) realloc(dat->sendInfo, sizeof(struct MessageSendInfo) * dat->sendCount);
-                        dat->sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, PSS_MESSAGE, flags, (LPARAM) dat->sendBuffer);
+                        dat->sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) dat->sendBuffer);
                         EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
                         SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 

@@ -521,7 +521,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
             if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
                 EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
                 CheckDlgButton(hwndDlg, IDC_NOTIFYTRAY, BST_CHECKED);
-                SetWindowText(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), Translate("Show balloon popup (unsupported system)"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), Translate("Show balloon popup (unsupported system)"));
             }
             break;
         case WM_COMMAND:
