@@ -52,8 +52,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	//delay check before first alpha of 0.3.4.1
-	//if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,3,4,1) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,3,4,3) ) return NULL;
 	return &pluginInfo;
 }
 
@@ -71,11 +70,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-/*
-The plugin loader in the first pass will call this plugin, which means we will get a chance
-to HookEvent() ME_SYSTEM_SHUTDOWN before the plugin loader, woot.
-*/
-int __declspec(dllexport) Load(PLUGINLINK * link)
+int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
 	pluginLink=link;
@@ -92,6 +87,12 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
 
 	return rc;
+}
+
+// never called by a newer plugin loader.
+int __declspec(dllexport) Load(PLUGINLINK * link)
+{
+	return 1;
 }
 
 int __declspec(dllexport) Unload(void)
