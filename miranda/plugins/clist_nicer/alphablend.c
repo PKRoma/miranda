@@ -25,10 +25,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AC_SRC_ALPHA 0x01
 #define M_PI 3.1
 
-//#define SEGMENTS 70
-#define REVCOLREF(colref) ( RGB(GetBValue(colref),GetGValue(colref),GetRValue(colref)) )
-#define ARGB_FROM_COLA(col,alpha)( (BYTE)((float)(((float)alpha)/100)*255) <<24| col)
-#define PERCENT_TO_BYTE(percent) (BYTE)((float)(((float)alpha)/percent)*255)
+BYTE percent_to_byte(UINT32 percent)
+{
+	return (BYTE)((FLOAT)(((FLOAT)percent)/100)*255);
+}
+
+COLORREF revcolref(COLORREF colref)
+{
+	return RGB(GetBValue(colref),GetGValue(colref),GetRValue(colref));
+}
+
+DWORD argb_from_cola(COLORREF col, UINT32 alpha)
+{
+	return ( (BYTE)percent_to_byte(alpha) <<24| col );
+}
+
 
 void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, 
 			   BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER)
@@ -111,8 +122,8 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 	holdbitmap=SelectObject(hdc, hbitmap);
 
 	// convert basecolor to RGB and then merge alpha so its ARGB
-	basecolor = ARGB_FROM_COLA(REVCOLREF(basecolor),alpha);
-	basecolor2 = ARGB_FROM_COLA(REVCOLREF(basecolor2),alpha);
+	basecolor = argb_from_cola(revcolref(basecolor),alpha);
+	basecolor2 = argb_from_cola(revcolref(basecolor2),alpha);
 
 	ubRed	=	(UCHAR)(basecolor>>16);
 	ubGreen =	(UCHAR)(basecolor>>8);
@@ -143,7 +154,7 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 					| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 			} else 
 			{
-				ubAlpha = PERCENT_TO_BYTE(alpha);
+				ubAlpha = percent_to_byte(alpha);
 				ubRedFinal = ubRed;
 				ubGreenFinal = ubGreen;
 				ubBlueFinal = ubBlue;
@@ -168,8 +179,6 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 	// corners
 	BrMask = CreateSolidBrush(RGB(0xFF,0x00,0xFF));
 	{
-		// realHeightHalf is 7
-
 		bmi.bmiHeader.biWidth = ulBitmapWidth = realHeightHalf;
 		bmi.bmiHeader.biHeight = ulBitmapHeight = realHeight;
 		bmi.bmiHeader.biSizeImage = ulBitmapWidth * ulBitmapHeight * 4;
@@ -207,7 +216,7 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 							| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 
 					} else {
-						ubAlpha = PERCENT_TO_BYTE(alpha);
+						ubAlpha = percent_to_byte(alpha);
 						ubRedFinal = ubRed;
 						ubGreenFinal = ubGreen;
 						ubBlueFinal = ubBlue;
@@ -254,7 +263,7 @@ void DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWO
 							| ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 					}
 					else {
-						ubAlpha = PERCENT_TO_BYTE(alpha);
+						ubAlpha = percent_to_byte(alpha);
 						ubRedFinal = ubRed;
 						ubGreenFinal = ubGreen;
 						ubBlueFinal = ubBlue;
