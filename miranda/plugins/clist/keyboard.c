@@ -22,13 +22,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-#define HOTKEY_SHOWHIDE 0x01
-#define HOTKEY_READMSG  0x02
-#define HOTKEY_NETSEARCH 0x04
-#define HOTKEY_SHOWOPTIONS 0x08
-
 int EventsProcessTrayDoubleClick(void);
 int ShowHide(WPARAM wParam,LPARAM lParam);
+
+static ATOM aHide = 0;
+static ATOM aRead = 0;
+static ATOM aSearch = 0;
+static ATOM aOpts = 0;
 
 static void WordToModAndVk(WORD w,UINT *mod,UINT *vk)
 {
@@ -45,59 +45,67 @@ int HotKeysRegister(HWND hwnd)
 	UINT mod,vk;
 
 	if(DBGetContactSettingByte(NULL,"CList","HKEnShowHide",0)) {
+        if (!aHide) aHide = GlobalAddAtom("HKEnShowHide");
 		WordToModAndVk((WORD)DBGetContactSettingWord(NULL,"CList","HKShowHide",0),&mod,&vk);
-		RegisterHotKey(hwnd,HOTKEY_SHOWHIDE,mod,vk);
+		RegisterHotKey(hwnd,aHide,mod,vk);
 	}
 	if(DBGetContactSettingByte(NULL,"CList","HKEnReadMsg",0)) {
+        if (!aRead) aRead = GlobalAddAtom("HKEnReadMsg");
 		WordToModAndVk((WORD)DBGetContactSettingWord(NULL,"CList","HKReadMsg",0),&mod,&vk);
-		RegisterHotKey(hwnd,HOTKEY_READMSG,mod,vk);
+		RegisterHotKey(hwnd,aRead,mod,vk);
 	}
 	if(DBGetContactSettingByte(NULL,"CList","HKEnNetSearch",0)) {
+        if (!aSearch) aSearch = GlobalAddAtom("HKEnNetSearch");
 		WordToModAndVk((WORD)DBGetContactSettingWord(NULL,"CList","HKNetSearch",0),&mod,&vk);
-		RegisterHotKey(hwnd,HOTKEY_NETSEARCH,mod,vk);
+		RegisterHotKey(hwnd,aSearch,mod,vk);
 	}
 	if(DBGetContactSettingByte(NULL,"CList","HKEnShowOptions",0)) {
+        if (!aOpts) aOpts = GlobalAddAtom("HKEnShowOptions");
 		WordToModAndVk((WORD)DBGetContactSettingWord(NULL,"CList","HKShowOptions",0),&mod,&vk);
-		RegisterHotKey(hwnd,HOTKEY_SHOWOPTIONS,mod,vk);
+		RegisterHotKey(hwnd,aOpts,mod,vk);
 	}
 	return 0;
 }
 
 void HotKeysUnregister(HWND hwnd)
 {
-	UnregisterHotKey(hwnd,HOTKEY_SHOWHIDE);
-	UnregisterHotKey(hwnd,HOTKEY_READMSG);
-	UnregisterHotKey(hwnd,HOTKEY_NETSEARCH);
-	UnregisterHotKey(hwnd,HOTKEY_SHOWOPTIONS);
+	if (aHide) {
+        UnregisterHotKey(hwnd, aHide);
+        GlobalDeleteAtom(aHide);
+    }
+	if (aRead) {
+        UnregisterHotKey(hwnd, aRead);
+        GlobalDeleteAtom(aRead);
+    }
+	if (aSearch) {
+        UnregisterHotKey(hwnd, aSearch);
+        GlobalDeleteAtom(aSearch);
+    }
+	if (aOpts) {
+        UnregisterHotKey(hwnd, aOpts);
+        GlobalDeleteAtom(aOpts);
+    }
 }
 
 int HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam)
 {
-	switch((int)wParam)	{
-		case HOTKEY_SHOWHIDE:
-			ShowHide(0,0);
-			break;
-		case HOTKEY_NETSEARCH:
-		{	DBVARIANT dbv;
-			if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
-				CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
-				mir_free(dbv.pszVal);
-			}
-			break;
-		}
-		case HOTKEY_READMSG:
-		{
-			if(EventsProcessTrayDoubleClick()==0) break;
-			SetForegroundWindow(hwnd);
-			SetFocus(hwnd);
-			break;
-		}
-		case HOTKEY_SHOWOPTIONS:
-		{
-			CallService("Options/OptionsCommand",0, 0);
-			break;
-		}
-	}
+    if (wParam==aHide)
+        ShowHide(0,0);
+    else if (wParam==aRead) {
+        DBVARIANT dbv;
+        if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
+            CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
+            mir_free(dbv.pszVal);
+        }
+    }
+    else if (wParam==aSearch) {
+        if(EventsProcessTrayDoubleClick()==0) return TRUE;
+        SetForegroundWindow(hwnd);
+        SetFocus(hwnd);
+    }
+    else if (wParam==aOpts) {
+        CallService("Options/OptionsCommand",0, 0);
+    }
 	return TRUE;
 } 
 
