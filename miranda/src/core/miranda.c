@@ -308,11 +308,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	BOOL (WINAPI *MyPeekMessage) (LPMSG,HWND,UINT,UINT,UINT);
 	BOOL (WINAPI *MyIsDialogMessage) (HWND,LPMSG);
-	LRESULT (WINAPI *MyDispatchMessage) (const LPMSG);
+	LRESULT (WINAPI *MyDispatchMessage) (LPMSG);
 
-	MyPeekMessage=(BOOL (WINAPI *)(LPMSG,HWND,UINT,UINT,UINT))GetProcAddress(GetModuleHandle("user32"), IsWinVerNT4Plus()?"PeekMessageW":"PeekMessageA" );
-	MyIsDialogMessage=(BOOL (WINAPI *)(HWND,LPMSG))GetProcAddress(GetModuleHandle("user32"), IsWinVerNT4Plus()?"IsDialogMessageW":"IsDialogMessageA");
-	MyDispatchMessage=(LRESULT (WINAPI *)(const LPMSG))GetProcAddress(GetModuleHandle("user32"), IsWinVerNT4Plus()?"DispatchMessageW":"DispatchMessageA");
+	MyPeekMessage=IsWinVerNT() ? (BOOL (WINAPI *)(LPMSG,HWND,UINT,UINT,UINT))GetProcAddress(GetModuleHandle("user32"),"PeekMessageW") : PeekMessageA;
+	MyIsDialogMessage=IsWinVerNT() ? (BOOL (WINAPI *)(HWND,LPMSG))GetProcAddress(GetModuleHandle("user32"),"IsDialogMessageW") : IsDialogMessageA;
+	MyDispatchMessage=IsWinVerNT() ? (LRESULT (WINAPI *)(LPMSG))GetProcAddress(GetModuleHandle("user32"),"DispatchMessageW") : DispatchMessageA;
 
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
