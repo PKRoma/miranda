@@ -441,7 +441,7 @@ DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, 
 	DWORD dwCookie;
 
 
-	dwCookie = AllocateCookie(ICQ_MSG_SRV_SEND, dwUin, (void*)pCookieData);
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
 	// Pack the standard header
 	packServChannel2Header(&packet, dwUin, (WORD)(nBodyLen+11), dwCookie, pCookieData->bMessageType, 0,
