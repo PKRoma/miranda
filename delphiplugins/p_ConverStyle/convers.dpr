@@ -2,7 +2,7 @@ library convers;
 
 {
 Conversation Style Messaging Plugin 
-Version 0.99.4
+Version 0.99.8
 by Christian Kästner
 for Miranda ICQ 0.1
 written with Delphi 5 Pro
@@ -56,7 +56,9 @@ uses
   m_email in '..\headerfiles\m_email.pas',
   m_langpack in '..\headerfiles\m_langpack.pas',
   langpacktools in '..\units\langpacktools.pas',
-  m_crypt in '..\headerfiles\m_crypt.pas';
+  m_crypt in '..\headerfiles\m_crypt.pas',
+  m_protocols in '..\headerfiles\m_protocols.pas',
+  m_protosvc in '..\headerfiles\m_protosvc.pas';
 
 {$R *.RES}
 
@@ -71,7 +73,7 @@ begin
   ZeroMemory(@PluginInfo,SizeOf(PluginInfo));
   PluginInfo.cbSize:=sizeof(TPLUGININFO);
   PluginInfo.shortName:='Conversation Style Messaging';
-  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,7,0);
+  PluginInfo.version:=PLUGIN_MAKE_VERSION(0,99,8,0);
   PluginInfo.description:='This plugin offers a conversation style messaging ability for Miranda ICQ. Like most instant message programs you see the history above the input field. Additionally it has a 3 different display stiles and couple of nice features and options.';
   PluginInfo.author:='Christian Kästner';
   PluginInfo.authorEmail:='christian.k@stner.de';
@@ -79,7 +81,7 @@ begin
   PluginInfo.homepage:='http://www.kaestnerpro.de/convers.zip';
   PluginInfo.isTransient:=0;
   PluginInfo.replacesDefaultModule:=DEFMOD_SRMESSAGE;
-  PluginInfoVersion:='0.997';
+  PluginInfoVersion:='0.998';
 
   Result:=@PluginInfo;
 end;
@@ -167,7 +169,6 @@ begin
   PluginLink.CallService(MS_DB_EVENT_GET,lParam{hdbEvent},DWord(@dbei));
 
   if //((dbei.flags and DBEF_SENT)<>0) or //send yourself
-    (StrComp(dbei.szModule,'ICQ')<>0) or
     (dbei.eventType<>EVENTTYPE_MESSAGE) then
     Exit;
 

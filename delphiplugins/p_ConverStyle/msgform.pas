@@ -17,7 +17,7 @@ uses
   StdCtrls, ExtCtrls,globals,m_clist,clisttools,statusmodes,skintools,
   m_skin,databasetools,m_icq,m_database, Menus,m_history,newpluginapi,
   m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email,optionfrm,
-  langpacktools,m_crypt;
+  langpacktools,m_crypt,m_protocols,m_protosvc;
 
 
 
@@ -116,7 +116,7 @@ type
 
     procedure pShowMessage(Text: string; time: Cardinal; username:string;incoming:Boolean;isRecent:Boolean=False);
 
-    procedure AddMessageToSendQueue(text:PChar;SendWay:Integer=ISMF_ROUTE_DEFAULT);
+    procedure AddMessageToSendQueue(text:PChar;SendWay:Integer=PIMF_ROUTE_DEFAULT);
     procedure SendMessageFromSendQueue(ForceThroughServer:Boolean=False);
     procedure DeleteFirstSendMessageQueueItem;
     procedure SendedFirstSendMessageQueueItem;
@@ -232,6 +232,7 @@ procedure TMsgWindow.FormCreate(Sender: TObject);
 //OnCreate initializing and loading options
 var
   email:PChar;
+  szProto:PChar;
 begin
   //add menuitems to system menu
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, $F201, '-');
@@ -243,7 +244,7 @@ begin
   SendMessageQueue:=TList.Create;
 
   //hook event when message send
-  fHookSendMessage:=PluginLink.HookEventMessage(ME_ICQ_EVENTSENT,Self.Handle,HM_EVENTSENT);
+  fHookSendMessage:=PluginLink.HookEventMessage(ME_PROTO_ACK,Self.Handle,HM_EVENTSENT);
 
   //check if other modules exists for history and userdetail etc.
   HistoryMenuItem.Enabled:=ServiceExists(PluginLink,MS_HISTORY_SHOWCONTACTHISTORY);
@@ -253,7 +254,10 @@ begin
   //check if user has specified an email, if not, don't enable send email item...
   email:='';
   if fUIN<>0 then
-    email:=ReadSettingStr(PluginLink,Self.hContact,'ICQ','e-mail','');
+    begin
+    szProto:=PChar(PluginLink.CallService(MS_PROTO_GETCONTACTBASEPROTO,Self.hContact,0));
+    email:=ReadSettingStr(PluginLink,Self.hContact,szProto,'e-mail','');
+    end;
   UserSendEMailMenuItem.Enabled:=UserSendEMailMenuItem.Enabled and (strlen(email)>0);
 
 
@@ -507,15 +511,15 @@ begin
   Text:=Sendmemo.Lines.Text;
   Text:=trimright(Text);
 
-  sendway:=ISMF_ROUTE_DEFAULT;
+  sendway:=PIMF_ROUTE_DEFAULT;
   if SendThroughServerItem.default then
-    sendway:=ISMF_ROUTE_THRUSERVER;
+    sendway:=PIMF_ROUTE_THRUSERVER;
   if SendDirectItem.default then
-    sendway:=ISMF_ROUTE_DIRECT;
+    sendway:=PIMF_ROUTE_DIRECT;
   if SendBestWayItem.default then
-    sendway:=ISMF_ROUTE_BESTWAY;
+    sendway:=PIMF_ROUTE_BESTWAY;
 
-  if sendway=ISMF_ROUTE_DIRECT then
+  if sendway=PIMF_ROUTE_DIRECT then
     iMaxMessageLength:=maxint
   else
     iMaxMessageLength:=MaxMessageLength;
@@ -554,7 +558,7 @@ begin
   end;
 end;
 
-procedure TMsgWindow.AddMessageToSendQueue(text:PChar;SendWay:Integer=ISMF_ROUTE_DEFAULT);
+procedure TMsgWindow.AddMessageToSendQueue(text:PChar;SendWay:Integer=PIMF_ROUTE_DEFAULT);
 //Add new message to messagequeue for later sending
 var
   p:PICQSENDMESSAGE;
@@ -603,11 +607,17 @@ end;
 
 procedure TMsgWindow.OnMessageSend(var Message: TMessage);
 //Event called by Miranda (ICQ Module) when the message was send successfully
+var
+  ack:PACKDATA;
 begin
-  if message.wParam<>fLastSendID then
+  ack:=PACKDATA(message.lParam);
+  if ack.hProcess<>fLastSendID then
     Exit;
 
-  if message.lParam<>ICQ_NOTIFY_SUCCESS then
+  if ack.hContact<>Self.hContact then
+    Exit;
+
+  if (ack.type_<>ACKTYPE_MESSAGE) or (ack.type_<>ACKRESULT_SUCCESS) then
     Exit;
 
   //disable timeout timer
@@ -674,15 +684,18 @@ this function is called when sending a message after adding it to the queue or
 when first message finished to send the next one or when user clicks retry}
 var
   ism:TICQSENDMESSAGE;
+  function if_(cond,val1,val2:Variant):Variant;
+  begin if cond then Result:=val1 else Result:=val2;end;
 begin
   if SendMessageQueue.Count>0 then
     begin
     copymemory(@ism,PICQSENDMESSAGE(SendMessageQueue[0]),SizeOf(ism));
     
     if ForceThroughServer then
-      ism.routeOverride:=ISMF_ROUTE_THRUSERVER;
+      ism.routeOverride:=PIMF_ROUTE_THRUSERVER;
+      //?? nur 0 oder throughserver?
 
-    fLastSendID:=PluginLink.CallService(MS_ICQ_SENDMESSAGE,0,dword(@ism));
+    fLastSendID:=CallContactService(PluginLink,Self.hContact,PSS_MESSAGE,ism.routeOverride,dword(ism.pszMessage));
 
     SendTimer.Interval:=fSendTimeout;
     SendTimer.Enabled:=True;
@@ -705,7 +718,7 @@ begin
     dbei.cbSize:=sizeof(dbei);
     dbei.eventType:=EVENTTYPE_MESSAGE;
     dbei.flags:=DBEF_SENT;
-    dbei.szModule:='ICQ';
+    dbei.szModule:=PChar(PluginLink.CallService(MS_PROTO_GETCONTACTBASEPROTO,Self.hContact,0));
     //convert tdatetime to seconds since 1.1.1970
     dbei.timestamp:=round((LocalToGMTTime(now)-encodedate(1970,1,1))*SecsPerDay);
     dbei.cbBlob:=strlen(p^.pszMessage)+1;
@@ -779,11 +792,11 @@ begin
     uin_identifier:=IntToStr(UIN);
   val:=ReadSettingInt(PluginLink,0,'Convers',pchar('SendWay'+uin_identifier),integer(False));
   case val of
-    ISMF_ROUTE_DIRECT:
+    PIMF_ROUTE_DIRECT:
       SendDirectItem.default:=true;
-    ISMF_ROUTE_THRUSERVER:
+    PIMF_ROUTE_THRUSERVER:
       SendThroughServerItem.default:=true;
-    ISMF_ROUTE_BESTWAY:
+    PIMF_ROUTE_BESTWAY:
       SendBestWayItem.default:=true;
   else
     SendDefaultWayItem.default:=true;
@@ -913,13 +926,13 @@ begin
   if fSavePosition then
     uin_identifier:=IntToStr(UIN);
 
-  SendWay:=ISMF_ROUTE_DEFAULT;
+  SendWay:=PIMF_ROUTE_DEFAULT;
   if SendThroughServerItem.default then
-    SendWay:=ISMF_ROUTE_THRUSERVER;
+    SendWay:=PIMF_ROUTE_THRUSERVER;
   if SendDirectItem.default then
-    SendWay:=ISMF_ROUTE_DIRECT;
+    SendWay:=PIMF_ROUTE_DIRECT;
   if SendBestWayItem.default then
-    SendWay:=ISMF_ROUTE_BESTWAY;
+    SendWay:=PIMF_ROUTE_BESTWAY;
 
   WriteSettingInt(PluginLink,hContact,'Convers',pchar('SendWay'+uin_identifier),SendWay);
 end;
@@ -1354,13 +1367,23 @@ begin
     begin
     if key in [ord('s'),ord('S')] then
       if SendBtn.Enabled then
+        begin
         SendBtnClick(Sender);
+        key:=0;
+        lSetKeyNull:=True;
+        end;
     if key in [ord('u'),ord('U')] then
+      begin
       UserBtn.Click;
+      key:=0;
+      lSetKeyNull:=True;
+      end;
     if key in [ord('c'),ord('C')] then
+      begin
       CancelBtn.Click;
-    key:=0;
-    lSetKeyNull:=True;
+      key:=0;
+      lSetKeyNull:=True;
+      end;
     end;
 
 
