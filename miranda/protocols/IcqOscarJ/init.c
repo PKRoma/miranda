@@ -60,7 +60,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,4,0),
+	PLUGIN_MAKE_VERSION(0,3,4,2),
 	"Support for ICQ network, slightly enhanced.",
 	"Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
