@@ -325,11 +325,12 @@ IDR_CONTEXT MENU DISCARDABLE
 BEGIN
     POPUP "Log"
     BEGIN
+        MENUITEM "C&lear Log",                  IDM_CLEAR
+        MENUITEM SEPARATOR
         MENUITEM "&Copy",                       IDM_COPY
         MENUITEM "Co&py All",                   IDM_COPYALL
-        MENUITEM "Select &All",                 IDM_SELECTALL
         MENUITEM SEPARATOR
-        MENUITEM "C&lear Log",                  IDM_CLEAR
+        MENUITEM "Select &All",                 IDM_SELECTALL
     END
     POPUP "LogLink"
     BEGIN

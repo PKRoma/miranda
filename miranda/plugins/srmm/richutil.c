@@ -28,71 +28,7 @@ static BOOL    (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int)
 
 static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static RichUtil_ClearUglyBorder(TRichUtil *ru);
-
-// List Begin
-static CRITICAL_SECTION g_reCS;
-
-typedef struct _RUList {
-	struct _RUList *_next;
-	struct _RUList *_prev;
-	TRichUtil *_ru;
-} RUList;
-
-static RUList *ru_list_add(RUList *list, TRichUtil *ru) {
-	RUList *l = (RUList*)malloc(sizeof(RUList));
-
-	EnterCriticalSection(&g_reCS);
-	l->_next = list;
-	l->_prev = NULL;
-	l->_ru = ru;
-	if (list)
-		list->_prev = l;
-	LeaveCriticalSection(&g_reCS);
-	return l;
-}
-
-static RUList *ru_list_remove_link(RUList *list, RUList *link) {
-	if (!link)
-		return list;
-	if (link->_next)
-		link->_next->_prev = link->_prev;
-	if (link->_prev)
-		link->_prev->_next = link->_next;
-	if (link==list)
-		list = link->_next;
-	return list;
-}
-
-static RUList *ru_list_remove(RUList *list, TRichUtil *ru) {
-	RUList *l;
-	
-	EnterCriticalSection(&g_reCS);
-	for (l=list; l!=NULL; l = list->_next) {
-		if (l->_ru==ru) {
-			list = ru_list_remove_link(list, l);
-			free(l);
-		}
-	}
-	LeaveCriticalSection(&g_reCS);
-	return list;
-}
-
-static TRichUtil *ru_list_find(RUList *list, HWND hwnd) {
-	RUList *l;
-	
-	EnterCriticalSection(&g_reCS);
-	for (l=list; l!=NULL; l = list->_next) {
-		if (IsWindow(l->_ru->hwnd)&&l->_ru->hwnd==hwnd) {
-			LeaveCriticalSection(&g_reCS);
-			return l->_ru;
-		}
-	}
-	LeaveCriticalSection(&g_reCS);
-	return NULL;
-}
-
-static RUList *g_reInstances = NULL;
-// List End
+static WNDPROC origProc;
 
 void RichUtil_Load() {
 	mTheme = IsWinVerXPPlus()?LoadLibraryA("uxtheme.dll"):0;
@@ -114,25 +50,23 @@ void RichUtil_Load() {
 		FreeLibrary(mTheme);
 		mTheme=NULL;
 	}
-	InitializeCriticalSection(&g_reCS);
 }
 
 void RichUtil_Unload() {
 	if (mTheme) {
 		FreeLibrary(mTheme);
 	}
-	DeleteCriticalSection(&g_reCS);
 }
 
 int RichUtil_SubClass(HWND hwndEdit) {
 	if (IsWindow(hwndEdit)) {
 		TRichUtil *ru = (TRichUtil*)malloc(sizeof(TRichUtil));
 
-		g_reInstances = ru_list_add(g_reInstances, ru);
 		ZeroMemory(ru, sizeof(TRichUtil));
 		ru->hwnd = hwndEdit;
 		ru->hasUglyBorder = 0;
-		ru->origProc = (WNDPROC)SetWindowLong(ru->hwnd, GWL_WNDPROC, (LONG)&RichUtil_Proc);
+		SetWindowLong(ru->hwnd, GWL_USERDATA, (LONG)ru); // Ugly hack
+		origProc = (WNDPROC)SetWindowLong(ru->hwnd, GWL_WNDPROC, (LONG)&RichUtil_Proc);
 		RichUtil_ClearUglyBorder(ru);
 		return 1;
 	}
@@ -142,15 +76,17 @@ int RichUtil_SubClass(HWND hwndEdit) {
 static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	TRichUtil *ru;
 
-	ru = ru_list_find(g_reInstances, hwnd);
+	ru = (TRichUtil *)GetWindowLong(hwnd, GWL_USERDATA);
 	switch(msg) {
 		case WM_THEMECHANGED:
 		case WM_STYLECHANGED:
+		{
 			RichUtil_ClearUglyBorder(ru);
 			break;
+		}
 		case WM_NCPAINT:
 		{
-			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
+			LRESULT ret = CallWindowProc(origProc, hwnd, msg, wParam, lParam);
 			if (ru->hasUglyBorder&&MyIsThemeActive()) {
 				HANDLE hTheme = MyOpenThemeData(ru->hwnd, L"EDIT");
 
@@ -186,7 +122,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		}
 		case WM_NCCALCSIZE:
 		{
-			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
+			LRESULT ret = CallWindowProc(origProc, hwnd, msg, wParam, lParam);
 			NCCALCSIZE_PARAMS *ncsParam = (NCCALCSIZE_PARAMS*)lParam;
 			
 			if (ru->hasUglyBorder&&MyIsThemeActive()) {
@@ -218,17 +154,17 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			break;
 		case WM_DESTROY:
 		{
-			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
+			LRESULT ret = CallWindowProc(origProc, hwnd, msg, wParam, lParam);
+
 			if(IsWindow(hwnd)) {
 				if((WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC) == &RichUtil_Proc)
-					SetWindowLong(hwnd, GWL_WNDPROC, (LONG)ru->origProc);
+					SetWindowLong(hwnd, GWL_WNDPROC, (LONG)origProc);
 			}
-			g_reInstances = ru_list_remove(g_reInstances, ru);
 			if (ru) free(ru);
 			return ret;
 		}
 	}
-	return CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
+	return CallWindowProc(origProc, hwnd, msg, wParam, lParam);
 }
 
 static RichUtil_ClearUglyBorder(TRichUtil *ru) {

@@ -16,7 +16,6 @@
 
 typedef struct {
 	HWND hwnd;
-	WNDPROC origProc;
 	RECT rect;
 	int hasUglyBorder;
 } TRichUtil;
