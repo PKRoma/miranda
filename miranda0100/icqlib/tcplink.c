@@ -839,21 +839,24 @@ unsigned long icq_TCPLinkSendSeq(icq_TCPLink *plink, icq_Packet *p,
   return sequence;
 }
 
-void icq_TCPLinkSend(icq_TCPLink *plink, icq_Packet *p)
+int icq_TCPLinkSend(icq_TCPLink *plink, icq_Packet *p)
 {
+  int result;
   /* if the link is currently connecting, queue the packets for
    * later, else send immediately */
   if(plink->mode & TCP_LINK_MODE_CONNECTING) {
+    result=-1;
     icq_ListInsert(plink->send_queue, 0, p);
     if(plink->icqlink->icq_RequestNotify)
       (*plink->icqlink->icq_RequestNotify)(plink->icqlink, p->id, ICQ_NOTIFY_CONNECTING, 0, 0);
   } else {
-    icq_PacketSend(p, plink->socket);
+    result=icq_PacketSend(p, plink->socket);
     if(p->id)
       if(plink->icqlink->icq_RequestNotify)
         (*plink->icqlink->icq_RequestNotify)(plink->icqlink, p->id, ICQ_NOTIFY_SENT, 0, 0);
     icq_PacketDelete(p);
   }
+  return result;
 }
 
 void icq_TCPLinkProcessReceived(icq_TCPLink *plink)

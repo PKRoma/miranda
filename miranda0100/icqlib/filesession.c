@@ -32,6 +32,7 @@
 #define close _close
 #define read _read
 #define write _write
+#define lseek _lseek
 #endif
 
 #include "icqlib.h"
@@ -231,13 +232,20 @@ void icq_FileSessionSendData(icq_FileSession *p)
 {
   /* for now just send a packet at a time */
   char buffer[2048];
-  int count=read(p->current_fd, buffer, 2048);
+  int count=read(p->current_fd, buffer, sizeof(buffer));
+  int sentcount;
 
   if(count>0) {
       icq_Packet *p2=icq_TCPCreateFile06Packet(count, buffer);
-      icq_TCPLinkSend(p->tcplink, p2);
-      p->total_transferred_bytes+=count;
-      p->current_file_progress+=count;
+      sentcount=icq_TCPLinkSend(p->tcplink, p2);
+	  if(sentcount==-1) icq_FmtLog(p->icqlink, ICQ_LOG_WARNING, "Tried to send file while still connecting\n");
+	  else if(sentcount<count) {
+		icq_FmtLog(p->icqlink, ICQ_LOG_MESSAGE, "Send buffers full: rolling back %d/%d bytes\n",count-sentcount,count);
+		if(count<sizeof(buffer)) count=sizeof(buffer);  //don't close if we roll back
+		lseek(p->current_fd,sentcount-count,SEEK_CUR);
+	  }
+      p->total_transferred_bytes+=sentcount;
+      p->current_file_progress+=sentcount;
       icq_FileSessionSetStatus(p, FILE_STATUS_SENDING);
 
       invoke_callback(p->icqlink, icq_FileNotify)(p, FILE_NOTIFY_DATAPACKET,
@@ -245,7 +253,7 @@ void icq_FileSessionSendData(icq_FileSession *p)
   }
 
   /* done transmitting if read returns less that 2048 bytes */
-  if(count<2048)
+  if(count<sizeof(buffer))
       icq_FileSessionClose(p);
 
   return;
