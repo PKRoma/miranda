@@ -127,3 +127,25 @@ plugins folder]
 [Somebody included you in his/her server list]
 [Allowed (active) contact]
 [Blocked contact]
+
+; chat window
+[Me]
+[Others]
+
+; chat log message
+[This conversation has been inactive, participants will be removed.]
+[To resume the conversation, please quit this session and start a new chat session.]
+
+; contact list and chat title
+[MSN Chat #]
+
+; message box
+[There is only 1 person left in the chat, do you want to switch back to standard message window?]
+[User is already in the chat session.]
+[No active chat session is found.]
+
+; menus
+[User &details]
+[User &history]
+[&Leave chat session]
+[&Invite user...]

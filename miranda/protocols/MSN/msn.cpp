@@ -198,7 +198,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 		GCREGISTER gcr = {0};
 		gcr.cbSize = sizeof( GCREGISTER );
-		gcr.dwFlags = GC_TYPNOTIF;
+		gcr.dwFlags = GC_TYPNOTIF|GC_CHANMGR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = &crCols[0];

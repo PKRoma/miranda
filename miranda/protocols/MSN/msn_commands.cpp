@@ -38,6 +38,8 @@ int MSN_Auth8( char* authChallengeInfo, char*& parResult );
 
 void mmdecode(char *trg, char *str);
 
+void MSN_ChatStart(ThreadData* info);
+
 char *sid;
 char *kv;
 char *MSPAuth;
@@ -503,36 +505,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		int   tPrefixLen = 0;
 
 		if ( info->mJoinedCount > 1 && info->mJoinedContacts != NULL ) {
-			if ( msnHaveChatDll ) {
-				if ( info->mChatID[0] == 0 ) {
-					NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
-					Sleep(5);
-
-					// add all participants onto the list
-					GCDEST gcd = {0};
-					gcd.pszModule = msnProtocolName;
-					gcd.pszID = info->mChatID;
-					gcd.iType = GC_EVENT_JOIN;
-
-					GCEVENT gce = {0};
-					gce.cbSize = sizeof(GCEVENT);
-					gce.pDest = &gcd;
-					gce.pszStatus = Translate("Others");
-					gce.time = time(NULL);
-					gce.bIsMe = FALSE;
-					gce.bAddToLog = TRUE;
-
-					for ( int j=0; j < info->mJoinedCount; j++ ) {
-						if (( long )info->mJoinedContacts[j] > 0 ) {
-							gce.pszNick = MSN_GetContactName( info->mJoinedContacts[j] );
-
-							char tEmail[ MSN_MAX_EMAIL_LEN ];
-							if ( !MSN_GetStaticString( "e-mail", info->mJoinedContacts[j], tEmail, sizeof tEmail )) {
-								gce.pszUID = tEmail;
-								MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
-				}	}	}	}
-
-			}
+			if ( msnHaveChatDll )
+				MSN_ChatStart( info );
 			else if ( info->mJoinedContacts[0] != tContact ) {
 				for ( int j=1; j < info->mJoinedCount; j++ ) {
 					if ( info->mJoinedContacts[j] == tContact ) {
@@ -838,7 +812,9 @@ LBL_InvalidCommand:
 		{
 			union {
 				char* tWords[ 2 ];
-				struct { char *userEmail, *junk; } data;
+				// modified for chat, orginally param2 = junk
+				// param 2: quit due to idle = "1", normal quit = nothing
+				struct { char *userEmail, *isIdle; } data;
 			};
 
 			sttDivideWords( params, 2, tWords );
@@ -865,8 +841,27 @@ LBL_InvalidCommand:
 
 			// in here, the first contact is the chat ID, starting from the second will be actual contact
 			// if only 1 person left in conversation
-			if ( MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 )) == 2 ) {
-				if ( MessageBox( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard SRMM session?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
+			int personleft = MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 ));
+			// see if the session is quit due to idleness
+			if ( personleft == 1 && !lstrcmp( data.isIdle, "1" ) ) {
+				GCDEST gcd = {0};
+				gcd.pszModule = msnProtocolName;
+				gcd.pszID = info->mChatID;
+				gcd.iType = GC_EVENT_INFORMATION;
+
+				GCEVENT gce = {0};
+				gce.cbSize = sizeof( GCEVENT );
+				gce.pDest = &gcd;
+				gce.bIsMe = FALSE;
+				gce.time = time(NULL);
+				gce.bAddToLog = TRUE;
+				gce.pszText = Translate("This conversation has been inactive, participants will be removed.");
+				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+				gce.pszText = Translate("To resume the conversation, please quit this session and start a new chat session.");
+				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+			}
+			else if ( personleft == 2 && lstrcmp( data.isIdle, "1" ) ) {
+				if ( MessageBox( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 					// kill chat dlg and open srmm dialog
 					GCEVENT gce = {0};
 					GCDEST gcd = {0};
@@ -883,6 +878,9 @@ LBL_InvalidCommand:
 					MSN_CallService( MS_GC_EVENT, WINDOW_OFFLINE, ( LPARAM )&gce );
 					MSN_CallService( MS_GC_EVENT, WINDOW_TERMINATE, ( LPARAM )&gce );
 			}	}
+			// this is not in chat session, quit the session when everyone left
+			else if ( personleft == 0 )
+				info->sendPacket("OUT", NULL );
 			
 			break;
 		}
@@ -1041,47 +1039,10 @@ LBL_InvalidCommand:
 				MSN_ShowPopup( tContactName, multichatmsg, MSN_ALLOW_MSGBOX );
 			}
 
-			if ( msnHaveChatDll && info->mJoinedCount > 1 ) {
-				GCDEST gcd = {0};
-				GCEVENT gce = {0};
-				HANDLE firstcontact = info->mJoinedContacts[0];
-
-				// this is done so to prevent freezing of the window
-				if ( info->mChatID[0] == 0 )
-					NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
-
-				// add the first contact back in
-				if (( long )firstcontact > 0) {
-				char tEmail[ MSN_MAX_EMAIL_LEN ];
-				MSN_GetStaticString( "e-mail", firstcontact, tEmail, sizeof( tEmail ));
-
-					gcd.pszModule = msnProtocolName;
-					gcd.pszID = info->mChatID;
-					gcd.iType = GC_EVENT_JOIN;
-					gce.cbSize = sizeof(GCEVENT);
-					gce.pDest = &gcd;
-					gce.pszNick = MSN_GetContactName(firstcontact);
-	
-					gce.pszUID = tEmail;
-					gce.pszStatus = Translate("Others");
-					gce.time = time(NULL);
-					gce.bIsMe = FALSE;
-					gce.bAddToLog = TRUE;
-					MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
-				}
-
-				gcd.pszModule = msnProtocolName;
-				gcd.pszID = info->mChatID;
-				gcd.iType = GC_EVENT_JOIN;
-				gce.cbSize = sizeof(GCEVENT);
-				gce.pDest = &gcd;
-				gce.pszNick = MSN_GetContactName(MSN_HContactFromEmail(data.userEmail, NULL, 1, 1));
-				gce.pszUID = data.userEmail;
-				gce.pszStatus = Translate("Others");
-				gce.time = time(NULL);
-				gce.bIsMe = FALSE;
-				gce.bAddToLog = TRUE;
-				MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+			// only start the chat session after all the IRO messages has been recieved
+			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmp(data.strThisContact, data.totalContacts) ) {
+				if ( info->mChatID[0] == 0 )	
+					MSN_ChatStart(info);
 			}
 
 			break;

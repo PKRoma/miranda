@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 
 void __cdecl MSNServerThread( ThreadData* info );
+void MSN_ChatStart(ThreadData* info);
 
 HANDLE msnSetNicknameMenuItem = NULL;
 extern HANDLE hInitChat;
@@ -527,6 +528,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 
 	switch( tThreads ) {
 	case 0:	
+		MessageBox(NULL, Translate("No active chat session is found."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
 		return 0;
 
 	case 1:
@@ -561,35 +563,19 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail ))) {
+		for ( int j=0; j < tActiveThreads[ tChosenThread ]->mJoinedCount; j++ ) {
+			// if the user is already in the chat session
+			if ( tActiveThreads[ tChosenThread ]->mJoinedContacts[j] == ( HANDLE )wParam ) {
+				MessageBox(NULL, Translate("User is already in the chat session."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
+				return 0;
+			}
+		}
+
 		tActiveThreads[ tChosenThread ]->sendPacket( "CAL", tEmail );
 
-		if ( msnHaveChatDll ) {
-			ThreadData* info = tActiveThreads[ tChosenThread ];
-			if ( info->mChatID[0] == 0 ) {
-				NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
-				Sleep(5);
-
-				// add all participants onto the list
-				GCDEST gcd = {0};
-				gcd.pszModule = msnProtocolName;
-				gcd.pszID = info->mChatID;
-				gcd.iType = GC_EVENT_JOIN;
-
-				GCEVENT gce = {0};
-				gce.cbSize = sizeof(GCEVENT);
-				gce.pDest = &gcd;
-				gce.pszStatus = Translate("Others");
-				gce.time = time(NULL);
-				gce.bIsMe = FALSE;
-				gce.bAddToLog = TRUE;
-
-				for ( int j=0; j < info->mJoinedCount; j++ ) {
-					if (( long )info->mJoinedContacts[j] > 0 ) {
-						gce.pszNick = MSN_GetContactName( info->mJoinedContacts[j] );
-						gce.pszUID = tEmail;
-						MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
-	}	}	}	}	}
-
+		if ( msnHaveChatDll )
+			MSN_ChatStart(tActiveThreads[ tChosenThread ]);
+	}
 	return 0;
 }
 
