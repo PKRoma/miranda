@@ -1587,7 +1587,10 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
 
   ltoa(dwUin, szUin, 10);
   nUinlen = strlen(szUin);
-  nMsglen = strlen(szMsg);
+  if (szMsg)
+    nMsglen = strlen(szMsg);
+  else
+    nMsglen = 0;
 
   packet.wLen = 15 + nUinlen + nMsglen;
 

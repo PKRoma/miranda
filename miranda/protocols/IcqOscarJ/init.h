@@ -48,4 +48,5 @@ BYTE gbAvatarsEnabled;
 #define DBG_CAPUTF
 #undef DBG_CAPRTF
 #define DBG_CAPMTN
-#undef DBG_CAPAVATAR
+#define DBG_CAPXTRAZ
+#define DBG_CAPAVATAR

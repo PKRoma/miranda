@@ -61,7 +61,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,4,3),
+	PLUGIN_MAKE_VERSION(0,3,4,4),
 	"Support for ICQ network, slightly enhanced.",
 	"Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
@@ -274,7 +274,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		mi.cbSize = sizeof(mi);
 		mi.position = 1000030000;
 		mi.flags = 0;
-		mi.hIcon = NULL;
+		mi.hIcon = NULL; // TODO: add icon
 		mi.pszContactOwner = gpszICQProtoName;
 		mi.pszName = Translate("Request authorization");
 		mi.pszService = pszServiceName;
@@ -285,7 +285,11 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		CreateServiceFunction(pszServiceName, IcqGrantAuthorization);
 
 		ZeroMemory(&mi, sizeof(mi));
+		mi.cbSize = sizeof(mi);
 		mi.position = 1000029999;
+		mi.flags = 0;
+		mi.hIcon = NULL; // TODO: add icon
+		mi.pszContactOwner = gpszICQProtoName;
 		mi.pszName = Translate("Grant authorization");
 		mi.pszService = pszServiceName;
 		hUserMenuGrant = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
