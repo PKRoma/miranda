@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include <windows.h>
 #include <commctrl.h>
-#include "../miranda32/database/database.h"
+#include "../../miranda-im/database/database.h"
 #include "resource.h"
 
 #define WZM_GOTOPAGE   (WM_USER+1)
