@@ -256,7 +256,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			dest = tBuffer2;
 		}
 		else dest = tBuffer;
-		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages (%d junk e-mails)." ), 
+		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages (%d junk e-mails)." ),
 			UnreadMessages, UnreadJunkEmails );
 	}
 
@@ -1348,7 +1348,7 @@ LBL_InvalidCommand:
 				return 1;
 			}
 
-			info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0137 MSMSGS %s", tEmail );
+			info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0205 MSMSGS %s", tEmail );
 
 			msnProtChallenge = "Q1P7W2E4J9R8U3S5";
 			msnProductID = "msmsgs@msnmsgr.com";
