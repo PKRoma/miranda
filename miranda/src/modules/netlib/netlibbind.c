@@ -113,7 +113,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return (int)(HANDLE)NULL;
 	}
-	if ( nlb->cbSize != sizeof(NETLIBBIND) || nlb->cbSize!=sizeof(NETLIBBINDOLD) ) {
+	if ( !(nlb->cbSize == sizeof(NETLIBBIND) || nlb->cbSize==sizeof(NETLIBBINDOLD)) ) {
 		return (int)(HANDLE)NULL;
 	}
 	nlbp=(struct NetlibBoundPort*)malloc(sizeof(struct NetlibBoundPort));
