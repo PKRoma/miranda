@@ -359,6 +359,8 @@ BEGIN
     LTEXT           "minutes old",IDC_STMINSOLD,207,212,90,8,WS_DISABLED
     CONTROL         "Use extra tabstops to format indent",IDC_INDENTWITHTABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,130,144,10
+    CONTROL         "Simple text formatting (*bold* etc.)",IDC_FORMATTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,58,142,11
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
@@ -736,6 +738,8 @@ BEGIN
             MENUITEM "Use multiple Background Colors", 
                                                     ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS
 
+            MENUITEM "Simple Text Formatting",      ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING
+
             MENUITEM SEPARATOR
             MENUITEM "Use Message Grouping",        ID_MESSAGELOGFORMATTING_GROUPMESSAGES
 
@@ -901,6 +905,8 @@ BEGIN
                                                     ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS
 
             MENUITEM "Use Message Grouping",        ID_MESSAGELOGFORMATTING_GROUPMESSAGES
+
+            MENUITEM "Simple Text Formatting",      ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING
 
             MENUITEM SEPARATOR
             MENUITEM "Use RTL for this Contact",    ID_LOGMENU_ACTIVATERTL

@@ -134,7 +134,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
         MoveMemory(sendJobs[iFound].sendBuffer, dat->sendBuffer, iLen * (sizeof(TCHAR) + 1));
         //_DebugPopup(dat->hContact, "Added: %s (entry: %d)", dat->sendJobs[dat->iSendJobCurrent].sendBuffer, dat->iSendJobCurrent);
     }
-    SendMessage(hwndDlg, DM_SAVEINPUTHISTORY, 0, 0);
+    SendMessage(hwndDlg, DM_SAVEINPUTHISTORY, 0, (LPARAM)iLen);
     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
     EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));

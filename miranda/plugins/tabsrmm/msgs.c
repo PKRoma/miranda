@@ -34,7 +34,6 @@ MYGLOBALS myGlobals;
 
 static void InitREOleCallback(void);
 
-HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 HANDLE hMessageWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 HANDLE *hMsgMenuItem = NULL;
@@ -798,9 +797,9 @@ int SplitmsgShutdown(void)
     if(g_hMsgHook != 0)
         UnhookWindowsHookEx(g_hMsgHook);
 #endif    
-    DestroyCursor(hCurSplitNS);
-    DestroyCursor(hCurHyperlinkHand);
-    DestroyCursor(hCurSplitWE);
+    DestroyCursor(myGlobals.hCurSplitNS);
+    DestroyCursor(myGlobals.hCurHyperlinkHand);
+    DestroyCursor(myGlobals.hCurSplitWE);
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
@@ -899,11 +898,11 @@ int LoadSendRecvMessageModule(void)
     SkinAddNewSound("RecvMsg", Translate("Message: Queued Incoming"), "message.wav");
     SkinAddNewSound("AlertMsg", Translate("Message: Incoming"), "messagealert.wav");
     SkinAddNewSound("SendMsg", Translate("Message: Outgoing"), "outgoing.wav");
-    hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
-    hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
-    hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
-    if (hCurHyperlinkHand == NULL)
-        hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
+    myGlobals.hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
+    myGlobals.hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
+    myGlobals.hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
+    if (myGlobals.hCurHyperlinkHand == NULL)
+        myGlobals.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
     return 0;
 }
 

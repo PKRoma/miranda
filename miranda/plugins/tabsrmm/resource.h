@@ -266,6 +266,7 @@
 #define IDC_INDENTWITHTABS              1699
 #define IDC_CHECK7                      1700
 #define IDC_DELETETEMP                  1700
+#define IDC_FORMATTING                  1700
 #define IDC_CHECK8                      1701
 #define IDC_FLASHCLIST                  1701
 #define IDC_NRFLASH                     1702
@@ -403,13 +404,14 @@
 #define ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT 40176
 #define ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS 40177
 #define ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS 40178
+#define ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING 40181
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40181
+#define _APS_NEXT_COMMAND_VALUE         40183
 #define _APS_NEXT_CONTROL_VALUE         1708
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -42,6 +42,7 @@ $Id$
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
+#include <math.h>
 
 extern MYGLOBALS myGlobals;
 
@@ -157,6 +158,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_USERELATIVEDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (myGlobals.m_IgnoreContactSettings ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENTWITHTABS ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_TEXTFORMAT ? MF_CHECKED : MF_UNCHECKED);
         
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
@@ -325,6 +327,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_MESSAGELOGFORMATTING_GROUPMESSAGES:
                 dat->dwFlags ^= MWF_LOG_GROUPMODE;
+                return 1;
+            case ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING:
+                dat->dwFlags ^= MWF_LOG_TEXTFORMAT;
                 return 1;
             case ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT:
                 dat->dwFlags ^= MWF_LOG_LONGDATES;
@@ -895,9 +900,18 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 	//int * pIndex;
 	BOOL bJustRemovedRTF = TRUE;
 	BOOL bTextHasStarted = FALSE;
+    LOGFONTA lf;
+    COLORREF color;
 
 	if(!pszText)
 		return FALSE;
+
+    /*
+     * used to filter out attributes which are already set for the default message input area
+     * font
+     */
+
+    LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, &color);
 
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
@@ -964,7 +978,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
-					_sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+                    if(!(lf.lfWeight == FW_BOLD))           // only allow bold if the font itself isn't a bold one, otherwise just strip it..
+                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\i"))) // italics
@@ -972,7 +987,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
-					_sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+                    if(!lf.lfItalic)                        // same as for bold
+                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\ul"))) // underlined
@@ -985,7 +1001,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 						iRemoveChars = 4;
 					else
 						iRemoveChars = 3;
-					_sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+                    if(!lf.lfUnderline)                     // same as for bold
+                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\tab"))) // tab
@@ -1107,6 +1124,11 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 
 	return TRUE;
 }
+
+/*
+ * trims the output from DoRtfToTags(), removes trailing newlines and whitespaces...
+ */
+
 void DoTrimMessage(TCHAR *msg)
 {
     int iLen = _tcslen(msg) - 1;

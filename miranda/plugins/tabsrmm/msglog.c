@@ -63,6 +63,7 @@ static char *szGroupedSeparator = "> ";
 extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
+extern int FormatText(HWND REdit, unsigned npos, unsigned maxlength);
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
 
@@ -507,7 +508,9 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     /* OnO: highlight start */
     if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
-
+    else if(dat->dwFlags & MWF_LOG_GRID)
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 3);
+        
     if ((dat->dwFlags & MWF_LOG_SHOWICONS) && g_groupBreak) {
         int i;
         if((dat->dwEventIsShown & MWF_SHOW_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE) {
@@ -973,7 +976,8 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
     /*
      * do text formatting...
      */
-    FormatText(hwndrtf, startAt, 0);
+    if(dat->dwFlags & MWF_LOG_TEXTFORMAT)
+        FormatText(hwndrtf, startAt, 0);
     
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);

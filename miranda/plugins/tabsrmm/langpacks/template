@@ -130,7 +130,7 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Send message]
 
-[View User's Details]
+[View User's Details (SHIFT-click to view history)]
 
 [Last received on %s at %s]
 
@@ -387,6 +387,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Remove trailing empty lines]
 
 [Ignore per-contact message log settings]
+
+[Simple text formatting (*bold etc.)]
 
 [Formatting options]
 
@@ -721,6 +723,8 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Log Status Changes]
 
 [Timestamp Settings]
+
+[Simple Text Formatting]
 
 [&Container]
 

@@ -20,12 +20,15 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ---------------------------------------------------------------------------
 
+$Id$
+
 simple text formatting routines, taken from the textformat plugin for Miranda
 
 -- Miranda TextFormat Plugin
 -- Copyright (C) 2003 Daniel Wesslén (wesslen)
 
 Modified and adapted for tabSRMM by Nightwish
+Unicode version by Nightwish
 
 License: GPL
 */
@@ -106,13 +109,8 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 {
 	GETTEXTLENGTHEX gtl;
     GETTEXTEX gtx = {0};
-#if defined(_UNICODE)
     gtl.codepage = 1200;
     gtl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
-#else
-	gtl.codepage = CP_ACP;
-	gtl.flags = GTL_DEFAULT | GTL_PRECISE;
-#endif
 	int textlen = SendMessage(REdit, EM_GETTEXTLENGTHEX, (WPARAM) &gtl, 0);
 	//if (textlen > (int)maxlength)
 	//	textlen = (int)maxlength;

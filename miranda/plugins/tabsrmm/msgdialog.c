@@ -912,7 +912,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                 SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONADDTOOLTIP, (WPARAM) Translate("Send message"), 0);
-                SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
+                SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details (SHIFT-click to view history)"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BUTTONADDTOOLTIP, (WPARAM) Translate("Protocol Menu"), 0);
                 
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
@@ -2412,7 +2412,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     char *streamOut;
 #if defined(_UNICODE)
                     TCHAR *allTmpW;
-                    GETTEXTEX gtx;
+                    //GETTEXTEX gtx;
                     TCHAR *decoded = NULL, *converted = NULL;
 #endif                    
                     
@@ -2422,13 +2422,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
                     
 #if defined( _UNICODE )
+                    /*
                     gtx.cb = bufSize * sizeof(TCHAR);
                     gtx.codepage = 1200;
                     gtx.flags = GT_USECRLF;
                     gtx.lpDefaultChar = 0;
                     gtx.lpUsedDefChar = 0;
                     
-                    //SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
+                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
+                    */
                     streamOut = Message_GetFromStream(hwndDlg, dat);
                     decoded = Utf8Decode(streamOut);
                     //MessageBoxW(0, decoded, L"decoded", MB_OK);
@@ -2520,30 +2522,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
                         NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
                     }
-                    /*
-                    if(dat->codePage != CP_ACP) {
-                        BOOL defaultchar;
-                        WideCharToMultiByte(dat->codePage, 0, &dat->sendBuffer[bufSize], -1, dat->sendBuffer, bufSize, NULL, &defaultchar);
-                        MessageBoxA(0, dat->sendBuffer, "ansi", MB_OK);
-                    }
-                    */
-                    /*
-                    {
-                        CHARFORMAT2 cf2, cf3;
-                        int i;
-                        ZeroMemory((void *)&cf2, sizeof(cf2));
-                        cf2.cbSize = sizeof(cf2);
-                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETREDRAW, FALSE, 0);
-                        cf3 = cf2;
-                        for(i = 0; i < bufSize; i++) {
-                            SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, i, i+1);
-                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-                            if(memcmp(&cf2, &cf3, sizeof(cf2)) != 0) {
-                            }
-                            cf3 = cf2;
-                        }
-                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETREDRAW, TRUE, 0);
-                    } */
                     AddToSendQueue(hwndDlg, dat, bufSize);
                     return TRUE;
                     }
@@ -3147,6 +3125,11 @@ verify:
              * increase stack
              * wParam = special mode to store it at a special position without caring about the
              * stack pointer and stuff..
+             *
+             * if lParam == 0 it will obtain the length from the input box, otherwise
+             * lParam will be the length of the required ANSI buffer in bytes and the message will
+             * be taken from dat->sendBuffer
+             * lParam must then provide the length of the string *INCLUDING* the terminating \0
              */
         case DM_SAVEINPUTHISTORY:
             {
@@ -3161,7 +3144,7 @@ verify:
                 }
                 
                 // input history stuff - add the line to the stack
-                iLength = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                iLength = (lParam == 0) ? GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) : lParam;
                 if(iLength > 0 && dat->history != NULL) {
                     if((dat->iHistoryTop == dat->iHistorySize) && oldTop == 0) {          // shift the stack down...
                         struct InputHistory ihTemp = dat->history[0];
@@ -3179,16 +3162,25 @@ verify:
                             dat->history[dat->iHistoryTop].szText = (TCHAR *)realloc(dat->history[dat->iHistoryTop].szText, (iLength + 1) * sizeof(TCHAR));
                         dat->history[dat->iHistoryTop].lLen = iLength;
                     }
+                    if(lParam == 0) {
 #if defined( _UNICODE )
-                    gtx.cb = (iLength + 1) * sizeof(TCHAR);
-                    gtx.codepage = 1200;
-                    gtx.flags = GT_DEFAULT;
-                    gtx.lpDefaultChar = 0;
-                    gtx.lpUsedDefChar = 0;
-                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)dat->history[dat->iHistoryTop].szText);
+                        gtx.cb = (iLength + 1) * sizeof(TCHAR);
+                        gtx.codepage = 1200;
+                        gtx.flags = GT_DEFAULT;
+                        gtx.lpDefaultChar = 0;
+                        gtx.lpUsedDefChar = 0;
+                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)dat->history[dat->iHistoryTop].szText);
 #else
-                    GetWindowText(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->history[dat->iHistoryTop].szText, dat->history[dat->iHistoryTop].lLen + 1);
+                        GetWindowText(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->history[dat->iHistoryTop].szText, dat->history[dat->iHistoryTop].lLen + 1);
 #endif
+                    }
+                    else {
+#if defined( _UNICODE )
+                        CopyMemory(dat->history[dat->iHistoryTop].szText, &dat->sendBuffer[lParam], lParam * sizeof(wchar_t));
+#else
+                        CopyMemory(dat->history[dat->iHistoryTop].szText, dat->sendBuffer, lParam);
+#endif
+                    }
                     if(!oldTop) {
                         if(dat->iHistoryTop < dat->iHistorySize) {
                             dat->iHistoryTop++;
