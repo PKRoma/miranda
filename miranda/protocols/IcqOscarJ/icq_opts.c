@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -80,7 +81,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 	odp.pfnDlgProc = DlgProcIcqContactsOpts;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-	SAFE_FREE(pszTreeItemName);
+	SAFE_FREE(&pszTreeItemName);
 	
 	// Add "privacy" option
 	nNameLen = strlen(Translate(gpszICQProtoName)) + 1 + strlen(Translate("Privacy"));
@@ -91,7 +92,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 	odp.pfnDlgProc = DlgProcIcqPrivacyOpts;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-	SAFE_FREE(pszTreeItemName);
+	SAFE_FREE(&pszTreeItemName);
 	
 	return 0;
 	
@@ -399,7 +400,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 						strcpy(pszServiceName, gpszICQProtoName);
 						strcat(pszServiceName, PS_CHANGEINFO);
 						CallService(pszServiceName, ICQCHANGEINFO_MAIN, (LPARAM)buf);
-						SAFE_FREE(pszServiceName);
+						SAFE_FREE(&pszServiceName);
 					}
 					
 					buflen=2;
@@ -417,9 +418,9 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 						strcpy(pszServiceName, gpszICQProtoName);
 						strcat(pszServiceName, PS_CHANGEINFO);
 						CallService(pszServiceName, ICQCHANGEINFO_SECURITY, (LPARAM)buf);
-						SAFE_FREE(pszServiceName);
+						SAFE_FREE(&pszServiceName);
 					}
-					SAFE_FREE(buf);
+					SAFE_FREE(&buf);
 					
 					
 					// Send a status packet to notify the server about the webaware setting
@@ -457,7 +458,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 
 
-static const UINT icqContactsControls[]={IDC_ADDNEW,IDC_USESERVERNICKS,IDC_ADDREMOVE,IDC_UPLOADNOW};
+static const UINT icqContactsControls[]={IDC_ADDNEW,IDC_ADDREMOVE,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW,IDC_ENABLEAVATARS,IDC_AUTOLOADAVATARS};
 static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -466,8 +467,11 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		TranslateDialogDefault(hwndDlg);
 		CheckDlgButton(hwndDlg, IDC_ENABLE, DBGetContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",DEFAULT_SS_ENABLED));
 		CheckDlgButton(hwndDlg, IDC_ADDNEW, DBGetContactSettingByte(NULL,gpszICQProtoName,"AddServerNew",DEFAULT_SS_ADD));
-		CheckDlgButton(hwndDlg, IDC_USESERVERNICKS, DBGetContactSettingByte(NULL,gpszICQProtoName,"UseServerNicks",DEFAULT_SS_NICKS));
 		CheckDlgButton(hwndDlg, IDC_ADDREMOVE, DBGetContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",DEFAULT_SS_ADDREMOVE));
+		CheckDlgButton(hwndDlg, IDC_LOADFROMSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",DEFAULT_SS_LOAD));
+		CheckDlgButton(hwndDlg, IDC_SAVETOSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",DEFAULT_SS_STORE));
+		CheckDlgButton(hwndDlg, IDC_ENABLEAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",DEFAULT_AVATARS_ENABLED));
+		CheckDlgButton(hwndDlg, IDC_AUTOLOADAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",DEFAULT_LOAD_AVATARS));
 		
 		if (DBGetContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",DEFAULT_SS_ENABLED))
 			icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), TRUE);
@@ -476,6 +480,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		if (icqOnline) {
 			ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLE), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEAVATARS), FALSE);
 		}
 		else {
 			EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
@@ -501,8 +506,11 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			case PSN_APPLY:
 				DBWriteContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLE));
 				DBWriteContactSettingByte(NULL,gpszICQProtoName,"AddServerNew",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDNEW));
-				DBWriteContactSettingByte(NULL,gpszICQProtoName,"UseServerNicks",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USESERVERNICKS));
 				DBWriteContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDREMOVE));
+				DBWriteContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOADFROMSERVER));
+				DBWriteContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SAVETOSERVER));
+				DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLEAVATARS));
+				DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOLOADAVATARS));
 				if(IsDlgButtonChecked(hwndDlg,IDC_ENABLE) && IsDlgButtonChecked(hwndDlg,IDC_ADDNEW)) {
 					HANDLE hContact;
 					char *szProto;
