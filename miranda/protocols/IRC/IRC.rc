@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -279,7 +279,7 @@ IDD_LIST DIALOG DISCARDABLE  0, 0, 198, 172
 STYLE DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | 
     WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Channels on server"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Shell Dlg"
 BEGIN
     PUSHBUTTON      "&Close",IDC_CLOSE,141,151,50,14
     DEFPUSHBUTTON   "&Join",IDC_JOIN,78,151,50,14,WS_DISABLED
@@ -448,7 +448,7 @@ END
 IDD_PREFS_CTCP DIALOGEX 0, 0, 294, 214
 STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Enable incoming requests",IDC_ENABLEXFER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,12,130,10
@@ -492,16 +492,16 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,27,170,113,10
 END
 
-IDD_MESSAGEBOX DIALOGEX 0, 0, 220, 57
+IDD_MESSAGEBOX DIALOGEX 0, 0, 220, 68
 STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
 CAPTION "CTCP Chat Request"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    PUSHBUTTON      "&Accept",IDN_YES,50,36,50,14
-    DEFPUSHBUTTON   "&Deny",IDN_NO,120,36,50,14
-    LTEXT           "",IDC_TEXT,43,13,170,19,0,WS_EX_TRANSPARENT
+    PUSHBUTTON      "&Accept",IDN_YES,50,47,50,14
+    DEFPUSHBUTTON   "&Deny",IDN_NO,120,47,50,14
+    LTEXT           "",IDC_TEXT,43,13,170,31,0,WS_EX_TRANSPARENT
     ICON            "",IDC_LOGO,7,13,21,20
 END
 
@@ -710,7 +710,7 @@ BEGIN
         VERTGUIDE, 75
         VERTGUIDE, 145
         TOPMARGIN, 7
-        BOTTOMMARGIN, 50
+        BOTTOMMARGIN, 61
         HORZGUIDE, 13
     END
 END
@@ -810,7 +810,7 @@ END
 
 2 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""winres.h""\r\n"
     "\0"
 END
 
