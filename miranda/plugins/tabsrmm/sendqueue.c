@@ -21,6 +21,7 @@
 extern HICON g_buttonBarIcons[];
 extern char *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern const UINT errorControls[5];
+extern int g_SecureIMAvail;
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
 extern int iSendJobCurrent;
