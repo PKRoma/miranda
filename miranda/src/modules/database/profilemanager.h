@@ -31,6 +31,7 @@ typedef struct {
 	DATABASELINK * dblink;	// out
 } PROFILEMANAGERDATA;
 
+int InitTime(void);
 int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg);
 int getProfileManager(PROFILEMANAGERDATA * pd);
 int getProfilePath(char * buf, size_t cch);

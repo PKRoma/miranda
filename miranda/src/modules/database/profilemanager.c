@@ -130,10 +130,10 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				dbe.pfnEnumCallback=(int(*)(char*,void*,LPARAM))FindDbProviders;
 				dbe.lParam=(LPARAM)hwndDlg;
 				if ( CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe) == (-1) ) {
-					// no plugins?!					
-					MessageBox(0,Translate("Miranda can not find any database plugins!\nYou need 'dbx_3x' or compatible for Miranda to work correctly."),Translate("Miranda: Et oh."),MB_OK | MB_ICONERROR);
-					SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKEWPARAM(IDCANCEL, 0), 0);
-					return TRUE;
+					// no plugins?!
+					EnableWindow(GetDlgItem(hwndDlg,IDC_PROFILEDRIVERS),FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_PROFILENAME),FALSE);
+					ShowWindow(GetDlgItem(hwndDlg,IDC_NODBDRIVERS),TRUE);
 				} //if
 				// default item
 				SendDlgItemMessage(hwndDlg, IDC_PROFILEDRIVERS, CB_SETCURSEL, 0, 0);

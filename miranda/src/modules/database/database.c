@@ -261,7 +261,6 @@ static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPAR
 				case EGROKPRF_VERNEWER:
 				case EGROKPRF_DAMAGED:
 				{
-					MessageBox(0,"The profile is damaged or newer than the current db driver supports.","",MB_ICONERROR);
 					break;
 				}
 			}
@@ -271,26 +270,81 @@ static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPAR
 	return DBPE_CONT;
 }
 
+typedef struct {
+	char * profile;
+	UINT msg;
+	ATOM aPath;
+	int found;
+} ENUMMIRANDAWINDOW;
+
+static BOOL CALLBACK EnumMirandaWindows(HWND hwnd, LPARAM lParam)
+{
+	char classname[256];
+	ENUMMIRANDAWINDOW * x = (ENUMMIRANDAWINDOW *)lParam;
+	DWORD res=0;
+	if ( GetClassName(hwnd,classname,sizeof(classname)) && lstrcmp("Miranda",classname)==0 ) {		
+		if ( SendMessageTimeout(hwnd, x->msg, (WPARAM)x->aPath, 0, SMTO_ABORTIFHUNG, 75, &res) && res ) {
+			x->found++;
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+static int FindMirandaForProfile(char * szProfile)
+{
+	ENUMMIRANDAWINDOW x={0};
+	x.profile=szProfile;
+	x.msg=RegisterWindowMessage("Miranda::ProcessProfile");
+	x.aPath=GlobalAddAtom(szProfile);
+	EnumWindows(EnumMirandaWindows, (LPARAM)&x);
+	GlobalDeleteAtom(x.aPath);
+	return x.found;
+}
+
 int LoadDatabaseModule(void)
 {
 	char szProfile[MAX_PATH];
+	// load the older basic services of the db
+	InitTime();
 	// find out which profile to load
 	if ( getProfile(szProfile, sizeof(szProfile)) ) {
+		int rc;
 		PLUGIN_DB_ENUM dbe;
 		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
 		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
 		dbe.lParam=(LPARAM)szProfile;
 		// find a driver to support the given profile
-		if ( CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe) != 0 ) {
-			HANDLE hFile;
-			// no enumeration took place
-			hFile=CreateFile(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);			
-			MessageBox(0,Translate(hFile == INVALID_HANDLE_VALUE ? "Sorry, It appears that the selected profile is already in use, please select another." 
-				: "Miranda was unable to find any way of loading selected profile, make sure you have dbx_3x.dll!"), 
-				Translate("Problem with that profile"), MB_ICONINFORMATION);
-			CloseHandle(hFile);
-			return 1;
+		rc=CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe);
+		switch ( rc ) {
+			case -1: {
+				// no plugins at all
+				char buf[256];
+				char * p = strrchr(szProfile,'\\');
+				_snprintf(buf,sizeof(buf),Translate("Miranda is unable to open '%s' because you do not have any profile plugins installed.\nYou need to install dbx_3x.dll or equivalent."), p ? ++p : szProfile );
+				MessageBox(0,buf,Translate("No profile support installed!"),MB_OK | MB_ICONERROR);
+				break;
+			}
+			case 1: {
+				// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
+				HANDLE hFile;
+				hFile=CreateFile(szProfile,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
+				if ( hFile == INVALID_HANDLE_VALUE ) {
+					if ( !FindMirandaForProfile(szProfile) ) {
+						// file is locked, tried to find miranda window, but that failed too.
+					}
+				} else {
+					// file isn't locked, just no driver could open it.
+					char buf[256];
+					char * p = strrchr(szProfile,'\\');
+					_snprintf(buf,sizeof(buf),Translate("Miranda was unable to open '%s', its in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
+					MessageBox(0,buf,Translate("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
+					CloseHandle(hFile);					
+				}
+				break;
+			}
 		}
+		return rc != 0;
 	} else {
 		return 1;
 	}
