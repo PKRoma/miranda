@@ -933,8 +933,7 @@ static void SetServerVcard()
 			szFileName = szPhotoFileName;
 			szFileType = szPhotoType;
 		}
-		else
-			szFileName = NULL;
+		else szFileName = NULL;
 	}
 	else {
 		szFileName = jabberVcardPhotoFileName;
@@ -949,8 +948,7 @@ static void SetServerVcard()
 			DeleteFile( jabberVcardPhotoFileName );
 			free( jabberVcardPhotoFileName );
 			jabberVcardPhotoFileName = NULL;
-		}
-	}
+	}	}
 	else {
 		char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
 		HANDLE hFile;
@@ -986,8 +984,8 @@ static void SetServerVcard()
 									if ( jabberVcardPhotoType ) {
 										free( jabberVcardPhotoType );
 										jabberVcardPhotoType = NULL;
-									}
-								}
+								}	}
+
 								if ( GetTempPath( sizeof( szTempPath ), szTempPath ) <= 0 )
 									strcpy( szTempPath, ".\\" );
 								if ( GetTempFileName( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
@@ -1000,27 +998,19 @@ static void SetServerVcard()
 										else
 											jabberVcardPhotoType = NULL;
 									}
-									else {
-										DeleteFile( szTempFileName );
-									}
-								}
-							}
-						}
-					}
+									else DeleteFile( szTempFileName );
+					}	}	}	}
 					free( buffer );
 				}
 				CloseHandle( hFile );
-			}
-		}
-	}
+	}	}	}
 
 	if ( text != NULL ) {
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_SETVCARD, JabberIqResultSetVcard );
 		JabberSend( jabberThreadInfo->s, "<iq type='set' id='"JABBER_IQID"%d'><vCard xmlns='vcard-temp'>%s</vCard></iq>", iqId, text );
 		free( text );
-	}
-}
+}	}
 
 #define WinVerMajor()      LOBYTE( LOWORD( GetVersion()) )
 #define WinVerMinor()      HIBYTE( LOWORD( GetVersion()) )
@@ -1154,24 +1144,17 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_UPDATE:
-			{
-				char* jid;
-
-				if (( jid=JabberTextEncode( jabberJID )) != NULL ) {
-					EnableWindow( GetDlgItem( hwndDlg,IDC_UPDATE ), FALSE );
-					EnableWindow( GetDlgItem( hwndDlg,IDC_SAVE ), FALSE );
-					strncpy( dat->szUpdating, JTranslate( "Updating" ), sizeof( dat->szUpdating ));
-					dat->szUpdating[sizeof( dat->szUpdating )-1] = '\0';
-					SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
-					ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
-					iqId = JabberSerialNext();
-					JabberIqAdd( iqId, IQ_PROC_GETVCARD, JabberIqResultGetVcard );
-					JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp'/></iq>", iqId, UTF8(jid));
-					dat->animating = TRUE;
-					SetTimer( hwndDlg, 1, 200, NULL );
-					free( jid );
-				}
-			}
+			EnableWindow( GetDlgItem( hwndDlg,IDC_UPDATE ), FALSE );
+			EnableWindow( GetDlgItem( hwndDlg,IDC_SAVE ), FALSE );
+			strncpy( dat->szUpdating, JTranslate( "Updating" ), sizeof( dat->szUpdating ));
+			dat->szUpdating[sizeof( dat->szUpdating )-1] = '\0';
+			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
+			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
+			iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_GETVCARD, JabberIqResultGetVcard );
+			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp'/></iq>", iqId, UTF8(jabberJID));
+			dat->animating = TRUE;
+			SetTimer( hwndDlg, 1, 200, NULL );
 			break;
 		case IDC_SAVE:
 			EnableWindow( GetDlgItem( hwndDlg,IDC_UPDATE ), FALSE );
@@ -1223,8 +1206,8 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		for ( i=0; i<dat->pageCount; i++ ) {
 			if ( dat->page[i].hwnd != NULL ) {
 				DestroyWindow( dat->page[i].hwnd );
-			}
-		}
+		}	}
+
 		if ( dat->page ) free( dat->page );
 		if ( dat ) free( dat );
 		break;

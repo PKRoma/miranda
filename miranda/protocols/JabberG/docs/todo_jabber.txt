@@ -1,7 +1,9 @@
-1. Remove built-in groupchat support
+- remove built-in groupchat support
+- place the conferences list into the contact list
+- HTTP Gateway mode support
 
-2. Remove built-in reconnection support
+If you have a wish not listed above, feel free to send me
+a e-mail.
 
-3. Place the conferences list into the contact list
+WMBR, George Hazan (ghazan@postman.ru)
 
-4. HTTP Gateway mode support

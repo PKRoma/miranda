@@ -30,16 +30,13 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
 {
-	char* szProto;
-	HANDLE hContact;
-	OPTIONSDIALOGPAGE odp = {0};
-
 	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )jabberProtoName ))
 		return 0;
 
-	hContact = ( HANDLE ) lParam;
-	szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-	if ( szProto!=NULL && !strcmp( szProto, jabberProtoName )) {
+	HANDLE hContact = ( HANDLE )lParam;
+	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+	if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+		OPTIONSDIALOGPAGE odp = {0};
 		odp.cbSize = sizeof( odp );
 		odp.hIcon = NULL;
 		odp.hInstance = hInst;
@@ -69,15 +66,12 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	case WM_JABBER_REFRESH:
 		{
 			DBVARIANT dbv;
-			HANDLE hContact;
-			HWND hwndList;
-			char* jid;
-			int count, i, index;
+			int count, index;
 			JABBER_LIST_ITEM *item;
 			JABBER_RESOURCE_STATUS *r;
 			char* localResource;
 
-			hwndList = GetDlgItem( hwndDlg, IDC_INFO_RESOURCE );
+			HWND hwndList = GetDlgItem( hwndDlg, IDC_INFO_RESOURCE );
 			SendMessage( hwndList, LB_RESETCONTENT, 0, 0 );
 			SetDlgItemText( hwndDlg, IDC_INFO_JID, "" );
 			SetDlgItemText( hwndDlg, IDC_SUBSCRIPTION, "" );
@@ -88,23 +82,21 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), FALSE );
 
-			hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
+			HANDLE hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
 			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-				jid = JabberTextDecode( dbv.pszVal );
+				char* jid = dbv.pszVal;
 				SetDlgItemText( hwndDlg, IDC_INFO_JID, jid );
-				free( jid );
-				jid = dbv.pszVal;
 				if ( jabberOnline ) {
 					if (( item=JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
 						if (( r=item->resource ) != NULL ) {
 							count = item->resourceCount;
-							for ( i=0; i<count; i++ ) {
+							for ( int i=0; i<count; i++ ) {
 								localResource = JabberTextDecode( r[i].resourceName );
 								index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )localResource );
 								SendMessage( hwndList, LB_SETITEMDATA, index, ( LPARAM )r[i].resourceName );
 								free( localResource );
-							}
-						}
+						}	}
+
 						switch ( item->subscription ) {
 						case SUB_BOTH:
 							SetDlgItemText( hwndDlg, IDC_SUBSCRIPTION, JTranslate( "both" ));
@@ -118,18 +110,12 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 						default:
 							SetDlgItemText( hwndDlg, IDC_SUBSCRIPTION, JTranslate( "none" ));
 							break;
-						}
-					}
-					else {
-						SetDlgItemText( hwndDlg, IDC_SUBSCRIPTION, JTranslate( "none ( not on roster )" ));
-					}
+					}	}
+					else SetDlgItemText( hwndDlg, IDC_SUBSCRIPTION, JTranslate( "none ( not on roster )" ));
 				}
-				else {
-					EnableWindow( hwndList, FALSE );
-				}
+				else EnableWindow( hwndList, FALSE );
 				JFreeVariant( &dbv );
-			}
-		}
+		}	}
 		break;
 	case WM_NOTIFY:
 		switch (( ( LPNMHDR )lParam )->idFrom ) {
@@ -151,23 +137,20 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			switch ( HIWORD( wParam )) {
 			case LBN_SELCHANGE:
 				{
-					HWND hwndList;
-					HANDLE hContact;
 					DBVARIANT dbv;
-					char* szResource;
-					int nItem, i;
-					JABBER_LIST_ITEM *item;
-					JABBER_RESOURCE_STATUS *r;
 					char* jid;
 
-					hwndList = GetDlgItem( hwndDlg, IDC_INFO_RESOURCE );
-					hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
+					HWND hwndList = GetDlgItem( hwndDlg, IDC_INFO_RESOURCE );
+					HANDLE hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
 					if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
 						jid = dbv.pszVal;
-						nItem = SendMessage( hwndList, LB_GETCURSEL, 0, 0 );
-						szResource = ( char* )SendMessage( hwndList, LB_GETITEMDATA, ( WPARAM ) nItem, 0 );
-						if ( szResource!=( char* )LB_ERR && ( item=JabberListGetItemPtr( LIST_ROSTER, jid ))!=NULL && ( r=item->resource )!=NULL ) {
-							for ( i=0; i<item->resourceCount && strcmp( r[i].resourceName, szResource ); i++ );
+						int nItem = SendMessage( hwndList, LB_GETCURSEL, 0, 0 );
+						char* szResource = ( char* )SendMessage( hwndList, LB_GETITEMDATA, ( WPARAM ) nItem, 0 );
+						JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid );
+						JABBER_RESOURCE_STATUS *r;
+
+						if ( szResource != ( char* )LB_ERR && item != NULL && ( r=item->resource ) != NULL ) {
+							for ( int i=0; i<item->resourceCount && strcmp( r[i].resourceName, szResource ); i++ );
 							if ( i < item->resourceCount ) {
 								if ( r[i].software != NULL ) {
 									SetDlgItemText( hwndDlg, IDC_SOFTWARE, r[i].software );
@@ -192,13 +175,9 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 								else {
 									SetDlgItemText( hwndDlg, IDC_SYSTEM, JTranslate( "<not specified>" ));
 									EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), FALSE );
-								}
-							}
-						}
+						}	}	}
 						JFreeVariant( &dbv );
-					}
-				}
-			}
+			}	}	}
 			break;
 		}
 		break;
