@@ -397,9 +397,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 			free( info->mJoinedContacts );
 	}
 
-	MSN_DebugLog( "Closing connection handle %08X", info->s );
-	Netlib_CloseHandle( info->s );
-
 	if ( tIsMainThread )
 		msnNsThread = NULL;
 
@@ -678,8 +675,10 @@ ThreadData::ThreadData()
 
 ThreadData::~ThreadData()
 {
-	if ( s != NULL )
+	if ( s != NULL ) {
+		MSN_DebugLog( "Closing connection handle %08X", s );
 		Netlib_CloseHandle( s );
+	}
 
 	if ( mMsnFtp != NULL )
 		delete mMsnFtp;
