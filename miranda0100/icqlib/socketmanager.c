@@ -110,7 +110,13 @@ void icq_SocketAlloc(int s)
 int icq_SocketDelete(int socket_fd)
 {
 #ifdef _WIN32
-  int result = closesocket(socket_fd);
+  u_long iosflag;
+  int result;
+  iosflag = FALSE;
+  ioctlsocket(socket_fd, FIONBIO, &iosflag);
+  iosflag = TRUE;
+  setsockopt(socket_fd,SOL_SOCKET,SO_DONTLINGER,(char*)&iosflag,sizeof(int));
+  result = closesocket(socket_fd);
 #else
   int result = close(socket_fd);
 #endif
