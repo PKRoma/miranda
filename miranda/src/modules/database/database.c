@@ -161,14 +161,8 @@ static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPAR
 		// liked the profile?
 		rc=dblink->grokHeader(szProfile,&err);
 		if ( rc == 0 ) { 			
-			// got ready?
-			if ( dblink->getReady(szProfile) == 0 ) {
-				// added APIs?
-				if ( dblink->Load(szProfile, &pluginCoreLink) == 0 ) 
-				{
-					return DBPE_DONE;
-				}
-			}
+			// added APIs?
+			if ( dblink->Load(szProfile, &pluginCoreLink) == 0 ) return DBPE_DONE;
 			return DBPE_HALT;
 		} else {
 			switch ( err ) {				 
