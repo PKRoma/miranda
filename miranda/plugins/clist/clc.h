@@ -135,6 +135,7 @@ struct ClcData {
 	int showSelAlways;
 	int showIdle;
 	int noVScrollbar;
+	int useWindowsColours;
 };
 
 //clc.c
@@ -221,4 +222,5 @@ void UnregisterFileDropping(HWND hwnd);
 #define CLCDEFAULT_LEFTMARGIN    0
 #define CLCDEFAULT_GAMMACORRECT  1
 #define CLCDEFAULT_SHOWIDLE      0
+#define CLCDEFAULT_USEWINDOWSCOLOURS 0
 
