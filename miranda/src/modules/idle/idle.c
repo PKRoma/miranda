@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IDL_IDLEONSAVER   "IdleOnSaver" // IDC_SCREENSAVER
 #define IDL_IDLEONLOCK    "IdleOnLock" // IDC_LOCKED
 #define IDL_IDLEPRIVATE   "IdlePrivate" // IDC_IDLEPRIVATE
+#define IDL_IDLESTATUSLOCK "IdleStatusLock" // IDC_IDLESTATUSLOCK
 #define IDL_AAENABLE      "AAEnable"
 #define IDL_AASTATUS      "AAStatus"
 
@@ -50,6 +51,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IdleObject_IsPrivacy(obj) (obj->state&0x10)
 #define IdleObject_SetPrivacy(obj) (obj->state|=0x10)
+
+#define IdleObject_SetStatusLock(obj) (obj->state|=0x20)
 
 typedef struct {
 	UINT hTimer;
@@ -81,12 +84,13 @@ static void IdleObject_ReadSettings(IdleObject * obj)
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, 0) ) IdleObject_SetSaverCheck(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, 0 ) ) IdleObject_SetWorkstationCheck(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, 0) ) IdleObject_SetPrivacy(obj);
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, 0) ) IdleObject_SetStatusLock(obj); 
 }
 
 static void IdleObject_Create(IdleObject * obj)
 {
 	ZeroMemory(obj, sizeof(IdleObject));	
-	obj->hTimer=SetTimer(NULL, 0, 1000, IdleTimer);
+	obj->hTimer=SetTimer(NULL, 0, 2000, IdleTimer);
 	IdleObject_ReadSettings(obj);
 }
 
@@ -115,7 +119,7 @@ static int IdleObject_IsUserIdle(IdleObject * obj)
 			if ( pt.x != obj->mousepos.x || pt.y != obj->mousepos.y ) {
 				obj->mousepos=pt;
 				obj->mouseidle=0;
-			} else obj->mouseidle += 1;	
+			} else obj->mouseidle += 2;	
 			if ( obj->mouseidle ) return obj->mouseidle * 1000 >= (obj->minutes * 60 * 1000);
 		}
 		return FALSE;
@@ -187,6 +191,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			CheckDlgButton(hwndDlg, IDC_SCREENSAVER, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONSAVER,0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_LOCKED, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_IDLEPRIVATE, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEPRIVATE,0) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_IDLESTATUSLOCK, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLESTATUSLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
 			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETBUDDY, (WPARAM)GetDlgItem(hwndDlg, IDC_IDLE1STTIME), 0);			
 			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETRANGE32, 1, 60);
 			SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETPOS, 0, MAKELONG((short) DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLETIME1ST, 10), 0));
@@ -198,16 +203,17 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			}
             j = IdleGetStatusIndex(DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0));
             SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_SETCURSEL, j, 0);
-			SendMessage(hwndDlg, WM_USER+1, 0, 0);
+			SendMessage(hwndDlg, WM_USER+2, 0, 0);
 			return TRUE;
 		}
-		case WM_USER+1:
+		case WM_USER+2:
 		{
 			BOOL checked = IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED;
 			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONWINDOWS), checked);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONMIRANDA), checked);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLE1STTIME), checked);	
             EnableWindow(GetDlgItem(hwndDlg, IDC_AASTATUS), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_IDLESTATUSLOCK), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
 			break;
 		}
 		case WM_COMMAND:
@@ -224,13 +230,9 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					break;
 				}
 				case IDC_IDLESHORT:
-				{
-					SendMessage(hwndDlg, WM_USER+1, 0, 0);
-					break;
-				}
                 case IDC_AASHORTIDLE:
 				{
-					SendMessage(hwndDlg, WM_USER+1, 0, 0);
+					SendMessage(hwndDlg, WM_USER+2, 0, 0);
 					break;
 				}
                 case IDC_AASTATUS:
@@ -254,6 +256,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED);
 				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED);
                 DBWriteContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, IsDlgButtonChecked(hwndDlg, IDC_IDLESTATUSLOCK)==BST_CHECKED?1:0);
 				{
 					int curSel = SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_GETCURSEL, 0, 0);
 					if ( curSel != CB_ERR ) {
@@ -294,6 +297,7 @@ static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
 	mii->idleTime = gIdleObject.minutes;
     mii->privacy = gIdleObject.state&0x10;
     mii->aaStatus = gIdleObject.aastatus;
+	mii->aaLock = gIdleObject.state&0x20;
 	return 0;
 }
 

@@ -59,8 +59,9 @@ static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
 					miranda_sys_free(awayMsg);
 				}				
 			} else if ( !(lParam&IDF_ISIDLE) && DBGetContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0) ) {
+				// returning from idle and this proto was set away, set it back
 				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0);
-				CallProtoService(proto[j]->szName, PS_SETSTATUS, ID_STATUS_ONLINE, 0);
+				if ( !mii.aaLock ) CallProtoService(proto[j]->szName, PS_SETSTATUS, ID_STATUS_ONLINE, 0);
 			}			
 		}
 	}
