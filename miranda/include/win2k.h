@@ -80,7 +80,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define NOWIN2K
 #endif
 
-#if WINVER >= 0x500
+#if WINVER >= 0x501
 #define NOWIN2K
 #endif
 
