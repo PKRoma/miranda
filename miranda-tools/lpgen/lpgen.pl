@@ -10,22 +10,22 @@ my $clines = 0;
 
 #Language Files
 if (!$ARGV[0] or $ARGV[0] eq "miranda") {
-    create_langfile('../../Miranda-IM', '../../Miranda-IM/docs/translations/langpack_english.txt', 'English (UK)', '0809', 'Miranda IM Development Team', 'info@miranda-im.org');
+    create_langfile('../../miranda/src', '../../miranda/i18n/langpack_english.txt', 'English (US)', '0809', 'Miranda IM Development Team', 'info@miranda-im.org');
 }
 if (!$ARGV[0] or $ARGV[0] eq "aim") {
-create_langfile('../../Protocols/AIMToc/', '../../Protocols/AIMToc/docs/aim-translation.txt', 'English (UK)', '0809', 'Robert Rainwater', 'info@miranda-im.org');
+create_langfile('../../miranda/protocols/AIMToc/', '../../miranda/protocols/AIMToc/docs/aim-translation.txt', 'English (US)', '0809', 'Robert Rainwater', 'info@miranda-im.org');
 }
 if (!$ARGV[0] or $ARGV[0] eq "icq") {
-    create_langfile('../../Protocols/IcqOscar8/', '../../Protocols/IcqOscar8/docs/IcqOscar8-translation.txt', 'English (UK)', '0809', 'Martin Öberg, Richard Hughes, Jon Keating', 'info@miranda-im.org');
+    create_langfile('../../miranda/protocols/IcqOscar8/', '../../miranda/protocols/IcqOscar8/docs/IcqOscar8-translation.txt', 'English (US)', '0809', 'Martin Öberg, Richard Hughes, Jon Keating', 'info@miranda-im.org');
 }
 if (!$ARGV[0] or $ARGV[0] eq "changeinfo") {
-    create_langfile('../../Plugins/changeinfo/', '../../Plugins/changeinfo/Docs/changeinfo-translation.txt', 'English (UK)', '0809', 'Richard Hughes', 'info@miranda-im.org');
+    create_langfile('../../miranda/plugins/changeinfo/', '../../miranda/plugins/changeinfo/Docs/changeinfo-translation.txt', 'English (US)', '0809', 'Richard Hughes', 'info@miranda-im.org');
 }
 if (!$ARGV[0] or $ARGV[0] eq "srmm") {
-    create_langfile('../../Plugins/SRMM/', '../../Plugins/SRMM/Docs/srmm-translation.txt', 'English (UK)', '0809', 'Miranda IM Development Team', 'info@miranda-im.org');
+    create_langfile('../../miranda/plugins/SRMM/', '../../miranda/plugins/SRMM/Docs/srmm-translation.txt', 'English (US)', '0809', 'Miranda IM Development Team', 'info@miranda-im.org');
 }
 if (!$ARGV[0] or $ARGV[0] eq "import") {
-    create_langfile('../../Plugins/Import/', '../../Plugins/Import/docs/import-translation.txt', 'English (UK)', '0809', 'Martin Öberg', 'info@miranda-im.org');
+    create_langfile('../../miranda/plugins/Import/', '../../miranda/plugins/Import/docs/import-translation.txt', 'English (US)', '0809', 'Martin Öberg', 'info@miranda-im.org');
 }
 
 sub create_langfile {
