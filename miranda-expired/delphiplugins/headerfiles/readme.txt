@@ -1,8 +1,12 @@
-This folder contains translated headerfiles from Miranda ICQ 0.1.0.0
+This folder contains translated headerfiles from Miranda ICQ 0.1.2.0
 for plugins written with Object Pascal (Delphi)
 
-Some files might be missing or incomplete but the most important
-headers are translated. Feel free to add newer headers.
+I have completed the translation for all header files in the version they
+were on december, 22nd 2001. Some parts of the translation are not tested.
+If you encounter any problems check the translation and for a new version
+for the original c headers.
+
+A tutorial on how to translate headers can be found at http://www.delphi-jedi.com
 
 
 
