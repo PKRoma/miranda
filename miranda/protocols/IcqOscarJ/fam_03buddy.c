@@ -118,6 +118,7 @@ char* cliLicqVer   = "Licq %u.%u";
 char* cliLicqVerL  = "Licq %u.%u.%u";
 char* cliCentericq = "Centericq";
 char* cliIcyJuice  = "IcyJuice";
+char* cliTrillian  = "Trillian";
 
 
 // TLV(1) Unknown (x50)
@@ -256,13 +257,18 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         if (dwFT2 == 0xffffffff)
 			  { // This is Gaim not Miranda
           szClient = "Gaim";
-        } else 
+        }
+        else if (!dwFT2 && wVersion == 7)
+        { // This is WebICQ not Miranda
+          szClient = "WebICQ";
+        }
+        else 
         { // Yes this is most probably Miranda, get the version info
 				  szClient = MirandaVersionToString(dwFT2);
 				  dwClientId = 1; // Miranda does not use Tick as msgId
 			  }
       }
-      else if ((dwFT1 & 0xFF7F0000) == 0x7D800000)
+      else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
       { // This is probably an Licq client
         DWORD ver = dwFT1 & 0xFFFF;
         if (ver % 10){
@@ -312,6 +318,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       else if ((dwFT1 == 0x3AA773EE) && (dwFT2 == 0x3AA66380))
       {
         szClient = cliLibicq2k;
+      }
+      else if (dwFT1 == 0x3B75AC09)
+      {
+        szClient = cliTrillian;
       }
       else if (dwFT1 == 0xFFFFFFFE && dwFT3 == 0xFFFFFFFE)
       {
@@ -535,7 +545,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             if (MatchCap(pTLV->pData, pTLV->wLen, &capTrilNew, 0x10))
               szClient = "Trillian v3";
             else
-              szClient = "Trillian";
+              szClient = cliTrillian;
           }
           else if ((capId = MatchCap(pTLV->pData, pTLV->wLen, &capSimOld, 0xF)) && ((*capId)[0xF] != 0x92 && (*capId)[0xF] >= 0x20 || (*capId)[0xF] == 0))
           {
@@ -641,7 +651,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           }
           else if (szClient == NULL) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
           {
-            if (wVersion == 8 && MatchCap(pTLV->pData, pTLV->wLen, &capStr20012, 0x10))
+            if (wVersion == 8 && (MatchCap(pTLV->pData, pTLV->wLen, &capStr20012, 0x10) || CheckContactCapabilities(hContact, CAPF_SRV_RELAY)))
             { // try to determine 2001-2003 versions
               if (MatchCap(pTLV->pData, pTLV->wLen, &capIs2001, 0x10))
                 if (!dwFT1 && !dwFT2 && !dwFT3)
@@ -651,7 +661,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               else if (MatchCap(pTLV->pData, pTLV->wLen, &capIs2002, 0x10))
                 szClient = "ICQ 2002";
               else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
-                szClient = "ICQ 2003a";
+                szClient = "ICQ 2002/2003a";
             }
             else if (wVersion == 9)
             { // try to determine lite versions
