@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MSN_NEWUSERURL "http://login.hotmail.passport.com/cgi-bin/register/default.asp?id=956&ru=http://messenger.msn.com/download/passportdone.asp"
 #define MSN_DEFAULT_PORT  1863
+#define MSN_DEFAULT_LOGIN_SERVER "messenger.hotmail.com"	//NB: msmsgs 3.60 hardcodes 64.4.13.33
 
 /*
 //moved to miranda.h
