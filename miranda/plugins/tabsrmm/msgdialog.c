@@ -2101,10 +2101,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     si.fMask = SIF_POS;
                     si.nPos = si.nMax - si.nPage + 1;
                     SetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si, TRUE);
-                    if(wParam)
+                    if(wParam) {
                         SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                    else
+                        if(!(dat->dwEventIsShown & MWF_SHOW_MICROLF))
+                            SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_LINEUP, 0), 0);
+                    }
+                    else {
                         PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+                        if(!(dat->dwEventIsShown & MWF_SHOW_MICROLF))
+                            PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_LINEUP, 0), 0);
+                    }
                     if(lParam)
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
                 }
