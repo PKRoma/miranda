@@ -48,7 +48,7 @@ BEGIN
 #endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
-    PUSHBUTTON      "&Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
+    PUSHBUTTON      "Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
     CONTROL         "&A",IDC_ADD,"MButtonClass",WS_TABSTOP,52,32,16,14,
                     0x18000000L
     CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,68,32,16,14,
@@ -63,7 +63,7 @@ BEGIN
                     0x18000000L
     CONTROL         "&Q",IDC_QUOTE,"MButtonClass",WS_TABSTOP,148,32,16,14,
                     0x18000000L
-    CONTROL         "&X",IDC_SAVE,"MButtonClass",WS_TABSTOP,164,32,16,14,
+    CONTROL         "",IDC_SAVE,"MButtonClass",WS_TABSTOP,164,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,

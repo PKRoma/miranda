@@ -73,6 +73,11 @@ Version 0.9.9.5 - 2005/01/XX
           grid line. You have to tweak this setting depending on the font you are using 
           for displaying messages - some fonts need it, others dont. Set it to 0 to
           disable the effect.
+          
+        + The hotkey Alt+X now works like in other programs - it interpretes the characters 
+          preceding the cursor as hexadecimal representation of a valid unicode character code
+          and inserts this character right at the cursor.
+          e.g. type "263a" and hit Alt+X - it will insert a little face.
 
 Version 0.9.9.4 - 2005/01/24
 

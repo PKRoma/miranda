@@ -110,7 +110,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
      * find a free entry in the send queue...
      */
     for(i = 0; i < NR_SENDJOBS; i++) {
-        if(sendJobs[i].hOwner != 0 || sendJobs[i].sendCount != 0)
+        if(sendJobs[i].hOwner != 0 || sendJobs[i].sendCount != 0 || sendJobs[i].iStatus != 0)
             continue;
         iFound = i;
         break;

@@ -228,6 +228,7 @@ void SetDialogToType(HWND hwndDlg)
         if(hButtonIcon == 0) {
             SMADD_GETICON smadd_iconinfo;
 
+            ZeroMemory((void *)&smadd_iconinfo, sizeof(smadd_iconinfo));
             smadd_iconinfo.cbSize = sizeof(smadd_iconinfo);
             smadd_iconinfo.Protocolname = dat->szProto;
             smadd_iconinfo.SmileySequence = ":)";
@@ -263,7 +264,7 @@ void SetDialogToType(HWND hwndDlg)
     {
         TCHAR szSendLabel[50];
 #if defined (_UNICODE)
-        MultiByteToWideChar(CP_ACP, 0, Translate("&Xend"), -1, szSendLabel, 40);
+        MultiByteToWideChar(CP_ACP, 0, Translate("Xend"), -1, szSendLabel, 40);
 #else
         strncpy(szSendLabel, Translate("&Xend"), 40);
 #endif        
@@ -646,7 +647,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (!showButton && !showSend && !showInfo)
                 urc->rcItem.bottom += 24;
-            else urc->rcItem.bottom += 1;
+            //else urc->rcItem.bottom += 1;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
@@ -1649,7 +1650,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 UTILRESIZEDIALOG urd;
                 BITMAP bminfo;
-
+                
                 if (IsIconic(hwndDlg))
                     break;
                 ZeroMemory(&urd, sizeof(urd));
@@ -1724,8 +1725,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 POINT pt;
                 RECT rc;
-                RECT rcLog;
-                GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
+                
                 if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_MULTISPLITTER)) {
                     int oldSplitterX;
                     GetClientRect(hwndDlg, &rc);
