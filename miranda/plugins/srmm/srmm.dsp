@@ -124,10 +124,6 @@ SOURCE=.\commonheaders.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_message.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\msgs.h
 # End Source File
 # Begin Source File
