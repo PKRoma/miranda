@@ -358,7 +358,9 @@ int __declspec( dllexport ) Unload( void )
 	if ( sid ) free( sid );
 	if ( passport ) free( passport );
 	if ( MSPAuth ) free( MSPAuth );
+
 	if ( msnLoginHost ) free( msnLoginHost );
+	if ( msnExternalIP ) free( msnExternalIP );
 	return 0;
 }
 

@@ -40,12 +40,13 @@ void mmdecode(char *trg, char *str);
 
 void MSN_ChatStart(ThreadData* info);
 
-char *sid;
-char *kv;
-char *MSPAuth;
+char* sid = NULL;
+char* kv = NULL;
+char* MSPAuth = NULL;
+char* passport = NULL;
+char* rru = NULL;
+
 unsigned long sl;
-char *passport;
-char *rru;
 
 extern int uniqueEventId;
 extern char sttHeaderStart[];
@@ -709,7 +710,9 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 		if ( DBGetContactSetting( NULL, "CListGroups", str, &dbv ))
 			break;
 
-		if ( dbv.pszVal[0] != 0 && !stricmp( dbv.pszVal+1, data.grpName )) {
+		bool result = (dbv.pszVal[0] != 0 && !stricmp( dbv.pszVal+1, data.grpName ));
+		MSN_FreeVariant( &dbv );
+		if ( result ) {
 			MSN_SetGroupNumber( data.grpId, i );
 			return true;
 	}	}
