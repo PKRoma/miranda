@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // from the plugin loader, hate extern but the db frontend is pretty much tied
 extern PLUGINLINK pluginCoreLink;
 // contains the location of mirandaboot.ini
-char mirandabootini[MAX_PATH];
+extern char mirandabootini[MAX_PATH];
 
 // returns 1 if the profile path was returned, without trailing slash
 int getProfilePath(char * buf, size_t cch)
@@ -61,17 +61,6 @@ int getProfilePath(char * buf, size_t cch)
 	}
 	// this never happens, usually C:\ is always returned	
 	return 0;
-}
-
-// fills mirandabootini, called from Load
-void getMirandaBootIni(void)
-{
-	char exe[MAX_PATH];
-	char * p = 0;
-	GetModuleFileName(NULL, exe, sizeof(exe));
-	p = strrchr(exe, '\\');
-	if ( p != 0 ) *p=0;
-	_snprintf(mirandabootini, sizeof(mirandabootini), "%s\\mirandaboot.ini", exe);
 }
 
 // returns 1 if *.dat spec is matched
@@ -285,8 +274,6 @@ static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPAR
 int LoadDatabaseModule(void)
 {
 	char szProfile[MAX_PATH];
-	// store the full location of any expected mirandaboot.ini
-	getMirandaBootIni();
 	// find out which profile to load
 	if ( getProfile(szProfile, sizeof(szProfile)) ) {
 		PLUGIN_DB_ENUM dbe;
