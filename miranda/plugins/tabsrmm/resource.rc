@@ -127,34 +127,19 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 266
+IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "   "
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "General settings",IDC_STATIC,7,7,138,44
+    GROUPBOX        "General settings",IDC_STATIC,7,7,138,48
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,16,129,10
     CONTROL         "Container stays on top",IDC_O_STICKY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,27,124,10
-    GROUPBOX        "Popup configuration",IDC_STATIC,7,51,138,60
-    CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,61,124,10
-    CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,71,110,10
-    LTEXT           "inactive tabs",IDC_STATIC,26,90,74,8
-    CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,99,121,9
-    GROUPBOX        "Titlebar options",IDC_STATIC,7,112,138,54
-    CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,121,121,10
-    CONTROL         "Show contacts name",IDC_SHOWCONTACTNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,131,125,11
-    CONTROL         "Show UIN",IDC_SHOWUIN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,143,121,8
-    CONTROL         "Show contacts status",IDC_SHOWSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,24,152,118,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,28,129,10
+    CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,40,129,10
     GROUPBOX        "Flashing options",IDC_STATIC,152,7,122,46
     CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP,166,16,101,11
@@ -162,54 +147,69 @@ BEGIN
                     BS_AUTORADIOBUTTON,166,27,98,12
     CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",
                     BS_AUTORADIOBUTTON,166,40,100,11
-    GROUPBOX        "Layout options",IDC_STATIC,151,55,123,79
+    GROUPBOX        "Popup configuration",IDC_STATIC,7,58,138,63
+    CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,67,124,10
+    CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,78,124,10
+    CONTROL         "Always enable popups for",IDC_ALWAYSPOPUPSINACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,89,124,10
+    LTEXT           "inactive tabs",IDC_STATIC,26,100,74,8
+    CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,109,124,10
+    GROUPBOX        "Titlebar options",IDC_STATIC,7,125,138,58
+    CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,136,121,10
+    CONTROL         "Show contacts name",IDC_SHOWCONTACTNAME,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,147,121,10
+    CONTROL         "Show UIN",IDC_SHOWUIN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,158,121,10
+    CONTROL         "Show contacts status",IDC_SHOWSTATUS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,24,169,117,10
+    GROUPBOX        "Layout options",IDC_STATIC,151,55,123,90
     CONTROL         "Single row tab control",IDC_SINGLEROWTAB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,64,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,67,111,10
     CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,75,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,79,111,10
     CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,86,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,91,111,10
     CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,97,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,103,111,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,108,110,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,115,111,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,120,109,10
-    GROUPBOX        "Show container name in titlebar",IDC_STATIC,152,137,122,
-                    42
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,127,111,10
+    CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,187,126,11
+    GROUPBOX        "Show container name in titlebar",IDC_STATIC,152,150,122,
+                    50
     CONTROL         "Never",IDC_O_TITLENEVER,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,165,145,100,10
+                    WS_GROUP,165,162,100,10
     CONTROL         "As prefix",IDC_O_TITLEFRONT,"Button",BS_AUTORADIOBUTTON,
-                    165,154,100,13
+                    165,173,100,10
     CONTROL         "As suffix",IDC_O_TITLESUFFIX,"Button",
-                    BS_AUTORADIOBUTTON,165,167,99,10
-    GROUPBOX        "Container transparency",IDC_STATIC,7,181,267,36
+                    BS_AUTORADIOBUTTON,165,184,100,10
+    GROUPBOX        "Container transparency",IDC_STATIC,7,200,267,36
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,192,101,11
-    LTEXT           "active",IDC_STATIC,125,193,26,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,211,101,11
+    LTEXT           "active",IDC_STATIC,125,212,26,11
     CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | 
-                    WS_TABSTOP,153,189,95,11
-    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,193,19,9
-    LTEXT           "inactive",IDC_STATIC,125,206,28,9
+                    WS_TABSTOP,153,208,95,11
+    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,212,19,9
+    LTEXT           "inactive",IDC_STATIC,125,225,28,9
     CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",
-                    TBS_BOTH | WS_TABSTOP,153,202,95,11
-    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,206,19,9
+                    TBS_BOTH | WS_TABSTOP,153,221,95,11
+    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,225,19,9
     CONTROL         "Set these values as defaults for new containers",
                     IDC_APPLYASDEFAULT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    13,219,253,12
+                    13,238,253,12
     CONTROL         "Also apply them to all existing containers",
                     IDC_APPLYEXISTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    13,230,253,12
-    PUSHBUTTON      "Load defaults",IDC_LOADDEFAULTS,7,244,69,15
-    DEFPUSHBUTTON   "OK",IDOK,114,245,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,169,245,50,14
-    PUSHBUTTON      "Apply",IDC_APPLY,225,245,50,14,WS_DISABLED
-    CONTROL         "Always enable popups for",IDC_ALWAYSPOPUPSINACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,81,122,10
-    CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,168,126,11
-    CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,40,119,8
+                    13,249,253,12
+    PUSHBUTTON      "Load defaults",IDC_LOADDEFAULTS,7,266,69,15
+    DEFPUSHBUTTON   "OK",IDOK,114,267,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,169,267,50,14
+    PUSHBUTTON      "Apply",IDC_APPLY,225,267,50,14,WS_DISABLED
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -345,7 +345,7 @@ BEGIN
                     WS_TABSTOP,158,156,140,11
     GROUPBOX        "Load History Events",IDC_STATIC,0,174,303,53
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,138,10
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,135,10
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
                     BS_AUTORADIOBUTTON,10,199,138,10
     EDITTEXT        IDC_LOADCOUNTN,170,197,33,12,ES_RIGHT | ES_NUMBER
@@ -374,7 +374,7 @@ BEGIN
     CONTROL         "Activate support for external log",IDC_MSGLOGPLUGIN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,81,140,10
     CONTROL         "Attempt to fix ""future"" timestamps",IDC_TSFIX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,134,184,161,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,184,148,11
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
@@ -611,7 +611,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 274
         TOPMARGIN, 7
-        BOTTOMMARGIN, 259
+        BOTTOMMARGIN, 281
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -80,6 +80,7 @@
 #define IDC_FONTCOLOR                   1078
 #define IDC_FONTFACE                    1079
 #define IDC_HISTORY                     1080
+#define IDC_CANCELADD                   1081
 #define IDC_FONTID                      1256
 #define IDC_SAMETYPE                    1257
 #define IDC_SAMESTYLE                   1258

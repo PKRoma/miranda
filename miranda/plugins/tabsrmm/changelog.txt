@@ -15,7 +15,14 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.9b - 2005/03/22
+Version 0.9.9.9b - 2005/03/25
+
+        * non-unicode version now sets the IEEF_NO_UNICODE flag for IEview. That may
+          resolve some crash problems.
+          
+        * some fixes related to the new icon loading stuff (ico lib).
+        
+Version 0.9.9.9 - 2005/03/24
 
         * after quoting, input focus is set to the message input area.
         
@@ -32,7 +39,7 @@ Version 0.9.9.9b - 2005/03/22
           runtime w/o having to restart miranda.
           
         ! fixed vertical maximize when taskbar is at the top (hope so)
-
+        
         * the avatar does no longer react on left button clicks. This stops the flickering
           aswell. Right button click still works and opens the context menu.
           
@@ -40,7 +47,7 @@ Version 0.9.9.9b - 2005/03/22
           (otherwise it is disabled). It will just pass the message to buddypounce for
           later delivery. Note: since buddypounce does not support unicode messages,
           an implicit "force ansi" send mode is used.
-
+        
         * dialog layout tweaks. It is now possible to get rid of all borders, including
           the outer tab control padding. The relevant settings are on the "tabs and
           layout" option page. You can set inner and outer border/padding values. It's
@@ -53,7 +60,7 @@ Version 0.9.9.9b - 2005/03/22
           with a timestamp "in the future" will always appear at the bottom of the log.
           It works only wile the window is open, it does not and CAN not work for loading
           the history.
-          
+                  
 Version 0.9.9.9 - 2005/03/19
 
         ! vertical maximize didn't allow to restore the window from the taskbar

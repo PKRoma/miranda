@@ -863,7 +863,11 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         event.cbSize = sizeof(IEVIEWEVENT);
         event.hwnd = dat->hwndLog;
         event.hContact = dat->hContact;
+#if defined(_UNICODE)
         event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
+#else
+        event.dwFlags = ((dat->dwFlags ? MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
+#endif        
         if (!fAppend) {
             event.iType = IEE_CLEAR_LOG;
             CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);

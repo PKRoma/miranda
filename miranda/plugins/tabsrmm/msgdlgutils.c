@@ -266,12 +266,14 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 
                     CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
                     ofn.lStructSize=sizeof(ofn);
-                    ofn.hwndOwner=hwndDlg;
+                    ofn.hwndOwner=0;
                     ofn.lpstrFile = FileName;
                     ofn.lpstrFilter = Filters;
                     ofn.nMaxFile = MAX_PATH;
-                    ofn.Flags=OFN_HIDEREADONLY|OFN_FILEMUSTEXIST;
+                    ofn.Flags=OFN_HIDEREADONLY;
+                    ofn.lpstrInitialDir = ".";
                     *FileName = '\0';
+                    ofn.lpstrDefExt="";
                     if (GetOpenFileNameA(&ofn))
                         DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",FileName);
                     else

@@ -238,6 +238,7 @@ typedef struct _tag_ICONDESC {
     char *szDesc;
     HICON *phIcon;      // where the handle is saved...
     int  uId;           // icon ID
+    BOOL bForceSmall;   // true: force 16x16
 } ICONDESC;
 
 struct InputHistory {

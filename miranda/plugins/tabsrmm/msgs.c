@@ -35,6 +35,7 @@ $Id$
 MYGLOBALS myGlobals;
 
 static void InitREOleCallback(void);
+static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
@@ -592,7 +593,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
             cle.hContact = (HANDLE) wParam;
 			cle.hDbEvent = (HANDLE) 1;
             cle.flags = CLEF_ONLYAFEW;
-            cle.hIcon = LoadIcon(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING));
+            cle.hIcon = myGlobals.g_buttonBarIcons[5];
             cle.pszService = "SRMsg/TypingMessage";
             cle.pszTooltip = szTip;
             CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -716,6 +717,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
             hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
         }
     }
+    if(ServiceExists(MS_SKIN2_ADDICON))
+        HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
     HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
     RestoreUnreadMessageAlerts();
     for(i = 0; i < NR_BUTTONBARICONS; i++)
@@ -905,8 +908,6 @@ int LoadSendRecvMessageModule(void)
     hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
     HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
     HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
-    if(ServiceExists(MS_SKIN2_ADDICON))
-        HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
     HookEvent(ME_PROTO_ACK, ProtoAck);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
@@ -1198,11 +1199,7 @@ struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hC
             }
             pCurrent = pCurrent->pNextContainer;
         }
-        if(pDesired)
-            return pDesired;
-        else {
-            return NULL;
-        }
+        return(pDesired != NULL ? pDesired : NULL);
     }
     else
         return FindContainerByName(szName);
@@ -1413,32 +1410,32 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned i
  */
 
 static ICONDESC myIcons[] = {
-    "tabSRMM_history", "Show History", &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY,
-    "tabSRMM_mlog", "Message Log Options", &myGlobals.g_buttonBarIcons[2], -IDI_TIMESTAMP,
-    "tabSRMM_add", "Add contact", &myGlobals.g_buttonBarIcons[0], -IDI_ADDCONTACT,
-    "tabSRMM_multi", "Multisend indicator", &myGlobals.g_buttonBarIcons[3], -IDI_MULTISEND,
-    "tabSRMM_typing", "Contact is typing", &myGlobals.g_buttonBarIcons[5], -IDI_TYPING,
-    "tabSRMM_quote", "Quote text", &myGlobals.g_buttonBarIcons[8], -IDI_QUOTE,
-    "tabSRMM_save", "Save and close", &myGlobals.g_buttonBarIcons[7], -IDI_SAVE,
-    "tabSRMM_send", "Send message", &myGlobals.g_buttonBarIcons[9], -IDI_CHECK,
-    "tabSRMM_avatar", "Avatar menu", &myGlobals.g_buttonBarIcons[10], -IDI_CONTACTPIC,
-    "tabSRMM_close", "Close", &myGlobals.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG,
-    "tabSRMM_usermenu", "User menu", &myGlobals.g_buttonBarIcons[4], -IDI_USERMENU,
-    "tabSRMM_error", "Message delivery error", &myGlobals.g_iconErr, -IDI_MSGERROR,
-    "tabSRMM_in", "Incoming message", &myGlobals.g_iconIn, -IDI_ICONIN,
-    "tabSRMM_out", "Outgoing message", &myGlobals.g_iconOut, -IDI_ICONOUT,
-    "tabSRMM_emoticon", "Smiley button", &myGlobals.g_buttonBarIcons[11], -IDI_SMILEYICON,
-    "tabSRMM_mtn_on", "Sending typing notify is on", &myGlobals.g_buttonBarIcons[12], -IDI_SELFTYPING_ON,
-    "tabSRMM_mtn_off", "Sending typing notify is off", &myGlobals.g_buttonBarIcons[13], -IDI_SELFTYPING_OFF,
-    "tabSRMM_container", "Static container icon", &myGlobals.g_iconContainer, -IDI_CONTAINER,
-    "tabSRMM_secureim_on", "SecureIM is on", &myGlobals.g_buttonBarIcons[14], -IDI_SECUREIM_ENABLED,
-    "tabSRMM_secureim_off", "SecureIM is off", &myGlobals.g_buttonBarIcons[15], -IDI_SECUREIM_DISABLED,
-    "tabSRMM_status", "Statuschange", &myGlobals.g_iconStatus, -IDI_STATUSCHANGE,
-    "tabSRMM_bold", "Format bold", &myGlobals.g_buttonBarIcons[17], -IDI_FONTBOLD,
-    "tabSRMM_italic", "Format italic", &myGlobals.g_buttonBarIcons[18], -IDI_FONTITALIC,
-    "tabSRMM_underline", "Format underline", &myGlobals.g_buttonBarIcons[19], -IDI_FONTUNDERLINE,
-    "tabSRMM_face", "Font face", &myGlobals.g_buttonBarIcons[20], -IDI_FONTFACE,
-    "tabSRMM_color", "Font color", &myGlobals.g_buttonBarIcons[21], -IDI_FONTCOLOR,
+    "tabSRMM_history", "Show History", &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY, 1,
+    "tabSRMM_mlog", "Message Log Options", &myGlobals.g_buttonBarIcons[2], -IDI_TIMESTAMP, 1,
+    "tabSRMM_add", "Add contact", &myGlobals.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
+    "tabSRMM_multi", "Multisend indicator", &myGlobals.g_buttonBarIcons[3], -IDI_MULTISEND, 1,
+    "tabSRMM_typing", "Contact is typing", &myGlobals.g_buttonBarIcons[5], -IDI_TYPING, 1,
+    "tabSRMM_quote", "Quote text", &myGlobals.g_buttonBarIcons[8], -IDI_QUOTE, 1,
+    "tabSRMM_save", "Save and close", &myGlobals.g_buttonBarIcons[7], -IDI_SAVE, 1,
+    "tabSRMM_send", "Send message", &myGlobals.g_buttonBarIcons[9], -IDI_CHECK, 1,
+    "tabSRMM_avatar", "Avatar menu", &myGlobals.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
+    "tabSRMM_close", "Close", &myGlobals.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG, 1,
+    "tabSRMM_usermenu", "User menu", &myGlobals.g_buttonBarIcons[4], -IDI_USERMENU, 1,
+    "tabSRMM_error", "Message delivery error", &myGlobals.g_iconErr, -IDI_MSGERROR, 1,
+    "tabSRMM_in", "Incoming message", &myGlobals.g_iconIn, -IDI_ICONIN, 0,
+    "tabSRMM_out", "Outgoing message", &myGlobals.g_iconOut, -IDI_ICONOUT, 0,
+    "tabSRMM_emoticon", "Smiley button", &myGlobals.g_buttonBarIcons[11], -IDI_SMILEYICON, 1,
+    "tabSRMM_mtn_on", "Sending typing notify is on", &myGlobals.g_buttonBarIcons[12], -IDI_SELFTYPING_ON, 1,
+    "tabSRMM_mtn_off", "Sending typing notify is off", &myGlobals.g_buttonBarIcons[13], -IDI_SELFTYPING_OFF, 1,
+    "tabSRMM_container", "Static container icon", &myGlobals.g_iconContainer, -IDI_CONTAINER, 1,
+    "tabSRMM_secureim_on", "SecureIM is on", &myGlobals.g_buttonBarIcons[14], -IDI_SECUREIM_ENABLED, 1,
+    "tabSRMM_secureim_off", "SecureIM is off", &myGlobals.g_buttonBarIcons[15], -IDI_SECUREIM_DISABLED, 1,
+    "tabSRMM_status", "Statuschange", &myGlobals.g_iconStatus, -IDI_STATUSCHANGE, 0,
+    "tabSRMM_bold", "Format bold", &myGlobals.g_buttonBarIcons[17], -IDI_FONTBOLD, 1,
+    "tabSRMM_italic", "Format italic", &myGlobals.g_buttonBarIcons[18], -IDI_FONTITALIC, 1,
+    "tabSRMM_underline", "Format underline", &myGlobals.g_buttonBarIcons[19], -IDI_FONTUNDERLINE, 1,
+    "tabSRMM_face", "Font face", &myGlobals.g_buttonBarIcons[20], -IDI_FONTFACE, 1,
+    "tabSRMM_color", "Font color", &myGlobals.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
     NULL, NULL, NULL, 0
 };
 
@@ -1458,17 +1455,21 @@ int SetupIconLibConfig()
         }
     }
     GetModuleFileNameA(g_hIconDLL, szFilename, MAX_PATH);
+    myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+    FreeLibrary(g_hIconDLL);
+    g_hIconDLL = 0;
     
     sid.cbSize = sizeof(SKINICONDESC);
     sid.pszSection = "TabSRMM";
     sid.pszDefaultFile = szFilename;
 
+    i = 0;
     do {
         if(myIcons[i].szName == NULL)
             break;
         sid.pszName = myIcons[i].szName;
         sid.pszDescription = myIcons[i].szDesc;
-        sid.iDefaultIndex = myIcons[i].uId;
+        sid.iDefaultIndex = myIcons[i].uId == -IDI_HISTORY ? 0 : myIcons[i].uId;
         CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
     } while(++i);
 
@@ -1509,6 +1510,7 @@ void LoadIconTheme()
     int cxIcon = GetSystemMetrics(SM_CXSMICON);
     int cyIcon = GetSystemMetrics(SM_CYSMICON);
     int i = 0;
+    //char szDebug[80];
     
     if(ServiceExists(MS_SKIN2_ADDICON)) {               // ico lib present...
         if(SetupIconLibConfig() == 0)
@@ -1547,10 +1549,11 @@ void LoadIconTheme()
         UncacheMsgLogIcons();
 
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+        i = 0;
         do {
             if(myIcons[i].szName == NULL)
                 break;
-            *(myIcons[i].phIcon) = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(abs(myIcons[i].uId)), IMAGE_ICON, cxIcon, cyIcon, 0);
+            *(myIcons[i].phIcon) = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(abs(myIcons[i].uId)), IMAGE_ICON, myIcons[i].bForceSmall ? cxIcon : 0, myIcons[i].bForceSmall ? cyIcon : 0, 0);
         } while(++i);
         myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
 

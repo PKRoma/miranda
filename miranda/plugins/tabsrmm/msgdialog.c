@@ -102,7 +102,7 @@ static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITAL
 static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_PROTOCOL, IDC_FONTUNDERLINE, IDC_HISTORY, -1 };
 static const UINT controlsToHide1[] = { IDOK, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
 static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
-static const UINT addControls[] = { IDC_ADDICON, IDC_ADDTEXT, IDC_ADD };
+static const UINT addControls[] = { IDC_ADDICON, IDC_ADDTEXT, IDC_ADD, IDC_CANCELADD };
 
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
@@ -188,11 +188,11 @@ void SetDialogToType(HWND hwndDlg)
         
         if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
             dat->bNotOnList = TRUE;
-            ShowMultipleControls(hwndDlg, addControls, 3, SW_SHOW);
+            ShowMultipleControls(hwndDlg, addControls, 4, SW_SHOW);
         }
         else {
             dat->bNotOnList = FALSE;
-            ShowMultipleControls(hwndDlg, addControls, 3, SW_HIDE);
+            ShowMultipleControls(hwndDlg, addControls, 4, SW_HIDE);
         }
     } else {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), SW_HIDE);
@@ -626,6 +626,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_ADDTEXT:
         case IDC_ADDICON:
         case IDC_ADD:
+        case IDC_CANCELADD:
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if(!showToolbar) {
@@ -877,6 +878,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 SetDlgItemTextA(hwndDlg, IDC_ADDTEXT, Translate("This contact is not on your list"));
                 SetDlgItemTextA(hwndDlg, IDC_ADD, Translate("Add it"));
+                SetDlgItemTextA(hwndDlg, IDC_CANCELADD, Translate("Leave it"));
 
                 SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
@@ -955,8 +957,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         int nMax;
                         nMax = CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM) dat->hContact);
                         if (nMax)
-                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_LIMITTEXT, (WPARAM) nMax, 0);
-                        SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
+                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
+                        else
+                            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, (LPARAM)7500);
                         pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
                         if(pCaps & PF4_AVATARS)
                             SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
@@ -2836,11 +2839,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         CallService(MS_ADDCONTACT_SHOW, (WPARAM) hwndDlg, (LPARAM) & acs);
                         if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
                             dat->bNotOnList = FALSE;
-                            ShowMultipleControls(hwndDlg, addControls, 3, SW_HIDE);
+                            ShowMultipleControls(hwndDlg, addControls, 4, SW_HIDE);
                             SendMessage(hwndDlg, WM_SIZE, 0, 0);
                         }
                         break;
                     }
+                case IDC_CANCELADD:
+                    dat->bNotOnList = FALSE;
+                    ShowMultipleControls(hwndDlg, addControls, 4, SW_HIDE);
+                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    break;
 // BEGIN MOD#33: Show contact's picture
                 case IDC_PIC:
                     {
@@ -3322,6 +3330,7 @@ verify:
 #else
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "container", szNewName);
 #endif                
+                WindowList_Remove(hMessageWindowList, hwndDlg);
                 CreateNewTabForContact(pNewContainer, dat->hContact, 0, NULL, TRUE, TRUE);
                 SendMessage(hwndDlg, WM_CLOSE, 0, 1);
                 if (iOldItems > 1) {                // there were more than 1 tab, container is still valid
