@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -28,17 +28,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MSN                 ICON    DISCARDABLE     "Icos\\msn.ico"
-IDI_LIST_FL             ICON    DISCARDABLE     "icos\\list_fl.ico"
-IDI_LIST_AL             ICON    DISCARDABLE     "icos\\list_al.ico"
-IDI_LIST_BL             ICON    DISCARDABLE     "icos\\list_bl.ico"
-IDI_LIST_RL             ICON    DISCARDABLE     "icos\\list_rl.ico"
-IDI_MSNBLOCK            ICON    DISCARDABLE     "Icos\\msnblock.ico"
-IDI_INBOX               ICON    DISCARDABLE     "Icos\\inbox.ico"
-IDI_INVITE              ICON    DISCARDABLE     "Icos\\invite.ico"
-IDI_PROFILE             ICON    DISCARDABLE     "Icos\\profile.ico"
-IDI_NETMEETING          ICON    DISCARDABLE     "Icos\\netmeeting.ico"
-IDI_AVATAR              ICON    DISCARDABLE     "Icos\\avatar.ico"
+IDI_MSN                 ICON                    "Icos\\msn.ico"
+IDI_LIST_FL             ICON                    "icos\\list_fl.ico"
+IDI_LIST_AL             ICON                    "icos\\list_al.ico"
+IDI_LIST_BL             ICON                    "icos\\list_bl.ico"
+IDI_LIST_RL             ICON                    "icos\\list_rl.ico"
+IDI_MSNBLOCK            ICON                    "Icos\\msnblock.ico"
+IDI_INBOX               ICON                    "Icos\\inbox.ico"
+IDI_INVITE              ICON                    "Icos\\invite.ico"
+IDI_PROFILE             ICON                    "Icos\\profile.ico"
+IDI_NETMEETING          ICON                    "Icos\\netmeeting.ico"
+IDI_AVATAR              ICON                    "Icos\\avatar.ico"
+IDI_SERVICES            ICON                    "Icos\\services.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -46,7 +47,7 @@ IDI_AVATAR              ICON    DISCARDABLE     "Icos\\avatar.ico"
 //
 
 IDD_OPT_MSN DIALOGEX 0, 0, 296, 188
-STYLE WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -83,9 +84,9 @@ BEGIN
 END
 
 IDD_OPT_MSN_CONN DIALOGEX 0, 0, 296, 136
-STYLE WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Connection settings",IDC_STATIC,8,4,280,84
     LTEXT           "Login server:",IDC_STATIC,20,18,44,8
@@ -110,7 +111,7 @@ BEGIN
 END
 
 IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 240, 212
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -152,8 +153,9 @@ BEGIN
                     IDC_STATIC,4,200,232,8
 END
 
-IDD_SETNICKNAME DIALOG DISCARDABLE  0, 0, 187, 42
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SETNICKNAME DIALOG  0, 0, 187, 42
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Set Nickname"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -162,15 +164,15 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,102,23,50,14
 END
 
-IDD_USEROPTS DIALOG DISCARDABLE  0, 0, 224, 132
-STYLE WS_CHILD
+IDD_USEROPTS DIALOG  0, 0, 224, 132
+STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_MSN_PICT,"Static",SS_BITMAP,8,8,15,13
 END
 
-IDD_GET_PNG2DIB DIALOG DISCARDABLE  0, 0, 276, 101
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GET_PNG2DIB DIALOG  0, 0, 276, 101
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "png2lib download"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -188,7 +190,7 @@ BEGIN
 END
 
 IDD_LISTSMGR DIALOGEX 0, 0, 313, 240
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -214,7 +216,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_OPT_MSN, DIALOG
     BEGIN
@@ -245,7 +247,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -288,27 +289,24 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
-
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include ""version.h""\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"

@@ -4,6 +4,10 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.1.7.8
+===============
+[+] 'View MSN services status' menu item was added to the main menu
+
 Version 0.1.7.7
 ===============
 [!] fixed some bugs with file transfer cancellation.

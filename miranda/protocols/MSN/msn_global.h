@@ -110,6 +110,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_GOTO_INBOX    "/GotoInbox"
 #define MS_EDIT_PROFILE  "/EditProfile"
 #define MS_SET_AVATAR    "/SetAvatar"
+#define MS_VIEW_STATUS   "/ViewMsnStatus"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions

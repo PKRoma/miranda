@@ -1090,6 +1090,15 @@ static int MsnViewProfile( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnViewServiceStatus - display MSN services status
+
+static int MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
+{
+	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://messenger.msn.com/Status.aspx" );
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // Services initialization and destruction
 
 static HANDLE hHookSettingChanged = NULL;
@@ -1144,6 +1153,15 @@ int LoadMsnServices( void )
 		mi.position = 2000060003;
 		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_AVATAR ));
 		mi.pszName = MSN_Translate( "Set &Avatar" );
+		mi.pszService = servicefunction;
+		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+		strcpy( tDest, MS_VIEW_STATUS );
+		CreateServiceFunction( servicefunction, MsnViewServiceStatus );
+
+		mi.position = 2000060004;
+		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_SERVICES ));
+		mi.pszName = MSN_Translate( "View MSN Services &Status" );
 		mi.pszService = servicefunction;
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 	}
