@@ -42,6 +42,10 @@ VOID CALLBACK MSNMainTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 int LoadMsnServices(void);
 void CmdQueue_Init(void);
 void CmdQueue_Uninit(void);
+void Switchboards_Init(void);
+void Switchboards_Uninit(void);
+void MsgQueue_Init(void);
+void MsgQueue_Uninit(void);
 
 volatile LONG msnLoggedIn;
 int msnStatusMode,msnDesiredStatus;
@@ -57,7 +61,9 @@ int __declspec(dllexport) Unload(void)
 {
 	if(msnLoggedIn) MSN_SendPacket(msnNSSocket,"OUT",NULL);
 	MSN_WS_CleanUp();
+	Switchboards_Uninit();
 	CmdQueue_Uninit();
+	MsgQueue_Uninit();
 	return 0;
 }
 
@@ -100,7 +106,9 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	msnLoggedIn=0;
 	MSN_WS_Init();
 	LoadMsnServices();
+	MsgQueue_Init();
 	CmdQueue_Init();
+	Switchboards_Init();
 	SetTimer(NULL,0,250,MSNMainTimerProc);
 	return 0;
 }

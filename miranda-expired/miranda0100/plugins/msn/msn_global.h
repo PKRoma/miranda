@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #include "../../miranda32/random/plugins/newpluginapi.h"
 #include "../../miranda32/database/m_database.h"
+#include "../../miranda32/protocols/protocols/m_protomod.h"
 
 #define MSNPROTONAME  "MSN"
 
@@ -108,7 +109,7 @@ LONG MSN_SendPacket(SOCKET s,const char *cmd,const char *params,...);
 char *MirandaStatusToMSN(int status);
 int MSNStatusToMiranda(const char *status);
 
-HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded);
+HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded,int temporary);
 int MSN_AddContact(char* uhandle,char*nick); //returns clist ID
 int MSN_ContactFromHandle(char*uhandle); //get cclist id from Uhandle
 void MSN_HandleFromContact(unsigned long uin,char*uhandle);
@@ -131,6 +132,9 @@ char *str_to_UTF8(unsigned char *in);
 struct ThreadData {
 	int type;
 	char server[80];
+	int caller;         //for switchboard servers only
+	char cookie[130];   //for switchboard servers only
+	HANDLE hContact;    //switchboard callees only
     //the rest is filled by thread
 	SOCKET s;
 	char data[1024];
@@ -138,10 +142,28 @@ struct ThreadData {
 };
 
 int CmdQueue_AddProtoAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
+int CmdQueue_AddChainRecv(CCSDATA *ccs);
 int CmdQueue_AddDbWriteSetting(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv);
 int CmdQueue_AddDbWriteSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *pszVal);
 int CmdQueue_AddDbWriteSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD wVal);
-int CmdQueue_AddDbCreateContact(const char *email,const char *nick);
+int CmdQueue_AddDbCreateContact(const char *email,const char *nick,int temporary,HANDLE hWaitEvent,HANDLE *phContact);
+
+#define SBSTATUS_NEW        0
+#define SBSTATUS_DNSLOOKUP  1
+#define SBSTATUS_CONNECTING 2
+#define SBSTATUS_AUTHENTICATING 3
+#define SBSTATUS_CONNECTED  10
+void Switchboards_New(SOCKET s);
+void Switchboards_Delete(void);
+void Switchboards_ChangeStatus(int newStatus);
+int Switchboards_ContactJoined(HANDLE hContact);
+int Switchboards_ContactLeft(HANDLE hContact);
+SOCKET Switchboards_SocketFromHContact(HANDLE hContact);
+
+int MsgQueue_Add(HANDLE hContact,const char *msg,DWORD flags);
+HANDLE MsgQueue_GetNextRecipient(void);
+char *MsgQueue_GetNext(HANDLE hContact,PDWORD pFlags,int *seq);
+int MsgQueue_AllocateUniqueSeq(void);
 
 //MSN error codes
 #define ERR_SYNTAX_ERROR                 200
