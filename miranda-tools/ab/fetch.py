@@ -166,6 +166,10 @@ fp.close()
 # The upload.py part of fetch.py
 # -------------------------------------------------------------------------------------
 
+if sys.argv[2] == "test":
+	print "\n*** Build stage completed, skipping upload cos you passed 'test'"
+	sys.exit(0)
+
 fp = open(sys.argv[1])
 p = string.strip(fp.read())
 fp.close()
