@@ -274,10 +274,19 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( info->s == NULL ) {
 		MSN_DebugLog( "Connection Failed (%d)", WSAGetLastError() );
 
-		if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
+		switch ( info->mType ) {
+		case SERVER_NOTIFICATION:
+		case SERVER_DISPATCH:
 			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 			MSN_GoOffline();
+			break;
+
+		case SERVER_FILETRANS:
+			if ( info->ft != NULL )
+				MSN_SendBroadcast( info->ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, info->ft, 0);
+			break;
 		}
+
 		return;
 	}
 
