@@ -149,4 +149,4 @@ int ResizeDialog(WPARAM wParam,LPARAM lParam)
 	}
 	EndDeferWindowPos(hDwp);
 	return 0;
-} 
+}
