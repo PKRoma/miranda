@@ -439,9 +439,13 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
                 }
             }
 
-            GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
-            if (bminfo.bmWidth>maxImageSizeX || bminfo.bmWidth<=0 || bminfo.bmHeight<=0 || bminfo.bmHeight>maxImageSizeY) 
-                isNoPic=TRUE;
+            if(dat->hContactPic == 0)
+                isNoPic = TRUE;
+            else {
+                GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
+                if (bminfo.bmWidth>maxImageSizeX || bminfo.bmWidth<=0 || bminfo.bmHeight<=0 || bminfo.bmHeight>maxImageSizeY) 
+                    isNoPic=TRUE;
+            }
             if (isNoPic) {
                 if (!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T,"MOD_Pic_failed",0)) {
                     _DebugPopup(dat->hContact, "%s %s", dbv.pszVal, Translate("has either a wrong size (max 150 x 150) or is not a recognized image file"));
@@ -465,6 +469,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
             ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
             SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
             SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+            InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
         }
         else {
             dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
