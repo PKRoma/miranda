@@ -2,13 +2,11 @@
 
 use POSIX;
 use File::Find;
-use Date::Simple('date','today');
 
 my $rootdir = '';
 my $output = '';
 my %hash = ();
 my $clines = 0;
-my $date = $today;
 
 #Language Files
 if (!$ARGV[0] or $ARGV[0] eq "miranda") {
