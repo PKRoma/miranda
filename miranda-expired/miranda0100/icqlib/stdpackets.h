@@ -93,6 +93,7 @@ void icq_TCPAppendSequenceN(icq_Link *icqlink, icq_Packet *p, DWORD seq);
 
 icq_Packet *icq_TCPCreateMessageAck(icq_TCPLink *plink, const char *message);
 icq_Packet *icq_TCPCreateURLAck(icq_TCPLink *plink, const char *message);
+icq_Packet *icq_TCPCreateAwayReqAck(icq_TCPLink *plink, WORD statusMode, const char *message);
 icq_Packet *icq_TCPCreateContactListAck(icq_TCPLink *plink, const char *message);
 icq_Packet *icq_TCPCreateWebPagerAck(icq_TCPLink *plink, const char *message);
 icq_Packet *icq_TCPCreateChatReqAck(icq_TCPLink *plink, WORD port);

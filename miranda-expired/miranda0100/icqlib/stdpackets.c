@@ -399,6 +399,19 @@ icq_Packet *icq_TCPCreateURLAck(icq_TCPLink *plink, const char *message)
    return p;
 }
 
+icq_Packet *icq_TCPCreateAwayReqAck(icq_TCPLink *plink, WORD statusMode, const char *message)
+{
+  icq_Packet *p=icq_TCPCreateStdPacket(
+    plink,
+    ICQ_TCP_ACK,
+    statusMode,           //one of the icq_tcp_msg_read... constants
+    message,
+    0, /* status */
+    0);   
+    
+  return p;
+}
+
 icq_Packet *icq_TCPCreateContactListAck(icq_TCPLink *plink, const char *message)
 {
   icq_Packet *p=icq_TCPCreateStdPacket(

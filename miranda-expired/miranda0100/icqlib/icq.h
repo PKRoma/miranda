@@ -189,6 +189,13 @@ struct icq_Link_s
   unsigned long icq_ProxyDestIP;    /* HOST byteorder */
   unsigned short icq_ProxyDestPort; /* HOST byteorder */
 
+  /** Away/NA/etc messages. */
+  char *icq_AwayMessage;
+  char *icq_NaMessage;
+  char *icq_OccupiedMessage;
+  char *icq_DndMessage;
+  char *icq_FreeChatMessage;
+
   /* Begin Callbacks */
   void (*icq_Logged)(icq_Link *icqlink);
   void (*icq_Disconnected)(icq_Link *icqlink);
@@ -353,6 +360,7 @@ unsigned short icq_SendAuthMsg(icq_Link *icqlink, unsigned long uin);
 void icq_SendSearchReq(icq_Link *icqlink, const char *email, const char *nick,
      const char* first, const char* last);
 void icq_SendSearchUINReq(icq_Link *icqlink, unsigned long uin);
+void icq_ChangeAwayMessage(icq_Link *icqlink, int status, const char *message);
 
 void icq_RegNewUser(icq_Link *icqlink, const char *pass);
 unsigned short icq_UpdateUserInfo(icq_Link *icqlink, const char *nick,
