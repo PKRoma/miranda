@@ -29,8 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "resource.h"
 
-LONG transactionId=0;
-
 typedef LONG ( WINAPI pIncrementFunc )( PLONG );
 
 static pIncrementFunc  MyInterlockedIncrement95;
@@ -198,15 +196,6 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 }
 
 //=======================================================================================
-// MSN_GetTransactionID - gets next message number
-//=======================================================================================
-
-long __stdcall MSN_GetTransactionID()
-{
-	return MyInterlockedIncrement( &transactionId );
-}
-
-//=======================================================================================
 // MSN_GoOffline - performs several actions when a server goes offline
 //=======================================================================================
 
@@ -239,7 +228,7 @@ void __stdcall	MSN_GoOffline()
 
 char sttHeaderStart[] = "MIME-Version: 1.0\r\n";
 
-LONG __stdcall	MSN_SendMessage( HANDLE s, const char* parMsg, int parFlags )
+LONG ThreadData::sendMessage( const char* parMsg, int parFlags )
 {
 	char tHeader[ 1024 ];
 	strcpy( tHeader, sttHeaderStart );
@@ -284,7 +273,7 @@ LONG __stdcall	MSN_SendMessage( HANDLE s, const char* parMsg, int parFlags )
 			tFontName, tFontStyle, tFontColor );
 	}
 
-	return MSN_SendPacket( s,"MSG","%c %d\r\n%s%s",
+	return sendPacket( "MSG", "%c %d\r\n%s%s",
 		( parFlags & MSG_REQUIRE_ACK ) ? 'A' : 'N',
 		strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
 }
@@ -293,7 +282,7 @@ LONG __stdcall	MSN_SendMessage( HANDLE s, const char* parMsg, int parFlags )
 // MSN_SendRawPacket - sends a packet accordingly to the MSN protocol
 //=======================================================================================
 
-LONG __stdcall	MSN_SendRawMessage( HANDLE s, int msgType, const char* data, int datLen )
+LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 {
 	if ( data == NULL )
 		data = "";
@@ -303,7 +292,7 @@ LONG __stdcall	MSN_SendRawMessage( HANDLE s, int msgType, const char* data, int 
 
 	char* buf = ( char* )alloca( datLen + 100 );
 
-	LONG thisTrid = MyInterlockedIncrement( &transactionId );
+	LONG thisTrid = MyInterlockedIncrement( &mTrid );
 	int nBytes = _snprintf( buf, 100, "MSG %d %c %d\r\n%s", 
 		thisTrid, msgType, datLen + sizeof(sttHeaderStart)-1, sttHeaderStart );
 	memcpy( buf + nBytes, data, datLen );
@@ -338,22 +327,37 @@ int __stdcall MSN_SendNickname(char *email, char *nickname)
 // MSN_SendPacket - sends a packet accordingly to the MSN protocol
 //=======================================================================================
 
-LONG __stdcall	MSN_SendPacket( HANDLE s,const char *cmd,const char *fmt,...)
+LONG __stdcall	MSN_SendPacket( HANDLE s, const char* cmd, const char* fmt,...)
+{
+	ThreadData* T = MSN_GetThreadByConnection( s );
+	if ( T == NULL )
+		return 0;
+
+	va_list vararg;
+	va_start( vararg, fmt );
+	return T->vsendPacket( cmd, fmt, vararg );
+}
+
+LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
+{
+	va_list vararg;
+	va_start( vararg, fmt );
+	return vsendPacket( cmd, fmt, vararg );
+}
+
+LONG ThreadData::vsendPacket( const char* cmd, const char* fmt, va_list vararg )
 {
 	int strsize = 512;
 	char* str = (char*)malloc( strsize );
 
-	LONG thisTrid = MyInterlockedIncrement( &transactionId );
+	LONG thisTrid = MyInterlockedIncrement( &mTrid );
 
 	if ( fmt == NULL || fmt[0] == '\0' ) 
 		sprintf( str, "%s %d", cmd, thisTrid );
 	else  {
-		va_list vararg;
 		int paramStart = sprintf( str, "%s %d ", cmd, thisTrid );
-		va_start( vararg, fmt );
 		while ( _vsnprintf( str+paramStart, strsize-paramStart-2, fmt, vararg ) == -1 )
 			str = (char*)realloc( str, strsize += 512 );
-		va_end( vararg );
 	}
 
 	if (( strncmp( str, "MSG", 3 ) !=0 ) && ( strncmp( str, "QRY", 3 ) != 0 )) 

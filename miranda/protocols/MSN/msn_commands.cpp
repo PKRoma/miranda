@@ -176,7 +176,7 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		"Request-Data: IP-Address:\r\n\r\n",
 		( bHasError ) ? "CANCEL" : "ACCEPT",
 		Invcookie, ipaddr, nlb.wPort, WORD((( double )rand() / ( double )RAND_MAX ) * 4294967295 ));
-	MSN_SendPacket( info->s, "MSG", "N %d\r\n%s", nBytes, command );
+	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
 	if ( bHasError ) delete ft;
 	else {
@@ -389,7 +389,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 				"Launch-Application: TRUE\r\n"
 				"IP-Address: %s\r\n\r\n",
 				Invcookie, ipaddr);
-			MSN_SendPacket( info->s, "MSG", "N %d\r\n%s", nBytes, command );
+			info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 		}
 		return;
 	}
@@ -425,7 +425,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 				"Cancel-Code: REJECT\r\n\r\n",
 				Invcookie);
 		}
-		MSN_SendPacket( info->s, "MSG", "N %d\r\n%s", nBytes, command );
+		info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 		return;
 	}
 
@@ -763,7 +763,7 @@ LBL_InvalidCommand:
 
 			// nobody left in, we might as well leave too
 			if ( MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 )) == 0 )
-				MSN_SendPacket( info->s, "OUT", NULL );
+				info->sendPacket( "OUT", NULL );
 			break;
 		}
 		case ' LAC':    //********* CAL: section 8.3 Inviting Users to a Switchboard Session
@@ -798,7 +798,7 @@ LBL_InvalidCommand:
 			MD5Update(&context, ( BYTE* )chalinfo, challen );
 			MD5Final(( BYTE* )dig, &context);
 
-			MSN_SendPacket( info->s, "QRY", "%s 32\r\n%08x%08x%08x%08x", msnProductID,
+			info->sendPacket( "QRY", "%s 32\r\n%08x%08x%08x%08x", msnProductID,
 				htonl( dig[0] ), htonl( dig[1] ), htonl( dig[2] ), htonl( dig[3] ));   // response for the server
 			break;
 		}
@@ -806,7 +806,7 @@ LBL_InvalidCommand:
 		{
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 			MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ));
-			MSN_SendPacket( info->s, "USR", "TWN I %s", tEmail );
+			info->sendPacket( "USR", "TWN I %s", tEmail );
 			break;
 		}
 		case ' NLF':    //********* FLN: section 7.9 Notification Messages
@@ -830,9 +830,9 @@ LBL_InvalidCommand:
 			if ( !strcmp( security1, "MD5" )) {
 				char tEmail[ MSN_MAX_EMAIL_LEN ];
 				if ( !MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail )))
-					MSN_SendPacket( info->s, "USR", "MD5 I %s", tEmail );
+					info->sendPacket( "USR", "MD5 I %s", tEmail );
 				else
-					MSN_SendPacket(info->s,"USR","MD5 I ");   //this will fail, of course
+					info->sendPacket( "USR", "MD5 I " );   //this will fail, of course
 			}
 			else {
 				MSN_DebugLog( "Unknown security package '%s'", security1 );
@@ -864,7 +864,7 @@ LBL_InvalidCommand:
 				ThreadData* T = MSN_GetUnconnectedThread( hContact );
 				if ( T != NULL )
 					if ( hContact == T->mInitialContact )
-						MSN_SendPacket( T->s, "CAL", "%s", data.userEmail );
+						T->sendPacket( "CAL", "%s", data.userEmail );
 
 				MSN_SetString( hContact, "Nick", data.userNick );
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
@@ -943,9 +943,9 @@ LBL_InvalidCommand:
 				if ( tFound != 0 ) {
 					do {
 						if ( E.msgSize == 0 )
-							MSN_SendMessage( info->s, E.message, 0 );
+							info->sendMessage( E.message, 0 );
 						else
-							MSN_SendRawMessage( info->s, ( E.msgSize == -1 ) ? 'N' : 'D', E.message, E.msgSize );
+							info->sendRawMessage(( E.msgSize == -1 ) ? 'N' : 'D', E.message, E.msgSize );
 
 						MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						free( E.message );
@@ -1208,19 +1208,19 @@ LBL_InvalidCommand:
 				HANDLE hContact = MsgQueue_GetNextRecipient();
 				if ( hContact == NULL ) { //can happen if both parties send first message at the same time
 					MSN_DebugLog( "USR (SB) internal: thread created for no reason" );
-					MSN_SendPacket( info->s, "OUT", NULL );
+					info->sendPacket( "OUT", NULL );
 					break;
 				}
 
 				char tEmail[ MSN_MAX_EMAIL_LEN ];
 				if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
 					MSN_DebugLog( "USR (SB) internal: Contact is not MSN" );
-					MSN_SendPacket( info->s, "OUT", NULL );
+					info->sendPacket( "OUT", NULL );
 					break;
 				}
 
 				info->mInitialContact = hContact;
-				MSN_SendPacket( info->s, "CAL", "%s", tEmail );
+				info->sendPacket( "CAL", "%s", tEmail );
 			}
 			else 	   //dispatch or notification server (section 7.3)
 			{
@@ -1240,7 +1240,7 @@ LBL_InvalidCommand:
 						return 1;
 					}
 
-					MSN_SendPacket( info->s, "USR", "TWN S %s", tAuth );
+					info->sendPacket( "USR", "TWN S %s", tAuth );
 					free( tAuth );
 				}
 				else if ( !strcmp( data.security, "MD5" )) {
@@ -1266,7 +1266,7 @@ LBL_InvalidCommand:
 						MD5Update( &context, ( BYTE* )chalinfo, strlen( chalinfo ));
 						MD5Final( digest, &context );
 
-						MSN_SendPacket( info->s, "USR", "MD5 S %08x%08x%08x%08x", htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)));
+						info->sendPacket( "USR", "MD5 S %08x%08x%08x%08x", htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)));
 					}
 					else MSN_DebugLog( "Unknown security sequence code '%c', ignoring command", data.sequence );
 				}
@@ -1300,9 +1300,9 @@ LBL_InvalidCommand:
 							T.wYear, T.wMonth, T.wDay, T.wHour, T.wMinute, T.wSecond );
 						MSN_SetString( NULL, "LastSyncTime", tNewDate );
 
-						MSN_SendPacket( info->s, "SYN", "%s %s", tNewDate, tOldDate );
+						info->sendPacket( "SYN", "%s %s", tNewDate, tOldDate );
 					}
-					else MSN_SendPacket( info->s, "SYN", "0" );
+					else info->sendPacket( "SYN", "0" );
 				}
 				else {
 					MSN_DebugLog( "Unknown security package '%s'", data.security );
@@ -1343,7 +1343,7 @@ LBL_InvalidCommand:
 				return 1;
 			}
 
-			MSN_SendPacket( info->s, "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0137 MSMSGS %s", tEmail );
+			info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0137 MSMSGS %s", tEmail );
 
 			msnProtChallenge = "QHDCY@7R1TB6W?5B";
 			msnProductID = "PROD0058#7IL2{QD";
@@ -1364,6 +1364,7 @@ LBL_InvalidCommand:
 				ThreadData* newThread = new ThreadData;
 				strcpy( newThread->mServer, data.newServer );
 				newThread->mType = SERVER_NOTIFICATION;
+				newThread->mTrid = info->mTrid;
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
 				newThread->startThread(( pThreadFunc )MSNServerThread );

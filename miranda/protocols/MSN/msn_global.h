@@ -126,11 +126,6 @@ int		__stdcall	MSN_WS_Recv( HANDLE, char* data, long datalen );
 #define  MSN_SHOW_ERROR       8
 void __stdcall MSN_ShowPopup( const char* nickname, const char* msg, int flags );
 
-#define	MSG_DISABLE_HDR		1
-#define	MSG_REQUIRE_ACK		2
-LONG __stdcall MSN_SendMessage( HANDLE, const char* msg, int parFlags );
-LONG __stdcall	MSN_SendRawMessage( HANDLE s, int msgType, const char* data, int datLen );
-
 LONG		__stdcall	MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
 char*		__stdcall	MirandaStatusToMSN( int status );
 int		__stdcall	MSNStatusToMiranda( const char* status );
@@ -153,7 +148,6 @@ void		__cdecl		MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP );
 void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
-long     __stdcall	MSN_GetTransactionID();
 int		__stdcall	MSN_SendNickname(char *email, char *nickname);
 void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
@@ -317,6 +311,9 @@ struct TQueueItem
 	char data[1];
 };
 
+#define	MSG_DISABLE_HDR		1
+#define	MSG_REQUIRE_ACK		2
+
 struct ThreadData
 {
 	ThreadData();
@@ -342,6 +339,7 @@ struct ThreadData
 	HANDLE*        mJoinedContacts;  //	another contacts
 	int            mJoinedCount;     // another contacts count
 	int				mMessageCount;		// message counter
+	LONG				mTrid;				// current message ID
 
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*  ft;               // file transfer block
@@ -351,11 +349,16 @@ struct ThreadData
 	int            mBytesInData;     // bytes available in data buffer
 	char           mData[4096];      // data buffer for connection
 
-	//----| start method |----------------------------------------------------------------
+	//----| methods |---------------------------------------------------------------------
 	void           applyGatewayData( HANDLE hConn, bool isPoll );
 	void				getGatewayUrl( char* dest, int destlen, bool isPoll );
 	void				processSessionData( const char* );
 	void           startThread( pThreadFunc );
+
+	LONG				sendMessage( const char* msg, int parFlags );
+	LONG				sendRawMessage( int msgType, const char* data, int datLen );
+	LONG				vsendPacket( const char* cmd, const char* fmt, va_list vararg );
+	LONG				sendPacket( const char* cmd, const char* fmt, ... );
 };
 
 void			__stdcall MSN_CloseConnections( void );
@@ -377,9 +380,14 @@ ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
 
 void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
 void __stdcall p2p_processMsg( ThreadData* info, char* msgbody );
-void __stdcall p2p_sendAck( filetransfer* ft, HANDLE s, P2P_Header* hdrdata );
-void __stdcall p2p_sendStatus( filetransfer* ft, HANDLE s, long lStatus );
-void __stdcall p2p_sendSLP( filetransfer* ft, MimeHeaders& headers, int iKind );
+void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
+void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus );
+
+void __stdcall p2p_registerSession( filetransfer* ft );
+void __stdcall p2p_unregisterSession( filetransfer* ft );
+
+filetransfer* __stdcall p2p_getSessionByID( long ID );
+filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Message queue

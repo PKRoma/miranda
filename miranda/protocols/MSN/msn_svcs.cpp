@@ -316,7 +316,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread != NULL && thread->ft != NULL ) {
 		if ( ft->p2p_appID == 0 ) {
-			MSN_SendPacket( thread->s, "MSG",
+			thread->sendPacket( "MSG",
 				"U %d\r\nMIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 				"Invitation-Command: ACCEPT\r\n"
@@ -326,11 +326,11 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 				172+4+strlen( thread->ft->szInvcookie ), thread->ft->szInvcookie );
 		}
 		else {
-			p2p_sendAck( ft, thread->s, &ft->p2p_hdr );
+			p2p_sendAck( ft, thread, &ft->p2p_hdr );
 			ft->p2p_msgid -= 3;
 
 			//---- send 200 OK Message 
-			p2p_sendStatus( ft, thread->s, 200 );
+			p2p_sendStatus( ft, thread, 200 );
 	}	}
 
 	ft->std.workingDir = strdup((char *)ccs->lParam);
@@ -350,7 +350,7 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 		if ( thread != NULL )
 			if ( thread->ft != NULL && thread->ft == ft )
-				p2p_sendStatus( ft, thread->s, -1 );
+				p2p_sendStatus( ft, thread, -1 );
 	}
 	return 0;
 }
@@ -369,7 +369,7 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread != NULL && thread->ft != NULL ) {
 		if ( ft->p2p_appID == 0 ) {
-			MSN_SendPacket( thread->s,"MSG",
+			thread->sendPacket( "MSG",
 				"U %d\r\nMIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 				"Invitation-Command: CANCEL\r\n"
@@ -378,11 +378,11 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 				172-33+4+strlen( thread->ft->szInvcookie ), thread->ft->szInvcookie );
 		}
 		else {
-			p2p_sendAck( ft, thread->s, &ft->p2p_hdr );
+			p2p_sendAck( ft, thread, &ft->p2p_hdr );
 			ft->p2p_msgid -= 3;
 
 			//---- send 603 DECLINE Message 
-			p2p_sendStatus( ft, thread->s, 603 );
+			p2p_sendStatus( ft, thread, 603 );
 	}	}
 
 	return 0;
@@ -528,7 +528,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail )))
-		MSN_SendPacket( tActiveThreads[ tChosenThread ]->s, "CAL", tEmail );
+		tActiveThreads[ tChosenThread ]->sendPacket( "CAL", tEmail );
 
 	return 0;
 }
@@ -671,7 +671,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		if ( thread == NULL )
 			MsgQueue_Add( ccs->hContact, msg, -1, sft );
 		else
-			MSN_SendMessage( thread->s, msg, MSG_DISABLE_HDR );
+			thread->sendMessage( msg, MSG_DISABLE_HDR );
 	}
 
 	MSN_SendBroadcast( ccs->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sft, 0 );
@@ -730,7 +730,7 @@ static int sttSendMessage( CCSDATA* ccs, char* msg )
 			seq = MsgQueue_Add( ccs->hContact, msg, 0, 0 );
 		else
 		{
-			seq = MSN_SendMessage( thread->s, msg, MSG_REQUIRE_ACK );
+			seq = thread->sendMessage( msg, MSG_REQUIRE_ACK );
 			free( msg );
 
 			HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -785,7 +785,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 		"Session-ID: {1A879604-D1B8-11D7-9066-0003FF431510}\r\n\r\n",
 		( WORD )(((double)rand()/(double)RAND_MAX)*4294967295));
 
-	MSN_SendMessage( thread->s, msg, MSG_DISABLE_HDR );
+	thread->sendMessage( msg, MSG_DISABLE_HDR );
 	return 0;
 }
 
@@ -1077,7 +1077,7 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
 		}
 	}
-	else MSN_SendMessage( T->s, tCommand, MSG_DISABLE_HDR );
+	else T->sendMessage( tCommand, MSG_DISABLE_HDR );
 	return 0;
 }
 

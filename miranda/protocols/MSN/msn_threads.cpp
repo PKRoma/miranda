@@ -293,14 +293,14 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
 		if ( MSN_GetByte( "UseMsnp10", 0 ))
-			MSN_SendPacket( info->s, "VER", "MSNP10 MSNP9 CVR0" );
+			info->sendPacket( "VER", "MSNP10 MSNP9 CVR0" );
 		else
-			MSN_SendPacket( info->s, "VER", "MSNP9 MSNP8 CVR0" );
+			info->sendPacket( "VER", "MSNP9 MSNP8 CVR0" );
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ));
-		MSN_SendPacket( info->s, info->mCaller ? "USR" : "ANS", "%s %s", tEmail, info->mCookie );
+		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", tEmail, info->mCookie );
 	} 
 	else if ( info->mType == SERVER_FILETRANS && info->mCaller == 0 ) {
 		MSN_WS_Send( info->s, "VER MSNFTP\r\n", 12 );
@@ -517,7 +517,7 @@ void __stdcall MSN_CloseConnections()
 			continue;
 		
 		if ( T->mType == SERVER_SWITCHBOARD && T->s != NULL )
-			MSN_SendPacket( T->s, "OUT", NULL );
+			T->sendPacket( "OUT", NULL );
 	}
 
 	LeaveCriticalSection( &sttLock );

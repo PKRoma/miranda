@@ -38,6 +38,8 @@ void		MsgQueue_Init( void );
 void		MsgQueue_Uninit( void );
 void		Lists_Init( void );
 void		Lists_Uninit( void );
+void		P2pSessions_Uninit( void );
+void		P2pSessions_Init( void );
 void		Threads_Uninit( void );
 int		MsnOptInit( WPARAM wParam, LPARAM lParam );
 
@@ -280,6 +282,7 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 	LoadMsnServices();
 	Lists_Init();
 	MsgQueue_Init();
+//	P2pSessions_Init();
 	return 0;
 }
 
@@ -298,6 +301,7 @@ int __declspec( dllexport ) Unload( void )
 	MSN_WS_CleanUp();
 	MsgQueue_Uninit();
 	Lists_Uninit();
+//	P2pSessions_Uninit();
 	Netlib_CloseHandle( hNetlibUser );
 
 	UnloadMsnServices();
