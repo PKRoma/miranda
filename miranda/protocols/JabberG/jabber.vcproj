@@ -793,6 +793,9 @@
 				RelativePath="icos\save.ico">
 			</File>
 			<File
+				RelativePath=".\version.rc">
+			</File>
+			<File
 				RelativePath="icos\write.ico">
 			</File>
 		</Filter>

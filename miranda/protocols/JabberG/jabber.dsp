@@ -1,10 +1,10 @@
-# Microsoft Developer Studio Project File - Name="jabber" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="jabberg" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=jabber - Win32 Release
+CFG=jabberg - Win32 Release
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,12 @@ CFG=jabber - Win32 Release
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "jabber.mak" CFG="jabber - Win32 Release"
+!MESSAGE NMAKE /f "jabber.mak" CFG="jabberg - Win32 Release"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "jabber - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "jabber - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "jabberg - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "jabberg - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -29,7 +29,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "jabber - Win32 Release"
+!IF  "$(CFG)" == "jabberg - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -56,7 +56,7 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib /nologo /base:"0x32500000" /dll /map /machine:I386 /out:"../../bin/release/plugins/jabber.dll" /ALIGN:4096 /ignore:4108
 # SUBTRACT LINK32 /pdb:none
 
-!ELSEIF  "$(CFG)" == "jabber - Win32 Debug"
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -86,115 +86,140 @@ LINK32=link.exe
 
 # Begin Target
 
-# Name "jabber - Win32 Release"
-# Name "jabber - Win32 Debug"
+# Name "jabberg - Win32 Release"
+# Name "jabberg - Win32 Debug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
 SOURCE=.\jabber.cpp
-# ADD CPP /Yc"Jabber.h"
+# ADD CPP /Yc"jabber.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_agent.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_byte.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_file.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_form.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_ft.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_groupchat.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_groupchatlog.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_iq.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_iqid.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_iqid_muc.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_list.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_menu.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_misc.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_opt.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_password.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_proxy.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_ssl.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_svc.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_thread.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_userinfo.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_util.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_vcard.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_ws.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_xml.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_xmlns.cpp
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -287,15 +312,11 @@ SOURCE=.\icos\jabber.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber.rc
-# End Source File
-# Begin Source File
-
 SOURCE=.\icos\key.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\message.ico
+SOURCE=.\msvc6.rc
 # End Source File
 # Begin Source File
 
