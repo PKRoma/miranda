@@ -60,6 +60,7 @@ struct SmsSendEntry {
 	FILETIME startTime;
 } static *smsSend;
 static int smsSendCount;
+static HANDLE hProtoAckHook;
 
 static char *GetXMLField(const char *xml,const char *tag1,...)
 {
@@ -241,12 +242,13 @@ char *GetSmsText(int i,int type)
 
 void InitSmsSend(void)
 {
-	HookEvent(ME_PROTO_ACK,ProtoAckHook);
+	hProtoAckHook=HookEvent(ME_PROTO_ACK,ProtoAckHook);
 }
 
 void UninitSmsSend(void)
 {
 	int i;
+	UnhookEvent(hProtoAckHook);
 	for(i=0;i<smsSendCount;i++) {
 		free(smsSend[i].number);
 		free(smsSend[i].text);
