@@ -112,9 +112,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			while( info->mTotalSend < ft->std.currentFileSize ) 
 			{
 				if ( ft->bCanceled )
-				{	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 					break;
-				}
 
 				wPlace=0;
 				sendpacket[wPlace++]=0x00;
@@ -204,7 +202,6 @@ LBL_InvalidCommand:
 				BYTE* p = tBuf.surelyRead( info->s, 3 );
 				if ( p == NULL ) {
 LBL_Error:		ft->close();
-					MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 					MSN_ShowError( "file transfer is canceled by remote host" );
 					return 1;
 				}
@@ -281,11 +278,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 		case SERVER_DISPATCH:
 			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 			MSN_GoOffline();
-			break;
-
-		case SERVER_FILETRANS:
-			if ( info->ft != NULL )
-				MSN_SendBroadcast( info->ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, info->ft, 0);
 			break;
 		}
 
@@ -797,10 +789,17 @@ void ThreadData::startThread( pThreadFunc parFunc )
 
 HReadBuffer::HReadBuffer( ThreadData* T, int iStart )
 {
+	owner = T;
 	buffer = ( BYTE* )T->mData;
-	bufferSize = sizeof T->mData;
 	totalDataSize = T->mBytesInData;
 	startOffset = iStart;
+}
+
+HReadBuffer::~HReadBuffer()
+{
+	owner->mBytesInData = totalDataSize - startOffset;
+	if ( owner->mBytesInData != 0 )
+		memmove( owner->mData, owner->mData + startOffset, owner->mBytesInData );
 }
 
 BYTE* HReadBuffer::surelyRead( HANDLE s, int parBytes )
@@ -817,8 +816,11 @@ BYTE* HReadBuffer::surelyRead( HANDLE s, int parBytes )
 		totalDataSize = tNewLen;
 	}
 
-	if ( parBytes > bufferSize - startOffset )
+	int bufferSize = sizeof owner->mData;
+	if ( parBytes > bufferSize - startOffset ) {
+		MSN_DebugLog( "HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset );
 		return NULL;
+	}
 
 	while( totalDataSize - startOffset < parBytes )
 	{

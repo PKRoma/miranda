@@ -178,10 +178,7 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		Invcookie, ipaddr, nlb.wPort, WORD((( double )rand() / ( double )RAND_MAX ) * 4294967295 ));
 	MSN_SendPacket( info->s, "MSG", "N %d\r\n%s", nBytes, command );
 
-	if ( bHasError ) {
-		MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-		delete ft;
-	}
+	if ( bHasError ) delete ft;
 	else {
 		ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 

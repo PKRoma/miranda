@@ -246,13 +246,14 @@ struct P2P_Header
 struct HReadBuffer
 {
 	HReadBuffer( ThreadData*, int );
+	~HReadBuffer();
 
 	BYTE* surelyRead( HANDLE s, int parBytes );
 
-	BYTE* buffer;
-	int	bufferSize;
-	int	totalDataSize;
-	int	startOffset;
+	ThreadData* owner;
+	BYTE*			buffer;
+	int			totalDataSize;
+	int			startOffset;
 };
 
 struct filetransfer
