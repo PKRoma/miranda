@@ -2,20 +2,25 @@
 ===============================================================================
                                 PopUp plugin
 Plugin Name: PopUp
-Plugin author: hrk, Luca Santarelli, hrk@users.sourceforge.net
+Plugin authors: Luca Santarelli aka hrk (hrk@users.sourceforge.net)
+                Victor Pavlychko aka zazoo (zazoo@ua.fm)
 ===============================================================================
+The purpose of this plugin is to give developers a common "platform/interface"
+to show PopUps. It is born from the source code of NewStatusNotify, another
+plugin I've made.
 
-The purpose of this plugin is to give developers a common "platform/interface" to show PopUps. It is born from the source code of NewStatusNotify, another plugin I've made.
-
-Remember that users *must* have this plugin enabled, or they won't get any popup. Write this in the requirements, do whatever you wish ;-)... but tell them!
+Remember that users *must* have this plugin enabled, or they won't get any
+popup. Write this in the requirements, do whatever you wish ;-)... but tell
+them!
 ===============================================================================
 */
 #ifndef M_POPUP_H
 #define M_POPUP_H
 
 /*
-NOTE! Since Popup 1.0.1.2 there is a main meun group called "PopUps" where I have put a "Enable/Disable" item.
-You can add your own "enable/disable" items by adding these lines before you call MS_CLIST_ADDMAINMENUITEM:
+NOTE! Since Popup 1.0.1.2 there is a main meun group called "PopUps" where I
+have put a "Enable/Disable" item. You can add your own "enable/disable" items
+by adding these lines before you call MS_CLIST_ADDMAINMENUITEM:
 mi.pszPopUpName = Translate("PopUps");
 mi.position = 0; //You don't need it and it's better if you put it to zero.
 */
@@ -25,16 +30,18 @@ mi.position = 0; //You don't need it and it's better if you put it to zero.
 #define MAX_CONTACTNAME 2048
 #define MAX_SECONDLINE 2048
 
+#define POPUP_USE_SKINNED_BG 0xffffffff
+
 //This is the basic data you'll need to fill and pass to the service function.
 typedef struct  {
-	HANDLE lchContact;										//Handle to the contact, can be NULL (main contact).
-	HICON lchIcon;												//Handle to a icon to be shown. Cannot be NULL.
-	char lpzContactName[MAX_CONTACTNAME];	//This is the contact name or the first line in the plugin. Cannot be NULL.
-	char lpzText[MAX_SECONDLINE];					//This is the second line text. Users can choose to hide it. Cannot be NULL.
-	COLORREF colorBack;										//COLORREF to be used for the background. Can be NULL, default will be used.
-	COLORREF colorText;										//COLORREF to be used for the text. Can be NULL, default will be used.
-	WNDPROC PluginWindowProc;							//Read below. Can be NULL; default will be used.
-	void * PluginData;										//Read below. Can be NULL.
+	HANDLE lchContact;                    //Handle to the contact, can be NULL (main contact).
+	HICON lchIcon;                        //Handle to a icon to be shown. Cannot be NULL.
+	char lpzContactName[MAX_CONTACTNAME]; //This is the contact name or the first line in the plugin. Cannot be NULL.
+	char lpzText[MAX_SECONDLINE];         //This is the second line text. Users can choose to hide it. Cannot be NULL.
+	COLORREF colorBack;                   //COLORREF to be used for the background. Can be NULL, default will be used.
+	COLORREF colorText;                   //COLORREF to be used for the text. Can be NULL, default will be used.
+	WNDPROC PluginWindowProc;             //Read below. Can be NULL; default will be used.
+	void * PluginData;                    //Read below. Can be NULL.
 } POPUPDATA, * LPPOPUPDATA;
 
 typedef struct {
@@ -42,12 +49,15 @@ typedef struct {
 	HICON lchIcon;
 	char lpzContactName[MAX_CONTACTNAME];
 	char lpzText[MAX_SECONDLINE];
-	COLORREF colorBack;
+	COLORREF colorBack;                   //Set background to POPUP_USE_SKINNED_BG to turn on skinning
 	COLORREF colorText;
 	WNDPROC PluginWindowProc;
 	void * PluginData;
-	int iSeconds;	//Custom delay time in seconds. -1 means "forever", 0 means "default time".
-	char cZero[16];	//16 unused bytes which may come useful in the future.
+	int iSeconds;                         //Custom delay time in seconds. -1 means "forever", 0 means "default time".
+	LPCTSTR lpzClass;                     //PopUp class. Used with skinning. See PopUp/AddClass for details
+	COLORREF skinBack;                    //Background color for colorizable skins
+	char cZero[16 - sizeof(LPCTSTR) - sizeof(COLORREF)];
+	                                      //some unused bytes which may come useful in the future.
 } POPUPDATAEX, *LPPOPUPDATAEX;
 
 /*
@@ -265,6 +275,33 @@ Returns: 0 if the popup was shown, -1 in case of failure.
 
 static int __inline PUShowMessage(char* lpzText, BYTE kind) {
 	return (int)CallService(MS_POPUP_SHOWMESSAGE, (WPARAM)lpzText,(LPARAM)kind);
+}
+
+/*
+Each skinned popup (e.g. with colorBack == POPUP_USE_SKINNED_BG) should have
+class set. Then you can choose separate skin for each class (for example, you
+can create separate class for your plugin and use it for all ypu popups. User
+would became able to choose skin for your popups independently from others)
+
+You have to register popup class before using it. To do so call "PopUp/AddClass"
+with lParam = (LPARAM)(const char *)popUpClassName.
+
+All class names are translated (via Translate()) before being added to list. You
+should use english names for them.
+
+There are three predefined classes and one for backward compatability.
+
+Note that you can add clases after popup wal loaded, e.g. you shoul intercept
+ME_SYSTEM_MODULESLOADED event
+*/
+#define MS_POPUP_ADDCLASS "PopUp/AddClass"
+#define POPUP_CLASS_DEFAULT "Default"
+#define POPUP_CLASS_WARNING "Warning"
+#define POPUP_CLASS_NOTIFY  "Notify"
+#define POPUP_CLASS_OLDAPI  "PopUp 1.0.1.x compatability" // for internal purposes
+
+static void __inline PUAddClass(const char *lpzClass){
+	CallService(MS_POPUP_ADDCLASS, 0, (LPARAM)lpzClass);
 }
 
 #endif
