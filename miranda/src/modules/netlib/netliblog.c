@@ -89,7 +89,7 @@ static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
             SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETFONT, (WPARAM)hFont, 0);
             SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL)));
             Utils_RestoreWindowPosition(hwndDlg,NULL,"Netlib","log");
-            ShowWindow(hwndDlg, SW_SHOWNORMAL);
+            ShowWindow(hwndDlg, SW_SHOW);
             return TRUE;
         }
         case DM_CLEARLOG:
@@ -162,7 +162,7 @@ static void SendConsoleMessage(char *msg)
 static void ShowConsole(void)
 {
     if (hwndLog) {
-        ShowWindow(hwndLog, SW_SHOWNORMAL);
+        ShowWindow(hwndLog, SW_SHOW);
     }
     else {
         hwndLog = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_NETLIBLOG), NULL, DlgConsole);
