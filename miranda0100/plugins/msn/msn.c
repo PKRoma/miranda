@@ -28,7 +28,7 @@ PLUGINLINK *pluginLink;
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
 	"MSN Protocol",
-	PLUGIN_MAKE_VERSION(0,1,0,0),
+	PLUGIN_MAKE_VERSION(0,1,0,1),
 	"Adds support for communicating with users of the MSN Messenger network",
 	"Richard Hughes",
 	"miranda@rhughes.net",

@@ -157,9 +157,8 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 					//just one person in here: are we supposed to be sending them anything?
 					msg=MsgQueue_GetNext(hContact,&flags,&seq);
 					if(msg!=NULL) {		//section 8.7/sending
-						//ack modes don't work (according to spec) to just assume it works
-						//TODO? UTF-8 encoding
-						MSN_SendPacket(info->s,"MSG","U %d\r\nContent-Type: text/plain\r\n\r\n%s",strlen(msg)+28,msg);
+						//ack modes don't work (according to spec) so just assume it works
+						MSN_SendPacket(info->s,"MSG","U %d\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s",strlen(msg)+43,msg);
 						free(msg);
 						CmdQueue_AddProtoAck(hContact,ACKTYPE_MESSAGE,ACKRESULT_SUCCESS,(HANDLE)seq,0);
 					}
@@ -230,7 +229,15 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 						headerCount++;
 					}
 				}
-				//TODO? UTF-8 decoding
+
+				{	int i;
+					for(i=0;i<headerCount;i++)
+						if(!strcmp(headers[i].name,"Content-Type"))
+							if(strstr(headers[i].value,"charset=UTF-8")!=NULL) {
+								Utf8Decode(msgBody);
+								break;
+							}
+				}
 
 				if(strchr(fromEmail,'@')==NULL) {   //message from the server (probably)
 				}

@@ -27,76 +27,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_DEFAULT_PORT  1863
 #define MSN_DEFAULT_LOGIN_SERVER "messenger.hotmail.com"	//NB: msmsgs 3.60 hardcodes 64.4.13.33
 
-/*
-//moved to miranda.h
-#define MSN_UHANDLE_LEN 130
-#define MSN_NICKNAME_LEN 30	
-#define MSN_PASSWORD_LEN 30
-#define MSN_BASEUIN (MAX_GROUPS+1)
-
-#define MSN_AUTHINF_LEN 30
-#define MSN_SID_LEN 30
-#define MSN_SES_MAX_USERS 10 //how many ppl u can chat wiht in one session
-typedef struct tagMSN_SESSION{
-	SOCKET con;
-
-	char authinf[MSN_AUTHINF_LEN];
-	char sid[MSN_SID_LEN];
-
-	int usercnt;
-	char users[MSN_SES_MAX_USERS][MSN_UHANDLE_LEN];
-}MSN_SES;
-
-typedef struct tagMSN_INF{
-	BOOL		enabled;
-
-	int status;
-	char uhandle[MSN_UHANDLE_LEN];
-	char nickname[MSN_NICKNAME_LEN];
-	char password[MSN_PASSWORD_LEN];
-
-	SOCKET sDS;
-	SOCKET sNS;
-	//SOCKET sSS;
-	MSN_SES *SS; //each msn session
-	int sscnt; //how many ss instances
-
-	BOOL netactive; //a port open, stuff happening
-	BOOL logedin; //have been authed
-}MSN_INFO;
-
-//(SUB)STATUS DEFINITONS
-#define MSN_STATUS_OFFLINE "FLN" 
-
-#define MSN_STATUS_ONLINE "" 
-#define MSN_STATUS_ONLINE2 "NLN" 
-#define MSN_STATUS_BUSY "BSY"
-#define MSN_STATUS_IDLE "IDL"
-#define MSN_STATUS_BRB "BRB"
-#define MSN_STATUS_AWAY "AWY"
-#define MSN_STATUS_PHONE "PHN"
-#define MSN_STATUS_LUNCH "LUN"
-
-*/
-//FUNCTION PROTOTYPES
 BOOL MSN_WS_Init();
 void MSN_WS_CleanUp();
 int MSN_WS_Send(SOCKET s,char*data,int datalen);
 int MSN_WS_Recv(SOCKET s,char*data,long datalen);
 unsigned long MSN_WS_ResolveName(char*name,WORD *port,int defaultPort);
-
-void MSN_AddContactByUhandle(HWND hwnd);
-int MSN_GetIntStatus(char *state);
-
-//int MSN_Login(char*server,int port); //TRUE/false ret
-
-//int MSN_SSConnect(char*server,int port,int sesid);
-
-//void MSN_Logout();
-//void MSN_Disconnect();
-
-void MSN_ChangeStatus(char*substat);
-void MSN_RemoveContact(char* uhandle);
 
 #define MSN_LOG_FATAL   60
 #define MSN_LOG_ERROR   50
@@ -111,23 +46,13 @@ char *MirandaStatusToMSN(int status);
 int MSNStatusToMiranda(const char *status);
 void UrlDecode(char *str);
 void UrlEncode(const char *src,char *dest,int cbDest);
+void Utf8Decode(char *str);
+void Utf8Encode(const char *src,char *dest,int cbDest);
 
 HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded,int temporary);
 int MSN_AddContact(char* uhandle,char*nick); //returns clist ID
 int MSN_ContactFromHandle(char*uhandle); //get cclist id from Uhandle
 void MSN_HandleFromContact(unsigned long uin,char*uhandle);
-
-//sesion stuff
-BOOL MSN_SendUserMessage(char *destuhandle,char*msg);
-void MSN_RemoveSession(int id);
-int MSN_CreateSession();
-void MSN_KillAllSessions();
-void MSN_RequestSBSession();
-
-//MIMIE FFUNCS
-void MSN_MIME_GetContentType(char*src,char*ct);
-
-char *str_to_UTF8(unsigned char *in);
 
 #define SERVER_DISPATCH     0
 #define SERVER_NOTIFICATION 1
