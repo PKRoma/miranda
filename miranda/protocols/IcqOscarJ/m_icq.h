@@ -130,6 +130,11 @@ typedef struct {
 //lParam=server's error code, 0 for success
 #define ICQACKTYPE_SERVERCLIST  1003
 
+//for rate warning distribution (mainly upload dlg)
+//hProcess=Rate class ID
+//lParam=server's status code
+#define ICQACKTYPE_RATEWARNING  1004
+
 //Changing user info:
 //See documentation of PS_CHANGEINFO
 //The changing user info stuff built into the protocol is purposely extremely

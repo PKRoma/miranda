@@ -352,16 +352,21 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 		if (wBufferLength >= 2)
 		{
 			WORD wStatus;
+      WORD wClass;
 			// This is a horrible simplification, but the only
 			// area where we have rate control is in the user info
 			// auto request part.
 			unpackWord(&pBuffer, &wStatus);
+      unpackWord(&pBuffer, &wClass);
+
 			if (wStatus == 2 || wStatus == 3)
 			{
+        ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
 				icq_EnableUserLookup(FALSE);
 			}
 			else if (wStatus == 4)
 			{
+        ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
 				icq_EnableUserLookup(TRUE);
 			}
 		}
