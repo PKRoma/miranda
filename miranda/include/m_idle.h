@@ -32,9 +32,7 @@ for short idle.*/
 
 #define IDF_ISIDLE		0x1 // idle has become active (if not set, inactive)
 #define IDF_SHORT		0x2 // short idle mode
-#define IDF_LONG		0x4 // long idle mode
 #define IDF_PRIVACY		0x8 // if set, the information provided shouldn't be given to third parties.
-#define IDF_ONFORCE	   0x10 // screensaver/onstationlocked,etc cause instant idle
 
 /*
 	wParam: 0
@@ -56,7 +54,7 @@ typedef struct {
 	int cbSize;			// sizeof()	
 	int enabled;		// monitoring is going on
 	int idleShortTime;	// short idle in mins, if zero then disabled
-	int idleLongTime;	// long idle in mins, if zero then disabled
+	int idleLongTime;	// defunct.
 	int privacy;		// user doesnt want other people seeing anything more than they are idle
 } MIRANDA_IDLE_INFO;
 
