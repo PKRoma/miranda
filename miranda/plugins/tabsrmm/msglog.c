@@ -40,6 +40,11 @@ $Id$
 //mathMod end
 #endif
 
+#if defined(RTFBITMAPS)
+static PBYTE pLogIconBmpBits[21];
+static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
+#endif
+
 int _log(const char *fmt, ...);
 static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak);
 void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
@@ -977,7 +982,9 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 #else
     ReplaceIcons(hwndDlg, dat, startAt, fAppend);
 #endif    
-    
+
+    if(!fAppend)
+        _DebugPopup(dat->hContact, "streaming ready");
     if(ci.pszVal)
         miranda_sys_free(ci.pszVal);
 }
@@ -1255,3 +1262,87 @@ char *Utf8Encode(const WCHAR *str)
 	return (char *) szOut;
 }
 
+#if defined(RTFBITMAPS)
+
+#define RTFPICTHEADERMAXSIZE   78
+void LoadMsgLogIcons(void)
+{
+	HICON hIcon;
+	HBITMAP hBmp, hoBmp;
+	HDC hdc, hdcMem;
+	BITMAPINFOHEADER bih = { 0 };
+	int widthBytes, i;
+	RECT rc;
+	HBRUSH hBkgBrush;
+	int rtfHeaderSize;
+	PBYTE pBmpBits;
+
+	g_hImageList = ImageList_Create(10, 10, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]), 0);
+	hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
+	bih.biSize = sizeof(bih);
+	bih.biBitCount = 24;
+	bih.biCompression = BI_RGB;
+	bih.biHeight = 10;
+	bih.biPlanes = 1;
+	bih.biWidth = 10;
+	widthBytes = ((bih.biWidth * bih.biBitCount + 31) >> 5) * 4;
+	rc.top = rc.left = 0;
+	rc.right = bih.biWidth;
+	rc.bottom = bih.biHeight;
+	hdc = GetDC(NULL);
+	hBmp = CreateCompatibleBitmap(hdc, bih.biWidth, bih.biHeight);
+	hdcMem = CreateCompatibleDC(hdc);
+	pBmpBits = (PBYTE) malloc(widthBytes * bih.biHeight);
+	for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++) {
+		switch (i) {
+			case LOGICON_MSG_IN:
+				hIcon = g_iconIn;
+				ImageList_AddIcon(g_hImageList, hIcon);
+				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_IN, ILD_NORMAL);
+				break;
+			case LOGICON_MSG_OUT:
+				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING));
+				ImageList_AddIcon(g_hImageList, hIcon);
+				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_OUT, ILD_NORMAL);
+				break;
+			case LOGICON_MSG_NOTICE:
+				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NOTICE));
+				ImageList_AddIcon(g_hImageList, hIcon);
+				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_NOTICE, ILD_NORMAL);
+				break;
+		}
+		pLogIconBmpBits[i] = (PBYTE) malloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);
+		//I can't seem to get binary mode working. No matter.
+		rtfHeaderSize = sprintf(pLogIconBmpBits[i], "{\\pict\\dibitmap0\\wbmbitspixel%u\\wbmplanes1\\wbmwidthbytes%u\\picw%u\\pich%u ", bih.biBitCount, widthBytes, bih.biWidth, bih.biHeight);
+		hoBmp = (HBITMAP) SelectObject(hdcMem, hBmp);
+		FillRect(hdcMem, &rc, hBkgBrush);
+		DrawIconEx(hdcMem, 0, 0, hIcon, bih.biWidth, bih.biHeight, 0, NULL, DI_NORMAL);
+		SelectObject(hdcMem, hoBmp);
+		GetDIBits(hdc, hBmp, 0, bih.biHeight, pBmpBits, (BITMAPINFO *) & bih, DIB_RGB_COLORS);
+		{
+			int n;
+			for (n = 0; n < sizeof(BITMAPINFOHEADER); n++)
+				sprintf(pLogIconBmpBits[i] + rtfHeaderSize + n * 2, "%02X", ((PBYTE) & bih)[n]);
+			for (n = 0; n < widthBytes * bih.biHeight; n += 4)
+				sprintf(pLogIconBmpBits[i] + rtfHeaderSize + (bih.biSize + n) * 2, "%02X%02X%02X%02X", pBmpBits[n], pBmpBits[n + 1], pBmpBits[n + 2], pBmpBits[n + 3]);
+		}
+		logIconBmpSize[i] = rtfHeaderSize + (bih.biSize + widthBytes * bih.biHeight) * 2 + 1;
+		pLogIconBmpBits[i][logIconBmpSize[i] - 1] = '}';
+	}
+	free(pBmpBits);
+	DeleteDC(hdcMem);
+	DeleteObject(hBmp);
+	ReleaseDC(NULL, hdc);
+	DeleteObject(hBkgBrush);
+}
+
+void FreeMsgLogIcons(void)
+{
+	int i;
+	for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++)
+		free(pLogIconBmpBits[i]);
+	ImageList_RemoveAll(g_hImageList);
+	ImageList_Destroy(g_hImageList);
+}
+
+#endif

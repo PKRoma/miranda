@@ -130,7 +130,7 @@ void BuildCodePageList();
  * without this, the rich edit control does NOT accept input for all languages.
  */
 
-#if defined(_UNICODE)
+#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
 LRESULT CALLBACK GetMsgHookProc(int iCode, WPARAM wParam, LPARAM lParam)
 {
     MSG *msg = (MSG *)lParam;
@@ -707,7 +707,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists("SecureIM/IsContactSecured"))
         g_SecureIMAvail = 1;
 
-#if defined(_UNICODE)
+#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", 0))
         g_hMsgHook = SetWindowsHookEx(WH_GETMESSAGE, GetMsgHookProc, 0, GetCurrentThreadId());
 #endif    
@@ -735,7 +735,7 @@ int SplitmsgShutdown(void)
 {
     int i;
 
-#if defined(_UNICODE)
+#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
     if(g_hMsgHook != 0)
         UnhookWindowsHookEx(g_hMsgHook);
 #endif    

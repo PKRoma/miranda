@@ -1,13 +1,12 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resrc1.h"
+#include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "resource.h"
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "windows.h"
 #undef APSTUDIO_HIDDEN_SYMBOLS
@@ -36,17 +35,10 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
     WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-#if defined(UNICODE)
-    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES |
+    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
-#else
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES |
-                    WS_EX_STATICEDGE
-#endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
     PUSHBUTTON      "&Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
@@ -116,12 +108,11 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 
 1 TEXTINCLUDE 
 BEGIN
-    "resrc1.h\0"
+    "resource.h\0"
 END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""resource.h""\r\n"
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"

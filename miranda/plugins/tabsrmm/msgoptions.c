@@ -33,7 +33,7 @@ extern HINSTANCE g_hInst;
 extern HWND g_hwndHotkeyHandler;
 extern int g_wantSnapping;
 
-#if defined(_UNICODE)
+#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
     extern HHOOK g_hMsgHook;
     extern LRESULT CALLBACK GetMsgHookProc(int iCode, WPARAM wParam, LPARAM lParam);
 #endif
@@ -154,10 +154,11 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Globally OFF"));
             CheckDlgButton(hwndDlg, IDC_AVADYNAMIC, DBGetContactSettingByte(NULL, SRMSGMOD_T, "dynamicavatarsize", 0));
             
-#if defined(_UNICODE)
+#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
             CheckDlgButton(hwndDlg, IDC_USEKBDHOOK, DBGetContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", 0));
 #else
             EnableWindow(GetDlgItem(hwndDlg, IDC_USEKBDHOOK), FALSE);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_USEKBDHOOK), SW_HIDE);
 #endif
             
             SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0), 0);
@@ -237,7 +238,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "eventapi", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EVENTAPI));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELETETEMP));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flashcl", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLASHCLIST));
-#if defined(_UNICODE)
+#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USEKBDHOOK));
                             if(IsDlgButtonChecked(hwndDlg, IDC_USEKBDHOOK)) {
                                 if(g_hMsgHook == 0)
