@@ -524,6 +524,13 @@
 #define IDC_SLOC                        1661
 #define IDC_PROFILENAME                 1673
 #define IDC_PROFILEDRIVERS              1674
+#define IDC_PLUGLIST                    1676
+#define IDC_PLUGINLONGINFO              1677
+#define IDC_PLUGINAUTHOR                1679
+#define IDC_PLUGININFOFRAME             1680
+#define IDC_PLUGINCPYR                  1681
+#define IDC_PLUGINURL                   1682
+#define IDC_PLUGINEMAIL                 1684
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -552,9 +559,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        271
+#define _APS_NEXT_RESOURCE_VALUE        273
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1675
+#define _APS_NEXT_CONTROL_VALUE         1685
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

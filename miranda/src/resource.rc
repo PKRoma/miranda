@@ -257,26 +257,6 @@ BEGIN
                     111,4,313,240,SS_CENTERIMAGE
 END
 
-IDD_PLUGINCONFLICT DIALOGEX 0, 0, 299, 142
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Plugin Conflict"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,96,122,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,152,122,50,14
-    LTEXT           "The following plugins all report that they perform the same function. Only one can be active at any time. Please select which you wish to use and click OK. Click Cancel if you wish to use the functionality built in to Miranda IM.",
-                    IDC_STATIC,5,5,289,32
-    LTEXT           "The feature that they all implement is %s",
-                    IDC_FEATURENAME,5,41,289,16
-    LTEXT           "You may change your selection at a later time in the Plugins tab of the Options dialog box.",
-                    IDC_STATIC,5,102,289,16
-    CONTROL         "List1",IDC_PLUGINLIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
-                    LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,5,60,289,40
-END
-
 IDD_READAWAYMSG DIALOGEX 0, 0, 187, 72
 STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
     WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
@@ -996,37 +976,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,30,90,101,11
 END
 
-IDD_OPT_PLUGINS DIALOGEX 0, 0, 313, 240
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Plugins",IDC_PLUGINSTATIC1,0,0,313,107
-    CONTROL         "List1",IDC_PLUGINLIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
-                    LVS_AUTOARRANGE | WS_BORDER | WS_TABSTOP,4,14,305,90
-    EDITTEXT        IDC_VERSION,60,124,232,12,ES_AUTOHSCROLL | ES_READONLY | 
-                    NOT WS_BORDER | NOT WS_TABSTOP
-    RTEXT           "Description:",IDC_ADESCRIPTION,8,139,48,8,SS_NOPREFIX
-    EDITTEXT        IDC_DESCRIPTION,60,139,245,24,ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | NOT 
-                    WS_TABSTOP
-    RTEXT           "Author:",IDC_AAUTHOR,8,165,48,8,SS_NOPREFIX
-    EDITTEXT        IDC_AUTHOR,60,165,245,12,ES_AUTOHSCROLL | ES_READONLY | 
-                    NOT WS_BORDER | NOT WS_TABSTOP
-    RTEXT           "Copyright:",IDC_ACOPYRIGHT,8,177,48,8,SS_NOPREFIX
-    EDITTEXT        IDC_COPYRIGHT,60,177,245,12,ES_AUTOHSCROLL | ES_READONLY | 
-                    NOT WS_BORDER | NOT WS_TABSTOP
-    RTEXT           "Homepage:",IDC_AHOMEPAGE,8,189,48,8,SS_NOPREFIX
-    CONTROL         "",IDC_HOMEPAGE,"Hyperlink",WS_TABSTOP,60,189,245,8
-    CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
-                    IDC_RESTARTREQD,8,225,297,8,NOT WS_VISIBLE
-    GROUPBOX        "About",IDC_ABOUTGROUP,0,111,313,111
-    PUSHBUTTON      "",IDC_PLUGINENABLE,162,202,70,14
-    PUSHBUTTON      "More Plugins...",IDC_GETMORE,239,202,66,14
-    RTEXT           "Version:",IDC_AVERSION,8,124,48,8,SS_NOPREFIX
-END
-
 IDD_OPT_ICONS DIALOGEX 0, 0, 257, 193
 STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
@@ -1677,14 +1626,6 @@ BEGIN
         BOTTOMMARGIN, 267
     END
 
-    IDD_PLUGINCONFLICT, DIALOG
-    BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 294
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 136
-    END
-
     IDD_READAWAYMSG, DIALOG
     BEGIN
         LEFTMARGIN, 5
@@ -1945,12 +1886,6 @@ BEGIN
         RIGHTMARGIN, 312
         TOPMARGIN, 2
         BOTTOMMARGIN, 208
-    END
-
-    IDD_OPT_PLUGINS, DIALOG
-    BEGIN
-        VERTGUIDE, 8
-        VERTGUIDE, 305
     END
 
     IDD_OPT_ICONS, DIALOG
@@ -2402,6 +2337,29 @@ BEGIN
                     IDC_STATIC,7,49,212,17
     LTEXT           "e.g. 3.xx profile",IDC_STATIC,131,73,77,11,WS_DISABLED
     LTEXT           "Driver",IDC_STATIC,20,74,23,9
+END
+
+IDD_OPT_PLUGINS DIALOG DISCARDABLE  0, 0, 315, 235
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List1",IDC_PLUGLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | 
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,4,0,306,145
+    EDITTEXT        IDC_PLUGINLONGINFO,50,159,253,19,ES_MULTILINE | 
+                    ES_READONLY | ES_WANTRETURN | NOT WS_BORDER | WS_VSCROLL
+    GROUPBOX        "",IDC_PLUGININFOFRAME,4,148,307,80,BS_RIGHT
+    EDITTEXT        IDC_PLUGINAUTHOR,50,178,253,12,ES_READONLY | 
+                    ES_WANTRETURN | NOT WS_BORDER
+    EDITTEXT        IDC_PLUGINCPYR,50,190,249,12,ES_AUTOHSCROLL | 
+                    ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
+    CONTROL         "",IDC_PLUGINURL,"Hyperlink",WS_TABSTOP,50,213,254,10
+    CONTROL         "",IDC_PLUGINEMAIL,"Hyperlink",WS_TABSTOP,50,201,208,10
+    RTEXT           "Description:",IDC_STATIC,8,158,38,10
+    RTEXT           "Author(s):",IDC_STATIC,8,177,38,9
+    RTEXT           "Copyright:",IDC_STATIC,8,190,38,9
+    RTEXT           "E-mail:",IDC_STATIC,8,202,38,8
+    RTEXT           "Homepage:",IDC_STATIC,7,213,38,8
 END
 
 
