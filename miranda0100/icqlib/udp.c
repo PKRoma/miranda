@@ -2,8 +2,11 @@
 /*
 $Id$
 $Log$
-Revision 1.1  2001/04/22 12:39:07  cyreve
-Initial revision
+Revision 1.2  2001/04/24 01:10:27  cyreve
+get long msgs working, limit now 1023 chars
+
+Revision 1.1.1.1  2001/04/22 12:39:07  cyreve
+
 
 Revision 1.25  2000/11/02 07:29:07  denis
 Ability to disable TCP protocol has been added.
@@ -549,7 +552,8 @@ WORD icq_UDPSendMessage(ICQLINK *link, DWORD uin, const char *text) /* V5 */
   char buf[512]; /* message may be only 450 bytes long */
   icq_Packet *p;
 
-  strncpy(buf, text, 512);
+  strncpy(buf, text, sizeof(buf));
+  buf[sizeof(buf)-1]='\0';
   icq_RusConv("kw", buf);
 
   p = icq_UDPCreateStdPacket(link, UDP_CMD_SEND_THRU_SRV);
@@ -567,9 +571,11 @@ WORD icq_UDPSendURL(ICQLINK *link, DWORD uin, const char *url, const char *descr
   char buf1[512], buf2[512];
   icq_Packet *p;
 
-  strncpy(buf1, descr, 512);
+  strncpy(buf1, descr, sizeof(buf1));
+  buf1[sizeof(buf1)-1]='\0';
   icq_RusConv("kw", buf1);
-  strncpy(buf2, url, 512);
+  strncpy(buf2, url, sizeof(buf2));
+  buf2[sizeof(buf2)-1]='\0';
 
   p = icq_UDPCreateStdPacket(link, UDP_CMD_SEND_THRU_SRV);
   icq_PacketAppend32(p, uin);

@@ -2,8 +2,11 @@
 /*
 $Id$
 $Log$
-Revision 1.1  2001/04/22 12:39:06  cyreve
-Initial revision
+Revision 1.2  2001/04/24 01:10:27  cyreve
+get long msgs working, limit now 1023 chars
+
+Revision 1.1.1.1  2001/04/22 12:39:06  cyreve
+
 
 Revision 1.36  2000/07/09 22:19:35  bills
 added new *Close functions, use *Close functions instead of *Delete
@@ -334,9 +337,10 @@ DWORD icq_TCPSendMessage(ICQLINK *link, DWORD uin, const char *message)
   icq_TCPLink *plink;
   icq_Packet *p;
   DWORD sequence;
-  char data[512] ;
+  char data[1024] ;
   
-  strncpy(data,message,512) ;
+  strncpy(data,message,sizeof(data)) ;
+  data[sizeof(data)-1]='\0';
   icq_RusConv("kw", data) ;
 
   plink=icq_TCPCheckLink(link, uin, TCP_LINK_MESSAGE);
@@ -367,8 +371,8 @@ DWORD icq_TCPSendURL(ICQLINK *link, DWORD uin, const char *message, const char *
 
   plink=icq_TCPCheckLink(link, uin, TCP_LINK_MESSAGE);
   
-  strncpy(data, message, 512);
-  data[511] = '\0';
+  strncpy(data, message, sizeof(data));
+  data[sizeof(data)-1] = '\0';
   icq_RusConv("kw", data);
 
   /* create and send the url packet */
@@ -397,8 +401,8 @@ DWORD icq_SendChatRequest(ICQLINK *link, DWORD uin, const char *message)
 
   plink=icq_TCPCheckLink(link, uin, TCP_LINK_MESSAGE);
   
-  strncpy(data, message, 512);
-  data[511] = '\0';
+  strncpy(data, message, sizeof(data));
+  data[sizeof(data)-1] = '\0';
   icq_RusConv("kw", data);
 
   /* create and send the url packet */
@@ -451,8 +455,8 @@ unsigned long icq_SendFileRequest(ICQLINK *link, unsigned long uin,
 
   strncpy(filename, *(pfile->files), 64);
 
-  strncpy(data, message, 512);
-  data[511] = '\0';
+  strncpy(data, message, sizeof(data));
+  data[sizeof(data)-1] = '\0';
   icq_RusConv("kw", data);  
 
   /* create and send the file req packet */
@@ -521,9 +525,9 @@ void icq_TCPSendChatData(ICQLINK *link, DWORD uin, const char *data)
   if(!plink)
     return;  
 
-  strncpy(data1,data,512) ;
-  data1[511] = '\0';
-  data1_len = strlen(data);
+  strncpy(data1,data,sizeof(data1)) ;
+  data1[sizeof(data1)-1] = '\0';
+  data1_len = strlen(data1);
   icq_ChatRusConv_n("kw", data1, data1_len);
 
   send(plink->socket, data1, data1_len, 0);
