@@ -109,14 +109,9 @@ void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata )
 			if ( str!=NULL && !strcmp( str, "http://jabber.org/protocol/muc#owner" )) {
 				if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 					str = JabberXmlGetAttrValue( xNode, "xmlns" );
-					if ( str!=NULL && !strcmp( str, "jabber:x:data" )) {
+					if ( str!=NULL && !strcmp( str, "jabber:x:data" ))
 						JabberFormCreateDialog( xNode, "Jabber Conference Room Configuration", JabberSetMucConfig, _strdup( from ));
-					}
-				}
-			}
-		}
-	}
-}
+}	}	}	}	}
 
 void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 {
@@ -141,10 +136,8 @@ void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 					if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
 						item = JabberListAdd( LIST_ROOM, JabberStringDecode( jid ));
 						item->name = JabberTextDecode( JabberXmlGetAttrValue( itemNode, "name" ));
-					}
-				}
-			}
-		}
+		}	}	}	}
+
 		if ( hwndJabberGroupchat != NULL ) {
 			if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
 				SendMessage( hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )jid );

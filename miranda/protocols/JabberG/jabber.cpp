@@ -66,7 +66,6 @@ CRITICAL_SECTION modeMsgMutex;
 char* jabberVcardPhotoFileName;
 char* jabberVcardPhotoType;
 BOOL  jabberSendKeepAlive;
-BOOL  jabberOldCoreVersion = FALSE;
 HICON jabberIcon[JABBER_ICON_TOTAL];
 
 HANDLE hWndListGcLog;
@@ -120,13 +119,10 @@ BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
 
 extern "C" __declspec( dllexport ) PLUGININFO *MirandaPluginInfo( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,3,3,0 )) {
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,4,0,0 )) {
 		MessageBox( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.3.3 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
-
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,4,0,0 ))
-		jabberOldCoreVersion = TRUE;
 
 	return &pluginInfo;
 }

@@ -126,18 +126,14 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 
 int JabberListExist( JABBER_LIST list, const char* jid )
 {
-	char* s = ( char* )alloca( strlen( jid )+1 ), *p, *q;
-	strcpy( s, jid );
-	// strip resouce name if any
-	if (( p=strchr( s, '@' )) != NULL )
-		if (( q=strchr( p, '/' )) != NULL )
-			*q = '\0';
+	char szSrc[ JABBER_MAX_JID_LEN ];
+	JabberStripJid( jid, szSrc, sizeof szSrc );
 
 	EnterCriticalSection( &csLists );
 	for ( int i=0; i<count; i++ ) {
-		if ( lists[i].list==list ) {
-			p = lists[i].jid;
-			if ( p && !lstrcmpi( p, s )) {
+		if ( lists[i].list == list ) {
+			char szTempJid[ JABBER_MAX_JID_LEN ];
+			if ( !lstrcmpi( szSrc, JabberStripJid( lists[i].jid, szTempJid, sizeof szTempJid ))) {
 			  	LeaveCriticalSection( &csLists );
 				return i+1;
 	}	}	}
@@ -348,10 +344,8 @@ void JabberListRemoveResource( JABBER_LIST list, const char* jid )
 #ifdef _DEBUG
 					PrintResource( i );
 #endif
-				}
-			}
-		}
-	}
+	}	}	}	}
+
 	LeaveCriticalSection( &csLists );
 }
 

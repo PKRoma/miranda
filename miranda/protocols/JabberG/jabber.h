@@ -61,7 +61,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * Global constants
  *******************************************************************/
 #define JABBER_DEFAULT_PORT 5222
-#define JABBER_IQID "keh_"
+#define JABBER_IQID "mir_"
+#define JABBER_MAX_JID_LEN  256
+
 // User-defined message
 #define WM_JABBER_REGDLG_UPDATE				WM_USER + 100
 #define WM_JABBER_AGENT_REFRESH				WM_USER + 101
@@ -317,7 +319,6 @@ extern char* streamId;
 extern DWORD jabberLocalIP;
 extern BOOL jabberConnected;
 extern BOOL jabberOnline;
-extern BOOL jabberOldCoreVersion;
 extern int jabberStatus;
 extern int jabberDesiredStatus;
 //extern char* jabberModeMsg;
@@ -426,6 +427,8 @@ void          __stdcall JabberSendPresence( int );
 char*         __stdcall JabberRtfEscape( char* str );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 char*         __stdcall JabberGetClientJID( const char* jid, char*, size_t );
+char*         __stdcall JabberStripJid( const char* jid, char* dest, size_t destLen );
+
 
 //---- jabber_misc.c ------------------------------------------------
 

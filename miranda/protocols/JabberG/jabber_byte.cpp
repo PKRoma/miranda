@@ -317,10 +317,7 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 
 				JabberLog( "bytestream_recv connecting to %s:%d", szHost, port );
 				NETLIBOPENCONNECTION nloc = { 0 };
-				if ( jabberOldCoreVersion )
-					nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-				else
-					nloc.cbSize = sizeof( nloc );
+				nloc.cbSize = sizeof( nloc );
 				nloc.szHost = szHost;
 				nloc.wPort = port;
 				hConn = ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );

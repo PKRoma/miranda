@@ -131,18 +131,19 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
 			DBVARIANT dbv;
 			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-				if (( p=dbv.pszVal ) != NULL ) {
-					if ( !stricmp( p, jid )) {	// exact match ( node@domain/resource )
+				if ( !lstrcmpi( dbv.pszVal, jid )) {	// exact match ( node@domain/resource )
 						hContactMatched = hContact;
 						JFreeVariant( &dbv );
 						break;
 					}
+
 					// match only node@domain part
-					if ( !lstrcmpi( p, s )) {
+				char szTempJid[ JABBER_MAX_JID_LEN ];
+				if ( !lstrcmpi( JabberStripJid( dbv.pszVal, szTempJid, sizeof szTempJid ), s )) {
 						hContactMatched = hContact;
 						JFreeVariant( &dbv );
 						break;
-				}	}
+				}
 
 				JFreeVariant( &dbv );
 		}	}
@@ -1047,6 +1048,9 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 	va_end( vararg );
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// JabberGetClientJID - adds a resource postfix to a JID
+
 char* __stdcall JabberGetClientJID( const char* jid, char* dest, size_t destLen )
 {
 	if ( jid == NULL ) 
@@ -1064,6 +1068,29 @@ char* __stdcall JabberGetClientJID( const char* jid, char* dest, size_t destLen 
 		char* resource = JabberListGetBestResourceNamePtr( jid );
 		if ( resource != NULL )
 			_snprintf( dest+len, destLen-len-1, "/%s", resource );
+	}
+
+	return dest;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// JabberStripJid - strips a resource postfix from a JID
+
+char* __stdcall JabberStripJid( const char* jid, char* dest, size_t destLen )
+{
+	if ( jid == NULL )
+		*dest = 0;
+	else {
+		size_t len = strlen( jid );
+		if ( len >= destLen )
+			len = destLen-1;
+
+		memcpy( dest, jid, len );
+		dest[ len ] = 0;
+
+		char* p = strchr( dest, '/' );
+		if ( p != NULL )
+			*p = 0;
 	}
 
 	return dest;

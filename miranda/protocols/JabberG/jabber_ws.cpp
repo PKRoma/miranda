@@ -53,10 +53,7 @@ void JabberWsUninit( void )
 JABBER_SOCKET JabberWsConnect( char* host, WORD port )
 {
 	NETLIBOPENCONNECTION nloc = { 0 };
-	if ( jabberOldCoreVersion )
-		nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-	else
-		nloc.cbSize = sizeof( nloc );
+	nloc.cbSize = sizeof( nloc );
 	nloc.szHost = host;
 	nloc.wPort = port;
 	return ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );

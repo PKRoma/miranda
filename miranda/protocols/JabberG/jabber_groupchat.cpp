@@ -195,7 +195,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					lvItem.mask = LVIF_PARAM | LVIF_TEXT;
 					lvItem.iSubItem = 0;
 					lvItem.lParam = ( LPARAM )item->jid;
-					lvItem.pszText = JabberTextDecode( item->jid );
+					lvItem.pszText = item->jid;
 					ListView_InsertItem( lv, &lvItem );
 					free( lvItem.pszText );
 					lvItem.mask = LVIF_TEXT;

@@ -76,10 +76,7 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 	}
 
 	NETLIBOPENCONNECTION nloc = { 0 };
-	if ( jabberOldCoreVersion )
-		nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-	else
-		nloc.cbSize = sizeof( nloc );
+	nloc.cbSize = sizeof( nloc );
 	nloc.cbSize = sizeof( NETLIBOPENCONNECTION );
 	nloc.szHost = ft->httpHostName;
 	nloc.wPort = ft->httpPort;

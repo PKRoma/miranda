@@ -149,12 +149,9 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 								else
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGOFF ), TRUE );
 								EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_UNREGISTER ), TRUE );
-							}
-						}
+						}	}
 						return TRUE;
-					}
-				}
-			}
+			}	}	}
 			break;
 		}
 		break;
@@ -208,8 +205,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 						lvItem.pszText = JTranslate( "Offline" );
 					ListView_SetItem( lv, &lvItem );
 					lvItem.iItem++;
-				}
-			}
+			}	}
 			i++;
 		}
 		return TRUE;
@@ -235,10 +231,9 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.cchTextMax = sizeof( text );
 				ListView_GetItem( lv, &lvItem );
 				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL ) {
+				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
 					JabberRegisterAgent( hwndDlg, item->jid );
 				}
-			}
 			return TRUE;
 		case IDC_JOIN:
 			lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
@@ -249,10 +244,9 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.cchTextMax = sizeof( text );
 				ListView_GetItem( lv, &lvItem );
 				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL ) {
+				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
 					JabberMenuHandleGroupchat( 0, ( LPARAM )item->jid );
 				}
-			}
 			return TRUE;
 		case IDC_AGENT_SERVER:
 			GetDlgItemText( hwndDlg, IDC_AGENT_SERVER, text, sizeof( text ));
@@ -388,8 +382,7 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 								wsprintf( str, "<%s/>", n->name );
 							strcat( regStr, str );
 						}
-						else if ( !strcmp( n->name, "registered" ) ||
-								 !strcmp( n->name, "instructions" )) {
+						else if ( !strcmp( n->name, "registered" ) || !strcmp( n->name, "instructions" )) {
 							// do nothing, we will skip these
 						}
 						else {
@@ -442,8 +435,7 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 						if ( !strcmp( n->name, "instructions" )) {
 							if ( str ) SetDlgItemText( hwndDlg, IDC_INSTRUCTION, str );
 						}
-						else if ( !strcmp( n->name, "key" ) ||
-								 !strcmp( n->name, "registered" )) {
+						else if ( !strcmp( n->name, "key" ) || !strcmp( n->name, "registered" )) {
 							// do nothing
 						}
 						else if ( !strcmp( n->name, "password" )) {
@@ -463,9 +455,8 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 							ypos += 24;
 						}
 						if ( str ) free( str );
-					}
-				}
-			}
+			}	}	}
+
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SUBMIT ), TRUE );
 		}
 		else if ( wParam == 0 ) {
@@ -512,8 +503,7 @@ static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM
 			case IDCLOSE:
 				DestroyWindow( hwndDlg );
 				return TRUE;
-			}
-		}
+		}	}
 		break;
 	case WM_DESTROY:
 		hwndAgentManualReg = NULL;
