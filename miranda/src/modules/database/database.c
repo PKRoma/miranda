@@ -171,7 +171,7 @@ static int showProfileManager(void)
 	if (GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
 	// wanna show it?
 	GetPrivateProfileString("Database", "ShowProfileMgr", "never", Mgr, sizeof(Mgr), mirandabootini);
-	if ( strcmp(Mgr,"yes") == 0 ) return 1;
+	if ( strcmpi(Mgr,"yes") == 0 ) return 1;
 	return 0;
 }
 
