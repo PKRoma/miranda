@@ -18,10 +18,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
 #include <stdio.h>
+#include <direct.h>
 
 BOOL CALLBACK WelcomeDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK OpenErrorDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK FileAccessDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+
+void GetProfileDirectory(char *szMirandaDir,char *szPath,int cbPath)
+{
+	char szProfileDir[MAX_PATH],szExpandedProfileDir[MAX_PATH],szMirandaBootIni[MAX_PATH];
+
+	lstrcpy(szMirandaBootIni,szMirandaDir);
+	lstrcat(szMirandaBootIni,"\\mirandaboot.ini");
+	GetPrivateProfileString("Database","ProfileDir",".",szProfileDir,sizeof(szProfileDir),szMirandaBootIni);
+	ExpandEnvironmentStrings(szProfileDir,szExpandedProfileDir,sizeof(szExpandedProfileDir));
+	_chdir(szMirandaDir);
+	if(!_fullpath(szPath,szExpandedProfileDir,cbPath))
+		lstrcpyn(szPath,szMirandaDir,cbPath);
+	if(szPath[lstrlen(szPath)-1]=='\\') szPath[lstrlen(szPath)-1]='\0';
+}
 
 static int AddDatabaseToList(HWND hwndList,char *filename)
 {
@@ -32,16 +47,15 @@ static int AddDatabaseToList(HWND hwndList,char *filename)
 	DBHeader dbhdr;
 	DWORD bytesRead;
 	int totalSize,wasted;
-
 	lvi.mask=LVIF_PARAM;
 	lvi.iSubItem=0;
 	for(lvi.iItem=ListView_GetItemCount(hwndList)-1;lvi.iItem>=0;lvi.iItem--) {
 		ListView_GetItem(hwndList,&lvi);
 		if(!strcmpi((char*)lvi.lParam,filename)) return lvi.iItem;
 	}
-
 	hDbFile=CreateFile(filename,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,NULL);
 	if(hDbFile==INVALID_HANDLE_VALUE) return -1;
+
 	ReadFile(hDbFile,&dbhdr,sizeof(dbhdr),&bytesRead,NULL);
 	totalSize=GetFileSize(hDbFile,NULL);
 	if(bytesRead<sizeof(dbhdr)) wasted=0;
@@ -67,6 +81,7 @@ static int AddDatabaseToList(HWND hwndList,char *filename)
 	ListView_SetItemText(hwndList,iNewItem,1,szSize);
 	sprintf(szSize,"%.2lf MB",wasted/1048576.0);
 	ListView_SetItemText(hwndList,iNewItem,2,szSize);
+	
 	return iNewItem;
 }
 
@@ -115,14 +130,14 @@ BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			}
 			{	HANDLE hFind;
 				WIN32_FIND_DATA fd;
-				char szSearchPath[MAX_PATH],szFilename[MAX_PATH];
-			
-				lstrcpy(szSearchPath,szMirandaPath);
+				char szSearchPath[MAX_PATH],szFilename[MAX_PATH],szProfileDir[MAX_PATH];
+				GetProfileDirectory(szMirandaPath,szProfileDir,sizeof(szProfileDir));
+				lstrcpy(szSearchPath,szProfileDir);
 				lstrcat(szSearchPath,"\\*.dat");
 				hFind=FindFirstFile(szSearchPath,&fd);
 				if(hFind!=INVALID_HANDLE_VALUE) {
 					do {
-						wsprintf(szFilename,"%s\\%s",szMirandaPath,fd.cFileName);
+						wsprintf(szFilename,"%s\\%s",szProfileDir,fd.cFileName);
 						AddDatabaseToList(GetDlgItem(hdlg,IDC_DBLIST),szFilename);
 					} while(FindNextFile(hFind,&fd));
 					FindClose(hFind);
