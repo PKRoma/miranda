@@ -1106,10 +1106,12 @@ LBL_Close:
 			( bAllowIncoming ) ? "Direct-Connect" : "Unknown-Connect", 0 );
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {
-		const char	*szListening = tFileInfo2[ "Listening" ],
-						*szNonce = tFileInfo2[ "Nonce" ],
+		const char	*szListening       = tFileInfo2[ "Listening" ],
+						*szNonce           = tFileInfo2[ "Nonce" ],
+						*szExternalAddress = tFileInfo2[ "IPv4External-Addrs" ],
+						*szExternalPort    = tFileInfo2[ "IPv4External-Port"  ],
 						*szInternalAddress = tFileInfo2[ "IPv4Internal-Addrs" ],
-						*szInternalPort = tFileInfo2[ "IPv4Internal-Port" ];
+						*szInternalPort    = tFileInfo2[ "IPv4Internal-Port"  ];
 		if ( szListening == NULL || szNonce == NULL ) {
 			MSN_DebugLog( "Invalid data packet, exiting..." );
 			goto LBL_Close;
@@ -1117,6 +1119,17 @@ LBL_Close:
 
 		// another side reported that it will be a server.
 		if ( !strcmp( szListening, "true" ) && strcmp( szNonce, sttVoidNonce )) {
+			if ( szExternalAddress != NULL && szExternalPort != NULL ) {
+				ThreadData* newThread = new ThreadData;
+				newThread->mType = SERVER_P2P_DIRECT;
+				newThread->mP2pSession = ft;
+				newThread->mParentThread = info;
+				strncpy( newThread->mCookie, szNonce, sizeof newThread->mCookie );
+				_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szExternalAddress, szExternalPort );
+				newThread->startThread(( pThreadFunc )p2p_filePassiveSendThread );
+				return;
+			}
+
 			if ( szInternalAddress == NULL || szInternalPort == NULL ) {
 				MSN_DebugLog( "Invalid data packet, exiting..." );
 				goto LBL_Close;
