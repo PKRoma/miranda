@@ -2,8 +2,11 @@
 /*
 $Id$
 $Log$
-Revision 1.1  2001/04/22 12:39:06  cyreve
-Initial revision
+Revision 1.2  2001/04/26 17:02:19  cyreve
+set to multithreaded runtime & misc file transfer fixes
+
+Revision 1.1.1.1  2001/04/22 12:39:06  cyreve
+
 
 Revision 1.15  2000/07/24 03:10:08  bills
 added support for real nickname during TCP transactions like file and
@@ -170,14 +173,8 @@ void icq_TCPProcessFilePacket(icq_Packet *p, icq_TCPLink *plink)
 
       /* respond */
       icq_FileSessionPrepareNextFile(psession);
-	  /*{char filename[260];
-	  char *str2;
-	  str2=strrchr(psession->current_file,'\\');
-	  if(str2!=NULL) strcpy(filename,str2+1);
-	  else strcpy(filename,psession->current_file);*/
       presponse=icq_TCPCreateFile02Packet(psession->current_file,
         psession->current_file_size, psession->current_speed);
-	  //}
       icq_TCPLinkSend(plink, presponse);
 #ifdef TCP_PACKET_TRACE
 #ifdef TCP_TRACE_ODS

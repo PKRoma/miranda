@@ -26,6 +26,7 @@ icq_FileSession *icq_FileSessionNew(ICQLINK *icqlink)
     p->status=0;
     p->id=0L;
     p->icqlink=icqlink;
+	p->tcplink=NULL;
     p->current_fd=-1;
     p->current_file_num=0;
     p->current_file_progress=0;
@@ -121,7 +122,7 @@ void icq_FileSessionSetCurrentFile(icq_FileSession *p, const char *filename)
 #endif
   } else {
 #ifdef _WIN32
-    p->current_fd=open(file, O_WRONLY | O_CREAT | O_BINARY);
+    p->current_fd=open(file, O_WRONLY | O_CREAT | O_BINARY,_S_IREAD|_S_IWRITE);
 #else
     p->current_fd=open(file, O_WRONLY | O_CREAT, S_IRWXU);
 #endif
@@ -228,9 +229,9 @@ void icq_FileSessionClose(icq_FileSession *p)
     icq_TCPLinkClose(plink);
   }
 
-  icq_FileSessionDelete(p);
-
   list_remove(p->icqlink->icq_FileSessions, p);		
+
+  icq_FileSessionDelete(p);
 }   
 
 void icq_FileSessionSetWorkingDir(icq_FileSession *p, const char *dir)
