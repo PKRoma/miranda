@@ -641,11 +641,14 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 				p2p_sendAck( ft, hdrdata );
 				ft->p2p_msgid-=2;
 
-				bool bUseDirect = false;
-				if ( atol( szNetID ) == 0 )
+				bool bUseDirect = false, bActAsServer = false;
+				if ( atol( szNetID ) == 0 ) {
 					if ( !strcmp( szConnType, "Direct-Connect" ) || !strcmp( szConnType, "Firewall" ))
 						bUseDirect = true;
-
+				}
+/*				else if ( MSN_GetByte( "NLSpecifyIncomingPorts", 0 ))
+					bUseDirect = bActAsServer = true; 
+*/
 				MimeHeaders tResult(20);
 				tResult.addString( "CSeq", "1 " );
 				tResult.addString( "Call-ID", ft->p2p_callID );
@@ -656,8 +659,27 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 					tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 
 				char szBody[ 512 ];
-				p2p_sendSlp( ft, tResult, 200, szBody, _snprintf( szBody, sizeof szBody,
-					"Bridge: TCPv1\r\nListening: false\r\nNonce: {00000000-0000-0000-0000-000000000000}\r\n\r\n%c", 0 ));
+				{
+					int  cbBodyLen;
+					if ( bActAsServer ) {
+						UUID myid;
+						UuidCreate( &myid );
+
+						cbBodyLen = _snprintf( szBody, sizeof szBody,
+							"Bridge: TCPv1\r\n"
+							"Listening: true\r\n"
+							"Nonce: {%08X-%04X-%04X-%08X%08X}\r\n\r\n%c", 
+							myid.Data1, (WORD)myid.Data2, (WORD)myid.Data3, *( DWORD* )myid.Data4, *( DWORD* )&myid.Data4[4],
+							0 );
+					}
+					else 
+						cbBodyLen = _snprintf( szBody, sizeof szBody,
+							"Bridge: TCPv1\r\n"
+							"Listening: false\r\n"
+							"Nonce: {00000000-0000-0000-0000-000000000000}\r\n\r\n%c", 0 );
+
+					p2p_sendSlp( ft, tResult, 200, szBody, cbBodyLen );
+				}
 
 				ft->p2p_msgid++;
 			}
@@ -687,7 +709,7 @@ void __stdcall p2p_processMsg( ThreadData* info, char* msgbody )
 				}
 				else p2p_sendStatus( ft, 603 );
 			}
-			else if ( iMsgType == 3 ) {
+			else if ( iMsgType == 3 && ft != NULL ) {
 				p2p_sendAck( ft, hdrdata );
 
 				const char *szCallID = tFileInfo[ "Call-ID" ], *szBranch = tFileInfo[ "Via" ];
