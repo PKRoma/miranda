@@ -74,6 +74,7 @@ extern HANDLE g_hEvent_Sessioncreated, g_hEvent_Sessionclosed, g_hEvent_Sessionc
 extern HICON g_buttonBarIcons[], g_iconContainer;
 
 HMENU g_hMenuContext, g_hMenuContainer = 0, g_hMenuEncoding = 0;
+int   g_wantSnapping = 0;
 
 #define DEFAULT_CONTAINER_POS 0x00400040
 #define DEFAULT_CONTAINER_SIZE 0x019001f4
@@ -230,7 +231,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     TCITEM item;
     HWND  hwndTab;
 
-    CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
+    if(g_wantSnapping)
+        CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
     
     pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
     hwndTab = GetDlgItem(hwndDlg, IDC_MSGTABS);

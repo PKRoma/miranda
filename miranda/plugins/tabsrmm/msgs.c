@@ -63,6 +63,8 @@ HMODULE hDLL;
 PSLWA pSetLayeredWindowAttributes;
 extern TCHAR g_szDefaultContainerName[];
 extern HMENU g_hMenuContext;
+extern int g_wantSnapping;
+
 extern struct ContainerWindowData *pFirstContainer;
 
 // send jobs...
@@ -658,6 +660,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
         g_SmileyAddAvail = 1;
 
+    g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0);
+    
     if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
         g_MetaContactsAvail = 1;
     

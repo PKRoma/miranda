@@ -240,6 +240,7 @@
 #define IDC_SYNCSOUNDS                  1690
 #define IDC_RELATIVEDATES               1690
 #define IDC_AVADYNAMIC                  1690
+#define IDC_USESNAPPING                 1690
 #define IDC_LONGDATES                   1691
 #define IDC_CHECK3                      1692
 #define IDC_CNTNOSTATUSBAR              1692
@@ -261,7 +262,6 @@
 #define IDC_FLASHCLIST                  1701
 #define IDC_NRFLASH                     1702
 #define IDC_NRFLASHSPIN                 1703
-#define IDC_EDIT3                       1704
 #define IDC_FLASHINTERVAL               1704
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001

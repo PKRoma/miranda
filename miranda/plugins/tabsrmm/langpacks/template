@@ -256,6 +256,20 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Use default container mode (manual contact assignments)]
 
+[Container flashing]
+
+[Global container options]
+
+[Flash containers]
+
+[times]
+
+[Flash interval]
+
+[milliseconds]
+
+[Use the snapping windows plugin]
+
 ; ------------------------
 ; ----------------- select container dialog box
 ; ------------------------

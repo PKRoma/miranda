@@ -1880,6 +1880,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 dbei.cbSize = sizeof(dbei);
                 dbei.cbBlob = 0;
+                dbei.
                 CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
                 if (dat->hDbEventFirst == NULL)
                     dat->hDbEventFirst = (HANDLE) lParam;

@@ -551,38 +551,41 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "To set container options, please use the container settings dialog. It is avalable by:\n1. chossing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
                     IDC_STATIC,7,2,298,25
-    GROUPBOX        "Container mode",IDC_STATIC,0,42,312,62
+    GROUPBOX        "Container mode",IDC_STATIC,0,30,312,62
     CONTROL         "Use contact list group names for organizing containers",
                     IDC_CONTAINERGROUPMODE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,6,51,296,10
+                    WS_GROUP,6,39,296,10
     CONTROL         "Maximum number of tabs per container",IDC_LIMITTABS,
-                    "Button",BS_AUTORADIOBUTTON,6,63,148,9
-    EDITTEXT        IDC_TABLIMIT,169,61,33,12,ES_AUTOHSCROLL | ES_NUMBER
+                    "Button",BS_AUTORADIOBUTTON,6,51,148,9
+    EDITTEXT        IDC_TABLIMIT,169,49,33,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_TABLIMITSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,202,65,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,202,53,9,
                     10
     CONTROL         "Use single window mode (one container per session)",
-                    IDC_SINGLEWINDOWMODE,"Button",BS_AUTORADIOBUTTON,6,74,
+                    IDC_SINGLEWINDOWMODE,"Button",BS_AUTORADIOBUTTON,6,62,
                     290,11
     CONTROL         "Use default container mode (manual contact assignments)",
                     IDC_DEFAULTCONTAINERMODE,"Button",BS_AUTORADIOBUTTON,6,
-                    87,295,12
+                    75,295,12
     GROUPBOX        "Set display name for the default container (instead of just ""default"")",
                     IDC_STATIC,1,186,310,30
     EDITTEXT        IDC_DEFAULTDISPLAYNAME,7,198,142,12,ES_AUTOHSCROLL
-    GROUPBOX        "Container flashing",IDC_STATIC,0,107,312,57
-    LTEXT           "Flash containers",IDC_STATIC,6,118,102,11
-    EDITTEXT        IDC_NRFLASH,111,116,34,12,ES_AUTOHSCROLL
+    GROUPBOX        "Container flashing",IDC_STATIC,0,94,312,43
+    LTEXT           "Flash containers",IDC_STATIC,6,105,102,11
+    EDITTEXT        IDC_NRFLASH,111,103,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_NRFLASHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,143,117,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,143,104,
                     14,11
-    LTEXT           "times",IDC_STATIC,166,118,83,11
-    LTEXT           "Flash interval",IDC_STATIC,6,133,99,11
-    EDITTEXT        IDC_FLASHINTERVAL,111,131,34,12,ES_AUTOHSCROLL
+    LTEXT           "times",IDC_STATIC,166,105,83,11
+    LTEXT           "Flash interval",IDC_STATIC,6,120,99,11
+    EDITTEXT        IDC_FLASHINTERVAL,111,118,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_FLASHINTERVALSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,149,134,10,10
-    LTEXT           "milliseconds",IDC_STATIC,166,132,81,12
+                    UDS_ARROWKEYS,149,121,10,10
+    LTEXT           "milliseconds",IDC_STATIC,166,119,81,12
+    GROUPBOX        "Global container options",IDC_STATIC,0,140,311,42
+    CONTROL         "Use the snapping windows plugin",IDC_USESNAPPING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,153,157,11
 END
 
 IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 312, 227

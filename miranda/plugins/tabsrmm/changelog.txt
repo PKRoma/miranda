@@ -34,7 +34,14 @@ This list is imcomplete, but contains a few important things left.
 
 Version 0.9.9.4 - 2005/01/20
 
-        + added support for the snapping windows plugin.
+        + added support for the snapping windows plugin. Yeah, even if I personally HATE
+          snapping windows, its done. Why? Because this great plugin makes it so easy - 
+          a single line of code is enough :)
+          You can find this great plugin here: 
+          http://www.miranda-im.org/download/details.php?action=viewfile&id=923
+          
+          However, its off by default, you need to activate it by checking the option 
+          under Options->Message sessions->Message containers.
         
         * changed window flashing code. Its now using FlashWindowEx() which means that
           tabSRMM won't work on Windows 95 anymore, but I don't think thats a problem :)
@@ -46,6 +53,9 @@ Version 0.9.9.4 - 2005/01/20
           containers which are using the "default" value and are NOT set to flash forever)
           and the flashing interval. You can find both options under Options->Message sessions->
           Container options.
+          
+        ! The option "use contacts local time" should no longer break message grouping when
+          the adjusted time of the buddy is "in the future".
           
 Version 0.9.9.3 - 2005/01/20
 
@@ -1376,4 +1386,4 @@ depending on user feedback and how much sense they would make.
 	  
 	+ bugfixes :)
         
-@xy _tboutput_form:16860 16815 3615 2190
+

@@ -504,15 +504,13 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep0, rtfFonts[MSGDLGFONTCOUNT]);
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 3);
             }
-            else {
+            else
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
-            }
         }
     }
     /* OnO: highlight start */
-    if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG) {
+    if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
-    }
 
     if ((dat->dwFlags & MWF_LOG_SHOWICONS) && g_groupBreak) {
         int i;
@@ -555,7 +553,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	if (dat->dwFlags & MWF_LOG_SHOWTIME || dat->dwFlags & MWF_LOG_SHOWNICK || !g_groupBreak) {
 		char *szName, *szFinalTimestamp, szDummy = '\0';
 		BYTE bHideNick = g_groupBreak ? !(dat->dwFlags & MWF_LOG_SHOWNICK) : TRUE;
-
+        DWORD final_time = dbei.timestamp;
+        
 		if (dat->dwFlags & MWF_LOG_SHOWTIME && (g_groupBreak || dat->dwEventIsShown & MWF_SHOW_MARKFOLLOWUPTS)) {
             showColon = 1;
 			if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0)) {
@@ -575,11 +574,13 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 					if (contact_gmt_diff!=-1) {
 						contact_gmt_diff = contact_gmt_diff>128 ? 256-contact_gmt_diff : 0-contact_gmt_diff;
 						diff=(int)local_gmt_diff-(int)contact_gmt_diff*60*60/2;
-						dbei.timestamp-=diff;
+                        final_time = dbei.timestamp - diff;
+						//dbei.timestamp-=diff;
 					}
 				}
 			}
-            szFinalTimestamp = MakeRelativeDate(dat, dbei.timestamp, g_groupBreak);
+            
+            szFinalTimestamp = MakeRelativeDate(dat, final_time, g_groupBreak);
 		}
         else if (!g_groupBreak)
             szFinalTimestamp = szGroupedSeparator;

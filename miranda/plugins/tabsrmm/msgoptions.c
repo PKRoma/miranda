@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 extern HWND g_hwndHotkeyHandler;
+extern int g_wantSnapping;
 
 HMENU BuildContainerMenu();
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
@@ -717,6 +718,10 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
             SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETPOS, 0, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000));
             SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETACCEL, 0, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000));
             
+            if(!ServiceExists("Utils/SnapWindowProc"))
+                EnableWindow(GetDlgItem(hwndDlg, IDC_USESNAPPING), FALSE);
+            else
+                CheckDlgButton(hwndDlg, IDC_USESNAPPING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0));
             
 #if defined(_UNICODE)
             if(DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv))
@@ -768,6 +773,8 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", IsDlgButtonChecked(hwndDlg, IDC_SINGLEWINDOWMODE));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", GetDlgItemInt(hwndDlg, IDC_FLASHINTERVAL, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nrflash", GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING));
+                            g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);
                             BuildContainerMenu();
                             return TRUE;
                         }
