@@ -252,6 +252,8 @@ struct icq_Link_s
   void (*icq_SrvAck)(icq_Link *icqlink, unsigned short seq);
   void (*icq_RequestNotify)(icq_Link *icqlink, unsigned long id, 
        int type, int arg, void *data);
+  void (*icq_RecvAwayMsg)(icq_Link *icqlink, unsigned long id,
+       const char *msg);
   void (*icq_FileNotify)(icq_FileSession *session, int type, int arg,
        void *data);
   void (*icq_ChatNotify)(icq_ChatSession *session, int type, int arg,
@@ -388,6 +390,7 @@ unsigned long icq_TCPSendMessage(icq_Link *icqlink, unsigned long uin,
      const char *message);
 unsigned long icq_TCPSendURL(icq_Link *icqlink, unsigned long uin,
      const char *message, const char *url);
+unsigned long icq_TCPSendAwayMessageReq(icq_Link *icqlink, unsigned long uin, int status);
 unsigned long icq_SendChatRequest(icq_Link *icqlink, unsigned long uin,
      const char *message);
 void icq_AcceptChatRequest(icq_Link *icqlink, unsigned long uin, unsigned long seq);

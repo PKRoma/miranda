@@ -84,6 +84,7 @@ icq_Packet *icq_TCPCreateStdPacket(icq_TCPLink *plink, WORD icq_TCPCommand,
 icq_Packet *icq_TCPCreateMessagePacket(icq_TCPLink *plink, const char *message);
 icq_Packet *icq_TCPCreateURLPacket(icq_TCPLink *plink, const char *message,
    const char *url);
+icq_Packet *icq_TCPCreateAwayReqPacket(icq_TCPLink *plink, WORD statusMode);
 icq_Packet *icq_TCPCreateChatReqPacket(icq_TCPLink *plink, const char *message);
 icq_Packet *icq_TCPCreateFileReqPacket(icq_TCPLink *plink, 
    const char *message, const char *filename, DWORD size);

@@ -126,6 +126,34 @@ DWORD icq_TCPSendMessage(icq_Link *icqlink, DWORD uin, const char *message)
   return sequence;
 }
 
+DWORD icq_TCPSendAwayMessageReq(icq_Link *icqlink, DWORD uin, int status)
+{
+  icq_TCPLink *plink;
+  icq_Packet *p;
+  DWORD sequence;
+  WORD type;
+  
+  plink=icq_TCPCheckLink(icqlink, uin, TCP_LINK_MESSAGE);
+
+  /* create and send the message packet */
+  switch(status) {
+	case STATUS_AWAY: type=ICQ_TCP_MSG_READAWAY; break;
+	case STATUS_DND: type=ICQ_TCP_MSG_READDND; break;
+	case STATUS_NA: type=ICQ_TCP_MSG_READNA; break;
+	case STATUS_OCCUPIED: type=ICQ_TCP_MSG_READOCCUPIED; break;
+	case STATUS_FREE_CHAT: type=ICQ_TCP_MSG_READFFC; break;
+	default: type=ICQ_TCP_MSG_READAWAY; break;
+  }
+  p=icq_TCPCreateAwayReqPacket(plink, type);
+  sequence=icq_TCPLinkSendSeq(plink, p, 0);
+
+#ifdef TCP_PACKET_TRACE
+  printf("away msg request packet sent to uin %lu { sequence=%lx }\n", uin, p->id);
+#endif
+
+  return sequence;
+}
+
 DWORD icq_TCPSendURL(icq_Link *icqlink, DWORD uin, const char *message, const char *url)
 {
   icq_TCPLink *plink;
