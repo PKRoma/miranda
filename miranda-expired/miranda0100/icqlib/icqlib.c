@@ -43,6 +43,10 @@
 #include "socketmanager.h"
 #include "contacts.h"
 
+//#include <stdio.h>  
+//#define l(t) {FILE *fp; fp=fopen("c:\\miranda.log.txt","at"); fprintf(fp,"%u: %d: %s\n",GetTickCount(),__LINE__,(t)); fclose(fp);}
+#define l(t)
+
 int icq_Russian = FALSE;
 BYTE icq_LogLevel = 0;
 
@@ -301,6 +305,7 @@ int icq_Connect(icq_Link *icqlink, const char *hostname, int port)
   struct hostent *host_struct; /* used in DNS llokup */
 
   /* create the unconnected socket*/
+  l("creating standard udp socket");
   icqlink->icq_UDPSok = icq_SocketNew(AF_INET, SOCK_DGRAM, 0);
 
   if(icqlink->icq_UDPSok == -1)
@@ -345,6 +350,7 @@ int icq_Connect(icq_Link *icqlink, const char *hostname, int port)
     prsin.sin_port = htons(icqlink->icq_ProxyPort); /* port */
 
     /* create the unconnected socket*/
+    l("creating proxy udp socket");
     icqlink->icq_ProxySok = icq_SocketNew(AF_INET, SOCK_STREAM, 0);
 
     if(icqlink->icq_ProxySok == -1)
