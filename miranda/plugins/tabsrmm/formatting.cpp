@@ -30,10 +30,11 @@ Modified and adapted for tabSRMM by Nightwish
 License: GPL
 */
 
+#define __TSR_CXX
+#include "commonheaders.h"
 
 #include <windows.h>
 #include <richedit.h>
-#include <tchar.h>
 
 #include <string>
 #include <vector>
@@ -126,7 +127,7 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 
     gtx.cb = (nleft + 1) * sizeof(wchar_t);
     gtx.codepage = 1200;
-    gtx.flags = GT_SELECTION;
+    gtx.flags = 2; // GT_SELECTION;
     gtx.lpDefaultChar = 0;
     gtx.lpUsedDefChar = 0;
 
@@ -147,6 +148,9 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 
 		std::wstring t_(old_text, p);
 		const wchar_t *what = t_.c_str();
+        bool space_seen = false, sep_seen = false;
+        unsigned searchoffs = p, epos;
+        wchar_t searchfor[] = invalidating_chars;
 
 		wchar_t sep = old_text[p];
 
@@ -159,11 +163,8 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 			goto miss;
 
 		// search for end
-		wchar_t searchfor[] = invalidating_chars;
 		searchfor[0] = sep;
-		unsigned searchoffs = p, epos;
 //		int countdown = 50;
-		bool space_seen = false, sep_seen = false;
 		for (;; searchoffs = epos) {
 //			if (!--countdown)
 //				goto miss;

@@ -931,7 +931,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				if(p1 == _tcsstr(p1, _T("\\cf"))) // foreground color
 				{
 					TCHAR szTemp[20];
-					int iCol = _tstoi(p1 + 3);
+					int iCol = _ttoi(p1 + 3);
 					//int iInd = RTFColorToIndex(pIndex, iCol, dat);
 					bJustRemovedRTF = TRUE;
 
@@ -943,12 +943,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				else if(p1 == _tcsstr(p1, _T("\\highlight"))) //background color
 				{
                     TCHAR szTemp[20];
-					int iCol = _tstoi(p1 + 10);
+					int iCol = _ttoi(p1 + 10);
 					//int iInd = RTFColorToIndex(pIndex, iCol, dat);
 					bJustRemovedRTF = TRUE;
 
                     _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
-					iRemoveChars = 10 + _tclen(szTemp);
+					iRemoveChars = 10 + _tcslen(szTemp);
 					//if(bTextHasStarted || iInd >= 0)
 					//	_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 ) ? _T("%%f%02u") : _T("%%F"), iInd);
 				}
