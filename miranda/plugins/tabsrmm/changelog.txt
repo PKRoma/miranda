@@ -32,6 +32,20 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
+Version 0.0.9.5 - 2005/01/04
+
+        ! fixed close tab on double click
+        
+        ! fixed missing PREF_UNICODE on resend attempts
+        
+        * new event for the event API - its fired before a message is sent. An external
+          plugin can use it to alter the content of the message input area.
+          This is for developers only - The event is sent via the MSG_WINDOW_EVT_CUSTOM
+          event type and the tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND subtype is passed
+          via the evtCode field of the TABSRMM_SessionInfo structure. A pointer to this
+          structure is passed via MessageWindowEventData.local.
+          (see m_tabsrmm.h and m_message.h for further details).
+          
 Version 0.0.9.4 - 2004/12/02
 
         * small change in smileyadd and tabSRMM's interface to smileyadd as an attempt

@@ -1306,9 +1306,10 @@ void InitAPI()
         g_isMetaContactsAvail = TRUE;
 }
 
-void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
+void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType) {
     MessageWindowEventData mwe = { 0 };
-
+    struct TABSRMM_SessionInfo se = { 0 };
+    
     if (hContact == NULL || hwnd == NULL) return;
     if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1))
         return;
@@ -1321,6 +1322,20 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
     mwe.szModule = "tabSRMsg";
 #endif    
     mwe.uType = type;
+    if(type = MSG_WINDOW_EVT_CUSTOM) {
+        se.cbSize = sizeof(se);
+        se.evtCode = subType;
+        se.dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+        se.hwnd = hwnd;
+        se.hwndInput = GetDlgItem(hwnd, IDC_MESSAGE);
+        if(se.dat != NULL) {
+            se.hwndContainer = se.dat->pContainer->hwnd;
+            se.pContainer = se.dat->pContainer;
+        }
+        mwe.local = (void *)&se;
+    }
+    else
+        mwe.local = NULL;
     NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe);
 }
 

@@ -148,7 +148,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
 static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
-void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type);
+void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigned int subType);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -166,6 +166,16 @@ static const UINT buttonLineControlsNew[] = { IDC_ADD, IDC_SMILEYBTN, IDC_PIC, I
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 static const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
+/*
+ * send flags
+ */
+
+#if defined(_UNICODE)
+    #define SEND_FLAGS PREF_UNICODE
+#else
+    #define SEND_FLAGS 0
+#endif
+    
 static char *MsgServiceName(HANDLE hContact)
 {
 #ifdef _UNICODE
@@ -1206,7 +1216,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 
                 dat->dwFlags |= MWF_INITMODE;
-                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
+                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
                 
                 SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONADDTOOLTIP, (WPARAM) Translate("Add Contact Permanently to List"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
@@ -1476,7 +1486,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
-                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
+                TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
                 return TRUE;
             }
         case DM_TYPING:
@@ -2235,10 +2245,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         FlashTab(hwndTab, dat->iTabID, &dat->bTabFlash, TRUE, dat->iFlashIcon, dat->iTabImage);
                 }
             } else if (wParam == TIMERID_ANTIBOMB) {
-                int flags = 0;
-#if defined(_UNICODE)
-                flags = PREF_UNICODE;
-#endif
                 int sentSoFar = 0, i;
                 KillTimer(hwndDlg, wParam);
                 for (i = 0; i < dat->sendJobs[0].sendCount; i++) {
@@ -2250,7 +2256,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SetTimer(hwndDlg, TIMERID_ANTIBOMB, TIMEOUT_ANTIBOMB, NULL);
                         break;
                     }
-                    dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), flags, (LPARAM) dat->sendJobs[0].sendBuffer);
+                    dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
                     sentSoFar++;
                 }
             } else if (wParam == TIMERID_TYPE) {
@@ -2372,16 +2378,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 case MSGERROR_RETRY:
                     {
-                        int flags = 0;
-#if defined(_UNICODE)
-                        flags = PREF_UNICODE;
-#endif
-
                         int i;
+
                         for (i = 0; i < dat->sendJobs[0].sendCount; i++) {
                             if (dat->sendJobs[0].sendInfo[i].hSendId == NULL && dat->sendJobs[0].sendInfo[i].hContact == NULL)
                                 continue;
-                            dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), flags, (LPARAM) dat->sendJobs[0].sendBuffer);
+                            dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
                         }
                     }
                     SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
@@ -2748,7 +2750,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
                         break;
 
-                    //TABSRMM_FireEvent(g_hEvent_Beforesend, hwndDlg, dat);
+                    TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
                     
                     bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
                     dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
@@ -3913,7 +3915,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case WM_DESTROY:
-            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
 // BEGIN MOD#26: Autosave notsent message (by Corsario & bi0)
 			if(dat->hContact) {
 				TCHAR *AutosaveMessage;
@@ -4031,7 +4033,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
             }
 // XXX end mod
-            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
             
             if (dat)
                 free(dat);
@@ -4205,12 +4207,6 @@ static int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
 
 static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    int flags = 0;
-    
-#if defined(_UNICODE)
-    flags = PREF_UNICODE;
-#endif
-
     if(dat->hAckEvent == 0)
         dat->hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_EVENTSENT);
     
@@ -4226,7 +4222,7 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat)
                 dat->sendJobs[0].sendInfo = (struct MessageSendInfo *) realloc(dat->sendJobs[0].sendInfo, sizeof(struct MessageSendInfo) * dat->sendJobs[0].sendCount);
                 dat->sendJobs[0].sendInfo[dat->sendJobs[0].sendCount - 1].hContact = hContact;
                 if (sentSoFar < ANTIBOMB_COUNT) {
-                    dat->sendJobs[0].sendInfo[dat->sendJobs[0].sendCount - 1].hSendId = (HANDLE) CallContactService(hContact, MsgServiceName(hContact), flags, (LPARAM) dat->sendJobs[0].sendBuffer);
+                    dat->sendJobs[0].sendInfo[dat->sendJobs[0].sendCount - 1].hSendId = (HANDLE) CallContactService(hContact, MsgServiceName(hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
                     sentSoFar++;
                 } else
                     dat->sendJobs[0].sendInfo[dat->sendJobs[0].sendCount - 1].hSendId = NULL;
@@ -4253,7 +4249,7 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat)
         else
             dat->sendJobs[0].sendInfo = (struct MessageSendInfo *) realloc(dat->sendJobs[0].sendInfo, sizeof(struct MessageSendInfo) * dat->sendJobs[0].sendCount);
         dat->sendJobs[0].sendInfo[0].hContact = dat->hContact;
-        dat->sendJobs[0].sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) dat->sendJobs[0].sendBuffer);
+        dat->sendJobs[0].sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) dat->sendJobs[0].sendBuffer);
     }
 
     // give icon feedback...

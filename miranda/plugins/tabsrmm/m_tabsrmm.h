@@ -202,14 +202,18 @@ struct StreamJob {
 //returns struct MessageWindowData *dat, 0 if no window is found
 #define MS_MSG_MOD_GETWINDOWFLAGS "SRMsg_MOD/GetWindowFlags"
 
-// events
+// custom tabSRMM events
+
+#define tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND 1
 
 struct TABSRMM_SessionInfo {
+    unsigned int cbSize;
+    unsigned int evtCode;
     HWND hwnd;              // handle of the message dialog (tab)
     HWND hwndContainer;     // handle of the parent container
     HWND hwndInput;         // handle of the input area (rich edit)
-    WINDOWPLACEMENT wp;     // window placement of the parent container
     struct MessageWindowData *dat;      // the session info
+    struct ContainerWindowData *pContainer;
 };
 
 #define ME_MSG_BEFORESEND "MSG/Session/Beforesend"      // fired, when a message is about to be sent, but BEFORE the contents of the 

@@ -874,11 +874,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             GetSystemTimeAsFileTime(&ft);
                             if (abs(pt.x - pContainer->pLastPos.x) < 5 && abs(pt.y - pContainer->pLastPos.y) < 5) {
                                 if ((ft.dwLowDateTime - pContainer->iLastClick) < (GetDoubleClickTime() * 10000)) {
-                                    GetCursorPos(&pt);
-                                    if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
-                                        if (MessageBoxA(pContainer->hwnd, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO)
-                                            break;
-                                    }
                                     SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
                                 }
                             }
