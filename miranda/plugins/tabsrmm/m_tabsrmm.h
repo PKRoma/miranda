@@ -165,7 +165,7 @@ struct MessageWindowData {
     time_t lastEventTime;
     DWORD dwEventIsShown;
     int iRealAvatarHeight;
-    int iButtonBarNeeds;
+    int iButtonBarNeeds, iButtonBarReallyNeeds, controlsHidden;
     DWORD dwLastActivity;
     HICON hProtoIcon;
     struct MessageSessionStats stats;
@@ -174,6 +174,7 @@ struct MessageWindowData {
     HANDLE hMultiSendThread;
     BOOL bIsMeta;
     HANDLE hFlashingEvent;
+    char uin[80];
 };
 
 typedef struct _recentinfo {
@@ -221,6 +222,8 @@ typedef struct _globals {
     int m_FlashOnClist;
     int m_TabAutoClose;
     int m_AlwaysFullToolbarWidth;
+    int m_LimitStaticAvatarHeight;
+    int m_SendFormat;
 } MYGLOBALS;
     
 struct InputHistory {

@@ -456,7 +456,7 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [seconds.]
 
-[Resize avatar larger than]
+[Do not resize avatars less than]
 
 [pixels in height]
 
@@ -473,8 +473,6 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [On, if present]
 
 [Globally OFF]
-
-[Dynamically resize avatars depending on splitter position]
 
 [Automatically close tabs after]
 

@@ -125,7 +125,9 @@ Version 0.9.9.5 - 2005/02/02
         * added message log options: "use symbols instead of icons". This will use symbols
           from the webdings font for marking events in the message log, instead of drawing
           icons. The advantage is that this is WAY faster and uses only a fraction of the
-          memory consumed by the icon code
+          memory consumed by the icon code. There are 2 new font settings (symbols incoming
+          and symbols outgoing) - you can set the size+color, but not the font itself (it
+          is forced to use the Webdings symbol font).
         
         - removed static avatar layout. Avatars are now always dynamically resized and the layout
           is constantly tweaked to avoid a "damaged" tool bar. A new option is available
@@ -136,7 +138,10 @@ Version 0.9.9.5 - 2005/02/02
           space needed on the toolbar significantly.
 
         ! fixed dividers screwing up linespacing sometimes.
-        
+
+        * UIN is now cached for non-metacontacts (saves service calls at every status change and 
+          titlebar update.
+
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

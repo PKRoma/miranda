@@ -49,13 +49,15 @@ BEGIN
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
     PUSHBUTTON      "Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,1,
+                    WS_EX_STATICEDGE
     CONTROL         "&A",IDC_ADD,"MButtonClass",WS_TABSTOP,68,32,16,14,
                     0x18000000L
     CONTROL         "&P",IDC_PIC,"MButtonClass",WS_TABSTOP,84,32,16,14,
                     0x18000000L
-    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,100,32,16,14,
+    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,100,32,16,14,
                     0x18000000L
-    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,116,32,16,14,
+    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,116,32,16,14,
                     0x18000000L
     CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,132,32,16,14,
                     0x18000000L
@@ -66,8 +68,6 @@ BEGIN
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
                     78,WS_EX_CLIENTEDGE
-    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,1,
-                    WS_EX_STATICEDGE
     CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
     CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
@@ -78,16 +78,16 @@ BEGIN
                     0x18000000L
     CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,44,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,60,32,16,14,
+    CONTROL         "",IDC_FONTBOLD,"MButtonClass",WS_TABSTOP,60,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_FONTCOLOR,"MButtonClass",WS_TABSTOP,76,32,16,14,
+    CONTROL         "",IDC_FONTITALIC,"MButtonClass",WS_TABSTOP,76,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_FONTBOLD,"MButtonClass",WS_TABSTOP,92,32,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_FONTITALIC,"MButtonClass",WS_TABSTOP,108,32,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,124,32,16,
+    CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,92,32,16,
                     14,0x18000000L
+    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,108,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_FONTCOLOR,"MButtonClass",WS_TABSTOP,124,32,16,14,
+                    0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
                     0x18000000L
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,31,187,1,

@@ -215,19 +215,16 @@ BEGIN
     CONTROL         "Use popup configuration for placing dividers",
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,23,271,11
-    CONTROL         "Resize avatar larger than",IDC_LIMITAVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,36,115,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,126,34,38,12,ES_AUTOHSCROLL | 
+    CONTROL         "Do not resize avatars less than",IDC_LIMITAVATARS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,36,115,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,146,35,38,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,35,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,185,36,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,191,36,85,11
-    CONTROL         "Dynamically resize avatars depending on splitter position",
-                    IDC_AVADYNAMIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    47,294,12
-    LTEXT           "Show avatars",IDC_STATIC,20,77,60,10
-    COMBOBOX        IDC_AVATARMODE,75,74,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
+    LTEXT           "pixels in height",IDC_STATIC,226,37,69,11
+    LTEXT           "Show avatars",IDC_STATIC,10,60,60,10
+    COMBOBOX        IDC_AVATARMODE,65,57,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
@@ -273,7 +270,9 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,147,131,11
     CONTROL         "Always keep the button bar at full width",
                     IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,59,276,10
+                    WS_TABSTOP,8,48,276,10
+    CONTROL         "Send formatting info",IDC_SENDFORMAT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,147,150,9
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226

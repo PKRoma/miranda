@@ -46,6 +46,7 @@ char *Message_GetFromStream(HWND hwndDlg, struct MessageWindowData* dat, DWORD d
 BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat);
 void DoTrimMessage(TCHAR *msg);
 void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -1195,3 +1195,33 @@ void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
         dat->iHistoryTop = oldTop;
 }
 
+void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    CONTACTINFO ci;
+
+    ZeroMemory((void *)&ci, sizeof(ci));
+
+    if(dat->bIsMeta) {
+        ci.hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
+        ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ci.hContact, 0);
+    }
+    else {
+        ci.hContact = dat->hContact;
+        ci.szProto = dat->szProto;
+    }
+    ci.cbSize = sizeof(ci);
+    ci.dwFlag = CNF_UNIQUEID;
+    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+        switch (ci.type) {
+            case CNFT_ASCIIZ:
+                _snprintf(dat->uin, sizeof(dat->uin), "%s", ci.pszVal);
+                miranda_sys_free(ci.pszVal);
+                break;
+            case CNFT_DWORD:
+                _snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
+                break;
+        }
+    }
+    else
+        dat->uin[0] = 0;
+}

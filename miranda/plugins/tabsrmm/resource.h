@@ -252,6 +252,7 @@
 #define IDC_AVADYNAMIC                  1690
 #define IDC_USESNAPPING                 1690
 #define IDC_EXTRAMICROLF                1690
+#define IDC_SENDFORMAT                  1690
 #define IDC_LONGDATES                   1691
 #define IDC_CHECK3                      1692
 #define IDC_CNTNOSTATUSBAR              1692
