@@ -532,11 +532,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 								MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 				}	}	}	}
 
-				char* tNickName = MSN_GetContactName( MSN_HContactFromEmail( data.fromEmail, NULL, 1, 1 ));
-				tPrefixLen = strlen( tNickName )+2;
-				tPrefix = ( char* )alloca( tPrefixLen+1 );
-				strcpy( tPrefix, tNickName );
-				strcat( tPrefix, ": " );
 			}
 			else if ( info->mJoinedContacts[0] != tContact ) {
 				for ( int j=1; j < info->mJoinedCount; j++ ) {
@@ -868,10 +863,9 @@ LBL_InvalidCommand:
 				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 			}
 
-			int personleft = MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 ));
 			// in here, the first contact is the chat ID, starting from the second will be actual contact
 			// if only 1 person left in conversation
-			if ( personleft == 2 ) {
+			if ( MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 )) == 2 ) {
 				if ( MessageBox( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard SRMM session?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 					// kill chat dlg and open srmm dialog
 					GCEVENT gce = {0};
@@ -879,15 +873,17 @@ LBL_InvalidCommand:
 					gce.cbSize = sizeof( GCEVENT );
 					gce.pDest = &gcd;
 
+					// a flag to let the kill function know what to do
+					// if the value is 1, then it'll open up the srmm window
+					info->mJoinedCount--;
+
 					gcd.pszModule = msnProtocolName;
 					gcd.pszID = info->mChatID;
 					gcd.iType = GC_EVENT_CONTROL;
 					MSN_CallService( MS_GC_EVENT, WINDOW_OFFLINE, ( LPARAM )&gce );
 					MSN_CallService( MS_GC_EVENT, WINDOW_TERMINATE, ( LPARAM )&gce );
 			}	}
-
-			if ( personleft == 1 )
-				info->sendPacket("OUT", NULL );
+			
 			break;
 		}
 		case ' LAC':    //********* CAL: section 8.3 Inviting Users to a Switchboard Session
@@ -1055,22 +1051,24 @@ LBL_InvalidCommand:
 					NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
 
 				// add the first contact back in
+				if (( long )firstcontact > 0) {
 				char tEmail[ MSN_MAX_EMAIL_LEN ];
 				MSN_GetStaticString( "e-mail", firstcontact, tEmail, sizeof( tEmail ));
 
-				gcd.pszModule = msnProtocolName;
-				gcd.pszID = info->mChatID;
-				gcd.iType = GC_EVENT_JOIN;
-				gce.cbSize = sizeof(GCEVENT);
-				gce.pDest = &gcd;
-				gce.pszNick = MSN_GetContactName(firstcontact);
-
-				gce.pszUID = tEmail;
-				gce.pszStatus = Translate("Others");
-				gce.time = time(NULL);
-				gce.bIsMe = FALSE;
-				gce.bAddToLog = TRUE;
-				MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+					gcd.pszModule = msnProtocolName;
+					gcd.pszID = info->mChatID;
+					gcd.iType = GC_EVENT_JOIN;
+					gce.cbSize = sizeof(GCEVENT);
+					gce.pDest = &gcd;
+					gce.pszNick = MSN_GetContactName(firstcontact);
+	
+					gce.pszUID = tEmail;
+					gce.pszStatus = Translate("Others");
+					gce.time = time(NULL);
+					gce.bIsMe = FALSE;
+					gce.bAddToLog = TRUE;
+					MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+				}
 
 				gcd.pszModule = msnProtocolName;
 				gcd.pszID = info->mChatID;

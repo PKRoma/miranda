@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void __cdecl MSNServerThread( ThreadData* info );
 
 HANDLE msnSetNicknameMenuItem = NULL;
+extern HANDLE hInitChat;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAddToList - adds contact to the server list
@@ -536,7 +537,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 		HMENU tMenu = ::CreatePopupMenu();
 
 		for ( int i=0; i < tThreads; i++ ) {
-			if ( tActiveThreads[i]->mJoinedContacts < 0 ) {
+			if (( long )tActiveThreads[i]->mJoinedContacts[0] < 0 ) {
 				char sessionName[ 255 ];
 				_snprintf( sessionName, sizeof( sessionName ), "%s%s",
 					Translate( "MSN Chat #" ), tActiveThreads[i]->mChatID );
@@ -559,8 +560,35 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 	}
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail )))
+	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail ))) {
 		tActiveThreads[ tChosenThread ]->sendPacket( "CAL", tEmail );
+
+		if ( msnHaveChatDll ) {
+			ThreadData* info = tActiveThreads[ tChosenThread ];
+			if ( info->mChatID[0] == 0 ) {
+				NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
+				Sleep(5);
+
+				// add all participants onto the list
+				GCDEST gcd = {0};
+				gcd.pszModule = msnProtocolName;
+				gcd.pszID = info->mChatID;
+				gcd.iType = GC_EVENT_JOIN;
+
+				GCEVENT gce = {0};
+				gce.cbSize = sizeof(GCEVENT);
+				gce.pDest = &gcd;
+				gce.pszStatus = Translate("Others");
+				gce.time = time(NULL);
+				gce.bIsMe = FALSE;
+				gce.bAddToLog = TRUE;
+
+				for ( int j=0; j < info->mJoinedCount; j++ ) {
+					if (( long )info->mJoinedContacts[j] > 0 ) {
+						gce.pszNick = MSN_GetContactName( info->mJoinedContacts[j] );
+						gce.pszUID = tEmail;
+						MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+	}	}	}	}	}
 
 	return 0;
 }

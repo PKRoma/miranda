@@ -95,8 +95,6 @@ void KillChatSession(char* id, GCHOOK* gch) {
 	ThreadData* thread = MSN_GetThreadByContact((HANDLE)-chatID);
 	GCDEST gcd = {0};
 	GCEVENT gce = {0};
-
-	thread->sendPacket("OUT", NULL);
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gcd.pszModule = gch->pDest->pszModule;
@@ -122,11 +120,14 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				int chatID = atoi(p);
 				ThreadData* thread = MSN_GetThreadByContact((HANDLE)-chatID);
 				// open up srmm dialog when quit while 1 person left
-				if (thread->mJoinedCount == 2) {
-					thread->mJoinedCount--;
+				if ( thread->mJoinedCount == 1 ) {
+					// switch back to normal session
 					thread->mJoinedContacts[0] = thread->mJoinedContacts[1];
-					MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)thread->mJoinedContacts[1], 0);
+					thread->mJoinedContacts = ( HANDLE* )realloc( thread->mJoinedContacts, sizeof( HANDLE ) );
+					MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)thread->mJoinedContacts[0], 0);
+					thread->mChatID[0] = 0;
 				}
+				else thread->sendPacket( "OUT", NULL );
 				break;
 			}
 			case GC_USER_MESSAGE:
