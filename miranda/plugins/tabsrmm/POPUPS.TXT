@@ -1,0 +1,54 @@
+
+tabSRMM, POPUP and NewEventNotify, how it works all together...
+---------------------------------------------------------------
+
+This document will try to explain how this stuff works and what you can 
+configure in conjunction with it.
+
+First, you need to use the NewEventNotify.DLL which comes with the tabSRMM 
+distribution. Standard NewEventNotify will not work at all, because it was 
+not written with tabs in mind and assumes that each message session has 
+its own toplevel window.
+
+If you want typing notify popups, you can safely use the 
+TypingNotify plugin by BiO, because it is already written to use the 
+service function provided by tabSRMM for finding an open message session 
+(actually, BiO suggested this function and I built it into tabSRMM).
+
+tabSRMM provides several options to configure popup behaviour. The default 
+setting will work as always - you do not get popups if a message session 
+has been openend for the specific contat. Neiter NEN nor TypingNotify will 
+display a popup, because the service function reports an open window to 
+them.
+
+There are, however, ways to tell the tabSRMM service when it should report 
+open sessions and when it should not. All these options can be configured 
+independently for each container, but you can specify default values if 
+you wish.
+
+The relevant options are:
+
+1) Enable popups if minimized
+   The container and all its tabs will show popups if the container has
+   been minimized to the taskbar.
+   
+2) Enable popups if unfocused
+   More aggressive popup behaviour. Now, you will always see event popups
+   unless the container is in the foreground (active and focused).
+   
+3) Always enable popups for inactive tabs.
+   This is the most aggressive setting. You will always see popups, UNLESS
+   the container is focused (in the foreground) and the tab which received
+   the event is the active one (selected).
+   
+The last option will basically show you popups for all your open sessions, 
+except for the session which is active (in the foreground).
+
+You can set default values for these under Options->Message containers 
+which will apply to containers at creation time. Once a container exists, 
+it has its own copy of these settings, so if you need to change them, you 
+will have to use the container settings dialog (right click the title- or 
+button bar of an open container or use the system menu and choose 
+"Container Options".
+
+
