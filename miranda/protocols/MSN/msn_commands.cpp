@@ -153,13 +153,13 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
 	bool bHasError = false;
-	NETLIBBIND nlb = {0};
+	NETLIBBINDOLD nlb = {0};
 
 	char ipaddr[256];
 	if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
 		bHasError = true;
 	else {
-		nlb.cbSize = sizeof NETLIBBIND;
+		nlb.cbSize = sizeof nlb;
 		nlb.pfnNewConnection = MSN_ConnectionProc;
 		nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
 		if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb)) == NULL ) {

@@ -79,8 +79,8 @@ static int sttCreateListener(
 		return 0;
 	}
 
-	NETLIBBIND nlb = {0};
-	nlb.cbSize = sizeof NETLIBBIND;
+	NETLIBBINDOLD nlb = {0};
+	nlb.cbSize = sizeof nlb;
 	nlb.pfnNewConnection = MSN_ConnectionProc;
 	nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
 	if (( ft->mIncomingBoundPort = (HANDLE) CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM) &nlb)) == NULL ) {
@@ -1280,6 +1280,13 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 
 	//---- receiving data -----------
 	if (( hdrdata->mFlags & 0x20 ) == 0x20 ) {
+		if ( ft->bCanceled ) {
+			p2p_sendBye( info, ft );
+			ft->complete();
+			p2p_unregisterSession( ft );
+			return;
+		}
+
 		if ( hdrdata->mOffset + hdrdata->mPacketLen > hdrdata->mTotalSize )
 			hdrdata->mPacketLen = DWORD( hdrdata->mTotalSize - hdrdata->mOffset );
 
