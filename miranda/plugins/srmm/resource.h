@@ -25,7 +25,6 @@
 #define IDI_INCOMING                    276
 #define IDI_OUTGOING                    277
 #define IDI_NOTICE                      282
-#define IDD_CORE                        284
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003

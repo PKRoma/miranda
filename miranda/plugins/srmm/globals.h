@@ -25,7 +25,6 @@ struct GlobalMessageData
 	unsigned int flags;
 	HICON hIcons[5];
 	HANDLE hMessageWindowList;
-	HWND hwndGlobal;
 };
 
 void InitGlobals();

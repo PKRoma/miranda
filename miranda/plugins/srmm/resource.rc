@@ -200,13 +200,6 @@ BEGIN
                     BS_AUTORADIOBUTTON,44,231,206,10
 END
 
-IDD_CORE DIALOG DISCARDABLE  0, 0, 233, 51
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "SRMM.  So fly, it has wings."
-FONT 8, "MS Shell Dlg"
-BEGIN
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -261,14 +254,6 @@ BEGIN
         RIGHTMARGIN, 276
         TOPMARGIN, 7
         BOTTOMMARGIN, 245
-    END
-
-    IDD_CORE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 226
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 44
     END
 END
 #endif    // APSTUDIO_INVOKED

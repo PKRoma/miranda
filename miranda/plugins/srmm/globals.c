@@ -2,12 +2,15 @@
 
 struct GlobalMessageData *g_dat=NULL;
 extern HINSTANCE g_hInst;
-static BOOL CALLBACK GlobalDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static HANDLE g_hDbEvent = 0, g_hAck = 0;
+static int dbaddedevent(WPARAM wParam, LPARAM lParam);
+static int ackevent(WPARAM wParam, LPARAM lParam);
 
 void InitGlobals() {
 	g_dat = (struct GlobalMessageData *)malloc(sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
-	g_dat->hwndGlobal = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CORE), 0, GlobalDlgProc);
+	g_hDbEvent = HookEvent(ME_DB_EVENT_ADDED, dbaddedevent);
+	g_hAck = HookEvent(ME_PROTO_ACK, ackevent);
 	ReloadGlobals();
 	g_dat->hIcons[SMF_ICON_ADD] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 	g_dat->hIcons[SMF_ICON_USERDETAIL] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IsWinVerXPPlus()? IDI_USERDETAILS32 : IDI_USERDETAILS), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -22,9 +25,10 @@ void FreeGlobals() {
 	if (g_dat) {
 		for (i=0;i<sizeof(g_dat->hIcons)/sizeof(g_dat->hIcons[0]);i++)
 			DestroyIcon(g_dat->hIcons[i]);
-		DestroyWindow(g_dat->hwndGlobal);
 		free(g_dat);
 	}
+	if (g_hDbEvent) UnhookEvent(g_hDbEvent);
+	if (g_hAck) UnhookEvent(g_hAck);
 }
 
 void ReloadGlobals() {
@@ -56,39 +60,25 @@ void ReloadGlobals() {
 		g_dat->flags |= SMF_HIDENAMES;
 }
 
-static HANDLE g_hDbEvent = 0, g_hAck = 0;
-
-static BOOL CALLBACK GlobalDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch(msg) {
-        case WM_INITDIALOG:
-			g_hDbEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
-			g_hAck = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_ACKEVENT);
-			return TRUE;
-		case HM_DBEVENTADDED:
-			if (wParam) {
-				HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)wParam);
-                if(h) SendMessage(h, HM_DBEVENTADDED, wParam, lParam);
-			}
-			break;
-		case HM_ACKEVENT:
-		{
-			ACKDATA *pAck = (ACKDATA *)lParam;
-			
-			if (!pAck) break;
-			else if (pAck->type==ACKTYPE_AVATAR) {
-				HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
-                if(h) SendMessage(h, HM_AVATARACK, wParam, lParam);
-			}
-			else if (pAck->type==ACKTYPE_MESSAGE) {
-				HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
-                if(h) SendMessage(h, HM_EVENTSENT, wParam, lParam);
-			}
-			break;
-		}
-		case WM_DESTROY:
-			if (g_hDbEvent) UnhookEvent(g_hDbEvent);
-			if (g_hAck) UnhookEvent(g_hAck);
+static int dbaddedevent(WPARAM wParam, LPARAM lParam) {
+	if (wParam) {
+		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)wParam);
+		if(h) SendMessage(h, HM_DBEVENTADDED, wParam, lParam);
 	}
-	return FALSE;
+	return 0;
+}
+
+static int ackevent(WPARAM wParam, LPARAM lParam) {
+	ACKDATA *pAck = (ACKDATA *)lParam;
+	
+	if (!pAck) return 0;
+	else if (pAck->type==ACKTYPE_AVATAR) {
+		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
+		if(h) SendMessage(h, HM_AVATARACK, wParam, lParam);
+	}
+	else if (pAck->type==ACKTYPE_MESSAGE) {
+		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
+		if(h) SendMessage(h, HM_EVENTSENT, wParam, lParam);
+	}
+	return 0;
 }
