@@ -294,7 +294,7 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
     			break;
     
     		case IDC_PREVIEW2:
-    			YAHOO_ShowPopup( "YahooUser", Translate( "typing..." ), YAHOO_NOTIFY_POPUP );
+    			YAHOO_ShowPopup( Translate("YahooUser"), Translate( "typing..." ), YAHOO_NOTIFY_POPUP );
     			break;
 		}
 		if (HIWORD(wParam) == EN_CHANGE) // Valid the Apply button if any change are done.
