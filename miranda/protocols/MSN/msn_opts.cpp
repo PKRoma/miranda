@@ -406,8 +406,6 @@ LBL_Del:			DeleteFile( tFileName );
 							UrlEncode( szBuffer, szEncodedBuffer, 1000 );
 
 							MSN_SetString( NULL, "PictObject", szEncodedBuffer );
-							if ( msnLoggedIn )
-								MSN_SetServerStatus( msnStatusMode );
 						}
 						{	char tFileName[ MAX_PATH ];
 							MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
