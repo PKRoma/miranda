@@ -1,6 +1,6 @@
 object OptionForm: TOptionForm
-  Left = 504
-  Top = 292
+  Left = -536
+  Top = 332
   BorderStyle = bsDialog
   Caption = 'Conversation Style Messaging - Options'
   ClientHeight = 368
@@ -58,7 +58,7 @@ object OptionForm: TOptionForm
     Top = 8
     Width = 321
     Height = 305
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     TabOrder = 3
     object TabSheet1: TTabSheet
       Caption = 'Misc'
@@ -119,13 +119,6 @@ object OptionForm: TOptionForm
         Height = 13
         Caption = 'Timeout:              msec'
       end
-      object Label3: TLabel
-        Left = 8
-        Top = 120
-        Width = 219
-        Height = 13
-        Caption = 'Auto-retry sending through server             times'
-      end
       object DoubleEnter: TCheckBox
         Left = 128
         Top = 160
@@ -166,15 +159,6 @@ object OptionForm: TOptionForm
         Height = 17
         Caption = 'Split messages larger than %d characters.'
         TabOrder = 4
-      end
-      object AutoRetryEdit: TEdit
-        Left = 168
-        Top = 116
-        Width = 33
-        Height = 21
-        TabOrder = 5
-        Text = '2'
-        OnExit = AutoRetryEditExit
       end
     end
     object TabSheet2: TTabSheet
@@ -217,7 +201,8 @@ object OptionForm: TOptionForm
           '%NAME% (%TIME%): %TEXT%'
           '%NAME%: %TEXT%'
           '%TIME%: %TEXT%'
-          '%TEXT%')
+          '%TEXT%'
+          '[%TIME%] <%NAME%> %TEXT% ')
       end
       object m_changefont: TButton
         Left = 16
@@ -278,7 +263,8 @@ object OptionForm: TOptionForm
           '%NAME% (%TIME%): %TEXT%'
           '%NAME%: %TEXT%'
           '%TIME%: %TEXT%'
-          '%TEXT%')
+          '%TEXT%'
+          '[%TIME%] <%NAME%> %TEXT% ')
       end
       object r_grayrecent: TCheckBox
         Left = 16
