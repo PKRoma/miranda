@@ -28,6 +28,7 @@ $Id$
 #include "m_message.h"
 #include "msgs.h"
 #include "m_smileyadd.h"
+#include "m_ieview.h"
 #include "m_metacontacts.h"
 
 MYGLOBALS myGlobals;
@@ -745,7 +746,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
         g_StreamThreadRunning = 0;
 #endif
 
-    if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
+    if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS) || ServiceExists(MS_IEVIEW_SHOWSMILEYSELECTION)) 
         myGlobals.g_SmileyAddAvail = 1;
 
     myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0);

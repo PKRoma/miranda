@@ -204,7 +204,7 @@ void SetDialogToType(HWND hwndDlg)
 #endif
     
 // IEVIew MOD Begin
-	if (myGlobals.g_WantIEView) {
+	if (dat->hwndLog) {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 		ShowWindow (GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
@@ -215,7 +215,7 @@ void SetDialogToType(HWND hwndDlg)
     
 // smileybutton stuff...
     
-    if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled) {
+    if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled && dat->hwndLog == 0) {
         nrSmileys = CheckValidSmileyPack(dat->szProto, &hButtonIcon);
 
         if(hButtonIcon == 0) {
@@ -243,6 +243,15 @@ void SetDialogToType(HWND hwndDlg)
         else {
             SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
         }
+    }
+    else if(dat->hwndLog != 0) {
+        dat->doSmileys = 1;
+        nrSmileys = 1;
+        if(dat->hSmileyIcon == 0) {
+            DeleteObject(dat->hSmileyIcon);
+            dat->hSmileyIcon = 0;
+        }
+        SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
     }
     
     if(nrSmileys == 0)
@@ -788,6 +797,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
                     dat->hwndLog = ieWindow.hwnd;
                 }
+                else
+                    dat->hwndLog = 0;
                 // IEVIew MOD End
 
 
@@ -1659,7 +1670,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
                 // IEVIew MOD Begin
-                if (myGlobals.g_WantIEView || dat->hwndLog != 0) {
+                if (dat->hwndLog != 0) {
                     RECT rcRichEdit;
                     POINT pt;
                     IEVIEWWINDOW ieWindow;
@@ -2659,20 +2670,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         HICON hButtonIcon = 0;
                         RECT rc;
                         
-						if(CheckValidSmileyPack(dat->szProto, &hButtonIcon) != 0) {
-							smaddInfo.cbSize = sizeof(SMADD_SHOWSEL);
-		                    smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_MESSAGE);
-			                smaddInfo.targetMessage = EM_REPLACESEL;
-				            smaddInfo.targetWParam = TRUE;
-					        smaddInfo.Protocolname = dat->szProto;
-						    GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
-              
-							smaddInfo.Direction = 0;
-					        smaddInfo.xPosition = rc.left;
-						    smaddInfo.yPosition = rc.top + 24;
-							dat->dwFlags |= MWF_SMBUTTONSELECTED;
-							CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
-						}
+                        if(CheckValidSmileyPack(dat->szProto, &hButtonIcon) != 0 || dat->hwndLog != 0) {
+                            smaddInfo.cbSize = sizeof(SMADD_SHOWSEL);
+                            smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_MESSAGE);
+                            smaddInfo.targetMessage = EM_REPLACESEL;
+                            smaddInfo.targetWParam = TRUE;
+                            smaddInfo.Protocolname = dat->szProto;
+                            GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
+
+                            smaddInfo.Direction = 0;
+                            smaddInfo.xPosition = rc.left;
+                            smaddInfo.yPosition = rc.top + 24;
+                            dat->dwFlags |= MWF_SMBUTTONSELECTED;
+                            if(dat->hwndLog)
+                                CallService(MS_IEVIEW_SHOWSMILEYSELECTION, 0, (LPARAM)&smaddInfo);
+                            else
+                                CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
+                        }
                     }
                     break;
                 case IDC_TIME: {
@@ -2764,7 +2778,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 // END MOD#33
                 case IDM_CLEAR:
                     // IEVIew MOD Begin
-                    if (myGlobals.g_WantIEView || dat->hwndLog != 0) {
+                    if (dat->hwndLog != 0) {
                         IEVIEWEVENT event;
                         event.cbSize = sizeof(IEVIEWEVENT);
                         event.iType = IEE_CLEAR_LOG;
@@ -3716,7 +3730,7 @@ verify:
             TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
             
             // IEVIew MOD Begin
-            if (myGlobals.g_WantIEView || dat->hwndLog != 0) {
+            if (dat->hwndLog != 0) {
                 IEVIEWWINDOW ieWindow;
                 ieWindow.cbSize = sizeof(IEVIEWWINDOW);
                 ieWindow.iType = IEW_DESTROY;

@@ -37,6 +37,10 @@ Version 0.9.9.6 - 2005/02/23
         ! applying any options does no longer hide the error controls, if the window/tab is in
           "error state".
           
+        * support for IEView's smiley-selection window added. If you have enabled the support 
+          for the "external log" (ieview), the smiley button will now show IEViews smiley 
+          selection control. This requires IEView 1.0.1.7 or later.
+          
 Version 0.9.9.5a - 2005/02/22
 
         Bugfix release only.

@@ -856,7 +856,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     FINDTEXTEXA fi;
     
     // IEVIew MOD Begin
-    if (myGlobals.g_WantIEView && dat->hwndLog != 0) {
+    if (dat->hwndLog != 0) {
         IEVIEWEVENT event;
         event.cbSize = sizeof(IEVIEWEVENT);
         event.hwnd = dat->hwndLog;
