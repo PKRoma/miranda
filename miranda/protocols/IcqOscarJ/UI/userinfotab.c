@@ -429,7 +429,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, char* szSetting, int special)
 {
-	DBVARIANT dbv;
+  DBVARIANT dbv = {0};
 	char str[80];
 	char* pstr;
 	int unspecified = 0;
@@ -565,7 +565,6 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
 			pstr = str;
 			lstrcpy(str,"???");
 			break;
-			
 		}
 	}
 	
@@ -575,6 +574,5 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
 	else
 		SetDlgItemText(hwndDlg, idCtrl, pstr);
 	
-	DBFreeVariant(&dbv);
-	
+  if (dbv.pszVal!=szSetting) DBFreeVariant(&dbv);
 }
