@@ -28,13 +28,13 @@ void icq_TCPProcessFilePacket(icq_Packet *p, icq_TCPLink *plink);
 #define TCP_TRACE_ODS
 
 /* trace packet process results */
-#define TCP_PROCESS_TRACE 
+//#define TCP_PROCESS_TRACE 
 
 /* trace sent and received icq packets */
-#define TCP_PACKET_TRACE    
+//#define TCP_PACKET_TRACE    
 
 /* trace raw sent and received packet data */
-#define TCP_RAW_TRACE 
+//#define TCP_RAW_TRACE 
 
 /* trace recv buffer in tcplink.c*/
 #undef TCP_BUFFER_TRACE
