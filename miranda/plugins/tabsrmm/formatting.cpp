@@ -48,7 +48,7 @@ extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
                      
 unsigned FormatSpan(HWND REdit, const std::wstring &text, unsigned npos, wchar_t prech)
 {
-	char empty[] = "";
+	wchar_t empty[] = L"";
 
 	// skip escaped section, remove the backslash
 	if (prech == '\\') {
@@ -87,16 +87,17 @@ unsigned FormatSpan(HWND REdit, const std::wstring &text, unsigned npos, wchar_t
 	}
 
 	SendMessage(REdit, EM_SETSEL, npos+osize-stripped_chars.size(), npos+osize);
-	SendMessageA(REdit, EM_REPLACESEL, FALSE, (LPARAM) empty);
+	SendMessage(REdit, EM_REPLACESEL, FALSE, (LPARAM) empty);
 	SendMessage(REdit, EM_SETSEL, npos, npos+stripped_chars.size());
-	SendMessageA(REdit, EM_REPLACESEL, FALSE, (LPARAM) empty);
+	SendMessage(REdit, EM_REPLACESEL, FALSE, (LPARAM) empty);
 
 	unsigned p, pos = 0;
-	while ((p = new_text.find_first_of(stripped_chars)) != new_text.npos) {
+
+    while ((p = new_text.find_first_of(stripped_chars)) != new_text.npos) {
 		new_text[p] = ' ';
-		char str[] = " ";
+		wchar_t str[] = L" ";
 		SendMessage(REdit, EM_SETSEL, npos+p, npos+p+1);
-		SendMessageA(REdit, EM_REPLACESEL, FALSE, (LPARAM) str);
+		SendMessage(REdit, EM_REPLACESEL, FALSE, (LPARAM) str);
 	}
 
 	SendMessage(REdit, EM_SETSEL, npos, npos + new_text.size());
@@ -125,7 +126,7 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 
     gtx.cb = (nleft + 1) * sizeof(wchar_t);
     gtx.codepage = 1200;
-    gtx.flags = 2; // GT_SELECTION;
+    gtx.flags = GT_SELECTION;
     gtx.lpDefaultChar = 0;
     gtx.lpUsedDefChar = 0;
 

@@ -32,11 +32,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * options.
  */
  
+#define CURRENT_THEME_VERSION 2
+
 void WriteThemeToINI(const char *szIniFilename)
 {
     int i;
     DBVARIANT dbv;
     char szBuf[100], szTemp[100], szAppname[100];
+    
+    WritePrivateProfileStringA("TabSRMM Theme", "Version", _itoa(CURRENT_THEME_VERSION, szBuf, 10), szIniFilename);
     
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         sprintf(szTemp, "Font%d", i);
@@ -75,6 +79,10 @@ void ReadThemeFromINI(const char *szIniFilename)
 {
     char szBuf[512], szTemp[100], szAppname[100];
     int i;
+    int version;
+
+    if(GetPrivateProfileIntA("TabSRMM Theme", "Version", 0, szIniFilename) == 0)         // no version number.. assume 1
+        version = 1;
     
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         sprintf(szTemp, "Font%d", i);

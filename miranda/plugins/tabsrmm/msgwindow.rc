@@ -37,30 +37,28 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 #if defined(UNICODE)
-    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
+    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE |
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
 #else
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
-                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES | 
+    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE |
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
+                    WS_VSCROLL | WS_TABSTOP,0,49,144,29,WS_EX_ACCEPTFILES |
                     WS_EX_STATICEDGE
 #endif
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
                     0x18000000L
     PUSHBUTTON      "Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
-    CONTROL         "&A",IDC_ADD,"MButtonClass",WS_TABSTOP,52,32,16,14,
-                    0x18000000L
-    CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,68,32,16,14,
+    CONTROL         "&A",IDC_ADD,"MButtonClass",WS_TABSTOP,68,32,16,14,
                     0x18000000L
     CONTROL         "&P",IDC_PIC,"MButtonClass",WS_TABSTOP,84,32,16,14,
                     0x18000000L
     CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,100,32,16,14,
                     0x18000000L
-    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,116,32,16,14,
+    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,116,32,16,14,
                     0x18000000L
-    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,132,32,16,14,
+    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,132,32,16,14,
                     0x18000000L
     CONTROL         "&Q",IDC_QUOTE,"MButtonClass",WS_TABSTOP,148,32,16,14,
                     0x18000000L
@@ -71,13 +69,25 @@ BEGIN
                     78,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,2,
                     WS_EX_STATICEDGE
-    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
+    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
     CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,17,32,8,14,
                     0x18000000L
     CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,28,32,16,14,
+                    0x18000000L
+    CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,44,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,60,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_FONTCOLOR,"MButtonClass",WS_TABSTOP,76,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_FONTBOLD,"MButtonClass",WS_TABSTOP,92,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_FONTITALIC,"MButtonClass",WS_TABSTOP,108,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,124,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
                     0x18000000L
@@ -90,12 +100,12 @@ BEGIN
                     106,10,45,12
     LTEXT           "The message failed to send successfully.",
                     IDC_STATICTEXT,27,1,150,7
-    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
+    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE |
                     WS_GROUP
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL |
                     ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
 					WS_EX_CLIENTEDGE
-                   
+
 END
 
 #endif    // Neutral resources

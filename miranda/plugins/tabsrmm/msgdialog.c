@@ -89,8 +89,10 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 
 static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
-static const UINT buttonLineControlsNew[] = { IDC_ADD, IDC_SMILEYBTN, IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_MULTIPLE, IDC_QUOTE, IDC_SAVE};
+static const UINT buttonLineControlsNew[] = { IDC_ADD, IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_MULTIPLE, IDC_QUOTE, IDC_SAVE};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
+static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTFACE, IDC_FONTCOLOR, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE};
+
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
 
 struct SendJob sendJobs[NR_SENDJOBS];
@@ -161,16 +163,26 @@ void SetDialogToType(HWND hwndDlg)
     struct MessageWindowData *dat;
     HICON hButtonIcon = 0;
     int nrSmileys = 0;
-    int showInfo, showButton, showSend;
+    int showInfo, showButton, showSend, showFormat;
     
     dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
     showInfo = dat->showUIElements & MWF_UI_SHOWINFO;
     showButton = dat->showUIElements & MWF_UI_SHOWBUTTON;
     showSend = dat->showUIElements & MWF_UI_SHOWSEND;
+    showFormat = dat->showUIElements & MWF_UI_SHOWFORMAT;
+    
+    if(showFormat) {
+        showSend = FALSE;
+        myGlobals.m_FullUin = 0;
+        dat->showUIElements &= ~MWF_UI_SHOWSEND;
+    }
     
     if (dat->hContact) {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), showButton ? SW_SHOW : SW_HIDE);
         ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), showInfo ? SW_SHOW : SW_HIDE);
+        ShowMultipleControls(hwndDlg, formatControls, sizeof(formatControls) / sizeof(formatControls[0]), showFormat ? SW_SHOW : SW_HIDE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), showButton ? SW_SHOW : SW_HIDE);
+        
         if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
             ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
     } else {
@@ -179,13 +191,18 @@ void SetDialogToType(HWND hwndDlg)
         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), showButton ? SW_SHOW : SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), FALSE);
     }
-    
+
     ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), SW_HIDE);
     
     if (showButton) {
         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), SW_SHOW);
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), TRUE);
+    }
+    if (showFormat) {
+        ShowWindow(GetDlgItem(hwndDlg, IDC_PIC), SW_HIDE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_HISTORY), SW_HIDE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), SW_HIDE);
     }
 
 // smileybutton stuff...
@@ -566,10 +583,18 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             }
+        case IDC_SMILEYBTN:
+        case IDC_FONTBOLD:
+        case IDC_FONTITALIC:
+        case IDC_FONTUNDERLINE:
+        case IDC_FONTFACE:
+        case IDC_FONTCOLOR:
+            urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
+            urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
+            return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_PROTOCOL:
         case IDC_PROTOMENU:
         case IDC_ADD:
-        case IDC_SMILEYBTN:
         case IDC_PIC:
         case IDC_USERMENU:
         case IDC_DETAILS:
@@ -804,6 +829,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
+                dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0) ? MWF_UI_SHOWFORMAT : 0;
                 dat->hBkgBrush = NULL;
                 dat->hInputBkgBrush = NULL;
                 dat->hDbEventFirst = NULL;
@@ -882,12 +908,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_STATICERRORICON, STM_SETICON, (WPARAM)myGlobals.g_iconErr, 0);
                 SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
+                SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[17]);
+                SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[18]);
+                SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[19]);
+                SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[20]);
+                SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
+                
                 EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), FALSE);
                 
             // Make them flat buttons
-                if (!myGlobals.m_FullUin) {
+                if (!myGlobals.m_FullUin)
                     SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
-                }
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0)) {
                     for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
                         SendMessage(GetDlgItem(hwndDlg, buttonLineControlsNew[i]), BUTTONSETASFLATBTN, 0, 0);
@@ -1240,6 +1271,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
+            dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0) ? MWF_UI_SHOWFORMAT : 0;
 
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
@@ -2409,7 +2441,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     //this is a 'send' button
                     int bufSize;
                     char *allTmp;
-                    char *streamOut;
+                    char *streamOut = NULL;
 #if defined(_UNICODE)
                     TCHAR *allTmpW;
                     //GETTEXTEX gtx;
@@ -2422,7 +2454,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
                     
 #if defined( _UNICODE )
-                    /*
+                    /*  old code, not used anymore because of rtf streaming and formatting code translation
                     gtx.cb = bufSize * sizeof(TCHAR);
                     gtx.codepage = 1200;
                     gtx.flags = GT_USECRLF;
@@ -2432,28 +2464,32 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
                     */
                     streamOut = Message_GetFromStream(hwndDlg, dat);
-                    decoded = Utf8Decode(streamOut);
-                    //MessageBoxW(0, decoded, L"decoded", MB_OK);
-                    converted = (TCHAR *)malloc((_tcslen(decoded) + 2)* sizeof(TCHAR));
-                    _tcscpy(converted, decoded);
-                    DoRtfToTags(converted, dat);
-                    DoTrimMessage(converted);
-                    //MessageBoxW(0, converted, L"foo", MB_OK);
-                    bufSize = WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, 0, 0, 0);
-                    dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
-                    WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, bufSize, 0, 0);
-                    CopyMemory(&dat->sendBuffer[bufSize], converted, (lstrlenW(converted) + 1)* sizeof(WCHAR));
-                    _DebugPopup(dat->hContact, "required mbcs len: %d (wstring: %d)", bufSize, lstrlenW(converted));
-                    free(converted);
-                    free(streamOut);
+                    if(streamOut != NULL) {
+                        decoded = Utf8Decode(streamOut);
+                        converted = (TCHAR *)malloc((lstrlenW(decoded) + 2)* sizeof(TCHAR));
+                        if(converted != NULL) {
+                            _tcscpy(converted, decoded);
+                            DoRtfToTags(converted, dat);
+                            DoTrimMessage(converted);
+                            bufSize = WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, 0, 0, 0);
+                            dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
+                            WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, bufSize, 0, 0);
+                            CopyMemory(&dat->sendBuffer[bufSize], converted, (lstrlenW(converted) + 1)* sizeof(WCHAR));
+                            //_DebugPopup(dat->hContact, "required mbcs len: %d (wstring: %d)", bufSize, lstrlenW(converted));
+                            free(converted);
+                        }
+                        free(streamOut);
+                    }
 #else                    
                     streamOut = Message_GetFromStream(hwndDlg, dat);
-                    DoRtfToTags(streamOut, dat);
-                    DoTrimMessage(streamOut);
-                    bufSize = lstrlenA(streamOut) + 1;
-                    dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * sizeof(char));
-                    CopyMemory(dat->sendBuffer, streamOut, bufSize);
-                    free(streamOut);
+                    if(streamOut != NULL) {
+                        DoRtfToTags(streamOut, dat);
+                        DoTrimMessage(streamOut);
+                        bufSize = lstrlenA(streamOut) + 1;
+                        dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * sizeof(char));
+                        CopyMemory(dat->sendBuffer, streamOut, bufSize);
+                        free(streamOut);
+                    }
 #endif  // unicode
                     if (dat->sendBuffer[0] == 0)
                         break;

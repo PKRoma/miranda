@@ -273,8 +273,8 @@ BEGIN
                     117,263,9
     CONTROL         "Use hook to translate keyboard input",IDC_USEKBDHOOK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,128,279,11
-    LTEXT           "CAUTON: only enable this, if you experience troubles with keyboard input\nwith some languages.",
-                    IDC_STATIC111,19,138,274,18
+    CONTROL         "Show formatting buttons",IDC_SHOWFORMATTING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,147,131,11
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226

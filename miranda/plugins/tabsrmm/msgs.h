@@ -69,7 +69,7 @@ typedef struct _settextex {
 #endif
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 17
+#define NR_BUTTONBARICONS 22
 
 #include <richedit.h>
 #include <richole.h>
@@ -410,11 +410,11 @@ struct MsgLogIcon {
 #define IDI_SECUREIM_ENABLED 20
 #define IDI_SECUREIM_DISABLED 19
 #define IDI_STATUSCHANGE 21
-#define IDI_RESERVED2 22
-#define IDI_RESERVED3 23
-#define IDI_RESERVED4 24
-#define IDI_RESERVED5 25
-#define IDI_RESERVED6 26
+#define IDI_FONTBOLD 22
+#define IDI_FONTITALIC 23
+#define IDI_FONTUNDERLINE 24
+#define IDI_FONTFACE 25
+#define IDI_FONTCOLOR 26
 #define IDI_RESERVED7 27
 #define IDI_RESERVED8 28
 #define IDI_RESERVED9 29

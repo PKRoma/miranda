@@ -95,8 +95,6 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 HMENU BuildContainerMenu();
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern HICON g_buttonBarIcons[];
-
 HMODULE g_hIconDLL = 0;
 // nls stuff...
 
@@ -1246,6 +1244,11 @@ void CreateImageList(BOOL bInitial)
             myGlobals.g_buttonBarIcons[14] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_ENABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
             myGlobals.g_buttonBarIcons[15] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_DISABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
             myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[17] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTBOLD), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[18] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTITALIC), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[19] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTUNDERLINE), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[20] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTFACE), IMAGE_ICON, cxIcon, cyIcon, 0);
+            myGlobals.g_buttonBarIcons[21] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTCOLOR), IMAGE_ICON, cxIcon, cyIcon, 0);
         }
     }
     else
