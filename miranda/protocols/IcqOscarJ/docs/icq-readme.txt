@@ -13,6 +13,10 @@ instant messenger network and communicate with other ICQ users.
 Changes
 _______
 
+0.3.4.2
+Improvements
+  Server-side list support rewritten, now uses acking.
+
 0.3.4.1
 
 Bugfixes
