@@ -412,43 +412,31 @@ static int isPluginOnWhiteList(char * pluginname)
 // used within LoadNewPluginsModule as an exception handler
 int CListFailed(int result)
 {
-	MessageBox(0,"No UI could be enabled, either you've disabled all UI plugins or none are installed.","CList missing!",MB_ICONWARNING);
+	// result = 0, no clist_* can be found
+	MessageBox(0, result ? 
+	Translate("Unable to start any of the installed contact list plugins, I even ignored your preferences for which contact list couldn't load any.") 
+	: Translate("Can't find a contact list plugin! you need clist_classic or clist_mw.") , "", MB_OK | MB_ICONINFORMATION);
 	return 1;
 }
 
 static int PluginOptionsInit(WPARAM wParam, LPARAM lParam);
 
-int LoadNewPluginsModule(void)
+static pluginEntry * getCListModule(char * exe, char * slice, int useWhiteList)
 {
-	char exe[MAX_PATH];
-	char * slice;
-	pluginEntry * p, * q;
-	pluginEntry * clist = NULL;
+	pluginEntry * p = pluginListUI;
 	BASIC_PLUGIN_INFO bpi;
-
-	// make full path to the plugin
-	GetModuleFileName(NULL, exe, sizeof(exe));
-	slice=strrchr(exe, '\\');
-	if ( slice != NULL ) *slice=0;
-	// remember some useful options
-	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt("PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
-	// first load the clist cos alot of plugins need that to be present at Load()
-	p=pluginListUI;
-	if ( p == NULL ) {
-		return CListFailed(0);
-	}
 	while ( p != NULL )
 	{
-		_snprintf(slice, &exe[sizeof(exe)] - slice, "\\Plugins\\%s", p->pluginname);
+		_snprintf(slice, &exe[MAX_PATH] - slice, "\\Plugins\\%s", p->pluginname);
 		CharLower(p->pluginname);
-		if ( isPluginOnWhiteList(p->pluginname) ) {
+		if ( useWhiteList ? isPluginOnWhiteList(p->pluginname) : 1 ) {
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
 				p->bpi = bpi;
 				p->pclass |= PCLASS_LAST | PCLASS_OK | PCLASS_BASICAPI;						
 				if ( bpi.clistlink(&pluginCoreLink) == 0 ) {
 					p->bpi=bpi;
 					p->pclass |= PCLASS_LOADED;
-					clist=p;
+					return p;
 					break;
 				} else { 
 					Plugin_Uninit(p); 
@@ -458,15 +446,34 @@ int LoadNewPluginsModule(void)
 		} //if
 		p = p->nextclass;
 	}
+	return NULL;
+}
+
+int LoadNewPluginsModule(void)
+{
+	char exe[MAX_PATH];
+	char * slice;
+	pluginEntry * p, * q;
+	pluginEntry * clist = NULL;
+	int useWhiteList;
+
+	// make full path to the plugin
+	GetModuleFileName(NULL, exe, sizeof(exe));
+	slice=strrchr(exe, '\\');
+	if ( slice != NULL ) *slice=0;
+	// remember some useful options
+	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt("PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
+	// first load the clist cos alot of plugins need that to be present at Load()
+	for ( useWhiteList = 1; useWhiteList >= 0 && clist == NULL; useWhiteList-- ) 
+		clist=getCListModule(exe, slice, useWhiteList);
 	/* the loop above will try and get one clist DLL to work, if all fail then just bail now */
-	if ( clist == NULL ) { 
-		return CListFailed(1);
-	}
-	/* make sure all other clist plugins are disabled */
+	if ( clist == NULL ) 
+		return CListFailed( pluginListUI ? 1 : 0 );
+	/* enable and disable as needed  */
 	p=pluginListUI;
 	while ( p != NULL ) {
-		if ( p != clist ) SetPluginOnWhiteList(p->pluginname, 0);
-		p=p->nextclass;
+		SetPluginOnWhiteList(p->pluginname, clist != p ? 0 : 1 );
+		p = p->nextclass;
 	}
 	/* now loop thru and load all the other plugins, do this in one pass */
 	p=pluginListHead.first;
@@ -643,12 +650,7 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						}
 						iRow=ListView_GetNextItem(hwndList, iRow, LVNI_ALL);
 					}
-				} else if ( hdr->uNewState&0x1000 && it.lParam == DEFMOD_CLISTALL ) {
-					// only one such item can every be checked cos of the DEFMOD_* but we'll get this event
-					// if things were forced to be unchecked to maintain the rule - so that's why lParam is always
-					// unset before un checking items
-					ListView_SetItemState(hwndList, hdr->iItem, 0x2000, 0xF000);					
-				}
+				} 
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 				break;
 			}			
