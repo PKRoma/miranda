@@ -38,7 +38,6 @@ IDI_INBOX               ICON                    "Icos\\inbox.ico"
 IDI_INVITE              ICON                    "Icos\\invite.ico"
 IDI_PROFILE             ICON                    "Icos\\profile.ico"
 IDI_NETMEETING          ICON                    "Icos\\netmeeting.ico"
-IDI_AVATAR              ICON                    "Icos\\avatar.ico"
 IDI_SERVICES            ICON                    "Icos\\services.ico"
 
 /////////////////////////////////////////////////////////////////////////////
