@@ -30,7 +30,6 @@ For more information, e-mail christian.k@stner.de
 uses
   Windows,
   Classes,
-  dialogs,
   newpluginapi in '..\units\newpluginapi.pas',
   globals in '..\units\globals.pas',
   m_clist in '..\headerfiles\m_clist.pas',
@@ -50,7 +49,6 @@ uses
   m_icq in '..\headerfiles\m_icq.pas',
   m_langpack in '..\headerfiles\m_langpack.pas',
   m_options in '..\headerfiles\m_options.pas',
-  passwdlg in 'passwdlg.pas' {PasswordDlg},
   sysutils,
   messages,
   m_clui in '..\headerfiles\m_clui.pas',
@@ -58,13 +56,14 @@ uses
   m_protocols in '..\headerfiles\m_protocols.pas';
 
 {$R *.RES}
+{$R DIALOG.RES}
 
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
 //Tell Miranda about this plugin
 begin
   PluginInfo.cbSize:=sizeof(TPLUGININFO);
   PluginInfo.shortName:='Low Security Plugin';
-  PluginInfo.version:=PLUGIN_MAKE_VERSION(1,0,0,0);
+  PluginInfo.version:=PLUGIN_MAKE_VERSION(1,1,0,0);
   PluginInfo.description:='Plugin which asks for password on startup and hence provides a low level security.';
   PluginInfo.author:='Christian Kästner';
   PluginInfo.authorEmail:='christian.k@stner.de';
@@ -72,6 +71,8 @@ begin
   PluginInfo.homepage:='http://miranda-icq.sourceforge.net';
   PluginInfo.isTransient:=0;
   PluginInfo.replacesDefaultModule:=0;  //doesn't replace anything built-in
+
+  globals.mirandaVersion:=mirandaVersion;
 
   Result:=@PluginInfo;
 end;
@@ -160,6 +161,45 @@ begin
 end;
 
 
+var
+  pass:PChar;
+const
+  IDC_PASSWORD=101;
+  DIALOG_1=1;
+
+function initDialog(hwndDlg:HWND;Msg:Word;wParam,lParam:DWord):DWord;stdcall;
+begin
+  if Msg=WM_INITDIALOG then
+    begin
+    TranslateDialogDefault(hwndDlg);
+    //activate edit control. have not found a better way (i'm unfamiliar with this part of low level windows api)
+    SendMessage( hwndDlg, WM_NEXTDLGCTL, 0, 0 );
+    SendMessage( hwndDlg, WM_NEXTDLGCTL, 0, 0 );  
+    SendMessage( hwndDlg, WM_NEXTDLGCTL, 0, 0 );  
+    end;
+  if Msg=WM_COMMAND then
+    if LOWORD(wParam) in [IDOK, IDCANCEL] then
+      begin
+      if LOWORD(wParam)=IDCANCEL then
+        ZeroMemory(pass,128 * sizeof(char))
+      else
+        GetDlgItemText(hwndDlg,IDC_PASSWORD,pass,128);
+      EndDialog(hwndDlg, 0);
+      end;
+  Result:=0;
+end;
+
+function querypassword:string;
+begin
+  pass := strAlloc(128 * sizeof(char));
+  try
+  DialogBox(hInstance,MAKEINTRESOURCE(DIALOG_1),0,@initDialog);
+  Result:=string(pass);
+  finally
+  StrDispose(pass);
+  end;
+end;
+
 function Load(link:PPLUGINLINK):Integer;cdecl;
 //load function called by miranda
 //gets called after db etc have been initialised, but before build in plugins like icq are loaded...
@@ -191,7 +231,8 @@ begin
     hash:=ReadSettingInt(PluginLink,0,'ICQ','PasswordCRC32',0);
     if hash<>CRC32(password,strlen(password)) then
       begin
-      ShowMessage('Wrong password!');
+      if Length(password)>0 then
+        MessageBox(0,PChar(Translate('Wrong password!')),PChar(Translate('LSecure')),MB_OK or MB_ICONSTOP);
       //hack to close miranda
       PostQuitMessage(0);
       Result:=1;//no unload

@@ -2,7 +2,7 @@ About
 -----
 
 LSecurity Plugin
-Version 1.0
+Version 1.1
 by Christian Kästner
 for Miranda ICQ 0.1+
 written with Delphi 5 Pro
@@ -16,7 +16,8 @@ low level security. If the password is incorrect it shuts down
 Miranda.
 It is only a low level security, because you can simply delete the
 plugin to start Miranda, but even in this case you still need the
-password to connect.
+password to connect via the ICQ protocol.
+
 
 Features
 --------
@@ -26,6 +27,21 @@ Features
 + Deletes password from dat file (stores only a hash value), so 
   that you cannot extract it while Miranda is not running.
 
+
+Compared to PassProt
+--------------------
+
+The PassProt plugin was written nearly at the same time this plugin
+was published (also I already started it some month ago).
+
+The PassProt plugin has a smaller filesize and works quite well.
+
+LSecure adds the feature that you cannot open Miranda with the 
+wrong password as long as the plugin is presend.
+So you cannot 
+- disable the plugin from the options without the password.
+- browse the history/contactlist without the password.
+- connect to other protocols without the password.
 
 License
 -------
@@ -51,3 +67,18 @@ For more information, e-mail christian.k@stner.de
 Changes
 -------
 
+1.1
+Replaced VCL Dialog with Resource Dialog -> smaller filesize
+Ability to translate the few texts
+
+1.0
+Initial Version
+
+
+Translation
+-----------
+[OK]
+[Cancel]
+[Wrong password!]
+[Enter password:]
+[LSecure]
