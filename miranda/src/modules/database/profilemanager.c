@@ -129,8 +129,11 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				dbe.cbSize=sizeof(dbe);
 				dbe.pfnEnumCallback=(int(*)(char*,void*,LPARAM))FindDbProviders;
 				dbe.lParam=(LPARAM)hwndDlg;
-				if ( CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe) != 0 ) {
-					// no plugins?!
+				if ( CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe) == (-1) ) {
+					// no plugins?!					
+					MessageBox(0,Translate("Miranda can not find any database plugins!\nYou need 'dbx_3x' or compatible for Miranda to work correctly."),Translate("Miranda: Et oh."),MB_OK | MB_ICONERROR);
+					SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKEWPARAM(IDCANCEL, 0), 0);
+					return TRUE;
 				} //if
 				// default item
 				SendDlgItemMessage(hwndDlg, IDC_PROFILEDRIVERS, CB_SETCURSEL, 0, 0);
@@ -143,10 +146,10 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				SetWindowLong(hwndProfile,GWL_WNDPROC,(LONG)ProfileNameValidate);
 			}
 			// focus on the textbox
-			PostMessage(hwndDlg,WM_USER+1,0,0);
+			PostMessage(hwndDlg,WM_USER+10,0,0);
 			return TRUE;
 		}
-		case WM_USER+1:
+		case WM_USER+10:
 		{
 			SetFocus(GetDlgItem(hwndDlg,IDC_PROFILENAME));
 			break;
@@ -252,10 +255,10 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			// find all the profiles
 			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)hwndDlg);
-			PostMessage(hwndDlg,WM_USER+1,0,0);
+			PostMessage(hwndDlg,WM_USER+10,0,0);
 			return TRUE;
 		}
-		case WM_USER+1:
+		case WM_USER+10:
 		{
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
 			SetFocus(hwndList);
