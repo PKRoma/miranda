@@ -639,11 +639,11 @@ void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *
 {
 	char z[1024];
 	
-	_snprintf(z, sizeof(z), "[miranda] Got conference invite to room: %s with msg: %s", room ?room:"", msg ?msg:"");
+	_snprintf(z, sizeof(z), Translate("[miranda] Got conference invite to room: %s with msg: %s"), room ?room:"", msg ?msg:"");
 	LOG(("[ext_yahoo_got_conf_invite] %s", z));
 	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0, 0);
 	
-	yahoo_conference_decline(ylad->id, NULL, members, room, "I am sorry, but i can't join your conference since this feature is not currently implemented in my client.");
+	yahoo_conference_decline(ylad->id, NULL, members, room, Translate("I am sorry, but i can't join your conference since this feature is not currently implemented in my client."));
 }
 
 void ext_yahoo_conf_userdecline(int id, char *who, char *room, char *msg)
@@ -1237,7 +1237,7 @@ void ext_yahoo_rejected(int id, char *who, char *msg)
    	char buff[1024]={0};
    	HANDLE hContact;
     LOG(("ext_yahoo_rejected"));
-	snprintf(buff, sizeof(buff), "%s has rejected your request and sent the following message:", who);
+	snprintf(buff, sizeof(buff), Translate("%s has rejected your request and sent the following message:"), who);
 
 	hContact = add_buddy(who, who, 0);
 	
@@ -1373,11 +1373,11 @@ void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
 	        char z[256], title[31];
     
 			if (from == NULL) {
-                strcpy(title, "New Mail");
-                wsprintf(z, "You Have %i unread msgs", cnt);
+                strcpy(title, Translate("New Mail"));
+                wsprintf(z, Translate("You Have %i unread msgs"), cnt);
 			} else {
-                wsprintf(title, "New Mail (%i msgs)", cnt);
-                _snprintf(z, 256, "From: %s\nSubject: %s", from, subj);
+                wsprintf(title, Translate("New Mail (%i msgs)"), cnt);
+                _snprintf(z, 256, Translate("From: %s\nSubject: %s"), from, subj);
 			}
 
             YAHOO_ShowPopup( title, z, YAHOO_ALLOW_ENTER + YAHOO_ALLOW_MSGBOX + YAHOO_MAIL_POPUP );
@@ -1412,7 +1412,7 @@ void ext_yahoo_webcam_invite(int id, char *me, char *from)
 {
     LOG(("ext_yahoo_webcam_invite"));
 	
-	ext_yahoo_got_im(id, me, from, "[miranda] Got webcam invite. (not currently supported)", 0, 0, 0, 0);
+	ext_yahoo_got_im(id, me, from, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, 0);
 }
 
 void ext_yahoo_webcam_invite_reply(int id, char *me, char *from, int accept)
@@ -1532,9 +1532,9 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 			LOG(("[ext_yahoo_got_ping] Error msg: %s", errormsg));
 
 			if (YAHOO_GetByte( "ShowErrors", 1 )) {
-				if (!YAHOO_ShowPopup("Yahoo Ping Error", errormsg, YAHOO_NOTIFY_POPUP)) {
+				if (!YAHOO_ShowPopup(Translate("Yahoo Ping Error"), errormsg, YAHOO_NOTIFY_POPUP)) {
 					if (YAHOO_hasnotification())
-						YAHOO_shownotification("Yahoo Ping Error", errormsg, NIIF_ERROR);
+						YAHOO_shownotification(Translate("Yahoo Ping Error"), errormsg, NIIF_ERROR);
 					//else
 					//	MessageBox(NULL, errormsg, "Yahoo Ping Error", MB_OK | MB_ICONINFORMATION);
 				}
@@ -1576,25 +1576,25 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 		return;
 	} else if(succ == YAHOO_LOGIN_UNAME) {
 
-		snprintf(buff, sizeof(buff), "Could not log into Yahoo service - username not recognised.  Please verify that your username is correctly typed.");
+		snprintf(buff, sizeof(buff), Translate("Could not log into Yahoo service - username not recognised.  Please verify that your username is correctly typed."));
 	} else if(succ == YAHOO_LOGIN_PASSWD) {
 
-		snprintf(buff, sizeof(buff), "Could not log into Yahoo service - password incorrect.  Please verify that your username and password are correctly typed.");
+		snprintf(buff, sizeof(buff), Translate("Could not log into Yahoo service - password incorrect.  Please verify that your username and password are correctly typed."));
 
 	} else if(succ == YAHOO_LOGIN_LOCK) {
 		
-		snprintf(buff, sizeof(buff), "Could not log into Yahoo service.  Your account has been locked.\nVisit %s to reactivate it.", url);
+		snprintf(buff, sizeof(buff), Translate("Could not log into Yahoo service.  Your account has been locked.\nVisit %s to reactivate it."), url);
 
 	} else if(succ == YAHOO_LOGIN_DUPL) {
-		snprintf(buff, sizeof(buff), "You have been logged out of the yahoo service, possibly due to a duplicate login.");
+		snprintf(buff, sizeof(buff), Translate("You have been logged out of the yahoo service, possibly due to a duplicate login."));
 	}else if(succ == -1) {
 		/// Can't Connect or got disconnected.
 		if (yahooStatus == ID_STATUS_CONNECTING)
-			snprintf(buff, sizeof(buff), "Could not connect to the Yahoo service. Check your server/port and proxy settings.");	
+			snprintf(buff, sizeof(buff), Translate("Could not connect to the Yahoo service. Check your server/port and proxy settings."));	
 		else
 			return;
 	} else {
-		snprintf(buff, sizeof(buff), "Could not log in, unknown reason: %d.", succ);
+		snprintf(buff, sizeof(buff),Translate("Could not log in, unknown reason: %d."), succ);
 	}
 
 	ext_yahoo_log(buff);
@@ -1607,11 +1607,11 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	// Show Error Message
 	//
 	if (YAHOO_GetByte( "ShowErrors", 1 )) {
-		if (!YAHOO_ShowPopup("Yahoo Login Error", buff, YAHOO_NOTIFY_POPUP)) {
+		if (!YAHOO_ShowPopup(Translate("Yahoo Login Error"), buff, YAHOO_NOTIFY_POPUP)) {
 			if (YAHOO_hasnotification())
-				YAHOO_shownotification("Yahoo Login Error", buff, NIIF_ERROR);
+				YAHOO_shownotification(Translate("Yahoo Login Error"), buff, NIIF_ERROR);
 			else
-				MessageBox(NULL, buff, "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
+				MessageBox(NULL, buff, Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
 		}
 	}
 }
@@ -1624,28 +1624,28 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
         
 	switch(num) {
 		case E_UNKNOWN:
-			snprintf(buff, sizeof(buff), "unknown error %s", err);
+			snprintf(buff, sizeof(buff), Translate("unknown error %s"), err);
 			break;
 		case E_CUSTOM:
-			snprintf(buff, sizeof(buff), "custom error %s", err);
+			snprintf(buff, sizeof(buff), Translate("custom error %s"), err);
 			break;
 		case E_CONFNOTAVAIL:
-			snprintf(buff, sizeof(buff), "%s is not available for the conference", err);
+			snprintf(buff, sizeof(buff), Translate("%s is not available for the conference"), err);
 			break;
 		case E_IGNOREDUP:
-			snprintf(buff, sizeof(buff), "%s is already ignored", err);
+			snprintf(buff, sizeof(buff), Translate("%s is already ignored"), err);
 			break;
 		case E_IGNORENONE:
-			snprintf(buff, sizeof(buff), "%s is not in the ignore list", err);
+			snprintf(buff, sizeof(buff), Translate("%s is not in the ignore list"), err);
 			break;
 		case E_IGNORECONF:
-			snprintf(buff, sizeof(buff), "%s is in buddy list - cannot ignore ", err);
+			snprintf(buff, sizeof(buff), Translate("%s is in buddy list - cannot ignore "), err);
 			break;
 		case E_SYSTEM:
-			snprintf(buff, sizeof(buff), "system error %s", err);
+			snprintf(buff, sizeof(buff), Translate("system error %s"), err);
 			break;
 		case E_CONNECTION:
-			snprintf(buff, sizeof(buff), "server connection error %s", err);
+			snprintf(buff, sizeof(buff), Translate("server connection error %s"), err);
 			break;
 	}
 	
@@ -1665,11 +1665,11 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 	if (yahooStatus != ID_STATUS_OFFLINE) {
 		// Show error only if we are not offline. [manual status changed]
 		if (YAHOO_GetByte( "ShowErrors", 1 )) {
-			if (!YAHOO_ShowPopup("Yahoo Error", buff, YAHOO_NOTIFY_POPUP)) {
+			if (!YAHOO_ShowPopup(Translate("Yahoo Error"), buff, YAHOO_NOTIFY_POPUP)) {
 				if (YAHOO_hasnotification())
-					YAHOO_shownotification("Yahoo Error", buff, NIIF_ERROR);
+					YAHOO_shownotification(Translate("Yahoo Error"), buff, NIIF_ERROR);
 				else
-					MessageBox(NULL, buff, "Yahoo Error", MB_OK | MB_ICONINFORMATION);
+					MessageBox(NULL, buff, Translate("Yahoo Error"), MB_OK | MB_ICONINFORMATION);
 			}
 		}
 	}
@@ -1709,12 +1709,12 @@ int ext_yahoo_connect(char *h, int p)
         yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
 
 		if (YAHOO_GetByte( "ShowErrors", 1 )) {
-			wsprintf(z, "Connection to %s:%d failed", ncon.szHost, ncon.wPort);
-			if (!YAHOO_ShowPopup("Yahoo Error", z, YAHOO_NOTIFY_POPUP)) {
+			wsprintf(z, Translate("Connection to %s:%d failed"), ncon.szHost, ncon.wPort);
+			if (!YAHOO_ShowPopup(Translate("Yahoo Error"), z, YAHOO_NOTIFY_POPUP)) {
 				if (YAHOO_hasnotification())
-					 YAHOO_shownotification("Yahoo Login Error", z, NIIF_ERROR);
+					 YAHOO_shownotification(Translate("Yahoo Error"), z, NIIF_ERROR);
 				else
-					 MessageBox(NULL, z, "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
+					 MessageBox(NULL, z, Translate("Yahoo Error"), MB_OK | MB_ICONINFORMATION);
 			}
 		}
         return -1;
@@ -1999,9 +1999,9 @@ void ext_yahoo_login(int login_mode)
     else {
         //_snprintf(host, sizeof(host), "%s", pager_host);
        	if (YAHOO_hasnotification())
-       		 YAHOO_shownotification("Yahoo Login Error", "Please enter Yahoo server to Connect to in Options.", NIIF_ERROR);
+       		 YAHOO_shownotification(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."), NIIF_ERROR);
 	    else
-	         MessageBox(NULL, "Please enter Yahoo server to Connect to in Options.", "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
+	         MessageBox(NULL, Translate("Please enter Yahoo server to Connect to in Options."), Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
 
         return;
     }
