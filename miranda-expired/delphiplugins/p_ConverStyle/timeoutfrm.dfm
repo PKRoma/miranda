@@ -1,11 +1,11 @@
 object TimeoutForm: TTimeoutForm
   Left = 309
   Top = 103
-  ActiveControl = RetryBtn
+  ActiveControl = Button1
   BorderStyle = bsDialog
   Caption = 'Timeout'
   ClientHeight = 122
-  ClientWidth = 316
+  ClientWidth = 319
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -69,5 +69,14 @@ object TimeoutForm: TTimeoutForm
     ReadOnly = True
     TabOrder = 3
     WantReturns = False
+  end
+  object Button1: TButton
+    Left = 328
+    Top = 112
+    Width = 9
+    Height = 9
+    Caption = 'Button1'
+    Default = True
+    TabOrder = 4
   end
 end
