@@ -826,7 +826,10 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         }
       }
       else if (res)
+      {
         Netlib_Logf(ghServerNetlibUser, "Error uploading avatar to server, #%d", res);
+        icq_LogMessage(LOG_WARNING, "Error uploading avatar to server, server refused to accept the image.");
+      }
       else
         Netlib_Logf(ghServerNetlibUser, "Received invalid upload avatar ack.");
 
