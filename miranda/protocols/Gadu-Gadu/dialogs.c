@@ -794,8 +794,10 @@ int gg_detailsinit(WPARAM wParam, LPARAM lParam)
 {
     char* szProto;
     szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
-    if ((szProto == NULL || strcmp(szProto, GG_PROTO)) && lParam)
+    if ((szProto == NULL || strcmp(szProto, GG_PROTO)) && lParam || lParam && DBGetContactSettingByte((HANDLE)lParam, GG_PROTO, "ChatRoom", 0))
             return 0;
+
+    // Here goes init
     {
             OPTIONSDIALOGPAGE odp;
 

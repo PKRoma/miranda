@@ -149,6 +149,18 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 #ifdef DEBUGMODE
         gg_netlog("gg_gc_event(): Terminating window and chat %x, id %s...", chat, chat->id);
 #endif
+        // Remove contact from contact list (duh!) should be done by chat.dll !!
+        HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+        while (hContact)
+        {
+            DBVARIANT dbv;
+            if(!DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv))
+            {
+                if(dbv.pszVal && !strcmp(chat->id, dbv.pszVal))
+                    CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+            }
+            hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+        }
         free(chat->recipients);
         list_remove(&chats, chat, 1);
         return 1;
@@ -269,15 +281,22 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
         sender ? senderName : NULL,
         chat->id, status, 0, (DWORD)chat};
     if(!gcwindow.pszName) gcwindow.pszName = Translate("Conference");
+    // Here we put nice new hash sign
+    char *name = calloc(strlen(gcwindow.pszName) + 2, sizeof(char));
+    *name = '#'; strcpy(name + 1, gcwindow.pszName);
+    gcwindow.pszName = name;
+    // Create new room
     if(CallService(MS_GC_NEWCHAT, 0, (LPARAM) &gcwindow))
     {
 #ifdef DEBUGMODE
         gg_netlog("gg_gc_egetchat(): Cannot create new chat window %s.", chat->id);
 #endif
+        free(name);
         free(chat);
         return 0;
     }
-    char *name; char id[32]; uin_t uin; DBVARIANT dbv;
+    free(name);
+    char id[32]; uin_t uin; DBVARIANT dbv;
     GCDEST gcdest = {GG_PROTO, chat->id, GC_EVENT_ADDGROUP};
     GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
     gcevent.pszUID = id;
