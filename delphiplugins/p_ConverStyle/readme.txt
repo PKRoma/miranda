@@ -2,7 +2,7 @@ About
 -----
 
 Conversation Style Messaging Plugin 
-Version 0.99
+Version 0.992
 by Christian Kästner (christian.k@stner.de)
 for Miranda ICQ 0.1
 written with Delphi 5 Pro
@@ -94,6 +94,9 @@ For more information, e-mail christian.k@stner.de
 
 Changes
 -------
+
+0.992
+* fixed arrow keys
 
 0.991 (yes I know this version numbers are mad, but I don't want it to be 1.0 
        before the options are integrated into miranda options)

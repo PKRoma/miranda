@@ -1249,8 +1249,6 @@ begin
       case Key of
         VK_TAB:
           Mask := DLGC_WANTTAB;
-        VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN:
-          Mask := DLGC_WANTARROWS;
         VK_RETURN, VK_EXECUTE, VK_ESCAPE, VK_CANCEL:
           Mask := DLGC_WANTALLKEYS;
       end;
@@ -1384,5 +1382,14 @@ procedure TMsgWindow.TabEnterWorkAroundBtnClick(Sender: TObject);
 begin
   SendBtn.Click;
 end;
+
+
+function DlgProcIgnoreOpts(Dialog: HWnd; Message, WParam: LongWord;
+  LParam: Longint): Boolean; export;
+begin
+  Result:=True;
+end;
+
+
 
 end.
