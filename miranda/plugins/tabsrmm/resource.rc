@@ -796,7 +796,7 @@ BEGIN
         MENUITEM "Send to &multiple Users",     ID_SENDMENU_SENDTOMULTIPLEUSERS
 
         MENUITEM "Send to &Container",          ID_SENDMENU_SENDTOCONTAINER
-        MENUITEM "Force &ANSI send",            ID_SENDMENU_FORCEANSISEND
+        MENUITEM "Force &ANSI",            			ID_SENDMENU_FORCEANSISEND
     END
     POPUP "Protomenu"
     BEGIN
@@ -1023,8 +1023,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,5
- PRODUCTVERSION 0,9,9,5
+ FILEVERSION 0,9,9,8
+ PRODUCTVERSION 0,9,9,8
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -1040,14 +1040,14 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 5"
+            VALUE "FileVersion", "0, 9, 9, 8"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 5"
-            VALUE "SpecialBuild", "pre-1"
+            VALUE "ProductVersion", "0, 9, 9, 8"
+            VALUE "SpecialBuild", "A"
         END
     END
     BLOCK "VarFileInfo"

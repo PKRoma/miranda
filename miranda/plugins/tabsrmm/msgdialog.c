@@ -1748,8 +1748,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 return 0;
             }
         case DM_REMAKELOG:
-            dat->iLastEventType = 0;
-            dat->iLastEventType = 0;
+            dat->lastEventTime = 0;
+            dat->iLastEventType = 1;
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             break;
         case DM_APPENDTOLOG:
@@ -2202,6 +2202,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
+                    if(dat->hwndLog != 0) {
+                        _DebugPopup(dat->hContact, "focus set");
+                        SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                    }
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2723,7 +2727,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 }
                 case IDC_TOGGLETOOLBAR:
-                    dat->pContainer->dwFlags ^= CNT_HIDETOOLBAR;
+                    if(GetKeyState(VK_SHIFT) & 0x8000)
+                        dat->pContainer->dwFlags ^= CNT_NOMENUBAR;
+                    else if(GetKeyState(VK_CONTROL) & 0x8000)
+                        dat->pContainer->dwFlags ^= CNT_NOSTATUSBAR;
+                    else
+                        dat->pContainer->dwFlags ^= CNT_HIDETOOLBAR;
+                    
                     SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
                     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                     break;

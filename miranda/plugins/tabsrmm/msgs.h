@@ -386,39 +386,39 @@ struct MsgLogIcon {
     HBRUSH hBkgBrush;
 };
 
-#define IDI_HISTORY 1
-#define IDI_TIMESTAMP 2
-#define IDI_ADDCONTACT 3
-#define IDI_MULTISEND 4
-#define IDI_TYPING 5
-#define IDI_QUOTE 6
-#define IDI_SAVE 7
-#define IDI_CHECK 8
-#define IDI_CONTACTPIC 9
-#define IDI_CLOSEMSGDLG 10
-#define IDI_USERMENU 11
-#define IDI_MSGERROR 12
-#define IDI_ICONIN 13
-#define IDI_ICONOUT 14
-#define IDI_SMILEYICON 15
-#define IDI_SELFTYPING_ON 16
-#define IDI_SELFTYPING_OFF 17
-#define IDI_CONTAINER 18
-#define IDI_SECUREIM_ENABLED 20
-#define IDI_SECUREIM_DISABLED 19
-#define IDI_STATUSCHANGE 21
-#define IDI_FONTBOLD 22
-#define IDI_FONTITALIC 23
-#define IDI_FONTUNDERLINE 24
-#define IDI_FONTFACE 25
-#define IDI_FONTCOLOR 26
+#define IDI_HISTORY 1           /* history button */
+#define IDI_TIMESTAMP 2         /* message log options */
+#define IDI_ADDCONTACT 3        /* add contact symbol (not a button anymore) */
+#define IDI_MULTISEND 4         /* multisend (not a button anymore, symbol still needed) */
+#define IDI_TYPING 5            /* typing notify icon in the statusbar */
+#define IDI_QUOTE 6             /* quote button */
+#define IDI_SAVE 7              /* close tab (with non-empty message area) */
+#define IDI_CHECK 8             /* send button */
+#define IDI_CONTACTPIC 9        /* avatar button */
+#define IDI_CLOSEMSGDLG 10      /* close tab (when message area is empty) */
+#define IDI_USERMENU 11         /* user menu pulldown */
+#define IDI_MSGERROR 12         /* error (for the message log and tab image) */
+#define IDI_ICONIN 13           /* incoming msg icon (log) */
+#define IDI_ICONOUT 14          /* outgoing msg icon (log) */
+#define IDI_SMILEYICON 15       /* smiley button fallback */
+#define IDI_SELFTYPING_ON 16    /* sending typing notify is on */
+#define IDI_SELFTYPING_OFF 17   /* sending typing notify is off */
+#define IDI_CONTAINER 18        /* static container icon */
+#define IDI_SECUREIM_ENABLED 20 /* connection is secured via secureim */
+#define IDI_SECUREIM_DISABLED 19    /* connection is not secured */
+#define IDI_STATUSCHANGE 21     /* status change events (message log) */
+#define IDI_FONTBOLD 22         /* bold */
+#define IDI_FONTITALIC 23       /* italic */
+#define IDI_FONTUNDERLINE 24    /* underline */
+#define IDI_FONTFACE 25         /* font face (currently not in use) */
+#define IDI_FONTCOLOR 26        /* font color (not in use yet) */
 #define IDI_RESERVED7 27
 #define IDI_RESERVED8 28
 #define IDI_RESERVED9 29
 #define IDI_RESERVED10 30
 
-#define IDB_UNKNOWNAVATAR 100
-#define IDS_IDENTIFY 101
+#define IDB_UNKNOWNAVATAR 100   /* fallback image for non-existing avatars (BITMAP) */
+#define IDS_IDENTIFY 101        /* string resource to identify icon pack */
 
 #define MSGDLGFONTCOUNT 22
 

@@ -517,10 +517,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_GETMINMAXINFO: {
                 RECT rc;
                 POINT pt;
-                RECT rcContainer;
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
-                GetWindowRect(hwndDlg, &rcContainer);
                 mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
                 mmi->ptMinTrackSize.x = 280;
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
@@ -528,11 +526,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
                 mmi->ptMinTrackSize.y += ((rc.top - pt.y) + 10);
                 if(pContainer->dwFlags & CNT_VERTICALMAX) {
+                    WINDOWPLACEMENT wp;
                     RECT rcDesktop;
+
+                    wp.length = sizeof(wp);
+                    GetWindowPlacement(hwndDlg, &wp);
                     SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDesktop, 0);
-                    mmi->ptMaxSize.x = rcContainer.right - rcContainer.left;
+                    mmi->ptMaxSize.x = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
                     mmi->ptMaxSize.y = rcDesktop.bottom - rcDesktop.top;
-                    mmi->ptMaxPosition.x = rcContainer.left;
+                    mmi->ptMaxPosition.x = wp.rcNormalPosition.left;
                     mmi->ptMaxPosition.y = 0;
                 }
                 return 0;
@@ -558,10 +560,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 15 - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 15 - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[2] = rcs.right - rcs.left - 35 - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 18 - (myGlobals.g_SecureIMAvail ? 23 : 0);
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 18 - (myGlobals.g_SecureIMAvail ? 23 : 0);
+                    statwidths[2] = rcs.right - rcs.left - 38 - (myGlobals.g_SecureIMAvail ? 23 : 0);
+                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
@@ -1303,8 +1305,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 18 - myGlobals.g_SecureIMAvail ? 23 : 0;
                     statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 18 - myGlobals.g_SecureIMAvail ? 23 : 0;
-                    statwidths[2] = rcs.right - rcs.left - 35 - myGlobals.g_SecureIMAvail ? 23 : 0;
-                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 35 : -1;
+                    statwidths[2] = rcs.right - rcs.left - 38 - myGlobals.g_SecureIMAvail ? 23 : 0;
+                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);

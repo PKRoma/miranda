@@ -832,6 +832,8 @@ int SplitmsgShutdown(void)
         DestroyIcon(myGlobals.g_buttonBarIcons[i]);
     if(myGlobals.g_hbmUnknown)
         DeleteObject(myGlobals.g_hbmUnknown);
+    if(protoIconData != 0)
+        free(protoIconData);
     return 0;
 }
 

@@ -41,11 +41,13 @@ You can later change the icon pack at runtime (there is an option on the "tabs
 and layout" option page to load another icon pack).
 
 In general, there is no need to use the non-unicode version - the unicode release
-is far more tested and works with all known protocols.
+is far more tested and works with all known protocols. It also has an option to
+force sending and receiving ANSI messages only - this may help with some older
+or buggy clients and their sometimes broken unicode support.
 
 
-Some features:
-------------
+2. Some features:
+-----------------
 
 * "tabbed messaging". All message dialog windows are now opened within a "container"
    window. A simple tab bar can be used to switch between the message windows.
@@ -62,24 +64,22 @@ Some features:
 *  Avatar support (for protocols which can do it). You can also set a local "user picture"
    for each contact.
       
+3. FAQ and general help
+-----------------------
+
+   For a lot of knowledge, please visit my forum at http://hell.at.eu.org/forums/
+   There you can find a lot of useful information, articles, a small FAQ, and some
+   links telling you more about tabSRMM in general.
+   
 
 4. Known bugs
 -------------
 
 *  some minor glitches under Windows 9x/ME, mostly graphical.
+
+*  multisend doesn't work well. I suggest using it with "care" :) It will
+   improve in the future.
   
-5. FAQ
-------
-
-Q: How to install this plugin?
-A: copy the dll to your plugin folder. Make sure, that no other plugin 
-   providing the same service (message dialog) is there, OR you will need
-   to configure it on the options->plugins page.
-   
-Q: How can I close a tab?
-A: Hit ESC or click the close button (red X) in the top right corner.
-
-
 6. Credits and thanks:
 ----------------------
 
@@ -97,17 +97,14 @@ the development phase. I cannot name you all here, because it's just too many.
 * the members on my own forum (http://hell.at.eu.org/forums/) for a lot of bug
   reports, feature suggestions and testing every new snapshot.
 
-* Angeli-Ka
-Many members of the Miranda community at http://www.miranda-im.org for suggestions,
-bug reports, testing and other contributions.
+* Angeli-Ka for many bug reports and general feedback,  especially in the 
+  early phase of development when using tabSRMM could be really frustrating :)
 
+* Progame - for finding even the most carefully hidden bugs
 
-
-
-
-
-
-
+* All other mambers of the Miranda community,  who helped with hunting down 
+  sometimes hard to find, bugs, and for suggesting features.
+  
 License: GPL
 
 Contact me at:         mailto: silvercircle@gmail.com

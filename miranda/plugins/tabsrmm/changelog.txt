@@ -15,6 +15,14 @@ SF.NET Project Page: http://www.sourceforge.net/projects/tabsrmm/
 
 Version 0.9.9.8 - 2005/03/04
 
+        ! vertical maximize didn't allow to restore the window from the taskbar
+
+        + new hotkey Shift+Alt T toggles the menubar in the current container (remember,
+          Alt-T toggles the toolbar).
+        
+        
+Version 0.9.9.8 - 2005/03/04
+
         + added icon pack version information. Valid icon packs need to contain a string
           identifier ("__tabSRMM_ICONPACK 1.0__") in order to be recognized. You can still
           load icon packs without this identifier, but you'll get a warning message.
@@ -37,22 +45,25 @@ Version 0.9.9.8 - 2005/03/04
           the container will show default maximize behaviour (taking entire screen).
           
         ! fixed bug with soft line feeds (SHIFT-Enter) when sending formatting info is enabled.
-
+        
         * changing message log or other option will no longer wipe the text from the input
           area.
-     
+        
         ! reset last eventtype and timestamp (for grouping messages) before rebuilding the log.
           This fixes an issue where the first message in the log could be visible with "in group"
           formatting (w/o an icon, nickname and long timestamp).
         
         ! ctrl-enter inserts linefeed when "send on enter" is active. I broke that a few
           versions ago.
-
+        
         * if an ansi codepage is set for the current contact (right click the message log and
           select a codepage), the unicode version now uses this codepage to encode the ansi
           part of the message. If no codepage is set, the default, system wide, codepage (CP_ACP)
           will be used. This will only affect the unicode version, the ansi version is always
           using the current codepage.
+          
+        * force ansi send extended to receive - if set, messages received from a "force ansi" 
+          contact will ignore the unicode part.
                     
 Version 0.9.9.7 - 2005/03/04
 

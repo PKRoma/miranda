@@ -725,7 +725,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 
                 if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                     dat->stats.lastReceivedChars = msglen - 1;
-                if (dbei.cbBlob >= (DWORD)(2 * msglen)) {
+                if ((dbei.cbBlob >= (DWORD)(2 * msglen)) && !(dat->sendMode & SMODE_FORCEANSI)) {
                     msg = (wchar_t *) &dbei.pBlob[msglen];
                     wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
                     if(wlen <= (msglen - 1) && wlen > 0){
@@ -1181,7 +1181,7 @@ TCHAR *Utf8Decode(const char *str)
 {
 	int i, len;
 	char *p;
-	static TCHAR *wszTemp;
+	static TCHAR *wszTemp = NULL;
 
 	if (str == NULL) return NULL;
 
@@ -1216,7 +1216,7 @@ TCHAR *Utf8Decode(const char *str)
 
 char *Utf8Encode(const WCHAR *str)
 {
-	static unsigned char *szOut;
+	static unsigned char *szOut = NULL;
 	int len, i;
 	const WCHAR *wszTemp, *w;
     
