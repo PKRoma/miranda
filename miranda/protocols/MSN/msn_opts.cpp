@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 
 #include "msn_md5.h"
+#include "sha1.h"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
@@ -40,10 +41,88 @@ extern char *rru;
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// avatar setting code 
+
+static BITMAPINFOHEADER*	pDib = NULL;
+static BYTE*					pDibBits = NULL;
+
+static void sttSetAvatar( HWND hwndDlg )
+{
+	if ( !MSN_LoadPngModule() )
+		return;
+
+	char filter[ 512 ];
+	MSN_CallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof filter, ( LPARAM )filter );
+
+	char str[ MAX_PATH ]; str[0] = 0;
+	OPENFILENAME ofn = {0};
+	ofn.lStructSize = sizeof( OPENFILENAME );
+	ofn.lpstrFilter = filter;
+	ofn.lpstrFile = str;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.nMaxFile = sizeof str;
+	ofn.nMaxFileTitle = MAX_PATH;
+	ofn.lpstrDefExt = "bmp";
+	if ( !GetOpenFileName( &ofn ))
+		return;
+	
+	HBITMAP hBitmap = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )str );
+	if ( hBitmap == NULL )
+		return;
+
+	BITMAP bmp;
+	HDC hDC = CreateCompatibleDC( NULL );
+	SelectObject( hDC, hBitmap );
+	GetObject( hBitmap, sizeof( BITMAP ), &bmp );
+
+	HDC hBmpDC = CreateCompatibleDC( hDC );
+	HBITMAP hStretchedBitmap = CreateBitmap( 96, 96, 1, GetDeviceCaps( hDC, BITSPIXEL ), NULL );
+	SelectObject( hBmpDC, hStretchedBitmap );
+	int side, dx, dy;
+
+	if ( bmp.bmWidth > bmp.bmHeight ) {
+		side = bmp.bmHeight;
+		dx = ( bmp.bmWidth - bmp.bmHeight )/2;
+		dy = 0;
+	}
+	else {
+		side = bmp.bmWidth;
+		dx = 0;
+		dy = ( bmp.bmHeight - bmp.bmWidth )/2;
+	}
+
+	SetStretchBltMode( hBmpDC, HALFTONE );
+	StretchBlt( hBmpDC, 0, 0, 96, 96, hDC, dx, dy, side, side, SRCCOPY );
+	DeleteObject( hBitmap );	
+	DeleteDC( hDC );
+
+	BITMAPINFO* bmi = ( BITMAPINFO* )alloca( sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
+	memset( bmi, 0, sizeof BITMAPINFO );
+	bmi->bmiHeader.biSize = 0x28;
+	if ( GetDIBits( hBmpDC, hStretchedBitmap, 0, 96, NULL, bmi, DIB_RGB_COLORS ) == 0 ) {
+		TWinErrorCode errCode;
+		MSN_ShowError( "Unable to get the bitmap: error %d (%s)", errCode.mErrorCode, errCode.getText() );
+		return;
+	}
+
+	pDib = ( BITMAPINFOHEADER* )GlobalAlloc( LPTR, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 + bmi->bmiHeader.biSizeImage );
+	memcpy( pDib, bmi, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
+	pDibBits = (( BYTE* )pDib ) + sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256;
+
+	GetDIBits( hBmpDC, hStretchedBitmap, 0, pDib->biHeight, pDibBits, ( BITMAPINFO* )pDib, DIB_RGB_COLORS );
+	DeleteObject( hStretchedBitmap );	
+	DeleteDC( hBmpDC );
+
+	InvalidateRect( hwndDlg, NULL, TRUE );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN Options dialog procedure
 
 static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	static RECT r;
+
 	switch ( msg ) {
 	case WM_INITDIALOG: {
 		TranslateDialogDefault( hwndDlg );
@@ -63,7 +142,6 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU,	MSN_GetByte( "DisableSetNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,		MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,	MSN_GetByte( "NeverUpdateNickname", 0 ));
-		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,		MSN_GetByte( "EnableAvatars", 0 ));
 
 		int tValue = MSN_GetByte( "RunMailerOnHotmail", 0 );
 		CheckDlgButton( hwndDlg, IDC_RUN_APP_ON_HOTMAIL, tValue );
@@ -77,8 +155,56 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS ), FALSE );
 		else
 			CheckDlgButton( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS, msnOtherContactsBlocked );
+
+		// avatar preparation code
+		pDib = NULL;
+		pDibBits = NULL;
+
+		GetWindowRect( GetDlgItem( hwndDlg, IDC_AVATAR ), &r );
+		ScreenToClient( hwndDlg, ( LPPOINT )&r );
+
+		tValue = MSN_GetByte( "EnableAvatars", 0 );
+		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,	tValue );
+		if ( tValue ) {
+			if ( !MSN_LoadPngModule() ) {
+				MSN_SetByte( "EnableAvatars", 0 );
+				CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,	FALSE );
+			}
+			else {
+				MSN_GetAvatarFileName( NULL, tBuffer, sizeof tBuffer );
+				HANDLE hFile = NULL, hMap = NULL;
+				BYTE* ppMap = NULL;
+				long  cbFileSize = 0;
+
+				if (( hFile = CreateFile( tBuffer, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
+					if (( hMap = CreateFileMapping( hFile, NULL, PAGE_READONLY, 0, 0, NULL )) != NULL )
+						if (( ppMap = ( BYTE* )::MapViewOfFile( hMap, FILE_MAP_READ, 0, 0, 0 )) != NULL )
+							cbFileSize = GetFileSize( hFile, NULL );
+
+				if ( cbFileSize != 0 )
+					if ( png2dibConvertor(( char* )ppMap, cbFileSize, &pDib ))
+						pDibBits = ( BYTE* )( pDib+1 );
+
+				if ( ppMap != NULL )	UnmapViewOfFile( ppMap );
+				if ( hMap  != NULL )	CloseHandle( hMap );
+				if ( hFile != NULL ) CloseHandle( hFile );
+		}	}
 		return TRUE;
 	}
+	case WM_DESTROY:
+		if ( pDib != NULL )
+		   GlobalFree( pDib );
+		break;
+
+	case WM_PAINT:
+		if ( pDib != NULL ) {
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint( hwndDlg, &ps );
+			SetDIBitsToDevice( hdc, r.left, r.top, 96, 96, 0, 0, 0, 96, pDibBits, ( BITMAPINFO* )pDib, DIB_RGB_COLORS );
+			EndPaint( hwndDlg, &ps );
+		}
+		break;
+
 	case WM_COMMAND:
 		if ( LOWORD( wParam ) == IDC_NEWMSNACCOUNTLINK ) {
 			MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://lc2.law13.hotmail.passport.com/cgi-bin/register" );
@@ -94,16 +220,36 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 		if ( HIWORD( wParam ) == BN_CLICKED )
 			switch( LOWORD( wParam )) {
-			case IDC_ENABLE_AVATARS:
-				if ( IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ))
-					if ( MSN_LoadPngModule() == NULL )
-						CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS, 0 );
+			case IDC_ENABLE_AVATARS: {
+				BYTE tIsChosen = IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS );
+				if ( tIsChosen && MSN_LoadPngModule() == NULL ) {
+					CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS, 0 );
+					break;
+				}
+
+            EnableWindow( GetDlgItem( hwndDlg, IDC_SETAVATAR ), tIsChosen );
+            EnableWindow( GetDlgItem( hwndDlg, IDC_DELETEAVATAR ), tIsChosen );
+			}
 
 			case IDC_DISABLE_MAIN_MENU:			case IDC_SENDFONTINFO:		
 			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
+
+			case IDC_SETAVATAR:
+				sttSetAvatar( hwndDlg );
+				goto LBL_Apply;
+
+			case IDC_DELETEAVATAR:
+				if ( pDib != NULL ) {
+					GlobalFree( pDib );
+					pDib = NULL;
+					pDibBits = NULL;
+				}
+
+				InvalidateRect( hwndDlg, NULL, TRUE );
+				goto LBL_Apply;
 
 			case IDC_RUN_APP_ON_HOTMAIL: {
 				BYTE tIsChosen = IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL );
@@ -187,20 +333,101 @@ LBL_Continue:
 			}	}
 			MSN_SetString( NULL, "Nick", screenStr );
 
-			BYTE tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAIN_MENU );
-			if ( MyOptions.DisableMenu != tValue )
-				MSN_SetByte( "DisableSetNickname", tValue );
-
-			tValue  = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
+			BYTE tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {
 				MSN_SendPacket( msnNSSocket, "BLP", ( tValue ) ? "BL" : "AL" );
 				break;
 			}
 
+			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS );
+			{
+				char tFileName[ MAX_PATH ];
+				MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
+
+				if ( tValue == FALSE ) {
+LBL_Del:			DeleteFile( tFileName );
+					DBDeleteContactSetting( NULL, msnProtocolName, "PictObject" );
+
+					GlobalFree( pDib ); pDib = NULL; pDibBits = NULL;
+					InvalidateRect( hwndDlg, NULL, TRUE );
+				}
+				else {
+					if ( pDib == NULL || pDibBits == NULL )
+						goto LBL_Del;
+
+					long dwPngSize = 0;
+					if ( dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, NULL, &dwPngSize )) {
+						BYTE* pPngMemBuffer = new BYTE[ dwPngSize ];
+						dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, pPngMemBuffer, &dwPngSize );
+
+						SHA1Context sha1ctx;
+						BYTE sha1c[ SHA1HashSize ], sha1d[ SHA1HashSize ];
+						char szSha1c[ 40 ], szSha1d[ 40 ];
+						SHA1Reset( &sha1ctx );
+						SHA1Input( &sha1ctx, pPngMemBuffer, dwPngSize );
+						SHA1Result( &sha1ctx, sha1d );
+						{	NETLIBBASE64 nlb = { szSha1d, sizeof szSha1d, ( PBYTE )sha1d, sizeof sha1d };
+							MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+						}
+
+						SHA1Reset( &sha1ctx );
+
+						char szEmail[ MSN_MAX_EMAIL_LEN ];
+						MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail );
+						SHA1Input( &sha1ctx, ( PBYTE )"Creator", 7 );
+						SHA1Input( &sha1ctx, ( PBYTE )szEmail, strlen( szEmail ));
+
+						char szFileSize[ 20 ];
+						ltoa( dwPngSize, szFileSize, 10 );
+						SHA1Input( &sha1ctx, ( PBYTE )"Size", 4 );
+						SHA1Input( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
+
+						SHA1Input( &sha1ctx, ( PBYTE )"Type", 4 );
+						SHA1Input( &sha1ctx, ( PBYTE )"3", 1 );
+
+						SHA1Input( &sha1ctx, ( PBYTE )"Location", 8 );
+						SHA1Input( &sha1ctx, ( PBYTE )"TFR43.dat", 9 );
+
+						SHA1Input( &sha1ctx, ( PBYTE )"Friendly", 8 );
+						SHA1Input( &sha1ctx, ( PBYTE )"AAA=", 4 );
+
+						SHA1Input( &sha1ctx, ( PBYTE )"SHA1D", 5 );
+						SHA1Input( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
+						SHA1Result( &sha1ctx, sha1c );
+						{	NETLIBBASE64 nlb = { szSha1c, sizeof szSha1c, ( PBYTE )sha1c, sizeof sha1c };
+							MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+						}
+						{	char* szBuffer = ( char* )alloca( 1000 );
+							_snprintf( szBuffer, 1000,
+								"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"TFR43.dat\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
+								szEmail, dwPngSize, szSha1d, szSha1c );
+
+							char* szEncodedBuffer = ( char* )alloca( 1000 );
+							UrlEncode( szBuffer, szEncodedBuffer, 1000 );
+
+							MSN_SetString( NULL, "PictObject", szEncodedBuffer );
+							if ( msnLoggedIn )
+								MSN_SetServerStatus( msnStatusMode );
+						}
+						{	char tFileName[ MAX_PATH ];
+							MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
+							FILE* out = fopen( tFileName, "wb" );
+							if ( out != NULL ) {
+								fwrite( pPngMemBuffer, dwPngSize, 1, out );
+								fclose( out );
+						}	}
+						delete pPngMemBuffer;
+				}	}
+
+				if ( msnLoggedIn )
+					MSN_SetServerStatus( msnStatusMode );
+			}
+			MSN_SetByte( "EnableAvatars", tValue );
+
 			MSN_SetByte( "SendFontInfo", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SENDFONTINFO ));
 			MSN_SetByte( "RunMailerOnHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL ));
 			MSN_SetByte( "NeverUpdateNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_OWN_NICKNAME ));
-			MSN_SetByte( "EnableAvatars", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ));
+			MSN_SetByte( "DisableSetNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAIN_MENU ));
 
 			GetDlgItemText( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
 			MSN_SetString( NULL, "MailerPath", screenStr );

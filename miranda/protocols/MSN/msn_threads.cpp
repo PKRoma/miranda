@@ -291,10 +291,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	}
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
-		if ( MSN_GetByte( "UseMsnp10", 0 ))
-			info->sendPacket( "VER", "MSNP10 MSNP9 CVR0" );
-		else
-			info->sendPacket( "VER", "MSNP9 MSNP8 CVR0" );
+		info->sendPacket( "VER", "MSNP10 MSNP9 CVR0" );
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		char tEmail[ MSN_MAX_EMAIL_LEN ];

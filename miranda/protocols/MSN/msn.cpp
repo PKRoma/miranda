@@ -123,8 +123,7 @@ static char* rtrim( char *string )
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char szModule[ 100 ], szBuffer[ 100 ];
-	strupr( strcpy( szModule, msnProtocolName ));
+	char szBuffer[ 100 ];
 
 	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
 	if ( wPort != 0xFFFF ) {
@@ -133,7 +132,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		ltoa( wPort, szBuffer, 10 );
 		MSN_SetString( NULL, "NLIncomingPorts", szBuffer );
 
-		DBDeleteContactSetting( NULL, szModule, "YourPort" );
+		DBDeleteContactSetting( NULL, msnProtocolName, "YourPort" );
 	}
 
 	_snprintf( szBuffer, sizeof szBuffer, "%s plugin connections", msnProtocolName );
@@ -141,7 +140,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS;
-	nlu.szSettingsModule = szModule;
+	nlu.szSettingsModule = msnProtocolName;
 	nlu.szDescriptiveName = MSN_Translate( szBuffer );
 
 	if ( MyOptions.UseGateway ) {

@@ -31,20 +31,23 @@
 #define IDC_MSN_PICT                    1008
 #define IDC_CUSTOM1                     1009
 #define IDC_USE_OWN_NICKNAME            1010
-#define IDC_KEEPALIVE                   1011
 #define IDC_BTN_INSTALL                 1011
 #define IDC_BTN_DOWNLOAD                1012
 #define IDC_BTN_CANCEL                  1013
 #define IDC_MSNLISTS                    1014
-#define IDC_LIST                        1014
+#define IDC_LIST                        1015
 #define IDC_ICON_FL                     1016
 #define IDC_ICON_RL                     1017
 #define IDC_ICON_AL                     1018
 #define IDC_ICON_BL                     1019
 #define IDC_PASSWORD                    1020
+#define IDC_AVATAR                      1021
 #define IDC_HANDLE                      1022
 #define IDC_HANDLE2                     1023
+#define IDC_SETAVATAR                   1024
+#define IDC_DELETEAVATAR                1025
 #define IDC_BGCOLOUR                    1026
+#define IDC_KEEPALIVE                   1027
 #define IDC_TEXTCOLOUR                  1028
 #define IDC_PREVIEW                     1030
 #define IDC_PREVIEW2                    1031
@@ -78,7 +81,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        129
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1020
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -96,11 +96,19 @@ typedef struct SHA1Context
  *  Function Prototypes
  */
 
-int SHA1Reset(  SHA1Context *);
-int SHA1Input(  SHA1Context *,
-                const uint8_t *,
-                unsigned int);
-int SHA1Result( SHA1Context *,
-                uint8_t Message_Digest[SHA1HashSize]);
+#if defined __cplusplus
+extern "C"
+{ 
+#endif
+
+	int SHA1Reset(  SHA1Context *);
+	int SHA1Input(  SHA1Context *,
+						const uint8_t *,
+						unsigned int);
+	int SHA1Result( SHA1Context *,
+						uint8_t Message_Digest[SHA1HashSize]);
+#if defined __cplusplus
+}
+#endif
 
 #endif
