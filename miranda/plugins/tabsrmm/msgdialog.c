@@ -2052,38 +2052,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             break;
         case DM_APPENDTOLOG:   //takes wParam=hDbEvent
-#if defined(_STREAMTHREADING)
-            if(g_StreamThreadRunning) {
-                if(dat->pendingStream > 0) {
-                    if(dat->addedEvents == NULL)
-                        dat->addedEvents = (HANDLE *)malloc(sizeof(HANDLE) * ADDEDEVENTSQUEUESIZE);
-                    else {
-                        if(dat->iAddedEvents >= ADDEDEVENTSQUEUESIZE)
-                            dat->addedEvents = (HANDLE *)realloc(dat->addedEvents, sizeof(HANDLE) * (dat->iAddedEvents + 1));
-                    }
-                    dat->addedEvents[dat->iAddedEvents++] = (HANDLE) wParam;
-                    _DebugPopup(dat->hContact, "adding event - %d", wParam);
-                }
-                else {
-                    if(dat->iAddedEvents > 0) {
-                        int i;
-                        _DebugPopup(dat->hContact, "handling queue - %d entries", dat->iAddedEvents);
-                        for(i = 0; i < dat->iAddedEvents; i++)
-                            StreamInEvents(hwndDlg, dat->addedEvents[i], 1, 1, NULL);
-                        dat->iAddedEvents = 0;
-                        if(dat->addedEvents) {
-                            free(dat->addedEvents);
-                            dat->addedEvents = NULL;
-                        }
-                    }
-                    StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
-                }
-            }
-            else
-                StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
-#else
             StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
-#endif            
             break;
         case DM_SCROLLLOGTOBOTTOM:
             {
@@ -2101,16 +2070,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     si.fMask = SIF_POS;
                     si.nPos = si.nMax - si.nPage + 1;
                     SetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si, TRUE);
-                    if(wParam) {
+                    if(wParam)
                         SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                        if(!(dat->dwEventIsShown & MWF_SHOW_MICROLF))
-                            SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_LINEUP, 0), 0);
-                    }
-                    else {
+                    else
                         PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                        if(!(dat->dwEventIsShown & MWF_SHOW_MICROLF))
-                            PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_LINEUP, 0), 0);
-                    }
                     if(lParam)
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
                 }

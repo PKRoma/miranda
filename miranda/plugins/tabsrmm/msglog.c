@@ -778,8 +778,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 
     if(dat->dwEventIsShown & MWF_SHOW_MICROLF)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
-    else
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
     
     /* OnO: highlight end */
     //if(dbei.eventType == EVENTTYPE_MESSAGE && dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
@@ -820,10 +818,11 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
                 }
                 dat->stage = STREAMSTAGE_TAIL;
                 //fall through
-            case STREAMSTAGE_TAIL:
+            case STREAMSTAGE_TAIL:{
                 dat->buffer = CreateRTFTail(dat->dlgDat);
                 dat->stage = STREAMSTAGE_STOP;
                 break;
+            }
             case STREAMSTAGE_STOP:
                 *pcb = 0;
                 return 0;
@@ -854,11 +853,11 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     // separator strings used for grid lines, message separation and so on...
     
     //strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "%s\\sl-1" : "\\par%s\\sl-1"));
-    strcpy(szSep0, fAppend ? ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\par%s\\sl-1" : "%s\\sl-1" ) : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "%s\\sl-1" : "%s\\sl-1"));
+    strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "%s\\sl-1" : "\\par%s\\sl-1"));
     _snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
 
     //strcpy(szSep2, fAppend ? "\\par\\sl0" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl0" : "\\par\\sl0"));
-    strcpy(szSep2, fAppend ? ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ?  "\\par\\sl0" : "\\sl1000") : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl1000" : "\\sl1000"));
+    strcpy(szSep2, fAppend ? "\\par\\sl0" : ((dat->dwEventIsShown & MWF_SHOW_MICROLF) ? "\\sl1000" : "\\par\\sl1000"));
 
     ZeroMemory(&ci, sizeof(ci));
     ci.cbSize = sizeof(ci);
@@ -924,10 +923,24 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         sel.cpMin = sel.cpMax - 1;
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, FALSE, (LPARAM)_T(""));
+    } else if(fAppend) {
+        CHARRANGE chr;
+        PARAFORMAT2 pf2 = {0};
+        HWND hwndrtf = GetDlgItem(hwndDlg, IDC_LOG);
+
+        chr.cpMin = startAt;
+        chr.cpMax = -1;
+        SendMessage(hwndrtf, EM_EXSETSEL, 0, (LPARAM)&chr);
+        //SendMessage(hwndrtf, EM_REPLACESEL, FALSE, (LPARAM)_T("\n\r"));
+        pf2.cbSize = sizeof(pf2);
+        pf2.dwMask = PFM_LINESPACING | PFM_OFFSETINDENT | PFM_OFFSET | PFM_RIGHTINDENT;
+        SendMessage(hwndrtf, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
+        _DebugPopup(NULL, "%d, %d, %d", pf2.dxOffset, pf2.dxRightIndent, pf2.dxStartIndent);
+        SendMessage(hwndrtf, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
     }
 
 #if defined(_STREAMTHREADING)
-    if(g_StreamThreadRunning && !fAppend) {
+    if(g_StreamThreadRunning) {
         if(!fAppend) {
             SendMessage(hwndrtf, WM_SETREDRAW, TRUE, 0);
         }
@@ -1004,14 +1017,13 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
             }
 
 #if defined(_STREAMTHREADING)
-            if(g_StreamThreadRunning && !fAppend)
+            if(g_StreamThreadRunning)
                 SendMessage(hwndDlg, DM_INSERTICON, (WPARAM)ole, (LPARAM)msgLogIcons[bIconIndex].hBmp);
             else
                 ImageDataInsertBitmap(ole, msgLogIcons[bIconIndex].hBmp);
 #else
             ImageDataInsertBitmap(ole, msgLogIcons[bIconIndex].hBmp);
 #endif            
-            //ImageDataInsertBitmap(ole, msgLogIcons[bIconIndex].hBmp);
             fi.chrg.cpMin = cr.cpMax + 6;
         }
         ReleaseRichEditOle(ole);
@@ -1038,7 +1050,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
         smadd.disableRedraw = TRUE;
         if(dat->doSmileys) {
 #if defined(_STREAMTHREADING)
-            if(g_StreamThreadRunning && !fAppend)
+            if(g_StreamThreadRunning)
                 CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE | TABSRMM_SMILEYADD_THREADING, (LPARAM)&smadd);
             else
                 CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);

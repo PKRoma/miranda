@@ -139,8 +139,6 @@ struct MessageWindowData {
     UINT codePage;
 #if defined(_STREAMTHREADING)
     int volatile pendingStream;
-    HANDLE *addedEvents;
-    int iAddedEvents;
 #endif    
     struct SendJob sendJobs[NR_SENDJOBS];
     int iSendJobCurrent, iSendJobMax;
