@@ -101,7 +101,7 @@ int LoadCLCModule(void);		// window class: CLC control
 int LoadButtonModule(void);		// window class: button class
 int LoadContactsModule(void);    // random: contact
 #ifdef _ALPHA_BASE_
-int LoadUpdateCheckModule(void); // Alpha build update check
+//int LoadUpdateCheckModule(void); // Alpha build update check
 #endif
 
 static int LoadDefaultModules(void)
