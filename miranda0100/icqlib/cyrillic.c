@@ -1,44 +1,29 @@
 /* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+
 /*
-$Id$
-$Log$
-Revision 1.1  2001/04/22 12:39:05  cyreve
-Initial revision
+ * $Id$
+ *
+ * Copyright (C) 1998-2001, Denis V. Dmitrienko <denis@null.net> and
+ *                          Bill Soudan <soudan@kde.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
 
-Revision 1.7  2000/05/21 17:41:14  denis
-Applied patch for russian letters IO and io by
-Vladimir Eltchinov <elik@design.ru>
-
-Revision 1.6  2000/02/07 02:31:37  bills
-added icq_RusConv_n
-
-Revision 1.5  1999/09/29 16:45:26  denis
-Cleanups
-
-Revision 1.4  1999/07/16 12:08:20  denis
-Cleaned up.
-
-Revision 1.3  1999/07/12 15:13:29  cproch
-- added definition of ICQLINK to hold session-specific global variabled
-  applications which have more than one connection are now possible
-- changed nearly every function defintion to support ICQLINK parameter
-
-Revision 1.2  1999/04/14 14:44:30  denis
-Switched from icq_Log callback to icq_FmtLog function.
-
-Revision 1.1  1999/03/24 11:37:35  denis
-Underscored files with TCP stuff renamed.
-TCP stuff cleaned up
-Function names changed to corresponding names.
-icqlib.c splitted to many small files by subject.
-C++ comments changed to ANSI C comments.
-
-*/
-
-#include "icqtypes.h"
 #include "icq.h"
 #include "icqlib.h"
-#include "util.h"
 
 BYTE kw[] = {128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,
              144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,

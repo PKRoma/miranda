@@ -1,10 +1,10 @@
-# Microsoft Developer Studio Project File - Name="icqlib" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="IcqLib" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=icqlib - Win32 BC
+CFG=IcqLib - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,23 +13,22 @@ CFG=icqlib - Win32 BC
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "icqlib.mak" CFG="icqlib - Win32 BC"
+!MESSAGE NMAKE /f "icqlib.mak" CFG="IcqLib - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "icqlib - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "icqlib - Win32 Debug" (based on "Win32 (x86) Static Library")
-!MESSAGE "icqlib - Win32 BC" (based on "Win32 (x86) Static Library")
+!MESSAGE "IcqLib - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "IcqLib - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/icqlib", XAAAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "icqlib - Win32 Release"
+!IF  "$(CFG)" == "IcqLib - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -41,10 +40,11 @@ RSC=rc.exe
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /Gf /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_MSVC_" /YX /FD /c
-# ADD BASE RSC /l 0x1009 /d "NDEBUG"
-# ADD RSC /l 0x1009 /d "NDEBUG"
+# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /FD /c
+# SUBTRACT CPP /YX
+# ADD BASE RSC /l 0x809
+# ADD RSC /l 0x809
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -52,7 +52,7 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "icqlib - Win32 Debug"
+!ELSEIF  "$(CFG)" == "IcqLib - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -64,36 +64,11 @@ LIB32=link.exe -lib
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "_MSVC_" /YX /FD /GZ /c
-# SUBTRACT CPP /Fr
-# ADD BASE RSC /l 0x1009 /d "_DEBUG"
-# ADD RSC /l 0x1009 /d "_DEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
-
-!ELSEIF  "$(CFG)" == "icqlib - Win32 BC"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "icqlib___Win32_BC"
-# PROP BASE Intermediate_Dir "icqlib___Win32_BC"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "icqlib___Win32_BC"
-# PROP Intermediate_Dir "icqlib___Win32_BC"
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "_MSVC_" /YX /FD /GZ /c
-# SUBTRACT BASE CPP /Fr
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "_MSVC_" /YX /FD /GZ /c
-# SUBTRACT CPP /Fr
-# ADD BASE RSC /l 0x1009 /d "_DEBUG"
-# ADD RSC /l 0x1009 /d "_DEBUG"
+# ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /W3 /Gm /Gi- /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /FD /c
+# SUBTRACT CPP /YX
+# ADD BASE RSC /l 0x809
+# ADD RSC /l 0x809
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -105,12 +80,11 @@ LIB32=link.exe -lib
 
 # Begin Target
 
-# Name "icqlib - Win32 Release"
-# Name "icqlib - Win32 Debug"
-# Name "icqlib - Win32 BC"
-# Begin Group "Source Files"
+# Name "IcqLib - Win32 Release"
+# Name "IcqLib - Win32 Debug"
+# Begin Group "Sources"
 
-# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# PROP Default_Filter "*.c"
 # Begin Source File
 
 SOURCE=.\chatsession.c
@@ -125,11 +99,19 @@ SOURCE=.\cyrillic.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\eventhandle.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\filesession.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\icqbyteorder.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\icqevent.c
 # End Source File
 # Begin Source File
 
@@ -150,6 +132,10 @@ SOURCE=.\proxy.c
 # Begin Source File
 
 SOURCE=.\queue.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\socketmanager.c
 # End Source File
 # Begin Source File
 
@@ -177,6 +163,10 @@ SOURCE=.\tcplink.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\timeout.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\udp.c
 # End Source File
 # Begin Source File
@@ -188,9 +178,9 @@ SOURCE=.\udphandle.c
 SOURCE=.\util.c
 # End Source File
 # End Group
-# Begin Group "Header Files"
+# Begin Group "Headers"
 
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# PROP Default_Filter "*.h"
 # Begin Source File
 
 SOURCE=.\chatsession.h
@@ -198,6 +188,10 @@ SOURCE=.\chatsession.h
 # Begin Source File
 
 SOURCE=.\contacts.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\eventhandle.h
 # End Source File
 # Begin Source File
 
@@ -210,6 +204,10 @@ SOURCE=.\icq.h
 # Begin Source File
 
 SOURCE=.\icqbyteorder.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\icqevent.h
 # End Source File
 # Begin Source File
 
@@ -233,6 +231,10 @@ SOURCE=.\queue.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\socketmanager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\stdpackets.h
 # End Source File
 # Begin Source File
@@ -242,6 +244,10 @@ SOURCE=.\tcp.h
 # Begin Source File
 
 SOURCE=.\tcplink.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\timeout.h
 # End Source File
 # Begin Source File
 

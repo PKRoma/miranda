@@ -1,156 +1,31 @@
 /* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+
 /*
-$Id$
-$Log$
-Revision 1.1  2001/04/22 12:39:07  cyreve
-Initial revision
-
-Revision 1.38  2000/07/09 22:19:35  bills
-added new *Close functions, use *Close functions instead of *Delete
-where correct, and misc cleanup
-
-Revision 1.37  2000/06/15 01:53:17  bills
-added icq_TCPLinkSendSeq function
-
-Revision 1.36  2000/05/04 15:57:20  bills
-Reworked file transfer notification, small bugfixes, and cleanups.
-
-Revision 1.35  2000/05/03 18:29:15  denis
-Callbacks have been moved to the ICQLINK structure.
-
-Revision 1.34  2000/04/10 18:11:45  denis
-ANSI cleanups.
-
-Revision 1.33  2000/04/10 16:36:04  denis
-Some more Win32 compatibility from Guillaume Rosanis <grs@mail.com>
-
-Revision 1.32  2000/04/05 14:37:02  denis
-Applied patch from "Guillaume R." <grs@mail.com> for basic Win32
-compatibility.
-
-Revision 1.31  2000/02/15 04:00:16  bills
- new icq_ChatRusConv_n function
-
-Revision 1.30  2000/02/07 02:46:29  bills
-implemented non-blocking TCP connects over SOCKS, cyrillic translation for chat
-
-Revision 1.29  2000/01/20 19:59:35  bills
-fixed bug in icq_TCPLinkConnect that caused file/chat connection attempts
-to go to the wrong port
-
-Revision 1.28  2000/01/16 03:59:10  bills
-reworked list code so list_nodes don't need to be inside item structures,
-removed strlist code and replaced with generic list calls
-
-Revision 1.27  1999/12/27 16:13:29  bills
-fixed bug in icq_TCPOnDataReceived, removed flags variable ;)
-
-Revision 1.26  1999/12/27 10:56:10  denis
-Unused "flags" variable commented out.
-
-Revision 1.25  1999/12/21 00:30:53  bills
-added icq_TCPLinkProcessReceived to support processing receive queue
-before delete (packets used to get dropped in this instance, oops),
-reworked icq_TCPLinkOnDataReceived to handle quick, large streams of data,
-changed icq_TCPLinkOnConnect and *Accept to make all sockets non-blocking.
-
-Revision 1.24  1999/12/14 03:33:34  bills
-icq_TCPLinkConnect now uses real_ip when our IP is same as remote IP to make
-connection, added code to implement connect timeout
-
-Revision 1.23  1999/11/30 09:57:44  bills
-buffer overflow check added, tcplinks will now close if buffer overflows.
-increased icq_TCPLinkBufferSize to 4096 to support file transfer packets
-
-Revision 1.22  1999/11/29 17:15:51  denis
-Absence of socklen_t type fixed.
-
-Revision 1.21  1999/10/01 00:49:21  lord
-some compilation problems are fixed.
-
-Revision 1.20  1999/09/29 20:26:41  bills
-ack forgot the args :)
-
-Revision 1.19  1999/09/29 20:21:45  bills
-renamed denis' new function
-
-Revision 1.18  1999/09/29 20:11:29  bills
-renamed tcp_link* to icq_TCPLink*.  many cleanups, added icq_TCPLinkOnConnect
-
-Revision 1.17  1999/09/29 17:10:05  denis
-TCP code SOCKS-ification. Not finished.
-
-Revision 1.16  1999/07/18 20:21:34  bills
-fixed fail notification bug introduced during ICQLINK changes, changed to
-use new byte-order functions & contact list functions, added better log
-messages
-
-Revision 1.15  1999/07/16 15:45:57  denis
-Cleaned up.
-
-Revision 1.14  1999/07/16 12:02:58  denis
-tcp_packet* functions renamed to icq_Packet*
-Cleaned up.
-
-Revision 1.13  1999/07/12 15:13:36  cproch
-- added definition of ICQLINK to hold session-specific global variabled
-  applications which have more than one connection are now possible
-- changed nearly every function defintion to support ICQLINK parameter
-
-Revision 1.12  1999/07/03 06:33:51  lord
-. byte order conversion macros added
-. some compilation warnings removed
-
-Revision 1.11  1999/06/30 13:52:23  bills
-implemented non-blocking connects
-
-Revision 1.10  1999/05/03 21:39:41  bills
-removed exit calls
-
-Revision 1.9  1999/04/29 09:35:54  denis
-Cleanups, warning removed
-
-Revision 1.8  1999/04/17 19:34:49  bills
-fixed bug in icq_TCPLinkOnDataReceived, multiple packets that come in on
-one recv call are now handled correctly.  added icq_TCPLinkAccept and
-icq_TCPLinkListen.  started using mode and type structure entries.  added
-icq_TCPLinks list and icq_FindTCPLink function.  changed received_queue and
-send_queue to lists.
-
-Revision 1.7  1999/04/14 15:02:45  denis
-Cleanups for "strict" compiling (-ansi -pedantic)
-
-Revision 1.6  1999/04/05 18:47:17  bills
-initial chat support implemented
-
-Revision 1.5  1999/03/31 01:50:54  bills
-wrapped up many tcp details- tcp code now handles incoming and outgoing
-tcp messages and urls!
-
-Revision 1.4  1999/03/28 03:27:49  bills
-fixed icq_TCPLinkConnect so it really connects to remote ip instead of
-always my local test computer O:)
-
-Revision 1.3  1999/03/26 20:02:41  bills
-fixed C++ comments, cleaned up
-
-Revision 1.2  1999/03/25 22:21:59  bills
-added necessary includes
-
-Revision 1.1  1999/03/25 21:09:07  bills
-tcp link functions
-*/
+ * $Id$
+ *
+ * Copyright (C) 1998-2001, Denis V. Dmitrienko <denis@null.net> and
+ *                          Bill Soudan <soudan@kde.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
 
 #include <stdlib.h>
 
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
 #include <fcntl.h>
-#include <stdarg.h>
 #include <errno.h>
-#include <sys/types.h>
 
 #ifdef _WIN32
 #include <winsock.h>
@@ -162,41 +37,38 @@ tcp link functions
 #define EAFNOSUPPORT  WSAEAFNOSUPPORT
 #define EWOULDBLOCK   WSAEWOULDBLOCK
 #else
-#include <sys/socket.h>
 #include <netdb.h>
 #endif
 
-#include "icqtypes.h"
-#include "icq.h"
 #include "icqlib.h"
-#include "tcplink.h"
 #include "stdpackets.h"
-#include "util.h"
 #include "tcp.h"
 #include "errno.h"
 #include "chatsession.h"
 #include "filesession.h"
+#include "contacts.h"
 
-icq_TCPLink *icq_TCPLinkNew(ICQLINK *link)
+icq_TCPLink *icq_TCPLinkNew(icq_Link *icqlink)
 {
   icq_TCPLink *p=(icq_TCPLink *)malloc(sizeof(icq_TCPLink));
 
   p->socket=-1;
-  p->icqlink=link;
+  p->icqlink=icqlink;
   p->mode=0;
   p->session=0L;
   p->type=TCP_LINK_MESSAGE;
   p->buffer_count=0;
-  p->send_queue=list_new();
-  p->received_queue=list_new();
+  p->send_queue=icq_ListNew();
+  p->received_queue=icq_ListNew();
   p->id=0;
   p->remote_uin=0;
   p->remote_version=0;
   p->flags=0;
   p->proxy_status = 0;
+  p->connect_timeout = NULL;
 
   if(p)
-    list_enqueue(link->icq_TCPLinks, p);
+    icq_LinkEnqueue(icqlink->d->icq_TCPLinks, p);
 
   return p;
 }
@@ -204,11 +76,12 @@ icq_TCPLink *icq_TCPLinkNew(ICQLINK *link)
 int _icq_TCPLinkDelete(void *pv, va_list data)
 {
   icq_Packet *p=(icq_Packet *)pv;
-  ICQLINK *icqlink=va_arg(data, ICQLINK *);
+  icq_Link *icqlink=va_arg(data, icq_Link *);
 
   /* notify the app the packet didn't make it */
   if(p->id)
-    (*icqlink->icq_RequestNotify)(icqlink, p->id, ICQ_NOTIFY_FAILED, 0, 0);
+    invoke_callback(icqlink, icq_RequestNotify)(icqlink, p->id,
+      ICQ_NOTIFY_FAILED, 0, 0);
 
   return 0;
 }
@@ -221,17 +94,11 @@ void icq_TCPLinkDelete(void *pv)
   icq_TCPLinkProcessReceived(p);
 
   /* make sure we notify app that packets in send queue didn't make it */
-  (void)list_traverse(p->send_queue, _icq_TCPLinkDelete, p->icqlink);
+  (void)icq_ListTraverse(p->send_queue, _icq_TCPLinkDelete, p->icqlink);
 
   /* destruct all packets still waiting on queues */
-  list_delete(p->send_queue, icq_PacketDelete);
-  list_delete(p->received_queue, icq_PacketDelete);
-
-  /* notify app if this was a chat or file xfer session and there is an
-   * id assigned */
-  if((p->type==TCP_LINK_CHAT || p->type==TCP_LINK_FILE) && p->id)
-    if(p->icqlink->icq_RequestNotify)
-      (*p->icqlink->icq_RequestNotify)(p->icqlink, p->id, ICQ_NOTIFY_SUCCESS, 0, 0);
+  icq_ListDelete(p->send_queue, icq_PacketDelete);
+  icq_ListDelete(p->received_queue, icq_PacketDelete);
 
   /* if this is a chat or file link, delete the associated session as
    * well, but make sure we unassociate ourself first so the session
@@ -241,13 +108,13 @@ void icq_TCPLinkDelete(void *pv)
     if(p->type==TCP_LINK_CHAT)
     {
       icq_ChatSession *psession=p->session;
-      /*psession->tcplink=0L;*/
+      psession->tcplink=NULL;
       icq_ChatSessionClose(psession);
     }
 
     if(p->type==TCP_LINK_FILE) {
       icq_FileSession *psession=p->session;
-      psession->tcplink=0L;
+      psession->tcplink=NULL;
       icq_FileSessionClose(psession);
     }
   }
@@ -255,11 +122,12 @@ void icq_TCPLinkDelete(void *pv)
   /* close the socket after we notify app so app can read errno if necessary */
   if (p->socket > -1)
   {
-#ifdef _WIN32
-    closesocket(p->socket);
-#else
-    close(p->socket);
-#endif
+    icq_SocketDelete(p->socket);
+  }
+
+  if (p->connect_timeout)
+  {
+    icq_TimeoutDelete(p->connect_timeout);
   }
 
   free(p);
@@ -267,7 +135,7 @@ void icq_TCPLinkDelete(void *pv)
 
 void icq_TCPLinkClose(icq_TCPLink *plink)
 {
-  list_remove(plink->icqlink->icq_TCPLinks, plink);
+  icq_ListRemove(plink->icqlink->d->icq_TCPLinks, plink);
   icq_TCPLinkDelete(plink);
 }
 
@@ -347,7 +215,9 @@ int icq_TCPLinkProxyAuthorization(icq_TCPLink *plink)
   int res;
   char buf[1024];
 
-  plink->mode = (plink->mode & (~TCP_LINK_SOCKS_AUTHORIZATION)) | TCP_LINK_SOCKS_AUTHSTATUS;
+  plink->mode &= ~TCP_LINK_SOCKS_AUTHORIZATION;
+  plink->mode |= TCP_LINK_SOCKS_AUTHSTATUS;
+
 #ifdef _WIN32
   res = recv(plink->socket, buf, 2, 0);
 #else
@@ -356,11 +226,7 @@ int icq_TCPLinkProxyAuthorization(icq_TCPLink *plink)
   if(res != 2 || buf[0] != 5 || buf[1] != 2) /* username/password authentication*/
   {
     icq_FmtLog(plink->icqlink, ICQ_LOG_FATAL, "[SOCKS] Authentication method incorrect\n");
-#ifdef _WIN32
-    closesocket(plink->socket);
-#else
-    close(plink->socket);
-#endif
+    icq_SocketDelete(plink->socket);
     return -1;
   }
   buf[0] = 1; /* version of subnegotiation */
@@ -392,11 +258,7 @@ int icq_TCPLinkProxyAuthStatus(icq_TCPLink *plink)
   if(res != 2 || buf[0] != 1 || buf[1] != 0)
   {
     icq_FmtLog(plink->icqlink, ICQ_LOG_FATAL, "[SOCKS] Authorization failure\n");
-#ifdef _WIN32
-    closesocket(plink->socket);
-#else
-    close(plink->socket);
-#endif
+    icq_SocketDelete(plink->socket);
     return -1;
   }
   return 0;
@@ -416,11 +278,7 @@ int icq_TCPLinkProxyNoAuthStatus(icq_TCPLink *plink)
   if(res != 2 || buf[0] != 5 || buf[1] != 0) /* no authentication required */
   {
     icq_FmtLog(plink->icqlink, ICQ_LOG_FATAL, "[SOCKS] Authentication method incorrect\n");
-#ifdef _WIN32
-    closesocket(plink->socket);
-#else
-    close(plink->socket);
-#endif
+    icq_SocketDelete(plink->socket);
     return -1;
   }
   return 0;
@@ -499,11 +357,7 @@ int icq_TCPLinkProxyConnectStatus(icq_TCPLink *plink)
         res = EFAULT;
         break;
     }
-#ifdef _WIN32
-    closesocket(plink->socket);
-#else
-    close(plink->socket);
-#endif
+    icq_SocketDelete(plink->socket);
     return res;
   }
   return 0;
@@ -526,7 +380,7 @@ int icq_TCPLinkConnect(icq_TCPLink *plink, DWORD uin, int port)
   if(!pcontact)
     return -2;
 
-  if((plink->socket=socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  if((plink->socket=icq_SocketNew(AF_INET, SOCK_STREAM, 0)) < 0)
     return -3;
 
 /*   bzero(&(plink->remote_address), sizeof(plink->remote_address));   Win32 incompatible... */
@@ -590,22 +444,19 @@ int icq_TCPLinkConnect(icq_TCPLink *plink, DWORD uin, int port)
 
   plink->remote_uin=uin;
 
-  plink->connect_time=time(0L);
-
   /* Send the hello packet */
   p=icq_TCPCreateInitPacket(plink);
   icq_TCPLinkSend(plink, p);
 
 #ifdef TCP_PACKET_TRACE
-#ifdef TCP_TRACE_ODS
-{char str[128];
-  sprintf(str,"hello packet queued for %lu\n", uin);
-  OutputDebugString(str);}
-#else
   printf("hello packet queued for %lu\n", uin);
-#endif
 #endif /* TCP_PACKET_TRACE */
 
+  icq_SocketSetHandler(plink->socket, ICQ_SOCKET_WRITE,
+    icq_TCPLinkOnConnect, plink);
+  plink->connect_timeout=icq_TimeoutNew(TCP_LINK_CONNECT_TIMEOUT,
+    (icq_TimeoutHandler)icq_TCPLinkClose, plink);
+  
   return 1;
 }
 
@@ -616,32 +467,32 @@ icq_TCPLink *icq_TCPLinkAccept(icq_TCPLink *plink)
 #else
   int flags;
 #endif
-  int socket;
+  int socket_fd;
   size_t remote_length;
-  icq_TCPLink *pnewlink=icq_TCPLinkNew( plink->icqlink );
+  icq_TCPLink *pnewlink=icq_TCPLinkNew(plink->icqlink);
   
   if(pnewlink)
   {
-	  remote_length = sizeof(struct sockaddr_in);
-		socket=accept(plink->socket, (struct sockaddr *)&(plink->remote_address),
-                  &remote_length);
-		/*if (socket==-1)
-		{
-			DWORD err;
-			err=GetLastError();
-		}*/
-		icq_FmtLog(plink->icqlink, ICQ_LOG_MESSAGE,
-			"accepting tcp connection from %s:%d\n",
-			inet_ntoa(*((struct in_addr *)(&(plink->remote_address.sin_addr)))),
-			ntohs(plink->remote_address.sin_port));
+    remote_length = sizeof(struct sockaddr_in);
+    socket_fd=icq_SocketAccept(plink->socket,
+      (struct sockaddr *)&(plink->remote_address), &remote_length);
 
-		/* FIXME: make sure accept succeeded */
-	
+    icq_FmtLog(plink->icqlink, ICQ_LOG_MESSAGE,
+      "accepting tcp connection from %s:%d\n",
+      inet_ntoa(*((struct in_addr *)(&(plink->remote_address.sin_addr)))),
+      ntohs(plink->remote_address.sin_port));
+
+    /* FIXME: make sure accept succeeded */
+
     pnewlink->type=plink->type;
-    pnewlink->socket=socket;
+    pnewlink->socket=socket_fd;
 
     /* first packet sent on an icq tcp link is always the hello packet */
     pnewlink->mode|=TCP_LINK_MODE_HELLOWAIT;
+
+    /* install socket handler for new socket */
+    icq_SocketSetHandler(socket_fd, ICQ_SOCKET_READ, 
+      icq_TCPLinkOnDataReceived, pnewlink);
   }
 
   /* set the socket to non-blocking */
@@ -665,7 +516,7 @@ int icq_TCPLinkListen(icq_TCPLink *plink)
   plink->remote_uin=0;
 
   /* create tcp listen socket */
-  if((plink->socket=socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  if((plink->socket=icq_SocketNew(AF_INET, SOCK_STREAM, 0)) < 0)
     return -1;
 
   /* must use memset, no bzero for Win32! */
@@ -691,7 +542,10 @@ int icq_TCPLinkListen(icq_TCPLink *plink)
              ntohs(plink->socket_address.sin_port));
 
   plink->mode|=TCP_LINK_MODE_LISTEN;
-  
+
+  icq_SocketSetHandler(plink->socket, ICQ_SOCKET_READ, icq_TCPLinkAccept,
+    plink);
+
   return 0;
 }
 
@@ -735,7 +589,7 @@ void icq_ChatRusConv_n(const char to[4], char *t_in, int t_len)
     icq_RusConv_n(to, &t_in[j], i - j);
 }
 
-int icq_TCPLinkOnDataReceived(icq_TCPLink *plink)
+void icq_TCPLinkOnDataReceived(icq_TCPLink *plink)
 {
   int process_count=0, recv_result=0;
   char *buffer=plink->buffer;
@@ -756,15 +610,8 @@ int icq_TCPLinkOnDataReceived(icq_TCPLink *plink)
     plink->buffer_count+=recv_result;
 
 #ifdef TCP_BUFFER_TRACE
-#ifdef TCP_TRACE_ODS
-{char str[128];
-    sprintf(str,"received %d bytes from link %x, new buffer count %d\n",
-      recv_result, plink, plink->buffer_count);
-  OutputDebugString(str);}
-#else
     printf("received %d bytes from link %x, new buffer count %d\n",
       recv_result, plink, plink->buffer_count);
-#endif
 
     hex_dump(plink->buffer, plink->buffer_count);
 #endif /*TCP_BUFFER_TRACE*/
@@ -776,9 +623,8 @@ int icq_TCPLinkOnDataReceived(icq_TCPLink *plink)
       /* notify the app with the new data */
       if(plink->type == TCP_LINK_CHAT)
         icq_ChatRusConv_n("wk", plink->buffer, plink->buffer_count);
-      if(plink->icqlink->icq_RequestNotify)
-        (*plink->icqlink->icq_RequestNotify)(plink->icqlink, plink->id, ICQ_NOTIFY_CHATDATA,
-                           plink->buffer_count, plink->buffer);
+      invoke_callback(plink->icqlink, icq_ChatNotify)(plink->session,
+        CHAT_NOTIFY_DATA, plink->buffer_count, plink->buffer);
       plink->buffer_count=0;
       continue;
     }
@@ -795,8 +641,7 @@ int icq_TCPLinkOnDataReceived(icq_TCPLink *plink)
         icq_FmtLog(plink->icqlink, ICQ_LOG_WARNING, "tcplink buffer "
           "overflow, packet size = %d, buffer size = %d, closing link\n",
           packet_size, icq_TCPLinkBufferSize);
-        icq_TCPLinkClose(plink);
-        return 0;
+        return;
       }
 
       if(packet_size+sizeof(WORD) <= (unsigned)plink->buffer_count)
@@ -824,38 +669,39 @@ int icq_TCPLinkOnDataReceived(icq_TCPLink *plink)
   } while (recv_result > 0);
 
 #ifdef _WIN32
-  if (recv_result < 0 && WSAGetLastError()!=EWOULDBLOCK) {
+  if (recv_result <= 0 && WSAGetLastError()!=EWOULDBLOCK) {
+
+    /* receive error - log it */
     icq_FmtLog(plink->icqlink, ICQ_LOG_WARNING, "recv failed from %d (%d),"
       " closing link\n", plink->remote_uin, WSAGetLastError());
 #else
-  if (recv_result < 0 && errno!=EWOULDBLOCK) {
+  if (recv_result <= 0 && errno!=EWOULDBLOCK) {
+
     /* receive error - log it */
     icq_FmtLog(plink->icqlink, ICQ_LOG_WARNING, "recv failed from %d (%d-%s),"
       " closing link\n", plink->remote_uin, errno, strerror(errno));
 #endif
 
+    icq_TCPLinkClose(plink);
+
+  } else {
+
+    icq_TCPLinkProcessReceived(plink);
 
   }
 
-  return process_count;
 }
 
 void icq_TCPLinkOnPacketReceived(icq_TCPLink *plink, icq_Packet *p)
 {
 
 #ifdef TCP_RAW_TRACE
-#ifdef TCP_TRACE_ODS
-{char str[128];
-  sprintf(str,"packet received! { length=%d }\n", p->length);
-  OutputDebugString(str);}
-#else
   printf("packet received! { length=%d }\n", p->length);
-#endif
   icq_PacketDump(p);
 #endif
 
-  /* Stick packet on ready packet linked list */
-  list_enqueue(plink->received_queue, p);
+  /* Stick packet on ready packet linked icq_List */
+  icq_LinkEnqueue(plink->received_queue, p);
 }
 
 void icq_TCPLinkOnConnect(icq_TCPLink *plink)
@@ -867,13 +713,18 @@ void icq_TCPLinkOnConnect(icq_TCPLink *plink)
 #endif
   int error;
   
+  icq_TimeoutDelete(plink->connect_timeout);
+  plink->connect_timeout = NULL;
+
   /* check getsockopt */
   len=sizeof(error);
 
+#ifndef __BEOS__
 #ifdef _WIN32
   getsockopt(plink->socket, SOL_SOCKET, SO_ERROR, (char *)&error, &len);
 #else
   getsockopt(plink->socket, SOL_SOCKET, SO_ERROR, &error, &len);
+#endif
 #endif
   if(!error && (plink->mode & (TCP_LINK_SOCKS_CONNECTING | TCP_LINK_SOCKS_AUTHORIZATION |
                                TCP_LINK_SOCKS_AUTHSTATUS | TCP_LINK_SOCKS_NOAUTHSTATUS |
@@ -907,7 +758,12 @@ void icq_TCPLinkOnConnect(icq_TCPLink *plink)
   }
 
   if(plink->mode & (TCP_LINK_SOCKS_CONNECTING | TCP_LINK_SOCKS_AUTHORIZATION | TCP_LINK_SOCKS_AUTHSTATUS | TCP_LINK_SOCKS_NOAUTHSTATUS | TCP_LINK_SOCKS_CROSSCONNECT | TCP_LINK_SOCKS_CONNSTATUS))
+  {
+    icq_SocketSetHandler(plink->socket, ICQ_SOCKET_WRITE, NULL, NULL);
+    icq_SocketSetHandler(plink->socket, ICQ_SOCKET_READ, 
+      icq_TCPLinkOnConnect, plink);
     return;
+  }
 
   len=sizeof(plink->socket_address);
   getsockname(plink->socket, (struct sockaddr *)&plink->socket_address, &len);
@@ -922,11 +778,15 @@ void icq_TCPLinkOnConnect(icq_TCPLink *plink)
 
   plink->mode&= ~TCP_LINK_MODE_CONNECTING;
 
+  icq_SocketSetHandler(plink->socket, ICQ_SOCKET_READ, 
+    icq_TCPLinkOnDataReceived, plink);
+  icq_SocketSetHandler(plink->socket, ICQ_SOCKET_WRITE, NULL, NULL);
+
   /* socket is now connected, notify each request that connection
    * has been established and send pending data */
   while(plink->send_queue->count>0)
   {
-    icq_Packet *p=list_dequeue(plink->send_queue);
+    icq_Packet *p=icq_LinkDequeue(plink->send_queue);
     if(p->id)
       if(plink->icqlink->icq_RequestNotify)
         (*plink->icqlink->icq_RequestNotify)(plink->icqlink, p->id, ICQ_NOTIFY_CONNECTED, 0, 0);
@@ -955,7 +815,7 @@ unsigned long icq_TCPLinkSendSeq(icq_TCPLink *plink, icq_Packet *p,
 {
   /* append the next sequence number on the packet */
   if (!sequence)
-    sequence=plink->icqlink->icq_TCPSequence--;
+    sequence=plink->icqlink->d->icq_TCPSequence--;
   p->id=sequence;
   icq_PacketEnd(p);
   icq_PacketAppend32(p, sequence);
@@ -963,7 +823,7 @@ unsigned long icq_TCPLinkSendSeq(icq_TCPLink *plink, icq_Packet *p,
   /* if the link is currently connecting, queue the packets for
    * later, else send immediately */
   if(plink->mode & TCP_LINK_MODE_CONNECTING) {
-    list_insert(plink->send_queue, 0, p);
+    icq_ListInsert(plink->send_queue, 0, p);
     if(plink->icqlink->icq_RequestNotify)
       (*plink->icqlink->icq_RequestNotify)(plink->icqlink, p->id, ICQ_NOTIFY_CONNECTING, 0, 0);
   } else {
@@ -981,7 +841,7 @@ void icq_TCPLinkSend(icq_TCPLink *plink, icq_Packet *p)
   /* if the link is currently connecting, queue the packets for
    * later, else send immediately */
   if(plink->mode & TCP_LINK_MODE_CONNECTING) {
-    list_insert(plink->send_queue, 0, p);
+    icq_ListInsert(plink->send_queue, 0, p);
     if(plink->icqlink->icq_RequestNotify)
       (*plink->icqlink->icq_RequestNotify)(plink->icqlink, p->id, ICQ_NOTIFY_CONNECTING, 0, 0);
   } else {
@@ -995,11 +855,11 @@ void icq_TCPLinkSend(icq_TCPLink *plink, icq_Packet *p)
 
 void icq_TCPLinkProcessReceived(icq_TCPLink *plink)
 {
-  list *plist=plink->received_queue;
+  icq_List *plist=plink->received_queue;
   while(plist->count>0)
 
   {
-    icq_Packet *p=list_dequeue(plist);
+    icq_Packet *p=icq_LinkDequeue(plist);
 
     if(plink->mode & TCP_LINK_MODE_HELLOWAIT)
     {
@@ -1039,7 +899,7 @@ int _icq_FindTCPLink(void *p, va_list data)
   return ( (plink->remote_uin == uin ) && (plink->type == type) );
 }
 
-icq_TCPLink *icq_FindTCPLink(ICQLINK *link, unsigned long uin, int type)
+icq_TCPLink *icq_FindTCPLink(icq_Link *icqlink, unsigned long uin, int type)
 {
-  return list_traverse(link->icq_TCPLinks, _icq_FindTCPLink, uin, type);
+  return icq_ListTraverse(icqlink->d->icq_TCPLinks, _icq_FindTCPLink, uin, type);
 }

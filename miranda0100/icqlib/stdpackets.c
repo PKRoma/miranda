@@ -1,62 +1,29 @@
 /* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+
 /*
-$Id$
-$Log$
-Revision 1.1  2001/04/22 12:39:06  cyreve
-Initial revision
-
-Revision 1.10  2000/06/15 01:51:23  bills
-added creation functions for cancel and refuse operations
-
-Revision 1.9  2000/05/04 15:50:38  bills
-warning cleanups
-
-Revision 1.8  2000/04/10 18:11:45  denis
-ANSI cleanups.
-
-Revision 1.7  2000/04/06 16:38:04  denis
-icq_*Send*Seq() functions with specified sequence number were added.
-
-Revision 1.6  2000/02/07 02:35:13  bills
-slightly modified chat packets
-
-Revision 1.5  2000/01/20 19:59:15  bills
-first implementation of sending file requests
-
-Revision 1.4  1999/09/29 20:12:32  bills
-tcp_link*->icq_TCPLink*
-
-Revision 1.3  1999/09/29 17:07:48  denis
-Host/network byteorder cleanups.
-
-Revision 1.2  1999/07/16 15:45:20  denis
-Cleaned up.
-
-Revision 1.1  1999/07/16 12:13:11  denis
-UDP packets support added.
-tcppackets.[ch] files renamed to stdpackets.[ch]
-
-Revision 1.9  1999/07/12 15:13:39  cproch
-- added definition of ICQLINK to hold session-specific global variabled
-  applications which have more than one connection are now possible
-- changed nearly every function defintion to support ICQLINK parameter
-
-Revision 1.8  1999/05/03 21:41:28  bills
-initial file xfer support added- untested
-
-Revision 1.7  1999/04/17 19:39:09  bills
-added new functions to create chat packets. removed unnecessary code.
-added new function to create URL ack packet.
-
-Revision 1.6  1999/04/14 15:08:39  denis
-Cleanups for "strict" compiling (-ansi -pedantic)
-
-*/
+ * $Id$
+ *
+ * Copyright (C) 1998-2001, Denis V. Dmitrienko <denis@null.net> and
+ *                          Bill Soudan <soudan@kde.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
 
 #include <stdlib.h>
 
-#include "icqtypes.h"
-#include "icq.h"
 #include "icqlib.h"
 #include "tcp.h"
 #include "stdpackets.h"
@@ -90,7 +57,7 @@ icq_Packet *icq_TCPCreateInitPacket(icq_TCPLink *plink)
 }
 
 icq_Packet *icq_TCPCreateStdPacket(icq_TCPLink *plink, WORD icq_TCPCommand,
-               WORD type, const unsigned char *msg, WORD status,
+               WORD type, const char *msg, WORD status,
                WORD msg_command)
 {
   icq_Packet *p=icq_PacketNew();
@@ -119,7 +86,7 @@ icq_Packet *icq_TCPCreateStdPacket(icq_TCPLink *plink, WORD icq_TCPCommand,
   return p;
 }
 
-icq_Packet *icq_TCPCreateMessagePacket(icq_TCPLink *plink, const unsigned char *message)
+icq_Packet *icq_TCPCreateMessagePacket(icq_TCPLink *plink, const char *message)
 {
   icq_Packet *p=icq_TCPCreateStdPacket(
     plink,
@@ -146,7 +113,7 @@ icq_Packet *icq_TCPCreateURLPacket(icq_TCPLink *plink, const char *message,
     plink,
     ICQ_TCP_MESSAGE,
     ICQ_TCP_MSG_URL,
-    str,
+    (const char *)str,
     0, /* status */
     ICQ_TCP_MSG_REAL);
 
@@ -155,7 +122,7 @@ icq_Packet *icq_TCPCreateURLPacket(icq_TCPLink *plink, const char *message,
   return p;
 }
 
-icq_Packet *icq_TCPCreateChatReqPacket(icq_TCPLink *plink, const unsigned char *message)
+icq_Packet *icq_TCPCreateChatReqPacket(icq_TCPLink *plink, const char *message)
 {
   icq_Packet *p=icq_TCPCreateStdPacket(
     plink,
@@ -363,7 +330,7 @@ icq_Packet *icq_TCPCreateFileReqPacket(icq_TCPLink *plink,
     plink,
     ICQ_TCP_MESSAGE,
     ICQ_TCP_MSG_FILE,
-    (const unsigned char*)message,
+    (const char*)message,
     0, /* status */
     ICQ_TCP_MSG_REAL);
 
@@ -378,22 +345,22 @@ icq_Packet *icq_TCPCreateFileReqPacket(icq_TCPLink *plink,
   return p;
 }
 
-void icq_TCPAppendSequence(ICQLINK *link, icq_Packet *p)
+void icq_TCPAppendSequence(icq_Link *icqlink, icq_Packet *p)
 {
-  p->id=link->icq_TCPSequence--;
+  p->id=icqlink->d->icq_TCPSequence--;
   icq_PacketEnd(p);
   icq_PacketAppend32(p, p->id);
 }
 
-void icq_TCPAppendSequenceN(ICQLINK *link, icq_Packet *p, DWORD seq)
+void icq_TCPAppendSequenceN(icq_Link *icqlink, icq_Packet *p, DWORD seq)
 {
-  (void)link;
+  (void)icqlink;
   p->id=seq;
   icq_PacketEnd(p);
   icq_PacketAppend32(p, p->id);
 }
 
-icq_Packet *icq_TCPCreateMessageAck(icq_TCPLink *plink, const unsigned char *message)
+icq_Packet *icq_TCPCreateMessageAck(icq_TCPLink *plink, const char *message)
 {
   icq_Packet *p=icq_TCPCreateStdPacket(
     plink,
@@ -406,7 +373,7 @@ icq_Packet *icq_TCPCreateMessageAck(icq_TCPLink *plink, const unsigned char *mes
    return p;
 }
 
-icq_Packet *icq_TCPCreateURLAck(icq_TCPLink *plink, const unsigned char *message)
+icq_Packet *icq_TCPCreateURLAck(icq_TCPLink *plink, const char *message)
 {
   icq_Packet *p=icq_TCPCreateStdPacket(
     plink,
@@ -419,6 +386,18 @@ icq_Packet *icq_TCPCreateURLAck(icq_TCPLink *plink, const unsigned char *message
    return p;
 }
 
+icq_Packet *icq_TCPCreateContactListAck(icq_TCPLink *plink, const char *message)
+{
+  icq_Packet *p=icq_TCPCreateStdPacket(
+    plink,
+    ICQ_TCP_ACK,
+    ICQ_TCP_MSG_CONTACTLIST,
+    message,
+    0, /* status */
+    ICQ_TCP_MSG_ACK);
+
+  return p;
+}
 
 icq_Packet *icq_TCPCreateFile00Packet(DWORD num_files, DWORD total_bytes,
   DWORD speed, const char *name)
@@ -525,39 +504,39 @@ icq_Packet *icq_TCPCreateFile06Packet(int length, void *data)
   return p;
 }
 
-icq_Packet *icq_UDPCreateStdPacket(ICQLINK *link, WORD cmd)
+icq_Packet *icq_UDPCreateStdPacket(icq_Link *icqlink, WORD cmd)
 {
   icq_Packet *p = icq_PacketNew();
 
-/*  if(!link->icq_UDPSession)
-    link->icq_UDPSession = rand() & 0x3FFFFFFF;
-  if(!link->icq_UDPSeqNum2)
-    link->icq_UDPSeqNum2 = rand() & 0x7FFF;*/
+/*  if(!link->d->icq_UDPSession)
+    link->d->icq_UDPSession = rand() & 0x3FFFFFFF;
+  if(!link->d->icq_UDPSeqNum2)
+    link->d->icq_UDPSeqNum2 = rand() & 0x7FFF;*/
 
-  icq_PacketAppend16(p, ICQ_UDP_VER);            /* ver */
-  icq_PacketAppend32(p, 0);                      /* zero */
-  icq_PacketAppend32(p, link->icq_Uin);          /* uin */
-  icq_PacketAppend32(p, link->icq_UDPSession);   /* session */
-  icq_PacketAppend16(p, cmd);                    /* cmd */
-  icq_PacketAppend16(p, link->icq_UDPSeqNum1++); /* seq1 */
-  icq_PacketAppend16(p, link->icq_UDPSeqNum2++); /* seq2 */
-  icq_PacketAppend32(p, 0);                      /* checkcode */
+  icq_PacketAppend16(p, ICQ_UDP_VER);                  /* ver */
+  icq_PacketAppend32(p, 0);                            /* zero */
+  icq_PacketAppend32(p, icqlink->icq_Uin);             /* uin */
+  icq_PacketAppend32(p, icqlink->d->icq_UDPSession);   /* session */
+  icq_PacketAppend16(p, cmd);                          /* cmd */
+  icq_PacketAppend16(p, icqlink->d->icq_UDPSeqNum1++); /* seq1 */
+  icq_PacketAppend16(p, icqlink->d->icq_UDPSeqNum2++); /* seq2 */
+  icq_PacketAppend32(p, 0);                            /* checkcode */
 
   return p;
 }
 
-icq_Packet *icq_UDPCreateStdSeqPacket(ICQLINK *link, WORD cmd, WORD seq)
+icq_Packet *icq_UDPCreateStdSeqPacket(icq_Link *icqlink, WORD cmd, WORD seq)
 {
   icq_Packet *p = icq_PacketNew();
 
-  icq_PacketAppend16(p, ICQ_UDP_VER);            /* ver */
-  icq_PacketAppend32(p, 0);                      /* zero */
-  icq_PacketAppend32(p, link->icq_Uin);          /* uin */
-  icq_PacketAppend32(p, link->icq_UDPSession);   /* session */
-  icq_PacketAppend16(p, cmd);                    /* cmd */
-  icq_PacketAppend16(p, seq);                    /* seq1 */
-  icq_PacketAppend16(p, 0);                      /* seq2 */
-  icq_PacketAppend32(p, 0);                      /* checkcode */
+  icq_PacketAppend16(p, ICQ_UDP_VER);                /* ver */
+  icq_PacketAppend32(p, 0);                          /* zero */
+  icq_PacketAppend32(p, icqlink->icq_Uin);           /* uin */
+  icq_PacketAppend32(p, icqlink->d->icq_UDPSession); /* session */
+  icq_PacketAppend16(p, cmd);                        /* cmd */
+  icq_PacketAppend16(p, seq);                        /* seq1 */
+  icq_PacketAppend16(p, 0);                          /* seq2 */
+  icq_PacketAppend32(p, 0);                          /* checkcode */
 
   return p;
 }
