@@ -1,14 +1,11 @@
-// BEIcons.cpp : Defines the entry point for the DLL application.
-//
-
-//#include "stdafx.h"
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-					 )
-{
-    return TRUE;
-}
+// Force 512 byte section alignment in the PE file
+#pragma comment(linker, "/OPT:NOWIN98")
+#pragma comment(linker, "/FIXED")
 
+BOOL WINAPI DllMainTiny(HANDLE hDllHandle,DWORD dwReason,LPVOID lpreserved)
+{
+	return TRUE;
+}
