@@ -27,6 +27,7 @@ static LONG WINAPI MyInterlockedIncrement95(PLONG pVal);
 static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal);
 static LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal)=MyInterlockedIncrementInit;
 static CRITICAL_SECTION csInterlocked95;
+extern HANDLE hLogEvent;
 
 //I hate Microsoft.
 static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
@@ -58,12 +59,9 @@ void MSN_DebugLog(int level,const char *fmt,...)
 	while(_vsnprintf(str,strsize,fmt,vararg)==-1) str=(char*)realloc(str,strsize+=2048);
 	va_end(vararg);
 	
-	//Plugin_NotifyPlugins(PM_ICQDEBUGMSG,(WPARAM)strlen(tmp),(LPARAM)tmp);
+	NotifyEventHooks(hLogEvent,level,(LPARAM)str);	   //possible bug: we're calling this from any old thread
 #ifdef _DEBUG
 	if(level>=MSN_LOG_PACKETS) {
-#else
-	if(level>=MSN_LOG_MESSAGE) {
-#endif
 		char head[64];
 		char *text;
 		wsprintf(head,"[MSN:%x:%d]",GetCurrentThreadId(),level);
@@ -72,7 +70,7 @@ void MSN_DebugLog(int level,const char *fmt,...)
 		OutputDebugString(text);
 		free(text);
 	}
-//#endif
+#endif
 	free(str);
 }
 
