@@ -17,6 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "msn_global.h"
+#include <time.h>
 #include "../../miranda32/ui/contactlist/m_clist.h"
 #include "../../miranda32/protocols/protocols/m_protosvc.h"
 
@@ -37,6 +38,7 @@ static struct CmdQueueEntry *cmdQueue;
 #define CMDQUEUE_CHAINRECV       2
 #define CMDQUEUE_DBWRITESETTING  3
 #define CMDQUEUE_DBCREATECONTACT 4
+#define CMDQUEUE_DBAUTHREQUEST   5
 
 struct CmdQueueData_DbCreateContact {
 	int temporary;
@@ -85,6 +87,31 @@ VOID CALLBACK MSNMainTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 					}
 					*dat->phContact=hContact;
 					SetEvent(dat->hWaitEvent);
+				}
+				break;
+			case CMDQUEUE_DBAUTHREQUEST:
+				{	DBEVENTINFO dbei;
+					PBYTE pCurBlob;
+					char *email,*nick;
+
+					email=(char*)entry.data;
+					nick=(char*)entry.data+strlen(email)+1;
+					//blob is: 0(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
+					ZeroMemory(&dbei,sizeof(dbei));
+					dbei.cbSize=sizeof(dbei);
+					dbei.szModule=MSNPROTONAME;
+					dbei.timestamp=(DWORD)time(NULL);
+					dbei.flags=0;
+					dbei.eventType=EVENTTYPE_AUTHREQUEST;
+					dbei.cbBlob=sizeof(DWORD)+strlen(nick)+strlen(email)+5;
+					pCurBlob=dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+					*(PDWORD)pCurBlob=0; pCurBlob+=sizeof(DWORD);
+					strcpy((char*)pCurBlob,nick); pCurBlob+=strlen(nick)+1;
+					*pCurBlob='\0'; pCurBlob++;	   //firstName
+					*pCurBlob='\0'; pCurBlob++;	   //lastName
+					strcpy((char*)pCurBlob,email); pCurBlob+=strlen(email)+1;
+					*pCurBlob='\0';         	   //reason
+					CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
 				}
 				break;
 		}
@@ -201,4 +228,13 @@ int CmdQueue_AddDbCreateContact(const char *email,const char *nick,int temporary
 	strcpy(dat->emailAndNick,email);
 	strcpy(dat->emailAndNick+strlen(email)+1,nick);
 	return CmdQueue_Add(CMDQUEUE_DBCREATECONTACT,dat);
+}
+
+int CmdQueue_AddDbAuthRequest(const char *email,const char *nick)
+{
+	PBYTE dat;
+	dat=(PBYTE)malloc(strlen(email)+strlen(nick)+2);
+	strcpy((char*)dat,email);
+	strcpy((char*)dat+strlen(email)+1,nick);
+	return CmdQueue_Add(CMDQUEUE_DBAUTHREQUEST,dat);
 }

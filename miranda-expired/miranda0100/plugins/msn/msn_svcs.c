@@ -32,7 +32,7 @@ extern int msnStatusMode,msnDesiredStatus;
 static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 {
 	if(wParam==PFLAGNUM_1)
-		return PF1_IM|PF1_SERVERCLIST;
+		return PF1_IM|PF1_SERVERCLIST|PF1_AUTHREQ;
 	if(wParam==PFLAGNUM_2)
 		return PF2_ONLINE|PF2_SHORTAWAY|PF2_LONGAWAY|PF2_LIGHTDND|PF2_ONTHEPHONE|PF2_OUTTOLUNCH;
 	if(wParam==PFLAGNUM_3)
@@ -132,6 +132,31 @@ static int MsnAddToList(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
+{
+	DBEVENTINFO dbei;
+	char *nick,*firstName,*lastName,*email;
+	char urlNick[130],urlEmail[130];
+
+	if(!msnLoggedIn) return 1;
+	ZeroMemory(&dbei,sizeof(dbei));
+	dbei.cbSize=sizeof(dbei);
+	if((dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,wParam,0))==(DWORD)(-1)) return 1;
+	dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+	if(CallService(MS_DB_EVENT_GET,wParam,(LPARAM)&dbei)) {free(dbei.pBlob); return 1;}
+	if(dbei.eventType!=EVENTTYPE_AUTHREQUEST) {free(dbei.pBlob); return 1;}
+	if(strcmp(dbei.szModule,MSNPROTONAME)) {free(dbei.pBlob); return 1;}
+	nick=(char*)(dbei.pBlob+sizeof(DWORD));
+	firstName=nick+strlen(nick)+1;
+	lastName=firstName+strlen(firstName)+1;
+	email=lastName+strlen(lastName)+1;
+	UrlEncode(nick,urlNick,sizeof(urlNick));
+	UrlEncode(email,urlEmail,sizeof(urlEmail));
+	free(dbei.pBlob);
+	MSN_SendPacket(msnNSSocket,"ADD","AL %s %s",urlEmail,urlNick);
+	return 0;
+}
+
 static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA *ccs=(CCSDATA*)lParam;
@@ -186,6 +211,7 @@ int LoadMsnServices(void)
 	CreateServiceFunction(MSNPROTONAME PS_GETSTATUS,MsnGetStatus);
 	CreateServiceFunction(MSNPROTONAME PS_BASICSEARCH,MsnBasicSearch);
 	CreateServiceFunction(MSNPROTONAME PS_ADDTOLIST,MsnAddToList);
+	CreateServiceFunction(MSNPROTONAME PS_AUTHALLOW,MsnAuthAllow);
 	CreateServiceFunction(MSNPROTONAME PSS_GETINFO,MsnGetInfo);
 	CreateServiceFunction(MSNPROTONAME PSS_MESSAGE,MsnSendMessage);
 	CreateServiceFunction(MSNPROTONAME PSR_MESSAGE,MsnRecvMessage);

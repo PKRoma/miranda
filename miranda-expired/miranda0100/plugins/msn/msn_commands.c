@@ -51,6 +51,22 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
 			break;
 		case ' DDA':    //********* ADD: section 7.8 List Modifications
+			{	char list[5],userEmail[130],userNick[130];
+				int serial,listId;
+				if(sscanf(params,"%4s %d %129s %129s",list,&serial,userEmail,userNick)<4) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
+					break;
+				}
+				UrlDecode(userEmail); UrlDecode(userNick);
+				listId=Lists_NameToCode(list);
+				if(listId==LIST_FL)
+					MSN_HContactFromEmail(userEmail,userNick,1,0);
+				else if(IsValidListCode(listId)) {
+					Lists_Add(listId,userEmail,userNick);
+					if(!Lists_IsInList(LIST_AL,userEmail) && !Lists_IsInList(LIST_BL,userEmail))
+						CmdQueue_AddDbAuthRequest(userEmail,userNick);
+				}
+			}
 			break;
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
 			break;
@@ -87,7 +103,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 		case ' FNI':	//********* INF: section 7.2 Server Policy Information
 			{	char security1[10];
 				if(sscanf(params,"%9s",security1)<1) {	  //can be more security packages on the end, comma delimited
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid INF command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				if(!strcmp(security1,"MD5")) {
@@ -117,7 +133,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 			{	char userStatus[10],userEmail[130],userNick[130];
 				HANDLE hContact;
 				if(sscanf(params,"%9s %129s %129s",userStatus,userEmail,userNick)<3) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid ILN/NLN command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				UrlDecode(userEmail); UrlDecode(userNick);
@@ -131,7 +147,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 			{	char userEmail[130],userNick[130];
 				int thisContact,totalContacts;
 				if(sscanf(params,"%d %d %129s %129s",&thisContact,&totalContacts,userEmail,userNick)<4) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid IRO command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				UrlDecode(userEmail); UrlDecode(userNick);
@@ -146,7 +162,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 				DWORD flags;
 				int seq;
 				if(sscanf(params,"%129s %129s",userEmail,userNick)<2) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid JOI command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				UrlDecode(userEmail); UrlDecode(userNick);
@@ -168,13 +184,19 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 		case ' TSL':    //********* LST: section 7.6 List Retrieval And Property Management
 			{	char list[5],userEmail[130],userNick[130];
 				int serialNumber,thisItem,totalItems;
+				int listId;
 				if(sscanf(params,"%4s %d %d %d %129s %129s",list,&serialNumber,&thisItem,&totalItems,userEmail,userNick)<6) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid LST command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				UrlDecode(userEmail); UrlDecode(userNick);
-				if(!strcmp(list,"FL")) {	 //'forward list' aka contact list
-					HANDLE hContact=MSN_HContactFromEmail(userEmail,userNick,1,0);
+				listId=Lists_NameToCode(list);
+				if(listId==LIST_FL)	 //'forward list' aka contact list
+					MSN_HContactFromEmail(userEmail,userNick,1,0);
+				else if(IsValidListCode(listId)) {
+					Lists_Add(listId,userEmail,userNick);
+					if(!Lists_IsInList(LIST_AL,userEmail) && !Lists_IsInList(LIST_BL,userEmail))
+						CmdQueue_AddDbAuthRequest(userEmail,userNick);
 				}
 			}
 			break;
@@ -186,7 +208,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 				int headerCount;
 
 				if(sscanf(params,"%129s %129s %d",fromEmail,fromNick,&msgBytes)<3) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid MSG command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				UrlDecode(fromEmail); UrlDecode(fromNick);
@@ -276,18 +298,29 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 		case ' TUO':    //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
 			return 1;
 		case ' MER':    //********* REM: section 7.8 List Modifications
+			{	char list[5],userEmail[130];
+				int serial,listId;
+				if(sscanf(params,"%4s %d %129s",list,&serial,userEmail)<3) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
+					break;
+				}
+				UrlDecode(userEmail);
+				listId=Lists_NameToCode(list);
+				if(IsValidListCode(listId))
+					Lists_Remove(listId,userEmail);
+			}
 			break;
 		case ' GNR':    //********* RNG: section 8.4 Getting Invited to a Switchboard Session
 			//note: unusual message encoding: trid==sessionid
 			{	char newServer[130],security[10],authChallengeInfo[130],callerEmail[130],callerNick[130];
 				struct ThreadData *newThread;
 				if(sscanf(params,"%129s %9s %129s %129s %129s",newServer,security,authChallengeInfo,callerEmail,callerNick)<5) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid RNG command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				UrlDecode(newServer); UrlDecode(callerEmail); UrlDecode(callerNick);
 				if(strcmp(security,"CKI")) {
-					MSN_DebugLog(MSN_LOG_ERROR,"Unknown security package in RNG command");
+					MSN_DebugLog(MSN_LOG_ERROR,"Unknown security package in RNG command: %s",security);
 					break;
 				}
 				newThread=(struct ThreadData*)malloc(sizeof(struct ThreadData));
@@ -302,6 +335,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 			}
 			break;
 		case ' NYS':    //********* SYN: section 7.5 Client User Property Synchronization
+			Lists_Wipe();
 			break;
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
 			if(info->type==SERVER_SWITCHBOARD) {    //(section 8.2)
@@ -403,7 +437,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 		case ' REV':	//******** VER: section 7.1 Protocol Versioning
 			{	char protocol1[6];
 				if(sscanf(params,"%5s",protocol1)<1) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid VER command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				if(!strcmp(protocol1,"MSNP2"))
@@ -423,7 +457,7 @@ int MSN_HandleCommands(struct ThreadData *info,char *cmdString)
 			{	char type[10];
 				struct ThreadData *newThread;
 				if(sscanf(params,"%9s",type)<1) {
-					MSN_DebugLog(MSN_LOG_WARNING,"Invalid XFR command, ignoring");
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid %.3s command, ignoring",cmdString);
 					break;
 				}
 				if(!strcmp(type,"NS")) {	  //notification server
