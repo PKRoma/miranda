@@ -1,15 +1,15 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
+Copyright ( c ) 2003-5 George Hazan.
+Copyright ( c ) 2002-3 Richard Hughes ( original version ).
 
 Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright ( C ) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+of the License, or ( at your option ) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "jabber.h"
 
-HANDLE __stdcall JCreateServiceFunction(
+HANDLE __stdcall JCreateServiceFunction( 
 	const char* szService,
 	MIRANDASERVICE serviceProc )
 {
@@ -45,7 +45,7 @@ DWORD __stdcall JGetByte( const char* valueName, int parDefltValue )
 
 char* __stdcall JGetContactName( HANDLE hContact )
 {
-	return ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, WPARAM( hContact), 0 );
+	return ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, WPARAM( hContact ), 0 );
 }
 
 DWORD __stdcall JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue )

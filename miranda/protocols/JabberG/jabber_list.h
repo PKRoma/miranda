@@ -1,12 +1,12 @@
 /*
 
 Jabber Protocol Plugin for Miranda IM
-Copyright (C) 2002-2004  Santithorn Bunchua
+Copyright ( C ) 2002-2004  Santithorn Bunchua
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+of the License, or ( at your option ) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -56,21 +56,21 @@ typedef enum {
 } JABBER_GC_ROLE;
 
 typedef enum {			// initial default to RSMODE_LASTSEEN
-	RSMODE_SERVER,		// always let server decide (always send correspondence without resouce name)
-	RSMODE_LASTSEEN,	// use the last seen resource (or let server decide if haven't seen anything yet)
-	RSMODE_MANUAL		// specify resource manually (see the defaultResource field - must not be NULL)
+	RSMODE_SERVER,		// always let server decide ( always send correspondence without resouce name )
+	RSMODE_LASTSEEN,	// use the last seen resource ( or let server decide if haven't seen anything yet )
+	RSMODE_MANUAL		// specify resource manually ( see the defaultResource field - must not be NULL )
 } JABBER_RESOURCE_MODE;
 
-#define CLIENT_CAP_READY		(1<<0)		// have already done disco#info query
-#define CLIENT_CAP_SI			(1<<1)		// stream initiation (si) profile
-#define CLIENT_CAP_SIFILE		(1<<2)		// file transfer si profile
-#define CLIENT_CAP_BYTESTREAM	(1<<3)		// socks5 bytestream
+#define CLIENT_CAP_READY		( 1<<0 )		// have already done disco#info query
+#define CLIENT_CAP_SI			( 1<<1 )		// stream initiation ( si ) profile
+#define CLIENT_CAP_SIFILE		( 1<<2 )		// file transfer si profile
+#define CLIENT_CAP_BYTESTREAM	( 1<<3 )		// socks5 bytestream
 
-#define AGENT_CAP_REGISTER		(1<<13)
-#define AGENT_CAP_SEARCH		(1<<14)
-#define AGENT_CAP_GROUPCHAT		(1<<15)
+#define AGENT_CAP_REGISTER		( 1<<13 )
+#define AGENT_CAP_SEARCH		( 1<<14 )
+#define AGENT_CAP_GROUPCHAT		( 1<<15 )
 
-#define CLIENT_CAP_FILE			(CLIENT_CAP_SI | CLIENT_CAP_SIFILE)
+#define CLIENT_CAP_FILE			( CLIENT_CAP_SI | CLIENT_CAP_SIFILE )
 
 typedef struct {
 	int status;
@@ -95,10 +95,10 @@ typedef struct {
 	int status;	// Main status, currently useful for transport where no resource information is kept.
 				// On normal contact, this is the same status as shown on contact list.
 	JABBER_RESOURCE_STATUS *resource;
-	int defaultResource;	// index to resource[x] which is the default, negative (-1) means no resource is chosen yet
+	int defaultResource;	// index to resource[x] which is the default, negative ( -1 ) means no resource is chosen yet
 	JABBER_RESOURCE_MODE resourceMode;
 	JABBER_SUBSCRIPTION subscription;
-	char* statusMessage;	// Status message when the update is to JID with no resource specified (e.g. transport user)
+	char* statusMessage;	// Status message when the update is to JID with no resource specified ( e.g. transport user )
 	char* group;
 	char* photoFileName;
 	int idMsgAckPending;
@@ -119,7 +119,7 @@ typedef struct {
 
 	// LIST_CHATROOM
 	// jid = room JID
-	// char* nick;	// my nick in this chat room (SPECIAL: in UTF8)
+	// char* nick;	// my nick in this chat room ( SPECIAL: in UTF8 )
 	// JABBER_RESOURCE_STATUS *resource;	// participant nicks in this room
 	HWND hwndGcDlg;	// groupchat messaging window for this room
 	HWND hwndGcListBan;
@@ -142,25 +142,25 @@ typedef struct {
 	// jbt
 
 	// LIST_FTRECV
-	// jid = string representation of stream id (sid)
+	// jid = string representation of stream id ( sid )
 	// ft = file transfer data
 } JABBER_LIST_ITEM;
 
-void JabberListInit(void);
-void JabberListUninit(void);
-void JabberListWipe(void);
-int JabberListExist(JABBER_LIST list, const char* jid);
-JABBER_LIST_ITEM *JabberListAdd(JABBER_LIST list, const char* jid);
-void JabberListRemove(JABBER_LIST list, const char* jid);
-void JabberListRemoveList(JABBER_LIST list);
-void JabberListRemoveByIndex(int index);
-int JabberListFindNext(JABBER_LIST list, int fromOffset);
-JABBER_LIST_ITEM *JabberListGetItemPtr(JABBER_LIST list, const char* jid);
-JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex(int index);
+void JabberListInit( void );
+void JabberListUninit( void );
+void JabberListWipe( void );
+int JabberListExist( JABBER_LIST list, const char* jid );
+JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const char* jid );
+void JabberListRemove( JABBER_LIST list, const char* jid );
+void JabberListRemoveList( JABBER_LIST list );
+void JabberListRemoveByIndex( int index );
+int JabberListFindNext( JABBER_LIST list, int fromOffset );
+JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const char* jid );
+JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
 
-void JabberListAddResource(JABBER_LIST list, const char* jid, int status, const char* statusMessage);
-void JabberListRemoveResource(JABBER_LIST list, const char* jid);
-char* JabberListGetBestResourceNamePtr(const char* jid);
-char* JabberListGetBestClientResourceNamePtr(const char* jid);
+void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const char* statusMessage );
+void JabberListRemoveResource( JABBER_LIST list, const char* jid );
+char* JabberListGetBestResourceNamePtr( const char* jid );
+char* JabberListGetBestClientResourceNamePtr( const char* jid );
 
 #endif

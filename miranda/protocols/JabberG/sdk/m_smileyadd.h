@@ -1,12 +1,12 @@
 /*
 Miranda SmileyAdd Plugin
 Plugin support header file
-Copyright (C) 2003 Rein-Peter de Boer (peacow)
+Copyright ( C ) 2003 Rein-Peter de Boer ( peacow )
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+of the License, or ( at your option ) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,14 +20,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 //replace smiley tags in a rich edit control... 
-//wParam = (WPARAM) 0; not used
-//lParam = (LPARAM) (SMADD_RICHEDIT*) &smre;  //pointer to SmAddRicheditStructure
-//return: TRUE if replacement succeeded, FALSE if not (disable by user?).
+//wParam = ( WPARAM ) 0; not used
+//lParam = ( LPARAM )( SMADD_RICHEDIT* ) &smre;  //pointer to SmAddRicheditStructure
+//return: TRUE if replacement succeeded, FALSE if not ( disable by user? ).
 typedef struct 
 {
   int cbSize;                //size of the structure
 	HWND hwndRichEditControl;  //handle to the rich edit control
-	CHARRANGE* rangeToReplace; //same meaning as for normal Richedit use (NULL = replaceall)
+	CHARRANGE* rangeToReplace; //same meaning as for normal Richedit use ( NULL = replaceall )
   char* Protocolname;  //protocol to use... if you have defined a protocol, u can 
                              //use your own protocol name. Smiley add wil automatically 
                              //select the smileypack that is defined for your protocol.
@@ -41,7 +41,7 @@ typedef struct
 {
   int cbSize;                //size of the structure
 	HWND hwndRichEditControl;  //handle to the rich edit control
-	CHARRANGE* rangeToReplace; //same meaning as for normal Richedit use (NULL = replaceall)
+	CHARRANGE* rangeToReplace; //same meaning as for normal Richedit use ( NULL = replaceall )
   char* Protocolname;  //protocol to use... if you have defined a protocol, u can 
                              //use your own protocol name. Smiley add wil automatically 
                              //select the smileypack that is defined for your protocol.
@@ -61,8 +61,8 @@ typedef struct
 
 
 //replace smiley tags in a rich edit control... 
-//wParam = (WPARAM) 0; not used
-//lParam = (LPARAM) (SMADD_GETICON*) &smgi;  //pointer to SmAddRicheditStructure
+//wParam = ( WPARAM ) 0; not used
+//lParam = ( LPARAM )( SMADD_GETICON* ) &smgi;  //pointer to SmAddRicheditStructure
 //return: TRUE if found, FALSE if not
 //NOTE: the 
 typedef struct 

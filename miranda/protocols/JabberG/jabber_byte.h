@@ -1,12 +1,12 @@
 /*
 
 Jabber Protocol Plugin for Miranda IM
-Copyright (C) 2002-2004  Santithorn Bunchua
+Copyright ( C ) 2002-2004  Santithorn Bunchua
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+of the License, or ( at your option ) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -34,13 +34,13 @@ typedef struct {
 	HANDLE hConn;
 	HANDLE hEvent;
 	XmlNode *iqNode;
-	BOOL (*pfnSend)(HANDLE hConn, void *userdata);
-	int (*pfnRecv)(HANDLE hConn, void *userdata, char* buffer, int datalen);
-	void (*pfnFinal)(BOOL success, void *userdata);
+	BOOL ( *pfnSend )( HANDLE hConn, void *userdata );
+	int ( *pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
+	void ( *pfnFinal )( BOOL success, void *userdata );
 	void *userdata;
 } JABBER_BYTE_TRANSFER;
 
-void __cdecl JabberByteSendThread(JABBER_BYTE_TRANSFER *jbt);
-void __cdecl JabberByteReceiveThread(JABBER_BYTE_TRANSFER *jbt);
+void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt );
+void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt );
 
 #endif

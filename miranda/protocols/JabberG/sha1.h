@@ -1,12 +1,12 @@
 /*
 
 Jabber Protocol Plugin for Miranda IM
-Copyright (C) 2002-2004  Santithorn Bunchua
+Copyright ( C ) 2002-2004  Santithorn Bunchua
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+of the License, or ( at your option ) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /*
 
-   Copyright (C) The Internet Society (2001).  All Rights Reserved.
+   Copyright ( C ) The Internet Society ( 2001 ).  All Rights Reserved.
 
    This document and translations of it may be copied and furnished to
    others, and derivative works that comment on or otherwise explain it
@@ -77,7 +77,7 @@ typedef __int32 int_least16_t;
  * must typdef the following:
  *    name              meaning
  *  uint32_t         unsigned 32 bit integer
- *  uint8_t          unsigned 8 bit integer (i.e., unsigned char)
+ *  uint8_t          unsigned 8 bit integer ( i.e., unsigned char )
  *  int_least16_t    integer of >= 16 bits
  *
  */
@@ -117,11 +117,11 @@ typedef struct SHA1Context
  *  Function Prototypes
  */
 
-int SHA1Reset(  SHA1Context *);
+int SHA1Reset(  SHA1Context * );
 int SHA1Input(  SHA1Context *,
                 const uint8_t *,
-                unsigned int);
+                unsigned int );
 int SHA1Result( SHA1Context *,
-                uint8_t Message_Digest[SHA1HashSize]);
+                uint8_t Message_Digest[SHA1HashSize] );
 
 #endif

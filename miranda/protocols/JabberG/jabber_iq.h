@@ -1,12 +1,12 @@
 /*
 
 Jabber Protocol Plugin for Miranda IM
-Copyright (C) 2002-2004  Santithorn Bunchua
+Copyright ( C ) 2002-2004  Santithorn Bunchua
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+of the License, or ( at your option ) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,7 +37,7 @@ typedef enum {
 	IQ_PROC_DISCOAGENTS
 } JABBER_IQ_PROCID;
 
-typedef void (*JABBER_IQ_PFUNC)(XmlNode *iqNode, void *usedata);
+typedef void ( *JABBER_IQ_PFUNC )( XmlNode *iqNode, void *usedata );
 
 typedef struct {
 	char* xmlns;
@@ -47,31 +47,31 @@ typedef struct {
 
 void JabberIqInit();
 void JabberIqUninit();
-JABBER_IQ_PFUNC JabberIqFetchFunc(int iqId);
-void JabberIqAdd(unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func);
-JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc(char* xmlns);
+JABBER_IQ_PFUNC JabberIqFetchFunc( int iqId );
+void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func );
+JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc( char* xmlns );
 
-void JabberIqResultGetAuth(XmlNode *iqNode, void *userdata);
-void JabberIqResultSetAuth(XmlNode *iqNode, void *userdata);
-void JabberIqResultGetRoster(XmlNode *iqNode, void *userdata);
-void JabberIqResultGetAgents(XmlNode *iqNode, void *userdata);
-void JabberIqResultGetRegister(XmlNode *iqNode, void *userdata);
-void JabberIqResultSetRegister(XmlNode *iqNode, void *userdata);
-void JabberIqResultGetVcard(XmlNode *iqNode, void *userdata);
-void JabberIqResultSetVcard(XmlNode *iqNode, void *userdata);
-void JabberIqResultSetSearch(XmlNode *iqNode, void *userdata);
-void JabberIqResultSetPassword(XmlNode *iqNode, void *userdata);
-void JabberIqResultDiscoAgentItems(XmlNode *iqNode, void *userdata);
-void JabberIqResultDiscoAgentInfo(XmlNode *iqNode, void *userdata);
-void JabberIqResultDiscoClientInfo(XmlNode *iqNode, void *userdata);
-void JabberIqResultBrowseRooms(XmlNode *iqNode, void *userdata);
-void JabberIqResultGetMuc(XmlNode *iqNode, void *userdata);
-void JabberIqResultDiscoRoomItems(XmlNode *iqNode, void *userdata);
-void JabberIqResultMucGetVoiceList(XmlNode *iqNode, void *userdata);
-void JabberIqResultMucGetMemberList(XmlNode *iqNode, void *userdata);
-void JabberIqResultMucGetModeratorList(XmlNode *iqNode, void *userdata);
-void JabberIqResultMucGetBanList(XmlNode *iqNode, void *userdata);
-void JabberIqResultMucGetAdminList(XmlNode *iqNode, void *userdata);
-void JabberIqResultMucGetOwnerList(XmlNode *iqNode, void *userdata);
+void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata );
+void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata );
+void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata );
+void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata );
+void JabberIqResultGetRegister( XmlNode *iqNode, void *userdata );
+void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata );
+void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata );
+void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata );
+void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata );
+void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata );
+void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
+void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
+void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata );
+void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
+void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata );
+void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
+void JabberIqResultMucGetVoiceList( XmlNode *iqNode, void *userdata );
+void JabberIqResultMucGetMemberList( XmlNode *iqNode, void *userdata );
+void JabberIqResultMucGetModeratorList( XmlNode *iqNode, void *userdata );
+void JabberIqResultMucGetBanList( XmlNode *iqNode, void *userdata );
+void JabberIqResultMucGetAdminList( XmlNode *iqNode, void *userdata );
+void JabberIqResultMucGetOwnerList( XmlNode *iqNode, void *userdata );
 
 #endif
