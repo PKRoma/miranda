@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_MSGSEND      0
 #define TIMERID_FLASHWND     1
 #define TIMERID_TYPE         2
-#define TIMERID_AVATAR       3
 #define TIMEOUT_FLASHWND     900
 #define TIMEOUT_ANTIBOMB     4000       //multiple-send bombproofing: send max 3 messages every 4 seconds
 #define ANTIBOMB_COUNT       3
@@ -626,7 +625,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ScreenToClient(hwndDlg, &pt);
 				dat->originalSplitterPos = pt.y;
 				if (dat->splitterPos == -1)
-					dat->splitterPos = dat->originalSplitterPos + 60;
+					dat->splitterPos = dat->originalSplitterPos;// + 60;
 				GetWindowRect(GetDlgItem(hwndDlg, IDC_ADD), &rc);
 				dat->lineHeight = rc.bottom - rc.top + 3;
 			}
@@ -761,7 +760,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
-			SetTimer(hwndDlg, TIMERID_AVATAR, 2000, NULL);
 			return TRUE;
 		}
 	case WM_CONTEXTMENU:
@@ -854,12 +852,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
 		//Disable avatars
-        //if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
+        if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
 			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
 			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
 			return 0;
-		//}
+		}
 		if(DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) {
 			ShowAvatar(hwndDlg, dat);
 			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
@@ -1276,10 +1274,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->showTyping = 1;
 				}
 			}
-		}
-		else if (wParam == TIMERID_AVATAR) {
-			KillTimer(hwndDlg, wParam);
-			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 		}
 		break;
 	case DM_ERRORDECIDED:
