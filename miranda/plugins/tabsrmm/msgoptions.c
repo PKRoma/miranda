@@ -668,8 +668,8 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                 SetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), _T("default"));
             else {
 #if defined(_UNICODE)
-                if(dbv.type == DBVT_BLOB) {
-                    SetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), (TCHAR *)dbv.pbVal);
+                if(dbv.type == DBVT_ASCIIZ) {
+                    SetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), Utf8Decode(dbv.pszVal));
 #else
                 if(dbv.type == DBVT_ASCIIZ) {
                     SetWindowTextA(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), dbv.pszVal);

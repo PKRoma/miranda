@@ -1378,10 +1378,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     				DBVARIANT dbv;
 #if defined ( _UNICODE )
                     if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW", &dbv)) {
-                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 1)  { // at least the 0x0000 is always there... 
+                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 0)  { // at least the 0x0000 is always there... 
                             WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
                             SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (LPCWSTR)wszTemp);
-                            free(wszTemp);
                         }
 #else
     				if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
@@ -2549,8 +2548,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #if defined(_UNICODE)
                         WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
                         SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
-                        if(wszTemp)
-                            free(wszTemp);
 #else                        
                         SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
 #endif                        
@@ -4340,7 +4337,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
     else if(menuId == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
-        int iNeverLogStatus = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) == 0;
+        int iLogStatus = (DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0) != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
         DWORD dwOldFlags = dat->dwFlags;
 
         switch(selection) {
@@ -4406,8 +4403,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_LOGMENU_SAVESPLITTERPOSITIONASGLOBALDEFAULT:
                 DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
                 return 1;
-            case ID_LOGMENU_NEVERLOGSTATUSCHANGES:
-                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", iNeverLogStatus ? -1 : 0);
+            case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
+                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", iLogStatus ? 0 : -1);
                 return 1;
             case ID_LOGMENU_SAVETHESESETTINGSASDEFAULTVALUES:
                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
@@ -4442,7 +4439,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     if(menuID == MENU_LOGMENU) {
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0);
-        int iNeverLogStatus = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) == 0;
+        int iLogStatus = (DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0) != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
         CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_ALWAYSUSEGLOBALSPLITTERPOSITION, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GLOBALSPLITTER ? MF_CHECKED : MF_UNCHECKED);
@@ -4456,7 +4453,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_LOGMENU_UNDERLINETIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_UNDERLINE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SWAPNICK ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_NEVERLOGSTATUSCHANGES, MF_BYCOMMAND | iNeverLogStatus ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);

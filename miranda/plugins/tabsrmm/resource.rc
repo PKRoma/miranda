@@ -438,7 +438,7 @@ BEGIN
     CONTROL         "",IDC_MSGTABS,"SysTabControl32",TCS_HOTTRACK | 
                     TCS_MULTILINE | TCS_TOOLTIPS | TCS_FOCUSNEVER | 
                     WS_CLIPCHILDREN,7,7,422,219
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,0,0,435,1,
+    CONTROL         "",IDC_STATICCONTROL,"Static",SS_BLACKFRAME,0,0,435,1,
                     WS_EX_STATICEDGE
 END
 
@@ -691,7 +691,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Activate RTL",                ID_LOGMENU_ACTIVATERTL
-        MENUITEM "Never log Status Changes",    ID_LOGMENU_NEVERLOGSTATUSCHANGES
+        MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
 
         MENUITEM SEPARATOR
         MENUITEM "Always use global Splitter Position", 
@@ -843,6 +843,9 @@ BEGIN
             MENUITEM "Grid Lines",                  ID_MESSAGELOGFORMATTING_SHOWGRID
 
             MENUITEM "Use thin Grid Lines",         ID_LOGITEMSTOSHOW_USETHINGRIDLINES
+
+            MENUITEM SEPARATOR
+            MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
 
         END
         MENUITEM SEPARATOR

@@ -57,6 +57,7 @@ extern int g_SmileyAddAvail;
 char szSep0[40], szSep1[152], szSep2[40];
 int g_groupBreak = TRUE;
 static char *szMyName, *szYourName;
+static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
 
 extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
@@ -482,7 +483,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line\\highlight%d", MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", rtfFonts[H_MSGFONTID_DIVIDERS]);
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0");
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
     }
     if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && ((dbei.timestamp - dat->lastEventTime) < 86400)) {
@@ -591,8 +592,12 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s ", szFinalTimestamp);
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
             showColon = 0;
-            if(dbei.eventType == EVENTTYPE_ERRMSG)
+            if(dbei.eventType == EVENTTYPE_ERRMSG) {
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "\r\n %s\r\n", dbei.szModule);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
+            }
         }
         else {
             if((dat->dwFlags & MWF_LOG_SHOWTIME) && !bHideNick) {		// show both...
@@ -742,6 +747,10 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 
 #endif      // unicode
 
+            if(dbei.eventType == EVENTTYPE_ERRMSG) {
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
+            }
             break;
         }
         case EVENTTYPE_URL:
@@ -1124,19 +1133,23 @@ static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int g
     return szResult;
 }   
 
+/*
+ * decodes UTF-8 to unicode
+ * taken from jabber protocol implementation and slightly modified
+ * return value is static
+ */
+
 WCHAR *Utf8Decode(const char *str)
 {
 	int i, len;
 	char *p;
-	WCHAR *wszTemp;
-	//WCHAR *szOut;
+	static WCHAR *wszTemp;
 
 	if (str == NULL) return NULL;
 
 	len = strlen(str);
 
-	// Convert utf8 to unicode
-	if ((wszTemp=(WCHAR *) malloc(sizeof(WCHAR) * (len + 1))) == NULL)
+    if ((wszTemp = (WCHAR *) realloc(wszTemp, sizeof(WCHAR) * (len + 1))) == NULL)
 		return NULL;
 	p = (char *) str;
 	i = 0;
@@ -1155,32 +1168,24 @@ WCHAR *Utf8Decode(const char *str)
 	}
 	wszTemp[i] = '\0';
 
-	// Convert unicode to local codepage
-    /*
-    if ((len=WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, NULL, 0, NULL, NULL)) == 0)
-		return NULL;
-	if ((szOut=(char *) malloc(len)) == NULL)
-		return NULL;
-	WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, szOut, len, NULL, NULL); */
-    
 	return wszTemp;
 }
 
+/*
+ * convert unicode to UTF-8
+ * code taken from jabber protocol implementation and slightly modified.
+ * return value is static
+ */
+
 char *Utf8Encode(const WCHAR *str)
 {
-	unsigned char *szOut;
+	static unsigned char *szOut;
 	int len, i;
-	WCHAR *wszTemp, *w;
+	const WCHAR *wszTemp, *w;
+    
+	if (str == NULL) 
+        return NULL;
 
-	if (str == NULL) return NULL;
-
-	//len = strlen(str);
-    len = lstrlenW(str);
-	// Convert local codepage to unicode
-    /*
-	if ((wszTemp=(WCHAR *) malloc(sizeof(WCHAR) * (len + 1))) == NULL) return NULL;
-	MultiByteToWideChar(CP_ACP, 0, str, -1, wszTemp, len + 1);
-    */
     wszTemp = str;
 
 	// Convert unicode to utf8
@@ -1191,7 +1196,7 @@ char *Utf8Encode(const WCHAR *str)
 		else len += 3;
 	}
 
-	if ((szOut=(unsigned char *) malloc(len + 1)) == NULL)
+	if ((szOut = (unsigned char *) realloc(szOut, len + 1)) == NULL)
 		return NULL;
 
 	i = 0;
@@ -1209,8 +1214,6 @@ char *Utf8Encode(const WCHAR *str)
 		}
 	}
 	szOut[i] = '\0';
-
-	//free(wszTemp);
-
 	return (char *) szOut;
 }
+

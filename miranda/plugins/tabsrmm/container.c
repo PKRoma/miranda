@@ -159,7 +159,6 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
                         else if (!_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
                             iFirstFree =  i;
                         }
-                        free(wszString);
                     }
     #else
                     if (dbv.type == DBVT_ASCIIZ) {
@@ -510,6 +509,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->statusBarHeight = 0;
                 
                 GetClientRect(hwndDlg, &rcClient);
+                MoveWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), 0, 0, rcClient.right - rcClient.left, 2, TRUE);
+                
                 if (lParam) {
                     if(pContainer->dwFlags & CNT_TABSBOTTOM)
                         MoveWindow(hwndTab, 2, 2, (rcClient.right - rcClient.left) - 4, (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - 1, TRUE);
@@ -853,8 +854,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 #if defined (_UNICODE)
                                         WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
                                         SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
-                                        if(wszTemp)
-                                            free(wszTemp);
 #else
                                         SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
 #endif
@@ -1761,7 +1760,6 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
         WCHAR *wszString = Utf8Decode(dbv.pszVal);
         _tcsncpy(szName, wszString, iNameLen);
         DBFreeVariant(&dbv);
-        free(wszString);
         return dbv.cpbVal;
     }
 #else
@@ -1803,16 +1801,13 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
             iCounter++;
             if (dbv.type == DBVT_ASCIIZ) {
 #if defined(_UNICODE)
-                WCHAR *wszTemp = Utf8Decode(dbv.pszVal);
+                WCHAR wszTemp[CONTAINER_NAMELEN + 2];
+                _tcsncpy(wszTemp, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN + 1);
                 if(!_tcsncmp(wszTemp, _T("**free**"), lstrlenW(wszTemp))) {
 #else                    
                 if(!strncmp(dbv.pszVal, "**free**", strlen(dbv.pszVal))) {
 #endif                    
                     DBFreeVariant(&dbv);
-#if defined(_UNICODE)
-                    if(wszTemp)
-                        free(wszTemp);
-#endif                    
                     continue;
                 }
                 if (dwAction & CNT_ENUM_DELETE) {
@@ -1823,10 +1818,6 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
 #endif                        
                         DeleteContainer(iCounter - 1);
                         DBFreeVariant(&dbv);
-#if defined(_UNICODE)
-                        if(wszTemp)
-                            free(wszTemp);
-#endif                    
                         break;
                     }
                 }
@@ -1838,10 +1829,6 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
 #endif                        
                         RenameContainer(iCounter - 1, szNew);
                         DBFreeVariant(&dbv);
-#if defined(_UNICODE)
-                        if(wszTemp)
-                            free(wszTemp);
-#endif                    
                         break;
                     }
                 }
@@ -1852,10 +1839,6 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
                     _snprintf(szSetting, CONTAINER_NAMELEN + 15, "%s%d_Trans", szSettingP, iCounter - 1);
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, szSetting, dwExtinfoEx);
                 }
-#if defined(_UNICODE)
-                if(wszTemp)
-                    free(wszTemp);
-#endif                    
             }
             DBFreeVariant(&dbv);
         }
@@ -1891,7 +1874,6 @@ void DeleteContainer(int iIndex)
 #if defined (_UNICODE)
     char *szKey = "TAB_ContainersW";
     char *szSettingP = "CNTW_";
-    WCHAR *wszContainerName;
 #else    
     char *szSettingP = "CNT_";
     char *szKey = "TAB_ContainersW";
@@ -1903,7 +1885,8 @@ void DeleteContainer(int iIndex)
     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
         if(dbv.type == DBVT_ASCIIZ) {
 #if defined (_UNICODE)
-            wszContainerName = Utf8Decode(dbv.pszVal);
+            WCHAR wszContainerName[CONTAINER_NAMELEN + 2];
+            _tcsncpy(wszContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN + 1);;
             _DBWriteContactSettingWString(NULL, szKey, szIndex, _T("**free**"));
 #else
             DBWriteContactSettingString(NULL, szKey, szIndex, "**free**");
@@ -1922,10 +1905,6 @@ void DeleteContainer(int iIndex)
                         DBDeleteContactSetting(hhContact, SRMSGMOD_T, "container");
 #endif                    
                     }
-#if defined(_UNICODE)
-                    if(wszString)
-                        free(wszString);
-#endif                    
                     DBFreeVariant(&dbv_c);
                 }
                 hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
@@ -1942,10 +1921,6 @@ void DeleteContainer(int iIndex)
             DBDeleteContactSetting(NULL, SRMSGMOD_T, szSetting);
             _snprintf(szSetting, CONTAINER_NAMELEN + 15, "%s%dy", szSettingP, iIndex);
             DBDeleteContactSetting(NULL, SRMSGMOD_T, szSetting);
-#if defined(_UNICODE)
-            if(wszContainerName)
-                free(wszContainerName);
-#endif            
         }
         DBFreeVariant(&dbv);
     }
@@ -1957,7 +1932,6 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
 #if defined (_UNICODE)
     char *szKey = "TAB_ContainersW";
     char *szSettingP = "CNTW_";
-    WCHAR *wszContainerName;
 #else    
     char *szSettingP = "CNT_";
     char *szKey = "TAB_ContainersW";
@@ -1969,7 +1943,8 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
     _snprintf(szIndex, 8, "%d", iIndex);
      if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined(_UNICODE)
-        wszContainerName = Utf8Decode(dbv.pszVal);
+        WCHAR wszContainerName[CONTAINER_NAMELEN + 2];
+        _tcsncpy(wszContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN + 1);
 #endif        
         if (szNew != NULL) {
             if (_tcslen(szNew) != 0)
@@ -1998,18 +1973,10 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
 #endif                        
                     }
                 }
-#if defined(_UNICODE)
-                if(wszTemp)
-                    free(wszTemp);
-#endif                
                 DBFreeVariant(&dbv_c);
             }
             hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
         }
-#if defined(_UNICODE)
-        if(wszContainerName)
-            free(wszContainerName);
-#endif        
         DBFreeVariant(&dbv);
     }
 }
@@ -2018,7 +1985,7 @@ void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting
 {
     char *utf8string = Utf8Encode(value);
     DBWriteContactSettingString(hContact, szKey, szSetting, utf8string);
-    free(utf8string);
+    //free(utf8string);
     
     /*    DBCONTACTWRITESETTING dbcws = { 0 };
     

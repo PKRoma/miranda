@@ -208,7 +208,6 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                             SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETITEMDATA, (WPARAM)iItemNew, (LPARAM)iCounter);
                         }
                     }
-                    free(wszString);
                     DBFreeVariant(&dbv);
                 }
 #else

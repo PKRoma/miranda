@@ -585,13 +585,16 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
     RestoreUnreadMessageAlerts();
     CreateImageList(TRUE);              // XXX tab support, create shared image list for tab icons.
+#if defined(_UNICODE)
+    ConvertAllToUTF8();
+#endif    
 	hDLL = LoadLibraryA("user32");
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
 
 #if defined(_UNICODE)
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
-        if(dbv.type == DBVT_BLOB)
-            _tcsncpy(g_szDefaultContainerName, (TCHAR *)dbv.pbVal, CONTAINER_NAMELEN);
+        if(dbv.type == DBVT_ASCIIZ) 
+            _tcsncpy(g_szDefaultContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
 #else
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainername", &dbv)) {
         if(dbv.type == DBVT_ASCIIZ)
@@ -636,9 +639,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     else
         g_SmileyAddAvail = 0;
 
-#if defined(_UNICODE)
-    ConvertAllToUTF8();
-#endif    
     // nls stuff
     CacheLogFonts();
     BuildCodePageList();
@@ -1236,9 +1236,10 @@ void ConvertAllToUTF8()
         _snprintf(szCounter, 8, "%d", counter);
         if(DBGetContactSetting(NULL, "TAB_ContainersW", szCounter, &dbv))
             break;
-        utf8string = Utf8Encode((WCHAR *)dbv.pbVal);
-        DBWriteContactSettingString(NULL, "TAB_ContainersW", szCounter, utf8string);
-        free(utf8string);
+        if(dbv.type == DBVT_BLOB && dbv.cpbVal > 0) {
+            utf8string = Utf8Encode((WCHAR *)dbv.pbVal);
+            DBWriteContactSettingString(NULL, "TAB_ContainersW", szCounter, utf8string);
+        }
         DBFreeVariant(&dbv);
         counter++;
     } while ( TRUE );
@@ -1248,15 +1249,20 @@ void ConvertAllToUTF8()
     while(hContact) {
         if(!DBGetContactSetting(hContact, SRMSGMOD_T, "containerW", &dbv)) {
             if(dbv.type == DBVT_BLOB && dbv.cpbVal > 0) {
-                MessageBoxW(0, dbv.pbVal, "b", MB_OK);
                 utf8string = Utf8Encode((WCHAR *)dbv.pbVal);
                 DBDeleteContactSetting(hContact, SRMSGMOD_T, "containerW");
                 DBWriteContactSettingString(hContact, SRMSGMOD_T, "containerW", utf8string);
-                free(utf8string);
             }
             DBFreeVariant(&dbv);
         }
         hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    }
+    if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
+        if(dbv.type == DBVT_BLOB) {
+            DBDeleteContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW");
+            DBWriteContactSettingString(NULL, SRMSGMOD_T, "defaultcontainernameW", Utf8Encode((WCHAR *)dbv.pbVal));
+        }
+        DBFreeVariant(&dbv);
     }
     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "utf8converted", 1);
 }

@@ -32,6 +32,22 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
+Version 0.0.8.99 - 2004/10/22
+
+        * the unicode version now uses utf-8 encoding to store various unicode settings
+          in the DB. No more blobs.
+          
+        * ability to show the tabs at the bottom. Looks fine with classic windows theme,
+          but may look strange with visual styles.
+          NOTE: Please don't complain - the official word from MS is that bottom tabs
+          are UNSUPPORTED under Windows XP when using visual styles. So either find
+          a style with "symmetric" tab skins (they look fine with bottom tabs in most
+          cases) or don't use bottom tabs.
+          Or use classic theme :)
+          
+        * New menubar added. It can be hidden (as a per container setting) and contains
+          many options which are normally only accessible via various option pages.
+
 Version 0.0.8.98 - 2004/10/17
 
         * fixed middle click close did not respect the "warn onl close" setting.
