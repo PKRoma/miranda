@@ -434,10 +434,9 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *
 
 
 
-
 /*
  * Name: ext_yahoo_contact_added
- * 	Called when a contact is added to your list
+ * 	Called when a contact adds you to their list
  * Params:
  * 	id   - the id that identifies the server connection
  * 	myid - the identity he was added to
@@ -446,8 +445,26 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who, char *msg);
 
+/*
+ * Name: ext_yahoo_buddy_added
+ * 	Called when a contact is added to our server list
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	myid - the identity he was added to
+ * 	who  - who was added
+ * 	group  - group buddy was added to
+ *  status - status of the operation
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_added)(int id, char *myid, char *who, char *group, int status);
 
 
+/*
+ * Name: ext_yahoo_cleanup
+ * 	Called when we need to cleanup ALL our references and pointers
+ * Params:
+ * 	id   - the id that identifies the server connection
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_cleanup)(int id);
 
 /*
  * Name: ext_yahoo_rejected

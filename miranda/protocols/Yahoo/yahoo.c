@@ -510,10 +510,25 @@ void yahoo_logout()
 	if (ylad)
 		yahoo_close(ylad->id);
 	
-	FREE(ylad);
-	ylad = NULL;
+	
 	
 	//pthread_mutex_unlock(&connectionHandleMutex);
+}
+
+void ext_yahoo_cleanup(int id)
+{
+	LOG(("[ext_yahoo_cleanup] id: %d", id));
+	
+	if (!ylad)
+		return;
+	
+	if (ylad->id != id) {
+		return;
+	}
+	
+	LOG(("[ext_yahoo_cleanup] id matched!!! Doing Cleanup!"));
+	FREE(ylad);
+	ylad = NULL;
 }
 
 void yahoo_send_msg(const char *id, const char *msg, int utf8)
@@ -1277,6 +1292,12 @@ void YAHOO_add_buddy(const char *who, const char *group, const char *msg)
     yahoo_add_buddy(ylad->id, who, group, msg);
 }
 
+void ext_yahoo_buddy_added(int id, char *myid, char *who, char *group, int status)
+{
+	LOG(("[ext_yahoo_buddy_added] %s authorized you as %s group: %s status: %d", who, myid, group, status));
+	
+}
+
 void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 {
 	char *szBlob,*pCurBlob;
@@ -1288,7 +1309,7 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
 
-    LOG(("ext_yahoo_contact_added %s added you w/ msg '%s'", who, msg));
+    LOG(("ext_yahoo_contact_added %s added you as %s w/ msg '%s'", who, myid, msg));
     
 	hContact = add_buddy(who, who, PALF_TEMPORARY);
 	
@@ -1965,6 +1986,10 @@ void register_callbacks()
 	yc.ext_yahoo_got_picture  = ext_yahoo_got_picture;
 	yc.ext_yahoo_got_picture_checksum = ext_yahoo_got_picture_checksum;
 	yc.ext_yahoo_got_picture_update = ext_yahoo_got_picture_update;
+	
+	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;
+	yc.ext_yahoo_cleanup = ext_yahoo_cleanup;
+	
 	yahoo_register_callbacks(&yc);
 	
 }

@@ -1089,6 +1089,8 @@ void yahoo_close(int id)
 	if(!yd)
 		return;
 
+	YAHOO_CALLBACK(ext_yahoo_cleanup)(id);
+	
 	del_from_list(yd);
 
 	yahoo_free_data(yd);
@@ -2554,7 +2556,7 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 			status = strtol(pair->value, NULL, 10);
 	}
 
-	yahoo_dump_unhandled(pkt);
+	//yahoo_dump_unhandled(pkt);
 
 	if(!who)
 		return;
@@ -2568,6 +2570,7 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 
 	yd->buddies = y_list_append(yd->buddies, bud);
 
+	YAHOO_CALLBACK(ext_yahoo_buddy_added)(yd->client_id, me, who, where, status); 
 /*	YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, who, status, NULL, (status==YAHOO_STATUS_AVAILABLE?0:1)); */
 }
 
