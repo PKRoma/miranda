@@ -5,3 +5,5 @@
 #define TCS_HOTTRACK 0x0040
 
 #include "resource.rc"
+#include "msgwindow.rc"
+

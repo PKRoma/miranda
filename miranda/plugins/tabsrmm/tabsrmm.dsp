@@ -70,8 +70,8 @@ LINK32=link.exe
 # PROP Output_Dir ".\Release_Unicode"
 # PROP Intermediate_Dir ".\Release_Unicode"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /O1 /Ob1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /GF /Gy /YX /Fp".\Release_Unicode/srmm.pch" /Fo".\Release_Unicode/" /Fd".\Release_Unicode/" /c /GX 
-# ADD CPP /nologo /MT /W3 /O1 /Ob1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /GF /Gy /YX /Fp".\Release_Unicode/srmm.pch" /Fo".\Release_Unicode/" /Fd".\Release_Unicode/" /c /GX 
+# ADD BASE CPP /nologo /MT /W3 /O1 /Ob1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /GF /YX /Fp".\Release_Unicode/srmm.pch" /Fo".\Release_Unicode/" /Fd".\Release_Unicode/" /c /GX 
+# ADD CPP /nologo /MT /W3 /O1 /Ob1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /GF /YX /Fp".\Release_Unicode/srmm.pch" /Fo".\Release_Unicode/" /Fd".\Release_Unicode/" /c /GX 
 # ADD BASE MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release_Unicode\srmm.tlb" /win32 
 # ADD MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release_Unicode\srmm.tlb" /win32 
 # ADD BASE RSC /l 2057 /d "NDEBUG" /d "UNICODE" 
@@ -239,6 +239,10 @@ SOURCE=msgdialog.c
 # End Source File
 # Begin Source File
 
+SOURCE=msgdlgutils.c
+# End Source File
+# Begin Source File
+
 SOURCE=msglog.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -375,11 +379,19 @@ SOURCE=m_tabsrmm.h
 # End Source File
 # Begin Source File
 
+SOURCE=msgdlgutils.h
+# End Source File
+# Begin Source File
+
 SOURCE=msgs.h
 # End Source File
 # Begin Source File
 
 SOURCE=resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\resrc1.h
 # End Source File
 # Begin Source File
 
@@ -435,11 +447,11 @@ SOURCE=..\..\Miranda-IM\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\dropuser.cur
+SOURCE=..\..\src\res\dropuser.cur
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\res\dropuser.cur
+SOURCE=..\..\Miranda-IM\res\dropuser.cur
 # End Source File
 # Begin Source File
 
@@ -467,11 +479,11 @@ SOURCE=.\res\angeli-icons\HistoryXP.ico
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\hyperlin.cur
+SOURCE=..\..\src\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\res\hyperlin.cur
+SOURCE=..\..\Miranda-IM\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
@@ -484,6 +496,10 @@ SOURCE=.\res\angeli-icons\Incom.ico
 # Begin Source File
 
 SOURCE=.\res\angeli-icons\Info.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\msgwindow.rc
 # End Source File
 # Begin Source File
 
@@ -559,7 +575,7 @@ SOURCE=..\..\Miranda-IM\res\rename.ico
 # End Source File
 # Begin Source File
 
-SOURCE=resource.rc
+SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
 

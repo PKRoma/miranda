@@ -47,7 +47,7 @@ static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
 
 int _log(const char *fmt, ...);
 static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak);
-void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
+static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
 extern int g_SmileyAddAvail;
 
 #if defined(_STREAMTHREADING)
@@ -477,9 +477,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 
     dat->stats.lastReceivedChars = 0;
     
-// BEGIN MOD#32: Use different fonts for old history events
     dat->isHistory = (dbei.timestamp < (DWORD)dat->stats.started && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
-// END MOD#32
 
     isSent = (dbei.flags & DBEF_SENT);
     
@@ -813,12 +811,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob + sizeof(DWORD));
             break;
     }
-    //if(dat->dwEventIsShown & MWF_SHOW_MICROLF)
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf);
     
-    /* OnO: highlight end */
-    //if(dbei.eventType == EVENTTYPE_MESSAGE && dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
-      //  AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight0");
     if(streamData->dbei == 0)
         free(dbei.pBlob);
     
