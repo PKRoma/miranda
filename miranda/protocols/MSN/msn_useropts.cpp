@@ -141,7 +141,7 @@ BOOL CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			if ( access( tFileName, 0 )) {
 LBL_Reread:
 				DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File", tFileName );
-				p2p_session( pData->hContact );
+				p2p_invite( pData->hContact, MSN_APPID_AVATAR );
 				return TRUE;
 			}
 
@@ -169,7 +169,7 @@ LBL_Reread:
 						( LPARAM )LoadImage( ::GetModuleHandle(NULL), AI->filename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
 				}
 				else if ( ack->result == ACKRESULT_STATUS )
-					p2p_session( pData->hContact );
+					p2p_invite( ack->hContact, MSN_APPID_AVATAR );
 		}	}
 		break;
 

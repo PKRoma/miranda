@@ -7,6 +7,7 @@ Legend:
 Version 0.1.7.8
 ===============
 [+] 'View MSN services status' menu item was added to the main menu
+[+] Massive improvements for P2P file transfers
 
 Version 0.1.7.7
 ===============

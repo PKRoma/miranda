@@ -189,7 +189,7 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		newThread->mType = SERVER_FILETRANS;
 		newThread->mCaller = 2;
 		newThread->mTotalSend = 0;
-		newThread->ft = ft; ft->mOwner = newThread;
+		newThread->ft = ft;
 		newThread->startThread(( pThreadFunc )MSNSendfileThread );
 }	}
 
@@ -321,7 +321,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
 
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
-		filetransfer* ft = info->ft = new filetransfer( info );
+		filetransfer* ft = info->ft = new filetransfer();
 
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
 		ft->std.currentFile = strdup( Appfile );
@@ -955,7 +955,6 @@ LBL_InvalidCommand:
 
 						if ( E.ft != NULL ) {
 							info->ft = E.ft;
-							info->ft->mOwner = info;
 							info->ft->mOwnsThread = true;
 						}
 					}

@@ -326,11 +326,11 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 				172+4+strlen( thread->ft->szInvcookie ), thread->ft->szInvcookie );
 		}
 		else {
-			p2p_sendAck( ft, &ft->p2p_hdr );
+			p2p_sendAck( ft, thread->s, &ft->p2p_hdr );
 			ft->p2p_msgid -= 3;
 
 			//---- send 200 OK Message 
-			p2p_sendStatus( ft, 200 );
+			p2p_sendStatus( ft, thread->s, 200 );
 	}	}
 
 	ft->std.workingDir = strdup((char *)ccs->lParam);
@@ -346,8 +346,12 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
 	ft->bCanceled = true;
-	if ( ft->p2p_appID != 0 )
-		p2p_sendStatus( ft, -1 );
+	if ( ft->p2p_appID != 0 ) {
+		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
+		if ( thread != NULL )
+			if ( thread->ft != NULL && thread->ft == ft )
+				p2p_sendStatus( ft, thread->s, -1 );
+	}
 	return 0;
 }
 
@@ -374,11 +378,11 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 				172-33+4+strlen( thread->ft->szInvcookie ), thread->ft->szInvcookie );
 		}
 		else {
-			p2p_sendAck( ft, &ft->p2p_hdr );
+			p2p_sendAck( ft, thread->s, &ft->p2p_hdr );
 			ft->p2p_msgid -= 3;
 
 			//---- send 603 DECLINE Message 
-			p2p_sendStatus( ft, 603 );
+			p2p_sendStatus( ft, thread->s, 603 );
 	}	}
 
 	return 0;
@@ -409,7 +413,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	}
 
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {
-		p2p_session( AI->hContact );
+		p2p_invite( AI->hContact, MSN_APPID_AVATAR );
 		return GAIR_WAITFOR;
 	}
 
@@ -616,9 +620,8 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	char** files = ( char** )ccs->lParam;
-	if ( files[1] != NULL )
-	{
-		MSN_ShowError( "MSN protocol allows only one file to be sent at a time" );
+	if ( files[1] != NULL ) {
+		MSN_ShowError( Translate( "MSN protocol allows only one file to be sent at a time" ));
 		return 0;
  	}
 
@@ -628,45 +631,49 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 			tFileSize += statbuf.st_size;
 	}
 
-	filetransfer* sft = new filetransfer( NULL );
+	filetransfer* sft = new filetransfer();
 	sft->std.totalFiles = 1;
 	sft->std.currentFile = strdup( files[0] );
-	sft->std.totalBytes = tFileSize;
+	sft->std.totalBytes = sft->std.currentFileSize = tFileSize;
 	sft->std.hContact = ccs->hContact;
 	sft->std.sending = 1;
 	sft->std.currentFileNumber = 0;
 	sft->fileId = -1;
 
-	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-	if ( thread != NULL )
-	{	sft->mOwner = thread;
-		thread->ft = sft;
+	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
+	if ( dwFlags & 0x30000000 )
+		p2p_invite( ccs->hContact, MSN_APPID_FILE, sft );
+	else {
+		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
+		if ( thread != NULL ) {
+			thread->ft = sft;
+		}
+		else MSN_SendPacket( msnNSSocket, "XFR", "SB" );
+
+		char* pszFiles = strrchr( *files, '\\' ), msg[ 1024 ];
+		if ( pszFiles )
+			pszFiles++;
+		else
+			pszFiles = *files;
+
+		char* pszFilesUTF = Utf8Encode( pszFiles );
+		_snprintf( msg, sizeof( msg ),
+			"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
+			"Application-Name: File Transfer\r\n"
+			"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
+			"Invitation-Command: INVITE\r\n"
+			"Invitation-Cookie: %i\r\n"
+			"Application-File: %s\r\n"
+			"Application-FileSize: %i\r\n\r\n",
+			( WORD )(((double)rand()/(double)RAND_MAX)*4294967295), pszFilesUTF, tFileSize );
+		free( pszFilesUTF );
+
+		if ( thread == NULL )
+			MsgQueue_Add( ccs->hContact, msg, -1, sft );
+		else
+			MSN_SendMessage( thread->s, msg, MSG_DISABLE_HDR );
 	}
-	else MSN_SendPacket( msnNSSocket, "XFR", "SB" );
 
-	char* pszFiles = strrchr( *files, '\\' ), msg[ 1024 ];
-	if ( pszFiles )
-		pszFiles++;
-	else
-		pszFiles = *files;
-
-	char* pszFilesUTF = Utf8Encode( pszFiles );
-	_snprintf( msg, sizeof( msg ),
-		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
-		"Application-Name: File Transfer\r\n"
-		"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
-		"Invitation-Command: INVITE\r\n"
-		"Invitation-Cookie: %i\r\n"
-		"Application-File: %s\r\n"
-		"Application-FileSize: %i\r\n\r\n",
-		( WORD )(((double)rand()/(double)RAND_MAX)*4294967295), pszFilesUTF, tFileSize );
-	free( pszFilesUTF );
-
-	if ( thread == NULL )
-		MsgQueue_Add( ccs->hContact, msg, -1, sft );
-	else
-		MSN_SendMessage( thread->s, msg, MSG_DISABLE_HDR );
-		
 	MSN_SendBroadcast( ccs->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sft, 0 );
 	return (int)(HANDLE)sft;
 }

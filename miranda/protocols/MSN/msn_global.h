@@ -257,15 +257,15 @@ struct HReadBuffer
 
 struct filetransfer
 {
-	filetransfer( ThreadData* );
+	filetransfer();
 	~filetransfer( void );
 
 	void close();
 
 	PROTOFILETRANSFERSTATUS std;
 
-	ThreadData*	mOwner;
 	bool		   bCanceled;		// flag to interrupt a transfer
+	bool			bCompleted;		// was a FT ever completed?
 	bool			inmemTransfer;	//	flag: the file being received is to be stored in memory
 
 	union {
@@ -371,10 +371,13 @@ ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
 
+#define MSN_APPID_AVATAR 1
+#define MSN_APPID_FILE   2
+
+void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
 void __stdcall p2p_processMsg( ThreadData* info, char* msgbody );
-void __stdcall p2p_session( HANDLE hContact );
-void __stdcall p2p_sendAck( filetransfer* ft, P2P_Header* hdrdata );
-void __stdcall p2p_sendStatus( filetransfer* ft, long lStatus );
+void __stdcall p2p_sendAck( filetransfer* ft, HANDLE s, P2P_Header* hdrdata );
+void __stdcall p2p_sendStatus( filetransfer* ft, HANDLE s, long lStatus );
 void __stdcall p2p_sendSLP( filetransfer* ft, MimeHeaders& headers, int iKind );
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -131,7 +131,8 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 
 				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 			}
-
+			
+			ft->bCompleted = true;
 			ft->close();
 			break;
 		}
@@ -213,7 +214,8 @@ LBL_Error:		ft->close();
 				dataLen |= (*p++ << 8);
 
 				if ( tIsTransitionFinished ) {
-LBL_Success:	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
+LBL_Success:	ft->bCompleted = true;
+					MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
 					ft->close();
 
 					static char sttCommand[] = "BYE 16777989\r\n";

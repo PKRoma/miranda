@@ -680,20 +680,19 @@ char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
 // filetransfer class members
 //=======================================================================================
 
-filetransfer::filetransfer( ThreadData* parOwner )
+filetransfer::filetransfer()
 {
 	memset( this, 0, sizeof( filetransfer ));
 	fileId = -1;
-	mOwner = parOwner;
 	std.cbSize = sizeof( std );
 }
 
 filetransfer::~filetransfer()
 {
-	if ( mOwner != NULL )
-		mOwner->ft = NULL;
-
 	MSN_DebugLog( "Destroying file transfer session %ld", p2p_sessionid );
+
+	if ( !bCompleted )
+		MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0);
 
 	if ( inmemTransfer ) {
 		if ( fileBuffer != NULL )
