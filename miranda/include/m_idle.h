@@ -31,7 +31,6 @@ and other information too. If you are unsure which idle mode to report for, repo
 for short idle.*/
 
 #define IDF_ISIDLE		0x1 // idle has become active (if not set, inactive)
-#define IDF_SHORT		0x2 // short idle mode
 #define IDF_PRIVACY		0x8 // if set, the information provided shouldn't be given to third parties.
 
 /*

@@ -126,7 +126,7 @@ static void IdleObject_Tick(IdleObject * obj)
 		|| ( IdleObject_IdleCheckSaver(obj) ? IsScreenSaverRunning() : FALSE  ) 
 			|| ( IdleObject_IdleCheckWorkstation(obj) ? IsWorkstationLocked() : FALSE );
 
-	unsigned int flags = IDF_SHORT | IdleObject_IsPrivacy(obj) ? IDF_PRIVACY : 0;
+	unsigned int flags = IdleObject_IsPrivacy(obj) ? IDF_PRIVACY : 0;
 
 	if ( !IdleObject_IsIdle(obj) && idle ) {
 		IdleObject_SetIdle(obj);
