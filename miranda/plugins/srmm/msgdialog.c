@@ -496,25 +496,21 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 		DeleteObject(dat->avatarPic);
         dat->avatarPic=0;
 	}
-	if (DBGetContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
-		SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
-		SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
-	}
-	else {
-		HANDLE hFile;
+	if (!DBGetContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
+		if(dbv.pszVal) {
+			HANDLE hFile;
 
-		if(strlen(dbv.pszVal)&&(hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
-			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
-			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
-		}
-		else {
-			dat->avatarPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
-			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
-			CloseHandle(hFile);
+			hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile!=INVALID_HANDLE_VALUE) {
+				dat->avatarPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+				CloseHandle(hFile);
+			}
+
 		}
 		DBFreeVariant(&dbv);
 	}
+	SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
+	SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
 }
 
 static void NotifyTyping(struct MessageWindowData *dat, int mode)
