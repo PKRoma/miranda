@@ -178,6 +178,9 @@ DWORD		__stdcall	MSN_SetString( HANDLE hContact, const char* valueName, const ch
 void     __cdecl		MSN_ShowError( const char* msgtext, ... );
 char*		__stdcall	MSN_Translate( const char* str );
 
+int		__stdcall	MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits );
+HBITMAP	__stdcall	MSN_LoadPictureToBitmap( const char* pszFileName );
+
 VOID		CALLBACK MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
 LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 DWORD		WINAPI	MsnShowMailThread( LPVOID );

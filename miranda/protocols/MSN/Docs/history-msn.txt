@@ -6,6 +6,7 @@ Legend:
 
 Version 0.1.7.9
 ===============
+[+] wish #000519: the ability to create avatars from PNG images.
 [+] Contact's phone numbers support was added
 [+] Options dialog was changed to allow a user to see his own avatar.
 Main menu item 'Set my own avatar' was deleted.

@@ -51,13 +51,19 @@ static void sttSetAvatar( HWND hwndDlg )
 	if ( !MSN_LoadPngModule() )
 		return;
 
-	char filter[ 512 ];
-	MSN_CallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof filter, ( LPARAM )filter );
+	char szFilter[ 512 ];
+	_snprintf( szFilter, sizeof( szFilter ),
+		"%s%c*.BMP;*.RLE%c%s%c*.JPG;*.JPEG%c%s%c*.GIF%c%s%c*.PNG%c%s%c*%c%c0",
+			MSN_Translate( "Windows Bitmaps" ), 0, 0,
+			MSN_Translate( "JPEG Bitmaps" ), 0, 0,
+			MSN_Translate( "GIF Bitmaps" ), 0, 0,
+			MSN_Translate( "PNG Images" ), 0, 0, 
+			MSN_Translate( "All Files" ), 0, 0, 0 );
 
 	char str[ MAX_PATH ]; str[0] = 0;
 	OPENFILENAME ofn = {0};
 	ofn.lStructSize = sizeof( OPENFILENAME );
-	ofn.lpstrFilter = filter;
+	ofn.lpstrFilter = szFilter;
 	ofn.lpstrFile = str;
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 	ofn.nMaxFile = sizeof str;
@@ -65,8 +71,8 @@ static void sttSetAvatar( HWND hwndDlg )
 	ofn.lpstrDefExt = "bmp";
 	if ( !GetOpenFileName( &ofn ))
 		return;
-	
-	HBITMAP hBitmap = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )str );
+
+	HBITMAP hBitmap = MSN_LoadPictureToBitmap( str );
 	if ( hBitmap == NULL )
 		return;
 
@@ -172,22 +178,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 			else {
 				MSN_GetAvatarFileName( NULL, tBuffer, sizeof tBuffer );
-				HANDLE hFile = NULL, hMap = NULL;
-				BYTE* ppMap = NULL;
-				long  cbFileSize = 0;
-
-				if (( hFile = CreateFile( tBuffer, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
-					if (( hMap = CreateFileMapping( hFile, NULL, PAGE_READONLY, 0, 0, NULL )) != NULL )
-						if (( ppMap = ( BYTE* )::MapViewOfFile( hMap, FILE_MAP_READ, 0, 0, 0 )) != NULL )
-							cbFileSize = GetFileSize( hFile, NULL );
-
-				if ( cbFileSize != 0 )
-					if ( png2dibConvertor(( char* )ppMap, cbFileSize, &pDib ))
-						pDibBits = ( BYTE* )( pDib+1 );
-
-				if ( ppMap != NULL )	UnmapViewOfFile( ppMap );
-				if ( hMap  != NULL )	CloseHandle( hMap );
-				if ( hFile != NULL ) CloseHandle( hFile );
+				MSN_PngToDibBits( tBuffer, pDib, pDibBits );
 		}	}
 		return TRUE;
 	}
