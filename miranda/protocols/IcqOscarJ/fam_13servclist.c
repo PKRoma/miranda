@@ -1,21 +1,21 @@
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
-// 
+//
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -62,7 +62,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	switch (pSnacHeader->wSubtype)
 	{
 
-	case ICQ_LISTS_LIST: // SRV_REPLYROSTER 
+	case ICQ_LISTS_LIST: // SRV_REPLYROSTER
 		bIsSyncingCL = TRUE;
 		handleServerCList(pBuffer, wBufferLength, pSnacHeader->wFlags);
 		break;
@@ -90,7 +90,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	case SRV_SSI_UPTODATE: // SRV_REPLYROSTEROK
 		bIsSyncingCL = FALSE;
 		Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x0F) - SRV_REPLYROSTEROK");
-		
+
 		// This will activate the server side list
 		sendRosterAck();
 		handleServUINSettings(wListenPort, dwLocalInternalIP);
@@ -103,7 +103,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	case ICQ_LISTS_CLI_MODIFYEND:
 		Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x12) - End of server modification");
 		break;
-		
+
 	case ICQ_LISTS_AUTHREQUEST:
 		handleRecvAuthRequest(pBuffer, wBufferLength);
 		break;
@@ -111,7 +111,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	case ICQ_LISTS_AUTHRESPONSE2:
 		handleRecvAuthResponse(pBuffer, wBufferLength);
 		break;
-		
+
 	case ICQ_LISTS_YOUWEREADDED:
 	case ICQ_LISTS_YOUWEREADDED2:
 		handleRecvAdded(pBuffer, wBufferLength);
@@ -120,7 +120,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	default:
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x13,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
-		
+
 	}
 
 }
@@ -153,7 +153,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 	else
 		bIsLastPacket = TRUE;
 
-	
+
 	if (wLen < 3)
 		return;
 
@@ -229,7 +229,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 		if (wTlvLength > 0)
 		{
 			pChain = readIntoTLVChain(&buf, (WORD)(wTlvLength), 0);
-			wLen -= wTlvLength; 
+			wLen -= wTlvLength;
 		}
 		else
 		{
@@ -239,7 +239,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 		switch (wTlvType)
 		{
-			
+
 		case SSI_ITEM_BUDDY:
 			{
 				/* this is a contact */
@@ -257,7 +257,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					char* pszProto;
 					DWORD dwUin;
 
-					
+
 					// This looks like a real contact
 					// Check if this user already exists in local list
 					dwUin = atoi(pszRecordName);
@@ -272,7 +272,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						}
 						hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 					}
-					
+
 					if (hContact == NULL)
 					{
 						// Not already on list: add
@@ -294,7 +294,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 								disposeChain(&pChain);
 							continue;
 						}
-						
+
 						DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 						if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "AddServerNew", DEFAULT_SS_ADD))
 							DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
@@ -308,13 +308,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
 						}
 					}
-					
+
 					// Save group and item ID
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", wItemId);
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", wGroupId);
 					ReserveServerID(wItemId);
 					ReserveServerID(wGroupId);
-					
+
 
 					if (pChain)
 					{
@@ -340,7 +340,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 									// Copy buffer to utf-8 buffer
 									memcpy(pszNick, pTLV->pData, wNickLength);
 									pszNick[wNickLength] = 0; // Terminate string
-									
+
 									// Convert to ansi
 									if (utf8_decode(pszNick, &pszTempNick))
 									{
@@ -404,14 +404,14 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				}
 			}
 			break;
-			
+
 		case SSI_ITEM_GROUP:
 			if ((wGroupId == 0) && (wItemId == 0))
 			{
 				/* list of groups. wTlvType=1, data is TLV(C8) containing list of WORDs which */
 				/* is the group ids
 				/* we don't need to use this. Our processing is on-the-fly */
-				
+
 				/* this record is always sent first in the first packet only, */
 			}
 			else if (wGroupId != 0)
@@ -430,16 +430,16 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					/* our processing is good enough that we don't need this duplication */
 				}
 				else
-				{ 
+				{
 					Netlib_Logf(ghServerNetlibUser, "Unhandled type 0x01, wItemID != 0");
 				}
 			}
 			else
-			{ 
+			{
 				Netlib_Logf(ghServerNetlibUser, "Unhandled type 0x01");
 			}
 			break;
-			
+
 		case SSI_ITEM_PERMIT:
 			/* item on visible list */
 			/* wItemId not related to contact ID */
@@ -450,12 +450,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			}
 			else
 			{
-				
+
 				DWORD dwUin;
 				char* pszProto;
 				HANDLE hContact;
 
-				
+
 				// This looks like a real contact
 				// Check if this user already exists in local list
 				dwUin = atoi(pszRecordName);
@@ -470,7 +470,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					}
 					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 				}
-				
+
 				if (hContact == NULL)
 				{
 					/* not already on list: add */
@@ -496,17 +496,17 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 				}
-				
+
 				// Save permit ID
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", wItemId);
 				ReserveServerID(wItemId);
 				// Set apparent mode
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_ONLINE);
 				Netlib_Logf(ghServerNetlibUser, "Visible-contact (%u)", dwUin);
-				
+
 			}
 			break;
-			
+
 		case SSI_ITEM_DENY: // Item on invisible list
 			if (!IsStringUIN(pszRecordName))
 			{
@@ -514,12 +514,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			}
 			else
 			{
-				
+
 				DWORD dwUin;
 				char* pszProto;
 				HANDLE hContact;
-				
-				
+
+
 				// This looks like a real contact
 				// Check if this user already exists in local list
 				dwUin = atoi(pszRecordName);
@@ -534,7 +534,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					}
 					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 				}
-				
+
 				if (hContact == NULL)
 				{
 					/* not already on list: add */
@@ -560,26 +560,26 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 				}
-				
+
 				// Save Deny ID
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", wItemId);
 				ReserveServerID(wItemId);
-				
+
 				// Set apparent mode
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
 				Netlib_Logf(ghServerNetlibUser, "Invisible-contact (%u)", dwUin);
 			}
 			break;
-			
-			
+
+
 		case SSI_ITEM_VISIBILITY: /* My visibility settings */
 			{
-				
+
 				BYTE bVisibility;
-				
-				
+
+
 				ReserveServerID(wItemId);
-				
+
 				// Look for visibility TLV
 				if (bVisibility = getByteFromChain(pChain, 0x00CA, 1))
 				{
@@ -588,17 +588,17 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				}
 			}
 			break;
-			
+
 		case SSI_ITEM_IGNORE:
 			/* item on ignore list */
 			/* pszRecordName is the UIN */
 			/* TODO */
-			
+
 			ReserveServerID(wItemId);
-			
+
 			if (!IsStringUIN(pszRecordName))
 				Netlib_Logf(ghServerNetlibUser, "Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
-			else 
+			else
 				Netlib_Logf(ghServerNetlibUser, "Ignored-contact ignored (%s)", pszRecordName);
 			break;
 
@@ -616,20 +616,20 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				Netlib_Logf(ghServerNetlibUser, "SSI first import seen");
 			}
 			break;
-			
+
 		case SSI_ITEM_UNKNOWN1:
 		default:
 			Netlib_Logf(ghServerNetlibUser, "SSI unhandled item %2x", wTlvType);
 			break;
 
 		}
-		
+
 		if (pChain)
 			disposeChain(&pChain);
-		
+
 	} // end for
-	
-	
+
+
 	Netlib_Logf(ghServerNetlibUser, "Bytes left: %u", wLen);
 
 	SAFE_FREE(pszRecordName);
@@ -661,7 +661,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			unpackDWord(&buf, &dwLastUpdateTime);
 			DBWriteContactSettingDword(NULL, gpszICQProtoName, "SrvLastUpdate", dwLastUpdateTime);
 			Netlib_Logf(ghServerNetlibUser, "Last update of server list was (%u) %s", dwLastUpdateTime, asctime(localtime(&dwLastUpdateTime)));
-			
+
 			sendRosterAck();
 			handleServUINSettings(wListenPort, dwLocalInternalIP);
 		}
@@ -674,7 +674,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 	{
 		Netlib_Logf(ghServerNetlibUser, "Waiting for more packets");
 	}
-	
+
 }
 
 
@@ -732,16 +732,17 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	memcpy(pCurBlob, buf, wReasonLen); pCurBlob += wReasonLen;
 	*(char *)pCurBlob = 0;
 	pre.szMessage=(char *)szBlob;
+// TODO: Change for new auth system, include all known informations
 
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
-	
+
 }
 
 
 
 static void handleRecvAdded(unsigned char *buf, WORD wLen)
 {
-	
+
 	BYTE nUinLen;
 	BYTE szUin[10];
 	DWORD dwUin;
@@ -782,6 +783,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0;
+// TODO: Change for new auth system
 
 	CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
 
@@ -791,13 +793,17 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 
 static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 {
-	
+
 	BYTE nUinLen;
 	BYTE bResponse;
 	BYTE szUin[10];
 	DWORD dwUin;
 	HANDLE hContact;
+	char* szNick;
+	WORD nReasonLen;
+	char* szReason;
 
+	bResponse = 0xFF;
 
 	unpackByte(&buf, &nUinLen);
 	wLen -= 1;
@@ -815,27 +821,47 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 	dwUin = atoi(szUin);
 	hContact = HContactFromUIN(dwUin, 1);
 
+	if (hContact != INVALID_HANDLE_VALUE) szNick = NickFromHandle(hContact);
 
-	unpackByte(&buf, &bResponse);
+	if (wLen > 0)
+	{
+	  unpackByte(&buf, &bResponse);
+	  wLen -= 1;
+	}
+	if (wLen >= 2)
+	{
+	  unpackWord(&buf, &nReasonLen);
+	  wLen -= 2;
+	  if (wLen >= nReasonLen)
+		{
+			szReason = malloc(nReasonLen+1);
+			unpackString(&buf, szReason, nReasonLen);
+			szReason[nReasonLen] = '\0';
+		}
+	}
+
 	switch (bResponse)
 	{
 
 	case 0:
 		DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 1);
-		Netlib_Logf(ghServerNetlibUser, "Authentication request denied by %u", dwUin);
+		Netlib_Logf(ghServerNetlibUser, "Authorisation request denied by %u", dwUin);
+		// TODO: Add to system history as soon as new auth system is ready
 		break;
 
 	case 1:
 		DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
-		Netlib_Logf(ghServerNetlibUser, "Authentication request granted by %u", dwUin);
+		Netlib_Logf(ghServerNetlibUser, "Authorisation request granted by %u", dwUin);
+		// TODO: Add to system history as soon as new auth system is ready
 		break;
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Unknown Authentication request response (%u) from %u", bResponse, dwUin);
+		Netlib_Logf(ghServerNetlibUser, "Unknown Authorisation request response (%u) from %u", bResponse, dwUin);
 		break;
 
 	}
-
+	SAFE_FREE(szNick);
+	SAFE_FREE(szReason);
 }
 
 
@@ -865,7 +891,7 @@ void updateServVisibilityCode(BYTE bCode)
 		if ((wVisibilityID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0)) == 0)
 		{
 			// No, create a new random ID
-			wVisibilityID = GenerateServerId(); 
+			wVisibilityID = GenerateServerId();
 			DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wVisibilityID);
 			wCommand = ICQ_LISTS_ADDTOLIST;
 			Netlib_Logf(ghServerNetlibUser, "Made new srvvisID, id is %u, code is %u", wVisibilityID, bCode);
@@ -876,7 +902,7 @@ void updateServVisibilityCode(BYTE bCode)
 			wCommand = ICQ_LISTS_UPDATEGROUP;
 		}
 
-		
+
 		// Build and send packet
 		packet.wLen = 25;
 		write_flap(&packet, ICQ_DATA_CHAN);
