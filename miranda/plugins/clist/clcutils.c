@@ -432,8 +432,8 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	if(hit==-1 || hitFlags&CLCHT_ONITEMEXTRA) return DROPTARGET_ONNOTHING;
 
 	if(movecontact->type==CLCIT_GROUP) {
-		struct ClcContact *bottomcontact,*topcontact;
-		struct ClcGroup *topgroup;
+		struct ClcContact *bottomcontact=NULL,*topcontact=NULL;
+		struct ClcGroup *topgroup=NULL;
 		int topItem=-1,bottomItem;
 		int ok=0;
 		if(pt.y+dat->yScroll<hit*dat->rowHeight+dat->insertionMarkHitHeight) {
