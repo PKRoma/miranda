@@ -32,6 +32,7 @@
 typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
+
 #ifndef _WIN32
 typedef unsigned char BOOL;
 #endif

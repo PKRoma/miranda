@@ -29,6 +29,8 @@
 #include <config.h>
 #endif
 
+#include <sys/types.h>
+
 #ifndef _WIN32
 #include <sys/socket.h>
 #else

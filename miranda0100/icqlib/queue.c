@@ -49,7 +49,7 @@ void icq_UDPQueuePut(icq_Link *icqlink, icq_Packet *p)
 #ifdef QUEUE_DEBUG
   printf("enqueuing queueitem %p\n", ptr);
 #endif
-  icq_LinkEnqueue(icqlink->d->icq_UDPQueue, ptr);
+  icq_ListEnqueue(icqlink->d->icq_UDPQueue, ptr);
 }
 
 void _icq_UDPQueueItemFree(void *p)

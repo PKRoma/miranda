@@ -77,7 +77,7 @@ void icq_FileSessionDelete(void *pv)
     while(*p2)
       free(*(p2++));
     free(p->files);
-	p->files=NULL;
+    p->files=NULL;
   }
 
   if (p->current_fd > -1 ) {
@@ -131,7 +131,7 @@ void icq_FileSessionSetCurrentFile(icq_FileSession *p, const char *filename)
 #ifdef _WIN32
   struct _stat file_status;
 #else
-  struct _stat file_status;
+  struct stat file_status;
 #endif
   char file[1024];
 
@@ -161,7 +161,8 @@ void icq_FileSessionSetCurrentFile(icq_FileSession *p, const char *filename)
 #endif
   } else {
 #ifdef _WIN32
-    p->current_fd=open(file, _O_WRONLY | _O_CREAT | _O_BINARY,_S_IREAD|_S_IWRITE);
+    p->current_fd=open(file, _O_WRONLY | _O_CREAT | _O_BINARY, 
+      _S_IREAD|_S_IWRITE);
 #else
     p->current_fd=open(file, O_WRONLY | O_CREAT, S_IRWXU);
 #endif
@@ -273,16 +274,15 @@ void icq_FileSessionClose(icq_FileSession *p)
     icq_TCPLinkClose(plink);
   }
 
-  //rcdh: swapped these two lines round
-  icq_ListRemove(p->icqlink->d->icq_FileSessions, p);		
-
+  icq_ListRemove(p->icqlink->d->icq_FileSessions, p);
   icq_FileSessionDelete(p);
 }   
 
 void icq_FileSessionSetWorkingDir(icq_FileSession *p, const char *dir)
 {
-  strncpy(p->working_dir, dir, sizeof(p->working_dir));
-  p->working_dir[sizeof(p->working_dir)-1]='\0';
+  int length = sizeof(p->working_dir);
+  strncpy(p->working_dir, dir, length);
+  p->working_dir[length-1]='\0';
 }  
 
 void icq_FileSessionSetFiles(icq_FileSession *p, char **files)

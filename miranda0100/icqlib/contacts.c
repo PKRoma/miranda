@@ -27,6 +27,7 @@
 #include "icqlib.h"
 
 #include "contacts.h"
+#include "udp.h"
 
 icq_ContactItem *icq_ContactNew(icq_Link *icqlink)
 {
@@ -49,8 +50,9 @@ void icq_ContactAdd(icq_Link *icqlink, DWORD cuin)
   icq_ContactItem *p = icq_ContactNew(icqlink);
   p->uin = cuin;
   p->vis_list = FALSE;
+  p->invis_list = FALSE;
 
-  icq_LinkEnqueue(icqlink->d->icq_ContactList, p);
+  icq_ListEnqueue(icqlink->d->icq_ContactList, p);
 }
 
 void icq_ContactRemove(icq_Link *icqlink, DWORD cuin)
@@ -82,18 +84,22 @@ icq_ContactItem *icq_ContactFind(icq_Link *icqlink, DWORD cuin)
   return icq_ListTraverse(icqlink->d->icq_ContactList, _icq_ContactFind, cuin);
 }
 
-void icq_ContactSetVis(icq_Link *icqlink, DWORD cuin, BYTE vu)
+void icq_ContactSetVis(icq_Link *icqlink, DWORD cuin, BOOL on)
 {
   icq_ContactItem *p = icq_ContactFind(icqlink, cuin);
-  if(p)
-    p->vis_list = vu;
+  if(p) {
+	if(p->vis_list!=on) icq_SendVisListUpdate(icqlink,cuin,VISIBLE_LIST,on);
+    p->vis_list = on;
+  }
 }
 
-void icq_ContactSetInvis(icq_Link *icqlink, DWORD cuin, BYTE vu)
+void icq_ContactSetInvis(icq_Link *icqlink, DWORD cuin, BOOL on)
 {
   icq_ContactItem *p = icq_ContactFind(icqlink, cuin);
-  if(p)
-    p->invis_list = vu;
+  if(p)	{
+	if(p->invis_list!=on) icq_SendVisListUpdate(icqlink,cuin,INVISIBLE_LIST,on);
+    p->invis_list = on;
+  }
 }
 
 icq_ContactItem *icq_ContactGetFirst(icq_Link *icqlink)

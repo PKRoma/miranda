@@ -35,6 +35,9 @@ void icq_DoMsg(icq_Link *icqlink, DWORD type, WORD len, char *data, DWORD uin, B
 {
   icq_List *strList;
   int fieldCount;
+  int i, k, nr;
+  const char **contact_uin;
+  const char **contact_nick;
   (void)len;
 
   strList = icq_ListNew();
@@ -57,10 +60,9 @@ void icq_DoMsg(icq_Link *icqlink, DWORD type, WORD len, char *data, DWORD uin, B
                  "Nick: %s, First Name: %s, Last Name: %s, EMail: %s\n",
                  uin, icq_ListAt(strList, 0), icq_ListAt(strList, 1),
                  icq_ListAt(strList, 2), icq_ListAt(strList, 3));
-      invoke_callback(icqlink,icq_RecvAdded)(icqlink, uin, hour, minute, 
-                      day, month, year,
-                      icq_ListAt(strList, 0), icq_ListAt(strList, 1),
-                      icq_ListAt(strList, 2), icq_ListAt(strList, 3));
+      invoke_callback(icqlink,icq_RecvAdded)(icqlink, uin, hour, minute, day, month, year,
+                                             icq_ListAt(strList, 0), icq_ListAt(strList, 1),
+                                             icq_ListAt(strList, 2), icq_ListAt(strList, 3));
       break;
     case TYPE_AUTH_REQ:
       /* Format: Nick, 0xFE, FName, 0xFE, LName, 0xFE, EMail, 0xFE, 0, 0xFE, Reason */
@@ -80,25 +82,25 @@ void icq_DoMsg(icq_Link *icqlink, DWORD type, WORD len, char *data, DWORD uin, B
                  "their contact list, Nick: %s, First Name: %s, Last Name: %s, "
                  "EMail: %s, Reason: %s\n", uin, icq_ListAt(strList, 0), icq_ListAt(strList, 1),
                  icq_ListAt(strList, 2), icq_ListAt(strList, 3), icq_ListAt(strList, 4));
-      invoke_callback(icqlink,icq_RecvAuthReq)(icqlink, uin, hour, minute, day,
-		      month, year, icq_ListAt(strList, 0),
-                      icq_ListAt(strList, 1), icq_ListAt(strList, 2),
-                      icq_ListAt(strList, 3), icq_ListAt(strList, 5));
+      invoke_callback(icqlink,icq_RecvAuthReq)(icqlink, uin, hour, minute, day, month, year,
+                                               icq_ListAt(strList, 0), icq_ListAt(strList, 1),
+                                               icq_ListAt(strList, 2), icq_ListAt(strList, 3),
+                                               icq_ListAt(strList, 5));
       break;
     case TYPE_URL:
       /* Format: Description, 0xFE, URL */
       fieldCount = icq_SplitFields(strList, data);
       if(fieldCount != 2)
       {
-        icq_FmtLog(icqlink, ICQ_LOG_ERROR, "Bad TYPE_URL packet (expected 2 args, recived %i)!\n", fieldCount);
+        icq_FmtLog(icqlink, ICQ_LOG_ERROR, "Bad TYPE_URL packet (expected 2 args, recived %i)!\n",
+                   fieldCount);
         return;
       }
       icq_RusConv("wk", icq_ListAt(strList, 0)); /* Description */
       icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "URL received from %lu, URL: %s, Description: %s\n",
                  uin, icq_ListAt(strList, 1), icq_ListAt(strList, 0));
-      invoke_callback(icqlink,icq_RecvURL)(icqlink, uin, hour, minute, day, 
-		      month, year, icq_ListAt(strList, 1),
-                      icq_ListAt(strList, 0));
+      invoke_callback(icqlink,icq_RecvURL)(icqlink, uin, hour, minute, day, month, year,
+                                           icq_ListAt(strList, 1), icq_ListAt(strList, 0));
       break;
     case TYPE_WEBPAGER:
       /* Format: Nick, 0xFE, Empty-FName, 0xFE, Empty-LName, 0xFE, EMail, 0xFE,
@@ -115,9 +117,9 @@ void icq_DoMsg(icq_Link *icqlink, DWORD type, WORD len, char *data, DWORD uin, B
       icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "WebPager message received, Nick: %s, EMail: %s, "
                  "Message:\n%s\n", icq_ListAt(strList, 0), icq_ListAt(strList, 3),
                  icq_ListAt(strList, 5));
-      invoke_callback(icqlink,icq_RecvWebPager)(icqlink, hour, minute, day, 
-		      month, year, icq_ListAt(strList, 0),
-                      icq_ListAt(strList, 3), icq_ListAt(strList, 5));
+      invoke_callback(icqlink,icq_RecvWebPager)(icqlink, hour, minute, day, month, year,
+                                                icq_ListAt(strList, 0), icq_ListAt(strList, 3),
+                                                icq_ListAt(strList, 5));
       break;
     case TYPE_EXPRESS:
       /* Format: Nick, 0xFE, Empty-FName, 0xFE, Empty-LName, 0xFE, EMail, 0xFE,
@@ -134,15 +136,35 @@ void icq_DoMsg(icq_Link *icqlink, DWORD type, WORD len, char *data, DWORD uin, B
       icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "MailExpress message received, Nick: %s, EMail: %s, "
                  "Message:\n%s\n", icq_ListAt(strList, 0), icq_ListAt(strList, 3),
                  icq_ListAt(strList, 5));
-      invoke_callback(icqlink,icq_RecvMailExpress)(icqlink, hour, minute, day, 
-		      month, year, icq_ListAt(strList, 0),
-                      icq_ListAt(strList, 3), icq_ListAt(strList, 5));
+      invoke_callback(icqlink, icq_RecvMailExpress)(icqlink, hour, minute, day, month, year,
+                                                   icq_ListAt(strList, 0), icq_ListAt(strList, 3),
+                                                   icq_ListAt(strList, 5));
+      break;
+    case TYPE_CONTACT:
+      /* Format: Number of contacts, 0xFE, UIN, 0xFE, Nick, 0xFE, ... */
+      nr = icq_SplitFields(strList, data);
+      contact_uin = (const char**)malloc((nr - 1) / 2);
+      contact_nick = (const char**)malloc((nr - 1) / 2);
+
+      icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Contact List received from %lu (%i):\n", uin,
+                 atoi(icq_ListAt(strList, 0)));
+
+      for(i = 1, k = 0; i < (nr - 1); k++)
+      {
+        contact_uin[k] = icq_ListAt(strList, i);
+        contact_nick[k] = icq_ListAt(strList, i + 1);
+        i += 2;
+        icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "\t%s - %s\n", contact_uin[k], contact_nick[k]);
+      }
+      invoke_callback(icqlink, icq_RecvContactList)(icqlink, uin, hour, minute, day, month, year,
+                                                 k, contact_uin, contact_nick);
+      free(contact_uin);
+      free(contact_nick);
       break;
     default:
       icq_RusConv("wk", data); /* Entire message */
       icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Instant message type %i from %lu:\n%s\n", type, uin, data);
-      invoke_callback(icqlink,icq_RecvMessage)(icqlink, uin, hour, minute, 
-		      day, month, year, data);
+      invoke_callback(icqlink, icq_RecvMessage)(icqlink, uin, hour, minute, day, month, year, data);
   }
   icq_ListDelete(strList, free);
 }
@@ -162,9 +184,8 @@ void icq_HandleInfoReply(icq_Link *icqlink, icq_Packet *p)
   icq_RusConv("wk", ptr3);
   icq_RusConv("wk", ptr4);
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Info reply for %lu\n", uin);
-  invoke_callback(icqlink,icq_InfoReply)(icqlink, uin, ptr1, ptr2, ptr3, 
-		  ptr4, icq_PacketRead8(p));
   icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
+  invoke_callback(icqlink,icq_InfoReply)(icqlink, uin, ptr1, ptr2, ptr3, ptr4, icq_PacketRead8(p));
   free(ptr1);
   free(ptr2);
   free(ptr3);
@@ -195,10 +216,9 @@ void icq_HandleExtInfoReply(icq_Link *icqlink, icq_Packet *p)
   icq_RusConv("wk", ptr4);
   icq_RusConv("wk", ptr5);
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Extended info reply for %lu\n", uin);
-  invoke_callback(icqlink,icq_ExtInfoReply)(icqlink, uin, (char*)ptr1, 
-		  cnt_code, cnt_stat, (char*)ptr2, age,
-                  gender, (char*)ptr3, (char*)ptr4, (char*)ptr5);
   icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
+  invoke_callback(icqlink,icq_ExtInfoReply)(icqlink, uin, (char*)ptr1, cnt_code, cnt_stat, (char*)ptr2,
+                                            age, gender, (char*)ptr3, (char*)ptr4, (char*)ptr5);
   free(ptr1);
   free(ptr2);
   free(ptr3);
@@ -223,9 +243,9 @@ void icq_HandleSearchReply(icq_Link *icqlink, icq_Packet *p)
   auth = icq_PacketRead8(p);
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "User found %lu, Nick: %s, First Name: %s, Last Name: %s, "
              "EMail: %s, Auth: %s\n", uin, ptr1, ptr2, ptr3, ptr4, auth==1?"no":"yes");
-  invoke_callback(icqlink,icq_UserFound)(icqlink, uin, (char*)ptr1, 
-		  (char*)ptr2, (char*)ptr3, (char*)ptr4, auth);
   icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
+  invoke_callback(icqlink,icq_UserFound)(icqlink, uin, (char*)ptr1, (char*)ptr2,
+                                         (char*)ptr3, (char*)ptr4, auth);
   free(ptr1);
   free(ptr2);
   free(ptr3);
@@ -243,7 +263,6 @@ void icq_HandleUserOffline(icq_Link *icqlink, icq_Packet *p)
   icq_PacketGotoUDPInData(p, 0);
   remote_uin = icq_PacketRead32(p);
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "User %lu logged off\n", remote_uin);
-  invoke_callback(icqlink,icq_UserOffline)(icqlink, remote_uin);
 
   ptr=icq_ContactFind(icqlink, remote_uin);
   if(ptr)
@@ -252,6 +271,7 @@ void icq_HandleUserOffline(icq_Link *icqlink, icq_Packet *p)
     ptr->remote_port = 0;
   }
   icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
+  invoke_callback(icqlink,icq_UserOffline)(icqlink, remote_uin);
 }
 
 void icq_HandleUserOnline(icq_Link *icqlink, icq_Packet *p)
@@ -273,8 +293,6 @@ void icq_HandleUserOnline(icq_Link *icqlink, icq_Packet *p)
              "User %lu (%s = 0x%X) logged on. tcp_flag=0x%X IP=%08X, real IP=%08X, port=%d\n",
              remote_uin, icq_ConvertStatus2Str(new_status), new_status, tcp_flag, remote_ip,
              remote_real_ip, remote_port);
-  invoke_callback(icqlink,icq_UserOnline)(icqlink, remote_uin, new_status, 
-		  remote_ip, remote_port, remote_real_ip, tcp_flag);
 
   ptr=icq_ContactFind(icqlink, remote_uin);
   if(ptr)
@@ -285,6 +303,8 @@ void icq_HandleUserOnline(icq_Link *icqlink, icq_Packet *p)
     ptr->tcp_flag = tcp_flag;
   }
   icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
+  invoke_callback(icqlink,icq_UserOnline)(icqlink, remote_uin, new_status, remote_ip,
+                                          remote_port, remote_real_ip, tcp_flag);
 }
 
 void icq_HandleStatusChange(icq_Link *icqlink, icq_Packet *p)
@@ -296,9 +316,8 @@ void icq_HandleStatusChange(icq_Link *icqlink, icq_Packet *p)
   new_status = icq_PacketRead32(p);
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "%lu changed status to %s (0x%X)\n", remote_uin,
              icq_ConvertStatus2Str(new_status), new_status);
-  invoke_callback(icqlink,icq_UserStatusUpdate)(icqlink, remote_uin, 
-		  new_status);
   icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
+  invoke_callback(icqlink,icq_UserStatusUpdate)(icqlink, remote_uin, new_status);
 }
 
 void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
@@ -329,11 +348,12 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
   icq_PacketGotoUDPInData(p, 0);
   subcmd = icq_PacketRead16(p);
   res = icq_PacketRead8(p);
+  icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
   if(res == META_SRV_FAILURE)
   {
     icq_FmtLog(icqlink, ICQ_LOG_WARNING, "META failure\n");
-    invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq2, 
-		    ICQ_NOTIFY_FAILED, sizeof(subcmd), &subcmd);
+    invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq2, ICQ_NOTIFY_FAILED,
+                                               sizeof(subcmd), &subcmd);
   }
   else
     switch(subcmd)
@@ -354,8 +374,7 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
         icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "META User Found %lu, Nick: %s, First Name: %s, "\
                    "Last Name: %s, EMail: %s, Auth: %s\n", seq2, uin, nick, first, last,
                    email, auth==1?"no":"yes");
-        invoke_callback(icqlink,icq_MetaUserFound)(icqlink, seq2, uin, nick, 
-			first, last, email, auth);
+        invoke_callback(icqlink,icq_MetaUserFound)(icqlink, seq2, uin, nick, first, last, email, auth);
         free(nick);
         free(first);
         free(last);
@@ -397,10 +416,10 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
                    nick, first, last, pri_eml, sec_eml, old_eml, city, state, phone,
                    fax, street, cellular, zip, icq_GetCountryName(country), timezone,
                    auth?"false":"true", webaware?"true":"false", hideip?"true":"false");
-        invoke_callback(icqlink,icq_MetaUserInfo)(icqlink, seq2, nick, first, 
-			last, pri_eml, sec_eml, old_eml, city, state, phone,
-			fax, street, cellular, zip, country, timezone, auth,
-			webaware, hideip);
+        invoke_callback(icqlink,icq_MetaUserInfo)(icqlink, seq2, nick, first, last, pri_eml,
+                                                  sec_eml, old_eml, city, state, phone, fax,
+                                                  street, cellular, zip, country, timezone,
+                                                  auth, webaware, hideip);
         free(nick);
         free(first);
         free(last);
@@ -441,9 +460,9 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
                    wphone, wfax, waddress, wzip, icq_GetCountryName(wcountry),
                    company, department, job, icq_GetMetaOccupationName(occupation),
                    whomepage);
-        invoke_callback(icqlink,icq_MetaUserWork)(icqlink, seq2, wcity, 
-			wstate, wphone, wfax, waddress, wzip, wcountry, 
-			company, department, job, occupation, whomepage);
+        invoke_callback(icqlink, icq_MetaUserWork)(icqlink, seq2, wcity, wstate, wphone,
+                                                   wfax, waddress, wzip, wcountry, company,
+                                                   department, job, occupation, whomepage);
         free(wcity);
         free(wstate);
         free(wphone);
@@ -495,10 +514,10 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
                    interests[0]?interests[0]:empty, icategory[1], interests[1]?interests[1]:empty,
                    icategory[2], interests[2]?interests[2]:empty, icategory[3],
                    interests[3]?interests[3]:empty);
-        invoke_callback(icqlink,icq_MetaUserInterests)(icqlink, seq2, inum, 
-			icategory[0], interests[0], icategory[1], 
-			interests[1], icategory[2], interests[2],
-			icategory[3], interests[3]);
+        invoke_callback(icqlink, icq_MetaUserInterests)(icqlink, seq2, inum,
+                                                        icategory[0], interests[0], icategory[1], 
+                                                        interests[1], icategory[2], interests[2],
+                                                        icategory[3], interests[3]);
         for(i=0; i<inum && i<4; i++)
           free(interests[i]);
         break;
@@ -528,13 +547,13 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
                    icq_GetMetaBackgroundName(bcategory[1]), backgrounds[1]?backgrounds[1]:empty,
                    icq_GetMetaBackgroundName(bcategory[2]), backgrounds[2]?backgrounds[2]:empty,
                    icq_GetMetaBackgroundName(bcategory[3]), backgrounds[3]?backgrounds[3]:empty);
-        invoke_callback(icqlink,icq_MetaUserAffiliations)(icqlink, seq2, 
-			anum, acategory[0], affiliations[0], acategory[1],
-			affiliations[1], acategory[2], affiliations[2], 
-			acategory[3], affiliations[3], bnum, bcategory[0], 
-			backgrounds[0], bcategory[1], backgrounds[1],
-           	        bcategory[2], backgrounds[2], bcategory[3], 
-			backgrounds[3]);
+        invoke_callback(icqlink, icq_MetaUserAffiliations)(icqlink, seq2, anum, acategory[0],
+                                                           affiliations[0], acategory[1], affiliations[1],
+                                                           acategory[2], affiliations[2], acategory[3],
+                                                           affiliations[3], bnum, bcategory[0],
+                                                           backgrounds[0], bcategory[1], backgrounds[1],
+                                                           bcategory[2], backgrounds[2], bcategory[3],
+                                                           backgrounds[3]);
         for(i=0; i<bnum && i<4; i++)
           free(backgrounds[i]);
         for(i=0; i<anum && i<4; i++)
@@ -551,7 +570,7 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
         icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "META User Homepage Category: %i, %i - %s\n",
                    hnum, hcategory[0], hpcat[0]);
         invoke_callback(icqlink,icq_MetaUserHomePageCategory)(icqlink, seq2,
-			hnum, hcategory[0], hpcat[0]?hpcat[0]:empty);
+                                                              hnum, hcategory[0], hpcat[0]?hpcat[0]:empty);
         for(i=0; i<hnum && i<1; i++)
           free(hpcat[i]);
         break;
@@ -561,15 +580,14 @@ void icq_HandleMetaUserInfo(icq_Link *icqlink, icq_Packet *p)
       case META_SRV_RES_SECURE:
       case META_SRV_RES_PASS:
         icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "META success\n");
-        invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq2,
-			ICQ_NOTIFY_SUCCESS, sizeof(subcmd), &subcmd);
+        invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq2, ICQ_NOTIFY_SUCCESS,
+                                                   sizeof(subcmd), &subcmd);
         break;
       default:
         icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "META User - 0x%04X\n", subcmd);
         icq_PacketUDPDump(p);
         break;
     }
-  icq_UDPAck(icqlink, icq_PacketReadUDPInSeq1(p));
 }
 
 void icq_HandleMultiPacket(icq_Link *icqlink, icq_Packet *p)
@@ -599,22 +617,21 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
   int len;
   struct in_addr in_a;
   DWORD uin;
-  WORD year, type, seq, cmd;
+  WORD year, type, seq, cmd, ver;
   BYTE month, day, hour, minute;
 
   seq = icq_PacketReadUDPInSeq1(p);
   cmd = icq_PacketReadUDPInCmd(p);
+  ver = icq_PacketReadUDPInVer(p);
 
-  if(icq_PacketReadUDPInVer(p) == 5) /* We understand only V5 packets! */
+  if(ver == 5) /* We understand only V5 packets! */
   {
     switch(cmd)
     {
       case UDP_SRV_ACK:
         icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "The server acknowledged the command\n");
-        invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq, 
-			ICQ_NOTIFY_ACK, 0, 0);
-        invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq, 
-			ICQ_NOTIFY_SUCCESS, 0, 0);
+        invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq, ICQ_NOTIFY_ACK, 0, 0);
+        invoke_callback(icqlink,icq_RequestNotify)(icqlink, seq, ICQ_NOTIFY_SUCCESS, 0, 0);
         icq_UDPQueueDelSeq(icqlink, seq);
         break;
       case UDP_SRV_MULTI_PACKET:
@@ -637,6 +654,7 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
         icq_SendLogin1(icqlink);
         icq_SendContactList(icqlink);
         icq_SendVisibleList(icqlink);
+        icq_SendInvisibleList(icqlink);
         invoke_callback(icqlink,icq_Logged)(icqlink);
         break;
       case UDP_SRV_OFFLINE_MESSAGE: /* Offline message through the server */
@@ -649,27 +667,8 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
         minute = icq_PacketRead8(p);
         type = icq_PacketRead16(p);
         len = icq_PacketRead16(p);
-		{  //convert from ICQ time (GMT+1) to local time
-		  struct tm icqtm;
-		  time_t sentTime;
-		  icqtm.tm_sec=0;
-		  icqtm.tm_min=minute;
-		  icqtm.tm_hour=hour;
-		  icqtm.tm_isdst=-1;
-		  icqtm.tm_mday=day;
-		  icqtm.tm_mon=month-1;
-		  icqtm.tm_year=year-1900;
-		  sentTime=mktime(&icqtm)-_timezone;
-		  if(_timezone>0) sentTime-=3600;
-		  tm_str=localtime(&sentTime);
-		  year=tm_str->tm_year+1900;
-		  month=tm_str->tm_mon+1;
-		  day=tm_str->tm_mday;
-		  hour=tm_str->tm_hour;
-		  minute=tm_str->tm_min;
-		}
-        icq_DoMsg(icqlink, type, len, (char*)&p->data[p->cursor], uin, hour, minute, day, month, year);
         icq_UDPAck(icqlink, seq);
+        icq_DoMsg(icqlink, type, len, (char*)&p->data[p->cursor], uin, hour, minute, day, month, year);
         break;
       case UDP_SRV_X1: /* unknown message sent after login*/
         icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Acknowleged UDP_SRV_X1 (Begin messages)\n");
@@ -701,13 +700,23 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
         break;
       case UDP_SRV_GO_AWAY:
         icq_FmtLog(icqlink, ICQ_LOG_ERROR, "Server has forced us to disconnect\n");
-        if(icqlink->icq_Disconnected)
-          (*icqlink->icq_Disconnected)(icqlink);
+        icq_UDPAck(icqlink, seq);
+        invoke_callback(icqlink, icq_Disconnected)(icqlink);
         break;
       case UDP_SRV_END_OF_SEARCH:
         icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Search done\n");
-        invoke_callback(icqlink,icq_SearchDone)(icqlink);
         icq_UDPAck(icqlink, seq);
+        invoke_callback(icqlink, icq_SearchDone)(icqlink);
+        break;
+      case UDP_SRV_UPDATE_OK:
+        icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "User info successfully updated\n");
+        icq_UDPAck(icqlink, seq);
+        invoke_callback(icqlink, icq_UpdateSuccess)(icqlink);
+        break;
+      case UDP_SRV_UPDATE_FAIL:
+        icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "User info update failed\n");
+        icq_UDPAck(icqlink, seq);
+        invoke_callback(icqlink, icq_UpdateFailure)(icqlink);
         break;
       case UDP_SRV_USER_FOUND:
         icq_HandleSearchReply(icqlink, p);
@@ -719,27 +728,43 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
         uin = icq_PacketRead32(p);
         type = icq_PacketRead16(p);
         len = icq_PacketRead16(p);
+        icq_UDPAck(icqlink, seq);
         icq_DoMsg(icqlink, type, len, (char*)&p->data[p->cursor], uin, tm_str->tm_hour,
                   tm_str->tm_min, tm_str->tm_mday, tm_str->tm_mon+1, tm_str->tm_year+1900);
-        icq_UDPAck(icqlink, seq);
         break;
       case UDP_SRV_WRONG_PASSWORD:
         icq_FmtLog(icqlink, ICQ_LOG_ERROR, "Wrong password\n");
-        invoke_callback(icqlink,icq_WrongPassword)(icqlink);
         icq_UDPAck(icqlink, seq);
+        invoke_callback(icqlink,icq_WrongPassword)(icqlink);
         break;
       case UDP_SRV_INVALID_UIN:
         icq_FmtLog(icqlink, ICQ_LOG_WARNING, "Invalid UIN\n");
-        invoke_callback(icqlink,icq_InvalidUIN)(icqlink);
         icq_UDPAck(icqlink, seq);
+        invoke_callback(icqlink,icq_InvalidUIN)(icqlink);
         break;
       case UDP_SRV_META_USER:
         icq_HandleMetaUserInfo(icqlink, p);
         break;
       default: /* commands we dont handle yet */
         icq_FmtLog(icqlink, ICQ_LOG_WARNING, "Unhandled message %04x, Version: %x, "
-                   "Sequence: %04x, Size: %d\n", cmd, icq_PacketReadUDPInVer(p),
-                   seq, p->length);
+                   "Sequence: %04x, Size: %d\n", cmd, ver, seq, p->length);
+        icq_UDPAck(icqlink, seq); /* fake like we know what we're doing */
+        break;
+    }
+  }
+  else if(ver == 3) /* And some of V3... */
+  {
+    cmd = icq_PacketReadUDPInCmdV3(p);
+    switch(cmd)
+    {
+      case UDP_SRV_WRONG_PASSWORD:
+        icq_FmtLog(icqlink, ICQ_LOG_ERROR, "Wrong password\n");
+        icq_UDPAck(icqlink, seq);
+        invoke_callback(icqlink,icq_WrongPassword)(icqlink);
+        break;
+      default: /* commands we dont handle yet */
+        icq_FmtLog(icqlink, ICQ_LOG_WARNING, "Unhandled message %04x, Version: %x, "
+                   "Sequence: %04x, Size: %d\n", cmd, ver, seq, p->length);
         icq_UDPAck(icqlink, seq); /* fake like we know what we're doing */
         break;
     }
@@ -747,12 +772,7 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
   else
   {
     icq_FmtLog(icqlink, ICQ_LOG_WARNING, "Unhandled protocol version! Message %04x, Version: %x, "
-               "Sequence: %04x, Size: %d\n", cmd, icq_PacketReadUDPInVer(p),
-               seq, p->length);
-	if(icq_PacketReadUDPInVer(p)==3 && cmd==0x3c00) {
-		//I *think* this is a bad password, only a guess, though
-        invoke_callback(icqlink,icq_WrongPassword)(icqlink);
-	}
+               "Sequence: %04x, Size: %d\n", cmd, ver, seq, p->length);
 /*    icq_UDPAck(icqlink, seq);  DO NOT ACK unhandled protocol version! */
   }
 }
@@ -774,6 +794,7 @@ void icq_HandleServerResponse(icq_Link *icqlink)
     icq_FmtLog(icqlink, ICQ_LOG_FATAL, "Connection terminated\n");
     icq_Disconnect(icqlink);
     invoke_callback(icqlink,icq_Disconnected)(icqlink);
+    return;
   }
   seq = icq_PacketReadUDPInSeq1(p);
   cmd = icq_PacketReadUDPInCmd(p);

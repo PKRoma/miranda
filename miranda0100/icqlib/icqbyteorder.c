@@ -29,22 +29,24 @@
  * they are highly optimised on some platforms.
  * But as last resort this simple code is used.
  */
+
 #ifndef HAVE_BYTESWAP_H
 # ifndef bswap_32
 unsigned long bswap_32(unsigned long v)
 {
-    unsigned char c,*x=(unsigned char *)&v;
-    c=x[0];x[0]=x[3];x[3]=c;
-    c=x[1];x[1]=x[2];x[2]=c;
-    return v;
+  unsigned char c,*x=(unsigned char *)&v;
+  c=x[0];x[0]=x[3];x[3]=c;
+  c=x[1];x[1]=x[2];x[2]=c;
+  return v;
 }
 # endif
+
 # ifndef bswap_16
 unsigned short bswap_16(unsigned short v)
 {
-    unsigned char c,*x=(unsigned char *)&v;
-    c=x[0];x[0]=x[1];x[1]=c;
-    return v;
+  unsigned char c,*x=(unsigned char *)&v;
+  c=x[0];x[0]=x[1];x[1]=c;
+  return v;
 }
 # endif
 #endif
