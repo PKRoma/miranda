@@ -388,10 +388,10 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 
 int MsnFileResume( WPARAM wParam, LPARAM lParam )
 {
-	if ( !msnLoggedIn )
+	filetransfer* ft = ( filetransfer* )wParam;
+	if ( !msnLoggedIn || ft == NULL )
 		return 1;
 
-	filetransfer* ft = ( filetransfer* )wParam;
 	if ( ft->p2p_appID != 0 ) {
 		PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
 		if ( pfr->action == FILERESUME_RENAME ) {
