@@ -55,7 +55,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	dbei.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
-	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE)
+	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || (dbei.flags&DBEF_READ))
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
