@@ -1057,6 +1057,9 @@ var
 const
   FlashInterval=400;
 begin
+  if Self.Visible and Self.Active then
+    exit;
+    
   case fHandleIncoming of
     0://popup steal focus
       begin
