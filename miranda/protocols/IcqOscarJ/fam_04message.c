@@ -832,7 +832,8 @@ int TypeStringToTypeId(const char* pszType)
 
 
 	if (!strcmp(pszType, "Web Page Address (URL)") ||
-		!strcmp(pszType, "Send Web Page Address (URL)"))
+		!strcmp(pszType, "Send Web Page Address (URL)") ||
+		!strcmp(pszType, "Send URL"))
 	{
 		nTypeID = MTYPE_URL;
 	}
