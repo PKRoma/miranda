@@ -33,6 +33,7 @@ HMENU hMenuMain;
 static HANDLE hContactDraggingEvent,hContactDroppedEvent,hContactDragStopEvent;
 static int transparentFocus=1;
 HWND hwndContactTree;
+UINT uMsgProcessProfile;
 
 BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 BOOL (WINAPI *MyAnimateWindow)(HWND hWnd,DWORD dwTime,DWORD dwFlags);
@@ -109,6 +110,24 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		return result;
 	if(CallService(MS_CLIST_HOTKEYSPROCESSMESSAGE,(WPARAM)&m,(LPARAM)&result))
 		return result;
+	}
+
+	if ( msg == uMsgProcessProfile ) {
+		char profile[MAX_PATH];
+		int rc;
+		// wParam = (ATOM)hProfileAtom, lParam = 0
+		if ( GlobalGetAtomName((ATOM)wParam, profile, sizeof(profile)) ) {
+			char path[MAX_PATH];
+			char file[MAX_PATH];
+			char p[MAX_PATH];
+			CallService(MS_DB_GETPROFILEPATH,sizeof(path),(LPARAM)&path);
+			CallService(MS_DB_GETPROFILENAME,sizeof(file),(LPARAM)&file);
+			_snprintf(p,sizeof(p),"%s\\%s",path,file);
+			rc=lstrcmp(profile,p) == 0;
+			ReplyMessage(rc);
+			if ( rc ) ShowWindowAsync(hwnd,SW_SHOW);
+		}
+		return 0;
 	}
 
     switch (msg)
@@ -744,6 +763,8 @@ int LoadCLUIModule(void)
 	WNDCLASS wndclass;
 	DBVARIANT dbv;
 	char titleText[256];
+
+	uMsgProcessProfile=RegisterWindowMessage("Miranda::ProcessProfile");
 	
 	hUserDll = LoadLibrary("user32.dll");
 	if (hUserDll) {
