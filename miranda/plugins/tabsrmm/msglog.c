@@ -699,6 +699,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         {
 #if defined( _UNICODE )
             wchar_t *msg;
+            int lpi;
 #else
             BYTE *msg;
 #endif
@@ -711,27 +712,29 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
 #if defined( _UNICODE )
             {
-                int msglen = strlen((char *) dbei.pBlob) + 1;
+                int msglen = _mbslen((char *) dbei.pBlob) + 1;
                 if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                     dat->stats.lastReceivedChars = msglen - 1;
-                if (dbei.cbBlob >= (DWORD)(3 * msglen)) {         // FIXME!!! possible unicode issue?
-                    msg = (TCHAR *) & dbei.pBlob[msglen];
-                    //if(wcslen(msg) == (msglen - 1) && msg[msglen - 1] == (wchar_t)0x000) {
-                        if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
-                            TrimMessage(msg);
+                if (dbei.cbBlob >= (DWORD)(3 * msglen)) {
+                    msg = (wchar_t *) &dbei.pBlob[msglen];
+                    lpi = IS_TEXT_UNICODE_UNICODE_MASK;
+                    if(IsTextUnicode((void *)msg, 2 * msglen, &lpi)) {
+                        TrimMessage(msg);
                         if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
                             TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
                             AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
                         }
                         else
                             AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg, 0);
-                    //}
+                    }
+                    else
+                        goto nounicode;
                 }
                 else {
+nounicode:
                     msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
                     MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
-                    if(dat->dwEventIsShown & MWF_SHOW_EMPTYLINEFIX)
-                        TrimMessage(msg);
+                    TrimMessage(msg);
                     if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
                         TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);

@@ -411,13 +411,13 @@ BEGIN
     CONTROL         "Show status text on tabs",IDC_SHOWSTATUSONTAB,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,33,136,12
     CONTROL         "Warn on close message tab",IDC_WARNONCLOSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,46,288,10
-    LTEXT           "Vertical tab padding",IDC_STATIC,148,34,71,10
-    EDITTEXT        IDC_TABPADDING,226,32,30,12,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,46,139,10
+    LTEXT           "Vertical tab padding",IDC_STATIC,148,30,71,10
+    EDITTEXT        IDC_TABPADDING,226,27,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,31,11,
                     13
-    LTEXT           "pixel",IDC_STATIC,267,34,28,11
+    LTEXT           "pixel",IDC_STATIC,267,29,28,11
     GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,64
     CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,81,127,11
@@ -431,12 +431,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,138,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,149,145,11
-    LTEXT           "Tab control border",IDC_STATIC,154,138,74,12
-    EDITTEXT        IDC_TABBORDER,233,135,28,13,ES_AUTOHSCROLL
+    LTEXT           "Tab control border",IDC_STATIC,148,44,74,12
+    EDITTEXT        IDC_TABBORDER,226,41,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,127,
-                    11,13
-    LTEXT           "pixel",IDC_STATIC,268,138,31,10
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,248,33,11,
+                    13
+    LTEXT           "pixel",IDC_STATIC,262,44,31,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,303,60
     CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,174,141,12
@@ -464,6 +464,9 @@ BEGIN
                     6,110,289,10
     CONTROL         "Flat message log (no static edge)",IDC_FLATMSGLOG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,150,133,10
+    LTEXT           "Icon DLL",IDC_STATIC,153,134,39,11
+    EDITTEXT        IDC_ICONDLLNAME,187,132,79,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SELECTICONDLL,271,132,26,13
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147

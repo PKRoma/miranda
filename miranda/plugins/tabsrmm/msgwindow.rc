@@ -68,23 +68,23 @@ BEGIN
                     78,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
-    CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
+    CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,0,32,16,14,
                     0x18000000L
-    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,17,32,16,14,
+    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,16,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,33,32,10,14,
+    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,32,32,10,14,
                     0x18000000L
-    CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,44,32,16,14,
+    CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,43,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_FONTBOLD,"MButtonClass",WS_TABSTOP,60,32,16,14,
+    CONTROL         "",IDC_FONTBOLD,"MButtonClass",WS_TABSTOP,59,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_FONTITALIC,"MButtonClass",WS_TABSTOP,76,32,16,14,
+    CONTROL         "",IDC_FONTITALIC,"MButtonClass",WS_TABSTOP,75,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,92,32,16,
+    CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,91,32,16,
                     14,0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,34,25,
                     0x18000000L
-    CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,31,187,1,
+    CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
                     WS_EX_STATICEDGE
     CONTROL         "&Retry",IDC_RETRY,"MButtonClass",WS_TABSTOP,26,10,35,12
     CONTROL         "&Cancel",IDC_CANCELSEND,"MButtonClass",WS_TABSTOP,66,10,

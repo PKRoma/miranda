@@ -33,6 +33,7 @@ extern MYGLOBALS myGlobals;
 
 extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
+extern HMODULE g_hIconDLL;
 
 #if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
     extern HHOOK g_hMsgHook;
@@ -40,7 +41,8 @@ extern HINSTANCE g_hInst;
 #endif
 
 HMENU BuildContainerMenu();
-void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals();
+void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
+void CreateImageList(BOOL bInitial);
 
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
 static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -620,7 +622,9 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL translated;
-
+    DBVARIANT dbv;
+    static char szOldFileName[MAX_PATH];
+    
 	switch (msg) {
         case WM_INITDIALOG:
         {
@@ -662,6 +666,13 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
             CheckDlgButton(hwndDlg, IDC_HOTKEYSAREGLOBAL, DBGetContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", 0));
 
+            if(DBGetContactSetting(NULL, SRMSGMOD_T, "icondll", &dbv))
+                SetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, "plugins\\tabsrmm_icons.dll");
+            else {
+                SetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            GetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, szOldFileName, MAX_PATH);
             
          break;
             
@@ -692,6 +703,29 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                 case IDC_SETUPAUTOCREATEMODES:
                     CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hwndDlg, DlgProcSetupStatusModes);
                     break;
+                case IDC_SELECTICONDLL:
+                    {
+                        static char szFilename[MAX_PATH];
+                        OPENFILENAMEA ofn={0};
+                        char szFilter[MAX_PATH];
+
+                        strncpy(szFilter, "ICON DLLs_*.dll", MAX_PATH);
+                        szFilter[9] = '\0';
+                        ofn.lStructSize=sizeof(ofn);
+                        ofn.hwndOwner=0;
+                        ofn.lpstrFile = szFilename;
+                        ofn.lpstrFilter = szFilter;
+                        ofn.lpstrInitialDir = ".";
+                        ofn.nMaxFile = MAX_PATH;
+                        ofn.Flags = OFN_HIDEREADONLY;
+                        ofn.lpstrDefExt = "dll";
+                        if (GetOpenFileNameA(&ofn)) {
+                            char szNewFilename[MAX_PATH];
+                            //CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFilename, (LPARAM)szNewFilename);
+                            SetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, szFilename);
+                            DBWriteContactSettingString(NULL, SRMSGMOD_T, "icondll", szFilename);
+                        }
+                    }
             }
            
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -700,7 +734,10 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             switch (((LPNMHDR) lParam)->idFrom) {
                 case 0:
                     switch (((LPNMHDR) lParam)->code) {
-						case PSN_APPLY:
+                        case PSN_APPLY:
+                            {
+                            char szFilename[MAX_PATH];
+                            
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_WARNONCLOSE));
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 							DBWriteContactSettingWord(NULL, SRMSGMOD_T, "cut_at", (WORD) GetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, &translated, FALSE));
@@ -723,10 +760,20 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                             ReloadGlobals();
+                            GetDlgItemTextA(hwndDlg, IDC_ICONDLLNAME, szFilename, MAX_PATH);
+                            if(strncmp(szFilename, szOldFileName, MAX_PATH)) {
+                                DBWriteContactSettingString(NULL, SRMSGMOD_T, "icondll", szFilename);
+                                UncacheMsgLogIcons();
+                                UnloadIconTheme();
+                                FreeLibrary(g_hIconDLL);
+                                CreateImageList(FALSE);
+                                WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
+                            }
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
                             SendMessage(myGlobals.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
                             SendMessage(myGlobals.g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
 							return TRUE;
+                            }
                     }
             }
             break;

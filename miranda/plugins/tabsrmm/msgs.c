@@ -72,6 +72,7 @@ void CacheLogFonts();
 void ConvertAllToUTF8();
 void InitAPI();
 void ReloadGlobals();
+void LoadIconTheme();
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
@@ -1184,7 +1185,8 @@ void CreateImageList(BOOL bInitial)
     int i, j;
     HICON hIcon;
     int iCurIcon = 0;
-
+    HMODULE hIconDLL;
+    
     // enumerate available protocols... full protocol icon support 
 
     CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &myGlobals.g_nrProtos, (LPARAM) &pProtos);
@@ -1197,55 +1199,12 @@ void CreateImageList(BOOL bInitial)
         }
     }
 
-    if(bInitial) {
-        int cxIcon = GetSystemMetrics(SM_CXSMICON);
-        int cyIcon = GetSystemMetrics(SM_CYSMICON);
-        
-        g_hIconDLL = LoadLibraryA("plugins/tabsrmm_icons.dll");
-        if(g_hIconDLL == NULL)
-            g_hIconDLL = LoadLibraryA("icons/tabsrmm_icons.dll");
-        if(g_hIconDLL == NULL)
-            MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
-        else {
-            myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
-
-            myGlobals.g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
-            myGlobals.g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
-            myGlobals.g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_iconContainer = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTAINER), IMAGE_ICON, 0, 0, 0);
-            myGlobals.g_iconStatus = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_STATUSCHANGE), IMAGE_ICON, 0, 0, 0);
-            myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (myGlobals.g_nrProtos + 1) * 12 + 8, 0);
-            CacheMsgLogIcons();
-
-            // load button bar Icons
-
-            myGlobals.g_buttonBarIcons[0] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[1] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_HISTORY), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[2] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TIMESTAMP), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[3] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MULTISEND), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[4] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_USERMENU), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[5] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[6] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CLOSEMSGDLG), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[7] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SAVE), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[8] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_QUOTE), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[9] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[10] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTACTPIC), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[11] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SMILEYICON), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[12] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_ON), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[13] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_OFF), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[14] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_ENABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[15] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_DISABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[17] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTBOLD), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[18] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTITALIC), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[19] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTUNDERLINE), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[20] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTFACE), IMAGE_ICON, cxIcon, cyIcon, 0);
-            myGlobals.g_buttonBarIcons[21] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTCOLOR), IMAGE_ICON, cxIcon, cyIcon, 0);
-        }
-    }
+    if(bInitial)
+        myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (myGlobals.g_nrProtos + 1) * 12 + 8, 0);
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);
 
+    LoadIconTheme();
     // load global status icons...
     for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
         hIcon = LoadSkinnedProtoIcon(0, i);
@@ -1422,3 +1381,80 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned i
     NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe);
 }
 
+void LoadIconTheme()
+{
+    char szFilename[MAX_PATH];
+    DBVARIANT dbv;
+    HANDLE hFile;
+    int cxIcon = GetSystemMetrics(SM_CXSMICON);
+    int cyIcon = GetSystemMetrics(SM_CYSMICON);
+
+    if(DBGetContactSetting(NULL, SRMSGMOD_T, "icondll", &dbv))
+        strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
+    else {
+        strncpy(szFilename, dbv.pszVal, MAX_PATH);
+        DBFreeVariant(&dbv);
+    }
+
+    if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+        strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
+    else
+        CloseHandle(hFile);
+
+    
+    g_hIconDLL = LoadLibraryA(szFilename);
+
+    if(g_hIconDLL == NULL)
+        MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
+    else {
+        myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+
+        myGlobals.g_iconIn = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONIN), IMAGE_ICON, 0, 0, 0);
+        myGlobals.g_iconOut = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ICONOUT), IMAGE_ICON, 0, 0, 0);
+        myGlobals.g_iconErr = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_iconContainer = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTAINER), IMAGE_ICON, 0, 0, 0);
+        myGlobals.g_iconStatus = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_STATUSCHANGE), IMAGE_ICON, 0, 0, 0);
+        CacheMsgLogIcons();
+
+        // load button bar Icons
+
+        myGlobals.g_buttonBarIcons[0] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[1] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_HISTORY), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[2] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TIMESTAMP), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[3] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MULTISEND), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[4] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_USERMENU), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[5] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[6] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CLOSEMSGDLG), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[7] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SAVE), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[8] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_QUOTE), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[9] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[10] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CONTACTPIC), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[11] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SMILEYICON), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[12] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_ON), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[13] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SELFTYPING_OFF), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[14] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_ENABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[15] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_SECUREIM_DISABLED), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[17] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTBOLD), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[18] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTITALIC), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[19] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTUNDERLINE), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[20] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTFACE), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[21] = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_FONTCOLOR), IMAGE_ICON, cxIcon, cyIcon, 0);
+    }
+}
+
+void UnloadIconTheme()
+{
+    int i;
+    
+    for(i = 0; i < NR_BUTTONBARICONS; i++) {
+        if(myGlobals.g_buttonBarIcons[i] != 0)
+            DestroyIcon(myGlobals.g_buttonBarIcons[i]);
+    }
+    DestroyIcon(myGlobals.g_iconIn);
+    DestroyIcon(myGlobals.g_iconOut);
+    DestroyIcon(myGlobals.g_iconErr);
+    DestroyIcon(myGlobals.g_iconContainer);
+    DestroyIcon(myGlobals.g_iconStatus);
+    DeleteObject(myGlobals.g_hbmUnknown);
+}

@@ -173,7 +173,10 @@ Version 0.9.9.5 - 2005/02/17
           formatting code will ignore tags within words. Options->message log->Format whole words
           only. In general, this will ignore formatting "tags" (*/_) within words, which means
           that you can only format whole words.
-        
+          
+        + it's now possible to change the icon theme "on the fly". You can load a new icon .dll
+          under Options->Message Window->Tabs and layout. All icons will be updated "on the fly".
+          
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

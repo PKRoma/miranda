@@ -297,6 +297,9 @@
 #define IDC_STATUSGROUP                 1710
 #define IDC_CHECK9                      1711
 #define IDC_ALLOWSENDBUTTONHIDE         1711
+#define IDC_ICONDLLNAME                 1712
+#define IDC_BUTTON2                     1713
+#define IDC_SELECTICONDLL               1713
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -437,7 +440,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
 #define _APS_NEXT_COMMAND_VALUE         40193
-#define _APS_NEXT_CONTROL_VALUE         1712
+#define _APS_NEXT_CONTROL_VALUE         1714
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -204,7 +204,7 @@ struct ProtocolData {
 #define DM_PROTOACK          (WM_USER+54)
 #define DM_RETRIEVEAVATAR    (WM_USER+55)
 #define DM_CONFIGURETOOLBAR  (WM_USER+56)
-//#define DM_ALIGNSPLITTERFULL (WM_USER+57)
+#define DM_LOADBUTTONBARICONS (WM_USER+57)
 #define DM_PICTHREADCOMPLETE (WM_USER+58)
 #define DM_UINTOCLIPBOARD   (WM_USER+59)
 #define DM_INSERTICON        (WM_USER+60)
@@ -222,7 +222,7 @@ struct ProtocolData {
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 
-#define MINSPLITTERY         50
+#define MINSPLITTERY         52
 #define MINLOGHEIGHT         30
 
 // wParam values for DM_SELECTTAB

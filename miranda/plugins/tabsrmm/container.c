@@ -1206,8 +1206,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 GetWindowRect(hwndDlg, &rc);
                 SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, 0);
                 SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
-                RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME);
+                RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
                 UpdateWindow(hwndDlg);
+                //RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_FRAME);
+                //UpdateWindow(pContainer->hwndActive);
                 PostMessage(pContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
                 break;
             }
