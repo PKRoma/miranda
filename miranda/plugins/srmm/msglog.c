@@ -27,12 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mbstring.h>
 #include "msgs.h"
 
+extern HINSTANCE g_hInst;
+
 static int logPixelSY;
-#define LOGICON_MSG  0
-#define LOGICON_URL  1
-#define LOGICON_FILE 2
-static PBYTE pLogIconBmpBits[3];
+#define LOGICON_MSG_IN   0
+#define LOGICON_MSG_OUT  1
+static PBYTE pLogIconBmpBits[2];
 static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
+static HIMAGELIST g_hImageList;
 
 #define STREAMSTAGE_HEADER  0
 #define STREAMSTAGE_EVENTS  1
@@ -235,23 +237,11 @@ static char *SetToStyle(int style)
     return szStyle;
 }
 
-int DbEventIsShown(DBEVENTINFO * dbei)
+int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 {
-    if (dbei->flags & DBEF_SENT && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SPLIT, SRMSGDEFSET_SPLIT))
+    if (dbei->flags & DBEF_SENT && !dat->isSplit && dbei->eventType!=EVENTTYPE_MESSAGE)
         return 0;
-    switch (dbei->eventType) {
-        case EVENTTYPE_MESSAGE:
-            return 1;
-        case EVENTTYPE_URL:
-            if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS))
-                return 1;
-            break;
-        case EVENTTYPE_FILE:
-            if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES))
-                return 1;
-            break;
-    }
-    return 0;
+    return 1;
 }
 
 //free() the return value
@@ -268,11 +258,11 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         return NULL;
     dbei.pBlob = (PBYTE) malloc(dbei.cbBlob);
     CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
-    if (!DbEventIsShown(&dbei)) {
+    if (!DbEventIsShown(&dbei, dat)) {
         free(dbei.pBlob);
         return NULL;
     }
-    if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
+    if (!(dbei.flags & DBEF_SENT) && dbei.eventType == EVENTTYPE_MESSAGE) {
         CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
         CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
     }
@@ -284,18 +274,13 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     if (prefixParaBreak) {
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
     }
-    if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWLOGICONS, SRMSGDEFSET_SHOWLOGICONS)) {
+    if (dat->showIcons) {
         int i;
-        switch (dbei.eventType) {
-            case EVENTTYPE_URL:
-                i = LOGICON_URL;
-                break;
-            case EVENTTYPE_FILE:
-                i = LOGICON_FILE;
-                break;
-            default:
-                i = LOGICON_MSG;
-                break;
+        if (dbei.flags&DBEF_SENT) {
+            i = LOGICON_MSG_IN;
+        }
+        else {
+            i = LOGICON_MSG_OUT;
         }
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
         while (bufferAlloced - bufferEnd < logIconBmpSize[i])
@@ -308,7 +293,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         DBTIMETOSTRING dbtts;
         char str[64];
 
-        dbtts.szFormat = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE) ? "d t" : "s";
+        dbtts.szFormat = dat->showDate ? "d t" : "s";
         dbtts.cbDest = sizeof(str);
         dbtts.szDest = str;
         CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dbei.timestamp, (LPARAM) & dbtts);
@@ -316,7 +301,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", str);
         showColon = 1;
     }
-    if (!DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_HIDENAMES, SRMSGDEFSET_HIDENAMES)) {
+    if (!dat->hideNames) {
         char *szName;
         CONTACTINFO ci;
         ZeroMemory(&ci, sizeof(ci));
@@ -370,19 +355,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 
             break;
         }
-        case EVENTTYPE_URL:
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
-            AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob);
-            if ((dbei.pBlob + lstrlenA(dbei.pBlob) + 1) != NULL && lstrlenA(dbei.pBlob + lstrlenA(dbei.pBlob) + 1))
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, " (%s)", dbei.pBlob + lstrlenA(dbei.pBlob) + 1);
-            break;
-        case EVENTTYPE_FILE:
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYFILE : MSGFONTID_YOURFILE));
-            if ((dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1) != NULL && lstrlenA(dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1))
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s (%s)", dbei.pBlob + sizeof(DWORD), dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1);
-            else
-                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob + sizeof(DWORD));
-            break;
     }
     free(dbei.pBlob);
     return buffer;
@@ -476,14 +448,15 @@ void LoadMsgLogIcons(void)
     HBRUSH hBkgBrush;
     int rtfHeaderSize;
     PBYTE pBmpBits;
-
+    
+    g_hImageList = ImageList_Create(10, 10, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]), 0);
     hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
     bih.biSize = sizeof(bih);
     bih.biBitCount = 24;
     bih.biCompression = BI_RGB;
-    bih.biHeight = GetSystemMetrics(SM_CYSMICON);
+    bih.biHeight = 10;
     bih.biPlanes = 1;
-    bih.biWidth = GetSystemMetrics(SM_CXSMICON);
+    bih.biWidth = 10;
     widthBytes = ((bih.biWidth * bih.biBitCount + 31) >> 5) * 4;
     rc.top = rc.left = 0;
     rc.right = bih.biWidth;
@@ -492,16 +465,17 @@ void LoadMsgLogIcons(void)
     hBmp = CreateCompatibleBitmap(hdc, bih.biWidth, bih.biHeight);
     hdcMem = CreateCompatibleDC(hdc);
     pBmpBits = (PBYTE) malloc(widthBytes * bih.biHeight);
-    for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++) {
-        switch (i) {
-            case LOGICON_URL:
-                hIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
+    for (i=0; i<sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++) {
+        switch(i) {
+            case LOGICON_MSG_IN:
+                hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_INCOMING));
+                ImageList_AddIcon(g_hImageList, hIcon);
+                hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_IN, ILD_NORMAL);
                 break;
-            case LOGICON_FILE:
-                hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-                break;
-            default:
-                hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+            case LOGICON_MSG_OUT:
+                hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING));
+                ImageList_AddIcon(g_hImageList, hIcon);
+                hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_OUT, ILD_NORMAL);
                 break;
         }
         pLogIconBmpBits[i] = (PBYTE) malloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);
@@ -532,6 +506,8 @@ void LoadMsgLogIcons(void)
 void FreeMsgLogIcons(void)
 {
     int i;
-    for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++)
+    for (i=0; i<sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++)
         free(pLogIconBmpBits[i]);
+    ImageList_RemoveAll(g_hImageList);
+    ImageList_Destroy(g_hImageList);
 }

@@ -36,7 +36,7 @@ PLUGININFO pluginInfo = {
 #else
     "Send/Receive Messaging",
 #endif
-    PLUGIN_MAKE_VERSION(1, 0, 4, 3),
+    PLUGIN_MAKE_VERSION(2, 0, 0, 3),
     "Send and receive instant messages using a split mode or single mode interface.",
     "Miranda IM Development Team",
     "info@miranda-im.org",

@@ -270,6 +270,10 @@ SOURCE=..\..\src\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\incoming.ico
+# End Source File
+# Begin Source File
+
 SOURCE="..\..\Miranda-IM\res\multisend.ico"
 # End Source File
 # Begin Source File
@@ -279,6 +283,10 @@ SOURCE=.\res\Multisend32.ico
 # Begin Source File
 
 SOURCE=.\res\Multisend8.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\outgoing.ico
 # End Source File
 # Begin Source File
 

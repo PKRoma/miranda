@@ -68,6 +68,9 @@ struct MessageWindowData {
 	int showTypingWin;
 	HWND hwndStatus;
 	DWORD lastMessage;
+    int showIcons;
+    int showDate;
+    int hideNames;
 };
 
 #define HM_EVENTSENT         (WM_USER+10)
@@ -94,24 +97,20 @@ struct CREOleCallback {
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int DbEventIsShown(DBEVENTINFO *dbei);
+int DbEventIsShown(DBEVENTINFO *dbei, struct MessageWindowData *dat);
 void StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend);
 void LoadMsgLogIcons(void);
 void FreeMsgLogIcons(void);
 
 #define MSGFONTID_MYMSG		  0
-#define MSGFONTID_MYURL		  1
-#define MSGFONTID_MYFILE	  2
-#define MSGFONTID_YOURMSG	  3
-#define MSGFONTID_YOURURL	  4
-#define MSGFONTID_YOURFILE	  5
-#define MSGFONTID_MYNAME	  6
-#define MSGFONTID_MYTIME	  7
-#define MSGFONTID_MYCOLON	  8
-#define MSGFONTID_YOURNAME	  9
-#define MSGFONTID_YOURTIME	  10
-#define MSGFONTID_YOURCOLON	  11
-#define MSGFONTID_MESSAGEAREA 12
+#define MSGFONTID_YOURMSG	  1
+#define MSGFONTID_MYNAME	  2
+#define MSGFONTID_MYTIME	  3
+#define MSGFONTID_MYCOLON	  4
+#define MSGFONTID_YOURNAME	  5
+#define MSGFONTID_YOURTIME	  6
+#define MSGFONTID_YOURCOLON	  7
+#define MSGFONTID_MESSAGEAREA 8
 void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
 extern const int msgDlgFontCount;
 
@@ -160,18 +159,14 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_LOADTIME          "LoadTime"
 #define SRMSGDEFSET_LOADTIME       10
 
-#define SRMSGSET_SHOWLOGICONS      "ShowLogIcons"
-#define SRMSGDEFSET_SHOWLOGICONS   0
+#define SRMSGSET_SHOWLOGICONS      "ShowLogIcon"
+#define SRMSGDEFSET_SHOWLOGICONS   1
 #define SRMSGSET_HIDENAMES         "HideNames"
 #define SRMSGDEFSET_HIDENAMES      0
 #define SRMSGSET_SHOWTIME          "ShowTime"
 #define SRMSGDEFSET_SHOWTIME       0
 #define SRMSGSET_SHOWDATE          "ShowDate"
 #define SRMSGDEFSET_SHOWDATE       0
-#define SRMSGSET_SHOWURLS          "ShowURLs"
-#define SRMSGDEFSET_SHOWURLS       0
-#define SRMSGSET_SHOWFILES         "ShowFiles"
-#define SRMSGDEFSET_SHOWFILES      0
 #define SRMSGSET_BKGCOLOUR         "BkgColour"
 #define SRMSGDEFSET_BKGCOLOUR      GetSysColor(COLOR_WINDOW)
 

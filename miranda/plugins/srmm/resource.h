@@ -27,6 +27,8 @@
 #define IDI_MULTISEND32                 273
 #define IDI_USERDETAILS32               274
 #define IDD_OPT_MSGTYPE                 275
+#define IDI_INCOMING                    276
+#define IDI_OUTGOING                    277
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003
@@ -96,7 +98,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        276
+#define _APS_NEXT_RESOURCE_VALUE        278
 #define _APS_NEXT_COMMAND_VALUE         40019
 #define _APS_NEXT_CONTROL_VALUE         1608
 #define _APS_NEXT_SYMED_VALUE           101

@@ -8,7 +8,6 @@ About
 This Miranda IM plugin allows you to send and receive instant messages.
 
 
-
 Installation
 ------------
 Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
@@ -17,6 +16,11 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
+2.0.0.0
+ - Remove file and url events from message log
+ - Cache database reads when showing messages in the log
+ - Show separate incoming/outgoing icons for messages with "Show Icons" option
+
 1.0.4.2
  - Typing Notify options didn't enable/disable correctly
 
@@ -38,6 +42,11 @@ Changes
 1.0.1.0
  - Initial release
 
+Todo:
+ - Font size fixes (muldiv, http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_1wmq.asp)
+ - Cache fonts
+ - Add "old" event fonts
+ - Avatar support
 
 Support and bug reporting
 -------------------------

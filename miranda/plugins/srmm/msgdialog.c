@@ -165,7 +165,7 @@ static void SetDialogToType(HWND hwndDlg)
     SetWindowPlacement(hwndDlg, &pl);   //in case size is smaller than new minimum
 }
 
-static void UpdateReadNextButtonText(HWND hwndBtn, HANDLE hDbEventViewing)
+static void UpdateReadNextButtonText(HWND hwndBtn, HANDLE hDbEventViewing, struct MessageWindowData *dat)
 {
     int count;
     HANDLE hDbEvent;
@@ -179,7 +179,7 @@ static void UpdateReadNextButtonText(HWND hwndBtn, HANDLE hDbEventViewing)
         while (hDbEvent) {
             dbei.cbBlob = 0;
             CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
-            if (DbEventIsShown(&dbei))
+            if (DbEventIsShown(&dbei, dat))
                 count++;
             hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
         }
@@ -740,7 +740,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dbei.cbBlob = 0;
                             dat->hDbEventFirst = hPrevEvent;
                             CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
-                            if (!DbEventIsShown(&dbei))
+                            if (!DbEventIsShown(&dbei, dat))
                                 i++;
                         }
                         break;
@@ -893,6 +893,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
             }
             dat->showTime = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTIME, SRMSGDEFSET_SHOWTIME);
+            dat->showIcons = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWLOGICONS, SRMSGDEFSET_SHOWLOGICONS);
+            dat->showDate = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE);
+            dat->hideNames = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_HIDENAMES, SRMSGDEFSET_HIDENAMES);
             SendDlgItemMessage(hwndDlg, IDC_TIME, BUTTONSETASPUSHBTN, 0, 0);
             CheckDlgButton(hwndDlg, IDC_TIME, dat->showTime ? BST_CHECKED : BST_UNCHECKED);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
@@ -1100,7 +1103,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             if (!dat->isSplit) {
                 StreamInEvents(hwndDlg, dat->hDbEventFirst, 1, 0);
-                UpdateReadNextButtonText(GetDlgItem(hwndDlg, IDC_READNEXT), dat->hDbEventFirst);
+                UpdateReadNextButtonText(GetDlgItem(hwndDlg, IDC_READNEXT), dat->hDbEventFirst, dat);
             }
             else
                 StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0);
@@ -1109,7 +1112,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if (dat->isSend)
                 break;
             if (!dat->isSplit)
-                UpdateReadNextButtonText(GetDlgItem(hwndDlg, IDC_READNEXT), dat->hDbEventFirst);
+                UpdateReadNextButtonText(GetDlgItem(hwndDlg, IDC_READNEXT), dat->hDbEventFirst, dat);
             else
                 StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1);
             break;
@@ -1142,7 +1145,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->hDbEventFirst = (HANDLE) lParam;
                 if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
                     break;
-                if (DbEventIsShown(&dbei)) {
+                if (DbEventIsShown(&dbei, dat)) {
                     if (dbei.eventType == EVENTTYPE_MESSAGE && dat->hwndStatus && !(dbei.flags & (DBEF_SENT))) {
                         dat->lastMessage = dbei.timestamp;
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
@@ -1395,7 +1398,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             break;
                         dbei.cbBlob = 0;
                         CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
-                        if (DbEventIsShown(&dbei))
+                        if (DbEventIsShown(&dbei, dat))
                             break;
                     }
                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);

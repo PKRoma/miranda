@@ -9,7 +9,7 @@
 //
 #include <windows.h>
 #include <winres.h>
-#include <statusmodes.h>
+#include "../../include/statusmodes.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -189,18 +189,14 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,158,158
-    CONTROL         "Show file events",IDC_SHOWFILES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,13,146,10
-    CONTROL         "Show url events",IDC_SHOWURLS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,29,146,10
     CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,44,146,10
+                    WS_TABSTOP,10,12,146,10
     CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,60,146,10
+                    WS_TABSTOP,10,28,146,10
     CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,76,146,10
+                    WS_TABSTOP,10,44,146,10
     CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,21,92,135,10
+                    WS_TABSTOP,21,60,135,10
     GROUPBOX        "Fonts",IDC_STATIC,166,0,140,158
     LTEXT           "Background colour:",IDC_STATIC,176,16,81,8
     CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,258,14,39,12
@@ -350,7 +346,7 @@ END
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
-    "#include ""../../SDK/headers_c/statusmodes.h""\r\n"
+    "#include ""../../include/statusmodes.h""\r\n"
     "\0"
 END
 
@@ -383,6 +379,8 @@ IDI_DOWNARROW32         ICON    DISCARDABLE     "res/Downarrow32.ico"
 IDI_HISTORY32           ICON    DISCARDABLE     "res/History32.ico"
 IDI_MULTISEND32         ICON    DISCARDABLE     "res/Multisend32.ico"
 IDI_USERDETAILS32       ICON    DISCARDABLE     "res/Details32.ico"
+IDI_INCOMING            ICON    DISCARDABLE     "res\\incoming.ico"
+IDI_OUTGOING            ICON    DISCARDABLE     "res\\outgoing.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -43,11 +43,7 @@ struct FontOptionsList
 }
 static fontOptionsList[] = {
     {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-    {"Outgoing URLs", RGB(0, 0, 255), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-    {"Outgoing files", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
     {"Incoming messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-    {"Incoming URLs", RGB(0, 0, 255), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-    {"Incoming files", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
     {"Outgoing name", RGB(50, 56, 114), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
     {"Outgoing time", RGB(0, 0, 0), "Terminal", DEFAULT_CHARSET, FONTF_BOLD, -9},
     {"Outgoing colon", RGB(50, 56, 114), "Arial", DEFAULT_CHARSET, 0, -11},
@@ -65,28 +61,28 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
     DBVARIANT dbv;
 
     if (colour) {
-        wsprintfA(str, "Font%dCol", i);
+        wsprintfA(str, "SRMFont%dCol", i);
         *colour = DBGetContactSettingDword(NULL, SRMSGMOD, str, fontOptionsList[i].defColour);
     }
     if (lf) {
-        wsprintfA(str, "Font%dSize", i);
+        wsprintfA(str, "SRMFont%dSize", i);
         lf->lfHeight = (char) DBGetContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[i].defSize);
         lf->lfWidth = 0;
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
-        wsprintfA(str, "Font%dSty", i);
+        wsprintfA(str, "SRMFont%dSty", i);
         style = DBGetContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[i].defStyle);
         lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
         lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
         lf->lfUnderline = 0;
         lf->lfStrikeOut = 0;
-        wsprintfA(str, "Font%dSet", i);
+        wsprintfA(str, "SRMFont%dSet", i);
         lf->lfCharSet = DBGetContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[i].defCharset);
         lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-        wsprintfA(str, "Font%d", i);
+        wsprintfA(str, "SRMFont%d", i);
         if (DBGetContactSetting(NULL, SRMSGMOD, str, &dbv))
             lstrcpyA(lf->lfFaceName, fontOptionsList[i].szDefFace);
         else {
@@ -229,8 +225,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_SHOWTIMES, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTIME, SRMSGDEFSET_SHOWTIME));
             EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWDATES), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
             CheckDlgButton(hwndDlg, IDC_SHOWDATES, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE));
-            CheckDlgButton(hwndDlg, IDC_SHOWURLS, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS));
-            CheckDlgButton(hwndDlg, IDC_SHOWFILES, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES));
             SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
             SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
 
@@ -413,23 +407,21 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_HIDENAMES, (BYTE) ! IsDlgButtonChecked(hwndDlg, IDC_SHOWNAMES));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTIME, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWDATE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWDATES));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWURLS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWFILES));
                             DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
 
                             {
                                 int i;
                                 char str[32];
                                 for (i = 0; i < sizeof(fontOptionsList) / sizeof(fontOptionsList[0]); i++) {
-                                    wsprintfA(str, "Font%d", i);
+                                    wsprintfA(str, "SRMFont%d", i);
                                     DBWriteContactSettingString(NULL, SRMSGMOD, str, fontOptionsList[i].szFace);
-                                    wsprintfA(str, "Font%dSize", i);
+                                    wsprintfA(str, "SRMFont%dSize", i);
                                     DBWriteContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[i].size);
-                                    wsprintfA(str, "Font%dSty", i);
+                                    wsprintfA(str, "SRMFont%dSty", i);
                                     DBWriteContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[i].style);
-                                    wsprintfA(str, "Font%dSet", i);
+                                    wsprintfA(str, "SRMFont%dSet", i);
                                     DBWriteContactSettingByte(NULL, SRMSGMOD, str, fontOptionsList[i].charset);
-                                    wsprintfA(str, "Font%dCol", i);
+                                    wsprintfA(str, "SRMFont%dCol", i);
                                     DBWriteContactSettingDword(NULL, SRMSGMOD, str, fontOptionsList[i].colour);
                                 }
                             }
