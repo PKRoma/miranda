@@ -371,6 +371,15 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.SetHookDefaultForHookableEvent=SetHookDefaultForHookableEvent;
 	pluginCoreLink.CallServiceSync=CallServiceSync;
 	pluginCoreLink.CallFunctionAsync=CallFunctionAsync;	
+	// remember where the mirandaboot.ini goes
+	{
+		char exe[MAX_PATH];
+		char * slice;
+		GetModuleFileName(NULL, exe, sizeof(exe));
+		slice=strrchr(exe, '\\');
+		if ( slice != NULL ) *slice=0;
+		_snprintf(mirandabootini, sizeof(mirandabootini), "%s\\mirandaboot.ini", exe);
+	}
 	// look for all *.dll's
 	enumPlugins(scanPluginsDir, 0, 0);
 	// the database will select which db plugin to use, or fail if no profile is selected
@@ -421,8 +430,6 @@ int LoadNewPluginsModule(void)
 	GetModuleFileName(NULL, exe, sizeof(exe));
 	slice=strrchr(exe, '\\');
 	if ( slice != NULL ) *slice=0;
-	// remember where the boot.ini goes
-	_snprintf(mirandabootini, sizeof(mirandabootini), "%s\\mirandaboot.ini", exe);
 	// remember some useful options
 	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt("PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
 	// first load the clist cos alot of plugins need that to be present at Load()
