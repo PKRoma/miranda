@@ -62,8 +62,14 @@ int MsnSetStatus(WPARAM wParam,LPARAM lParam)
 	else {
 		if(!msnLoggedIn && !(msnStatusMode>=ID_STATUS_CONNECTING && msnStatusMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)) {
 			struct ThreadData *newThread;
+			DBVARIANT dbv;
 			newThread=(struct ThreadData*)malloc(sizeof(struct ThreadData));
-			strcpy(newThread->server,"messenger.hotmail.com");	//NB: msmsgs 3.60 hardcodes 64.4.13.33
+			if(DBGetContactSetting(NULL,MSNPROTONAME,"LoginServer",&dbv))
+				strcpy(newThread->server,MSN_DEFAULT_LOGIN_SERVER);
+			else {
+				lstrcpyn(newThread->server,dbv.pszVal,sizeof(newThread->server));
+				DBFreeVariant(&dbv);
+			}
 			newThread->type=SERVER_DISPATCH;
 			ProtoBroadcastAck(MSNPROTONAME,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)msnStatusMode,ID_STATUS_CONNECTING);
 			msnStatusMode=ID_STATUS_CONNECTING;

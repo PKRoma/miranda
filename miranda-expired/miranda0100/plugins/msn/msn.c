@@ -17,10 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "msn_global.h"
-//#include "resource.h"
 #include "../../miranda32/core/m_system.h"
 #include "../../miranda32/protocols/protocols/m_protomod.h"
 #include "../../miranda32/ui/contactlist/m_clist.h"
+#include "../../miranda32/ui/options/m_options.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -46,6 +46,7 @@ void Switchboards_Init(void);
 void Switchboards_Uninit(void);
 void MsgQueue_Init(void);
 void MsgQueue_Uninit(void);
+int MsnOptInit(WPARAM wParam,LPARAM lParam);
 
 volatile LONG msnLoggedIn;
 int msnStatusMode,msnDesiredStatus;
@@ -79,12 +80,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	pluginLink=link;
 
-	//DBWriteContactSettingString(NULL,MSNPROTONAME,"e-mail","");
-	/*{char pw[64]="";
-	 CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(pw),(LPARAM)pw);
-	DBWriteContactSettingString(NULL,MSNPROTONAME,"Password",pw);
-	}*/
-		
+	HookEvent(ME_OPT_INITIALISE,MsnOptInit);
+
 	ZeroMemory(&pd,sizeof(pd));
 	pd.cbSize=sizeof(pd);
 	pd.szName=MSNPROTONAME;
