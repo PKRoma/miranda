@@ -1,5 +1,0 @@
-LIBRARY 'talk.dll'
-EXPORTS
-	Load
-	Unload
-	Notify
