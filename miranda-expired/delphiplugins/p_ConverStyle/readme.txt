@@ -2,7 +2,7 @@ About
 -----
 
 Conversation Style Messaging Plugin 
-Version 0.996
+Version 0.997
 by Christian Kästner (christian.k@stner.de)
 for Miranda ICQ 0.1
 written with Delphi 5 Pro
@@ -94,6 +94,9 @@ For more information, e-mail christian.k@stner.de
 
 Changes
 -------
+
+0.997
+* fixed that Alt-Gr (right alt key) is not used for shortcuts, again
 
 0.996
 * Fixed multiple flashing on contactlist
