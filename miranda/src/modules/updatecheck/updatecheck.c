@@ -44,7 +44,7 @@ static void __cdecl _updatethread(void *unused) {
     nlhr.cbSize = sizeof(nlhr);
     nlhr.requestType = REQUEST_GET;
     nlhr.flags = NLHRF_DUMPASTEXT;
-    nlhr.szUrl = "http://miranda.sourceforge.net/testing/checkout.when";
+    nlhr.szUrl = "http://files.miranda-im.org/testing/checkout.when";
     nlreply = (NETLIBHTTPREQUEST *) CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&nlhr);
     if (nlreply) {
         if (nlreply->resultCode==200&&nlreply->dataLength) {
@@ -53,7 +53,7 @@ static void __cdecl _updatethread(void *unused) {
             if (!DBGetContactSetting(NULL, UC_MOD, "Result", &dbv)) {
                 if (strcmp(dbv.pszVal, nlreply->pData)) {
                     if (IDYES==MessageBox(0, Translate("A new test build is now available.\r\nWould you like to visit the Miranda Alpha Build site to download this update?"), Translate("Miranda Update Available"), MB_YESNO)) {
-                        CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.sourceforge.net/testing/");
+                        CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://files.miranda-im.org/testing/");
                     }
                     DBWriteContactSettingString(NULL, UC_MOD, "Result", nlreply->pData);
                     DBWriteContactSettingDword(NULL, UC_MOD, "LastSuccess", time(NULL));
@@ -80,7 +80,7 @@ static int UpdateModulesLoaded(WPARAM wParam, LPARAM lParam)
 	nlu.szDescriptiveName=Translate("Miranda Update Check connection");
 	hNetlibUser=(HANDLE)CallService(MS_NETLIB_REGISTERUSER,0,(LPARAM)&nlu);
     if (hNetlibUser) {
-        //forkthread(_updatethread, 0, NULL);
+        forkthread(_updatethread, 0, NULL);
     }
     return 0;
 }
