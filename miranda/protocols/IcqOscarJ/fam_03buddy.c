@@ -386,6 +386,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           if (dwJob)
           {
             char szAvatar[256];
+            int dwPaFormat;
 
             ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 
@@ -398,10 +399,20 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 				    cws.value.cpbVal = 0x14; //pTLV->wLen; // only 20 bytes useful
 				    dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
 
-            GetAvatarFileName(dwUIN, szAvatar, 255);
+            if (pTLV->pData[1] == 8)
+              dwPaFormat = PA_FORMAT_XML;
+            else 
+              dwPaFormat = PA_FORMAT_JPEG;
+            GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
             if (GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar)) 
             { // avatar request sent
-              DBWriteContactSettingString(hContact, "ContactPhoto", "File", szAvatar);
+              if (dwPaFormat == PA_FORMAT_JPEG)
+              {
+                DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
+                DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
+                if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szAvatar))
+                  Netlib_Logf(ghServerNetlibUser, "Avatar file could not be linked to mToolTip.");
+              }
             } 
           }
           else

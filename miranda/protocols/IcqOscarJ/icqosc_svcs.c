@@ -175,13 +175,19 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
   PROTO_AVATAR_INFORMATION* pai = (PROTO_AVATAR_INFORMATION*)lParam;
   int dwLocalUIN;
   DBVARIANT dbv;
+  int dwPaFormat;
 
   if (DBGetContactSetting(pai->hContact, gpszICQProtoName, "AvatarHash", &dbv))
     return GAIR_NOAVATAR; // we did not found avatar hash - no avatar available
 
   dwLocalUIN = DBGetContactSettingDword(pai->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-  GetAvatarFileName(dwLocalUIN, pai->filename, MAX_PATH);
-  pai->format = PA_FORMAT_JPEG; // we only support jpeg avatars by now
+  if (dbv.pbVal[1] == 8)
+    dwPaFormat = PA_FORMAT_XML;
+  else
+    dwPaFormat = PA_FORMAT_JPEG;
+
+  GetAvatarFileName(dwLocalUIN, dwPaFormat, pai->filename, MAX_PATH);
+  pai->format = dwPaFormat; // we only support jpeg avatars by now
 
   if (access(pai->filename, 0) == 0)
   {
@@ -190,7 +196,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
     return GAIR_SUCCESS; // we have found the avatar file, whoala
   }
 
-  if ((wParam&GAIF_FORCE) != 0 && pai->hContact != 0)
+  if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
   { // request avatar data
     GetAvatarData(pai->hContact, dwLocalUIN, dbv.pbVal, dbv.cpbVal, pai->filename);
     DBFreeVariant(&dbv);

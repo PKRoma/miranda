@@ -39,7 +39,7 @@
 
 extern BOOL AvatarsReady;
 
-void GetAvatarFileName(int dwUin, char* pszDest, int cbLen);
+void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen);
 
 int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen, char* file);
 int SetAvatarData(char* hash, unsigned int hashlen, char* data, unsigned int datalen);

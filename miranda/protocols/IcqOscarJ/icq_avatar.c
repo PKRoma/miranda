@@ -92,7 +92,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
 
 
-void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
+void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
 {
   int tPathLen;
 
@@ -105,7 +105,12 @@ void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
   if (dwUin != 0) 
   {
     ltoa(dwUin, pszDest + tPathLen, 10);
-    strcat(pszDest + tPathLen, ".jpg");
+    if (dwFormat == PA_FORMAT_JPEG)
+      strcat(pszDest + tPathLen, ".jpg");
+    else if (dwFormat == PA_FORMAT_XML)
+      strcat(pszDest + tPathLen, ".xml");
+    else
+      strcat(pszDest + tPathLen, ".dat");
   }
   else strcpy(pszDest + tPathLen, "avatar.jpg" );
 }
