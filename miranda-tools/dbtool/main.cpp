@@ -27,7 +27,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	hInst=hInstance;
 	InitCommonControls();
-	opts.bBackup=1;   //alpha: we really want this
 	DialogBox(hInst,MAKEINTRESOURCE(IDD_WIZARD),NULL,WizardDlgProc);
 	return 0;
 }

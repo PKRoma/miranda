@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK CleaningDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 
 BOOL CALLBACK FileAccessDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
@@ -42,14 +43,11 @@ BOOL CALLBACK FileAccessDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPar
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDC_BACK:
-					CloseHandle(opts.hFile);
 					SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_SELECTDB,(LPARAM)SelectDbDlgProc);
 					break;
 				case IDOK:
-					if(!opts.bCheckOnly && !opts.bBackup)
-						if(MessageBox(hdlg,"This is an ALPHA version of the database tool. Are you SURE you don't want to backup?","AlphaAlphaAlphaAlpha",MB_YESNO)==IDNO)
-							break;
-					SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_CLEANING,(LPARAM)CleaningDlgProc);
+					if(opts.bCheckOnly) SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_PROGRESS,(LPARAM)ProgressDlgProc);
+					else SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_CLEANING,(LPARAM)CleaningDlgProc);
 					break;
 				case IDC_CHECKONLY:
 					EnableWindow(GetDlgItem(hdlg,IDC_BACKUP),!IsDlgButtonChecked(hdlg,IDC_CHECKONLY));

@@ -92,7 +92,7 @@ BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				lvc.fmt=LVCFMT_LEFT;
 				lvc.pszText="Database";
 				ListView_InsertColumn(GetDlgItem(hdlg,IDC_DBLIST),0,&lvc);
-				lvc.cx=80;
+				lvc.cx=70;
 				lvc.fmt=LVCFMT_RIGHT;
 				lvc.pszText="Total size";
 				ListView_InsertColumn(GetDlgItem(hdlg,IDC_DBLIST),1,&lvc);
@@ -133,6 +133,7 @@ BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				if(i==-1) i=0;
 				ListView_SetItemState(GetDlgItem(hdlg,IDC_DBLIST),i,LVIS_SELECTED,LVIS_SELECTED);
 			}
+			if(opts.hFile!=NULL && opts.hFile!=INVALID_HANDLE_VALUE) CloseHandle(opts.hFile);
 			return TRUE;
 		}
 		case WZN_PAGECHANGING:

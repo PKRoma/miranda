@@ -9,14 +9,11 @@ fixing inconsistencies that may have been introduced.
 To keep it simple and robust, Miranda will not by itself reclaim any blank
 space created by deleting information from its profile databases, so this tool
 will do that for you. It can also fix some problems that may occur in rare
-circumstances.
+circumstances. Since it also re-writes the database in a more sensible order
+(a bit like defragmenting your hard disk) you may find that you get a speed
+improvement in Miranda by running your database through this tool.
 
-ALPHA RELEASE: It is strongly recommended that you leave the 'backup' option
-enabled and run databases through a consistency check once they have been
-processed.
-
-The newest version of this tool will eventually be available on the Miranda
-website, but I want to thoroughly check its bug-freeness first.
+The newest version of this tool is available on the Miranda website.
 
 Todo: There is no support for any command line parameters to allow for
 unattended operation yet, and it would be helpful if there was better

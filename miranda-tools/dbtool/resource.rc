@@ -211,8 +211,6 @@ BEGIN
     LTEXT           "",IDC_BACKUPFILE,56,76,193,8,SS_NOPREFIX
     LTEXT           "The processing of the database has been completed. Click Next to return to the start of the wizard to select another database to check, or click Finish to exit the wizard.",
                     IDC_STATIC,23,38,226,24
-    LTEXT           "ALPHA: It is strongly recommend that you run the same database through a consistency check again.",
-                    IDC_STATIC,23,120,226,16,WS_BORDER
 END
 
 
@@ -325,13 +323,13 @@ IDI_PROFILERED          ICON    FIXED IMPURE    "res\\profiler.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,0,0
- PRODUCTVERSION 0,1,0,0
+ FILEVERSION 0,1,1,0
+ PRODUCTVERSION 0,1,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x21L
+ FILEFLAGS 0x1L
 #else
- FILEFLAGS 0x20L
+ FILEFLAGS 0x0L
 #endif
  FILEOS 0x40004L
  FILETYPE 0x1L
@@ -344,15 +342,15 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", " \0"
             VALUE "FileDescription", "Miranda Database Tool\0"
-            VALUE "FileVersion", "0.1.0.0 alpha\0"
+            VALUE "FileVersion", "0.1.1.0\0"
             VALUE "InternalName", "dbtool\0"
             VALUE "LegalCopyright", "Copyright © 2001 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "dbtool.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Miranda Database Tool\0"
-            VALUE "ProductVersion", "0.1.0.0 alpha\0"
-            VALUE "SpecialBuild", "alpha\0"
+            VALUE "ProductVersion", "0.1.1.0\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
