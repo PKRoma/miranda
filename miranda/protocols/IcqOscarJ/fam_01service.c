@@ -73,7 +73,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 		// This tells the server which SNAC families and their corresponding
 		// versions which the client understands. This also seems to identify
 		// the client as an ICQ vice AIM client to the server.
-		// Miranda mimics the behaviour of 2003b (haven't changed since at least 2002a)
+		// Miranda mimics the behaviour of icq5 (haven't changed since at least 2002a)
 		packet.wLen = 50;
 		write_flap(&packet, 2);
 		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES<<0x10);
@@ -149,7 +149,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       ack = (servlistcookie*)malloc(sizeof(servlistcookie));
       if (ack)
       { // we try to use standalone cookie if available
-        ack->dwAction = 0; // loading list
+        ack->dwAction = SSA_CHECK_ROSTER; // loading list
         ack->dwUin = 0; // init content
         dwCookie = AllocateCookie(ICQ_LISTS_CLI_CHECK, 0, ack);
       }
@@ -158,9 +158,16 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
       packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, dwCookie);
       // check if it was not changed elsewhere (force reload, set that setting to zero)
-      packDWord(&packet, dwLastUpdate);  // last saved time
-      packWord(&packet, wRecordCount);   // number of records saved
-
+      if (IsServerGroupsDefined())
+      {
+        packDWord(&packet, dwLastUpdate);  // last saved time
+        packWord(&packet, wRecordCount);   // number of records saved
+      }
+      else
+      { // we need to get groups info into DB, force receive list
+        packDWord(&packet, 0);  // last saved time
+        packWord(&packet, 0);   // number of records saved
+      }
       sendServPacket(&packet);
     }
 
@@ -409,7 +416,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
     Netlib_Logf(ghServerNetlibUser, "Received our avatar hash & status.");
 
-    if (wBufferLength >= 0x14)
+    if ((wBufferLength >= 0x14) && gbAvatarsEnabled)
     {
       switch (pBuffer[2])
       {
@@ -795,7 +802,7 @@ void handleServUINSettings(int nPort, int nIP)
 		packDWord(&packet, WEBFRONTPORT);   // Web front port
 		packDWord(&packet, CLIENTFEATURES); // Client features
 		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x80030401);     // Abused timestamp
+		packDWord(&packet, 0x80030402);     // Abused timestamp
 		packDWord(&packet, 0x00000000);     // Timestamp
 		packWord(&packet, 0x0000);          // Unknown
 
