@@ -66,7 +66,11 @@ static char* getNewUuid()
 	return result;
 }
 
-static int sttCreateListener( filetransfer* ft, pThreadFunc thrdFunc, char* szBody, size_t cbBody )
+static int sttCreateListener( 
+	ThreadData* info, 
+	filetransfer* ft, 
+	pThreadFunc thrdFunc, 
+	char* szBody, size_t cbBody )
 {
 	char ipaddr[256];
 	if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr )) {
@@ -91,6 +95,7 @@ static int sttCreateListener( filetransfer* ft, pThreadFunc thrdFunc, char* szBo
 		newThread->mType = SERVER_FILETRANS;
 		newThread->mCaller = 3;
 		newThread->mP2pSession = ft;
+		newThread->mParentThread = info;
 		strncpy( newThread->mCookie, ( char* )szUuid, sizeof newThread->mCookie );
 		ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
@@ -351,7 +356,8 @@ bool p2p_connectTo( ThreadData* info )
 			MSN_DebugLog( "Connection Failed (%d): %s", err.mErrorCode, err.getText() );
 		}
 
-		MSN_PingParentThread( info->mParentThread, ft );
+		if ( ft->std.sending )
+			MSN_PingParentThread( info->mParentThread, ft );
 		return false;
 	}
 
@@ -389,10 +395,12 @@ bool p2p_listen( ThreadData* info )
 {
 	filetransfer* ft = info->mP2pSession;
 
-	switch( WaitForSingleObject( ft->hWaitEvent, 60000 )) {
+	switch( WaitForSingleObject( ft->hWaitEvent, 5000 )) {
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
 		MSN_DebugLog( "Incoming connection timed out, closing file transfer" );
+		if ( ft->std.sending )
+			MSN_PingParentThread( info->mParentThread, ft );
 LBL_Error:
 		MSN_DebugLog( "File transfer failed" );
 		return false;
@@ -882,7 +890,7 @@ static void sttInitDirectTransfer(
 	char szBody[ 512 ];
 	int  cbBodyLen = 0;
 	if ( bActAsServer )
-		cbBodyLen = sttCreateListener( ft, ( pThreadFunc )p2p_filePassiveRecvThread, szBody, sizeof szBody );
+		cbBodyLen = sttCreateListener( info, ft, ( pThreadFunc )p2p_filePassiveRecvThread, szBody, sizeof szBody );
 
 	if ( !cbBodyLen )
 		cbBodyLen = _snprintf( szBody, sizeof szBody, 
@@ -1018,7 +1026,7 @@ LBL_Close:
 
 		// can we be a server?
 		if ( bAllowIncoming )
-			cbBody = sttCreateListener( ft, ( pThreadFunc )p2p_fileActiveSendThread, szBody, 1024 );
+			cbBody = sttCreateListener( info, ft, ( pThreadFunc )p2p_fileActiveSendThread, szBody, 1024 );
 
 		// no, send a file via server
 		if ( cbBody == 0 ) {
@@ -1031,7 +1039,7 @@ LBL_Close:
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transreqbody" )) {
 		// can we be a server?
 		if ( bAllowIncoming )
-			cbBody = sttCreateListener( ft, ( pThreadFunc )p2p_fileActiveSendThread, szBody, 1024 );
+			cbBody = sttCreateListener( info, ft, ( pThreadFunc )p2p_fileActiveSendThread, szBody, 1024 );
 
 		// no, send a file via server
 		if ( cbBody == 0 ) {
