@@ -22,7 +22,8 @@
 
 ; Menus
 
-[&Block/Unblock]
+[&Block]
+[&Unblock]
 [Display Hotmail &Inbox]
 [&Invite to chat]
 [Set &Nickname]
