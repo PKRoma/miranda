@@ -46,22 +46,21 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP,0,48,144,30,WS_EX_ACCEPTFILES |
                     WS_EX_STATICEDGE
 #endif
-    CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
+    CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,146,32,24,14,
                     0x18000000L
-    PUSHBUTTON      "Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "",IDC_SENDMENU,"MButtonClass",WS_TABSTOP,170,32,10,14,
+                    0x18000000L
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,1,
                     WS_EX_STATICEDGE
-    CONTROL         "&P",IDC_PIC,"MButtonClass",WS_TABSTOP,84,32,16,14,
+    CONTROL         "&P",IDC_PIC,"MButtonClass",WS_TABSTOP,90,32,16,14,
                     0x18000000L
-    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,100,32,16,14,
+    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,106,32,16,14,
                     0x18000000L
-    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,116,32,16,14,
+    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,122,32,16,14,
                     0x18000000L
-    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,132,32,16,14,
+    CONTROL         "&Q",IDC_QUOTE,"MButtonClass",WS_TABSTOP,138,32,16,14,
                     0x18000000L
-    CONTROL         "&Q",IDC_QUOTE,"MButtonClass",WS_TABSTOP,148,32,16,14,
-                    0x18000000L
-    CONTROL         "",IDC_SAVE,"MButtonClass",WS_TABSTOP,164,32,16,14,
+    CONTROL         "",IDC_SAVE,"MButtonClass",WS_TABSTOP,154,32,16,14,
                     0x18000000L
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
@@ -101,6 +100,7 @@ BEGIN
     ICON            "",IDC_ADDICON,2,18,16,14,SS_CENTERIMAGE
     CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,135,18,50,14,
                     0x18000000L
+    ICON            "",IDC_MULTIPLEICON,0,64,16,14,SS_CENTERIMAGE
 END
 
 #endif    // Neutral resources

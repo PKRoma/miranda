@@ -786,6 +786,13 @@ BEGIN
                                                 ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
 
     END
+    POPUP "Sendmenu"
+    BEGIN
+        MENUITEM "Send &Default",               ID_SENDMENU_SENDDEFAULT
+        MENUITEM "Send to &multiple Users",     ID_SENDMENU_SENDTOMULTIPLEUSERS
+
+        MENUITEM "Send to &Container",          ID_SENDMENU_SENDTOCONTAINER
+    END
 END
 
 #endif    // Englisch (USA) resources

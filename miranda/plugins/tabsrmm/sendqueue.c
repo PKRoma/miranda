@@ -153,7 +153,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     if(dat->hAckEvent == 0)
         dat->hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_EVENTSENT);
     */
-    if (dat->multiple) {            // implement multiple later...
+    if (dat->sendMode & SMODE_MULTIPLE) {            // implement multiple later...
         HANDLE hContact, hItem;
         //ClearSendJob(iEntry);
         //_DebugMessage(hwndDlg, dat, "Multisend is temporarily disabled because of drastic changes to the send queue system");

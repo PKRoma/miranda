@@ -13,6 +13,30 @@ SF.NET Project Page: http://www.sourceforge.net/projects/tabsrmm/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.6 - 2005/02/23
+
+        ! flicker-free formatting button update
+        
+        ! changed multisend UI a bit. There is now a new button just right of the send button.
+          It's called "send menu" and looks like a small dropdown toolbar button. If you click
+          it (hotkey is Ctrl-S) a menu will open, allowing you to set the sending mode. 3 
+          modes are available at the moment:
+          1) Default (send to contact only).
+          2) Send to multiple Users - will open the multisend window, allowing you to choose
+             up to 20 contacts.
+          3) Send to container - this replaces the /all command (which didn't work well with 
+             the new message input box code anyway) and will send the message to all tabs
+             in the current container.
+             
+          More "sending modes" may be added in the future.
+          
+          The old multisend button is gone, however, if you are in *any* multisend mode, an
+          icon will appear left of the input box, indicating that the message you are typing
+          *may* be sent to more than a single contact.
+
+        ! applying any options does no longer hide the error controls, if the window/tab is in
+          "error state".
+          
 Version 0.9.9.5a - 2005/02/22
 
         Bugfix release only.

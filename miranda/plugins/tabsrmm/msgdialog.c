@@ -95,10 +95,10 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 
 static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
-static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_MULTIPLE, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE};
+static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE, IDC_SENDMENU};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
-static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_MULTIPLE, IDC_FONTUNDERLINE, IDC_PROTOCOL, -1 };
+static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_PROTOCOL, IDC_FONTUNDERLINE, IDC_HISTORY, -1 };
 static const UINT controlsToHide1[] = { IDOK, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
 static const UINT addControls[] = { IDC_ADDICON, IDC_ADDTEXT, IDC_ADD };
 
@@ -194,10 +194,10 @@ void SetDialogToType(HWND hwndDlg)
     } else {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), SW_HIDE);
         ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), SW_HIDE);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), showToolbar ? SW_SHOW : SW_HIDE);
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), FALSE);
     }
 
+    ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
+    
 #if defined(_RELEASE_BUILD)
     EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), FALSE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_PROTOMENU), SW_HIDE);
@@ -211,12 +211,8 @@ void SetDialogToType(HWND hwndDlg)
 	} else
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
 // IEVIew MOD End
-    ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), SW_HIDE);
+    ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), dat->dwFlags & MWF_ERRORSTATE ? SW_SHOW : SW_HIDE);
     
-    if (showToolbar) {
-        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), SW_SHOW);
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), TRUE);
-    }
 // smileybutton stuff...
     
     if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled) {
@@ -271,8 +267,8 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
     ShowWindow(GetDlgItem(hwndDlg, IDOK), showToolbar ? SW_SHOW : SW_HIDE);
 
-    ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), dat->multiple ? SW_SHOW : SW_HIDE);
-    ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), dat->multiple ? SW_SHOW : SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
     
     EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
         
@@ -321,7 +317,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         CheckDlgButton(GetParent(hwnd), IDC_FONTUNDERLINE, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTUNDERLINE) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
                         SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTUNDERLINE, IDC_MESSAGE), 0);
                         return 0;
+                    case 19:
+                        PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDMENU, 0);
+                        return 0;
                 }
+                break;
             }
         case WM_KEYUP:
             break;
@@ -456,7 +456,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_KILLFOCUS:
             break;
         case WM_SYSCHAR:
-            if(VkKeyScan((TCHAR)wParam) == 'S' && GetKeyState(VK_MENU) && 0x8000) {
+            if(VkKeyScan((TCHAR)wParam) == 'S' && GetKeyState(VK_MENU) & 0x8000) {
                 if (!(GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)) {
                     PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                     return 0;
@@ -471,6 +471,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 else
                     iIndex = bChar - (BYTE)'0';
                 SendMessage(mwdat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_BY_INDEX, (LPARAM)iIndex);
+                return 0;
             }
             break;
         case WM_SYSKEYDOWN:
@@ -578,7 +579,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_DETAILS:
         case IDC_HISTORY:
         case IDC_TIME:
-        case IDC_MULTIPLE:
         case IDC_QUOTE:
         case IDC_SAVE:
         case IDC_RETRY:
@@ -605,6 +605,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, -(dat->pic.cx + 2 + 3), 0);
 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+        case IDC_MULTIPLEICON:
+            return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_ADDTEXT:
         case IDC_ADDICON:
         case IDC_ADD:
@@ -618,7 +620,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_LOG:
             if(dat->dwFlags & MWF_ERRORSTATE)
                 urc->rcItem.top += 38;
-            if (dat->multiple)
+            if (dat->sendMode & SMODE_MULTIPLE)
                 urc->rcItem.right -= (dat->multiSplitterX + 3);
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (!showToolbar)
@@ -641,14 +643,15 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.left=urc->rcItem.right-(dat->pic.cx +2);
             return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
         case IDC_MESSAGE:
-            {
-                urc->rcItem.right = urc->dlgNewSize.cx;
-                if (dat->showPic)
-                    urc->rcItem.right -= dat->pic.cx+4;
-                urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
-                return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-            }
+            urc->rcItem.right = urc->dlgNewSize.cx;
+            if (dat->showPic)
+                urc->rcItem.right -= dat->pic.cx+4;
+            urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
+            if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
+                urc->rcItem.left += 26;
+            return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDOK:
+        case IDC_SENDMENU:
             OffsetRect(&urc->rcItem, 12, 0);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
@@ -876,7 +879,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
                 
-                SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
@@ -900,7 +902,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_TIME), BUTTONADDTOOLTIP, (WPARAM) Translate("Message Log Options"), 0);
-                SendMessage(GetDlgItem(hwndDlg, IDC_MULTIPLE), BUTTONADDTOOLTIP, (WPARAM) Translate("Send Message to Multiple Users"), 0);
+                SendMessage(GetDlgItem(hwndDlg, IDC_SENDMENU), BUTTONADDTOOLTIP, (WPARAM) Translate("Send Menu"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_QUOTE), BUTTONADDTOOLTIP, (WPARAM) Translate("Quote Text"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_PIC), BUTTONADDTOOLTIP, (WPARAM) Translate("Avatar Options"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_SMILEYBTN), BUTTONADDTOOLTIP, (WPARAM) Translate("Insert Emoticon"), 0);
@@ -1024,10 +1026,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwFlags &= ~MWF_INITMODE;
                 
                 
-                if (dat->hContact == NULL) {
-                    CheckDlgButton(hwndDlg, IDC_MULTIPLE, BST_CHECKED);
-                    SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_MULTIPLE, BN_CLICKED), 0);
-                }
                 {
                     DBEVENTINFO dbei = { 0};
                     HANDLE hdbEvent;
@@ -1238,8 +1236,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetDialogToType(hwndDlg);
             dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
             dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
-            dat->iButtonBarNeeds += (dat->showUIElements) ? 34 : 0;
-            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 128 : 88) : 0);
+            dat->iButtonBarNeeds += (dat->showUIElements) ? 28 : 0;
+            dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 122 : 82) : 0);
             if(lParam == 1) {
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
@@ -1250,13 +1248,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_LOADBUTTONBARICONS:
             SendDlgItemMessage(hwndDlg, IDC_HISTORY, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[1]);
             SendDlgItemMessage(hwndDlg, IDC_TIME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[2]);
-            SendDlgItemMessage(hwndDlg, IDC_MULTIPLE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[3]);
+            SendDlgItemMessage(hwndDlg, IDC_SENDMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
             SendDlgItemMessage(hwndDlg, IDC_QUOTE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[8]);
             SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[6]);
             SendDlgItemMessage(hwndDlg, IDC_PIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[10]);
             SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[9]);
             SendDlgItemMessage(hwndDlg, IDC_STATICERRORICON, STM_SETICON, (WPARAM)myGlobals.g_iconErr, 0);
             SendDlgItemMessage(hwndDlg, IDC_ADDICON, STM_SETICON, (WPARAM)myGlobals.g_buttonBarIcons[0], 0);
+            SendDlgItemMessage(hwndDlg, IDC_MULTIPLEICON, STM_SETICON, (WPARAM)myGlobals.g_buttonBarIcons[3], 0);
             SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
             SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[17]);
             SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[18]);
@@ -1664,13 +1663,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     RECT rcRichEdit;
                     POINT pt;
                     IEVIEWWINDOW ieWindow;
-//                    int  exw, exh;
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
                     pt.x = rcRichEdit.left;
                     pt.y = rcRichEdit.top;
                     ScreenToClient(hwndDlg, &pt);
-    //                exw = urc->dlgNewSize.cx;// / 2 - 3;
-    //                exh = urc->dlgNewSize.cy - dat->splitterY;//(urc->rcItem.bottom-urc->rcItem.top) * urc->dlgNewSize.cy / urc->dlgOriginalSize.cy;
                     ieWindow.cbSize = sizeof(IEVIEWWINDOW);
                     ieWindow.iType = IEW_SETPOS;
                     ieWindow.parent = hwndDlg;
@@ -1680,7 +1676,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
                     ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
                     CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
-                    //urc->rcItem.left += exw;
                 }
                 // IEVIew MOD End
                 break;
@@ -2416,15 +2411,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             switch (LOWORD(wParam)) {
                 case IDOK:
                     {
-                    //this is a 'send' button
                     int bufSize;
-                    char *allTmp;
                     char *streamOut = NULL;
                     TCHAR *decoded = NULL, *converted = NULL;
-#if defined(_UNICODE)
-                    TCHAR *allTmpW;
-                    //GETTEXTEX gtx;
-#endif                    
                     
                     if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
                         break;
@@ -2474,38 +2463,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->sendBuffer[0] == 0)
                         break;
 
-// BEGIN /all /MOD, contributed by JdGordon
-#define SEND2ALLTEXT Translate("/all")
-                    if (!strncmp(dat->sendBuffer,SEND2ALLTEXT, strlen(SEND2ALLTEXT))) {
+                    if (dat->sendMode & SMODE_CONTAINER && dat->pContainer->hwndActive == hwndDlg && GetForegroundWindow() == dat->pContainer->hwnd) {
                         HWND contacthwnd;
                         TCITEM tci;
                         BOOL bOldState;
-                        int tabCount = TabCtrl_GetItemCount(hwndTab), i, chars2add=0;
-                        
-                        allTmp = (char *)malloc(bufSize + 1);
-                        // copy the msg to temp
-                        strcpy(allTmp, dat->sendBuffer);
-                        // stop idiots from doing /all/all/all....
-                        while(!strncmp(&allTmp[strlen(SEND2ALLTEXT)+chars2add],SEND2ALLTEXT,strlen(SEND2ALLTEXT)))
-                           chars2add += strlen(SEND2ALLTEXT);
-                        // copy it back without the /all
-                        strcpy(dat->sendBuffer, &allTmp[strlen(SEND2ALLTEXT)+chars2add]);
-                        // no tabs... break and send normally
-#ifdef _UNICODE
-#define SEND2ALLTEXTW (_T("/all"))
-                        allTmpW = (TCHAR *)malloc((bufSize + 1) * sizeof(TCHAR));
-                        lstrcpyW(allTmpW, (TCHAR *)&dat->sendBuffer[bufSize]);
-                        // stop idiots from doing /all/all/all....
-                        while(!wcsncmp(&allTmpW[lstrlenW(SEND2ALLTEXTW) + chars2add], SEND2ALLTEXTW, lstrlenW(SEND2ALLTEXTW)))
-                           chars2add += lstrlenW(SEND2ALLTEXTW);
-                        // copy it back without the /all
-                        lstrcpyW((TCHAR *)&dat->sendBuffer[strlen(dat->sendBuffer) + 1], &allTmpW[lstrlenW(SEND2ALLTEXTW) + chars2add]);
-                        free(allTmpW);
-#endif
-                        free(allTmp);
-                        if (!tabCount)
-                           break;
+                        int tabCount = TabCtrl_GetItemCount(hwndTab), i;
+                        char *szFromStream = NULL;
 
+#if defined(_UNICODE)
+                        szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
+#else
+                        szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
+#endif
                         ZeroMemory((void *)&tci, sizeof(tci));
                         tci.mask = TCIF_PARAM;
    
@@ -2516,13 +2485,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                            if (IsWindow(contacthwnd)) {   
                               // if the contact hwnd is the current contact then ignore it and let the normal code deal with the msg
                               if (contacthwnd != hwndDlg) {
-                                 SETTEXTEX stx = {ST_DEFAULT, 1200};
-                                 // send the buffer to the contacts msg typing area
-#ifdef _UNICODE
-                                 SendDlgItemMessage(contacthwnd, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&dat->sendBuffer[strlen(dat->sendBuffer) + 1]);
+#if defined(_UNICODE)
+                                 SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
 #else
-                                 SetDlgItemTextA(contacthwnd, IDC_MESSAGE, (char*)dat->sendBuffer);
-#endif                                     
+                                 SETTEXTEX stx = {ST_DEFAULT, CP_ACP};
+#endif                                 
+                                 // send the buffer to the contacts msg typing area
+                                 SendDlgItemMessage(contacthwnd, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szFromStream);
                                  // enable the IDOK
                                  bOldState = IsWindowEnabled(GetDlgItem(contacthwnd, IDOK));
                                  EnableWindow(GetDlgItem(contacthwnd,IDOK), 1);
@@ -2533,6 +2502,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                               }
                            }
                         }
+                        if(szFromStream)
+                            free(szFromStream);
                     }
 // END /all /MOD
                     if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
@@ -2613,23 +2584,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         } else {
 #ifdef _UNICODE
                             wchar_t *converted = 0;
-                            /*
-                            gtx.cb = ((sel.cpMax - sel.cpMin) + 1) * sizeof(TCHAR);
-                            gtx.codepage = 1200;
-                            gtx.flags = GT_SELECTION | GT_DEFAULT;
-                            gtx.lpDefaultChar = 0;
-                            gtx.lpUsedDefChar = 0;
-                            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)szText);
-                            */
                             szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SF_USECODEPAGE|SFF_SELECTION);
-                            /*
-                            i=0;
-                            while(szText[i]) {
-                                if(szText[i] == 0x0b)
-                                    szText[i] = '\r';
-                                i++;
-                            }*/
-                            
                             szQuoted = QuoteText(Utf8Decode(szFromStream), 64, 0);
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
                             // SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
@@ -2637,14 +2592,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             free(szFromStream);
 #else
                             szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SFF_SELECTION);
-                            /*
-                            SendDlgItemMessageA(hwndDlg,IDC_LOG,EM_GETSELTEXT,0,(LPARAM)szText);
-                            i = 0;
-                            while(szText[i]) {
-                                if(szText[i] == 0x0b)
-                                    szText[i] = '\r';
-                                i++;
-                            }*/
                             szQuoted=QuoteText(szFromStream, 64, 0);
                             SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
                             free(szQuoted);
@@ -2749,15 +2696,39 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     break;
                 }
-                case IDC_MULTIPLE: {
+                case IDC_SENDMENU: {
                     RECT rc;
-
-                    dat->multiple = IsDlgButtonChecked(hwndDlg, IDC_MULTIPLE);
+                    HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 3);
+                    int iSelection;
+                    
+                    GetWindowRect(GetDlgItem(hwndDlg, IDC_SENDMENU), &rc);
+                    CheckMenuItem(submenu, ID_SENDMENU_SENDTOMULTIPLEUSERS, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE ? MF_CHECKED : MF_UNCHECKED));
+                    CheckMenuItem(submenu, ID_SENDMENU_SENDDEFAULT, MF_BYCOMMAND | (dat->sendMode == 0 ? MF_CHECKED : MF_UNCHECKED));
+                    CheckMenuItem(submenu, ID_SENDMENU_SENDTOCONTAINER, MF_BYCOMMAND | (dat->sendMode & SMODE_CONTAINER ? MF_CHECKED : MF_UNCHECKED));
+                    
+                    iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                    
+                    switch(iSelection) {
+                        case ID_SENDMENU_SENDTOMULTIPLEUSERS:
+                            dat->sendMode ^= SMODE_MULTIPLE;
+                            break;
+                        case ID_SENDMENU_SENDDEFAULT:
+                            dat->sendMode = 0;
+                            break;
+                        case ID_SENDMENU_SENDTOCONTAINER:
+                            dat->sendMode ^= SMODE_CONTAINER;
+                            break;
+                    }
+                    //dat->multiple = IsDlgButtonChecked(hwndDlg, IDC_MULTIPLE);
+                    if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
+                        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
+                    else
+                        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
                     SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                    ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), dat->multiple ? SW_SHOW : SW_HIDE);
-                    ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), dat->multiple ? SW_SHOW : SW_HIDE);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
                     break;
                     }
                 case IDC_ADD:
@@ -2884,13 +2855,40 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             CHARFORMAT2 cf2;
 
                             if(msg == WM_LBUTTONDOWN || msg == WM_KEYUP || msg == WM_LBUTTONUP) {
+                                int bBold = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD);
+                                int bItalic = IsDlgButtonChecked(hwndDlg, IDC_FONTITALIC);
+                                int bUnder = IsDlgButtonChecked(hwndDlg, IDC_FONTUNDERLINE);
+                                
                                 cf2.cbSize = sizeof(CHARFORMAT2);
                                 cf2.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE;
                                 cf2.dwEffects = 0;
                                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-                                CheckDlgButton(hwndDlg, IDC_FONTBOLD, cf2.dwEffects & CFE_BOLD ? BST_CHECKED : BST_UNCHECKED);
-                                CheckDlgButton(hwndDlg, IDC_FONTITALIC, cf2.dwEffects & CFE_ITALIC ? BST_CHECKED : BST_UNCHECKED);
-                                CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, cf2.dwEffects & CFE_UNDERLINE ? BST_CHECKED : BST_UNCHECKED);
+                                if(cf2.dwEffects & CFE_BOLD) {
+                                    if(bBold == BST_UNCHECKED)
+                                        CheckDlgButton(hwndDlg, IDC_FONTBOLD, BST_CHECKED);
+                                }
+                                else {
+                                    if(bBold == BST_CHECKED)
+                                        CheckDlgButton(hwndDlg, IDC_FONTBOLD, BST_UNCHECKED);
+                                }
+                                
+                                if(cf2.dwEffects & CFE_ITALIC) {
+                                    if(bItalic == BST_UNCHECKED)
+                                        CheckDlgButton(hwndDlg, IDC_FONTITALIC, BST_CHECKED);
+                                }
+                                else {
+                                    if(bItalic == BST_CHECKED)
+                                        CheckDlgButton(hwndDlg, IDC_FONTITALIC, BST_UNCHECKED);
+                                }
+                                
+                                if(cf2.dwEffects & CFE_UNDERLINE) {
+                                    if(bUnder == BST_UNCHECKED)
+                                        CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, BST_CHECKED);
+                                }
+                                else {
+                                    if(bUnder == BST_CHECKED)
+                                        CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, BST_UNCHECKED);
+                                }
                             }
                             switch (msg) {
                                 case WM_LBUTTONDOWN:
@@ -3717,11 +3715,6 @@ verify:
 // XXX end mod
             TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
             
-            if (dat)
-                free(dat);
-            else
-                MessageBoxA(0,"dat == 0 in WM_DESTROY", "Warning", MB_OK);
-            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
             // IEVIew MOD Begin
             if (myGlobals.g_WantIEView || dat->hwndLog != 0) {
                 IEVIEWWINDOW ieWindow;
@@ -3732,6 +3725,11 @@ verify:
             }
             // IEVIew MOD End
 
+            if (dat)
+                free(dat);
+            else
+                MessageBoxA(0,"dat == 0 in WM_DESTROY", "Warning", MB_OK);
+            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
             break;
     }
     return FALSE;

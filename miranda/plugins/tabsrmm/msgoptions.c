@@ -338,6 +338,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_FORMATTING, dwFlags & MWF_LOG_TEXTFORMAT);
             CheckDlgButton(hwndDlg, IDC_SYMBOLS, dwFlags & MWF_LOG_SYMBOLS);
             CheckDlgButton(hwndDlg, IDC_FORMATWHOLEWORDSONLY, DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatwords", 0));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATWHOLEWORDSONLY), IsDlgButtonChecked(hwndDlg, IDC_FORMATTING));
             
             CheckDlgButton(hwndDlg, IDC_MSGLOGPLUGIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0));
             
@@ -393,6 +394,9 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case IDC_GROUPMODE:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP), IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE));
                     break;
+                case IDC_FORMATTING:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATWHOLEWORDSONLY), IsDlgButtonChecked(hwndDlg, IDC_FORMATTING));
+                    break;
             }
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
@@ -421,7 +425,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                       (IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE) ? MWF_LOG_GROUPMODE : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_RELATIVEDATES) ? MWF_LOG_USERELATIVEDATES : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_LONGDATES) ? MWF_LOG_LONGDATES : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG) ? MWF_LOG_INDIVIDUALBKG : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_INDENTWITHTABS) ? MWF_LOG_INDENTWITHTABS : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_FORMATTING) ? MWF_LOG_TEXTFORMAT : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS) ? MWF_LOG_SYMBOLS : 0) |

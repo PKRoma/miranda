@@ -45,6 +45,10 @@
 #define MWF_SHOW_MARKFOLLOWUPTS 32
 #define MWF_SHOW_FLASHCLIST 64
 
+#define SMODE_DEFAULT 0
+#define SMODE_MULTIPLE 1
+#define SMODE_CONTAINER 2
+
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
 	TCHAR szName[CONTAINER_NAMELEN + 4];		// container name
@@ -115,7 +119,7 @@ struct MessageWindowData {
 	// IEVIew MOD End
     HWND hwnd;
 	HANDLE hDbEventFirst,hDbEventLast;
-	int multiple;
+	int sendMode;
 	HBRUSH hBkgBrush, hInputBkgBrush;
 	int splitterY, originalSplitterY, dynaSplitter;
 	int multiSplitterX;

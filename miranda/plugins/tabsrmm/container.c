@@ -426,9 +426,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     return 0;
                 case ID_VIEW_SHOWMULTISENDCONTACTLIST:
-                    CheckDlgButton(pContainer->hwndActive, IDC_MULTIPLE, dat->multiple ? BST_UNCHECKED : BST_CHECKED);
-                    SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_MULTIPLE, BN_CLICKED), 0);
-                    RedrawWindow(GetDlgItem(pContainer->hwndActive, IDC_MULTIPLE), NULL, NULL, RDW_INVALIDATE);
+                    //CheckDlgButton(pContainer->hwndActive, IDC_MULTIPLE, dat->multiple ? BST_UNCHECKED : BST_CHECKED);
+                    //SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_MULTIPLE, BN_CLICKED), 0);
+                    //RedrawWindow(GetDlgItem(pContainer->hwndActive, IDC_MULTIPLE), NULL, NULL, RDW_INVALIDATE);
 //                    PostMessage(pContainer->hwndActive, WM_COMMAND, IDC_MULTIPLE, 0);
                     break;
                 case ID_VIEW_STAYONTOP:
@@ -1101,7 +1101,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckMenuItem(hMenu, ID_VIEW_SHOWTOOLBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_HIDETOOLBAR ? MF_UNCHECKED : MF_CHECKED);
             
             EnableMenuItem(hMenu, ID_TITLEBAR_SHOWSTATUS, pContainer->dwFlags & CNT_TITLE_SHOWNAME);
-            CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | dat->multiple ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE) ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
 
             CheckMenuItem(hMenu, ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS, MF_BYCOMMAND | pContainer->dwFlags & (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE) ? MF_UNCHECKED : MF_CHECKED);

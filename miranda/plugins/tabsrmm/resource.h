@@ -32,11 +32,12 @@
 #define IDC_AUTOCLOSE                   1004
 #define IDC_AUTOMIN                     1005
 #define IDC_TIME                        1006
-#define IDC_MULTIPLE                    1007
+#define IDC_SENDMENU                    1007
 #define IDC_QUOTE                       1008
 #define IDC_NAME                        1009
 #define IDC_CLOSE                       1010
 #define IDC_SAVE                        1010
+#define IDC_MULTIPLEICON                1011
 #define IDC_CONTACTPIC                  1012
 #define IDC_ST_ENTERMSG                 1013
 #define IDC_SPLITTER                    1017
@@ -432,6 +433,9 @@
 #define ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS 40184
 #define ID_MESSAGEICONS_USEINCOMING     40185
 #define ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH 40191
+#define ID_SENDMENU_SENDDEFAULT         40193
+#define ID_SENDMENU_SENDTOMULTIPLEUSERS 40194
+#define ID_SENDMENU_SENDTOCONTAINER     40195
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -439,7 +443,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40193
+#define _APS_NEXT_COMMAND_VALUE         40196
 #define _APS_NEXT_CONTROL_VALUE         1714
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
