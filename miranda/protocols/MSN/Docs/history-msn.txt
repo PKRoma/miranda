@@ -7,6 +7,8 @@ Legend:
 Version 0.4.0.1
 ===============
 [+] wish #0000971 fixed: Block & Unblock actions must be separated
+[+] wish #0000966 fixed: to show the warning when a  contact  tries
+to establish a audio/video/webcam conference with you.
 [-] removed support for old versions of Miranda.
 [!] fixes for minor string allocation problems.
 
