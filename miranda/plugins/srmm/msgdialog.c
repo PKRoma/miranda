@@ -914,7 +914,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			else
 				lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
-			GetWindowText(hwndDlg, oldtitle, sizeof(oldtitle));
+			GetWindowTextA(hwndDlg, oldtitle, sizeof(oldtitle));
 			if (lstrcmpA(newtitle, oldtitle)) { //swt() flickers even if the title hasn't actually changed
 				SetWindowTextA(hwndDlg, newtitle);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
