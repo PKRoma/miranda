@@ -76,6 +76,8 @@ type
     procedure FormResize(Sender: TObject);
     procedure TabEnterWorkAroundBtnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure WMMenuChar(var MessageRec: TWMMenuChar);message WM_MENUCHAR;
   private
     HistoryMemo:TWinControl;//basic class for memo, richedit and grid
   private//options
@@ -1314,7 +1316,7 @@ procedure TMsgWindow.SendMemoKeyUp(Sender: TObject; var Key: Word;
 begin
   if fSingleEnter and (fEnterCount=1) then
     begin
-    key:=0;
+    key:=0;                                                           
     if SendBtn.Enabled then
       SendBtnClick(Sender);
     end;
@@ -1327,11 +1329,41 @@ begin
     end;
 end;
 
+var
+  lSetKeyNull:Boolean;//to avoid the beep
+
 procedure TMsgWindow.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   Mask: Integer;
 begin
+  lSetKeyNull:=False;
+
+  //STRG+ENTER and STRG+S shortcut for sending
+  if ((key in [ord('s'),ord('S')]) and (ssCtrl in Shift)) or
+    ((key = vk_return) and ((ssCtrl in Shift) or (ssAlt in Shift))) then
+    begin
+    key:=0;
+    lSetKeyNull:=True;
+    if SendBtn.Enabled then
+      SendBtnClick(Sender);
+    end;
+
+  //ALT Shortcuts
+  if (ssAlt in Shift) then
+    begin
+    if key in [ord('s'),ord('S')] then
+      if SendBtn.Enabled then
+        SendBtnClick(Sender);
+    if key in [ord('u'),ord('U')] then
+      UserBtn.Click;
+    if key in [ord('c'),ord('C')] then
+      CancelBtn.Click;
+    key:=0;
+    lSetKeyNull:=True;
+    end;
+
+
   with Sender as TWinControl do
     begin
       if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
@@ -1351,6 +1383,26 @@ begin
     end;
 end;
 
+//both routines to kill the beep
+procedure TMsgWindow.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  If lSetKeyNull then
+          begin
+          Key:= #0;
+          lSetKeyNull:= False;
+          end;
+end;
+procedure TMsgWindow.WMMenuChar(var MessageRec: TWMMenuChar);
+begin
+  inherited;
+  if lSetKeyNull then begin
+    MessageRec.Result := MakeLong(0, 1);
+    lSetKeyNull := false;
+  end;
+end;
+
+
+
 procedure TMsgWindow.OnCNChar(var Message: TWMChar);
 begin
   if not (csDesigning in ComponentState) then
@@ -1368,7 +1420,7 @@ end;
 procedure TMsgWindow.FormKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  //STRG+ENTER and STRG+S shortcut for sending
+{  //STRG+ENTER and STRG+S shortcut for sending
   if ((key = ord('S')) and (Shift=[ssCtrl])) or
     ((key = vk_return) and ((ssCtrl in Shift) or (ssAlt in Shift))) then
     begin
@@ -1377,7 +1429,8 @@ begin
       SendBtnClick(Sender);
     end;
 
-  if Shift=[ssAlt] then
+  if key in [ord('s'),Ord('S')] then
+    if Shift=[ssAlt] then
     begin
     if key in [ord('s'),Ord('S')] then
       if SendBtn.Enabled then
@@ -1387,7 +1440,7 @@ begin
     if key=Ord('C') then
       CancelBtn.Click;
     key:=0;
-    end;
+    end;   }
 end;
 
 
@@ -1489,5 +1542,6 @@ begin
   PluginLink.CallService(MS_CLIST_REMOVEEVENT,dword(hContact),dword(blinkid));
   fFlashingContactList:=False;
 end;
+
 
 end.

@@ -21,6 +21,7 @@ object MsgWindow: TMsgWindow
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  OnKeyPress = FormKeyPress
   OnKeyUp = FormKeyUp
   OnResize = FormResize
   OnShow = FormShow
