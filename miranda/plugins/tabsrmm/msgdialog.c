@@ -432,9 +432,13 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
             else {
                 if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
                     if(startThread && dat->hThread == 0) {
-                        dat->hThread = CreateThread(NULL, 0, LoadPictureThread, (LPVOID)hwndDlg, 0, &dwThreadId);
+                        dat->showPic = 0;
+                        ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), SW_HIDE);
                         SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                        SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                        SendMessage(hwndDlg, WM_SIZE, 0, 0);
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+                        dat->hThread = CreateThread(NULL, 0, LoadPictureThread, (LPVOID)hwndDlg, 0, &dwThreadId);
                         DBFreeVariant(&dbv);
                         return;
                     }
@@ -1970,19 +1974,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  * attempt to fix splitter troubles..
                  * hardcoded limits... better solution is possible, but this works for now
                  */
+                    if (dat->splitterY > ((rc.bottom - rc.top) - 50))    // splitter top limit
+                        dat->splitterY = oldSplitterY;
                     if (dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
                         int iOffset = (dat->showUIElements == 0) ? 28 : 0;
                         if (dat->splitterY < (dat->bottomOffset + iOffset) || dat->splitterY < MINSPLITTERY)
                             dat->splitterY = oldSplitterY;
                     } else {
                         // handle dynamic resizing of picture while splitter is moving...
-                        dat->dynaSplitter = (rc.bottom - pt.y) - 8;
-                        SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                        if (dat->splitterY < MINSPLITTERY)           // min splitter size
+                        if (dat->splitterY <= MINSPLITTERY)           // min splitter size
                             dat->splitterY = oldSplitterY;
+                        else if (dat->splitterY > ((rc.bottom - rc.top) - 50))
+                            dat->splitterY = oldSplitterY;
+                        else {
+                            dat->dynaSplitter = (rc.bottom - pt.y) - 8;
+                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                        }
                     }
-                    if (dat->splitterY > ((rc.bottom - rc.top) - 50))    // splitter top limit
-                        dat->splitterY = oldSplitterY;
                 }
                 SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
                 break;
@@ -3059,8 +3067,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 // BEGIN MOD#33: Show contact's picture
                 case IDC_CONTACTPIC:
                     SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
-                    if(GetWindowLong(hwndDlg, DWL_MSGRESULT) == 0)
+                    if(GetWindowLong(hwndDlg, DWL_MSGRESULT) == 0) {
                         ShowPicture(hwndDlg,dat,TRUE,TRUE,TRUE);
+                        if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
+                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                        }
+                    }
                     break;
 // END MOD#33
                 case IDM_CLEAR:
@@ -3585,6 +3601,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 CloseHandle(dat->hThread);
                 dat->hThread = 0;
                 ShowPicture(hwndDlg, dat, FALSE, TRUE, FALSE);
+                if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
+                    SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                    SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                }
             }
             break;
         case DM_UINTOCLIPBOARD:
@@ -3656,6 +3679,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai_s.filename);
                         DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai_s.filename);
                         ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                        if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
+                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                        }
                     }
                 }
                 SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);

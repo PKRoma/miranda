@@ -212,6 +212,13 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
                         DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
                         ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                        if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
+                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+                            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                        }
                     }
                 }
                 return 0;
