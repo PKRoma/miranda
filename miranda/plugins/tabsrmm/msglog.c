@@ -970,6 +970,11 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 #endif            
         }
     }
+    /*
+     * do text formatting...
+     */
+    FormatText(hwndrtf, startAt, 0);
+    
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
@@ -1098,8 +1103,7 @@ WCHAR *Utf8Decode(const char *str)
 			wszTemp[i++] |= (*(p++) & 0x3f);
 		}
 	}
-	wszTemp[i] = '\0';
-
+	wszTemp[i] = (WCHAR)'\0';
 	return wszTemp;
 }
 

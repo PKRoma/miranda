@@ -804,7 +804,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
-                //dat->hNewEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
                 dat->hBkgBrush = NULL;
                 dat->hInputBkgBrush = NULL;
                 dat->hDbEventFirst = NULL;
@@ -1890,7 +1889,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 if(iIndex < NR_SENDJOBS) {      // single sendjob timer
                     KillTimer(hwndDlg, wParam);
-                    //_DebugPopup(dat->hContact, "timeout for: %d (index: %d)", dat->hContact, iIndex);
                     _snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
                     sendJobs[iIndex].iStatus = SQ_ERROR;
                     if(!(dat->dwFlags & MWF_ERRORSTATE))
@@ -1980,16 +1978,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             int iLen = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
                             int iOffset = 0;
                             char *szMessage = (char *)malloc(iLen + 10);
-                            /*
-                        	if (!DBGetContactSetting(dat->hContact, "buddypounce", "PounceMsg",&dbv))
-                        	{
-                                if(lstrlenA(dbv.pszVal) > 0) {
-                                    szMessage[0] = '\r';
-                                    szMessage[1] = '\n';
-                                    iOffset = 2;
-                                }
-                        		DBFreeVariant(&dbv);
-                            } */
                             if(szMessage) {
                                 char *szNote = "The message has been successfully queued for later delivery.";
                                 DBEVENTINFO dbei;
@@ -2004,10 +1992,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 dbei.pBlob = (PBYTE) szNote;
                                 StreamInEvents(hwndDlg,  0, 1, 1, &dbei);
                                 SkinPlaySound("SendMsg");
-                                if (dat->hDbEventFirst == NULL) {
-                                    //dat->hDbEventFirst = hNewEvent;
+                                if (dat->hDbEventFirst == NULL)
                                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                                }
                                 SendMessage(hwndDlg, DM_SAVEINPUTHISTORY, 0, 0);
                                 EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 
@@ -2423,9 +2409,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     //this is a 'send' button
                     int bufSize;
                     char *allTmp;
+                    char *streamOut;
 #if defined(_UNICODE)
                     TCHAR *allTmpW;
                     GETTEXTEX gtx;
+                    TCHAR *decoded = NULL, *converted = NULL;
 #endif                    
                     
                     if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
@@ -2433,17 +2421,38 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
                     
-                    bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
-                    dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
-                    GetDlgItemTextA(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
 #if defined( _UNICODE )
                     gtx.cb = bufSize * sizeof(TCHAR);
                     gtx.codepage = 1200;
                     gtx.flags = GT_USECRLF;
                     gtx.lpDefaultChar = 0;
                     gtx.lpUsedDefChar = 0;
-                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
-#endif
+                    
+                    //SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
+                    streamOut = Message_GetFromStream(hwndDlg, dat);
+                    decoded = Utf8Decode(streamOut);
+                    //MessageBoxW(0, decoded, L"decoded", MB_OK);
+                    converted = (TCHAR *)malloc((_tcslen(decoded) + 2)* sizeof(TCHAR));
+                    _tcscpy(converted, decoded);
+                    DoRtfToTags(converted, dat);
+                    DoTrimMessage(converted);
+                    //MessageBoxW(0, converted, L"foo", MB_OK);
+                    bufSize = WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, 0, 0, 0);
+                    dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
+                    WideCharToMultiByte(CP_ACP, 0, converted, -1, dat->sendBuffer, bufSize, 0, 0);
+                    CopyMemory(&dat->sendBuffer[bufSize], converted, (lstrlenW(converted) + 1)* sizeof(WCHAR));
+                    _DebugPopup(dat->hContact, "required mbcs len: %d (wstring: %d)", bufSize, lstrlenW(converted));
+                    free(converted);
+                    free(streamOut);
+#else                    
+                    streamOut = Message_GetFromStream(hwndDlg, dat);
+                    DoRtfToTags(streamOut, dat);
+                    DoTrimMessage(streamOut);
+                    bufSize = lstrlenA(streamOut) + 1;
+                    dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * sizeof(char));
+                    CopyMemory(dat->sendBuffer, streamOut, bufSize);
+                    free(streamOut);
+#endif  // unicode
                     if (dat->sendBuffer[0] == 0)
                         break;
 
@@ -3023,7 +3032,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             break;
             /*
-             * this is now *only* called from the global ME_PROTO_ACK handler in hotkeyhandler.c (the hidden window)
+             * this is now *only* called from the global ME_PROTO_ACK handler (static int ProtoAck() in msgs.c)
              * it receives:
              * wParam = index of the sendjob in the queue in the low word, index of the found sendID in the high word
                         (normally 0, but if its a multisend job, then the sendjob may contain more than one hContact/hSendId
@@ -3081,8 +3090,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     return 0;
                 }
 
-                //_DebugPopup(dat->hContact, "(Owner %d) ACK_for: hC: %d, sendid: %d - index: %d (%d)", sendJobs[iFound].hOwner, sendJobs[iFound].hContact[i], sendJobs[iFound].hSendId[i], iFound, i);
-                //_DebugPopup(dat->hContact, "(Owner %d) ACK_for: hC: %d, sendid: %d - index: %d (%d)", sendJobs[iFound].hOwner, ack->hContact, ack->hProcess, iFound, i);
                 dbei.cbSize = sizeof(dbei);
                 dbei.eventType = EVENTTYPE_MESSAGE;
                 dbei.flags = DBEF_SENT;

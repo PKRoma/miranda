@@ -191,7 +191,6 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
         sendJobs[iEntry].iAcksNeeded = 1;
         SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
-        //_DebugPopup(dat->hContact, "added to queue with sendid: %d as index: %d", sendJobs[iEntry].hSendId[0], iEntry);
     }
     dat->iOpenJobs++;
     myGlobals.iSendJobCurrent++;

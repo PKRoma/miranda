@@ -42,6 +42,9 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
 DWORD WINAPI LoadPictureThread(LPVOID param);
 void SetDialogToType(HWND hwndDlg);
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei);
+char *Message_GetFromStream(HWND hwndDlg, struct MessageWindowData* dat);
+BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat);
+void DoTrimMessage(TCHAR *msg);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

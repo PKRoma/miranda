@@ -840,3 +840,282 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
         dat->hFlashingEvent = hEvent;
     }
 }
+
+static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+{
+	static DWORD dwRead;
+    char ** ppText = (char **) dwCookie;
+
+	if (*ppText == NULL)
+	{
+		*ppText = malloc(cb);
+		memcpy(*ppText, pbBuff, cb);
+		*pcb = cb;
+		dwRead = cb;
+	}
+	else
+	{
+		char  *p = malloc(dwRead + cb);
+		memcpy(p, *ppText, dwRead);
+		memcpy(p+dwRead, pbBuff, cb);
+		free(*ppText);
+		*ppText = p;
+		*pcb = cb;
+		dwRead += cb;
+	}
+
+    return 0;
+}
+
+char * Message_GetFromStream(HWND hwndDlg, struct MessageWindowData* dat)
+{
+	EDITSTREAM stream;
+	char *pszText = NULL;
+    DWORD dwFlags;
+
+	if(hwndDlg == 0 || dat == 0)
+		return NULL;
+
+	ZeroMemory(&stream, sizeof(stream));
+	stream.pfnCallback = Message_StreamCallback;
+	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
+#if defined(_UNICODE)
+    dwFlags = (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE);
+#else
+    dwFlags = SF_RTF|SF_RTFNOOBJS|SFF_PLAINRTF;
+#endif    
+	SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) & stream);
+	
+	return pszText; // pszText contains the text
+}
+
+BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
+{
+	TCHAR * p1;
+	//int * pIndex;
+	BOOL bJustRemovedRTF = TRUE;
+	BOOL bTextHasStarted = FALSE;
+
+	if(!pszText)
+		return FALSE;
+
+	// create an index of colors in the module and map them to
+	// corresponding colors in the RTF color table
+
+    /*
+	pIndex = malloc(sizeof(int) * MM_FindModule(dat->pszModule)->nColorCount);
+	for(i = 0; i < MM_FindModule(dat->pszModule)->nColorCount ; i++)
+		pIndex[i] = -1;
+	CreateColorMap(pszText, pIndex, dat);
+    */
+	// scan the file for rtf commands and remove or parse them
+	p1 = _tcsstr(pszText, _T("\\pard"));
+	if(p1)
+	{
+		int iRemoveChars;
+		TCHAR InsertThis[50];
+		p1 += 5;
+
+		MoveMemory(pszText, p1, (_tcslen(p1) +1) * sizeof(TCHAR));
+		p1 = pszText;
+
+		// iterate through all characters, if rtf control character found then take action
+		while(*p1 != (TCHAR)'\0')
+		{
+			_sntprintf(InsertThis, sizeof(InsertThis), _T(""));
+			iRemoveChars = 0;
+
+			switch (*p1)
+			{
+			case (TCHAR)'\\':
+				if(p1 == _tcsstr(p1, _T("\\cf"))) // foreground color
+				{
+					TCHAR szTemp[20];
+					int iCol = _tstoi(p1 + 3);
+					//int iInd = RTFColorToIndex(pIndex, iCol, dat);
+					bJustRemovedRTF = TRUE;
+
+                    _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
+					iRemoveChars = 3 + _tcslen(szTemp);
+					//if(bTextHasStarted || iCol)
+					//	_snprintf(InsertThis, sizeof(InsertThis), ( iCol >0 ) ? _T("%%c%02u") : _T("%%C"), iCol);
+				}
+				else if(p1 == _tcsstr(p1, _T("\\highlight"))) //background color
+				{
+                    TCHAR szTemp[20];
+					int iCol = _tstoi(p1 + 10);
+					//int iInd = RTFColorToIndex(pIndex, iCol, dat);
+					bJustRemovedRTF = TRUE;
+
+                    _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
+					iRemoveChars = 10 + _tclen(szTemp);
+					//if(bTextHasStarted || iInd >= 0)
+					//	_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 ) ? _T("%%f%02u") : _T("%%F"), iInd);
+				}
+				else if(p1 == _tcsstr(p1, _T("\\par"))) // newline
+				{
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = 4;
+					//_sntprintf(InsertThis, sizeof(InsertThis), _T("\n"));
+				}
+				else if(p1 == _tcsstr(p1, _T("\\b"))) //bold
+				{
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
+					_sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+
+				}
+				else if(p1 == _tcsstr(p1, _T("\\i"))) // italics
+				{
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
+					_sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+
+				}
+				else if(p1 == _tcsstr(p1, _T("\\ul"))) // underlined
+				{
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					if(p1[3] == (TCHAR)'n')
+						iRemoveChars = 7;
+					else if(p1[3] == (TCHAR)'0')
+						iRemoveChars = 4;
+					else
+						iRemoveChars = 3;
+					_sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+
+				}
+				else if(p1 == _tcsstr(p1, _T("\\tab"))) // tab
+				{
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = 4;
+					_sntprintf(InsertThis, sizeof(InsertThis), _T(" "));
+
+				}
+				else if(p1[1] == (TCHAR)'\\' || p1[1] == (TCHAR)'{' || p1[1] == (TCHAR)'}' ) // escaped characters
+				{
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = 2;
+					_sntprintf(InsertThis, sizeof(InsertThis), _T("%c"), p1[1]);
+
+				}
+				else if(p1[1] == (TCHAR)'\'' ) // special character
+				{
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = FALSE;
+					if(p1[2] != (TCHAR)' ' && p1[2] != (TCHAR)'\\')
+					{
+						int iLame = 0;
+						TCHAR * p3;
+						if(p1[3] != (TCHAR)' ' && p1[3] != (TCHAR)'\\')
+						{
+							_tcsncpy(InsertThis, p1 + 2, 3);
+							iRemoveChars = 4;
+						}
+						else
+						{
+							_tcsncpy(InsertThis, p1 + 2, 2);
+							iRemoveChars = 3;
+
+						}
+						// convert string containing char in hex format to int.
+						// i'm sure there is a better way than this lame stuff that came out of me
+						p3 = InsertThis;
+						while (*p3)
+						{
+							if(*p3 == (TCHAR)'a')
+								iLame += 10 * (int)pow(16, _tcslen(p3) -1);
+							else if(*p3 == (TCHAR)'b')
+								iLame += 11 * (int)pow(16, _tcslen(p3) -1);
+							else if(*p3 == (TCHAR)'c')
+								iLame += 12 * (int)pow(16, _tcslen(p3) -1);
+							else if(*p3 == (TCHAR)'d')
+								iLame += 13 * (int)pow(16, _tcslen(p3) -1);
+							else if(*p3 == (TCHAR)'e')
+								iLame += 14 * (int)pow(16, _tcslen(p3) -1);
+							else if(*p3 == (TCHAR)'f')
+								iLame += 15 * (int)pow(16, _tcslen(p3) -1);
+							else
+								iLame += (*p3 - 48) * (int)pow(16, _tcslen(p3) -1);
+							p3++;
+						}
+						_sntprintf(InsertThis, sizeof(InsertThis), _T("%c"), iLame);
+					}
+					else
+						iRemoveChars = 2;
+				}
+				else // remove unknown RTF command
+				{
+					int j = 1;
+					bJustRemovedRTF = TRUE;
+					while(p1[j] != (TCHAR)' ' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
+						j++;
+					iRemoveChars = j;
+				}
+				break;
+
+			case (TCHAR)'{': // other RTF control characters
+			case (TCHAR)'}':
+				iRemoveChars = 1;
+				break;
+
+			case (TCHAR)'%': // escape chat -> protocol control character
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = FALSE;
+				iRemoveChars = 1;
+				_sntprintf(InsertThis, sizeof(InsertThis), _T("%%%%"));
+				break;
+			case (TCHAR)' ': // remove spaces following a RTF command
+				if(bJustRemovedRTF)
+					iRemoveChars = 1;
+				bJustRemovedRTF = FALSE;
+				bTextHasStarted = TRUE;
+				break;
+
+			default: // other text that should not be touched
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = FALSE;
+
+				break;
+			}
+
+			// move the memory and paste in new commands instead of the old RTF
+			if(_tcslen(InsertThis) || iRemoveChars)
+			{
+				MoveMemory(p1 + _tcslen(InsertThis) , p1 + iRemoveChars, (_tcslen(p1) - iRemoveChars +1) * sizeof(TCHAR));
+				CopyMemory(p1, InsertThis, _tcslen(InsertThis) * sizeof(TCHAR));
+				p1 += _tcslen(InsertThis);
+			}
+			else
+				p1++;
+		}
+
+
+	}
+	else // error
+	{
+		//free(pIndex);
+		return FALSE;
+	}
+
+	//free(pIndex);
+
+	return TRUE;
+}
+void DoTrimMessage(TCHAR *msg)
+{
+    int iLen = _tcslen(msg) - 1;
+    int i = iLen;
+
+    while(i && (msg[i] == '\r' || msg[i] == '\n') || msg[i] == ' ') {
+        i--;
+    }
+    if(i < iLen)
+        msg[i+1] = '\0';
+}
+

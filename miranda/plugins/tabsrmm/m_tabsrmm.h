@@ -27,7 +27,7 @@
 #define MWF_INITMODE  0x400000
 #define MWF_NEEDCHECKSIZE 0x800000
 #define MWF_DIVIDERSET 0x1000000
-#define MWF_LOCALIZED 0x2000000                     // F R E E (currently unused)
+#define MWF_LOG_TEXTFORMAT 0x2000000                     // F R E E (currently unused)
 #define MWF_LOG_GRID 0x4000000
 #define MWF_LOG_INDIVIDUALBKG 0x8000000
 #define MWF_LOG_LIMITAVATARHEIGHT 0x10000000

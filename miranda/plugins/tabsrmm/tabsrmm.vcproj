@@ -413,6 +413,21 @@
 				RelativePath=".\containeroptions.c">
 			</File>
 			<File
+				RelativePath=".\formatting.cpp">
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						ExceptionHandling="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						ExceptionHandling="TRUE"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\hotkeyhandler.c">
 			</File>
 			<File
@@ -739,25 +754,25 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur">
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
 			</File>
 			<File
+				RelativePath="..\..\src\res\dropuser.cur">
+			</File>
+			<File
 				RelativePath=".\res\error.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico">
+				RelativePath="..\..\Miranda-IM\res\history.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico">
+				RelativePath=".\res\angeli-icons\History.ico">
 			</File>
 			<File
 				RelativePath="res\History32.ico">
@@ -850,10 +865,10 @@
 				RelativePath=".\resource.rc">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">
