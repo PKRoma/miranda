@@ -16,7 +16,7 @@
 #include <process.h>
 #include "yahoo.h"
 
-#include "../../SDK/headers_c/m_system.h"
+#include <m_system.h>
 
 /* Gena01 - added some defined to fix compilation with mingw gcc */
 /* __try/__finally taken from abiword patch found on the web */

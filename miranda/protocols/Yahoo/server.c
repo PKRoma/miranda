@@ -19,7 +19,7 @@
 #include "libyahoo2/yahoo_util.h"
 
 #include "yahoo.h"
-#include "../../SDK/headers_c/m_system.h"
+#include <m_system.h>
 #include <time.h>
 
 int poll_loop = 1;

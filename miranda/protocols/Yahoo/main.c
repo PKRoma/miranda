@@ -14,12 +14,12 @@
 #include "yahoo.h"
 #include "http_gateway.h"
 
-#include "../../SDK/headers_c/m_system.h"
-#include "../../SDK/headers_c/m_langpack.h"
-#include "../../SDK/headers_c/m_options.h"
-#include "../../SDK/headers_c/m_skin.h"
-#include "../../SDK/headers_c/m_message.h"
-#include "../../SDK/headers_c/m_idle.h"
+#include <m_system.h>
+#include <m_langpack.h>
+#include <m_options.h>
+#include <m_skin.h>
+#include <m_message.h>
+#include <m_idle.h>
 
 //#define HTTP_GATEWAY
 

@@ -10,9 +10,9 @@ RC = windres
 RM = rm
 
 ifdef DEBUG
-BIN = ../../Bin/Debug/Plugins/Yahoo.dll
+BIN = ../../bin/debug/plugins/Yahoo.dll
 else
-BIN = ../../Bin/Release/Plugins/Yahoo.dll
+BIN = ../../bin/release/plugins/Yahoo.dll
 endif
 
 DEFINES = -DHAVE_CONFIG_H -DUSE_STRUCT_CALLBACKS
@@ -22,10 +22,10 @@ endif
 
 
 ifdef DEBUG
-CFLAGS  = -g $(DEFINES)
+CFLAGS  = -g $(DEFINES) -I../../include
 LDFLAGS  = -shared 
 else
-CFLAGS  = -Os $(DEFINES)
+CFLAGS  = -Os $(DEFINES) -I../../include
 LDFLAGS  = -shared -s
 endif
 

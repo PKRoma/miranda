@@ -17,10 +17,10 @@
 #include "yahoo.h"
 #include "resource.h"
 
-#include "../../SDK/headers_c/m_langpack.h"
-#include "../../SDK/headers_c/m_utils.h"
-#include "../../SDK/headers_c/m_options.h"
-#include "../../SDK/headers_c/m_popup.h"
+#include <m_langpack.h>
+#include <m_utils.h>
+#include <m_options.h>
+#include <m_popup.h>
 
 /*
  * YahooOptInit - initialize/register our Options w/ Miranda.

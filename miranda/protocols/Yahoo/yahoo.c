@@ -20,11 +20,11 @@
  * Miranda headers
  */
 #include "yahoo.h"
-#include "../../SDK/headers_c/m_protosvc.h"
-#include "../../SDK/headers_c/m_langpack.h"
-#include "../../SDK/headers_c/m_skin.h"
-#include "../../SDK/headers_c/m_popup.h"
-#include "../../SDK/headers_c/m_message.h"
+#include <m_protosvc.h>
+#include <m_langpack.h>
+#include <m_skin.h>
+#include <m_popup.h>
+#include <m_message.h>
 
 typedef struct {
 	int id;

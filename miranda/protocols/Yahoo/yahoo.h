@@ -21,11 +21,11 @@
 #include "libyahoo2/yahoo2_callbacks.h"
 #include "libyahoo2/yahoo_util.h"
 
-#include "../../SDK/headers_c/newpluginapi.h"
-#include "../../SDK/headers_c/m_database.h"
-#include "../../SDK/headers_c/m_protomod.h"
-#include "../../SDK/headers_c/m_netlib.h"
-#include "../../SDK/headers_c/m_clist.h"
+#include <newpluginapi.h>
+#include <m_database.h>
+#include <m_protomod.h>
+#include <m_netlib.h>
+#include <m_clist.h>
 
 //=======================================================
 //	Definitions
