@@ -539,7 +539,7 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
 {
-    int showInfo, showButton, showSend;
+    int showInfo, showButton, showSend, showFormat;
     struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
     int iClistOffset = 0;
     RECT rc;
@@ -547,7 +547,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     showInfo = dat->showUIElements & MWF_UI_SHOWINFO;
     showButton = dat->showUIElements & MWF_UI_SHOWBUTTON;
     showSend = dat->showUIElements & MWF_UI_SHOWSEND;
-
+    showFormat = dat->showUIElements & MWF_UI_SHOWFORMAT;
+    
     GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
     iClistOffset = rc.bottom;
 
@@ -591,6 +592,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_FONTCOLOR:
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
+            if(!dat->doSmileys)
+                OffsetRect(&urc->rcItem, -16, 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_PROTOCOL:
         case IDC_PROTOMENU:
@@ -924,6 +927,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(GetDlgItem(hwndDlg, buttonLineControlsNew[i]), BUTTONSETASFLATBTN, 0, 0);
                     for (i = 0; i < sizeof(errorControls) / sizeof(errorControls[0]); i++)
                         SendMessage(GetDlgItem(hwndDlg, errorControls[i]), BUTTONSETASFLATBTN, 0, 0);
+                    for (i = 0; i < sizeof(formatControls) / sizeof(formatControls[0]); i++)
+                        SendMessage(GetDlgItem(hwndDlg, formatControls[i]), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONSETASFLATBTN, 0, 0);
@@ -945,7 +950,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONADDTOOLTIP, (WPARAM) Translate("Send message"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details (SHIFT-click to view history)"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BUTTONADDTOOLTIP, (WPARAM) Translate("Protocol Menu"), 0);
-                
+                SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONADDTOOLTIP, (WPARAM) Translate("Bold text"), 0);
+                SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONADDTOOLTIP, (WPARAM) Translate("Italic text"), 0);
+                SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONADDTOOLTIP, (WPARAM) Translate("Underlined text"), 0);
+                SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font"), 0);
+                SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font color"), 0);
+
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
@@ -2463,7 +2473,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)&dat->sendBuffer[bufSize]);
                     */
-                    streamOut = Message_GetFromStream(hwndDlg, dat);
+                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, 0);
                     if(streamOut != NULL) {
                         decoded = Utf8Decode(streamOut);
                         converted = (TCHAR *)malloc((lstrlenW(decoded) + 2)* sizeof(TCHAR));
@@ -2481,7 +2491,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         free(streamOut);
                     }
 #else                    
-                    streamOut = Message_GetFromStream(hwndDlg, dat);
+                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, 0);
                     if(streamOut != NULL) {
                         DoRtfToTags(streamOut, dat);
                         DoTrimMessage(streamOut);
@@ -2563,14 +2573,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 case IDC_QUOTE:
                     {   CHARRANGE sel;
-                        TCHAR *szText, *szQuoted;
-                        int i;
+                        TCHAR *szQuoted, *szText;
+                        char *szFromStream = NULL;
+                        //int i;
 #ifdef _UNICODE
                         TCHAR *szConverted;
                         int iAlloced = 0;
                         int iSize = 0;
                         SETTEXTEX stx = {ST_SELECTION, 1200};
-                        GETTEXTEX gtx;
+                        //GETTEXTEX gtx;
 #endif                        
 
                         if (dat->hDbEventLast==NULL) break;
@@ -2630,37 +2641,45 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 free(szConverted);
 #endif                            
                         } else {
-                            szText = (TCHAR *)malloc(((sel.cpMax - sel.cpMin) + 100) * sizeof(TCHAR));
 #ifdef _UNICODE
+                            wchar_t *converted = 0;
+                            /*
                             gtx.cb = ((sel.cpMax - sel.cpMin) + 1) * sizeof(TCHAR);
                             gtx.codepage = 1200;
                             gtx.flags = GT_SELECTION | GT_DEFAULT;
                             gtx.lpDefaultChar = 0;
                             gtx.lpUsedDefChar = 0;
                             SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)szText);
+                            */
+                            szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SF_USECODEPAGE|SFF_SELECTION);
+                            /*
                             i=0;
                             while(szText[i]) {
                                 if(szText[i] == 0x0b)
                                     szText[i] = '\r';
                                 i++;
-                            }
-                            szQuoted = QuoteText(szText, 64, 0);
+                            }*/
+                            
+                            szQuoted = QuoteText(Utf8Decode(szFromStream), 64, 0);
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
                             // SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
                             free(szQuoted);
+                            free(szFromStream);
 #else
+                            szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SFF_SELECTION);
+                            /*
                             SendDlgItemMessageA(hwndDlg,IDC_LOG,EM_GETSELTEXT,0,(LPARAM)szText);
                             i = 0;
                             while(szText[i]) {
                                 if(szText[i] == 0x0b)
                                     szText[i] = '\r';
                                 i++;
-                            }
+                            }*/
                             szQuoted=QuoteText(szText, 64, 0);
                             SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
                             free(szQuoted);
+                            free(szFromStream);
 #endif
-                            free(szText);
                         }
                         break;
                     }

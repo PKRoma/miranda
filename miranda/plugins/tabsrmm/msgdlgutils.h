@@ -42,7 +42,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
 DWORD WINAPI LoadPictureThread(LPVOID param);
 void SetDialogToType(HWND hwndDlg);
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei);
-char *Message_GetFromStream(HWND hwndDlg, struct MessageWindowData* dat);
+char *Message_GetFromStream(HWND hwndDlg, struct MessageWindowData* dat, DWORD dwPassedFlags);
 BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat);
 void DoTrimMessage(TCHAR *msg);
 

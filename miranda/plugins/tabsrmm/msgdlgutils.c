@@ -853,43 +853,51 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 
 	if (*ppText == NULL)
 	{
-		*ppText = malloc(cb);
-		memcpy(*ppText, pbBuff, cb);
+		*ppText = malloc(cb + 2);
+		CopyMemory(*ppText, pbBuff, cb);
 		*pcb = cb;
 		dwRead = cb;
+        *(*ppText + cb) = '\0';
 	}
 	else
 	{
-		char  *p = malloc(dwRead + cb);
-		memcpy(p, *ppText, dwRead);
-		memcpy(p+dwRead, pbBuff, cb);
-		free(*ppText);
+		char  *p = realloc(*ppText, dwRead + cb + 2);
+		//memcpy(p, *ppText, dwRead);
+		CopyMemory(p+dwRead, pbBuff, cb);
+		//free(*ppText);
 		*ppText = p;
 		*pcb = cb;
 		dwRead += cb;
+        *(*ppText + dwRead) = '\0';
 	}
 
     return 0;
 }
 
-char * Message_GetFromStream(HWND hwndDlg, struct MessageWindowData* dat)
+char * Message_GetFromStream(HWND hwndRtf, struct MessageWindowData* dat, DWORD dwPassedFlags)
 {
 	EDITSTREAM stream;
 	char *pszText = NULL;
-    DWORD dwFlags;
+    DWORD dwFlags = 0;
 
-	if(hwndDlg == 0 || dat == 0)
+	if(hwndRtf == 0 || dat == 0)
 		return NULL;
 
 	ZeroMemory(&stream, sizeof(stream));
 	stream.pfnCallback = Message_StreamCallback;
 	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
 #if defined(_UNICODE)
-    dwFlags = (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE);
+    if(dwPassedFlags == 0)
+        dwFlags = (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE);
+    else
+        dwFlags = (CP_UTF8 << 16) | dwPassedFlags;
 #else
-    dwFlags = SF_RTF|SF_RTFNOOBJS|SFF_PLAINRTF;
+    if(dwPassedFlags == 0)
+        dwFlags = SF_RTF|SF_RTFNOOBJS|SFF_PLAINRTF;
+    else
+        dwFlags = dwPassedFlags;
 #endif    
-	SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) & stream);
+	SendMessage(hwndRtf, EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) & stream);
 	
 	return pszText; // pszText contains the text
 }
@@ -1081,12 +1089,14 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				iRemoveChars = 1;
 				break;
 
+            /*
 			case (TCHAR)'%': // escape chat -> protocol control character
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 1;
 				_sntprintf(InsertThis, sizeof(InsertThis), _T("%%%%"));
 				break;
+            */
 			case (TCHAR)' ': // remove spaces following a RTF command
 				if(bJustRemovedRTF)
 					iRemoveChars = 1;
