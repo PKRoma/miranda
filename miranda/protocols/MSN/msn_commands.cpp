@@ -1096,6 +1096,9 @@ LBL_InvalidCommand:
 				MSN_DebugLog( "You have been disconnected from the MSN server because you logged on from another location using the same MSN passport." );
 			}
 
+			if ( !stricmp( params, "MIG" )) // ignore it
+				break;
+
 			return 1;
 
 		case ' PRP':	//********* PRP: user property
