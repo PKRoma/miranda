@@ -263,6 +263,7 @@ struct filetransfer
 
 	void close();
 	void complete();
+	int  create();
 
 	PROTOFILETRANSFERSTATUS std;
 

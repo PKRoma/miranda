@@ -25,7 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
+#include <direct.h>
 #include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #include "resource.h"
 
@@ -688,6 +691,7 @@ filetransfer::filetransfer()
 {
 	memset( this, 0, sizeof( filetransfer ));
 	fileId = -1;
+	hWaitEvent = INVALID_HANDLE_VALUE;
 	std.cbSize = sizeof( std );
 }
 
@@ -708,7 +712,7 @@ filetransfer::~filetransfer()
 	if ( mIncomingBoundPort != NULL )
 		Netlib_CloseHandle( mIncomingBoundPort );
 
-	if ( hWaitEvent != NULL )
+	if ( hWaitEvent != INVALID_HANDLE_VALUE )
 		CloseHandle( hWaitEvent );
 
 	if ( p2p_branch != NULL ) free( p2p_branch );
@@ -735,6 +739,45 @@ void filetransfer::complete()
 
 	bCompleted = true;
 	MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, this, 0);
+}
+
+int filetransfer::create()
+{
+	if ( inmemTransfer ) {
+		if ( fileBuffer == NULL ) {
+			if (( fileBuffer = ( char* )LocalAlloc( LPTR, DWORD( std.totalBytes ))) == NULL ) {
+				MSN_DebugLog( "Not enough memory to receive file '%s'", std.currentFile );
+				return -1;
+		}	}
+
+		return ( int )fileBuffer;
+	}
+
+	if ( fileId != -1 )
+		return fileId;
+
+	_chdir( std.workingDir );
+
+	if ( hWaitEvent != INVALID_HANDLE_VALUE )
+		CloseHandle( hWaitEvent );
+   hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+
+	if ( MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, this, ( LPARAM )&std ))
+		WaitForSingleObject( hWaitEvent, INFINITE );
+
+	char filefull[ MAX_PATH ];
+	_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, std.currentFile );
+	std.currentFile = strdup( filefull );
+
+	if ( msnRunningUnderNT && wszFileName != NULL )
+		fileId = _wopen( wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+	else
+		fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+
+	if ( fileId == -1 )
+		MSN_DebugLog( "Cannot create file '%s' during a file transfer", filefull );
+
+	return fileId;
 }
 
 //=======================================================================================

@@ -315,7 +315,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread != NULL ) {
-		if ( thread->mMsnFtp != NULL && ft->p2p_appID == 0 ) {
+		if ( ft->p2p_appID == 0 ) {
 			thread->sendPacket( "MSG",
 				"U %d\r\nMIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
@@ -323,7 +323,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 				"Invitation-Cookie: %s\r\n"
 				"Launch-Application: FALSE\r\n"
 				"Request-Data: IP-Address:\r\n\r\n",
-				172+4+strlen( thread->mMsnFtp->szInvcookie ), thread->mMsnFtp->szInvcookie );
+				172+4+strlen( ft->szInvcookie ), ft->szInvcookie );
 		}
 		else {
 			p2p_sendAck( ft, thread, &ft->p2p_hdr );
@@ -376,7 +376,7 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread != NULL ) {
-		if ( ft->p2p_appID == 0 && thread->mMsnFtp != NULL ) {
+		if ( ft->p2p_appID == 0 ) {
 			thread->sendPacket( "MSG",
 				"U %d\r\nMIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
@@ -396,6 +396,32 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnFileResume - renames a file
+
+int MsnFileResume( WPARAM wParam, LPARAM lParam )
+{
+	if ( !msnLoggedIn )
+		return 1;
+
+	filetransfer* ft = ( filetransfer* )wParam;
+	if ( ft->p2p_appID != 0 ) {
+		PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
+		if ( pfr->action == FILERESUME_RENAME ) {
+			if ( ft->wszFileName != NULL ) {
+				free( ft->wszFileName );
+				ft->wszFileName = NULL;
+			}
+
+			if ( ft->std.currentFile != NULL )
+				free( ft->std.currentFile );
+			ft->std.currentFile = strdup( pfr->szFilename );
+	}	}
+   
+	SetEvent( ft->hWaitEvent );
+	return 0;
+}
+	
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAvatarInfo - retrieve the avatar info
 
@@ -1239,6 +1265,7 @@ int LoadMsnServices( void )
 	MSN_CreateProtoServiceFunction( PS_AUTHALLOW,			MsnAuthAllow );
 	MSN_CreateProtoServiceFunction( PS_AUTHDENY,				MsnAuthDeny );
 	MSN_CreateProtoServiceFunction( PS_BASICSEARCH,			MsnBasicSearch );
+	MSN_CreateProtoServiceFunction( PS_FILERESUME,			MsnFileResume );
 	MSN_CreateProtoServiceFunction( PS_GETAVATARINFO,		MsnGetAvatarInfo );
 	MSN_CreateProtoServiceFunction( PS_GETCAPS,				MsnGetCaps );
 	MSN_CreateProtoServiceFunction( PS_GETNAME,				MsnGetName );
