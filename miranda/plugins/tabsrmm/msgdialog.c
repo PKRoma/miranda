@@ -2235,6 +2235,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         FlashTab(hwndTab, dat->iTabID, &dat->bTabFlash, TRUE, dat->iFlashIcon, dat->iTabImage);
                 }
             } else if (wParam == TIMERID_ANTIBOMB) {
+                int flags = 0;
+#if defined(_UNICODE)
+                flags = PREF_UNICODE;
+#endif
                 int sentSoFar = 0, i;
                 KillTimer(hwndDlg, wParam);
                 for (i = 0; i < dat->sendJobs[0].sendCount; i++) {
@@ -2246,7 +2250,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SetTimer(hwndDlg, TIMERID_ANTIBOMB, TIMEOUT_ANTIBOMB, NULL);
                         break;
                     }
-                    dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), 0, (LPARAM) dat->sendJobs[0].sendBuffer);
+                    dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), flags, (LPARAM) dat->sendJobs[0].sendBuffer);
                     sentSoFar++;
                 }
             } else if (wParam == TIMERID_TYPE) {
@@ -2368,11 +2372,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 case MSGERROR_RETRY:
                     {
+                        int flags = 0;
+#if defined(_UNICODE)
+                        flags = PREF_UNICODE;
+#endif
+
                         int i;
                         for (i = 0; i < dat->sendJobs[0].sendCount; i++) {
                             if (dat->sendJobs[0].sendInfo[i].hSendId == NULL && dat->sendJobs[0].sendInfo[i].hContact == NULL)
                                 continue;
-                            dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), 0, (LPARAM) dat->sendJobs[0].sendBuffer);
+                            dat->sendJobs[0].sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendJobs[0].sendInfo[i].hContact, MsgServiceName(dat->sendJobs[0].sendInfo[i].hContact), flags, (LPARAM) dat->sendJobs[0].sendBuffer);
                         }
                     }
                     SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
