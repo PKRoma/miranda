@@ -33,7 +33,7 @@ static HWND hwndSendSms;
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
 	"SMS",
-	PLUGIN_MAKE_VERSION(0,1,0,0),
+	PLUGIN_MAKE_VERSION(0,1,2,0),
 	"Send SMS text messages to mobile phones through the ICQ network",
 	"Richard Hughes",
 	"cyreve@users.sourceforge.net",
@@ -62,6 +62,8 @@ static int SendSMSMenuCommand(WPARAM wParam,LPARAM lParam)
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
+	if(mirandaVersion<PLUGIN_MAKE_VERSION(0,1,2,0))
+		return NULL;
 	return &pluginInfo;
 }
 
