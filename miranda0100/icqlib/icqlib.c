@@ -96,6 +96,37 @@ DWORD icq_SendURL(icq_Link *icqlink, DWORD uin, const char *url,
   return 0;
 }
 
+void icq_ChangeAwayMessage(icq_Link *icqlink, int status, const char *message)
+{
+  char **linkMsg;
+
+  switch(status) {
+    case STATUS_AWAY:
+	  linkMsg = &icqlink->icq_AwayMessage;
+	  break;
+    case STATUS_NA:
+	  linkMsg = &icqlink->icq_NaMessage;
+	  break;
+    case STATUS_OCCUPIED:
+	  linkMsg = &icqlink->icq_OccupiedMessage;
+	  break;
+    case STATUS_DND:
+	  linkMsg = &icqlink->icq_DndMessage;
+	  break;
+    case STATUS_FREE_CHAT:
+	  linkMsg = &icqlink->icq_FreeChatMessage;
+	  break;
+	default:
+	  return;
+  }
+  if(*linkMsg)
+    free(*linkMsg);
+  if(message)
+    *linkMsg = strdup(message);
+  else
+	*linkMsg = NULL;
+}
+
 static int icqlib_initialized = 0;
 
 void icq_LibInit()
@@ -206,12 +237,29 @@ void icq_LinkInit(icq_Link *icqlink, DWORD uin, const char *password,
   icqlink->icq_ProxyOurPort = 0;
   icqlink->icq_ProxyDestIP = -1;
   icqlink->icq_ProxyDestPort = 0;
+
+  /* away msg stuff */
+  icqlink->icq_AwayMessage = NULL;
+  icqlink->icq_NaMessage = NULL;
+  icqlink->icq_OccupiedMessage = NULL;
+  icqlink->icq_DndMessage = NULL;
+  icqlink->icq_FreeChatMessage = NULL;
 }
 
 void icq_LinkDestroy(icq_Link *icqlink)
 {
   if(icqlink->icq_UseTCP)
     icq_TCPDone(icqlink);
+  if(icqlink->icq_AwayMessage)
+    free(icqlink->icq_AwayMessage);
+  if(icqlink->icq_NaMessage)
+    free(icqlink->icq_NaMessage);
+  if(icqlink->icq_OccupiedMessage)
+    free(icqlink->icq_OccupiedMessage);
+  if(icqlink->icq_DndMessage)
+    free(icqlink->icq_DndMessage);
+  if(icqlink->icq_FreeChatMessage)
+    free(icqlink->icq_FreeChatMessage);
   if(icqlink->icq_Password)
     free(icqlink->icq_Password);
   if(icqlink->icq_Nick)

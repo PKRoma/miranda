@@ -31,6 +31,7 @@
 
 void icq_TCPOnMessageReceived(icq_Link *icqlink, DWORD uin, const char *message, DWORD id, icq_TCPLink *plink);
 void icq_TCPOnURLReceived(icq_Link *icqlink, DWORD uin, const char *message, DWORD id);
+void icq_TCPOnAwayMsgReqReceived(icq_Link *icqlink, DWORD uin, WORD statusMode, DWORD id);
 void icq_TCPOnContactListReceived(icq_Link *icqlink, DWORD uin, const char *message, DWORD id);
 void icq_TCPOnChatReqReceived(icq_Link *icqlink, DWORD uin, const char *message, DWORD id);
 void icq_TCPOnFileReqReceived(icq_Link *icqlink, DWORD uin, const char *message, 
@@ -137,6 +138,14 @@ void icq_TCPProcessPacket(icq_Packet *p, icq_TCPLink *plink)
         case ICQ_TCP_MSG_CONTACTLIST:
           icq_TCPOnContactListReceived(plink->icqlink, uin, message, p->id);
           break;
+
+        case ICQ_TCP_MSG_READAWAY:
+        case ICQ_TCP_MSG_READNA:
+        case ICQ_TCP_MSG_READDND:
+        case ICQ_TCP_MSG_READOCCUPIED:
+        case ICQ_TCP_MSG_READFFC:
+		  icq_TCPOnAwayMsgReqReceived(plink->icqlink, uin, type&~ICQ_TCP_MASS_MASK, p->id);
+		  break;
 
         default:
           icq_FmtLog(plink->icqlink, ICQ_LOG_WARNING, "unknown message type %d!\n", type);
@@ -314,6 +323,47 @@ void icq_TCPOnURLReceived(icq_Link *icqlink, DWORD uin, const char *message, DWO
   icq_PacketSend(pack, plink->socket);
 #ifdef TCP_PACKET_TRACE
   printf("tcp message ack sent to %lu { sequence=%lx }\n", uin, id);
+#endif
+  icq_PacketDelete(pack);
+}
+
+void icq_TCPOnAwayMsgReqReceived(icq_Link *icqlink, DWORD uin, WORD statusMode, DWORD id)
+{
+  char *message;
+  icq_Packet *pack;
+  icq_TCPLink *plink=icq_FindTCPLink(icqlink, uin, TCP_LINK_MESSAGE);
+
+  switch(statusMode) {
+	case ICQ_TCP_MSG_READAWAY:
+	  message = icqlink->icq_AwayMessage;
+	  break;
+	case ICQ_TCP_MSG_READNA:
+	  message = icqlink->icq_NaMessage;
+	  break;
+	case ICQ_TCP_MSG_READOCCUPIED:
+	  message = icqlink->icq_OccupiedMessage;
+	  break;
+	case ICQ_TCP_MSG_READDND:
+	  message = icqlink->icq_DndMessage;
+	  break;
+	case ICQ_TCP_MSG_READFFC:
+	  message = icqlink->icq_FreeChatMessage;
+	  break;
+  }
+
+  if (message == NULL) {
+#ifdef TCP_PACKET_TRACE
+    printf("tcp away message type %d from %lu IGNORED { sequence=%lx }\n", statusMode, uin, id);
+#endif
+    return;
+  }
+
+  /* send message in the ack */
+  pack=icq_TCPCreateAwayReqAck(plink,statusMode,message);
+  icq_PacketAppend32(pack, id);
+  icq_PacketSend(pack, plink->socket);
+#ifdef TCP_PACKET_TRACE
+  printf("tcp away message ack (type %d) sent to %lu { sequence=%lx }\n", statusMode, uin, id);
 #endif
   icq_PacketDelete(pack);
 }
