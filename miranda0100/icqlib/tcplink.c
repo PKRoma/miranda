@@ -48,6 +48,10 @@
 #include "filesession.h"
 #include "contacts.h"
 
+//#include <stdio.h>  
+//#define l(t) {FILE *fp; fp=fopen("c:\\miranda.log.txt","at"); fprintf(fp,"%u: %d: %s\n",GetTickCount(),__LINE__,(t)); fclose(fp);}
+#define l(t)
+
 icq_TCPLink *icq_TCPLinkNew(icq_Link *icqlink)
 {
   icq_TCPLink *p=(icq_TCPLink *)malloc(sizeof(icq_TCPLink));
@@ -380,6 +384,7 @@ int icq_TCPLinkConnect(icq_TCPLink *plink, DWORD uin, int port)
   if(!pcontact)
     return -2;
 
+  l("creating TCP socket w/connect");
   if((plink->socket=icq_SocketNew(AF_INET, SOCK_STREAM, 0)) < 0)
     return -3;
 
@@ -515,6 +520,7 @@ int icq_TCPLinkListen(icq_TCPLink *plink)
   plink->remote_uin=0;
 
   /* create tcp listen socket */
+  l("creating listener socket");
   if((plink->socket=icq_SocketNew(AF_INET, SOCK_STREAM, 0)) < 0)
     return -1;
 
