@@ -2,6 +2,7 @@
 #define _FUSE_LOG_
 void log_printf(const char *szFmt,...);
 void log_flush(void);
+int log_modulefromaddress(HANDLE hSnap,void *address,MODULEENTRY32 *modInfo);
 typedef struct {
 	int cbSize;
 	char *shortName;

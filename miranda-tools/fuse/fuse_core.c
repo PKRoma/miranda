@@ -40,6 +40,7 @@ typedef struct {
 	char name[MAXMODULELABELLENGTH];
 	DWORD nameHash;
 	MIRANDASERVICE pfnService;
+	DWORD dwTimesLow,dwTimesHigh;
 } TServiceList;
 
 typedef struct {
@@ -104,7 +105,7 @@ int DumpErrorInformation(EXCEPTION_POINTERS *ep)
 			sf.AddrFrame.Offset=c->Ebp;
 			sf.AddrFrame.Mode=AddrModeFlat;
 
-			SymSetOptions(SYMOPT_DEFERRED_LOADS|SYMOPT_LOAD_LINES|SYMOPT_CASE_INSENSITIVE|SYMOPT_NO_CPP);			
+			SymSetOptions(SYMOPT_DEFERRED_LOADS|SYMOPT_LOAD_LINES|SYMOPT_CASE_INSENSITIVE|SYMOPT_NO_CPP);
 			/* StackWalk() */
 			if (StackWalk(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),hThread,&sf,c,NULL,(void*)SymFunctionTableAccess,(void*)SymGetModuleBase,NULL)) {
 				DWORD symOffset=0;
@@ -158,35 +159,96 @@ int InitialiseModularEngine(void)
 
 }
 
+void DestroyingModularEngine(void)
+{	
+	int i, j;
+	HANDLE hSnap;
+	hSnap=hSnap=CreateToolhelp32Snapshot(TH32CS_SNAPMODULE,GetCurrentProcessId());
+	log_printf("<hr>core state dump <i>before</i> shutdown, service information will be dumped <i>at</i> shutdown, note that hook hashes may collide; hook name hashes are used for reducing strcmp().<hr>");
+	if (hSnap) {
+		MODULEENTRY32 moduleInfo;
+		moduleInfo.dwSize=sizeof(MODULEENTRY32);
+		if (Module32First(hSnap,&moduleInfo)) {
+			for (;;) {
+				log_printf("module: %s<br>\tusage=%d%%, address: %08x-%08x <br>.",moduleInfo.szModule,moduleInfo.ProccntUsage,moduleInfo.modBaseAddr,moduleInfo.modBaseAddr+moduleInfo.modBaseSize);
+				moduleInfo.dwSize=sizeof(MODULEENTRY32);
+				if (!Module32Next(hSnap,&moduleInfo)) break;
+			} //for
+		} //if
+		log_printf(".");
+
+		EnterCriticalSection(&csHooks);
+		for (i=0; i<hookCount; i++) {
+			THookList *h=&hook[i];
+			log_printf("<b>hook</b> \"%s\", hash=0x%08x",h->name,h->hookHash);
+			if (h->subscriberCount) {
+				for (j=0;j<h->subscriberCount;j++) {
+					void *pfnHook=h->subscriber[j].pfnHook;
+					int badhook=0;
+					/*
+						hooks are checked again before shutdown because the caller
+						maybe using a function from another DLL which maybe GetProcAddress()'d
+						this wouldn't be valid after such a DLL was freed,
+
+						It could be checked at the actual hook calling I suppose but this is
+						pretty near the NotifyEventHook() that causes shutdown which can be a
+						a high source of error.
+					*/
+					__try {
+						if (IsBadCodePtr(pfnHook)) {
+							badhook=1;
+						} //if
+					} __except (DumpErrorInformation(GetExceptionInformation())) {
+						h->subscriber[j].pfnHook=NULL;
+						badhook=1;
+					} //try
+					if (!badhook && !log_modulefromaddress(hSnap,pfnHook,&moduleInfo)) {
+						strcpy(moduleInfo.szModule,"unknown");
+					} //if
+					log_printf("\tsubscriber: address=0x%08x, module=%s",badhook?"didnt scan":pfnHook,moduleInfo.szModule);
+				} //for
+				log_printf(".");
+			} else {
+				log_printf("\tno subscribers");
+			} //if
+		} //for
+		LeaveCriticalSection(&csHooks);
+
+	} else {
+		log_printf("<font color=red>CreateToolhelp32Snapshot failed, GetLastError()=%x</font>",GetLastError());
+	} //if
+	CloseHandle(hSnap);
+	return;
+}
+
 void DestroyModularEngine(void)
 {
-	int i;
+	int i,useless=0;
 	EnterCriticalSection(&csHooks);
-	log_printf("DestroyModularEngine: destroying modular core.");
-	log_printf("\tServices\t\t: %d", serviceCount);
-	log_printf("\tHooks   \t\t: %d", hookCount);
-	LeaveCriticalSection(&csHooks);
+	log_printf("DestroyModularEngine: destroying modular core (serviceCount=%d, hookCount=%d)\r\n",serviceCount,hookCount);
+	LeaveCriticalSection(&csHooks);	
+
+	log_printf("<hr>");
+	log_printf("service information");
+	log_printf("<hr>");
+
+	for (i=0;i<serviceCount;i++) {
+		log_printf("free service\t: \"%s\"",service[i].name);
+		if (service[i].dwTimesLow || service[i].dwTimesHigh) {
+			log_printf("\tlow\t: <b>%d</b> \t high\t: %d",service[i].dwTimesLow,service[i].dwTimesHigh);
+		} else {
+			log_printf("\tnot invoked.");
+			useless++;
+		} //if
+		log_printf(".");
+	} //if
+	if (serviceCount && useless) {
+		log_printf("<br>stats: out of <b>%d</b> service%s, <b>%d</b> were not called <b>at all</b><br>",serviceCount,serviceCount!=1?"s":"",useless);
+	} //if
+
 	for(i=0;i<hookCount;i++) {
 		__try {
 			if(hook[i].subscriberCount) { 
-				log_printf("-");				
-				log_printf("\tfree hook: %s",hook[i].name);
-				log_printf("\tnumber of hookers: %d", hook[i].subscriberCount);
-				{
-					int j;
-					for (j=0;j<hook[i].subscriberCount;j++) {
-						THookSubscriber *sub=&hook[i].subscriber[j];
-						if (sub->pfnHook) {
-							log_printf("\thook-address\t: 0x%x",sub->pfnHook);
-						} else {
-							if (IsWindow(sub->hwnd)) {
-								log_printf("\thook-window\t: 0x%x, message=0x%x",sub->hwnd,sub->message);
-							} //if
-						} //if
-					} //for
-				}
-				log_printf("-");
-
 				free(hook[i].subscriber);
 			} //if
 		} __except (DumpErrorInformation(GetExceptionInformation())) {
@@ -197,7 +259,7 @@ void DestroyModularEngine(void)
 	DeleteCriticalSection(&csHooks);
 	DeleteCriticalSection(&csServices);
 	CloseHandle(hMainThread);
-	log_printf("DestroyModularEngine deinitialised OK");
+	log_printf("<b>DestroyModularEngine deinitialised OK</b>");
 }
 
 DWORD NameHashFunction(const char *szStr)
@@ -301,8 +363,6 @@ int DestroyHookableEvent(HANDLE hEvent)
 	log_printf("DestroyHookableEvent: deleting \"%s\" by request from %d", hook[hookId].name,(DWORD)hEvent);
 	hook[hookId].name[0]=0;
 	if(hook[hookId].subscriberCount) {
-		log_printf("DestroyHookableEvent information..");
-		log_printf("\t subscriber count\t: %d", hook[hookId].subscriberCount);
 		free(hook[hookId].subscriber);
 		hook[hookId].subscriber=NULL;
 		hook[hookId].subscriberCount=0;
@@ -375,7 +435,7 @@ HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc)
 	__try {
 		if (IsBadCodePtr((void*)hookProc)) {
 			
-			log_printf("<font color=red>HookEvent: tried to hook \"%s\" with illegal MIRANDASERVICE function</font>");
+			log_printf("<font color=red>HookEvent: tried to hook \"%s\" with illegal MIRANDASERVICE function</font>",name);
 			return NULL;
 		} //if
 	} __except(DumpErrorInformation(GetExceptionInformation())) {
@@ -431,19 +491,16 @@ int UnhookEvent(HANDLE hHook)
 	if(hookId>=hookCount || hookId<0) {
 		LeaveCriticalSection(&csHooks); 
 		log_printf("<font color=red>UnhookEvent: tried to unhook with (%d) handle, out of range</font>",hHook);
-		DebugBreak();
 		return 1;
 	}
 	if(hook[hookId].name[0]==0) {
 		LeaveCriticalSection(&csHooks);
 		log_printf("<font color=red>UnhookEvent: tried to unhook with (%d) handle, hook does not exist</font>",hHook);
-		DebugBreak();
 		return 1;
 	}
 	if(subscriberId>=hook[hookId].subscriberCount || subscriberId<0) {
 		log_printf("<font color=red>UnhookEvent: tried to unhook from \"%s\" with invalid handle (%d)</font>",hook[hookId].name,hHook);
 		LeaveCriticalSection(&csHooks); 		
-		DebugBreak();
 		return 1;
 	}
 	hook[hookId].subscriber[subscriberId].pfnHook=NULL;
@@ -500,7 +557,6 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 		if (IsBadCodePtr((void*)serviceProc)) {
 			LeaveCriticalSection(&csServices);
 			log_printf("<font color=red>CreateServiceFunction: tried to create \"%s\" with illegal function pointer (%x)</font>",name,(DWORD)serviceProc);
-			DebugBreak();
 			return NULL;
 		} //if
 	} __except(DumpErrorInformation(GetExceptionInformation())) {
@@ -512,6 +568,7 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 	strcpy(service[i].name,name);
 	service[i].nameHash=hash;
 	service[i].pfnService=serviceProc;
+	service[i].dwTimesLow=service[i].dwTimesHigh=0;
 	serviceCount++;
 	LeaveCriticalSection(&csServices);
 	log_printf("CreateServiceFunction: created service \"%s\" with function pointer %x",name,(DWORD)serviceProc);
@@ -558,12 +615,14 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		return CALLSERVICE_NOTFOUND;
 	}
 	pfnService=pService->pfnService;
+	if (++pService->dwTimesLow==0) {
+		pService->dwTimesHigh++;
+	} //if
 	LeaveCriticalSection(&csServices);
 	__try {
 		rc=((int (*)(WPARAM,LPARAM))pfnService)(wParam,lParam);
 	} __except(DumpErrorInformation(GetExceptionInformation())) 
-	{
-		
+	{		
 	} //try
 	return rc;
 }

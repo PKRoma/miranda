@@ -3,6 +3,7 @@
 
 int InitialiseModularEngine(void);
 void DestroyModularEngine(void);
+void DestroyingModularEngine(void);
 HANDLE CreateHookableEvent(const char *name);
 int DestroyHookableEvent(HANDLE hEvent);
 int NotifyEventHooks(HANDLE hEvent,WPARAM wParam,LPARAM lParam);
@@ -14,9 +15,12 @@ int DestroyServiceFunction(HANDLE hService);
 int CallService(const char *name,WPARAM wParam,LPARAM lParam);
 int ServiceExists(const char *name);
 int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam);
-
 int fuse_log_init(void);
 int fuse_log_deinit(void);
+
+
+static DWORD gStartTick;
+
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
@@ -27,6 +31,11 @@ int __declspec(dllexport) fuse_ctrl(DWORD dwMsg, void* Param)
 {	
 	int rc;
 	switch (dwMsg) {
+		case FUSE_DEATH:
+		{
+			DestroyingModularEngine();
+			return 0;
+		}
 		case FUSE_DEFMOD:
 		{	
 			if (Param) {
@@ -38,6 +47,7 @@ int __declspec(dllexport) fuse_ctrl(DWORD dwMsg, void* Param)
 		}
 		case FUSE_INIT:
 		{
+			gStartTick=GetTickCount();
 			fuse_log_init();
 			log_printf("starting modular engine..");
 			rc=InitialiseModularEngine();
@@ -58,7 +68,7 @@ int __declspec(dllexport) fuse_ctrl(DWORD dwMsg, void* Param)
 					fl->CallService=CallService;
 					fl->ServiceExists=ServiceExists;
 					fl->CallServiceSync=CallServiceSync;
-					log_printf("<font color=green>FUSE_LINK given to Miranda, reported size of FUSE_LINK is %d bytes</font>", fl->cbSize);
+					log_printf("<font color=green>FUSE_LINK given to Miranda, reported size of FUSE_LINK is %d bytes</font>", fl->cbSize);					
 				} //if
 			}
 			return rc;
@@ -67,7 +77,8 @@ int __declspec(dllexport) fuse_ctrl(DWORD dwMsg, void* Param)
 		{
 			log_printf("<font color=green>Got FUSE_DEINIT, cleaning up..</font>");
 			DestroyModularEngine();
-			log_printf("DestroyModuleEngine() returned.\r\n Goodbye!");
+			log_printf("DestroyModuleEngine() returned.");
+			log_printf("Runtime\t: %d seconds",GetTickCount()-gStartTick);
 			fuse_log_deinit();
 			return 0;
 		}

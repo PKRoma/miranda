@@ -224,3 +224,23 @@ void log_flush(void)
 	if (fplog) fflush(fplog);
 	return;
 }
+
+int log_modulefromaddress(HANDLE hSnap,void *address,MODULEENTRY32 *modInfo)
+{
+	if (hSnap) {
+		MODULEENTRY32 moduleInfo;
+		moduleInfo.dwSize=sizeof(moduleInfo);
+		if (Module32First(hSnap,&moduleInfo)) {
+			for (;;) {
+				DWORD dwStart=(DWORD)moduleInfo.modBaseAddr,dwEnd=dwStart+moduleInfo.modBaseSize;
+				if ((DWORD)address >= dwStart && (DWORD)address <= dwEnd) {
+					memmove(modInfo,&moduleInfo,sizeof(moduleInfo));
+					return 1;					
+				} //if
+				moduleInfo.dwSize=sizeof(moduleInfo);
+				if (!Module32Next(hSnap,&moduleInfo)) break;
+			} //for
+		} //if		
+	} //if
+	return 0;
+}
