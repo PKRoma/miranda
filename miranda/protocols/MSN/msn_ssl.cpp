@@ -50,8 +50,6 @@ static ft_HttpOpenRequest     f_HttpOpenRequest;
 static ft_HttpQueryInfo       f_HttpQueryInfo;
 static ft_HttpSendRequest     f_HttpSendRequest;
 
-static char* sttLoginHost = NULL;
-
 static void  sttApplyProxy( HINTERNET parHandle )
 {
 	char tBuffer[ 100 ];
@@ -295,10 +293,10 @@ int MSN_Auth8( char* authChallengeInfo, char*& parResult )
 	f_HttpQueryInfo = (ft_HttpQueryInfo)GetProcAddress( tDll, "HttpQueryInfoA" );
 	f_HttpSendRequest = (ft_HttpSendRequest)GetProcAddress( tDll, "HttpSendRequestA" );
 
-	if ( sttLoginHost == NULL )
+	if ( msnLoginHost == NULL )
 	{
-		sttLoginHost = sttSslGet( "https://nexus.passport.com/rdr/pprdr.asp", NULL );
-		if ( sttLoginHost == NULL )
+		msnLoginHost = sttSslGet( "https://nexus.passport.com/rdr/pprdr.asp", NULL );
+		if ( msnLoginHost == NULL )
 		{
 			retVal = 1;
 LBL_Exit:
@@ -307,20 +305,20 @@ LBL_Exit:
 			return retVal;
 		}
 
-		char* p = strstr( sttLoginHost, "DALogin=" );
+		char* p = strstr( msnLoginHost, "DALogin=" );
 		if ( p == NULL )
-		{	free( sttLoginHost ); sttLoginHost = NULL;
+		{	free( msnLoginHost ); msnLoginHost = NULL;
 			retVal = 2;
 			goto LBL_Exit;
 		}
 
-		strcpy( sttLoginHost, "https://" );
-		strdel( sttLoginHost+8, int( p-sttLoginHost ));
-		if (( p = strchr( sttLoginHost, ',' )) != 0 )
+		strcpy( msnLoginHost, "https://" );
+		strdel( msnLoginHost+8, int( p-msnLoginHost ));
+		if (( p = strchr( msnLoginHost, ',' )) != 0 )
 			*p = 0;
 	}
 
-	char* tResult = sttSslGet( sttLoginHost, authChallengeInfo );
+	char* tResult = sttSslGet( msnLoginHost, authChallengeInfo );
 	if ( tResult == NULL )
 	{	retVal = 3;
 		goto LBL_Exit;
