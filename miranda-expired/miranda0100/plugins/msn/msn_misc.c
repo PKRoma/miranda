@@ -170,64 +170,32 @@ void UrlEncode(const char *src,char *dest,int cbDest)
 	dest[iDest]='\0';
 }
 
-/*
-void MSN_RemoveContact(char* uhandle)
+void Utf8Decode(char *str)
 {
-	if (opts.MSN.sNS)
-		MSN_SendPacket(opts.MSN.sNS,"REM",uhandle);
-
+	char *pstr;
+	int len=strlen(str);
+	if(len<2) return;
+	for(pstr=str;len>=2;pstr++,len--) {
+		if(((BYTE)pstr[0]&0xE0)==0xC0 && ((BYTE)pstr[1]&0xC0)==0x80) {
+			*pstr=(char)((((DWORD)(BYTE)pstr[0]&0x1F)<<6)|((DWORD)(BYTE)pstr[1]&0x3F));
+			memmove(pstr+1,pstr+2,--len);
+		}
+	}
 }
 
-	
-// returned value MUST be freed by the caller
-char *str_to_UTF8(unsigned char *in)
+void Utf8Encode(const char *src,char *dest,int cbDest)
 {
-    int n, i = 0;
-    char *result = NULL;
-
-    // for now, allocate more than enough space...
-    result = (char *) malloc(strlen(in) * 2 + 1);
-
-    //convert a string to UTF-8 Format
-    for (n = 0; n < (int)strlen(in); n++)
-    {
-        //if(c<0x80)
-        long c = (long) in[n];
-
-        if (c < 128)
-        {
-            result[i++] = (char) c;
-        }
-        else
-        {
-            *//*
-              ' Character range from 0x80 to 0xFF is treated as an *eleven* bit
-              ' character for Unicode compatibility, even though we only have
-              ' 8 bits.  The first byte indicates how many total bytes in each
-              ' character by the number of high-bits set.  Each following byte
-              ' ALWAYS begins with the bit sequence 10.
-              
-              ' First byte is a combination of 0xC0 (11000000) and the first
-              ' 5 bits of the 11-bit sequence (the 2 highest bits of our char),
-              ' which we get by shifting our char 6 bits right, and or'ing
-              ' it with 0xC0.  The initial "110" bits indicate a 2-byte encoding.
-            */
-               //Result += Chr((Ord(value[n]) shr 6) or $C0);
-               //result[i++]=(char)((c>>6)|0xC0);
-            //result[i++] = (char) ((c >> 6) | 192);
-
-            /*
-              ' Second byte is a combination of x80 (10000000) and the last
-              ' 6 bits of the 11-bit sequence, which we get by masking off
-              ' our char with 00111111 (0x3F), and or'ing itr with 0x80.  The
-              ' initial "10" marks this as the middle of a multi-byte sequence.
-            *//*
-            //Result := Result + Chr((Ord(value[n]) and $3F) or $80);
-            //result[i++]=(char)((c&0x3F)|0x80);
-            result[i++] = (char) ((c & 63) | 128);
-        }
-    }
-    result[i] = '\0';
-    return result;
+	int iSrc,iDest;
+	for(iSrc=iDest=0;src[iSrc];iSrc++) {
+		if(src[iSrc]<0) {
+			if(iDest>=cbDest-3) break;
+			dest[iDest++]=(BYTE)((((DWORD)(BYTE)src[iSrc]&0xC0)>>6)|0xC0);
+			dest[iDest++]=(BYTE)(((DWORD)(BYTE)src[iSrc]&0x3F)|0x80);
+		}
+		else {
+			dest[iDest++]=src[iSrc];
+			if(iDest==cbDest-1) break;
+		}
+	}
+	dest[iDest]='\0';
 }
-*/ 

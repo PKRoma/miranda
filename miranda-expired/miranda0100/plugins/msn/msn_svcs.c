@@ -71,8 +71,10 @@ int MsnSetStatus(WPARAM wParam,LPARAM lParam)
 				DBFreeVariant(&dbv);
 			}
 			newThread->type=SERVER_DISPATCH;
-			ProtoBroadcastAck(MSNPROTONAME,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)msnStatusMode,ID_STATUS_CONNECTING);
-			msnStatusMode=ID_STATUS_CONNECTING;
+			{	int oldMode=msnStatusMode;
+				msnStatusMode=ID_STATUS_CONNECTING;
+				ProtoBroadcastAck(MSNPROTONAME,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)oldMode,msnStatusMode);
+			}
 			_beginthread(MSNServerThread,0,newThread);
 		}
 		else {   //change status
@@ -141,15 +143,17 @@ static int MsnSendMessage(WPARAM wParam,LPARAM lParam)
 	CCSDATA *ccs=(CCSDATA*)lParam;
 	SOCKET s;
 	int seq;
+	char *msg;
 
+	msg=(char*)malloc(strlen((char*)ccs->lParam)*2+1);
+	Utf8Encode((char*)ccs->lParam,msg,strlen((char*)ccs->lParam)*2+1);
 	s=Switchboards_SocketFromHContact(ccs->hContact);
 	if(s==SOCKET_ERROR) {
 		MSN_SendPacket(msnNSSocket,"XFR","SB");
-		return MsgQueue_Add(ccs->hContact,(char*)ccs->lParam,ccs->wParam);
+		return MsgQueue_Add(ccs->hContact,msg,ccs->wParam);
 	}
 	seq=MsgQueue_AllocateUniqueSeq();
-	//TODO? UTF-8 encoding
-	MSN_SendPacket(s,"MSG","U %d\r\nContent-Type: text/plain\r\n\r\n%s",strlen((char*)ccs->lParam)+28,(char*)ccs->lParam);
+	MSN_SendPacket(s,"MSG","U %d\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s",strlen(msg)+43,msg);
 	CmdQueue_AddProtoAck(ccs->hContact,ACKTYPE_MESSAGE,ACKRESULT_SUCCESS,(HANDLE)seq,0);  //need a delay so caller gets seq before ack
 	return seq;
 }
