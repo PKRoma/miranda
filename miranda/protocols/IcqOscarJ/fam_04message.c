@@ -314,6 +314,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 							szMsg = calloc(nStrSize+1, sizeof(wchar_t)+1);
 							szMsg[nStrSize - 1] = 0; // ?? redundant as long as calloc is used
 							WideCharToMultiByte(CP_ACP, 0, usMsg, wMsgLen / sizeof(WCHAR), szMsg, nStrSize, NULL, NULL);
+              nStrSize = strlen(szMsg); // this is necessary, sometimes it was bad
 							memcpy(szMsg+nStrSize+1, usMsg, wMsgLen);
 
 							pre.flags = PREF_UNICODE;
