@@ -23,6 +23,7 @@
 #define IDD_HOTKEYSLAVE                 303
 #define IDR_MENUBAR                     308
 #define IDD_CHOOSESTATUSMODES           310
+#define IDD_OPTIONSDIALOG               311
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003
@@ -266,6 +267,8 @@
 #define IDC_FLASHINTERVAL               1704
 #define IDC_USEKBDHOOK                  1705
 #define IDC_STATIC111                   1706
+#define IDC_TAB1                        1706
+#define IDC_OPTIONSTAB                  1706
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -396,9 +399,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        311
+#define _APS_NEXT_RESOURCE_VALUE        312
 #define _APS_NEXT_COMMAND_VALUE         40177
-#define _APS_NEXT_CONTROL_VALUE         1706
+#define _APS_NEXT_CONTROL_VALUE         1707
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

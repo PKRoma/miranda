@@ -43,6 +43,7 @@ void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
 static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -1369,25 +1370,26 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.cbSize = sizeof(odp);
     odp.position = 910000000;
     odp.hInstance = g_hInst;
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGDLG);
-    odp.pszTitle = Translate("Messaging");
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
+    odp.pszTitle = Translate("Message Window");
     odp.pszGroup = Translate("Message Sessions");
-    odp.pfnDlgProc = DlgProcOptions;
+    odp.pfnDlgProc = OptionsDlgProc;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
+/*
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGLOG);
     odp.pszTitle = Translate("Messaging Log");
     odp.pfnDlgProc = DlgProcLogOptions;
     odp.nIDBottomSimpleControl = IDC_STMSGLOGGROUP;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
+*/
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
     odp.pszTitle = Translate("Typing Notify");
     odp.pfnDlgProc = DlgProcTypeOptions;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
+/*
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_TABBEDMSG);
 	odp.pszTitle = Translate("Message tabs");
 	odp.pfnDlgProc = DlgProcTabbedOptions;
@@ -1405,7 +1407,7 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.pfnDlgProc = DlgProcMsgWindowFonts;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    
+*/    
     return 0;
 }
 
@@ -1478,3 +1480,106 @@ static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wPar
     return FALSE;
 }
 
+/*
+ * tabbed options dialog
+ */
+
+static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+   static int iInit = TRUE;
+   
+   switch(msg)
+   {
+      case WM_INITDIALOG:
+      {
+         TCITEMA tci;
+         RECT rcClient;
+         GetClientRect(hwnd, &rcClient);
+
+         iInit = TRUE;
+         tci.mask = TCIF_PARAM|TCIF_TEXT;
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGDLG), hwnd, DlgProcOptions);
+         tci.pszText = Translate("General");
+         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)0, (LPARAM)&tci);
+         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGWINDOWFONTS),hwnd, DlgProcMsgWindowFonts);
+         tci.pszText = Translate("Fonts and Colors");
+         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)1, (LPARAM)&tci);
+         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         ShowWindow((HWND)tci.lParam, SW_HIDE);
+         
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_TABBEDMSG),hwnd,DlgProcTabbedOptions);
+         tci.pszText = Translate("Tabs and layout");
+         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)2, (LPARAM)&tci);
+         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         ShowWindow((HWND)tci.lParam, SW_HIDE);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CONTAINERS),hwnd,DlgProcContainerOptions);
+         tci.pszText = Translate("Containers");
+         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)3, (LPARAM)&tci);
+         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         ShowWindow((HWND)tci.lParam, SW_HIDE);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGLOG),hwnd,DlgProcLogOptions);
+         tci.pszText = Translate("Message log");
+         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)4, (LPARAM)&tci);
+         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
+         ShowWindow((HWND)tci.lParam, SW_HIDE);
+         // add more tabs here if needed
+         // activate the final tab
+         iInit = FALSE;
+         return FALSE;
+      }
+      
+       case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+         if(!iInit)
+             SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+         break;
+      case WM_NOTIFY:
+         switch(((LPNMHDR)lParam)->idFrom) {
+            case 0:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case PSN_APPLY:
+                     {
+                        TCITEM tci;
+                        int i,count;
+                        tci.mask = TCIF_PARAM;
+                        count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+                        for (i=0;i<count;i++)
+                        {
+                           TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+                           SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+                        }
+                     }
+                  break;
+               }
+            break;
+            case IDC_OPTIONSTAB:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case TCN_SELCHANGING:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                     }
+                  break;
+                  case TCN_SELCHANGE:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_SHOW);                     
+                     }
+                  break;
+               }
+            break;
+
+         }
+      break;
+   }
+   return FALSE;
+}

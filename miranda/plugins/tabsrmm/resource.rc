@@ -11,6 +11,7 @@
 #include <winres.h>
 #include "../../include/statusmodes.h"
 
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -28,8 +29,25 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
+IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
+IDD_OPTIONSDIALOG DIALOGEX 0, 0, 312, 247
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",0x0,1,1,310,245,
+                    WS_EX_ACCEPTFILES
+END
+
 IDD_CHOOSESTATUSMODES DIALOGEX 0, 0, 226, 154
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -188,17 +206,16 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,110,121,10
 END
 
-IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 227
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,1,310,223
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,0,303,226
     CONTROL         "Automatically switch tabs in minimized containers",
                     IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,12,295,10
+                    8,12,289,10
     CONTROL         "Place dividers in inactive sessions",IDC_USEDIVIDERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,23,295,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,23,289,11
     CONTROL         "Use popup configuration for placing dividers",
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,34,271,11
@@ -260,9 +277,8 @@ BEGIN
                     IDC_STATIC111,19,138,274,18
 END
 
-IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
+IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Items to show",IDC_STMSGLOGGROUP,0,0,150,94
@@ -282,7 +298,7 @@ BEGIN
                     WS_TABSTOP,17,78,61,10
     CONTROL         "Show seconds",IDC_SHOWSECONDS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,85,77,63,11
-    GROUPBOX        "Other options",IDC_STATIC,154,0,151,94
+    GROUPBOX        "Other options",IDC_STATIC,154,0,149,94
     CONTROL         "Enable message log scrolling hotkeys",IDC_LOGHOTKEYS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,12,142,13
     CONTROL         "Log status changes",IDC_LOGSTATUS,"Button",
@@ -292,7 +308,7 @@ BEGIN
     CONTROL         "Ignore per-contact message log settings",
                     IDC_IGNORECONTACTSETTINGS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,158,50,142,11
-    GROUPBOX        "Formatting options",IDC_STATIC,0,95,305,76
+    GROUPBOX        "Formatting options",IDC_STATIC,0,95,303,76
     CONTROL         "Message body in a new line",IDC_SHOW_EVENTS_NL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,106,127,9
     CONTROL         "Underline timestamp/nickname",IDC_UNDERLINE,"Button",
@@ -322,7 +338,7 @@ BEGIN
     CONTROL         "Mark followup messages with timestamps",
                     IDC_MARKFOLLOWUPTIMESTAMP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,158,156,140,11
-    GROUPBOX        "Load History Events",IDC_STATIC,0,174,306,55
+    GROUPBOX        "Load History Events",IDC_STATIC,0,174,303,53
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,138,10
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
@@ -345,7 +361,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,130,144,10
 END
 
-IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
+IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -369,12 +385,11 @@ BEGIN
                     BS_AUTORADIOBUTTON,44,231,206,10
 END
 
-IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 312, 227
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
+IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab options",IDC_STATIC,0,0,311,61
+    GROUPBOX        "Tab options",IDC_STATIC,0,0,303,61
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,11,135,10
     EDITTEXT        IDC_CUT_TITLEMAX,148,9,30,12,ES_AUTOHSCROLL
@@ -391,15 +406,15 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,31,11,
                     13
     LTEXT           "pixel",IDC_STATIC,267,34,28,11
-    GROUPBOX        "Create tabs and containers",IDC_STATIC,0,65,311,52
+    GROUPBOX        "Create tabs and containers",IDC_STATIC,0,65,303,52
     CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,86,134,11
     CONTROL         "Popup container if minimized",IDC_POPUPCONTAINER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,6,97,132,11
     CONTROL         "Create containers, but leave them minimized",
                     IDC_AUTOCREATECONTAINER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,143,86,162,11
-    GROUPBOX        "Message dialog layout",IDC_STATIC,0,120,311,42
+                    WS_TABSTOP,137,86,156,11
+    GROUPBOX        "Message dialog layout",IDC_STATIC,0,120,303,42
     CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,132,133,11
     CONTROL         "Show full UIN on toolbar",IDC_FULLUSERNAME,"Button",
@@ -411,8 +426,8 @@ BEGIN
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,127,
                     11,13
-    LTEXT           "pixel",IDC_STATIC,268,132,35,10
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,311,62
+    LTEXT           "pixel",IDC_STATIC,268,132,31,10
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,303,60
     CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,173,141,12
     LTEXT           "Input history:",IDC_STATIC,155,175,74,10
@@ -420,9 +435,9 @@ BEGIN
     CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,170,
                     12,13
-    LTEXT           "entries",IDC_STATIC,272,175,31,10
+    LTEXT           "entries",IDC_STATIC,272,175,28,10
     CONTROL         "Use ESC key for closing sessions",IDC_ESC_MINIMIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,185,300,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,185,294,11
     CONTROL         "Use global hotkeys for finding message sessions",
                     IDC_HOTKEYSAREGLOBAL,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,5,197,295,9
@@ -431,8 +446,8 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Automatically pop up the window/tab when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,75,
-                    300,10
-    PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,142,99,
+                    294,10
+    PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,137,99,
                     154,14
 END
 
@@ -455,14 +470,13 @@ BEGIN
     PUSHBUTTON      "Create new",IDC_CREATENEW,134,119,66,14
 END
 
-IDD_OPT_CONTAINERS DIALOGEX 0, 0, 312, 227
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
+IDD_OPT_CONTAINERS DIALOGEX 0, 0, 303, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "To set container options, please use the container settings dialog. It is avalable by:\n1. chossing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
                     IDC_STATIC,7,2,298,25
-    GROUPBOX        "Container mode",IDC_STATIC,0,30,312,62
+    GROUPBOX        "Container mode",IDC_STATIC,0,30,303,62
     CONTROL         "Use contact list group names for organizing containers",
                     IDC_CONTAINERGROUPMODE,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,6,40,296,10
@@ -479,9 +493,9 @@ BEGIN
                     IDC_DEFAULTCONTAINERMODE,"Button",BS_AUTORADIOBUTTON,6,
                     75,295,12
     GROUPBOX        "Set display name for the default container (instead of just ""default"")",
-                    IDC_STATIC,1,186,310,30
+                    IDC_STATIC,0,186,303,30
     EDITTEXT        IDC_DEFAULTDISPLAYNAME,7,198,142,12,ES_AUTOHSCROLL
-    GROUPBOX        "Container flashing",IDC_STATIC,0,94,312,43
+    GROUPBOX        "Container flashing",IDC_STATIC,0,94,303,43
     LTEXT           "Flash containers",IDC_STATIC,6,106,102,11
     EDITTEXT        IDC_NRFLASH,111,104,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_NRFLASHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -494,17 +508,16 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,149,121,10,10
     LTEXT           "milliseconds",IDC_STATIC,166,119,81,12
-    GROUPBOX        "Global container options",IDC_STATIC,0,140,311,42
+    GROUPBOX        "Global container options",IDC_STATIC,0,140,303,42
     CONTROL         "Use the snapping windows plugin",IDC_USESNAPPING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,153,157,11
 END
 
-IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 312, 227
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
+IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 303, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message Window Fonts",IDC_STATIC,4,4,304,125
+    GROUPBOX        "Message Window Fonts",IDC_STATIC,0,4,303,125
     COMBOBOX        IDC_FONTID,27,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "same",IDC_STSAMETEXT,34,32,45,10,SS_CENTERIMAGE
@@ -534,7 +547,7 @@ BEGIN
     CONTROL         "",IDC_COLOUR,"ColourPicker",WS_TABSTOP,221,87,59,12
     EDITTEXT        IDC_SAMPLE,78,104,151,16,ES_CENTER | ES_READONLY | NOT 
                     WS_TABSTOP
-    GROUPBOX        "Background Colors",IDC_STATIC,3,135,305,87
+    GROUPBOX        "Background Colors",IDC_STATIC,0,135,303,87
     LTEXT           "Default background",IDC_STATIC,15,159,81,8
     CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,102,158,39,10
     LTEXT           "Input area background",IDC_STATIC,15,174,80,10
@@ -585,7 +598,7 @@ BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\n"
-    "#include ""msgwindow.rc""\r\n"
+    "\r\n"
     "\0"
 END
 
@@ -742,39 +755,6 @@ END
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 #pragma code_page(1252)
 #endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_HOTKEYSLAVE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 133
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 45
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
