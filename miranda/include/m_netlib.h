@@ -304,11 +304,22 @@ typedef struct {
 //          MS_NETLIB_SENDHTTPREQUEST or MS_NETLIB_RECVHTTPHEADERS
 #define NLOCF_HTTP  0x0001  //this connection will be used for HTTP communications. If configured for an HTTP/HTTPS proxy the connection is opened as if there was no proxy.
 #define NLOCF_STICKYHEADERS 0x0002 //this connection should send the sticky headers associated with NetLib user apart of any HTTP request
+
+/* Added during 0.4.0+ development!! (2004/11/29) prior to this, connect() blocks til a connection is made or
+a hard timeout is reached, this can be anywhere between 30-60 seconds, and it stops Miranda from unloading whilst
+this is attempted, clearing sucking - so now you can set a timeout of any value, there is still a hard limit which is
+always reached by Windows, If a timeout occurs, or Miranda is exiting then you will get ERROR_TIMEOUT as soon as possible.
+*/ 
+#define NETLIBOPENCONNECTION_V1_SIZE 16 /* old sizeof() is 14 bytes, but there is padding of 2 bytes */
 struct NETLIBOPENCONNECTION_tag {
 	int cbSize;
 	const char *szHost;	  //can contain the string representation of an IP
 	WORD wPort;			  //host byte order
-	DWORD flags;
+	DWORD flags;	
+	unsigned int timeout;
+	/* optional, called in the context of the thread that issued the attempt, if it returns 0 the connection attempt is
+	stopped, the remaining timeout value can also be adjusted */
+	int (*waitcallback) (unsigned int * timeout);
 };
 //typedef struct NETLIBOPENCONNECTION_tag NETLIBOPENCONNECTION;  //(above for reasons of forward referencing)
 #define MS_NETLIB_OPENCONNECTION	"Netlib/OpenConnection"
