@@ -663,12 +663,29 @@ void __cdecl p2p_filePassiveSendThread( ThreadData* info )
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendViaServer - sends a file via server
 
-void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T )
+struct p2p_sendViaServerParams 
 {
+	HANDLE s;
+	filetransfer* ft;
+};
+
+static void __cdecl p2p_sendViaServerThread( ThreadData* info )
+{
+	HANDLE s = info->s; info->s = NULL;
+	filetransfer* ft = info->mP2pSession;
+	
 	while ( ft->std.currentFileProgress < ft->std.totalBytes ) {
+		ThreadData* T = MSN_GetThreadByConnection( s );
+		if ( T == NULL ) {
+			MSN_DebugLog( "File transfer broken" );
+			p2p_unregisterSession( ft );
+			return;
+		}
+
 		if ( ft->bCanceled ) {
 			p2p_sendBye( T, ft );
 			MSN_DebugLog( "File transfer canceled" );
+			p2p_unregisterSession( ft );
 			return;
 		}
 
@@ -679,6 +696,15 @@ void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T )
 	ft->p2p_ackID = 3000;
 	MSN_DebugLog( "File transfer succeeded" );
 	ft->complete();
+}
+
+void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T )
+{
+	ThreadData* newThread = new ThreadData;
+	newThread->mType = SERVER_FILETRANS;
+	newThread->mP2pSession = ft;
+	newThread->s = T->s;
+	newThread->startThread(( pThreadFunc )p2p_sendViaServerThread );
 }
 
 LONG __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T )

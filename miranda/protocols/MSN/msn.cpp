@@ -49,7 +49,6 @@ int		MsnOptInit( WPARAM wParam, LPARAM lParam );
 
 int      uniqueEventId = 0;
 int      msnSearchID = -1;
-HANDLE   msnGetInfoContact = NULL;
 char*    msnExternalIP = NULL;
 HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;

@@ -479,7 +479,7 @@ static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
 		return 0;
 
 	CCSDATA *ccs=(CCSDATA*)lParam;
-	msnGetInfoContact = ccs->hContact;
+	MSN_SendBroadcast( ccs->hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
 	return 1;
 }
 
