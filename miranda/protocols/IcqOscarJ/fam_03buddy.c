@@ -366,6 +366,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         DBVARIANT dbv;
         int dummy;
         int dwJob = 0;
+        char szAvatar[256];
+        int dwPaFormat;
 
         if (gbAvatarsEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLoad", 1))
         { // check settings, should we request avatar immediatelly
@@ -380,14 +382,33 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             { // the hash is different, request new avatar
               dwJob = 1;
             }
+            else
+            { // the hash does not changed, so check if the file exists
+              if (pTLV->pData[1] == 8)
+                dwPaFormat = PA_FORMAT_XML;
+              else 
+                dwPaFormat = PA_FORMAT_JPEG;
+              GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
+              if (access(szAvatar, 0) == 0)
+              { // the file exists, so try to update photo setting
+                if (dwPaFormat == PA_FORMAT_JPEG)
+                {
+                  DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
+                  DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
+                  if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szAvatar))
+                    Netlib_Logf(ghServerNetlibUser, "Avatar file could not be linked to mToolTip.");
+                }
+              }
+              else
+              { // the file was lost, get it again
+                dwJob = 1;
+              }
+            }
             DBFreeVariant(&dbv);
           }
 
           if (dwJob)
           {
-            char szAvatar[256];
-            int dwPaFormat;
-
             ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, new hash stored.");
@@ -405,7 +426,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               dwPaFormat = PA_FORMAT_JPEG;
             GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
             if (GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar)) 
-            { // avatar request sent
+            { // avatar request sent or added to queue
               if (dwPaFormat == PA_FORMAT_JPEG)
               {
                 DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
@@ -494,7 +515,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capSim, 0xC))
           {
             unsigned ver1 = (*capId)[0xC];
-            unsigned ver2 = (*capId)[0xD];
+            unsigned ver2 = (*capId)[0xD] % 100;
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
               _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);

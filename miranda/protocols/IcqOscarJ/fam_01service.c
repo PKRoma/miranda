@@ -76,7 +76,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 		// Miranda mimics the behaviour of 2003b (haven't changed since at least 2002a)
 		packet.wLen = 50;
 		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES);
+		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES<<0x10);
 		packDWord(&packet, 0x00010004);
 		packDWord(&packet, 0x00130004);
 		packDWord(&packet, 0x00020001);
@@ -99,7 +99,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #endif
     packet.wLen = 10;
     write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQ_RATE_INFO, 0, ICQ_CLIENT_REQ_RATE_INFO);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQ_RATE_INFO, 0, ICQ_CLIENT_REQ_RATE_INFO<<0x10);
     sendServPacket(&packet);
     break;
 
@@ -111,7 +111,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     /* Don't really care about this now, just send the ack */
     packet.wLen = 20;
     write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK, 0, ICQ_CLIENT_RATE_ACK);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK, 0, ICQ_CLIENT_RATE_ACK<<0x10);
     packDWord(&packet, 0x00010002);
     packDWord(&packet, 0x00030004);
     packWord(&packet, 0x0005);
@@ -123,7 +123,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #endif
     packet.wLen = 10;
     write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQINFO, 0, ICQ_CLIENT_REQINFO);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQINFO, 0, ICQ_CLIENT_REQINFO<<0x10);
     sendServPacket(&packet);
 
     if (gbSsiEnabled)
@@ -136,7 +136,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       // CLI_REQLISTS - we want to use SSI
       packet.wLen = 10;
       write_flap(&packet, ICQ_DATA_CHAN);
-      packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQLISTS, 0, ICQ_LISTS_CLI_REQLISTS);
+      packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQLISTS, 0, ICQ_LISTS_CLI_REQLISTS<<0x10);
       sendServPacket(&packet);
 #ifdef _DEBUG
       Netlib_Logf(ghServerNetlibUser, "Requesting roster check");
@@ -157,25 +157,25 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     // CLI_REQLOCATION
     packet.wLen = 10;
     write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_LOCATION_FAMILY, 0x02, 0, 0x02);
+    packFNACHeader(&packet, ICQ_LOCATION_FAMILY, 0x02, 0, 0x020000);
     sendServPacket(&packet);
 
     // CLI_REQBUDDY
     packet.wLen = 10;
     write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_CLI_REQBUDDY, 0, ICQ_USER_CLI_REQBUDDY);
+    packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_CLI_REQBUDDY, 0, ICQ_USER_CLI_REQBUDDY<<0x10);
     sendServPacket(&packet);
 
     // CLI_REQICBM
     packet.wLen = 10;
     write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_REQICBM, 0, ICQ_MSG_CLI_REQICBM);
+    packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_REQICBM, 0, ICQ_MSG_CLI_REQICBM<<0x10);
     sendServPacket(&packet);
 
     // CLI_REQBOS
     packet.wLen = 10;
     write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_BOS_FAMILY, 0x02, 0, 0x02);
+    packFNACHeader(&packet, ICQ_BOS_FAMILY, 0x02, 0, 0x020000);
     sendServPacket(&packet);
     break;
 
@@ -184,7 +184,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     // This is the list of groups that we want to have on the next server
     packet.wLen = 30;
     write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_PAUSE_ACK, 0, ICQ_CLIENT_PAUSE_ACK);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_PAUSE_ACK, 0, ICQ_CLIENT_PAUSE_ACK<<0x10);
     packWord(&packet,ICQ_SERVICE_FAMILY);
     packWord(&packet,ICQ_LISTS_FAMILY);
     packWord(&packet,ICQ_LOCATION_FAMILY);
@@ -397,7 +397,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
   {
     DBCONTACTWRITESETTING cws;
 
-    Netlib_Logf(ghServerNetlibUser, "Received our avatar hash.");
+    Netlib_Logf(ghServerNetlibUser, "Received our avatar hash & status.");
 
     if (wBufferLength >= 0x14)
     {
@@ -415,10 +415,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
           break;
         }
-        case 0x41:
-        { // request to upload avatar data
-          break;
-        }
+        case 0x41: // request to upload avatar data
         case 0x81:
         { // request to re-upload avatar data
           break;
@@ -563,7 +560,7 @@ void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 
 		packet.wLen = nListLen + 10;
 		write_flap(&packet, 2);
-		packFNACHeader(&packet, wFamily, wSubtype, 0, wFlags);
+		packFNACHeader(&packet, wFamily, wSubtype, 0, wFlags<<0x10);
 		packBuffer(&packet, szList, (WORD)nListLen);
 		sendServPacket(&packet);
 
@@ -608,7 +605,7 @@ void handleServUINSettings(int nPort, int nIP)
 
 		packet.wLen = 30 + wAdditionalData;
 		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_LOCATION_FAMILY, 0x04, 0, 0x04);
+		packFNACHeader(&packet, ICQ_LOCATION_FAMILY, 0x04, 0, 0x040000);
 
 		/* TLV(5): capability data */
 		packWord(&packet, 0x0005);
@@ -675,7 +672,7 @@ void handleServUINSettings(int nPort, int nIP)
 	// Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
 	packet.wLen = 26;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x02);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x020000);
 	packWord(&packet, 0x0001);              // Channel
 #ifdef DBG_CAPMTN
 		packDWord(&packet, 0x0000000B);     // Flags
@@ -692,7 +689,7 @@ void handleServUINSettings(int nPort, int nIP)
 	// Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
 	packet.wLen = 26;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x02);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x020000);
 	packWord(&packet, 0x0002);              // Channel
 	packDWord(&packet, 0x00000003);         // Flags
 	packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
@@ -705,7 +702,7 @@ void handleServUINSettings(int nPort, int nIP)
 	// Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
 	packet.wLen = 26;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x02);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x020000);
 	packWord(&packet, 0x0004);              // Channel
 	packDWord(&packet, 0x00000003);         // Flags
 	packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
@@ -717,13 +714,13 @@ void handleServUINSettings(int nPort, int nIP)
 
 
 	/* SNAC 3,4: Tell server who's on our list */
-	sendEntireListServ(ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, 4, BUL_ALLCONTACTS);
+	sendEntireListServ(ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, ICQ_USER_ADDTOLIST, BUL_ALLCONTACTS);
 
 	if (icqGoingOnlineStatus == ID_STATUS_INVISIBLE)
 	{
 		/* Tell server who's on our visible list */
 		if (!gbSsiEnabled)
-			sendEntireListServ(9, 5, 7, BUL_VISIBLE);
+			sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDVISIBLE, 7, BUL_VISIBLE);
 		else
 			updateServVisibilityCode(3);
 	}
@@ -732,7 +729,7 @@ void handleServUINSettings(int nPort, int nIP)
 	{
 		/* Tell server who's on our invisible list */
 		if (!gbSsiEnabled)
-			sendEntireListServ(9, 7, 7, BUL_INVISIBLE);
+			sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDINVISIBLE, 7, BUL_INVISIBLE);
 		else
 			updateServVisibilityCode(4);
 	}
@@ -773,7 +770,7 @@ void handleServUINSettings(int nPort, int nIP)
 
 		packet.wLen = 65;
 		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS);
+		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
 		packDWord(&packet, 0x00060004);	// TLV 6: Status mode and security flags
 		packWord(&packet, wFlags);      // Status flags
 		packWord(&packet, wStatus);     // Status
@@ -800,7 +797,7 @@ void handleServUINSettings(int nPort, int nIP)
 	/* SNAC 1,11 */
 	packet.wLen = 14;
 	write_flap(&packet, 2);
-	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE);
+	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE<<0x10);
 	packDWord(&packet, 0x00000000);
 
 	sendServPacket(&packet);
@@ -809,7 +806,7 @@ void handleServUINSettings(int nPort, int nIP)
 
 	packet.wLen = 90;
 	write_flap(&packet, 2);
-	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY);
+	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY<<0x10);
 	packDWord(&packet, 0x00010003);
 	packDWord(&packet, 0x0110047B);
 	packDWord(&packet, 0x00130002);

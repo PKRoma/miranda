@@ -55,6 +55,7 @@ typedef struct avatarcookie_t
   DWORD dwUin;
   HANDLE hContact;
   unsigned int hashlen;
+  unsigned int cbData;
   char *szFile;
 } avatarcookie;
 
@@ -168,7 +169,7 @@ void StopAvatarThread()
 }
 
 
-// request avatar from server
+// request avatar data from server
 int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen, char* file)
 {
   avatarthreadstartinfo* atsi;
@@ -186,13 +187,14 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
     nUinLen = strlen(szUin);
     
     ack = (avatarcookie*)malloc(sizeof(avatarcookie));
+    if (!ack) return 0; // out of memory, go away
     ack->dwUin = dwUin;
     ack->hContact = hContact;
     ack->hashlen = hashlen;
     ack->szFile = _strdup(file); // we duplicate the string
     dwCookie = AllocateCookie(6, dwUin, ack);
 
-    packet.wLen = 20 + nUinLen + hashlen;
+    packet.wLen = 12 + nUinLen + hashlen;
     write_flap(&packet, 2);
     packFNACHeader(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST, 0, dwCookie);
     packByte(&packet, nUinLen);
@@ -209,8 +211,28 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
   }
   // we failed to send request, or avatar thread not ready
   EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
-  { // add request to queue, processed after successful login
-    avatarrequest* ar = (avatarrequest*)malloc(sizeof(avatarrequest));
+  { // check if any request for this user is not already in the queue
+    avatarrequest* ar;
+    int bYet = 0;
+    ar = pendingRequests;
+    while (ar)
+    {
+      if (ar->hContact == hContact)
+      { // we found it, return error
+        LeaveCriticalSection(&cookieMutex);
+        Netlib_Logf(ghServerNetlibUser, "Ignoring duplicate get %d avatar request.", dwUin);
+
+        return 0;
+      }
+      ar = ar->pNext;
+    }
+    // add request to queue, processed after successful login
+    ar = (avatarrequest*)malloc(sizeof(avatarrequest));
+    if (!ar)
+    { // out of memory, go away
+      LeaveCriticalSection(&cookieMutex);
+      return 0;
+    }
     ar->type = 1; // get avatar
     ar->dwUin = dwUin;
     ar->hContact = hContact;
@@ -231,15 +253,90 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
     pendingStart = 1;
   }
 
-  return 0;
+  return -1; // we added to queue
 }
 
-// upload avatar to server
-static int SetAvatarData(char* hash, unsigned int hashlen, char* data, unsigned int datalen)
-{
-  // if ready, try send request, otherwise add to queue and start; on failure add request to queue and start
-  // if sent successfully then add to waiting queue
-  return 0;
+// upload avatar data to server
+static int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
+{ 
+  avatarthreadstartinfo* atsi;
+
+  atsi = currentAvatarThread; // we take avatar thread - horrible, but realiable
+  if (AvatarsReady) // check if we are ready
+  {
+    icq_packet packet;
+    DWORD dwCookie;
+    avatarcookie* ack;
+
+    ack = (avatarcookie*)malloc(sizeof(avatarcookie));
+    if (!ack) return 0; // out of memory, go away
+    ack->hContact = hContact;
+    ack->cbData = datalen;
+
+    dwCookie = AllocateCookie(2, 0, ack);
+
+    packet.wLen = 14 + datalen;
+    write_flap(&packet, 2);
+    packFNACHeader(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_UPLOAD_REQUEST, 0, dwCookie);
+    packWord(&packet, 1); // unknown, probably reference
+    packWord(&packet, (WORD)datalen);
+    packBuffer(&packet, data, (unsigned short)datalen);
+
+    if (sendAvatarPacket(&packet, atsi))
+    {
+      Netlib_Logf(ghServerNetlibUser, "Upload avatar packet sent.");
+
+      return dwCookie;
+    }
+  }
+  // we failed to send request, or avatar thread not ready
+  EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
+  { // check if any request for this user is not already in the queue
+    avatarrequest* ar;
+    int bYet = 0;
+    ar = pendingRequests;
+    while (ar)
+    {
+      if (ar->hContact == hContact)
+      { // we found it, return error
+        LeaveCriticalSection(&cookieMutex);
+        Netlib_Logf(ghServerNetlibUser, "Ignoring duplicate upload avatar request.");
+
+        return 0;
+      }
+      ar = ar->pNext;
+    }
+    // add request to queue, processed after successful login
+    ar = (avatarrequest*)malloc(sizeof(avatarrequest));
+    if (!ar)
+    { // out of memory, go away
+      LeaveCriticalSection(&cookieMutex);
+      return 0;
+    }
+    ar->type = 2; // upload avatar
+    ar->hContact = hContact;
+    ar->pData = (char*)malloc(datalen);
+    if (!ar->pData)
+    { // alloc failed
+      SAFE_FREE(&ar);
+      return 0;
+    }
+    memcpy(ar->pData, data, datalen); // copy the data
+    ar->cbData = datalen;
+    ar->pNext = pendingRequests;
+    pendingRequests = ar;
+  }
+  LeaveCriticalSection(&cookieMutex);
+
+  Netlib_Logf(ghServerNetlibUser, "Request to upload avatar image added to queue.");
+
+  if (!AvatarsReady && !pendingStart)
+  {
+    icq_requestnewfamily(0x10, StartAvatarThread);
+    pendingStart = 1;
+  }
+
+  return -1; // we added to queue
 }
 
 
@@ -298,9 +395,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
             SAFE_FREE(&reqdata->hash); // as soon as it will be copied
             break;
           case 2: // set avatar
-            SetAvatarData(reqdata->hash, reqdata->hashlen, reqdata->pData, reqdata->cbData);
+            SetAvatarData(reqdata->hContact, reqdata->pData, reqdata->cbData);
 
-            SAFE_FREE(&reqdata->hash);
+            SAFE_FREE(&reqdata->pData);
             break;
           }
 
@@ -630,7 +727,8 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         else
         { // the avatar is empty, delete the file
           DeleteFile(ac->szFile);
-
+          // there was probably some error, delete the hash too
+          DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash");
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
         }
         SAFE_FREE(&ac->szFile);
@@ -645,9 +743,28 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       break;
     }
     case ICQ_AVATAR_UPLOAD_ACK:
-     // upload completed, notify
-      break;
+    {
+      // upload completed, notify
+      BYTE res;
+      unpackByte(&pBuffer, &res);
+      if (!res && (wBufferLength == 0x15))
+      {
+        avatarcookie* ac;
+        if (FindCookie(pSnacHeader->dwRef, NULL, &ac))
+        {
+          // here we store the local hash
+          SAFE_FREE(&ac);
+        }
+        else
+        {
+          Netlib_Logf(ghServerNetlibUser, "Warning: Received unexpected Upload Avatar Reply SNAC(x10,x03).");
+        }
+      }
+      else
+        Netlib_Logf(ghServerNetlibUser, "Received invalid upload avatar ack.");
 
+      break;
+    }
   default:
     Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x02,%2x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
