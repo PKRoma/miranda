@@ -1,6 +1,7 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
 Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
@@ -73,7 +74,7 @@ void __stdcall p2p_unregisterSession( filetransfer* ft )
 
 filetransfer* __stdcall p2p_getSessionByID( long ID )
 {
-	if ( ID == 0 ) 
+	if ( ID == 0 )
 		return NULL;
 
 	filetransfer* ft = NULL;
@@ -95,7 +96,7 @@ filetransfer* __stdcall p2p_getSessionByID( long ID )
 
 filetransfer* __stdcall p2p_getSessionByMsgID( long ID )
 {
-	if ( ID == 0 ) 
+	if ( ID == 0 )
 		return NULL;
 
 	filetransfer* ft = NULL;

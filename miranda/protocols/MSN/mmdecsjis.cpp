@@ -1,8 +1,9 @@
 /*
-Plugin of Miranda IM for communicating with users of the MSN Messenger protocol. 
-Copyright (C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
-Miranda IM: the free icq client for MS Windows 
+Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -59,15 +60,15 @@ void mmdec_base64( char *t, char *s)
 {
 	int   d, count, j, val;
 	char  buf[BUFLEN], *bp, nw[4], *p;
-	
-	for (bp = buf; *s; s += 4) 
+
+	for (bp = buf; *s; s += 4)
 	{
 		val = 0;
 		if (s[2] == '=') count = 1;
 		else if (s[3] == '=') count = 2;
 		else count = 3;
-		
-		for (j = 0; j <= count; j++) 
+
+		for (j = 0; j <= count; j++)
 		{
 			if (!(p = strchr(mm64, s[j])))
 				return;
@@ -76,8 +77,8 @@ void mmdec_base64( char *t, char *s)
 			d <<= (3-j)*6;
 			val += d;
 		}
-		
-		for (j = 2; j >= 0; j--) 
+
+		for (j = 2; j >= 0; j--)
 		{
 			nw[j] = val & 255;
 			val >>= 8;
@@ -93,33 +94,33 @@ void mmdec_base64( char *t, char *s)
 void mmdec_quote( char *t, char *s )
 {
 	char  buf[BUFLEN], cval, *bp, *p;
-	
-	for ( bp = buf; *s; ) 
+
+	for ( bp = buf; *s; )
 	{
-		if (*s == '=') 
+		if (*s == '=')
 		{
 			cval = 0;
-			if (s[1] && (p = strchr(mmquote, s[1]))) 
+			if (s[1] && (p = strchr(mmquote, s[1])))
 				cval += (p - mmquote);
-			else 
+			else
 			{	*bp++ = *s++;
 				continue;
 			}
-			
-			if (s[2] && (p = strchr(mmquote, s[2]))) 
+
+			if (s[2] && (p = strchr(mmquote, s[2])))
 			{
 				cval <<= 4;
 				cval += (p - mmquote);
 				*bp++ = cval;
 				s += 3;
-			} 
+			}
 			else *bp++ = *s++;
-		} 
-		else if (*s == '_') 
+		}
+		else if (*s == '_')
 		{
 			*bp++ = 0x20;
 			s++;
-		} 
+		}
 		else *bp++ = *s++;
 	}
 
@@ -134,9 +135,9 @@ void mmdecode( char *trg, char *str )
 	int  base64, quote;
 	int  jis;
 	char *c;
-	
+
 	buf[0] = '\0';
-	
+
 	for (s = str, u = buf; *s; )
 	{
 		//	if (!strnicmp(s, "=?ISO-2022-JP?B?", 16) || !strnicmp(s, "=?iso-2022-jp?B?", 16)) {
@@ -158,7 +159,7 @@ void mmdecode( char *trg, char *str )
 		else
 			jis = 0;
 
-		if ( base64 || quote ) 
+		if ( base64 || quote )
 		{
 			if ( mmcont )
 			{
@@ -167,8 +168,8 @@ void mmdecode( char *trg, char *str )
 			}
 			if(quote) c = strstr(s,"?Q?");
 			if(base64) c = strstr(s,"?B?");
-			
-			for (s = c+3, t = mmbuf; *s; ) 
+
+			for (s = c+3, t = mmbuf; *s; )
 			{
 				if (s[0] == '?' && s[1] == '=')
 					break;
@@ -178,20 +179,20 @@ void mmdecode( char *trg, char *str )
 
 			if ( s[0] != '?' || s[1] != '=' )
 				goto end;
-			
+
 			s += 2;
 			*t = '\0';
 
 			if (base64) mmdec_base64(mmbuf, mmbuf);
 			if (quote) mmdec_quote(mmbuf, mmbuf);
-			for ( t = mmbuf; *t; ) 
+			for ( t = mmbuf; *t; )
 				*u++ = *t++;
 
 			mmcont = 1;
 			/* if (*s == ' ' || *s == '\t') *u++ = *s; */
 			/* for ( ; *s == ' ' || *s == '\t'; s++) ; */
-		} 
-		else 
+		}
+		else
 		{
 			if (*s != ' ' && *s != '\t') mmcont = 0;
 			*u++ = *s++;
@@ -199,7 +200,7 @@ void mmdecode( char *trg, char *str )
 
 	*u = '\0';
 end:
-	if ( jis ) 
+	if ( jis )
 		jiskarasjis( buf, buf ); // japanese jis code to shift-jis code
 	strcpy( trg, buf );
 }
@@ -225,18 +226,18 @@ int rjis( char *t, char *s )
 {
 	char *p, buf[BUFLEN];
 	int kanji = 0;
-	
-	if (strchr(s, ESC) || !strchr(s, '$')) 
+
+	if (strchr(s, ESC) || !strchr(s, '$'))
 	{
 		if (s != t) strcpy(t, s);
 		return 1;
 	}
 
-	for (p = buf; *s; ) 
+	for (p = buf; *s; )
 	{
-		if (!kanji && s[0] == '$' && (s[1] == '@' || s[1] == 'B')) 
+		if (!kanji && s[0] == '$' && (s[1] == '@' || s[1] == 'B'))
 		{
-			if (maybekanji((int)s[2], (int)s[3])) 
+			if (maybekanji((int)s[2], (int)s[3]))
 			{
 				kanji = 1;
 				*p++ = ESC;
@@ -249,7 +250,7 @@ int rjis( char *t, char *s )
 			*p++ = *s++;
 			continue;
 		}
-		if (kanji && s[0] == '(' && (s[1] == 'J' || s[1] == 'B')) 
+		if (kanji && s[0] == '(' && (s[1] == 'J' || s[1] == 'B'))
 		{
 			kanji = 0;
 			*p++ = ESC;
@@ -260,7 +261,7 @@ int rjis( char *t, char *s )
 		*p++ = *s++;
 	}
 	*p = *s;    /* terminate string */
-	
+
 	strcpy(t, buf);
 	return 0;
 }
@@ -341,24 +342,24 @@ int maybekanji( int c1, int c2 )
 unsigned int jis2sjis(unsigned int jis)
 {
 	unsigned int hib, lob;
-	
+
 	hib = (jis >> 8) & 0xff;
 	lob = jis & 0xff;
 	lob += (hib & 1) ? 0x1f : 0x7d;
 	if (lob >= 0x7f) lob++;
 	hib = ((hib - 0x21) >> 1) + 0x81;
 	if (hib > 0x9f) hib += 0x40;
-	
+
 	return (hib << 8) | lob;
 }
 
 static void rint2hexsz(char *str, int num, int *off)
 {
 	int k, n;
-	
-	if ((k = num >> 4) != 0) 
+
+	if ((k = num >> 4) != 0)
 		rint2hexsz(str, k, off);
-	
+
 	n = num & 0xf;
 	*(str + *off) = n <= 9 ? n + '0' : n - 10 + 'A';
 	(*off)++;
@@ -367,7 +368,7 @@ static void rint2hexsz(char *str, int num, int *off)
 void int2hexsz(char *str, int num)
 {
 	int i;
-	
+
 	i = 0;
 	if (num < 0) {
 		num = -num;
@@ -382,7 +383,7 @@ int hexsz2int(char *str)
 {
 	int val;
 	int sign;
-	
+
 	while (*str == ' ' || *str == '\t') str++;
 	sign = 1;
 	if (*str == '+') str++;
@@ -400,21 +401,21 @@ int hexsz2int(char *str)
 		else                                 val += *str - 'a' + 10;
 		str++;
 	}
-	
+
 	return sign == 1 ? val : -val;
 }
 
 unsigned short Jis2Sjis( unsigned short jis )
 {
 	unsigned short ubyte, lbyte;
-	
+
 	ubyte = jis >> 8;
 	lbyte = jis & 0x00ff;
-	
+
 	lbyte += 0x1f;
 	if ( lbyte >= 0x7f ) lbyte++;
 	if ( lbyte <= 0x3f ) return 0;
-	
+
 	if ( (ubyte & 0x0001) == 0 )
 	{
 		lbyte = jis & 0x00ff;
@@ -422,12 +423,12 @@ unsigned short Jis2Sjis( unsigned short jis )
 		ubyte--;
 		if ( lbyte > 0xfd ) return 0;
 	}
-	
+
 	ubyte -= 0x1f;
 	ubyte = ubyte >> 1;
 	ubyte += 0x80;
 	if ( ubyte >= 0xa0 ) ubyte += 0x40;
-	
+
 	if ( ((ubyte >= 0x81) && (ubyte <= 0x9f)) || ((ubyte >= 0xe0) && (ubyte <= 0xef)) )
 		return (ubyte << 8) + lbyte;
 
@@ -458,18 +459,18 @@ void JIS2SJIS( char* text ) {
   for( wr=re=(unsigned char*)text; *re; re++ ){
     if( (re[0]=='\x1b' && re[1]=='$' && re[2] == 'B' ) ||
         (re[0]=='\x1b' && re[1]=='$' && re[2] == '@' ) ){
-      re+=2; 
+      re+=2;
       mode = JAPANESE;
       continue;
     }else if( (re[0]=='\x0f') ||
         (re[0]=='\x1b' && re[1]=='(' && re[2] == 'B' ) ||
         (re[0]=='\x1b' && re[1]=='(' && re[2] == 'J' ) ){
-      re+=2; 
+      re+=2;
       mode = ASCII;
       continue;
     }else if( (re[0]=='\x0e') ||
         (re[0]=='\x1b' && re[1]=='(' && re[2] == 'I' ) ){
-      re+=2; 
+      re+=2;
       mode = ASCII; // hankaku IGNORE
       continue;
     }
@@ -486,4 +487,3 @@ void JIS2SJIS( char* text ) {
   }
   *wr='\0';
 }
-

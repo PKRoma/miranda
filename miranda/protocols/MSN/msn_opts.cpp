@@ -1,6 +1,7 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
 Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
@@ -39,7 +40,7 @@ extern char *rru;
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// avatar setting code 
+// avatar setting code
 
 static BITMAPINFOHEADER*	pDib = NULL;
 static BYTE*					pDibBits = NULL;
@@ -163,7 +164,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow( GetDlgItem( hwndDlg, IDC_DELETEAVATAR ), tIsChosen );
 			}
 
-			case IDC_DISABLE_MAIN_MENU:			case IDC_SENDFONTINFO:		
+			case IDC_DISABLE_MAIN_MENU:			case IDC_SENDFONTINFO:
 			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );

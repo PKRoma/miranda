@@ -1,8 +1,9 @@
 /*
-Plugin of Miranda IM for communicating with users of the MSN Messenger protocol. 
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
-Miranda IM: the free icq client for MS Windows 
+Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -77,7 +78,7 @@ LBL_AddContact:
 
 	if ( !( flags & PALF_TEMPORARY ))
 		goto LBL_AddContact;
-	
+
 	DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 	DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
 	return hContact;
@@ -236,7 +237,7 @@ static int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-	if ( szProto == NULL || strcmp( szProto, msnProtocolName )) 
+	if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
 		return 0;
 
 	HANDLE hContact = ( HANDLE )wParam;
@@ -317,7 +318,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 				172+4+strlen( ft->szInvcookie ), ft->szInvcookie );
 		}
 		else {
-			//---- send 200 OK Message 
+			//---- send 200 OK Message
 //			if ( ft->mIsFirst )
 			p2p_sendStatus( ft, thread, 200 );
 	}	}
@@ -359,7 +360,7 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 {
 	if ( !msnLoggedIn )
 		return 1;
-	
+
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
@@ -375,7 +376,7 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 				172-33+4+strlen( ft->szInvcookie ), ft->szInvcookie );
 		}
 		else {
-			//---- send 603 DECLINE Message 
+			//---- send 603 DECLINE Message
 			p2p_sendStatus( ft, thread, 603 );
 	}	}
 
@@ -403,11 +404,11 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 				free( ft->std.currentFile );
 			ft->std.currentFile = strdup( pfr->szFilename );
 	}	}
-   
+
 	SetEvent( ft->hWaitEvent );
 	return 0;
 }
-	
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAvatarInfo - retrieve the avatar info
 
@@ -434,7 +435,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_WAITFOR;
 	}
 
-	return GAIR_NOAVATAR;	
+	return GAIR_NOAVATAR;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -444,16 +445,16 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 {
 	switch( wParam ) {
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH | 
-				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL | 
+		return PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH |
+				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL |
 				 PF1_FILESEND | PF1_FILERECV | PF1_URLRECV | PF1_VISLIST;
 
 	case PFLAGNUM_2:
-		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | 
+		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND |
 				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH | PF2_INVISIBLE;
 
 	case PFLAGNUM_3:
-		return PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | PF2_HEAVYDND | 
+		return PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | PF2_HEAVYDND |
 				 PF2_FREECHAT | PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
 
 	case PFLAGNUM_4:
@@ -461,7 +462,7 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 
 	case PFLAG_UNIQUEIDTEXT:
 		return ( int )MSN_Translate( "E-mail address" );
-	
+
 	case PFLAG_UNIQUEIDSETTING:
 		return ( int )"e-mail";
 	}
@@ -559,7 +560,7 @@ static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 
 	switch(wParam&0xFFFF) {
 		case PLI_PROTOCOL: id=IDI_MSN; break;
-		default: return (int)(HICON)NULL;	
+		default: return (int)(HICON)NULL;
 	}
 
 	bool tIsSmall = ( wParam & PLIF_SMALL ) != 0;
@@ -664,7 +665,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 		if ( thread != NULL )
 			thread->mMsnFtp = sft;
-		else 
+		else
 			MSN_SendPacket( msnNSSocket, "XFR", "SB" );
 
 		char* pszFiles = strrchr( *files, '\\' ), msg[ 1024 ];
@@ -894,7 +895,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						char tEmail[ MSN_MAX_EMAIL_LEN ];
 						MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ));
 						MSN_SendNickname( tEmail, str );
-					}	
+					}
 
 				case IDCANCEL:
  					DestroyWindow( hwndDlg );
@@ -912,7 +913,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 static int SetNicknameUI( WPARAM wParam, LPARAM lParam )
 {
 	HWND hwndSetNickname = CreateDialog(hInst, MAKEINTRESOURCE( IDD_SETNICKNAME ), NULL, DlgProcSetNickname );
-	
+
 	SetForegroundWindow( hwndSetNickname );
 	SetFocus( hwndSetNickname );
  	ShowWindow( hwndSetNickname, SW_SHOW );
@@ -931,7 +932,7 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 	{
 		MSN_GoOffline();
 	}
-	else if (!msnLoggedIn && !(msnStatusMode>=ID_STATUS_CONNECTING && msnStatusMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)) 
+	else if (!msnLoggedIn && !(msnStatusMode>=ID_STATUS_CONNECTING && msnStatusMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES))
 	{
 		ThreadData* newThread = new ThreadData;
 
@@ -940,9 +941,9 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 		char tServer[ sizeof( newThread->mServer ) ];
 		if ( !MSN_GetStaticString( "LoginServer", NULL, tServer, sizeof( tServer )))
 			lstrcpyn( newThread->mServer, tServer, sizeof( newThread->mServer ));
-		else 
+		else
 			strcpy( newThread->mServer, MSN_DEFAULT_LOGIN_SERVER );
-		
+
 		sprintf( newThread->mServer + strlen( newThread->mServer ), ":%i", tServerPort );
 
 		newThread->mType = SERVER_DISPATCH;
@@ -1023,7 +1024,7 @@ static HANDLE hHookContactDeleted = NULL;
 int LoadMsnServices( void )
 {
 	//////////////////////////////////////////////////////////////////////////////////////
-	// Main menu initialization 
+	// Main menu initialization
 
 	char servicefunction[ 100 ];
 	strcpy( servicefunction, msnProtocolName );
@@ -1084,7 +1085,7 @@ int LoadMsnServices( void )
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// Contact menu initialization 
+	// Contact menu initialization
 
 	strcpy( tDest, MSN_BLOCK );
 	CreateServiceFunction( servicefunction, MsnBlockCommand );
@@ -1131,7 +1132,7 @@ int LoadMsnServices( void )
 	MSN_EnableMenuItems( FALSE );
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// Service creation 
+	// Service creation
 
 	hHookContactDeleted = HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted );
 	hHookSettingChanged = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged );
@@ -1163,7 +1164,7 @@ int LoadMsnServices( void )
 	MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,  MsnSetApparentMode );
 	MSN_CreateProtoServiceFunction( PSS_USERISTYPING,     MsnUserIsTyping );
 
-	MSN_CreateProtoServiceFunction( MSN_SET_AVATAR,			MsnSetAvatar );	
+	MSN_CreateProtoServiceFunction( MSN_SET_AVATAR,			MsnSetAvatar );
 	MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,		MsnSetNickName );
 	return 0;
 }

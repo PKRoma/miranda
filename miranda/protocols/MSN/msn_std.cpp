@@ -1,8 +1,9 @@
 /*
-Plugin of Miranda IM for communicating with users of the MSN Messenger protocol. 
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
-Miranda IM: the free icq client for MS Windows 
+Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -24,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE msnSetNicknameMenuItem;
 
-HANDLE __stdcall MSN_CreateProtoServiceFunction( 
+HANDLE __stdcall MSN_CreateProtoServiceFunction(
 	const char* szService,
 	MIRANDASERVICE serviceProc )
 {
@@ -105,11 +106,11 @@ int __stdcall MSN_SendBroadcast( HANDLE hContact, int type, int result, HANDLE h
 {
 	ACKDATA ack = {0};
 	ack.cbSize = sizeof( ACKDATA );
-	ack.szModule = msnProtocolName; 
+	ack.szModule = msnProtocolName;
 	ack.hContact = hContact;
-	ack.type = type; 
+	ack.type = type;
 	ack.result = result;
-	ack.hProcess = hProcess; 
+	ack.hProcess = hProcess;
 	ack.lParam = lParam;
 	return MSN_CallService( MS_PROTO_BROADCASTACK, 0, ( LPARAM )&ack );
 }

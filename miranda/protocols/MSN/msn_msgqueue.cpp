@@ -1,8 +1,9 @@
 /*
-Plugin of Miranda IM for communicating with users of the MSN Messenger protocol. 
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
-Miranda IM: the free icq client for MS Windows 
+Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -117,7 +118,7 @@ int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 
 	EnterCriticalSection( &csMsgQueue );
 	for( i=0; i < msgQueueCount; i++ )
-		if ( msgQueue[ i ].hContact == hContact ) 
+		if ( msgQueue[ i ].hContact == hContact )
 			break;
 
 	if ( i == msgQueueCount )

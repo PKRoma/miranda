@@ -1,6 +1,7 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
 Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
@@ -1122,7 +1123,7 @@ LBL_InvalidCommand:
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
 			if ( !stricmp( params, "OTH" )) {
 				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
-				MSN_DebugLog( "You have been disconnected from the MSN server because you logged on from another location using the same MSN passport." );		
+				MSN_DebugLog( "You have been disconnected from the MSN server because you logged on from another location using the same MSN passport." );
 			}
 
 			return 1;

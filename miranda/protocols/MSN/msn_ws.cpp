@@ -1,6 +1,7 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
 Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
@@ -108,7 +109,7 @@ static int MSN_WS_DG_Recv( HANDLE s, char* data, long datalen )
 
 LBL_RecvAgain:
 	int ret;
-	{	
+	{
 		NETLIBSELECT tSelect = {0};
 		tSelect.cbSize = sizeof( tSelect );
 		tSelect.dwTimeout = 1000;

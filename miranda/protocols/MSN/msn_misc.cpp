@@ -1,8 +1,9 @@
-*
-Plugin of Miranda IM for communicating with users of the MSN Messenger protocol. 
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+/*
+Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
-Miranda IM: the free icq client for MS Windows 
+Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -49,7 +50,7 @@ extern bool msnUseExtendedPopups;
 
 char* __stdcall MirandaStatusToMSN( int status )
 {
-	switch(status) 
+	switch(status)
 	{
 		case ID_STATUS_OFFLINE:		return "FLN";
 		case ID_STATUS_NA:			return "BRB";
@@ -93,7 +94,7 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 
 	char* listName;
 
-	switch( flags & 0xFF ) 
+	switch( flags & 0xFF )
 	{
 		case LIST_AL: listName = "AL";	break;
 		case LIST_BL: listName = "BL";	break;
@@ -202,14 +203,14 @@ void __stdcall	MSN_GoOffline()
 
 	int msnOldStatus = msnStatusMode; msnStatusMode = ID_STATUS_OFFLINE;
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
-	
+
 	msnLoggedIn = false;
 
 	MSN_EnableMenuItems( FALSE );
 	MSN_CloseConnections();
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL ) 
+	while ( hContact != NULL )
 	{
 		if ( !lstrcmp( msnProtocolName, (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 )))
 			if ( ID_STATUS_OFFLINE != MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE ))
@@ -289,7 +290,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 	char* buf = ( char* )alloca( datLen + 100 );
 
 	LONG thisTrid = MyInterlockedIncrement( &mTrid );
-	int nBytes = _snprintf( buf, 100, "MSG %d %c %d\r\n%s", 
+	int nBytes = _snprintf( buf, 100, "MSG %d %c %d\r\n%s",
 		thisTrid, msgType, datLen + sizeof(sttHeaderStart)-1, sttHeaderStart );
 	memcpy( buf + nBytes, data, datLen );
 	MSN_WS_Send( s, buf, nBytes + datLen );
@@ -342,7 +343,7 @@ LONG ThreadData::vsendPacket( const char* cmd, const char* fmt, va_list vararg )
 
 	LONG thisTrid = MyInterlockedIncrement( &mTrid );
 
-	if ( fmt == NULL || fmt[0] == '\0' ) 
+	if ( fmt == NULL || fmt[0] == '\0' )
 		sprintf( str, "%s %d", cmd, thisTrid );
 	else  {
 		int paramStart = sprintf( str, "%s %d ", cmd, thisTrid );
@@ -350,7 +351,7 @@ LONG ThreadData::vsendPacket( const char* cmd, const char* fmt, va_list vararg )
 			str = (char*)realloc( str, strsize += 512 );
 	}
 
-	if (( strncmp( str, "MSG", 3 ) !=0 ) && ( strncmp( str, "QRY", 3 ) != 0 )) 
+	if (( strncmp( str, "MSG", 3 ) !=0 ) && ( strncmp( str, "QRY", 3 ) != 0 ))
 		strcat( str,"\r\n" );
 
 	MSN_WS_Send( s, str, strlen( str ));
@@ -408,7 +409,7 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 
 	if ( msnUseExtendedPopups )
 		MSN_CallService( MS_POPUP_ADDPOPUPEX, ( WPARAM )ppd, 0 );
-	else 
+	else
 		MSN_CallService( MS_POPUP_ADDPOPUP, ( WPARAM )ppd, 0 );
 
 	free( ppd );
@@ -416,7 +417,7 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 
 void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 {
-	if ( !ServiceExists( MS_POPUP_ADDPOPUP )) {	
+	if ( !ServiceExists( MS_POPUP_ADDPOPUP )) {
 		if ( flags & MSN_ALLOW_MSGBOX )
 			MessageBox( NULL, msg, "MSN Protocol", MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
 
@@ -500,7 +501,7 @@ void __stdcall UrlDecode( char* str )
 }
 
 //=======================================================================================
-// UrlEncode - converts printable characters into URL chars like %20 
+// UrlEncode - converts printable characters into URL chars like %20
 //=======================================================================================
 
 void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
@@ -509,12 +510,12 @@ void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 	int   i = 0;
 
 	for( const BYTE* s = ( const BYTE* )src; *s; s++ ) {
-		if (( *s < '0' && *s != '.' && *s != '-' ) || 
-			 ( *s >= ':' && *s <= '?' ) || 
-			 ( *s >= '[' && *s <= '`' && *s != '_' ) || 
+		if (( *s < '0' && *s != '.' && *s != '-' ) ||
+			 ( *s >= ':' && *s <= '?' ) ||
+			 ( *s >= '[' && *s <= '`' && *s != '_' ) ||
 			 ( *s >= '{' ))
 		{
-			if ( i >= cbDest-4 ) 
+			if ( i >= cbDest-4 )
 				break;
 
 			*d++ = '%';
@@ -522,10 +523,10 @@ void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 			d += 2;
 			i += 3;
 		}
-		else 
+		else
 		{
 			*d++ = *s;
-			if ( i++ == cbDest-1 ) 
+			if ( i++ == cbDest-1 )
 				break;
 	}	}
 
@@ -541,7 +542,7 @@ void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 )
 	wchar_t* tempBuf;
 
 	int len = strlen( str );
-	if ( len < 2 ) {	
+	if ( len < 2 ) {
 		if ( ucs2 != NULL ) {
 			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
 			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
@@ -790,7 +791,7 @@ char* TWinErrorCode::getText()
 		int tBytes = 0;
 
 		if ( mErrorCode >= 12000 && mErrorCode < 12500 )
-			tBytes = FormatMessage( 
+			tBytes = FormatMessage(
 				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE,
 				::GetModuleHandle( "WININET.DLL" ),
 				mErrorCode, LANG_NEUTRAL, (LPTSTR)&mErrorText, 0, NULL );

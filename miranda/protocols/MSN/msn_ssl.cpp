@@ -1,6 +1,7 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
 Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
@@ -152,10 +153,10 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 
 				if ( !MSN_GetStaticString( "NLProxyAuthUser", NULL, tBuffer, SSL_BUF_SIZE ))
 					f_InternetSetOption( tRequest, INTERNET_OPTION_PROXY_USERNAME, tBuffer, strlen( tBuffer )+1 );
-				else 
+				else
 					MSN_DebugLog( "Warning: proxy user name is required but missing" );
 
-				if ( !MSN_GetStaticString( "NLProxyAuthPassword", NULL, tBuffer, SSL_BUF_SIZE )) {	
+				if ( !MSN_GetStaticString( "NLProxyAuthPassword", NULL, tBuffer, SSL_BUF_SIZE )) {
 					MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer )+1, ( LPARAM )tBuffer );
 					f_InternetSetOption( tRequest, INTERNET_OPTION_PROXY_PASSWORD, tBuffer, strlen( tBuffer )+1 );
 				}

@@ -1,6 +1,7 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
 Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
@@ -52,7 +53,7 @@ int __stdcall MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppD
 
 	SetStretchBltMode( hBmpDC, HALFTONE );
 	StretchBlt( hBmpDC, 0, 0, 96, 96, hDC, dx, dy, side, side, SRCCOPY );
-	DeleteObject( hBitmap );	
+	DeleteObject( hBitmap );
 	DeleteDC( hDC );
 
 	BITMAPINFO* bmi = ( BITMAPINFO* )alloca( sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
@@ -72,7 +73,7 @@ int __stdcall MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppD
 	ppDibBits = (( BYTE* )ppDib ) + sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256;
 
 	GetDIBits( hBmpDC, hStretchedBitmap, 0, ppDib->biHeight, ppDibBits, ( BITMAPINFO* )ppDib, DIB_RGB_COLORS );
-	DeleteObject( hStretchedBitmap );	
+	DeleteObject( hStretchedBitmap );
 	DeleteDC( hBmpDC );
 	return ERROR_SUCCESS;
 }
@@ -162,7 +163,7 @@ int __stdcall MSN_EnterBitmapFileName( char* szDest )
 			MSN_Translate( "Windows Bitmaps" ), 0, 0,
 			MSN_Translate( "JPEG Bitmaps" ), 0, 0,
 			MSN_Translate( "GIF Bitmaps" ), 0, 0,
-			MSN_Translate( "PNG Bitmaps" ), 0, 0, 
+			MSN_Translate( "PNG Bitmaps" ), 0, 0,
 			MSN_Translate( "All Files" ), 0, 0, 0 );
 
 	*szDest = 0;
@@ -222,7 +223,7 @@ int __stdcall MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDi
 	if ( cbFileSize != 0 ) {
 		if ( png2dibConvertor(( char* )ppMap, cbFileSize, &ppDib ))
 			ppDibBits = ( BYTE* )( ppDib+1 );
-		else 
+		else
 			cbFileSize = 0;
 	}
 
@@ -232,4 +233,3 @@ int __stdcall MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDi
 
 	return ( cbFileSize != 0 ) ? ERROR_SUCCESS : 2;
 }
-

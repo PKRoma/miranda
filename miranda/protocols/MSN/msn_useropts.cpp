@@ -1,6 +1,7 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
 This file uses the 'Webhost sample' code
 Copyright(C) 2002 Chris Becke (http://www.mvps.org/user32/webhost.cab)
@@ -165,7 +166,7 @@ LBL_Reread:
 				( LPARAM )LoadImage( ::GetModuleHandle(NULL), tBuffer, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
 		}
 		return TRUE;
-	
+
 	case HM_REBIND_AVATAR:
 		{	MsnDlgProcData* pData = ( MsnDlgProcData* )GetWindowLong( hwndDlg, GWL_USERDATA );
 

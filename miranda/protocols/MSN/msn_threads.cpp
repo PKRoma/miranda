@@ -1,8 +1,9 @@
 /*
-Plugin of Miranda IM for communicating with users of the MSN Messenger protocol. 
-Copyright(C) 2002-2004 George Hazan (modification) and Richard Hughes (original)
+Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2003-5 George Hazan.
+Copyright (c) 2002-3 Richard Hughes (original version).
 
-Miranda IM: the free icq client for MS Windows 
+Miranda IM: the free icq client for MS Windows
 Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -51,7 +52,7 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 		 */
 
 		if ( msnLoggedIn && !MyOptions.UseGateway )
-			if ( MSN_GetByte( "KeepAlive", 0 )) 
+			if ( MSN_GetByte( "KeepAlive", 0 ))
 				MSN_WS_Send( msnNSSocket, "PNG\r\n", 5 );
 }	}
 
@@ -67,7 +68,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 	if ( cmdString[ 3 ] )
 		params = cmdString+4;
 
-	switch((*(PDWORD)cmdString&0x00FFFFFF)|0x20000000) 
+	switch((*(PDWORD)cmdString&0x00FFFFFF)|0x20000000)
 	{
 		case ' EYB':    //********* BYE
 		{
@@ -75,11 +76,11 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			return 1;
 		}
 		case ' LIF':    //********* FIL
-		{	
+		{
 			char filesize[ 30 ];
 			if ( sscanf( params, "%s", filesize ) < 1 )
 				goto LBL_InvalidCommand;
-			
+
 			info->mCaller = 1;
 			MSN_WS_Send( info->s, "TFR\r\n", 5 );
 			_chdir( ft->std.workingDir );
@@ -111,7 +112,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				break;
 
 			MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0 );
-			while( ft->std.currentFileProgress < ft->std.currentFileSize ) 
+			while( ft->std.currentFileProgress < ft->std.currentFileSize )
 			{
 				if ( ft->bCanceled )
 					break;
@@ -133,7 +134,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 
 				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 			}
-			
+
 			ft->bCompleted = true;
 			ft->close();
 			break;
@@ -141,7 +142,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 		case ' RSU':    //********* USR
 		{
 			char email[130],authcookie[14];
-			if ( sscanf(params,"%129s %13s",email,authcookie) < 2 ) 
+			if ( sscanf(params,"%129s %13s",email,authcookie) < 2 )
 			{
 				MSN_DebugLog( "Invalid USR OK command, ignoring" );
 				break;
@@ -153,17 +154,17 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			break;
 		}
 		case ' REV':    //********* VER
-		{	
+		{
 			char protocol1[ 7 ];
-			if ( sscanf( params, "%6s", protocol1 ) < 1 ) 
-			{	
+			if ( sscanf( params, "%6s", protocol1 ) < 1 )
+			{
 LBL_InvalidCommand:
 				MSN_DebugLog( "Invalid %.3s command, ignoring", cmdString );
 				break;
 			}
 
 			if ( strcmp( protocol1, "MSNFTP" ) != 0 )
-			{	
+			{
 				int tempInt;
 				int tFieldCount = sscanf( params, "%d %6s", &tempInt, protocol1 );
 				if ( tFieldCount != 2 || strcmp( protocol1, "MSNFTP" ) != 0 )
@@ -182,7 +183,7 @@ LBL_InvalidCommand:
 						MSN_WS_Send( info->s, tCommand, strlen( tCommand ));
 					}
 					else if ( info->mCaller == 2 )  //send
-					{	
+					{
 						static char sttCommand[] = "VER MSNFTP\r\n";
 						MSN_WS_Send( info->s, sttCommand, strlen( sttCommand ));
 					}
@@ -195,7 +196,7 @@ LBL_InvalidCommand:
 		{
 			HReadBuffer tBuf( info, int( cmdString - info->mData ));
 
-			while ( true ) 
+			while ( true )
 			{
 				if ( ft->bCanceled )
 				{	MSN_WS_Send( info->s, "CCL\r\n", 5 );
@@ -217,7 +218,7 @@ LBL_Error:		ft->close();
 				if ( tIsTransitionFinished ) {
 LBL_Success:	ft->complete();
 					ft->close();
-					
+
 					static char sttCommand[] = "BYE 16777989\r\n";
 					MSN_WS_Send( info->s, sttCommand, strlen( sttCommand ));
 					return 0;
@@ -301,7 +302,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ));
 		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", tEmail, info->mCookie );
-	} 
+	}
 	else if ( info->mType == SERVER_FILETRANS && info->mCaller == 0 ) {
 		MSN_WS_Send( info->s, "VER MSNFTP\r\n", 12 );
 	}
@@ -343,9 +344,9 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 		if ( info->mCaller == 1 && info->mType == SERVER_FILETRANS ) {
 			handlerResult = MSN_HandleMSNFTP( info, info->mData );
-			if ( handlerResult ) 
+			if ( handlerResult )
 				break;
-		} 
+		}
 		else {
 			while( TRUE ) {
 				char* peol = strchr(info->mData,'\r');
@@ -420,7 +421,7 @@ void __cdecl MSNSendfileThread( ThreadData* info )
 	case WAIT_FAILED:
 		MSN_DebugLog( "Incoming connection timed out, closing file transfer" );
 		return;
-	}	
+	}
 
 	info->mBytesInData = 0;
 
@@ -435,14 +436,14 @@ void __cdecl MSNSendfileThread( ThreadData* info )
 		info->mBytesInData += recvResult;
 
 		//pull off each line for parsing
-		if (( info->mCaller == 3 ) && ( info->mType == SERVER_FILETRANS )) 
+		if (( info->mCaller == 3 ) && ( info->mType == SERVER_FILETRANS ))
 		{
 			handlerResult = MSN_HandleMSNFTP( info, info->mData );
-			if ( handlerResult ) 
+			if ( handlerResult )
 				break;
-		} 
+		}
 		else  // info->mType!=SERVER_FILETRANS
-		{ 
+		{
 			while ( TRUE )
 			{
 				char* peol = strchr(info->mData,'\r');
@@ -464,7 +465,7 @@ void __cdecl MSNSendfileThread( ThreadData* info )
 
 				MSN_DebugLog( "RECV:%s", msg );
 
-				if ( !isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) 
+				if ( !isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' '))
 				{
 					MSN_DebugLog( "Invalid command name");
 					continue;
@@ -476,14 +477,14 @@ void __cdecl MSNSendfileThread( ThreadData* info )
 						handlerResult = MSN_HandleErrors(info,msg);
 					else
 						handlerResult = MSN_HandleCommands( info, msg );
-				} 
+				}
 				else handlerResult = MSN_HandleMSNFTP( info, msg );
 
 				if ( handlerResult )
 					break;
 		}	}
 
-		if ( info->mBytesInData == sizeof( info->mData )) 
+		if ( info->mBytesInData == sizeof( info->mData ))
 		{	MSN_DebugLog( "sizeof(data) is too small: the longest line won't fit" );
 			break;
 	}	}
@@ -515,7 +516,7 @@ void __stdcall MSN_CloseConnections()
 		ThreadData* T = sttThreads[ i ];
 		if ( T == NULL )
 			continue;
-		
+
 		if ( T->mType == SERVER_SWITCHBOARD && T->s != NULL )
 			T->sendPacket( "OUT", NULL );
 	}
@@ -602,7 +603,7 @@ int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
 		if ( T->mType == SERVER_SWITCHBOARD && T->mJoinedCount != 0 && T->mJoinedContacts != NULL )
 			parResult[ tCount++ ] = T;
 	}
-	
+
 	LeaveCriticalSection( &sttLock );
 	return tCount;
 }
@@ -623,7 +624,7 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
 		{	tResult = T;
 			break;
 	}	}
-	
+
 	LeaveCriticalSection( &sttLock );
 	return tResult;
 }
@@ -649,7 +650,7 @@ ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 			tResult = T;
 			break;
 	}	}
-	
+
 	LeaveCriticalSection( &sttLock );
 	return tResult;
 }
@@ -665,19 +666,19 @@ void __stdcall MSN_PingParentThread( ThreadData* parentThread, filetransfer* ft 
 			parentThread->mP2PInitTrid = p2p_sendPortionViaServer( ft, parentThread );
 			break;
 	}	}
-	
+
 	LeaveCriticalSection( &sttLock );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // class ThreadData members
 
-ThreadData::ThreadData() 
+ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof ThreadData );
 }
 
-ThreadData::~ThreadData() 
+ThreadData::~ThreadData()
 {
 	if ( s != NULL )
 		Netlib_CloseHandle( s );
@@ -713,7 +714,7 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 			_snprintf( dest, destlen, sttFormatString, "SB", mServer );
 		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
 	}
-	else _snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s", 
+	else _snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
 		mGatewayIP, ( isPoll ) ? "Action=poll&" : "", mSessionID );
 }
 
@@ -778,7 +779,7 @@ static void sttUnregisterThread( ThreadData* s )
 }
 
 static void __cdecl forkthread_r(struct FORK_ARG *fa)
-{	
+{
 	pThreadFunc callercode = fa->threadcode;
 	ThreadData* arg = fa->arg;
 	MSN_CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
@@ -791,7 +792,7 @@ static void __cdecl forkthread_r(struct FORK_ARG *fa)
 		delete arg;
 
 		MSN_CallService(MS_SYSTEM_THREAD_POP, 0, 0);
-	} 
+	}
 	return;
 }
 
