@@ -469,7 +469,7 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 
 		if ((smep->proto!=NULL))
 		{
-			NotifyEventHooks(hStatusModeChangeEvent, smep->status, 0);
+			NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
 			CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);	
 		}else
 		{
