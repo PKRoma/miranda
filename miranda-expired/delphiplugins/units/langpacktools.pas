@@ -14,7 +14,7 @@ unit langpacktools;
 interface
 
 
-uses windows,globals,m_langpack;
+uses windows,globals,m_langpack,newpluginapi;
 
 function Translate(s:string):string;
 function Translatep(s:PChar):PChar;
@@ -25,11 +25,17 @@ implementation
 
 function Translate(s:string):string;
 begin
-  Result:=string(PChar(PluginLink.CallService(MS_LANGPACK_TRANSLATESTRING,0,dword(PChar(s)))));
+  if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,1,0))>=0 then
+    Result:=string(PChar(PluginLink.CallService(MS_LANGPACK_TRANSLATESTRING,0,dword(PChar(s)))))
+  else
+    Result:=s;
 end;
 function Translatep(s:PChar):PChar;
 begin
-  Result:=PChar(PluginLink.CallService(MS_LANGPACK_TRANSLATESTRING,0,dword(s)));
+  if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,1,0))>=0 then
+    Result:=PChar(PluginLink.CallService(MS_LANGPACK_TRANSLATESTRING,0,dword(s)))
+  else
+    Result:=s;
 end;
 
 function TranslateDialogDefault(hwndDlg:thandle):integer;
@@ -37,6 +43,8 @@ function TranslateDialogDefault(hwndDlg:thandle):integer;
 var
   lptd:TLANGPACKTRANSLATEDIALOG;
 begin
+  if CompareVersion(mirandaversion,PLUGIN_MAKE_VERSION(0,1,1,0))<0 then
+    Exit;
   lptd.cbSize:=sizeof(lptd);
   lptd.flags:=0;
   lptd.hwndDlg:=hwndDlg;
