@@ -51,6 +51,18 @@ Version 0.0.8.99 - 2004/10/22
         * input area is now a rich edit control instead of a normal multiline edit box.
           It was changed to allow future additions like text formatting
 
+        * new avatar setting: Disable automatic Avatar updates. You can find it in the
+          avatar menu on the toolbar and in the new menu bar. This setting is "per contact"
+          only and will prevent automatic avatar changes, if you have, for example, set
+          your own custom picture for a specific contact.
+          
+        * simplified the font settings a bit. There are now less than before and they
+          were moved to another DB module path. So you will probably have to reconfigure
+          your fonts :(
+          
+        * fast copy the UIN to the clipboard by clicking on the usermenu button (second
+          button from the left) while holding the shift key.
+          
 Version 0.0.8.98 - 2004/10/17
 
         * fixed middle click close did not respect the "warn onl close" setting.

@@ -623,6 +623,7 @@ BEGIN
         MENUITEM "Cut",                         IDM_CUT
         MENUITEM "Copy",                        IDM_COPY
         MENUITEM "Paste",                       IDM_PASTE
+        MENUITEM "Paste formatted Text",        IDM_PASTEFORMATTED
         MENUITEM SEPARATOR
         MENUITEM "Copy all",                    IDM_COPYALL
         MENUITEM "Select all",                  IDM_SELECTALL
@@ -652,6 +653,9 @@ BEGIN
         MENUITEM "Reset the Avatar",            ID_PICMENU_RESETTHEAVATAR
         MENUITEM "Load a local Picture as Avatar...", 
                                                 ID_PICMENU_LOADALOCALPICTUREASAVATAR
+
+        MENUITEM "Disable automatic Avatar updates", 
+                                                ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
 
         MENUITEM SEPARATOR
         MENUITEM "Align for maximum Log Size",  ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE
@@ -828,6 +832,9 @@ BEGIN
 
             MENUITEM "Load a local Picture as Avatar", 
                                                     ID_PICMENU_LOADALOCALPICTUREASAVATAR
+
+            MENUITEM "Disable automatic Avatar updates", 
+                                                    ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
 
             MENUITEM SEPARATOR
             MENUITEM "Align for maximum Log Size",  ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE

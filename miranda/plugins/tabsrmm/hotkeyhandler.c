@@ -208,9 +208,11 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
                 }
                 if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_SUCCESS) {
-                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
-                    DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
-                    ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                    if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
+                        DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
+                        DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
+                        ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                    }
                 }
                 return 0;
             }

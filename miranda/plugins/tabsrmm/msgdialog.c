@@ -520,10 +520,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             dat->lastEnterTime = 0;
             return 0;
         case WM_CHAR:
-            if (wParam == 22 && GetKeyState(VK_CONTROL) & 0x8000) {
-                SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
-                return 0;
-            }
             if (wParam == 21 && GetKeyState(VK_CONTROL) & 0x8000) {             // ctrl-U next unread tab
                 SendMessage(GetParent(hwnd), DM_QUERYPENDING, DM_QUERY_NEXT, 0);
                 return 0;
@@ -571,6 +567,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 }
             }
             if (GetKeyState(VK_CONTROL) & 0x8000) {
+                if (wParam == 'V') {
+                    SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+                    return 0;
+                }
                 if (wParam == VK_TAB) {
                     SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
                     return 0;
@@ -578,8 +578,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 if (wParam == VK_F4) {
                     SendMessage(GetParent(hwnd), WM_CLOSE, 1, 0);
                     return 0;
-                }
-                if (wParam == VK_V) {
                 }
                 if (!(GetKeyState(VK_SHIFT) & 0x8000) && (wParam == VK_UP || wParam == VK_DOWN)) {          // input history scrolling (ctrl-up / down)
                     if(mwdat) {
@@ -2821,11 +2819,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 case IDC_NAME:
                 case IDC_USERMENU:
                     {
-                        RECT rc;
-                        HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
-                        GetWindowRect(GetDlgItem(hwndDlg, LOWORD(wParam)), &rc);
-                        TrackPopupMenu(hMenu, 0, rc.left, rc.bottom, 0, hwndDlg, NULL);
-                        DestroyMenu(hMenu);
+                        if(GetKeyState(VK_SHIFT) & 0x8000) {    // copy UIN
+                            SendMessage(hwndDlg, DM_UINTOCLIPBOARD, 0, 0);
+                        }
+                        else {
+                            RECT rc;
+                            HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+                            GetWindowRect(GetDlgItem(hwndDlg, LOWORD(wParam)), &rc);
+                            TrackPopupMenu(hMenu, 0, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                            DestroyMenu(hMenu);
+                        }
                     }
                     break;
                 case IDC_HISTORY:
@@ -3130,8 +3133,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                                     SendMessage(((NMHDR *) lParam)->hwndFrom, WM_CUT, 0, 0);
                                                     break;
                                                 case IDM_PASTE:
+                                                case IDM_PASTEFORMATTED:
                                                     if(idFrom == IDC_MESSAGE)
-                                                        SendMessage(((NMHDR *) lParam)->hwndFrom, EM_PASTESPECIAL, CF_TEXT, 0);
+                                                        SendMessage(((NMHDR *) lParam)->hwndFrom, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXT : 0, 0);
                                                     break;
                                                 case IDM_COPYALL:
                                                     SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
@@ -3445,6 +3449,45 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 ShowPicture(hwndDlg, dat, FALSE, TRUE, FALSE);
             }
             break;
+        case DM_UINTOCLIPBOARD:
+            {
+                CONTACTINFO ci;
+                int hasName = 0;
+                char buf[128];
+                HGLOBAL hData;
+
+                if(dat->hContact) {
+                    char *contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
+                    ZeroMemory(&ci, sizeof(ci));
+                    ci.cbSize = sizeof(ci);
+                    ci.hContact = dat->hContact;
+                    ci.szProto = dat->szProto;
+                    ci.dwFlag = CNF_UNIQUEID;
+                    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+                        switch (ci.type) {
+                            case CNFT_ASCIIZ:
+                                hasName = 1;
+                                _snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+                                miranda_sys_free(ci.pszVal);
+                                break;
+                            case CNFT_DWORD:
+                                hasName = 1;
+                                _snprintf(buf, sizeof(buf), "%u", ci.dVal);
+                                break;
+                        }
+                    }
+                    if (!OpenClipboard(hwndDlg))
+                        break;
+                    EmptyClipboard();
+                    hData = GlobalAlloc(GMEM_MOVEABLE, hasName ? lstrlenA(buf) + 1 : lstrlenA(contactName) + 1);
+                    lstrcpyA(GlobalLock(hData), hasName ? buf : contactName);
+                    GlobalUnlock(hData);
+                    SetClipboardData(CF_TEXT, hData);
+                    CloseClipboard();
+                }
+                break;
+            }
+                
         /*
          * force a reload of the avatar by using the PS_GETAVATARINFO proto service
          */
@@ -3471,9 +3514,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(result == GAIR_WAITFOR)
                     _DebugPopup(dat->hContact, "Retrieving Avatar...");
                 else if(result == GAIR_SUCCESS) {
-                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai_s.filename);
-                    DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai_s.filename);
-                    ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                    if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
+                        DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai_s.filename);
+                        DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai_s.filename);
+                        ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                    }
                 }
                 SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
             }
@@ -4318,6 +4363,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
                 SendMessage(hwndDlg, DM_ALIGNSPLITTERFULL, 0, 0);
                 return 1;
+            case ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES:
+                {
+                    int iState = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0);
+                    DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", !iState);
+                    return 1;
+                }
             case ID_PICMENU_LOADALOCALPICTUREASAVATAR:
                 {
                     char FileName[MAX_PATH];
@@ -4475,6 +4526,8 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_LOADALOCALPICTUREASAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
+        CheckMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
     }
     return 0;
 }

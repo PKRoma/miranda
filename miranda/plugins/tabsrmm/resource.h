@@ -348,13 +348,15 @@
 #define ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL 40157
 #define IDM_CUT                         40162
 #define IDM_PASTE                       40163
+#define ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES 40165
+#define IDM_PASTEFORMATTED              40168
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        309
-#define _APS_NEXT_COMMAND_VALUE         40165
+#define _APS_NEXT_COMMAND_VALUE         40169
 #define _APS_NEXT_CONTROL_VALUE         1696
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
