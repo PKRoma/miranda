@@ -269,7 +269,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         Netlib_Logf(ghServerNetlibUser, "Removing of privacy item from server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, Translate("Removing of privacy item from server list failed."));
       }
-      FreeServerID(sc->wContactId); // release server id
+      FreeServerID(sc->wContactId, SSIT_ITEM); // release server id
       break;
     }
   case SSA_CONTACT_ADD:
@@ -289,7 +289,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           sc = NULL; // we do not want it to be freed now
           break;
         }
-        FreeServerID(sc->wContactId);
+        FreeServerID(sc->wContactId, SSIT_ITEM);
         SAFE_FREE(&sc->szGroupName); // the the nick
         sendAddEnd(); // end server modifications here
         RemovePendingOperation(sc->hContact, 0);
@@ -335,7 +335,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
     {
       if (wError)
       {
-        FreeServerID(sc->wGroupId);
+        FreeServerID(sc->wGroupId, SSIT_GROUP);
         Netlib_Logf(ghServerNetlibUser, "Adding of group to server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, Translate("Adding of group to server list failed."));
       }
@@ -387,7 +387,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", 0); // clear the values
         DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", 0);
 
-        FreeServerID(sc->wContactId); 
+        FreeServerID(sc->wContactId, SSIT_ITEM); 
               
         if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
         { // the group is still not empty, just update it
@@ -408,7 +408,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         {
           DWORD dwCookie;
 
-          if (CheckServerID(sc->wGroupId, 0) && countGroupLevel(sc->wGroupId)>0)
+          if (CheckServerID((WORD)(sc->wGroupId+1), 0) || countGroupLevel((WORD)(sc->wGroupId+1)) == 0)
           { // is next id an sub-group, if yes, we cannot delete this group
             sc->dwAction = SSA_GROUP_REMOVE;
             sc->wContactId = 0;
@@ -456,7 +456,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         DWORD dwCookie;
 
         setServerGroupName(sc->wGroupId, NULL); // clear group from namelist
-        FreeServerID(sc->wGroupId);
+        FreeServerID(sc->wGroupId, SSIT_GROUP);
         removeGroupPathLinks(sc->wGroupId);
 
         groupData = collectGroups(&groupSize);
@@ -500,7 +500,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
         DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", sc->wNewContactId);
 	      DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", sc->wNewGroupId);
-        FreeServerID(sc->wContactId); // release old contact id
+        FreeServerID(sc->wContactId, SSIT_ITEM); // release old contact id
 
         if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize)) // update the group we moved from
         { // the group is still not empty, just update it
@@ -596,9 +596,9 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         Netlib_Logf(ghServerNetlibUser, "Uploading of avatar hash failed.");
-        if (sc->wGroupId) // is avatar added ?
+        if (sc->wGroupId) // is avatar added or updated?
         {
-          FreeServerID(sc->wContactId);
+          FreeServerID(sc->wContactId, SSIT_ITEM);
           DBDeleteContactSetting(NULL, gpszICQProtoName, "SrvAvatarID"); // to fix old versions
         }
       }
@@ -615,7 +615,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       else
       {
         DBDeleteContactSetting(NULL, gpszICQProtoName, "SrvAvatarID");
-        FreeServerID(sc->wContactId);
+        FreeServerID(sc->wContactId, SSIT_ITEM);
 
         setUserInfo();
       }
@@ -638,7 +638,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 {
-
 	BYTE bySSIVersion;
 	WORD wRecordCount;
 	WORD wRecord;
@@ -647,7 +646,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 	WORD wItemId;
 	WORD wTlvType;
 	WORD wTlvLength;
-	WORD wDefaultGroupId = 0;
 	BOOL bIsLastPacket;
 	char* pszRecordName = NULL;
 	oscar_tlv_chain* pChain = NULL;
@@ -683,7 +681,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 	// Loop over all items in the packet
 	for (wRecord = 0; wRecord < wRecordCount; wRecord++)
 	{
-
 		Netlib_Logf(ghServerNetlibUser, "SSI: parsing record %u", wRecord + 1);
 
 		if (wLen < 10)
@@ -828,7 +825,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					// Save group and item ID
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", wItemId);
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", wGroupId);
-					ReserveServerID(wItemId);
+					ReserveServerID(wItemId, SSIT_ITEM);
 
           // TODO: this will be enabled when Manage Serv-list dialog is finished
           if (/*DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) ||*/ bAdded)
@@ -980,9 +977,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						{
 							DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
 						}
-
 					}
-
 				}
 			}
 			break;
@@ -1004,7 +999,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           char* pszName = NULL;
           WORD wNameLength;
 
-					ReserveServerID(wGroupId);
+					ReserveServerID(wGroupId, SSIT_GROUP);
 
           wNameLength = strlen(pszRecordName);
 
@@ -1032,8 +1027,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           setServerGroupName(wGroupId, pszName);
 
           Netlib_Logf(ghServerNetlibUser, "Group %s added to known groups.", pszName);
-					if (wDefaultGroupId == 0 || !strlen(pszRecordName) > 0) // TODO: remove
-						wDefaultGroupId = wGroupId;	  /* need to save one group ID so that we can do valid upload packets */
 
           SAFE_FREE(&pszName);
           /* demangle full grouppath, create groups, set it to known */
@@ -1064,11 +1057,9 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			}
 			else
 			{
-
 				DWORD dwUin;
 				char* pszProto;
 				HANDLE hContact;
-
 
 				// This looks like a real contact
 				// Check if this user already exists in local list
@@ -1115,7 +1106,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 				// Save permit ID
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", wItemId);
-				ReserveServerID(wItemId);
+				ReserveServerID(wItemId, SSIT_ITEM);
 				// Set apparent mode
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_ONLINE);
 				Netlib_Logf(ghServerNetlibUser, "Visible-contact (%u)", dwUin);
@@ -1130,7 +1121,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			}
 			else
 			{
-
 				DWORD dwUin;
 				char* pszProto;
 				HANDLE hContact;
@@ -1181,7 +1171,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 				// Save Deny ID
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", wItemId);
-				ReserveServerID(wItemId);
+				ReserveServerID(wItemId, SSIT_ITEM);
 
 				// Set apparent mode
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
@@ -1194,7 +1184,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       {
         BYTE bVisibility;
 
-        ReserveServerID(wItemId);
+        ReserveServerID(wItemId, SSIT_ITEM);
 
         // Look for visibility TLV
         if (bVisibility = getByteFromChain(pChain, 0x00CA, 1))
@@ -1261,7 +1251,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 				// Save Ignore ID
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", wItemId);
-				ReserveServerID(wItemId);
+				ReserveServerID(wItemId, SSIT_ITEM);
 
 				// Set apparent mode & ignore
         DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
@@ -1294,7 +1284,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         /* data is TLV(D5) hash */
         /* we ignore this, just save the id */
         /* cause we get the hash again after login */
-        ReserveServerID(wItemId);
+        ReserveServerID(wItemId, SSIT_ITEM);
         DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", wItemId);
         Netlib_Logf(ghServerNetlibUser, "SSI Avatar item recognized");
       }
@@ -1310,7 +1300,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 		default:
 			Netlib_Logf(ghServerNetlibUser, "SSI unhandled item %2x", wTlvType);
 			break;
-
 		}
 
 		if (pChain)
@@ -1318,21 +1307,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 	} // end for
 
-
 	Netlib_Logf(ghServerNetlibUser, "Bytes left: %u", wLen);
 
 	SAFE_FREE(&pszRecordName);
 
-	if (wDefaultGroupId)
-	{
-		DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", wDefaultGroupId);
-#ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Default group is %u", wDefaultGroupId);
-#endif
-	}
-
 	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", (WORD)(wRecord + DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0)));
-
 
 	if (bIsLastPacket)
 	{
@@ -1440,14 +1419,12 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 // TODO: Change for new auth system, include all known informations
 
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
-
 }
 
 
 
 static void handleRecvAdded(unsigned char *buf, WORD wLen)
 {
-
 	BYTE nUinLen;
 	BYTE szUin[10];
 	DWORD dwUin;
@@ -1492,14 +1469,12 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 // TODO: Change for new auth system
 
 	CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
-
 }
 
 
 
 static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 {
-
 	BYTE nUinLen;
 	BYTE bResponse;
 	BYTE szUin[10];
@@ -1602,7 +1577,7 @@ void updateServVisibilityCode(BYTE bCode)
     if ((wVisibilityID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0)) == 0)
     {
       // No, create a new random ID
-      wVisibilityID = GenerateServerId();
+      wVisibilityID = GenerateServerId(SSIT_ITEM);
       DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wVisibilityID);
       wCommand = ICQ_LISTS_ADDTOLIST;
       Netlib_Logf(ghServerNetlibUser, "Made new srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
@@ -1660,7 +1635,7 @@ void updateServAvatarHash(char* pHash)
     if ((wAvatarID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0)) == 0)
     {
       // No, create a new random ID
-      wAvatarID = GenerateServerId();
+      wAvatarID = GenerateServerId(SSIT_ITEM);
       wCommand = ICQ_LISTS_ADDTOLIST;
       Netlib_Logf(ghServerNetlibUser, "Made new srvAvatarID, id is %u", wAvatarID);
     }

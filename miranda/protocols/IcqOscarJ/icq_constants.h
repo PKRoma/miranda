@@ -51,6 +51,7 @@
 #define DEFAULT_SS_ADDSERVER    1
 #define DEFAULT_SS_LOAD         0
 #define DEFAULT_SS_STORE        1
+#define DEFAULT_SS_GROUP        "General"
 
 #define DEFAULT_AIM_ENABLED     0
 #define DEFAULT_MTN_ENABLED     0

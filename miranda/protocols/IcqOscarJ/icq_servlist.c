@@ -46,7 +46,7 @@ extern int gnCurrentStatus;
 
 static HANDLE hHookSettingChanged = NULL;
 static HANDLE hHookContactDeleted = NULL;
-static WORD* pwIDList = NULL;
+static DWORD* pwIDList = NULL;
 static int nIDListCount = 0;
 static int nIDListSize = 0;
 
@@ -318,19 +318,19 @@ void FlushPendingOperations()
 
 
 // Add a server ID to the list of reserved IDs.
-// To speed up the process, IDs cannot be removed, and if
+// To speed up the process, no checks is done, if
 // you try to reserve an ID twice, it will be added again.
 // You should call CheckServerID before reserving an ID.
-void ReserveServerID(WORD wID)
+void ReserveServerID(WORD wID, int bGroupId)
 {
   EnterCriticalSection(&servlistMutex);
 	if (nIDListCount >= nIDListSize)
 	{
 		nIDListSize += 100;
-		pwIDList = (WORD*)realloc(pwIDList, nIDListSize * sizeof(WORD));
+		pwIDList = (DWORD*)realloc(pwIDList, nIDListSize * sizeof(DWORD));
 	}
 
-	pwIDList[nIDListCount] = wID;
+	pwIDList[nIDListCount] = wID | bGroupId << 0x18;
 	nIDListCount++;	
   LeaveCriticalSection(&servlistMutex);
 }
@@ -339,16 +339,17 @@ void ReserveServerID(WORD wID)
 
 // Remove a server ID from the list of reserved IDs.
 // Used for deleting contacts and other modifications.
-void FreeServerID(WORD wID)
+void FreeServerID(WORD wID, int bGroupId)
 {
   int i, j;
+  DWORD dwId = wID | bGroupId << 0x18;
 
   EnterCriticalSection(&servlistMutex);
   if (pwIDList)
   {
     for (i = 0; i<nIDListCount; i++)
     {
-      if (pwIDList[i] == wID)
+      if (pwIDList[i] == dwId)
       { // we found it, so remove
         for (j = i+1; j<nIDListCount; j++)
         {
@@ -363,7 +364,7 @@ void FreeServerID(WORD wID)
 
 
 // Returns true if dwID is reserved
-BOOL CheckServerID(WORD wID, int wCount)
+BOOL CheckServerID(WORD wID, unsigned int wCount)
 {
   int i;
 
@@ -372,7 +373,7 @@ BOOL CheckServerID(WORD wID, int wCount)
   {
     for (i = 0; i<nIDListCount; i++)
     {
-      if ((pwIDList[i] >= wID) && (pwIDList[i] <= wID + wCount))
+      if (((pwIDList[i] & 0xFFFF) >= wID) && ((pwIDList[i] & 0xFFFF) <= wID + wCount))
       {
         LeaveCriticalSection(&servlistMutex);
         return TRUE;
@@ -417,7 +418,7 @@ static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
     { // it is not a cached server-group name
       return 0;
     }
-    ReserveServerID((WORD)strtoul(szSetting, NULL, 0x10));
+    ReserveServerID((WORD)strtoul(szSetting, NULL, 0x10), SSIT_GROUP);
   }
   return 0;
 }
@@ -450,9 +451,9 @@ void LoadServerIDs()
 
   EnterCriticalSection(&servlistMutex);
   if (wSrvID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0))
-    ReserveServerID(wSrvID);
+    ReserveServerID(wSrvID, SSIT_ITEM);
   if (wSrvID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0))
-    ReserveServerID(wSrvID);
+    ReserveServerID(wSrvID, SSIT_ITEM);
 
   ReserveServerGroups();
   
@@ -463,16 +464,14 @@ void LoadServerIDs()
     szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
     if (szProto && !lstrcmp(szProto, gpszICQProtoName))
     {
-      /*if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0))
-        ReserveServerID(wSrvID); // TODO: rewrite - use our grouplist, too much duplicity here*/
       if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvContactId", 0))
-        ReserveServerID(wSrvID);
+        ReserveServerID(wSrvID, SSIT_ITEM);
       if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0))
-        ReserveServerID(wSrvID);
+        ReserveServerID(wSrvID, SSIT_ITEM);
       if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0))
-        ReserveServerID(wSrvID);
+        ReserveServerID(wSrvID, SSIT_ITEM);
       if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", 0))
-        ReserveServerID(wSrvID);
+        ReserveServerID(wSrvID, SSIT_ITEM);
     }
     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
   }
@@ -482,7 +481,7 @@ void LoadServerIDs()
 }
 
 
-WORD GenerateServerId(VOID)
+WORD GenerateServerId(int bGroupId)
 {
   WORD wId;
 
@@ -497,13 +496,13 @@ WORD GenerateServerId(VOID)
       break;
   }
 
-  ReserveServerID(wId);
+  ReserveServerID(wId, bGroupId);
 
   return wId;
 }
 
 // Generate server ID with wCount IDs free after it, for sub-groups.
-WORD GenerateServerIdPair(int wCount)
+WORD GenerateServerIdPair(int bGroupId, int wCount)
 {
   WORD wId;
 
@@ -518,7 +517,7 @@ WORD GenerateServerIdPair(int wCount)
       break;
 	}
 	
-	ReserveServerID(wId);
+	ReserveServerID(wId, bGroupId);
 
 	return wId;
 }
@@ -1153,7 +1152,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
 
       if (ack = (servlistcookie*)malloc(sizeof(servlistcookie)))
       { // we have cookie good, go on
-        ReserveServerID((WORD)(wGroupID+1));
+        ReserveServerID((WORD)(wGroupID+1), SSIT_GROUP);
         
         ack->hContact = NULL;
         ack->wContactId = 0;
@@ -1190,7 +1189,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
   WORD wGroupID = 0;
   char* szGroup = (char*)szGroupPath;
 
-  if (!szGroup || szGroup[0]=='\0') szGroup = "General"; // TODO: make some default group name
+  if (!szGroup || szGroup[0]=='\0') szGroup = DEFAULT_SS_GROUP;
 
   if (wGroupID = getServerGroupID(szGroup))
   {
@@ -1207,7 +1206,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
     { // we have cookie good, go on
       ack->hContact = NULL;
       ack->wContactId = 0;
-      ack->wGroupId = GenerateServerId();
+      ack->wGroupId = GenerateServerId(SSIT_GROUP);
       ack->szGroupName = _strdup(szGroup); // we need that name
       ack->dwAction = SSA_GROUP_ADD;
       ack->dwUin = 0;
@@ -1254,18 +1253,20 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
   
   if (strstr(szGroup, "\\") != NULL)
   { // we failed to get grouppath, trim it by one group
+    WORD wRes;
     char *szLast = _strdup(szGroup);
     char *szLess = szLast;
 
     while (strstr(szLast, "\\") != NULL)
       szLast = strstr(szLast, "\\")+1; // look for last backslash
     szLast[-1] = '\0'; 
-    return makeGroupId(szLess, ofCallback, lParam);
+    wRes = makeGroupId(szLess, ofCallback, lParam);
     SAFE_FREE(&szLess);
+
+    return wRes;
   }
 
-  // TODO: remove this, it is now only as a last resort
-  wGroupID = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0); 
+  wGroupID = 0; // everything failed, let callback handle error
   if (ofCallback) ofCallback(wGroupID, (LPARAM)lParam);
   
   return wGroupID;
@@ -1310,7 +1311,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
     return;
   }
 
-	wItemID = GenerateServerId();
+	wItemID = GenerateServerId(SSIT_ITEM);
 
   ack->dwAction = SSA_CONTACT_ADD;
   ack->dwUin = dwUin;
@@ -1487,7 +1488,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   ack->dwUin = dwUin;
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
-  ack->wNewContactId = GenerateServerId(); // icq5 recreates also this, imitate
+  ack->wNewContactId = GenerateServerId(SSIT_ITEM); // icq5 recreates also this, imitate
   ack->wNewGroupId = wNewGroupID;
   ack->lParam = 0; // we use this as a sign
 
@@ -1515,6 +1516,12 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
   { // the contact moved to non existing group, do not do anything: MetaContact hack
     Netlib_Logf(ghServerNetlibUser, "Contact not moved - probably hiding by MetaContacts.");
     return 0;
+  }
+
+  if (!DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0))
+  { // the contact is not stored on the server, check if we should try to add
+    if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+      return 0;
   }
 
   if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
@@ -1849,8 +1856,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
           { // the target group is not known - it is probably rename
             if (getServerGroupID(szGroup))
             { // source group not known -> already renamed
-              bRenamed = 1;
-              Netlib_Logf(ghServerNetlibUser, "Group %x renamed.", wGroupId);
+              if (!IsGroupRenamed(wGroupId))
+              { // is rename in progress ?
+                bRenamed = 1;
+                Netlib_Logf(ghServerNetlibUser, "Group %x renamed to ""%s"".", wGroupId, cws->value.pszVal);
+              }
             }
           }
         }

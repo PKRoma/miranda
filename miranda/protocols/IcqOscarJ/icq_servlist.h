@@ -97,11 +97,15 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup);
 DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
 DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
 
-WORD GenerateServerId(VOID);
-WORD GenerateServerIdPair(int wCount);
-void ReserveServerID(WORD wID);
-void FreeServerID(WORD wID);
-BOOL CheckServerID(WORD wID, int wCount);
+// id type groups
+#define SSIT_ITEM 0
+#define SSIT_GROUP 1
+
+WORD GenerateServerId(int bGroupId);
+WORD GenerateServerIdPair(int bGroupId, int wCount);
+void ReserveServerID(WORD wID, int bGroupId);
+void FreeServerID(WORD wID, int bGroupId);
+BOOL CheckServerID(WORD wID, unsigned int wCount);
 void FlushServerIDs();
 void LoadServerIDs();
 
