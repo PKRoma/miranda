@@ -284,6 +284,7 @@
 #define IDC_SYMBOLS                     1708
 #define IDC_CHECK6                      1709
 #define IDC_ALWAYSFULLWIDTHTOOLBAR      1709
+#define IDC_STATUSGROUP                 1710
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -412,14 +413,18 @@
 #define ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS 40177
 #define ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS 40178
 #define ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING 40181
+#define ID_MESSAGEICONS_SHOWICONS       40183
+#define ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS 40184
+#define ID_MESSAGEICONS_USEINCOMING     40185
+#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40183
-#define _APS_NEXT_CONTROL_VALUE         1710
+#define _APS_NEXT_COMMAND_VALUE         40189
+#define _APS_NEXT_CONTROL_VALUE         1711
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

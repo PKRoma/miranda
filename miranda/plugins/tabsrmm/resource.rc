@@ -8,7 +8,6 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include <winres.h>
 #include "../../include/statusmodes.h"
 
 
@@ -56,7 +55,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,169,133,50,14
     CONTROL         "All modes",IDC_ALWAYS,"Button",BS_AUTOCHECKBOX,19,17,70,
                     14
-    GROUPBOX        "Choose modes",IDC_STATIC,7,7,212,119
+    GROUPBOX        "Choose modes",IDC_STATUSGROUP,7,7,212,119
     CONTROL         "",IDC_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,
                     39,82,11
     CONTROL         "",IDC_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,54,
@@ -615,7 +614,6 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
-    "#include <winres.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\n"
     "\r\n"
     "\0"
@@ -702,7 +700,15 @@ BEGIN
     END
     POPUP "Logmenu"
     BEGIN
-        MENUITEM "Show Message Icons",          ID_LOGMENU_SHOWMESSAGEICONS
+        POPUP "Message Icons"
+        BEGIN
+            MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
+
+            MENUITEM "Symbols instead of Icons",    ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
+
+            MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
+
+        END
         MENUITEM "Show Nickname",               ID_LOGMENU_SHOWNICKNAME
         MENUITEM "Display Timestamp after Nickname", 
                                                 ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME
@@ -863,8 +869,15 @@ BEGIN
     BEGIN
         POPUP "Log Items to show"
         BEGIN
-            MENUITEM "Message Icons",               ID_LOGMENU_SHOWMESSAGEICONS
+            POPUP "Message Icons"
+            BEGIN
+                MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
 
+                MENUITEM "Symbols instead of Icons",    ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
+
+                MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
+
+            END
             MENUITEM "Nickname",                    ID_LOGMENU_SHOWNICKNAME
             MENUITEM SEPARATOR
             MENUITEM "Grid Lines",                  ID_MESSAGELOGFORMATTING_SHOWGRID

@@ -244,5 +244,9 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 	return npos;
 }
 
-#endif // _UNICODE
+#else
+
+// ansi version
+
+#endif
 

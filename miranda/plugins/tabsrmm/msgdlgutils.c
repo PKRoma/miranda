@@ -145,7 +145,9 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_LOGMENU_SHOWDATE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWSECONDS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_INDENTMESSAGEBODY, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENT ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_SHOWMESSAGEICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwEventIsShown & MWF_SHOW_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWNICK ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_UNDERLINETIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_UNDERLINE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
@@ -286,8 +288,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_LOGMENU_SHOWSECONDS:
                 dat->dwFlags ^= MWF_LOG_SHOWSECONDS;
                 return 1;
-            case ID_LOGMENU_SHOWMESSAGEICONS:
+            case ID_MESSAGEICONS_SHOWICONS:
+            case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
                 dat->dwFlags ^= MWF_LOG_SHOWICONS;
+                dat->dwFlags ^= MWF_LOG_SYMBOLS;
+                return 1;
+            case ID_MESSAGEICONS_USEINCOMING:
                 return 1;
             case ID_LOGMENU_SHOWNICKNAME:
                 dat->dwFlags ^= MWF_LOG_SHOWNICK;
