@@ -244,9 +244,11 @@ void __cdecl MSNServerThread( ThreadData* info )
 {
 	MSN_DebugLog( "Thread started: server='%s', type=%d", info->mServer, info->mType );
 
-	NETLIBOPENCONNECTION tConn = {0};
-	tConn.cbSize = sizeof( tConn );
-	tConn.flags = 0;
+	NETLIBOPENCONNECTION tConn = { 0 };
+	if ( msnRunningUnderOldCore )
+      tConn.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+	else
+		tConn.cbSize = sizeof( tConn ), tConn.flags = NLOCF_V2;
 
  	char* tPortDelim = strrchr( info->mServer, ':' );
 	if ( tPortDelim != NULL )

@@ -54,6 +54,7 @@ HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
 bool     msnRunningUnderNT = false;
+bool		msnRunningUnderOldCore = false;
 
 MYOPTIONS MyOptions;
 
@@ -324,6 +325,9 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 1, 2, 0 ))
 		return NULL;
+
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 0 ))
+		msnRunningUnderOldCore = true;
 
 	return &pluginInfo;
 }

@@ -513,3 +513,4 @@ extern	HINSTANCE	   hInst;
 extern	int				msnOtherContactsBlocked;
 
 extern   bool				msnRunningUnderNT;
+extern	bool				msnRunningUnderOldCore;
