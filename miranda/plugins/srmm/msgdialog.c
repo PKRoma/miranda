@@ -505,7 +505,6 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 				dat->avatarPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
 				CloseHandle(hFile);
 			}
-
 		}
 		DBFreeVariant(&dbv);
 	}
