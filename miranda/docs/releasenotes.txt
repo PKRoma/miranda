@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             December 2004 (v0.4)
+                             January 2005 (v0.4)
 
                           http://www.miranda-im.org
 
@@ -43,6 +43,9 @@ Bugfixes:
  - Scrollbar still appeared sometimes if XP skinning was enabled
  - Contact list control read-disk-on-paint bugs
  - Many database bug fixes (crashes, corruption)
+ - Crash opening Find/Add dialog
+ - No & sign in the Open File button on the File Transfer window
+ - Visual defect in "Options\Contact List\Icons" when Expert options unchecked
  - AIM: Removing user from deny list didn't always update mode in Miranda
  - AIM: Fixed file transfers with Mac users
  - ICQ: Error alert blocked I/O
@@ -60,6 +63,7 @@ Enhancements:
  - New status bar options (hide bevel, hide gripper)
  - Database I/O improvements
  - Option to hide vertical scroll bar
+ - Opening a URL blocked I/O
  - AIM: Show mobile users as 'on the phone'
  - MSN: Sending/receiving avatar support
  - MSN: Peer to peer support
