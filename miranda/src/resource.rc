@@ -1505,6 +1505,32 @@ BEGIN
     GROUPBOX        "Status Change on Idle",IDC_STATIC,4,129,303,45
 END
 
+IDD_OPT_PLUGINS DIALOG DISCARDABLE  0, 0, 315, 247
+STYLE WS_CHILD
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "List1",IDC_PLUGLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
+                    LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,4,0,306,145
+    EDITTEXT        IDC_PLUGINLONGINFO,50,159,253,19,ES_MULTILINE | 
+                    ES_READONLY | ES_WANTRETURN | NOT WS_BORDER | WS_VSCROLL
+    GROUPBOX        "",IDC_PLUGININFOFRAME,4,148,307,80,BS_RIGHT
+    EDITTEXT        IDC_PLUGINAUTHOR,50,178,253,12,ES_READONLY | 
+                    ES_WANTRETURN | NOT WS_BORDER
+    EDITTEXT        IDC_PLUGINCPYR,50,190,249,12,ES_AUTOHSCROLL | 
+                    ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
+    CONTROL         "",IDC_PLUGINURL,"Hyperlink",WS_TABSTOP,50,213,254,10
+    CONTROL         "",IDC_PLUGINEMAIL,"Hyperlink",WS_TABSTOP,50,201,208,10
+    RTEXT           "Description:",IDC_STATIC,8,158,38,10
+    RTEXT           "Author(s):",IDC_STATIC,8,177,38,9
+    RTEXT           "Copyright:",IDC_STATIC,8,190,38,9
+    RTEXT           "E-mail:",IDC_STATIC,8,202,38,8
+    RTEXT           "Homepage:",IDC_STATIC,7,213,38,8
+    CTEXT           "Please restart Miranda IM for your changes to take effect.",
+                    IDC_RESTART,5,233,305,11,NOT WS_VISIBLE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2016,6 +2042,11 @@ BEGIN
         VERTGUIDE, 8
         VERTGUIDE, 302
     END
+
+    IDD_OPT_PLUGINS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 235
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2299,30 +2330,6 @@ BEGIN
     LTEXT           "Driver",IDC_STATIC,20,74,23,9
     LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",
                     IDC_NODBDRIVERS,7,113,212,22,NOT WS_VISIBLE
-END
-
-IDD_OPT_PLUGINS DIALOG DISCARDABLE  0, 0, 315, 235
-STYLE WS_CHILD
-FONT 8, "MS Shell Dlg"
-BEGIN
-    CONTROL         "List1",IDC_PLUGLIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
-                    LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
-                    WS_TABSTOP,4,0,306,145
-    EDITTEXT        IDC_PLUGINLONGINFO,50,159,253,19,ES_MULTILINE | 
-                    ES_READONLY | ES_WANTRETURN | NOT WS_BORDER | WS_VSCROLL
-    GROUPBOX        "",IDC_PLUGININFOFRAME,4,148,307,80,BS_RIGHT
-    EDITTEXT        IDC_PLUGINAUTHOR,50,178,253,12,ES_READONLY | 
-                    ES_WANTRETURN | NOT WS_BORDER
-    EDITTEXT        IDC_PLUGINCPYR,50,190,249,12,ES_AUTOHSCROLL | 
-                    ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
-    CONTROL         "",IDC_PLUGINURL,"Hyperlink",WS_TABSTOP,50,213,254,10
-    CONTROL         "",IDC_PLUGINEMAIL,"Hyperlink",WS_TABSTOP,50,201,208,10
-    RTEXT           "Description:",IDC_STATIC,8,158,38,10
-    RTEXT           "Author(s):",IDC_STATIC,8,177,38,9
-    RTEXT           "Copyright:",IDC_STATIC,8,190,38,9
-    RTEXT           "E-mail:",IDC_STATIC,8,202,38,8
-    RTEXT           "Homepage:",IDC_STATIC,7,213,38,8
 END
 
 

@@ -657,7 +657,8 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						}
 						iRow=ListView_GetNextItem(hwndList, iRow, LVNI_ALL);
 					}
-				} 
+				}
+				ShowWindow(GetDlgItem(hwndDlg, IDC_RESTART), TRUE);
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 				break;
 			}			
