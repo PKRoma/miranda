@@ -41,7 +41,6 @@ extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 extern HANDLE hMessageWindowList, hHookWinEvt;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
-extern HBITMAP g_hbmUnknown;
 
 static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus);
 
@@ -461,7 +460,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         {
             if (!dat->showSend)
                 urc->rcItem.right = urc->dlgNewSize.cx - urc->rcItem.left;
-			if (dat->showAvatar) {
+			if (dat->showAvatar&&dat->avatarPic) {
 				urc->rcItem.left = dat->avatarWidth+4;
 			}
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
@@ -497,12 +496,11 @@ static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	DBVARIANT dbv;
 
-	if (dat->avatarPic!=g_hbmUnknown) {
+	if (dat->avatarPic) {
 		DeleteObject(dat->avatarPic);
-        dat->avatarPic=NULL;
+        dat->avatarPic=0;
 	}
 	if (DBGetContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
-		dat->avatarPic=g_hbmUnknown;
 		SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
 		SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 		SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
@@ -511,7 +509,6 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 		HANDLE hFile;
 
 		if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
-			dat->avatarPic=g_hbmUnknown;
 			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
@@ -592,7 +589,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dat->showAvatar = 0;
 				dat->limitAvatarH = 0;
 				if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
-					dat->avatarPic = g_hbmUnknown;
 					dat->showAvatar = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, SRMSGDEFSET_AVATARENABLE);
 					dat->limitAvatarH = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT)?DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT):0;
 				}
@@ -835,6 +831,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->avatarWidth=50;
 			dat->avatarHeight=50;
 			ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
+			return 0;
 		}
 		GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 		if (dat->limitAvatarH) {
@@ -857,7 +854,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 		dat->minEditBoxSize.cx = dat->minEditInit.right - dat->minEditInit.left;
 		dat->minEditBoxSize.cy = dat->minEditInit.bottom - dat->minEditInit.top;
-		if (dat->showAvatar) {
+		if (dat->showAvatar&&dat->avatarPic) {
 			if (dat->minEditBoxSize.cy<=dat->avatarHeight)
 				dat->minEditBoxSize.cy = dat->avatarHeight;
 		}
@@ -884,6 +881,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
         if (dat->showAvatar==0) {
+			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
+			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
+			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
 			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
 			return 0;
 		}
@@ -1006,7 +1006,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->showAvatar = 0;
 			dat->limitAvatarH = 0;
 			if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
-				dat->avatarPic = g_hbmUnknown;
 				dat->showAvatar = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, SRMSGDEFSET_AVATARENABLE);
 				dat->limitAvatarH = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT)?DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT):0;
 			}
@@ -1393,7 +1392,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						HDC hdcMem = CreateCompatibleDC(dis->hDC);
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->avatarPic);
 						
-						if (dat->limitAvatarH) {
+						if (dat->limitAvatarH&&bminfo.bmHeight>dat->limitAvatarH) {
 							double aspect = 0, w = 0;
 
 							aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
@@ -1741,7 +1740,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(dat->hwndStatus);
 		if (dat->hAvatarAck)
 			UnhookEvent(dat->hAvatarAck);
-		if (dat->avatarPic&&dat->avatarPic!=g_hbmUnknown)
+		if (dat->avatarPic)
 			DeleteObject(dat->avatarPic);
 		{
 			int i;
