@@ -1,8 +1,8 @@
 ----------------------------oOo----------------------------
 
-                      Chat v 0.1.0.3
+                      Chat v 0.2.0.0
 
-	     Released 2004-05-26, last updated 2004-06-21
+        Released 2004-05-26, last updated 2004-11-10
 
 -----------------------------------------------------------
 
@@ -42,9 +42,9 @@ or the process will fail.
 The files included in the .zip you have downloaded are: 
 
 chat.dll - the actual plugin. 
-chat_Readme.txt - a brief description of the plugin 
-chat_license.txt - a copy of the license of the plugin (GNU GPL) 
-chat_Translate.txt - translatable strings for people who like to translate 
+Chat_Readme.txt - a brief description of the plugin 
+Chat_license.txt - a copy of the license of the plugin (GNU GPL) 
+Chat_Translate.txt - translatable strings for people who like to translate 
 m_chat.h - for developers
 InstallScript.xml - a script for the Miranda Installer 
   
@@ -71,39 +71,9 @@ Base Address?
 
 Version History?
 ----------------    
-v 0.1.0.5
-- Bugfix:  CTRL+Enter did not work correctly
-- Bugfix:  there was an annoying sound when using certain special keys
-- Bugfix:  the statusbar popups did not work
-- Other:   the popups can now use the same color scheme as in the log
-- Other:   when using CTRL+Up the caret is placed at the end
-- Other:   commas (,) can be used as delimiter in the highlight string
 
-v 0.1.0.4
-- Bugfix:  It crashed sometimes when sending a '%' character
-- Bugfix:  The highlight was wrong sometimes
-
-v 0.1.0.3
-- Feature: command history (CTRL UP-ARROW/DOWN-ARROW)
-- Feature: Support for the PopUp (or similar) plugin
-- Feature: Blinking icons in the tray for chat room events
-- Feature: Option to strip colours from incoming text
-- Bugfix:  It was not possible to have an empty group name to add chat rooms to
-- Bugfix:  On some incoming text the font size would be extremely big
-- Bugfix:  The plugin could crash when moving scrollbars (attempted bugfix) 
-- Bugfix:  Colours were sometimes displayed wrong
-- Bugfix:  The '%' character were displayed wrong sometimes and identifiers did not work
-- Bugfix:  Text containing fomatting were not highlighted correctly
-- Bugfix:  It was possible to 'quick connect' even if Chat ws not installed
-- Bugfix:  Topic in the statusbar disappeared sometimes
-- Bugfix:  Nick name auto find (TAB) did not work correctly
-- Bugfix:  The log to file feature was broken and could crash and behave bad
-- Other:   The plugin is not dependant on IRC_icons.dll anymore, removed it from the installer also
-
-
-0.1.0.0 (04-05-26)
-
-- initial release
+Please go to:
+http://www.miranda-im.org/download/details.php?action=viewlog&id=1309
 
 
 
