@@ -73,9 +73,9 @@ BEGIN
                     WS_VISIBLE | WS_TABSTOP,2,67,12,12
     CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
                     0x18000000L
-    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,17,32,8,14,
+    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,17,32,16,14,
                     0x18000000L
-    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,28,32,16,14,
+    CONTROL         "",IDC_PROTOMENU,"MButtonClass",WS_TABSTOP,33,32,8,14,
                     0x18000000L
     CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,44,32,16,14,
                     0x18000000L

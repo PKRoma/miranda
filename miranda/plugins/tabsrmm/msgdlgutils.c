@@ -70,7 +70,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
     picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
 
-    if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds + infospace)) {
+    if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds + infospace) && !myGlobals.m_AlwaysFullToolbarWidth) {
         dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2);
         dat->bottomOffset = dat->dynaSplitter + 100;
     }
@@ -166,8 +166,8 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, dat->dwFlags & MWF_LOG_INDENT ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
-        EnableMenuItem(submenu, ID_PICMENU_ALIGNFORFULL, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) ? MF_ENABLED : MF_GRAYED));
-        EnableMenuItem(submenu, ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) ? MF_ENABLED : MF_GRAYED));
+        //EnableMenuItem(submenu, ID_PICMENU_ALIGNFORFULL, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) ? MF_ENABLED : MF_GRAYED));
+        //EnableMenuItem(submenu, ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
         CheckMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
@@ -204,12 +204,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 return 1;
-            case ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE:
-                SendMessage(hwndDlg, DM_ALIGNSPLITTERMAXLOG, 0, 0);
-                return 1;
-            case ID_PICMENU_ALIGNFORFULL:
-                SendMessage(hwndDlg, DM_ALIGNSPLITTERFULL, 0, 0);
-                return 1;
             case ID_PICMENU_RESETTHEAVATAR:
                 DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic");
                 if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
@@ -218,12 +212,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 DBDeleteContactSetting(dat->hContact, "ContactPhoto", "File");
                 SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
                 InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-                if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR))
-                    SendMessage(hwndDlg, DM_ALIGNSPLITTERFULL, 0, 0);
-                else {
-                    SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                    SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                }
+                SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 return 1;
             case ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES:
                 {
@@ -758,14 +748,8 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
                 dat->hContactPic = myGlobals.g_hbmUnknown;
             else {
                 GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
-                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                    if (bminfo.bmWidth <= 0 || bminfo.bmHeight <= 0) 
-                        isNoPic=TRUE;
-                }
-                else  {
-                    if (bminfo.bmWidth>maxImageSizeX || bminfo.bmWidth<=0 || bminfo.bmHeight<=0 || bminfo.bmHeight>maxImageSizeY) 
-                        isNoPic=TRUE;
-                }
+                if (bminfo.bmWidth <= 0 || bminfo.bmHeight <= 0) 
+                    isNoPic=TRUE;
             }
             if (isNoPic) {
                 _DebugPopup(dat->hContact, "%s %s", dbv.pszVal, Translate("has either a wrong size (max 150 x 150) or is not a recognized image file"));
@@ -781,13 +765,9 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
         }
         if(dat->hContactPic) {
             dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-            if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                if(dat->dynaSplitter == 0 || dat->splitterY == 0)
-                    SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-                dat->dynaSplitter = dat->splitterY - 34;
-            }
-            else
+            if(dat->dynaSplitter == 0 || dat->splitterY == 0)
                 SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
+            dat->dynaSplitter = dat->splitterY - 34;
             SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
             SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
             ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
@@ -1208,3 +1188,4 @@ void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
     if(oldTop)
         dat->iHistoryTop = oldTop;
 }
+

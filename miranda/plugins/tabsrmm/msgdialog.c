@@ -171,11 +171,8 @@ void SetDialogToType(HWND hwndDlg)
     showSend = dat->showUIElements & MWF_UI_SHOWSEND;
     showFormat = dat->showUIElements & MWF_UI_SHOWFORMAT;
     
-    if(showFormat) {
-        showSend = FALSE;
+    if(showFormat)
         myGlobals.m_FullUin = 0;
-        dat->showUIElements &= ~MWF_UI_SHOWSEND;
-    }
     
     if (dat->hContact) {
         ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), showButton ? SW_SHOW : SW_HIDE);
@@ -199,12 +196,6 @@ void SetDialogToType(HWND hwndDlg)
         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), SW_SHOW);
         EnableWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), TRUE);
     }
-    if (showFormat) {
-        ShowWindow(GetDlgItem(hwndDlg, IDC_PIC), SW_HIDE);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_HISTORY), SW_HIDE);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLE), SW_HIDE);
-    }
-
 // smileybutton stuff...
     
     if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled) {
@@ -527,7 +518,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
     int iClistOffset = 0;
     RECT rc;
-
+    static int uinWidth;
+    
     showInfo = dat->showUIElements & MWF_UI_SHOWINFO;
     showButton = dat->showUIElements & MWF_UI_SHOWBUTTON;
     showSend = dat->showUIElements & MWF_UI_SHOWSEND;
@@ -542,6 +534,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if (buttonLineControlsNew[i] == urc->wId)
                 OffsetRect(&urc->rcItem, 0, -(dat->splitterY +10));
     }
+
+    // dynamic toolbar configuration...
+    
+    if(showFormat)
+        ShowWindow(GetDlgItem(hwndDlg, IDC_PIC), dat->showPic ? SW_HIDE : SW_SHOW);
+    
     switch (urc->wId) {
         case IDC_NAME:
             {
@@ -560,6 +558,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                     SelectObject(hdc, (HFONT) SendMessage(GetDlgItem(hwndDlg, IDOK1), WM_GETFONT, 0, 0));
                     GetTextExtentPoint32(hdc, buf, lstrlen(buf), &textSize);
                     urc->rcItem.right = urc->rcItem.left + textSize.cx + 12;        // padding
+                    uinWidth = urc->rcItem.right - urc->rcItem.left;
                     if (showButton && urc->rcItem.right > urc->dlgNewSize.cx - dat->nLabelRight)
                         urc->rcItem.right = urc->dlgNewSize.cx - dat->nLabelRight;
                     ReleaseDC(h, hdc);
@@ -577,7 +576,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if(!dat->doSmileys)
-                OffsetRect(&urc->rcItem, -16, 0);
+                OffsetRect(&urc->rcItem, -22, 0);
+            if(!showFormat && myGlobals.m_FullUin && urc->wId == IDC_SMILEYBTN)
+                OffsetRect(&urc->rcItem, uinWidth - 22, 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_PROTOCOL:
         case IDC_PROTOMENU:
@@ -602,20 +603,16 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, 9, 0);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
+            if(!showFormat && myGlobals.m_FullUin && urc->wId == IDC_PROTOMENU)
+                OffsetRect(&urc->rcItem, uinWidth - 26, 0);
             if (urc->wId == IDC_PROTOCOL || urc->wId == IDC_PROTOMENU)
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             if (showSend) {
                 urc->rcItem.left -= 40;
                 urc->rcItem.right -= 40;
             }
-            if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 27)))
-                    OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-            }
-            else {
-                if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 33)))
-                    OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-            }
+            if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 33)))
+                OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_LOG:
@@ -633,14 +630,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.right +=1;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + 27) && dat->showPic)
-                    urc->rcItem.right -= (dat->pic.cx + 4);
-            }
-            else {
-                if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + 33) && dat->showPic)
-                    urc->rcItem.right -= (dat->pic.cx + 4);
-            }
+            if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + 33) && dat->showPic)
+                urc->rcItem.right -= (dat->pic.cx + 4);
             return RD_ANCHORX_WIDTH | RD_ANCHORY_BOTTOM;
         case IDC_CONTACTPIC:
             urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
@@ -659,14 +650,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
 
-            if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 27)))
-                    OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-            }
-            else {
-                if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 33)))
-                    OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-            }
+            if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + 33)))
+                OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
             
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTISPLITTER:
@@ -818,7 +803,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
 #if defined(_UNICODE)
                 dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatbuttons", 0) ? MWF_UI_SHOWFORMAT : 0;
-#endif                
+#endif       
+                if(dat->showUIElements & MWF_UI_SHOWFORMAT)
+                    myGlobals.m_FullUin = 0;
+                
                 dat->hBkgBrush = NULL;
                 dat->hInputBkgBrush = NULL;
                 dat->hDbEventFirst = NULL;
@@ -842,12 +830,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(!myGlobals.m_IgnoreContactSettings) {
                     DWORD dwLocalFlags = 0;
                     int dwLocalSmAdd = 0;
-                    int doLimitAvatar = dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT;
                     
                     if(dat->hContact) {
                         dwLocalFlags = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", 0xffffffff);
                         if(dwLocalFlags != 0xffffffff)
-                            dat->dwFlags = dwLocalFlags | ((dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT) ? MWF_LOG_LIMITAVATARHEIGHT : 0);
+                            dat->dwFlags = dwLocalFlags;
                         dwLocalSmAdd = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "doSmileys", 0xffffffff);
                         if(dwLocalSmAdd != 0xffffffff)
                             dat->doSmileys = dwLocalSmAdd;
@@ -954,9 +941,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
-//                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEDITSTYLE, SES_USEAIMM, SES_USEAIMM);
                 
-                /* duh, how come we didnt use this from the start? */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
                 if (dat->hContact) {
                     int  pCaps;
@@ -971,7 +956,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         nMax = CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM) dat->hContact);
                         if (nMax)
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_LIMITTEXT, (WPARAM) nMax, 0);
-                    /* get around a lame bug in the Windows template resource code where richedits are limited to 0x7FFF */
                         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
                         pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
                         if(pCaps & PF4_AVATARS)
@@ -979,7 +963,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
-            // Hack alert.  Read the CList/UseGroups setting an hide/show groups in our clist
                 if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
                 else
@@ -1185,11 +1168,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
                     if(GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd)
                         FlashContainer(dat->pContainer, 1, 0);
-                    //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                 }
                 SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
-                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)
-                    SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
@@ -1260,11 +1241,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
                 }
             }
-            // dynamic avatar resizing...
-            if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "dynamicavatarsize", 0))
-                dat->dwFlags |= MWF_LOG_DYNAMICAVATAR;
-            else
-                dat->dwFlags &= ~MWF_LOG_DYNAMICAVATAR;
             dat->showUIElements = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE) ? MWF_UI_SHOWINFO : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE) ? MWF_UI_SHOWBUTTON : 0;
             dat->showUIElements |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON) ? MWF_UI_SHOWSEND : 0;
@@ -1281,7 +1257,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             
             dat->iButtonBarNeeds = (dat->showUIElements & MWF_UI_SHOWSEND) ? 40 : 0;
             dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWBUTTON ? (dat->doSmileys ? 180 : 154) : 0);
-            dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWINFO) ? 25 : 0;
+            dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWINFO) ? 32 : 0;
             
             if(dat->dwFlags & MWF_LOG_GRID && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0))
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1,1));     // XXX margins in the log (looks slightly better)
@@ -1459,13 +1435,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             char *szNewStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, 0);
                             
                             if(dat->szProto != NULL) {
-                                if(dat->wStatus == ID_STATUS_OFFLINE) {
+                                if(dat->wStatus == ID_STATUS_OFFLINE)
                                     _snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
-                                } else if(dat->wOldStatus == ID_STATUS_OFFLINE) {
+                                else if(dat->wOldStatus == ID_STATUS_OFFLINE)
                                     _snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
-                                } else {
+                                else
                                     _snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
-                                }
                             }
                             iLen = strlen(buffer) + 1;
                             MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], iLen);
@@ -1515,15 +1490,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case DM_ADDDIVIDER:
-            {
-                if(!(dat->dwFlags & MWF_DIVIDERSET) && myGlobals.m_UseDividers) {
-                    if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG)) > 0) {
-                        dat->dwFlags |= MWF_DIVIDERWANTED;
-                        dat->dwFlags |= MWF_DIVIDERSET;
-                    }
+            if(!(dat->dwFlags & MWF_DIVIDERSET) && myGlobals.m_UseDividers) {
+                if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG)) > 0) {
+                    dat->dwFlags |= MWF_DIVIDERWANTED;
+                    dat->dwFlags |= MWF_DIVIDERSET;
                 }
-                break;
             }
+            break;
         case WM_SETFOCUS:
             if (dat->iTabID >= 0) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
@@ -1625,23 +1598,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSGSPLITNEW);
                 urd.pfnResizer = MessageDialogResize;
 
-                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR && dat->hContactPic != 0) {
+                if(dat->hContactPic != 0) {
                     GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
                     CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
                 }
                 if (dat->uMinHeight > 0 && HIWORD(lParam) >= dat->uMinHeight) {
                     if (dat->splitterY > HIWORD(lParam) - MINLOGHEIGHT) {
                         dat->splitterY = HIWORD(lParam) - MINLOGHEIGHT;
-                        if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                            dat->dynaSplitter = dat->splitterY - 34;
-                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                        }
+                        dat->dynaSplitter = dat->splitterY - 34;
+                        SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     }
                     if (dat->splitterY < MINSPLITTERY) {
-                        if(dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR))
-                            SendMessage(hwndDlg, DM_ALIGNSPLITTERMAXLOG, 0, 0);
-                        else
+                        if(dat->showPic)
                             SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
                     }
                 }
@@ -1682,13 +1651,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  * attempt to fix splitter troubles..
                  * hardcoded limits... better solution is possible, but this works for now
                  */
-                    if (dat->showPic && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                        int iOffset = (dat->showUIElements == 0) ? 28 : 0;
-                        if (dat->splitterY < (dat->bottomOffset + iOffset) || dat->splitterY < MINSPLITTERY)
-                            dat->splitterY = oldSplitterY;
-                        if (dat->splitterY > ((rc.bottom - rc.top) - 50))    // splitter top limit
-                            dat->splitterY = oldSplitterY;
-                    } else {
+                    if (dat->showPic) {
                         // handle dynamic resizing of picture while splitter is moving...
                         if (dat->splitterY <= MINSPLITTERY)           // min splitter size
                             dat->splitterY = oldSplitterY;
@@ -1945,7 +1908,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
                 }
                 if (dat->showTyping) {
-                    if (dat->nTypeSecs) {
+                    if (dat->nTypeSecs > 0) {
                         dat->nTypeSecs--;
                         if (GetForegroundWindow() == dat->pContainer->hwnd)
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
@@ -1959,7 +1922,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->showTyping = 0;
                     }
                 } else {
-                    if (dat->nTypeSecs) {
+                    if (dat->nTypeSecs > 0) {
                         char szBuf[256];
                         char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
@@ -2215,26 +2178,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_RECALCPICTURESIZE:
         {
             BITMAP bminfo;
-            int iMaxHeight;
             
             if(dat->hContactPic == 0) {
                 dat->pic.cy = dat->pic.cx = 60;
                 break;
             }
             GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
-            iMaxHeight = myGlobals.m_AvatarMaxHeight;
-            if((dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT) && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) && bminfo.bmHeight > (LONG)iMaxHeight) {
-                double aspect = (double)iMaxHeight / (double)bminfo.bmHeight;
-                double newWidth = (double)bminfo.bmWidth * aspect;
-                dat->pic.cy = iMaxHeight + 2*1;
-                dat->pic.cx = (int)newWidth + 2*1;
-            }
-            else if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)
-                CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
-            else {
-                dat->pic.cx=bminfo.bmWidth+2*1;
-                dat->pic.cy=bminfo.bmHeight+2*1;
-            }
+            CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
             break;
         }
@@ -2244,61 +2194,25 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
          */
         case DM_UPDATEPICLAYOUT:
             if (dat->showPic) {
-                POINT pt1;
-                RECT rc1, rc2;
                 int iOffset = 0;
                 
-                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                    dat->bottomOffset = dat->dynaSplitter + 100;
-                    break;
-                    if(dat->hContactPic) {
-                        BITMAP bminfo;
-                        int iMaxHeight = 0;
-                        
-                        GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
-                        iMaxHeight = myGlobals.m_AvatarMaxHeight;
-                        if(dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT && bminfo.bmHeight > (LONG)iMaxHeight)
-                            dat->bottomOffset = iMaxHeight;
-                        else
-                            dat->bottomOffset = bminfo.bmHeight;
-                        dat->bottomOffset += 2*1;
-                    }
+                dat->bottomOffset = dat->dynaSplitter + 100;
+                break;
+                if(dat->hContactPic) {
+                    BITMAP bminfo;
+                    
+                    GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
+                    dat->bottomOffset = bminfo.bmHeight;
+                    dat->bottomOffset += 2*1;
                 }
-                else {
-                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                    GetClientRect(hwndDlg, &rc2);
-                    GetWindowRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), &rc1);
-                    pt1.x = rc1.left;
-                    pt1.y = rc1.top;
-                    ScreenToClient(hwndDlg, &pt1);
-                    dat->bottomOffset = (rc2.bottom - rc2.top) - pt1.y + 1;
-                    // XXX for splitter at top of bar               dat->bottomOffset = (rc2.bottom - rc2.top) - pt1.y + (rc1.bottom - rc1.top) + 5 - 24;
-                    iOffset = (dat->showUIElements == 0) ? 28 : 0;
-                    if (dat->splitterY < (dat->bottomOffset + iOffset)) {
-                        dat->splitterY = dat->bottomOffset + iOffset;
-                        if(!wParam)
-                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                        SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                    }
-                }
-            } else if (dat->hContact && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-				if(!wParam)
-					SendMessage(hwndDlg, WM_SIZE, 0, 0);
             }
             break;
         case DM_LOADSPLITTERPOS:
             {
-                if(dat->showPic && dat->hContact && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", (DWORD) 150);
-                }
-                else {
-                    if(myGlobals.m_IgnoreContactSettings)
-                        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
-                    else {
-                        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150));
-                    }
-                }
+                if(myGlobals.m_IgnoreContactSettings)
+                    dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
+                else
+                    dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150));
                 if(dat->splitterY < MINSPLITTERY || dat->splitterY == -1) {
                     if(!dat->showPic)
                         dat->splitterY = MINSPLITTERY;
@@ -2392,24 +2306,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     HPEN hPen;
                     BITMAP bminfo;
                     double dAspect = 0, dNewWidth = 0;
-                    DWORD iMaxHeight;
+                    DWORD iMaxHeight = 0;
+                    RECT rc;
                     
-                    iMaxHeight = myGlobals.m_AvatarMaxHeight;
                     GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
-                    if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                        RECT rc;
 
-                        GetClientRect(hwndDlg, &rc);
-                        dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
-                        dNewWidth = (double)bminfo.bmWidth * dAspect;
-                        if(dNewWidth > (double)(rc.right - rc.left) * 0.8)
-                            dNewWidth = (double)(rc.right - rc.left) * 0.8;
-                        iMaxHeight = dat->iRealAvatarHeight;
-                    }
-                    else if(dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT && bminfo.bmHeight > (LONG)iMaxHeight) {
-                        dAspect = (double)iMaxHeight / (double)bminfo.bmHeight;
-                        dNewWidth = (double)bminfo.bmWidth * dAspect;
-                    }
+                    GetClientRect(hwndDlg, &rc);
+                    dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
+                    dNewWidth = (double)bminfo.bmWidth * dAspect;
+                    if(dNewWidth > (double)(rc.right - rc.left) * 0.8)
+                        dNewWidth = (double)(rc.right - rc.left) * 0.8;
+                    iMaxHeight = dat->iRealAvatarHeight;
                     hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
                     SelectObject(dis->hDC, hPen);
                     Rectangle(dis->hDC, 0, 0, dat->pic.cx, dat->pic.cy);
@@ -2417,12 +2324,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->hContactPic && dat->showPic) {
                         HDC hdcMem = CreateCompatibleDC(dis->hDC);
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->hContactPic);
-                        if((dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT && bminfo.bmHeight > (LONG)iMaxHeight) || dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                            SetStretchBltMode(dis->hDC, HALFTONE);
-                            StretchBlt(dis->hDC, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                        } else {
-                            BitBlt(dis->hDC, 1, 1, bminfo.bmWidth, bminfo.bmHeight, hdcMem, 0, 0, SRCCOPY);
-                        }
+                        SetStretchBltMode(dis->hDC, HALFTONE);
+                        StretchBlt(dis->hDC, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                         DeleteObject(hbmMem);
                         DeleteDC(hdcMem);
                     }
@@ -3184,13 +3087,11 @@ verify:
              * updated to use RTF streaming and save rich text in utf8 format
              */
         case DM_SAVEPERCONTACT:
-            if (!dat->showPic || (dat->showPic && (dat->dwFlags & MWF_LOG_DYNAMICAVATAR))) {
-                if(!myGlobals.m_IgnoreContactSettings) {
+            if (dat->showPic) {
+                if(!myGlobals.m_IgnoreContactSettings)
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
-                }
-                else {
+                else
                     DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
-                }
             } else {
                 if (dat->hContact)
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
@@ -3237,46 +3138,16 @@ verify:
          */
         case DM_PICTURECHANGED:
             ShowPicture(hwndDlg, dat, TRUE, TRUE, TRUE);
-            if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-                SendMessage(hwndDlg, WM_SIZE, 0, 0);
-            }
             return 0;
 
         case DM_STATUSBARCHANGED:
             UpdateStatusBar(hwndDlg, dat);
             break;
-            
-        case DM_ALIGNSPLITTERMAXLOG:
-            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 1, 0);
-            dat->splitterY = dat->bottomOffset;
-            dat->splitterY = dat->splitterY < MINSPLITTERY ? MINSPLITTERY : dat->splitterY;
-            SendMessage(hwndDlg, DM_SPLITTERMOVED, (WPARAM)dat->splitterY, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
-            SendMessage(hwndDlg, WM_SIZE, 0, 0);
-            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-            break;
-        case DM_ALIGNSPLITTERFULL:
-            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 1, 0);
-            dat->splitterY = dat->bottomOffset + 28;
-            dat->splitterY = dat->splitterY < MINSPLITTERY ? MINSPLITTERY : dat->splitterY;
-            SendMessage(hwndDlg, DM_SPLITTERMOVED, (WPARAM)dat->splitterY, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
-            SendMessage(hwndDlg, WM_SIZE, 0, 0);
-            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-            break;
-
         case DM_PICTHREADCOMPLETE:
             if(dat->hThread) {
                 CloseHandle(dat->hThread);
                 dat->hThread = 0;
                 ShowPicture(hwndDlg, dat, FALSE, TRUE, FALSE);
-                if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                    SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                    SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                }
             }
             break;
         case DM_MULTISENDTHREADCOMPLETE:
@@ -3355,11 +3226,6 @@ verify:
                         DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai_s.filename);
                         DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai_s.filename);
                         ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
-                        if(!(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)) {
-                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                            SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
-                        }
                     }
                 }
                 SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);

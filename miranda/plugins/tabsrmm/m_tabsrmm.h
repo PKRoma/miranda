@@ -20,7 +20,7 @@
 #define MWF_LOG_UNDERLINE 65536
 #define MWF_LOG_SWAPNICK 131072
 #define MWF_LOG_SHOWICONS 262144
-#define MWF_LOG_DYNAMICAVATAR 524288
+//#define MWF_LOG_DYNAMICAVATAR 524288
 
 #define MWF_LOG_INDENTWITHTABS 1048576
 #define MWF_LOG_SYMBOLS 0x200000
@@ -30,7 +30,7 @@
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MWF_LOG_GRID 0x4000000
 #define MWF_LOG_INDIVIDUALBKG 0x8000000
-#define MWF_LOG_LIMITAVATARHEIGHT 0x10000000
+//#define MWF_LOG_LIMITAVATARHEIGHT 0x10000000
 #define MWF_SMBUTTONSELECTED 0x20000000
 #define MWF_DIVIDERWANTED 0x40000000
 #define MWF_LOG_GROUPMODE 0x80000000
@@ -214,13 +214,13 @@ typedef struct _globals {
     int m_UseDividers;
     int m_DividersUsePopupConfig;
     int m_MsgTimeout;
-    int m_AvatarMaxHeight;
     int m_EscapeCloses;
     int m_WarnOnClose;
     int m_ExtraMicroLF;
     int m_AvatarMode;
     int m_FlashOnClist;
     int m_TabAutoClose;
+    int m_AlwaysFullToolbarWidth;
 } MYGLOBALS;
     
 struct InputHistory {

@@ -281,8 +281,9 @@
 #define IDC_TAB1                        1706
 #define IDC_OPTIONSTAB                  1706
 #define IDC_EXTRALFSPIN                 1707
-#define IDC_CHECK6                      1708
 #define IDC_SYMBOLS                     1708
+#define IDC_CHECK6                      1709
+#define IDC_ALWAYSFULLWIDTHTOOLBAR      1709
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -418,7 +419,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
 #define _APS_NEXT_COMMAND_VALUE         40183
-#define _APS_NEXT_CONTROL_VALUE         1709
+#define _APS_NEXT_CONTROL_VALUE         1710
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

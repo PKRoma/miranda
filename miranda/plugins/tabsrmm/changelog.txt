@@ -127,6 +127,14 @@ Version 0.9.9.5 - 2005/02/02
           icons. The advantage is that this is WAY faster and uses only a fraction of the
           memory consumed by the icon code
         
+        - removed static avatar layout. Avatars are now always dynamically resized and the layout
+          is constantly tweaked to avoid a "damaged" tool bar. A new option is available
+          under Options->Messaging:
+          [ ] Always keep the button bar at full width
+          This option, when enabled, will prevent the avatar from using toolbar space. Its
+          useful if you have enabled the formatting buttons, because they will increase the
+          space needed on the toolbar significantly.
+
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE

@@ -211,25 +211,22 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Options",IDC_STATIC,0,0,303,226
-    CONTROL         "Automatically switch tabs in minimized containers",
-                    IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,12,289,10
     CONTROL         "Place dividers in inactive sessions",IDC_USEDIVIDERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,23,289,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,12,289,11
     CONTROL         "Use popup configuration for placing dividers",
                     IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,19,34,271,11
+                    WS_TABSTOP,19,23,271,11
     CONTROL         "Resize avatar larger than",IDC_LIMITAVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,50,115,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,126,48,38,12,ES_AUTOHSCROLL | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,36,115,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,126,34,38,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,49,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,35,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,191,50,85,11
+    LTEXT           "pixels in height",IDC_STATIC,191,36,85,11
     CONTROL         "Dynamically resize avatars depending on splitter position",
                     IDC_AVADYNAMIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    61,294,12
+                    47,294,12
     LTEXT           "Show avatars",IDC_STATIC,20,77,60,10
     COMBOBOX        IDC_AVATARMODE,75,74,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
@@ -275,6 +272,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,128,279,11
     CONTROL         "Show formatting buttons",IDC_SHOWFORMATTING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,147,131,11
+    CONTROL         "Always keep the button bar at full width",
+                    IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,18,59,276,10
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
@@ -394,7 +394,7 @@ IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab options",IDC_STATIC,0,0,303,61
+    GROUPBOX        "Tab options",IDC_STATIC,0,0,303,57
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,11,135,10
     EDITTEXT        IDC_CUT_TITLEMAX,148,9,30,12,ES_AUTOHSCROLL
@@ -411,49 +411,52 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,31,11,
                     13
     LTEXT           "pixel",IDC_STATIC,267,34,28,11
-    GROUPBOX        "Create tabs and containers",IDC_STATIC,0,65,303,52
+    GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,64
     CONTROL         "Create tabs in the background",IDC_AUTOCREATETABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,86,127,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,81,127,11
     CONTROL         "Popup container if minimized",IDC_POPUPCONTAINER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,6,97,132,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,92,132,11
     CONTROL         "Create containers, but leave them minimized",
                     IDC_AUTOCREATECONTAINER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,137,86,156,11
-    GROUPBOX        "Message dialog layout",IDC_STATIC,0,120,303,42
+                    WS_TABSTOP,137,81,156,11
+    GROUPBOX        "Message dialog layout",IDC_STATIC,0,126,303,36
     CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,132,133,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,138,133,11
     CONTROL         "Show full UIN on toolbar",IDC_FULLUSERNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,143,133,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,149,133,11
     CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,142,152,11
-    LTEXT           "Tab control border",IDC_STATIC,154,132,74,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,148,152,11
+    LTEXT           "Tab control border",IDC_STATIC,154,138,74,12
     EDITTEXT        IDC_TABBORDER,233,130,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,127,
                     11,13
-    LTEXT           "pixel",IDC_STATIC,268,132,31,10
+    LTEXT           "pixel",IDC_STATIC,268,138,31,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,303,60
     CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,173,141,12
-    LTEXT           "Input history:",IDC_STATIC,155,175,74,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,174,141,12
+    LTEXT           "Input history:",IDC_STATIC,155,176,74,10
     EDITTEXT        IDC_HISTORYSIZE,238,173,28,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,170,
                     12,13
-    LTEXT           "entries",IDC_STATIC,272,175,28,10
+    LTEXT           "entries",IDC_STATIC,272,176,28,10
     CONTROL         "Use ESC key for closing sessions",IDC_ESC_MINIMIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,185,294,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,186,294,11
     CONTROL         "Use global hotkeys for finding message sessions",
                     IDC_HOTKEYSAREGLOBAL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,197,295,9
+                    WS_TABSTOP,5,198,295,9
     LTEXT           "Modifiers",IDC_STATIC,17,210,66,11
     COMBOBOX        IDC_MODIFIERS,87,208,84,50,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Automatically pop up the window/tab when a message is received",
-                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,75,
+                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,70,
                     294,10
-    PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,137,99,
+    PUSHBUTTON      "Setup status modes...",IDC_SETUPAUTOCREATEMODES,137,94,
                     154,14
+    CONTROL         "Automatically switch tabs in minimized containers",
+                    IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    6,110,289,10
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147
@@ -696,10 +699,6 @@ BEGIN
         MENUITEM "Disable automatic Avatar updates", 
                                                 ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
 
-        MENUITEM SEPARATOR
-        MENUITEM "Align for maximum Log Size",  ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE
-
-        MENUITEM "Align for full Width Button Bar", ID_PICMENU_ALIGNFORFULL
     END
     POPUP "Logmenu"
     BEGIN
@@ -852,11 +851,6 @@ BEGIN
             MENUITEM "Disable automatic Avatar updates", 
                                                     ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
 
-            MENUITEM SEPARATOR
-            MENUITEM "Align for maximum Log Size",  ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE
-
-            MENUITEM "Align for full Width Button Bar", 
-                                                    ID_PICMENU_ALIGNFORFULL
         END
         MENUITEM SEPARATOR
         MENUITEM "Show Multisend Contact List", ID_VIEW_SHOWMULTISENDCONTACTLIST
