@@ -1089,8 +1089,8 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 				if (!YAHOO_ShowPopup("Yahoo Ping Error", errormsg, YAHOO_NOTIFY_POPUP)) {
 					if (YAHOO_hasnotification())
 						YAHOO_shownotification("Yahoo Ping Error", errormsg, NIIF_ERROR);
-					else
-						MessageBox(NULL, errormsg, "Yahoo Ping Error", MB_OK | MB_ICONINFORMATION);
+					//else
+					//	MessageBox(NULL, errormsg, "Yahoo Ping Error", MB_OK | MB_ICONINFORMATION);
 				}
 				//if (ServiceExists( MS_POPUP_SHOWMESSAGE && !PUShowMessage(strdup(errormsg), SM_WARNING)) ){
 				//} else if (YAHOO_hasnotification())
