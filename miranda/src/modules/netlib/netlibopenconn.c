@@ -322,6 +322,79 @@ static void FreePartiallyInitedConnection(struct NetlibConnection *nlc)
 
 #define PortInMask(mask,p)  ((mask)[((p)&0xFFFF)>>3]&(1<<((p)&7)))
 
+static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLIBOPENCONNECTION * nloc)
+{
+	int rc=0;
+	unsigned int dwTimeout=( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) ) ? nloc->timeout : 0;
+	unsigned int notblocking=1;	
+	TIMEVAL tv;
+	DWORD lasterr = 0;	
+	// if dwTimeout is zero then its an old style connection or new with a 0 timeout, select() will error quicker anyway
+	if ( dwTimeout == 0 )
+		dwTimeout += 60;
+	// return the socket to non blocking
+	if ( ioctlsocket(s, FIONBIO, &notblocking) != 0 ) {
+		return SOCKET_ERROR;
+	}
+	// try a connect
+	if ( connect(s, name, namelen) == 0 ) {
+		goto unblock;
+	}
+	// didn't work, was it cos of nonblocking?
+	if ( WSAGetLastError() != WSAEWOULDBLOCK ) {
+		rc=SOCKET_ERROR;
+		lasterr=WSAGetLastError();
+		goto unblock;
+	}
+	// setup select()
+	tv.tv_sec=1;
+	tv.tv_usec=0;
+	for (;;) {		
+		fd_set r, w, e;
+		FD_ZERO(&r); FD_ZERO(&w); FD_ZERO(&e);
+		FD_SET(s, &r);
+		FD_SET(s, &w);
+		FD_SET(s, &e);		
+		if ( (rc=select(0, &r, &w, &e, &tv)) == SOCKET_ERROR ) {
+			break;
+		}			
+		if ( rc > 0 ) {			
+			if ( FD_ISSET(s, &r) ) {
+				// connection was closed
+				rc=SOCKET_ERROR;
+			}
+			if ( FD_ISSET(s, &w) ) {
+				// connection was successful
+				rc=0;
+			}
+			if ( FD_ISSET(s, &e) ) {
+				// connection failed.
+				rc=SOCKET_ERROR;
+			}
+			goto unblock;
+		} else if ( Miranda_Terminated() ) {
+			rc=SOCKET_ERROR;
+			lasterr=ERROR_TIMEOUT;
+			goto unblock;
+		} else if ( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) && nloc->waitcallback != NULL 
+			&& nloc->waitcallback(&dwTimeout) == 0) {
+			rc=SOCKET_ERROR;
+			lasterr=ERROR_TIMEOUT;
+			goto unblock;
+		}
+		if ( --dwTimeout == 0 ) {
+			rc=SOCKET_ERROR;
+			lasterr=ERROR_TIMEOUT;
+			goto unblock;
+		}
+	}
+unblock:	
+	notblocking=0;
+	ioctlsocket(s, FIONBIO, &notblocking);
+	SetLastError(lasterr);
+	return rc;
+}
+
 int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBOPENCONNECTION *nloc=(NETLIBOPENCONNECTION*)lParam;
@@ -329,7 +402,8 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	struct NetlibConnection *nlc;
 	SOCKADDR_IN sin;
 
-	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nloc==NULL || nloc->cbSize!=sizeof(NETLIBOPENCONNECTION) || nloc->szHost==NULL || nloc->wPort==0) {
+	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nloc==NULL 
+		|| !(nloc->cbSize==NETLIBOPENCONNECTION_V1_SIZE||nloc->cbSize==sizeof(NETLIBOPENCONNECTION)) || nloc->szHost==NULL || nloc->wPort==0) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return (int)(HANDLE)NULL;
 	}
@@ -394,10 +468,10 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 		nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nloc->szHost);
 	}
 	if(nlc->sinProxy.sin_addr.S_un.S_addr==0
-	   || connect(nlc->s,(SOCKADDR *)&nlc->sinProxy,sizeof(nlc->sinProxy))==SOCKET_ERROR) {
+	   || my_connect(nlc->s,(SOCKADDR *)&nlc->sinProxy,sizeof(nlc->sinProxy), nloc)==SOCKET_ERROR) {
 		if(nlc->sinProxy.sin_addr.S_un.S_addr)
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
-		FreePartiallyInitedConnection(nlc);
+		FreePartiallyInitedConnection(nlc);		
 		return (int)(HANDLE)NULL;
 	}
 
@@ -448,7 +522,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 						nlc->sinProxy.sin_port=htons((short)nloc->wPort);
 						nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nloc->szHost);
 						if(nlc->sinProxy.sin_addr.S_un.S_addr==0
-						   || connect(nlc->s,(SOCKADDR *)&nlc->sinProxy,sizeof(nlc->sinProxy))==SOCKET_ERROR) {
+						   || my_connect(nlc->s,(SOCKADDR *)&nlc->sinProxy,sizeof(nlc->sinProxy), nloc)==SOCKET_ERROR) {
 							if(nlc->sinProxy.sin_addr.S_un.S_addr)
 								Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
 							FreePartiallyInitedConnection(nlc);
