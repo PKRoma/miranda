@@ -60,7 +60,7 @@ int getProfilePath(char * buf, size_t cch)
 		}
 	}
 	// this never happens, usually C:\ is always returned	
-	return 1;
+	return 0;
 }
 
 // fills mirandabootini, called from Load
@@ -162,14 +162,14 @@ static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
 	if ( getProfileCmdLineArgs(buf,sizeof(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
 		if ( !isValidProfileName(buf) ) _snprintf(buf,sizeof(buf)-5,"%s.dat",buf);
-		if ( !isValidProfileName(buf) ) return 0;
-		// this filename might not exist at all!
-		_snprintf(szProfile,cch,"%s\\%s",profiledir,buf);
-		// if it can't be opened, we didn't see it.
-		hFile=CreateFile(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);	
-		rc = hFile != INVALID_HANDLE_VALUE;
-		CloseHandle(hFile);
-		return rc;
+		// expand the relative to a full path , which might fail
+		if ( _fullpath(szProfile, buf, cch) != 0 ) {
+			hFile=CreateFile(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
+			rc=hFile != INVALID_HANDLE_VALUE;
+			CloseHandle(hFile);
+			return rc;
+		}
+		return 0;
 	}
 	return 0;
 }
