@@ -284,18 +284,20 @@ static int UnloadNewPlugins(WPARAM wParam, LPARAM lParam)
 // called at the end of module chain unloading, just modular engine left at this point
 int UnloadNewPluginsModule(void)
 {
-	pluginEntry * p = pluginListHead.first;
+	pluginEntry * p = pluginListHead.first;	
 	// unload everything but the DB
 	while ( p != NULL ) {
-		pluginEntry * q = p->next;
-		LL_Remove(&pluginListHead, p);
-		if ( !(p->pclass&PCLASS_DB) ) Plugin_Uninit(p);
+		pluginEntry * q = p->next;			
+		if ( !(p->pclass&PCLASS_DB) ) { 
+			LL_Remove(&pluginListHead, p);
+			Plugin_Uninit(p);
+		}
 		p = q;
 	}
 	// unload the DB
 	p = pluginListHead.first;
 	while ( p != NULL ) {
-		pluginEntry * q = p->next;
+		pluginEntry * q = p->next;		
 		Plugin_Uninit(p);
 		p = q;
 	}
