@@ -42,6 +42,7 @@ History
  - Extra contacts from server list are added on login (optional)
  - Remove SSI sync support
  - Removing user from deny list didn't always update mode in Miranda
+ - Fixed file transfers with Mac users
 
 1.0.9.5
  - Problems with some character escape sequences
