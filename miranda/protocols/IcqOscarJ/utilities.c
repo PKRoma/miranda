@@ -544,6 +544,7 @@ void ResetSettingsOnListReload()
 
   // Reset a bunch of session specific settings
   DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0);
+  DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0);
   DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0); // TODO: remove, this is useless
   DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0);
 

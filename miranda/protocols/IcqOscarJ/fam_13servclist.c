@@ -44,6 +44,8 @@ extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 
+extern void setUserInfo();
+
 BOOL bIsSyncingCL = FALSE;
 
 static void handleServerCListAck(servlistcookie* sc, WORD wError);
@@ -594,6 +596,12 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         Netlib_Logf(ghServerNetlibUser, "Uploading of avatar hash failed.");
+        if (sc->wGroupId) // is avatar added ?
+          FreeServerID(sc->wContactId);
+      }
+      else
+      {
+        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", sc->wContactId);
       }
       break;
     }
@@ -605,6 +613,8 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       {
         DBDeleteContactSetting(NULL, gpszICQProtoName, "SrvAvatarID");
         FreeServerID(sc->wContactId);
+
+        setUserInfo();
       }
       break;
     }
@@ -1648,7 +1658,6 @@ void updateServAvatarHash(char* pHash)
     {
       // No, create a new random ID
       wAvatarID = GenerateServerId();
-      DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", wAvatarID);
       wCommand = ICQ_LISTS_ADDTOLIST;
       Netlib_Logf(ghServerNetlibUser, "Made new srvAvatarID, id is %u", wAvatarID);
     }
@@ -1666,10 +1675,11 @@ void updateServAvatarHash(char* pHash)
     }
     ack->dwAction = SSA_SETAVATAR; // update avatar hash
     ack->dwUin = 0; // this is ours
+    ack->wContactId = wAvatarID;
     dwCookie = AllocateCookie(wCommand, 0, ack); // take cookie
 
     // Build and send packet
-    packet.wLen = 46;
+    packet.wLen = 47;
     write_flap(&packet, ICQ_DATA_CHAN);
     packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
     packWord(&packet, 1);                   // Name length

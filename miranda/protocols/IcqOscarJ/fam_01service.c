@@ -449,6 +449,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         {
           DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", pBuffer, 0x14);
           
+          setUserInfo();
+
           // TODO: here we need to find a file, check its hash, if invalid get avatar from server
           // TODO: check if we had set any avatar if yes set our, if not download from server
 
@@ -886,7 +888,6 @@ void handleServUINSettings(int nPort, int nIP)
 
 	// SNAC 1,1E: Set status
 	{
-
 		WORD wFlags = 0;
 		WORD wStatus;
 
@@ -938,7 +939,6 @@ void handleServUINSettings(int nPort, int nIP)
 		packWord(&packet, 0x0000);          // Unknown
 
 		sendServPacket(&packet);
-
 	}
 
 
@@ -955,26 +955,26 @@ void handleServUINSettings(int nPort, int nIP)
 	packet.wLen = 90;
 	write_flap(&packet, 2);
 	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY<<0x10);
-	packDWord(&packet, 0x00010003);
-	packDWord(&packet, 0x0110047B);
-	packDWord(&packet, 0x00130002);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x00010004); // imitate icq5 behaviour
+	packDWord(&packet, 0x011008E4);
+	packDWord(&packet, 0x00130004);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x00020001);
-	packDWord(&packet, 0x0101047B);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x00030001);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x00150001);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x00040001);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x00060001);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x00090001);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x000A0001);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x011008E4);
 	packDWord(&packet, 0x000B0001);
-	packDWord(&packet, 0x0110047B);
+	packDWord(&packet, 0x011008E4);
 
   sendServPacket(&packet);
 
