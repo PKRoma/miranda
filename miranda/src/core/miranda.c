@@ -423,74 +423,6 @@ static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetMirandaBuildString(WPARAM wParam, LPARAM lParam)
-{
-	char date[64];// Month-Name Day Year
-	char time[64];// 00:00:00
-	char * monthnames[]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"}; // quakers look away now
-	char * p = 0;
-	char * year=0;
-	char * month=0;
-	int monthnum=0;
-	char * day=0;
-	char * hour=0;
-	char * min=0;
-	char * sec=0;
-	// copy the date/time of this compile
-	strncpy(date,__DATE__,sizeof(date));
-	strncpy(time,__TIME__,sizeof(time));
-	// start of month
-	month=date;
-	p = strchr(month, ' ');	
-	if ( p ) {
-		// end of month		
-		*p=0; 
-		{
-			// convert month abbrev. into number
-			int j;
-			for (j=0;j<sizeof(monthnames)/sizeof(monthnames[0]);j++) {
-				if ( strcmp(month, monthnames[j]) == 0 ) {
-					monthnum=j+1;
-					break;
-				}
-			}
-		}
-		// start of day
-		day=p+1;
-		p = strchr(p+1, ' ');
-		if ( p ) {
-			// end of day, start of year
-			*p=0; 
-			// look for end of year
-			year=p+1;
-			p = strchr(p+1, ' ');
-			if ( p ) {				
-				*p=0;
-			}
-		}
-	}
-	// parse time
-	hour=time;
-	p = strchr(hour, ':');
-	if ( p ) {
-		// found the end of hour
-		*p=0;
-		// start of min
-		min=++p;
-		// find the end of min
-		p = strchr(min,':');
-		if ( p ) {
-			*p=0;
-			sec=++p;
-		}
-	}
-	if ( year && month && day && hour && min && sec ) {
-		_snprintf((char*)lParam,(int)wParam,"%s%02u%s%s%s%s",year,monthnum,day,hour,min,sec);
-		return 0;
-	}
-	return 1;
-}
-
 int WaitOnHandle(WPARAM wParam,LPARAM lParam)
 {
 	if(waitObjectCount>=MAXIMUM_WAIT_OBJECTS-1) return 1;
@@ -540,7 +472,6 @@ int LoadSystemModule(void)
 	CreateServiceFunction(MS_SYSTEM_OKTOEXIT,OkToExit);	
 	CreateServiceFunction(MS_SYSTEM_GETVERSION,GetMirandaVersion);
 	CreateServiceFunction(MS_SYSTEM_GETVERSIONTEXT,GetMirandaVersionText);
-	CreateServiceFunction(MS_SYSTEM_GETBUILDSTRING,GetMirandaBuildString);
 	CreateServiceFunction(MS_SYSTEM_WAITONHANDLE,WaitOnHandle);
 	CreateServiceFunction(MS_SYSTEM_REMOVEWAIT,RemoveWait);
 	CreateServiceFunction(MS_SYSTEM_GET_MMI,GetMemoryManagerInterface);
