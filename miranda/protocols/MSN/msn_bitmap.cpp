@@ -36,7 +36,7 @@ int __stdcall MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppD
 	GetObject( hBitmap, sizeof( BITMAP ), &bmp );
 
 	HDC hBmpDC = CreateCompatibleDC( hDC );
-	HBITMAP hStretchedBitmap = CreateBitmap( 96, 96, 1, GetDeviceCaps( hDC, BITSPIXEL ), NULL );
+	HBITMAP hStretchedBitmap = CreateBitmap( 96, 96, 1, 32, NULL );
 	SelectObject( hBmpDC, hStretchedBitmap );
 	int side, dx, dy;
 
