@@ -16,7 +16,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls,Placemnt,globals,m_clist,clisttools,statusmodes,skintools,
   m_skin,databasetools,m_icq,m_database, Menus,m_history,newpluginapi,
-  m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email;
+  m_userinfo, TB97Ctls, ComCtrls, Aligrid,misc,timeoutfrm,m_email,optionfrm;
 
 
 
@@ -132,7 +132,7 @@ type
     procedure BringWindowToFront;
 
     procedure LoadOptions;
-    procedure ReloadOptions;
+    procedure ReloadOptions(optiontype:TOptionType=otAll);
     procedure SaveOptions;
     procedure SavePos;
     procedure LoadPos;
@@ -144,7 +144,7 @@ function ServiceExists(PluginLink:TPluginLink;ServiceName:PChar):Boolean;
 
 implementation
 
-uses windowmanager,optionfrm;
+uses windowmanager;
 
 {$R *.DFM}
 
@@ -744,7 +744,7 @@ begin
   end;
 end;
 
-procedure TMsgWindow.ReloadOptions;
+procedure TMsgWindow.ReloadOptions(optiontype:TOptionType=otAll);
 //once at start and any time the options change
 var
   val:integer;
@@ -753,73 +753,94 @@ var
   it:Boolean;
 begin
   //misc
-  val:=ReadSettingInt(PluginLink,0,'Convers','SplitLargeMessages',integer(False));
-  SplitLargeMessages:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','StorePositions',integer(True));
-  fSavePosition:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','DoubleEnterSend',integer(False));
-  fDoubleEnter:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','SingleEnterSend',integer(False));
-  fSingleEnter:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(False));
-  fCloseWindowAfterSend:=Boolean(val);
-  val:=ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0);
-  fHandleIncoming:=val;
-  val:=ReadSettingInt(PluginLink,0,'Convers','SendTimeout',DEFAULT_TIMEOUT_MSGSEND);
-  fSendTimeout:=val;
+  if optiontype in [otAll,otMisc] then
+    begin
+    val:=ReadSettingInt(PluginLink,0,'Convers','StorePositions',integer(True));
+    fSavePosition:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','HandleIncoming',0);
+    fHandleIncoming:=val;
+    //recent only onces
+    end;
+
+  //sendmessage
+  if optiontype in [otAll,otSend] then
+    begin
+    val:=ReadSettingInt(PluginLink,0,'Convers','SplitLargeMessages',integer(False));
+    SplitLargeMessages:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','DoubleEnterSend',integer(False));
+    fDoubleEnter:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','SingleEnterSend',integer(False));
+    fSingleEnter:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','CloseWindowAfterSend',integer(False));
+    fCloseWindowAfterSend:=Boolean(val);
+    val:=ReadSettingInt(PluginLink,0,'Convers','SendTimeout',DEFAULT_TIMEOUT_MSGSEND);
+    fSendTimeout:=val;
+    end;
 
 
 
   //font for sendmemo
-  s:=SizeOf(LogFont);
-  ReadSettingBlob(PluginLink,0,'Convers','Font',s, p);
-  if Assigned(p) then
+  if optiontype in [otAll,otMemo,otRich,otGrid] then
     begin
-    SendMemo.Font.Handle:=CreateFontIndirect(PLogFont(p)^);
-    SendMemo.Font.Color:=TColor(ReadSettingInt(PluginLink,0,'Convers','FontCol',Integer(clBlack)));
-    FreeSettingBlob(PluginLink,s, p);
+    s:=SizeOf(LogFont);
+    ReadSettingBlob(PluginLink,0,'Convers','Font',s, p);
+    if Assigned(p) then
+      begin
+      SendMemo.Font.Handle:=CreateFontIndirect(PLogFont(p)^);
+      SendMemo.Font.Color:=TColor(ReadSettingInt(PluginLink,0,'Convers','FontCol',Integer(clBlack)));
+      FreeSettingBlob(PluginLink,s, p);
+      end;
     end;
 
   //load settings for memo
-  fMemoTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','MemoTextPattern','%NAME% (%TIME%): %TEXT%'));
+  if optiontype in [otAll,otMemo] then
+    begin
+    fMemoTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','MemoTextPattern','%NAME% (%TIME%): %TEXT%'));
+    end;
 
   //load rich settings
-  fRichTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','RichTextPattern','%NAME% (%TIME%): %TEXT%'));
+  if optiontype in [otAll,otRich] then
+    begin
+    fRichTextPattern:=string(ReadSettingStr(PluginLink,0,'Convers','RichTextPattern','%NAME% (%TIME%): %TEXT%'));
 
-  s:=SizeOf(fRichSettings);
-  ReadSettingBlob(PluginLink,0,'Convers','RichSettings',s, p);
-  if Assigned(p) then
-    begin
-    fRichSettings:=PRichEditSettings(p)^;
-    FreeSettingBlob(PluginLink,s, p);
-    end
-  else
-    fRichSettings:=DefaultRichEditSettings;
-  if fDisplayMode=dmRich then
-    begin
-    SendMemo.Font.Color:=fRichSettings.RichStyles[0].Color;
-    if fRichSettings.RichStyles[0].Bold then
-      SendMemo.Font.Style:=SendMemo.Font.Style+[fsBold]
+    s:=SizeOf(fRichSettings);
+    ReadSettingBlob(PluginLink,0,'Convers','RichSettings',s, p);
+    if Assigned(p) then
+      begin
+      fRichSettings:=PRichEditSettings(p)^;
+      FreeSettingBlob(PluginLink,s, p);
+      end
     else
-      SendMemo.Font.Style:=SendMemo.Font.Style-[fsBold];
-    if fRichSettings.RichStyles[0].Italic then
-      SendMemo.Font.Style:=SendMemo.Font.Style+[fsItalic]
-    else
-      SendMemo.Font.Style:=SendMemo.Font.Style-[fsItalic];
+      fRichSettings:=DefaultRichEditSettings;
+    if fDisplayMode=dmRich then
+      begin
+      SendMemo.Font.Color:=fRichSettings.RichStyles[0].Color;
+      if fRichSettings.RichStyles[0].Bold then
+        SendMemo.Font.Style:=SendMemo.Font.Style+[fsBold]
+      else
+        SendMemo.Font.Style:=SendMemo.Font.Style-[fsBold];
+      if fRichSettings.RichStyles[0].Italic then
+        SendMemo.Font.Style:=SendMemo.Font.Style+[fsItalic]
+      else
+        SendMemo.Font.Style:=SendMemo.Font.Style-[fsItalic];
+      end;
     end;
 
   //load grid settings (except incltime! incltime only load one time!)
-  it:=fGridSettings.InclTime;
-  s:=SizeOf(fGridSettings);
-  ReadSettingBlob(PluginLink,0,'Convers','GridSettings',s, p);
-  if Assigned(p) then
+  if optiontype in [otAll,otGrid] then
     begin
-    fGridSettings:=PGridEditSettings(p)^;
-    FreeSettingBlob(PluginLink,s, p);
-    end
-  else
-    fGridSettings:=DefaultGridEditSettings;
-  fGridSettings.InclTime:=it;
+    it:=fGridSettings.InclTime;
+    s:=SizeOf(fGridSettings);
+    ReadSettingBlob(PluginLink,0,'Convers','GridSettings',s, p);
+    if Assigned(p) then
+      begin
+      fGridSettings:=PGridEditSettings(p)^;
+      FreeSettingBlob(PluginLink,s, p);
+      end
+    else
+      fGridSettings:=DefaultGridEditSettings;
+    fGridSettings.InclTime:=it;
+    end;
 end;
 
 procedure TMsgWindow.SaveOptions;
@@ -1138,7 +1159,7 @@ begin
       try
       hContact:=Self.hContact;
       ShowModal;
-      TWindowManager(WindowManager).ReloadOptions;
+      TWindowManager(WindowManager).ReloadOptions(otall);
       finally
       Free;
       end;
