@@ -72,8 +72,8 @@ BEGIN
     EDITTEXT        IDC_HANDLE,61,4,100,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_PASSWORD,61,19,100,12,ES_PASSWORD | ES_AUTOHSCROLL
     EDITTEXT        IDC_LOGINSERVER,61,34,100,12,ES_AUTOHSCROLL
-    RTEXT           "Password:",IDC_STATIC12,4,21,52,8
-    RTEXT           "Handle:",IDC_STATIC11,4,6,52,8
+    RTEXT           "Password:",-1,4,21,52,8
+    RTEXT           "Full e-mail:",-1,4,6,52,8
     RTEXT           "Login server:",-1,4,36,52,8
 END
 
