@@ -137,7 +137,9 @@ static void SaveKeyboardMessage(struct MsgEditSubclassData *dat, UINT message, W
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct MsgEditSubclassData *dat;
+    struct MessageWindowData *pdat;
 
+    pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
     dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
     switch (msg) {
         case EM_SUBCLASSED:
@@ -265,6 +267,40 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 #endif
                 SaveKeyboardMessage(dat, msg, wParam, lParam);
                 return 0;
+            }
+            if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000)) {
+                if (!pdat->cmdListCurrent) {
+                    pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
+                    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+                    SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
+                    SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+                    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+                    SendMessage(hwnd, EM_SETSEL, 0, -1);
+                }
+                else if (pdat->cmdListCurrent->prev) {
+                    pdat->cmdListCurrent = pdat->cmdListCurrent->prev;
+                    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+                    SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
+                    SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+                    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+                    SendMessage(hwnd, EM_SETSEL, 0, -1);
+                }
+            }
+            else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000)) {
+                if (!pdat->cmdListCurrent) 
+                    pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
+                if (pdat->cmdListCurrent->next) {
+                    pdat->cmdListCurrent = pdat->cmdListCurrent->next;
+                    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+                    SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
+                    SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+                    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+                    SendMessage(hwnd, EM_SETSEL, 0, -1);
+                }
+                else {
+                    pdat->cmdListCurrent = 0;
+                    SetWindowText(hwnd, "");
+                }
             }
             if (wParam == VK_RETURN)
                 break;
@@ -484,6 +520,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->nTypeSecs = 0;
             dat->nLastTyping = 0;
             dat->showTyping = 0;
+            dat->cmdList = 0;
+            dat->cmdListCurrent = 0;
             dat->showTypingWin = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
             dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
             SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
@@ -1107,7 +1145,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         GetDlgItemText(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
                         if (dat->sendBuffer[0] == 0)
                             break;
-
+                        dat->cmdList = tcmdlist_append(dat->cmdList, dat->sendBuffer);
+                        dat->cmdListCurrent = 0;
                         if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
                             NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
                         }
@@ -1408,6 +1447,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 for (i = 0; i < sizeof(dat->hIcons) / sizeof(dat->hIcons[0]); i++)
                     DestroyIcon(dat->hIcons[i]);
             }
+            tcmdlist_free(dat->cmdList);
             WindowList_Remove(hMessageWindowList, hwndDlg);
             DBWriteContactSettingDword(NULL, SRMMMOD, "splittery", dat->splitterY);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);

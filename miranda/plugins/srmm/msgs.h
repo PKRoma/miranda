@@ -74,6 +74,8 @@ struct MessageWindowData
     char *szProto;
     WORD wStatus;
     WORD wOldStatus;
+    TCmdList *cmdList;
+    TCmdList *cmdListCurrent;
 };
 
 #define HM_EVENTSENT         (WM_USER+10)

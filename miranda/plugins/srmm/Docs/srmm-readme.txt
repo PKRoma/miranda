@@ -23,6 +23,7 @@ Changes
  - Cache database reads when showing messages in the log
  - Show separate incoming/outgoing icons for messages with "Show Icons" option
  - Show status changes in the message window
+ - Message area supports Ctrl+Up/Down to scroll through past messages
 
 1.0.4.2
  - Typing Notify options didn't enable/disable correctly
