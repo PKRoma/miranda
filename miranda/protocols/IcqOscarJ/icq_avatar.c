@@ -738,7 +738,6 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           {
             DBCONTACTWRITESETTING cws;
             DBVARIANT dbv;
-            int dummy;
 
             fwrite(pBuffer, datalen, 1, out);
             fclose(out);
@@ -750,12 +749,13 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
               cws.value.pbVal = dbv.pbVal;
               cws.value.cpbVal = dbv.cpbVal; 
               cws.szSetting = "AvatarSaved";
-              dummy = CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)ac->hContact, (LPARAM)&cws);
+              if (CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)ac->hContact, (LPARAM)&cws))
+                Netlib_Logf(ghServerNetlibUser, "Failed to set file hash.");
 
               DBFreeVariant(&dbv);
             }
             else
-              Netlib_Logf(ghServerNetlibUser, "Failed to set file hash.");
+              Netlib_Logf(ghServerNetlibUser, "Failed to set file hash (no hash in DB?).");
 
             ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&ai, (LPARAM)NULL);
           }
