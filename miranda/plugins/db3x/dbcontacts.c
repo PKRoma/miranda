@@ -124,6 +124,11 @@ static int DeleteContact(WPARAM wParam,LPARAM lParam)
 		LeaveCriticalSection(&csDbAccess);
 		return 1;
 	}
+	if ( (HANDLE)wParam == (HANDLE)dbHeader.ofsUser ) {
+		LeaveCriticalSection(&csDbAccess);
+		log0("FATAL: del of user chain attempted.");
+		return 1;
+	}
 	log0("del contact");
 	LeaveCriticalSection(&csDbAccess);
 	//call notifier while outside mutex
