@@ -211,6 +211,39 @@ int MSN_HandleCommands(struct ThreadData *info,char *msg)
 				else
 					MSN_DebugLog(MSN_LOG_ERROR,"Unknown referral server: %s",type);
 			}
+			break;
+		case ' TSL':    //LST: section 7.6 List Retrieval And Property Management
+			{	char list[5],userEmail[130],userNick[130];
+				int serialNumber,thisItem,totalItems;
+				if(sscanf(params,"%4s %d %d %d %129s %129s",list,&serialNumber,&thisItem,&totalItems,userEmail,userNick)<6) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid LST command, ignoring");
+					break;
+				}
+				if(!strcmp(list,"FL")) {	 //'forward list' aka contact list
+					HANDLE hContact=MSN_HContactFromEmail(userEmail,userNick,1);
+				}
+			}
+			break;
+		case ' NLI':
+		case ' NLN':    //ILN/NLN: section 7.9 Notification Messages
+			{	char userStatus[10],userEmail[130],userNick[130];
+				HANDLE hContact;
+				if(sscanf(params,"%9s %129s %129s",userStatus,userEmail,userNick)<3) {
+					MSN_DebugLog(MSN_LOG_WARNING,"Invalid ILN/NLN command, ignoring");
+					break;
+				}
+				if((hContact=MSN_HContactFromEmail(userEmail,userNick,0))!=NULL) {
+					CmdQueue_AddDbWriteSettingString(hContact,MSNPROTONAME,"Nick",userNick);
+					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",(WORD)MSNStatusToMiranda(userStatus));
+				}
+			}
+			break;
+		case ' NLF':    //FLN: section 7.9 Notification Messages
+			{	HANDLE hContact;
+				if((hContact=MSN_HContactFromEmail(params,NULL,0))!=NULL)
+					CmdQueue_AddDbWriteSettingWord(hContact,MSNPROTONAME,"Status",ID_STATUS_OFFLINE);
+			}
+			break;
 		case ' GSM':    //MSG: section 8.8 Receiving an Instant Message
 			{	char fromEmail[130],fromNick[130];
 				int msgBytes,bytesFromData;

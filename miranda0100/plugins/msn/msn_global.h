@@ -108,6 +108,7 @@ LONG MSN_SendPacket(SOCKET s,const char *cmd,const char *params,...);
 char *MirandaStatusToMSN(int status);
 int MSNStatusToMiranda(const char *status);
 
+HANDLE MSN_HContactFromEmail(const char *msnEmail,const char *msnNick,int addIfNeeded);
 int MSN_AddContact(char* uhandle,char*nick); //returns clist ID
 int MSN_ContactFromHandle(char*uhandle); //get cclist id from Uhandle
 void MSN_HandleFromContact(unsigned long uin,char*uhandle);
@@ -139,6 +140,8 @@ struct ThreadData {
 int CmdQueue_AddProtoAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
 int CmdQueue_AddDbWriteSetting(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv);
 int CmdQueue_AddDbWriteSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *pszVal);
+int CmdQueue_AddDbWriteSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD wVal);
+int CmdQueue_AddDbCreateContact(const char *email,const char *nick);
 
 //MSN error codes
 #define ERR_SYNTAX_ERROR                 200

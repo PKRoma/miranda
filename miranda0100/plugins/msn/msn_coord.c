@@ -35,6 +35,7 @@ static int cmdQueueCount,cmdQueueAlloced;
 static struct CmdQueueEntry *cmdQueue;
 #define CMDQUEUE_PROTOACK        1
 #define CMDQUEUE_DBWRITESETTING  2
+#define CMDQUEUE_DBCREATECONTACT 3
 
 /* NOTE:
 This should really be done with core/m_system.h:MS_SYSTEM_WAITONHANDLE, but
@@ -56,6 +57,16 @@ VOID CALLBACK MSNMainTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 				break;
 			case CMDQUEUE_DBWRITESETTING:
 				CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)*(HANDLE*)entry.data,(LPARAM)((PBYTE)entry.data+sizeof(HANDLE)));
+				break;
+			case CMDQUEUE_DBCREATECONTACT:
+				{	HANDLE hContact;
+					char *nick;
+					hContact=(HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
+					CallService(MS_PROTO_ADDTOCONTACT,(WPARAM)hContact,(LPARAM)MSNPROTONAME);
+					DBWriteContactSettingString(hContact,MSNPROTONAME,"e-mail",(char*)entry.data);
+					nick=(char*)entry.data+strlen((char*)entry.data)+1;
+					if(nick[0]) DBWriteContactSettingString(hContact,MSNPROTONAME,"Nick",nick);
+				}
 				break;
 		}
 		if(entry.data) free(entry.data);
@@ -114,23 +125,23 @@ int CmdQueue_AddDbWriteSetting(HANDLE hContact,const char *szModule,const char *
 	DBCONTACTWRITESETTING *cws;
 	char *pBuf;
 
-	bytesReqd=sizeof(HANDLE)+sizeof(DBCONTACTWRITESETTING)+strlen(szModule)+1+strlen(szSetting+1);
+	bytesReqd=sizeof(HANDLE)+sizeof(DBCONTACTWRITESETTING)+strlen(szModule)+1+strlen(szSetting)+1;
 	if(dbv->type==DBVT_BLOB) bytesReqd+=dbv->cpbVal;
 	else if(dbv->type==DBVT_ASCIIZ) bytesReqd+=strlen(dbv->pszVal)+1;
 	pBuf=(char*)malloc(bytesReqd);
 	*(HANDLE*)pBuf=hContact;
-	cws=(DBCONTACTWRITESETTING*)pBuf+sizeof(HANDLE);
+	cws=(DBCONTACTWRITESETTING*)(pBuf+sizeof(HANDLE));
 	ofs=sizeof(DBCONTACTWRITESETTING)+sizeof(HANDLE);
 	strcpy(pBuf+ofs,szModule);
 	cws->szModule=pBuf+ofs;
-	ofs+=strlen(szModule);
+	ofs+=strlen(szModule)+1;
 	strcpy(pBuf+ofs,szSetting);
 	cws->szSetting=pBuf+ofs;
-	ofs+=strlen(szSetting);
+	ofs+=strlen(szSetting)+1;
 	memcpy(&cws->value,dbv,sizeof(DBVARIANT));
 	if(dbv->type==DBVT_BLOB) memcpy(pBuf+ofs,dbv->pbVal,dbv->cpbVal);
 	else if(dbv->type==DBVT_ASCIIZ) strcpy(pBuf+ofs,dbv->pszVal);
-	return CmdQueue_Add(CMDQUEUE_DBWRITESETTING,cws);
+	return CmdQueue_Add(CMDQUEUE_DBWRITESETTING,pBuf);
 }
 
 int CmdQueue_AddDbWriteSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *pszVal)
@@ -139,4 +150,21 @@ int CmdQueue_AddDbWriteSettingString(HANDLE hContact,const char *szModule,const 
 	dbv.type=DBVT_ASCIIZ;
 	dbv.pszVal=(char*)pszVal;
 	return CmdQueue_AddDbWriteSetting(hContact,szModule,szSetting,&dbv);
+}
+
+int CmdQueue_AddDbWriteSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD wVal)
+{
+	DBVARIANT dbv;
+	dbv.type=DBVT_WORD;
+	dbv.wVal=wVal;
+	return CmdQueue_AddDbWriteSetting(hContact,szModule,szSetting,&dbv);
+}
+
+int CmdQueue_AddDbCreateContact(const char *email,const char *nick)
+{
+	char *dat;
+	dat=(char*)malloc(strlen(email)+strlen(nick)+2);
+	strcpy(dat,email);
+	strcpy(dat+strlen(dat)+1,nick);
+	return CmdQueue_Add(CMDQUEUE_DBCREATECONTACT,dat);
 }
