@@ -828,18 +828,19 @@ int JabberSendFile(WPARAM wParam, LPARAM lParam)
 
 int JabberRecvMessage(WPARAM wParam, LPARAM lParam)
 {
-	DBEVENTINFO dbei;
-	CCSDATA *ccs = (CCSDATA *) lParam;
-	PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
+	CCSDATA *ccs = ( CCSDATA* )lParam;
+	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
 
-	DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
-	ZeroMemory(&dbei, sizeof(dbei));
+	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = jabberProtoName;
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags&PREF_CREATEREAD?DBEF_READ:0;
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.cbBlob = strlen(pre->szMessage) + 1;
+	if ( pre->flags & PREF_UNICODE )
+		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
+
 	dbei.pBlob = (PBYTE) pre->szMessage;
 	CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) &dbei);
 	return 0;

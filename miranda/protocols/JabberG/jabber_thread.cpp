@@ -624,18 +624,9 @@ static void JabberProcessProtocol(XmlNode *node, void *userdata)
 static void JabberProcessMessage(XmlNode *node, void *userdata)
 {
 	struct ThreadData *info;
-	HANDLE hContact;
-	CCSDATA ccs;
-	PROTORECVEVENT recv;
 	XmlNode *bodyNode, *subjectNode, *xNode, *inviteNode, *idNode, *n;
-	char *from, *type, *nick, *p, *localMessage, *idStr, *fromResource;
-	time_t msgTime, now;
-	BOOL delivered, composing;
-	int i, id;
-	JABBER_LIST_ITEM *item;
-	BOOL isChatRoomJid;
-	BOOL isChatRoomInvitation;
-	char *inviteRoomJid, *inviteFromJid, *inviteReason, *invitePassword;
+	char *from, *type, *nick, *p, *idStr, *fromResource;
+	int id;
 
 	if (!node->name || strcmp(node->name, "message")) return;
 	if ((info=(struct ThreadData *) userdata) == NULL) return;
@@ -645,7 +636,7 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 	else {
 		if ((from=JabberXmlGetAttrValue(node, "from")) != NULL) {
 
-			isChatRoomJid = JabberListExist(LIST_CHATROOM, from);
+			BOOL isChatRoomJid = JabberListExist(LIST_CHATROOM, from);
 
 			if (isChatRoomJid && type!=NULL && !strcmp(type, "groupchat"))
 				JabberGroupchatProcessMessage(node, userdata);
@@ -653,34 +644,49 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 			else {
 
 				// If message is from a stranger (not in roster), item is NULL
-				item = JabberListGetItemPtr(LIST_ROSTER, from);
+				JABBER_LIST_ITEM *item = JabberListGetItemPtr(LIST_ROSTER, from);
 
 				if ((bodyNode=JabberXmlGetChild(node, "body")) != NULL) {
 					if (bodyNode->text != NULL) {
+						WCHAR* wszMessage;
+						char*  szMessage;
+
 						if ((subjectNode=JabberXmlGetChild(node, "subject"))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0') {
-							p = (char *) malloc(strlen(subjectNode->text)+strlen(bodyNode->text)+12);
+							p = ( char* )alloca( strlen( subjectNode->text ) + strlen( bodyNode->text ) + 12 );
 							sprintf(p, "Subject: %s\r\n%s", subjectNode->text, bodyNode->text);
-							localMessage = JabberTextDecode(p);
-							free(p);
+							szMessage = p;
 						}
-						else {
-							localMessage = JabberTextDecode(bodyNode->text);
+						else szMessage = bodyNode->text;
+
+						JabberUtf8Decode( szMessage, &wszMessage );
+						JabberUrlDecode( szMessage );
+						if (( szMessage = JabberUnixToDos( szMessage )) == NULL )
+							szMessage = "";
+						{	
+							JabberUrlDecodeW( wszMessage );
+							WCHAR* p = JabberUnixToDosW( wszMessage );
+							free( wszMessage ); 
+							wszMessage = ( p == NULL ) ? L"" : p;
 						}
 
-						isChatRoomInvitation = FALSE;
-						inviteRoomJid = NULL;
-						inviteFromJid = NULL;
-						inviteReason = NULL;
-						invitePassword = NULL;
-						msgTime = 0;
-						delivered = composing = FALSE;
-						i = 1;
-						while ((xNode=JabberXmlGetNthChild(node, "x", i)) != NULL) {
+						int cbAnsiLen = strlen( szMessage )+1, cbWideLen = wcslen( wszMessage )+1;
+						char* buf = ( char* )alloca( cbAnsiLen + cbWideLen*sizeof( WCHAR )); 
+						memcpy( buf, szMessage, cbAnsiLen );
+						memcpy( buf + cbAnsiLen, wszMessage, cbWideLen*sizeof( WCHAR ));
+
+						time_t msgTime = 0, now;
+						BOOL  isChatRoomInvitation = FALSE;
+						char* inviteRoomJid = NULL;
+						char* inviteFromJid = NULL;
+						char* inviteReason = NULL;
+						char* invitePassword = NULL;
+						BOOL delivered = FALSE, composing = FALSE;
+
+						for ( int i = 1; ( xNode = JabberXmlGetNthChild(node, "x", i)) != NULL; i++ ) {
 							if ((p=JabberXmlGetAttrValue(xNode, "xmlns")) != NULL) {
 								if (!strcmp(p, "jabber:x:delay") && msgTime==0) {
-									if ((p=JabberXmlGetAttrValue(xNode, "stamp")) != NULL) {
+									if ((p=JabberXmlGetAttrValue(xNode, "stamp")) != NULL)
 										msgTime = JabberIsoToUnixTime(p);
-									}
 								}
 								else if (!strcmp(p, "jabber:x:event")) {
 									// Check whether any event is requested
@@ -700,34 +706,33 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 								else if (!strcmp(p, "http://jabber.org/protocol/muc#user")) {
 									if ((inviteNode=JabberXmlGetChild(xNode, "invite")) != NULL) {
 										inviteFromJid = JabberXmlGetAttrValue(inviteNode, "from");
-										if ((n=JabberXmlGetChild(inviteNode, "reason")) != NULL) {
+										if ((n=JabberXmlGetChild(inviteNode, "reason")) != NULL)
 											inviteReason = n->text;
-										}
-									}
-									if ((n=JabberXmlGetChild(xNode, "password")) != NULL) {
+									}	
+
+									if ((n=JabberXmlGetChild(xNode, "password")) != NULL)
 										invitePassword = n->text;
-									}
 								}
 								else if (!strcmp(p, "jabber:x:conference")) {
 									inviteRoomJid = JabberXmlGetAttrValue(xNode, "jid");
 									if (inviteReason == NULL)
 										inviteReason = xNode->text;
 									isChatRoomInvitation = TRUE;
-								}
-							}
+							}	}
+
 							i++;
 						}
 
 						if (isChatRoomInvitation) {
-							if (inviteRoomJid != NULL) {
+							if (inviteRoomJid != NULL)
 								JabberGroupchatProcessInvite(inviteRoomJid, inviteFromJid, inviteReason, invitePassword);
-							}
 						}
 						else {
+							HANDLE hContact = JabberHContactFromJID( from );
 
 							if (item != NULL) {
 								item->wantComposingEvent = composing;
-								if ((hContact=JabberHContactFromJID(from)) != NULL)
+								if ( hContact != NULL)
 									CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 
 								if (item->resourceMode==RSMODE_LASTSEEN && (fromResource=strchr(from, '/'))!=NULL) {
@@ -737,13 +742,9 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 											if (!strcmp(item->resource[i].resourceName, fromResource)) {
 												item->defaultResource = i;
 												break;
-											}
-										}
-									}
-								}
-							}
+							}	}	}	}	}
 
-							if ((hContact=JabberHContactFromJID(from)) == NULL) {
+							if ( hContact == NULL) {
 								// Create a temporary contact
 								if (isChatRoomJid) {
 									if ((p=strchr(from, '/'))!=NULL && p[1]!='\0')
@@ -760,13 +761,17 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 								free(nick);
 							}
 
-							now = time(NULL);
-							if (msgTime==0 || msgTime>now)
+							now = time( NULL );
+							if ( msgTime==0 || msgTime > now )
 								msgTime = now;
-							recv.flags = 0;
+
+							PROTORECVEVENT recv;
+							recv.flags = PREF_UNICODE;
 							recv.timestamp = (DWORD) msgTime;
-							recv.szMessage = localMessage;
+							recv.szMessage = buf;
 							recv.lParam = 0;
+
+							CCSDATA ccs;
 							ccs.hContact = hContact;
 							ccs.wParam = 0;
 							ccs.szProtoService = PSR_MESSAGE;
@@ -774,7 +779,8 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 							CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
 						}
 
-						free(localMessage);
+						free( szMessage );
+						free( wszMessage );
 					}
 				}
 				else {	// bodyNode==NULL - check for message event notification (ack, composing)
@@ -785,32 +791,24 @@ static void JabberProcessMessage(XmlNode *node, void *userdata)
 								JabberXmlGetChild(xNode, "offline")!=NULL) {
 
 								id = -1;
-								if (idNode!=NULL && idNode->text!=NULL) {
+								if (idNode!=NULL && idNode->text!=NULL)
 									if (!strncmp(idNode->text, JABBER_IQID, strlen(JABBER_IQID)))
 										id = atoi((idNode->text)+strlen(JABBER_IQID));
-								}
-								if (id == item->idMsgAckPending) {
+
+								if (id == item->idMsgAckPending)
 									ProtoBroadcastAck(jabberProtoName, JabberHContactFromJID(from), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-								}
 							}
-							if (JabberXmlGetChild(xNode, "composing") != NULL) {
-								if ((hContact=JabberHContactFromJID(from)) != NULL) {
+
+							HANDLE hContact;
+							if (JabberXmlGetChild(xNode, "composing") != NULL)
+								if ((hContact=JabberHContactFromJID(from)) != NULL)
 									CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_INFINITE);
-								}
-							}
-							if (xNode->numChild==0 || (xNode->numChild==1 && idNode!=NULL)) {
+
+							if (xNode->numChild==0 || (xNode->numChild==1 && idNode!=NULL))
 								// Maybe a cancel to the previous composing
-								if ((hContact=JabberHContactFromJID(from)) != NULL) {
+								if ((hContact=JabberHContactFromJID(from)) != NULL)
 									CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
+}	}	}	}	}	}	}
 
 static void JabberProcessPresence(XmlNode *node, void *userdata)
 {

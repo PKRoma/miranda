@@ -269,6 +269,28 @@ void JabberUrlDecode(char *str)
 	*q = '\0';
 }
 
+void JabberUrlDecodeW( WCHAR* str )
+{
+	if (str == NULL)
+		return;
+
+	WCHAR *p, *q;
+	for (p=q=str; *p!='\0'; p++,q++) {
+		if (*p == '&') {
+			if (!wcsncmp(p, L"&amp;", 5)) {	*q = '&'; p += 4; }
+			else if (!wcsncmp(p, L"&apos;", 6)) { *q = '\''; p += 5; }
+			else if (!wcsncmp(p, L"&gt;", 4)) { *q = '>'; p += 3; }
+			else if (!wcsncmp(p, L"&lt;", 4)) { *q = '<'; p += 3; }
+			else if (!wcsncmp(p, L"&quot;", 6)) { *q = '"'; p += 5; }
+			else { *q = *p;	}
+		}
+		else {
+			*q = *p;
+		}
+	}
+	*q = '\0';
+}
+
 char *JabberUrlEncode(const char *str)
 {
 	char *s, *p, *q;
@@ -304,75 +326,58 @@ char *JabberUrlEncode(const char *str)
 	return s;
 }
 
-char *JabberUtf8Decode(const char *str)
+void JabberUtf8Decode( char* str, WCHAR** ucs2 )
 {
-	int i, len;
-	char *p;
-	WCHAR *wszTemp;
-	char *szOut;
+	if ( str == NULL )
+		return;
 
-	if (str == NULL) return NULL;
-
-	len = strlen(str);
-
-	// Convert utf8 to unicode
-	if ((wszTemp=(WCHAR *) malloc(sizeof(WCHAR) * (len + 1))) == NULL)
-		return NULL;
-	p = (char *) str;
-	i = 0;
-	while (*p) {
-		if ((*p & 0x80) == 0)
-			wszTemp[i++] = *(p++);
-		else if ((*p & 0xe0) == 0xe0) {
-			wszTemp[i] = (*(p++) & 0x1f) << 12;
-			wszTemp[i] |= (*(p++) & 0x3f) << 6;
-			wszTemp[i++] |= (*(p++) & 0x3f);
+	int len = strlen( str );
+	if ( len < 2 ) {
+		if ( ucs2 != NULL ) {
+			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
+			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
+			( *ucs2 )[ len ] = 0;
 		}
-		else {
-			wszTemp[i] = (*(p++) & 0x3f) << 6;
-			wszTemp[i++] |= (*(p++) & 0x3f);
-		}
+		return;
 	}
-	wszTemp[i] = '\0';
 
-	// Convert unicode to local codepage
-	if ((len=WideCharToMultiByte(jabberCodePage, 0, wszTemp, -1, NULL, 0, NULL, NULL)) == 0)
-		return NULL;
-	if ((szOut=(char *) malloc(len)) == NULL)
-		return NULL;
-	WideCharToMultiByte(jabberCodePage, 0, wszTemp, -1, szOut, len, NULL, NULL);
-	free(wszTemp);
+	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	{
+		wchar_t* d = tempBuf;
+		BYTE* s = ( BYTE* )str;
 
-	return szOut;
-
-/*
-	for(p=q=str; *p!='\0'; p++,q++) {
-		if(p[1]!='\0' && (p[0]&0xE0)==0xC0 && (p[1]&0xC0)==0x80) {
-			// 110xxxxx 10xxxxxx
-			*q = (char) (BYTE) (((p[0]&0x1F)<<6)|(p[1]&0x3F));
-			p++;
-		}
-		else if (p[1]!='\0' && p[2]!='\0' && (p[0]&0xF0)==0xE0 && (p[1]&0xC0)==0x80 && (p[2]&0xC0)==0x80) {
-			// 1110xxxx 10xxxxxx 10xxxxxx
-			unicode=(((WORD)(p[0]&0x0F))<<12) |
-				    (((WORD)(p[1]&0x3F))<<6) |
-					((WORD)(p[2]&0x3F));
-			// Thai (convert to TIS-620)
-			if (unicode>=0x0E00 && unicode<=0x0E7F) {
-				*q = (char) ((unicode&0x7F)+0xA0);
+		while( *s )
+		{
+			if (( *s & 0x80 ) == 0 ) {
+				*d++ = *s++;
+				continue;
 			}
-			// Default (useless anyway)
-			else {
-				*q = (char) (unicode&0x7F);
+
+			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
+				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
+				s += 3;
+				continue;
 			}
-			p += 2;
+
+			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
+				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
+				s += 2;
+				continue;
+			}
+
+			*d++ = *s++;
 		}
-		else {
-			*q = *p;
-		}
+
+		*d = 0;
 	}
-	*q = '\0';
-*/
+
+	if ( ucs2 != NULL ) {
+		int fullLen = ( len+1 )*sizeof( wchar_t );
+		*ucs2 = ( wchar_t* )malloc( fullLen );
+		memcpy( *ucs2, tempBuf, fullLen );
+	}
+
+   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
 }
 
 char* JabberUtf8EncodeW( const WCHAR* wstr )
@@ -459,6 +464,32 @@ char *JabberUnixToDos(const char *str)
 	}
 	if ((res=(char *)malloc(strlen(str)+extra+1)) != NULL) {
 		for (p=(char *) str,q=res; *p!='\0'; p++,q++) {
+			if (*p == '\n') {
+				*q = '\r';
+				q++;
+			}
+			*q = *p;
+		}
+		*q = '\0';
+	}
+	return res;
+}
+
+WCHAR* JabberUnixToDosW( const WCHAR* str)
+{
+	if (str==NULL || str[0]=='\0')
+		return NULL;
+
+	const WCHAR *p;
+	WCHAR *q, *res;
+	int extra = 0;
+
+	for ( p = str; *p!='\0'; p++) {
+		if (*p == '\n')
+			extra++;
+	}
+	if ((res = ( WCHAR* )malloc( sizeof(WCHAR)*( wcslen( str ) + extra + 1 ))) != NULL) {
+		for ( p = str,q=res; *p!='\0'; p++,q++) {
 			if (*p == '\n') {
 				*q = '\r';
 				q++;
@@ -669,20 +700,19 @@ char* JabberTextEncodeW( const wchar_t* str )
 	return JabberUtf8EncodeW( s1 );
 }
 
-char *JabberTextDecode(const char *str)
+char *JabberTextDecode( const char *str )
 {
-	char *s1;
-	char *s2;
-
-	if (str == NULL) return NULL;
-	if ((s1=JabberUtf8Decode(str)) == NULL)
+	if ( str == NULL )
 		return NULL;
-	JabberUrlDecode(s1);
-	if ((s2=JabberUnixToDos(s1)) == NULL) {
-		free(s1);
-		return FALSE;
-	}
-	free(s1);
+
+	char* s1 = ( char* )alloca( strlen( str )+1 ), *s2;
+	strcpy( s1, str );
+
+	JabberUtf8Decode( s1, NULL );
+	JabberUrlDecode( s1 );
+	if (( s2 = JabberUnixToDos( s1 )) == NULL)
+		return NULL;
+
 	return s2;
 }
 
