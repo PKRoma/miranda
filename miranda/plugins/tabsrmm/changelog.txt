@@ -43,6 +43,18 @@ Version 0.9.9.5 - 2005/01/XX
           It is a new message log option, available either as global or per-contact option
           (depending on the message log option mode - global or per-contact).
 
+        + added a Msg hook to properly process unicode keyboard messages. This fixes a input
+          problem with some langauges like Azeri. You need to enable it under options->messaging
+          [] Use hook to translate keyboard input.
+          This is only available in the unicode version of tabSRMM.
+          Don't enable it, if you do not experience problems with keyboard input.
+          
+        + merged Ghosts patch for interaction with the SecureIM plugin. See README.SecureIM for
+          more information.
+          
+        ! fixed a resizing issue with "windowshade" mode (if you're using windowblinds or other
+          utilities which support "rolling up" a window and reduce it to the title bar only.
+
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE
