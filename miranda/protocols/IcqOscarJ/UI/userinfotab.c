@@ -69,6 +69,7 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 {
   char* szProto;
   OPTIONSDIALOGPAGE odp;
+  char szAvtCaption[MAX_PATH+8];
 
   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
   if ((szProto == NULL || strcmp(szProto, gpszICQProtoName)) && lParam)
@@ -84,12 +85,18 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 
   CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 
-  if (((lParam !=0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled))
+  if (((lParam != 0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled))
   {
     odp.pfnDlgProc = AvatarDlgProc;
     odp.position = -1899999999;
     odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_AVATAR);
-    odp.pszTitle = Translate("Avatar");
+    if (lParam != 0)
+      odp.pszTitle = Translate("Avatar");
+    else
+    {
+      _snprintf(szAvtCaption, sizeof(szAvtCaption), Translate("%s Avatar"), gpszICQProtoName);
+      odp.pszTitle = szAvtCaption;
+    }
 
     CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
   }
@@ -156,7 +163,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_REALIP, hContact, (char*)DBVT_DWORD, (char*)dwLocalInternalIP, SVS_IP);
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)8, SVS_ICQVERSION);
-                SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda ICQ", SVS_ZEROISUNSPEC);
+                SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_ONLINESINCE, hContact, (char*)DBVT_DWORD, (char*)gtOnlineSince, SVS_TIMESTAMP);
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, (char*)DBVT_DELETED, "TickTS", SVS_TIMESTAMP);
                 SetValue(hwndDlg, IDC_IDLETIME, hContact, (char*)DBVT_DELETED, "IdleTS", SVS_TIMESTAMP);
