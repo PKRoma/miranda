@@ -281,7 +281,7 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 	{
 	char buf[256];
-	wsprintf(buf,"%s/%s",mi->pszContactOwner,mi->pszService);
+	wsprintf(buf,"%s/%s",(mi->pszContactOwner!=NULL)?mi->pszContactOwner:"",mi->pszService);
 	op.Value=(int)buf;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 	}
