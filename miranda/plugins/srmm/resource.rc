@@ -68,7 +68,7 @@ BEGIN
     CONTROL         "Support control up/down in message area to show previously sent messages",
                     IDC_CTRLSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
                     88,298,10
-    CONTROL         "Delete temorary contacts when closing message window",
+    CONTROL         "Delete temporary contacts when closing message window",
                     IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,100,
                     287,10
 END
