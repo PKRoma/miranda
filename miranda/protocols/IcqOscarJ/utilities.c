@@ -115,7 +115,6 @@ int IcqStatusToMiranda(WORD nIcqStatus)
 
 WORD MirandaStatusToIcq(int nMirandaStatus)
 {
-
 	WORD nIcqStatus;
 
 
@@ -166,18 +165,14 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 
 	}
 
-
 	return nIcqStatus;
-
 }
 
 
 
 int MirandaStatusToSupported(int nMirandaStatus)
 {
-
 	int nSupportedStatus;
-
 
 	switch (nMirandaStatus)
 	{
@@ -213,18 +208,14 @@ int MirandaStatusToSupported(int nMirandaStatus)
 
 	}
 
-
 	return nSupportedStatus;
-
 }
 
 
 
 char* MirandaStatusToString(int mirandaStatus)
 {
-
 	return (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
-
 }
 
 
@@ -233,7 +224,6 @@ char* MirandaStatusToString(int mirandaStatus)
 // Function is not multithread safe.
 char* MirandaVersionToString(int v)
 {
-
 	static char szVersion[64];
 
 	if (!v)
@@ -247,7 +237,6 @@ char* MirandaVersionToString(int v)
 	}
 
 	return szVersion;
-
 }
 
 
@@ -514,12 +503,10 @@ HANDLE HContactFromUID(char* pszUID, int allowAdd)
 
 char *NickFromHandle(HANDLE hContact)
 {
-
 	if (hContact == INVALID_HANDLE_VALUE)
 		return _strdup("<invalid>");
 
 	return _strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
-
 }
 
 
@@ -527,12 +514,10 @@ char *NickFromHandle(HANDLE hContact)
 /* a strlen() that likes NULL */
 size_t strlennull(const char *string)
 {
-
 	if (string)
 		return strlen(string);
 
 	return 0;
-
 }
 
 
@@ -577,7 +562,6 @@ void ResetSettingsOnConnect()
 	char *szProto;
 
 	// Reset a bunch of session specific settings
-//	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0);
   DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -594,11 +578,6 @@ void ResetSettingsOnConnect()
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
 
 			// All these values will be restored during the login
-//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
-//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
-//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
-//			DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
-//			DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
 			if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 		}
@@ -945,10 +924,12 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
       if (DBGetContactSettingByte(hContact, "ContactPhoto", "ICQLink", 0))
       { // we are linked update DB
         if (szFile)
+        {
           DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
           DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
           if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szFile))
             Netlib_Logf(ghServerNetlibUser, "Avatar file could not be linked to ContactPhoto.");
+        }
         else
         { // no file, unlink
           DBDeleteContactSetting(hContact, "ContactPhoto", "File");
