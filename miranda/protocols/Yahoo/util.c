@@ -241,9 +241,8 @@ int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
                 szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
                 if (szProto==NULL || strcmp(szProto, yahooProtocolName)) return 0;
 
-                YAHOO_DebugLog("Adding Permanently %s to list.");
-           
-           		if ( !DBGetContactSetting( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+                if ( !DBGetContactSetting( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+						YAHOO_DebugLog("Adding Permanently %s to list.", dbv.pszVal);
                         YAHOO_add_buddy(dbv.pszVal, "miranda", NULL);
            		 		DBFreeVariant(&dbv);
            		}
