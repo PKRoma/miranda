@@ -31,7 +31,7 @@ extern HWND hwndContactList;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"Nicer contact list",
-	PLUGIN_MAKE_VERSION(0,3,4,10),
+	PLUGIN_MAKE_VERSION(0,3,4,11),
 	"Display contacts, event notifications, protocol status",
 	"Pixel, egoDust, cyreve",
 	"",
