@@ -289,65 +289,114 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 	DWORD dw, c;
 
     if(!error) {
-		 HANDLE myhFile;
-		 
-		 LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
-		 wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
-		 
-		 LOG(("Getting file: %s", buf));
-		 myhFile    = CreateFile(buf,
-                                   GENERIC_WRITE,
-                                   FILE_SHARE_WRITE,
-								   NULL, OPEN_ALWAYS,  FILE_ATTRIBUTE_NORMAL,  0);
+		HANDLE myhFile;
+		PROTOFILETRANSFERSTATUS pfts;
 
-		if(myhFile !=INVALID_HANDLE_VALUE) {
-			PROTOFILETRANSFERSTATUS pfts;
+		ZeroMemory(&pfts, sizeof(PROTOFILETRANSFERSTATUS));
+		pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
+		pfts.hContact = sf->hContact;
+		pfts.sending = 0;
+		pfts.files = &filename;
+		pfts.totalFiles = 1;//ntohs(1);
+		pfts.currentFileNumber = 0;
+		pfts.totalBytes = size;
+		
+		pfts.workingDir = sf->savepath;//ft->savepath;
+		pfts.currentFileSize = size; //ntohl(ft->hdr.size);
+			
+		LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
+		wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
+		
+		pfts.currentFile = _strdup(buf);		
+		
+		_chdir( sf->savepath ); // save this just in case
+		
+		if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
+			CloseHandle( sf->hWaitEvent );
+		
+	    sf->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
-			ZeroMemory(&pfts, sizeof(PROTOFILETRANSFERSTATUS));
-			pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
-			pfts.hContact = sf->hContact;
-			pfts.sending = 0;
-			pfts.files = &sf->filename;
-			pfts.totalFiles = 1;//ntohs(1);
-			pfts.currentFileNumber = 0;
-			pfts.totalBytes = size;//sf->size;
-			pfts.currentFile = _strdup(buf);
-			pfts.workingDir = sf->savepath;//ft->savepath;
-			pfts.currentFileSize = size; //ntohl(ft->hdr.size);
-					
-			DWORD lNotify = GetTickCount();
-			LOG(("proto: %s, hContact: %d", yahooProtocolName, sf->hContact));
+		if ( YAHOO_SendBroadcast( sf->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, (void *)sf, ( LPARAM )&pfts )) {
+			WaitForSingleObject( sf->hWaitEvent, INFINITE );
 			
-			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
-			
-			do {
-				dw = Netlib_Recv((SOCKET)fd, buf, 1024, MSG_NODUMP);
-			
-				if (dw) {
-					WriteFile(myhFile, buf, dw, &c, NULL);
-					rsize += dw;
-					
-					/*LOG(("Got %d/%d", rsize, size));*/
-					if(GetTickCount() >= lNotify + 500 || dw <= 0 || rsize == size) {
-						
-					LOG(("DOING UI Notify. Got %d/%d", rsize, size));
-					
-					pfts.totalProgress = rsize;
-					pfts.currentFileTime = time(NULL);//ntohl(ft->hdr.modtime);
-					pfts.currentFileProgress = rsize;
-					
-					ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
-					lNotify = GetTickCount();
-					}
-				}
-				
-				if (sf->cancel) {
-					LOG(("Recv Cancelled! "));
-					error = 1;
+			switch(sf->action){
+				case FILERESUME_RENAME:
+				case FILERESUME_OVERWRITE:	
+				case FILERESUME_RESUME:	
+					// no action needed at this point, just break out of the switch statement
+					break;
+
+				case FILERESUME_CANCEL	:
+					sf->cancel = 1;
+					break;
+
+				case FILERESUME_SKIP	:
+				default:
+					//delete this; // per usual dcc objects destroy themselves when they fail or when connection is closed
+					//return FALSE; 
+					sf->cancel = 2;
 					break;
 				}
-			} while ( dw > 0 );
-	    CloseHandle(myhFile);
+		}
+
+		free(pfts.currentFile);
+		
+		if (! sf->cancel) {
+			LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
+			//wsprintf(buf, "%s\%s", sf->savepath, sf->filename);
+			//wsprintf(buf, "%s\%s", sf->filename);
+			lstrcpy(buf, sf->filename);
+			
+			pfts.currentFile = _strdup(buf);		
+	
+			LOG(("Getting file: %s", buf));
+			myhFile    = CreateFile(buf,
+									GENERIC_WRITE,
+									FILE_SHARE_WRITE,
+									NULL, OPEN_ALWAYS,  FILE_ATTRIBUTE_NORMAL,  0);
+	
+			if(myhFile !=INVALID_HANDLE_VALUE) {
+				
+						
+				DWORD lNotify = GetTickCount();
+				LOG(("proto: %s, hContact: %d", yahooProtocolName, sf->hContact));
+				
+				ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
+				
+				do {
+					dw = Netlib_Recv((SOCKET)fd, buf, 1024, MSG_NODUMP);
+				
+					if (dw) {
+						WriteFile(myhFile, buf, dw, &c, NULL);
+						rsize += dw;
+						
+						/*LOG(("Got %d/%d", rsize, size));*/
+						if(GetTickCount() >= lNotify + 500 || dw <= 0 || rsize == size) {
+							
+						LOG(("DOING UI Notify. Got %d/%d", rsize, size));
+						
+						pfts.totalProgress = rsize;
+						pfts.currentFileTime = time(NULL);//ntohl(ft->hdr.modtime);
+						pfts.currentFileProgress = rsize;
+						
+						ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
+						lNotify = GetTickCount();
+						}
+					}
+					
+					if (sf->cancel) {
+						LOG(("Recv Cancelled! "));
+						error = 1;
+						break;
+					}
+				} while ( dw > 0 );
+			CloseHandle(myhFile);
+				
+			} else {
+				LOG(("Can not open file for writing: %s", buf));
+			}
+			
+			free(pfts.currentFile);
 		}
     }
 	
@@ -1007,6 +1056,7 @@ void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, ch
 	
 	ft= (y_filetransfer*) malloc(sizeof(y_filetransfer));
 	ft->who = strdup(who);
+	ft->hWaitEvent = INVALID_HANDLE_VALUE;
 	if (msg != NULL)
 		ft->msg = strdup(msg);
 	else

@@ -179,10 +179,14 @@ typedef struct {
 	char *url;
 	char *savepath;
 	unsigned long fsize;
+	HANDLE hWaitEvent;
+	DWORD action;
 } y_filetransfer;
 
 void YAHOO_SendFile(y_filetransfer *ft);
 void YAHOO_RecvFile(y_filetransfer *ft);
+
+#define FILERESUME_CANCEL	11
 
 char * yahoo_status_code(enum yahoo_status s);
 void YAHOO_refresh();

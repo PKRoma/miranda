@@ -826,6 +826,9 @@ static void __cdecl yahoo_recv_filethread(y_filetransfer *sf)
 	YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
 	
 	YAHOO_RecvFile(sf);
+	if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
+		CloseHandle( sf->hWaitEvent );
+	
 	free(sf->who);
 	free(sf->msg);
 	free(sf->filename);
@@ -843,6 +846,7 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 
     //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
     ft->savepath = _strdup((char *) ccs->lParam);
+	
     //ft->state = FR_STATE_RECEIVING;
     //aim_filerecv_accept(ft->user, ft->cookie);
     pthread_create(yahoo_recv_filethread, (void *) ft);
@@ -852,6 +856,32 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 int YahooFileDeny(WPARAM wParam,LPARAM lParam) 
 {
 	/* deny file receive request.. just ignore it! */
+	return 0;
+}
+
+int YahooFileResume( WPARAM wParam, LPARAM lParam )
+{
+	y_filetransfer *ft = (y_filetransfer *) wParam;
+	YAHOO_DebugLog("[YahooFileResume]");
+	
+	if ( !yahooLoggedIn || ft == NULL )
+		return 1;
+
+	
+	PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
+	
+	ft->action = pfr->action;
+	if ( pfr->action == FILERESUME_RENAME ) {
+		if ( ft->filename != NULL ) {
+			free( ft->filename );
+			ft->filename = NULL;
+		}
+
+		ft->filename = strdup( pfr->szFilename );
+	}	
+	
+
+	SetEvent( ft->hWaitEvent );
 	return 0;
 }
 
@@ -876,9 +906,15 @@ static void __cdecl yahoo_send_filethread(y_filetransfer *sf)
 int YahooFileCancel(WPARAM wParam,LPARAM lParam) 
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
-	y_filetransfer* sf = (y_filetransfer*)ccs->wParam;
+	y_filetransfer* ft = (y_filetransfer*)ccs->wParam;
 	
-	sf->cancel = 1;
+	YAHOO_DebugLog("[YahooFileCancel]");
+	
+	if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
+		SetEvent( ft->hWaitEvent );
+	
+	ft->action = FILERESUME_CANCEL;
+	ft->cancel = 1;
 	return 0;
 }
 
@@ -1055,6 +1091,10 @@ int LoadYahooServices( void )
 	
 	YAHOO_CreateProtoServiceFunction( PS_AUTHALLOW,	YahooAuthAllow );
 	YAHOO_CreateProtoServiceFunction( PS_AUTHDENY,	YahooAuthDeny );
+	
+	YAHOO_CreateProtoServiceFunction( PS_FILERESUME, YahooFileResume );
+	
+	
 	YAHOO_CreateProtoServiceFunction( PSR_AUTH,	     YahooRecvAuth );
 	YAHOO_CreateProtoServiceFunction( PSS_AUTHREQUEST,	YahooSendAuthRequest);
 	///
@@ -1075,6 +1115,7 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSS_FILEALLOW,		YahooFileAllow );
 	//Refuses a file transfer request
 	YAHOO_CreateProtoServiceFunction( PSS_FILEDENY,		YahooFileDeny );
+	
 	//Cancel an in-progress file transfer
 	YAHOO_CreateProtoServiceFunction( PSS_FILECANCEL,		YahooFileCancel );
 	//Initiate a file send
