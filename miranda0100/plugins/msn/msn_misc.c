@@ -61,6 +61,9 @@ void MSN_DebugLog(int level,const char *fmt,...)
 	//Plugin_NotifyPlugins(PM_ICQDEBUGMSG,(WPARAM)strlen(tmp),(LPARAM)tmp);
 #ifdef _DEBUG
 	if(level>=MSN_LOG_PACKETS) {
+#else
+	if(level>=MSN_LOG_MESSAGE) {
+#endif
 		char head[64];
 		char *text;
 		wsprintf(head,"[MSN:%x:%d]",GetCurrentThreadId(),level);
@@ -69,7 +72,7 @@ void MSN_DebugLog(int level,const char *fmt,...)
 		OutputDebugString(text);
 		free(text);
 	}
-#endif
+//#endif
 	free(str);
 }
 
