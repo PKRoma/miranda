@@ -103,7 +103,6 @@ static int FindDbProviders(char * pluginname, DATABASELINK * dblink, LPARAM lPar
 {
 	HWND hwndDlg = (HWND)lParam;
 	HWND hwndCombo = GetDlgItem(hwndDlg, IDC_PROFILEDRIVERS);
-	struct DlgProfData * dat = (struct DlgProfData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 	char szName[64];
 
 	if ( dblink->getFriendlyName(szName,sizeof(szName),1) == 0 ) {
@@ -128,7 +127,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				// fill in the db plugins present
 				PLUGIN_DB_ENUM dbe;
 				dbe.cbSize=sizeof(dbe);
-				dbe.pfnEnumCallback=FindDbProviders;
+				dbe.pfnEnumCallback=(int(*)(char*,void*,LPARAM))FindDbProviders;
 				dbe.lParam=(LPARAM)hwndDlg;
 				if ( CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe) != 0 ) {
 					// no plugins?!
@@ -285,8 +284,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					case NM_DBLCLK:
 					{					
 						HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
-						LVITEM item;
-						size_t profileLen = 0;
+						LVITEM item;						
 						char profile[MAX_PATH];
 						
 						if ( dat == NULL ) break;
