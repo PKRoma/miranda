@@ -298,7 +298,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
     }
   case SSA_GROUP_ADD:
     {
-      SAFE_FREE(&sc->szGroupName);
       if (wError)
       {
         FreeServerID(sc->wGroupId);
@@ -335,10 +334,11 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
         if (sc->ofCallback) // is add contact pending
         {
-          sc->ofCallback(NULL, sc->wGroupId, (LPARAM)sc);
+          sc->ofCallback(NULL, sc->wGroupId, (LPARAM)sc->lParam);
           sc = NULL; // we do not want to be freed here
         }
       }
+      SAFE_FREE(&sc->szGroupName);
       break;
     }
   case SSA_CONTACT_REMOVE:
@@ -713,7 +713,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							continue;
 						}
 
-            if (szGroup = makeGroupPath(wGroupId, TRUE))
+            if (szGroup = makeGroupPath(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
               DBWriteContactSettingString(hContact, "CList", "Group", szGroup);
 
@@ -943,7 +943,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
           SAFE_FREE(&pszName);
           /* demangle full grouppath, create groups, set it to known */
-          pszName = makeGroupPath(wGroupId, FALSE); 
+          pszName = makeGroupPath(wGroupId); 
           SAFE_FREE(&pszName);
 
           /* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */
@@ -1164,8 +1164,9 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", wItemId);
 				ReserveServerID(wItemId);
 
-				// Set apparent mode
-//				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
+				// Set apparent mode & ignore
+        DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
+        // TODO: set ignore
         Netlib_Logf(ghServerNetlibUser, "Ignore-contact (%u)", dwUin);
       }
 			break;
@@ -1535,9 +1536,10 @@ void sendAddStart(void)
 {
   icq_packet packet;
 
-  packet.wLen = 10;
+  packet.wLen = 14;
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART<<0x10);
+  packDWord(&packet, 1<<0x10);
   sendServPacket(&packet);
 }
 

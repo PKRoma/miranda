@@ -224,6 +224,12 @@ DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WO
   _itoa(dwUin, szUin, 10);
   nUinLen = strlen(szUin);
 
+  if (!nUinLen)
+  {
+    Netlib_Logf(ghServerNetlibUser, "Buddy upload failed (UIN missing).");
+    return 0;
+  }
+
   // Prepare custom utf-8 nick name
   if (szNick && (strlen(szNick) > 0))
   {
@@ -313,7 +319,11 @@ DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szN
   {
     nNameLen = 0;
   }
-  if (nNameLen == 0 && wGroupId != 0) return 0; // without name we could not change the group
+  if (nNameLen == 0 && wGroupId != 0)
+  {
+    Netlib_Logf(ghServerNetlibUser, "Group upload failed (GroupName missing).");
+    return 0; // without name we could not change the group
+  }
 
   // Build the packet
   packet.wLen = nNameLen + 20;	
@@ -551,6 +561,31 @@ void* collectGroups(int *count)
 
 
 
+static void removeGroupPathLinks(WORD wGroupID)
+{
+  char idstr[33];
+  DBVARIANT dbv;
+  int i;
+  char szModule[MAX_PATH+6];
+
+  strcpy(szModule, gpszICQProtoName);
+  strcat(szModule, "Groups");
+
+  for(i=0;;i++)
+  {
+    itoa(i,idstr,10);
+    if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv)) break;
+    if (DBGetContactSettingWord(NULL, szModule, dbv.pszVal+1, 0) == wGroupID)
+    { // we found grouppath link to this id, delete
+      DBDeleteContactSetting(NULL, szModule, dbv.pszVal+1);
+    }
+    DBFreeVariant(&dbv);
+  }
+  return;
+}
+
+
+
 char* getServerGroupName(WORD wGroupID)
 {
   DBVARIANT dbv;
@@ -585,8 +620,10 @@ void setServerGroupName(WORD wGroupID, const char* szGroupName)
   if (szGroupName)
     DBWriteContactSettingString(NULL, szModule, szGroup, szGroupName);
   else
+  {
     DBDeleteContactSetting(NULL, szModule, szGroup);
-
+    removeGroupPathLinks(wGroupID);
+  }
   return;
 }
  
@@ -611,7 +648,10 @@ void setServerGroupID(const char* szPath, WORD wGroupID)
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "Groups");
 
-  DBWriteContactSettingWord(NULL, szModule, szPath, wGroupID);
+  if (wGroupID)
+    DBWriteContactSettingWord(NULL, szModule, szPath, wGroupID);
+  else
+    DBDeleteContactSetting(NULL, szModule, szPath);
 
   return;
 }
@@ -621,21 +661,23 @@ void setServerGroupID(const char* szPath, WORD wGroupID)
 // copied from groups.c - horrible, but only possible as this is not available as service
 static int GroupNameExists(const char *name,int skipGroup)
 {
-	char idstr[33];
-	DBVARIANT dbv;
-	int i;
+  char idstr[33];
+  DBVARIANT dbv;
+  int i;
 
-	for(i=0;;i++) {
-		if(i==skipGroup) continue;
-		itoa(i,idstr,10);
-		if(DBGetContactSetting(NULL,"CListGroups",idstr,&dbv)) break;
-		if(!strcmp(dbv.pszVal+1,name)) {
-			DBFreeVariant(&dbv);
-			return 1;
-		}
-		DBFreeVariant(&dbv);
-	}
-	return 0;
+  for(i=0;;i++)
+  {
+    if(i==skipGroup) continue;
+    itoa(i,idstr,10);
+    if(DBGetContactSetting(NULL,"CListGroups",idstr,&dbv)) break;
+    if(!strcmp(dbv.pszVal+1,name)) 
+    {
+      DBFreeVariant(&dbv);
+      return 1;
+    }
+    DBFreeVariant(&dbv);
+  }
+  return 0;
 }
 
 
@@ -663,7 +705,7 @@ int countGroupLevel(WORD wGroupId)
 
 
 // demangle group path
-char* makeGroupPath(WORD wGroupId, DWORD bCanCreate)
+char* makeGroupPath(WORD wGroupId)
 {
   char* szGroup = NULL;
 
@@ -692,7 +734,7 @@ char* makeGroupPath(WORD wGroupId, DWORD bCanCreate)
         { // that was not a sub-group, it was just a group starting with >
           int hGroup;
 
-          if (!GroupNameExists(szGroup, -1) && bCanCreate)
+          if (!GroupNameExists(szGroup, -1))
           { // if the group does not exist, create it
             hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
             CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
@@ -701,7 +743,7 @@ char* makeGroupPath(WORD wGroupId, DWORD bCanCreate)
           return szGroup;
         }
 
-        szTempGroup = makeGroupPath(wId, bCanCreate);
+        szTempGroup = makeGroupPath(wId);
 
         szTempGroup = realloc(szTempGroup, strlen(szGroup)+strlen(szTempGroup)+2);
         strcat(szTempGroup, "\\");
@@ -717,7 +759,7 @@ char* makeGroupPath(WORD wGroupId, DWORD bCanCreate)
         { // unknown path, create
           int hGroup;
 
-          if (!GroupNameExists(szGroup, -1) && bCanCreate)
+          if (!GroupNameExists(szGroup, -1))
           { // if the group does not exist, create it
             hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
             CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
@@ -730,7 +772,7 @@ char* makeGroupPath(WORD wGroupId, DWORD bCanCreate)
       { // create that group
         int hGroup;
 
-        if (!GroupNameExists(szGroup, -1) && bCanCreate)
+        if (!GroupNameExists(szGroup, -1))
         { // if the group does not exist, create it
           hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
           CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
@@ -770,7 +812,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
       ack->hContact = NULL;
       ack->wContactId = 0;
       ack->wGroupId = GenerateServerId();
-      ack->szGroupName = NULL;
+      ack->szGroupName = _strdup(szGroup); // we need that name
       ack->dwAction = SSA_GROUP_ADD;
       ack->dwUin = 0;
       ack->ofCallback = ofCallback;
@@ -790,7 +832,11 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
   
   if (strstr(szGroup, "\\") != NULL)
   { // we failed to get grouppath, trim it to root group
-    strstr(szGroup, "\\")[0] = '\0';
+    char *szLast = strstr(szGroup, "\\")+1;
+
+    while (strstr(szLast, "\\") != NULL)
+      szLast = strstr(szGroup, "\\")+1; // look for last backslash
+    szLast[-1] = '\0'; 
     return makeGroupId(szGroupPath, ofCallback, lParam);
   }
 
@@ -948,12 +994,16 @@ void moveServContactReady(const char* pszGroupPath, WORD wNewGroupID, LPARAM lPa
   ack = (servlistcookie*)lParam;
   if (!ack) return;
 
+  if (!ack->hContact) return; // we do not move us, caused our uin was wrongly added to list
+
   wItemID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "ServerId", 0);
   wGroupID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "SrvGroupId", 0);
 
-  if (!wItemID) // TODO: do not fail here, just add the user to the correct group
-  { // Only move the contact if it had an ID
-    Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no ID)");
+  if (!wItemID) 
+  { // We have no ID, so try to simply add the contact to serv-list 
+    Netlib_Logf(ghServerNetlibUser, "Unable to move contact (no ItemID) -> trying to add");
+    // we know the GroupID, so directly call add
+    addServContactReady(pszGroupPath, wNewGroupID, lParam);
     return;
   }
 
@@ -1000,8 +1050,10 @@ void moveServContactReady(const char* pszGroupPath, WORD wNewGroupID, LPARAM lPa
   dwCookie2 = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
 
   sendAddStart();
-  icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, wGroupID, wItemID, ack->szGroupName, pszNote, bAuth, SSI_ITEM_BUDDY);
+  /* this is just like Licq does it, icq5 sends that in different order, but sometimes it gives unwanted
+  /* side effect, so I changed the order. */
   icq_sendBuddy(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, wNewGroupID, ack->wNewContactId, ack->szGroupName, pszNote, bAuth, SSI_ITEM_BUDDY);
+  icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, wGroupID, wItemID, ack->szGroupName, pszNote, bAuth, SSI_ITEM_BUDDY);
 
   DBFreeVariant(&dbvNote);
   SAFE_FREE(&pszNick);
@@ -1014,6 +1066,12 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 {
   servlistcookie* ack;
   char* pszNick;
+
+  if (!GroupNameExists(pszNewGroup, -1) && (pszNewGroup != NULL) && (pszNewGroup[0]!='\0'))
+  { // the contact moved to non existing group, do not do anything: MetaContact hack
+    Netlib_Logf(ghServerNetlibUser, "Contact not moved - probably hiding by MetaContacts.");
+    return 0;
+  }
 
   if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
   { // Could not do anything without cookie

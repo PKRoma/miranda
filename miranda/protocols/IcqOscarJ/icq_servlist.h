@@ -85,7 +85,7 @@ void setServerGroupName(WORD wGroupID, const char* szGroupName);
 WORD getServerGroupID(const char* szPath);
 void setServerGroupID(const char* szPath, WORD wGroupID);
 int IsServerGroupsDefined();
-char* makeGroupPath(WORD wGroupId, DWORD bCanCreate);
+char* makeGroupPath(WORD wGroupId);
 WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
 
 DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup);
