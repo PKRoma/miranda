@@ -1,6 +1,8 @@
 /*
  * sendqueue.c
  * implements a queued send system 
+ * part of tabSRMM, (C) 2004-2005 by Miranda IM project
+ * $Id$
  */
 
 #include "commonheaders.h"

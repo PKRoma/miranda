@@ -2360,3 +2360,4 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     else
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_ENABLED);
 }
+
