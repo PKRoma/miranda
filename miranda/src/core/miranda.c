@@ -327,6 +327,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		msg.message=WM_QUIT+1;
 		while(PeekMessage(&msg,NULL,0,0,PM_REMOVE)) { 			
+			if ( hAPCWindow == msg.hwnd ) {
+				DispatchMessage(&msg);
+				continue;
+			}
 			checkIdle(&msg);
 			if(msg.message==WM_QUIT) break;
 			h=GetForegroundWindow();
