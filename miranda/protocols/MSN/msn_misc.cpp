@@ -180,9 +180,14 @@ void __stdcall	MSN_DebugLog( const char *fmt, ... )
 	va_list	vararg;
 
 	va_start( vararg, fmt );
-	int tBytes = _vsnprintf( str, sizeof( str ), fmt, vararg );
+	int tBytes = _vsnprintf( str, sizeof(str)-1, fmt, vararg );
+	if ( tBytes == 0 )
+		return;
+
 	if ( tBytes > 0 )
 		str[ tBytes ] = 0;
+	else
+		str[ sizeof(str)-1 ] = 0;
 
 	MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
 	va_end( vararg );
