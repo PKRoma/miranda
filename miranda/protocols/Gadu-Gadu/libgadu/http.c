@@ -14,7 +14,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
+ *  USA.
  */
 
 #include <sys/types.h>
@@ -117,17 +118,16 @@ struct gg_http *gg_http_connect(const char *hostname, int port, int async, const
 		h->check = GG_CHECK_READ;
 		h->timeout = GG_DEFAULT_TIMEOUT;
 	} else {
-		struct hostent *he;
-		struct in_addr a;
+		struct in_addr *hn, a;
 
-		if (!(he = gg_gethostbyname(hostname))) {
+		if (!(hn = gg_gethostbyname(hostname))) {
                         gg_debug(GG_DEBUG_MISC, "// gg_http_connect() host not found\n");
 			gg_http_free(h);
 			errno = ENOENT;
 			return NULL;
 		} else {
-			memcpy((char*) &a, he->h_addr, sizeof(a));
-			free(he);
+			a.s_addr = hn->s_addr;
+			free(hn);
 		}
 
 		if (!(h->fd = gg_connect(&a, port, 0)) == -1) {

@@ -3,7 +3,7 @@
 /*
  *  (C) Copyright 2001-2003 Wojtek Kaniewski <wojtekka@irc.pl>
  *                          Robert J. Wo¼ny <speedy@ziew.org>
- *                          Arkadiusz Mi¶kiewicz <misiek@pld.org.pl>
+ *                          Arkadiusz Mi¶kiewicz <arekm@pld-linux.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License Version
@@ -16,7 +16,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
+ *  USA.
  */
 
 #include <io.h>
@@ -45,47 +46,60 @@ void gg_event_free(struct gg_event *e)
 	if (!e)
 		return;
 	
-	if (e->type == GG_EVENT_MSG) {
+	switch (e->type) {
+		case GG_EVENT_MSG:
 		free(e->event.msg.message);
 		free(e->event.msg.formats);
 		free(e->event.msg.recipients);
-	}
+			break;
 	
-	if (e->type == GG_EVENT_NOTIFY)
+		case GG_EVENT_NOTIFY:
 		free(e->event.notify);
+			break;
 	
-	if (e->type == GG_EVENT_NOTIFY60) {
+		case GG_EVENT_NOTIFY60:
+		{
 		int i;
 
 		for (i = 0; e->event.notify60[i].uin; i++)
 			free(e->event.notify60[i].descr);
 		
 		free(e->event.notify60);
+
+			break;
 	}
 
-	if (e->type == GG_EVENT_STATUS60)
+		case GG_EVENT_STATUS60:
 		free(e->event.status60.descr);
+			break;
 	
-	if (e->type == GG_EVENT_STATUS)
+		case GG_EVENT_STATUS:
 		free(e->event.status.descr);
+			break;
 
-	if (e->type == GG_EVENT_NOTIFY_DESCR) {
+		case GG_EVENT_NOTIFY_DESCR:
 		free(e->event.notify_descr.notify);
 		free(e->event.notify_descr.descr);
-	}
+			break;
 
-	if (e->type == GG_EVENT_DCC_VOICE_DATA)
+		case GG_EVENT_DCC_VOICE_DATA:
 		free(e->event.dcc_voice_data.data);
+			break;
 
-	if (e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY || e->type == GG_EVENT_PUBDIR50_READ || e->type == GG_EVENT_PUBDIR50_WRITE)
+		case GG_EVENT_PUBDIR50_SEARCH_REPLY:
+		case GG_EVENT_PUBDIR50_READ:
+		case GG_EVENT_PUBDIR50_WRITE:
 		gg_pubdir50_free(e->event.pubdir50);
+			break;
 
-	if (e->type == GG_EVENT_USERLIST)
+		case GG_EVENT_USERLIST:
 		free(e->event.userlist.reply);
+			break;
 	
-	if (e->type == GG_EVENT_IMAGE_REPLY) {
+		case GG_EVENT_IMAGE_REPLY:
 		free(e->event.image_reply.filename);
 		free(e->event.image_reply.image);
+			break;
 	}
 
 	free(e);

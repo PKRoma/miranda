@@ -19,7 +19,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
+ *  USA.
  */
 
 #ifndef __GG_LIBGADU_H
@@ -913,7 +914,7 @@ char *gg_vsaprintf(const char *format, va_list ap);
 char *gg_get_line(char **ptr);
 
 int gg_connect(void *addr, int port, int async);
-struct hostent *gg_gethostbyname(const char *hostname);
+struct in_addr *gg_gethostbyname(const char *hostname);
 char *gg_read_line(int sock, char *buf, int length);
 void gg_chomp(char *line);
 char *gg_urlencode(const char *str);
@@ -949,7 +950,7 @@ int gg_image_queue_remove(struct gg_session *s, struct gg_image_queue *q, int fr
 #define GG_DEFAULT_PROTOCOL_VERSION 0x20
 #define GG_DEFAULT_TIMEOUT 30
 #define GG_HAS_AUDIO_MASK 0x40000000
-#define GG_LIBGADU_VERSION "20040714"
+#define GG_LIBGADU_VERSION "20041124"
 
 #define GG_DEFAULT_DCC_PORT 1550
 
