@@ -281,9 +281,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       }
       else if (dwFT1 == 0xffffffbe)
       {
-        unsigned ver1 = (dwFT1>>24)&0xFF;
-        unsigned ver2 = (dwFT1>>16)&0xFF;
-        unsigned ver3 = (dwFT1>>8)&0xFF;
+        unsigned ver1 = (dwFT2>>24)&0xFF;
+        unsigned ver2 = (dwFT2>>16)&0xFF;
+        unsigned ver3 = (dwFT2>>8)&0xFF;
         
         if (ver3) 
           _snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
