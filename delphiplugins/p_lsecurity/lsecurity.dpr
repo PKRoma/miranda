@@ -53,7 +53,9 @@ uses
   passwdlg in 'passwdlg.pas' {PasswordDlg},
   sysutils,
   messages,
-  m_clui in '..\headerfiles\m_clui.pas';
+  m_clui in '..\headerfiles\m_clui.pas',
+  m_protosvc in '..\headerfiles\m_protosvc.pas',
+  m_protocols in '..\headerfiles\m_protocols.pas';
 
 {$R *.RES}
 
@@ -191,7 +193,7 @@ begin
       begin
       ShowMessage('Wrong password!');
       //hack to close miranda
-      SendMessage(HWND(PluginLink.CallService(MS_CLUI_GETHWND,0,0)),WM_COMMAND,DWord(ID_ICQ_EXIT),0);
+      PostQuitMessage(0);
       Result:=1;//no unload
       end
     else
