@@ -1,8 +1,22 @@
+{***************************************************************
+ * Project     : Miranda Plugin API for Delphi
+ * Unit Name   : m_options
+ * Description : Converted Headerfile
+ *
+ * Author      : Christian Kästner
+ * Date        : 22.12.2001
+ *
+ * Copyright © 2001 by Christian Kästner (christian.k@stner.de)
+ ****************************************************************}
+
 unit m_options;
 
 interface
 
 uses windows;
+
+{$ifndef M_OPTIONS_H__}
+{$define M_OPTIONS_H__}
 
 { Opt/Initialise
 The user opened the options dialog. Modules should do whatever initialisation
@@ -45,6 +59,8 @@ type
   end;
 const
   MS_OPT_ADDPAGE='Opt/AddPage';
+
+{$endif}  //M_OPTIONS_H__
 
 
 implementation

@@ -8,5 +8,19 @@
  * Copyright © 2001 by Christian Kästner (christian.k@stner.de)
  ****************************************************************}
 
+unit m_url;
 
-//not translated yet
+interface
+
+
+//bring up the send URL dialog for a user
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=0
+//returns 0 on success or nonzero on failure
+//returns immediately, before the url is sent
+const
+   MS_URL_SENDURL    'SRUrl/SendCommand';
+
+
+implementation
+end.
