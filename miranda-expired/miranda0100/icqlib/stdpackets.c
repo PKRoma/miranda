@@ -104,11 +104,11 @@ icq_Packet *icq_TCPCreateAwayReqPacket(icq_TCPLink *plink, WORD statusMode)
   icq_Packet *p=icq_TCPCreateStdPacket(
     plink,
     ICQ_TCP_MESSAGE,
-    statusMode,		  //one of the icq_tcp_msg_read... constants
+    statusMode,           //one of the icq_tcp_msg_read... constants
     "",
     0, /* status */
-    0);
-
+    0);   
+    
   return p;
 }
 

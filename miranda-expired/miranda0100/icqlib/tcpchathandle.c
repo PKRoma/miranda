@@ -35,9 +35,6 @@ void icq_HandleChatAck(icq_TCPLink *plink, icq_Packet *p, int port)
   icq_ChatSession *pchat;
   icq_Packet *p2;
 
-  invoke_callback(plink->icqlink, icq_RequestNotify)(plink->icqlink, 
-    p->id, ICQ_NOTIFY_ACK, 0, NULL);
-
   pchatlink=icq_TCPLinkNew(plink->icqlink);
   pchatlink->type=TCP_LINK_CHAT;
   pchatlink->id=p->id;
@@ -51,8 +48,6 @@ void icq_HandleChatAck(icq_TCPLink *plink, icq_Packet *p, int port)
 
   invoke_callback(plink->icqlink, icq_RequestNotify)(plink->icqlink, p->id,
     ICQ_NOTIFY_CHATSESSION, sizeof(icq_ChatSession), pchat);
-  invoke_callback(plink->icqlink, icq_RequestNotify)(plink->icqlink, p->id,
-    ICQ_NOTIFY_SUCCESS, 0, NULL);
 
   icq_ChatSessionSetStatus(pchat, CHAT_STATUS_CONNECTING);
   icq_TCPLinkConnect(pchatlink, plink->remote_uin, port);

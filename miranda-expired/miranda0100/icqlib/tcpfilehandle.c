@@ -223,9 +223,6 @@ void icq_HandleFileAck(icq_TCPLink *plink, icq_Packet *p, int port)
   icq_FileSession *pfile;
   icq_Packet *p2;
 
-  invoke_callback(plink->icqlink, icq_RequestNotify)(plink->icqlink, 
-    p->id, ICQ_NOTIFY_ACK, 0, NULL);
-
   pfilelink=icq_TCPLinkNew(plink->icqlink);
   pfilelink->type=TCP_LINK_FILE;
   pfilelink->id=p->id;
@@ -234,12 +231,10 @@ void icq_HandleFileAck(icq_TCPLink *plink, icq_Packet *p, int port)
   pfile=icq_FindFileSession(plink->icqlink, plink->remote_uin, 0);
 
   pfile->tcplink=pfilelink;
-  pfilelink->id=pfile->id;	   //this was commented out by thing. why?
+  pfilelink->id=pfile->id;
 
   invoke_callback(plink->icqlink, icq_RequestNotify)(plink->icqlink,
     pfile->id, ICQ_NOTIFY_FILESESSION, sizeof(icq_FileSession), pfile);
-  invoke_callback(plink->icqlink, icq_RequestNotify)(plink->icqlink,
-    pfile->id, ICQ_NOTIFY_SUCCESS, 0, NULL);
   
   icq_FileSessionSetStatus(pfile, FILE_STATUS_CONNECTING);
   icq_TCPLinkConnect(pfilelink, plink->remote_uin, port);

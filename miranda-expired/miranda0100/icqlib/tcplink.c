@@ -68,7 +68,7 @@ icq_TCPLink *icq_TCPLinkNew(icq_Link *icqlink)
   p->connect_timeout = NULL;
 
   if(p)
-    icq_LinkEnqueue(icqlink->d->icq_TCPLinks, p);
+    icq_ListEnqueue(icqlink->d->icq_TCPLinks, p);
 
   return p;
 }
@@ -91,7 +91,7 @@ void icq_TCPLinkDelete(void *pv)
   icq_TCPLink *p=(icq_TCPLink *)pv;
 
   /* process anything left in the received queue */
-  icq_TCPLinkProcessReceived(p);	   //thing commented this out
+  icq_TCPLinkProcessReceived(p);
 
   /* make sure we notify app that packets in send queue didn't make it */
   (void)icq_ListTraverse(p->send_queue, _icq_TCPLinkDelete, p->icqlink);
@@ -186,20 +186,20 @@ int icq_TCPLinkProxyRequestAuthorization(icq_TCPLink *plink)
 {
   char buf[1024];
 
+  int hasName = plink->icqlink->icq_ProxyName &&
+    strlen(plink->icqlink->icq_ProxyName);
+  int hasPass = plink->icqlink->icq_ProxyPass &&
+    strlen(plink->icqlink->icq_ProxyPass);
+  int authEnabled = hasName && hasPass && plink->icqlink->icq_ProxyAuth;
+
   plink->mode = (plink->mode & (~TCP_LINK_SOCKS_CONNECTING));
   buf[0] = 5; /* protocol version */
   buf[1] = 1; /* number of methods */
-  if(!strlen(plink->icqlink->icq_ProxyName) || !strlen(plink->icqlink->icq_ProxyPass) ||
-     !plink->icqlink->icq_ProxyAuth)
-  {
-    buf[2] = 0; /* no authorization required */
-    plink->mode |= TCP_LINK_SOCKS_NOAUTHSTATUS;
-  }
-  else
-  {
-    buf[2] = 2; /* method username/password */
-    plink->mode |= TCP_LINK_SOCKS_AUTHORIZATION;
-  }
+  buf[2] = authEnabled ? 2 : 0; /* authentication method */
+
+  plink->mode |= authEnabled ? TCP_LINK_SOCKS_AUTHORIZATION :
+    TCP_LINK_SOCKS_NOAUTHSTATUS;
+
 #ifdef _WIN32
   if(send(plink->socket, buf, 3, 0) != 3)
     return errno;
@@ -498,7 +498,6 @@ icq_TCPLink *icq_TCPLinkAccept(icq_TCPLink *plink)
   /* set the socket to non-blocking */
 #ifdef _WIN32
   iosflag = TRUE;
-  //ioctlsocket(plink->socket, FIONBIO, &iosflag);
   ioctlsocket(pnewlink->socket, FIONBIO, &iosflag);
 #else
   flags=fcntl(pnewlink->socket, F_GETFL, 0);
@@ -670,13 +669,11 @@ void icq_TCPLinkOnDataReceived(icq_TCPLink *plink)
 
 #ifdef _WIN32
   if (recv_result <= 0 && WSAGetLastError()!=EWOULDBLOCK) {
-
     /* receive error - log it */
     icq_FmtLog(plink->icqlink, ICQ_LOG_WARNING, "recv failed from %d (%d),"
       " closing link\n", plink->remote_uin, WSAGetLastError());
 #else
   if (recv_result <= 0 && errno!=EWOULDBLOCK) {
-
     /* receive error - log it */
     icq_FmtLog(plink->icqlink, ICQ_LOG_WARNING, "recv failed from %d (%d-%s),"
       " closing link\n", plink->remote_uin, errno, strerror(errno));
@@ -701,7 +698,7 @@ void icq_TCPLinkOnPacketReceived(icq_TCPLink *plink, icq_Packet *p)
 #endif
 
   /* Stick packet on ready packet linked icq_List */
-  icq_LinkEnqueue(plink->received_queue, p);
+  icq_ListEnqueue(plink->received_queue, p);
 }
 
 void icq_TCPLinkOnConnect(icq_TCPLink *plink)
@@ -786,7 +783,7 @@ void icq_TCPLinkOnConnect(icq_TCPLink *plink)
    * has been established and send pending data */
   while(plink->send_queue->count>0)
   {
-    icq_Packet *p=icq_LinkDequeue(plink->send_queue);
+    icq_Packet *p=icq_ListDequeue(plink->send_queue);
     if(p->id)
       if(plink->icqlink->icq_RequestNotify)
         (*plink->icqlink->icq_RequestNotify)(plink->icqlink, p->id, ICQ_NOTIFY_CONNECTED, 0, 0);
@@ -859,7 +856,7 @@ void icq_TCPLinkProcessReceived(icq_TCPLink *plink)
   while(plist->count>0)
 
   {
-    icq_Packet *p=icq_LinkDequeue(plist);
+    icq_Packet *p=icq_ListDequeue(plist);
 
     if(plink->mode & TCP_LINK_MODE_HELLOWAIT)
     {

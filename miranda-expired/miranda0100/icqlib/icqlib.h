@@ -67,8 +67,8 @@ extern char *strdup(const char *s);
  * icqlib, but must be contained in the per-connection ICQLINK
  * struct.
  */
-struct icq_LinkPrivate_s {
-
+struct icq_LinkPrivate_s
+{
   icq_List *icq_ContactList;
 
   /* 65536 seqs max, 1 bit per seq -> 65536/8 = 8192 */
@@ -83,7 +83,6 @@ struct icq_LinkPrivate_s {
   icq_List *icq_TCPLinks;
   icq_List *icq_ChatSessions;
   icq_List *icq_FileSessions;
-
 };
 
 #define invoke_callback(plink, callback) \

@@ -293,7 +293,8 @@ void icq_SendVisibleList(icq_Link *icqlink) /* V5 */
     icq_PacketGotoUDPOutData(p, 0);
     icq_PacketAppend8(p, num_used);
     icq_UDPSockWrite(icqlink, p);
-  } else
+  }
+  else
     icq_PacketDelete(p);
 }
 
@@ -319,8 +320,19 @@ void icq_SendInvisibleList(icq_Link *icqlink) /* V5 */
     icq_PacketGotoUDPOutData(p, 0);
     icq_PacketAppend8(p, num_used);
     icq_UDPSockWrite(icqlink, p);
-  } else
+  }
+  else
     icq_PacketDelete(p);
+}
+
+void icq_SendVisListUpdate(icq_Link *icqlink, DWORD uin, BYTE list, BOOL on)
+{
+  icq_Packet *p = icq_UDPCreateStdPacket(icqlink, UDP_CMD_UPDATE_LIST);
+
+  icq_PacketAppend32(p, uin);
+  icq_PacketAppend8(p, list);
+  icq_PacketAppend8(p, on);
+  icq_UDPSockWrite(icqlink, p);
 }
 
 /**************************************
@@ -406,7 +418,7 @@ void icq_UDPAck(icq_Link *icqlink, int seq) /* V5 */
 
   icq_FmtLog(icqlink, ICQ_LOG_MESSAGE, "Acking\n");
   icq_UDPSockWriteDirect(icqlink, p);
-  icq_PacketDelete(p);		//rcdh: somebody should be mutilated for missing this out
+  icq_PacketDelete(p);
 }
 
 /***************************************************
@@ -415,11 +427,11 @@ message to send.
 ***************************************************/
 WORD icq_UDPSendMessage(icq_Link *icqlink, DWORD uin, const char *text) /* V5 */
 {
-  char buf[ICQ_MAX_UDP_MESSAGE_SIZE]; /* message may be only 450 bytes long */
+  char buf[ICQ_MAX_UDP_MESSAGE_SIZE];
   icq_Packet *p;
 
   strncpy(buf, text, sizeof(buf));
-  buf[sizeof(buf)-1]='\0';
+  buf[sizeof(buf)-1] = 0;
   icq_RusConv("kw", buf);
 
   p = icq_UDPCreateStdPacket(icqlink, UDP_CMD_SEND_THRU_SRV);
@@ -437,10 +449,10 @@ WORD icq_UDPSendURL(icq_Link *icqlink, DWORD uin, const char *url, const char *d
   icq_Packet *p;
 
   strncpy(buf1, descr, sizeof(buf1));
-  buf1[sizeof(buf1)-1]='\0';
+  buf1[sizeof(buf1)-1] = 0;
   icq_RusConv("kw", buf1);
   strncpy(buf2, url, sizeof(buf2));
-  buf2[sizeof(buf2)-1]=0;
+  buf2[sizeof(buf2)-1] = 0;
 
   p = icq_UDPCreateStdPacket(icqlink, UDP_CMD_SEND_THRU_SRV);
   icq_PacketAppend32(p, uin);

@@ -62,6 +62,7 @@
 #define UDP_CMD_REG_NEW_USER       0x03FC
 #define UDP_CMD_VIS_LIST           0x06AE
 #define UDP_CMD_INVIS_LIST         0x06A4
+#define UDP_CMD_UPDATE_LIST        0x06B8
 #define UDP_CMD_META_USER          0x064A
 #define UDP_CMD_RAND_SEARCH        0x056E
 #define UDP_CMD_RAND_SET           0x0564
@@ -79,7 +80,8 @@
 #define UDP_SRV_STATUS_UPDATE      0x01A4
 #define UDP_SRV_X1                 0x021C
 #define UDP_SRV_X2                 0x00E6
-#define UDP_SRV_UPDATE             0x01E0
+#define UDP_SRV_UPDATE_OK          0x01E0
+#define UDP_SRV_UPDATE_FAIL        0x01EA
 #define UDP_SRV_UPDATE_EXT         0x00C8
 #define UDP_SRV_NEW_UIN            0x0046
 #define UDP_SRV_NEW_USER           0x00B4
@@ -146,6 +148,10 @@
 #define LOGIN_SNDRCV_TCP  0x04
 #define LOGIN_NO_TCP      0x06
 
+#define INVISIBLE_LIST   1	  //to be used with UDP_CMD_UPDATE_LIST
+#define VISIBLE_LIST     2
+
+void icq_SendVisListUpdate(icq_Link *icqlink, DWORD uin, BYTE list, BOOL on);
 void icq_SendGotMessages(icq_Link *icqlink);
 void icq_SendLogin1(icq_Link *icqlink);
 void icq_StatusUpdate(icq_Link *icqlink, icq_Packet*);

@@ -58,7 +58,7 @@ void (*icq_SocketNotify)(int socket_fd, int type, int status);
 
 /**
  * Creates a new socket using the operating system's socket creation
- * facitily.
+ * facility.
  */
 int icq_SocketNew(int domain, int type, int protocol)
 {
@@ -98,7 +98,7 @@ void icq_SocketAlloc(int s)
     for (i=0; i<ICQ_SOCKET_MAX; i++)
       psocket->handlers[i] = NULL;
 
-    icq_LinkEnqueue(icq_SocketList, psocket);
+    icq_ListEnqueue(icq_SocketList, psocket);
   }
 }  
 

@@ -68,6 +68,7 @@ WORD icq_PacketReadUDPOutSeq1(icq_Packet*);
 WORD icq_PacketReadUDPOutSeq2(icq_Packet*);
 WORD icq_PacketReadUDPInVer(icq_Packet*);
 WORD icq_PacketReadUDPInCmd(icq_Packet*);
+WORD icq_PacketReadUDPInCmdV3(icq_Packet*);
 WORD icq_PacketReadUDPInSeq1(icq_Packet*);
 WORD icq_PacketReadUDPInSeq2(icq_Packet*);
 DWORD icq_PacketReadUDPInUIN(icq_Packet*);

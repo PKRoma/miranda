@@ -45,7 +45,8 @@ icq_List *icq_ListNew()
 /* Frees all list nodes and list itself */
 void icq_ListDelete(icq_List *plist, void (*item_free_f)(void *))
 {
-  icq_ListFree(plist, item_free_f);
+  if (item_free_f)
+    icq_ListFree(plist, item_free_f);
   free(plist);
 }
 
@@ -201,12 +202,12 @@ int icq_ListDump(icq_List *plist)
 {
   icq_ListNode *p=plist->head;
 
-  printf("list %x { head=%x, tail=%x, count=%d }\ncontents: ",
-         (int)plist, (int)plist->head, (int)plist->tail, plist->count);
+  printf("list %lx { head=%lx, tail=%lx, count=%d }\ncontents: ",
+         (long)plist, (long)plist->head, (long)plist->tail, plist->count);
 
   while(p)
   {
-    printf("%x, ", (int)p->item);
+    printf("%lx, ", (long)p->item);
     p=p->next;
   }
   printf("end\n");

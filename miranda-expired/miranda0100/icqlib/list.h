@@ -31,10 +31,10 @@
 
 #include <stdarg.h>
 
-#define icq_LinkEnqueue(plist, p) \
+#define icq_ListEnqueue(plist, p) \
    icq_ListInsert(plist, 0, p)
 
-#define icq_LinkDequeue(plist) \
+#define icq_ListDequeue(plist) \
   icq_ListRemoveNode(plist, plist->head)
 
 typedef struct icq_ListNode_s icq_ListNode;

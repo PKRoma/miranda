@@ -84,7 +84,7 @@ int _icq_HandleTimeout1(void *p, va_list data)
   (void)data;
 
   if (t->expire_time <= current_time)
-    icq_LinkEnqueue(expired_timeouts, t);
+    icq_ListEnqueue(expired_timeouts, t);
   else
     /* traversal is complete when we reach an expire time in the future */
     complete = 1;
@@ -132,7 +132,7 @@ void icq_HandleTimeout()
 
   icq_CurrentTimeout = NULL;
 
-  /* these three operations must be split up, in the case where a
+  /* these three operations must be split up for the case where a
    * timeout function causes timers to be deleted - this ensures
    * we don't try to free any timers that have already been removed
    * or corrupt the list traversal process */
@@ -147,9 +147,12 @@ void icq_HandleTimeout()
   /* delete any expired timeouts */
   icq_ListTraverse(icq_TimeoutList, _icq_HandleTimeout3, current_time);
 
+  /* if there's any timeouts left, notify the library client */
   if (icq_TimeoutList->count)
     icq_TimeoutDoNotify();
-}  
+
+  icq_ListDelete(expired_timeouts, NULL);
+}
 
 void icq_TimeoutDoNotify()
 {
