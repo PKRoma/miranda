@@ -31,6 +31,27 @@ This list is imcomplete, but contains a few important things left.
         
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
+          
+Version 0.9.9.1 - 2005/01/14
+
+        ! fixed a few translation bugs (menu bar, the new status mode dialog)
+
+        + new option: typing notify->Flash window once on typing events.
+          This can be disabled to avoid the flashes when a typing notification
+          arrives...
+          It is enabled by default and replaces the old option to enable the
+          typing notify window icons (which is gone).
+          
+        ! manually opening a container does not give him a message icon instead
+          of the status icon.
+          
+        * when a container shows a message icon indicating unread events in one
+          of its tabs, the typing notify icon may temporarily override the message
+          icon.
+
+        + meta contact support: When the toolbar button is set to show the full UIN,
+          it will now display the UIN of the active subcontact, instead of the 
+          MetaContact ID# (which is a simple number and not really important to know).
 
 Version 0.9.9.0 - 2005/01/08 - BETA
 
@@ -115,19 +136,6 @@ Version 0.9.9.0 - 2005/01/08 - BETA
           Typing notification messages + icons should no longer remain when the window
           receives a "typing off" message.
 
-Version 0.9.9.1 - 2005/01/14
-
-        * fixed a few translation bugs (menu bar, the new status mode dialog)
-
-        + new option: typing notify->Flash window once on typing events.
-          This can be disabled to avoid the flashes when a typing notification
-          arrives...
-          It is enabled by default and replaces the old option to enable the
-          typing notify window icons (which is gone).
-          
-        ! manually opening a container does not give him a message icon instead
-          of the status icon.
-        
  Version 0.0.9.5 - 2005/01/04
 
         ! fixed close tab on double click

@@ -1656,11 +1656,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         int hasName = 0;
                         char buf[128];
 
-                        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
                         ZeroMemory(&ci, sizeof(ci));
+                        if(IsMetaContact(hwndDlg, dat)) {
+                            ci.hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
+                            ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ci.hContact, 0);
+                        }
+                        else {
+                            ci.hContact = dat->hContact;
+                            ci.szProto = dat->szProto;
+                        }
+                        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
                         ci.cbSize = sizeof(ci);
-                        ci.hContact = dat->hContact;
-                        ci.szProto = dat->szProto;
                         ci.dwFlag = CNF_UNIQUEID;
                         if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
                             switch (ci.type) {
@@ -1690,8 +1696,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             else
                                 strncpy(newcontactname, contactName, sizeof(newcontactname));
 
-                            if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1))
+                            if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "fulluin", 1)) {
                                 SetDlgItemTextA(hwndDlg, IDC_NAME, hasName ? buf : contactName);
+                                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                            }
                             else
                                 SendDlgItemMessage(hwndDlg, IDC_NAME, BUTTONADDTOOLTIP, hasName ? (WPARAM) buf : (WPARAM) contactName, 0);
 
