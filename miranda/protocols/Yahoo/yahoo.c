@@ -291,6 +291,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
     if(!error) {
 		HANDLE myhFile;
 		PROTOFILETRANSFERSTATUS pfts;
+		char *old_dir;
 
 		ZeroMemory(&pfts, sizeof(PROTOFILETRANSFERSTATUS));
 		pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
@@ -309,7 +310,13 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		
 		pfts.currentFile = _strdup(buf);		
 		
-		_chdir( sf->savepath ); // save this just in case
+		old_dir = _getcwd(NULL, 512);
+		
+		if (old_dir) {
+			_chdir( sf->savepath ); // save this just in case
+		} else {
+			LOG(("WARNING: Can't get the current working directory!" ));
+		}
 		
 		if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
 			CloseHandle( sf->hWaitEvent );
@@ -397,6 +404,11 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 			}
 			
 			free(pfts.currentFile);
+		}
+		
+		if (old_dir) {
+			_chdir(old_dir); 
+			free(old_dir); 
 		}
     }
 	
