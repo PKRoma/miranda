@@ -32,6 +32,29 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
+Version 0.0.9.3 - 2004/11/14
+
+        * unified the unsent and charcounter displays on the statusbar. The new format
+          is now: x/yyyy where is is the number of queued messages (normally 0) and yyyy
+          the number of chars typed into the input box.
+          Reason: Make space on the status bar for new indicators coming in the future.
+          
+        * When using dynamic avatar resizing, the maximum size of an avatar is no longer
+          limited to 300 x 300 pixels. It can be up to 1024x768 pixels (not recommended though,
+          as this will use quite some memory) and will be downsized to match the splitter
+          position.
+          
+        * the dynamic avatar resizing now enforces a horzontal size limit - the avatar cannot
+          gain more than 80% of the width of the window width so the message input area
+          will never completely disappear because of the avatar taking all the available
+          space. Note that this may corrupt the aspect ratio of an avatar picture.
+
+        * fixed severr bug with avatars (messing up contacts handle)
+
+        * added smart avatar resizing - when using the dynamic avatar resizing option,
+          the layouting code will now take care that the avatar won't take too much space
+          of the button bar. it will try to keep all the button visible.
+                  
 Version 0.0.9.2 - 2004/11/13
 
         * various avatar layouting fixes.
@@ -1115,3 +1138,4 @@ depending on user feedback and how much sense they would make.
 	  
 	+ bugfixes :)
         
+@xy _tboutput_form:16860 16815 3615 2190

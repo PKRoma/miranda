@@ -371,6 +371,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case IDOK:
                     SendMessage(pContainer->hwndActive, WM_COMMAND, wParam, lParam);      // pass the IDOK command to the active child - fixes the "enter not working
                     break;
+                case ID_FILE_SAVEMESSAGELOGAS:
+                    SendMessage(pContainer->hwndActive, DM_SAVEMESSAGELOG, 0, 0);
+                    break;
                 case ID_FILE_CLOSEMESSAGESESSION:
                     PostMessage(pContainer->hwndActive, WM_CLOSE, 0, 1);
                     break;
@@ -531,25 +534,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 if (pContainer->hwndStatus) {
                     RECT rcs;
-                    int iParts = SendMessage(pContainer->hwndStatus, SB_GETPARTS, 0, 0);
+                    int statwidths[4];
+                    
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
-                    if (iParts == 4) {
-                        int statwidths[4];
 
-                        statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 50;
-                        statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 35;
-                        statwidths[2] = rcs.right - rcs.left - 35;
-                        statwidths[3] = -1;
-                        SendMessage(pContainer->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
-                    } else if(iParts == 3) {
-                        int statwidths[3];
-                        
-                        statwidths[0] = rcs.right - rcs.left - SB_CHAR_WIDTH - 50;
-                        statwidths[1] = rcs.right - rcs.left - 35;
-                        statwidths[2] = -1;
-                        SendMessage(pContainer->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
-                    }
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 50;
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 35;
+                    statwidths[2] = rcs.right - rcs.left - 35;
+                    statwidths[3] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                 }
                 else
@@ -1051,6 +1045,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(hContact) {
                     hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
                     ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMenu, Translate("User"));
+                    DrawMenuBar(hwndDlg);
                     GetCursorPos(&pt);
                     TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
                     DestroyMenu(hMenu);
@@ -1185,9 +1180,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			HMENU hSysmenu = GetSystemMenu(hwndDlg, FALSE);
 			HANDLE hContact;
 
-            if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1))
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_STATICCONTROL), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_STATICCONTROL), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-
+            InvalidateRect(GetDlgItem(hwndDlg, IDC_STATICCONTROL), NULL, TRUE);
+            
             if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
                 pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);      // hide container name in single window mode (not needed)
 
@@ -1256,23 +1250,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 if(pContainer->hwndStatus) {
                     RECT rc;
+                    int statwidths[4];
+
                     GetWindowRect(pContainer->hwndStatus, &rc);
 
-                    if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT)) {
-                        int statwidths[4];
-
-                        statwidths[0] = (rc.right - rc.left) - (2 * SB_CHAR_WIDTH) - 50;
-                        statwidths[1] = rc.right - rc.left - SB_CHAR_WIDTH - 35;
-                        statwidths[2] = rc.right - rc.left - 35;
-                        statwidths[3] = -1;
-                        SendMessage(pContainer->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
-                    } else {
-                        int statwidths[3];
-                        statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH - 50;
-                        statwidths[1] = rc.right - rc.left - 35;
-                        statwidths[2] = -1;
-                        SendMessage(pContainer->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
-                    }
+                    statwidths[0] = (rc.right - rc.left) - (2 * SB_CHAR_WIDTH) - 50;
+                    statwidths[1] = rc.right - rc.left - SB_CHAR_WIDTH - 35;
+                    statwidths[2] = rc.right - rc.left - 35;
+                    statwidths[3] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
                     SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);

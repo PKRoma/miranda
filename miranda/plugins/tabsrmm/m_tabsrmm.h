@@ -150,6 +150,7 @@ struct MessageWindowData {
     time_t lastEventTime;
     DWORD dwEventIsShown;
     int iRealAvatarHeight;
+    int iButtonBarNeeds;
 };
 
 typedef struct _recentinfo {

@@ -193,6 +193,7 @@ struct ProtocolData {
 #define DM_FORCEDREMAKELOG   (WM_USER+62)
 #define DM_QUERYFLAGS        (WM_USER+63)
 #define DM_STATUSBARCHANGED  (WM_USER+64)
+#define DM_SAVEMESSAGELOG    (WM_USER+65)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
@@ -275,16 +276,12 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_CASCADE        1
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    1
-#define SRMSGSET_SENDONDBLENTER    "SendOnDblEnter"
-#define SRMSGDEFSET_SENDONDBLENTER 0
 #define SRMSGSET_CLOSEONREPLY      "CloseOnReply"
 #define SRMSGDEFSET_CLOSEONREPLY   1
 #define SRMSGSET_STATUSICON        "UseStatusWinIcon"
 #define SRMSGDEFSET_STATUSICON     0
 #define SRMSGSET_SENDBUTTON        "UseSendButton"
 #define SRMSGDEFSET_SENDBUTTON     1
-#define SRMSGSET_CHARCOUNT         "ShowCharCount"
-#define SRMSGDEFSET_CHARCOUNT      0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
 #define SRMSGDEFSET_MSGTIMEOUT     10000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)

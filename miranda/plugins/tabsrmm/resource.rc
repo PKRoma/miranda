@@ -200,9 +200,6 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Messaging Mode",IDC_STATIC,0,0,310,28
-    LTEXT           "tabSRMM is now a ""split only"" message module. The single read/send mode is no longer available.",
-                    IDC_STATIC,7,8,301,18
     GROUPBOX        "Message Window Options",IDC_STATIC,0,30,310,194
     CONTROL         "Automatically pop up the window when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,40,
@@ -228,11 +225,9 @@ BEGIN
     CONTROL         "Show toolbar buttons",IDC_SHOWBUTTONLINE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,190,137,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,167,141,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,190,141,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,148,179,137,10
-    CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,190,133,10
     LTEXT           "Show warning when message has not been received after",
                     IDC_STATIC,8,203,211,8
     EDITTEXT        IDC_SECONDS,223,201,25,12,ES_AUTOHSCROLL
@@ -299,8 +294,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,133,138,10
     CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,147,131,10
-    CONTROL         "Use thin gridlines",IDC_THINSEPARATORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,21,158,106,11
     CONTROL         "Indent events",IDC_INDENT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,158,104,61,10
     LTEXT           "(pixels)",IDC_STATIC,231,104,31,9
@@ -857,8 +850,6 @@ BEGIN
             MENUITEM "Nickname",                    ID_LOGMENU_SHOWNICKNAME
             MENUITEM SEPARATOR
             MENUITEM "Grid Lines",                  ID_MESSAGELOGFORMATTING_SHOWGRID
-
-            MENUITEM "Use thin Grid Lines",         ID_LOGITEMSTOSHOW_USETHINGRIDLINES
 
             MENUITEM SEPARATOR
             MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES

@@ -773,7 +773,9 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob + sizeof(DWORD));
             break;
     }
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
+
+    //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
     /* OnO: highlight end */
     //if(dbei.eventType == EVENTTYPE_MESSAGE && dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
       //  AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight0");
@@ -846,16 +848,11 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     // separator strings used for grid lines, message separation and so on...
     
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "thingrid", 0)) {
-        strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
-        _snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
-    }
-    else {
-        strcpy(szSep0, fAppend ? "\\par%s" : "%s");
-        strcpy(szSep1, "\\highlight%d \\par");
-    }
+    strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
+    _snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
 
-    strcpy(szSep2, fAppend ? "\\par" : "");
+    //strcpy(szSep2, fAppend ? "\\par" : "");
+    strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl0");
     
     ZeroMemory(&ci, sizeof(ci));
     ci.cbSize = sizeof(ci);
@@ -1038,8 +1035,6 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt)
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggroupd", 1))
-        UpdateWindow(GetDlgItem(hwndDlg, IDC_LOG));
     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
     EnableWindow(GetDlgItem(hwndDlg, IDC_QUOTE), dat->hDbEventLast != NULL);

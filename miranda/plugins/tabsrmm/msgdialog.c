@@ -122,7 +122,7 @@ extern HBITMAP g_hbmUnknown;
 extern char *szWarnClose;
 extern HMENU g_hMenuEncoding;
 
-static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus);
+static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat);
 static int CheckValidSmileyPack(char *szProto, HICON *icon);
 static void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode);
 static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon);
@@ -145,6 +145,7 @@ static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat);
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId);
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
 static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
+void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -269,7 +270,6 @@ static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cContr
 static void SetDialogToType(HWND hwndDlg)
 {
     struct MessageWindowData *dat;
-    int iWantStatusbar = 0;
     HICON hButtonIcon = 0;
     int nrSmileys = 0;
     int showInfo, showButton, showSend;
@@ -337,7 +337,7 @@ static void SetDialogToType(HWND hwndDlg)
     EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
     
     if(dat->pContainer->hwndActive == hwndDlg)
-        UpdateReadChars(hwndDlg, dat->pContainer->hwndStatus);
+        UpdateReadChars(hwndDlg, dat);
 
     {
         TCHAR szSendLabel[50];
@@ -450,11 +450,17 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
             }
 
             if(dat->hContactPic == 0)
-                dat->hContact = g_hbmUnknown;
+                dat->hContactPic = g_hbmUnknown;
             else {
                 GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
-                if (bminfo.bmWidth>maxImageSizeX || bminfo.bmWidth<=0 || bminfo.bmHeight<=0 || bminfo.bmHeight>maxImageSizeY) 
-                    isNoPic=TRUE;
+                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
+                    if (bminfo.bmWidth <= 0 || bminfo.bmHeight <= 0) 
+                        isNoPic=TRUE;
+                }
+                else  {
+                    if (bminfo.bmWidth>maxImageSizeX || bminfo.bmWidth<=0 || bminfo.bmHeight<=0 || bminfo.bmHeight>maxImageSizeY) 
+                        isNoPic=TRUE;
+                }
             }
             if (isNoPic) {
                 _DebugPopup(dat->hContact, "%s %s", dbv.pszVal, Translate("has either a wrong size (max 150 x 150) or is not a recognized image file"));
@@ -937,14 +943,14 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
 
-static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
+static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    if (hwndStatus && SendMessage(hwndStatus, SB_GETPARTS, 0, 0) == 4) {
+    if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) == 4) {
         TCHAR buf[128];
         int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
-        _sntprintf(buf, sizeof(buf), _T("%d"), len);
-        SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM) buf);
+        _sntprintf(buf, sizeof(buf), _T("%d/%d"), dat->iSendJobCurrent, len);
+        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
     }
 }
 
@@ -1377,7 +1383,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     					{
     						int len = GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE));
                             if(dat->pContainer->hwndActive == hwndDlg)
-                                UpdateReadChars(hwndDlg, dat->pContainer->hwndStatus);
+                                UpdateReadChars(hwndDlg, dat);
                             UpdateSaveAndSendButton(hwndDlg, dat);
     					}
     				}
@@ -1450,6 +1456,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
+                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR)
+                    SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
                 if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
                     dat->pContainer->dwFlags &= ~CNT_CREATE_MINIMIZED;
@@ -1544,6 +1552,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0) ? MWF_SHOW_INOUTICONS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 0) ? MWF_SHOW_EMPTYLINEFIX : 0;
+
+            dat->iButtonBarNeeds = (dat->showUIElements & MWF_UI_SHOWSEND) ? 40 : 0;
+            dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWBUTTON ? (dat->doSmileys ? 180 : 154) : 0);
+            dat->iButtonBarNeeds += (dat->showUIElements & MWF_UI_SHOWINFO) ? 25 : 0;
             
             if(dat->dwFlags & MWF_LOG_GRID)
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1,1));     // XXX margins in the log (looks slightly better)
@@ -1863,7 +1875,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 urd.lParam = (LPARAM) dat;
                 urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSGSPLITNEW);
                 urd.pfnResizer = MessageDialogResize;
+                BITMAP bminfo;
 
+                if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR && dat->hContactPic != 0) {
+                    GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
+                    CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
+                }
                 if (dat->uMinHeight > 0 && HIWORD(lParam) >= dat->uMinHeight) {
                     if (dat->splitterY > HIWORD(lParam) - MINLOGHEIGHT) {
                         dat->splitterY = HIWORD(lParam) - MINLOGHEIGHT;
@@ -1882,11 +1899,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
-            // The statusbar sometimes draws over these 2 controls so 
-            // redraw them
-                RedrawWindow(GetDlgItem(hwndDlg, IDC_NAME), NULL, NULL, RDW_INVALIDATE);        // force redraw for this control
-                RedrawWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), NULL, NULL, RDW_INVALIDATE);        // force redraw for this control
-				RedrawWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), NULL, NULL, RDW_INVALIDATE);        // force redraw for this control
 #ifdef __MATHMOD_SUPPORT    			
                 //mathMod begin
     			{
@@ -2313,7 +2325,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                                 SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                                 if(dat->pContainer->hwndActive == hwndDlg)
-                                    UpdateReadChars(hwndDlg, dat->pContainer->hwndStatus);
+                                    UpdateReadChars(hwndDlg, dat);
                                 SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_buttonBarIcons[6]);
                                 SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                                 dat->dwFlags &= ~MWF_SAVEBTN_SAV;
@@ -2481,23 +2493,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if((dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT) && !(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) && bminfo.bmHeight > (LONG)iMaxHeight) {
                 double aspect = (double)iMaxHeight / (double)bminfo.bmHeight;
                 double newWidth = (double)bminfo.bmWidth * aspect;
-
                 dat->pic.cy = iMaxHeight + 2*1;
                 dat->pic.cx = (int)newWidth + 2*1;
             }
             else if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
-                double aspect = 0, newWidth = 0;
-                
-                if(dat->dynaSplitter < dat->bottomOffset)
-                    dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2);
-                else
-                    dat->iRealAvatarHeight = dat->dynaSplitter;
-
-                aspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
-                newWidth = (double)bminfo.bmWidth * aspect;
-
-                dat->pic.cy = dat->iRealAvatarHeight + 2*1;
-                dat->pic.cx = (int)newWidth + 2*1;
+                CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
             }
             else {
                 dat->pic.cx=bminfo.bmWidth+2*1;
@@ -2517,6 +2517,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 int iOffset = 0;
                 
                 if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
+                    dat->bottomOffset = dat->dynaSplitter + 100;
+                    break;
                     if(dat->hContactPic) {
                         BITMAP bminfo;
                         int iMaxHeight = 0;
@@ -2652,15 +2654,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_DRAWITEM:
             {
                 LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-                if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
-                    if (dat->szProto) {
-                        HICON hIcon;
-
-                        hIcon = LoadSkinnedProtoIcon(dat->szProto, dat->wStatus);
-                        if (hIcon)
-                            DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
-                    }
-                } else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
+                if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
                     DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, g_buttonBarIcons[5], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
                 } else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && dat->hContactPic && dat->showPic) {
                     HPEN hPen;
@@ -2671,8 +2665,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     iMaxHeight = DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100);
                     GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
                     if(dat->dwFlags & MWF_LOG_DYNAMICAVATAR) {
+                        RECT rc;
+
+                        GetClientRect(hwndDlg, &rc);
                         dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
                         dNewWidth = (double)bminfo.bmWidth * dAspect;
+                        if(dNewWidth > (double)(rc.right - rc.left) * 0.8)
+                            dNewWidth = (double)(rc.right - rc.left) * 0.8;
                         iMaxHeight = dat->iRealAvatarHeight;
                     }
                     else if(dat->dwFlags & MWF_LOG_LIMITAVATARHEIGHT && bminfo.bmHeight > (LONG)iMaxHeight) {
@@ -2950,16 +2949,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 case IDC_HISTORY:
                     // OnO: RTF log
-                    if(GetKeyState(VK_SHIFT) & 0x8000)
-                    {
-                        EDITSTREAM stream = { 0 };
-                        stream.dwCookie = (DWORD_PTR)dat;
-                        stream.dwError = 0;
-                        stream.pfnCallback = StreamOut;
-                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
-                    }
-                    else
-                        CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
+                    CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
                     break;
                 case IDC_DETAILS:
                     CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) dat->hContact, 0);
@@ -3143,7 +3133,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #endif                    
                     if (HIWORD(wParam) == EN_CHANGE) {
                         if(dat->pContainer->hwndActive == hwndDlg)
-                            UpdateReadChars(hwndDlg, dat->pContainer->hwndStatus);
+                            UpdateReadChars(hwndDlg, dat);
                         dat->dwFlags |= MWF_NEEDHISTORYSAVE;
 
                         UpdateSaveAndSendButton(hwndDlg, dat);
@@ -3710,6 +3700,36 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             return 0;
             break;
+        /*
+         * save the contents of the log as rtf file
+         */
+        case DM_SAVEMESSAGELOG:
+        {
+            char szFilename[MAX_PATH];
+            OPENFILENAMEA ofn={0};
+            EDITSTREAM stream = { 0 };
+            char szFilter[MAX_PATH];
+            
+            strncpy(szFilter, "Rich Edit file_*.rtf", MAX_PATH);
+            szFilter[14] = '\0';
+            strncpy(szFilename, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0), MAX_PATH);
+            strncat(szFilename, ".rtf", MAX_PATH);
+            ofn.lStructSize=sizeof(ofn);
+            ofn.hwndOwner=hwndDlg;
+            ofn.lpstrFile = szFilename;
+            ofn.lpstrFilter = szFilter;
+            ofn.lpstrInitialDir = "rtflogs";
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_HIDEREADONLY;
+            ofn.lpstrDefExt = "rtf";
+            if (GetSaveFileNameA(&ofn)) {
+                stream.dwCookie = (DWORD_PTR)szFilename;
+                stream.dwError = 0;
+                stream.pfnCallback = StreamOut;
+                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
+            }
+            break;
+        }
 // BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:
 		{	
@@ -4050,13 +4070,9 @@ TCHAR *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes)
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {                                                                                                        
     HANDLE hFile;
-    char szName[256];
 
-    struct MessageWindowData *dat = (struct MessageWindowData *)dwCookie;
-    
-    _snprintf(szName, 255, "rtflogs\\%s.rtf", (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0));
-    
-    if(( hFile = CreateFileA(szName, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE )      
+    char *szFilename = (char *)dwCookie;
+    if(( hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE )      
     {                                                                                                    
         SetFilePointer(hFile, 0, NULL, FILE_END);                                                        
         WriteFile(hFile, pbBuff, cb, pcb, NULL);                                                         
@@ -4102,10 +4118,9 @@ static int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
     EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
-    if(dat->pContainer->hwndActive == hwndDlg) {
+    if(dat->pContainer->hwndActive == hwndDlg)
         UpdateUnsentDisplay(hwndDlg, dat);
-        UpdateReadChars(hwndDlg, dat->pContainer->hwndStatus);
-    }
+
     UpdateSaveAndSendButton(hwndDlg, dat);
     
     if(dat->iSendJobCurrent == 1)
@@ -4238,10 +4253,11 @@ static void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSe
 static void UpdateUnsentDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 2) {
-        char buf[128];
+        TCHAR buf[128];
+        int len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
-        _snprintf(buf, sizeof(buf), Translate("%d Unsent"), dat->iSendJobCurrent);
-        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
+        _sntprintf(buf, sizeof(buf), _T("%d/%d"), dat->iSendJobCurrent, len);
+        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
     }
 }
 
@@ -4449,7 +4465,7 @@ static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
-        UpdateReadChars(hwndDlg, dat->pContainer->hwndStatus);
+        UpdateReadChars(hwndDlg, dat);
         UpdateUnsentDisplay(hwndDlg, dat);
     }
 }
@@ -4735,4 +4751,35 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     return 0;
 }
 
+void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo)
+{
+    RECT rc;
+    double aspect = 0, newWidth = 0, picAspect = 0;
+    double picProjectedWidth = 0;
+    int infospace = 0;
+    
+    GetClientRect(hwndDlg, &rc);
+    if(dat->showUIElements & MWF_UI_SHOWINFO) {
+        RECT rcname;
+        GetClientRect(GetDlgItem(hwndDlg, IDC_NAME), &rcname);
+        infospace = (rcname.right - rcname.left) + 4;
+    }
+    picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
+    picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
 
+    if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds + infospace)) {
+        dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2);
+        dat->bottomOffset = dat->dynaSplitter + 100;
+    }
+    else {
+        dat->iRealAvatarHeight = dat->dynaSplitter;
+        dat->bottomOffset = -33;
+    }
+
+    aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
+    newWidth = (double)bminfo->bmWidth * aspect;
+    if(newWidth > (double)(rc.right - rc.left) * 0.8)
+        newWidth = (double)(rc.right - rc.left) * 0.8;
+    dat->pic.cy = dat->iRealAvatarHeight + 2*1;
+    dat->pic.cx = (int)newWidth + 2*1;
+}

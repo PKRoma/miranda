@@ -122,7 +122,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_SENDONENTER, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER));
             CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
             CheckDlgButton(hwndDlg, IDC_SHOWSENDBTN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON));
-            CheckDlgButton(hwndDlg, IDC_CHARCOUNT, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT));
             CheckDlgButton(hwndDlg, IDC_DEBUGPOPUPS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "debuginfo", 0));
             CheckDlgButton(hwndDlg, IDC_USEDIVIDERS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0));
             CheckDlgButton(hwndDlg, IDC_AUTOSWITCHTABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0));
@@ -192,7 +191,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONENTER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STATUSWIN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDBUTTON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSENDBTN));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_CHARCOUNT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CHARCOUNT));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "debuginfo", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DEBUGPOPUPS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usedividers", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USEDIVIDERS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSWITCHTABS));
@@ -282,7 +280,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_IGNORECONTACTSETTINGS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 1));
             CheckDlgButton(hwndDlg, IDC_LOGHOTKEYS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0));
             CheckDlgButton(hwndDlg, IDC_AGGRESSIVEUPDATE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggroupd", 1));
-            CheckDlgButton(hwndDlg, IDC_THINSEPARATORS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "thingrid", 0));
             
             SetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), FALSE);
             SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
@@ -370,7 +367,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_INOUTICONS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EMPTYLINEFIX));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "aggroupd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AGGRESSIVEUPDATE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "thingrid", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_THINSEPARATORS));
                             
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
                             return TRUE;
