@@ -45,15 +45,12 @@ static void GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour)
 {
 	SystemParametersInfo(SPI_GETICONTITLELOGFONT,sizeof(LOGFONT),lf,FALSE);
 	*colour=GetSysColor(COLOR_WINDOWTEXT);
+	lf->lfHeight=8;
 	switch(i) {
-		case FONTID_CONTACTS:
-			lf->lfHeight=8;
-			break;
 		case FONTID_GROUPS:
 			lf->lfWeight=FW_BOLD;
 			break;
 		case FONTID_GROUPCOUNTS:
-			lf->lfHeight=(int)(lf->lfHeight*.75);
 			*colour=GetSysColor(COLOR_3DSHADOW);
 			break;
 		case FONTID_OFFINVIS:
@@ -61,7 +58,6 @@ static void GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour)
 			lf->lfItalic=!lf->lfItalic;
 			break;
 		case FONTID_DIVIDERS:
-			lf->lfHeight=(int)(lf->lfHeight*.75);
 			break;
 		case FONTID_NOTONLIST:
 			*colour=GetSysColor(COLOR_3DSHADOW);
