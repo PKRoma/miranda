@@ -36,7 +36,6 @@
 
 #include "icqoscar.h"
 
-
 extern int gbIdleAllow;
 extern int gnCurrentStatus;
 extern int icqGoingOnlineStatus;
@@ -55,16 +54,19 @@ extern char* migratedServer;
 int isMigrating;
 extern char gpszICQProtoName[MAX_PATH];
 
+void setUserInfo();
+
+char* calcMD5Hash(char* szFile);
+
+
 void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
-
   icq_packet packet;
-
 
   switch (pSnacHeader->wSubtype)
   {
 
-	case ICQ_SERVER_READY:
+  case ICQ_SERVER_READY:
 #ifdef _DEBUG
 		Netlib_Logf(ghServerNetlibUser, "Server is ready and is requesting my Family versions");
 		Netlib_Logf(ghServerNetlibUser, "Sending my Families");
@@ -445,8 +447,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     {
       switch (pBuffer[2])
       {
-        case 1:
-        { // informational packet, just store the hash
+        case 1: // our avatar is on the server, store hash
+        {
           int dummy;
           cws.szModule = gpszICQProtoName;
           cws.szSetting = "AvatarHash";
@@ -454,13 +456,78 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           cws.value.pbVal = pBuffer;
           cws.value.cpbVal = 0x14;
           dummy = CallService(MS_DB_CONTACT_WRITESETTING, 0, (LPARAM)&cws);
+          
+          // TODO: here we need to find a file, check its hash, if invalid get avatar from server
+          // TODO: check if we had set any avatar if yes set our, if not download from server
 
           break;
         }
         case 0x41: // request to upload avatar data
         case 0x81:
         { // request to re-upload avatar data
-          Netlib_Logf(ghServerNetlibUser, "We are requested to post our avatar data.");
+          DBVARIANT dbv;
+          char* hash;
+
+          if (!gbSsiEnabled) break; // we could not change serv-list if it is disabled...
+
+          if (DBGetContactSetting(NULL, gpszICQProtoName, "AvatarFile", &dbv))
+          { // we have no file to upload, remove hash from server
+            Netlib_Logf(ghServerNetlibUser, "We do not have avatar, removing hash.");
+            updateServAvatarHash(NULL);
+
+            break;
+          }
+          hash = calcMD5Hash(dbv.pszVal);
+          if (!hash)
+          { // the hash could not be calculated, remove from server
+            Netlib_Logf(ghServerNetlibUser, "We could not obtain hash, removing hash.");
+            updateServAvatarHash(NULL);
+          }
+          else if (!memcmp(hash, pBuffer+4, 0x10))
+          { // we have the right file
+            HANDLE hFile = NULL, hMap = NULL;
+            BYTE* ppMap = NULL;
+            long cbFileSize = 0;
+
+            Netlib_Logf(ghServerNetlibUser, "Uploading our avatar data.");
+
+            if ((hFile = CreateFile(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
+              if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
+                if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
+                  cbFileSize = GetFileSize( hFile, NULL );
+
+            if (cbFileSize != 0)
+            {
+              SetAvatarData(NULL, ppMap, cbFileSize);
+            }
+
+            if (ppMap != NULL) UnmapViewOfFile(ppMap);
+            if (hMap  != NULL) CloseHandle(hMap);
+            if (hFile != NULL) CloseHandle(hFile);
+            SAFE_FREE(&hash);
+          }
+          else
+          {
+            char* pHash = malloc(0x12);
+            if (pHash)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Our file is different, set our new hash.");
+
+              pHash[0] = 1; // state of the hash
+              pHash[1] = 0x10; // len of the hash
+              memcpy(pHash+2, hash, 0x10);
+              updateServAvatarHash(pHash);
+              SAFE_FREE(&pHash);
+            }
+            else
+            {
+              Netlib_Logf(ghServerNetlibUser, "We could not set hash, removing hash.");
+              updateServAvatarHash(NULL);
+            }
+            SAFE_FREE(&hash);
+          }
+
+          DBFreeVariant(&dbv);
           break;
         }
       }
@@ -492,6 +559,43 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 }
 
+
+
+char* calcMD5Hash(char* szFile)
+{
+  md5_state_t state;
+  md5_byte_t digest[16];
+
+  if (szFile)
+  {
+    HANDLE hFile = NULL, hMap = NULL;
+    BYTE* ppMap = NULL;
+    long cbFileSize = 0;
+    char* res;
+
+    if ((hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
+      if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
+        if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
+          cbFileSize = GetFileSize( hFile, NULL );
+
+    res = malloc(16*sizeof(char));
+    if (cbFileSize != 0 && res)
+    {
+      md5_init(&state);
+      md5_append(&state, (const md5_byte_t *)ppMap, cbFileSize);
+      md5_finish(&state, digest);
+      memcpy(res, digest, 16);
+    }
+
+    if (ppMap != NULL) UnmapViewOfFile(ppMap);
+    if (hMap  != NULL) CloseHandle(hMap);
+    if (hFile != NULL) CloseHandle(hFile);
+
+    if (res) return res;
+  }
+  
+  return NULL;
+}
 
 
 static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
@@ -615,102 +719,111 @@ void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 
 
 
+void setUserInfo()
+{ // CLI_SETUSERINFO
+
+  icq_packet packet;
+  WORD wAdditionalData = 0;
+
+  if (gbAimEnabled)
+    wAdditionalData += 16;
+#ifdef DBG_CAPMTN
+  wAdditionalData += 16;
+#endif
+#ifdef DBG_CAPCH2
+  wAdditionalData += 16;
+#endif
+#ifdef DBG_CAPRTF
+  wAdditionalData += 16;
+#endif
+#ifdef DBG_CAPUTF
+  wAdditionalData += 16;
+#endif
+#ifdef DBG_CAPXTRAZ
+  wAdditionalData += 16;
+#endif
+#ifdef DBG_CAPAVATAR
+  wAdditionalData += 16;
+#endif
+
+  packet.wLen = 30 + wAdditionalData;
+  write_flap(&packet, 2);
+  packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, ICQ_LOCATION_SET_USER_INFO<<0x10);
+
+  /* TLV(5): capability data */
+  packWord(&packet, 0x0005);
+  packWord(&packet, (WORD)(16 + wAdditionalData));
+
+
+#ifdef DBG_CAPMTN
+  {
+    packDWord(&packet, 0x563FC809);
+    packDWord(&packet, 0x0B6F41BD);
+    packDWord(&packet, 0x9F794226);
+    packDWord(&packet, 0x09DFA2F3);
+  }
+#endif
+#ifdef DBG_CAPCH2
+  {
+    packDWord(&packet, 0x09461349); // AIM_CAPS_ICQSERVERRELAY
+    packDWord(&packet, 0x4c7f11d1);
+    packDWord(&packet, 0x82224445);
+    packDWord(&packet, 0x53540000);
+  }
+#endif
+#ifdef DBG_CAPRTF
+  {
+    packDWord(&packet, 0x97B12751);	// AIM_CAPS_ICQRTF
+    packDWord(&packet, 0x243C4334); // Broadcasts the capability to receive
+    packDWord(&packet, 0xAD22D6AB); // RTF messages
+    packDWord(&packet, 0xF73F1492);
+  }
+#endif
+#ifdef DBG_CAPUTF
+  {
+    packDWord(&packet, 0x0946134e);	// CAP_UTF8MSGS
+    packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to receive
+    packDWord(&packet, 0x82224445); // UTF8 encoded messages
+    packDWord(&packet, 0x53540000);
+  }
+#endif
+#ifdef DBG_CAPXTRAZ
+  {
+    packDWord(&packet, 0x1a093c6c);	// CAP_XTRAZ
+    packDWord(&packet, 0xd7fd4ec5); // Broadcasts the capability to handle
+    packDWord(&packet, 0x9d51a647); // Xtraz
+    packDWord(&packet, 0x4e34f5a0);
+  }
+#endif
+#ifdef DBG_CAPAVATAR
+  {
+    packDWord(&packet, 0x0946134c);	// CAP_AVATAR
+    packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to provide
+    packDWord(&packet, 0x82224445); // Avatar
+    packDWord(&packet, 0x53540000);
+  }
+#endif
+  if (gbAimEnabled)
+  {
+    packDWord(&packet, 0x0946134D); // Tells the server we can speak to AIM
+    packDWord(&packet, 0x4C7F11D1); // This also change how permit/deny lists work
+    packDWord(&packet, 0x82224445);
+    packDWord(&packet, 0x53540000);
+  }
+  packDWord(&packet, 0x09461344); // AIM_CAPS_ICQ
+  packDWord(&packet, 0x4c7f11d1);
+  packDWord(&packet, 0x82224445);
+  packDWord(&packet, 0x53540000);
+
+  sendServPacket(&packet);
+}
+
+
 void handleServUINSettings(int nPort, int nIP)
 {
+  icq_packet packet;
 
-	icq_packet packet;
-
-
-	// CLI_SETUSERINFO
-	{
-
-		WORD wAdditionalData = 0;
-
-
-		if (gbAimEnabled)
-			wAdditionalData += 16;
-#ifdef DBG_CAPMTN
-		wAdditionalData += 16;
-#endif
-#ifdef DBG_CAPCH2
-		wAdditionalData += 16;
-#endif
-#ifdef DBG_CAPRTF
-		wAdditionalData += 16;
-#endif
-#ifdef DBG_CAPUTF
-		wAdditionalData += 16;
-#endif
-#ifdef DBG_CAPAVATAR
-		wAdditionalData += 16;
-#endif
-
-
-		packet.wLen = 30 + wAdditionalData;
-		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_LOCATION_FAMILY, 0x04, 0, 0x040000);
-
-		/* TLV(5): capability data */
-		packWord(&packet, 0x0005);
-		packWord(&packet, (WORD)(16 + wAdditionalData));
-
-
-#ifdef DBG_CAPMTN
-        {
-			packDWord(&packet, 0x563FC809);
-			packDWord(&packet, 0x0B6F41BD);
-			packDWord(&packet, 0x9F794226);
-			packDWord(&packet, 0x09DFA2F3);
-        }
-#endif
-#ifdef DBG_CAPCH2
-		{
-			packDWord(&packet, 0x09461349); // AIM_CAPS_ICQSERVERRELAY
-			packDWord(&packet, 0x4c7f11d1);
-			packDWord(&packet, 0x82224445);
-			packDWord(&packet, 0x53540000);
-		}
-#endif
-#ifdef DBG_CAPRTF
-		{
-			packDWord(&packet, 0x97B12751);	// AIM_CAPS_ICQRTF
-			packDWord(&packet, 0x243C4334); // Broadcasts the capability to receive
-			packDWord(&packet, 0xAD22D6AB); // RTF messages
-			packDWord(&packet, 0xF73F1492);
-		}
-#endif
-#ifdef DBG_CAPUTF
-		{
-			packDWord(&packet, 0x0946134e);	// CAP_UTF8MSGS
-			packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to receive
-			packDWord(&packet, 0x82224445); // UTF8 encoded messages
-			packDWord(&packet, 0x53540000);
-		}
-#endif
-#ifdef DBG_CAPAVATAR
-		{
-			packDWord(&packet, 0x0946134c);	// CAP_EXTRAZ
-			packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to receive
-			packDWord(&packet, 0x82224445); // Buddy Avatars
-			packDWord(&packet, 0x53540000);
-		}
-#endif
-		if (gbAimEnabled)
-		{
-			packDWord(&packet, 0x0946134D); // Tells the server we can speak to AIM
-			packDWord(&packet, 0x4C7F11D1); // This also change how permit/deny lists work
-			packDWord(&packet, 0x82224445);
-			packDWord(&packet, 0x53540000);
-		}
-		packDWord(&packet, 0x09461344); // AIM_CAPS_ICQ
-		packDWord(&packet, 0x4c7f11d1);
-		packDWord(&packet, 0x82224445);
-		packDWord(&packet, 0x53540000);
-
-		sendServPacket(&packet);
-
-	}
-
+  setUserInfo();
 
 	// Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
 	packet.wLen = 26;
@@ -828,7 +941,7 @@ void handleServUINSettings(int nPort, int nIP)
 		packDWord(&packet, WEBFRONTPORT);   // Web front port
 		packDWord(&packet, CLIENTFEATURES); // Client features
 		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x80030403);     // Abused timestamp
+		packDWord(&packet, 0x80030404);     // Abused timestamp
 		packDWord(&packet, 0x00000000);     // Timestamp
 		packWord(&packet, 0x0000);          // Unknown
 

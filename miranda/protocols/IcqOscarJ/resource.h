@@ -24,7 +24,9 @@
 #define IDC_SUPTIME                     1020
 #define IDC_                            1021
 #define IDC_ICQNUM                      1022
-#define IDC_AVATAR                      1022
+#define IDC_AVATAR                      1023
+#define IDC_SETAVATAR                   1024
+#define IDC_DELETEAVATAR                1025
 #define IDC_CLIST                       1035
 #define IDC_EMAIL                       1048
 #define IDC_NICK                        1053
@@ -106,9 +108,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        107
+#define _APS_NEXT_RESOURCE_VALUE        108
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1023
+#define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

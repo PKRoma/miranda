@@ -573,7 +573,6 @@ void ResetSettingsOnConnect()
 	HANDLE hContact;
 	char *szProto;
 
-
 	// Reset a bunch of session specific settings
 //	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvDefGroupId", 0);
   DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);

@@ -152,7 +152,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,4,3
+ FILEVERSION 0,3,4,4
  PRODUCTVERSION 0,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -171,9 +171,9 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 4, 3\0"
+            VALUE "FileVersion", "0, 3, 4, 4\0"
             VALUE "InternalName", "ICQ protocol plugin for Miranda IM (Joe)\0"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2005 Martin Öberg, Richard Hughes, Jon Keating\0"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2005 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ICQ.dll\0"
             VALUE "PrivateBuild", "\0"
@@ -361,6 +361,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_AVATAR,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_SUNKEN,8,8,131,116
+    PUSHBUTTON      "Set",IDC_SETAVATAR,154,90,58,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Delete",IDC_DELETEAVATAR,154,108,58,14,NOT WS_VISIBLE
 END
 
 
@@ -432,7 +434,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 IDD_OPT_ICQ DIALOGEX 0, 0, 281, 234
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "ICQ",IDC_STICQGROUP,4,4,273,95
     RTEXT           "ICQ number:",IDC_STATIC11,12,19,51,8

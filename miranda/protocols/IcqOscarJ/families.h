@@ -85,6 +85,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 #define BUL_INVISIBLE     2
 void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType);
 void updateServVisibilityCode(BYTE bCode);
+void updateServAvatarHash(char* pHash);
 void sendAddStart(void);
 void sendAddEnd(void);
 DWORD renameServContact(HANDLE hContact, const char *szNick);

@@ -48,6 +48,7 @@ typedef struct avatarthreadstartinfo_t
   int stopThread; // horrible, but simple - signal for thread to stop
   WORD wLocalSequence;
   CRITICAL_SECTION localSeqMutex;
+  int pendingLogin;
 } avatarthreadstartinfo;
 
 typedef struct avatarcookie_t
@@ -74,7 +75,7 @@ typedef struct avatarrequest_t
 
 avatarthreadstartinfo* currentAvatarThread; 
 int pendingAvatarsStart = 1;
-static int pendingLogin = 0;
+//static int pendingLogin = 0;
 avatarrequest* pendingRequests = NULL;
 
 extern CRITICAL_SECTION cookieMutex;
@@ -132,7 +133,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
 
     return;
   }
-  if (pendingLogin)
+  if (currentAvatarThread && currentAvatarThread->pendingLogin) // this is not safe...
   {
     Netlib_Logf(ghServerNetlibUser, "Avatar, Multiple start thread attempt, ignored.");
     Netlib_CloseHandle(hConn);
@@ -140,10 +141,10 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
     return;
   }
   
-  pendingLogin = 1;
   AvatarsReady = FALSE; // the old connection should not be used anymore
 
   atsi = (avatarthreadstartinfo*)malloc(sizeof(avatarthreadstartinfo));
+  atsi->pendingLogin = 1;
   atsi->stopThread = 0; // we want thread to run
   // Randomize sequence
   atsi->wLocalSequence = (WORD)RandRange(0, 0x7fff);
@@ -259,7 +260,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
 }
 
 // upload avatar data to server
-static int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
+int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 { 
   avatarthreadstartinfo* atsi;
 
@@ -436,7 +437,6 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
   {
     AvatarsReady = FALSE; // we are not ready
     pendingAvatarsStart = 0;
-    pendingLogin = 0;
     currentAvatarThread = NULL; // this is horrible, rewrite
   }
   SAFE_FREE(&atsi);
@@ -679,7 +679,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     
     AvatarsReady = TRUE; // we are ready to process requests
     pendingAvatarsStart = 0;
-    pendingLogin = 0;
+    atsi->pendingLogin = 0;
 
     Netlib_Logf(ghServerNetlibUser, " *** Yeehah, avatar login sequence complete");
     break;
@@ -797,6 +797,8 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           Netlib_Logf(ghServerNetlibUser, "Warning: Received unexpected Upload Avatar Reply SNAC(x10,x03).");
         }
       }
+      else if (res)
+        Netlib_Logf(ghServerNetlibUser, "Error uploading avatar to server, #%d", res);
       else
         Netlib_Logf(ghServerNetlibUser, "Received invalid upload avatar ack.");
 

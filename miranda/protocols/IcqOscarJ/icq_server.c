@@ -48,6 +48,7 @@ extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
 HANDLE hServerConn;
 DWORD dwLocalInternalIP, dwLocalExternalIP;
+int gtOnlineSince = 0;
 WORD wListenPort;
 WORD wLocalSequence;
 DWORD dwLocalDirectConnCookie;
@@ -62,19 +63,18 @@ static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted
 
 static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 {
+  serverthread_start_info info;
 
-	serverthread_start_info info;
+  info = *infoParam;
+  SAFE_FREE(&infoParam);
 
+  srand(time(NULL));
 
-	info = *infoParam;
-	SAFE_FREE(&infoParam);
+  dwLocalDirectConnCookie = rand() ^ (rand() << 16);
 
-	srand(time(NULL));
+  ResetSettingsOnConnect();
 
-	dwLocalDirectConnCookie = rand() ^ (rand() << 16);
-
-	ResetSettingsOnConnect();
-
+  gtOnlineSince = time(NULL);
 
 	// Connect to the login server
 	Netlib_Logf(ghServerNetlibUser, "Authenticating to server");
@@ -129,19 +129,16 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 	}
 
 
-	// This is the "infinite" loop that receives the packets from the ICQ server
-	{
+  // This is the "infinite" loop that receives the packets from the ICQ server
+  {
+    int recvResult;
+    NETLIBPACKETRECVER packetRecv = {0};
 
-		int recvResult;
-		NETLIBPACKETRECVER packetRecv = {0};
-
-
-		hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
-		packetRecv.cbSize = sizeof(packetRecv);
-		packetRecv.dwTimeout = INFINITE;
-		for(;;)
-		{
-
+    hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
+    packetRecv.cbSize = sizeof(packetRecv);
+    packetRecv.dwTimeout = INFINITE;
+    for(;;)
+    {
 			recvResult = CallService(MS_NETLIB_GETMOREPACKETS,(WPARAM)hServerPacketRecver, (LPARAM)&packetRecv);
 
 			if (recvResult == 0)
@@ -168,8 +165,6 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 	}
 
-
-
 	// Time to shutdown
 	icq_serverDisconnect();
 	if (gnCurrentStatus != ID_STATUS_OFFLINE)
@@ -180,6 +175,8 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
 			(HANDLE)oldStatus, gnCurrentStatus);
 	}
+
+  gtOnlineSince = 0;
 
 	// Offline all contacts
 	{
