@@ -63,7 +63,9 @@ static char *szGroupedSeparator = "> ";
 extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
-extern int FormatText(HWND REdit, unsigned npos, unsigned maxlength);
+#if defined(_UNICODE)
+    extern int FormatText(HWND REdit, unsigned npos, unsigned maxlength);
+#endif
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
 
@@ -513,12 +515,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         
     if ((dat->dwFlags & MWF_LOG_SHOWICONS) && g_groupBreak) {
         int i;
-        if((dat->dwEventIsShown & MWF_SHOW_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE) {
-            if(isSent)
-                i= LOGICON_OUT;
-            else
-                i= LOGICON_IN;
-        }
+        if((dat->dwEventIsShown & MWF_SHOW_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
+            i = isSent ? LOGICON_OUT : LOGICON_IN;
         else {
             switch (dbei.eventType) {
                 case EVENTTYPE_URL:
@@ -540,7 +538,30 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         }
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s  #~#%01d%c%s  ", rtfFonts[MSGDLGFONTCOUNT], i, isSent ? '>' : '<', rtfFonts[H_MSGFONTID_DIVIDERS]);
     }
-    //else;
+    else if(dat ->dwFlags & MWF_LOG_SYMBOLS && g_groupBreak) {
+        char c;
+        if((dat->dwEventIsShown & MWF_SHOW_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
+            c = isSent ? 0x37 : 0x38;
+        else {
+            switch(dbei.eventType) {
+                case EVENTTYPE_MESSAGE:
+                    c = 0xaa;
+                    break;
+                case EVENTTYPE_FILE:
+                    c = 0xcd;
+                    break;
+                case EVENTTYPE_URL:
+                    c = 0xfe;
+                    break;
+                case EVENTTYPE_STATUSCHANGE:
+                    c = 0x4e;
+                    break;
+                case EVENTTYPE_ERRMSG:
+                    c = 0x72;;
+            }
+        }
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %c%s ", rtfFonts[MSGFONTID_SYMBOLS], c, rtfFonts[H_MSGFONTID_DIVIDERS]);
+    }
         //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[H_MSGFONTID_DIVIDERS]);
     
 // underline
@@ -976,8 +997,11 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
     /*
      * do text formatting...
      */
+
+#if defined(_UNICODE)
     if(dat->dwFlags & MWF_LOG_TEXTFORMAT)
         FormatText(hwndrtf, startAt, 0);
+#endif
     
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
@@ -1080,17 +1104,17 @@ static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int g
  * return value is static
  */
 
-WCHAR *Utf8Decode(const char *str)
+TCHAR *Utf8Decode(const char *str)
 {
 	int i, len;
 	char *p;
-	static WCHAR *wszTemp;
+	static TCHAR *wszTemp;
 
 	if (str == NULL) return NULL;
 
 	len = strlen(str);
 
-    if ((wszTemp = (WCHAR *) realloc(wszTemp, sizeof(WCHAR) * (len + 1))) == NULL)
+    if ((wszTemp = (TCHAR *) realloc(wszTemp, sizeof(TCHAR) * (len + 1))) == NULL)
 		return NULL;
 	p = (char *) str;
 	i = 0;
@@ -1107,7 +1131,7 @@ WCHAR *Utf8Decode(const char *str)
 			wszTemp[i++] |= (*(p++) & 0x3f);
 		}
 	}
-	wszTemp[i] = (WCHAR)'\0';
+	wszTemp[i] = (TCHAR)'\0';
 	return wszTemp;
 }
 

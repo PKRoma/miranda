@@ -206,6 +206,19 @@ SOURCE=.\containeroptions.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\formatting.cpp
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /nologo /EHsc /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /nologo /EHsc /GX 
+!ENDIF
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\hotkeyhandler.c
 # End Source File
 # Begin Source File
@@ -443,15 +456,11 @@ SOURCE=res\Details8.ico
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\dragcopy.cur
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\src\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\res\dropuser.cur
+SOURCE=..\..\Miranda-IM\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
@@ -459,15 +468,19 @@ SOURCE=..\..\Miranda-IM\res\dropuser.cur
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\res\dropuser.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\error.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\angeli-icons\History.ico
+SOURCE=..\..\Miranda-IM\res\history.ico
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\history.ico
+SOURCE=.\res\angeli-icons\History.ico
 # End Source File
 # Begin Source File
 
@@ -591,11 +604,11 @@ SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\save.ico
+SOURCE=.\res\angeli-icons\Save.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\angeli-icons\Save.ico
+SOURCE=.\res\save.ico
 # End Source File
 # Begin Source File
 

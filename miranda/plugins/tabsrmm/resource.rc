@@ -291,13 +291,13 @@ BEGIN
     CONTROL         "Use in/out icons",IDC_INOUTICONS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,77,32,70,10
     CONTROL         "Show nicknames",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,43,138,10
+                    WS_TABSTOP,10,60,138,10
     CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,55,135,10
+                    WS_TABSTOP,10,72,135,10
     CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,20,66,61,10
+                    WS_TABSTOP,20,83,61,10
     CONTROL         "Show seconds",IDC_SHOWSECONDS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,88,66,59,10
+                    WS_TABSTOP,88,83,59,10
     GROUPBOX        "Other options",IDC_STATIC,154,0,149,94
     CONTROL         "Enable message log scrolling hotkeys",IDC_LOGHOTKEYS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,10,142,10
@@ -361,6 +361,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,130,144,10
     CONTROL         "Simple text formatting (*bold* etc.)",IDC_FORMATTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,58,142,11
+    CONTROL         "Use symbols instead of icons",IDC_SYMBOLS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,44,134,8
+    LTEXT           "(needs Webdings font installed)",IDC_STATIC,20,52,121,9
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
@@ -534,27 +537,27 @@ BEGIN
     LTEXT           "as:",IDC_STASTEXT,34,46,45,10,SS_CENTERIMAGE
     COMBOBOX        IDC_SAMEAS,79,45,196,88,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    COMBOBOX        IDC_TYPEFACE,27,72,136,182,CBS_DROPDOWN | CBS_SORT | 
+    COMBOBOX        IDC_TYPEFACE,27,66,136,182,CBS_DROPDOWN | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_SCRIPT,171,72,60,68,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_SCRIPT,171,66,60,68,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    COMBOBOX        IDC_FONTSIZE,240,72,40,69,CBS_DROPDOWN | WS_VSCROLL | 
+    COMBOBOX        IDC_FONTSIZE,240,66,40,69,CBS_DROPDOWN | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "Bold",IDC_BOLD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,
-                    86,45,10
+                    80,45,10
     CONTROL         "Italic",IDC_ITALIC,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,80,86,52,10
+                    WS_TABSTOP,80,80,52,10
     CONTROL         "Underline",IDC_UNDERLINE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,132,86,66,10
-    CONTROL         "",IDC_COLOUR,"ColourPicker",WS_TABSTOP,221,85,59,12
-    EDITTEXT        IDC_SAMPLE,78,99,151,16,ES_CENTER | ES_READONLY | NOT 
+                    WS_TABSTOP,132,80,66,10
+    CONTROL         "",IDC_COLOUR,"ColourPicker",WS_TABSTOP,221,79,59,12
+    EDITTEXT        IDC_SAMPLE,78,93,151,16,ES_CENTER | ES_READONLY | NOT 
                     WS_TABSTOP
     LTEXT           "Extra microspacing at the end of a paragraph",
-                    IDC_STATIC,28,120,157,10
-    EDITTEXT        IDC_EXTRAMICROLF,199,118,36,13,ES_AUTOHSCROLL | 
+                    IDC_STATIC,28,114,157,10
+    EDITTEXT        IDC_EXTRAMICROLF,199,112,36,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_EXTRALFSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,235,119,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,235,113,
                     12,11
     GROUPBOX        "Background Colors",IDC_STATIC,0,150,303,72
     LTEXT           "Default background",IDC_STATIC,15,165,81,8

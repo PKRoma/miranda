@@ -33,6 +33,8 @@ Unicode version by Nightwish
 License: GPL
 */
 
+#if defined(UNICODE)
+
 #define __TSR_CXX
 #include "commonheaders.h"
 
@@ -126,7 +128,7 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 
     gtx.cb = (nleft + 1) * sizeof(wchar_t);
     gtx.codepage = 1200;
-    gtx.flags = GT_SELECTION;
+    gtx.flags = 2;
     gtx.lpDefaultChar = 0;
     gtx.lpUsedDefChar = 0;
 
@@ -145,7 +147,7 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 	unsigned p, opos = 0;
 	while ((p = old_text.find_first_of(L"/_*", opos)) != old_text.npos) {
 
-		std::wstring t_(old_text, p);
+		std::wstring t_(old_text.c_str(), p);
 		const wchar_t *what = t_.c_str();
         bool space_seen = false, sep_seen = false;
         unsigned searchoffs = p, epos;
@@ -241,4 +243,6 @@ extern "C" int FormatText(HWND REdit, unsigned npos, unsigned maxlength)
 
 	return npos;
 }
+
+#endif // _UNICODE
 

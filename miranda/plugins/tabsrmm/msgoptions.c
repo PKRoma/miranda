@@ -72,7 +72,7 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
 
     if (colour) {
         wsprintfA(str, "Font%dCol", i);
-        *colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, str, fontOptionsList[0].defColour);
+        *colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, str, GetSysColor(COLOR_WINDOWTEXT));
     }
     if (lf) {
         HDC hdc = GetDC(NULL);
@@ -330,6 +330,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_RELATIVEDATES, dwFlags & MWF_LOG_USERELATIVEDATES);
             CheckDlgButton(hwndDlg, IDC_INDENTWITHTABS, dwFlags & MWF_LOG_INDENTWITHTABS);
             CheckDlgButton(hwndDlg, IDC_FORMATTING, dwFlags & MWF_LOG_TEXTFORMAT);
+            CheckDlgButton(hwndDlg, IDC_SYMBOLS, dwFlags & MWF_LOG_SYMBOLS);
             
             CheckDlgButton(hwndDlg, IDC_EMPTYLINEFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1));
             CheckDlgButton(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1));
@@ -350,7 +351,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
             
             EnableWindow(GetDlgItem(hwndDlg, IDC_INOUTICONS), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
-            
+            EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOGICONS), !IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_SYMBOLS), !IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
             return TRUE;
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
@@ -364,7 +366,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     EnableWindow(GetDlgItem(hwndDlg, IDC_STMINSOLD), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
                     break;
                 case IDC_SHOWLOGICONS:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_INOUTICONS), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
+                case IDC_SYMBOLS:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_INOUTICONS), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS) || IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS));
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOGICONS), !IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS));
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_SYMBOLS), !IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
                     break;
                 case IDC_SHOWTIMES:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWDATES), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
@@ -410,6 +415,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                       (IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG) ? MWF_LOG_INDIVIDUALBKG : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_INDENTWITHTABS) ? MWF_LOG_INDENTWITHTABS : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_FORMATTING) ? MWF_LOG_TEXTFORMAT : 0) |
+                                      (IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS) ? MWF_LOG_SYMBOLS : 0) |
                                       (IsDlgButtonChecked(hwndDlg, IDC_SWAPTIMESTAMP) ? MWF_LOG_SWAPNICK : 0);
                             
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LOGHOTKEYS));
@@ -842,7 +848,8 @@ static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
         "* Message Input Area",
         "* Status changes",
         "* Dividers",
-        "* Error and warning Messages"};
+        "* Error and warning Messages",
+        "* Symbols"};
 
 #define FONTS_TO_CONFIG MSGDLGFONTCOUNT
 
@@ -882,7 +889,8 @@ static int fontListOrder[MSGDLGFONTCOUNT + 1] = {
     MSGFONTID_MESSAGEAREA,
     H_MSGFONTID_STATUSCHANGES,
     H_MSGFONTID_DIVIDERS,
-    MSGFONTID_ERROR};
+    MSGFONTID_ERROR,
+    MSGFONTID_SYMBOLS};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
 #define M_REMAKESAMPLE       (WM_USER+11)
@@ -1063,7 +1071,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                 SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
-
+                
                 SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SRMSGDEFSET_BKGCOLOUR));
@@ -1361,6 +1369,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", IsDlgButtonChecked(hwndDlg, IDC_WANTVERTICALGRID));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
+                                
                                 ReloadGlobals();
                                 UncacheMsgLogIcons();
                                 CacheMsgLogIcons();

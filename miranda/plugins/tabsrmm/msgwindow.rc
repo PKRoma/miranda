@@ -98,8 +98,8 @@ BEGIN
                     35,12
     CONTROL         "Send &Later",IDC_MSGSENDLATER,"MButtonClass",WS_TABSTOP,
                     106,10,45,12
-    LTEXT           "The message failed to send successfully.",
-                    IDC_STATICTEXT,27,1,150,7
+    LTEXT           "",
+                    IDC_STATICTEXT,27,1,160,7
     ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE |
                     WS_GROUP
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL |

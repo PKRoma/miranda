@@ -1050,7 +1050,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 						}
 						// convert string containing char in hex format to int.
 						// i'm sure there is a better way than this lame stuff that came out of me
-						p3 = InsertThis;
+                        /*
+                        p3 = InsertThis;
 						while (*p3)
 						{
 							if(*p3 == (TCHAR)'a')
@@ -1070,6 +1071,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 							p3++;
 						}
 						_sntprintf(InsertThis, sizeof(InsertThis), _T("%c"), iLame);
+                        */
 					}
 					else
 						iRemoveChars = 2;

@@ -118,6 +118,15 @@ Version 0.9.9.5 - 2005/02/02
           
         * unified all eventhooks - finally. 
         
+        + added simple text formatting routines for formatting *bold* /italic/ and _underline_ 
+          in the message log. The code was taken from the textformat plugin and adopted to
+          tabSRMM (unicode aware, some small changes)-
+          
+        * added message log options: "use symbols instead of icons". This will use symbols
+          from the webdings font for marking events in the message log, instead of drawing
+          icons. The advantage is that this is WAY faster and uses only a fraction of the
+          memory consumed by the icon code
+        
 Version 0.9.9.4 - 2005/01/24
 
         + added support for the snapping windows plugin. Yeah, even if I personally HATE
