@@ -1,6 +1,6 @@
 /* 
  * ICQ OSCAR Protocol Plugin for Miranda
- * Copyright (C) 2001 Jon Keating <jon@licq.org>
+ * Copyright (C) 2001-2 Jon Keating <jon@licq.org>
  *
  * All distributed forms of this file must retain this notice.
  *
@@ -32,7 +32,7 @@ PLUGININFO pluginInfo =
 	"The protocol used to communicate with the old ICQ servers.",
 	"Richard Hughes",
 	"cyreve@users.sourceforge.net",
-	"© 2001 Richard Hughes",
+	"© 2001-2 Richard Hughes",
 	"http://miranda-icq.sourceforge.net/",
 	0,
 	DEFMOD_PROTOCOLICQ

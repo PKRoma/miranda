@@ -1,6 +1,6 @@
 /*
 Miranda ICQ: the free icq client for MS Windows 
-Copyright (C) 2000-1  Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (C) 2000-2  Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -32,7 +32,7 @@ PLUGININFO pluginInfo={
 	"Adds support for communicating with users of the MSN Messenger network",
 	"Richard Hughes",
 	"miranda@rhughes.net",
-	"© 2001 Richard Hughes",
+	"© 2001-2 Richard Hughes",
 	"http://miranda-icq.sourceforge.net/",
 	0,
 	DEFMOD_PROTOCOLMSN
