@@ -25,6 +25,9 @@ Bugfixes:
   Group with subgroups was deleted if empty, that messed up subgroups
   Newly added contacts from server sometimes missed their group
   Offline messages are no longer received older than existing ones
+  Now will not try to add contacts to server, which are not ours
+  Divided server ids to groups - caused strange behaviour if id and group id were same
+  Other small fixes
 
 New features:
   Added avatar tab to user-details dialog to show avatar even without mToolTip
@@ -33,6 +36,7 @@ New features:
   Added support for uploading your own avatar image
 
 Improvements:
+  Rewritten Manage Server List dialog - now works perfectly (without sub-groups support)
   Added partial support for subgroups (supported: rename, move, parial: add)
   Added optional linking to mToolTip, link only if no image set
   Added workaround for QNext client (it is not capable of type2 msgs)
