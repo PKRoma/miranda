@@ -31,7 +31,6 @@ struct NewMessageWindowLParam {
 };
 
 struct MessageSendInfo {
-	HANDLE hContact;
 	HANDLE hSendId;
 };
 
@@ -66,6 +65,7 @@ struct MessageWindowData {
     int showIcons;
     int showDate;
     int hideNames;
+    char *szProto;
 };
 
 #define HM_EVENTSENT         (WM_USER+10)

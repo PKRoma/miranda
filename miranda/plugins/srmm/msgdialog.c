@@ -27,8 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define TIMERID_MSGSEND      0
 #define TIMERID_FLASHWND     1
-#define TIMERID_ANTIBOMB     2
-#define TIMERID_TYPE         3
+#define TIMERID_TYPE         2
 #define TIMEOUT_FLASHWND     900
 #define TIMEOUT_ANTIBOMB     4000       //multiple-send bombproofing: send max 3 messages every 4 seconds
 #define ANTIBOMB_COUNT       3
@@ -425,7 +424,6 @@ static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 
 static void NotifyTyping(struct MessageWindowData *dat, int mode)
 {
-    char *szProto;
     DWORD protoStatus;
     DWORD protoCaps;
     DWORD typeCaps;
@@ -439,20 +437,19 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
     // Don't send to users who are not on the visible list when you are in invisible mode.
     if (!DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
         return;
-    szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-    if (!szProto)
+    if (!dat->szProto)
         return;
-    protoStatus = CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-    protoCaps = CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0);
-    typeCaps = CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0);
+    protoStatus = CallProtoService(dat->szProto, PS_GETSTATUS, 0, 0);
+    protoCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
+    typeCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
 
     if (!(typeCaps & PF4_SUPPORTTYPING))
         return;
     if (protoStatus < ID_STATUS_ONLINE)
         return;
-    if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->hContact, szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
+    if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
         return;
-    if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->hContact, szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
+    if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
         return;
     if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)
         && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGUNKNOWN, SRMSGDEFSET_TYPINGUNKNOWN))
@@ -484,6 +481,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
+            dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
             dat->hAckEvent = NULL;
             dat->sendInfo = NULL;
             dat->showInfo = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE);
@@ -568,11 +566,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             /* duh, how come we didnt use this from the start? */
             SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
             if (dat->hContact) {
-                char *szProto;
-                szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-                if (szProto) {
+                if (dat->szProto) {
                     int nMax;
-                    nMax = CallProtoService(szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM) dat->hContact);
+                    nMax = CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM) dat->hContact);
                     if (nMax)
                         SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_LIMITTEXT, (WPARAM) nMax, 0);
                     /* get around a lame bug in the Windows template resource code where richedits are limited to 0x7FFF */
@@ -697,10 +693,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         {
             if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON)) {
                 WORD wStatus;
-                char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-                if (szProto) {
-                    wStatus = DBGetContactSettingWord(dat->hContact, szProto, "Status", ID_STATUS_OFFLINE);
-                    SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(szProto, wStatus));
+
+                if (dat->szProto) {
+                    wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+                    SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(dat->szProto, wStatus));
                     break;
                 }
             }
@@ -770,13 +766,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         {
             char newtitle[256], oldtitle[256];
             char *szStatus, *contactName, *pszNewTitleEnd;
-            char *szProto;
             DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
 
             pszNewTitleEnd = "Message Session";
             if (dat->hContact) {
-                szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-                if (szProto) {
+                if (dat->szProto) {
                     CONTACTINFO ci;
                     int hasName = 0;
                     char buf[128];
@@ -786,7 +780,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     ZeroMemory(&ci, sizeof(ci));
                     ci.cbSize = sizeof(ci);
                     ci.hContact = dat->hContact;
-                    ci.szProto = szProto;
+                    ci.szProto = dat->szProto;
                     ci.dwFlag = CNF_UNIQUEID;
                     if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
                         switch (ci.type) {
@@ -802,12 +796,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
                     SetDlgItemTextA(hwndDlg, IDC_NAME, hasName ? buf : contactName);
-                    szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
+                    szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE), 0);
                     if (statusIcon)
                         _snprintf(newtitle, sizeof(newtitle), "%s - %s", contactName, Translate(pszNewTitleEnd));
                     else
                         _snprintf(newtitle, sizeof(newtitle), "%s (%s): %s", contactName, szStatus, Translate(pszNewTitleEnd));
-                    if (!cws || (!strcmp(cws->szModule, szProto) && !strcmp(cws->szSetting, "Status"))) {
+                    if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
                         if (statusIcon) {
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
@@ -982,22 +976,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 dat->nFlash++;
             }
-            else if (wParam == TIMERID_ANTIBOMB) {
-                int sentSoFar = 0, i;
-                KillTimer(hwndDlg, wParam);
-                for (i = 0; i < dat->sendCount; i++) {
-                    if (dat->sendInfo[i].hContact == NULL)
-                        continue;
-                    if (sentSoFar >= ANTIBOMB_COUNT) {
-                        KillTimer(hwndDlg, TIMERID_MSGSEND);
-                        SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
-                        SetTimer(hwndDlg, TIMERID_ANTIBOMB, TIMEOUT_ANTIBOMB, NULL);
-                        break;
-                    }
-                    dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendInfo[i].hContact, MsgServiceName(dat->sendInfo[i].hContact), 0, (LPARAM) dat->sendBuffer);
-                    sentSoFar++;
-                }
-            }
             else if (wParam == TIMERID_TYPE) {
                 if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && GetTickCount() - dat->nLastTyping > TIMEOUT_TYPEOFF) {
                     NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
@@ -1047,9 +1025,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 {
                     int i;
                     for (i = 0; i < dat->sendCount; i++) {
-                        if (dat->sendInfo[i].hSendId == NULL && dat->sendInfo[i].hContact == NULL)
+                        if (dat->sendInfo[i].hSendId == NULL && dat->hContact == NULL)
                             continue;
-                        dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->sendInfo[i].hContact, MsgServiceName(dat->sendInfo[i].hContact), 0, (LPARAM) dat->sendBuffer);
+                        dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), 0, (LPARAM) dat->sendBuffer);
                     }
                 }
                     SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
@@ -1072,15 +1050,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         {
             LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
             if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
-                char *szProto;
-
-                szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-                if (szProto) {
+                if (dat->szProto) {
                     HICON hIcon;
                     int dwStatus;
 
-                    dwStatus = DBGetContactSettingWord(dat->hContact, szProto, "Status", ID_STATUS_OFFLINE);
-                    hIcon = LoadSkinnedProtoIcon(szProto, dwStatus);
+                    dwStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+                    hIcon = LoadSkinnedProtoIcon(dat->szProto, dwStatus);
                     if (hIcon)
                         DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
                 }
@@ -1121,7 +1096,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->sendCount = 1;
                         dat->sendInfo = (struct MessageSendInfo *) realloc(dat->sendInfo, sizeof(struct MessageSendInfo) * dat->sendCount);
                         dat->sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) dat->sendBuffer);
-                        dat->sendInfo[0].hContact = dat->hContact;
                         EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
                         SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 
@@ -1343,7 +1317,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }                   //switch
 
             for (i = 0; i < dat->sendCount; i++)
-                if (ack->hProcess == dat->sendInfo[i].hSendId && ack->hContact == dat->sendInfo[i].hContact)
+                if (ack->hProcess == dat->sendInfo[i].hSendId && ack->hContact == dat->hContact)
                     break;
             if (i == dat->sendCount)
                 break;
@@ -1351,25 +1325,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dbei.cbSize = sizeof(dbei);
             dbei.eventType = EVENTTYPE_MESSAGE;
             dbei.flags = DBEF_SENT;
-            dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->sendInfo[i].hContact, 0);
+            dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
             dbei.timestamp = time(NULL);
             dbei.cbBlob = lstrlenA(dat->sendBuffer) + 1;
 #if defined( _UNICODE )
             dbei.cbBlob *= sizeof(TCHAR) + 1;
 #endif
             dbei.pBlob = (PBYTE) dat->sendBuffer;
-            hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->sendInfo[i].hContact, (LPARAM) & dbei);
+            hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
             SkinPlaySound("SendMsg");
-            if (dat->sendInfo[i].hContact == dat->hContact) {
-                if (dat->hDbEventFirst == NULL) {
-                    dat->hDbEventFirst = hNewEvent;
-                    SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                }
+            if (dat->hDbEventFirst == NULL) {
+                dat->hDbEventFirst = hNewEvent;
+                SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             }
+            
             dat->sendInfo[i].hSendId = NULL;
-            dat->sendInfo[i].hContact = NULL;
             for (i = 0; i < dat->sendCount; i++)
-                if (dat->sendInfo[i].hContact || dat->sendInfo[i].hSendId)
+                if (dat->sendInfo[i].hSendId)
                     break;
             if (i == dat->sendCount) {
                 int len;
