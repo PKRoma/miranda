@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /D __STDC__=1 /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x809
 # ADD RSC /l 0x809
@@ -66,7 +66,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /FD /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /D __STDC__=1 /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x809
 # ADD RSC /l 0x809
@@ -91,7 +91,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /FD /c
 # SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /FD /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32" /D "BYTE_ORDER_LITTLE_ENDIAN" /D "_MSVC_" /D __STDC__=1 /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x809
 # ADD RSC /l 0x809
