@@ -28,3 +28,7 @@
 
 #define write(a,b,c) send(a,b,c,0)
 #define read(a,b,c)  recv(a,b,c,0)
+
+#include <newpluginapi.h>
+#include <m_netlib.h>
+#define close(a)	 Netlib_CloseHandle(a)
