@@ -109,6 +109,7 @@
 #define IDC_TOKEN				457
 #define IDC_IGNORECONF          458
 #define IDC_POPUPIMG            456
+#define IDC_SHOWNOTONMYLIST     457
 
 #define IDC_IMAGECLOSE        	459
 #define IDC_TABCONTROL        	460

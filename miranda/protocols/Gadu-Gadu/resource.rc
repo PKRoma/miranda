@@ -53,13 +53,14 @@ BEGIN
         CONTROL         "Change password",IDC_CHPASS,"Hyperlink",WS_TABSTOP,175,36,90,8
         CONTROL         "Retrieve password",IDC_LOSTPASS,"Hyperlink",WS_TABSTOP,175,49,90,8
 //      CONTROL         "Change e-mail",IDC_CHEMAIL,"Hyperlink",WS_TABSTOP,175,62,90,8
-    GROUPBOX            "Options",IDC_STATIC,4,85,273,94
+    GROUPBOX            "Options",IDC_STATIC,4,85,273,109
         CONTROL         "Friends only",IDC_FRIENDSONLY,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,100,255,10
         CONTROL         "Show offline users with status message as invisible in contact list",IDC_SHOWINVISIBLE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,115,255,10
         CONTROL         "After disconnection leave away message of status:",IDC_LEAVESTATUSMSG,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,130,185,10
 		COMBOBOX        IDC_LEAVESTATUS,200,128,70,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
         CONTROL         "Ignore incoming conference messages",IDC_IGNORECONF,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,145,255,10
         CONTROL         "Automatically pop up the window when a image is received",IDC_POPUPIMG,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,160,255,10
+        CONTROL         "Show contacts not on my list having me on their list",IDC_SHOWNOTONMYLIST,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,175,255,10
 
         CTEXT           "You will need to reconnect for the changes you have made on this page to take effect.",IDC_RELOADREQD,4,200,273,8,NOT WS_VISIBLE
 END
