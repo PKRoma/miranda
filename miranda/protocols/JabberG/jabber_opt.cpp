@@ -456,205 +456,200 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		{
-			DBVARIANT dbv;
-			BOOL bDirect, bManualDirect;
-			BOOL bProxy, bManualProxy;
+	{
+		DBVARIANT dbv;
+		BOOL bDirect, bManualDirect;
+		BOOL bProxy, bManualProxy;
 
-			TranslateDialogDefault( hwndDlg );
+		TranslateDialogDefault( hwndDlg );
 
-			// Multi-user conference options
-			fontChanged = FALSE;
-			hFont = NULL;
-			JabberGcLogLoadFont( gcLogFont );
-			if ( gcLogFont[0].face[0] != '\0' ) {
-				strncpy( lf.lfFaceName, gcLogFont[0].face, sizeof( lf.lfFaceName ));
-				lf.lfHeight = -MulDiv( gcLogFont[0].size, GetDeviceCaps( GetDC( NULL ), LOGPIXELSY ), 72 );
-				lf.lfCharSet = gcLogFont[0].charset;
-				lf.lfWeight = ( gcLogFont[0].style & JABBER_FONT_BOLD ) ? FW_BOLD : FW_NORMAL;
-				lf.lfItalic = ( gcLogFont[0].style & JABBER_FONT_ITALIC ) ? TRUE : FALSE;
-				hFont = CreateFontIndirect( &lf );
-				SendDlgItemMessage( hwndDlg, IDC_FONTSHOW, WM_SETFONT, ( WPARAM ) hFont, FALSE );
-				SetDlgItemText( hwndDlg, IDC_FONTSHOW, lf.lfFaceName );
+		// Multi-user conference options
+		fontChanged = FALSE;
+		hFont = NULL;
+		JabberGcLogLoadFont( gcLogFont );
+		if ( gcLogFont[0].face[0] != '\0' ) {
+			strncpy( lf.lfFaceName, gcLogFont[0].face, sizeof( lf.lfFaceName ));
+			lf.lfHeight = -MulDiv( gcLogFont[0].size, GetDeviceCaps( GetDC( NULL ), LOGPIXELSY ), 72 );
+			lf.lfCharSet = gcLogFont[0].charset;
+			lf.lfWeight = ( gcLogFont[0].style & JABBER_FONT_BOLD ) ? FW_BOLD : FW_NORMAL;
+			lf.lfItalic = ( gcLogFont[0].style & JABBER_FONT_ITALIC ) ? TRUE : FALSE;
+			hFont = CreateFontIndirect( &lf );
+			SendDlgItemMessage( hwndDlg, IDC_FONTSHOW, WM_SETFONT, ( WPARAM ) hFont, FALSE );
+			SetDlgItemText( hwndDlg, IDC_FONTSHOW, lf.lfFaceName );
+		}
+		if ( JGetByte( "GcLogSendOnEnter", TRUE ) == TRUE )
+			CheckRadioButton( hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_ENTER );
+		else
+			CheckRadioButton( hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_CTRLENTER );
+		CheckDlgButton( hwndDlg, IDC_FLASH, JGetByte( "GcLogFlash", TRUE ));
+		if ( JGetByte( "GcLogTime", TRUE ) == TRUE )
+			CheckDlgButton( hwndDlg, IDC_TIME, TRUE );
+		else
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DATE ), FALSE );
+		CheckDlgButton( hwndDlg, IDC_DATE, JGetByte( "GcLogDate", FALSE ));
+
+		// File transfer options
+		bDirect = JGetByte( "BsDirect", TRUE );
+		bManualDirect = JGetByte( "BsDirectManual", FALSE );
+		CheckDlgButton( hwndDlg, IDC_DIRECT, bDirect );
+		CheckDlgButton( hwndDlg, IDC_DIRECT_MANUAL, bManualDirect );
+		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsDirectAddr", &dbv )) {
+			SetDlgItemText( hwndDlg, IDC_DIRECT_ADDR, dbv.pszVal );
+			JFreeVariant( &dbv );
+		}
+		if ( !bDirect )
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_MANUAL ), FALSE );
+		if ( !bDirect || !bManualDirect )
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), FALSE );
+
+		bProxy = JGetByte( "BsProxy", FALSE );
+		bManualProxy = JGetByte( "BsProxyManual", FALSE );
+		CheckDlgButton( hwndDlg, IDC_PROXY, bProxy );
+		CheckDlgButton( hwndDlg, IDC_PROXY_MANUAL, bManualProxy );
+		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
+			SetDlgItemText( hwndDlg, IDC_PROXY_ADDR, dbv.pszVal );
+			JFreeVariant( &dbv );
+		}
+		if ( !bProxy )
+			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_MANUAL ), FALSE );
+		if ( !bProxy || !bManualProxy )
+			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), FALSE );
+
+		// Miscellaneous options
+		CheckDlgButton( hwndDlg, IDC_SHOW_TRANSPORT, JGetByte( "ShowTransport", TRUE ));
+		CheckDlgButton( hwndDlg, IDC_AUTO_ADD, JGetByte( "AutoAdd", TRUE ));
+		CheckDlgButton( hwndDlg, IDC_MSG_ACK, JGetByte( "MsgAck", FALSE ));
+		CheckDlgButton( hwndDlg, IDC_DISABLE_MAINMENU, JGetByte( "DisableMainMenu", FALSE ));
+		return TRUE;
+	}
+	case WM_COMMAND:
+	{
+		switch ( LOWORD( wParam )) {
+		case IDC_DIRECT_ADDR:
+		case IDC_PROXY_ADDR:
+			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		case IDC_DIRECT:
+			bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_MANUAL ), bChecked );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL )) );
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		case IDC_DIRECT_MANUAL:
+			bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), bChecked );
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		case IDC_PROXY:
+			bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_MANUAL ), bChecked );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL )) );
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		case IDC_PROXY_MANUAL:
+			bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), bChecked );
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		case IDC_FONT:
+			{
+				CHOOSEFONT cf = {0};
+
+				cf.lStructSize = sizeof( CHOOSEFONT );
+				cf.hwndOwner = hwndDlg;
+				cf.lpLogFont = &lf;
+				cf.Flags = CF_FORCEFONTEXIST|CF_INITTOLOGFONTSTRUCT|CF_SCREENFONTS;
+				if ( ChooseFont( &cf )) {
+					fontChanged = TRUE;
+					if ( hFont ) DeleteObject( hFont );
+					hFont = CreateFontIndirect( &lf );
+					SendDlgItemMessage( hwndDlg, IDC_FONTSHOW, WM_SETFONT, ( WPARAM ) hFont, FALSE );
+					SetDlgItemText( hwndDlg, IDC_FONTSHOW, lf.lfFaceName );
+					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				}
 			}
-			if ( JGetByte( "GcLogSendOnEnter", TRUE ) == TRUE )
-				CheckRadioButton( hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_ENTER );
-			else
-				CheckRadioButton( hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_CTRLENTER );
-			CheckDlgButton( hwndDlg, IDC_FLASH, JGetByte( "GcLogFlash", TRUE ));
-			if ( JGetByte( "GcLogTime", TRUE ) == TRUE )
-				CheckDlgButton( hwndDlg, IDC_TIME, TRUE );
-			else
-				EnableWindow( GetDlgItem( hwndDlg, IDC_DATE ), FALSE );
-			CheckDlgButton( hwndDlg, IDC_DATE, JGetByte( "GcLogDate", FALSE ));
+			break;
+		case IDC_TIME:
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DATE ), IsDlgButtonChecked( hwndDlg, IDC_TIME ));
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		default:
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		}
+		break;
+	}
+	case WM_NOTIFY:
+	{
+		JABBER_LIST_ITEM *item;
+		HANDLE hContact;
+		int index, i;
+		char key[64];
+
+		switch (( ( LPNMHDR ) lParam )->code ) {
+		case PSN_APPLY:
+			// Multi-user conference options
+			if ( fontChanged ) {
+				for ( i=0; i<JABBER_GCLOG_NUM_FONT; i++ ) {
+					sprintf( key, "GcLogFont%dFace", i );
+					JSetString( NULL, key, lf.lfFaceName );
+					sprintf( key, "GcLogFont%dSize", i );
+					JSetByte( key, ( BYTE ) MulDiv( abs( lf.lfHeight ), 72, GetDeviceCaps( GetDC( NULL ), LOGPIXELSY )) );
+					sprintf( key, "GcLogFont%dCharset", i );
+					JSetByte( key, lf.lfCharSet );
+					fontStyle = ( lf.lfWeight>=FW_BOLD ) ? JABBER_FONT_BOLD : 0;
+					if ( lf.lfItalic == TRUE )
+						fontStyle |= JABBER_FONT_ITALIC;
+					sprintf( key, "GcLogFont%dStyle", i );
+					JSetByte( key, fontStyle );
+					// color is missing here!!!
+					// this is intentional so that we will use default color
+				}
+				if ( jabberOnline )
+					WindowList_Broadcast( hWndListGcLog, WM_JABBER_SET_FONT, 0, 0 );
+			}
+
+			JSetByte( "GcLogSendOnEnter", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_ENTER ));
+			JSetByte( "GcLogFlash", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_FLASH ));
+			JSetByte( "GcLogTime", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_TIME ));
+			JSetByte( "GcLogDate", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DATE ));
 
 			// File transfer options
-			bDirect = JGetByte( "BsDirect", TRUE );
-			bManualDirect = JGetByte( "BsDirectManual", FALSE );
-			CheckDlgButton( hwndDlg, IDC_DIRECT, bDirect );
-			CheckDlgButton( hwndDlg, IDC_DIRECT_MANUAL, bManualDirect );
-			if ( !DBGetContactSetting( NULL, jabberProtoName, "BsDirectAddr", &dbv )) {
-				SetDlgItemText( hwndDlg, IDC_DIRECT_ADDR, dbv.pszVal );
-				JFreeVariant( &dbv );
-			}
-			if ( !bDirect )
-				EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_MANUAL ), FALSE );
-			if ( !bDirect || !bManualDirect )
-				EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), FALSE );
-
-			bProxy = JGetByte( "BsProxy", FALSE );
-			bManualProxy = JGetByte( "BsProxyManual", FALSE );
-			CheckDlgButton( hwndDlg, IDC_PROXY, bProxy );
-			CheckDlgButton( hwndDlg, IDC_PROXY_MANUAL, bManualProxy );
-			if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
-				SetDlgItemText( hwndDlg, IDC_PROXY_ADDR, dbv.pszVal );
-				JFreeVariant( &dbv );
-			}
-			if ( !bProxy )
-				EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_MANUAL ), FALSE );
-			if ( !bProxy || !bManualProxy )
-				EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), FALSE );
+			JSetByte( "BsDirect", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT ));
+			JSetByte( "BsDirectManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL ));
+			GetDlgItemText( hwndDlg, IDC_DIRECT_ADDR, text, sizeof( text ));
+			JSetString( NULL, "BsDirectAddr", text );
+			JSetByte( "BsProxy", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY ));
+			JSetByte( "BsProxyManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL ));
+			GetDlgItemText( hwndDlg, IDC_PROXY_ADDR, text, sizeof( text ));
+			JSetString( NULL, "BsProxyAddr", text );
 
 			// Miscellaneous options
-			CheckDlgButton( hwndDlg, IDC_SHOW_TRANSPORT, JGetByte( "ShowTransport", TRUE ));
-			CheckDlgButton( hwndDlg, IDC_AUTO_ADD, JGetByte( "AutoAdd", TRUE ));
-			CheckDlgButton( hwndDlg, IDC_MSG_ACK, JGetByte( "MsgAck", FALSE ));
+			bChecked = IsDlgButtonChecked( hwndDlg, IDC_SHOW_TRANSPORT );
+			JSetByte( "ShowTransport", ( BYTE ) bChecked );
+			index = 0;
+			while (( index=JabberListFindNext( LIST_ROSTER, index )) >= 0 ) {
+				if (( item=JabberListGetItemPtrFromIndex( index )) != NULL ) {
+					if ( strchr( item->jid, '@' ) == NULL ) {
+						if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
+							if ( bChecked ) {
+								if ( item->status != JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
+									JSetWord( hContact, "Status", ( WORD )item->status );
+							}	}
+							else if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
+								JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				}	}	}
+				index++;
+			}
 
+			JSetByte( "AutoAdd", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_AUTO_ADD ));
+			JSetByte( "MsgAck", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_MSG_ACK ));
+			JSetByte( "DisableMainMenu", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAINMENU ));
 			return TRUE;
 		}
-	case WM_COMMAND:
-		{
-			switch ( LOWORD( wParam )) {
-			case IDC_DIRECT_ADDR:
-			case IDC_PROXY_ADDR:
-				if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
-					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-			case IDC_DIRECT:
-				bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_MANUAL ), bChecked );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL )) );
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-			case IDC_DIRECT_MANUAL:
-				bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), bChecked );
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-			case IDC_PROXY:
-				bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_MANUAL ), bChecked );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL )) );
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-			case IDC_PROXY_MANUAL:
-				bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), bChecked );
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-			case IDC_FONT:
-				{
-					CHOOSEFONT cf = {0};
-
-					cf.lStructSize = sizeof( CHOOSEFONT );
-					cf.hwndOwner = hwndDlg;
-					cf.lpLogFont = &lf;
-					cf.Flags = CF_FORCEFONTEXIST|CF_INITTOLOGFONTSTRUCT|CF_SCREENFONTS;
-					if ( ChooseFont( &cf )) {
-						fontChanged = TRUE;
-						if ( hFont ) DeleteObject( hFont );
-						hFont = CreateFontIndirect( &lf );
-						SendDlgItemMessage( hwndDlg, IDC_FONTSHOW, WM_SETFONT, ( WPARAM ) hFont, FALSE );
-						SetDlgItemText( hwndDlg, IDC_FONTSHOW, lf.lfFaceName );
-						SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-					}
-				}
-				break;
-			case IDC_TIME:
-				EnableWindow( GetDlgItem( hwndDlg, IDC_DATE ), IsDlgButtonChecked( hwndDlg, IDC_TIME ));
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-			default:
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-			}
-		}
 		break;
-	case WM_NOTIFY:
-		{
-			JABBER_LIST_ITEM *item;
-			HANDLE hContact;
-			int index, i;
-			char key[64];
-
-			switch (( ( LPNMHDR ) lParam )->code ) {
-			case PSN_APPLY:
-				// Multi-user conference options
-				if ( fontChanged ) {
-					for ( i=0; i<JABBER_GCLOG_NUM_FONT; i++ ) {
-						sprintf( key, "GcLogFont%dFace", i );
-						JSetString( NULL, key, lf.lfFaceName );
-						sprintf( key, "GcLogFont%dSize", i );
-						JSetByte( key, ( BYTE ) MulDiv( abs( lf.lfHeight ), 72, GetDeviceCaps( GetDC( NULL ), LOGPIXELSY )) );
-						sprintf( key, "GcLogFont%dCharset", i );
-						JSetByte( key, lf.lfCharSet );
-						fontStyle = ( lf.lfWeight>=FW_BOLD ) ? JABBER_FONT_BOLD : 0;
-						if ( lf.lfItalic == TRUE )
-							fontStyle |= JABBER_FONT_ITALIC;
-						sprintf( key, "GcLogFont%dStyle", i );
-						JSetByte( key, fontStyle );
-						// color is missing here!!!
-						// this is intentional so that we will use default color
-					}
-					if ( jabberOnline )
-						WindowList_Broadcast( hWndListGcLog, WM_JABBER_SET_FONT, 0, 0 );
-				}
-
-				JSetByte( "GcLogSendOnEnter", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_ENTER ));
-				JSetByte( "GcLogFlash", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_FLASH ));
-				JSetByte( "GcLogTime", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_TIME ));
-				JSetByte( "GcLogDate", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DATE ));
-
-				// File transfer options
-				JSetByte( "BsDirect", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT ));
-				JSetByte( "BsDirectManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL ));
-				GetDlgItemText( hwndDlg, IDC_DIRECT_ADDR, text, sizeof( text ));
-				JSetString( NULL, "BsDirectAddr", text );
-				JSetByte( "BsProxy", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY ));
-				JSetByte( "BsProxyManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL ));
-				GetDlgItemText( hwndDlg, IDC_PROXY_ADDR, text, sizeof( text ));
-				JSetString( NULL, "BsProxyAddr", text );
-
-				// Miscellaneous options
-				bChecked = IsDlgButtonChecked( hwndDlg, IDC_SHOW_TRANSPORT );
-				JSetByte( "ShowTransport", ( BYTE ) bChecked );
-				index = 0;
-				while (( index=JabberListFindNext( LIST_ROSTER, index )) >= 0 ) {
-					if (( item=JabberListGetItemPtrFromIndex( index )) != NULL ) {
-						if ( strchr( item->jid, '@' ) == NULL ) {
-							if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
-								if ( bChecked ) {
-									if ( item->status != JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
-										JSetWord( hContact, "Status", ( WORD )item->status );
-									}
-								}
-								else {
-									if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE ) {
-										JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
-									}
-								}
-							}
-						}
-					}
-					index++;
-				}
-				JSetByte( "AutoAdd", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_AUTO_ADD ));
-				JSetByte( "MsgAck", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_MSG_ACK ));
-
-				return TRUE;
-			}
-		}
-		break;
+	}
 	case WM_DESTROY:
 		if ( hFont ) DeleteObject( hFont );
 		break;

@@ -735,6 +735,9 @@
 				RelativePath="jabber_xmlns.h">
 			</File>
 			<File
+				RelativePath=".\resource.h">
+			</File>
+			<File
 				RelativePath="sha1.h">
 			</File>
 			<File

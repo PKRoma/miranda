@@ -8,6 +8,7 @@ Version 0.2.0.2
 ===============
 [+] search by JID now verifies the user's presense, without confirming any
 input
+[+] wish #0000299: DisableMainMenuItem option wanted
 [!] bug #0000298 fixed: search by nickname instead of a full JID resulted
 to the auth process stuck.
 [!] bug #0000691 fixed: Jabber writes to MyHandle instead of a NickName

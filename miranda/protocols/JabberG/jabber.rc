@@ -13,9 +13,9 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English ( U.S.) resources
+// English (U.S.) resources
 
-#if !defined( AFX_RESOURCE_DLL) || defined( AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
@@ -409,7 +409,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,92,58,50,14
 END
 
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 222, 210
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 222, 217
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -430,7 +430,7 @@ BEGIN
                     WS_TABSTOP,97,44,114,10
     CONTROL         "Show date",IDC_DATE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,97,55,105,10
-    GROUPBOX        "File Transfer",IDC_STATIC,2,73,216,74
+    GROUPBOX        "File Transfer",IDC_STATIC,2,73,216,71
     CONTROL         "Allow file sending through bytestream proxy server",
                     IDC_PROXY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
                     WS_TABSTOP,9,112,202,10
@@ -439,21 +439,23 @@ BEGIN
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,100,101,10
     EDITTEXT        IDC_DIRECT_ADDR,117,99,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,2,152,216,55
+    GROUPBOX        "Miscellaneous",IDC_STATIC,2,147,216,67
     CONTROL         "Show transport agents on contact list",
                     IDC_SHOW_TRANSPORT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,166,202,11
+                    WS_TABSTOP,9,162,202,11
     CONTROL         "Automatically add contact when accept authorization",
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,177,203,12
+                    WS_TABSTOP,9,174,203,12
     CONTROL         "Send messages slower, but with full acknowledgement",
                     IDC_MSG_ACK,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,188,203,12
+                    WS_TABSTOP,9,186,203,12
     CONTROL         "Allow file sending through direct peer-to-peer connection",
                     IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,88,
                     202,10
     CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,124,102,10
+    CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,198,75,10
 END
 
 IDD_GROUPCHAT DIALOGEX 0, 0, 306, 208
@@ -735,7 +737,7 @@ BEGIN
         RIGHTMARGIN, 218
         VERTGUIDE, 9
         TOPMARGIN, 3
-        BOTTOMMARGIN, 207
+        BOTTOMMARGIN, 214
     END
 
     IDD_GROUPCHAT, DIALOG
