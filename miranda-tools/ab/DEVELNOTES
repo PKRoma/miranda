@@ -1,0 +1,2 @@
+Yahoo is not present in this build because it still uses the old istyping API
+so fails to compile.
