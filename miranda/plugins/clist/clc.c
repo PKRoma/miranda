@@ -241,23 +241,14 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 			}
 			break;
-		
-		case WM_WINDOWPOSCHANGING:
+		case INTM_SCROLLBARCHANGED:
 		{
-			if ( dat->noVScrollbar && GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
-				ShowScrollBar(hwnd, SB_VERT, FALSE);
-			} else {
-				// only show the scrollbar if it needs to be shown
-				SCROLLINFO si;
-				si.cbSize=sizeof(si);
-				si.fMask=SIF_ALL;
-				if ( GetScrollInfo(hwnd, SB_VERT, &si) && si.nPage < (UINT)si.nMax ) {
-					ShowScrollBar(hwnd, SB_VERT, TRUE);
-				}
+			if ( GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
+				if ( dat->noVScrollbar ) ShowScrollBar(hwnd,SB_VERT,FALSE);
+				else RecalcScrollBar(hwnd,dat);
 			}
 			break;
 		}
-
 		case INTM_RELOADOPTIONS:
 			LoadClcOptions(hwnd,dat);
 			SaveStateAndRebuildList(hwnd,dat);
@@ -265,7 +256,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		case WM_THEMECHANGED:
 			InvalidateRect(hwnd, NULL, FALSE);
 			break;
-		case WM_SIZE:
+		case WM_SIZE:			
 			EndRename(hwnd,dat,1);
 			KillTimer(hwnd,TIMERID_INFOTIP);
 			KillTimer(hwnd,TIMERID_RENAME);
