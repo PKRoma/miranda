@@ -61,7 +61,7 @@ static int IsEmpty(char *str) {
     int len = lstrlen(str);
 
     while (str[i]) {
-        if (!isspace(str[i])) return 0;
+        if (str[i]!=' '&&str[i]!='\r'&&str[i]!='\n') return 0;
         i++;
     }
     return 1;
