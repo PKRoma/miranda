@@ -1,0 +1,7 @@
+// THIS FILE WILL BE OVERWRITTEN BY DEV-C++!
+// DO NOT EDIT!
+
+#define UDS_HOTTRACK 0x0100
+#define TCS_HOTTRACK 0x0040
+
+#include "resource.rc"

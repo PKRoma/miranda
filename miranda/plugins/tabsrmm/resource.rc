@@ -1,0 +1,811 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#include <winres.h>
+#include "../../include/statusmodes.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral (Standard) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MSGSPLITNEW DIALOGEX 0, 0, 188, 79
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | 
+    WS_CHILD | WS_CLIPCHILDREN
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_MESSAGE,0,49,144,29,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_NOHIDESEL | ES_WANTRETURN | NOT WS_BORDER | 
+                    WS_VSCROLL,WS_EX_ACCEPTFILES | WS_EX_STATICEDGE
+    CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,156,32,24,14,
+                    0x18000000L
+    PUSHBUTTON      "&Yend",IDOK1,163,31,24,14,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "&A",IDC_ADD,"MButtonClass",WS_TABSTOP,52,32,16,14,
+                    0x18000000L
+    CONTROL         "&E",IDC_SMILEYBTN,"MButtonClass",WS_TABSTOP,68,32,16,14,
+                    0x18000000L
+    CONTROL         "&P",IDC_PIC,"MButtonClass",WS_TABSTOP,84,32,16,14,
+                    0x18000000L
+    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,100,32,16,14,
+                    0x18000000L
+    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,116,32,16,14,
+                    0x18000000L
+    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,132,32,16,14,
+                    0x18000000L
+    CONTROL         "&Q",IDC_QUOTE,"MButtonClass",WS_TABSTOP,148,32,16,14,
+                    0x18000000L
+    CONTROL         "&X",IDC_SAVE,"MButtonClass",WS_TABSTOP,164,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
+                    62,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,2,
+                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
+                    WS_VISIBLE | WS_TABSTOP,2,67,12,12
+    CONTROL         "&D",IDC_PROTOCOL,"MButtonClass",WS_TABSTOP,1,32,16,14,
+                    0x18000000L
+    CONTROL         "&U",IDC_NAME,"MButtonClass",WS_TABSTOP,18,32,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,54,33,24,
+                    0x18000000L
+    CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
+                    WS_EX_STATICEDGE
+    CONTROL         "&Retry",IDC_RETRY,"MButtonClass",WS_TABSTOP,26,10,35,12
+    CONTROL         "&Cancel",IDC_CANCELSEND,"MButtonClass",WS_TABSTOP,66,10,
+                    35,12
+    CONTROL         "Send &Later",IDC_MSGSENDLATER,"MButtonClass",WS_TABSTOP,
+                    106,10,45,12
+    LTEXT           "The message failed to send successfully.",
+                    IDC_STATICTEXT,27,1,150,7
+    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
+                    WS_GROUP
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
+                    WS_EX_STATICEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_MSGSPLITNEW, DIALOG
+    BEGIN
+        RIGHTMARGIN, 187
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral (Standard) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Englisch (USA) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 224
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "   "
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "General settings",IDC_STATIC,7,7,138,88
+    CONTROL         "Hide titlebar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,16,126,10
+    CONTROL         "Hide tab bar if there is only one tab",IDC_O_NOTABS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,26,129,10
+    CONTROL         "Enable Popups if minimized",IDC_O_DONTREPORT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,36,124,10
+    CONTROL         "Container stays on top",IDC_O_STICKY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,46,124,10
+    GROUPBOX        "Flashing options",IDC_STATIC,152,7,122,46
+    CONTROL         "Use default value",IDC_O_FLASHDEFAULT,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,166,16,73,11
+    CONTROL         "Flash forever",IDC_O_FLASHALWAYS,"Button",
+                    BS_AUTORADIOBUTTON,166,27,68,12
+    CONTROL         "Never flash",IDC_O_FLASHNEVER,"Button",
+                    BS_AUTORADIOBUTTON,166,40,66,11
+    GROUPBOX        "Titlebar options",IDC_STATIC,7,96,138,43
+    CONTROL         "Show contacts name",IDC_SHOWCONTACTNAME,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,104,104,11
+    CONTROL         "Show contacts status",IDC_SHOWSTATUS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,114,102,12
+    GROUPBOX        "Show container name in titlebar",IDC_STATIC,152,96,122,
+                    43
+    CONTROL         "Never",IDC_O_TITLENEVER,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,165,104,66,10
+    CONTROL         "As prefix",IDC_O_TITLEFRONT,"Button",BS_AUTORADIOBUTTON,
+                    165,113,61,13
+    CONTROL         "As suffix",IDC_O_TITLESUFFIX,"Button",
+                    BS_AUTORADIOBUTTON,165,126,73,10
+    GROUPBOX        "Transparency Options",IDC_STATIC,7,140,267,33
+    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,149,81,11
+    LTEXT           "active",IDC_STATIC,125,149,26,11
+    LTEXT           "inactive",IDC_STATIC,125,163,28,9
+    CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | 
+                    WS_TABSTOP,153,144,95,11
+    CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",
+                    TBS_BOTH | WS_TABSTOP,153,159,95,11
+    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,149,19,9
+    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,163,19,9
+    CONTROL         "Set these values as defaults for new containers",
+                    IDC_APPLYASDEFAULT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    13,176,217,12
+    PUSHBUTTON      "Load defaults",IDC_LOADDEFAULTS,7,203,69,15
+    DEFPUSHBUTTON   "OK",IDOK,114,203,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,169,203,50,14
+    PUSHBUTTON      "Apply",IDC_APPLY,225,203,50,14,WS_DISABLED
+    CONTROL         "Also apply them to all existing containers",
+                    IDC_APPLYEXISTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    13,187,186,12
+    CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,56,110,10
+    CONTROL         "Always enable popups for",IDC_ALWAYSPOPUPSINACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,66,122,10
+    LTEXT           "inactive tabs",IDC_STATIC,26,75,74,8
+    LTEXT           "only valid if name is also shown",IDC_STATIC,25,125,117,
+                    11
+    GROUPBOX        "Layout options",IDC_STATIC,151,55,123,40
+    CONTROL         "Single Row tab control",IDC_SINGLEROWTAB,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,65,100,10
+    CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,84,121,9
+    CONTROL         "Hide the Status Bar",IDC_CNTNOSTATUSBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,80,93,8
+END
+
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 227
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Messaging Mode",IDC_STATIC,0,0,310,28
+    LTEXT           "tabSRMM is now a ""split only"" message module. The single read/send mode is no longer available.",
+                    IDC_STATIC,7,8,301,18
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,30,310,194
+    CONTROL         "Automatically pop up the window when a message is received",
+                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,40,
+                    300,10
+    CONTROL         "Use the contact's status icon as the window icon",
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,51,
+                    273,10
+    CONTROL         "Automatically switch tabs in minimized containers",
+                    IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,63,262,10
+    CONTROL         "Use horizontal dividers in inactive sessions",
+                    IDC_USEDIVIDERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
+                    74,152,11
+    CONTROL         "Use popup configuration for placing dividers",
+                    IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,19,85,271,11
+    CONTROL         "Show debugging info Popups",IDC_DEBUGPOPUPS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,156,117,11
+    CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,168,135,10
+    CONTROL         "Show protocol icon and userID field.",IDC_SHOWINFOLINE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,179,138,10
+    CONTROL         "Show toolbar buttons",IDC_SHOWBUTTONLINE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,190,137,10
+    CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,156,141,10
+    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,168,137,10
+    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,179,137,10
+    CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,190,133,10
+    LTEXT           "Show warning when message has not been received after",
+                    IDC_STATIC,8,203,211,8
+    EDITTEXT        IDC_SECONDS,223,201,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,203,44,8
+    CONTROL         "Resize Avatar larger than",IDC_LIMITAVATARS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,101,115,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,126,99,38,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,100,9,
+                    11
+    LTEXT           "pixels in height",IDC_STATIC,191,101,51,11
+    CONTROL         "Use threaded streaming (RESTART Miranda if you change this)",
+                    IDC_STREAMTHREADING,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,114,274,11
+END
+
+IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Items to show",IDC_STMSGLOGGROUP,0,0,150,94
+    CONTROL         "Show file events",IDC_SHOWFILES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,14,137,10
+    CONTROL         "Show url events",IDC_SHOWURLS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,27,136,10
+    CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,39,65,12
+    CONTROL         "Use arrow icons",IDC_INOUTICONS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,77,39,70,12
+    CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,53,138,10
+    CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,66,135,10
+    CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,78,61,10
+    CONTROL         "Show seconds",IDC_SHOWSECONDS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,85,77,63,11
+    GROUPBOX        "Other options",IDC_STATIC,154,0,151,94
+    CONTROL         "Enable hotkeys for scrolling the log",IDC_LOGHOTKEYS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,12,131,13
+    CONTROL         "Log status changes",IDC_LOGSTATUS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,26,130,13
+    CONTROL         "Remove trailing empty lines",IDC_EMPTYLINEFIX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,42,143,10
+    CONTROL         "Ignore per-contact message log settings",
+                    IDC_IGNORECONTACTSETTINGS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,158,56,142,11
+    CONTROL         "More aggressive log updates",IDC_AGGRESSIVEUPDATE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,79,118,10
+    GROUPBOX        "Formatting options",IDC_STATIC,0,97,305,74
+    CONTROL         "Show Events in a new line",IDC_SHOW_EVENTS_NL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,106,127,9
+    CONTROL         "Underline Timestamp/Nick",IDC_UNDERLINE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,118,128,12
+    CONTROL         "Show timestamp after Nickname",IDC_SWAPTIMESTAMP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,133,138,10
+    CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,147,131,10
+    CONTROL         "Use thin gridlines",IDC_THINSEPARATORS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,21,158,106,11
+    CONTROL         "Indent events",IDC_INDENT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,158,104,61,10
+    LTEXT           "(pixels)",IDC_STATIC,231,104,31,9
+    LTEXT           "Left",IDC_STATIC,158,118,20,12
+    EDITTEXT        IDC_INDENTAMOUNT,182,116,35,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_HOTTRACK,215,117,10,11
+    LTEXT           "Right",IDC_STATIC,230,118,24,9
+    EDITTEXT        IDC_RIGHTINDENT,254,116,35,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_RINDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,289,116,
+                    10,11
+    GROUPBOX        "Load History Events",IDC_STATIC,0,174,306,55
+    CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,138,10
+    CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
+                    BS_AUTORADIOBUTTON,10,199,138,10
+    EDITTEXT        IDC_LOADCOUNTN,148,197,33,12,ES_RIGHT | ES_NUMBER
+    CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,181,196,
+                    10,14
+    CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",
+                    BS_AUTORADIOBUTTON,10,212,138,10
+    EDITTEXT        IDC_LOADTIMEN,148,211,33,12,ES_RIGHT | ES_NUMBER | 
+                    WS_DISABLED
+    CONTROL         "Spin1",IDC_LOADTIMESPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
+                    WS_DISABLED,178,209,10,14
+    LTEXT           "minutes old",IDC_STMINSOLD,185,212,90,8,WS_DISABLED
+    CONTROL         "Group subsequent messages",IDC_GROUPMODE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,132,141,11
+    CONTROL         "Use relative timestamps",IDC_RELATIVEDATES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,147,102,8
+    CONTROL         "Use long date format",IDC_LONGDATES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,159,119,10
+END
+
+IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,42,248,
+                    131,WS_EX_CLIENTEDGE
+    LTEXT           "Send typing notifications to the following users when you are typing a message to the them:",
+                    IDC_STATIC,19,18,245,19
+    CONTROL         "Show typing notifications when a user is typing a message",
+                    IDC_SHOWNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,
+                    178,233,13
+    CONTROL         "Update inactive message window icons when a user is typing",
+                    IDC_TYPEWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,193,
+                    230,10
+    CONTROL         "Show typing notification when no message dialog is open",
+                    IDC_TYPETRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,
+                    206,230,10
+    CONTROL         "Flash in the system tray and in the contact list",
+                    IDC_NOTIFYTRAY,"Button",BS_AUTORADIOBUTTON,44,219,206,10
+    CONTROL         "Show balloon popup",IDC_NOTIFYBALLOON,"Button",
+                    BS_AUTORADIOBUTTON,44,231,206,10
+END
+
+IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 312, 227
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Tab options",IDC_STATIC,0,0,311,61
+    CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,11,108,10
+    EDITTEXT        IDC_CUT_TITLEMAX,148,8,30,12,ES_AUTOHSCROLL
+    LTEXT           "characters",IDC_STATIC,190,10,46,9
+    CONTROL         "Show full name as a tooltip over tabs",IDC_SHOWTABTIP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,23,147,10
+    CONTROL         "Show status text on tabs",IDC_SHOWSTATUSONTAB,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,33,121,12
+    CONTROL         "Warn on close message tab",IDC_WARNONCLOSE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,46,114,10
+    LTEXT           "Vertical tab padding",IDC_STATIC,148,34,71,10
+    EDITTEXT        IDC_TABPADDING,226,32,30,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,251,31,11,
+                    13
+    LTEXT           "pixel",IDC_STATIC,267,34,28,11
+    GROUPBOX        "Automatically create tabs in the background",IDC_STATIC,
+                    0,65,311,46
+    LTEXT           "NOTE: these settings have no effect if you are using the ""auto popup"" feature.",
+                    IDC_STATIC,17,75,282,11
+    CONTROL         "Auto create tab on event",IDC_AUTOCREATETABS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,85,114,11
+    CONTROL         "Popup container if minimized",IDC_POPUPCONTAINER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,96,118,11
+    CONTROL         "Also create Container, but do not activate it.",
+                    IDC_AUTOCREATECONTAINER,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,143,96,162,11
+    GROUPBOX        "Message dialog layout",IDC_STATIC,0,113,311,49
+    CONTROL         "Use flat buttons",IDC_FLATBUTTONS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,123,110,11
+    CONTROL         "Show full UIN on toolbar",IDC_FULLUSERNAME,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,136,111,11
+    CONTROL         "Multisend CLIST splits message history only",
+                    IDC_CLISTMODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,
+                    123,157,8
+    LTEXT           "Tab Control border",IDC_STATIC,168,148,66,12
+    EDITTEXT        IDC_TABBORDER,233,146,28,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,254,143,
+                    11,13
+    LTEXT           "pixel",IDC_STATIC,268,148,19,10
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,0,164,311,62
+    CONTROL         "Activate autolocale support",IDC_AUTOLOCALE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,171,118,12
+    LTEXT           "Input history:",IDC_STATIC,190,173,48,10
+    EDITTEXT        IDC_HISTORYSIZE,238,171,28,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,170,
+                    12,13
+    LTEXT           "entries",IDC_STATIC,272,173,28,10
+    CONTROL         "Use ESC key for closing sessions",IDC_ESC_MINIMIZE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,183,120,11
+    CONTROL         "Use global hotkeys for finding message sessions",
+                    IDC_HOTKEYSAREGLOBAL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,195,178,9
+    LTEXT           "Modifiers",IDC_STATIC,5,209,36,11
+    COMBOBOX        IDC_MODIFIERS,42,207,84,50,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Splitters have static edges",IDC_SPLITTERSTATICEDGES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,135,152,11
+END
+
+IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
+    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_MSGTABS,"SysTabControl32",TCS_HOTTRACK | 
+                    TCS_MULTILINE | TCS_TOOLTIPS | TCS_FOCUSNEVER | 
+                    WS_CLIPCHILDREN,7,7,422,219
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,0,0,435,1,
+                    WS_EX_STATICEDGE
+END
+
+IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Select container"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,134,19,66,14
+    PUSHBUTTON      "Cancel",IDCANCEL,134,36,66,14
+    GROUPBOX        "Available containers",IDC_STATIC,7,7,198,98
+    LISTBOX         IDC_CNTLIST,11,19,118,63,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_NEWCONTAINER,11,120,117,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Create new",IDC_CREATENEW,134,119,66,14
+    GROUPBOX        "Create a new container",IDC_STATIC,7,107,198,34
+    PUSHBUTTON      "Delete",IDC_DELETECONTAINER,134,68,66,14
+    PUSHBUTTON      "Rename",IDC_RENAMECONTAINER,134,85,66,14
+    EDITTEXT        IDC_NEWCONTAINERNAME,11,86,117,12,ES_AUTOHSCROLL
+END
+
+IDD_OPT_CONTAINERS DIALOGEX 0, 0, 312, 227
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "To set container options, please use the container settings dialog. It is avalable by:\n1. chossing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
+                    IDC_STATIC,7,2,298,25
+    GROUPBOX        "Container Mode",IDC_STATIC,0,42,312,62
+    CONTROL         "Use contact list group names for organizing containers",
+                    IDC_CONTAINERGROUPMODE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,6,51,200,10
+    CONTROL         "Maximum number of tabs per container",IDC_LIMITTABS,
+                    "Button",BS_AUTORADIOBUTTON,6,63,148,9
+    EDITTEXT        IDC_TABLIMIT,169,61,33,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_TABLIMITSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,202,65,9,
+                    10
+    CONTROL         "Use single window mode (one container per session)",
+                    IDC_SINGLEWINDOWMODE,"Button",BS_AUTORADIOBUTTON,6,74,
+                    196,11
+    GROUPBOX        "Set display name for the default container (instead of just ""default"")",
+                    IDC_STATIC,1,186,310,30
+    EDITTEXT        IDC_DEFAULTDISPLAYNAME,7,198,142,12,ES_AUTOHSCROLL
+    CONTROL         "Use default container mode (manual contact assignments)",
+                    IDC_DEFAULTCONTAINERMODE,"Button",BS_AUTORADIOBUTTON,6,
+                    87,214,12
+END
+
+IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 312, 227
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Message Window Fonts",IDC_STATIC,4,4,304,125
+    COMBOBOX        IDC_FONTID,27,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "same",IDC_STSAMETEXT,34,32,45,10,SS_CENTERIMAGE
+    CONTROL         "Typeface",IDC_SAMETYPE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,79,32,52,10
+    CONTROL         "Size",IDC_SAMESIZE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,132,32,45,10
+    CONTROL         "Style",IDC_SAMESTYLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,178,32,48,10
+    CONTROL         "Colour",IDC_SAMECOLOUR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,227,32,53,10
+    LTEXT           "as:",IDC_STASTEXT,34,46,45,10,SS_CENTERIMAGE
+    COMBOBOX        IDC_SAMEAS,79,45,196,88,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_TYPEFACE,27,72,136,182,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SCRIPT,171,72,60,68,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE,240,72,40,69,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Bold",IDC_BOLD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,
+                    88,45,10
+    CONTROL         "Italic",IDC_ITALIC,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,80,88,52,10
+    CONTROL         "Underline",IDC_UNDERLINE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,132,88,66,10
+    CONTROL         "",IDC_COLOUR,"ColourPicker",WS_TABSTOP,221,87,59,12
+    EDITTEXT        IDC_SAMPLE,78,104,151,16,ES_CENTER | ES_READONLY | NOT 
+                    WS_TABSTOP
+    GROUPBOX        "Background Colors",IDC_STATIC,3,135,305,87
+    LTEXT           "Default background",IDC_STATIC,15,159,81,8
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,102,158,39,10
+    LTEXT           "Input area background",IDC_STATIC,15,174,80,10
+    CONTROL         "",IDC_INPUTBKG,"ColourPicker",WS_TABSTOP,102,173,39,10
+    LTEXT           "Outgoing background:",IDC_STATIC,172,158,81,8
+    CONTROL         "",IDC_BKGOUTGOING,"ColourPicker",WS_TABSTOP,258,157,39,
+                    10
+    LTEXT           "Incoming background:",IDC_STATIC,172,172,81,8
+    CONTROL         "",IDC_BKGINCOMING,"ColourPicker",WS_TABSTOP,258,171,39,
+                    10
+    CONTROL         "Use individual background colors",IDC_USEINDIVIDUALBKG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,197,128,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CONTAINEROPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 274
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 217
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#include <winres.h>\r\n"
+    "#include ""../../include/statusmodes.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_HYPERLINKHAND       CURSOR                  "../../src/res/hyperlin.cur"
+IDC_DROP                CURSOR                  "../../src/res/DRAGCOPY.CUR"
+IDC_DROPUSER            CURSOR                  "../../src/res/dropuser.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_CONTEXT MENU 
+BEGIN
+    POPUP "Log"
+    BEGIN
+        MENUITEM "&Copy",                       IDM_COPY
+        MENUITEM "Co&py All",                   IDM_COPYALL
+        MENUITEM "Select &All",                 IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "Clear Log",                   IDM_CLEAR
+    END
+    POPUP "LogLink"
+    BEGIN
+        MENUITEM "Open in &new window",         IDM_OPENNEW
+        MENUITEM "&Open in existing window",    IDM_OPENEXISTING
+        MENUITEM "&Copy link",                  IDM_COPYLINK
+    END
+END
+
+IDR_TABCONTEXT MENU 
+BEGIN
+    POPUP "Tabmenu"
+    BEGIN
+        MENUITEM "Close tab",                   ID_TABMENU_CLOSETAB
+        MENUITEM SEPARATOR
+        MENUITEM "Switch to next Tab",          ID_TABMENU_SWITCHTONEXTTAB
+        MENUITEM "Switch to previous Tab",      ID_TABMENU_SWITCHTOPREVIOUSTAB
+
+        MENUITEM SEPARATOR
+        MENUITEM "Attach to Container...",      ID_TABMENU_ATTACHTOCONTAINER
+        MENUITEM "Container Options...",        ID_TABMENU_CONTAINEROPTIONS
+        MENUITEM SEPARATOR
+        MENUITEM "Close Container",             ID_TABMENU_CLOSECONTAINER
+    END
+    POPUP "Picmenu"
+    BEGIN
+        MENUITEM "Toggle Avatar display",       ID_PICMENU_TOGGLEAVATARDISPLAY
+
+        MENUITEM SEPARATOR
+        MENUITEM "Reset the Avatar",            ID_PICMENU_RESETTHEAVATAR
+        MENUITEM "Load a local picture as avatar...", 
+                                                ID_PICMENU_LOADALOCALPICTUREASAVATAR
+
+        MENUITEM SEPARATOR
+        MENUITEM "Align for maximum Log Size",  ID_PICMENU_ALIGNFORMAXIMUMLOGSIZE
+
+        MENUITEM "Align for full-width Button Bar", ID_PICMENU_ALIGNFORFULL
+    END
+    POPUP "Logmenu"
+    BEGIN
+        MENUITEM "Show Message Icons",          ID_LOGMENU_SHOWMESSAGEICONS
+        MENUITEM "Show Nickname",               ID_LOGMENU_SHOWNICKNAME
+        MENUITEM "Display Timestamp after Nickname", 
+                                                ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME
+
+        MENUITEM SEPARATOR
+        POPUP "Timestamp Settings"
+        BEGIN
+            MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
+            MENUITEM "Show Date",                   ID_LOGMENU_SHOWDATE
+            MENUITEM "Show Seconds",                ID_LOGMENU_SHOWSECONDS
+            MENUITEM SEPARATOR
+            MENUITEM "Use relative timestamps",     ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS
+
+            MENUITEM "Use long date format",        ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT
+
+        END
+        MENUITEM SEPARATOR
+        POPUP "Message Log formatting"
+        BEGIN
+            MENUITEM "Indent Message Body",         ID_LOGMENU_INDENTMESSAGEBODY
+
+            MENUITEM "Message Body in a new Line",  ID_LOGMENU_MESSAGEBODYINANEWLINE
+
+            MENUITEM "Underline Timestamp / Nickname", 
+                                                    ID_LOGMENU_UNDERLINETIMESTAMP
+
+            MENUITEM SEPARATOR
+            MENUITEM "Show grid",                   ID_MESSAGELOGFORMATTING_SHOWGRID
+
+            MENUITEM "Use individual background colors", 
+                                                    ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS
+
+            MENUITEM SEPARATOR
+            MENUITEM "Group messages",              ID_MESSAGELOGFORMATTING_GROUPMESSAGES
+
+        END
+        MENUITEM SEPARATOR
+        POPUP "Status Bar Settings"
+        BEGIN
+            MENUITEM "Show the Status Bar",         ID_STATUSBARSETTINGS_SHOWTHESTATUSBAR
+
+            MENUITEM "Hide the Status Bar",         ID_STATUSBARSETTINGS_HIDETHESTATUSBAR
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Activate RTL",                ID_LOGMENU_ACTIVATERTL
+        MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
+
+        MENUITEM "Never log Status Changes",    ID_LOGMENU_NEVERLOGSTATUSCHANGES
+
+        MENUITEM SEPARATOR
+        MENUITEM "Always use global Splitter Position", 
+                                                ID_LOGMENU_ALWAYSUSEGLOBALSPLITTERPOSITION
+
+        MENUITEM "Save Splitter Position as global Default", 
+                                                ID_LOGMENU_SAVESPLITTERPOSITIONASGLOBALDEFAULT
+
+        MENUITEM SEPARATOR
+        MENUITEM "Load Defaults",               ID_LOGMENU_LOADDEFAULTS
+        MENUITEM "Save these Settings as default Values", 
+                                                ID_LOGMENU_SAVETHESESETTINGSASDEFAULTVALUES
+
+    END
+END
+
+#endif    // Englisch (USA) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Deutsch (Österreich) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_HOTKEYSLAVE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 133
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 45
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENUBAR MENU 
+BEGIN
+    MENUITEM "&File",                       0
+    POPUP "View"
+    BEGIN
+        MENUITEM "Show Menu Bar",               ID_VIEW_SHOWMENUBAR
+        MENUITEM "Show Status Bar",             ID_VIEW_SHOWSTATUSBAR
+        MENUITEM SEPARATOR
+        POPUP "Toolbar"
+        BEGIN
+            MENUITEM "Send Button",                 ID_TOOLBAR_SENDBUTTON
+            MENUITEM "User Information",            ID_TOOLBAR_USERINFORMATION
+
+            MENUITEM "Extra Buttons",               ID_TOOLBAR_EXTRABUTTONS
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Show Avatar",                 ID_VIEW_SHOWAVATAR
+        MENUITEM "Show Title Bar",              ID_VIEW_SHOWTITLEBAR
+    END
+    MENUITEM "&User",                       0
+    MENUITEM "Message Log",                 0
+    POPUP "Avatar"
+    BEGIN
+        MENUITEM "Toggle Avatar display",       ID_PICMENU_TOGGLEAVATARDISPLAY
+
+        MENUITEM SEPARATOR
+        MENUITEM "Reset the Avatar",            ID_PICMENU_RESETTHEAVATAR
+    END
+    MENUITEM "Help",                        0
+END
+
+#endif    // Deutsch (Österreich) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

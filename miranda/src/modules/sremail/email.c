@@ -1,0 +1,93 @@
+/*
+
+Miranda IM: the free IM client for Microsoft* Windows*
+
+Copyright 2000-2003 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+#include "../../core/commonheaders.h"
+
+static HANDLE hEMailMenuItem;
+
+void SendEmailThread(char *szUrl)
+{
+	ShellExecute(NULL,"open",szUrl,"","",SW_SHOW);
+	free(szUrl);	
+	return;
+}
+
+static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
+{
+	DBVARIANT dbv;
+	char *szUrl;
+	char *szProto;
+
+	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
+	if(szProto==NULL || DBGetContactSetting((HANDLE)wParam,szProto,"e-mail",&dbv)) {
+		if(DBGetContactSetting((HANDLE)wParam,"UserInfo","Mye-mail0",&dbv)) {
+			MessageBox((HWND)lParam,Translate("User has not registered an e-mail address"),Translate("Send e-mail"),MB_OK);
+			return 1;
+		}
+	}
+	szUrl=(char*)malloc(lstrlen(dbv.pszVal)+8);
+	lstrcpy(szUrl,"mailto:");
+	lstrcat(szUrl,dbv.pszVal);
+	free(dbv.pszVal);
+	forkthread(SendEmailThread,0,szUrl);
+	return 0;
+}
+
+static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
+{
+	CLISTMENUITEM mi;
+	DBVARIANT dbv;
+	char *szProto;
+
+	ZeroMemory(&mi,sizeof(mi));
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIM_FLAGS;
+
+	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	if (szProto == NULL || DBGetContactSetting((HANDLE)wParam, szProto, "e-mail",& dbv)) {
+		if (DBGetContactSetting((HANDLE)wParam, "UserInfo", "Mye-mail0", &dbv))
+			mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+	}
+
+	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hEMailMenuItem, (LPARAM)&mi);
+
+	return 0;
+}
+
+int LoadSendRecvEMailModule(void)
+{
+	CLISTMENUITEM mi;
+
+	CreateServiceFunction(MS_EMAIL_SENDEMAIL, SendEMailCommand);
+	ZeroMemory(&mi, sizeof(mi));
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000010000;
+	mi.flags = 0;
+	mi.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SENDEMAIL));
+	mi.pszContactOwner = NULL;
+	mi.pszName = Translate("&E-mail");
+	mi.pszService = MS_EMAIL_SENDEMAIL;
+	hEMailMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, EMailPreBuildMenu);
+
+	return 0;
+}

@@ -1,0 +1,6 @@
+LIBRARY icqwd
+EXPORTS
+	MirandaPluginInfo
+	Load
+	Unload
+	icqCommit

@@ -1,0 +1,433 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#include <winres.h>
+#include <statusmodes.h>
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 227
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Messaging Mode",IDC_STATIC,0,0,310,31
+    CONTROL         "Split Mode",IDC_PRESETSPLIT,"Button",BS_AUTORADIOBUTTON | 
+                    BS_PUSHLIKE,95,9,56,16
+    CONTROL         "Single Mode",IDC_PRESETSINGLE,"Button",
+                    BS_AUTORADIOBUTTON | BS_PUSHLIKE,161,9,56,16
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,37,310,187
+    CONTROL         "Automatically pop up the window when a message is received",
+                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,51,
+                    300,10
+    CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,65,212,10
+    CONTROL         "Close the message window on reply",IDC_CLOSEONREPLY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,79,202,10
+    CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,93,221,10
+    CONTROL         "Use the contact's status icon as the window icon",
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
+                    107,273,10
+    CONTROL         "Save the window size and location individually for each contact",
+                    IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,121,300,10
+    CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,137,136,10
+    CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,152,135,10
+    CONTROL         "Show username on top row",IDC_SHOWINFOLINE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,167,138,10
+    CONTROL         "Show toolbar buttons on top row",IDC_SHOWBUTTONLINE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,182,137,10
+    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,137,137,10
+    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,152,137,10
+    CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,167,133,10
+    LTEXT           "Show warning when message has not been received after",
+                    IDC_STATIC,8,203,211,8
+    EDITTEXT        IDC_SECONDS,223,201,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,203,44,8
+END
+
+IDD_MSGSENDERROR DIALOGEX 0, 0, 187, 97
+STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Message send error"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "An error has occured. The protocol reported the following error:",
+                    IDC_STATIC,5,5,177,28
+    DEFPUSHBUTTON   "Try again",IDOK,22,78,63,14
+    PUSHBUTTON      "Cancel",IDCANCEL,104,78,61,14
+    EDITTEXT        IDC_ERRORTEXT,5,37,177,35,ES_MULTILINE | ES_READONLY | 
+                    WS_VSCROLL
+END
+
+IDD_MSGSPLIT DIALOGEX 0, 0, 184, 78
+STYLE DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+    WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+CAPTION "Message Session"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_MESSAGE,1,49,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "&Send",IDOK,143,48,39,15
+    PUSHBUTTON      "Close",IDCANCEL,129,0,54,15,NOT WS_VISIBLE
+    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,2,5,
+                    12,12
+    LTEXT           "",IDC_NAME,16,5,95,9,SS_NOPREFIX | SS_CENTERIMAGE
+    CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,74,2,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,92,2,16,14,
+                    0x18000000L
+    CONTROL         "&D",IDC_DETAILS,"MButtonClass",WS_TABSTOP,110,2,16,14,
+                    0x18000000L
+    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,128,2,16,14,
+                    0x18000000L
+    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,146,2,16,14,
+                    0x18000000L
+    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,164,2,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,181,5,4,89
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,2,30,
+                    60,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_LOG,"RichEdit20A",WS_VSCROLL | WS_TABSTOP | 0x844,
+                    1,18,181,26,WS_EX_STATICEDGE
+    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,45,183,2
+    PUSHBUTTON      "Read &Next",IDC_READNEXT,123,0,60,15
+    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
+                    WS_VISIBLE | WS_TABSTOP,2,64,12,12
+END
+
+IDD_MSGSINGLE DIALOG DISCARDABLE  0, 0, 183, 68
+STYLE DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
+    WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "%.200s: Message Received"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "&Reply",IDOK,33,50,54,15
+    PUSHBUTTON      "Close",IDCANCEL,96,50,54,15
+    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,4,5,
+                    12,12
+    LTEXT           "",IDC_NAME,18,5,95,9,SS_NOPREFIX | SS_CENTERIMAGE
+    CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,93,2,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,111,2,16,14,
+                    0x18000000L
+    CONTROL         "&D",IDC_DETAILS,"MButtonClass",WS_TABSTOP,129,2,16,14,
+                    0x18000000L
+    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,147,2,16,14,
+                    0x18000000L
+    CONTROL         "&T",IDC_TIME,"MButtonClass",WS_TABSTOP,165,2,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_LOG,"RichEdit20A",WS_TABSTOP,3,18,177,26
+    PUSHBUTTON      "Read &Next",IDC_READNEXT,118,50,60,15
+    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
+                    WS_VISIBLE | WS_TABSTOP,4,52,12,12
+END
+
+IDD_MSGSEND DIALOG DISCARDABLE  0, 0, 184, 66
+STYLE DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
+    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "%.200s: Send Message"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    EDITTEXT        IDC_MESSAGE,3,20,177,23,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "&Send",IDOK,31,48,54,15
+    PUSHBUTTON      "Close",IDCANCEL,94,48,54,15
+    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW | WS_TABSTOP,2,5,
+                    12,12
+    LTEXT           "",IDC_NAME,16,5,95,9,SS_NOPREFIX | SS_CENTERIMAGE
+    CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,92,2,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_USERMENU,"MButtonClass",WS_TABSTOP,110,2,16,14,
+                    0x18000000L
+    CONTROL         "&D",IDC_DETAILS,"MButtonClass",WS_TABSTOP,128,2,16,14,
+                    0x18000000L
+    CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,146,2,16,14,
+                    0x18000000L
+    CONTROL         "&M",IDC_MULTIPLE,"MButtonClass",WS_TABSTOP,164,2,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,180,0,4,77
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,3,30,
+                    61
+    CONTROL         "",IDC_TYPINGNOTIFY,"Button",BS_OWNERDRAW | NOT 
+                    WS_VISIBLE | WS_TABSTOP,4,51,12,12
+END
+
+IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,158,158
+    CONTROL         "Show file events",IDC_SHOWFILES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,13,146,10
+    CONTROL         "Show url events",IDC_SHOWURLS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,29,146,10
+    CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,44,146,10
+    CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,60,146,10
+    CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,76,146,10
+    CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,21,92,135,10
+    GROUPBOX        "Fonts",IDC_STATIC,166,0,140,158
+    LTEXT           "Background colour:",IDC_STATIC,176,16,81,8
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,258,14,39,12
+    LISTBOX         IDC_FONTLIST,176,31,121,82,LBS_OWNERDRAWVARIABLE | 
+                    LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "",IDC_FONTCOLOUR,"ColourPicker",WS_TABSTOP,176,117,57,
+                    14
+    PUSHBUTTON      "Choose font...",IDC_CHOOSEFONT,240,117,57,14
+    GROUPBOX        "Load History Events",IDC_STATIC,0,163,306,66
+    CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,10,177,138,10
+    CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
+                    BS_AUTORADIOBUTTON,10,193,138,10
+    EDITTEXT        IDC_LOADCOUNTN,148,192,33,12,ES_RIGHT | ES_NUMBER | 
+                    WS_DISABLED
+    CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
+                    WS_DISABLED,170,191,10,14
+    CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",
+                    BS_AUTORADIOBUTTON,10,209,138,10
+    EDITTEXT        IDC_LOADTIMEN,148,208,33,12,ES_RIGHT | ES_NUMBER | 
+                    WS_DISABLED
+    CONTROL         "Spin1",IDC_LOADTIMESPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
+                    WS_DISABLED,170,207,10,14
+    LTEXT           "minutes old",IDC_STMINSOLD,185,210,90,8,WS_DISABLED
+    CTEXT           "Select multiple fonts by dragging or by using the control key",
+                    IDC_STATIC,176,135,121,16
+END
+
+IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,42,248,
+                    131,WS_EX_CLIENTEDGE
+    LTEXT           "Send typing notifications to the following users when you are typing a message to the them:",
+                    IDC_STATIC,19,18,245,19
+    CONTROL         "Show typing notifications when a user is typing a message",
+                    IDC_SHOWNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,
+                    178,233,13
+    CONTROL         "Update inactive message window icons when a user is typing",
+                    IDC_TYPEWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,193,
+                    230,10
+    CONTROL         "Show typing notification when no message dialog is open",
+                    IDC_TYPETRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,
+                    206,230,10
+    CONTROL         "Flash in the system tray and in the contact list",
+                    IDC_NOTIFYTRAY,"Button",BS_AUTORADIOBUTTON,44,219,206,10
+    CONTROL         "Show balloon popup",IDC_NOTIFYBALLOON,"Button",
+                    BS_AUTORADIOBUTTON,44,231,206,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_OPT_MSGDLG, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 22
+        VERTGUIDE, 51
+        VERTGUIDE, 148
+        VERTGUIDE, 295
+        VERTGUIDE, 310
+        BOTTOMMARGIN, 224
+    END
+
+    IDD_MSGSENDERROR, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 182
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 92
+    END
+
+    IDD_MSGSPLIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 179
+        TOPMARGIN, 5
+        HORZGUIDE, 16
+        HORZGUIDE, 53
+    END
+
+    IDD_MSGSINGLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 178
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 67
+        HORZGUIDE, 16
+    END
+
+    IDD_MSGSEND, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 179
+        VERTGUIDE, 178
+        TOPMARGIN, 5
+        HORZGUIDE, 16
+    END
+
+    IDD_OPT_MSGLOG, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 148
+        VERTGUIDE, 156
+        VERTGUIDE, 176
+        VERTGUIDE, 297
+        HORZGUIDE, 183
+        HORZGUIDE, 199
+    END
+
+    IDD_OPT_MSGTYPE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 276
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 245
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#include <winres.h>\r\n"
+    "#include ""../../SDK/headers_c/statusmodes.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_USERDETAILS         ICON    DISCARDABLE     "res/Details8.ico"
+IDI_TIMESTAMP           ICON    DISCARDABLE     "res/Clock8.ico"
+IDI_ADDCONTACT          ICON    DISCARDABLE     "../../src/res/addcontact.ico"
+IDI_HISTORY             ICON    DISCARDABLE     "res/History8.ico"
+IDI_MULTISEND           ICON    DISCARDABLE     "res/Multisend8.ico"
+IDI_DOWNARROW           ICON    DISCARDABLE     "res/Downarrow8.ico"
+IDI_TYPING              ICON    DISCARDABLE     "res/Typing8.ico"
+IDI_TIMESTAMP32         ICON    DISCARDABLE     "res/Clock32.ico"
+IDI_TYPING32            ICON    DISCARDABLE     "res/Typing32.ico"
+IDI_DOWNARROW32         ICON    DISCARDABLE     "res/Downarrow32.ico"
+IDI_HISTORY32           ICON    DISCARDABLE     "res/History32.ico"
+IDI_MULTISEND32         ICON    DISCARDABLE     "res/Multisend32.ico"
+IDI_USERDETAILS32       ICON    DISCARDABLE     "res/Details32.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "../../src/res/hyperlin.cur"
+IDC_DROP                CURSOR  DISCARDABLE     "../../src/res/DRAGCOPY.CUR"
+IDC_DROPUSER            CURSOR  DISCARDABLE     "../../src/res/dropuser.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_CONTEXT MENU DISCARDABLE 
+BEGIN
+    POPUP "Log"
+    BEGIN
+        MENUITEM "&Copy",                       IDM_COPY
+        MENUITEM "Co&py All",                   IDM_COPYALL
+        MENUITEM "Select &All",                 IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "C&lear Log",                  IDM_CLEAR
+    END
+    POPUP "LogLink"
+    BEGIN
+        MENUITEM "Open in &new window",         IDM_OPENNEW
+        MENUITEM "&Open in existing window",    IDM_OPENEXISTING
+        MENUITEM "&Copy link",                  IDM_COPYLINK
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

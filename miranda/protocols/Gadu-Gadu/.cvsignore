@@ -1,0 +1,6 @@
+*.a
+*.dll
+*.res
+*.o
+.depend
+build.bat

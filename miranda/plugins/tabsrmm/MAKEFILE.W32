@@ -1,0 +1,63 @@
+# Project: tabsrmm
+# Makefile created by Dev-C++ 4.9.9.0
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = tabsrmm_private.res
+OBJ  = Release_MINGW32_UNICODE/ImageDataObject.o Release_MINGW32_UNICODE/container.o Release_MINGW32_UNICODE/containeroptions.o Release_MINGW32_UNICODE/hotkeyhandler.o Release_MINGW32_UNICODE/msgdialog.o Release_MINGW32_UNICODE/msglog.o Release_MINGW32_UNICODE/msgoptions.o Release_MINGW32_UNICODE/msgs.o Release_MINGW32_UNICODE/selectcontainer.o Release_MINGW32_UNICODE/srmm.o $(RES)
+LINKOBJ  = Release_MINGW32_UNICODE/ImageDataObject.o Release_MINGW32_UNICODE/container.o Release_MINGW32_UNICODE/containeroptions.o Release_MINGW32_UNICODE/hotkeyhandler.o Release_MINGW32_UNICODE/msgdialog.o Release_MINGW32_UNICODE/msglog.o Release_MINGW32_UNICODE/msgoptions.o Release_MINGW32_UNICODE/msgs.o Release_MINGW32_UNICODE/selectcontainer.o Release_MINGW32_UNICODE/srmm.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias ../../../../Dev-Cpp/lib/libgdi32.a ../../../../Dev-Cpp/lib/libole32.a ../../../../Dev-Cpp/lib/libuser32.a ../../../../Dev-Cpp/lib/libcomctl32.a ../../../../Dev-Cpp/lib/libuuid.a ../../../../Dev-Cpp/lib/libcomdlg32.a  ../../../../Dev-Cpp/lib/libstdc++.a -mwindows -s
+INCS =  -I"C:/Dev-Cpp/include"
+CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
+BIN  = Release_MINGW32_UNICODE/tabsrmmW.dll
+CXXFLAGS = $(CXXINCS) -DBUILDING_DLL=1   -fexpensive-optimizations -O2 -mwindows
+CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -DUNICODE   -fexpensive-optimizations -O2 -mwindows
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before Release_MINGW32_UNICODE/tabsrmmW.dll all-after
+
+
+clean: clean-custom
+	rm -f $(OBJ) $(BIN)
+
+DLLWRAP=dllwrap.exe
+DEFFILE=Release_MINGW32_UNICODE/libtabsrmm.def
+STATICLIB=Release_MINGW32_UNICODE/libtabsrmm.a
+
+$(BIN): $(LINKOBJ)
+	$(DLLWRAP) --output-def $(DEFFILE) --implib $(STATICLIB) $(LINKOBJ) $(LIBS) -o $(BIN)
+
+Release_MINGW32_UNICODE/ImageDataObject.o: ImageDataObject.cpp
+	$(CPP) -c ImageDataObject.cpp -o Release_MINGW32_UNICODE/ImageDataObject.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/container.o: container.c
+	$(CC) -c container.c -o Release_MINGW32_UNICODE/container.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/containeroptions.o: containeroptions.c
+	$(CC) -c containeroptions.c -o Release_MINGW32_UNICODE/containeroptions.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/hotkeyhandler.o: hotkeyhandler.c
+	$(CC) -c hotkeyhandler.c -o Release_MINGW32_UNICODE/hotkeyhandler.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/msgdialog.o: msgdialog.c
+	$(CC) -c msgdialog.c -o Release_MINGW32_UNICODE/msgdialog.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/msglog.o: msglog.c
+	$(CC) -c msglog.c -o Release_MINGW32_UNICODE/msglog.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/msgoptions.o: msgoptions.c
+	$(CC) -c msgoptions.c -o Release_MINGW32_UNICODE/msgoptions.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/msgs.o: msgs.c
+	$(CC) -c msgs.c -o Release_MINGW32_UNICODE/msgs.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/selectcontainer.o: selectcontainer.c
+	$(CC) -c selectcontainer.c -o Release_MINGW32_UNICODE/selectcontainer.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/srmm.o: srmm.c
+	$(CC) -c srmm.c -o Release_MINGW32_UNICODE/srmm.o $(CFLAGS)
+
+tabsrmm_private.res: tabsrmm_private.rc
+	$(WINDRES) -i tabsrmm_private.rc -I rc -o tabsrmm_private.res -O coff -D__GNUWIN32__

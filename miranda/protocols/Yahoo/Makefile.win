@@ -1,0 +1,39 @@
+SRC = http_gateway.c main.c options.c pthread.c server.c services.c util.c yahoo.c \
+	  libyahoo2/crypt.c libyahoo2/libyahoo2.c libyahoo2/md5.c libyahoo2/sha.c libyahoo2/yahoo_fn.c libyahoo2/yahoo_httplib.c libyahoo2/yahoo_list.c libyahoo2/yahoo_util.c
+OBJ = $(SRC:.c=.o)
+RES = Yahoo.res
+
+LIB = 
+
+CC = gcc
+RC = windres
+RM = rm
+
+ifdef DEBUG
+BIN = ../../Bin/Debug/Plugins/Yahoo.dll
+else
+BIN = ../../Bin/Release/Plugins/Yahoo.dll
+endif
+
+DEFINES = -DHAVE_CONFIG_H -DUSE_STRUCT_CALLBACKS
+ifdef DEBUG
+DEFINES := $(DEFINES) -D_DEBUG
+endif
+
+
+ifdef DEBUG
+CFLAGS  = -g $(DEFINES)
+LDFLAGS  = -shared 
+else
+CFLAGS  = -Os $(DEFINES)
+LDFLAGS  = -shared -s
+endif
+
+all : $(OBJ) $(RES)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
+
+$(RES) : $(RES:.res=.rc) $(RES:.res=.h) Makefile.win
+	$(RC) -O COFF -o $(RES) -i $(RES:.res=.rc)
+
+clean :
+	$(RM) -f $(OBJ) $(RES)

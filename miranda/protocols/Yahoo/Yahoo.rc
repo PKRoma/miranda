@@ -1,0 +1,113 @@
+/*
+ * $Id$
+ *
+ * myYahoo Miranda Plugin 
+ *
+ * Authors: Gennady Feldman (aka Gena01) 
+ *          Laurent Marechal (aka Peorth)
+ *
+ * This code is under GPL and is based on AIM, MSN and Miranda source code.
+ * I want to thank Robert Rainwater and George Hazan for their code and support
+ * and for answering some of my questions during development of this plugin.
+ */
+#include <windows.h>
+
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON    DISCARDABLE     "icos\\yahoo.ico"
+IDI_YAHOO               ICON    DISCARDABLE     "icos\\yahoo.ico"
+IDI_INBOX               ICON    DISCARDABLE     "icos\\inbox.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OPT_YAHOO DIALOGEX 0, 0, 296, 220
+STYLE WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Yahoo",IDC_STYAHOOGROUP,8,10,280,76,WS_GROUP
+    RTEXT           "ID:",IDC_STATIC,16,20,52,8
+    EDITTEXT        IDC_HANDLE,72,18,100,12,ES_AUTOHSCROLL
+    RTEXT           "Password:",IDC_STATIC,16,36,52,8
+    EDITTEXT        IDC_PASSWORD,72,34,100,12,ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL         "Create a new Yahoo account using the Yahoo website",
+                    IDC_NEWYAHOOACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,72,208,8
+
+    GROUPBOX        "Expert",IDC_STATIC,8,88,280,118
+	
+    RTEXT           "Login server:",IDC_STATIC,12,104,52,10
+    EDITTEXT        IDC_LOGINSERVER,68,102,97,12,ES_AUTOHSCROLL
+    RTEXT           "Port:",IDC_STATIC,170,104,25,10
+    EDITTEXT        IDC_YAHOOPORT,199,102,29,12,ES_AUTOHSCROLL | ES_NUMBER
+	PUSHBUTTON      "Reset",IDC_RESETSERVER,235,102,34,12
+	
+	CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,116,220,10 					
+
+    CONTROL         "Disable main menu (needs restart)",IDC_DISMAINMENU,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,130,220,10
+	
+	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,144,220,10 					
+
+	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,160,220,10 					
+
+END
+
+IDD_OPT_YAHOO_POPUP DIALOGEX 0, 0, 240, 200
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Colors",IDC_STATIC,4,0,232,60
+    CONTROL         "",IDC_BGCOLOUR,"ColourPicker",WS_TABSTOP,12,12,39,12
+    LTEXT           "Background color",IDC_STATIC,56,14,176,8,
+                    SS_CENTERIMAGE
+    CONTROL         "",IDC_TEXTCOLOUR,"ColourPicker",WS_TABSTOP,12,28,39,12
+    LTEXT           "Text color",IDC_STATIC,56,30,176,8,SS_CENTERIMAGE
+    CONTROL         "Use Windows colors",IDC_USEWINCOLORS,"Button",
+                    BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,12,44,
+                    220,8
+    GROUPBOX        "Yahoo Mail",IDC_STATIC,4,64,232,60
+    CONTROL         "Display Yahoo Mail notifications",
+                    IDC_DISABLEYAHOOMAIL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,76,220,10
+    LTEXT           "Timeout (*)",IDC_STATIC,12,107,52,8
+    EDITTEXT        IDC_POPUP_TIMEOUT,72,105,24,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "Preview",IDC_PREVIEW,176,104,52,12
+    GROUPBOX        "Other",IDC_STATIC,4,128,232,58
+    CONTROL         "Display popups when user is typing",IDC_NOTIFY_USERTYPE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,140,216,10
+    LTEXT           "Timeout (*)",IDC_STATIC,12,166,60,8
+    EDITTEXT        IDC_POPUP_TIMEOUT2,72,164,24,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "Preview",IDC_PREVIEW2,176,166,52,12
+    LTEXT           "(*) Timeouts require Popup v. 1.0.1.9 or later",
+                    IDC_STATIC,4,188,232,8
+END
+
+IDD_SETCUSTSTAT DIALOG DISCARDABLE  0, 0, 187, 51
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set Custom Status"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    EDITTEXT        IDC_CUSTSTAT,5,5,177,12,ES_AUTOHSCROLL
+    CONTROL         "Show as busy",
+                    IDC_CUSTSTATBUSY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    5,21,120,10
+    DEFPUSHBUTTON   "OK",IDOK,36,34,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,102,34,50,14
+END
+

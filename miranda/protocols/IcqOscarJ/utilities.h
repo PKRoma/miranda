@@ -1,0 +1,110 @@
+// ---------------------------------------------------------------------------80
+//                ICQ plugin for Miranda Instant Messenger
+//                ________________________________________
+// 
+// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001,2002 Jon Keating, Richard Hughes
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+// -----------------------------------------------------------------------------
+//
+// File name      : $Source$
+// Revision       : $Revision$
+// Last change on : $Date$
+// Last change by : $Author$
+//
+// DESCRIPTION:
+//
+//  Describe me here please...
+//
+// -----------------------------------------------------------------------------
+
+#ifndef __UTILITIES_H
+#define __UTILITIES_H
+
+typedef struct icq_cookie_info_s
+{
+	WORD wCookie;
+	DWORD dwUin;
+	void *pvExtra;
+} icq_cookie_info;
+
+typedef struct icq_ack_args_s
+{
+	HANDLE hContact;
+	int    nAckType;
+	int    nAckResult;
+	HANDLE hSequence;
+	LPARAM pszMessage;
+} icq_ack_args;
+
+
+/*---------* Functions *---------------*/
+
+void icq_EnableMultipleControls(HWND hwndDlg, const UINT* controls, int cControls, int state);
+void icq_ShowMultipleControls(HWND hwndDlg, const UINT* controls, int cControls, int state);
+int IcqStatusToMiranda(WORD wStatus);
+WORD MirandaStatusToIcq(int nStatus);
+int MirandaStatusToSupported(int nMirandaStatus);
+char *MirandaStatusToString(int);
+char *MirandaVersionToString(int);
+
+void InitCookies(void);
+void UninitCookies(void);
+WORD AllocateCookie(DWORD dwUin, void *pvExtra);
+int FindCookie(WORD wCookie, DWORD *pdwUin, void **ppvExtra);
+int FindCookieByData(void *pvExtra,WORD *pwCookie, DWORD *pdwUin);
+void FreeCookie(WORD wCookie);
+WORD GenerateCookie(void);
+
+HANDLE HContactFromUIN(DWORD, int);
+//HANDLE HContactFromUID(char* pszUID, int);
+char *NickFromHandle(HANDLE);
+
+size_t strlennull(const char *string);
+
+void ResetSettingsOnConnect(void);
+void ResetSettingsOnLoad(void);
+int RandRange(int nLow, int nHigh);
+
+BOOL IsStringUIN(char* pszString);
+
+void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments);
+void icq_SendProtoAck(HANDLE hContact, WORD wCookie, int nAckResult, int nAckType, char* pszMessage);
+
+BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength);
+BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);
+BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength);
+BOOL writeDbInfoSettingByte(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);
+BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength);
+
+int GetGMTOffset(void);
+
+BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType);
+
+#define icqOnline ((gnCurrentStatus != ID_STATUS_OFFLINE) && (gnCurrentStatus != ID_STATUS_CONNECTING))
+
+static void __inline SAFE_FREE(void* p)
+{
+	if (p)
+	{
+		free(p);
+		p = NULL;
+	}
+}
+
+#endif /* __UTILITIES_H */

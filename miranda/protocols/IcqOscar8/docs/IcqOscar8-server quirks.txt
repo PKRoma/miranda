@@ -1,0 +1,22 @@
+This took me over an hour to debug, so I'd hate for anyone else to have to
+repeat the work.
+
+The ICQ server apparently has some sort of limit on how frequently you can
+connect to their server. The limit is fairly high, but with all my testing
+I've exceeded it on my test ICQ number.
+
+I tried to load that test ICQ number on Mirabilis' client and it told me
+that the rate was exceeded and to 'try again in a while', so it looks
+like it's not permanent. The symptoms are basically that Miranda
+repeatedly sticks at 'connecting' for no apparent reason, so watch it.
+
+The following is pure speculation:
+
+I'm guessing the limit is around 100 connects in two hours.
+
+It seems accounts can be connected again after about half an hour, but on a
+sort of 'probation' scheme. Ie, they can be connected once but then if you
+disconnect you can't reconnect for another 5 minutes or so.
+
+I have no idea how long this probation goes on for, but it's definitely less
+than 24 hours and probably around 3-6 hours.

@@ -1,0 +1,38 @@
+Miranda IM is brought to you by:
+
+Martin Öberg (Strickz) [admin && random coder]
+Robert Rainwater (rainwater) [admin && coder]
+Sam K (egoDust) [admin && coder]
+Lyon Lim (lynlimz) [webmaster]
+George Hazan (ghazan) [MSN developer]
+Jörgen Persson (i_am_matrix) [IRC developer]
+Santithorn Bunchua (keh) [Jabber, QQ, tlen developer]
+Gennady Feldman (Gena01) [Yahoo developer]
+Adam Strzelecki (OnO) [Gadu Gadu developer]
+Piotr Piastucki (the_leech) [tlen developer]
+Alex Sanda (Nightwish) [tabsrmm developer]
+
+-- More people should be added here, need to ask em first --
+
+And where are these people?
+
+Cyreve, who made Miranda what it is today
+Emostar, who wrote a lot of the new ICQ protocol code
+Esnow, who wrote more code
+Figbug, who was in control before 0.1.0.0 and wrote a lot of that code
+Tristan_VdV, who wrote lots of code before 0.1.0.0
+Crypt0gl, who created the basic website design
+Lowspirit, who does some very nice UI design
+Glutnix, who asked to be described as an icon wrangler
+
+All the plugin developers, who are too multitudinous to name individually, but you can find out who they are when you download their work from the website.
+
+The translators, who have done great things for increasing Miranda IM's user base, and who will be infuriated that I won't let them change this text.
+
+The media developers, who made the icons, sounds and skins you see on the website. You should download all their creations too.
+
+The bug reporters, who give Miranda IM its quality. Extra special mention to those who helped with the really difficult ones and went a long way out of their way to help me fix them.
+
+The web forum residents, who discover new and exciting ways to break Miranda IM daily and who are the gestalt that shapes how Miranda IM works.
+
+The users, who...er...use it.

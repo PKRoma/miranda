@@ -1,0 +1,231 @@
+; *** Gadu-Gadu
+
+; Info page
+[Public Info]
+Katalog publiczny
+[Family name:]
+Nazwisko rodz.:
+[Origin city:]
+Miasto rodz.:
+[Birth year:]
+Rok urodzenia:
+
+; Options
+;[Gadu-Gadu] << Deprecitated 0.0.1.4
+;[&Gadu-Gadu] << Deprecitated 0.0.1.4
+;[Gadu-Gadu connection] << Deprecitated 0.0.1.4
+; Expert short
+[Ex.]
+Eks.
+[connection]
+po³¹czenie
+[Friends only]
+Tylko dla przyjació³
+[Show offline users with status message as invisible in contact list]
+Pokazuj u¿ytkowników z opisem stanu jako niewidocznych
+[Ignore incoming conference messages]
+Ignoruj nadchodz¹ce wiadomoœci konferencyjne
+[Automatically pop up the window when a image is received]
+Automatycznie pokazuj okienko na wierzchu, kiedy otrzymam obrazek
+[Gadu-Gadu Number:]
+Numer Gadu-Gadu:
+[Gadu-Gadu Number]
+Numer Gadu-Gadu
+[Gadu-Gadu User Details]
+Dane u¿ytkownika Gadu-Gadu
+;[Lost Gadu-Gadu Password?] << Deprecitated 0.0.1.3
+[Retrieve password]
+Odzyskaj has³o
+[Create new account]
+Utwórz nowe konto
+[Remove account]
+Usuñ konto
+[Change password]
+Zmieñ has³o
+[Change e-mail]
+Zmieñ e-mail
+[Keep connection alive]
+Utrzymuj po³¹czenie
+[Change status safely]
+Bezpiecznie zmieniaj stan
+[Show connection errors]
+Pokazuj b³êdy po³¹czenia
+[Automatically reconnect after unintentional disconnection]
+Po³¹cz ponownie automatycznie po niezamierzonym roz³¹czeniu
+;[Leave last status message after disconnected]  << depreciated in 0.0.1.2
+[After disconnection leave away message of status:]
+Po roz³¹czeniu siê zostaw opis nastêpuj¹cego stanu:
+[Manually specify connection host]
+Podaj adres hosta serwera rêcznie
+[Use secure SSL connection]
+U¿ywaj bezpiecznego po³¹czenia SSL
+[Host:]
+Host:
+[Use direct connections]
+U¿ywaj po³¹czeñ bezpoœrednich
+[Use forwarding]
+U¿ywaj forwardowania
+
+; Menu
+[Import List From &Server]
+Importuj listê z &serwera
+[Import List From &Text File...]
+Importuj listê z pliku &tekstowego...
+[&Remove List From Server]
+&Usuñ listê z serwera
+[Export List To &Server]
+Eksportuj listê do &serwera
+[Export List To &Text File...]
+Eksportuj listê do pliku &tekstowego...
+[Text files]
+Pliki tekstowe
+
+; Errors
+;[Gadu-Gadu Error] << depreciated in 0.0.1.4
+[Connection cannot be established because of error:\n\t%s]
+Po³¹czenie nie mo¿e byæ nawi¹zane z powodu b³êdu:\n\t%s
+;Connection specific errors
+[Miranda was unable to resolve the name of the Gadu-Gadu server to its numeric address.]
+Miranda nie mog³a ustaliæ IP serwera Gadu-Gadu na podstawie nazwy hosta.
+[Received invalid server response.]
+Otrzymano niepoprawn¹ odpowiedŸ od serwera.
+[Cannot establish secure connection.]
+Nie mo¿na nawi¹zaæ bezpiecznego po³¹czenia.
+[Your Gadu-Gadu number and password combination was rejected by the Gadu-Gadu server. Please check login details at M->Options->Network->Gadu-Gadu and try again.]
+Twój numer i has³o zosta³y odrzucone przez serwer Gadu-Gadu. SprawdŸ dane logowania M->Opcje->Sieæ->Gadu-Gadu i spróbuj ponownie.
+[Connecting to Gadu-Gadu hub failed.]
+Po³¹czenie z hubem Gadu-Gadu nie uda³o siê.
+; Token stuff
+[Token retrieval failed because of error:\n\t%s]
+Nie mo¿na by³o pobraæ tokena z powodu b³êdu:\n\t%s
+[Enter token to continue]
+WprowadŸ token aby kontynuowaæ
+;[Token]
+;Import export errors
+[You have to be connected before you can import/export contacts from/to server.]
+Po³¹cz siê przed importowaniem/eksportowaniem kontaktów z/na serwer.
+[List cannot be exported because of error:\n\t%s]
+Lista nie mo¿e byæ wyeksportowana z powodu b³êdu:\n\t%s
+[List cannot be exported to file "%s" because of error:\n\t%s]
+Lista nie mo¿e byæ wyeksportowana do pliku "%s" z powodu b³êdu:\n\t%s
+[List cannot be imported because of error:\n\t%s]
+Lista nie mo¿e byæ zaimportowana z powodu b³êdu:\n\t%s
+[List cannot be imported from file "%s" because of error:\n\t%s]
+Lista nie mo¿e byæ zaimportowana z pliku "%s" z powodu b³êdu:\n\t%s
+[List remove successful.]
+Lista zosta³a usuniêta pomyœlnie.
+[List export successful.]
+Lista zosta³a wyeksportowana pomyœlnie.
+[List import successful.]
+Lista zosta³a zaimportowana pomyœlnie.
+[contacts]
+kontakty
+[Your password will be sent to your registration e-mail.\nDo you want to continue ?]
+Twoje has³o zostanie wys³ane na twój e-mail rejestracyjny.\nChcesz kontynuowaæ ?
+[Password could not be reminded because of error:\n\t%s]
+Has³o nie mo¿e zostaæ wys³ane z powodu b³êdu:\n\t%s
+[Password was sent to your e-mail.]
+Has³o zosta³o wys³ane na Twój e-mail.
+[Your info cannot be uploaded because of error:\n\t%s]
+Twoje dane nie mo¿e byæ wys³ane z powodu b³êdu:\n\t%s
+[Your info has been uploaded to public catalog.]
+Twoje dane zosta³y wys³ane do katalogu publicznego.
+;Password changing
+[Your password cannot be changed because of error:\n\t%s]
+Twoje has³o nie mo¿e byæ zmienione z powodu b³êdu:\n\t%s
+[Your password has been changed.]
+Twoje has³o zosta³o zmienione.
+;E-mail changing
+[Your e-mail cannot be changed because of error:\n\t%s]
+Twój e-mail nie mo¿e byæ zmieniony z powodu b³êdu:\n\t%s
+[Your e-mail has been changed.]
+Twój e-mail zosta³ zmieniony.
+;Account registration
+[Cannot register new account because of error:\n\t%s]
+Nie mo¿na zarejestrowaæ konta z powodu b³êdu:\n\t%s
+[Registration rejected]
+Rejestracja zosta³a odrzucona
+[You have registered new account.\nPlease fill up your personal details in "M->Change my details..."]
+Zarejestrowa³eœ nowe konto.\nProszê wype³nij informacjê o sobie w "M->Zmieñ moje dane..."
+;Account removal
+[Your account cannot be removed because of error:\n\t%s]
+Twoje konto nie mo¿e byæ usuniête z powodu b³êdu:\n\t%s
+[Bad number or password]
+Z³y numer lub has³o
+[Bad old e-mail or password]
+Z³y stary e-mail lub has³o
+[Bad e-mail or password]
+Z³y e-mail lub has³o
+[Invalid data entered]
+Wprowadzono z³e dane
+[Your account has been removed.]
+Twoje konto zosta³o usuniête.
+;User utils messages
+;[Passwords do not match.] << depreciated in 0.0.1.3
+[Password too short.]
+Has³o za krótkie.
+;[You should disconnect before making any permanent changes with your account.\nDo you want disconnect now ?] << depreciated in 0.0.1.4
+[You should disconnect before making any permanent changes with your account.\nDo you want to disconnect now ?]
+Powinieneœ siê roz³¹czyæ przed wszelkimi trwa³ymi zmianami Twojego konta.\nCzy chcesz siê roz³¹czyæ ?
+[Server hostname %s is invalid. Using default hostname provided by the network.]
+Adres serwera %s jest nieprawid³owy. U¿yty zostanie adres podany przez sieæ.
+[External direct connections hostname %s is invalid. Disabling external host forwarding.]
+Adres zewnêtrzny dla po³¹czeñ bezpoœrednich %s jest nieprawid³owy. Forwardowanie zostanie wy³¹czone.
+
+; Password dialog
+;[Change Gadu-Gadu Password] << depreciated in 0.0.1.3
+[Change Gadu-Gadu password]
+Zmieñ has³o Gadu-Gadu
+[Changes current Gadu-Gadu user password.]
+Twoje aktualne has³o zostanie zmienione.
+[Change Gadu-Gadu e-mail]
+Zmieñ e-mail Gadu-Gadu
+[Changes current Gadu-Gadu user e-mail.]
+Twój aktualny e-mail zostanie zmieniony.
+[New password:]
+Nowe has³o:
+[Password:]
+Has³o:
+[Confirm password:]
+PotwierdŸ has³o:
+[New e-mail:]
+Nowy e-mail:
+; Remove account dialog
+[Remove]
+Usuñ
+[Yes, I want to remove my account]
+Tak, chcê usun¹æ moje konto
+[Remove Gadu-Gadu account]
+Usuñ konto Gadu-Gadu
+[This will remove your Gadu-Gadu account.]
+Twoje konto zostanie usuniête.
+; Create account dialog
+[Create Gadu-Gadu account]
+Utwórz konto Gadu-Gadu
+[This will create new Gadu-Gadu account.]
+Zostanie utworzone nowe konto Gadu-Gadu.
+
+; Search dialog
+[Age from:]
+Wiek od:
+[to:]
+do:
+;[Search online users only]
+
+; Image recv/send
+[&Image]
+&Obrazek
+[Image saved.]
+Zapisano obrazek.
+[Image cannot be written to disk.]
+Nie mo¿na zapisaæ obrazka na dysku.
+[Image from %s]
+Obrazek od %s
+[Image for %s]
+Obrazek dla %s
+[Image files (*.bmp,*.jpg,*.gif)]
+Pliki obrazów (*.bmp,*.jpg,*.gif)
+[Select picture to send]
+Wybierz obrazek do wys³ania
+[Could not load image. Image might have unsupported file format.]
+Nie mo¿na za³adowaæ obrazka. Wybrany plik mo¿e mieæ nieznany format.
