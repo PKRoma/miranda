@@ -291,8 +291,9 @@ IDI_TYPING32            ICON    DISCARDABLE     "res/Typing32.ico"
 IDI_DOWNARROW32         ICON    DISCARDABLE     "res/Downarrow32.ico"
 IDI_HISTORY32           ICON    DISCARDABLE     "res/History32.ico"
 IDI_USERDETAILS32       ICON    DISCARDABLE     "res/Details32.ico"
-IDI_INCOMING            ICON    DISCARDABLE     "res\\incoming.ico"
 IDI_OUTGOING            ICON    DISCARDABLE     "res\\outgoing.ico"
+IDI_INCOMING            ICON    DISCARDABLE     "res\\incoming.ico"
+IDI_NOTICE              ICON    DISCARDABLE     "res\\notice.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

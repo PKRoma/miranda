@@ -46,21 +46,6 @@ static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_NAME };
 static const UINT buttonLineControls[] = { IDC_ADD, IDC_USERMENU, IDC_DETAILS, IDC_HISTORY, IDC_TIME };
 static const UINT sendControls[] = { IDC_MESSAGE };
 
-static char *MsgServiceName(HANDLE hContact)
-{
-#ifdef _UNICODE
-    char szServiceName[100];
-    char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-    if (szProto == NULL)
-        return PSS_MESSAGE;
-
-    _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
-    if (ServiceExists(szServiceName))
-        return PSS_MESSAGE "W";
-#endif
-    return PSS_MESSAGE;
-}
-
 static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
 {
     int i;
@@ -482,6 +467,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
             dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+            if(dat->hContact && dat->szProto != NULL)
+                dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+            else
+                dat->wStatus = ID_STATUS_OFFLINE;
+            dat->wOldStatus = dat->wStatus;
             dat->hAckEvent = NULL;
             dat->sendInfo = NULL;
             dat->showInfo = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE);
@@ -720,11 +710,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dbtts.szDest = time;
                 CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
                 _snprintf(fmt, sizeof(fmt), Translate("Last message received on %s at %s."), date, time);
-                SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
+                SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) fmt);
                 SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
             }
             else {
-                SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
+                SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) "");
                 SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
             }
             break;
@@ -775,7 +765,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     int hasName = 0;
                     char buf[128];
                     int statusIcon = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
-
+                    
+                    dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
                     contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
                     ZeroMemory(&ci, sizeof(ci));
                     ci.cbSize = sizeof(ci);
@@ -807,6 +798,42 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         }
                     }
+
+                    // log
+                    if (dat->wStatus!=dat->wOldStatus || lParam != 0) {
+                        DBEVENTINFO dbei;
+                        char buffer[450];
+                        HANDLE hNewEvent;
+                        int iLen;
+
+                        char *szOldStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wOldStatus, 0);
+                        char *szNewStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, 0);
+                        
+                        if(dat->wStatus == ID_STATUS_OFFLINE) {
+                            _snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+                        } 
+                        else if(dat->wOldStatus == ID_STATUS_OFFLINE) {
+                            _snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
+                        } 
+                        else {
+                            _snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
+                        }
+                        iLen = strlen(buffer) + 1;
+                        MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], iLen);
+                        dbei.cbSize = sizeof(dbei);
+                        dbei.pBlob = (PBYTE) buffer;
+                        dbei.cbBlob = (strlen(buffer) + 1) * (sizeof(TCHAR) + 1);
+                        dbei.eventType = EVENTTYPE_STATUSCHANGE;
+                        dbei.flags = 0;
+                        dbei.timestamp = time(NULL);
+                        dbei.szModule = dat->szProto;
+                        hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
+                        if (dat->hDbEventFirst == NULL) {
+                            dat->hDbEventFirst = hNewEvent;
+                            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+                        }
+                    }
+                    dat->wOldStatus = dat->wStatus;
                 }
             }
             else
@@ -954,7 +981,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
                     else
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                    if ((GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg) && !(dbei.flags & DBEF_SENT)) {
+                    if ((GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg) && !(dbei.flags & DBEF_SENT) && dbei.eventType!=EVENTTYPE_STATUSCHANGE) {
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                     }           //if
                 }
@@ -1000,7 +1027,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                         _snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
                         dat->nTypeSecs--;
-                        SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
+                        SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
                         SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) dat->hIcons[5]);
                         if (dat->showTypingWin && GetForegroundWindow() != hwndDlg)
                             SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) dat->hIcons[5]);
@@ -1027,7 +1054,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     for (i = 0; i < dat->sendCount; i++) {
                         if (dat->sendInfo[i].hSendId == NULL && dat->hContact == NULL)
                             continue;
-                        dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), 0, (LPARAM) dat->sendBuffer);
+                        dat->sendInfo[i].hSendId = (HANDLE) CallContactService(dat->hContact, PSS_MESSAGE, 0, (LPARAM) dat->sendBuffer);
                     }
                 }
                     SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
@@ -1078,11 +1105,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                         bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
                         dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
-                        GetDlgItemTextA(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
-#if defined( _UNICODE )
-                        GetDlgItemTextW(hwndDlg, IDC_MESSAGE, (TCHAR *) & dat->sendBuffer[bufSize], bufSize);
-                        flags = PREF_UNICODE;
-#endif
+                        GetDlgItemText(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
                         if (dat->sendBuffer[0] == 0)
                             break;
 
@@ -1095,7 +1118,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             break;  //never happens
                         dat->sendCount = 1;
                         dat->sendInfo = (struct MessageSendInfo *) realloc(dat->sendInfo, sizeof(struct MessageSendInfo) * dat->sendCount);
-                        dat->sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) dat->sendBuffer);
+                        dat->sendInfo[0].hSendId = (HANDLE) CallContactService(dat->hContact, PSS_MESSAGE, flags, (LPARAM) dat->sendBuffer);
                         EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
                         SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 
@@ -1328,9 +1351,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
             dbei.timestamp = time(NULL);
             dbei.cbBlob = lstrlenA(dat->sendBuffer) + 1;
-#if defined( _UNICODE )
-            dbei.cbBlob *= sizeof(TCHAR) + 1;
-#endif
             dbei.pBlob = (PBYTE) dat->sendBuffer;
             hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
             SkinPlaySound("SendMsg");

@@ -31,11 +31,7 @@ HINSTANCE g_hInst;
 
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
-#ifdef _UNICODE
-    "Send/Receive Messaging (Unicode)",
-#else
-    "Send/Receive Messaging",
-#endif
+    "Send/Receive Messages",
     PLUGIN_MAKE_VERSION(2, 0, 0, 3),
     "Send and receive instant messages",
     "Miranda IM Development Team",

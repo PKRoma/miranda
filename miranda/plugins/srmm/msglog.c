@@ -30,9 +30,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HINSTANCE g_hInst;
 
 static int logPixelSY;
-#define LOGICON_MSG_IN   0
-#define LOGICON_MSG_OUT  1
-static PBYTE pLogIconBmpBits[2];
+#define LOGICON_MSG_IN      0
+#define LOGICON_MSG_OUT     1
+#define LOGICON_MSG_NOTICE  2
+static PBYTE pLogIconBmpBits[3];
 static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
 static HIMAGELIST g_hImageList;
 
@@ -68,55 +69,6 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
     va_end(va);
     *cbBufferEnd += charsDone;
 }
-
-#if defined( _UNICODE )
-static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR * line)
-{
-    DWORD textCharsCount = 0;
-    char *d;
-
-    int lineLen = wcslen(line) * 9 + 8;
-    if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
-        cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
-        *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
-    }
-
-    d = *buffer + *cbBufferEnd;
-    strcpy(d, "{\\uc1 ");
-    d += 6;
-
-    for (; *line; line++, textCharsCount++) {
-        if (*line == '\r' && line[1] == '\n') {
-            CopyMemory(d, "\\par ", 5);
-            line++;
-            d += 5;
-        }
-        else if (*line == '\n') {
-            CopyMemory(d, "\\par ", 5);
-            d += 5;
-        }
-        else if (*line == '\t') {
-            CopyMemory(d, "\\tab ", 5);
-            d += 5;
-        }
-        else if (*line == '\\' || *line == '{' || *line == '}') {
-            *d++ = '\\';
-            *d++ = (char) *line;
-        }
-        else if (*line < 128) {
-            *d++ = (char) *line;
-        }
-        else
-            d += sprintf(d, "\\u%d ?", *line);
-    }
-
-    strcpy(d, "}");
-    d++;
-
-    *cbBufferEnd = (int) (d - *buffer);
-    return textCharsCount;
-}
-#endif
 
 //same as above but does "\r\n"->"\\par " and "\t"->"\\tab " too
 static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
@@ -239,9 +191,15 @@ static char *SetToStyle(int style)
 
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 {
-    if (dbei->flags & DBEF_SENT && dbei->eventType!=EVENTTYPE_MESSAGE)
-        return 0;
-    return 1;
+    switch (dbei->eventType) {
+        case EVENTTYPE_MESSAGE:
+            return 1;
+        case EVENTTYPE_STATUSCHANGE:
+            if (dbei->flags&DBEF_READ)
+                return 0;
+            return 1;
+    }
+    return 0;
 }
 
 //free() the return value
@@ -266,7 +224,9 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
         CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
     }
-
+    else if (dbei.eventType == EVENTTYPE_STATUSCHANGE) {
+        CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
+    }
     bufferEnd = 0;
     bufferAlloced = 1024;
     buffer = (char *) malloc(bufferAlloced);
@@ -276,11 +236,19 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     }
     if (dat->showIcons) {
         int i;
-        if (dbei.flags&DBEF_SENT) {
-            i = LOGICON_MSG_IN;
-        }
-        else {
-            i = LOGICON_MSG_OUT;
+
+        switch(dbei.eventType) {
+            case EVENTTYPE_MESSAGE:
+                if (dbei.flags&DBEF_SENT) {
+                    i = LOGICON_MSG_OUT;
+                }
+                else {
+                    i = LOGICON_MSG_IN;
+                }
+                break;
+            case EVENTTYPE_STATUSCHANGE:
+                i = LOGICON_MSG_NOTICE;
+                break;
         }
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
         while (bufferAlloced - bufferEnd < logIconBmpSize[i])
@@ -299,9 +267,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dbei.timestamp, (LPARAM) & dbtts);
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYTIME : MSGFONTID_YOURTIME));
         AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", str);
-        showColon = 1;
     }
-    if (!dat->hideNames) {
+    if (!dat->hideNames&&dbei.eventType!=EVENTTYPE_STATUSCHANGE) {
         char *szName;
         CONTACTINFO ci;
         ZeroMemory(&ci, sizeof(ci));
@@ -330,29 +297,38 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     switch (dbei.eventType) {
         case EVENTTYPE_MESSAGE:
         {
-#if defined( _UNICODE )
-            wchar_t *msg;
-#else
             BYTE *msg;
-#endif
 
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
-#if defined( _UNICODE )
-            {
-                int msglen = strlen((char *) dbei.pBlob) + 1;
-                if (msglen != (int) dbei.cbBlob)
-                    msg = (TCHAR *) & dbei.pBlob[msglen];
-                else {
-                    msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
-                    MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
-                }
-                AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg);
-            }
-#else
             msg = (BYTE *) dbei.pBlob;
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", msg);
-#endif
+            break;
+        }
+        case EVENTTYPE_STATUSCHANGE:
+        {
+            BYTE *msg;
+            char *szName;
+            CONTACTINFO ci;
+            ZeroMemory(&ci, sizeof(ci));
 
+            if (dbei.flags & DBEF_SENT) {
+                ci.cbSize = sizeof(ci);
+                ci.hContact = NULL;
+                ci.szProto = dbei.szModule;
+                ci.dwFlag = CNF_DISPLAY;
+                if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+                    // CNF_DISPLAY always returns a string type
+                    szName = ci.pszVal;
+                }
+            }
+            else
+                szName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0);
+
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(MSGFONTID_NOTICE));
+            msg = (BYTE *) dbei.pBlob;
+            AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s %s", szName, msg);
+            if (ci.pszVal)
+                miranda_sys_free(ci.pszVal);
             break;
         }
     }
@@ -476,6 +452,11 @@ void LoadMsgLogIcons(void)
                 hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING));
                 ImageList_AddIcon(g_hImageList, hIcon);
                 hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_OUT, ILD_NORMAL);
+                break;
+            case LOGICON_MSG_NOTICE:
+                hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NOTICE));
+                ImageList_AddIcon(g_hImageList, hIcon);
+                hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_NOTICE, ILD_NORMAL);
                 break;
         }
         pLogIconBmpBits[i] = (PBYTE) malloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);

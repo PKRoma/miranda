@@ -50,7 +50,8 @@ static fontOptionsList[] = {
     {"Incoming name", RGB(215, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
     {"Incoming time", RGB(0, 0, 0), "Terminal", DEFAULT_CHARSET, FONTF_BOLD, -9},
     {"Incoming colon", RGB(215, 0, 0), "Arial", DEFAULT_CHARSET, 0, -11},
-    {"Message Area", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12},
+    {"Message area", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12},
+    {"Notices", RGB(90, 90, 160), "Arial", DEFAULT_CHARSET, 0, -12},
 };
 const int msgDlgFontCount = sizeof(fontOptionsList) / sizeof(fontOptionsList[0]);
 

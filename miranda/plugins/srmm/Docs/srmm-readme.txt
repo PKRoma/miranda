@@ -22,6 +22,7 @@ Changes
  - Remove file and url events from message log
  - Cache database reads when showing messages in the log
  - Show separate incoming/outgoing icons for messages with "Show Icons" option
+ - Show status changes in the message window
 
 1.0.4.2
  - Typing Notify options didn't enable/disable correctly

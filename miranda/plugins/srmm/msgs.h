@@ -66,6 +66,8 @@ struct MessageWindowData {
     int showDate;
     int hideNames;
     char *szProto;
+    WORD wStatus;
+    WORD wOldStatus;
 };
 
 #define HM_EVENTSENT         (WM_USER+10)
@@ -81,6 +83,8 @@ struct MessageWindowData {
 #define DM_TYPING            (WM_USER+20)
 #define DM_UPDATEWINICON     (WM_USER+21)
 #define DM_UPDATELASTMESSAGE (WM_USER+22)
+
+#define EVENTTYPE_STATUSCHANGE 25368
 
 struct CREOleCallback {
 	IRichEditOleCallbackVtbl *lpVtbl;
@@ -106,6 +110,8 @@ void FreeMsgLogIcons(void);
 #define MSGFONTID_YOURTIME	  6
 #define MSGFONTID_YOURCOLON	  7
 #define MSGFONTID_MESSAGEAREA 8
+#define MSGFONTID_NOTICE      9
+
 void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
 extern const int msgDlgFontCount;
 
