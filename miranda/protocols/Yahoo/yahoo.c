@@ -441,59 +441,6 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8)
    
 }
 
-HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags )
-{
-	char *szProto;
-	HANDLE hContact;
-	
-	//LOG(("[add_buddy] id: %s nick: %s flags: %d", yahoo_id, yahoo_name, flags));
-	//check not already on list
-	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		   hContact != NULL;
-			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
-	{
-		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
-		{
-			DBVARIANT dbv;
-			if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
-				continue;
-
-			{	
-                int tCompareResult = lstrcmp( dbv.pszVal, yahoo_id );
-				DBFreeVariant( &dbv );
-				if ( tCompareResult )
-					continue;
-			}
-
-			if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
-			{
-				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-				DBDeleteContactSetting( hContact, "CList", "Hidden" );
-
-            }
-			return hContact;
-			}	
-    }
-
-	//not already there: add
-	hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_ADD, 0, 0 );
-	YAHOO_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )yahooProtocolName );
-	YAHOO_SetString( hContact, YAHOO_LOGINID, yahoo_id );
-	if (lstrlen(yahoo_name) > 0)
-		YAHOO_SetString( hContact, "Nick", yahoo_name );
-	else
-	    YAHOO_SetString( hContact, "Nick", yahoo_id );
-	    
-	//DBWriteContactSettingWord(hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
-
-   	if (flags & PALF_TEMPORARY ) {
-		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
-		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-    }	
-	return hContact;
-}
-
 HANDLE getbuddyH(const char *yahoo_id)
 {
 	char  *szProto;
@@ -524,39 +471,57 @@ HANDLE getbuddyH(const char *yahoo_id)
 	return NULL;
 }
 
+HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags )
+{
+	//char *szProto;
+	HANDLE hContact;
+	//DBVARIANT dbv;
+	
+	hContact = getbuddyH(yahoo_id);
+	if (hContact != NULL) {
+		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
+		{
+			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+			DBDeleteContactSetting( hContact, "CList", "Hidden" );
+
+        }
+		return hContact;
+    }
+
+	//not already there: add
+	hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_ADD, 0, 0 );
+	YAHOO_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )yahooProtocolName );
+	YAHOO_SetString( hContact, YAHOO_LOGINID, yahoo_id );
+	if (lstrlen(yahoo_name) > 0)
+		YAHOO_SetString( hContact, "Nick", yahoo_name );
+	else
+	    YAHOO_SetString( hContact, "Nick", yahoo_id );
+	    
+	//DBWriteContactSettingWord(hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
+
+   	if (flags & PALF_TEMPORARY ) {
+		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+    }	
+	return hContact;
+}
 
 const char *find_buddy( const char *yahoo_id)
 {
-	char  *szProto;
+	//char  *szProto;
 	static char nick[128];
 	HANDLE hContact;
+	DBVARIANT dbv;
 	
-	nick[0] = '\0';
-	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		   hContact != NULL;
-			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
-	{
-		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
-		{
-			DBVARIANT dbv;
-			if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
-				continue;
-
-			{	
-                int tCompareResult = lstrcmp( dbv.pszVal, yahoo_id );
-				DBFreeVariant( &dbv );
-				if ( tCompareResult )
-					continue;
-			}
-
-			if ( DBGetContactSetting( hContact, yahooProtocolName, "Nick", &dbv ))
-				continue;
-        
-            strncpy(nick, dbv.pszVal, 128);
-         	DBFreeVariant( &dbv );
-			return nick;
-			}	
+	hContact = getbuddyH(yahoo_id);
+	if (hContact != NULL) {
+		if ( DBGetContactSetting( hContact, yahooProtocolName, "Nick", &dbv ))
+			return NULL;
+	
+		strncpy(nick, dbv.pszVal, 128);
+		DBFreeVariant( &dbv );
+		return nick;
+		
     }
 
 	return NULL;
@@ -737,12 +702,11 @@ void ext_yahoo_got_im(int id, char *who, char *msg, long tm, int stat, int utf8)
 			// strip the alternate colors tag
 			!strnicmp(umsg ,"<ALT ",5) || !strnicmp(umsg ,"</ALT>",6)){ 
                 while ((*c++ != '>') && (*c != '\0')); 
-		}
-
+		} else
         // strip ANSI color combination
         if ((*c == 0x1b) && (*(c+1) == '[')){ 
                while ((*c++ != 'm') && (*c != '\0')); 
-		}
+		} else
 		
 		if (*c != '\0'){
 			umsg[oidx++] = *c;

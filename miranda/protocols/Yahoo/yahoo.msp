@@ -50,7 +50,7 @@ intermediateFilesDirectory=Release
 outputFilesDirectory=Release
 compilerPreprocessor=
 extraCompilerOptions=-DHAVE_CONFIG_H -DUSE_STRUCT_CALLBACKS
-compilerIncludeDirectory=
+compilerIncludeDirectory=..\..\include\
 noWarning=0
 defaultWarning=1
 allWarning=1
@@ -124,18 +124,4 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-yahoo.c,430
-libyahoo2\yahoo2_types.h,1335
-services.c,7811
-libyahoo2\yahoo2_callbacks.h,4409
-resource.h,1895
-Yahoo.rc,2455
-options.c,0
-..\MSN\msn_misc.cpp,19488
-util.c,9045
-yahoo.h,6574
-main.c,1148
-libyahoo2\yahoo2.h,0
-libyahoo2\yahoo_util.c,1554
-libyahoo2\Docs\README,5898
-libyahoo2\libyahoo2.c,911
+yahoo.c,14956
