@@ -201,7 +201,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 				else if(p1[1] == '\'' ) // special character
 				{
 					bTextHasStarted = TRUE;
-					bJustRemovedRTF = TRUE;
+					bJustRemovedRTF = FALSE;
 					if(p1[2] != ' ' && p1[2] != '\\')
 					{
 						int iLame = 0;
