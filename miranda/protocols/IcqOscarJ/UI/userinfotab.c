@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004 Joe Kucera
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -41,7 +41,12 @@
 extern char gpszICQProtoName[MAX_PATH];
 extern HANDLE hInst;
 
+extern DWORD dwLocalInternalIP;
+extern DWORD dwLocalExternalIP;
+extern WORD wListenPort;
+
 static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, char *szSetting, int special);
 
 #define SVS_NORMAL        0
@@ -59,28 +64,34 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, 
 
 int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 {
+  char* szProto;
+  OPTIONSDIALOGPAGE odp;
 
-	char* szProto;
-	OPTIONSDIALOGPAGE odp;
+  szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
+  if ((szProto == NULL || strcmp(szProto, gpszICQProtoName)) && lParam)
+    return 0;
 
+  odp.cbSize = sizeof(odp);
+  odp.hIcon = NULL;
+  odp.hInstance = hInst;
+  odp.pfnDlgProc = IcqDlgProc;
+  odp.position = -1900000000;
+  odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_ICQ);
+  odp.pszTitle = Translate(gpszICQProtoName);
 
-	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
-    if ((szProto == NULL || strcmp(szProto, gpszICQProtoName)) && lParam)
-		return 0;
+  CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 
-		
-	odp.cbSize = sizeof(odp);
-	odp.hIcon = NULL;
-	odp.hInstance = hInst;
-	odp.pfnDlgProc = IcqDlgProc;
-	odp.position = -1900000000;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_ICQ);
-	odp.pszTitle = Translate(gpszICQProtoName);
+  if ((lParam !=0) && gbAvatarsEnabled)
+  {
+    odp.pfnDlgProc = AvatarDlgProc;
+    odp.position = -1899999999;
+    odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_AVATAR);
+    odp.pszTitle = Translate("Avatar");
 
-	CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
-	
-	return 0;
-	
+    CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+  }
+
+  return 0;
 }
 
 
@@ -110,33 +121,45 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						
 					case PSN_INFOCHANGED:
 						{
+              char* szProto;
+              HANDLE hContact = (HANDLE)((LPPSHNOTIFY)lParam)->lParam;
 
-							char* szProto;
-							HANDLE hContact = (HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-							
-							
-							if (hContact == NULL)
-								szProto = gpszICQProtoName;
-							else
-								szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-							
-							if (szProto == NULL)
-								break;
-							
-							SetValue(hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, 0);
-							SetValue(hwndDlg, IDC_IP, hContact, szProto, "IP", SVS_IP);
-							SetValue(hwndDlg, IDC_REALIP, hContact, szProto, "RealIP", SVS_IP);
-							SetValue(hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
-							SetValue(hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
-							SetValue(hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
-							SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
-							if (DBGetContactSettingDword(hContact, szProto, "ClientID", 0) == 1)
-								DBWriteContactSettingDword(hContact, szProto, "TickTS", 0);
-							SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
-							
-						}
-						break;
-						
+              if (hContact == NULL)
+                szProto = gpszICQProtoName;
+              else
+                szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+
+              if (szProto == NULL)
+                break;
+
+              SetValue(hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, 0);
+
+              if (hContact)
+              {
+                SetValue(hwndDlg, IDC_IP, hContact, szProto, "IP", SVS_IP);
+                SetValue(hwndDlg, IDC_REALIP, hContact, szProto, "RealIP", SVS_IP);
+                SetValue(hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
+                SetValue(hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
+                SetValue(hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
+                SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
+                if (DBGetContactSettingDword(hContact, szProto, "ClientID", 0) == 1)
+                  DBWriteContactSettingDword(hContact, szProto, "TickTS", 0);
+                SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
+                SetValue(hwndDlg, IDC_IDLETIME, hContact, szProto, "IdleTS", SVS_TIMESTAMP);
+              }
+              else
+              {
+                SetValue(hwndDlg, IDC_IP, hContact, (char*)DBVT_DWORD, (char*)dwLocalInternalIP, SVS_IP);
+                SetValue(hwndDlg, IDC_REALIP, hContact, (char*)DBVT_DWORD, (char*)dwLocalExternalIP, SVS_IP);
+                SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
+                SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)8, SVS_ICQVERSION);
+                SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda ICQ", SVS_ZEROISUNSPEC);
+                SetValue(hwndDlg, IDC_ONLINESINCE, hContact, (char*)DBVT_DELETED, "LogonTS", SVS_TIMESTAMP);
+                SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, (char*)DBVT_DELETED, "TickTS", SVS_TIMESTAMP);
+                SetValue(hwndDlg, IDC_IDLETIME, hContact, (char*)DBVT_DELETED, "IdleTS", SVS_TIMESTAMP);
+              }
+            }
+            break;
 					}
 				}
 				break;
@@ -169,29 +192,167 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	
 }
 
+typedef struct AvtDlgProcData_t
+{
+	HANDLE hContact;
+	HANDLE hEventHook;
+} AvtDlgProcData;
+
+#define HM_REBIND_AVATAR  ( WM_USER + 1024 )
+
+static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch ( msg ) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		{
+      DBVARIANT dbvHash, dbvSaved;
+			AvtDlgProcData* pData = (AvtDlgProcData*)malloc(sizeof(AvtDlgProcData));
+      DWORD dwUIN;
+      char szAvatar[MAX_PATH];
+      DWORD dwPaFormat;
+      int bValid = 0;
+
+			pData->hContact = (HANDLE)lParam;
+			pData->hEventHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_REBIND_AVATAR);
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)pData);
+
+      if (!DBGetContactSetting((HANDLE)lParam, gpszICQProtoName, "AvatarHash", &dbvHash))
+      {
+        if (dbvHash.pbVal[1] == 8)
+          dwPaFormat = PA_FORMAT_XML;
+        else 
+          dwPaFormat = PA_FORMAT_JPEG;
+
+        dwUIN = DBGetContactSettingDword((HANDLE)lParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+        GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
+
+        if (!DBGetContactSetting((HANDLE)lParam, gpszICQProtoName, "AvatarSaved", &dbvSaved))
+        {
+          if (!memcmp(dbvHash.pbVal, dbvSaved.pbVal, 0x14))
+          { // if the file exists, we know we have the current avatar
+            if (!access(szAvatar, 0)) bValid = 1;
+          }
+          DBFreeVariant(&dbvSaved);
+        }
+        else // we do not have saved picture hash, do not rely on it
+          if (!access(szAvatar, 0)) bValid = 1;
+      }
+      else 
+        return TRUE;
+
+      if (bValid)
+      { //load avatar
+        HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
+        
+        if (avt)
+          SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)avt);
+      }
+      else
+        GetAvatarData((HANDLE)lParam, dwUIN, dbvHash.pbVal, 0x14, szAvatar);
+
+      DBFreeVariant(&dbvHash);
+    }
+    return TRUE;
+	
+  case HM_REBIND_AVATAR:
+    {	
+      AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+      ACKDATA* ack = (ACKDATA*)lParam;
+      if (ack->type == ACKTYPE_AVATAR && ack->hContact == pData->hContact)
+      {
+        if (ack->result == ACKRESULT_SUCCESS)
+        { // load avatar
+          PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)ack->hProcess;
+
+          HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)AI->filename);
+        
+          if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
+          if (avt) DeleteObject(avt); // we release old avatar if any
+				}
+				else if (ack->result == ACKRESULT_STATUS)
+        {
+          DWORD dwUIN = DBGetContactSettingDword(pData->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+          DBVARIANT dbvHash;
+          
+          if (!DBGetContactSetting(pData->hContact, gpszICQProtoName, "AvatarHash", &dbvHash))
+          {
+            char szAvatar[MAX_PATH];
+            DWORD dwPaFormat;
+
+            if (dbvHash.pbVal[1] == 8)
+              dwPaFormat = PA_FORMAT_XML;
+            else 
+              dwPaFormat = PA_FORMAT_JPEG;
+
+            GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
+            GetAvatarData(pData->hContact, dwUIN, dbvHash.pbVal, 0x14, szAvatar);
+          }
+          DBFreeVariant(&dbvHash);
+        }
+      }	
+    }
+		break;
+
+	case WM_DESTROY:
+    {
+		  AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+		  UnhookEvent(pData->hEventHook);
+		  SAFE_FREE(&pData);
+    }
+	}
+
+	return FALSE;
+}
+
 
 
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, char* szSetting, int special)
 {
-	
 	DBVARIANT dbv;
 	char str[80];
 	char* pstr;
 	int unspecified = 0;
 
-	
 	dbv.type = DBVT_DELETED;
-	
-	if (szModule == NULL)
-		unspecified = 1;
-	else
-		unspecified = DBGetContactSetting(hContact, szModule, szSetting, &dbv);
-	
+
+  if ((hContact == NULL) && ((int)szModule<0x100))
+  {
+    dbv.type = (BYTE)szModule;
+
+    switch((int)szModule)
+    {
+    case DBVT_BYTE:
+      dbv.cVal = (BYTE)szSetting;
+      break;
+    case DBVT_WORD:
+      dbv.wVal = (WORD)szSetting;
+      break;
+    case DBVT_DWORD:
+      dbv.dVal = (DWORD)szSetting;
+      break;
+    case DBVT_ASCIIZ:
+      dbv.pszVal = szSetting;
+      break;
+    default:
+      unspecified = 1;
+      dbv.type = DBVT_DELETED;
+    }
+  }
+  else
+  {
+	  if (szModule == NULL)
+		  unspecified = 1;
+	  else
+		  unspecified = DBGetContactSetting(hContact, szModule, szSetting, &dbv);
+  }
+
 	if (!unspecified)
 	{
 		switch (dbv.type)
 		{
-			
+
 		case DBVT_BYTE:
 			if (special == SVS_GENDER)
 			{
