@@ -15,6 +15,7 @@ boolean tooltipshoing;
 
 
 POINT lastpnt;
+RECT OldRc={0};
 
 LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -188,15 +189,30 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		PostMessage(hwndStatus,WM_MOVE,wParam,lParam);
 	case WM_SIZE:
 		{
-		if(msg==WM_SIZE) PostMessage(hwndStatus,WM_SIZE,wParam,lParam);
+			RECT rc;
+			int b;
+		if (hwndStatus!=0)
+		{
+			
+			
  
-			if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
-//				CheckProtocolOrder();
-				if (canloadstatusbar){CluiProtocolStatusChanged(0,0);};
+			GetClientRect(hwnd,&rc);
+			
+			b=LOWORD(lParam);
+			if (b!=0&&(rc.right-rc.left)!=(OldRc.right-OldRc.left))
+			{
+				OldRc=rc;
+			if (canloadstatusbar)
+			{	
+				if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
+					CluiProtocolStatusChanged(0,0);
+					}
 			};
-
+			};
+			if(msg==WM_SIZE) PostMessage(hwndStatus,WM_SIZE,wParam,lParam);
 			if (hwndStatus!=0) InvalidateRect(hwndStatus,NULL,TRUE);
 			return(0);
+		};
 		};
 
 	default:

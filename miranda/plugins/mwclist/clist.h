@@ -46,7 +46,7 @@ typedef struct  {
 	int ApparentMode;
 	int NotOnList;
 	int IdleTS;
-
+	void *ClcContact;
 
 } displayNameCacheEntry,*pdisplayNameCacheEntry;
 

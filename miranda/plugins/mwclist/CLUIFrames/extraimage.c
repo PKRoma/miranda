@@ -195,10 +195,12 @@ void SetAllExtraIcons(HWND hwndList)
 	int maxpr,count,i;
 	PROTOCOLDESCRIPTOR **protos;
 	int em,pr,sms,a1,a2;
+	int tick=0;
 
-
-	if (hwndContactTree==0){return;};
 	
+	if (hwndContactTree==0){return;};
+	tick=GetTickCount();
+
 	SetNewExtraColumnCount();
 	{
 		int bla;
@@ -234,34 +236,41 @@ void SetAllExtraIcons(HWND hwndList)
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	do {
 		szProto=NULL;
-		hItem=(HANDLE)SendMessage(hwndList,CLM_FINDCONTACT,(WPARAM)hContact,0);
+		//hItem=(HANDLE)SendMessage(hwndList,CLM_FINDCONTACT,(WPARAM)hContact,0);
+		hItem=hContact;
 		if (hItem==0){continue;};
 		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);		
-
+		
 		{
-		DBVARIANT dbv;
+		DBVARIANT dbv={0};
 		boolean showemail;	
 		showemail=TRUE;
-		if (szProto == NULL || DBGetContactSetting(hContact, szProto, "e-mail",&dbv)) {
-				if (DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
-					showemail=FALSE;
-			}
-		
-		if (ExtraToColumnNum(EXTRA_ICON_EMAIL)!=-1) SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
-		
+		if (ExtraToColumnNum(EXTRA_ICON_EMAIL)!=-1)
+		{
+			
+			if (szProto == NULL || DBGetContactSetting(hContact, szProto, "e-mail",&dbv)) {
+					if (DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
+						showemail=FALSE;
+				}
+			
+			 SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
+		if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
+		}
 		}
 
 		{
-		DBVARIANT dbv;
+		DBVARIANT dbv={0};
 		boolean showsms;	
 		showsms=TRUE;
-		if (szProto == NULL || DBGetContactSetting(hContact, szProto, "Cellular",&dbv)) {
-				if (DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
-					showsms=FALSE;
-			}
-		
-		if (ExtraToColumnNum(EXTRA_ICON_SMS)!=-1) SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	
-		
+		if (ExtraToColumnNum(EXTRA_ICON_SMS)!=-1)
+		{
+			if (szProto == NULL || DBGetContactSetting(hContact, szProto, "Cellular",&dbv)) {
+					if (DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
+						showsms=FALSE;
+				}
+			 SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	
+		if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
+		}
 		}		
 
 		if(ExtraToColumnNum(EXTRA_ICON_PROTO)!=-1) {
@@ -289,9 +298,15 @@ void SetAllExtraIcons(HWND hwndList)
 		}
 		
 		NotifyEventHooks(hExtraImageApplying,(WPARAM)hContact,0);
-
-
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
+	
+	tick=GetTickCount()-tick;
+	{
+		char buf[256];
+		wsprintf(buf,"SetAllExtraIcons %d ms\r\n",tick);
+		OutputDebugString(buf);
+		DBWriteContactSettingDword((HANDLE)0,"CLUI","PF:Last SetAllExtraIcons Time:",tick);
+	}	
 }
 
 

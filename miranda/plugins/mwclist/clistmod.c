@@ -33,7 +33,7 @@ int InitCustomMenus(void);
 void UninitCustomMenus(void);
 int InitCListEvents(void);
 void UninitCListEvents(void);
-void InitDisplayNameCache(void);
+void InitDisplayNameCache(SortedList *list);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 int ContactAdded(WPARAM wParam,LPARAM lParam);
 int ContactDeleted(WPARAM wParam,LPARAM lParam);
@@ -55,15 +55,18 @@ int Docking_IsDocked(WPARAM wParam,LPARAM lParam);
 int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
 static int CListIconsChanged(WPARAM wParam,LPARAM lParam);
 int MenuProcessCommand(WPARAM wParam,LPARAM lParam);
-void InitDisplayNameCache(void);
-void FreeDisplayNameCache(void);
+void InitDisplayNameCache(SortedList *list);
+void FreeDisplayNameCache(SortedList *list);
 void InitTray(void);
+
 
 HANDLE hContactDoubleClicked,hStatusModeChangeEvent,hContactIconChangedEvent;
 HIMAGELIST hCListImages;
 extern int currentDesiredStatusMode;
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 extern BYTE nameOrder[];
+extern SortedList lContactsCache;
+
 static int statusModeList[]={ID_STATUS_OFFLINE,ID_STATUS_ONLINE,ID_STATUS_AWAY,ID_STATUS_NA,ID_STATUS_OCCUPIED,ID_STATUS_DND,ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_ONTHEPHONE,ID_STATUS_OUTTOLUNCH};
 static int skinIconStatusList[]={SKINICON_STATUS_OFFLINE,SKINICON_STATUS_ONLINE,SKINICON_STATUS_AWAY,SKINICON_STATUS_NA,SKINICON_STATUS_OCCUPIED,SKINICON_STATUS_DND,SKINICON_STATUS_FREE4CHAT,SKINICON_STATUS_INVISIBLE,SKINICON_STATUS_ONTHEPHONE,SKINICON_STATUS_OUTTOLUNCH};
 struct ProtoIconIndex {
@@ -196,7 +199,7 @@ static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 	UnhookEvent(hSettingChanged);
 	UninitCustomMenus();
 	UninitCListEvents();
-	FreeDisplayNameCache();
+	FreeDisplayNameCache(&lContactsCache);
 	mir_free(protoIconIndex);
 	DestroyHookableEvent(hContactDoubleClicked);
 	return 0;
@@ -416,7 +419,7 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_HOTKEYSPROCESSMESSAGE,HotkeysProcessMessage);
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle("kernel32"),"SetProcessWorkingSetSize");
-	InitDisplayNameCache();
+	InitDisplayNameCache(&lContactsCache);
 	InitCListEvents();
 	InitCustomMenus();
 	InitGroupServices();	

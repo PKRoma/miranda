@@ -2585,6 +2585,14 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				curdragbar=-1;lbypos=-1;oldframeheight=-1;ReleaseCapture();
 			}
 			break;
+		case WM_PRINTCLIENT:
+			{
+				if (lParam&PRF_CLIENT)
+				{
+				GetClientRect(hwnd,&rect);
+				DrawTitleBar((HDC)wParam,rect,Frameid);
+				}
+			}
 		case WM_PAINT:	
 			{
 					HDC paintDC;
@@ -2594,10 +2602,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 					paintDC = BeginPaint(hwnd, &paintStruct);
 					rect=paintStruct.rcPaint;
 					DrawTitleBar(paintDC,rect,Frameid);
-					EndPaint(hwnd, &paintStruct);
-
-					
-					
+					EndPaint(hwnd, &paintStruct);					
 					return 0;
 			}
 		default:return DefWindowProc(hwnd, msg, wParam, lParam);

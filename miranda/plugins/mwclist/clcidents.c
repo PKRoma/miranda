@@ -69,6 +69,92 @@ int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactI
 	return -1;
 }
 
+pdisplayNameCacheEntry GetCLCFullCacheEntry(struct ClcData *dat,HANDLE hContact)
+{
+	{
+	displayNameCacheEntry dnce, *pdnce,*pdnce2;
+	
+	if (hContact==0) return NULL;
+	dnce.hContact=hContact;
+	
+	pdnce=List_Find(&dat->lCLCContactsCache,&dnce);
+
+		if (pdnce==NULL)
+		{
+			pdnce=mir_calloc(1,sizeof(displayNameCacheEntry));
+			pdnce->hContact=hContact;
+			List_Insert(&dat->lCLCContactsCache,pdnce,0);
+//List_Dump(&lContactsCache);
+			List_Sort(&dat->lCLCContactsCache);
+//List_Dump(&lContactsCache);
+			pdnce2=List_Find(&dat->lCLCContactsCache,&dnce);//for check
+			if (pdnce2->hContact!=pdnce->hContact)
+			{
+				return (NULL);
+			};
+
+			if (pdnce2!=pdnce)
+			{
+				return (NULL);
+			}
+		};
+	
+		//if (pdnce!=NULL) CheckPDNCE(pdnce); not needed
+		return (pdnce);
+
+	}
+}
+
+void ClearClcContactCache(struct ClcData *dat,HANDLE hContact)
+{
+
+		pdisplayNameCacheEntry cacheEntry;
+
+		if (hContact==INVALID_HANDLE_VALUE)
+		{
+			int i;
+
+			for(i=0;i<(dat->lCLCContactsCache.realCount);i++)
+			{
+				pdisplayNameCacheEntry pdnce;
+				pdnce=dat->lCLCContactsCache.items[i];
+				pdnce->ClcContact=NULL;
+			};		
+		//FreeDisplayNameCache(&dat->lCLCContactsCache);
+		//InitDisplayNameCache(&dat->lCLCContactsCache);			
+		OutputDebugString("Clear full cache\r\n");
+		}
+		if(!IsHContactGroup(hContact)&&!IsHContactInfo(hContact))
+		{
+			{
+//				char buf[255];
+				//sprintf(buf,"ClearCache %x,%x\r\n",dat,hContact);
+				//OutputDebugString(buf);
+			}
+			cacheEntry=GetCLCFullCacheEntry(dat,hContact);
+			if (cacheEntry!=NULL)
+			{
+				cacheEntry->ClcContact=NULL;
+			};
+		};
+
+}
+void SetClcContactCacheItem(struct ClcData *dat,HANDLE hContact,void *contact)
+{
+		pdisplayNameCacheEntry cacheEntry;
+		if(!IsHContactGroup(hContact)&&!IsHContactInfo(hContact))
+		{
+			cacheEntry=GetCLCFullCacheEntry(dat,hContact);
+			if (cacheEntry!=NULL)
+			{
+				cacheEntry->ClcContact=contact;
+			};
+		}
+
+}
+
+
+
 int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible)
 {
 	int index=0;
@@ -76,6 +162,48 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 	struct ClcGroup *group=&dat->list;
 
 	group->scanIndex=0;
+
+	if (isVisible==NULL&&hItem!=NULL&&subgroup==NULL&&!IsHContactGroup(hItem)&&!IsHContactInfo(hItem))
+	{
+		//try use cache
+		pdisplayNameCacheEntry cacheEntry;
+		cacheEntry=GetCLCFullCacheEntry(dat,hItem);
+		if (cacheEntry!=NULL)
+		{
+			if (cacheEntry->ClcContact==NULL)
+			{
+				int *isv={0};
+				void *z={0};
+				int ret;
+				ret=FindItem(hwnd,dat,hItem,(struct ClcContact ** )&z,(struct  ClcGroup** )&isv,NULL);
+				if (ret=0) {return (0);};
+				cacheEntry->ClcContact=(void *)z;
+			}
+			if (cacheEntry->ClcContact!=NULL)
+			{
+				if (contact!=NULL) *contact=(struct ClcContact *)cacheEntry->ClcContact;
+
+				{
+					/*
+					void *p={0};
+					int *isv={0};
+					int ret;
+					ret=FindItem(hwnd,dat,hItem,&p,&isv,NULL);
+					if (ret=0) {return (0);};
+					if (p!=cacheEntry->ClcContact)
+					{
+						MessageBox(0,"hITEM FAILEDDDDDDDD!!!!!","",0);
+						//cacheEntry->ClcContact=p;
+					}
+					*/
+				}
+				return 1;
+			}
+		}
+	}
+
+	group=&dat->list;
+
 	for(;;) {
 		if(group->scanIndex==group->contactCount) {
 			struct ClcGroup *tgroup;

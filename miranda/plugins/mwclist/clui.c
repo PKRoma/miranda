@@ -75,6 +75,8 @@ extern void LoadExtraImageFunc();
 extern int CreateStatusBarhWnd(HWND parent);
 extern int CreateStatusBarFrame();
 extern int LoadProtocolOrderModule(void);
+extern int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam);
+extern int ExtraToColumnNum(int extra);
 
 #define M_CREATECLC  (WM_USER+1)
 
@@ -275,18 +277,19 @@ int CreateCLC(HWND parent)
 	
 	ReloadExtraIcons();
 	{
-		{	int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
-			if(state==SETTING_STATE_NORMAL) ShowWindow(hwndContactList, SW_SHOW);
-			else if(state==SETTING_STATE_MINIMIZED) ShowWindow(hwndContactList, SW_SHOWMINIMIZED);
-		}
 		lastreqh=0;
 		{
 			CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
 		}
 
+		{	int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+			if(state==SETTING_STATE_NORMAL) ShowWindow(hwndContactList, SW_SHOW);
+			else if(state==SETTING_STATE_MINIMIZED) ShowWindow(hwndContactList, SW_SHOWMINIMIZED);
+		}
 		
 		lastreqh=0;
 		disableautoupd=0;
+	
 	}
 hSettingChangedHook=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnSettingChanging);
 return(0);
@@ -539,7 +542,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			
 		case WM_TIMER:
 			
-			if ((int)wParam>=TM_STATUSBARUPDATE||(int)wParam<=TM_STATUSBARUPDATE+64)
+			if ((int)wParam>=TM_STATUSBARUPDATE&&(int)wParam<=TM_STATUSBARUPDATE+64)
 			{
 					
 					int status,i;
@@ -626,7 +629,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			else {
 				if(wParam) SetForegroundWindow(hwnd);
 				MyAnimateWindow(hwnd,200,AW_BLEND|(wParam?0:AW_HIDE));
-				SetWindowPos(hwndContactTree,0,0,0,0,0,SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
+				//SetWindowPos(hwndContactTree,0,0,0,0,0,SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
+				CLUIFramesUpdateFrame(-1,0);
 			}
 			break;
 			}
@@ -829,9 +833,23 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					case NM_CLICK:
 						{	NMCLISTCONTROL *nm=(NMCLISTCONTROL*)lParam;
 						DWORD hitFlags;
+						HANDLE hItem;
 						
-						if(SendMessage(hwndContactTree,CLM_HITTEST,(WPARAM)&hitFlags,MAKELPARAM(nm->pt.x,nm->pt.y)))
-							break;
+						hItem=(HANDLE)SendMessage(hwndContactTree,CLM_HITTEST,(WPARAM)&hitFlags,MAKELPARAM(nm->pt.x,nm->pt.y));
+
+							if (hitFlags&CLCHT_ONITEMEXTRA)
+							{					
+								int v=ExtraToColumnNum(EXTRA_ICON_PROTO);
+								if(nm->iColumn==v) {
+									if (!IsHContactGroup(hItem)&&!IsHContactInfo(hItem))
+									{
+										CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
+									}
+									
+									
+								}
+							};	
+						if(hItem) break;
 						if((hitFlags&(CLCHT_NOWHERE|CLCHT_INLEFTMARGIN|CLCHT_BELOWITEMS))==0) break;
 						if (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)) {
 							POINT pt;
@@ -940,7 +958,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
 		case WM_DRAWITEM:
 			{	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
-			if(dis->hwndItem==hwndStatus&&IsWindowVisible(hwndStatus)) {
+			if(dis->hwndItem==hwndStatus/*&&IsWindowVisible(hwndStatus)*/) {
 				ProtocolData *PD=(ProtocolData *)dis->itemData;
 				char *szProto=(char*)dis->itemData;
 				int status,x;
@@ -1015,6 +1033,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					GetTextExtentPoint32(dis->hDC,szStatus,lstrlen(szStatus),&textSize);
 					TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szStatus,lstrlen(szStatus));
 				}
+
+
 			}
 			else if(dis->CtlType==ODT_MENU) {
 				if(dis->itemData==MENU_MIRANDAMENU) {

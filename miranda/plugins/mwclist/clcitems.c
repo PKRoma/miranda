@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //routines for managing adding/removal of items in the list, including sorting
 
 extern int CompareContacts(WPARAM wParam,LPARAM lParam);
+extern void ClearClcContactCache(struct ClcData *dat,HANDLE hContact);
 
 static int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 {
@@ -192,7 +193,8 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdispla
 	int i;
 	
 	hContact=cacheEntry->hContact;
-	
+	//ClearClcContactCache(hContact);
+
 	dat->NeedResort=1;
 	for(i=group->contactCount-1;i>=0;i--)
 		if(group->contact[i].type!=CLCIT_INFO || !(group->contact[i].flags&CLCIIF_BELOWCONTACTS)) break;
@@ -200,6 +202,10 @@ static void AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdispla
 	group->contact[i].type=CLCIT_CONTACT;
 	group->contact[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
 	group->contact[i].hContact=hContact;
+	
+	//cacheEntry->ClcContact=&(group->contact[i]);
+	//SetClcContactCacheItem(dat,hContact,&(group->contact[i]));
+
 	szProto=cacheEntry->szProto;
 	if(szProto!=NULL&&!IsHiddenMode(dat,cacheEntry->status))
 		group->contact[i].flags|=CONTACTF_ONLINE;
@@ -234,7 +240,8 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 	
 	dat->NeedResort=1;
 	ClearRowByIndexCache();
-
+	ClearClcContactCache(dat,hContact);
+	
 	if(style&CLS_NOHIDEOFFLINE) checkHideOffline=0;
 	if(checkHideOffline) {
 		if(szProto==NULL) status=ID_STATUS_OFFLINE;
@@ -284,8 +291,10 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 struct ClcGroup *RemoveItemFromGroup(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount)
 {
 	int iContact;
+	struct ClcData* dat=(struct ClcData*)GetWindowLong(hwnd,0);
 	
 	ClearRowByIndexCache();
+	if(contact->type==CLCIT_CONTACT) ClearClcContactCache(dat,contact->hContact);
 
 	iContact=((unsigned)contact-(unsigned)group->contact)/sizeof(struct ClcContact);
 	if(iContact>=group->contactCount) return group;
@@ -305,6 +314,7 @@ struct ClcGroup *RemoveItemFromGroup(HWND hwnd,struct ClcGroup *group,struct Clc
 		return RemoveItemFromGroup(hwnd,group->parent,&group->parent->contact[i],0);
 	}
 
+	
 	ClearRowByIndexCache();
 	return group;
 }
@@ -317,11 +327,13 @@ void DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 	
 	ClearRowByIndexCache();
 	dat->NeedResort=1;
-
+	
 	if(!FindItem(hwnd,dat,hItem,&contact,&group,NULL)) {
 		DBVARIANT dbv;
 		int i,nameOffset;
 		if(!IsHContactContact(hItem)) return;
+		ClearClcContactCache(dat,hItem);
+
 		if(DBGetContactSetting(hItem,"CList","Group",&dbv)) return;
 
 		//decrease member counts of all parent groups too
@@ -354,6 +366,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 	int tick=GetTickCount();
 
 	ClearRowByIndexCache();
+	ClearClcContactCache(dat,INVALID_HANDLE_VALUE);
 
 	dat->list.expanded=1;
 	dat->list.hideOffline=DBGetContactSettingByte(NULL,"CLC","HideOfflineRoot",0);
@@ -379,10 +392,14 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 		pdisplayNameCacheEntry cacheEntry;
 		
 		cacheEntry=GetContactFullCacheEntry(hContact);
+		//cacheEntry->ClcContact=NULL;
+		ClearClcContactCache(dat,hContact);
 		if (cacheEntry==NULL)
 		{
 			MessageBox(0,"Fail To Get CacheEntry for hContact","!!!!!!!!",0);
 		}
+		
+
 		if(style&CLS_SHOWHIDDEN || !cacheEntry->Hidden) {
 			if(strlen(cacheEntry->szGroup)==0)
 				group=&dat->list;
@@ -439,6 +456,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 	sprintf(buf,"RebuildEntireList %d \r\n",tick);
 
 	OutputDebugString(buf);
+	DBWriteContactSettingDword((HANDLE)0,"CLUI","PF:Last RebuildEntireList Time:",tick);
 	}	
 }
 
@@ -576,6 +594,8 @@ void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort)
 			group->scanIndex++;
 		}
 		
+		ClearClcContactCache(dat,INVALID_HANDLE_VALUE);
+
 		if(hSelItem)
 			if(FindItem(hwnd,dat,hSelItem,&selcontact,&selgroup,NULL))
 				dat->selection=GetRowsPriorTo(&dat->list,selgroup,selcontact-selgroup->contact);
@@ -595,10 +615,11 @@ void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort)
 	{
 	char buf[255];
 	//sprintf(buf,"%s %s took %i ms",__FILE__,__LINE__,tick);
-		if (tick>0) 
+		if (tick>5) 
 		{
 			sprintf(buf,"SortCLC %d \r\n",tick);
 			OutputDebugString(buf);
+			DBWriteContactSettingDword((HANDLE)0,"CLUI","PF:Last SortCLC Time:",tick);
 		}
 	}
 #endif	

@@ -64,16 +64,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	SendMessage(hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
 	
 	SendMessage(hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT)); 
-	//
-	/* only working after restart
-	{
-	int olds=GetWindowLong(hwndStatus,GWL_STYLE);
-	//olds&=~SBARS_SIZEGRIP;
-	//if (olds&DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE)) olds|=SBARS_SIZEGRIP;
-	olds|=SBARS_SIZEGRIP;
-	SetWindowLong(hwndStatus,GWL_STYLE,olds);
-	};
-*/
+
 	partWidths=(int*)malloc(storedcount*sizeof(int));
 	if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
 		RECT rc;

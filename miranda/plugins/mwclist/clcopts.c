@@ -383,9 +383,16 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								if(col==CLCDEFAULT_SELBKCOLOUR) DBDeleteContactSetting(NULL,"CLC","SelBkColour");
 								else DBWriteContactSettingDword(NULL,"CLC","SelBkColour",col);
 							}
-							{	char str[MAX_PATH];
+							{	
+								char str[MAX_PATH],strrel[MAX_PATH];
 								GetDlgItemText(hwndDlg,IDC_FILENAME,str,sizeof(str));
-								DBWriteContactSettingString(NULL,"CLC","BkBitmap",str);
+                                if (ServiceExists(MS_UTILS_PATHTORELATIVE)) {
+                                    if (CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)strrel))
+                                        DBWriteContactSettingString(NULL,"CLC","BkBitmap",strrel);
+                                    else DBWriteContactSettingString(NULL,"CLC","BkBitmap",str);
+                                }
+                                else DBWriteContactSettingString(NULL,"CLC","BkBitmap",str);
+
 							}
 							{	WORD flags=0;
 								if(IsDlgButtonChecked(hwndDlg,IDC_STRETCHH)) flags|=CLB_STRETCHH;

@@ -287,7 +287,7 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 			break;
 
 		case CLM_SETEXTRAIMAGE:
-		{	struct ClcContact *contact;
+		{	struct ClcContact *contact;	
 			if(LOWORD(lParam)>=dat->extraColumnsCount) return 0;
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL)) return 0;
 			contact->iExtraImage[LOWORD(lParam)]=(BYTE)HIWORD(lParam);

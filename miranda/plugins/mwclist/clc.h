@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #ifndef _CLC_H_
 #define _CLC_H_
+#include "dblists.h"
 
 #define HCONTACT_ISGROUP    0x80000000
 #define HCONTACT_ISINFO     0xFFFF0000
@@ -141,6 +142,7 @@ struct ClcData {
 	int showIdle;
 	int noVScrollbar;
 	int NeedResort;
+	SortedList lCLCContactsCache;
 };
 
 //clc.c

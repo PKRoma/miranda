@@ -42,6 +42,11 @@ int GetStatusForContact(HANDLE hContact,char *szProto);
 static int DumpElem( pdisplayNameCacheEntry pdnce )
 {
 	char buf[256];
+	if (pdnce==NULL)
+	{
+		MessageBox(0,"DumpElem Called with null","",0);
+		return (0);
+	}
 	if (pdnce->name) sprintf(buf,"%x: hc:%x, %s\r\n",pdnce,pdnce->hContact,pdnce->name);
 		else
 		sprintf(buf,"%x: hc:%x\r\n",pdnce,pdnce->hContact);
@@ -74,18 +79,16 @@ static int handleQsortCompare( void** c1, void** c2 )
 	return (handleCompare((void *)*( long *)c1,(void *)*( long *)c2));		
 }
 
-void InitDisplayNameCache(void)
+void InitDisplayNameCache(SortedList *list)
 {
 	int i;
 	HANDLE hContact;
-	lContactsCache.dumpFunc =DumpElem;
-	lContactsCache.sortFunc=handleCompare;
-	lContactsCache.sortQsortFunc=handleQsortCompare;
-	lContactsCache.increment=1024;
 
-	displayNameCacheSize=CallService(MS_DB_CONTACT_GETCOUNT,0,0)+1;
-	
-	displayNameCache=(displayNameCacheEntry*)mir_realloc(NULL,displayNameCacheSize*sizeof(displayNameCacheEntry));
+	memset(list,0,sizeof(SortedList));
+	list->dumpFunc =DumpElem;
+	list->sortFunc=handleCompare;
+	list->sortQsortFunc=handleQsortCompare;
+	list->increment=CallService(MS_DB_CONTACT_GETCOUNT,0,0)+1;
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	i=0;
@@ -94,31 +97,27 @@ void InitDisplayNameCache(void)
 			displayNameCacheEntry *pdnce;
 			pdnce=mir_calloc(1,sizeof(displayNameCacheEntry));
 			pdnce->hContact=hContact;
-			//pdnce->hContact=i*1+1;
-			//dnce->name=_strdup(displayNameCache[i].name);
-
-			List_Insert(&lContactsCache,pdnce,i);
-	
+			List_Insert(list,pdnce,i);
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 		i++;
 	}
 	
 	
-	//List_Dump(&lContactsCache);
-	List_Sort(&lContactsCache);
-	//List_Dump(&lContactsCache);
+		//List_Dump(list);
+	List_Sort(list);
+	//	List_Dump(list);
 }
 int gdnc=0;
-void FreeDisplayNameCache(void)
+void FreeDisplayNameCache(SortedList *list)
 {
 	int i;
 
-	for(i=0;i<(lContactsCache.realCount);i++)
+	for(i=0;i<(list->realCount);i++)
 	{
 		pdisplayNameCacheEntry pdnce;
-		pdnce=lContactsCache.items[i];
+		pdnce=list->items[i];
 		if (pdnce&&pdnce->name) mir_free(pdnce->name);
-		if (pdnce&&pdnce->szProto) mir_free(pdnce->szProto);
+		//if (pdnce&&pdnce->szProto) mir_free(pdnce->szProto);//proto is system string
 		if (pdnce&&pdnce->szGroup) mir_free(pdnce->szGroup);
 		mir_free(pdnce);
 	};
@@ -127,7 +126,7 @@ gdnc++;
 	//displayNameCache=NULL;
 	//displayNameCacheSize=0;
 	
-	List_Destroy(&lContactsCache);
+	List_Destroy(list);
 	
 }
 
@@ -263,8 +262,8 @@ static pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact)
 void InvalidateDisplayNameCacheEntry(HANDLE hContact)
 {
 	if(hContact==INVALID_HANDLE_VALUE) {
-		FreeDisplayNameCache();
-		InitDisplayNameCache();
+		FreeDisplayNameCache(&lContactsCache);
+		InitDisplayNameCache(&lContactsCache);
 		SendMessage(hwndContactTree,CLM_AUTOREBUILD,0,0);
 	}
 	else {
@@ -273,7 +272,7 @@ void InvalidateDisplayNameCacheEntry(HANDLE hContact)
 		{
 			if (pdnce->name) mir_free(pdnce->name);
 			pdnce->name=NULL;
-			if (pdnce->szProto) mir_free(pdnce->szProto);
+			//if (pdnce->szProto) mir_free(pdnce->szProto); proto is system string
 			if (pdnce->szGroup) mir_free(pdnce->szGroup);
 			pdnce->szGroup=NULL;
 			pdnce->Hidden=-1;
@@ -300,7 +299,7 @@ char *GetProtoForContact(HANDLE hContact)
 		char *szProto=NULL;
 		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 		if (szProto==NULL) return(NULL);
-		return(mir_strdup(szProto));
+		return((szProto));
 };
 
 int GetStatusForContact(HANDLE hContact,char *szProto)

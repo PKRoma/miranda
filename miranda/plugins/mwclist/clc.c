@@ -35,6 +35,7 @@ static HANDLE hAckHook;
 
 static HANDLE hSettingChanged1;
 static HANDLE hSettingChanged2;
+extern void InitDisplayNameCache(SortedList *list);
 
 int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
@@ -238,6 +239,9 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			dat->list.parent=NULL;
 			dat->list.hideOffline=0;
 			dat->NeedResort=1;
+			//dat->lCLCContactsCache=
+			InitDisplayNameCache(&dat->lCLCContactsCache);
+
 			LoadClcOptions(hwnd,dat);
 			if (!IsWindowVisible(hwnd)) 
 			{

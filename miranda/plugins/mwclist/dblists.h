@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /* a simple sorted list implementation */
+#ifndef _DBLISTS_H
+#define _DBLISTS_H
 
 typedef int ( *FSortFunc )( void*, void* );
 typedef int ( *FSortQsortFunc )( void**, void** );
@@ -52,3 +54,5 @@ int   List_Insert( SortedList*, void*, int );
 int   List_Remove( SortedList*, int );
 void List_Sort( SortedList* p_list );
 void List_Dump( SortedList* p_list );
+
+#endif

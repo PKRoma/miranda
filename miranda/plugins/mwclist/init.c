@@ -82,8 +82,16 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
 
+	__try
+	{
+	
 	rc=LoadContactListModule();
 	if (rc==0) rc=LoadCLCModule();
+	}
+	__except(0)
+	{
+		int i=1;
+	}
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
 
 	return rc;
