@@ -53,8 +53,8 @@ extern bool				bTempDisableCheck ;
 extern bool				bTempForceCheck ;
 extern bool				bPerformDone;
 int						iTempCheckTime = 0;
-int						OldStatus= ID_STATUS_OFFLINE;;
-int						GlobalStatus= ID_STATUS_OFFLINE;;
+int						OldStatus= ID_STATUS_OFFLINE;
+int						GlobalStatus = ID_STATUS_OFFLINE;
 UINT_PTR				RetryTimer = 0;	
 String					StatusMessage ="";	
 
@@ -1420,7 +1420,7 @@ static int Service_GetStatus(WPARAM wParam,LPARAM lParam)
 }
 static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
-	if (GlobalStatus != ID_STATUS_ONLINE && wParam != ID_STATUS_FREECHAT)
+	if (GlobalStatus != ID_STATUS_ONLINE && GlobalStatus != ID_STATUS_INVISIBLE && GlobalStatus != ID_STATUS_FREECHAT && GlobalStatus != ID_STATUS_CONNECTING && GlobalStatus != ID_STATUS_OFFLINE)
 	{
 		if (StatusMessage == "" || lParam == NULL || StatusMessage != ReplaceString((char *)lParam, "\r\n", " ") )
 		{
