@@ -42,7 +42,20 @@ extern char gpszICQProtoName[MAX_PATH];
 
 static const char *szLevelDescr[] = {"ICQ Note", "ICQ Warning", "ICQ Error", "ICQ Fatal"};
 
+typedef struct {
+    char *szMsg;
+    char *szTitle;
+} LogMessageInfo;
 
+static void __cdecl icq_LogMessageThread(void* arg) {
+    LogMessageInfo *err = (LogMessageInfo*)arg;
+    if (!err) return;
+    if (err->szMsg&&err->szTitle)
+        MessageBox(NULL, err->szMsg, err->szTitle, MB_OK);
+    if (err->szMsg) free(err->szMsg);
+    if (err->szTitle) free(err->szTitle);
+    free(err);
+}
 
 void icq_LogMessage(int level, const char *szMsg)
 {
@@ -53,9 +66,12 @@ void icq_LogMessage(int level, const char *szMsg)
 	Netlib_Logf(ghServerNetlibUser, "%s", szMsg);
 	
 	displayLevel = DBGetContactSettingByte(NULL, gpszICQProtoName, "ShowLogLevel", LOG_FATAL);
-	if (level >= displayLevel)
-		MessageBox(NULL, szMsg, Translate(szLevelDescr[level]), MB_OK);
-	
+	if (level >= displayLevel) {
+        LogMessageInfo *lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
+        lmi->szMsg = _strdup(szMsg);
+        lmi->szTitle = _strdup(Translate(szLevelDescr[level]));
+        forkthread(icq_LogMessageThread, 0, lmi);
+    }
 }
 
 
