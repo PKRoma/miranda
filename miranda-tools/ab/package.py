@@ -4,7 +4,7 @@ import string
 import zipfile
 import time
 import os.path
-import vars
+from vars import *
 
 try:
 	z = zipfile.ZipFile('zip/' + MNAME + '.zip','w',zipfile.ZIP_DEFLATED)	
@@ -12,7 +12,7 @@ except:
 	print "Problem: Failed to create nightly zip (release)"
 	sys.exit(1)
 	
-print "creating", name, "(release) mode"
+print "creating", MNAME + '_zip', "(release) mode"
 z.write('Bin/Release/miranda32.exe', 'miranda32.exe')
 z.write('Bin/Release/Plugins/ICQ.dll', 'Plugins/ICQ.dll')
 z.write('Bin/Release/Plugins/AIM.dll','Plugins/AIM.dll')
@@ -31,7 +31,7 @@ except:
 	print "Problem: Failed to create nightly zip (debug)"
 	sys.exit(1)
 	
-print "creating", name, "(debug) mode"
+print "creating", MNAME + '_debug.zip', "(debug) mode"
 z.write('Bin/Debug/miranda32.exe', 'miranda32.exe')
 z.write('Bin/Debug/Plugins/ICQ.dll', 'Plugins/ICQ.dll')
 z.write('Bin/Debug/Plugins/AIM.dll','Plugins/AIM.dll')
