@@ -16,7 +16,7 @@ SF.NET Project Page: http://www.sourceforge.net/projects/tabsrmm/
 Version 0.9.9.8 - 2005/03/04
 
         + added icon pack version information. Valid icon packs need to contain a string
-          identifier ("__tabSRMM_ICONPACK 1.0__") in order to be recognized. You can stil
+          identifier ("__tabSRMM_ICONPACK 1.0__") in order to be recognized. You can still
           load icon packs without this identifier, but you'll get a warning message.
           This was added to avoid problems when specifiyng a DLL which is, in fact, not
           a valid icon pack for tabSRMM. In such cases, the plugin could even crash badly

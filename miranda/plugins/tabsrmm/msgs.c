@@ -74,6 +74,7 @@ void ConvertAllToUTF8();
 void InitAPI();
 void ReloadGlobals();
 void LoadIconTheme();
+void UnloadIconTheme();
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
@@ -652,7 +653,7 @@ static void RestoreUnreadMessageAlerts(void)
                 if (!usingReadNext && windowAlreadyExists)
                     continue;
 
-                if (autoPopup && !windowAlreadyExists) {
+                if (0) {
                     struct NewMessageWindowLParam newData = { 0 };
                     newData.hContact = hContact;
                     newData.isSend = 0;
@@ -701,6 +702,9 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     }
     HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
     RestoreUnreadMessageAlerts();
+    for(i = 0; i < NR_BUTTONBARICONS; i++)
+        myGlobals.g_buttonBarIcons[i] = 0;
+    LoadIconTheme();
     CreateImageList(TRUE);              // XXX tab support, create shared image list for tab icons.
 #if defined(_UNICODE)
     ConvertAllToUTF8();
@@ -851,9 +855,8 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
     // change all the icons
     WindowList_Broadcast(hMessageWindowList, DM_UPDATEWINICON, 0, 0);
 
+    LoadIconTheme();
     CreateImageList(FALSE);
-    UncacheMsgLogIcons();
-    CacheMsgLogIcons();
     return 0;
 }
 
@@ -1205,7 +1208,6 @@ void CreateImageList(BOOL bInitial)
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);
 
-    LoadIconTheme();
     // load global status icons...
     for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
         hIcon = LoadSkinnedProtoIcon(0, i);
@@ -1239,9 +1241,13 @@ void CreateImageList(BOOL bInitial)
     myGlobals.g_IconMsgEvent = iCurIcon++;
 
     // typing notify icon
-    hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);    
-    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    DestroyIcon(hIcon);
+    if(g_hIconDLL) {
+        hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);    
+        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
+        DestroyIcon(hIcon);
+    }
+    else
+        ImageList_AddIcon(myGlobals.g_hImageList, 0);
     myGlobals.g_IconTypingEvent = iCurIcon++;
 
     hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
@@ -1252,14 +1258,22 @@ void CreateImageList(BOOL bInitial)
     ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
     myGlobals.g_IconUrlEvent = iCurIcon++;
 
-    hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    DestroyIcon(hIcon);
+    if(g_hIconDLL) {
+        hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_MSGERROR), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
+        DestroyIcon(hIcon);
+    }
+    else
+        ImageList_AddIcon(myGlobals.g_hImageList, 0);
     myGlobals.g_IconError = iCurIcon++;
 
-    hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    DestroyIcon(hIcon);
+    if(g_hIconDLL) {
+        hIcon = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDI_CHECK), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
+        DestroyIcon(hIcon);
+    }
+    else
+        ImageList_AddIcon(myGlobals.g_hImageList, 0);
     myGlobals.g_IconSend = iCurIcon++;
     
     ImageList_AddIcon(myGlobals.g_hImageList, 0);             // empty (end of list)
@@ -1388,12 +1402,14 @@ void LoadIconTheme()
     DBVARIANT dbv;
     HANDLE hFile;
     char szIDString[256];
-    int i;
     int cxIcon = GetSystemMetrics(SM_CXSMICON);
     int cyIcon = GetSystemMetrics(SM_CYSMICON);
 
-    g_hIconDLL = 0;
-
+    if(g_hIconDLL) {
+        FreeLibrary(g_hIconDLL);
+        g_hIconDLL = 0;
+    }
+    
     if(DBGetContactSetting(NULL, SRMSGMOD_T, "icondll", &dbv))
         strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
     else {
@@ -1406,9 +1422,6 @@ void LoadIconTheme()
     else
         CloseHandle(hFile);
 
-    for(i = 0; i < NR_BUTTONBARICONS; i++)
-        myGlobals.g_buttonBarIcons[i] = 0;
-    
     g_hIconDLL = LoadLibraryA(szFilename);
 
     if(g_hIconDLL == NULL)
@@ -1424,6 +1437,8 @@ void LoadIconTheme()
                     goto failure;
             }
         }
+        UnloadIconTheme();
+        UncacheMsgLogIcons();
         
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
 

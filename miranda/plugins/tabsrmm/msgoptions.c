@@ -767,12 +767,11 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             if(strncmp(szFilename, szOldFileName, MAX_PATH)) {
                                 if(MessageBoxA(0, Translate("Changing the icon pack at runtime requires closing of all open message windows.\nProceed?"), Translate("Warning"), MB_YESNO) == IDYES) {
                                     DBWriteContactSettingString(NULL, SRMSGMOD_T, "icondll", szFilename);
-                                    UncacheMsgLogIcons();
-                                    UnloadIconTheme();
-                                    FreeLibrary(g_hIconDLL);
-                                    CreateImageList(FALSE);
                                     while(pFirstContainer)
                                         SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
+                                    LoadIconTheme();
+                                    if(g_hIconDLL)
+                                        CreateImageList(FALSE);
                                     //WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
                                 }
                                 else
