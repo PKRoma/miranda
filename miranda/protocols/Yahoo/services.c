@@ -45,6 +45,7 @@ void yahoo_logoff_buddies()
 		}	
 }
 
+
 //=======================================================
 //GetCaps
 //=======================================================
@@ -69,7 +70,7 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
             break;
             
         case PFLAGNUM_4:
-            ret = PF4_FORCEAUTH|PF4_FORCEADDED|PF4_SUPPORTTYPING|PF4_SUPPORTIDLE;
+            ret = PF4_FORCEAUTH|PF4_FORCEADDED|PF4_SUPPORTTYPING|PF4_SUPPORTIDLE| PF4_AVATARS;
             break;
         case PFLAG_UNIQUEIDTEXT:
             ret = (int) Translate("ID");
@@ -418,7 +419,7 @@ int YahooSendAuthRequest(WPARAM wParam,LPARAM lParam)
 				
 				YAHOO_DebugLog("Adding buddy:%s Auth:%s", dbv.pszVal, c);
 				YAHOO_add_buddy(dbv.pszVal, "miranda", c);
-				
+				YAHOO_SetString(ccs->hContact, "YGroup", "miranda");
 				DBFreeVariant( &dbv );
 				
 				return 0; // Success
@@ -1027,6 +1028,90 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
+void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen)
+{
+  int tPathLen;
+
+  DBVARIANT dbv;
+  
+  CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
+
+  tPathLen = lstrlen(pszDest);
+  tPathLen += _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", yahooProtocolName);
+  CreateDirectory(pszDest, NULL);
+
+  if (!DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+		lstrcpy(pszDest + tPathLen, dbv.pszVal);
+		tPathLen +=lstrlen(dbv.pszVal);
+		DBFreeVariant(&dbv);
+  }else {
+		lstrcpy(pszDest + tPathLen, "avatar");
+		tPathLen +=lstrlen("avatar");
+  }
+  lstrcpy(pszDest + tPathLen, ".bmp" );
+}
+
+int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
+{
+	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+
+	DBVARIANT dbv;
+	if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] For: %s", dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}else {
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO]");
+	}
+
+	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+		if (YAHOO_GetWord(AI->hContact, "PictCK", 0) != 0) {
+			GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
+			DeleteFile(AI->filename);
+		}
+
+		return GAIR_NOAVATAR;
+	}
+	
+	if (YAHOO_GetWord(AI->hContact, "PictCK", 0) != 0) {
+		
+		GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
+		//if ( access( AI->filename, 0 ) == 0 ) {
+		AI->format = PA_FORMAT_BMP;
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
+		
+		if (access( AI->filename, 0 ) == 0 ) {
+			return GAIR_SUCCESS;
+		} else {
+			/* need to request it again? */
+			if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0) {
+				return GAIR_WAITFOR;
+			} else if ( yahooLoggedIn ) {
+				DBVARIANT dbv;
+	  
+				if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+					YAHOO_request_avatar(dbv.pszVal/*who */);
+					DBFreeVariant(&dbv);
+					return GAIR_WAITFOR;
+				}
+			}
+		}
+		
+	}
+	
+	YAHOO_DebugLog("[YAHOO_GETAVATARINFO] NO AVATAR???");
+	return GAIR_NOAVATAR;
+}
+
+int YahooSetAvatarUI( WPARAM wParam, LPARAM lParam )
+{
+	/*char szFileName[ MAX_PATH ];
+	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
+		return 1;
+
+	return MsnSetAvatar( 0, ( LPARAM )szFileName );*/
+	return 1; /* error for now */
+}
+
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;
 
@@ -1141,6 +1226,8 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSR_FILE,				YahooRecvFile );
 	
 	YAHOO_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,	YahooSetApparentMode);
+	
+	YAHOO_CreateProtoServiceFunction( PS_GETAVATARINFO,	YahooGetAvatarInfo);
 	return 0;
 }
 

@@ -30,7 +30,7 @@ extern int do_yahoo_debug;
 
 int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 {
-    LOG(("send socket: %d, %d bytes", s, len));
+    //LOG(("send socket: %d, %d bytes", s, len));
 
     if (yahooStatus == ID_STATUS_OFFLINE) {
 		YAHOO_DebugLog("WE OFFLINE ALREADY!!");
@@ -49,11 +49,11 @@ int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 
 int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 {
-	LOG(("Recv socket: %d", s));
+	//LOG(("Recv socket: %d", s));
 	
 	int RecvResult = Netlib_Recv((HANDLE)s, buf, len, 0);
 	
-	LOG(("Got bytes: %d, len: %d", RecvResult, len));
+	//LOG(("Got bytes: %d, len: %d", RecvResult, len));
 	
 	return RecvResult;
 

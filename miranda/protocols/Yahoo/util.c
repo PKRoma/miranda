@@ -13,6 +13,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <shlwapi.h>
+#include <malloc.h>
 
 #include "yahoo.h"
 #include <m_popup.h>

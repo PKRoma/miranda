@@ -187,7 +187,8 @@ typedef struct {
 
 void YAHOO_SendFile(y_filetransfer *ft);
 void YAHOO_RecvFile(y_filetransfer *ft);
-
+void YAHOO_request_avatar(const char* who);
+void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen);
 #define FILERESUME_CANCEL	11
 
 char * yahoo_status_code(enum yahoo_status s);

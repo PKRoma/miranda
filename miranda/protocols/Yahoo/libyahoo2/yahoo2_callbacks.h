@@ -107,9 +107,17 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_login_response)(int id, int succ, char *url);
  * 	id   - the id that identifies the server connection
  * 	buds - the buddy list
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_buddies)(int id, YList * buds, char *stealthlist);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_buddies)(int id, YList * buds);
 
 
+/*
+ * Name: ext_yahoo_got_buddies
+ * 	Called when the contact list is got from the server
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	stealthlist - a string representing buddy ids to hide from
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_stealthlist)(int id, char *stealthlist);
 
 
 /*
@@ -168,11 +176,45 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
  * 	away - whether the contact is away or not (YAHOO_STATUS_CUSTOM)
  * 	idle - this is the number of seconds he is idle [if he is idle]
  *  mobile - this is set for mobile users/buddies
+ *  cksum - picture checksum [avatar support]
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum);
 
 
+/*
+ * Name: ext_yahoo_got_picture
+ * 	Called when we request picture URL.
+ * Params:
+ * 	id   - the id that identifies the server connection
+ *  me   - the identity of mine being notified
+ * 	who  - the handle of the remote user
+ * pic_url - URL to the buddy icon
+ * cksum - checksum
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture)(int id, const char *me, const char *who, const char *pic_url, int cksum);
 
+
+/*
+ * Name: ext_yahoo_got_picture_checksum
+ * 	Called when our buddy changes his/hers buddy icon
+ * Params:
+ * 	id   - the id that identifies the server connection
+ *  me   - the identity of mine being notified
+ * 	who  - the handle of the remote user
+ * cksum - checksum
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_checksum)(int id, const char *me, const char *who, int cksum);
+
+/*
+ * Name: ext_yahoo_got_picture_update
+ * 	Called when our buddy shares or stops sharing pictures with us.
+ * Params:
+ * 	id   - the id that identifies the server connection
+ *  me   - the identity of mine being notified
+ * 	who  - the handle of the remote user
+ * cksum - checksum
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_update)(int id, const char *me, const char *who, int buddy_icon);
 
 /*
  * Name: ext_yahoo_got_im
@@ -188,8 +230,9 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int 
  * 				2 == error sending message
  * 				5
  * 	utf8 - whether the message is encoded as utf8 or not
+ *  buddy_icon - whether the buddy has buddy_icon set or not.
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, char *me, char *who, char *msg, long tm, int stat, int utf8);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
 
 
 

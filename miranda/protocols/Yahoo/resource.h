@@ -44,6 +44,7 @@
 #define IDC_DISABLE_UTF8                1476 
 #define IDC_USE_YAB		                1477
 #define IDC_SHOW_ERRORS	                1478
+#define IDC_SHOW_AVATARS                1479
 /*
  *
  */

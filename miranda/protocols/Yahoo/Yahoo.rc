@@ -63,6 +63,9 @@ BEGIN
 	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,160,220,10 					
 
+	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,174,220,10 					
+
 END
 
 IDD_OPT_YAHOO_POPUP DIALOGEX 0, 0, 240, 200

@@ -16,6 +16,9 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
+#include <direct.h> 
+#include <malloc.h>
+
 /*
  * Miranda headers
  */
@@ -66,7 +69,7 @@ static int ping_timer = 0;
 
 extern int poll_loop;
 
-void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8);
+void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
 
 char * yahoo_status_code(enum yahoo_status s)
 {
@@ -252,7 +255,7 @@ void get_fd(int id, int fd, int error, void *data)
 			
 				if (dw) {
 					//dw = send(fd, buf, dw, 0);
-					dw = Netlib_Send((SOCKET)fd, buf, dw, MSG_NODUMP);
+					dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
 					size += dw;
 					
 					if(GetTickCount() >= lNotify + 500 || dw < 1024 || size == statbuf.st_size) {
@@ -390,7 +393,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 				ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
 				
 				do {
-					dw = Netlib_Recv((SOCKET)fd, buf, 1024, MSG_NODUMP);
+					dw = Netlib_Recv((HANDLE)fd, buf, 1024, MSG_NODUMP);
 				
 					if (dw) {
 						WriteFile(myhFile, buf, dw, &c, NULL);
@@ -457,8 +460,11 @@ void YAHOO_remove_buddy(const char *who)
 
 	//if ( DBGetContactSetting( hContact, "Clist", "Group", &dbv ))
 	//	return;
-	if ( DBGetContactSetting( hContact, yahooProtocolName, "YGroup", &dbv ))
+	if ( DBGetContactSetting( hContact, yahooProtocolName, "YGroup", &dbv )) {
+		LOG(("WARNING NO DATABASE GROUP  using 'miranda'!"));
+		yahoo_remove_buddy(ylad->id, who, "miranda");
 		return;
+	}
 	
 	yahoo_remove_buddy(ylad->id, who, dbv.pszVal);
 	DBFreeVariant( &dbv );
@@ -635,7 +641,7 @@ void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *
 	
 	_snprintf(z, sizeof(z), "[miranda] Got conference invite to room: %s with msg: %s", room ?room:"", msg ?msg:"");
 	LOG(("[ext_yahoo_got_conf_invite] %s", z));
-	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0);
+	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0, 0);
 	
 	yahoo_conference_decline(ylad->id, NULL, members, room, "I am sorry, but i can't join your conference since this feature is not currently implemented in my client.");
 }
@@ -676,13 +682,24 @@ void ext_yahoo_chat_message(int id, char *who, char *room, char *msg, int msgtyp
 {
 }
 
+void YAHOO_request_avatar(const char* who)
+{
+	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+		LOG(("Avatars disabled, but available for: %s", who));
+		return;
+	}
+	
+	LOG(("Requesting Avatar for: %s", who));
+	yahoo_request_buddy_avatar(ylad->id, who);
+}
+
 /* Other handlers */
-void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile)
+void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum)
 {
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	LOG(("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle));
+	LOG(("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d)", who, msg, stat, away, idle, cksum));
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
@@ -692,6 +709,8 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		LOG(("Buddy Found On My List!"));
 		LOG(("Buddy %d", hContact));
 	}
+	
+	
 	
 	if (!mobile)
 		YAHOO_SetWord(hContact, "Status", yahoo_to_miranda_status(stat,away));
@@ -720,18 +739,335 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	} 
 		
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
+
+	/* Last thing check the checksum and request new one if we need to */
+	if (!cksum || cksum == -1) {
+		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+
+		PROTO_AVATAR_INFORMATION AI;
+		AI.cbSize = sizeof AI;
+		AI.format = PA_FORMAT_BMP;
+		AI.hContact = hContact;
+		AI.filename[0]='\0';
 		
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+	} else {
+		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
+			YAHOO_request_avatar(who);	
+		}
+	}
 }
 
-void ext_yahoo_got_buddies(int id, YList * buds, char *stealthlist)
+static HMODULE sttPngLib = NULL;
+
+typedef	BOOL ( *pfnConvertPng2dib )( char*, size_t, BITMAPINFOHEADER** );
+//extern pfnConvertPng2dib png2dibConvertor;
+
+pfnConvertPng2dib png2dibConvertor = NULL;
+
+/*
+ * The Following PNG related stuff copied from MSN. Thanks George!
+ */
+BOOL YAHOO_LoadPngModule()
 {
-	char **stealth = NULL;
+	if ( sttPngLib == NULL ) {
+		if (( sttPngLib = LoadLibrary( "png2dib.dll" )) == NULL ) {
+			char tDllPath[ MAX_PATH ];
+			GetModuleFileName( hinstance, tDllPath, sizeof( tDllPath ));
+			{
+				char* p = strrchr( tDllPath, '\\' );
+				if ( p != NULL )
+					strcpy( p+1, "png2dib.dll" );
+				else
+					strcpy( tDllPath, "png2dib.dll" );
+			}
+
+			if (( sttPngLib = LoadLibrary( tDllPath )) == NULL ) {
+				MessageBox( NULL,
+					Translate( "Please install png2dib.dll for avatar support. " ),
+					Translate( "Error" ),
+					MB_OK | MB_ICONSTOP );
+				YAHOO_SetByte("ShowAvatars", 0);
+				return FALSE;
+		}	}
+
+		png2dibConvertor = ( pfnConvertPng2dib )GetProcAddress( sttPngLib, "mempng2dib" );
+		//dib2pngConvertor = ( pfnConvertDib2png )GetProcAddress( sttPngLib, "dib2mempng" );
+		//getver           = ( pfnGetVer )        GetProcAddress( sttPngLib, "getver" );
+		if ( png2dibConvertor == NULL) { // || dib2pngConvertor == NULL || getver == NULL ) {
+			FreeLibrary( sttPngLib ); sttPngLib = NULL;
+			MessageBox( NULL,
+				Translate( "Your png2dib.dll is either obsolete or damaged. " ),
+				Translate( "Error" ),
+				MB_OK | MB_ICONSTOP );
+
+			//goto LBL_Error;
+			return FALSE;
+	}	}
+
+	return TRUE;
+}
+
+struct avatar_info{
+	char *who;
+	char *pic_url;
+	int cksum;
+};
+
+void get_picture(int id, int fd, int error,	const char *filename, unsigned long size, void *data) 
+{
+    char buf[4096];
+    int rsize = 0;
+	DWORD dw, c;
+	HANDLE 	hContact = 0;
+	char *pBuff = NULL;
+	struct avatar_info *avt = (struct avatar_info *) data;
+		
+	LOG(("Getting file: %s size: %d", filename, size));
+	pBuff = malloc(size);
+	if (!pBuff) 
+		error = 1;
+	
+	hContact = getbuddyH(avt->who);
+	
+	if (!hContact){
+		error = 1;
+		
+	} else {
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 1);
+	}
+	
+    if(!error) {
+				
+				do {
+					dw = Netlib_Recv((HANDLE)fd, buf, 4096, MSG_NODUMP);
+				
+					if (dw) {
+						//WriteFile(myhFile, buf, dw, &c, NULL);
+						CopyMemory(&pBuff[rsize], buf, dw);
+						rsize += dw;
+					}
+					
+				} while ( dw > 0 );
+			
+    }
+	
+    LOG(("File download complete!"));
+
+//    ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
+	if (!error) {
+			HANDLE myhFile;
+		
+			
+			//---- Converting memory buffer to bitmap and saving it to disk
+			if ( !YAHOO_LoadPngModule() )
+				return;
+
+			BITMAPINFOHEADER* pDib;
+			if ( !png2dibConvertor( pBuff, rsize, &pDib ))
+				return;
+
+
+
+
+			GetAvatarFileName(hContact, buf, 1024);
+			LOG(("Saving file: %s size: %d", buf, size));
+			myhFile    = CreateFile(buf,
+									GENERIC_WRITE,
+									FILE_SHARE_WRITE,
+									NULL, OPEN_ALWAYS,  FILE_ATTRIBUTE_NORMAL,  0);
+	
+			if(myhFile !=INVALID_HANDLE_VALUE) {
+				BITMAPFILEHEADER tHeader = { 0 };
+				tHeader.bfType = 0x4d42;
+				tHeader.bfOffBits = sizeof( tHeader ) + sizeof( BITMAPINFOHEADER );
+				tHeader.bfSize = tHeader.bfOffBits + pDib->biSizeImage;
+				WriteFile(myhFile, &tHeader, sizeof( tHeader ), &c, NULL);
+				WriteFile(myhFile, pDib, sizeof( BITMAPINFOHEADER ), &c, NULL );
+				WriteFile(myhFile, pDib+1, pDib->biSizeImage, &c, NULL );
+				//fclose( out );
+				
+				//WriteFile(myhFile, pBuff, rsize, &c, NULL);
+				CloseHandle(myhFile);
+			} else {
+				LOG(("Can not open file for writing: %s", buf));
+			}
+	}
+
+	FREE(pBuff);
+	PROTO_AVATAR_INFORMATION AI;
+	AI.cbSize = sizeof AI;
+	AI.format = PA_FORMAT_BMP;
+	AI.hContact = hContact;
+	lstrcpy(AI.filename,buf);
+
+	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", avt->cksum);
+	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
+	
+	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED,(HANDLE) &AI, 0);
+}
+
+
+static void __cdecl yahoo_recv_avatarthread(struct avatar_info *avt) 
+{
+//    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	if (avt == NULL) {
+		YAHOO_DebugLog("AVT IS NULL!!!");
+		return;
+	}
+	//YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
+	
+	//YAHOO_RecvFile(sf);
+	//if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
+	//	CloseHandle( sf->hWaitEvent );
+	LOG(("yahoo_recv_avatarthread who:%s url:%s checksum: %d", avt->who, avt->pic_url, avt->cksum));
+	yahoo_get_url_handle(ylad->id, avt->pic_url, &get_picture, avt);
+	
+	free(avt->who);
+	free(avt->pic_url);
+	free(avt);
+}
+
+void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum)
+{
+	struct avatar_info *avt;
+	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d)", who, pic_url, cksum));
+	
+	avt = malloc(sizeof(struct avatar_info));
+	avt->who = _strdup(who);
+	avt->pic_url = _strdup(pic_url);
+	avt->cksum = cksum;
+	
+	pthread_create(yahoo_recv_avatarthread, (void *) avt);
+	
+	LOG(("ext_yahoo_got_picture exiting"));
+}
+
+void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int cksum)
+{
+	HANDLE 	hContact = 0;
+
+	LOG(("ext_yahoo_got_picture_checksum for %s checksum: %d", who, cksum));
+
+	hContact = getbuddyH(who);
+	if (hContact == NULL) {
+		LOG(("Buddy Not Found. Skipping avatar update"));
+		return;
+	}
+	
+	/* Last thing check the checksum and request new one if we need to */
+	if (!cksum || cksum == -1) {
+		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+
+		PROTO_AVATAR_INFORMATION AI;
+		AI.cbSize = sizeof AI;
+		AI.format = PA_FORMAT_BMP;
+		AI.hContact = hContact;
+		AI.filename[0]='\0';
+
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+	} else {
+		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
+			YAHOO_request_avatar(who);	
+		}
+	}
+	
+}
+
+void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int buddy_icon)
+{
+	HANDLE 	hContact = 0;
+
+	LOG(("ext_yahoo_got_picture_update for %s buddy_icon: %d", who, buddy_icon));
+
+	hContact = getbuddyH(who);
+	if (hContact == NULL) {
+		LOG(("Buddy Not Found. Skipping avatar update"));
+		return;
+	}
+	
+	/* Last thing check the checksum and request new one if we need to */
+	if (!buddy_icon || buddy_icon == -1) {
+		//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+
+		PROTO_AVATAR_INFORMATION AI;
+		AI.cbSize = sizeof AI;
+		AI.format = PA_FORMAT_BMP;
+		AI.hContact = hContact;
+		AI.filename[0]='\0';
+
+
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+	} else if (buddy_icon == 2) {
+		YAHOO_request_avatar(who);	
+	}
+	
+}
+
+void ext_yahoo_got_stealth(int id, char *stealthlist)
+{
 	char **s;
 	int found = 0;
+	char **stealth = NULL;
+	char  *szProto;
+	HANDLE hContact;
+
+	LOG(("[ext_yahoo_got_stealth] list: %s", stealthlist));
 	
 	if (stealthlist)
 		stealth = y_strsplit(stealthlist, ",", -1);
 	
+
+	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		   hContact != NULL;
+			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+	{
+		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName )) {
+			DBVARIANT dbv;
+			if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+				continue;
+
+			found = 0;
+			
+			for(s = stealth; s && *s; s++) {
+				
+				if (strcmp(*s, dbv.pszVal) == 0) {
+					LOG(("GOT id = %s", dbv.pszVal));
+					found = 1;
+					break;
+				}
+			}
+			
+			/* Check the stealth list */
+			if (found) { /* we have him on our Stealth List */
+				LOG(("Setting STEALTH for id = %s", dbv.pszVal));
+				/* need to set the ApparentMode thingy */
+				if (ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
+					DBWriteContactSettingWord(hContact, yahooProtocolName, "ApparentMode", (WORD) ID_STATUS_OFFLINE);
+				
+			} else { /* he is not on the Stealth List */
+				LOG(("Resetting STEALTH for id = %s", dbv.pszVal));
+				/* need to delete the ApparentMode thingy */
+				if (DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
+					DBDeleteContactSetting(hContact, yahooProtocolName, "ApparentMode");
+			}
+				
+			DBFreeVariant( &dbv );
+		}		
+    }
+
+
+}
+void ext_yahoo_got_buddies(int id, YList * buds)
+{
     LOG(("ext_yahoo_got_buddies"));
     
 	if (buds == NULL) {
@@ -777,34 +1113,12 @@ void ext_yahoo_got_buddies(int id, YList * buds, char *stealthlist)
 		  if (bud->yab_entry->email) 
 			YAHOO_SetString( hContact, "e-mail", bud->yab_entry->email);
 		  
+		  if (bud->yab_entry->mphone) 
+			YAHOO_SetString( hContact, "Cellular", bud->yab_entry->mphone);
 		  
 		}
 		
 		
-		found = 0;
-		
-		for(s = stealth; s && *s; s++) {
-			
-			if (strcmp(*s, bud->id) == 0) {
-				LOG(("GOT id = %s", bud->id));
-				found = 1;
-				break;
-			}
-		}
-		
-		/* Check the stealth list */
-		if (found) { /* we have him on our Stealth List */
-			LOG(("Setting STEALTH for id = %s", bud->id));
-			/* need to set the ApparentMode thingy */
-			if (ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
-				DBWriteContactSettingWord(hContact, yahooProtocolName, "ApparentMode", (WORD) ID_STATUS_OFFLINE);
-			
-		} else { /* he is not on the Stealth List */
-			LOG(("Resetting STEALTH for id = %s", bud->id));
-			/* need to delete the ApparentMode thingy */
-			if (DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
-				DBDeleteContactSetting(hContact, yahooProtocolName, "ApparentMode");
-		}
 	}
 
 }
@@ -814,7 +1128,7 @@ void ext_yahoo_got_ignore(int id, YList * igns)
     LOG(("ext_yahoo_got_ignore"));
 }
 
-void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8)
+void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon)
 {
     char 		*umsg, *c = msg;
 	int 		oidx = 0;
@@ -828,7 +1142,7 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 	HANDLE 			hContact;
 
 	
-    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%d stat:%d utf8:%d", me, who, msg, tm, stat, utf8));
+    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%d stat:%d utf8:%d buddy_icon: %d", me, who, msg, tm, stat, utf8, buddy_icon));
    	
 	if(stat == 2) {
 		LOG(("Error sending message to %s", who));
@@ -911,6 +1225,11 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 
+	if (buddy_icon == 2) {
+		/* request the buddy image */
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+		YAHOO_request_avatar(who);
+	}
 }
 
 void ext_yahoo_rejected(int id, char *who, char *msg)
@@ -1093,7 +1412,7 @@ void ext_yahoo_webcam_invite(int id, char *me, char *from)
 {
     LOG(("ext_yahoo_webcam_invite"));
 	
-	ext_yahoo_got_im(id, me, from, "[miranda] Got webcam invite. (not currently supported)", 0, 0, 0);
+	ext_yahoo_got_im(id, me, from, "[miranda] Got webcam invite. (not currently supported)", 0, 0, 0, 0);
 }
 
 void ext_yahoo_webcam_invite_reply(int id, char *me, char *from, int accept)
@@ -1622,7 +1941,11 @@ void register_callbacks()
 	yc.ext_yahoo_connect = ext_yahoo_connect;
 	yc.ext_yahoo_connect_async = ext_yahoo_connect_async;
 
+	yc.ext_yahoo_got_stealthlist = ext_yahoo_got_stealth;
 	yc.ext_yahoo_got_ping  = ext_yahoo_got_ping;
+	yc.ext_yahoo_got_picture  = ext_yahoo_got_picture;
+	yc.ext_yahoo_got_picture_checksum = ext_yahoo_got_picture_checksum;
+	yc.ext_yahoo_got_picture_update = ext_yahoo_got_picture_update;
 	yahoo_register_callbacks(&yc);
 	
 }

@@ -192,6 +192,8 @@ const char  * yahoo_get_cookie(int id, const char *which);
 /* You'll have to do urlencoding yourself, but see yahoo_httplib.h first */
 const char  * yahoo_get_profile_url( void );
 
+void yahoo_request_buddy_avatar(int id, const char *buddy);
+
 #include "yahoo_httplib.h"
 
 #ifdef __cplusplus
