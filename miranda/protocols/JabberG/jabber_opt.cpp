@@ -308,7 +308,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), FALSE );
 			break;
 		case IDC_LINK_PUBLIC_SERVER:
-			ShellExecute( hwndDlg, "open", "http://www.jabber.org/user/publicservers.php", "", "", SW_SHOW );
+			ShellExecute( hwndDlg, "open", "http://www.jabber.org/network", "", "", SW_SHOW );
 			return TRUE;
 		case IDC_BUTTON_REGISTER:
 			GetDlgItemText( hwndDlg, IDC_EDIT_USERNAME, regInfo.username, sizeof( regInfo.username ));
