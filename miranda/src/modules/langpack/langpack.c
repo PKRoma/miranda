@@ -50,6 +50,23 @@ static void TrimString(char *str)
 	MoveMemory(str,str+start,len-start+1);
 }
 
+static void TrimStringSimple(char *str) 
+{
+    if (str[lstrlen(str)-1] == '\n') str[lstrlen(str)-1] = '\0';
+    if (str[lstrlen(str)-1] == '\r') str[lstrlen(str)-1] = '\0';
+}
+
+static int IsEmpty(char *str) {
+    int i = 0;
+    int len = lstrlen(str);
+
+    while (str[i]) {
+        if (!isspace(str[i])) return 0;
+        i++;
+    }
+    return 1;
+}
+
 static void ConvertBackslashes(char *str)
 {
 	char *pstr;
@@ -123,6 +140,7 @@ static int LoadLangPack(const char *szLangPack)
 	FILE *fp;
 	char line[4096];
 	char *pszColon;
+    char *pszLine;
 	int entriesAlloced;
 	int startOfLine=0;
 	unsigned int linePos=1;
@@ -137,8 +155,8 @@ static int LoadLangPack(const char *szLangPack)
 	while(!feof(fp)) {
 		startOfLine=ftell(fp);
 		if(fgets(line,sizeof(line),fp)==NULL) break;
-		TrimString(line);
-		if(line[0]==';' || line[0]==0) continue;
+        TrimString(line);
+		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
 		if(line[0]=='[') break;
 		pszColon=strchr(line,':');
 		if(pszColon==NULL) {fclose(fp); return 3;}
@@ -153,23 +171,23 @@ static int LoadLangPack(const char *szLangPack)
 	entriesAlloced=0;
 	while(!feof(fp)) {
 		if(fgets(line,sizeof(line),fp)==NULL) break;
-		TrimString(line);
-		if(line[0]==';' || line[0]==0) continue;
+		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
+        TrimStringSimple(line);
 		ConvertBackslashes(line);
-		if(line[0]=='[' && line[lstrlen(line)-1]==']') {
+        if(line[0]=='[' && line[lstrlen(line)-1]==']') {
 			if(langPack.entryCount && langPack.entry[langPack.entryCount-1].local==NULL) {
 				if(langPack.entry[langPack.entryCount-1].english!=NULL) free(langPack.entry[langPack.entryCount-1].english);
 				langPack.entryCount--;
 			}
-			line[0]=' '; line[lstrlen(line)-1]=' ';
-			TrimString(line);
+            pszLine = line+1;
+			line[lstrlen(line)-1]='\0';
+			TrimStringSimple(line);
 			if(++langPack.entryCount>entriesAlloced) {
 				entriesAlloced+=128;
 				langPack.entry=(struct LangPackEntry*)realloc(langPack.entry,sizeof(struct LangPackEntry)*entriesAlloced);
 			}
-			//langPack.entry[langPack.entryCount-1].english=_strdup(line);
 			langPack.entry[langPack.entryCount-1].english=NULL;
-			langPack.entry[langPack.entryCount-1].englishHash=LangPackHash(line);
+			langPack.entry[langPack.entryCount-1].englishHash=LangPackHash(pszLine);
 			langPack.entry[langPack.entryCount-1].local=NULL;
 			langPack.entry[langPack.entryCount-1].linePos=linePos++;
 		}
