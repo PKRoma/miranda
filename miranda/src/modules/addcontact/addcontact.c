@@ -116,7 +116,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 					break;
 				case IDOK:
 					{
-						HANDLE hcontact;
+						HANDLE hcontact=INVALID_HANDLE_VALUE;
 						char szHandle[256];
 						
 						if(acs->handleType==HANDLE_EVENT)
@@ -128,11 +128,13 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 							CallService(MS_DB_EVENT_GET,(WPARAM)acs->handle,(LPARAM)&dbei);
 							hcontact=(HANDLE)CallProtoService(dbei.szModule,PS_ADDTOLISTBYEVENT,0,(LPARAM)acs->handle);
 						}
-						else if(acs->handleType==HANDLE_SEARCHRESULT)
-							hcontact=(HANDLE)CallProtoService(acs->szProto,PS_ADDTOLIST,0,(LPARAM)acs->psr);
+						else if(acs->handleType==HANDLE_SEARCHRESULT) 
+							hcontact=(HANDLE)CallProtoService(acs->szProto,PS_ADDTOLIST,0,(LPARAM)acs->psr);													
 
 						else if(acs->handleType==HANDLE_CONTACT)
 							hcontact=acs->handle;
+						
+						if ( hcontact == NULL ) break;
 
 						if(IsDlgButtonChecked(hdlg,IDC_ADDED)) CallContactService(hcontact,PSS_ADDED,0,0);
 						if(IsDlgButtonChecked(hdlg,IDC_AUTH)) {
