@@ -1131,7 +1131,7 @@ void ext_yahoo_error(int id, char *err, int fatal)
 
 int ext_yahoo_connect(char *h, int p)
 {
-	NETLIBOPENCONNECTION ncon;
+	NETLIBOPENCONNECTION ncon = {0};
     HANDLE con;
     
 	LOG(("ext_yahoo_connect %s:%d", h, p));
