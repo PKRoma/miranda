@@ -673,7 +673,8 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			{
 				case IDOK:
 						{
-                        char str[ 48+1 ];
+                        char str[ 255 + 1 ];
+						
 						GetDlgItemText( hwndDlg, IDC_CUSTSTAT, str, sizeof( str ));
 						YAHOO_SetString( NULL, YAHOO_CUSTSTATDB, str );
                         YAHOO_SetByte("BusyCustStat", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
