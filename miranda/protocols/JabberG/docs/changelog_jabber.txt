@@ -4,10 +4,8 @@ Legend:
 [-] deleted
 [!] bug fixed
 
-Version 0.2.0.2
+Version 0.4.0.1
 ===============
-[+] search by JID now verifies the user's presense, instead of confirming any
-user input
 [+] wish #0000299: DisableMainMenuItem option wanted
 [-] reconnection ability removed, use KeepStatus plugin instead
 [!] bug #0000298 fixed: search by nickname instead of a full JID resulted
