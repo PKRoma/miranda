@@ -53,6 +53,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct {
 	UINT hTimer;
+	unsigned int useridlecheck;
 	unsigned int state; 
 	unsigned int minutes;	// user setting, number of minutes of inactivity to wait for
 	POINT mousepos;
@@ -60,7 +61,7 @@ typedef struct {
     int aastatus;
 } IdleObject;
 
-static int aa_Status[] = {ID_STATUS_AWAY, ID_STATUS_DND, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH};
+static int aa_Status[] = {ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH};
 
 static IdleObject gIdleObject;
 static HANDLE hIdleEvent;
@@ -72,6 +73,7 @@ static BOOL IsScreenSaverRunning(void);
 
 static void IdleObject_ReadSettings(IdleObject * obj)
 {
+	obj->useridlecheck = DBGetContactSettingByte(NULL, IDLEMOD, IDL_USERIDLECHECK, 0);
 	obj->minutes = DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLETIME1ST, 10);
     obj->aastatus = !DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? 0 : DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, 0) ) IdleObject_UseMethod1(obj);
@@ -122,7 +124,7 @@ static int IdleObject_IsUserIdle(IdleObject * obj)
 
 static void IdleObject_Tick(IdleObject * obj)
 {
-	BOOL idle = IdleObject_IsUserIdle(obj) 
+	BOOL idle = ( obj->useridlecheck ? IdleObject_IsUserIdle(obj) : FALSE )
 		|| ( IdleObject_IdleCheckSaver(obj) ? IsScreenSaverRunning() : FALSE  ) 
 			|| ( IdleObject_IdleCheckWorkstation(obj) ? IsWorkstationLocked() : FALSE );
 
