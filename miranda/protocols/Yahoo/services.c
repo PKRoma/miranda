@@ -127,8 +127,8 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 {
     int status = (int) wParam;
 
-    if (yahooStatus == status)
-        return 0;
+    //if (yahooStatus == status)
+    //    return 0;
         
     YAHOO_DebugLog("Set Status to %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0));
     if (status == ID_STATUS_OFFLINE) {
