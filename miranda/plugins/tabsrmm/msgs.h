@@ -69,6 +69,7 @@ typedef struct _settextex {
 #define MSGERROR_SENDLATER  2
 
 int _DebugPopup(HANDLE hContact, const char *fmt, ...);
+int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
 
 #define HISTORY_INITIAL_ALLOCSIZE 100
 

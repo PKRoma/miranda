@@ -32,6 +32,13 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
           
+Version 0.9.9.2 - 2005/01/18
+
+        ! fixed - status icon on the container did not appear when the title bar
+          was forced to not show the buddy status text.
+          
+        ! the dialog box for choosing the autopopup status modes is now translateable.
+        
 Version 0.9.9.1 - 2005/01/14
 
         ! fixed a few translation bugs (menu bar, the new status mode dialog)

@@ -1380,6 +1380,7 @@ static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wPar
         {
             int i;
             
+            TranslateDialogDefault(hwndDlg);
             SetWindowTextA(hwndDlg, Translate("Choose status modes"));
             for(i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
                 SetWindowTextA(GetDlgItem(hwndDlg, i), Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0)));

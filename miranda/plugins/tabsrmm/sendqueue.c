@@ -94,7 +94,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
     int iFound = NR_SENDJOBS;
     
     if(iSendJobCurrent >= NR_SENDJOBS) {
-        LogErrorMessage(hwndDlg, dat, -1, Translate("Send queue full"));
+        _DebugMessage(hwndDlg, dat, "Send queue full");
         return 0;
     }
     /*
@@ -107,7 +107,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
         break;
     }
     if(iFound == NR_SENDJOBS) {
-        LogErrorMessage(hwndDlg, dat, -1, Translate("Send queue full"));
+        _DebugMessage(hwndDlg, dat, "Send queue full");
         return 0;
     }
     iLength = iLen;
@@ -194,11 +194,13 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     return 0;
 }
 
-void ClearSendJob(int iIndex) {
+void ClearSendJob(int iIndex) 
+{
     sendJobs[iIndex].hOwner = 0;
     sendJobs[iIndex].hwndOwner = 0;
     sendJobs[iIndex].sendCount = 0;
     sendJobs[iIndex].iStatus = 0;
+    sendJobs[iIndex].iAcksNeeded = 0;
     ZeroMemory(sendJobs[iIndex].hContact, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
     ZeroMemory(sendJobs[iIndex].hSendId, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
 }
@@ -227,6 +229,11 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
         UpdateReadChars(hwndDlg, dat);
 }
 
+/*
+ * logs an error message to the message window. Optionally, appends the original message
+ * from the given sendJob (queue index)
+ */
+
 void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg)
 {
     DBEVENTINFO dbei = {0};
@@ -250,12 +257,23 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
     StreamInEvents(hwndDlg, NULL, 1, 1, &dbei);
 }
 
+/*
+ * enable or disable the sending controls in the given window
+ * ) input area
+ * ) multisend contact list instance
+ * ) send button
+ */
+
 void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 {
     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, (WPARAM) iMode ? FALSE : TRUE, 0);
     EnableWindow(GetDlgItem(hwndDlg, IDC_CLIST), iMode ? TRUE : FALSE);
     EnableWindow(GetDlgItem(hwndDlg, IDOK), iMode);
 }
+
+/*
+ * show or hide the error control button bar on top of the window
+ */
 
 void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 {

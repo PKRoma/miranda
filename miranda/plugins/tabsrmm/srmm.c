@@ -135,3 +135,15 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
     return 0;
 }
 
+int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)
+{
+    va_list va;
+    char    debug[1024];
+    int     ibsize = 1023;
+
+    va_start(va, fmt);
+    _vsnprintf(debug, ibsize, fmt, va);
+
+    LogErrorMessage(hwndDlg, dat, -1, debug);
+    return 0;
+}

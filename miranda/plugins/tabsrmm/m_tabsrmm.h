@@ -78,8 +78,10 @@ struct ContainerWindowData {
     int volatile pendingStream;
 #endif
     DWORD dwLastActivity;
-    HICON hIcon;                // current window icon
+    int hIcon;                // current window icon stick indicator
 };
+
+#define STICK_ICON_MSG 10
 
 /*
 struct MessageSendInfo {
@@ -99,6 +101,7 @@ struct SendJob {
     HWND hwndOwner;
     unsigned int iStatus;
     char szErrorMsg[128];
+    int iAcksNeeded;
 };
 
 struct MessageSessionStats {

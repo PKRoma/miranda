@@ -595,11 +595,15 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             showColon = 1;
 
         if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[H_MSGFONTID_STATUSCHANGES]);
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[H_MSGFONTID_MYTIME]);
             AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s ", szFinalTimestamp);
-            AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
+            if(dbei.eventType == EVENTTYPE_STATUSCHANGE) {
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[H_MSGFONTID_MYNAME]);
+                AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "%s", szName);
+            }
             showColon = 0;
             if(dbei.eventType == EVENTTYPE_ERRMSG) {
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[H_MSGFONTID_STATUSCHANGES]);
                 AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s", dbei.szModule);
                 if(dbei.cbBlob != 0) {
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\r\n%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);

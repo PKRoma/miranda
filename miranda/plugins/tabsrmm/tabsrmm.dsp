@@ -318,6 +318,10 @@ SOURCE=.\selectcontainer.c
 # End Source File
 # Begin Source File
 
+SOURCE=sendqueue.c
+# End Source File
+# Begin Source File
+
 SOURCE=srmm.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -359,6 +363,10 @@ SOURCE=m_message.h
 # End Source File
 # Begin Source File
 
+SOURCE=m_metacontacts.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\m_popup.h
 # End Source File
 # Begin Source File
@@ -372,6 +380,10 @@ SOURCE=msgs.h
 # Begin Source File
 
 SOURCE=resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=sendqueue.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -603,6 +615,10 @@ SOURCE=MAKEFILE.W32.ANSI
 # End Source File
 # Begin Source File
 
+SOURCE=MetaContacts.TXT
+# End Source File
+# Begin Source File
+
 SOURCE=POPUPS.TXT
 # End Source File
 # Begin Source File
@@ -612,6 +628,10 @@ SOURCE=README.ICONS
 # Begin Source File
 
 SOURCE=.\readme.txt
+# End Source File
+# Begin Source File
+
+SOURCE=langpacks\template
 # End Source File
 # Begin Source File
 

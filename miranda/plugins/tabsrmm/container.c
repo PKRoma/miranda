@@ -54,6 +54,7 @@ $Id$
 #include "msgs.h"
 #include "m_message.h"
 #include "m_metacontacts.h"
+#include "msgdlgutils.h"
 
 #define SB_CHAR_WIDTH        45
 
@@ -93,8 +94,6 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newName);
 void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
-int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId);
-int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
 
 int _log(const char *fmt, ...);
 
@@ -607,12 +606,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 temp[0] = '\0';
                 tTemp[0] = '\0';
                 
+                szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+                if (szProto)
+                    wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
+                
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
-                    szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-                    if (szProto) {
-                        wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-                        szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
-                    }
+                    szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
                     if(szStatus != NULL && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS && pContainer->dwFlags & CNT_TITLE_SHOWNAME)
                         _snprintf(temp, sizeof(temp), "%s (%s)", contactName, szStatus);
                     else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
@@ -1430,11 +1429,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
                     break;
                 }
-                if(pContainer->hIcon == hIconMsg && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
-                    lParam = (LPARAM)pContainer->hIcon;
+                if(pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
+                    lParam = (LPARAM)hIconMsg;
                     //break;          // don't overwrite the new message indicator flag
                 SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
-                pContainer->hIcon = (HICON)lParam;
+                pContainer->hIcon = (lParam == (LPARAM)hIconMsg) ? STICK_ICON_MSG : 0;
                 break;
             }
         case WM_DRAWITEM:
