@@ -4,6 +4,11 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.1.7.9
+===============
+[!] Option 'File Transfers -> If a file already exists  ->  Rename'
+doesn't work for MSN P2P transfers.
+
 Version 0.1.7.8
 ===============
 [+] 'View MSN services status' menu item was added to the main menu
