@@ -25,6 +25,7 @@ type
     CancelBtn: TButton;
     CapLabel: TLabel;
     MessageTextLabel: TMemo;
+    Button1: TButton;
   private
     { Private declarations }
   public
