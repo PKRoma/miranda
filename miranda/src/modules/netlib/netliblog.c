@@ -30,6 +30,8 @@ static HWND hwndLog = NULL;
 
 #define DM_CLEARLOG (WM_USER+1)
 #define DM_LOG      (WM_USER+2)
+#define DMO_UPDATE  (WM_USER+3)
+
 #define TIMEFORMAT_NONE         0
 #define TIMEFORMAT_HHMMSS       1
 #define TIMEFORMAT_MILLISECONDS 2
@@ -69,6 +71,13 @@ static int ConsoleResizeProc(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc
     return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
+static void UpdateConsoleOpts(void)
+{
+    if (logOptions.hwndOpts) {
+        SendMessage(logOptions.hwndOpts, DMO_UPDATE, 0, 0);
+    }
+}
+
 static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static UINT uLen = 0;
 
@@ -78,7 +87,7 @@ static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
         {
             HFONT hFont = CreateFont(14,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FIXED_PITCH|FF_DONTCARE,"Courier New");
             SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETFONT, (WPARAM)hFont, 0);
-            SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_HELP)));
+            SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL)));
             Utils_RestoreWindowPosition(hwndDlg,NULL,"Netlib","log");
             ShowWindow(hwndDlg, SW_SHOWNORMAL);
             return TRUE;
@@ -124,6 +133,10 @@ static BOOL CALLBACK DlgConsole(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetBkColor((HDC)wParam,RGB(0,0,0));
                 return (BOOL)GetStockObject(BLACK_BRUSH);
             }
+            break;
+        case WM_CLOSE:
+            ShowWindow(hwndDlg, SW_HIDE);
+            UpdateConsoleOpts();
             break;
         case WM_DESTROY:
             Utils_SaveWindowPosition(hwndDlg,NULL,"Netlib","log");
@@ -180,13 +193,10 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			}
 			SendDlgItemMessage(hwndDlg,IDC_TIMEFORMAT,CB_SETCURSEL,logOptions.timeFormat,0);
 			CheckDlgButton(hwndDlg,IDC_SHOWNAMES,logOptions.showUser?BST_CHECKED:BST_UNCHECKED);
-
-			CheckDlgButton(hwndDlg,IDC_TOCONSOLE,logOptions.toConsole?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg,IDC_SHOWCONSOLEATSTART,DBGetContactSettingByte(NULL,"Netlib","ShowConsoleAtStart",0)?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg,IDC_TOOUTPUTDEBUGSTRING,logOptions.toOutputDebugString?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg,IDC_TOFILE,logOptions.toFile?BST_CHECKED:BST_UNCHECKED);
 			SetDlgItemText(hwndDlg,IDC_FILENAME,logOptions.szFile);
-
 			CheckDlgButton(hwndDlg,IDC_SHOWTHISDLGATSTART,DBGetContactSettingByte(NULL,"Netlib","ShowLogOptsAtStart",0)?BST_CHECKED:BST_UNCHECKED);
 			{	DBVARIANT dbv;
 				if(!DBGetContactSetting(NULL,"Netlib","RunAtStart",&dbv)) {
@@ -194,8 +204,15 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					DBFreeVariant(&dbv);
 				}
 			}
-			if(IsConsoleVisible()) SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Hide console"));
+            SendMessage(hwndDlg, DMO_UPDATE, 0, 0);
 			return TRUE;
+        case DMO_UPDATE:
+        {
+            CheckDlgButton(hwndDlg,IDC_TOCONSOLE,logOptions.toConsole?BST_CHECKED:BST_UNCHECKED);
+            if(IsConsoleVisible()) SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Hide console"));
+            else SetDlgItemText(hwndDlg,IDC_SHOWCONSOLE,Translate("Show console"));
+            break;
+        }
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDC_DUMPRECV:
@@ -532,7 +549,13 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 }
 
-
+static int LogMenuCommand(WPARAM wParam, LPARAM lParam)
+{
+    logOptions.toConsole = 1;
+    ShowConsole();
+    UpdateConsoleOpts();
+    return 0;
+}
 
 void NetlibLogInit(void)
 {
@@ -575,6 +598,20 @@ void NetlibLogInit(void)
 		if(dbv.pszVal[0]) CreateProcess(NULL,dbv.pszVal,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi);
 		DBFreeVariant(&dbv);
 	}
+    {
+        CLISTMENUITEM mi;
+
+        CreateServiceFunction("Netlib/Menu/Log", LogMenuCommand);
+	    ZeroMemory(&mi, sizeof(mi));
+	    mi.cbSize = sizeof(mi);
+        mi.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL));
+        mi.pszPopupName = Translate("&Help");
+        mi.popupPosition = 2000090000;
+        mi.position = 2000010000;
+        mi.pszName = Translate("Network Log");
+        mi.pszService = "Netlib/Menu/Log";
+        CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
+    }
 }
 
 void NetlibLogShutdown(void)
