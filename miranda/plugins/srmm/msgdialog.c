@@ -269,37 +269,41 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 return 0;
             }
             if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000)) {
-                if (!pdat->cmdListCurrent) {
-                    pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
-                    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-                    SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
-                    SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-                    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-                    SendMessage(hwnd, EM_SETSEL, 0, -1);
-                }
-                else if (pdat->cmdListCurrent->prev) {
-                    pdat->cmdListCurrent = pdat->cmdListCurrent->prev;
-                    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-                    SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
-                    SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-                    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-                    SendMessage(hwnd, EM_SETSEL, 0, -1);
+                if (pdat->cmdList) {
+                    if (!pdat->cmdListCurrent) {
+                        pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
+                        SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+                        SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
+                        SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+                        SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+                        SendMessage(hwnd, EM_SETSEL, 0, -1);
+                    }
+                    else if (pdat->cmdListCurrent->prev) {
+                        pdat->cmdListCurrent = pdat->cmdListCurrent->prev;
+                        SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+                        SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
+                        SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+                        SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+                        SendMessage(hwnd, EM_SETSEL, 0, -1);
+                    }
                 }
             }
             else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000)) {
-                if (!pdat->cmdListCurrent) 
-                    pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
-                if (pdat->cmdListCurrent->next) {
-                    pdat->cmdListCurrent = pdat->cmdListCurrent->next;
-                    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-                    SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
-                    SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-                    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-                    SendMessage(hwnd, EM_SETSEL, 0, -1);
-                }
-                else {
-                    pdat->cmdListCurrent = 0;
-                    SetWindowText(hwnd, "");
+                if (pdat->cmdList) {
+                    if (!pdat->cmdListCurrent) 
+                        pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
+                    if (pdat->cmdListCurrent->next) {
+                        pdat->cmdListCurrent = pdat->cmdListCurrent->next;
+                        SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+                        SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
+                        SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+                        SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+                        SendMessage(hwnd, EM_SETSEL, 0, -1);
+                    }
+                    else {
+                        pdat->cmdListCurrent = 0;
+                        SetWindowText(hwnd, "");
+                    }
                 }
             }
             if (wParam == VK_RETURN)
