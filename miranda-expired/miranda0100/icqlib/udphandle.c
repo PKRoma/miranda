@@ -649,6 +649,25 @@ void icq_ServerResponse(icq_Link *icqlink, icq_Packet *p)
         minute = icq_PacketRead8(p);
         type = icq_PacketRead16(p);
         len = icq_PacketRead16(p);
+		{  //convert from ICQ time (GMT+1) to local time
+		  struct tm icqtm;
+		  time_t sentTime;
+		  icqtm.tm_sec=0;
+		  icqtm.tm_min=minute;
+		  icqtm.tm_hour=hour;
+		  icqtm.tm_isdst=-1;
+		  icqtm.tm_mday=day;
+		  icqtm.tm_mon=month-1;
+		  icqtm.tm_year=year-1900;
+		  sentTime=mktime(&icqtm)-_timezone;
+		  if(_timezone>0) sentTime-=3600;
+		  tm_str=localtime(&sentTime);
+		  year=tm_str->tm_year+1900;
+		  month=tm_str->tm_mon+1;
+		  day=tm_str->tm_mday;
+		  hour=tm_str->tm_hour;
+		  minute=tm_str->tm_min;
+		}
         icq_DoMsg(icqlink, type, len, (char*)&p->data[p->cursor], uin, hour, minute, day, month, year);
         icq_UDPAck(icqlink, seq);
         break;
