@@ -212,6 +212,7 @@
 #define IDC_SINGLEROWTAB                1671
 #define IDC_COMBO1                      1674
 #define IDC_MODIFIERS                   1674
+#define IDC_AVATARMODE                  1674
 #define IDC_RICHEDIT21                  1676
 #define IDC_CHECK6                      1677
 #define IDC_EMPTYLINEFIX                1677
@@ -355,7 +356,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        309
+#define _APS_NEXT_RESOURCE_VALUE        310
 #define _APS_NEXT_COMMAND_VALUE         40169
 #define _APS_NEXT_CONTROL_VALUE         1696
 #define _APS_NEXT_SYMED_VALUE           101

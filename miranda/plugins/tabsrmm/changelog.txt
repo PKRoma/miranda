@@ -32,7 +32,7 @@ This list is imcomplete, but contains a few important things left.
         * add a menu bar to the message window to get the options and settings more
           centralized. However, the menu bar needs to be hide-able (maybe automatically)
 
-Version 0.0.8.99 - 2004/10/22
+Version 0.0.8.99 - 2004/11/07
 
         * the unicode version now uses utf-8 encoding to store various unicode settings
           in the DB. No more blobs.
@@ -62,6 +62,10 @@ Version 0.0.8.99 - 2004/10/22
           
         * fast copy the UIN to the clipboard by clicking on the usermenu button (second
           button from the left) while holding the shift key.
+          
+        * Global settings for avatar display added. See Options -> Messaging. There are
+          3 modes available to activate avatars per default, per default for protocols
+          which support them, or manually per contact.
           
 Version 0.0.8.98 - 2004/10/17
 

@@ -240,16 +240,19 @@ BEGIN
     EDITTEXT        IDC_SECONDS,223,201,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,203,44,8
     CONTROL         "Resize Avatar larger than",IDC_LIMITAVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,101,115,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,126,99,38,12,ES_AUTOHSCROLL | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,98,115,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,126,96,38,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,100,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,165,97,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,191,101,51,11
+    LTEXT           "pixels in height",IDC_STATIC,191,98,51,11
     CONTROL         "Use threaded streaming (RESTART Miranda if you change this)",
                     IDC_STREAMTHREADING,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,114,274,11
+                    WS_TABSTOP,8,127,274,11
+    LTEXT           "Show avatars",IDC_STATIC,20,113,60,10
+    COMBOBOX        IDC_AVATARMODE,75,110,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
@@ -720,6 +723,26 @@ BEGIN
                                                 ID_LOGMENU_SAVETHESESETTINGSASDEFAULTVALUES
 
     END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_OPT_MSGDLG DLGINIT
+BEGIN
+    IDC_AVATARMODE, 0x403, 12, 0
+0x6c47, 0x626f, 0x6c61, 0x796c, 0x6f20, 0x006e, 
+    IDC_AVATARMODE, 0x403, 37, 0
+0x6e4f, 0x6620, 0x726f, 0x7020, 0x6f72, 0x6f74, 0x6f63, 0x736c, 0x7720, 
+0x7469, 0x2068, 0x7661, 0x7461, 0x7261, 0x7320, 0x7075, 0x6f70, 0x7472, 
+"\000" 
+    IDC_AVATARMODE, 0x403, 20, 0
+0x6550, 0x2072, 0x6f63, 0x746e, 0x6361, 0x2074, 0x6573, 0x7474, 0x6e69, 
+0x0067, 
+    0
 END
 
 #endif    // Englisch (USA) resources

@@ -143,6 +143,7 @@ static void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode
 static void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat);
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId);
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
+static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -465,14 +466,14 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
         }
 
         if(dat->hContactPic) {
-            dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);;
+            dat->showPic = GetAvatarVisibility(hwndDlg, dat);
             ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
             SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
             SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
         }
         else {
-            dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
+            dat->showPic = GetAvatarVisibility(hwndDlg, dat);
             ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
             dat->pic.cy = dat->pic.cx = 60;
             InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
@@ -1123,7 +1124,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 
 // BEGIN MOD#33: Show contact's picture
-                dat->showPic = DBGetContactSettingByte(dat->hContact,SRMSGMOD_T,"MOD_ShowPic",0);
+                dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 // END MOD#33
                 SendMessage(hwndDlg, DM_LOADSPLITTERPOS, 0, 0);
 
@@ -4321,6 +4322,39 @@ static void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int 
     TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
 }
 
+/*
+ * retrieve the visiblity of the avatar window, depending on the global setting
+ * and local mode
+ */
+
+static int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    BYTE bAvatarMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0);
+
+    dat->showPic = 0;
+    switch(bAvatarMode) {
+        case 0:             // globally on
+            dat->showPic = 1;
+            break;
+        case 1:             // on for protocols with avatar support
+            {
+                int pCaps;
+
+                if(dat->szProto) {
+                    pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
+                    if(pCaps & PF4_AVATARS) {
+                        dat->showPic = 1;
+                    }
+                }
+                break;
+            }
+        case 2:             // default (per contact, as it always was
+            dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
+            break;
+    }
+    return dat->showPic;
+}
+
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId)
 {
     if(menuId == MENU_PICMENU || menuId == MENU_TABCONTEXT) {
@@ -4536,4 +4570,5 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     }
     return 0;
 }
+
 
