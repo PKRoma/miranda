@@ -210,6 +210,9 @@ LBL_Restart:
 				case ERROR_INTERNET_POST_IS_NON_SECURE:
 				case ERROR_INTERNET_SEC_CERT_CN_INVALID:
 				case ERROR_INTERNET_SEC_CERT_DATE_INVALID:
+				case ERROR_INTERNET_SEC_CERT_ERRORS:
+				case ERROR_INTERNET_SEC_CERT_NO_REV:
+				case ERROR_INTERNET_SEC_CERT_REV_FAILED:
 					if ( ERROR_CANCELLED != f_InternetErrorDlg( GetDesktopWindow(), tRequest, tErrorCode, ERROR_FLAGS, NULL ))
 						goto LBL_Restart;
 
