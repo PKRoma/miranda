@@ -189,6 +189,10 @@ SOURCE=.\m_icq.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\md5.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\resource.h
 # End Source File
 # Begin Source File
@@ -408,6 +412,10 @@ SOURCE=.\icq_servlist.c
 
 SOURCE=.\icqoscar.c
 # ADD CPP /Yc"icqoscar.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\md5.c
 # End Source File
 # Begin Source File
 
