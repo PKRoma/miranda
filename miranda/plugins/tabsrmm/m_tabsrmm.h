@@ -309,3 +309,13 @@ struct TABSRMM_SessionInfo {
 // fired, when a message is about to be sent, but BEFORE the contents of the 
                                                         // input area is examined. A plugin can therefore use this event to modify
                                                         // the contents of the input box before it is actually sent.
+                                                        // 
+                                                        // 
+                                                        // 
+
+#define MS_MSG_GETWINDOWAPI "MessageAPI/WindowAPI"
+//wparam=0
+//lparam=0
+//Returns a dword with the current message api version 
+//Current version is 0,0,0,2
+

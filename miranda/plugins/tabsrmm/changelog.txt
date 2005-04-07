@@ -19,7 +19,15 @@ Version 0.9.9.93 - 2005/04/02
 
         * updated translation template, added german translation
         
+        * some option pages updated (conditionally enable/disable controls)
+
+        * removed unused "Sound" submenu from the menu bar.
         
+        * icon descriptions for IcoLib are now translateable (see the section at the
+          end of the language template).
+          
+        + added MS_MSG_GETWINDOWAPI ("MessageAPI/WindowAPI") service for Message 
+          API 0.0.0.2 specs
 
 Version 0.9.9.92 - 2005/03/31
 

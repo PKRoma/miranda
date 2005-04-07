@@ -24,6 +24,7 @@ selectcontainer.c  dialog procedure for the "select/create container" dialog
                    box..
                    (C) 2004 by Nightwish, this file ispart of tabSRMM, a tabbed 
                    message module for Miranda 0.3.3 and higher.
+$Id$                   
 */
 
 #include "commonheaders.h"

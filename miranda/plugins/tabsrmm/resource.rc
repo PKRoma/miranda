@@ -333,9 +333,9 @@ BEGIN
     CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,136,127,9
     CONTROL         "Use relative timestamps",IDC_RELATIVEDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,146,135,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,146,135,9
     CONTROL         "Use long date format",IDC_LONGDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,157,135,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,157,135,9
     CONTROL         "Indent message body (pixels)",IDC_INDENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,158,104,141,10
     LTEXT           "Left",IDC_STATIC,158,118,29,12
@@ -421,17 +421,17 @@ BEGIN
     LTEXT           "pixel",IDC_STATIC,267,25,28,11
     CONTROL         "Warn on close message tab",IDC_WARNONCLOSE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,33,139,10
-    LTEXT           "Tab control margins:",IDC_STATIC,7,47,133,11
-    RTEXT           "inner",IDC_STATIC,148,47,28,11
-    EDITTEXT        IDC_TABBORDER,183,44,28,13,ES_AUTOHSCROLL
+    LTEXT           "Tab control margins:",IDC_STATIC,7,45,133,11
+    RTEXT           "inner",IDC_STATIC,148,45,28,11
+    EDITTEXT        IDC_TABBORDER,183,42,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,210,43,11,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,210,41,11,
                     13
-    RTEXT           "outer",IDC_STATIC,220,47,30,11
-    EDITTEXT        IDC_TABBORDEROUTER,260,44,28,13,ES_AUTOHSCROLL
+    RTEXT           "outer",IDC_STATIC,220,45,30,11
+    EDITTEXT        IDC_TABBORDEROUTER,260,42,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTER,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,287,44,11,13
+                    UDS_ARROWKEYS,287,42,11,13
     GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,62
     CONTROL         "Automatically pop up the window/tab when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,70,
@@ -1007,17 +1007,6 @@ BEGIN
 
             MENUITEM "Show Popups for all inactive sessions", 
                                                     ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS
-
-        END
-        MENUITEM SEPARATOR
-        POPUP "Sounds (unimplemented yet)", GRAYED
-        BEGIN
-            MENUITEM "Disable All Message Sounds",  ID_SOUNDS_DISABLEALLMESSAGESOUNDS
-
-            MENUITEM "Enable all Message Sounds",   ID_SOUNDS_ENABLEALLMESSAGESOUNDS
-
-            MENUITEM "Sync Sounds with Event Popups", 
-                                                    ID_SOUNDS_SYNCSOUNDSWITHEVENTPOPUPS
 
         END
         MENUITEM SEPARATOR

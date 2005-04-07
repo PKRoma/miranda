@@ -189,6 +189,15 @@ static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
 }
 
 /*
+ * return the version of the window api supported
+ */
+
+static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
+{
+	return PLUGIN_MAKE_VERSION(0,0,0,2);
+}
+
+/*
  * service function finds a message session 
  * wParam = contact handle for which we want the window handle
  * thanks to bio for the suggestion of this service
@@ -1355,6 +1364,7 @@ void InitAPI()
     CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand);
 #endif
     CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
+    CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
     CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
     CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
 
@@ -1406,11 +1416,6 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned i
     NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe);
 }
 
-/*
- * this creates the configuration the first time, tabSRMM is started when IcoLib plugin is installed.
- * It uses the icons from the default icons DLL under plugins...
- */
-
 static ICONDESC myIcons[] = {
     "tabSRMM_history", "Show History", &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY, 1,
     "tabSRMM_mlog", "Message Log Options", &myGlobals.g_buttonBarIcons[2], -IDI_TIMESTAMP, 1,
@@ -1440,6 +1445,11 @@ static ICONDESC myIcons[] = {
     "tabSRMM_color", "Font color", &myGlobals.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
     NULL, NULL, NULL, 0
 };
+
+/*
+ * setup default icons for the IcoLib service. This needs to be done every time the plugin is loaded
+ * default icons are taken from the icon pack in either \icons or \plugins
+ */
 
 int SetupIconLibConfig()
 {
@@ -1471,7 +1481,7 @@ int SetupIconLibConfig()
             break;
         sid.pszName = myIcons[i].szName;
         sid.pszDescription = Translate(myIcons[i].szDesc);
-        sid.iDefaultIndex = myIcons[i].uId == -IDI_HISTORY ? 0 : myIcons[i].uId;
+        sid.iDefaultIndex = myIcons[i].uId == -IDI_HISTORY ? 0 : myIcons[i].uId;        // workaround problem /w icoLib and a resource id of 1 (actually, a Windows problem)
         CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
     } while(++i);
 

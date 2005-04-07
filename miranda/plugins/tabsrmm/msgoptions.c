@@ -19,6 +19,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id$
+
 */
 #include "commonheaders.h"
 #pragma hdrstop
@@ -143,6 +146,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
             CheckDlgButton(hwndDlg, IDC_USEDIVIDERS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0));
             CheckDlgButton(hwndDlg, IDC_DIVIDERSUSEPOPUPCONFIG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DIVIDERSUSEPOPUPCONFIG), IsDlgButtonChecked(hwndDlg, IDC_USEDIVIDERS));
+            
             CheckDlgButton(hwndDlg, IDC_SENDONSHIFTENTER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1));
             CheckDlgButton(hwndDlg, IDC_EVENTAPI, DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1));
             CheckDlgButton(hwndDlg, IDC_DELETETEMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0));
@@ -204,6 +209,9 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     break;
                 case IDC_AUTOCLOSE:
                     CheckDlgButton(hwndDlg, IDC_AUTOMIN, BST_UNCHECKED);
+                    break;
+                case IDC_USEDIVIDERS:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_DIVIDERSUSEPOPUPCONFIG), IsDlgButtonChecked(hwndDlg, IDC_USEDIVIDERS));
                     break;
                 case IDC_SENDONENTER:
                     CheckDlgButton(hwndDlg, IDC_SENDONDBLENTER, BST_UNCHECKED);
@@ -367,6 +375,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             EnableWindow(GetDlgItem(hwndDlg, IDC_INOUTICONS), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
             EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOGICONS), !IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS));
             EnableWindow(GetDlgItem(hwndDlg, IDC_SYMBOLS), !IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
+            SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_INDENT, 0), 0);
+            
             return TRUE;
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
@@ -392,6 +402,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case IDC_INDENTAMOUNT:
                 case IDC_LOADCOUNTN:
                 case IDC_LOADTIMEN:
+                case IDC_RIGHTINDENT:
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
                     break;
@@ -405,6 +416,15 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     if(IsDlgButtonChecked(hwndDlg, IDC_TSFIX))
                         MessageBoxA(0, "Caution: This attempt to fix the 'future timestamp issue' may have side effects. Also, it only works for events while the session is active, NOT for loading the history", "Warning", MB_OK | MB_ICONHAND);
                     break;
+                case IDC_INDENT:
+                    {
+                        int iIndent = IsDlgButtonChecked(hwndDlg, IDC_INDENT);
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_INDENTAMOUNT), iIndent);
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_RIGHTINDENT), iIndent);
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_INDENTSPIN), iIndent);
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_RINDENTSPIN), iIndent);
+                        break;
+                    }
             }
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;

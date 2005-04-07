@@ -861,4 +861,58 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Containers]
 
 [Message log]
+;
+; icon descriptions for IcoLib
+;
+[Show History]
+
+[Message Log Options]
+
+[Add contact]
+
+[Multisend indicator]
+
+[Contact is typing]
+
+[Quote text]
+
+[Save and close]
+
+[Send message]
+
+[Avatar menu]
+
+[Close]
+
+[User menu]
+
+[Message delivery error]
+
+[Incoming message]
+
+[Outgoing message]
+
+[Smiley button]
+
+[Sending typing notify is on]
+
+[Sending typing notify is off]
+
+[Static container icon]
+
+[SecureIM is on]
+
+[SecureIM is off]
+
+[Statuschange]
+
+[Format bold]
+
+[Format italic]
+
+[Format underline]
+
+[Font face]
+
+[Font color]
 
