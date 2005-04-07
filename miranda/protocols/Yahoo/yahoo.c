@@ -767,6 +767,7 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 			YAHOO_request_avatar(who);	
 		}
 	}*/
+	LOG(("[ext_yahoo_status_changed] exiting"));
 }
 
 static HMODULE sttPngLib = NULL;
@@ -942,8 +943,7 @@ static void __cdecl yahoo_recv_avatarthread(struct avatar_info *avt)
 void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum)
 {
 	HANDLE 	hContact = 0;
-	struct avatar_info *avt;
-	
+		
 	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d)", who, pic_url, cksum));
 	
 	hContact = getbuddyH(who);
@@ -953,14 +953,25 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		return;
 	}
 	
-	if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-		LOG(("[ext_yahoo_got_picture] Checksums don't match. Current: %d, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum));
-		avt = malloc(sizeof(struct avatar_info));
-		avt->who = _strdup(who);
-		avt->pic_url = _strdup(pic_url);
-		avt->cksum = cksum;
+	if (!cksum || cksum == -1) {
+        yahoo_reset_avatar(hContact);
+	} else {
+		if (pic_url == NULL) {
+			LOG(("[ext_yahoo_got_picture] WARNING: Empty URL for avatar?"));
+			return;
+		}
 		
-		pthread_create(yahoo_recv_avatarthread, (void *) avt);
+		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+			struct avatar_info *avt;
+			
+			LOG(("[ext_yahoo_got_picture] Checksums don't match. Current: %d, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum));
+			avt = malloc(sizeof(struct avatar_info));
+			avt->who = _strdup(who);
+			avt->pic_url = _strdup(pic_url);
+			avt->cksum = cksum;
+			
+			pthread_create(yahoo_recv_avatarthread, (void *) avt);
+		}
 	}
 	LOG(("ext_yahoo_got_picture exiting"));
 }
