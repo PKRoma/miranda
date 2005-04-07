@@ -326,9 +326,9 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
 
 	if ( AppGUID != NULL ) { 
-		if ( strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
+		if ( !strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
 			MSN_ShowPopup( MSN_GetContactName( info->mJoinedContacts[0] ), 
-				MSN_Translate( "Contact tried to open an audio conference, which isn't supported" ), MSN_ALLOW_MSGBOX );
+				MSN_Translate( "Contact tried to open an audio conference (currently not supported)" ), MSN_ALLOW_MSGBOX );
 			return;
 	}	}
 
