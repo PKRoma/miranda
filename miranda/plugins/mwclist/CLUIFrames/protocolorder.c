@@ -72,6 +72,7 @@ int CheckProtocolOrder()
 	//curproto=0;
 	//curproto[1]='22';
 	protochanged=FALSE;
+	OutputDebugStr("Calling CheckProtocolOrder\r\n");
 
 	ver=DBGetContactSettingDword(0,"Protocols","PrVer",-1);
 	if (ver!=PrVer){protochanged=TRUE;};

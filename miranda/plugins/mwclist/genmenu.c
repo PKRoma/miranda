@@ -10,8 +10,11 @@ PIntMenuObject MenuObjects=NULL;
 int MenuObjectsCount=0;
 int NextObjectId=0x100;
 int NextObjectMenuItemId=0x37;
+boolean isGenMenuInited=FALSE;
 
 static CRITICAL_SECTION csMenuHook;
+
+
 static void lockmo()
 {
 	EnterCriticalSection(&csMenuHook);
@@ -121,6 +124,8 @@ static int MO_MeasureMenuItem(WPARAM wParam,LPARAM lParam)
 	PMO_IntMenuItem pimi=NULL;
 	LPMEASUREITEMSTRUCT mis=(LPMEASUREITEMSTRUCT)lParam;
 	
+	if (!isGenMenuInited) return -1;
+
 	if (mis==NULL){return(FALSE);};
 	pimi=MO_GetIntMenuItem(mis->itemData);
 	if(pimi==NULL) return FALSE;
@@ -139,7 +144,7 @@ int MO_DrawMenuItem(WPARAM wParam,LPARAM lParam)
 	int y,objidx,menuitemidx;
 	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
 	
-	
+	if (!isGenMenuInited) return -1;	
 	
 	if (dis==NULL){return(FALSE);};
 	
@@ -230,7 +235,11 @@ int MO_RemoveAllObjects()
 int MO_RemoveMenuObject(WPARAM wParam,LPARAM lParam)
 {
 	int objidx;
+	
+	if (!isGenMenuInited) return -1;	
 	lockmo();
+
+
 	objidx=GetMenuObjbyId((int)wParam);
 	if (objidx==-1){unlockmo();return(-1);};
 
@@ -251,6 +260,7 @@ int MO_ProcessHotKeys(WPARAM wParam,LPARAM lParam)
 	int i;
 	int vKey=(int)lParam;
 	
+	if (!isGenMenuInited) return -1;	
 	lockmo();
 	objidx=GetMenuObjbyId((int)wParam);
 	if (objidx==-1){unlockmo();return(FALSE);};
@@ -279,6 +289,7 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 	PMO_IntMenuItem pimi;
 	PMO_MenuItem mi=(PMO_MenuItem)lParam;
 
+	if (!isGenMenuInited) return -1;
 	if (mi==NULL){return(-1);};
 	lockmo();
 	pimi=MO_GetIntMenuItem(wParam);
@@ -299,6 +310,7 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
 	int oldflags;
 	int objidx;
 	
+	if (!isGenMenuInited) return -1;
 	if(pmiparam==NULL){return(-1);};
 	lockmo();
 	pimi=MO_GetIntMenuItem(wParam);
@@ -338,6 +350,7 @@ int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
 	int objidx,menuitemidx;//pos in array
 	int res;
 	
+	if (!isGenMenuInited) return -1;
 	lockmo();
 	UnpackGlobalId(wParam,&objid,&menuitemid);
 	if ((objid==-1)||(menuitemid==-1)){return(0);};
@@ -367,6 +380,7 @@ int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
 {
 	int i,j;
 	
+	if (!isGenMenuInited) return -1;
 	lockmo();
 	for (i=0;i<MenuObjectsCount;i++)
 	{
@@ -393,7 +407,7 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
 	char *srvname;
 	void *ownerdata;
 	
-
+	if (!isGenMenuInited) return -1;
 	lockmo();
 	if (GetAllIdx(globid,&objidx,&menuitemidx)==0){unlockmo();return(0);};
 	srvname=MenuObjects[objidx].ExecService;
@@ -409,15 +423,19 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
 };
 
 
-
+int setcnt=0;
 int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	lpOptParam lpop;
 	PMO_IntMenuItem pimi;
 	int objidx;
 		
+	if (!isGenMenuInited) return -1;
 	if (lParam==0){return(0);};
+//OutputDebugString("MO_SetOptionsMenuItem lock try\r\n");
 	lockmo();
+	setcnt++;
+//OutputDebugString("MO_SetOptionsMenuItem in lock\r\n");
 	__try
 	{
 		lpop=(lpOptParam)lParam;
@@ -439,7 +457,15 @@ int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
 	}
 	__finally
 	{
+		setcnt--;
 		unlockmo();
+		{
+		//	char buf[256];
+
+		//sprintf(buf,"MO_SetOptionsMenuItem in unlock %d\r\n",setcnt);
+		//OutputDebugString(buf);
+		}
+		
 	}
 	return 1;
 };
@@ -449,6 +475,7 @@ int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
 	int  pimoidx;
 	lpOptParam lpop;
 		
+	if (!isGenMenuInited) return -1;
 	if (lParam==0){return(0);};
 	lockmo();
 	__try
@@ -488,6 +515,7 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 	PMenuParam pmp=(PMenuParam)lParam;
 	int result;
 
+	if (!isGenMenuInited) return -1;
 	if (pmp==NULL){return(-1);};
 	lockmo();
 	MenuObjects=(PIntMenuObject)mir_realloc(MenuObjects,sizeof(TIntMenuObject)*(MenuObjectsCount+1));
@@ -536,6 +564,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 	int miidx,result;
 	int res;
 	
+	if (!isGenMenuInited) return -1;	
 	if (pmi==NULL){return(-1);};
 	lockmo();
 	menuobjecthandle=wParam;
@@ -593,6 +622,7 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
 	int objidx;
 	int oldroot,i;
 	
+	if (!isGenMenuInited) return -1;	
 	if (pmi==NULL){return(-1);};
 	objidx=GetMenuObjbyId(wParam);
 	if (objidx==-1){return(-1);};
@@ -752,6 +782,8 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 	int tick;
 	int pimoidx;
 	ListParam * lp;
+		
+	if (!isGenMenuInited) return -1;
 	lockmo();
 
 	tick=GetTickCount();
@@ -1109,16 +1141,46 @@ int InitGenMenu()
 	CreateServiceFunction(MO_SETOPTIONSMENUITEM,MO_SetOptionsMenuItem);
 
 	HookEvent(ME_OPT_INITIALISE,GenMenuOptInit);	
+	lockmo();
+	isGenMenuInited=TRUE;
+	unlockmo();
+
 	OutputDebugString("GenMenu Inited Done\r\n");
 
 	return(0);
 };
 int UnitGenMenu()
 {
+OutputDebugString("GenMenu ShutDown ...\r\n");
 	lockmo();
 	MO_RemoveAllObjects();	
+	isGenMenuInited=FALSE;
+	
+
+	DestroyServiceFunction(MO_BUILDMENU);
+
+	DestroyServiceFunction(MO_PROCESSCOMMAND);
+	DestroyServiceFunction(MO_CREATENEWMENUOBJECT);
+	DestroyServiceFunction(MO_REMOVEMENUITEM);
+	DestroyServiceFunction(MO_ADDNEWMENUITEM);
+	DestroyServiceFunction(MO_MENUITEMGETOWNERDATA);
+	DestroyServiceFunction(MO_MODIFYMENUITEM);
+	DestroyServiceFunction(MO_GETMENUITEM);
+	DestroyServiceFunction(MO_PROCESSCOMMANDBYMENUIDENT);
+	DestroyServiceFunction(MO_PROCESSHOTKEYS);
+	DestroyServiceFunction(MO_REMOVEMENUOBJECT);
+
+	DestroyServiceFunction(MO_DRAWMENUITEM);
+	DestroyServiceFunction(MO_MEASUREMENUITEM);
+
+	DestroyServiceFunction(MO_SETOPTIONSMENUOBJECT);
+	DestroyServiceFunction(MO_SETOPTIONSMENUITEM);
+	DestroyHookableEvent(ME_OPT_INITIALISE);
 	unlockmo();
+
 	DeleteCriticalSection(&csMenuHook);
+	OutputDebugString("GenMenu ShutDown Done\r\n");
+
 	return(0);
 };
 

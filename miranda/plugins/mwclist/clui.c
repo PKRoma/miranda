@@ -841,12 +841,15 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)(sourceAlpha+(destAlpha-sourceAlpha)*(int)(thisTick-startTick)/200), LWA_ALPHA);
 				}
 				MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)destAlpha, LWA_ALPHA);
+				//CLUIFramesUpdateFrame(-1,0);
+				InvalidateRect(hwndStatus,NULL,TRUE); 
 			}
 			else {
 				if(wParam) SetForegroundWindow(hwnd);
 				MyAnimateWindow(hwnd,200,AW_BLEND|(wParam?0:AW_HIDE));
 				//SetWindowPos(hwndContactTree,0,0,0,0,0,SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
 				CLUIFramesUpdateFrame(-1,0);
+				InvalidateRect(hwndStatus,NULL,TRUE); 
 			}
 			break;
 			}

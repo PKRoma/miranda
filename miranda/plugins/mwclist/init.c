@@ -63,11 +63,18 @@ int LoadCLUIModule();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
+
+__try	
 	{
 	int *disableDefaultModule = 0;
 	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
 	if(!disableDefaultModule[DEFMOD_UICLUI]) if( LoadCLUIModule()) return 1;
 	}
+__except (exceptFunction(GetExceptionInformation()) ) 
+{ 
+		return 0; 
+} 
+
 	return 0;
 }
 int SetDrawer(WPARAM wParam,LPARAM lParam)
@@ -94,7 +101,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 	// get the internal malloc/free()
+	__try{
+	
 OutputDebugString("CListInitialise ClistMW\r\n");
+
 
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
@@ -103,19 +113,18 @@ OutputDebugString("CListInitialise ClistMW\r\n");
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
 
-	__try
-	{
-	
 	rc=LoadContactListModule();
 	if (rc==0) rc=LoadCLCModule();
-	}
-	__except(0)
-	{
-		int i=1;
-	}
+
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
 	LoadMoveToGroup();
 OutputDebugString("CListInitialise ClistMW...Done\r\n");
+}
+__except (exceptFunction(GetExceptionInformation()) ) 
+{ 
+		return 0; 
+} 
+
 	return rc;
 }
 

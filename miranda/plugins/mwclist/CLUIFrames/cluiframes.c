@@ -691,6 +691,17 @@ int CLUIFramesGetalClientFrame(void)
 	int i;
 	if(alclientFrame!=-1)
 		return alclientFrame;
+
+  if(alclientFrame!=-1) {
+    /* this value could become invalid if RemoveItemFromList was called,
+     * so we double-check */
+    if (alclientFrame<nFramescount) {
+      if(Frames[alclientFrame].align==alClient) {
+        return alclientFrame;
+      }
+    }
+}	
+	
 	for(i=0;i<nFramescount;i++)
 		if(Frames[i].align==alClient) {
 			alclientFrame=i;

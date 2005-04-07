@@ -67,7 +67,7 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	struct ClcContact *hitcontact;
 	struct ClcGroup *hitgroup;
 	int hit,indent,width,i,cxSmIcon;
-	int checkboxWidth, subident,ic;
+	int checkboxWidth, subident,ic=0;
 	SIZE textSize;
 	HDC hdc;
 	HFONT oldfont;
@@ -145,6 +145,8 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 		if(testx>=x &&
 		   testx<x+cxSmIcon) {
 			if(flags) *flags|=CLCHT_ONITEMEXTRA|(i<<24);
+			
+			ReleaseDC(hwnd,hdc);
 			return hit;
 		}
 	}	

@@ -51,6 +51,7 @@ int GetProtocolVisibility(char * ProtoName)
     char buf2[10];
     int count;
 	count=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
+	if (count==-1) return (1);
     for (i=0; i<count; i++)
     {
         itoa(i,buf2,10);

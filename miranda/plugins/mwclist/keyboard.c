@@ -65,7 +65,7 @@ int hkHideShow(WPARAM wParam,LPARAM lParam)
 int hkSearch(WPARAM wParam,LPARAM lParam)
 {
 
-        DBVARIANT dbv;
+	DBVARIANT dbv={0};
         if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
             CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
             mir_free(dbv.pszVal);
@@ -336,11 +336,10 @@ static int ServiceSkinAddNewHotKey(WPARAM wParam,LPARAM lParam)
 	HotKeyList[HotKeyCount].pszService=mir_strdup(ssd->pszService);
 	HotKeyList[HotKeyCount].DefHotKey=ssd->DefHotKey;
 	HotKeyList[HotKeyCount].aAtom=0;
-
-	//HotKeyList[HotKeyCount].tempFile=NULL;
+	HotKeyList[HotKeyCount].tempFile=NULL;
 
     if (ssd->DefHotKey) {
-        DBVARIANT dbv;
+        DBVARIANT dbv={0};
 
         if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, &dbv)) {
             DBWriteContactSettingWord(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, (WORD)ssd->DefHotKey);
@@ -506,7 +505,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                 if (HotKeyList[tvi.lParam].tempFile) 
                     NotifyEventHooks(hPlayEvent, 0, (LPARAM)HotKeyList[tvi.lParam].tempFile);
                 else {
-                    DBVARIANT dbv;
+                    DBVARIANT dbv={0};
                     if(!DBGetContactSetting(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,&dbv)) {
                         char szPathFull[MAX_PATH];
                         
@@ -537,7 +536,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                 }
                 else {
                     if (DBGetContactSettingByte(NULL, "SkinHotKeysOff", HotKeyList[tvi.lParam].name, 0)==0) {
-                        DBVARIANT dbv;
+                        DBVARIANT dbv={0};
 
                         if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[tvi.lParam].name, &dbv)==0) {                           
                             //CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)str);
@@ -643,7 +642,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                             }
                             else {
                                 char buf[256];
-                                DBVARIANT dbv;
+                                DBVARIANT dbv={0};
                                 
                                 _snprintf(buf, sizeof(buf), "%s: %s", HotKeyList[tvi.lParam].section, HotKeyList[tvi.lParam].description);
                                 SetDlgItemText(hwndDlg, IDC_NAMEVAL, buf);

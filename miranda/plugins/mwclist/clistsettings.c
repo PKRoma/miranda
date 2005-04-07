@@ -132,6 +132,7 @@ gdnc++;
 	//displayNameCacheSize=0;
 	
 	List_Destroy(list);
+	list=NULL;
 	
 }
 

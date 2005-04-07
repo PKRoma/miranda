@@ -75,13 +75,14 @@ static int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 		group->contact=(struct ClcContact*)mir_realloc(group->contact,sizeof(struct ClcContact)*group->allocedCount);
 	}
 	memmove(group->contact+iAboveItem+1,group->contact+iAboveItem,sizeof(struct ClcContact)*(group->contactCount-iAboveItem-1));
+	memset(&(group->contact[iAboveItem]),0,sizeof((group->contact[iAboveItem])));
 	group->contact[iAboveItem].type=CLCIT_DIVIDER;
 	group->contact[iAboveItem].flags=0;
 	memset(group->contact[iAboveItem].iExtraImage,0xFF,sizeof(group->contact[iAboveItem].iExtraImage));
 	group->contact[iAboveItem].szText[0]='\0';
 	group->contact[iAboveItem].SubAllocated=0;
 	group->contact[iAboveItem].subcontacts=NULL;
-	group->contact[iAboveItem].SubExpanded=0;
+	group->contact[iAboveItem].SubExpanded=0;	
 	
 	ClearRowByIndexCache();
 	return iAboveItem;

@@ -115,7 +115,21 @@ static int __cdecl MyStrCmp (const char *a, const char *b)
 	return (strcmp(a,b));
 };
 
+static int __cdecl MyStrLen (const char *a)
+{
+	
+	if (a==NULL) return 0;
+	if ((int)a<1000||IsBadCodePtr((FARPROC)a)) 
+	{
+		return 0;
+	}
+	//OutputDebugStr("MY\r\n");
+	//undef();
+	return (strlen(a));
+};
+
 #define strcmp(a,b) MyStrCmp(a,b)
+#define strlen(a) MyStrLen(a)
 #endif
 
 
