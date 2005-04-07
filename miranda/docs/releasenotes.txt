@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             April 2005 (v0.4rc3)
+                             April 2005 (v0.4)
 
                           http://www.miranda-im.org
 
@@ -92,7 +92,6 @@ Enhancements:
  - Yahoo: Stealth support (Yahoo v6 visibility list)
  - Yahoo: Idle support
  - Yahoo: Avatar support (retrieval only)
-
 
 * New in 0.3.3
 
