@@ -199,6 +199,8 @@ void aim_links_unregister()
 {
     LOG(LOG_DEBUG, "Links: unregister");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command");
+    RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open");
+    RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim");
 }
 
