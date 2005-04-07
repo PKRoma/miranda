@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             January 2005 (v0.4)
+                             April 2005 (v0.4rc3)
 
                           http://www.miranda-im.org
 
@@ -49,8 +49,16 @@ Bugfixes:
  - AIM: Removing user from deny list didn't always update mode in Miranda
  - AIM: Fixed file transfers with Mac users
  - ICQ: Error alert blocked I/O
+ - ICQ: Newly added contact with privacy setting is not hidden anymore
+ - ICQ: Offline messages are no longer received older than existing ones
+ - ICQ: Fixed authorisation reply
+ - ICQ: Fixed contact transfer ack
+ - ICQ: Now parses URL send ack correctly, no more timeout
+ - ICQ: Now sending ack on contacts receive
+ - ICQ: Fixed crash on receiving long message through P2P
  - MSN: Connection/login fixes
  - IRC: Many bug fixes
+ - Yahoo: Much cleaner/better/stable code
 
 Enhancements:
  - Database and contact list control moved to plugins
@@ -67,15 +75,24 @@ Enhancements:
  - AIM: Show mobile users as 'on the phone'
  - MSN: Sending/receiving avatar support
  - MSN: Peer to peer support
- - IRC: DCC filetransfers and Chats
- - IRC: Reversed filetransfers
- - IRC: Send-ahead support
- - IRC: Incoming TDCC support
- - IRC: CTCP support (all the usual commands)
- - IRC: Configurable quit message
- - IRC: Option to show addresses in joins/quits etc
- - IRC: Formatting of outgoing text
- - IRC: Optional SSL support
+ - ICQ: Added avatar tab to user-details dialog to show avatar
+ - ICQ: My user-details now show more information & added idle since to ICQ tab
+ - ICQ: Added full unicode message support (requires SRMM Unicode)
+ - ICQ: Added support for sending and receiving Idle time
+ - ICQ: Added reliable client identification 
+ - ICQ: Added support for avatar images (downloading & uploading).
+ - ICQ: Added Grant authorisation option (send & recognize)
+ - IRC: Support for secured connections using OpenSSL
+ - IRC: Support for CTCP and DCC filetransfers and chats
+ - IRC: New graphical user interface using Chat plugin
+ - Jabber: Unicode support
+ - Yahoo: Better Unicode support
+ - Yahoo: New Buddy Search
+ - Yahoo: File Transfer support
+ - Yahoo: Stealth support (Yahoo v6 visibility list)
+ - Yahoo: Idle support
+ - Yahoo: Avatar support (retrieval only)
+
 
 * New in 0.3.3
 
