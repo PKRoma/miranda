@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <malloc.h>
 
 
-#define _ALPHA_BASE_ 0	// defined for CVS builds
-#define _ALPHA_FUSE_ 0	// defined for fuse powered core
+#define _ALPHA_BASE_ 1	// defined for CVS builds
+#define _ALPHA_FUSE_ 1	// defined for fuse powered core
 
 #ifdef _DEBUG
 #	define _CRTDBG_MAP_ALLOC
