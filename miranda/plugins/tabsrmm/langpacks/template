@@ -136,7 +136,9 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Send message]
 
-[View User's Details (SHIFT-click to view history)]
+[View User's Details]
+
+[View User's Details (Right click for MetaContact control)]
 
 [Last received on %s at %s]
 
@@ -151,10 +153,6 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Input locale saved.]
 
 [ANSI Encoding]
-
-[You are %s on %s (MetaContact)]
-
-[You are %s on %s]
 
 ; ------------------------
 ; ----------------- containeroptions.c  source code strings

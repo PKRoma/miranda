@@ -29,6 +29,21 @@ Version 0.9.9.93 - 2005/04/02
         + added MS_MSG_GETWINDOWAPI ("MessageAPI/WindowAPI") service for Message 
           API 0.0.0.2 specs
 
+        * when using the "Send Later" send mode, a log message informs you about
+          successfully passing the message over to buddypounce. If using IEView, the
+          message is printed to the status bar instead.
+          
+        * MetaContacts support - the status icons in the title bar and on the tool
+          bar are now showing the actual protocol icons. Also, smileyadd will now use
+          the smiley set which has been configured for the actual protocol. No more
+          need to define an extra smiley set for the MetaContacts protocol.
+          
+          Consequently, the MetaContacts control menu has been moved from the status
+          bar to the tool bar -> right click the protocol button for the MetaContacts
+          context menu.
+          
+        ! fixed small visual glitch with the add contact bar.
+          
 Version 0.9.9.92 - 2005/03/31
 
         * plugins like HTTPServer (and all others which try to feed text into the message 

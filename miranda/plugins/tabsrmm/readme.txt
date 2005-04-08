@@ -1,4 +1,4 @@
-				tabbed  SRMM plugin for Miranda IM 0.3.3+
+				tabbed  SRMM plugin for Miranda IM 0.4.0.0
 				------------------------------------------
 
 Project page: http://www.sourceforge.net/projects/tabsrmm/
@@ -6,8 +6,8 @@ Support Forum: http://hell.at.eu.org/forums/
 
 ----------------------------------------------------------
 				
-Version: 0.9.9.9
-Created: March 2004
+Version: 1.0.0.0
+Created: April 2004
 
 1. Overview
 -----------
@@ -17,14 +17,20 @@ required). It adds many new options and features to make instant messaging more
 enjoyable and allows you to tweak almost every aspect of the message window to
 fit your needs.
 
+1.1. Requirements
+-----------------
+
+a) Miranda IM, Version 0.4.0.0 or later.
+b) The unicode version of tabSRMM requires Windows 2000 or XP and will not 
+   run under Windows 9x or ME. The ANSI version may run under Windows 98 
+   or ME (not under Windows 95), but there are some minor problems. In general,
+   I suggest that, if you're still using a 9x based Windows, you should not
+   expect tabSRMM to work without problems. I do no longer have access to any
+   Win 9x system, and do not use it as a development platform, so it is a bit
+   hard to fix issues related to Win 9x.
+
 HOW TO INSTALL
 --------------
-
-First, tabSRMM is only supported on Windows 2000 or later. The unicode version 
-does NOT work under older versions of Windows and probably never will. The 
-non-unicode version runs, but you have to accept some minor problems. Since I
-have abandoned Win 9x as a development system a long time ago, I have no way
-to develop and test my work under Windows 9x/ME. 
 
 The archive contains 2 .DLLs:
 
@@ -32,7 +38,7 @@ The archive contains 2 .DLLs:
 2. tabsrmm_unicode.dll - unicode aware.
 
 copy one of the .dll files (unicode or non-unicode) to your plugins folder and
-PLEASE NOTE THAT THIS PLUGIN NEEDS AT LEAST MIRANDA VERSION 0.3.3 and
+PLEASE NOTE THAT THIS PLUGIN NEEDS AT LEAST MIRANDA VERSION 0.4.0.0 and
 will NOT WORK with older releases.
 
 INSTALLING THE ICON PACK - IMPORTANT !!
@@ -42,14 +48,10 @@ You need to copy ONE of the included tabsrmm_icons.dll into the plugins folder
 aswell. If you don't, you'll receive an error message about a missing resource
 dll, and you won't see any icons on the toolbar and elsewhere.
 
-You can later change the icon pack at runtime (there is an option on the "tabs
-and layout" option page to load another icon pack).
-
 In general, there is no need to use the non-unicode version - the unicode release
 is far more tested and works with all known protocols. It also has an option to
 force sending and receiving ANSI messages only - this may help with some older
 or buggy clients and their sometimes broken unicode support.
-
 
 2. Some features:
 -----------------
@@ -75,10 +77,9 @@ or buggy clients and their sometimes broken unicode support.
    For a lot of knowledge, please visit my forum at http://hell.at.eu.org/forums/
    There you can find a lot of useful information, articles, a small FAQ, and some
    links telling you more about tabSRMM in general.
-   
 
-4. Known bugs
--------------
+4. Known bugs and issues
+------------------------
 
 *  some minor glitches under Windows 9x/ME, mostly graphical.
 
@@ -105,7 +106,7 @@ the development phase. I cannot name you all here, because it's just too many.
 * Angeli-Ka for many bug reports and general feedback,  especially in the 
   early phase of development when using tabSRMM could be really frustrating :)
 
-* Progame - for finding even the most carefully hidden bugs
+* Progame - for finding even the most carefully hidden bugs :)
 
 * All other mambers of the Miranda community,  who helped with hunting down 
   sometimes hard to find, bugs, and for suggesting features.

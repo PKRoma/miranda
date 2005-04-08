@@ -362,7 +362,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,150,184,148,11
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
                     BS_AUTORADIOBUTTON,10,199,138,10
-    EDITTEXT        IDC_LOADCOUNTN,170,197,33,12,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_LOADCOUNTN,170,197,33,12,ES_RIGHT | ES_NUMBER | 
+                    WS_DISABLED
     CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,203,196,
@@ -1029,8 +1030,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,92
- PRODUCTVERSION 0,9,9,92
+ FILEVERSION 0,9,9,93
+ PRODUCTVERSION 0,9,9,93
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -1046,13 +1047,13 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 92"
+            VALUE "FileVersion", "0, 9, 9, 93"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 92"
+            VALUE "ProductVersion", "0, 9, 9, 93"
             VALUE "SpecialBuild", "A"
         END
     END

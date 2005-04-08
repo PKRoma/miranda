@@ -132,8 +132,10 @@ Avataroptionen
 Emotikon einfügen
 [Send message]
 Nachricht senden
-[View User's Details (SHIFT-click to view history)]
+[View User's Details]
 Zeige Benutzerdetails
+[View User's Details (Right click for MetaContact control)]
+Zeige Benutzerdetails (Rechtsklick für Meta-Kontakt Kontrolle)
 [Last received on %s at %s]
 Letzte Nachricht: am %s um %s
 [signed off (was %s)]
@@ -148,10 +150,6 @@ ist nun %s (war %s)
 Tastaturlayout gespeichert.
 [ANSI Encoding]
 ANSI Kodierung
-[You are %s on %s (MetaContact)]
-Sie sind %s auf %s (Meta Kontakt)
-[You are %s on %s]
-Sie sind %s auf %s
 ; ------------------------
 ; ----------------- containeroptions.c  source code strings
 ; ------------------------

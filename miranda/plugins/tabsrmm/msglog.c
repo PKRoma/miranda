@@ -1065,7 +1065,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 
         smadd.cbSize = sizeof(smadd);
         smadd.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
-        smadd.Protocolname = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
+        smadd.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
         if(startAt > 0)
             smadd.rangeToReplace = &sel;
         else

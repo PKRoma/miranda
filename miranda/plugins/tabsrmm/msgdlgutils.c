@@ -143,11 +143,11 @@ int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat)
 }
 char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    HANDLE hSubContact = 0;
-    
-    hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
-    if(hSubContact)
-        return (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hSubContact, 0);
+    dat->hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
+    if(dat->hSubContact) {
+        dat->szMetaProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hSubContact, 0);
+        return dat->szMetaProto;
+    }
     else
         return dat->szProto;
 }
@@ -439,39 +439,24 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 
 void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iSecIMStatus)
 {
-    if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
-        char szTipText[256], *szProto = NULL;
-        CONTACTINFO ci;
+    time_t now = time(NULL);
+    now = now - dat->stats.started;
 
-        if(dat->bIsMeta)
-            szProto = GetCurrentMetaContactProto(hwndDlg, dat);
-        else
-            szProto = dat->szProto;
-        
-        ZeroMemory(&ci, sizeof(ci));
-        ci.cbSize = sizeof(ci);
-        ci.hContact = NULL;
-        ci.szProto = szProto;
-        ci.dwFlag = CNF_DISPLAY;
-        if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-            if(dat->bIsMeta)
-                _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s (MetaContact)"), ci.pszVal, szProto);
-            else
-                _snprintf(szTipText, sizeof(szTipText), Translate("You are %s on %s"), ci.pszVal, szProto); 
-            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
-        }
-        if(ci.pszVal)
-            miranda_sys_free(ci.pszVal);
+    if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
+        char szTipText[256];
+
         if(myGlobals.g_SecureIMAvail && iSecIMStatus >= 0) {
             _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? "enabled" : "disabled");
             SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
         }
+        _snprintf(szTipText, sizeof(szTipText), "Session stats: Active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
+        SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szTipText);
     }
 }
 
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 4) {
+    if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 3) {
         TCHAR buf[128];
         int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
@@ -493,8 +478,6 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[15]);
         }
         UpdateReadChars(hwndDlg, dat);
-        if(dat->hProtoIcon)
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
         UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
     }
 }

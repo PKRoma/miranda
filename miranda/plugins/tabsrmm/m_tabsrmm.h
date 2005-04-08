@@ -120,7 +120,7 @@ struct MessageSessionStats {
 };
 
 struct MessageWindowData {
-	HANDLE hContact;
+	HANDLE hContact, hSubContact;
 	// IEVIew MOD Begin
 	HWND hwndLog;
 	// IEVIew MOD End
@@ -167,14 +167,14 @@ struct MessageWindowData {
 #endif    
     HBITMAP hSmileyIcon;
     char *szProto;
-    WORD wStatus;
+    char *szMetaProto;
+    WORD wStatus, wMetaStatus;
     int iLastEventType;
     time_t lastEventTime;
     DWORD dwEventIsShown;
     int iRealAvatarHeight;
     int iButtonBarNeeds, iButtonBarReallyNeeds, controlsHidden;
     DWORD dwLastActivity;
-    HICON hProtoIcon;
     struct MessageSessionStats stats;
     int iOpenJobs;
     int iCurrentQueueError;

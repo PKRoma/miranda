@@ -60,6 +60,7 @@ DWORD _DBGetContactSettingDword(HANDLE hContact, char *pszSetting, char *pszValu
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, const wchar_t *value);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
+HMENU BuildMCProtocolMenu(HWND hwndDlg);
 
 char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
@@ -223,7 +224,7 @@ void SetDialogToType(HWND hwndDlg)
 // smileybutton stuff...
     
     if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled && dat->hwndLog == 0) {
-        nrSmileys = CheckValidSmileyPack(dat->szProto, &hButtonIcon);
+        nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, &hButtonIcon);
 
         dat->doSmileys = 1;
         
@@ -631,8 +632,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.bottom += 24;
                 urc->rcItem.top += 24;
             }
-            if(!splitterEdges)
-                OffsetRect(&urc->rcItem, 0, 2);
+            OffsetRect(&urc->rcItem, 0, 2);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_LOG:
             if(dat->dwFlags & MWF_ERRORSTATE)
@@ -643,7 +643,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if (!showToolbar)
                 urc->rcItem.bottom += (splitterEdges ? 24 : 26);
             if(dat->bNotOnList)
-                urc->rcItem.bottom -= 24;
+                urc->rcItem.bottom -= 26;
             if(!splitterEdges)
                 urc->rcItem.bottom += 2;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
@@ -693,7 +693,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if (!showToolbar)
                 urc->rcItem.bottom += (splitterEdges ? 24 : 26);
             if(dat->bNotOnList)
-                urc->rcItem.bottom -= 24;
+                urc->rcItem.bottom -= 26;
             if(!splitterEdges)
                 urc->rcItem.bottom += 2;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
@@ -826,8 +826,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->hwndLog)
                         SetWindowLong(dat->hwndLog, GWL_EXSTYLE, GetWindowLong(dat->hwndLog, GWL_EXSTYLE) & ~(WS_EX_STATICEDGE | WS_EX_CLIENTEDGE));
                 }
-                
-                SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
+
+                if(dat->bIsMeta)
+                    SendMessage(hwndDlg, DM_UPDATEMETACONTACTINFO, 0, 0);
+                else
+                    SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                 dat->bTabFlash = FALSE;
                 dat->mayFlashTab = FALSE;
                 dat->iTabImage = newData->iTabImage;
@@ -926,7 +929,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                 SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONADDTOOLTIP, (WPARAM) Translate("Send message"), 0);
-                SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
+                if(dat->bIsMeta)
+                    SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details (Right click for MetaContact control)"), 0);
+                else
+                    SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_PROTOMENU, BUTTONADDTOOLTIP, (WPARAM) Translate("Protocol Menu"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONADDTOOLTIP, (WPARAM) Translate("Bold text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONADDTOOLTIP, (WPARAM) Translate("Italic text"), 0);
@@ -1140,11 +1146,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 HWND t_hwnd;
                 HICON hIcon;
-
+                char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+                WORD wStatus = dat->bIsMeta ? dat->wMetaStatus : dat->wStatus;
                 t_hwnd = dat->pContainer->hwnd;
 
-                if (dat->szProto) {
-                    hIcon = LoadSkinnedProtoIcon(dat->szProto, dat->wStatus);
+                if (szProto) {
+                    hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
                     SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 
                     if (dat->pContainer->hwndActive == hwndDlg)
@@ -1246,15 +1253,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
 
-            if(dat->hContact && dat->szProto != NULL) {
-                if(!dat->bIsMeta)
-                    dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(dat->szProto, ID_STATUS_ONLINE);
-                else {
-                    DWORD dwForcedContactNum = 0;
-                    CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
-                    DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", dwForcedContactNum);
-                    dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
-                }
+            if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
+                DWORD dwForcedContactNum = 0;
+                CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
+                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", dwForcedContactNum);
             }
             
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
@@ -1473,7 +1475,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     item.mask = TCIF_TEXT | TCIF_IMAGE;     // XXX update tab text + icon
 
                     if (dat->iTabID  >= 0) {
-                        item.iImage = GetProtoIconFromList(dat->szProto, (int)dat->wStatus);       // proto icon support
+                        item.iImage = GetProtoIconFromList(dat->bIsMeta ? dat->szMetaProto : dat->szProto, (int)(dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));       // proto icon support
                         dat->iTabImage = item.iImage;                               // save new icon for flashing...
                         if(dat->dwFlags & MWF_ERRORSTATE)                        // dont update icon if we are in error state (leave the 
                             item.mask &= ~TCIF_IMAGE;
@@ -1997,7 +1999,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     } else {
                         dat->showTyping = 0;
                         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
-                        SendMessage(dat->pContainer->hwnd, DM_UPDATEWINICON, 0, 0);
+                        SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         HandleIconFeedback(hwndDlg, dat, -1);
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, 0, 0);
                         if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
@@ -2191,7 +2193,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
         case DM_QUERYSTATUS: {
                 WORD *wStatus = (WORD *) lParam;
-                *wStatus = dat->wStatus;
+                *wStatus = dat->bIsMeta ? dat->wMetaStatus : dat->wStatus;
                 return 0;
             }
         case DM_QUERYFLAGS: {
@@ -2496,16 +2498,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     if (dat->sendMode & SMODE_SENDLATER) {
 #if defined(_UNICODE)
-                        if(ServiceExists("BuddyPounce/AddToPounce")) {
+                        if(ServiceExists("BuddyPounce/AddToPounce"))
                             CallService("BuddyPounce/AddToPounce", (WPARAM)dat->hContact, (LPARAM)dat->sendBuffer);
-                            break;
-                        }
 #else
-                        if(ServiceExists("BuddyPounce/AddToPounce")) {
+                        if(ServiceExists("BuddyPounce/AddToPounce"))
                             CallService("BuddyPounce/AddToPounce", (WPARAM)dat->hContact, (LPARAM)dat->sendBuffer);
-                            break;
-                        }
 #endif
+                        if(dat->hwndLog != 0 && dat->pContainer->hwndStatus) {
+                            SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)Translate("Message saved for later delivery"));
+                        }
+                        else
+                            LogErrorMessage(hwndDlg, dat, -1, Translate("Message saved for later delivery"));
+                        
+                        SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
+                        break;
                     }
                     if (dat->sendMode & SMODE_CONTAINER && dat->pContainer->hwndActive == hwndDlg && GetForegroundWindow() == dat->pContainer->hwnd) {
                         HWND contacthwnd;
@@ -2704,12 +2710,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         HICON hButtonIcon = 0;
                         RECT rc;
                         
-                        if(CheckValidSmileyPack(dat->szProto, &hButtonIcon) != 0 || dat->hwndLog != 0) {
+                        if(CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, &hButtonIcon) != 0 || dat->hwndLog != 0) {
                             smaddInfo.cbSize = sizeof(SMADD_SHOWSEL);
                             smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_MESSAGE);
                             smaddInfo.targetMessage = EM_REPLACESEL;
                             smaddInfo.targetWParam = TRUE;
-                            smaddInfo.Protocolname = dat->szProto;
+                            smaddInfo.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                             GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
 
                             smaddInfo.Direction = 0;
@@ -3219,7 +3225,35 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             break;
         case WM_CONTEXTMENU:
-            if((HWND)wParam == GetDlgItem(hwndDlg, IDC_CONTACTPIC)) {
+            if((HWND)wParam == GetDlgItem(hwndDlg, IDC_PROTOCOL) && dat->hContact != 0) {
+                POINT pt;
+                HMENU hMC;
+
+                GetCursorPos(&pt);
+                hMC = BuildMCProtocolMenu(hwndDlg);
+                if(hMC) {
+                    int iSelection = 0;
+                    iSelection = TrackPopupMenu(hMC, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                    if(iSelection < 1000 && iSelection >= 100) {         // the "force" submenu...
+                        if(iSelection == 999) {                           // un-force
+                            if(CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0) == 0)
+                                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
+                            else
+                                _DebugMessage(hwndDlg, dat, Translate("Unforce failed"));
+                        }
+                        else {
+                            if(CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)dat->hContact,  (LPARAM)(iSelection - 100)) == 0)
+                                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", (DWORD)(iSelection - 100));
+                            else
+                                _DebugMessage(hwndDlg, dat, Translate("The selected protocol cannot be forced at this time"));
+                        }
+                    }
+                    else if(iSelection >= 1000) {                        // the "default" menu...
+                        CallService(MS_MC_SETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, (LPARAM)(iSelection - 1000));
+                    }
+                    DestroyMenu(hMC);
+                }
+                break;
             }
             break;
             /*
@@ -3550,7 +3584,7 @@ verify:
         case DM_UPDATEMETACONTACTINFO:      // update the icon in the statusbar for the "most online" protocol
         {
             DWORD isForced;
-            
+            char *szProto;
             if((isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1)) >= 0) {
                 char szTemp[64];
                 _snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
@@ -3560,11 +3594,12 @@ verify:
                     DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
                 }
             }
-            dat->hProtoIcon = (HICON)LoadSkinnedProtoIcon(GetCurrentMetaContactProto(hwndDlg, dat), ID_STATUS_ONLINE);
-            if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0) {
-                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)dat->hProtoIcon);
+            szProto = GetCurrentMetaContactProto(hwndDlg, dat);
+            dat->wMetaStatus = DBGetContactSettingWord(dat->hSubContact, dat->szMetaProto, "Status", ID_STATUS_OFFLINE);
+
+            if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0)
                 UpdateStatusBarTooltips(hwndDlg, dat, -1);
-            }
+            SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
             break;
         }
 		case DM_SECURE_CHANGED:

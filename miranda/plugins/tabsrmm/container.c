@@ -96,7 +96,7 @@ extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static WNDPROC OldTabControlProc;
-static HMENU BuildMCProtocolMenu(HWND hwndDlg);
+HMENU BuildMCProtocolMenu(HWND hwndDlg);
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 
 /*
@@ -562,17 +562,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 if (pContainer->hwndStatus) {
                     RECT rcs;
-                    int statwidths[5];
+                    int statwidths[4];
                     
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 18 - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 18 - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[2] = rcs.right - rcs.left - 38 - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
-                    statwidths[4] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (myGlobals.g_SecureIMAvail ? 26 : 0);
+                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH - 8) - (myGlobals.g_SecureIMAvail ? 26 : 0);
+                    statwidths[2] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
+                    statwidths[3] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                 }
                 else
@@ -633,6 +632,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         uin = dat->uin;
                     else
                         uin = dummy;
+                    szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                 }
                 else
                     uin = dummy;
@@ -646,10 +646,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 temp[0] = '\0';
                 tTemp[0] = '\0';
                 
-                szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
                 if (szProto)
                     SendMessage(pContainer->hwndActive, DM_QUERYSTATUS, 0, (LPARAM)&wStatus);
-
+                else
+                    break;
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWUIN)
                     _snprintf(temp, sizeof(temp), "%s - %s", contactName, uin);
                 else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
@@ -1306,17 +1306,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 
                 if(pContainer->hwndStatus) {
-                    RECT rcs;
-                    int statwidths[5];
+                    /* RECT rcs;
+                    int statwidths[4];
 
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 18 - myGlobals.g_SecureIMAvail ? 23 : 0;
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - 18 - myGlobals.g_SecureIMAvail ? 23 : 0;
-                    statwidths[2] = rcs.right - rcs.left - 38 - myGlobals.g_SecureIMAvail ? 23 : 0;
-                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
-                    statwidths[4] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (myGlobals.g_SecureIMAvail ? 23 : 0);
+                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - (myGlobals.g_SecureIMAvail ? 23 : 0);
+                    statwidths[2] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 23 : -1;
+                    statwidths[3] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM) statwidths); */
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
                     SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);
@@ -1419,42 +1418,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     POINT pt, pt1;
                     HANDLE hContact;
                     HMENU hMenu;
-                    RECT rcPanel;
-                    
-                    SendMessage(pContainer->hwndStatus, SB_GETRECT, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)&rcPanel);
+
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     if(hContact) {
                         GetCursorPos(&pt);
                         pt1 = pt;
                         ScreenToClient(hwndDlg, &pt1);
-                        if(pt1.x > rcPanel.left && pt1.x < rcPanel.right) {
-                            HMENU hMC;
-                            hMC = BuildMCProtocolMenu(pContainer->hwndActive);
-                            if(hMC) {
-                                struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
-                                int iSelection = 0;
-                                iSelection = TrackPopupMenu(hMC, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
-                                if(iSelection < 1000 && iSelection >= 100) {         // the "force" submenu...
-                                    if(iSelection == 999) {                           // un-force
-                                        if(CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)hContact, 0) == 0)
-                                            DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", -1);
-                                        else
-                                            _DebugMessage(pContainer->hwndActive, dat, Translate("Unforce failed"));
-                                    }
-                                    else {
-                                        if(CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)hContact,  (LPARAM)(iSelection - 100)) == 0)
-                                            DBWriteContactSettingDword(hContact, "MetaContacts", "tabSRMM_forced", (DWORD)(iSelection - 100));
-                                        else
-                                            _DebugMessage(pContainer->hwndActive, dat, Translate("The selected protocol cannot be forced at this time"));
-                                    }
-                                }
-                                else if(iSelection >= 1000) {                        // the "default" menu...
-                                    CallService(MS_MC_SETDEFAULTCONTACTNUM, (WPARAM)hContact, (LPARAM)(iSelection - 1000));
-                                }
-                                DestroyMenu(hMC);
-                            }
-                            break;
-                        }
                         hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
                         TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
                         DestroyMenu(hMenu);
@@ -1486,7 +1455,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
         case DM_UPDATEWINICON:
             {
-                WORD wStatus;
+                _DebugPopup(0, "container updatewinicon");
+                
+                /*WORD wStatus;
                 HICON hIcon;
                 HANDLE hContact;
                 char *szProto;
@@ -1501,7 +1472,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
                     break;
-                }
+                }*/
                 break;
             }
         case DM_QUERYCLIENTAREA:
@@ -2209,7 +2180,7 @@ HMENU BuildContainerMenu()
     return hMenu;
 }
 
-static HMENU BuildMCProtocolMenu(HWND hwndDlg)
+HMENU BuildMCProtocolMenu(HWND hwndDlg)
 {
     HMENU hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
     DBVARIANT dbv;

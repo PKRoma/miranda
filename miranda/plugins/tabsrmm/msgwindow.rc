@@ -100,9 +100,9 @@ BEGIN
                     WS_EX_STATICEDGE
     LTEXT           "",IDC_ADDTEXT,20,20,124,7
     ICON            "",IDC_ADDICON,2,18,16,14,SS_CENTERIMAGE
-    CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,135,18,50,14,
+    CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,135,16,50,14,
                     0x18000000L
-    CONTROL         "Dont",IDC_CANCELADD,"MButtonClass",WS_TABSTOP,190,18,50,14,
+    CONTROL         "Dont",IDC_CANCELADD,"MButtonClass",WS_TABSTOP,190,16,50,14,
                     0x18000000L
     ICON            "",IDC_MULTIPLEICON,0,64,16,14,SS_CENTERIMAGE
 END

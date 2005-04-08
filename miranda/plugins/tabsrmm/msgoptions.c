@@ -666,6 +666,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			CheckDlgButton(hwndDlg, IDC_WARNONCLOSE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0));
 			CheckDlgButton(hwndDlg, IDC_CUT_TABTITLE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0));
 			SetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15), FALSE);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSONTAB, DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0));
             CheckDlgButton(hwndDlg, IDC_AUTOCREATETABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 0));
             CheckDlgButton(hwndDlg, IDC_POPUPCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "cpopup", 0));
@@ -729,6 +730,9 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                     break;
                 case IDC_SETUPAUTOCREATEMODES:
                     CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hwndDlg, DlgProcSetupStatusModes);
+                    break;
+                case IDC_CUT_TABTITLE:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
                     break;
             }
            
@@ -794,7 +798,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
             SendDlgItemMessage(hwndDlg, IDC_TABLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 1));
             SendDlgItemMessage(hwndDlg, IDC_TABLIMITSPIN, UDM_SETPOS, 0, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "maxtabs", 1));
             SetDlgItemInt(hwndDlg, IDC_TABLIMIT, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "maxtabs", 1), FALSE);
-
+            EnableWindow(GetDlgItem(hwndDlg, IDC_TABLIMIT), IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
             CheckDlgButton(hwndDlg, IDC_SINGLEWINDOWMODE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0));
             CheckDlgButton(hwndDlg, IDC_DEFAULTCONTAINERMODE, !(IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE) || IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS) || IsDlgButtonChecked(hwndDlg, IDC_SINGLEWINDOWMODE)));
 
@@ -837,6 +841,9 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                 case IDC_TABLIMIT:
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
+                    break;
+                case IDC_LIMITTABS:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_TABLIMIT), IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
                     break;
             }
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
