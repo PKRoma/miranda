@@ -834,8 +834,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (rc.bottom-rc.top<dat->minEditBoxSize.cy) {
 			SendMessage(hwndDlg, DM_SPLITTERMOVED, rc.top-(rc.bottom-rc.top-dat->minEditBoxSize.cy-4), (LPARAM) GetDlgItem(hwndDlg, IDC_SPLITTER));
 		}
-		SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 		SendMessage(hwndDlg, WM_SIZE, 0, 0);
+		SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 		break;
 	}
 	case DM_GETAVATAR:
