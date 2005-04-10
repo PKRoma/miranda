@@ -33,6 +33,9 @@ static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
+static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern void OnStatusBarBackgroundChange();
+
 DWORD GetDefaultExStyle(void)
 {
 	BOOL param;
@@ -118,6 +121,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle=Translate("List Background");
 	odp.pfnDlgProc=DlgProcClcBkgOpts;
 	odp.flags=ODPF_BOLDGROUPS;
+	
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCTEXT);
 	odp.pszTitle=Translate("List Text");
@@ -128,6 +132,14 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle=Translate("List MetaContacts");
 	odp.pfnDlgProc=DlgProcClcMetaOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+
+
+	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCBKG);
+	odp.pszTitle=Translate("StatusBar Background");
+	odp.pfnDlgProc=DlgProcStatusBarBkgOpts;
+	odp.flags=ODPF_BOLDGROUPS;
+	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+
 
 	return 0;
 }
@@ -368,6 +380,152 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
+static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+		case WM_INITDIALOG:
+			TranslateDialogDefault(hwndDlg);
+			CheckDlgButton(hwndDlg,IDC_BITMAP,DBGetContactSettingByte(NULL,"StatusBar","UseBitmap",CLCDEFAULT_USEBITMAP)?BST_CHECKED:BST_UNCHECKED);
+			SendMessage(hwndDlg,WM_USER+10,0,0);
+			SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_BKCOLOUR);
+			SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"StatusBar","BkColour",CLCDEFAULT_BKCOLOUR));
+			SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELBKCOLOUR);
+			SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"StatusBar","SelBkColour",CLCDEFAULT_SELBKCOLOUR));
+			{	DBVARIANT dbv;
+				if(!DBGetContactSetting(NULL,"StatusBar","BkBitmap",&dbv)) {
+					SetDlgItemText(hwndDlg,IDC_FILENAME,dbv.pszVal);
+                    if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
+                        char szPath[MAX_PATH];
+
+                        if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPath))
+                            SetDlgItemText(hwndDlg,IDC_FILENAME,szPath);
+                    }
+                    else 
+					mir_free(dbv.pszVal);
+				}
+			}
+
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE,DBGetContactSettingByte(NULL,"StatusBar","HiLightMode",0)==0?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE1,DBGetContactSettingByte(NULL,"StatusBar","HiLightMode",0)==1?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE2,DBGetContactSettingByte(NULL,"StatusBar","HiLightMode",0)==2?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE3,DBGetContactSettingByte(NULL,"StatusBar","HiLightMode",0)==3?BST_CHECKED:BST_UNCHECKED);
+
+			
+
+			{	WORD bmpUse=DBGetContactSettingWord(NULL,"StatusBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
+				CheckDlgButton(hwndDlg,IDC_STRETCHH,bmpUse&CLB_STRETCHH?BST_CHECKED:BST_UNCHECKED);
+				CheckDlgButton(hwndDlg,IDC_STRETCHV,bmpUse&CLB_STRETCHV?BST_CHECKED:BST_UNCHECKED);
+				CheckDlgButton(hwndDlg,IDC_TILEH,bmpUse&CLBF_TILEH?BST_CHECKED:BST_UNCHECKED);
+				CheckDlgButton(hwndDlg,IDC_TILEV,bmpUse&CLBF_TILEV?BST_CHECKED:BST_UNCHECKED);
+				CheckDlgButton(hwndDlg,IDC_SCROLL,bmpUse&CLBF_SCROLL?BST_CHECKED:BST_UNCHECKED);
+				CheckDlgButton(hwndDlg,IDC_PROPORTIONAL,bmpUse&CLBF_PROPORTIONAL?BST_CHECKED:BST_UNCHECKED);
+				CheckDlgButton(hwndDlg,IDC_TILEVROWH,bmpUse&CLBF_TILEVTOROWHEIGHT?BST_CHECKED:BST_UNCHECKED);
+
+			}
+			{	HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
+				MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandle("shlwapi"),"SHAutoComplete");
+				if(MySHAutoComplete) MySHAutoComplete(GetDlgItem(hwndDlg,IDC_FILENAME),1);
+			}
+			return TRUE;
+		case WM_USER+10:
+			EnableWindow(GetDlgItem(hwndDlg,IDC_FILENAME),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_BROWSE),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STRETCHH),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STRETCHV),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_TILEH),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_TILEV),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_SCROLL),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_PROPORTIONAL),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_TILEVROWH),IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+			break;
+		case WM_COMMAND:
+			if(LOWORD(wParam)==IDC_BROWSE) {
+				char str[MAX_PATH];
+				OPENFILENAME ofn={0};
+				char filter[512];
+
+				GetDlgItemText(hwndDlg,IDC_FILENAME,str,sizeof(str));
+				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+				ofn.hwndOwner = hwndDlg;
+				ofn.hInstance = NULL;
+				CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(filter),(LPARAM)filter);
+				ofn.lpstrFilter = filter;
+				ofn.lpstrFile = str;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+				ofn.nMaxFile = sizeof(str);
+				ofn.nMaxFileTitle = MAX_PATH;
+				ofn.lpstrDefExt = "bmp";
+				if(!GetOpenFileName(&ofn)) break;
+				SetDlgItemText(hwndDlg,IDC_FILENAME,str);
+			}
+			else if(LOWORD(wParam)==IDC_FILENAME && HIWORD(wParam)!=EN_CHANGE) break;
+			if(LOWORD(wParam)==IDC_BITMAP) SendMessage(hwndDlg,WM_USER+10,0,0);
+			if(LOWORD(wParam)==IDC_FILENAME && (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus())) return 0;
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		case WM_NOTIFY:
+			switch(((LPNMHDR)lParam)->idFrom) {
+				case 0:
+					switch (((LPNMHDR)lParam)->code)
+					{
+						case PSN_APPLY:
+							
+							
+							
+							DBWriteContactSettingByte(NULL,"StatusBar","UseBitmap",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_BITMAP));
+							{	COLORREF col;
+								col=SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_GETCOLOUR,0,0);
+								if(col==CLCDEFAULT_BKCOLOUR) DBDeleteContactSetting(NULL,"StatusBar","BkColour");
+								else DBWriteContactSettingDword(NULL,"StatusBar","BkColour",col);
+								col=SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_GETCOLOUR,0,0);
+								if(col==CLCDEFAULT_SELBKCOLOUR) DBDeleteContactSetting(NULL,"StatusBar","SelBkColour");
+								else DBWriteContactSettingDword(NULL,"StatusBar","SelBkColour",col);
+							}
+							{	
+								char str[MAX_PATH],strrel[MAX_PATH];
+								GetDlgItemText(hwndDlg,IDC_FILENAME,str,sizeof(str));
+                                if (ServiceExists(MS_UTILS_PATHTORELATIVE)) {
+                                    if (CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)strrel))
+                                        DBWriteContactSettingString(NULL,"StatusBar","BkBitmap",strrel);
+                                    else DBWriteContactSettingString(NULL,"StatusBar","BkBitmap",str);
+                                }
+                                else DBWriteContactSettingString(NULL,"StatusBar","BkBitmap",str);
+
+							}
+							{	WORD flags=0;
+								if(IsDlgButtonChecked(hwndDlg,IDC_STRETCHH)) flags|=CLB_STRETCHH;
+								if(IsDlgButtonChecked(hwndDlg,IDC_STRETCHV)) flags|=CLB_STRETCHV;
+								if(IsDlgButtonChecked(hwndDlg,IDC_TILEH)) flags|=CLBF_TILEH;
+								if(IsDlgButtonChecked(hwndDlg,IDC_TILEV)) flags|=CLBF_TILEV;
+								if(IsDlgButtonChecked(hwndDlg,IDC_SCROLL)) flags|=CLBF_SCROLL;
+								if(IsDlgButtonChecked(hwndDlg,IDC_PROPORTIONAL)) flags|=CLBF_PROPORTIONAL;
+								if(IsDlgButtonChecked(hwndDlg,IDC_TILEVROWH)) flags|=CLBF_TILEVTOROWHEIGHT;
+
+								DBWriteContactSettingWord(NULL,"StatusBar","BkBmpUse",flags);
+							}
+							{
+								int hil=0;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE1))  hil=1;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE2))  hil=2;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE3))  hil=3;
+
+							DBWriteContactSettingByte(NULL,"StatusBar","HiLightMode",(BYTE)hil);
+
+							}
+							
+							ClcOptionsChanged();
+							OnStatusBarBackgroundChange();
+							return TRUE;
+					}
+					break;
+			}
+			break;
+	}
+	return FALSE;
+}
+
+
 static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -393,12 +551,6 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					mir_free(dbv.pszVal);
 				}
 			}
-
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==0?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE1,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE2,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==2?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE3,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==3?BST_CHECKED:BST_UNCHECKED);
-
 			
 
 			{	WORD bmpUse=DBGetContactSettingWord(NULL,"CLC","BkBmpUse",CLCDEFAULT_BKBMPUSE);
@@ -491,15 +643,6 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								if(IsDlgButtonChecked(hwndDlg,IDC_TILEVROWH)) flags|=CLBF_TILEVTOROWHEIGHT;
 
 								DBWriteContactSettingWord(NULL,"CLC","BkBmpUse",flags);
-							}
-							{
-								int hil=0;
-							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE1))  hil=1;
-							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE2))  hil=2;
-							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE3))  hil=3;
-
-							DBWriteContactSettingByte(NULL,"CLC","HiLightMode",(BYTE)hil);
-
 							}
 
 							ClcOptionsChanged();
@@ -663,6 +806,12 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR));
 			SendDlgItemMessage(hwndDlg,IDC_QUICKCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_QUICKSEARCHCOLOUR);
 			SendDlgItemMessage(hwndDlg,IDC_QUICKCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR));
+
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==0?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE1,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE2,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==2?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,IDC_HILIGHTMODE3,DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==3?BST_CHECKED:BST_UNCHECKED);
+		
 			return TRUE;
 		case M_REBUILDFONTGROUP:	//remake all the needed controls when the user changes the font selector at the top
 		{	int i=SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETCURSEL,0,0),0);
@@ -840,9 +989,9 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				
 
 			}
-			i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
-			if(i<minHeight) SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
-
+			//i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
+			//if(i<minHeight) SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETPOS,0,MAKELONG(minHeight,0));
+			minHeight=1;
 			SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETRANGE,0,MAKELONG(255,minHeight));
 			break;
 		}
@@ -979,6 +1128,16 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							}
 							DBWriteContactSettingByte(NULL,"CLC","RowHeight",(BYTE)SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0));
 							DBWriteContactSettingByte(NULL,"CLC","GammaCorrect",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_GAMMACORRECT));
+							{
+								int hil=0;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE1))  hil=1;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE2))  hil=2;
+							if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE3))  hil=3;
+
+							DBWriteContactSettingByte(NULL,"CLC","HiLightMode",(BYTE)hil);
+
+							}					
+							
 							ClcOptionsChanged();
 							return TRUE;
 						case PSN_EXPERTCHANGED:

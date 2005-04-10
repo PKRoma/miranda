@@ -1837,7 +1837,9 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 	RemoveItemFromList(pos,&Frames,&nFramescount);
 
 	ulockfrm();
+	InvalidateRect(hwndContactList,NULL,TRUE);
 	CLUIFramesOnClistResize((WPARAM)hwndContactList,0);
+	InvalidateRect(hwndContactList,NULL,TRUE);
 	
 	return(0);
 };
@@ -1868,7 +1870,7 @@ int CLUIFramesForceUpdateFrame(const wndFrame *Frame)
 
 int CLUIFrameMoveResize(const wndFrame *Frame)
 {
-	
+	//int b;
 	// we need to show or hide the frame?
 	if(Frame->visible&&(!Frame->needhide)) {
 		ShowWindow(Frame->hWnd,SW_SHOW);
@@ -1879,7 +1881,7 @@ int CLUIFrameMoveResize(const wndFrame *Frame)
 		ShowWindow(Frame->TitleBar.hwnd,SW_HIDE);
 		return(0);
 	}
-
+	
 	// set frame position
 	SetWindowPos(Frame->hWnd,NULL,Frame->wndSize.left,Frame->wndSize.top,
 					Frame->wndSize.right-Frame->wndSize.left,
@@ -1964,6 +1966,8 @@ int CLUIFramesResize(const RECT newsize)
 	
 	
 	GapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
+	sepw=GapBetweenFrames;
 
 	if(nFramescount<1) return 0; 
 
@@ -2008,7 +2012,7 @@ int CLUIFramesResize(const RECT newsize)
 			if(((Frames[i].align!=alClient))&&(!Frames[i].floating)&&(Frames[i].visible)&&(!Frames[i].needhide)) {
 				drawitems++;
 				curfrmtbh=(TitleBarH+GapBetweenTitlebar)*btoint(Frames[i].TitleBar.ShowTitleBar);
-				sumheight+=(Frames[i].height)+curfrmtbh+sepw;
+				sumheight+=(Frames[i].height)+curfrmtbh+sepw+(Frames[i].UseBorder?2:0);
 				if(sumheight>newheight-tbh) {
 					sumheight-=(Frames[i].height)+curfrmtbh+sepw;
 					Frames[i].needhide=TRUE;
@@ -2027,7 +2031,7 @@ int CLUIFramesResize(const RECT newsize)
 		if((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alTop)) {
 			curfrmtbh=(TitleBarH+GapBetweenTitlebar)*btoint(Frames[i].TitleBar.ShowTitleBar);
 			Frames[i].wndSize.top=prevframebottomline+sepw+(curfrmtbh);
-			Frames[i].wndSize.bottom=Frames[i].height+Frames[i].wndSize.top;
+			Frames[i].wndSize.bottom=Frames[i].height+Frames[i].wndSize.top+(Frames[i].UseBorder?2:0);
 			Frames[i].prevvisframe=prevframe;
 			prevframe=i;
 			prevframebottomline=Frames[i].wndSize.bottom;
@@ -2071,7 +2075,7 @@ int CLUIFramesResize(const RECT newsize)
 			curfrmtbh=(TitleBarH+GapBetweenTitlebar)*btoint(Frames[i].TitleBar.ShowTitleBar);
 
 			Frames[i].wndSize.bottom=prevframebottomline-sepw;
-			Frames[i].wndSize.top=Frames[i].wndSize.bottom-Frames[i].height;
+			Frames[i].wndSize.top=Frames[i].wndSize.bottom-Frames[i].height-(Frames[i].UseBorder?2:0);
 			Frames[i].prevvisframe=prevframe;
 			prevframe=i;
 			prevframebottomline=Frames[i].wndSize.top/*-1*/-curfrmtbh;

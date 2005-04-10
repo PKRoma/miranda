@@ -525,10 +525,12 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 	MenuObjects[MenuObjectsCount].CheckService=mir_strdup(pmp->CheckService);
 	MenuObjects[MenuObjectsCount].ExecService=mir_strdup(pmp->ExecService);
 
-	if(IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
+//	if(IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
 		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,100);
-	else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
-		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
+	//else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
+//		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
+	
+	
 	
 	result=MenuObjects[MenuObjectsCount].id;
 	MenuObjectsCount++;

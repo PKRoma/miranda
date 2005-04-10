@@ -40,6 +40,7 @@ IDI_ICQC6               ICON    DISCARDABLE     "res\\6.ico"
 IDI_ICQC7               ICON    DISCARDABLE     "res\\7.ico"
 IDI_ICQC8               ICON    DISCARDABLE     "res\\8.ico"
 IDI_EMAIL               ICON    DISCARDABLE     "res\\sendmail.ico"
+IDI_NEWGROUP2           ICON    DISCARDABLE     "res\\addgoupp.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -94,10 +95,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_GLOBUS              ICON    FIXED IMPURE    "res\\globus.ico"
-
+IDI_GLOBUS              ICON    DISCARDABLE     "res\\globus.ico"
 IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
-IDI_NEWGROUP            ICON    DISCARDABLE     "res\\blank.ico"
 IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
 IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
 IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
@@ -405,12 +404,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,160,140,10
 END
 
-IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 240
+IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 256
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Fonts",IDC_STATIC,4,4,269,125
+    GROUPBOX        "Fonts",IDC_STATIC,5,5,269,125
     COMBOBOX        IDC_FONTID,12,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "same",IDC_STSAMETEXT,19,32,45,10,SS_CENTERIMAGE
@@ -425,7 +424,7 @@ BEGIN
     LTEXT           "as:",IDC_STASTEXT,19,46,45,10,SS_CENTERIMAGE
     COMBOBOX        IDC_SAMEAS,64,45,196,88,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    CONTROL         "",IDC_STHORZBAR,"Static",SS_ETCHEDHORZ,9,64,259,1
+    CONTROL         "",IDC_STHORZBAR,"Static",SS_ETCHEDFRAME,9,60,259,5
     COMBOBOX        IDC_TYPEFACE,12,72,136,182,CBS_DROPDOWN | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_SCRIPT,156,72,60,68,CBS_DROPDOWNLIST | WS_VSCROLL | 
@@ -449,24 +448,33 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,97,145,10,
                     14
     LTEXT           "pixels",IDC_STATIC,112,148,62,8
-    GROUPBOX        "Additional Colours",IDC_STATIC,4,171,269,65
+    GROUPBOX        "Additional Colours",IDC_STATIC,4,171,121,79
     LTEXT           "Selected text:",IDC_STATIC,12,186,65,8
     CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,77,184,29,12
     LTEXT           "Hottrack text:",IDC_STATIC,12,202,65,8
     CONTROL         "",IDC_HOTCOLOUR,"ColourPicker",WS_TABSTOP,77,200,29,12
     CONTROL         "Gamma correction",IDC_GAMMACORRECT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,119,201,117,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,235,95,10
     LTEXT           "Quicksearch text:",IDC_STATIC,12,218,65,8
     CONTROL         "",IDC_QUICKCOLOUR,"ColourPicker",WS_TABSTOP,77,216,29,
                     12
     LTEXT           "Size:",IDC_STSIZETEXT,231,114,34,8,NOT WS_VISIBLE
     LTEXT           "Colour:",IDC_STCOLOURTEXT,228,102,37,8,NOT WS_VISIBLE
+    GROUPBOX        "Selection Mode",IDC_STATIC,130,171,144,79
+    CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
+                    145,185,39,10
+    CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
+                    BS_AUTORADIOBUTTON,145,215,61,10
+    CONTROL         "Full selection",IDC_HILIGHTMODE1,"Button",
+                    BS_AUTORADIOBUTTON,145,200,57,10
+    CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
+                    BS_AUTORADIOBUTTON,145,230,55,10
 END
 
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 151
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Contact List Background",IDC_STATIC,4,4,227,141
     LTEXT           "Background colour:",IDC_STATIC,12,20,72,8,NOT WS_GROUP
@@ -489,14 +497,6 @@ BEGIN
                     WS_TABSTOP,121,110,100,10
     CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,121,97,101,10
-    CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
-                    150,15,39,10
-    CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
-                    BS_AUTORADIOBUTTON,150,35,61,10
-    CONTROL         "Full selection",IDC_HILIGHTMODE1,"Button",
-                    BS_AUTORADIOBUTTON,150,25,57,10
-    CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
-                    BS_AUTORADIOBUTTON,150,45,55,10
     CONTROL         "Tile vertically according to Row Height",IDC_TILEVROWH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,125,205,10
 END
@@ -575,7 +575,7 @@ END
 IDD_OPT_META_CLC DIALOGEX 0, 0, 259, 97
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Use 'Meta' protocol icons for Metacontacts",IDC_META,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,13,233,10
@@ -677,7 +677,7 @@ BEGIN
         VERTGUIDE, 258
         VERTGUIDE, 265
         TOPMARGIN, 4
-        BOTTOMMARGIN, 236
+        BOTTOMMARGIN, 252
         HORZGUIDE, 37
         HORZGUIDE, 51
         HORZGUIDE, 79
@@ -966,7 +966,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 IDD_OPT_SBAR DIALOGEX 0, 0, 178, 211
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Status Bar",IDC_STATIC,4,4,170,201
     CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 

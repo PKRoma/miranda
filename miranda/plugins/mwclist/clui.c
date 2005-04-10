@@ -84,6 +84,7 @@ extern int ExtraToColumnNum(int extra);
 extern void TrayIconUpdateBase(const char *szChangedProto);
 extern void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis);
 extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
+extern void InitGroupMenus();
 
 void InvalidateDisplayNameCacheEntry(HANDLE hContact);
 
@@ -110,6 +111,7 @@ static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 	
 	OnModulesLoadedCalled=TRUE;	
 	InvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);
+	InitGroupMenus();
 	return 0;
 }
 
@@ -1091,7 +1093,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					switch (((LPNMHDR)lParam)->code) {
 					case NM_CLICK:
 						{
-							unsigned int nParts, nPanel;
+							int nParts=0, nPanel=0;
 							NMMOUSE *nm=(NMMOUSE*)lParam;
 							HMENU hMenu;
 							RECT rc;
@@ -1099,17 +1101,43 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 							int totcount;
 							ProtocolData *PD;
 							int menuid;
+							int startoffset=DBGetContactSettingDword(NULL,"StatusBar","FirstIconOffset",0);
+							int extraspace=DBGetContactSettingDword(NULL,"StatusBar","BkExtraSpace",0);
+							boolean UseOwnerDrawStatusBar=DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",0);
+
 							
 							hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 							nParts=SendMessage(hwndStatus,SB_GETPARTS,0,0);
+							
 							if (nm->dwItemSpec==0xFFFFFFFE) {
 								nPanel=nParts-1;
 								SendMessage(hwndStatus,SB_GETRECT,nPanel,(LPARAM)&rc);
 								if (nm->pt.x < rc.left) return FALSE;
-						} else { 
+							} else { 
+								
+								if (!((startoffset)!=0&&UseOwnerDrawStatusBar))
+								{								
 								nPanel=nm->dwItemSpec; 
 								SendMessage(hwndStatus,SB_GETRECT,nPanel,(LPARAM)&rc);
+								}else
+								{
+									int i;
+									for (i=0;i<nParts;i++)
+									{
+										SendMessage(hwndStatus,SB_GETRECT,i,(LPARAM)&rc);
+										rc.left+=startoffset;
+										rc.right+=startoffset;
+										//if (nm->pt.x>rc.left &&)
+										if (PtInRect(&rc,nm->pt))
+										{
+											nPanel=i;
+											break;
+										}
+									}
+
 								}
+							
+							}
 						
 
 
@@ -1399,7 +1427,6 @@ int LoadCLUIModule(void)
 	LoadExtraImageFunc();	
 				// create status bar frame
 	CreateStatusBarhWnd(hwndContactList);				
-	CreateStatusBarFrame();
 
 	{	//int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
 		hMenuMain=GetMenu(hwndContactList);

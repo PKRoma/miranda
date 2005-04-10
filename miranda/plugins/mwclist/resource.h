@@ -53,7 +53,6 @@
 #define IDD_NEWPROFILE                  198
 #define IDR_CLISTMENU                   199
 #define IDI_BLANK                       200
-#define IDI_NEWGROUP                    200
 #define IDD_FINDADD                     201
 #define IDI_USERONLINE                  201
 #define IDD_OPT_AUTOAWAY                202
@@ -127,6 +126,8 @@
 #define IDI_BLANK1                      278
 #define IDD_OPT_META_CLC                279
 #define IDD_DIALOG1                     280
+#define IDI_NEWGROUP                    282
+#define IDI_NEWGROUP2                   282
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -604,7 +605,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        281
+#define _APS_NEXT_RESOURCE_VALUE        283
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1762
 #define _APS_NEXT_SYMED_VALUE           101

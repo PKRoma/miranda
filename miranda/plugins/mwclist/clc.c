@@ -362,7 +362,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				ReleaseDC(hwnd,hdc);
 				if(dat->himlHighlight)
 					ImageList_Destroy(dat->himlHighlight);
-				dat->himlHighlight=ImageList_Create(rc.right,rc.bottom,(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,1,1);
+				dat->himlHighlight=ImageList_Create(rc.right,rc.bottom,ILC_COLOR32|ILC_MASK,1,1);
 				ImageList_Add(dat->himlHighlight,hBmp,hBmpMask);
 				DeleteObject(hBmpMask);
 				DeleteObject(hBmp);

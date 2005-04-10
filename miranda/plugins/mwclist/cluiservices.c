@@ -65,6 +65,24 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	if (storedcount==-1){return(0);};
 	
+	{
+		//free protocol data
+	int nPanel;
+	int nParts=SendMessage(hwndStatus,SB_GETPARTS,0,0);
+    for (nPanel=0;nPanel<nParts;nPanel++)
+			{
+			ProtocolData *PD;
+			PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
+			if (PD!=NULL&&!IsBadCodePtr((void *)PD))
+			{
+				SendMessage(hwndStatus,SB_SETTEXT,(WPARAM)nPanel|SBT_OWNERDRAW,(LPARAM)0);
+				if (PD->RealName) free(PD->RealName);
+				if (PD) free(PD);
+			}
+
+			}
+	}
+	
 	SendMessage(hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
 	
 	SendMessage(hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT)); 

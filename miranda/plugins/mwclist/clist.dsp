@@ -557,6 +557,10 @@ SOURCE=.\res\addcontact.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\addgoupp.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\away.ico
 # End Source File
 # Begin Source File
@@ -614,6 +618,10 @@ SOURCE=.\res\finduser.ico
 # Begin Source File
 
 SOURCE=.\res\freechat.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\globus.ico
 # End Source File
 # Begin Source File
 

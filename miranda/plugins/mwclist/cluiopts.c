@@ -31,6 +31,7 @@ extern hFrameHelperStatusBar;
 extern void ReAssignExtraIcons();
 extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int UseOwnerDrawStatusBar;
+extern int OnStatusBarBackgroundChange();
 
 static UINT expertOnlyControls[]={IDC_BRINGTOFRONT, IDC_AUTOSIZE,IDC_STATIC21,IDC_MAXSIZEHEIGHT,IDC_MAXSIZESPIN,IDC_STATIC22,IDC_AUTOSIZEUPWARD,IDC_SHOWMAINMENU,IDC_SHOWCAPTION,IDC_CLIENTDRAG};
 int CluiOptInit(WPARAM wParam,LPARAM lParam)
@@ -407,6 +408,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 					SendMessage(hwndContactList,WM_SIZE,0,0);
 					//CheckProtocolOrder();
+					
+					OnStatusBarBackgroundChange();
 					CluiProtocolStatusChanged(0,0);			
 					return TRUE;
 					}

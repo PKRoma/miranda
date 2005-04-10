@@ -37,6 +37,9 @@ HANDLE hHideOfflineUsersMenuItem;
 HANDLE hHideOfflineUsersOutHereMenuItem;
 HANDLE hHideEmptyGroupsMenuItem;
 HANDLE hDisableGroupsMenuItem;
+HANDLE hNewGroupMenuItem;
+HANDLE hNewSubGroupMenuItem;
+
 int NewGroupIconidx;
 
 extern HWND hwndContactTree;
@@ -261,14 +264,28 @@ static int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
 	return 0;
 };
 
+int static OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
+{
+	HICON hicon;
+	CLISTMENUITEM clmi={0};
 
+	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,FALSE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP);
+	NewGroupIconidx=ImageList_ReplaceIcon(hCListImages,NewGroupIconidx,hicon);	
+	
+	clmi.cbSize=sizeof(clmi);
+	clmi.flags=CMIM_ICON;
+	clmi.hIcon=ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
+	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hNewSubGroupMenuItem,(LPARAM)&clmi);
+	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hNewGroupMenuItem,(LPARAM)&clmi);
+	return 0;
+};
 
 void InitGroupMenus(void)
 {
 	TMenuParam tmp;
 	OptParam op;
 	HICON hicon;
-	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,TRUE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP);
+	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,TRUE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP2);
 	NewGroupIconidx=ImageList_AddIcon(hCListImages,hicon );	
 	
 	CreateServiceFunction("CLISTMENUSGroup/ExecService",GroupMenuExecService);
@@ -378,7 +395,7 @@ void InitGroupMenus(void)
 	mi.hIcon=ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
 	mi.pszService=MS_CLIST_GROUPCREATE;
 	mi.pszName=Translate("&New Group");	
-	AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
+	hNewGroupMenuItem=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
@@ -415,6 +432,9 @@ void InitGroupMenus(void)
 	mi.pszService="CLISTMENUSGroup/UseGroupsHelper";
 	mi.pszName=Translate("Disable &Groups");	
 	hDisableGroupsMenuItem=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
+	
+	
+	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
 	
 	//MS_CLIST_GROUPCREATE
 
@@ -705,7 +725,7 @@ void InitSubGroupMenus(void)
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=Translate("&New SubGroup");	
 	gmp.lParam=0;gmp.wParam=POPUP_NEWSUBGROUP;
-	AddSubGroupMenuItem((WPARAM)&gmp,(LPARAM)&mi);
+	hNewSubGroupMenuItem=(HANDLE)AddSubGroupMenuItem((WPARAM)&gmp,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);

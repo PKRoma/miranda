@@ -439,7 +439,7 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_HOTKEYSPROCESSMESSAGE,HotkeysProcessMessage);
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle("kernel32"),"SetProcessWorkingSetSize");
-	hCListImages = ImageList_Create(16, 16, ILC_MASK|(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16), 32, 0);
+	hCListImages = ImageList_Create(16, 16, ILC_COLOR32|ILC_MASK, 32, 0);
 
 	InitDisplayNameCache(&lContactsCache);
 	InitCListEvents();
@@ -479,7 +479,7 @@ int LoadContactListModule(void)
 	ImageList_AddIcon(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
 	ImageList_AddIcon(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
 
-	InitGroupMenus();
+	
 
 	return 0;
 }
