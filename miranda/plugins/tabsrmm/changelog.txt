@@ -36,14 +36,18 @@ Version 0.9.9.93 - 2005/04/02
         * MetaContacts support - the status icons in the title bar and on the tool
           bar are now showing the actual protocol icons. Also, smileyadd will now use
           the smiley set which has been configured for the actual protocol. No more
-          need to define an extra smiley set for the MetaContacts protocol.
+          need to define an extra smiley set for the MetaContacts protocol (does not
+          work with IEView though, because IEView does its smiley selection alone).
           
           Consequently, the MetaContacts control menu has been moved from the status
           bar to the tool bar -> right click the protocol button for the MetaContacts
           context menu.
           
         ! fixed small visual glitch with the add contact bar.
-          
+
+        * changed memory handling for the sendqueue and input history.. fixed possible 
+          memory corruption with DBCS strings.
+                    
 Version 0.9.9.92 - 2005/03/31
 
         * plugins like HTTPServer (and all others which try to feed text into the message 

@@ -102,7 +102,7 @@ struct SendJob {
     HANDLE hContact[SENDJOBS_MAX_SENDS];
     HANDLE hSendId[SENDJOBS_MAX_SENDS];
     char *sendBuffer;
-    DWORD dwLen;        // actual buffer langth (checked for reallocs()
+    int  dwLen;        // actual buffer langth (checked for reallocs()
     int sendCount;
     HANDLE hOwner;
     HWND hwndOwner;
@@ -131,6 +131,7 @@ struct MessageWindowData {
 	int splitterY, originalSplitterY, dynaSplitter;
 	int multiSplitterX;
 	char *sendBuffer;
+    int  iSendBufferSize;
     SIZE minEditBoxSize;
 	int showUIElements;
 	int nTypeSecs;

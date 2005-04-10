@@ -84,7 +84,7 @@ typedef struct _settextex {
 int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
 
-#define HISTORY_INITIAL_ALLOCSIZE 100
+#define HISTORY_INITIAL_ALLOCSIZE 300
 
 struct NewMessageWindowLParam {
 	HANDLE hContact;

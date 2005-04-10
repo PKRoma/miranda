@@ -1149,14 +1149,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                 WORD wStatus = dat->bIsMeta ? dat->wMetaStatus : dat->wStatus;
                 t_hwnd = dat->pContainer->hwnd;
-
+                
                 if (szProto) {
                     hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
                     SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 
                     if (dat->pContainer->hwndActive == hwndDlg)
                         SendMessage(t_hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
-                    break;
                 }
                 break;
             }
@@ -1365,7 +1364,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #ifdef _UNICODE
                 wchar_t w_newtitle[256];
 #endif
-                char newtitle[128];
+                char newtitle[128], *szProto = 0, *szOldMetaProto = 0;
                 char *szStatus = NULL, *contactName, *pszNewTitleEnd, newcontactname[128], *temp;
                 TCITEM item;
                 int    iHash = 0;
@@ -1376,13 +1375,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 pszNewTitleEnd = "Message Session";
                 
+                if(dat->iTabID == -1)
+                    break;
+                ZeroMemory((void *)&item, sizeof(item));
                 if (dat->hContact) {
                     int iHasName;
                     char fulluin[128];
                     if (dat->szProto) {
 
-                        if(dat->bIsMeta)                    // update uin for metacontacts (may change at any time)
+                        if(dat->bIsMeta) {
+                            szOldMetaProto = dat->szMetaProto;
+                            szProto = GetCurrentMetaContactProto(hwndDlg, dat);
                             GetContactUIN(hwndDlg, dat);
+                        }
                         
                         contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
                         iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
@@ -1394,7 +1399,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             iHash += (*(temp++) * (int)(temp - contactName + 1));
 
                         dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-
+                        
                         if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
                             if (myGlobals.m_CutContactNameOnTabs)
                                 CutContactName(contactName, newcontactname, sizeof(newcontactname));
@@ -1407,9 +1412,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     _snprintf(newtitle, 127, "%s (%s)", newcontactname, szStatus);
                                 else
                                     _snprintf(newtitle, 127, "%s", newcontactname);
-                            } else {
+                            } else
                                 _snprintf(newtitle, 127, "%s", "Forward");
-                            }
+                            
+                            item.mask |= TCIF_TEXT;
                         }
                         if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
                             InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
@@ -1422,10 +1428,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 } else
                     lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
 
-                ZeroMemory((void *)&item, sizeof(item));
-                item.mask = TCIF_TEXT;
-
-                if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
+                if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
                     if(dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
                         if(dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD)-1 && !(dat->dwFlags & MWF_INITMODE)) {             // log status changes to message log
                             DBEVENTINFO dbei;
@@ -1461,28 +1464,28 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
 
-                    dat->iOldHash = iHash;
-                    dat->wOldStatus = dat->wStatus;
+                    if(item.mask & TCIF_TEXT) {
 #ifdef _UNICODE
-                    if (MultiByteToWideChar(CP_ACP, 0, newtitle, -1, w_newtitle, sizeof(w_newtitle)) != 0) {
-                        item.pszText = w_newtitle;
-                        item.cchTextMax = sizeof(w_newtitle);
-                    }
+                        if (MultiByteToWideChar(CP_ACP, 0, newtitle, -1, w_newtitle, sizeof(w_newtitle)) != 0) {
+                            item.pszText = w_newtitle;
+                            item.cchTextMax = sizeof(w_newtitle);
+                        }
 #else
-                    item.pszText = newtitle;
-                    item.cchTextMax = 127;;
+                        item.pszText = newtitle;
+                        item.cchTextMax = 127;;
 #endif
-                    item.mask = TCIF_TEXT | TCIF_IMAGE;     // XXX update tab text + icon
-
+                    }
                     if (dat->iTabID  >= 0) {
                         item.iImage = GetProtoIconFromList(dat->bIsMeta ? dat->szMetaProto : dat->szProto, (int)(dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));       // proto icon support
+                        if(!(dat->dwFlags & MWF_ERRORSTATE))
+                            item.mask |= TCIF_IMAGE;
                         dat->iTabImage = item.iImage;                               // save new icon for flashing...
-                        if(dat->dwFlags & MWF_ERRORSTATE)                        // dont update icon if we are in error state (leave the 
-                            item.mask &= ~TCIF_IMAGE;
                         TabCtrl_SetItem(hwndTab, dat->iTabID, &item);
                     }
-                    if (dat->pContainer->hwndActive == hwndDlg)
+                    if (dat->pContainer->hwndActive == hwndDlg && (dat->iOldHash != iHash || dat->wOldStatus != dat->wStatus))
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    dat->iOldHash = iHash;
+                    dat->wOldStatus = dat->wStatus;
                 }
                 
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
@@ -2447,7 +2450,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             switch (LOWORD(wParam)) {
                 case IDOK:
                     {
-                    int bufSize;
+                    int bufSize = 0, memRequired = 0;
                     char *streamOut = NULL;
                     TCHAR *decoded = NULL, *converted = NULL;
                     
@@ -2460,7 +2463,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
                     if(streamOut != NULL) {
                         decoded = Utf8Decode(streamOut);
-                        converted = (TCHAR *)malloc((lstrlenW(decoded) + 2) * sizeof(TCHAR));
+                        converted = (TCHAR *)malloc((lstrlenW(decoded) + 2) * sizeof(WCHAR));
                         if(converted != NULL) {
                             _tcscpy(converted, decoded);
                             if(myGlobals.m_SendFormat) {
@@ -2468,7 +2471,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 DoTrimMessage(converted);
                             }
                             bufSize = WideCharToMultiByte(dat->codePage, 0, converted, -1, dat->sendBuffer, 0, 0, 0);
-                            dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
+                            memRequired = bufSize + ((lstrlenW(converted) + 1) * sizeof(WCHAR));
+                            if(memRequired > dat->iSendBufferSize) {
+                                dat->sendBuffer = (char *) realloc(dat->sendBuffer, memRequired);
+                                dat->iSendBufferSize = memRequired;
+                            }
                             WideCharToMultiByte(dat->codePage, 0, converted, -1, dat->sendBuffer, bufSize, 0, 0);
                             CopyMemory(&dat->sendBuffer[bufSize], converted, (lstrlenW(converted) + 1) * sizeof(WCHAR));
                             free(converted);
@@ -2485,15 +2492,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 DoRtfToTags(converted, dat);
                                 DoTrimMessage(converted);
                             }
-                            bufSize = lstrlenA(converted) + 1;
-                            dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * sizeof(char));
+                            bufSize = memRequired = lstrlenA(converted) + 1;
+                            if(memRequired > dat->iSendBufferSize) {
+                                dat->sendBuffer = (char *) realloc(dat->sendBuffer, memRequired);
+                                dat->iSendBufferSize = memRequired;
+                            }
                             CopyMemory(dat->sendBuffer, converted, bufSize);
                             free(converted);
                         }
                         free(streamOut);
                     }
 #endif  // unicode
-                    if (dat->sendBuffer[0] == 0)
+                    if (dat->sendBuffer[0] == 0 || memRequired == 0)
                         break;
 
                     if (dat->sendMode & SMODE_SENDLATER) {
@@ -2559,7 +2569,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
                         NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
                     }
-                    AddToSendQueue(hwndDlg, dat, bufSize);
+                    AddToSendQueue(hwndDlg, dat, memRequired);
                     return TRUE;
                     }
                 case IDC_QUOTE:
@@ -3595,7 +3605,6 @@ verify:
                 }
             }
             szProto = GetCurrentMetaContactProto(hwndDlg, dat);
-            dat->wMetaStatus = DBGetContactSettingWord(dat->hSubContact, dat->szMetaProto, "Status", ID_STATUS_OFFLINE);
 
             if(dat->pContainer->hwndActive == hwndDlg && dat->pContainer->hwndStatus != 0)
                 UpdateStatusBarTooltips(hwndDlg, dat, -1);
