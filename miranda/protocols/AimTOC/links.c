@@ -55,7 +55,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
             s += 4;
             if (!_strnicmp(s, "goim?", 5)) {
                 char *tok, *sn = NULL, *msg = NULL;
-
+					
                 LOG(LOG_DEBUG, "Links: WM_COPYDATA - goim");
                 s += 5;
                 if (!(*s))
@@ -72,7 +72,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
                 }
                 if (sn && ServiceExists(MS_MSG_SENDMESSAGE)) {
                     HANDLE hContact = aim_buddy_get(sn, 1, 0, 0, NULL);
-
+					
                     if (hContact)
                         CallService(MS_MSG_SENDMESSAGE, (WPARAM) hContact, (LPARAM) msg);
                 }
@@ -174,25 +174,48 @@ static void aim_links_register()
 {
     HKEY hkey;
     char szBuf[MAX_PATH], szExe[MAX_PATH * 2], szShort[MAX_PATH];
-    
+
+
+    GetModuleFileName(hInstance, szBuf, sizeof(szBuf));
+    GetShortPathName(szBuf, szShort, sizeof(szShort));
     LOG(LOG_DEBUG, "Links: register");
+	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim", &hkey) == ERROR_SUCCESS) {
+		RegSetValue(hkey, NULL, REG_SZ, "URL:AIM Protocol", strlen("URL:AIM Protocol"));
+		RegSetValueEx(hkey, "URL Protocol" , 0, REG_SZ, (PBYTE)"", 1);
+		RegCloseKey(hkey);
+	}
+	else {
+		LOG(LOG_ERROR, "Links: register - unable to create registry key (root)");
+		return;
+	}
+	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\DefaultIcon", &hkey) == ERROR_SUCCESS) {
+		char szIcon[MAX_PATH];
+
+		_snprintf(szIcon, sizeof(szIcon), "%s,0", szShort);
+		RegSetValue(hkey, NULL, REG_SZ, szIcon, strlen(szIcon));
+		RegCloseKey(hkey);
+	}
+	else {
+		LOG(LOG_ERROR, "Links: register - unable to create registry key (DefaultIcon)");
+		return;
+	}
     if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command", &hkey) == ERROR_SUCCESS) {
-        GetModuleFileName(hInstance, szBuf, sizeof(szBuf));
-        GetShortPathName(szBuf, szShort, sizeof(szShort));
         // MSVC exports differently than gcc/mingw
 #ifdef _MSC_VER
         _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,_aim_links_exec@16 %%1", szShort);
-        LOG(LOG_DEBUG, "Links: registering (%s)", szExe);
+        LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #else
         _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
-        LOG(LOG_DEBUG, "Links: registering (%s)", szExe);
+        LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #endif
         RegSetValue(hkey, NULL, REG_SZ, szExe, strlen(szExe));
         RegCloseKey(hkey);
     }
     else {
-        LOG(LOG_DEBUG, "Links: unregister - unable to create registry key");
+        LOG(LOG_ERROR, "Links: register - unable to create registry key (command)");
+		return;
     }
+
 }
 
 void aim_links_unregister()
@@ -201,6 +224,7 @@ void aim_links_unregister()
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell");
+    RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\DefaultIcon");
     RegDeleteKey(HKEY_CLASSES_ROOT, "aim");
 }
 
