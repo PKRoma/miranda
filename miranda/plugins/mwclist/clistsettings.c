@@ -647,6 +647,12 @@ __try
 					
 				}
 			}
+			else if (!strcmp(cws->szModule,"MetaContacts"))
+			{
+			PostMessage(hwndContactTree,CLM_AUTOREBUILD,0,0);
+			DBFreeVariant(&dbv);
+			return 0;
+			}
 			else
 			{
 				DBFreeVariant(&dbv);

@@ -64,6 +64,10 @@ int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactI
 				continue;
 			}
 		}
+ if(group->contact[group->scanIndex].type==CLCIT_CONTACT)
+        {
+            count+=group->contact[group->scanIndex].SubAllocated*group->contact[group->scanIndex].SubExpanded;
+        }
 		group->scanIndex++;
 	}
 	return -1;

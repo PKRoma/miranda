@@ -12,6 +12,7 @@ typedef struct{
 	boolean OverrideShow;
 	char *UniqName;
 	char *CustomName;
+	boolean IconRegistred;
 }TMO_IntMenuItem,*PMO_IntMenuItem;
 
 typedef struct{
@@ -41,6 +42,7 @@ PMO_IntMenuItem MenuItems;
 int MenuItemsCount;
 HANDLE hMenuIcons;
 BOOL bUseUserDefinedItems;
+
 }TIntMenuObject,*PIntMenuObject;
 
 
