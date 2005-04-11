@@ -31,7 +31,7 @@ extern HWND hwndContactList;
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Classic contact list",
-    PLUGIN_MAKE_VERSION(0, 4, 0, 0),
+    PLUGIN_MAKE_VERSION(0, 5, 0, 0),
     "Display contacts, event notifications, protocol status",
     "Miranda IM project",
     "egodust@users.sourceforge.net",
