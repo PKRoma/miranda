@@ -134,7 +134,7 @@ void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
 				DeleteObject(hrgn);
 }
 
-void DrawBackGround(HWND hwnd)
+void DrawBackGround(HWND hwnd,HDC mhdc)
 {
 	HDC hdcMem,hdc;
 	RECT clRect,*rcPaint;
@@ -154,8 +154,15 @@ void DrawBackGround(HWND hwnd)
 	
 	hFont=(HFONT)SendMessage(hwnd,WM_GETFONT,0,0);
 	
+	if (mhdc)
+	{
+	hdc=mhdc;
+	rcPaint=NULL;
+	}else
+	{
 	hdc=BeginPaint(hwnd,&paintst);
 	rcPaint=&(paintst.rcPaint);
+	}
 
 	GetClientRect(hwnd,&clRect);
 	if(rcPaint==NULL) rcPaint=&clRect;
@@ -291,7 +298,10 @@ void DrawBackGround(HWND hwnd)
 		DeleteDC(hdcMem);
 		paintst.fErase=FALSE;
 		//DeleteObject(hFont);
+		if (!mhdc)
+		{		
 		EndPaint(hwnd,&paintst);	
+		}
 	}
 }
 
@@ -312,9 +322,15 @@ if (UseOwnerDrawStatusBar)
 			//DrawBackGround(hwnd);
 			return 0;
 		}
+	case WM_PRINT:
+		{
+			DrawBackGround(hwnd,(HDC)wParam);
+			return 0;
+		}
 	case WM_PAINT:
 		{
-			DrawBackGround(hwnd);
+			DrawBackGround(hwnd,0);
+			return 0;
 		}
 	};
 
