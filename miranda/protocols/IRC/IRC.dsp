@@ -305,14 +305,6 @@ SOURCE=.\Icons\world.ico
 # PROP Default_Filter ".txt"
 # Begin Source File
 
-SOURCE=".\Docs for developers\IRC_Dev_Info.txt"
-# End Source File
-# Begin Source File
-
-SOURCE=".\Docs, Internal\IRC_Internal.txt"
-# End Source File
-# Begin Source File
-
 SOURCE=.\Docs\IRC_license.txt
 # End Source File
 # Begin Source File
@@ -322,6 +314,10 @@ SOURCE=.\Docs\IRC_Readme.txt
 # Begin Source File
 
 SOURCE=.\Docs\IRC_Translate.txt
+# End Source File
+# Begin Source File
+
+SOURCE="..\..\..\CVS upload\to do.txt"
 # End Source File
 # End Group
 # End Target
