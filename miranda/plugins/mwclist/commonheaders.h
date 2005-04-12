@@ -89,9 +89,13 @@ extern HINSTANCE g_hInst;
 
 extern struct MM_INTERFACE memoryManagerInterface;
 
+#define alloc(n) mir_alloc(n)
+//#define free(ptr) mir_free(ptr)
+//#define realloc(ptr,size) mir_realloc(ptr,size)
+
 
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
+#define mir_free(ptr) mir_free_proxy(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
 #ifndef CS_DROPSHADOW
@@ -101,6 +105,21 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #ifndef MYCMP
 #define MYCMP 1
 
+static int mir_free_proxy(void *ptr)
+{
+	if (ptr==NULL||IsBadCodePtr(ptr))
+	{
+		char buf[256];
+		wsprintf(buf,"Bad code ptr in mir_free_proxy ptr: %x\r\n",ptr);
+		//ASSERT("Bad code ptr");
+		DebugBreak();
+		OutputDebugStr(buf);
+		return 0;
+	}
+	memoryManagerInterface.mmi_free(ptr);
+	return 0;
+
+}
 
 static int __cdecl MyStrCmp (const char *a, const char *b)
 {

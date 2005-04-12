@@ -235,6 +235,13 @@ void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk)
 	int moved=0;
 	RECT clRect;
 
+
+	if (dat==NULL||IsBadCodePtr((void *)dat)) 
+	{
+		OutputDebugStr("dat is null __FILE____LINE__");
+		return ;
+	};
+
 	GetClientRect(hwnd,&clRect);
 	itemy=iItem*dat->rowHeight;
 	if(partialOk) {

@@ -1,3 +1,6 @@
+//
+//../../bin/debug/plugins/clist_mw.dll
+//H:\lang\miranda-15-10\miranda\bin\debug\miranda32.exe
 #include "commonheaders.h"
 #include "clist.h"
 #include "m_genmenu.h"
@@ -1203,7 +1206,8 @@ int RegisterOneIcon(int mo,int mi)
 		HICON newIcon;
 		char *uname;
 		
-		
+		if(!ServiceExists(MS_SKIN2_ADDICON)) return 0;
+
 		uname=MenuObjects[mo].MenuItems[mi].UniqName;
 		if (uname==NULL) uname=MenuObjects[mo].MenuItems[mi].CustomName;
 
@@ -1240,15 +1244,17 @@ int RegisterAllIconsinIconLib()
 {
 		int mi,mo;
 //register all icons
-
-	for (mo=0;mo<MenuObjectsCount;mo++)
-	{
-		for (mi=0;mi<MenuObjects[mo].MenuItemsCount;mi++)
+		if(ServiceExists(MS_SKIN2_ADDICON))
 		{
-			RegisterOneIcon(mo,mi);
-		}
-	};
-	OnIconLibChanges(0,0);
+			for (mo=0;mo<MenuObjectsCount;mo++)
+			{
+				for (mi=0;mi<MenuObjects[mo].MenuItemsCount;mi++)
+				{
+					RegisterOneIcon(mo,mi);
+				}
+			};
+			OnIconLibChanges(0,0);
+		};
 return 0;
 }
 

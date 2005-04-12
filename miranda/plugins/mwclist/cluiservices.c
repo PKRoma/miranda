@@ -76,8 +76,8 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 			if (PD!=NULL&&!IsBadCodePtr((void *)PD))
 			{
 				SendMessage(hwndStatus,SB_SETTEXT,(WPARAM)nPanel|SBT_OWNERDRAW,(LPARAM)0);
-				if (PD->RealName) free(PD->RealName);
-				if (PD) free(PD);
+				if (PD->RealName) mir_free(PD->RealName);
+				if (PD) mir_free(PD);
 			}
 
 			}
@@ -192,8 +192,8 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 
 		status=CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0);
 		//SendMessage(hwndStatus,SB_SETTEXT,partCount|SBT_OWNERDRAW,(LPARAM)curprotocol->szName);
-		PD=(ProtocolData*)malloc(sizeof(ProtocolData));
-		PD->RealName=strdup(curprotocol->szName);
+		PD=(ProtocolData*)mir_alloc(sizeof(ProtocolData));
+		PD->RealName=mir_strdup(curprotocol->szName);
 		itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
 		PD->protopos=DBGetContactSettingDword(NULL,"Protocols",(char *)&buf,-1);
 		{
