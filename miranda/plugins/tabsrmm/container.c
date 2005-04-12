@@ -57,6 +57,12 @@ $Id$
 #include "msgdlgutils.h"
 #include "m_snapping_windows.h"
 
+#ifdef __MATHMOD_SUPPORT
+//mathMod begin
+#include "m_MathModule.h"
+//mathMod end
+#endif
+
 #define SB_CHAR_WIDTH        45
 
 char *szWarnClose = "Do you really want to close this session?";
@@ -543,7 +549,23 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 return 0;
             }
-
+#ifdef __MATHMOD_SUPPORT    		
+            //mathMod begin
+    		case WM_MOVE:
+    		if(myGlobals.m_MathModAvail) {
+                TMathWindowInfo mathWndInfo;
+    			RECT windRect;
+    			GetWindowRect(hwndDlg, &windRect);
+    			mathWndInfo.top=windRect.top;
+    			mathWndInfo.left=windRect.left;
+    			mathWndInfo.right=windRect.right - 5;
+    			mathWndInfo.bottom=windRect.bottom;
+    			CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg);
+    			CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+    		}
+            break;
+    		//mathMod end
+#endif            
         case WM_SIZE: { 
                 RECT rcClient;
                 int i = 0;
@@ -611,7 +633,24 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
                 if (pContainer->hwndStatus)
                     RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
-                break; 
+#ifdef __MATHMOD_SUPPORT    			
+                //mathMod begin
+    			if(myGlobals.m_MathModAvail) {  //start scope
+    						TMathWindowInfo mathWndInfo;
+    												
+    						RECT windRect;
+    						// größe ermitteln:
+    						GetWindowRect(hwndDlg,&windRect);
+    						mathWndInfo.top=windRect.top;
+    						mathWndInfo.left=windRect.left;
+    						mathWndInfo.right=windRect.right - 5;
+    						mathWndInfo.bottom=windRect.bottom;
+    						CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg); 
+    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+    			}  // end scope
+    			//mathMod end
+#endif                
+            break;
             } 
         case DM_UPDATETITLE: {
                 HANDLE hContact = (HANDLE) wParam;

@@ -30,6 +30,12 @@ $Id$
 #include "../../include/m_clui.h"
 #include "m_ieview.h"
 
+#ifdef __MATHMOD_SUPPORT
+//mathMod begin
+#include "m_MathModule.h"
+//mathMod end
+#endif
+
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
 extern MYGLOBALS myGlobals;
@@ -1716,4 +1722,5 @@ void ReloadGlobals()
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
      myGlobals.m_SplitterMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 0);
+     myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
 }

@@ -241,6 +241,7 @@ typedef struct _globals {
     int m_RTLDefault;
     int m_SplitterSaveOnClose;
     int m_SplitterMode;
+    int m_MathModAvail;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

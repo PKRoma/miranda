@@ -711,7 +711,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
-void updatePreview(HWND hwndDlg)
+static void updatePreview(HWND hwndDlg, struct MessageWindowData *dat)
 {	
 	TMathWindowInfo mathWndInfo;
 
@@ -719,17 +719,39 @@ void updatePreview(HWND hwndDlg)
 	RECT windRect;
 	char * thestr = malloc(len+5);
 	GetWindowTextA( GetDlgItem( hwndDlg, IDC_MESSAGE),(LPTSTR) thestr, len+1);
-	// größe ermitteln:
-	GetWindowRect(hwndDlg,&windRect);
+	GetWindowRect(dat->pContainer->hwnd,&windRect);
 	mathWndInfo.top=windRect.top;
 	mathWndInfo.left=windRect.left;
-	mathWndInfo.right=windRect.right;
+	mathWndInfo.right=windRect.right - 5;
 	mathWndInfo.bottom=windRect.bottom;
 
-	CallService(MTH_Set_Srmm_HWND,0,(LPARAM)hwndDlg); 
+	CallService(MTH_Set_Srmm_HWND,0,(LPARAM)dat->pContainer->hwnd); 
 	CallService(MTH_SETFORMULA,0,(LPARAM) thestr);
 	CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
 	free(thestr);
+}
+
+static void updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    WINDOWPLACEMENT  cWinPlace;
+
+    if(!myGlobals.m_MathModAvail)
+        return;
+    
+    updatePreview(hwndDlg, dat);
+    CallService(MTH_SHOW, 0, 0);
+    cWinPlace.length=sizeof(WINDOWPLACEMENT);
+    GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
+    if (cWinPlace.showCmd == SW_SHOWMAXIMIZED)
+    {
+        RECT rcWindow;
+        GetWindowRect(hwndDlg, &rcWindow);
+        if(CallService(MTH_GET_PREVIEW_SHOWN,0,0))
+            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0),1);
+        else
+            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN),1);
+    }
+    SetForegroundWindow(dat->pContainer->hwnd);
 }
 //mathMod end
 #endif
@@ -1575,9 +1597,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
+#if defined(__MATHMOD_SUPPORT)
+                updateMathWindow(hwndDlg, dat);
+#endif                
             }
             return 1;
-            break;
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_ACTIVE)
                 break;
@@ -1618,6 +1642,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
+#if defined(__MATHMOD_SUPPORT)
+                updateMathWindow(hwndDlg, dat);
+#endif                
             }
             break;
         case WM_GETMINMAXINFO:
@@ -1739,46 +1766,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
                 }
                 // IEVIew MOD End
-#ifdef __MATHMOD_SUPPORT    			
-                //mathMod begin
-    			{  //start scope
-    						TMathWindowInfo mathWndInfo;
-    												
-    						RECT windRect;
-    						// größe ermitteln:
-    						GetWindowRect(hwndDlg,&windRect);
-    						mathWndInfo.top=windRect.top;
-    						mathWndInfo.left=windRect.left;
-    						mathWndInfo.right=windRect.right;
-    						mathWndInfo.bottom=windRect.bottom;
-    						CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg); 
-    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-    			}  // end scope
-    			//mathMod end
-#endif                
-
                 break;
             }
-#ifdef __MATHMOD_SUPPORT    		
-            //mathMod begin
-    		case WM_MOVE:
-    		{
-    			TMathWindowInfo mathWndInfo;
-//MessageBoxA(0, "move", "wm_move", MB_OK);
-    			RECT windRect;
-    			// größe ermitteln:
-    			GetWindowRect(hwndDlg,&windRect);
-    			mathWndInfo.top=windRect.top;
-    			mathWndInfo.left=windRect.left;
-    			mathWndInfo.right=windRect.right;
-    			mathWndInfo.bottom=windRect.bottom;
-    			CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg);
-    			CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-    			break;
-    		}
-    		//mathMod end
-#endif            
-
         case DM_SPLITTERMOVED:
             {
                 POINT pt;
@@ -3091,6 +3080,12 @@ quote_from_last:
                     }
                     break;
                 case IDC_MESSAGE:
+#ifdef __MATHMOD_SUPPORT					
+                    //mathMod begin
+					if(myGlobals.m_MathModAvail && HIWORD(wParam) == EN_CHANGE)
+                        updateMathWindow(hwndDlg, dat);
+					//mathMod end
+#endif                     
                     if (HIWORD(wParam) == EN_CHANGE) {
                         if(dat->pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);
