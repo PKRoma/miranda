@@ -358,15 +358,19 @@ SOURCE=.\Icons\window.ico
 # PROP Default_Filter ".txt"
 # Begin Source File
 
-SOURCE=.\chat_internal.txt
+SOURCE=.\Docs\Chat_license.txt
 # End Source File
 # Begin Source File
 
-SOURCE=.\Chat_Readme.txt
+SOURCE=.\Docs\Chat_Readme.txt
 # End Source File
 # Begin Source File
 
-SOURCE=.\Chat_Translate.txt
+SOURCE=.\Docs\Chat_Translate.txt
+# End Source File
+# Begin Source File
+
+SOURCE="..\..\..\CVS upload\to do.txt"
 # End Source File
 # End Group
 # End Target

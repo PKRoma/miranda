@@ -118,15 +118,15 @@
 
 // Note that merging the .rdata section will result in LARGER exe's if you using
 // MFC (esp. static link). If this is desirable, define _MERGE_RDATA_ in your project.
-#ifdef _MERGE_RDATA_
-#pragma comment(linker,"/merge:.rdata=.data")
-#endif // _MERGE_RDATA_
+//#ifdef _MERGE_RDATA_
+//#pragma comment(linker,"/merge:.rdata=.data")
+//#endif // _MERGE_RDATA_
 
-#pragma comment(linker,"/merge:.text=.data")
-#if (_MSC_VER<1300)
+//#pragma comment(linker,"/merge:.text=.data")
+//#if (_MSC_VER<1300)
 	// In VC7, this causes problems with the relocation and data tables, so best to not merge them
-	#pragma comment(linker,"/merge:.reloc=.data")
-#endif
+//	#pragma comment(linker,"/merge:.reloc=.data")
+//#endif
 
 // Merging sections with different attributes causes a linker warning, so
 // turn off the warning. From Michael Geary. Undocumented, as usual!

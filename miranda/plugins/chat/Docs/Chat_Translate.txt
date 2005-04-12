@@ -1,6 +1,6 @@
 ;----------------------------oOo----------------------------
 ;
-;                   Chat Plugin v 0.2.1.0
+;                   Chat Plugin v 0.2.1.1
 ;
 ;
 ;                   TRANSLATION TEMPLATE
