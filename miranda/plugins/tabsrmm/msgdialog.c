@@ -50,6 +50,12 @@ $Id$
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2
 
+#ifdef __MATHMOD_SUPPORT
+//mathMod begin
+#include "m_MathModule.h"
+//mathMod end
+#endif
+
 extern MYGLOBALS myGlobals;
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -490,13 +496,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             }
             break;
         case WM_SYSKEYDOWN:
-            if(wParam == VK_LEFT && GetKeyState(VK_MENU) & 0x8000) {
+            if(wParam == VK_LEFT && GetKeyState(VK_LMENU) & 0x8000) {
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
-                return 0;
+                break;
             }
-            if(wParam == VK_RIGHT && GetKeyState(VK_MENU) & 0x8000) {
+            if(wParam == VK_RIGHT && GetKeyState(VK_LMENU) & 0x8000) {
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
-                return 0;
+                break;
             }
             break;
         case WM_INPUTLANGCHANGEREQUEST: {
@@ -702,6 +708,31 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
+
+#ifdef __MATHMOD_SUPPORT
+//mathMod begin
+void updatePreview(HWND hwndDlg)
+{	
+	TMathWindowInfo mathWndInfo;
+
+	int len=GetWindowTextLengthA( GetDlgItem( hwndDlg, IDC_MESSAGE) );
+	RECT windRect;
+	char * thestr = malloc(len+5);
+	GetWindowTextA( GetDlgItem( hwndDlg, IDC_MESSAGE),(LPTSTR) thestr, len+1);
+	// größe ermitteln:
+	GetWindowRect(hwndDlg,&windRect);
+	mathWndInfo.top=windRect.top;
+	mathWndInfo.left=windRect.left;
+	mathWndInfo.right=windRect.right;
+	mathWndInfo.bottom=windRect.bottom;
+
+	CallService(MTH_Set_Srmm_HWND,0,(LPARAM)hwndDlg); 
+	CallService(MTH_SETFORMULA,0,(LPARAM) thestr);
+	CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+	free(thestr);
+}
+//mathMod end
+#endif
 
 static void NotifyTyping(struct MessageWindowData *dat, int mode)
 {
@@ -1245,6 +1276,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
             break;
         case DM_OPTIONSAPPLIED:
+#ifdef __MATHMOD_SUPPORT            
+            //mathMod begin
+			CallService(MATH_SETBKGCOLOR, 0, (LPARAM)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MATH_BKGCOLOUR, SRMSGDEFSET_MATH_BKGCOLOUR));
+			//mathMod end
+#endif             
+
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
                 if(myGlobals.m_IgnoreContactSettings) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
@@ -1591,6 +1628,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
                 mmi->ptMinTrackSize.x = rcWindow.right - rcWindow.left - ((rcLog.right - rcLog.left) - dat->minEditBoxSize.cx);
                 mmi->ptMinTrackSize.y = rcWindow.bottom - rcWindow.top - ((rcLog.bottom - rcLog.top) - dat->minEditBoxSize.cy);
+#ifdef __MATHMOD_SUPPORT    			
+                //mathMod begin		// set maximum size, to fit formula-preview on the screen.
+    			if (CallService(MTH_GET_PREVIEW_SHOWN,0,0))	//when preview is shown, fit the maximum size of message-dialog.
+    				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0);//max-height
+    			else
+    				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN);				
+    			//mathMod end 
+#endif                
                 return 0;
             }
         case WM_SIZE:
@@ -1635,8 +1680,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetClientRect(hwndDlg, &rc);
                 buttonBarSpace = (rc.right - rc.left) - 6;
                 if(dat->showPic) {
-                    if(dat->splitterY <= (dat->bottomOffset + 33))
-                        buttonBarSpace = (rc.right - rc.left - 6) - (dat->pic.cx + 6);
+                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
+                        if(dat->splitterY <= (dat->bottomOffset + 33))
+                            buttonBarSpace = (rc.right - rc.left - 6) - (dat->pic.cx + 6);
+                    }
+                    else if(dat->iAvatarDisplayMode == AVATARMODE_STATIC) {
+                        if(!myGlobals.m_AlwaysFullToolbarWidth && dat->splitterY <= (dat->bottomOffset + 26))
+                            buttonBarSpace = (rc.right - rc.left - 6) - (dat->pic.cx + 6);
+                    }
                 }
 
                 dat->controlsHidden = FALSE;
@@ -1688,8 +1739,46 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
                 }
                 // IEVIew MOD End
+#ifdef __MATHMOD_SUPPORT    			
+                //mathMod begin
+    			{  //start scope
+    						TMathWindowInfo mathWndInfo;
+    												
+    						RECT windRect;
+    						// größe ermitteln:
+    						GetWindowRect(hwndDlg,&windRect);
+    						mathWndInfo.top=windRect.top;
+    						mathWndInfo.left=windRect.left;
+    						mathWndInfo.right=windRect.right;
+    						mathWndInfo.bottom=windRect.bottom;
+    						CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg); 
+    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+    			}  // end scope
+    			//mathMod end
+#endif                
+
                 break;
             }
+#ifdef __MATHMOD_SUPPORT    		
+            //mathMod begin
+    		case WM_MOVE:
+    		{
+    			TMathWindowInfo mathWndInfo;
+//MessageBoxA(0, "move", "wm_move", MB_OK);
+    			RECT windRect;
+    			// größe ermitteln:
+    			GetWindowRect(hwndDlg,&windRect);
+    			mathWndInfo.top=windRect.top;
+    			mathWndInfo.left=windRect.left;
+    			mathWndInfo.right=windRect.right;
+    			mathWndInfo.bottom=windRect.bottom;
+    			CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg);
+    			CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+    			break;
+    		}
+    		//mathMod end
+#endif            
+
         case DM_SPLITTERMOVED:
             {
                 POINT pt;
@@ -2576,26 +2665,55 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     {   CHARRANGE sel;
                         TCHAR *szQuoted, *szText;
                         char *szFromStream = NULL;
-                        //int i;
+                        HANDLE hDBEvent = 0;
 #ifdef _UNICODE
                         TCHAR *szConverted;
                         int iAlloced = 0;
                         int iSize = 0;
                         SETTEXTEX stx = {ST_SELECTION, 1200};
-                        //GETTEXTEX gtx;
 #endif                        
-
-                        if (dat->hDbEventLast==NULL) break;
+                        if(dat->hwndLog != 0) {                 // IEView quoting support..
+                            TCHAR *selected = 0, *szQuoted = 0;
+                            IEVIEWEVENT event;
+                            event.cbSize = sizeof(IEVIEWEVENT);
+                            event.hwnd = dat->hwndLog;
+                            event.hContact = dat->hContact;
+#if !defined(_UNICODE)
+                            event.dwFlags |= IEEF_NO_UNICODE;
+#endif                            
+                            event.iType = IEE_GETSELECTION;
+                            selected = (TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+                            if(selected != NULL) {
+                                szQuoted = QuoteText(selected, 64, 0);
+#if defined(_UNICODE)
+                                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
+#else
+                                SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
+#endif                                
+                                if(szQuoted)
+                                    free(szQuoted);
+                                break;
+                            }
+                            else {
+                                hDBEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)dat->hContact, 0);
+                                goto quote_from_last;
+                            }
+                        }
+                        if (dat->hDbEventLast==NULL) 
+                            break;
+                        else
+                            hDBEvent = dat->hDbEventLast;
+quote_from_last:                        
                         SendDlgItemMessage(hwndDlg,IDC_LOG,EM_EXGETSEL,0,(LPARAM)&sel);
                         if (sel.cpMin==sel.cpMax) {
                             DBEVENTINFO dbei={0};
                             int iDescr;
                             
                             dbei.cbSize=sizeof(dbei);
-                            dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEventLast,0);
+                            dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDBEvent,0);
                             szText=(TCHAR *)malloc((dbei.cbBlob+1) * sizeof(TCHAR));   //URLs are made one char bigger for crlf
                             dbei.pBlob=(BYTE *)szText;
-                            CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEventLast,(LPARAM)&dbei);
+                            CallService(MS_DB_EVENT_GET,(WPARAM)hDBEvent,(LPARAM)&dbei);
 #ifdef _UNICODE
                             iSize = strlen((char *)dbei.pBlob) + 1;
                             if(iSize != dbei.cbBlob)

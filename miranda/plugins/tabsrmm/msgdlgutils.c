@@ -81,7 +81,8 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 
         GetClientRect(dat->pContainer->hwnd, &rcContainer);
         AdjustTabClientRect(dat->pContainer, &rcContainer);
-        cx = rcContainer.right - rcContainer.left - 8;
+        //cx = rcContainer.right - rcContainer.left - 8;
+        cx = rc.right - rc.left;
 
         if(dat->iRealAvatarHeight == 0) {               // calc first layout paramaters
             picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);

@@ -132,16 +132,16 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
                 iLength = HISTORY_INITIAL_ALLOCSIZE;
             sendJobs[iFound].sendBuffer = (char *)malloc(iLength);
             sendJobs[iFound].dwLen = iLength;
-            _DebugPopup(dat->hContact, "Alloced %d bytes for %d (memRequired = %d", iLength, iFound, iLen);
+            //_DebugPopup(dat->hContact, "Alloced %d bytes for %d (memRequired = %d", iLength, iFound, iLen);
         }
         else {
             if(iLength > sendJobs[iFound].dwLen) {
-                _DebugPopup(dat->hContact, "REalloced %d bytes for %d (memRequired = %d", iLength, iFound, iLen);
+                //_DebugPopup(dat->hContact, "REalloced %d bytes for %d (memRequired = %d", iLength, iFound, iLen);
                 sendJobs[iFound].sendBuffer = (char *)realloc(sendJobs[iFound].sendBuffer, iLength);
                 sendJobs[iFound].dwLen = iLength;
             }
         }
-        _DebugPopup(dat->hContact, "Copied %d bytes to %d (blocksize = %d)", iLen, iFound, sendJobs[iFound].dwLen);
+        //_DebugPopup(dat->hContact, "Copied %d bytes to %d (blocksize = %d) - tID = %d", iLen, iFound, sendJobs[iFound].dwLen, GetCurrentThreadId());
         CopyMemory(sendJobs[iFound].sendBuffer, dat->sendBuffer, iLen);
     }
     SaveInputHistory(hwndDlg, dat, 0, 0);
@@ -226,6 +226,7 @@ void ClearSendJob(int iIndex)
     sendJobs[iIndex].iAcksNeeded = 0;
     ZeroMemory(sendJobs[iIndex].hContact, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
     ZeroMemory(sendJobs[iIndex].hSendId, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
+    //_DebugPopup(0, "cleared %d - tID = %d", iIndex, GetCurrentThreadId());
 }
 
 /*

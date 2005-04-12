@@ -35,6 +35,11 @@ $Id$
 // IEVIew MOD Begin
 #include "m_ieview.h"
 // IEVIew MOD End
+#ifdef __MATHMOD_SUPPORT
+//mathMod begin
+#include "m_MathModule.h"
+//mathMod end
+#endif
 
 #if defined(RTFBITMAPS)
 static PBYTE pLogIconBmpBits[21];
@@ -866,15 +871,19 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         event.hContact = dat->hContact;
 #if defined(_UNICODE)
         event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
+        if(dat->sendMode & SMODE_FORCEANSI) {
+            event.dwFlags |= IEEF_NO_UNICODE;
+            event.codepage = dat->codePage;
+        }
 #else
         event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
+        event.codepage = 0;
 #endif        
         if (!fAppend) {
             event.iType = IEE_CLEAR_LOG;
             CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
         }
         event.iType = IEE_LOG_EVENTS;
-        event.hContact = dat->hContact;
         event.hDbEventFirst = hDbEventFirst;
         event.count = count;
         CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
@@ -1083,6 +1092,23 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
         }
     }
     
+// do formula-replacing    
+#ifdef __MATHMOD_SUPPORT    
+	// mathMod begin
+	if (ServiceExists(MATH_RTF_REPLACE_FORMULAE))
+	{
+			 TMathRicheditInfo mathReplaceInfo;
+			 CHARRANGE mathNewSel;
+			 mathNewSel.cpMin=startAt;
+			 mathNewSel.cpMax=-1;
+			 mathReplaceInfo.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
+			 if (startAt > 0) mathReplaceInfo.sel = & mathNewSel; else mathReplaceInfo.sel=0;
+			 mathReplaceInfo.disableredraw = TRUE;
+			 CallService(MATH_RTF_REPLACE_FORMULAE,0, (LPARAM)&mathReplaceInfo);
+	}
+	// mathMod end
+#endif    
+
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);

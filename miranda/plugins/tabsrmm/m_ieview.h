@@ -51,8 +51,9 @@ typedef struct {
 	int			cy;                 // IE control vertical size
 } IEVIEWWINDOW;
 
-#define IEE_LOG_EVENTS  1           // log specified number of DB events
-#define IEE_CLEAR_LOG	2           // clear log
+#define IEE_LOG_EVENTS  	1       // log specified number of DB events
+#define IEE_CLEAR_LOG		2       // clear log
+#define IEE_GETSELECTION	3       // get selected text
 
 #define IEEF_RTL        1           // turn on RTL support
 #define IEEF_NO_UNICODE 2           // disable Unicode support
@@ -65,6 +66,7 @@ typedef struct {
 	HANDLE      hContact;           // contact
 	HANDLE 		hDbEventFirst;      // first event to log
 	int 		count;              // number of events to log
+	int         codepage;           // ANSI codepage
 } IEVIEWEVENT;
 
 
@@ -74,13 +76,6 @@ typedef struct {
 	int			cbSize;             // size of the strusture
 	int			iType;				// one of IEN_* values
 } IEVIEWNOTIFICATION;
-
-#define IEU_QUOTE				1
-
-typedef struct {
-	int			cbSize;             // size of the strusture
-	int			iType;				// one of IEN_* values
-} IEVIEWUTILS;
 
 
 typedef struct {
