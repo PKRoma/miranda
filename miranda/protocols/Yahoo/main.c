@@ -50,7 +50,6 @@ PLUGININFO pluginInfo={
 		"Gennady Feldman",
 		"gena01@gmail.com",
 		"© 2003-2005 G.Feldman",
-		//"http://www.coincoins.net/index.php?id=59",
 		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
 		0,
 		0 //DEFMOD_PROTOCOLYAHOO
