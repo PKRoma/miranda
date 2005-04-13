@@ -308,6 +308,15 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
                 return 0;
             }
+            if (wParam == 0x0d && (GetKeyState(VK_CONTROL) & 0x8000) && myGlobals.m_MathModAvail) {
+                TCHAR toInsert[100];
+                _tcsncpy(toInsert, myGlobals.m_MathModStartDelimiter, sizeof(toInsert));
+                _tcsncat(toInsert, myGlobals.m_MathModStartDelimiter, sizeof(toInsert));
+                MessageBox(0, toInsert, _T("foo"), MB_OK);
+                SetWindowText(hwnd, toInsert);
+                //SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)toInsert);
+                return 0;
+            }
             if (wParam == 0x0f && GetKeyState(VK_CONTROL) & 0x8000) {
                 CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), GetParent(hwnd), DlgProcContainerOptions, (LPARAM) mwdat->pContainer);
                 return 0;
@@ -718,14 +727,13 @@ static void updatePreview(HWND hwndDlg, struct MessageWindowData *dat)
 	int len=GetWindowTextLengthA( GetDlgItem( hwndDlg, IDC_MESSAGE) );
 	RECT windRect;
 	char * thestr = malloc(len+5);
-	GetWindowTextA( GetDlgItem( hwndDlg, IDC_MESSAGE),(LPTSTR) thestr, len+1);
+	GetWindowTextA( GetDlgItem( hwndDlg, IDC_MESSAGE), thestr, len+1);
 	GetWindowRect(dat->pContainer->hwnd,&windRect);
 	mathWndInfo.top=windRect.top;
 	mathWndInfo.left=windRect.left;
 	mathWndInfo.right=windRect.right - 5;
-	mathWndInfo.bottom=windRect.bottom;
+	mathWndInfo.bottom=windRect.bottom - 5;
 
-	CallService(MTH_Set_Srmm_HWND,0,(LPARAM)dat->pContainer->hwnd); 
 	CallService(MTH_SETFORMULA,0,(LPARAM) thestr);
 	CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
 	free(thestr);
@@ -742,6 +750,7 @@ static void updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
     CallService(MTH_SHOW, 0, 0);
     cWinPlace.length=sizeof(WINDOWPLACEMENT);
     GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
+    return;
     if (cWinPlace.showCmd == SW_SHOWMAXIMIZED)
     {
         RECT rcWindow;
@@ -751,7 +760,6 @@ static void updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
         else
             MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN),1);
     }
-    SetForegroundWindow(dat->pContainer->hwnd);
 }
 //mathMod end
 #endif
@@ -1005,7 +1013,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
-                
+                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+                                   
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
                 if (dat->hContact) {
                     int  pCaps;
@@ -1598,7 +1607,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
 #if defined(__MATHMOD_SUPPORT)
-                updateMathWindow(hwndDlg, dat);
+                if(myGlobals.m_MathModAvail) {
+                    CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE)); 
+                    updateMathWindow(hwndDlg, dat);
+                }
 #endif                
             }
             return 1;
@@ -1643,7 +1655,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
 #if defined(__MATHMOD_SUPPORT)
-                updateMathWindow(hwndDlg, dat);
+                if(myGlobals.m_MathModAvail) {
+                    CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE)); 
+                    updateMathWindow(hwndDlg, dat);
+                }
 #endif                
             }
             break;

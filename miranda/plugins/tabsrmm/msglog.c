@@ -1032,7 +1032,6 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
             cr.cpMax = fi.chrgText.cpMax + 2;
             SendMessage(hwndrtf, EM_EXSETSEL, 0, (LPARAM)&cr);
             
-            //SendMessage(hwndrtf, EM_SETSEL, fi.chrgText.cpMin, fi.chrgText.cpMax + 2);
             tr.chrg.cpMin = fi.chrgText.cpMin + 3;
             tr.chrg.cpMax = fi.chrgText.cpMin + 5;
             SendMessageA(hwndrtf, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
@@ -1095,7 +1094,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 // do formula-replacing    
 #ifdef __MATHMOD_SUPPORT    
 	// mathMod begin
-	if (ServiceExists(MATH_RTF_REPLACE_FORMULAE))
+	if (myGlobals.m_MathModAvail)
 	{
 			 TMathRicheditInfo mathReplaceInfo;
 			 CHARRANGE mathNewSel;

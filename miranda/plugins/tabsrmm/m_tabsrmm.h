@@ -242,6 +242,8 @@ typedef struct _globals {
     int m_SplitterSaveOnClose;
     int m_SplitterMode;
     int m_MathModAvail;
+    TCHAR m_MathModStartDelimiter[40];
+    
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
