@@ -56,7 +56,7 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
         case PFLAGNUM_1:
             ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSGRECV |  PF1_BASICSEARCH
 			                        | PF1_FILESEND  | PF1_FILERECV| PF1_VISLIST;
-//                          | PF1_SERVERCLIST | PF1_VISLIST ;
+//                          | PF1_SERVERCLIST ;
             break;
 
         case PFLAGNUM_2:
@@ -165,15 +165,16 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			lstrcpyn(ylad->yahoo_id, dbv.pszVal, 255);
 			DBFreeVariant(&dbv);
 		} else 
-			lstrcpyn(errmsg, "Please enter your yahoo id in Options.", 80);
+			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
 		
 
+		if (errmsg[0] == '\0') 
 		if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
 			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 			lstrcpyn(ylad->password, dbv.pszVal, 255);
 			DBFreeVariant(&dbv);
 		}  else
-			lstrcpyn(errmsg, "Please enter your yahoo password in Options.", 80);
+			lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
 
 		if (errmsg[0] != '\0'){
 			FREE(ylad);
@@ -181,9 +182,9 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
         
 			if (YAHOO_hasnotification())
-				YAHOO_shownotification("Yahoo Login Error", errmsg, NIIF_ERROR);
+				YAHOO_shownotification(Translate("Yahoo Login Error"), errmsg, NIIF_ERROR);
 			else
-				MessageBox(NULL, errmsg, "Yahoo Login Error", MB_OK | MB_ICONINFORMATION);
+				MessageBox(NULL, errmsg, Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
     
 			return 0;
 		}
@@ -707,7 +708,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
                               yahoo_set_status(YAHOO_CUSTOM_STATUS, str, ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
  				              }
 						else
-			             	  YAHOO_shownotification("ERROR", "You need to be connected to set the custom message", NIIF_ERROR);
+			             	  YAHOO_shownotification("ERROR", Translate("You need to be connected to set the custom message"), NIIF_ERROR);
 						}
 				case IDCANCEL:
  					DestroyWindow( hwndDlg );
@@ -726,7 +727,14 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 //=======================================================
 static int SetCustomStatCommand( WPARAM wParam, LPARAM lParam )
 {
-	HWND hwndSetCustomStatus = CreateDialog(hinstance, MAKEINTRESOURCE( IDD_SETCUSTSTAT ), NULL, DlgProcSetCustStat );
+	HWND hwndSetCustomStatus;
+	
+	if ( !yahooLoggedIn ) {
+		YAHOO_shownotification("ERROR", Translate("You need to be connected to set the custom message"), NIIF_ERROR);
+		return 0;
+	}
+	
+	hwndSetCustomStatus = CreateDialog(hinstance, MAKEINTRESOURCE( IDD_SETCUSTSTAT ), NULL, DlgProcSetCustStat );
 	
 	SetForegroundWindow( hwndSetCustomStatus );
 	SetFocus( hwndSetCustomStatus );
@@ -742,9 +750,9 @@ static int YahooShowProfileCommand( WPARAM wParam, LPARAM lParam )
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
 
-	if ( !yahooLoggedIn )
+	if ( !yahooLoggedIn ) 
 		return 0;
-
+	
 	if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
 		return 0;
 		
@@ -802,8 +810,10 @@ static int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 //=======================================================
 static int YahooRefreshCommand( WPARAM wParam, LPARAM lParam )
 {
-	if ( !yahooLoggedIn )
+	if ( !yahooLoggedIn ){
+		YAHOO_shownotification("ERROR", Translate("You need to be connected to refresh your buddy list"), NIIF_ERROR);
 		return 0;
+	}
 //	yahoo_refresh(ylad->id);
 	YAHOO_refresh();
 	return 0;

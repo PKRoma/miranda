@@ -81,7 +81,8 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 
         GetClientRect(dat->pContainer->hwnd, &rcContainer);
         AdjustTabClientRect(dat->pContainer, &rcContainer);
-        cx = rcContainer.right - rcContainer.left - 8;
+        //cx = rcContainer.right - rcContainer.left - 8;
+        cx = rc.right - rc.left;
 
         if(dat->iRealAvatarHeight == 0) {               // calc first layout paramaters
             picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
@@ -146,6 +147,10 @@ char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat)
     dat->hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
     if(dat->hSubContact) {
         dat->szMetaProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hSubContact, 0);
+        if(dat->szMetaProto)
+            dat->wMetaStatus = DBGetContactSettingWord(dat->hSubContact, dat->szMetaProto, "Status", ID_STATUS_OFFLINE);
+        else
+            dat->wMetaStatus = ID_STATUS_OFFLINE;
         return dat->szMetaProto;
     }
     else
@@ -1231,16 +1236,17 @@ void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
             if(dat->history[dat->iHistoryTop].szText == NULL) {
                 if(iLength < HISTORY_INITIAL_ALLOCSIZE)
                     iLength = HISTORY_INITIAL_ALLOCSIZE;
-                dat->history[dat->iHistoryTop].szText = (TCHAR *)malloc((iLength + 1) * sizeof(TCHAR));
+                dat->history[dat->iHistoryTop].szText = (TCHAR *)malloc(iLength);
+                dat->history[dat->iHistoryTop].lLen = iLength;
             }
-            else
-                dat->history[dat->iHistoryTop].szText = (TCHAR *)realloc(dat->history[dat->iHistoryTop].szText, (iLength + 1) * sizeof(TCHAR));
-            dat->history[dat->iHistoryTop].lLen = iLength;
+            else {
+                if(iLength > dat->history[dat->iHistoryTop].lLen) {
+                    dat->history[dat->iHistoryTop].szText = (TCHAR *)realloc(dat->history[dat->iHistoryTop].szText, iLength);
+                    dat->history[dat->iHistoryTop].lLen = iLength;
+                }
+            }
         }
-        if(lParam == 0)
-            CopyMemory(dat->history[dat->iHistoryTop].szText, szFromStream, iStreamLength);
-        else
-            CopyMemory(dat->history[dat->iHistoryTop].szText, &dat->sendBuffer[lParam], lParam * sizeof(wchar_t));
+        CopyMemory(dat->history[dat->iHistoryTop].szText, szFromStream, iStreamLength);
         if(!oldTop) {
             if(dat->iHistoryTop < dat->iHistorySize) {
                 dat->iHistoryTop++;

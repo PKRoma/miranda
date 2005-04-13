@@ -537,17 +537,19 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			//extra icons
 			if (!(style&CLS_EX_MULTICOLUMNALIGNLEFT))
 			{							
-					int c=dat->extraColumnsCount;
-					for(iImage=dat->extraColumnsCount-1;iImage>=0;iImage--) {
-						COLORREF colourFg=dat->selBkColour;
-						int mode=ILD_NORMAL;
-						if(group->contact[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
-						if(selected) mode=ILD_SELECTED;
-						else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
-						else if(group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
-						if (dat->MetaIgnoreEmptyExtra) c--; else c=iImage;
-						ImageList_DrawEx(dat->himlExtraColumns,group->contact[group->scanIndex].iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
-					}
+				int c=dat->extraColumnsCount;
+				for(iImage=dat->extraColumnsCount-1;iImage>=0;iImage--) {
+					  COLORREF colourFg=dat->selBkColour;
+					  int mode=ILD_NORMAL;
+                        
+					  if(Drawing->iExtraImage[iImage]==0xFF) continue;
+					  if(selected) mode=ILD_SELECTED;
+					  else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
+					  else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
+					  if (dat->MetaIgnoreEmptyExtra) c--; else c=iImage;
+					  ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+					 }
+
 			}
 			else
 			{
@@ -557,7 +559,8 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						int mode=ILD_NORMAL;
 						int x;
 
-						if(group->contact[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
+						//if(group->contact[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
+					/*	
 						if(selected) mode=ILD_SELECTED;
 						else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
 						else if(group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
@@ -569,6 +572,20 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						ImageList_DrawEx(dat->himlExtraColumns,group->contact[group->scanIndex].iExtraImage[iImage],hdcMem,
 							x,
 							y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+					*/
+					  if(Drawing->iExtraImage[iImage]==0xFF) continue;
+					  if(selected) mode=ILD_SELECTED;
+					  else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
+					  else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
+      
+					  x=(dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2+width);
+					  x+=16;
+					  x=x+dat->extraColumnSpacing*(ic);
+					  if (iImage==dat->extraColumnsCount-1) {x=clRect.right-18;};
+					  ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
+							x,
+							y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+						
 					ic++;
 					}
 			}

@@ -63,7 +63,10 @@ extern "C" const WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly)
 
     if(message.find(L"://") != message.npos)
        return(message.c_str());
-    
+#ifdef __MATHMOD_SUPPORT
+    if(myGlobals.m_MathModAvail && message.find(myGlobals.m_MathModStartDelimiter) != message.npos)
+        return(message.c_str());
+#endif    
     while((beginmark = message.find_first_of(L"*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
         if(bWordsOnly) {
@@ -130,6 +133,10 @@ extern "C" const char *FormatRaw(const char *msg, int bWordsOnly)
 
     if(message.find("://") != message.npos)
        return(message.c_str());
+#ifdef __MATHMOD_SUPPORT
+    if(myGlobals.m_MathModAvail && message.find(myGlobals.m_MathModStartDelimiter) != message.npos)
+        return(message.c_str());
+#endif    
 
     while((beginmark = message.find_first_of("*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];

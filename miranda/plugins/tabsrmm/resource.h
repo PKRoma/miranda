@@ -310,6 +310,8 @@
 #define IDC_BUTTON2                     1713
 #define IDC_SELECTICONDLL               1713
 #define IDC_RTLDEFAULT                  1714
+#define IDC_CHECK10                     1715
+#define IDC_MATHMODSUPPORT              1715
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -466,7 +468,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
 #define _APS_NEXT_COMMAND_VALUE         40212
-#define _APS_NEXT_CONTROL_VALUE         1715
+#define _APS_NEXT_CONTROL_VALUE         1716
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

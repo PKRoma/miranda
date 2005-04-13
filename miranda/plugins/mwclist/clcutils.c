@@ -235,6 +235,13 @@ void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk)
 	int moved=0;
 	RECT clRect;
 
+
+	if (dat==NULL||IsBadCodePtr((void *)dat)) 
+	{
+		OutputDebugStr("dat is null __FILE____LINE__");
+		return ;
+	};
+
 	GetClientRect(hwnd,&clRect);
 	itemy=iItem*dat->rowHeight;
 	if(partialOk) {
@@ -630,7 +637,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 	dat->showIdle=DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE);
 	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
 	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
-	ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
+//	ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
 	if(!dat->bkChanged) {
 		DBVARIANT dbv;
 		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);

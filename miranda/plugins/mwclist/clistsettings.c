@@ -633,7 +633,7 @@ __try
 						if (cws->value.wVal == ID_STATUS_OFFLINE) {
 							//ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 0);
 							ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
-							mir_free(dbv.pszVal);
+							if (dbv.pszVal) mir_free(dbv.pszVal);
 							return 0;
 						}
 						//ChangeContactIcon((HANDLE)wParam, IconFromStatusMode(cws->szModule, cws->value.wVal), 1);
@@ -646,6 +646,12 @@ __try
 					}
 					
 				}
+			}
+			else if (!strcmp(cws->szModule,"MetaContacts"))
+			{
+			PostMessage(hwndContactTree,CLM_AUTOREBUILD,0,0);
+			DBFreeVariant(&dbv);
+			return 0;
 			}
 			else
 			{

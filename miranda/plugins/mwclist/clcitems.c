@@ -194,8 +194,10 @@ void FreeGroup(struct ClcGroup *group)
 	if(group->allocedCount)
 	{	
 		if (group->contact->SubAllocated)
-			mir_free(group->contact->subcontacts);
-		mir_free(group->contact);
+			if (group->contact->subcontacts) mir_free(group->contact->subcontacts);
+		
+			
+			if(group->contact) mir_free(group->contact);
 	}
 	group->allocedCount=0;
 	group->contact=NULL;

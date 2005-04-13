@@ -843,7 +843,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)(sourceAlpha+(destAlpha-sourceAlpha)*(int)(thisTick-startTick)/200), LWA_ALPHA);
 				}
 				MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)destAlpha, LWA_ALPHA);
-				//CLUIFramesUpdateFrame(-1,0);
+				
 				InvalidateRect(hwndStatus,NULL,TRUE); 
 			}
 			else {

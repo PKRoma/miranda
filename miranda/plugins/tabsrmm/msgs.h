@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // #define _STREAMTHREADING 1
 // #define WANT_UGLY_HOOK 1
 
+#define __MATHMOD_SUPPORT 1
 #define _RELEASE_BUILD 1
 
 #ifdef __GNUWIN32__
@@ -84,7 +85,7 @@ typedef struct _settextex {
 int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
 
-#define HISTORY_INITIAL_ALLOCSIZE 100
+#define HISTORY_INITIAL_ALLOCSIZE 300
 
 struct NewMessageWindowLParam {
 	HANDLE hContact;
@@ -365,6 +366,16 @@ typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
 #define CNT_ENUM_DELETE 1           // delete the target container...
 #define CNT_ENUM_RENAME 2
 #define CNT_ENUM_WRITEFLAGS 4
+
+//mathMod begin
+#define SRMSGSET_MATH_BKGCOLOUR    "MathBkgColour"
+#define SRMSGDEFSET_MATH_BKGCOLOUR GetSysColor(COLOR_WINDOW)
+#define SRMSGSET_MATH_SUBSTITUTE_DELIMITER "MathSubsDelimiter"
+#define SRMSGDEFSET_MATH_SUBSTITUTE_DELIMITER "\""
+//service-function:
+#define MATH_SETBKGCOLOR "Math/SetBackGroundColor"
+//0x00BFF5F7
+//mathMod end
 
 #define IDM_CONTAINERMENU 50500
 

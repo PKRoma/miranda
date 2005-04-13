@@ -323,7 +323,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,70,142,10
     CONTROL         "RTL is default text direction",IDC_RTLDEFAULT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,158,82,142,10
-    GROUPBOX        "Formatting options",IDC_STATIC,0,95,303,76
+    GROUPBOX        "Formatting options",IDC_STATIC,0,95,303,79
     CONTROL         "Message body in a new line",IDC_SHOW_EVENTS_NL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,105,127,9
     CONTROL         "Underline timestamp/nickname",IDC_UNDERLINE,"Button",
@@ -337,24 +337,24 @@ BEGIN
     CONTROL         "Use long date format",IDC_LONGDATES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,157,135,9
     CONTROL         "Indent message body (pixels)",IDC_INDENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,104,141,10
-    LTEXT           "Left",IDC_STATIC,158,118,29,12
-    EDITTEXT        IDC_INDENTAMOUNT,188,116,29,12,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,102,141,10
+    LTEXT           "Left",IDC_STATIC,158,114,29,12
+    EDITTEXT        IDC_INDENTAMOUNT,188,112,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,215,117,10,11
+                    UDS_HOTTRACK,215,113,10,11
     LTEXT           "Right",IDC_STATIC,230,118,26,9
-    EDITTEXT        IDC_RIGHTINDENT,259,116,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_RIGHTINDENT,259,112,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_RINDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,289,116,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,289,112,
                     10,11
     CONTROL         "Use extra tabstops to format indent",IDC_INDENTWITHTABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,130,144,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,126,144,10
     CONTROL         "Use Message Grouping",IDC_GROUPMODE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,142,141,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,137,141,11
     CONTROL         "Mark followup messages with timestamps",
                     IDC_MARKFOLLOWUPTIMESTAMP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,158,155,140,11
+                    WS_TABSTOP,158,148,140,11
     GROUPBOX        "Load History Events",IDC_STATIC,0,174,303,53
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,135,10
@@ -377,6 +377,8 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
                     WS_DISABLED,200,209,10,14
     LTEXT           "minutes old",IDC_STMINSOLD,207,212,90,8,WS_DISABLED
+    CONTROL         "Support Math Module plugin",IDC_MATHMODSUPPORT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,158,160,140,11
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256

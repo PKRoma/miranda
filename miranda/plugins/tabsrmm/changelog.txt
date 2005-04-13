@@ -15,12 +15,20 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.93 - 2005/04/02
+Version 0.9.9.94 - 2005/04/11
+
+        * small fix with static avatars and toolbar button hiding.
+
+        + added support for the Math Module plugin. Requires recent MathModule
+          version. MathMod support can be activated on the Message Log options
+          page (only, if the plugin is active, otherwise the option is grayed out)
+
+Version 0.9.9.93 - 2005/04/11
 
         * updated translation template, added german translation
         
         * some option pages updated (conditionally enable/disable controls)
-
+        
         * removed unused "Sound" submenu from the menu bar.
         
         * icon descriptions for IcoLib are now translateable (see the section at the
@@ -28,7 +36,7 @@ Version 0.9.9.93 - 2005/04/02
           
         + added MS_MSG_GETWINDOWAPI ("MessageAPI/WindowAPI") service for Message 
           API 0.0.0.2 specs
-
+        
         * when using the "Send Later" send mode, a log message informs you about
           successfully passing the message over to buddypounce. If using IEView, the
           message is printed to the status bar instead.
@@ -36,13 +44,24 @@ Version 0.9.9.93 - 2005/04/02
         * MetaContacts support - the status icons in the title bar and on the tool
           bar are now showing the actual protocol icons. Also, smileyadd will now use
           the smiley set which has been configured for the actual protocol. No more
-          need to define an extra smiley set for the MetaContacts protocol.
+          need to define an extra smiley set for the MetaContacts protocol (does not
+          work with IEView though, because IEView does its smiley selection alone).
           
           Consequently, the MetaContacts control menu has been moved from the status
           bar to the tool bar -> right click the protocol button for the MetaContacts
           context menu.
           
         ! fixed small visual glitch with the add contact bar.
+        
+        * changed memory handling for the sendqueue and input history.. fixed possible 
+          memory corruption with DBCS strings.
+                    
+        * some IEView related updates.. codepage for force ansi send mode
+        
+        + quoting support for IEView (requires very recent IEView, not yet released)
+        
+        + bumped version requirement. Beginning with 0.9.9.93, tabSRMM REQUIRES Miranda
+          0.4 or later.
           
 Version 0.9.9.92 - 2005/03/31
 

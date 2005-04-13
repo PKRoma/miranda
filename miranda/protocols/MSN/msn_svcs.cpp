@@ -868,10 +868,8 @@ LBL_Error:
 	else
 	{	if ( thread->mJoinedCount == 0 )
 			seq = MsgQueue_Add( ccs->hContact, msg, 0, 0 );
-		else
-		{
+		else {
 			seq = thread->sendMessage( msg, MSG_REQUIRE_ACK );
-			free( msg );
 
 			if ( !MyOptions.SlowSend ) {
 				HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -880,6 +878,7 @@ LBL_Error:
 				SetEvent( hEvent );
 	}	}	}
 
+	free( msg );
 	return seq;
 }
 

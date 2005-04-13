@@ -399,7 +399,7 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 			Sleep(100);
 		}
 		ManualWhoCount++;
-		SetChatTimer(OnlineNotifTimer, StrToInt(prefs->OnlineNotificationTime)*1000, KeepAliveTimerProc);
+		SetChatTimer(OnlineNotifTimer, StrToInt(prefs->OnlineNotificationTime)*1000, OnlineNotifTimerProc);
 
 		return false;
 	}

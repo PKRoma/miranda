@@ -7,6 +7,16 @@ typedef struct {
 	int  iDefaultIndex;
 } SKINICONDESC;
 
+typedef struct {
+	int cbSize;
+    char *pszSection;        //section name used to group icons
+	char *pszDescription;	   //description for options dialog
+	char *pszName;		   //name to refer to icon when playing and in db
+    char *pszDefaultFile;    //default icon file to use
+	int  iDefaultIndex;
+	HICON hDefaultIcon;
+} SKINICONDESC2;
+
 //
 //  Add a icon into options UI
 //

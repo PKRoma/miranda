@@ -661,25 +661,11 @@ String ModeToStatus(char sMode)
 }
 String PrefixToStatus(char cPrefix) 
 {
-	if(strchr(sUserModePrefixes.c_str(), cPrefix))
+	int i = (int)strchr(sUserModePrefixes.c_str(), cPrefix);
+	if(i)
 	{
-
-		switch(cPrefix)
-		{
-		case '*':
-			return (String)"Owner";
-		case '@':
-			return (String)"Op";
-		case '+':
-			return (String)"Voice";
-		case '%':
-			return (String)"Halfop";
-		case '!':
-			return (String)"Admin";
-		default:
-			return (String)"Unknown";
-		}
-
+		int index = i - (int)sUserModePrefixes.c_str();
+		return ModeToStatus(sUserModes[index]);
 	}
 
 	return (String)"Normal";

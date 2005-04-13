@@ -32,6 +32,18 @@ $Id$
 #include "m_metacontacts.h"
 #include "IcoLib.h"
 
+#ifdef __MATHMOD_SUPPORT
+//mathMod begin
+#define QUESTIONMathExists "req_Is_MathModule_Installed"
+#define ANSWERMathExists "automaticAnswer:MathModule_Is_Installed"
+#define REPORTMathModuleInstalled_SERVICENAME "MATHMODULE_SEND_INSTALLED"
+#define MTH_GETBITMAP "Math/GetBitmap"
+#include <windows.h>
+#include "../../include/m_protomod.h"
+#include "../../include/m_protosvc.h"
+//mathMod end
+#endif
+
 MYGLOBALS myGlobals;
 
 static void InitREOleCallback(void);
@@ -300,12 +312,12 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
     hwndDlg = WindowList_Find(hMessageWindowList, (HANDLE)pAck->hContact);
     if(hwndDlg) {
         struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS)
+            PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
         if(pai == NULL) {
             _DebugPopup(dat->hContact, "pai == 0 in avatar ACK handler");
             return 0;
         }
-        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS)
-            PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
         if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_SUCCESS) {
             if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);

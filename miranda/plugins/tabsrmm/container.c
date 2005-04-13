@@ -57,6 +57,12 @@ $Id$
 #include "msgdlgutils.h"
 #include "m_snapping_windows.h"
 
+#ifdef __MATHMOD_SUPPORT
+//mathMod begin
+#include "m_MathModule.h"
+//mathMod end
+#endif
+
 #define SB_CHAR_WIDTH        45
 
 char *szWarnClose = "Do you really want to close this session?";
@@ -515,6 +521,23 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 pContainer->dwFlags &= ~CNT_SIZINGLOOP;
+#ifdef __MATHMOD_SUPPORT    			
+                //mathMod begin
+    			if(myGlobals.m_MathModAvail) {  //start scope
+    						TMathWindowInfo mathWndInfo;
+    												
+    						RECT windRect;
+    						// größe ermitteln:
+    						GetWindowRect(hwndDlg,&windRect);
+    						mathWndInfo.top=windRect.top;
+    						mathWndInfo.left=windRect.left;
+    						mathWndInfo.right=windRect.right - 5;
+    						mathWndInfo.bottom=windRect.bottom - 5;
+    						CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg); 
+    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+    			}  // end scope
+    			//mathMod end
+#endif                
                 break;
             }
         case WM_GETMINMAXINFO: {
@@ -522,12 +545,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 POINT pt;
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
-                //mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
                 mmi->ptMinTrackSize.x = 275;
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 pt.y = rc.top;
                 TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
-                //mmi->ptMinTrackSize.y += ((rc.top - pt.y) + 10);
                 if(pContainer->dwFlags & CNT_VERTICALMAX) {
                     WINDOWPLACEMENT wp;
                     RECT rcDesktop;
@@ -545,7 +566,23 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 return 0;
             }
-
+#ifdef __MATHMOD_SUPPORT    		
+            //mathMod begin
+    		case WM_MOVE:
+    		if(myGlobals.m_MathModAvail) {
+                TMathWindowInfo mathWndInfo;
+    			RECT windRect;
+    			GetWindowRect(hwndDlg, &windRect);
+    			mathWndInfo.top=windRect.top;
+    			mathWndInfo.left=windRect.left;
+    			mathWndInfo.right=windRect.right - 5;
+    			mathWndInfo.bottom=windRect.bottom - 5;
+                CallService(MTH_Set_Srmm_HWND,0,(LPARAM) pContainer->hwndActive); 
+                CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+    		}
+            break;
+    		//mathMod end
+#endif            
         case WM_SIZE: { 
                 RECT rcClient;
                 int i = 0;
@@ -578,8 +615,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->statusBarHeight = 0;
                 
                 GetClientRect(hwndDlg, &rcClient);
-                //MoveWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), 0, 0, rcClient.right - rcClient.left, 2, TRUE);
-                //menuSep = pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 3;
                 menuSep = 0;
                 if (lParam) {
                     if(pContainer->dwFlags & CNT_TABSBOTTOM)
@@ -589,7 +624,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 AdjustTabClientRect(pContainer, &rcClient);
 
-                //rc = rcClient;
                 /*
                  * we care about all client sessions, but we really resize only the active tab (hwndActive)
                  * we tell inactive tabs to resize theirselves later when they get activated (DM_CHECKSIZE
@@ -616,7 +650,25 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
                 if (pContainer->hwndStatus)
                     RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
-                break; 
+#ifdef __MATHMOD_SUPPORT    			
+                //mathMod begin
+    			if(myGlobals.m_MathModAvail && !(pContainer->dwFlags & CNT_SIZINGLOOP)) {  //start scope
+    						TMathWindowInfo mathWndInfo;
+    												
+    						RECT windRect;
+    						// größe ermitteln:
+    						GetWindowRect(hwndDlg,&windRect);
+    						mathWndInfo.top=windRect.top;
+    						mathWndInfo.left=windRect.left;
+    						mathWndInfo.right=windRect.right - 5;
+    						mathWndInfo.bottom=windRect.bottom;
+                            CallService(MTH_Set_Srmm_HWND,0,(LPARAM) pContainer->hwndActive); 
+    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+                            //ResizeMathWindow(&windRect);
+    			}  // end scope
+    			//mathMod end
+#endif                
+            break;
             } 
         case DM_UPDATETITLE: {
                 HANDLE hContact = (HANDLE) wParam;
@@ -761,7 +813,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case SC_MAXIMIZE:
                 case SC_RESTORE:
                     pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-                    //SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                     break;
             }
             break;
@@ -1069,7 +1120,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SetWindowPos(pContainer->hwndActive, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_NOZORDER | SWP_SHOWWINDOW);
                     SetFocus(GetDlgItem(pContainer->hwndActive, IDC_LOG));
                     SetFocus(pContainer->hwndActive);
-                    //SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -1213,7 +1263,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			if (HIWORD(pContainer->dwTransparency) < 50)
 				pContainer->dwTransparency = MAKELONG((WORD)LOWORD(pContainer->dwTransparency), 50);
 			
-            //pContainer->nFlashMax = pContainer->dwFlags & CNT_FLASHALWAYS ? 0xffffffff : DBGetContactSettingByte(NULL, SRMSGMOD, "FlashMax", 4);
             break;
 		}
         case DM_STATUSBARCHANGED:
@@ -1225,8 +1274,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
                 RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
                 UpdateWindow(hwndDlg);
-                //RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_FRAME);
-                //UpdateWindow(pContainer->hwndActive);
                 PostMessage(pContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
                 break;
             }
@@ -1235,7 +1282,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			HMENU hSysmenu = GetSystemMenu(hwndDlg, FALSE);
 			HANDLE hContact;
 
-            //InvalidateRect(GetDlgItem(hwndDlg, IDC_STATICCONTROL), NULL, TRUE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             
             if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
@@ -1334,7 +1380,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
                 }
                 SetMenu(hwndDlg, pContainer->hMenu);
-                //ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_SHOW);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 DrawMenuBar(hwndDlg);
             }
@@ -1453,28 +1498,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
         case WM_MEASUREITEM:
             return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
-        case DM_UPDATEWINICON:
-            {
-                _DebugPopup(0, "container updatewinicon");
-                
-                /*WORD wStatus;
-                HICON hIcon;
-                HANDLE hContact;
-                char *szProto;
-                
-                SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-
-                szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-
-                if (szProto) {
-                    SendMessage(pContainer->hwndActive, DM_QUERYSTATUS, 0, (LPARAM)&wStatus);
-                    hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
-
-                    SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) hIcon);
-                    break;
-                }*/
-                break;
-            }
         case DM_QUERYCLIENTAREA:
             {
                 RECT *rc = (RECT *)lParam;
@@ -1695,7 +1718,6 @@ int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
     tch.pt = *pt;
     tch.flags = 0;
     return TabCtrl_HitTest(hwndTab, &tch);
-    // return -1;      // mouse cursor not over one of the tabs
 }
 
 /*
@@ -2115,16 +2137,6 @@ void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting
 {
     char *utf8string = Utf8Encode(value);
     DBWriteContactSettingString(hContact, szKey, szSetting, utf8string);
-    //free(utf8string);
-    
-    /*    DBCONTACTWRITESETTING dbcws = { 0 };
-    
-    dbcws.szModule = szKey;
-    dbcws.szSetting = szSetting;
-    dbcws.value.type = DBVT_BLOB;
-    dbcws.value.pbVal = (BYTE *) value;
-    dbcws.value.cpbVal = (WORD)((lstrlenW(value) + 1) * sizeof(TCHAR));
-    CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM) hContact, (LPARAM)&dbcws);*/
 }
 
 HMENU BuildContainerMenu()
