@@ -1679,6 +1679,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 							if(g_LogOptions.FlashWindow)
 							{
+								SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+/*
 								FLASHWINFO fi;
 								fi.cbSize = sizeof(FLASHWINFO);
 								fi.hwnd = hwndDlg;
@@ -1686,7 +1688,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 								fi.uCount = 3;  
 								fi.dwTimeout = 0;
 								FlashWindowEx(&fi);
-
+*/
 							}
 							if(DBGetContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(WORD) 0) != 40071)
 								DBWriteContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
@@ -1948,6 +1950,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case GC_HIGHLIGHT:
 			if(DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0)
 			{
+				SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+/*
 				FLASHWINFO fi;
 				fi.cbSize = sizeof(FLASHWINFO);
 				fi.hwnd = hwndDlg;
@@ -1955,7 +1959,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				fi.uCount = 3;  
 				fi.dwTimeout = 0;
 				FlashWindowEx(&fi);
-
+*/
 			}
 			if(DBGetContactSettingByte(dat->hContact, "CList", "Hidden", 0) != 0)
 				DBDeleteContactSetting(dat->hContact, "CList", "Hidden");
@@ -2070,7 +2074,15 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			}break;
 		
- 		case WM_ACTIVATE:
+ 	case WM_TIMER:
+		{
+			if (wParam == TIMERID_FLASHWND) 
+			{
+				FlashWindow(hwndDlg, TRUE);
+			}
+		}break;
+
+		case WM_ACTIVATE:
 		{
 			if (LOWORD(wParam) != WA_ACTIVE)
 				break;
@@ -2089,6 +2101,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SetActiveChatWindow(dat->pszID, dat->pszModule);
 			if(DBGetContactSettingWord(dat->hContact, dat->pszModule ,"ApparentMode", 0) != 0)
 				DBWriteContactSettingWord(dat->hContact, dat->pszModule ,"ApparentMode",(LPARAM) 0);
+
+			if (KillTimer(hwndDlg, TIMERID_FLASHWND))
+				FlashWindow(hwndDlg, FALSE);
 
 			if(CallService(MS_CLIST_GETEVENT, (WPARAM)dat->hContact, (LPARAM)0))
 				CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)"chaticon");

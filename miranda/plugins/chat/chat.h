@@ -90,6 +90,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define EM_UNSUBCLASSED			(WM_USER+201)
 #define EM_ACTIVATE				(WM_USER+202)
 
+#define TIMERID_FLASHWND		205
+
 #define GC_EVENT_HIGHLIGHT		0x1000
 
 // special service for tweaking performance
