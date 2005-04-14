@@ -114,7 +114,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				{
 //					SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 //					InvalidateRect(hWindow, NULL, TRUE);
-					PostMessage(hWindow, GC_REDRAWLOG, 0, 0);
+					SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
 				}
 				SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 				SetForegroundWindow(hWindow);
