@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../../core/commonheaders.h"
 
+// block these plugins
+#define DEFMOD_REMOVED_UIPLUGINOPTS     21
+
 // basic export prototypes
 typedef int (__cdecl * Miranda_Plugin_Load) ( PLUGINLINK * );
 typedef int (__cdecl * Miranda_Plugin_Unload) ( void );
@@ -124,7 +127,8 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 		PLUGININFO * pi = bpi->Info(mirandaVersion);
 		if ( pi && pi->cbSize==sizeof(PLUGININFO) && pi->shortName && pi->description 
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
-				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST )
+				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST 
+				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)
 		{
 			bpi->pluginInfo = pi;
 			// basic API is present
