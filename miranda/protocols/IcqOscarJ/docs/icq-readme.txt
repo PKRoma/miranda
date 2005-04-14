@@ -13,6 +13,14 @@ instant messenger network and communicate with other ICQ users.
 Changes
 _______
 
+0.3.5.1
+
+Bugfixes
+  Renaming of server groups was not working properly - caused errors
+  Avatar could not be deleted (the delete button did not work)
+  File Transfers were not working properly in some cases (wrong cookie handling)
+
+
 0.3.5
 
 Bugfixes:
