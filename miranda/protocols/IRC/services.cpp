@@ -1228,7 +1228,7 @@ static void __cdecl ConnectServerThread(LPVOID di)
 	EnterCriticalSection(&cs);
 	InterlockedIncrement((volatile long *) &bConnectThreadRunning);
 	InterlockedIncrement((volatile long *) &bConnectRequested);
-	while ( bConnectRequested > 0 ) 
+	while ( !Miranda_Terminated() && bConnectRequested > 0 ) 
 	{
 		InterlockedDecrement((volatile long *) &bConnectRequested);
 		if (g_ircSession)
