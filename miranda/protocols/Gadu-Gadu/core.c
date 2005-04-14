@@ -228,6 +228,7 @@ int gg_decodehosts(char *var, GGHOST *hosts, int max)
         else
             var ++;
     }
+    return hp;
 }
 
 
