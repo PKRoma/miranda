@@ -180,7 +180,7 @@ extern char *ggProtoError;
 #define GG_KEY_SSLCONN			"SSLConnection" // Use SSL/TLS for connections
 #define GG_KEYDEF_SSLCONN		1
 #define GG_KEY_SERVERHOSTS		"ServerHosts"   // NL separated list of hosts for server connection
-#define GG_KEYDEF_SERVERHOSTS   ""
+#define GG_KEYDEF_SERVERHOSTS   "217.17.41.83\r\n217.17.41.85\r\n217.17.41.88\r\n217.17.41.89\r\n217.17.41.92\r\n217.17.41.93"
 
 
 #define GG_KEY_CLIENTIP 		"IP"      		// Contact IP (by notify)
