@@ -26,6 +26,7 @@ static HANDLE hEventGGGetChat = NULL;
 
 #define GG_GC_GETCHAT "%s/GCGetChat"
 #define GGS_OPEN_CONF "%s/OpenConf"
+#define GGS_CLEAR_IGNORED "%s/ClearIgnored"
 
 int ggGCEnabled = FALSE;
 int ggGCID = 0;
@@ -34,6 +35,7 @@ int gg_gc_menu(WPARAM wParam, LPARAM lParam);
 int gg_gc_event(WPARAM wParam, LPARAM lParam);
 int gg_gc_egetchat(WPARAM wParam, LPARAM lParam);
 int gg_gc_openconf(WPARAM wParam, LPARAM lParam);
+int gg_gc_clearignored(WPARAM wParam, LPARAM lParam);
 
 list_t chats = NULL;
 
@@ -42,6 +44,7 @@ typedef struct _gg_gc_chat
     uin_t *recipients;
     int recipients_count;
     char id[32];
+    BOOL ignore;
 } gg_gc_chat;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +86,7 @@ int gg_gc_load()
         mi.cbSize = sizeof(mi);
         char service[64];
 
-        // Import from server item
+        // Conferencing
         snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
         CreateServiceFunction(service, gg_gc_openconf);
         mi.pszPopupName = GG_PROTONAME;
@@ -93,7 +96,17 @@ int gg_gc_load()
         mi.pszName = Translate("Open &conference...");
         mi.pszService = service;
         CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-	}
+
+        snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
+        CreateServiceFunction(service, gg_gc_clearignored);
+        mi.pszPopupName = GG_PROTONAME;
+        mi.popupPosition = 500090000;
+        mi.position = 500090000;
+        mi.hIcon = NULL;
+        mi.pszName = Translate("&Clear ignored conferences");
+        mi.pszService = service;
+        CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+    }
 #ifdef DEBUGMODE
     else
         gg_netlog("gg_gc_getchat(): Cannot register with groupchat plugin !!!");
@@ -124,7 +137,11 @@ int gg_gc_menu(WPARAM wParam, LPARAM lParam)
 int gg_gc_event(WPARAM wParam, LPARAM lParam)
 {
     GCHOOK *gch = (GCHOOK *)lParam;
-    if(!gch) return 0;
+
+    // Check if we got our protocol
+    if(!gch || !gch->pDest || !gch->pDest->pszModule || lstrcmpi(gch->pDest->pszModule, GG_PROTO))
+        return 0;
+
     gg_gc_chat *chat = NULL;
 
     uin_t uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
@@ -170,7 +187,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
     }
 
     // Message typed
-    if(gch->pDest && gch->pDest->iType == GC_USER_MESSAGE && chat && uin && ggSess && gch->pszText)
+    if(gg_isonline() && gch->pDest && gch->pDest->iType == GC_USER_MESSAGE && chat && uin && gch->pszText)
     {
         char id[32]; UIN2ID(uin, id);
         DBVARIANT dbv;
@@ -194,7 +211,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 #endif
         CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
         if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
-        gg_send_message_confer(ggSess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
+        gg_send_message_confer(ggThread->sess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
         return 1;
     }
 
@@ -221,6 +238,8 @@ typedef struct _gg_gc_echat
     char * chat_id;
 } gg_gc_echat;
 
+////////////////////////////////////////////////////////////////////////////////
+// This is main groupchat initialization routine
 int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 {
     gg_gc_echat *gc = (gg_gc_echat *)lParam;
@@ -264,17 +283,69 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
             if(found == recipients_count)
             {
 #ifdef DEBUGMODE
-                gg_netlog("gg_gc_egetchat(): Returning existing id %s, size %d.", chat->id, chat->recipients_count);
+                if(chat->ignore)
+                    gg_netlog("gg_gc_egetchat(): Ignoring existing id %s, size %d.", chat->id, chat->recipients_count);
+                else
+                    gg_netlog("gg_gc_egetchat(): Returning existing id %s, size %d.", chat->id, chat->recipients_count);
 #endif
                 gc->chat_id = chat->id;
-                return 1;
+                return !(chat->ignore);
             }
         }
     }
 
     // Make new uin list to chat mapping
     gg_gc_chat *chat = (gg_gc_chat *)malloc(sizeof(gg_gc_chat));
-    UIN2ID(ggGCID ++, chat->id);
+    UIN2ID(ggGCID ++, chat->id); chat->ignore = FALSE;
+
+    // Check groupchat policy (new) / only for incoming
+    if(sender)
+    {
+        int unknown = (gg_getcontact(sender, 0, 0, NULL) == NULL),
+            unknownSender = unknown;
+        for(i = 0; i < recipients_count; i++)
+            if(!gg_getcontact(recipients[i], 0, 0, NULL))
+                unknown ++;
+        if((DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_DEFAULT, GG_KEYDEF_GC_POLICY_DEFAULT) == 2) ||
+           (DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL, GG_KEYDEF_GC_POLICY_TOTAL) == 2 &&
+            recipients_count >= DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, GG_KEYDEF_GC_COUNT_TOTAL)) ||
+           (DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_UNKNOWN, GG_KEYDEF_GC_POLICY_UNKNOWN) == 2 &&
+            unknown >= DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, GG_KEYDEF_GC_COUNT_UNKNOWN)))
+            chat->ignore = TRUE;
+        if(!chat->ignore && ((DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_DEFAULT, GG_KEYDEF_GC_POLICY_DEFAULT) == 1) ||
+           (DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL, GG_KEYDEF_GC_POLICY_TOTAL) == 1 &&
+            recipients_count >= DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, GG_KEYDEF_GC_COUNT_TOTAL)) ||
+           (DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_UNKNOWN, GG_KEYDEF_GC_POLICY_UNKNOWN) == 1 &&
+            unknown >= DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, GG_KEYDEF_GC_COUNT_UNKNOWN))))
+        {
+            char *senderName = unknownSender ?
+                Translate("Unknown") : ((char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 0, 0, NULL), 0));
+            char error[256];
+            sprintf(error, Translate("%s has initiated conference with %d participants (%d unknowns).\nDo you want do participate ?"),
+                senderName, recipients_count + 1, unknown);
+            chat->ignore = (MessageBox(
+                NULL,
+                error,
+                GG_PROTONAME,
+                MB_OKCANCEL | MB_ICONEXCLAMATION
+                ) != IDOK);
+        }
+        if(chat->ignore)
+        {
+            // Copy recipient list
+            chat->recipients_count = recipients_count + (sender ? 1 : 0);
+            chat->recipients = (uin_t *)calloc(chat->recipients_count, sizeof(uin_t));
+            for(i = 0; i < recipients_count; i++)
+                chat->recipients[i] = recipients[i];
+            if(sender) chat->recipients[i] = sender;
+    #ifdef DEBUGMODE
+            gg_netlog("gg_gc_egetchat(): Ignoring new chat %s, count %d.", chat->id, chat->recipients_count);
+    #endif
+            list_add(&chats, chat, 0);
+            gc->chat_id = chat->id;
+            return 0;
+        }
+    }
 
     // Create new chat window
     char *senderName = sender ? (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 1, 0, NULL), 0) : NULL;
@@ -422,7 +493,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
                     HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
                     int count = 0, i = 0;
                     // Check if connected
-                    if (!ggSess)
+                    if (!gg_isonline())
                     {
                         MessageBox(NULL,
                             Translate("You have to be connected to open new conference."),
@@ -574,10 +645,34 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 }
 
+int gg_gc_clearignored(WPARAM wParam, LPARAM lParam)
+{
+    list_t l = chats; BOOL cleared = FALSE;
+    while(l)
+    {
+        gg_gc_chat *chat = (gg_gc_chat *)l->data;
+        l = l->next;
+        if(chat->ignore)
+        {
+            if(chat->recipients) free(chat->recipients);
+            list_remove(&chats, chat, 1);
+            cleared = TRUE;
+        }
+    }
+    MessageBox(
+        NULL,
+        cleared ?
+            Translate("All ignored conferences are now unignored and the conference policy will act again.") :
+            Translate("There are no ignored conferences."),
+        GG_PROTONAME,
+        MB_OK | MB_ICONINFORMATION
+    );
+}
+
 int gg_gc_openconf(WPARAM wParam, LPARAM lParam)
 {
     // Check if connected
-    if (!ggSess)
+    if (!gg_isonline())
     {
         MessageBox(NULL,
             Translate("You have to be connected to open new conference."),

@@ -118,6 +118,12 @@
 #define IDC_IMAGE_SEND        	461
 #define IDC_IMAGE_SAVE        	462
 
+#define IDC_GC_POLICY_TOTAL     463
+#define IDC_GC_POLICY_UNKNOWN   464
+#define IDC_GC_POLICY_DEFAULT   465
+#define IDC_GC_COUNT_TOTAL      466
+#define IDC_GC_COUNT_UNKNOWN    467
+
 #define IDC_IMG_DELETE          1010
 #define IDC_IMG_SEND            1011
 #define IDC_IMG_PREV            1012

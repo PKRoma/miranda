@@ -300,6 +300,30 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 default:
                     SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_SETCURSEL, 0, 0);
             }
+
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_SETCURSEL,
+                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL, GG_KEYDEF_GC_POLICY_TOTAL), 0);
+
+            if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, GG_KEYDEF_GC_COUNT_TOTAL))
+                SetDlgItemText(hwndDlg, IDC_GC_COUNT_TOTAL, ditoa(num));
+
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_SETCURSEL,
+                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_UNKNOWN, GG_KEYDEF_GC_POLICY_UNKNOWN), 0);
+
+            if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, GG_KEYDEF_GC_COUNT_UNKNOWN))
+                SetDlgItemText(hwndDlg, IDC_GC_COUNT_UNKNOWN, ditoa(num));
+
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_SETCURSEL,
+                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_DEFAULT, GG_KEYDEF_GC_POLICY_DEFAULT), 0);
             break;
         }
         case WM_COMMAND:
@@ -342,7 +366,7 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							MB_OKCANCEL | MB_ICONEXCLAMATION) == IDCANCEL)
 							break;
 						else
-							gg_disconnect();
+							gg_disconnect(FALSE);
 					}
 				case IDC_CHPASS:
 				case IDC_CHEMAIL:
@@ -477,6 +501,19 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, GG_KEYDEF_LEAVESTATUS);
                     }
 
+                    // Write groupchat policy
+                    DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL,
+                        SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_GETCURSEL, 0, 0));
+                    DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_UNKNOWN,
+                        SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_GETCURSEL, 0, 0));
+                    DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_DEFAULT,
+                        SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_GETCURSEL, 0, 0));
+
+                    GetDlgItemText(hwndDlg, IDC_GC_COUNT_TOTAL, str, sizeof(str));
+                    DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, atoi(str));
+                    GetDlgItemText(hwndDlg, IDC_GC_COUNT_UNKNOWN, str, sizeof(str));
+                    DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, atoi(str));
+
                     break;
                 }
             }
@@ -496,12 +533,12 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             DWORD num;
 
             TranslateDialogDefault(hwndDlg);
-            if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_SERVERHOST, &dbv)) {
+            if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv)) {
                 SetDlgItemText(hwndDlg, IDC_HOST, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-            if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_SERVERPORT, GG_DEFAULT_PORT))
-                SetDlgItemText(hwndDlg, IDC_PORT, ditoa(num));
+            else
+                SetDlgItemText(hwndDlg, IDC_HOST, GG_KEYDEF_SERVERHOSTS);
 
             CheckDlgButton(hwndDlg, IDC_KEEPALIVE, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_KEEPALIVE, GG_KEYDEF_KEEPALIVE));
             CheckDlgButton(hwndDlg, IDC_SHOWCERRORS, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWCERRORS, GG_KEYDEF_SHOWCERRORS));
@@ -585,9 +622,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
                     // Write custom servers
                     GetDlgItemText(hwndDlg, IDC_HOST, str, sizeof(str));
-                    DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_SERVERHOST, str);
-                    GetDlgItemText(hwndDlg, IDC_PORT, str, sizeof(str));
-                    DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_SERVERPORT, atoi(str));
+                    DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, str);
 
                     // Write direct port
                     GetDlgItemText(hwndDlg, IDC_DIRECTPORT, str, sizeof(str));
@@ -758,7 +793,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
                 // Run update
                 gg_pubdir50_seq_set(req, GG_SEQ_CHINFO);
-                gg_pubdir50(ggSess, req);
+                gg_pubdir50(ggThread->sess, req);
                 dat->updating = TRUE;
 
                 gg_pubdir50_free(req);

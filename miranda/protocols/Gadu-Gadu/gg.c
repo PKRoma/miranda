@@ -25,7 +25,7 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 2, 7),
+    PLUGIN_MAKE_VERSION(0, 0, 2, 8),
     "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
@@ -43,7 +43,8 @@ int ggDesiredStatus = ID_STATUS_OFFLINE;    // gadu-gadu desired status
 HANDLE hNetlib;                             // used just for logz
 HANDLE hLibSSL;								// SSL main library handle
 HANDLE hLibEAY;								// SSL/EAY misc library handle
-char *ggProto = NULL;						// proto id get from DLL name   (def GG from GG.dll or GGdebug.dll)
+char ggProto[64] = GGDEF_PROTO;		        // proto id get from DLL name   (def GG from GG.dll or GGdebug.dll)
+                                            // (static variable because may be needed after destroy)
 char *ggProtoName = NULL;					// proto name get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
 char *ggProtoError = NULL;					// proto error get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
 
@@ -245,7 +246,8 @@ void init_protonames()
 	if((q = strstr(p, "debug")) && strlen(q) == 5)
 		*q = '\0';
 
-	ggProto = strdup(p);
+    // We copy to static variable
+	strncpy(ggProto, p, sizeof(ggProto));
 	strupr(ggProto);
 	// Is it default GG.dll if yes do Gadu-Gadu as a title
 	if(!strcmp(ggProto, GGDEF_PROTO))
@@ -276,9 +278,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
     pd.szName = GG_PROTO;
     pd.type = PROTOTYPE_PROTOCOL;
     CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
+    pthread_mutex_init(&threadMutex, NULL);
     pthread_mutex_init(&modeMsgsMutex, NULL);
-    pthread_mutex_init(&connectionHandleMutex, NULL);
-    pthread_mutex_init(&dccWatchesMutex, NULL);
     gg_registerservices();
     gg_setalloffline();
     gg_refreshblockedicon();
@@ -290,7 +291,9 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 int __declspec(dllexport) Unload()
 {
     // Log off
-    if (gg_isonline()) gg_disconnect();
+    if(gg_isonline()) gg_disconnect();
+    // Check threads
+    gg_cleanupthreads();
 #ifdef DEBUGMODE
     gg_netlog("Unload(): destroying plugin");
 #endif
@@ -298,9 +301,8 @@ int __declspec(dllexport) Unload()
     gg_destroykeepalive();
     gg_img_unload();
     gg_gc_unload();
+    pthread_mutex_destroy(&threadMutex);
     pthread_mutex_destroy(&modeMsgsMutex);
-    pthread_mutex_destroy(&connectionHandleMutex);
-    pthread_mutex_destroy(&dccWatchesMutex);
     LocalEventUnhook(hHookOptsInit);
     LocalEventUnhook(hHookModulesLoaded);
     LocalEventUnhook(hHookSettingDeleted);
@@ -317,7 +319,6 @@ int __declspec(dllexport) Unload()
     if(ggModeMsg.szOffline)     free(ggModeMsg.szOffline);
 
 	// Cleanup protonames
-	if(ggProto) free(ggProto);
 	if(ggProtoName) free(ggProtoName);
 	if(ggProtoError) free(ggProtoError);
 
