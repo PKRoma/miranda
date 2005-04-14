@@ -280,7 +280,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 	case ICQ_SERVER_NAME_INFO: // This is the reply to CLI_REQINFO
 		{
-
 			BYTE bUinLen;
 			oscar_tlv_chain *chain;
 
@@ -343,7 +342,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 					forkthread(icq_keepAliveThread, 0, NULL);
 
 			}
-
 		}
 		break;
 
@@ -474,7 +472,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           if (DBGetContactSetting(NULL, gpszICQProtoName, "AvatarFile", &dbv))
           { // we have no file to upload, remove hash from server
             Netlib_Logf(ghServerNetlibUser, "We do not have avatar, removing hash.");
-            updateServAvatarHash(NULL);
+            updateServAvatarHash(NULL, 0);
 
             break;
           }
@@ -482,7 +480,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           if (!hash)
           { // the hash could not be calculated, remove from server
             Netlib_Logf(ghServerNetlibUser, "We could not obtain hash, removing hash.");
-            updateServAvatarHash(NULL);
+            updateServAvatarHash(NULL, 0);
           }
           else if (!memcmp(hash, pBuffer+4, 0x10))
           { // we have the right file
@@ -517,13 +515,13 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
               pHash[0] = 1; // state of the hash
               pHash[1] = 0x10; // len of the hash
               memcpy(pHash+2, hash, 0x10);
-              updateServAvatarHash(pHash);
+              updateServAvatarHash(pHash, 0x12);
               SAFE_FREE(&pHash);
             }
             else
             {
               Netlib_Logf(ghServerNetlibUser, "We could not set hash, removing hash.");
-              updateServAvatarHash(NULL);
+              updateServAvatarHash(NULL, 0);
             }
             SAFE_FREE(&hash);
           }
@@ -557,7 +555,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 		break;
 
 	}
-
 }
 
 
@@ -722,7 +719,6 @@ void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 
 void setUserInfo()
 { // CLI_SETUSERINFO
-
   icq_packet packet;
   WORD wAdditionalData = 0;
 
@@ -941,7 +937,7 @@ void handleServUINSettings(int nPort, int nIP)
 		packDWord(&packet, WEBFRONTPORT);   // Web front port
 		packDWord(&packet, CLIENTFEATURES); // Client features
 		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x00030500);     // Abused timestamp
+		packDWord(&packet, 0x80030501);     // Abused timestamp
 		packDWord(&packet, 0x00000000);     // Timestamp
 		packWord(&packet, 0x0000);          // Unknown
 
@@ -987,7 +983,6 @@ void handleServUINSettings(int nPort, int nIP)
 
   if (gbAvatarsEnabled)
   { // Send SNAC 1,4 - request avatar family 0x10 connection
-
     icq_requestnewfamily(0x10, StartAvatarThread);
 
     pendingAvatarsStart = 1;

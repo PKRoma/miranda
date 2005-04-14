@@ -381,7 +381,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 		{
 			icq_sendAdvancedMsgAck(dc->dwRemoteUin, 0, 0, wCookie, (BYTE)typeId, 0);
 		}
-		handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (BYTE)typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf);
+		handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf);
 	}
 	else
 	{

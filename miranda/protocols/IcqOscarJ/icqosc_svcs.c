@@ -57,7 +57,6 @@ extern HANDLE hInst;
 
 int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 {
-
 	int nReturn = 0;
 
 
@@ -107,53 +106,43 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 
 	case PFLAG_MAXLENOFMESSAGE:
 		nReturn = MAX_MESSAGESNACSIZE-100;
-
 	}
 
 	return nReturn;
-
 }
 
 
 
 int IcqGetName(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		strncpy((char *)lParam, Translate(gpszICQProtoName), wParam);
 
 		return 0; // Success
-
 	}
 
 	return 1; // Failure
-
 }
 
 
 
 int IcqLoadIcon(WPARAM wParam, LPARAM lParam)
 {
-
 	UINT id;
 
 
 	switch (wParam & 0xFFFF)
 	{
-
 		case PLI_PROTOCOL:
 			id = IDI_ICQ;
 			break;
 
 		default:
 			return 0; // Failure
-
 	}
 
 	return (int)LoadImage(hInst, MAKEINTRESOURCE(id), IMAGE_ICON, GetSystemMetrics(wParam&PLIF_SMALL?SM_CXSMICON:SM_CXICON), GetSystemMetrics(wParam&PLIF_SMALL?SM_CYSMICON:SM_CYICON), 0);
-
 }
 
 
@@ -218,18 +207,15 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
 int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 {
-
 	int oldStatus = gnCurrentStatus;
 	int nNewStatus = MirandaStatusToSupported(wParam);
 
 
 	if (nNewStatus != oldStatus)
 	{
-
 		// New status is OFFLINE
 		if (nNewStatus == ID_STATUS_OFFLINE)
 		{
-
 			int oldStatus = gnCurrentStatus;
 			icq_packet packet;
 
@@ -247,11 +233,9 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
 
 			Netlib_Logf(ghServerNetlibUser, "Logged off.");
-
 		}
 		else
 		{
-
 			switch (gnCurrentStatus)
 			{
 
@@ -301,16 +285,13 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 			// We are connecting... We only need to change the going online status
 			case ID_STATUS_CONNECTING:
 				{
-
 					icqGoingOnlineStatus = nNewStatus;
 					break;
-
 				}
 
 			// We are already connected so we should just change status
 			default:
 				{
-
 					gnCurrentStatus = nNewStatus;
 
 					ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
@@ -332,24 +313,19 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 						if (gbSsiEnabled)
 							updateServVisibilityCode(4);
 					}
-
 				}
 			}
-
 		}
 	}
 
 	return 0;
-
 }
 
 
 
 int IcqGetStatus(WPARAM wParam, LPARAM lParam)
 {
-
 	return gnCurrentStatus;
-
 }
 
 
@@ -491,7 +467,6 @@ static int cheekySearchId = -1;
 static DWORD cheekySearchUin;
 static VOID CALLBACK CheekySearchTimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 {
-
 	ICQSEARCHRESULT isr = {0};
 
 
@@ -508,7 +483,6 @@ static VOID CALLBACK CheekySearchTimerProc(HWND hwnd, UINT uMsg, UINT idEvent, D
 	ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)cheekySearchId, 0);
 
 	cheekySearchId = -1;
-
 }
 
 
@@ -566,7 +540,6 @@ int IcqBasicSearch(WPARAM wParam, LPARAM lParam)
 
 int IcqSearchByEmail(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam && icqOnline && (strlen((char*)lParam) > 0))
 	{
 
@@ -576,17 +549,14 @@ int IcqSearchByEmail(WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0; // Failure
-
 }
 
 
 
 int IcqSearchByDetails(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam && icqOnline)
 	{
-
 		PROTOSEARCHBYNAME *psbn=(PROTOSEARCHBYNAME*)lParam;
 
 
@@ -595,28 +565,22 @@ int IcqSearchByDetails(WPARAM wParam, LPARAM lParam)
 			// Success
 			return SearchByNames(psbn->pszNick, psbn->pszFirstName, psbn->pszLastName);
 		}
-
 	}
 
 	return 0; // Failure
-
 }
 
 
 
 int IcqCreateAdvSearchUI(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam && hInst)
 	{
-
 		// Success
 		return (int)CreateDialog(hInst , MAKEINTRESOURCE(IDD_ICQADVANCEDSEARCH), (HWND)lParam, AdvancedSearchDlgProc);
-
 	}
 
 	return 0; // Failure
-
 }
 
 
@@ -767,15 +731,12 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 
 int IcqChangeInfo(WPARAM wParam, LPARAM lParam)
 {
-
-	if (lParam && icqOnline) {
-
+	if (lParam && icqOnline)
+  {
 		return icq_changeUserDetailsServ((WORD)wParam, (PBYTE)(lParam+2), *(PWORD)lParam); // Success
-
 	}
 
 	return 0; // Failure
-
 }
 
 
@@ -927,12 +888,10 @@ int IcqFileResume(WPARAM wParam, LPARAM lParam)
 
 int IcqSendSms(WPARAM wParam, LPARAM lParam)
 {
-
 	if (icqOnline && wParam && lParam)
 		return icq_sendSMSServ((const char *)wParam, (const char *)lParam);
 
 	return 0; // Failure
-
 }
 
 
@@ -940,51 +899,41 @@ int IcqSendSms(WPARAM wParam, LPARAM lParam)
 // Maybe we should be saving these up for batch changing, but I can't be bothered yet
 int IcqSetApparentMode(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 		DWORD uin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
 
 		if (ccs->hContact && uin != 0)
 		{
-
 			// Only 3 modes are supported
 			if (ccs->wParam == 0 || ccs->wParam == ID_STATUS_ONLINE || ccs->wParam == ID_STATUS_OFFLINE)
 			{
-
 				int oldMode = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "ApparentMode", 0);
-
 
 				// Dont send redundant updates
 				if ((int)ccs->wParam != oldMode)
 				{
-
 					DBWriteContactSettingWord(ccs->hContact, gpszICQProtoName, "ApparentMode", (WORD)ccs->wParam);
 
 					// Not being online is only an error when in SS mode. This is not handled
 					// yet so we just ignore this for now.
 					if (icqOnline)
 					{
-
 						if (oldMode != 0) // Remove from old list
 							icq_sendChangeVisInvis(ccs->hContact, uin, oldMode==ID_STATUS_OFFLINE, 0);
 						if (ccs->wParam != 0) // Add to new list
 							icq_sendChangeVisInvis(ccs->hContact, uin, ccs->wParam==ID_STATUS_OFFLINE, 1);
-
 					}
 
 					return 0; // Success
-
 				}
 			}
 		}
 	}
 
 	return 1; // Failure
-
 }
 
 
@@ -1051,23 +1000,20 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
-
 
 		if (ccs->hContact && ccs->lParam)
 		{
-
 			WORD wRecipientStatus;
 			DWORD dwCookie;
 			DWORD dwUin;
 			char* pszText;
 
-
 			pszText = (char*)ccs->lParam;
+      // TODO: here check if it contains non Ascii chars and if yes, and if enabled send as unicode
+
 			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 			wRecipientStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 
@@ -1090,9 +1036,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 			// Looks OK
 			else
 			{
-
 				message_cookie_data* pCookieData;
-
 
 				// Set up the ack type
 				pCookieData = malloc(sizeof(message_cookie_data));
@@ -1106,8 +1050,8 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 					pCookieData->nAckType = ACKTYPE_CLIENT;
 
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
-		Netlib_Logf(ghServerNetlibUser, "Send message - Contact status is %u", wRecipientStatus);
+    		Netlib_Logf(ghServerNetlibUser, "Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
+		    Netlib_Logf(ghServerNetlibUser, "Send message - Contact status is %u", wRecipientStatus);
 #endif
 				if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
 					(wRecipientStatus == ID_STATUS_OFFLINE))
@@ -1116,7 +1060,6 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-
 					WORD wPriority;
 
 
@@ -1126,7 +1069,6 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 						wPriority = 0x0021;
 
 					dwCookie = icq_SendChannel2Message(dwUin, pszText, strlen(pszText), wPriority, pCookieData);
-
 				}
 
 				// This will stop the message dialog from waiting for the real message delivery ack
@@ -1138,31 +1080,25 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 					SAFE_FREE(&pCookieData);
 					FreeCookie(dwCookie);
 				}
-
 			}
 
 			return dwCookie; // Success
 
 		}
-
 	}
 
 	return 0; // Failure
-
 }
 
 
 int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 
 		if (ccs->hContact && ccs->lParam)
 		{
-
 			WORD wRecipientStatus;
 			DWORD dwCookie;
 			DWORD dwUin;
@@ -1172,7 +1108,6 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 			{	// send as unicode only if marked as unicode
 				return IcqSendMessage(wParam, lParam);
 			}
-
 
 			pszText = (wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1); // get the UTF-16 part
 			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
@@ -1211,8 +1146,8 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 					pCookieData->nAckType = ACKTYPE_CLIENT;
 
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
-		Netlib_Logf(ghServerNetlibUser, "Send unicode message - Contact status is %u", wRecipientStatus);
+    		Netlib_Logf(ghServerNetlibUser, "Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
+		    Netlib_Logf(ghServerNetlibUser, "Send unicode message - Contact status is %u", wRecipientStatus);
 #endif
 				if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY))
 				{
@@ -1220,7 +1155,6 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-
 					WORD wPriority;
 					char* utf8msg;
 
@@ -1233,7 +1167,6 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 					dwCookie = icq_SendChannel2MessageW(dwUin, utf8msg, strlen(utf8msg), wPriority, pCookieData);
 
 					SAFE_FREE(&utf8msg);
-
 				}
 
 				// This will stop the message dialog from waiting for the real message delivery ack
@@ -1248,12 +1181,10 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 
 			}
 			return dwCookie; // Success
-
 		}
 
 	}
 	return 0; // Failure
-
 }
 
 

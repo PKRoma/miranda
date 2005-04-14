@@ -136,6 +136,9 @@
 #define MTYPE_AUTODND  0xEB // Auto do not disturb message
 #define MTYPE_AUTOFFC  0xEC // Auto free for chat message
 
+#define MTYPE_GREETINGCARD    0x101 // Request for Contacts (internal use only)
+#define MTYPE_REQUESTCONTACTS 0x102 // Greeting Card
+
 #define MTYPE_UNKNOWN  0x00 // Unknown message, only used internally by this plugin
 
 

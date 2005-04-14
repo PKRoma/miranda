@@ -219,7 +219,6 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 		break;
 
 	}
-
 }
 
 
@@ -1620,7 +1619,7 @@ void updateServVisibilityCode(BYTE bCode)
 
 // Updates the avatar hash used while in SSI mode. If a server ID is
 // not stored in the local DB, a new ID will be added to the server list.
-void updateServAvatarHash(char* pHash)
+void updateServAvatarHash(char* pHash, int size)
 {
   icq_packet packet;
   WORD wAvatarID;
@@ -1657,7 +1656,7 @@ void updateServAvatarHash(char* pHash)
     dwCookie = AllocateCookie(wCommand, 0, ack); // take cookie
 
     // Build and send packet
-    packet.wLen = 47;
+    packet.wLen = 29 + size;
     write_flap(&packet, ICQ_DATA_CHAN);
     packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
     packWord(&packet, 1);                   // Name length
@@ -1665,12 +1664,12 @@ void updateServAvatarHash(char* pHash)
     packWord(&packet, 0);                   // GroupID (0 if not relevant)
     packWord(&packet, wAvatarID);           // EntryID
     packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
-    packWord(&packet, 0x1A);                // Length in bytes of following TLV
+    packWord(&packet, 0x8 + size);          // Length in bytes of following TLV
     packWord(&packet, 0x131);               // TLV Type (Name)
     packWord(&packet, 0);                   // TLV Length (empty)
     packWord(&packet, 0xD5);                // TLV Type
-    packWord(&packet, 0x12);                // TLV Length
-    packBuffer(&packet, pHash, 0x12);       // TLV Value (avatar hash)
+    packWord(&packet, size);                // TLV Length
+    packBuffer(&packet, pHash, size);       // TLV Value (avatar hash)
     sendServPacket(&packet);
     // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
     // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash

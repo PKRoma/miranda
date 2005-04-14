@@ -1709,7 +1709,7 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
   DWORD groupSize;
 
   if (IsGroupRenamed(wGroupId)) return; // the group was already renamed
-  
+
   if (level == -1) return; // we failed to prepare group
 
   szLast = szGroupName;
@@ -1747,7 +1747,6 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
 
     dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
 
-    //removeGroupPathLinks(wGroupId);
     AddGroupRename(wGroupId);
 
     icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, wGroupId, szGroup, groupData, groupSize);
@@ -1849,6 +1848,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         WORD wGroupId = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvGroupId", 0);
         char* szGroup = makeGroupPath(wGroupId);
         int bRenamed = 0;
+        int bMoved = 1;
 
         if (wGroupId && !GroupNameExists(szGroup, -1))
         { // if we moved from non-existing group, it can be rename
@@ -1861,6 +1861,8 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
                 bRenamed = 1;
                 Netlib_Logf(ghServerNetlibUser, "Group %x renamed to ""%s"".", wGroupId, cws->value.pszVal);
               }
+              else // if rename in progress do not move contacts
+                bMoved = 0;
             }
           }
         }
@@ -1868,7 +1870,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
         if (bRenamed)
           renameServGroup(wGroupId, cws->value.pszVal);
-        else
+        else if (bMoved)
           moveServContactGroup((HANDLE)wParam, cws->value.pszVal);
       }
       else
@@ -1876,7 +1878,6 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         moveServContactGroup((HANDLE)wParam, NULL);
       }
     }		
-
   }
 
   if (!strcmp(cws->szModule, "UserInfo"))
@@ -1912,7 +1913,6 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 
 //	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE))
   { // we need all server contacts on local buddy list
-
 		WORD wContactID;
 		WORD wGroupID;
 		WORD wVisibleID;
@@ -1920,7 +1920,6 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
     WORD wIgnoreID;
 		DWORD dwUIN;
 
-		
 		wContactID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "ServerId", 0);
 		wGroupID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvGroupId", 0);
 		wVisibleID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvPermitId", 0);
@@ -1930,7 +1929,6 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 
 		if ((wGroupID && wContactID) || wVisibleID || wInvisibleID || wIgnoreID)
 		{
-
 			if (wContactID)
       { // delete contact from server
         removeServContact((HANDLE)wParam);
@@ -2008,7 +2006,6 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
   }
 
 	return 0;
-
 }
 
 

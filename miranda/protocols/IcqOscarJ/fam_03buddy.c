@@ -112,6 +112,7 @@ const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xb
 const capstr capXtraz     = {0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0};
 const capstr capIcq5Extra = {0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_SENDFILE
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
+const capstr capXtStatus  = {0x63, 0x65, 0x73, 0x37, 0xA0, 0x3F, 0x49, 0xFF, 0x80, 0xe5, 0xf7, 0x09, 0xcd, 0xe0, 0xa4, 0xee};
 
 char* cliLibicq2k  = "libicq2000";
 char* cliLicqVer   = "Licq %u.%u";
@@ -135,7 +136,6 @@ char* cliIM2       = "IM2";
 // TLV(1D) Avatar Hash (20 bytes)
 static void handleUserOnline(BYTE* buf, WORD wLen)
 {
-
 	HANDLE hContact;
 	DWORD dwPort;
 	DWORD dwRealIP;
@@ -213,7 +213,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 	// Read user info TLVs
 	{
-
 		oscar_tlv_chain* pChain;
 		oscar_tlv* pTLV;
 
@@ -386,11 +385,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		Netlib_Logf(ghServerNetlibUser, "Online since %s", asctime(localtime(&dwOnlineSince)));
 #endif
 
-
 		// Check client capabilities
 		if (hContact != NULL)
 		{
-
 			WORD wOldStatus;
 
 			wOldStatus = DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
@@ -513,7 +510,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 			// Update the contact's capabilities
 			if (wOldStatus == ID_STATUS_OFFLINE)
 			{
-
 				// Delete the capabilities we saved the last time this contact came online
 				ClearAllContactCapabilities(hContact);
 
@@ -525,6 +521,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           capstr* capId;
 
 					AddCapabilitiesFromBuffer(hContact, pTLV->pData, pTLV->wLen);
+          if (MatchCap(pTLV->pData, pTLV->wLen, &capXtStatus, 0x10))
+          { // TODO: request custom status information
+            Netlib_Logf(ghServerNetlibUser, "Contact is in custom status mode.");
+          }
+
           // check capabilities for client identification
           if (MatchCap(pTLV->pData, pTLV->wLen, &capTrillian, 0x10) || MatchCap(pTLV->pData, pTLV->wLen, &capTrilCrypt, 0x10))
           { // this is Trillian, check for new version
@@ -702,8 +703,19 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 			}
       else
-        /*if (szClient == 0)*/ szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
+      {
+        szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
 
+				// Get Capability Info TLV
+				pTLV = getTLV(pChain, 0x0D, 1);
+				if (pTLV && (pTLV->wLen >= 16))
+				{
+          if (MatchCap(pTLV->pData, pTLV->wLen, &capXtStatus, 0x10))
+          { // TODO: request custom status information
+            Netlib_Logf(ghServerNetlibUser, "Contact is in custom status mode.");
+          }
+        }
+      }
 		}
 
 

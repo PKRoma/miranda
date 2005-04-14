@@ -104,7 +104,6 @@ static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WOR
 
 static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wPriority, int isAck, int includeDcInfo, BYTE bRequestServerAck)
 {
-
 	DWORD dwID1;
 	DWORD dwID2;
 
@@ -163,7 +162,6 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD 
                             // 03 - auto reply message request
 	packLEWord(p, (WORD)MirandaStatusToIcq(gnCurrentStatus));
 	packWord(p, wPriority);
-
 }
 
 
@@ -264,7 +262,6 @@ void icq_setidle(int bAllow)
 
 void icq_setstatus(WORD wStatus)
 {
-
 	icq_packet packet;
 	WORD wFlags = 0;
 
@@ -288,7 +285,6 @@ void icq_setstatus(WORD wStatus)
 	default:
 		wFlags = wFlags | STATUS_DCDISABLED;
 		break;
-
 	}
 
 
@@ -303,14 +299,12 @@ void icq_setstatus(WORD wStatus)
 
 	// Send packet
 	sendServPacket(&packet);
-
 }
 
 
 
 DWORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData)
 {
-
 	icq_packet packet;
 	WORD wMessageLen;
 	DWORD dwCookie;
@@ -361,13 +355,11 @@ DWORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, messa
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
 DWORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData)
 {
-
 	icq_packet packet;
 	WORD wMessageLen;
 	DWORD dwCookie;
@@ -426,13 +418,11 @@ DWORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, m
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
 DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 
@@ -458,13 +448,11 @@ DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, 
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
 DWORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 
@@ -501,7 +489,6 @@ DWORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLen,
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
