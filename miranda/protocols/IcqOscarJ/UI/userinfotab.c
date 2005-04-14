@@ -382,7 +382,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 ihash[2] = 1;    //hash status
                 ihash[3] = 0x10; //hash len
                 memcpy(ihash+4, hash, 0x10);
-                updateServAvatarHash(ihash+2);
+                updateServAvatarHash(ihash+2, 0x12);
 
                 if (DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", ihash, 0x14))
                 {
@@ -406,13 +406,14 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     case IDC_DELETEAVATAR:
       {
         HBITMAP avt;
+        BYTE bEmptyAvatar[7] = {0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
 
         avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
         RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
         if (avt) DeleteObject(avt); // we release old avatar if any
         DBDeleteContactSetting(NULL, gpszICQProtoName, "AvatarFile");
         DBDeleteContactSetting(NULL, gpszICQProtoName, "AvatarHash");
-        updateServAvatarHash(NULL); // clear hash on server
+        updateServAvatarHash(bEmptyAvatar, 7); // clear hash on server
       }
       break;
     }
