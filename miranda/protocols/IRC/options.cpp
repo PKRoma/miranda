@@ -830,7 +830,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						GetWindowText(GetDlgItem(hwndDlg, IDC_PERFORMEDIT), temp, j+1);
 
 						if(my_strstri(temp, "/away"))
-							MessageBox(NULL, "The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically.", "IRC Error", MB_OK);
+							MessageBox(NULL, Translate("The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically."), Translate("IRC Error"), MB_OK);
 						else
 						{
 							int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);

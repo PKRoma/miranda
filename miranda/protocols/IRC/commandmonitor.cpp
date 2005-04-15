@@ -2645,6 +2645,10 @@ bool DoOnConnect(const CIrcMessage *pmsg)
 
 }
 
+static void __cdecl AwayWarningThread(LPVOID di)
+{
+	MessageBox(NULL, Translate("The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically."), Translate("IRC Error"), MB_OK);
+}
 int DoPerform(char * event)
 {
 	if (!pszPerformFile)
@@ -2669,10 +2673,11 @@ int DoPerform(char * event)
 			return 0;
 		char * DoThis = new char[p1-p2+1];
 		lstrcpyn(DoThis, p2, p1-p2+1);
+
 		if(!my_strstri(DoThis, "/away"))
 			PostIrcMessageWnd(NULL, NULL, (char *)DoThis);
 		else
-			MessageBox(NULL, "The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically.", "IRC Error", MB_OK);
+			forkthread(AwayWarningThread, NULL, NULL  );
 		delete [] DoThis;
 		delete [] search;
 		return 1;
@@ -2680,7 +2685,6 @@ int DoPerform(char * event)
 	delete [] search;
 	return 0;
 }
-
 
 
 char * IsIgnored(String nick, String address, String host, char type) 
