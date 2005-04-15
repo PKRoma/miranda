@@ -896,6 +896,7 @@ start:
     if(thread == ggThread)
     {
         gg_broadcastnewstatus(ID_STATUS_OFFLINE);
+        gg_setalloffline();
         ggThread = NULL;
     }
     list_remove(&ggThreadList, thread, 1);
