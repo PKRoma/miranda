@@ -319,7 +319,7 @@ start:
         {
             hostcount = gg_decodehosts(dbv.pszVal, hosts, 64);
             hostnum ++;
-            if(hostcount || hostnum < hostcount)
+            if(hostcount && hostnum < hostcount)
             {
                 if(!(p.server_addr = gg_dnslookup(hosts[hostnum].hostname)))
                 {
