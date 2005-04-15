@@ -237,7 +237,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 
 		}
 		
-       else if ((*buffer)[i] == '\t') {
+       else if ((*buffer)[i] == '\t' && !streamData->bStripFormat) {
             if (*cbBufferEnd + 5 > *cbBufferAlloced) {
                 *cbBufferAlloced += 1024;
                 *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
@@ -246,7 +246,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
             CopyMemory(*buffer + i, "\\tab ", 5);
             *cbBufferEnd += 4;
         }
-        else if ((*buffer)[i] == '\\' || (*buffer)[i] == '{' || (*buffer)[i] == '}') {
+        else if (((*buffer)[i] == '\\' || (*buffer)[i] == '{' || (*buffer)[i] == '}') && !streamData->bStripFormat) {
             if (*cbBufferEnd + 2 > *cbBufferAlloced) {
                 *cbBufferAlloced += 1024;
                 *buffer = (char *) realloc(*buffer, *cbBufferAlloced);

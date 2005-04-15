@@ -1271,8 +1271,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat->pEventListEnd = NULL;
 			dat->pszTopic = NULL;
 			dat->pMe = NULL;
-            dat->windowWasCascaded = 0;
-			dat->nUsersInNicklist = 0;
+ 			dat->nUsersInNicklist = 0;
 			dat->ItemData = 0;
 			dat->LastTime = 0;
 			dat->bBGSet = FALSE;
@@ -1334,25 +1333,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if(dat->iType == GCW_SERVER)
 					EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), FALSE);
 			}
-			
-			{
-				int savePerContact = DBGetContactSettingByte(NULL, "Chat", "SavePosition", 0);
-				if (!RestoreWindowPosition(hwndDlg, dat->hContact, "Chat", "room", SW_HIDE)) 
-				{
-					if (savePerContact) 
-					{
-						if (!RestoreWindowPosition(hwndDlg, NULL, "Chat", "room", SW_HIDE))
-							SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
-					}
-					else
-						SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
 
-					if (DBGetContactSettingByte(NULL, "Chat", "CascadeWindows", 1))
-						WM_BroadcastMessage(NULL, GC_CASCADENEWWINDOW, (WPARAM) hwndDlg, (LPARAM) & dat->windowWasCascaded, FALSE);
-				}
-				else if (!savePerContact && DBGetContactSettingByte(NULL, "Chat", "CascadeWindows", 1))
-					WM_BroadcastMessage(NULL, GC_CASCADENEWWINDOW, (WPARAM) hwndDlg, (LPARAM) & dat->windowWasCascaded, FALSE);
-			}
+			SendMessage(hwndDlg, GC_SETWINDOWPOS, 0, 0);
 			
 			if(SmileyAddInstalled)
 				EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEY), TRUE);
@@ -1757,11 +1739,11 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if(bRedrawFlag)
 					{
 //						SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
-//						InvalidateRect(hwndDlg, NULL, TRUE);
 						SendMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 					}
 					SetWindowPos(hwndDlg, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 					SetActiveWindow(hwndDlg);
+					InvalidateRect(hwndDlg, NULL, TRUE);
 
 				}
 				nlu->dwItemData = 1; // stupid fix
@@ -2002,26 +1984,40 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			PostMessage(hwndDlg,WM_SIZE,0,0);
 		}break;
-       case GC_CASCADENEWWINDOW:
-            if ((HWND) wParam == hwndDlg)
-                break;
-            {
-                RECT rcThis, rcNew;
-				DWORD dwFlag;
+		case GC_SETWINDOWPOS:
+			{
+			HWND hWnd = GetActiveChatWindow();
+			int savePerContact = DBGetContactSettingByte(NULL, "Chat", "SavePosition", 0);
 
-				dwFlag = SWP_NOZORDER | SWP_NOSIZE;
+			if(savePerContact)
+			{
+				if (RestoreWindowPosition(hwndDlg, dat->hContact, "Chat", "room", SW_HIDE)) 
+					break;
+				if (!RestoreWindowPosition(hwndDlg, NULL, "Chat", "room", SW_HIDE))
+					SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
+			}
+			else
+				SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
+
+			if(hWnd && DBGetContactSettingByte(NULL, "Chat", "CascadeWindows", 1))
+			{
+				RECT rcThis, rcNew;
+				int dwFlag = SWP_NOZORDER | SWP_NOSIZE;
 				if(!IsWindowVisible ((HWND)wParam))
 					dwFlag |= SWP_HIDEWINDOW;
 
-                GetWindowRect(hwndDlg, &rcThis);
-                GetWindowRect((HWND) wParam, &rcNew);
-                if (abs(rcThis.left - rcNew.left) < 3 && abs(rcThis.top - rcNew.top) < 3) {
-                    int offset = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFRAME);
-                    SetWindowPos((HWND) wParam, 0, rcNew.left + offset, rcNew.top + offset, 0, 0, dwFlag);
-                    *(int *) lParam = 1;
-                }
-            }
-            break;
+				GetWindowRect(hwndDlg, &rcThis);
+				GetWindowRect(hWnd, &rcNew);
+
+				{
+					int offset = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFRAME);
+					SetWindowPos((HWND) hwndDlg, 0, rcNew.left + offset, rcNew.top + offset, 0, 0, dwFlag);
+				}
+
+			}
+ 
+
+            }break;
 		case GC_FIREHOOK:
 		{
 			if (lParam)
@@ -2092,6 +2088,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 //			InvalidateRect(GetDlgItem(hwndDlg,IDC_LOG), NULL, TRUE);
 			CHARRANGE sel;
+			WINDOWPLACEMENT wp = { 0 };
+
+			wp.length = sizeof(wp);
+			GetWindowPlacement(hwndDlg, &wp);
+			g_LogOptions.iX = wp.rcNormalPosition.left;
+			g_LogOptions.iY = wp.rcNormalPosition.top;
+			g_LogOptions.iWidth = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+			g_LogOptions.iHeight = wp.rcNormalPosition.bottom - wp.rcNormalPosition.top;
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXGETSEL, 0, (LPARAM) & sel);
 			sel.cpMin = sel.cpMax;
@@ -2382,9 +2386,27 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}break;
 			case IDC_SHOWNICKLIST:
 				{
+					BOOL bVisible = TRUE;
 					if(!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_SHOWNICKLIST))) 
 						break;
-					ShowWindow(GetDlgItem(hwndDlg, IDC_NICKLIST), IsWindowVisible(GetDlgItem(hwndDlg, IDC_NICKLIST))?SW_HIDE:SW_SHOW);
+
+					bVisible = IsWindowVisible(GetDlgItem(hwndDlg, IDC_NICKLIST));
+					ShowWindow(GetDlgItem(hwndDlg, IDC_NICKLIST), bVisible?SW_HIDE:SW_SHOW);
+					{ // scroll log to bottom
+
+						SCROLLINFO si = { 0 };
+						if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL) != 0)
+						{
+							si.cbSize = sizeof(si);
+							si.fMask = SIF_PAGE | SIF_RANGE;
+							GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
+							si.fMask = SIF_POS;
+							si.nPos = si.nMax - si.nPage + 1;
+							SetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si, TRUE);
+							PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+						}
+
+					}
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				}break;
 			case IDC_MESSAGE:

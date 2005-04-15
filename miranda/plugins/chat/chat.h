@@ -80,7 +80,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_FILTERFIX			(WM_USER+111)
 #define GC_CHANGEFILTERFLAG		(WM_USER+112)
 #define GC_SHOWFILTERMENU		(WM_USER+113)
-#define GC_CASCADENEWWINDOW		(WM_USER+114)
+#define GC_SETWINDOWPOS			(WM_USER+114)
 #define GC_SAVEWNDPOS			(WM_USER+115)
 #define GC_HIGHLIGHT			(WM_USER+116)
 #define	GC_NICKLISTREINIT		(WM_USER+117)
@@ -197,7 +197,6 @@ struct CREOleCallback {
 
 typedef struct  {
 	BOOL		bFilterEnabled;
-	BOOL		windowWasCascaded;
 	BOOL		bFGSet;
 	BOOL		bBGSet;
 	int			nUsersInNicklist;

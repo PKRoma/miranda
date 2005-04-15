@@ -185,7 +185,7 @@ int	CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam)
 						{
 //							SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 //							InvalidateRect(hWindow, NULL, TRUE);
-							SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+							PostMessage(hWindow, GC_REDRAWLOG, 0, 0);
 						}
 						SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 						SetForegroundWindow(hWindow);
@@ -203,7 +203,7 @@ int	CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam)
 					{
 //						SendMessage(hWindow, WM_SETREDRAW, TRUE, 0);
 //						InvalidateRect(hWindow, NULL, TRUE);
-						SendMessage(hWindow, GC_REDRAWLOG, 0, 0);
+						PostMessage(hWindow, GC_REDRAWLOG, 0, 0);
 					}
 					SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 					SetForegroundWindow(hWindow);

@@ -208,43 +208,43 @@ BOOL DoPopupAndTrayIcon(HWND hWnd, int iEvent, CHATWINDOWDATA * dat, NEWEVENTLPA
 			{
 			case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
 			case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
-				CList_AddEvent(hWnd, dat->hContact, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), "chaticon", 0, "%s wants your attention in %s", nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), "chaticon", 0, Translate("%s wants your attention in %s"), nlu->pszName, dat->pszName); 
 				break;
 			case GC_EVENT_MESSAGE :
-				CList_AddEvent(hWnd, dat->hContact, hIcons[17], "chaticon", CLEF_ONLYAFEW, "%s speaks in %s", nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[17], "chaticon", CLEF_ONLYAFEW, Translate("%s speaks in %s"), nlu->pszName, dat->pszName); 
 				break;
 			case GC_EVENT_ACTION:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[23], "chaticon", CLEF_ONLYAFEW, "%s speaks in %s", nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[23], "chaticon", CLEF_ONLYAFEW, Translate("%s speaks in %s"), nlu->pszName, dat->pszName); 
 				break;
 			case GC_EVENT_JOIN:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[11], "chaticon", CLEF_ONLYAFEW, "%s has joined %s", nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[11], "chaticon", CLEF_ONLYAFEW, Translate("%s has joined %s"), nlu->pszName, dat->pszName); 
 				break;
 			case GC_EVENT_PART:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[12], "chaticon", CLEF_ONLYAFEW, "%s has left %s", nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[12], "chaticon", CLEF_ONLYAFEW, Translate("%s has left %s"), nlu->pszName, dat->pszName); 
 				break;
 			case GC_EVENT_QUIT:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[13], "chaticon", CLEF_ONLYAFEW, "%s disconnected", nlu->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[13], "chaticon", CLEF_ONLYAFEW, Translate("%s has disconnected"), nlu->pszName); 
 				break;
 			case GC_EVENT_NICK:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[15], "chaticon", CLEF_ONLYAFEW, "%s is now known as %s", nlu->pszName, nlu->pszText); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[15], "chaticon", CLEF_ONLYAFEW, Translate("%s is now known as %s"), nlu->pszName, nlu->pszText); 
 				break;
 			case GC_EVENT_KICK:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[14], "chaticon", CLEF_ONLYAFEW, "%s kicked %s from %s", nlu->pszStatus, nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[14], "chaticon", CLEF_ONLYAFEW, Translate("%s kicked %s from %s"), nlu->pszStatus, nlu->pszName, dat->pszName); 
 				break;
 			case GC_EVENT_NOTICE:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[16], "chaticon", CLEF_ONLYAFEW, "Notice from %s", dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[16], "chaticon", CLEF_ONLYAFEW, Translate("Notice from %s"), dat->pszName); 
 				break;
 			case GC_EVENT_TOPIC:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[19], "chaticon", CLEF_ONLYAFEW, "Topic change in %s", dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[19], "chaticon", CLEF_ONLYAFEW, Translate("Topic change in %s"), dat->pszName); 
 				break;
 			case GC_EVENT_INFORMATION:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[20], "chaticon", CLEF_ONLYAFEW, "Informative message in %s", dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[20], "chaticon", CLEF_ONLYAFEW, Translate("Information in %s"), dat->pszName); 
 				break;
 			case GC_EVENT_ADDSTATUS:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[21], "chaticon", CLEF_ONLYAFEW, "%s enables \'%s\' status for %s in %s", nlu->pszText, nlu->pszStatus, nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[21], "chaticon", CLEF_ONLYAFEW, Translate("%s enables \'%s\' status for %s in %s"), nlu->pszText, nlu->pszStatus, nlu->pszName, dat->pszName); 
 				break;
 			case GC_EVENT_REMOVESTATUS:
-				CList_AddEvent(hWnd, dat->hContact, hIcons[22], "chaticon", CLEF_ONLYAFEW, "%s disables \'%s\' status for %s in %s", nlu->pszText, nlu->pszStatus, nlu->pszName, dat->pszName); 
+				CList_AddEvent(hWnd, dat->hContact, hIcons[22], "chaticon", CLEF_ONLYAFEW, Translate("%s disables \'%s\' status for %s in %s"), nlu->pszText, nlu->pszStatus, nlu->pszName, dat->pszName); 
 				break;
 
 			default:break;
@@ -261,58 +261,58 @@ BOOL DoPopupAndTrayIcon(HWND hWnd, int iEvent, CHATWINDOWDATA * dat, NEWEVENTLPA
 				switch (iEvent)
 				{			
 				case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
-					ShowPopup(dat->hContact, hWnd, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), dat->pszModule, dat->pszName, aFonts[16].color, nlu->bBroadcasted, "%s says: %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
+					ShowPopup(dat->hContact, hWnd, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), dat->pszModule, dat->pszName, aFonts[16].color, nlu->bBroadcasted, Translate("%s says: %s"), nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
 					ShowPopup(dat->hContact, hWnd, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), dat->pszModule, dat->pszName, aFonts[16].color, nlu->bBroadcasted, "%s %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_MESSAGE :
-					ShowPopup(dat->hContact, hWnd, hIcons[17], dat->pszModule, dat->pszName, aFonts[9].color, nlu->bBroadcasted, "%s says: %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
+					ShowPopup(dat->hContact, hWnd, hIcons[17], dat->pszModule, dat->pszName, aFonts[9].color, nlu->bBroadcasted, Translate("%s says: %s"), nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_ACTION:
 					ShowPopup(dat->hContact, hWnd, hIcons[23], dat->pszModule, dat->pszName, aFonts[15].color, nlu->bBroadcasted, "%s %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_JOIN:
-					ShowPopup(dat->hContact, hWnd, hIcons[11], dat->pszModule, dat->pszName, aFonts[3].color, nlu->bBroadcasted, "%s has joined", nlu->pszName); 
+					ShowPopup(dat->hContact, hWnd, hIcons[11], dat->pszModule, dat->pszName, aFonts[3].color, nlu->bBroadcasted, Translate("%s has joined"), nlu->pszName); 
 					break;
 				case GC_EVENT_PART:
 					if(!nlu->pszText)
-						ShowPopup(dat->hContact, hWnd, hIcons[12], dat->pszModule, dat->pszName, aFonts[4].color, nlu->bBroadcasted, "%s has left", nlu->pszName); 
+						ShowPopup(dat->hContact, hWnd, hIcons[12], dat->pszModule, dat->pszName, aFonts[4].color, nlu->bBroadcasted, Translate("%s has left"), nlu->pszName); 
 					else					
-						ShowPopup(dat->hContact, hWnd, hIcons[12], dat->pszModule, dat->pszName, aFonts[4].color, nlu->bBroadcasted, "%s has left (%s)", nlu->pszName, RemoveFormatting(nlu->pszText)); 
+						ShowPopup(dat->hContact, hWnd, hIcons[12], dat->pszModule, dat->pszName, aFonts[4].color, nlu->bBroadcasted, Translate("%s has left (%s)"), nlu->pszName, RemoveFormatting(nlu->pszText)); 
 						break;
 				case GC_EVENT_QUIT:
 					if(!nlu->pszText)
-						ShowPopup(dat->hContact, hWnd, hIcons[13], dat->pszModule, dat->pszName, aFonts[5].color, nlu->bBroadcasted, "%s disconnected", nlu->pszName); 
+						ShowPopup(dat->hContact, hWnd, hIcons[13], dat->pszModule, dat->pszName, aFonts[5].color, nlu->bBroadcasted, Translate("%s has disconnected"), nlu->pszName); 
 					else
-						ShowPopup(dat->hContact, hWnd, hIcons[13], dat->pszModule, dat->pszName, aFonts[5].color, nlu->bBroadcasted, "%s disconnected (%s)", nlu->pszName,RemoveFormatting(nlu->pszText)); 
+						ShowPopup(dat->hContact, hWnd, hIcons[13], dat->pszModule, dat->pszName, aFonts[5].color, nlu->bBroadcasted, Translate("%s has disconnected (%s)"), nlu->pszName,RemoveFormatting(nlu->pszText)); 
 						break;
 				case GC_EVENT_NICK:
-					ShowPopup(dat->hContact, hWnd, hIcons[15], dat->pszModule, dat->pszName, aFonts[7].color, nlu->bBroadcasted, "%s is now known as %s", nlu->pszName, nlu->pszText); 
+					ShowPopup(dat->hContact, hWnd, hIcons[15], dat->pszModule, dat->pszName, aFonts[7].color, nlu->bBroadcasted, Translate("%s is now known as %s"), nlu->pszName, nlu->pszText); 
 					break;
 				case GC_EVENT_KICK:
 					if(!nlu->pszText)
-						ShowPopup(dat->hContact, hWnd, hIcons[14], dat->pszModule, dat->pszName, aFonts[6].color, nlu->bBroadcasted, "%s kicked %s", nlu->pszStatus, nlu->pszName); 
+						ShowPopup(dat->hContact, hWnd, hIcons[14], dat->pszModule, dat->pszName, aFonts[6].color, nlu->bBroadcasted, Translate("%s kicked %s"), nlu->pszStatus, nlu->pszName); 
 					else
-						ShowPopup(dat->hContact, hWnd, hIcons[14], dat->pszModule, dat->pszName, aFonts[6].color, nlu->bBroadcasted, "%s kicked %s (%s)", nlu->pszStatus, nlu->pszName, RemoveFormatting(nlu->pszText)); 
+						ShowPopup(dat->hContact, hWnd, hIcons[14], dat->pszModule, dat->pszName, aFonts[6].color, nlu->bBroadcasted, Translate("%s kicked %s (%s)"), nlu->pszStatus, nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_NOTICE:
-					ShowPopup(dat->hContact, hWnd, hIcons[16], dat->pszModule, dat->pszName, aFonts[8].color, nlu->bBroadcasted, "Notice from %s: %s", nlu->pszName, RemoveFormatting(nlu->pszText)); 
+					ShowPopup(dat->hContact, hWnd, hIcons[16], dat->pszModule, dat->pszName, aFonts[8].color, nlu->bBroadcasted, Translate("Notice from %s: %s"), nlu->pszName, RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_TOPIC:
 					if(!nlu->pszName)
-						ShowPopup(dat->hContact, hWnd, hIcons[19], dat->pszModule, dat->pszName, aFonts[11].color, nlu->bBroadcasted, "Topic is \'%s\'", RemoveFormatting(nlu->pszText)); 
+						ShowPopup(dat->hContact, hWnd, hIcons[19], dat->pszModule, dat->pszName, aFonts[11].color, nlu->bBroadcasted, Translate("The topic is \'%s\'"), RemoveFormatting(nlu->pszText)); 
 					else
-						ShowPopup(dat->hContact, hWnd, hIcons[19], dat->pszModule, dat->pszName, aFonts[11].color, nlu->bBroadcasted, "Topic is \'%s\' (set by %s)", RemoveFormatting(nlu->pszText), nlu->pszName); 
+						ShowPopup(dat->hContact, hWnd, hIcons[19], dat->pszModule, dat->pszName, aFonts[11].color, nlu->bBroadcasted, Translate("The topic is \'%s\' (set by %s)"), RemoveFormatting(nlu->pszText), nlu->pszName); 
 					break;
 				case GC_EVENT_INFORMATION:
 					ShowPopup(dat->hContact, hWnd, hIcons[20], dat->pszModule, dat->pszName, aFonts[12].color, nlu->bBroadcasted, "%s", RemoveFormatting(nlu->pszText)); 
 					break;
 				case GC_EVENT_ADDSTATUS:
-					ShowPopup(dat->hContact, hWnd, hIcons[21], dat->pszModule, dat->pszName, aFonts[13].color, nlu->bBroadcasted, "%s enables \'%s\' status for %s", nlu->pszText, nlu->pszStatus, nlu->pszName); 
+					ShowPopup(dat->hContact, hWnd, hIcons[21], dat->pszModule, dat->pszName, aFonts[13].color, nlu->bBroadcasted, Translate("%s enables \'%s\' status for %s"), nlu->pszText, nlu->pszStatus, nlu->pszName); 
 					break;
 				case GC_EVENT_REMOVESTATUS:
-					ShowPopup(dat->hContact, hWnd, hIcons[22], dat->pszModule, dat->pszName, aFonts[14].color, nlu->bBroadcasted, "%s disables \'%s\' status for %s", nlu->pszText, nlu->pszStatus, nlu->pszName); 
+					ShowPopup(dat->hContact, hWnd, hIcons[22], dat->pszModule, dat->pszName, aFonts[14].color, nlu->bBroadcasted, Translate("%s disables \'%s\' status for %s"), nlu->pszText, nlu->pszStatus, nlu->pszName); 
 					break;
 
 				default:break;

@@ -170,27 +170,6 @@ int __declspec(dllexport) Unload(void)
 	UnhookEvents();
 	return 0;
 }
-int __declspec(dllexport) UninstallEx(PLUGINUNINSTALLPARAMS* ppup)
-{
-	if (ppup && ppup->bDoDeleteSettings) 
-	{
-		PUIRemoveDbModule("Chat");
-		PUIRemoveDbModule("ChatFonts");
-
-		PUIRemoveSkinSound("ChatMessage");
-		PUIRemoveSkinSound("ChatHighlight"); 
-		PUIRemoveSkinSound("ChatAction"); 
-		PUIRemoveSkinSound((WPARAM) "ChatJoin"); 
-		PUIRemoveSkinSound((WPARAM) "ChatKick"); 
-		PUIRemoveSkinSound((WPARAM) "ChatMode"); 
-		PUIRemoveSkinSound((WPARAM) "ChatNick"); 
-		PUIRemoveSkinSound((WPARAM) "ChatNotice"); 
-		PUIRemoveSkinSound((WPARAM) "ChatPart"); 
-		PUIRemoveSkinSound((WPARAM) "ChatQuit"); 
-		PUIRemoveSkinSound((WPARAM) "ChatTopic"); 
-	}
-	return 0; 
-}
 
 void LoadIcons(void)
 {
