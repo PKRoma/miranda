@@ -995,7 +995,7 @@ hStatusMenuHandlesCnt=0;
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService=NULL;
 	tmp.ExecService="MainMenuExecService";
-	tmp.name="MainMenu";
+	tmp.name="Main Menu";
 	hMainMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	
@@ -1015,7 +1015,7 @@ hStatusMenuHandlesCnt=0;
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService="ContactMenuCheckService";
 	tmp.ExecService="ContactMenuExecService";
-	tmp.name="ContactMenu";
+	tmp.name="Contact Menu";
 	hContactMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	op.Handle=hContactMenuObject;

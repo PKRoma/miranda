@@ -9,6 +9,7 @@ HWND helperhwnd=0;
 HANDLE hFrameHelperStatusBar;
 extern	 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int GetConnectingIconService (WPARAM wParam,LPARAM lParam);
+extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 int RecreateStatusBar();
 
 int UseOwnerDrawStatusBar;
@@ -44,8 +45,9 @@ int OnStatusBarBackgroundChange()
 		backgroundBmpUse=DBGetContactSettingWord(NULL,"StatusBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 		extraspace=DBGetContactSettingDword(NULL,"StatusBar","BkExtraSpace",0);
 		};
-		if (hwndStatus) InvalidateRect(hwndStatus,NULL,TRUE);
+		
 		RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
+		if (hwndStatus) InvalidateRect(hwndStatus,NULL,TRUE);
 	return 0;
 }
 
@@ -557,10 +559,14 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 HWND CreateStatusHelper(HWND parent)
 {
-	WNDCLASS wndclass;
+	WNDCLASS wndclass={0};
 	char pluginname[]="Statushelper";
 
-    wndclass.style         = 0;
+    
+	if (GetClassInfo(g_hInst,pluginname,&wndclass) ==0)
+	{
+	
+	wndclass.style         = 0;
     wndclass.lpfnWndProc   = StatusHelperProc;
     wndclass.cbClsExtra    = 0;
     wndclass.cbWndExtra    = 0;
@@ -571,6 +577,8 @@ HWND CreateStatusHelper(HWND parent)
     wndclass.lpszMenuName  = NULL;
     wndclass.lpszClassName = pluginname;
 	RegisterClass(&wndclass);
+	
+	};
 
 	return(CreateWindow(pluginname,pluginname,
 	/*WS_THICKFRAME|*/WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,
@@ -591,7 +599,7 @@ int CreateStatusBarFrame()
 				Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER;
 				GetWindowRect(helperhwnd,&rc);
 				h=rc.bottom-rc.top;
-				Frame.height=(h==0)?18:h;
+				Frame.height=(h==0)?20:h;
 
 
 				Frame.name=(Translate("Status"));
@@ -622,6 +630,7 @@ int RecreateStatusBar(HWND parent)
 	OldWindowProc=(WNDPROC)GetWindowLong(hwndStatus,GWL_WNDPROC);
 	SetWindowLong(hwndStatus,GWL_WNDPROC,(LONG)&StatusBarOwnerDrawProc);
 	CreateStatusBarFrame();
+	CluiProtocolStatusChanged(0,0);
 
 	{
 

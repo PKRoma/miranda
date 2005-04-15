@@ -539,6 +539,10 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 	result=MenuObjects[MenuObjectsCount].id;
 	MenuObjectsCount++;
 	unlockmo();
+	OutputDebugString("!!! Created New MenuObject \t");
+	if (pmp->name) OutputDebugString(pmp->name);
+	OutputDebugString("\r\n");
+
 	return(result);
 };
 //wparam=MenuItemHandle
@@ -563,29 +567,33 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
 {		
 	SKINICONDESC2 sid={0};
+	int retval;
 				
-		if (hIcon==NULL) return hIcon;
+		//if (hIcon==NULL) return hIcon;
+	if(RegistredOk) *RegistredOk=FALSE;
 
-		if(ServiceExists(MS_SKIN2_ADDICON))
-		{
 				if (Name!=NULL&&strlen(Name)!=0)
 				{				
 
-				if (RegisterIt)
-				{
-			
-					sid.cbSize = sizeof(sid);
-					sid.pszSection = Translate(SectName);				
-					sid.pszName=Name;
-					sid.pszDefaultFile="ss";
-					sid.pszDescription=Description;
-					sid.hDefaultIcon=hIcon;
+							if(ServiceExists(MS_SKIN2_ADDICON))
+								{
 
-					CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-					if(RegistredOk) *RegistredOk=TRUE;
-				};
-				return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)Name));
-				}
+							if (RegisterIt)
+							{
+						
+								sid.cbSize = sizeof(sid);
+								sid.pszSection = Translate(SectName);				
+								sid.pszName=Name;
+								sid.pszDefaultFile="ss";
+								sid.pszDescription=Description;
+								sid.hDefaultIcon=hIcon;
+
+								retval=CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+								
+								if(RegistredOk) *RegistredOk=TRUE;
+							};
+							return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)Name));
+							}
 		};
 	
 	return hIcon;
@@ -643,7 +651,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 #endif
 
 	MenuObjects[objidx].MenuItems[miidx].IconRegistred=FALSE;
-	if(pmi->hIcon!=NULL) 
+	if(TRUE/*pmi->hIcon!=NULL*/) 
 	{
 		MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
 		RegisterOneIcon(objidx,miidx);
@@ -1181,7 +1189,8 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 		
 		uname=MenuObjects[mo].MenuItems[mi].UniqName;
 		if (uname==NULL) uname=MenuObjects[mo].MenuItems[mi].CustomName;
-			if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL&&MenuObjects[mo].MenuItems[mi].iconId!=-1)
+		//&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
+		if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
 			{	
 				newIcon=LoadIconFromLibrary(
 					MenuObjects[mo].Name,
@@ -1223,7 +1232,8 @@ int RegisterOneIcon(int mo,int mi)
 			*/
 	//	OutputDebugString(buf);
 	}
-		if (!MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL&&MenuObjects[mo].MenuItems[mi].iconId!=-1)
+		//&&MenuObjects[mo].MenuItems[mi].iconId!=-1
+		if (!MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
 			{	
 
 				char mn[255];
@@ -1248,6 +1258,11 @@ int RegisterAllIconsinIconLib()
 		{
 			for (mo=0;mo<MenuObjectsCount;mo++)
 			{
+				OutputDebugString("Trying Register for \t");
+				OutputDebugString(MenuObjects[mo].Name);
+				OutputDebugString("\r\n");
+
+
 				for (mi=0;mi<MenuObjects[mo].MenuItemsCount;mi++)
 				{
 					RegisterOneIcon(mo,mi);
@@ -1256,12 +1271,28 @@ int RegisterAllIconsinIconLib()
 			OnIconLibChanges(0,0);
 		};
 return 0;
+};
+
+//#define PostRegisterTimerID 12001
+int posttimerid;
+VOID CALLBACK PostRegisterIcons(          HWND hwnd,
+    UINT uMsg,
+    UINT_PTR idEvent,
+    DWORD dwTime
+)
+{
+	KillTimer(0,posttimerid);
+	RegisterAllIconsinIconLib();
 }
+
 
 int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	RegisterAllIconsinIconLib();
+	//RegisterAllIconsinIconLib();
 	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibChanges);
+	//CallService(MS_CLUI_GETHWND,0,0)
+	posttimerid=SetTimer((HWND)NULL,0,5,(TIMERPROC)PostRegisterIcons);
+	
 
 return 0;
 };

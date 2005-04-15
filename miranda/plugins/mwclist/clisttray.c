@@ -860,7 +860,7 @@ void InitTrayMenus(void)
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService=NULL;
 	tmp.ExecService="CLISTMENUSTRAY/ExecService";
-	tmp.name="TrayMenu";
+	tmp.name="Tray Menu";
 	hTrayMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	
