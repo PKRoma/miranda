@@ -174,61 +174,6 @@ extern "C" int __declspec(dllexport) Unload(void)
 
 
 
-extern "C" int __declspec(dllexport) UninstallEx(PLUGINUNINSTALLPARAMS* ppup)
-{
-	if (ppup && ppup->bDoDeleteSettings) 
-	{
-		char path[MAX_PATH];
-		char * dllname;
-		char * fend;
-		
-		GetModuleFileName( g_hInstance, path, MAX_PATH);
-		dllname = strrchr(path,'\\');
-		dllname++;
-		fend = strrchr(path,'.');
-		if(fend)
-			*fend = '\0';
-
-		if (ppup->bIsMirandaRunning )
-		{ 
-			HANDLE hContact;
-			char *szProto;
-
-			hContact = (HANDLE) PUICallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-			while (hContact) 
-			{
-				szProto = (char *) PUICallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-				if (szProto != NULL && !lstrcmpi(szProto, dllname)) 
-				{
-					DBCONTACTWRITESETTING cws;
-					cws.szModule="CList";
-					cws.szSetting="NotOnList";
-					cws.value.type=DBVT_BYTE;
-					cws.value.bVal=1;
-					PUICallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
-				}
-				hContact = (HANDLE) PUICallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-			}
-			PUIRemoveDbModule(dllname);
-		}
-		char szFileName[MAX_PATH]; 
-		_snprintf(szFileName, sizeof(szFileName), "%s%s_servers.ini", ppup->pszPluginsPath, dllname);
-		DeleteFile(szFileName); 
-		_snprintf(szFileName, sizeof(szFileName), "%s%s_ignore.ini",  ppup->pszPluginsPath, dllname);
-		DeleteFile(szFileName); 
-		_snprintf(szFileName, sizeof(szFileName), "%s%s_perform.ini",  ppup->pszPluginsPath, dllname);
-		DeleteFile(szFileName); 
-		_snprintf(szFileName, sizeof(szFileName), "%sIRC_license.txt",  ppup->pszPluginsPath);
-		DeleteFile(szFileName); 
-		_snprintf(szFileName, sizeof(szFileName), "%sIRC_Readme.txt",  ppup->pszPluginsPath);
-		DeleteFile(szFileName); 
-		_snprintf(szFileName, sizeof(szFileName), "%sIRC_Translate.txt",  ppup->pszPluginsPath);
-		DeleteFile(szFileName); 
-	}
-	return 0; 
-}
-
-
 
 
 

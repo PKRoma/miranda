@@ -824,24 +824,31 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					case ( IDC_ADD):
 					{
-						int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
-						PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
-						if (pPerf != 0)
-						{
-							delete []pPerf->Perform;
-							delete pPerf;
-						}
+
 						int j = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_PERFORMEDIT));
 						char * temp = new char[j+1];
 						GetWindowText(GetDlgItem(hwndDlg, IDC_PERFORMEDIT), temp, j+1);
-						pPerf = new PERFORM_INFO;
-						pPerf->Perform = new char[j+1];
-						lstrcpy(pPerf->Perform, temp);
-						SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_SETITEMDATA, i, (LPARAM) pPerf);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), false);
 
+						if(my_strstri(temp, "/away"))
+							MessageBox(NULL, "The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically.", "IRC Error", MB_OK);
+						else
+						{
+							int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
+							PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
+							if (pPerf != 0)
+							{
+								delete []pPerf->Perform;
+								delete pPerf;
+							}
+							pPerf = new PERFORM_INFO;
+							pPerf->Perform = new char[j+1];
+							lstrcpy(pPerf->Perform, temp);
+							SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_SETITEMDATA, i, (LPARAM) pPerf);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), false);
+
+							PerformlistModified = true;
+						}
 						delete []temp;
-						PerformlistModified = true;
 
 						
 					}break;

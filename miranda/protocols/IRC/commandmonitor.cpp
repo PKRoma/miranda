@@ -2669,7 +2669,10 @@ int DoPerform(char * event)
 			return 0;
 		char * DoThis = new char[p1-p2+1];
 		lstrcpyn(DoThis, p2, p1-p2+1);
-		PostIrcMessageWnd(NULL, NULL, (char *)DoThis);
+		if(!my_strstri(DoThis, "/away"))
+			PostIrcMessageWnd(NULL, NULL, (char *)DoThis);
+		else
+			MessageBox(NULL, "The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically.", "IRC Error", MB_OK);
 		delete [] DoThis;
 		delete [] search;
 		return 1;
