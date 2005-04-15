@@ -55,6 +55,10 @@ int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactI
 		}
 		if(group==subgroup && contactIndex==group->scanIndex) return count;
 		count++;
+		if ((group->contact[group->scanIndex].type==CLCIT_CONTACT) && (group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG)) {
+			count++;
+		}
+
 		if(group->contact[group->scanIndex].type==CLCIT_GROUP) {
 			if(group->contact[group->scanIndex].group==subgroup && contactIndex==-1)
 				return count-1;
@@ -333,6 +337,10 @@ int GetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,
 						
 					}
 				index++;
+				if ((group->contact[group->scanIndex].type==CLCIT_CONTACT) && (group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG)) {
+					index++;
+				}
+
 				if(group->contact[group->scanIndex].type==CLCIT_GROUP && group->contact[group->scanIndex].group->expanded) {
 					group=group->contact[group->scanIndex].group;
 					group->scanIndex=0;

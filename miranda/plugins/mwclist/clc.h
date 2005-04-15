@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
 #define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
 #define MAXEXTRACOLUMNS     16
+#define MAXSTATUSMSGLEN		256
 
 #define INTM_NAMECHANGED     (WM_USER+10)
 #define INTM_ICONCHANGED     (WM_USER+11)
@@ -47,6 +48,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define INTM_IDLECHANGED         (WM_USER+23)
 #define INTM_SCROLLBARCHANGED (WM_USER+24)
 #define INTM_PROTOCHANGED (WM_USER+25)
+#define INTM_STATUSMSGCHANGED	(WM_USER+26)
 
 #define TIMERID_RENAME         10
 #define TIMERID_DRAGAUTOSCROLL 11
@@ -63,6 +65,8 @@ struct ClcGroup;
 #define CONTACTF_NOTONLIST 8
 #define CONTACTF_CHECKED   16
 #define CONTACTF_IDLE      32
+#define CONTACTF_STATUSMSG 64
+
 struct ClcContact {
 	BYTE type;
 	BYTE flags;
@@ -83,6 +87,7 @@ struct ClcContact {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
 	char szText[120-MAXEXTRACOLUMNS];
 	char * proto;	// MS_PROTO_GETBASEPROTO
+	char szStatusMsg[MAXSTATUSMSGLEN];
 };
 
 #define GROUP_ALLOCATE_STEP  8
@@ -176,6 +181,7 @@ void DeleteItemFromTree(HWND hwnd,HANDLE hItem);
 void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 int GetGroupContentsCount(struct ClcGroup *group,int visibleOnly);
+int GetNewSelection(struct ClcGroup *group,int selection, int direction);
 void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat);
 
 //clcmsgs.c

@@ -504,6 +504,23 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				rc.right=clRect.right;
 				DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,DT_END_ELLIPSIS);
 			}
+
+			if (style&CLS_SHOWSTATUSMESSAGES)
+			{		
+					// status message
+					if (group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG) {
+						char * szText = group->contact[group->scanIndex].szStatusMsg;
+						RECT rc;
+						rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
+						rc.top=y+dat->rowHeight+((dat->rowHeight-fontHeight)>>1);
+						rc.right=(clRect.right - clRect.left);
+						rc.bottom=rc.top+dat->rowHeight;
+						ChangeToFont(hdcMem,dat,FONTID_STATUSMSG,&fontHeight);
+						//ExtTextOut(hdcMem,rc.left,rc.top,ETO_CLIPPED,&rc,szText,lstrlen(szText),NULL);
+						DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_SINGLELINE | DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+					}
+			}
+
 			if(selected) {
 				if(Drawing->type!=CLCIT_DIVIDER) {
 					SetTextColor(hdcMem,dat->quickSearchColour);
@@ -594,6 +611,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	}
 		index++;
 		y+=dat->rowHeight;
+
+		if (group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG) {
+			y+=dat->rowHeight;
+			index++;
+		}
 
 		//increment by subcontacts
 		if (group->contact[group->scanIndex].subcontacts!=NULL && group->contact[group->scanIndex].type!=CLCIT_GROUP)

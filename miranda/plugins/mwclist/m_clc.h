@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLS_NOHIDEOFFLINE   0x0080	 //overrides CLS_HIDEOFFLINE and the per-group hideoffline setting
 #define CLS_GREYALTERNATE   0x0100   //make every other line slightly grey
 #define CLS_GROUPCHECKBOXES 0x0200   //put checkboxes on groups too (managed by CLC)
+#define  CLS_SHOWSTATUSMESSAGES 0x0400
 
 #define CLS_EX_DISABLEDRAGDROP     0x00000001
 #define CLS_EX_EDITLABELS          0x00000002
@@ -47,10 +48,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLS_EX_HIDECOUNTSWHENEMPTY 0x00000040
 #define CLS_EX_NOTRANSLUCENTSEL    0x00000080
 #define CLS_EX_LINEWITHGROUPS      0x00000100
-#define CLS_EX_QUICKSEARCHVISONLY  0x00000200
-#define CLS_EX_SORTGROUPSALPHA     0x00000400
-#define CLS_EX_NOSMOOTHSCROLLING   0x00000800
-#define CLS_EX_MULTICOLUMNALIGNLEFT   0x00001000
+#define CLS_EX_QUICKSEARCHVISONLY		0x00000200
+#define CLS_EX_SORTGROUPSALPHA			0x00000400
+#define CLS_EX_NOSMOOTHSCROLLING		0x00000800
+#define CLS_EX_MULTICOLUMNALIGNLEFT		0x00001000
 
 #define CLM_FIRST   0x1000    //this is the same as LVM_FIRST
 #define CLM_LAST    0x1100
@@ -125,7 +126,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_GROUPCOUNTS 5
 #define FONTID_DIVIDERS    6
 #define FONTID_OFFINVIS    7
-#define FONTID_MAX         7
+#define FONTID_STATUSMSG   8
+#define FONTID_MAX         8
+
 #define CLM_SETFONT           (CLM_FIRST+33)   //wParam=hFont, lParam=MAKELPARAM(fRedraw,fontId)
 #define CLM_SETINDENT         (CLM_FIRST+34)   //wParam=new indent, default is 3 pixels
 #define CLM_SETITEMTEXT       (CLM_FIRST+35)   //wParam=hItem, lParam=(char*)pszNewText

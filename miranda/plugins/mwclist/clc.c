@@ -42,6 +42,52 @@ ClcProtoStatus *clcProto = NULL;
 extern int sortByStatus;
 struct ClcContact * hitcontact=NULL;
 
+static int stopStatusUpdater = 0;
+void StatusUpdaterThread(HWND hwndDlg)
+{
+	int i,curdelay,lastcheck=0;
+	char szServiceName[256];
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	
+	SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_LOWEST);
+		
+	while (!stopStatusUpdater) {
+	
+	curdelay=DBGetContactSettingByte(hContact,"CList","StatusMsgAutoDelay",15000);
+	if (curdelay<5000) curdelay=5000;
+	
+	if ((GetTickCount()-lastcheck)>curdelay)
+	{
+		lastcheck=GetTickCount();
+		if (DBGetContactSettingByte(hContact,"CList","StatusMsgAuto",0)) {
+				for (i=0; i<5; i++) {
+					if (hContact!=NULL) {
+					pdisplayNameCacheEntry pdnce =(pdisplayNameCacheEntry)GetDisplayNameCacheEntry((HANDLE)hContact);
+						if (pdnce!=NULL&&pdnce->protoNotExists==FALSE&&pdnce->szProto!=NULL)
+						{			
+							char *szProto =pdnce->szProto; //(char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+							_snprintf(szServiceName, sizeof(szServiceName), "%s%s", szProto, PSS_GETAWAYMSG);
+							if (ServiceExists(szServiceName)) {
+								strncpy(szServiceName, PSS_GETAWAYMSG, sizeof(szServiceName));
+								CallContactService(hContact, szServiceName, 0, 0);
+							}
+						};
+						hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+					}
+					if (hContact==NULL) {
+						hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+						if (hContact==NULL) break;
+					}
+				Sleep(500);
+				}
+			}
+	};
+	//Sleep(DBGetContactSettingByte(hContact,"CList","StatusMsgAutoDelay",100));
+	Sleep(200);
+	}
+}
+
+
 
 int GetProtocolVisibility(char * ProtoName)
 {
@@ -104,6 +150,9 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 			WindowList_Broadcast(hClcWindowList,INTM_INVALIDATE,0,0);
 		else if(cws->value.type==DBVT_BLOB&&!strcmp(cws->szSetting,"NameOrder"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMEORDERCHANGED,0,0);
+		else if(!strcmp(cws->szSetting,"StatusMsg")) 
+			WindowList_Broadcast(hClcWindowList,INTM_STATUSMSGCHANGED,wParam,lParam);
+
 	}
 	else if(!strcmp(cws->szModule,"CListGroups")) {
 		WindowList_Broadcast(hClcWindowList,INTM_GROUPSCHANGED,wParam,lParam);
@@ -311,6 +360,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 			}
 			OutputDebugString("Create New ClistControl END\r\n");
+			forkthread(StatusUpdaterThread,0,0);
+
 			break;
 
 		case INTM_RELOADOPTIONS:
@@ -583,6 +634,39 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			break;
 		}
 
+		case INTM_STATUSMSGCHANGED:
+		{	struct ClcContact *contact=NULL;
+			struct ClcGroup *group=NULL;
+			DBVARIANT dbv;
+			DWORD style=GetWindowLong(hwnd,GWL_STYLE);
+
+			if (!(style&CLS_SHOWSTATUSMESSAGES)) break;
+			if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL) && contact!=NULL) {
+				contact->flags &= ~CONTACTF_STATUSMSG;
+				if (!DBGetContactSetting((HANDLE)wParam, "CList", "StatusMsg", &dbv)) {
+					int j;
+					if (dbv.pszVal==NULL||strlen(dbv.pszVal)==0) break;
+					lstrcpyn(contact->szStatusMsg, dbv.pszVal, sizeof(contact->szStatusMsg));
+					for (j=strlen(contact->szStatusMsg)-1;j>=0;j--) {
+						if (contact->szStatusMsg[j]=='\r' || contact->szStatusMsg[j]=='\n' || contact->szStatusMsg[j]=='\t') {
+							contact->szStatusMsg[j] = ' ';
+						}
+					}
+					DBFreeVariant(&dbv);
+					if (strlen(contact->szStatusMsg)>0) {
+						contact->flags |= CONTACTF_STATUSMSG;
+						dat->NeedResort=TRUE;
+					}
+				}
+			}
+
+			InvalidateRect(hwnd,NULL,FALSE);
+			
+			SortClcByTimer(hwnd);
+			RecalcScrollBar(hwnd,dat);
+			break;
+		}
+
 		case INTM_NOTONLISTCHANGED:
 		{	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING*)lParam;
 			struct ClcContact *contact;
@@ -713,12 +797,17 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				pageSize=clRect.bottom/dat->rowHeight;
 			}
 			switch(wParam) {
-				case VK_DOWN: dat->selection++; selMoved=1; break;
-				case VK_UP: dat->selection--; selMoved=1; break;
-				case VK_PRIOR: dat->selection-=pageSize; selMoved=1; break;
-				case VK_NEXT: dat->selection+=pageSize; selMoved=1; break;
+				case VK_DOWN: dat->selection = GetNewSelection(&dat->list, dat->selection+1, 1); selMoved=1; break;
+				case VK_UP: dat->selection = GetNewSelection(&dat->list, dat->selection-1, 0); selMoved=1; break;
+				case VK_PRIOR: dat->selection = GetNewSelection(&dat->list, dat->selection-pageSize, 0); selMoved=1; break;
+				case VK_NEXT: dat->selection = GetNewSelection(&dat->list, dat->selection+pageSize, 1); selMoved=1; break;
+//				case VK_DOWN: dat->selection++; selMoved=1; break;
+//				case VK_UP: dat->selection--; selMoved=1; break;
+//				case VK_PRIOR: dat->selection-=pageSize; selMoved=1; break;
+//				case VK_NEXT: dat->selection+=pageSize; selMoved=1; break;
 				case VK_HOME: dat->selection=0; selMoved=1; break;
-				case VK_END: dat->selection=GetGroupContentsCount(&dat->list,1)-1; selMoved=1; break;
+				case VK_END: dat->selection=GetNewSelection(&dat->list, dat->selection+99999, 1); selMoved=1; break;
+//				case VK_END: dat->selection=GetGroupContentsCount(&dat->list,1)-1; selMoved=1; break;
 				case VK_LEFT: changeGroupExpand=1; break;
 				case VK_RIGHT: changeGroupExpand=2; break;
 				case VK_RETURN: DoSelectionDefaultAction(hwnd,dat); return 0;
@@ -1283,6 +1372,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 		}
 			
 		case WM_DESTROY:
+			stopStatusUpdater = 1;
 			HideInfoTip(hwnd,dat);
 			{	int i;
 				for(i=0;i<=FONTID_MAX;i++)
@@ -1296,6 +1386,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 			mir_free(dat);
 			UnregisterFileDropping(hwnd);
 			WindowList_Remove(hClcWindowList,hwnd);
+
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }

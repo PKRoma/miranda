@@ -418,11 +418,13 @@ int PreCreateCLC(HWND parent)
 					|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
 					|CLS_HIDEOFFLINE
 					//|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
-					|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
+					|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0)
+					|(DBGetContactSettingByte(NULL,"CList","ShowStatusMessages",1)?CLS_SHOWSTATUSMESSAGES:0)
 					|CLS_MULTICOLUMN
 					//|DBGetContactSettingByte(NULL,"CLUI","ExtraIconsAlignToLeft",1)?CLS_EX_MULTICOLUMNALIGNLEFT:0
-					),
-					0,0,0,0,parent,NULL,g_hInst,NULL);
+					
+					,0,0,0,0,parent,NULL,g_hInst,NULL);
+	
 	
 	return((int)hwndContactTree);
 };
@@ -1453,3 +1455,4 @@ int LoadCLUIModule(void)
 	 
 	return 0;
 }
+

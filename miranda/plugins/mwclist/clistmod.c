@@ -144,6 +144,19 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 {
 	ACKDATA *ack=(ACKDATA*)lParam;
 
+	if (ack->type==ACKTYPE_AWAYMSG && ack->lParam) {
+		DBVARIANT dbv;
+		if (!DBGetContactSetting(ack->hContact, "CList", "StatusMsg", &dbv)) {
+			if (!strcmp(dbv.pszVal, (char *)ack->lParam)) {
+				DBFreeVariant(&dbv);
+				return 0;
+			}
+			DBFreeVariant(&dbv);
+		}
+		DBWriteContactSettingString(ack->hContact, "CList", "StatusMsg", (char *)ack->lParam);
+		return 0;
+	}
+
 	if(ack->type!=ACKTYPE_STATUS) return 0;
 	CallService(MS_CLUI_PROTOCOLSTATUSCHANGED,ack->lParam,(LPARAM)ack->szModule);
 
@@ -411,6 +424,12 @@ static int ContactFilesDropped(WPARAM wParam,LPARAM lParam)
 
 int LoadContactListModule(void)
 {
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact!=NULL) {
+		DBWriteContactSettingString(hContact, "CList", "StatusMsg", "");
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+	}
+
 	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
 	HookEvent(ME_SYSTEM_MODULESLOADED,ContactListModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);

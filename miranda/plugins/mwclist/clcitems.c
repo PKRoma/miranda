@@ -237,7 +237,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	WORD apparentMode;
 	DWORD idleMode;
 	HANDLE hContact;
-
+	DBVARIANT dbv;
 	int i;
 	
 	hContact=cacheEntry->hContact;
@@ -272,6 +272,21 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 
 	lstrcpyn(group->contact[i].szText,cacheEntry->name,sizeof(group->contact[i].szText));
 	group->contact[i].proto = szProto;
+
+	if (!DBGetContactSetting(hContact, "CList", "StatusMsg", &dbv)) {
+		int j;
+		lstrcpyn(group->contact[i].szStatusMsg, dbv.pszVal, sizeof(group->contact[i].szStatusMsg));
+		for (j=strlen(group->contact[i].szStatusMsg)-1;j>=0;j--) {
+			if (group->contact[i].szStatusMsg[j]=='\r' || group->contact[i].szStatusMsg[j]=='\n' || group->contact[i].szStatusMsg[j]=='\t') {
+				group->contact[i].szStatusMsg[j] = ' ';
+			}
+		}
+		DBFreeVariant(&dbv);
+		if (strlen(group->contact[i].szStatusMsg)>0) {
+			group->contact[i].flags |= CONTACTF_STATUSMSG;
+		}
+	}
+
 	
 	ClearRowByIndexCache();
 	return &(group->contact[i]);
@@ -535,9 +550,45 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 	}	
 }
 
+
+int GetNewSelection(struct ClcGroup *group, int selection, int direction)
+{
+	int lastcount=0, count=0;//group->contactCount;
+	struct ClcGroup *topgroup=group;
+	if (selection<0) {
+		return 0;
+	}
+	group->scanIndex=0;
+	for(;;) {
+		if(group->scanIndex==group->contactCount) {
+			group=group->parent;
+			if(group==NULL) break;
+			group->scanIndex++;
+			continue;
+		}
+		if (count>=selection) return count;
+		lastcount = count;
+		count++;
+		if ((group->contact[group->scanIndex].type==CLCIT_CONTACT) && (group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG)) {
+			count++;
+		}
+		if (!direction) {
+			if (count>selection) return lastcount;
+		}
+		if(group->contact[group->scanIndex].type==CLCIT_GROUP && (group->contact[group->scanIndex].group->expanded)) {
+			group=group->contact[group->scanIndex].group;
+			group->scanIndex=0;
+		//	count+=group->contactCount;
+			continue;
+		}
+		group->scanIndex++;
+	}
+	return lastcount;
+ }
+
 int GetGroupContentsCount(struct ClcGroup *group,int visibleOnly)
 {
-	int count=group->contactCount;
+	int count=0;//group->contactCount;
 	struct ClcGroup *topgroup=group;
 
 	group->scanIndex=0;
@@ -545,15 +596,23 @@ int GetGroupContentsCount(struct ClcGroup *group,int visibleOnly)
 		if(group->scanIndex==group->contactCount) {
 			if(group==topgroup) break;
 			group=group->parent;
+			group->scanIndex++;
+			continue;
+
 		}
-		else if (group->contact[group->scanIndex].type==CLCIT_CONTACT && (group->contact[group->scanIndex].SubAllocated>0) && visibleOnly && group->contact[group->scanIndex].SubExpanded)
-		{
-			count+=group->contact[group->scanIndex].SubAllocated;
+//		else if (group->contact[group->scanIndex].type==CLCIT_CONTACT && (group->contact[group->scanIndex].SubAllocated>0) && visibleOnly && group->contact[group->scanIndex].SubExpanded)
+//		{
+//			count+=group->contact[group->scanIndex].SubAllocated;
+		count++;
+		if ((group->contact[group->scanIndex].type==CLCIT_CONTACT) && (group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG)) {
+			count++;
+
 		}
-		else if(group->contact[group->scanIndex].type==CLCIT_GROUP && (!visibleOnly || group->contact[group->scanIndex].group->expanded)) {
+//		else if(group->contact[group->scanIndex].type==CLCIT_GROUP && (!visibleOnly || group->contact[group->scanIndex].group->expanded)) {
+		if(group->contact[group->scanIndex].type==CLCIT_GROUP && (!visibleOnly || group->contact[group->scanIndex].group->expanded)) {
 			group=group->contact[group->scanIndex].group;
 			group->scanIndex=0;
-			count+=group->contactCount;
+//			count+=group->contactCount;
 			continue;
 		}
 		group->scanIndex++;
