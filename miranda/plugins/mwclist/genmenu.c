@@ -584,7 +584,7 @@ HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIco
 								sid.cbSize = sizeof(sid);
 								sid.pszSection = Translate(SectName);				
 								sid.pszName=Name;
-								sid.pszDefaultFile="ss";
+								sid.pszDefaultFile=NULL;
 								sid.pszDescription=Description;
 								sid.hDefaultIcon=hIcon;
 
