@@ -1446,8 +1446,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			SetWindowText(hwndDlg, szTemp);
 		} break;
-		case GC_UPDATENICKLIST:
+		case GC_REDRAWWINDOW:
 		{	
+			HICON hIcon = DBGetContactSettingWord(dat->hContact, dat->pszModule, "Status", ID_STATUS_OFFLINE)==ID_STATUS_ONLINE?MM_FindModule(dat->pszModule)->hOnlineIcon:MM_FindModule(dat->pszModule)->hOfflineIcon;
+			SendMessage(dat->hwndStatus, SB_SETICON, 0,(LPARAM)hIcon);
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_ALLCHILDREN);
 		} break;
 

@@ -1115,8 +1115,8 @@ void LoadGlobalSettings(void)
 	LoadMsgDlgFont(19, &lf, NULL);
 	g_LogOptions.UserListHeadingsFont = CreateFontIndirectA(&lf);
 
-	g_LogOptions.GroupOpenIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	g_LogOptions.GroupClosedIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
+	g_LogOptions.GroupOpenIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN);
+	g_LogOptions.GroupClosedIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT);
 
 
 }
@@ -1134,10 +1134,10 @@ static void FreeGlobalSettings(void)
 		DeleteObject(g_LogOptions.UserListFont);
 	if(g_LogOptions.UserListHeadingsFont)
 		DeleteObject(g_LogOptions.UserListHeadingsFont);
-	if(g_LogOptions.GroupClosedIcon)
-		DestroyIcon(g_LogOptions.GroupClosedIcon);
-	if(g_LogOptions.GroupOpenIcon)
-		DestroyIcon(g_LogOptions.GroupOpenIcon);
+//	if(g_LogOptions.GroupClosedIcon)
+//		DestroyIcon(g_LogOptions.GroupClosedIcon);
+//	if(g_LogOptions.GroupOpenIcon)
+//		DestroyIcon(g_LogOptions.GroupOpenIcon);
 }
 
 int OptionsInit(void)

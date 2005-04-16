@@ -96,14 +96,10 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 
 int IconsChanged(WPARAM wParam,LPARAM lParam)
 {
-	if(g_LogOptions.GroupOpenIcon)
-		DestroyIcon(g_LogOptions.GroupOpenIcon);
-	g_LogOptions.GroupOpenIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-
-	if(g_LogOptions.GroupClosedIcon)
-		DestroyIcon(g_LogOptions.GroupClosedIcon);
-	g_LogOptions.GroupClosedIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
-	WM_BroadcastMessage(NULL, GC_UPDATENICKLIST, 0, 0, FALSE);
+	g_LogOptions.GroupOpenIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN);
+	g_LogOptions.GroupClosedIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT);
+	MM_IconsChanged();
+	WM_BroadcastMessage(NULL, GC_REDRAWWINDOW, 0, 0, FALSE);
 	return 0;
 }
 

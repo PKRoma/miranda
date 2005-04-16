@@ -380,8 +380,8 @@ BOOL MM_AddModule(MODULE* info)
 		lstrcpy(node->data.pszModule, info->pszModule);
 		node->data.pszModDispName = (char*)malloc(lstrlen(info->pszModDispName) + 1); 
 		lstrcpy(node->data.pszModDispName, info->pszModDispName);
-		node->data.hOnlineIcon= CopyIcon(LoadSkinnedProtoIcon(info->pszModule, ID_STATUS_ONLINE)); 
-		node->data.hOfflineIcon= CopyIcon(LoadSkinnedProtoIcon(info->pszModule, ID_STATUS_OFFLINE)); 
+		node->data.hOnlineIcon= LoadSkinnedProtoIcon(info->pszModule, ID_STATUS_ONLINE); 
+		node->data.hOfflineIcon= LoadSkinnedProtoIcon(info->pszModule, ID_STATUS_OFFLINE); 
 		if (m_ModList == NULL) // list is empty
 		{
 			m_ModList = node;
@@ -395,6 +395,19 @@ BOOL MM_AddModule(MODULE* info)
 		return TRUE;
 	}
 	return FALSE;
+}
+
+void MM_IconsChanged(void)
+{
+	MODULEINFO *pTemp = m_ModList, *pLast = NULL;
+	while (pTemp != NULL)
+	{
+		pTemp->data.hOnlineIcon= LoadSkinnedProtoIcon(pTemp->data.pszModule, ID_STATUS_ONLINE); 
+		pTemp->data.hOfflineIcon= LoadSkinnedProtoIcon(pTemp->data.pszModule, ID_STATUS_OFFLINE); 
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+	return;
 }
 
 MODULE* MM_FindModule(char* pszModule)
@@ -434,10 +447,10 @@ BOOL MM_RemoveAll (void)
 		free(m_ModList->data.pszModDispName);
 		if(m_ModList->data.crColors)
 			free (m_ModList->data.crColors);
-		if(m_ModList->data.hOnlineIcon)
-		DestroyIcon(m_ModList->data.hOnlineIcon);
-		if(m_ModList->data.hOfflineIcon)
-		DestroyIcon(m_ModList->data.hOfflineIcon);
+//		if(m_ModList->data.hOnlineIcon)
+//			DestroyIcon(m_ModList->data.hOnlineIcon);
+//		if(m_ModList->data.hOfflineIcon)
+//			DestroyIcon(m_ModList->data.hOfflineIcon);
 		free (m_ModList);
 		m_ModList = pLast;
     }
