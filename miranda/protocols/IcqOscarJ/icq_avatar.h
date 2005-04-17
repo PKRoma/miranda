@@ -39,7 +39,11 @@
 
 extern BOOL AvatarsReady;
 
-void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen);
+void GetFullAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen);
+void GetAvatarFileName(int dwUin, char* pszDest, int cbLen);
+void AddAvatarExt(int dwFormat, char* pszDest);
+
+int DetectAvatarFormat(char* szFile);
 
 int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen, char* file);
 int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen);

@@ -44,7 +44,6 @@ int gnCurrentStatus;
 int icqGoingOnlineStatus;
 
 extern HANDLE ghServerNetlibUser;
-extern HANDLE hServerConn;
 extern icq_mode_messages modeMsgs;
 extern CRITICAL_SECTION modeMsgsMutex;
 extern WORD wListenPort;
@@ -172,23 +171,23 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
     return GAIR_NOAVATAR; // we did not found avatar hash - no avatar available
 
   dwLocalUIN = DBGetContactSettingDword(pai->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-  if (dbv.pbVal[1] == 8)
-    dwPaFormat = PA_FORMAT_XML;
-  else
-    dwPaFormat = PA_FORMAT_JPEG;
+  dwPaFormat = DBGetContactSettingByte(pai->hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+  if (dwPaFormat != PA_FORMAT_UNKNOWN)
+  { // we know the format, test file
+    GetFullAvatarFileName(dwLocalUIN, dwPaFormat, pai->filename, MAX_PATH);
 
-  GetAvatarFileName(dwLocalUIN, dwPaFormat, pai->filename, MAX_PATH);
-  pai->format = dwPaFormat; // we only support jpeg avatars by now
+    pai->format = dwPaFormat; 
 
-  if (!DBGetContactSetting(pai->hContact, gpszICQProtoName, "AvatarSaved", &dbvSaved) && !memcmp(dbv.pbVal, dbvSaved.pbVal, 0x14))
-  { // hashes are the same
-    if (access(pai->filename, 0) == 0)
-    {
-      DBFreeVariant(&dbv);
+    if (!DBGetContactSetting(pai->hContact, gpszICQProtoName, "AvatarSaved", &dbvSaved) && !memcmp(dbv.pbVal, dbvSaved.pbVal, 0x14))
+    { // hashes are the same
+      if (access(pai->filename, 0) == 0)
+      {
+        DBFreeVariant(&dbv);
 
-      return GAIR_SUCCESS; // we have found the avatar file, whoala
+        return GAIR_SUCCESS; // we have found the avatar file, whoala
+      }
+      DBFreeVariant(&dbvSaved);
     }
-    DBFreeVariant(&dbvSaved);
   }
 
   if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
@@ -332,7 +331,6 @@ int IcqGetStatus(WPARAM wParam, LPARAM lParam)
 
 int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
-
 	char** ppszMsg = NULL;
 
 
@@ -364,7 +362,6 @@ int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
 	default:
 		LeaveCriticalSection(&modeMsgsMutex);
 		return 1; // Failure
-
 	}
 
 	// Free old message
@@ -380,17 +377,14 @@ int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
 	LeaveCriticalSection(&modeMsgsMutex);
 
 	return 0; // Success
-
 }
 
 
 
 int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
 {
-
 	if (icqOnline && wParam)
 	{
-
 		DBEVENTINFO dbei;
 		DWORD uin;
 
@@ -415,21 +409,17 @@ int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
 		icq_sendAuthResponseServ(uin, 1, "");
 
 		return 0; // Success
-
 	}
 
 	return 1; // Failure
-
 }
 
 
 
 int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
 {
-
 	if (icqOnline && wParam)
 	{
-
 		DBEVENTINFO dbei;
 		DWORD uin;
 
@@ -454,11 +444,9 @@ int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
 		icq_sendAuthResponseServ(uin, 0, (char *)lParam);
 
 		return 0; // Success
-
 	}
 
 	return 1; // Failure
-
 }
 
 
@@ -587,30 +575,24 @@ int IcqCreateAdvSearchUI(WPARAM wParam, LPARAM lParam)
 
 int IcqSearchByAdvanced(WPARAM wParam, LPARAM lParam)
 {
-
 	if (icqOnline && IsWindow((HWND)lParam))
 	{
-
 		int nDataLen;
 		BYTE* bySearchData;
 
 
 		if (bySearchData = createAdvancedSearchStructure((HWND)lParam, &nDataLen))
 		{
-
 			int result;
 
 			result = icq_sendAdvancedSearchServ(bySearchData, nDataLen);
 			SAFE_FREE(&bySearchData);
 
 			return result; // Success
-
 		}
-
 	}
 
 	return 0; // Failure
-
 }
 
 
@@ -618,7 +600,6 @@ int IcqSearchByAdvanced(WPARAM wParam, LPARAM lParam)
 // TODO: Adding needs some more work in general
 static HANDLE AddToListByUIN(DWORD dwUin, DWORD dwFlags)
 {
-
 	HANDLE hContact;
 
 
@@ -626,38 +607,32 @@ static HANDLE AddToListByUIN(DWORD dwUin, DWORD dwFlags)
 
 	if (hContact)
 	{
-
-		if ((!dwFlags&PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1)) {
+		if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1)) 
+    {
 			DBDeleteContactSetting(hContact, "CList", "NotOnList");
 			DBDeleteContactSetting(hContact, "CList", "Hidden");
 		}
 
 		return hContact; // Success
-
 	}
 
 	return NULL; // Failure
-
 }
 
 
 
 int IcqAddToList(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		ICQSEARCHRESULT *isr = (ICQSEARCHRESULT*)lParam;
 
 
 		if (isr->hdr.cbSize == sizeof(ICQSEARCHRESULT))
 			return (int)AddToListByUIN(isr->uin, wParam);
-
 	}
 
 	return 0; // Failure
-
 }
 
 
@@ -745,10 +720,8 @@ static int messageRate = 0;
 static DWORD lastMessageTick = 0;
 int IcqGetInfo(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam && icqOnline)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
@@ -761,33 +734,26 @@ int IcqGetInfo(WPARAM wParam, LPARAM lParam)
 		// server kicks if 100 msgs sent instantly, so send max 50 instantly
 		if (messageRate < 67*50)
 		{
-
 			icq_sendGetInfoServ(dwUin, (ccs->wParam & SGIF_MINIMAL) != 0);
 
 			return 0; // Success
-
 		}
-
 	}
 
 	return 1; // Failure
-
 }
 
 
 
 int IcqFileAllow(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
 		if (dwUin && icqOnline && ccs->hContact && ccs->lParam && ccs->wParam)
 		{
-
 			filetransfer* ft = ((filetransfer *)ccs->wParam);
 
 			ft->szSavePath = _strdup((char *)ccs->lParam);
@@ -800,49 +766,40 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
 				icq_sendFileAcceptServ(dwUin, ft);
 
 			return ccs->wParam; // Success
-
 		}
-
 	}
 
 	return 0; // Failure
-
 }
 
 int IcqFileDeny(WPARAM wParam, LPARAM lParam)
 {
-
 	int nReturnValue = 1;
 
 	if (lParam)
 	{
-
 		CCSDATA *ccs = (CCSDATA *)lParam;
 		filetransfer *ft = (filetransfer*)ccs->wParam;
 		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
-		if (icqOnline && dwUin && ccs->wParam && ccs->hContact) {
-
+		if (icqOnline && dwUin && ccs->wParam && ccs->hContact) 
+    {
 			icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam);
 
 			nReturnValue = 0; // Success
-
 		}
 		/* FIXME: ft leaks (but can get double freed?) */
 	}
 
 	return nReturnValue;
-
 }
 
 
 
 int IcqFileCancel(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam /*&& icqOnline*/)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
@@ -854,34 +811,27 @@ int IcqFileCancel(WPARAM wParam, LPARAM lParam)
 			icq_CancelFileTransfer(ccs->hContact, ft);
 
 			return 0; // Success
-
 		}
-
 	}
 
 	return 1; // Failure
-
 }
 
 
 
 int IcqFileResume(WPARAM wParam, LPARAM lParam)
 {
-
 	if (icqOnline && wParam)
 	{
-
 		PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
 
 
 		icq_sendFileResume((filetransfer *)wParam, pfr->action, pfr->szFilename);
 
 		return 0; // Success
-
 	}
 
 	return 1; // Failure
-
 }
 
 
@@ -1190,16 +1140,13 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 
 int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 
 
 		if (ccs->hContact && ccs->lParam)
 		{
-
 			DWORD dwCookie;
 			WORD wRecipientStatus;
 			DWORD dwUin;
@@ -1222,7 +1169,6 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 			// Looks OK
 			else
 			{
-
 				message_cookie_data* pCookieData;
 				char* szDesc;
 				char* szUrl;
@@ -1269,11 +1215,9 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 
 					dwCookie = icq_SendChannel4Message(dwUin, MTYPE_URL,
 						(WORD)nBodyLen, szBody, pCookieData);
-
 				}
 				else
 				{
-
 					WORD wPriority;
 
 
@@ -1283,7 +1227,6 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 						wPriority = 0x0021;
 
 					dwCookie = icq_SendChannel2Message(dwUin, szBody, nBodyLen, wPriority, pCookieData);
-
 				}
 
 				// Free memory used for body
@@ -1299,33 +1242,27 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 					SAFE_FREE(&pCookieData);
 					FreeCookie(dwCookie);
 				}
-
 			}
 
 			return dwCookie; // Success
 
 		}
-
 	}
 
 	return 0; // Failure
-
 }
 
 
 
 int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 
 
 		if (ccs->hContact && ccs->lParam)
 		{
-
 			int nContacts;
 			int i;
 			HANDLE* hContactsList = (HANDLE*)ccs->lParam;
@@ -1358,7 +1295,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 			// OK
 			else
 			{
-
 				int nBodyLength;
 				char szUin[17];
 				char szCount[17];
@@ -1387,7 +1323,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 
 					if (i == nContacts)
 					{
-
 						message_cookie_data* pCookieData;
 						char* pBody;
 						char* pBuffer;
@@ -1439,7 +1374,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 						}
 						else
 						{
-
 							WORD wPriority;
 
 
@@ -1465,10 +1399,8 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 					}
 					else
 					{
-
 						dwCookie = GenerateCookie(0);
 						icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("Bad data (internal error #2)"));
-
 					}
 
 					for(i = 0; i < nContacts; i++)
@@ -1483,32 +1415,24 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 				{
 				  dwCookie = 0;
 				}
-
 			}
 
 			return dwCookie;
-
 		}
-
 	}
 
 	// Exit with Failure
 	return 0;
-
 }
 
 int IcqSendFile(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam && icqOnline)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
-
 
 		if (ccs->hContact && ccs->lParam && ccs->wParam)
 		{
-
 			HANDLE hContact = ccs->hContact;
 			char** files = (char**)ccs->lParam;
 			char* pszDesc = (char*)ccs->wParam;
@@ -1517,23 +1441,18 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 
 			if (dwUin)
 			{
-
 				if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 				{
-
 					WORD wClientVersion;
 
 
 					wClientVersion = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Version", 7);
 					if (wClientVersion < 7)
 					{
-
 						Netlib_Logf(ghServerNetlibUser, "IcqSendFile() can't send to version %u", wClientVersion);
-
 					}
 					else
 					{
-
 						int i;
 						filetransfer* ft;
 						struct _stat statbuf;
@@ -1571,7 +1490,6 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 
 						// Send file transfer request
 						{
-
 							char szFiles[64];
 							char* pszFiles;
 
@@ -1594,7 +1512,6 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 
 							// Send packet through server
 							{
-
 								if (ft->nVersion == 7)
 								{
 									Netlib_Logf(ghServerNetlibUser, "Sending v7 file transfer request through server");
@@ -1605,13 +1522,10 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 									Netlib_Logf(ghServerNetlibUser, "Sending v8 file transfer request through server");
 									icq_sendFileSendServv8(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
 								}
-
 							}
-
 						}
 
 						return (int)(HANDLE)ft; // Success
-
 					}
 				}
 			}
@@ -1619,40 +1533,31 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0; // Failure
-
 }
 
 
 
 int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam && icqOnline)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 
 
 		if (ccs->hContact)
 		{
-
 			DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
 			if (dwUin && ccs->lParam)
 			{
-
 				icq_sendAuthReqServ(dwUin, (char *)ccs->lParam);
 
 				return 0; // Success
-
 			}
-
 		}
-
 	}
 
 	return 1; // Failure
-
 }
 
 

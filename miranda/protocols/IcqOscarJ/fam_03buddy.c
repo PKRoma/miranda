@@ -418,21 +418,25 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             }
             else
             { // the hash does not changed, so check if the file exists
-              if (pTLV->pData[1] == 8)
-                dwPaFormat = PA_FORMAT_XML;
-              else 
-                dwPaFormat = PA_FORMAT_JPEG;
-              GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
-              if (access(szAvatar, 0) == 0)
-              { // the file exists, so try to update photo setting
-                if (dwPaFormat == PA_FORMAT_JPEG)
-                {
-                  LinkContactPhotoToFile(hContact, szAvatar);
-                }
+              dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+              if (dwPaFormat == PA_FORMAT_UNKNOWN)
+              { // we do not know the format, get avatar again
+                dwJob = 1;
               }
               else
-              { // the file was lost, get it again
-                dwJob = 1;
+              {
+                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
+                if (access(szAvatar, 0) == 0)
+                { // the file exists, so try to update photo setting
+                  if (dwPaFormat != PA_FORMAT_XML)
+                  {
+                    LinkContactPhotoToFile(hContact, szAvatar);
+                  }
+                }
+                else
+                { // the file was lost, get it again
+                  dwJob = 1;
+                }
               }
             }
             DBFreeVariant(&dbv);
@@ -450,18 +454,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
             }
 
-            if (pTLV->pData[1] == 8)
-              dwPaFormat = PA_FORMAT_XML;
-            else 
-              dwPaFormat = PA_FORMAT_JPEG;
-            GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
-            if (GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar)) 
-            { // avatar request sent or added to queue
-              if (dwPaFormat == PA_FORMAT_JPEG)
-              {
-                LinkContactPhotoToFile(hContact, szAvatar);
-              }
-            } 
+            GetAvatarFileName(dwUIN, szAvatar, 255);
+            GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar);
+            // avatar request sent or added to queue
           }
           else
           {

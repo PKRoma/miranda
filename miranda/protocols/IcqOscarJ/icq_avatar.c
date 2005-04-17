@@ -96,7 +96,13 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
 
 
-void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
+void GetFullAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
+{
+  GetAvatarFileName(dwUin, pszDest, cbLen);
+  AddAvatarExt(dwFormat, pszDest);
+}
+
+void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
 {
   int tPathLen;
 
@@ -125,16 +131,60 @@ void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
       strcat(pszDest + tPathLen, "_avt");
     }
   }
-  if (dwFormat == PA_FORMAT_JPEG)
-    strcat(pszDest + tPathLen, ".jpg");
-  else if (dwFormat == PA_FORMAT_GIF)
-    strcat(pszDest + tPathLen, ".gif");
-  else if (dwFormat == PA_FORMAT_XML)
-    strcat(pszDest + tPathLen, ".xml");
-  else
-    strcat(pszDest + tPathLen, ".dat");
 }
 
+void AddAvatarExt(int dwFormat, char* pszDest)
+{
+  if (dwFormat == PA_FORMAT_JPEG)
+    strcat(pszDest, ".jpg");
+  else if (dwFormat == PA_FORMAT_GIF)
+    strcat(pszDest, ".gif");
+  else if (dwFormat == PA_FORMAT_PNG)
+    strcat(pszDest, ".png");
+  else if (dwFormat == PA_FORMAT_BMP)
+    strcat(pszDest, ".bmp");
+  else if (dwFormat == PA_FORMAT_XML)
+    strcat(pszDest, ".xml");
+  else
+    strcat(pszDest, ".dat");
+}
+
+int DetectAvatarFormatBuffer(char* pBuffer)
+{
+  if (!strncmp(pBuffer, "%PNG", 4))
+  {
+    return PA_FORMAT_PNG;
+  }
+  if (!strncmp(pBuffer, "GIF8", 4))
+  {
+    return PA_FORMAT_GIF;
+  }
+  if (!strnicmp(pBuffer, "<?xml", 5))
+  {
+    return PA_FORMAT_XML;
+  }
+  if (((DWORD*)pBuffer)[0] == 0xE0FFD8FFul)
+  {
+    return PA_FORMAT_JPEG;
+  }
+  if (!strncmp(pBuffer, "BM", 2))
+  {
+    return PA_FORMAT_BMP;
+  }
+  return PA_FORMAT_UNKNOWN;
+}
+
+
+int DetectAvatarFormat(char* szFile)
+{
+  char pBuf[32];
+
+  int src = _open(szFile, _O_BINARY | _O_RDONLY);
+  _read(src, pBuf, 32);
+  _close(src);
+
+  return DetectAvatarFormatBuffer(pBuf);
+}
 
 
 void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called from event
@@ -743,7 +793,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       {
         BYTE len;
         WORD datalen;
-        FILE* out;
+        int out;
         PROTO_AVATAR_INFORMATION ai;
 
         ai.cbSize = sizeof ai;
@@ -770,17 +820,25 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         pBuffer += (ac->hashlen<<1) + 1;
         unpackWord(&pBuffer, &datalen);
 
-        if (datalen)
+        if (datalen > 4)
         { // store to file...
+          int dwPaFormat;
+
           Netlib_Logf(ghServerNetlibUser, "Received user avatar, storing (%d bytes).", datalen);
 
-          out = fopen(ac->szFile, "wb");
+          dwPaFormat = DetectAvatarFormatBuffer(pBuffer);
+          DBWriteContactSettingByte(ac->hContact, gpszICQProtoName, "AvatarType", (BYTE)dwPaFormat);
+          AddAvatarExt(dwPaFormat, ac->szFile);
+
+          out = _open(ac->szFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			    if (out) 
           {
             DBVARIANT dbv;
 
-            fwrite(pBuffer, datalen, 1, out);
-            fclose(out);
+            _write(out, pBuffer, datalen);
+            _close(out);
+            
+            LinkContactPhotoToFile(ac->hContact, ac->szFile); // this should not be here, but no other simple solution available
 
             if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
             {
