@@ -1664,12 +1664,12 @@ void updateServAvatarHash(char* pHash, int size)
     packWord(&packet, 0);                   // GroupID (0 if not relevant)
     packWord(&packet, wAvatarID);           // EntryID
     packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
-    packWord(&packet, 0x8 + size);          // Length in bytes of following TLV
+    packWord(&packet, (WORD)(0x8 + size));          // Length in bytes of following TLV
     packWord(&packet, 0x131);               // TLV Type (Name)
     packWord(&packet, 0);                   // TLV Length (empty)
     packWord(&packet, 0xD5);                // TLV Type
-    packWord(&packet, size);                // TLV Length
-    packBuffer(&packet, pHash, size);       // TLV Value (avatar hash)
+    packWord(&packet, (WORD)size);                // TLV Length
+    packBuffer(&packet, pHash, (WORD)size);       // TLV Value (avatar hash)
     sendServPacket(&packet);
     // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
     // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash
