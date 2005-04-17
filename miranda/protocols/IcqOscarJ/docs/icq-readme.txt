@@ -19,6 +19,11 @@ Bugfixes
   Renaming of server groups was not working properly - caused errors
   Avatar could not be deleted (the delete button did not work)
   File Transfers were not working properly in some cases (wrong cookie handling)
+  Avatar formats were not recognized correctly
+  Method of determining target dir in file receive was not solid enough
+  Manage server-list dialog leaked memory
+  Synchronize visibility items was not working properly
+  Our avatar image was not linked to our ContactPhoto
 
 
 0.3.5
