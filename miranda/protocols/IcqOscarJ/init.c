@@ -61,7 +61,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,5,0),
+	PLUGIN_MAKE_VERSION(0,3,5,1),
 	"Support for ICQ network, slightly enhanced.",
 	"Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
@@ -302,7 +302,7 @@ int __declspec(dllexport) Unload(void)
 		write_flap(&packet, ICQ_CLOSE_CHAN);
 		sendServPacket(&packet);
 
-		icq_serverDisconnect(1);
+		icq_serverDisconnect();
 	}
 
 	UninitServerLists();
