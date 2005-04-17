@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Declarations for server thread
 //
 // -----------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ char *migratedServer;
 
 /*---------* Functions *---------------*/
 
-void icq_serverDisconnect(int bWait);
+void icq_serverDisconnect();
 void sendServPacket(icq_packet *);
 void icq_login(const char *szPassword);
 

@@ -85,14 +85,12 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
   }
 
-
 	SAFE_FREE(&(void*)info.nloc.szHost);
 
 
 	// Login error
 	if (hServerConn == NULL)
 	{
-
 		int oldStatus = gnCurrentStatus;
 		DWORD dwError = GetLastError();
 
@@ -164,11 +162,10 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 		// Close DC port
 		Netlib_CloseHandle(hDirectBoundPort);
 		hDirectBoundPort = 0;
-
 	}
 
 	// Time to shutdown
-	icq_serverDisconnect(0);
+	icq_serverDisconnect();
 	if (gnCurrentStatus != ID_STATUS_OFFLINE)
 	{
 		int oldStatus = gnCurrentStatus;
@@ -197,8 +194,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 					if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE)
 						!= ID_STATUS_OFFLINE)
 					{
-						DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status",
-							ID_STATUS_OFFLINE);
+						DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 					}
 				}
 			}
@@ -211,14 +207,15 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   FlushPendingOperations(); // clear pending operations list
   FlushGroupRenames(); // clear group rename in progress list
 
+  Netlib_Logf(ghServerNetlibUser, "Server thread ended.");
+
   return 0;
 }
 
 
 
-void icq_serverDisconnect(int bWait)
+void icq_serverDisconnect()
 {
-
 	EnterCriticalSection(&connectionHandleMutex);
 
 	if (hServerConn)
@@ -228,7 +225,7 @@ void icq_serverDisconnect(int bWait)
 		LeaveCriticalSection(&connectionHandleMutex);
     
 		// Not called from network thread?
-		if (bWait)//(GetCurrentThreadId() != serverThreadId.dwThreadId)
+		if (GetCurrentThreadId() != serverThreadId.dwThreadId)
     {
 			while (WaitForSingleObjectEx(serverThreadId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
 		  CloseHandle(serverThreadId.hThread);
@@ -242,7 +239,6 @@ void icq_serverDisconnect(int bWait)
 
 static int handleServerPackets(unsigned char* buf, int len, serverthread_start_info* info)
 {
-
 	BYTE channel;
 	WORD sequence;
 	WORD datalen;
@@ -250,7 +246,6 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
 
 	while (len > 0)
 	{
-
 		// All FLAPS begin with 0x2a
 		if (*buf++ != FLAP_MARKER)
 			break;
@@ -310,19 +305,16 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
 
 void sendServPacket(icq_packet* pPacket)
 {
-
 	// This critsec makes sure that the sequence order doesn't get screwed up
 	EnterCriticalSection(&localSeqMutex);
 
 	if (hServerConn)
 	{
-
 		int nRetries;
 		int nSendResult;
 
 
-
-		// :IMPORTANT:
+    // :IMPORTANT:
 		// The FLAP sequence must be a WORD. When it reaches 0xFFFF it should wrap to
 		// 0x0000, otherwise we'll get kicked by server.
 		wLocalSequence++;
@@ -333,7 +325,6 @@ void sendServPacket(icq_packet* pPacket)
 
 		for (nRetries = 3; nRetries >= 0; nRetries--)
 		{
-
 			nSendResult = Netlib_Send(hServerConn, (const char *)pPacket->pData, pPacket->wLen, 0);
 
 			if (nSendResult != SOCKET_ERROR)
@@ -357,23 +348,16 @@ void sendServPacket(icq_packet* pPacket)
 				ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
 					(HANDLE)oldStatus, gnCurrentStatus);
 			}
-
 		}
-
 	}
 	else
 	{
-
 		Netlib_Logf(ghServerNetlibUser, "Error: Failed to send packet (no connection)");
-
 	}
-
 
 	LeaveCriticalSection(&localSeqMutex);
 
-
 	SAFE_FREE(&pPacket->pData);
-
 }
 
 
