@@ -69,9 +69,8 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	NETLIBOPENCONNECTION nloc = {0};
 
 
-	Netlib_CloseHandle(hServerConn);
-	hServerConn = NULL;
-
+  Netlib_CloseHandle(hServerConn);
+  hServerConn = NULL;
 
 	// Todo: We really should sanity check this, maybe reset it with a timer
 	// so we don't trigger on this by mistake
@@ -89,7 +88,6 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
 	if (!(chain = readIntoTLVChain(&buf, datalen, 0)))
 	{
-
 		Netlib_Logf(ghServerNetlibUser, "Error: Missing chain on close channel");
 		return;
 	}
@@ -99,12 +97,10 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	wError = getWordFromChain(chain, 0x08, 1);
 	if (wError)
 	{
-
 		disposeChain(&chain);
 		handleSignonError(wError);
 
 		return;
-
 	}
 
 	// TLV 9 errors (runtime errors?)
@@ -121,7 +117,6 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		handleRuntimeError(wError);
 
 		return;
-
 	}
 
 
@@ -136,14 +131,12 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
 	if (!newServer || !cookie)
 	{
-
 		icq_LogMessage(LOG_FATAL, Translate("You could not sign on because the server returned invalid data. Try again."));
 
 		SAFE_FREE(&newServer);
 		SAFE_FREE(&cookie);
 
 		return;
-
 	}
 
 	Netlib_Logf(ghServerNetlibUser, "Authenticated.");
@@ -161,11 +154,11 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	nloc.flags = 0;
 	nloc.szHost = servip;
 	nloc.wPort = (WORD)atoi(&newServer[i]);
-  { /* Time to close the Connection & packet receiver */
+
+  { /* Time to release packet receiver, connection already closed */
     Netlib_CloseHandle(hServerPacketRecver);
-    Netlib_CloseHandle(hServerConn);
     hServerPacketRecver = NULL; // clear the variable
-	hServerConn = 0;
+
     Netlib_Logf(ghServerNetlibUser, "Closed connection to login server");
   }
 
