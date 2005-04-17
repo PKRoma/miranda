@@ -78,9 +78,9 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 		packTLV(&packet, 0x0003, (WORD)strlen(CLIENT_ID_STRING), CLIENT_ID_STRING); // Client ID string
 		packTLVWord(&packet, 0x0016, 0x010a);               // Client ID
 		packTLVWord(&packet, 0x0017, 0x0014);               // Client major version
-		packTLVWord(&packet, 0x0018, 0x0020);               // Client minor version
+		packTLVWord(&packet, 0x0018, 0x0022);               // Client minor version
 		packTLVWord(&packet, 0x0019, 0x0000);               // Client lesser version
-		packTLVWord(&packet, 0x001a, 0x090b);               // Client build number
+		packTLVWord(&packet, 0x001a, 0x0911);               // Client build number
 		packTLVDWord(&packet, 0x0014, 0x0000043d);          // Client distribution number
 		packTLV(&packet, 0x000f, 0x0002, "en");             // Client language
 		packTLV(&packet, 0x000e, 0x0002, "us");             // Client country
@@ -93,11 +93,9 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 
 		isLoginServer = 0;
 		cookieDataLen = 0;
-
 	}
 	else 
 	{
-		
 		if (cookieDataLen)
 		{
 			packet.wLen = cookieDataLen + 8;
@@ -121,7 +119,5 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 			// We need a cookie to identify us to the communication server
 			Netlib_Logf(ghServerNetlibUser, "Something went wrong...");
 		}
-		
 	}
-
 }
