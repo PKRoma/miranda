@@ -611,13 +611,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
               if (isChecked)
               {  // Queue for uploading
-                pszGroup = _strdup(DEFAULT_SS_GROUP);
+                pszGroup = NULL;
                 if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
                 {
                   if (dbv.pszVal && strlen(dbv.pszVal) > 0)
                     pszGroup = _strdup(dbv.pszVal);
                   DBFreeVariant(&dbv);
                 }
+                if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
 
                 // Get group ID from cache, if not ready use parent group, if still not ready create one
                 wNewGroupId = getServerGroupID(pszGroup);
@@ -695,13 +696,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               WORD wCurrentGroupId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
               DBVARIANT dbv;
 
-              pszGroup = _strdup(DEFAULT_SS_GROUP);
+              pszGroup = NULL;
               if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
               {
                 if (dbv.pszVal && strlen(dbv.pszVal) > 0)
                   pszGroup = _strdup(dbv.pszVal);
                 DBFreeVariant(&dbv);
               }
+              if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
               wNewGroupId = getServerGroupID(pszGroup);
               if (!wNewGroupId && strstr(pszGroup, "\\") != NULL)
               { // if it is sub-group, take master parent
@@ -799,7 +801,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               break;
             }
           }
-          else if (wApparentMode == ID_STATUS_OFFLINE)
+          if (wApparentMode == ID_STATUS_OFFLINE)
           { // contact is on the invisible list
             if (wDenyId == 0 && wIgnoreId == 0)
             {
@@ -810,8 +812,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               break;
             }
           }
-          else
-          { // contact is not on any list
+          if (wApparentMode != ID_STATUS_ONLINE)
+          { // contact is not on visible list
             if (wPermitId != 0)
             {
               currentAction = ACTION_REMOVEVISIBLE;
@@ -820,7 +822,10 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_PERMIT);
               break;
             }
-            else if (wDenyId != 0)
+          }
+          if (wApparentMode != ID_STATUS_OFFLINE)
+          { // contact is not on invisible list
+            if (wDenyId != 0)
             {
               currentAction = ACTION_REMOVEINVISIBLE;
               wNewContactId = wDenyId;
