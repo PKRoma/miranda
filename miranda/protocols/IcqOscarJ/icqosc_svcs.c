@@ -192,6 +192,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
   if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
   { // request avatar data
+    GetAvatarFileName(dwLocalUIN, pai->filename, MAX_PATH);
     GetAvatarData(pai->hContact, dwLocalUIN, dbv.pbVal, dbv.cpbVal, pai->filename);
     DBFreeVariant(&dbv);
 
