@@ -473,7 +473,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           { // we have no file to upload, remove hash from server
             Netlib_Logf(ghServerNetlibUser, "We do not have avatar, removing hash.");
             updateServAvatarHash(NULL, 0);
-
+            LinkContactPhotoToFile(NULL, NULL);
             break;
           }
           hash = calcMD5Hash(dbv.pszVal);
@@ -481,6 +481,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           { // the hash could not be calculated, remove from server
             Netlib_Logf(ghServerNetlibUser, "We could not obtain hash, removing hash.");
             updateServAvatarHash(NULL, 0);
+            LinkContactPhotoToFile(NULL, NULL);
           }
           else if (!memcmp(hash, pBuffer+4, 0x10))
           { // we have the right file
@@ -498,6 +499,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             if (cbFileSize != 0)
             {
               SetAvatarData(NULL, ppMap, cbFileSize);
+              LinkContactPhotoToFile(NULL, dbv.pszVal);
             }
 
             if (ppMap != NULL) UnmapViewOfFile(ppMap);
