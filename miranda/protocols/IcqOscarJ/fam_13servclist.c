@@ -759,6 +759,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           char* pszProto;
           DWORD dwUin;
           int bAdded = 0;
+          int bRegroup = 0;
+          WORD wOldGroupId;
 
           // This looks like a real contact
           // Check if this user already exists in local list
@@ -821,13 +823,39 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
           }
 
+          wOldGroupId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
 					// Save group and item ID
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", wItemId);
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", wGroupId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
-          // TODO: this will be enabled when Manage Serv-list dialog is finished
-          if (/*DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) ||*/ bAdded)
+          if (wOldGroupId != wGroupId && DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD))
+          { // contact has been moved on the server
+            char* szOldGroup = getServerGroupName(wOldGroupId);
+            char* szGroup = getServerGroupName(wGroupId);
+
+            if (!szOldGroup)
+            { // old group is not known, most probably not created subgroup
+              DBVARIANT dbv;
+
+              if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
+              { // get group from CList
+                if (dbv.pszVal && strlen(dbv.pszVal) > 0)
+                  szOldGroup = _strdup(dbv.pszVal);
+                DBFreeVariant(&dbv);
+              }
+              if (!szOldGroup) szOldGroup = _strdup(DEFAULT_SS_GROUP);
+            }
+
+            if (!szGroup || strlen(szGroup)>strlen(szOldGroup) || strncmp(szGroup, szOldGroup, strlen(szGroup)))
+            { // contact moved to new group or sub-group or not to master group
+              bRegroup = 1;
+            }
+            SAFE_FREE(&szGroup);
+            SAFE_FREE(&szOldGroup);
+          }
+
+          if (bRegroup || bAdded)
           { // if we should load server details or contact was just added, update its group
             char* szGroup;
 
