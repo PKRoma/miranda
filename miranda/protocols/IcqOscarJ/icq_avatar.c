@@ -838,7 +838,8 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
             _write(out, pBuffer, datalen);
             _close(out);
             
-            LinkContactPhotoToFile(ac->hContact, ac->szFile); // this should not be here, but no other simple solution available
+            if (dwPaFormat != PA_FORMAT_XML)
+              LinkContactPhotoToFile(ac->hContact, ac->szFile); // this should not be here, but no other simple solution available
 
             if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
             {
