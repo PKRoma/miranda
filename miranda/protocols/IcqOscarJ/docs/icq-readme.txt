@@ -15,7 +15,7 @@ _______
 
 0.3.5.1
 
-Bugfixes
+Bugfixes:
   Renaming of server groups was not working properly - caused errors
   Avatar could not be deleted (the delete button did not work)
   File Transfers were not working properly in some cases (wrong cookie handling)
@@ -24,6 +24,9 @@ Bugfixes
   Manage server-list dialog leaked memory
   Synchronize visibility items was not working properly
   Our avatar image was not linked to our ContactPhoto
+
+Improvements:
+  If Update details from server is on, user group are also updated
 
 
 0.3.5
