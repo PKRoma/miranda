@@ -55,6 +55,8 @@ void ReloadGlobals() {
 		g_dat->flags |= SMF_AVATAR;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE))
 		g_dat->flags |= SMF_SHOWDATE;
+	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSECS, SRMSGDEFSET_SHOWSECS))
+		g_dat->flags |= SMF_SHOWSECS;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDENAMES, SRMSGDEFSET_HIDENAMES))
 		g_dat->flags |= SMF_HIDENAMES;
 }

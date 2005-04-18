@@ -13,6 +13,7 @@
 #define SMF_AVATAR          0x00000200
 #define SMF_SHOWDATE        0x00000400
 #define SMF_HIDENAMES       0x00000800
+#define SMF_SHOWSECS        0x00001000
 
 #define SMF_ICON_ADD        0
 #define SMF_ICON_USERDETAIL 1

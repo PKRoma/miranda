@@ -172,6 +172,8 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_HIDENAMES      1
 #define SRMSGSET_SHOWTIME          "ShowTime"
 #define SRMSGDEFSET_SHOWTIME       1
+#define SRMSGSET_SHOWSECS          "ShowSeconds"
+#define SRMSGDEFSET_SHOWSECS       1
 #define SRMSGSET_SHOWDATE          "ShowDate"
 #define SRMSGDEFSET_SHOWDATE       0
 #define SRMSGSET_SHOWSTATUSCH      "ShowStatusChanges"

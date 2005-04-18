@@ -16,6 +16,10 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
+2.2.0.0.
+ - Log window didn't scroll correctly when avatar was loaded
+ - Added show seconds option to log window timestamp
+
 2.1.0.0
  - Show avatars for protocols that support them
  - Show user menu by clicking user name

@@ -35,7 +35,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Send/Receive Messages",
 #endif
-	PLUGIN_MAKE_VERSION(2, 1, 0, 0),
+	PLUGIN_MAKE_VERSION(2, 2, 0, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"info@miranda-im.org",

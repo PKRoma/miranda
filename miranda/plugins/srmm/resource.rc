@@ -100,14 +100,13 @@ STYLE DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
     WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
 CAPTION "Message Session"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_MESSAGE,1,49,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL
     DEFPUSHBUTTON   "&Send",IDOK,143,48,39,15
     PUSHBUTTON      "Close",IDCANCEL,129,0,54,15,NOT WS_VISIBLE
-    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW,2,5,
-                    12,12
+    CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW,2,5,12,12
     CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,15,2,95,14,
                     0x18000000L
     CONTROL         "",IDC_ADD,"MButtonClass",WS_TABSTOP,110,2,16,14,
@@ -128,17 +127,17 @@ END
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,158,158
     CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,12,146,10
     CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,28,146,10
-    CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Show timestamp",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,44,146,10
     CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,21,60,135,10
+                    WS_TABSTOP,21,75,135,10
     GROUPBOX        "Fonts",IDC_STATIC,163,0,143,158
     LTEXT           "Background colour:",IDC_STATIC,169,16,81,8
     CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,261,14,39,12
@@ -171,7 +170,9 @@ BEGIN
     CTEXT           "Select multiple fonts by dragging or by using the control key",
                     IDC_STATIC,169,135,131,16
     CONTROL         "Show status changes",IDC_SHOWSTATUSCHANGES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,76,146,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,92,146,10
+    CONTROL         "Show seconds",IDC_SHOWSECS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,21,59,127,10
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252

@@ -307,8 +307,11 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	if (g_dat->flags&SMF_SHOWTIME) {
 		DBTIMETOSTRING dbtts;
 		char str[64];
-
-		dbtts.szFormat = g_dat->flags&SMF_SHOWDATE ? "d s" : "s";
+		
+		if (g_dat->flags&SMF_SHOWSECS) 
+			dbtts.szFormat = g_dat->flags&SMF_SHOWDATE ? "d s" : "s";
+		else
+			dbtts.szFormat = g_dat->flags&SMF_SHOWDATE ? "d t" : "t";
 		dbtts.cbDest = sizeof(str);
 		dbtts.szDest = str;
 		CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dbei.timestamp, (LPARAM) & dbtts);
