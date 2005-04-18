@@ -794,12 +794,16 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         BYTE len;
         WORD datalen;
         int out;
+        char* szMyFile = (char*)malloc(strlen(ac->szFile)+10);
         PROTO_AVATAR_INFORMATION ai;
 
+        strcpy(szMyFile, ac->szFile);
+
         ai.cbSize = sizeof ai;
-        ai.format = PA_FORMAT_JPEG;
+        ai.format = PA_FORMAT_JPEG; // this is for error only
         ai.hContact = ac->hContact;
         strcpy(ai.filename, ac->szFile);
+        AddAvatarExt(PA_FORMAT_JPEG, ai.filename); 
 
         FreeCookie(pSnacHeader->dwRef);
         unpackByte(&pBuffer, &len);
@@ -828,9 +832,11 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 
           dwPaFormat = DetectAvatarFormatBuffer(pBuffer);
           DBWriteContactSettingByte(ac->hContact, gpszICQProtoName, "AvatarType", (BYTE)dwPaFormat);
-          AddAvatarExt(dwPaFormat, ac->szFile);
+          ai.format = dwPaFormat; // set the format
+          AddAvatarExt(dwPaFormat, szMyFile);
+          strcpy(ai.filename, szMyFile);
 
-          out = _open(ac->szFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+          out = _open(szMyFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			    if (out) 
           {
             DBVARIANT dbv;
@@ -839,7 +845,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
             _close(out);
             
             if (dwPaFormat != PA_FORMAT_XML)
-              LinkContactPhotoToFile(ac->hContact, ac->szFile); // this should not be here, but no other simple solution available
+              LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
 
             if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
             {
@@ -863,11 +869,9 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           }
         }
         else
-        { // the avatar is empty, delete the file
-          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, file deleted.", datalen);
+        { // the avatar is empty, delete the hash
+          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, hash deleted.", datalen);
 
-          DeleteFile(ac->szFile);
-          // there was probably some error, delete the hash too
           DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarSaved");
           DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash");
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
