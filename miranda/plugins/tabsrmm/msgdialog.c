@@ -253,7 +253,7 @@ void SetDialogToType(HWND hwndDlg)
         SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
     }
     
-    if(nrSmileys == 0)
+    if(nrSmileys == 0 || dat->hContact == 0)
         dat->doSmileys = 0;
     
     ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
@@ -308,17 +308,23 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
                 return 0;
             }
-            if (wParam == 0x0d && (GetKeyState(VK_CONTROL) & 0x8000) && myGlobals.m_MathModAvail) {
-                TCHAR toInsert[100];
-                _tcsncpy(toInsert, myGlobals.m_MathModStartDelimiter, sizeof(toInsert));
-                _tcsncat(toInsert, myGlobals.m_MathModStartDelimiter, sizeof(toInsert));
-                MessageBox(0, toInsert, _T("foo"), MB_OK);
-                SetWindowText(hwnd, toInsert);
-                //SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)toInsert);
-                return 0;
-            }
             if (wParam == 0x0f && GetKeyState(VK_CONTROL) & 0x8000) {
                 CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), GetParent(hwnd), DlgProcContainerOptions, (LPARAM) mwdat->pContainer);
+                return 0;
+            }
+            if (wParam == 0x0d && (GetKeyState(VK_CONTROL) & 0x8000) && myGlobals.m_MathModAvail) {
+                TCHAR toInsert[100];
+                BYTE keyState[256];
+                int i;
+                int iLen = _tcslen(myGlobals.m_MathModStartDelimiter);
+                ZeroMemory(keyState, 256);
+                _tcsncpy(toInsert, myGlobals.m_MathModStartDelimiter, 30);
+                _tcsncat(toInsert, myGlobals.m_MathModStartDelimiter, 30);
+                SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)toInsert);
+                SetKeyboardState(keyState);
+                for(i = 0; i < iLen; i++) {
+                    SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
+                }
                 return 0;
             }
             if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
@@ -507,11 +513,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_SYSKEYDOWN:
             if(wParam == VK_LEFT && GetKeyState(VK_LMENU) & 0x8000) {
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
-                break;
+                return 0;
             }
             if(wParam == VK_RIGHT && GetKeyState(VK_LMENU) & 0x8000) {
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
-                break;
+                return 0;
             }
             break;
         case WM_INPUTLANGCHANGEREQUEST: {
@@ -2679,9 +2685,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(dat->hwndLog != 0) {                 // IEView quoting support..
                             TCHAR *selected = 0, *szQuoted = 0;
                             IEVIEWEVENT event;
+                            ZeroMemory((void *)&event, sizeof(event));
                             event.cbSize = sizeof(IEVIEWEVENT);
                             event.hwnd = dat->hwndLog;
                             event.hContact = dat->hContact;
+                            event.dwFlags = 0;
 #if !defined(_UNICODE)
                             event.dwFlags |= IEEF_NO_UNICODE;
 #endif                            

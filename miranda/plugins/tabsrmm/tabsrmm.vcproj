@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252" ?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
@@ -808,6 +808,10 @@
 				RelativePath="ImageDataObject.h">
 			</File>
 			<File
+				RelativePath="m_ieview.h"/>
+			<File
+				RelativePath="m_MathModule.h"/>
+			<File
 				RelativePath="m_message.h">
 			</File>
 			<File
@@ -816,6 +820,10 @@
 			<File
 				RelativePath=".\m_popup.h">
 			</File>
+			<File
+				RelativePath="m_smileyadd.h"/>
+			<File
+				RelativePath="m_Snapping_windows.h"/>
 			<File
 				RelativePath="m_tabsrmm.h">
 			</File>

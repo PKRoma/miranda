@@ -442,8 +442,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
         newData.isSend = 0;
         if(bAutoPopup) {
             bActivate = bPopup = TRUE;
-            pContainer = FindContainerByName(szName);
-            if (pContainer == NULL)
+            if((pContainer = FindContainerByName(szName)) == NULL);
                 pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
             CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup);
             return 0;

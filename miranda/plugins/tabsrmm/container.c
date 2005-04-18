@@ -521,23 +521,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 pContainer->dwFlags &= ~CNT_SIZINGLOOP;
-#ifdef __MATHMOD_SUPPORT    			
-                //mathMod begin
-    			if(myGlobals.m_MathModAvail) {  //start scope
-    						TMathWindowInfo mathWndInfo;
-    												
-    						RECT windRect;
-    						// größe ermitteln:
-    						GetWindowRect(hwndDlg,&windRect);
-    						mathWndInfo.top=windRect.top;
-    						mathWndInfo.left=windRect.left;
-    						mathWndInfo.right=windRect.right - 5;
-    						mathWndInfo.bottom=windRect.bottom - 5;
-    						CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg); 
-    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-    			}  // end scope
-    			//mathMod end
-#endif                
                 break;
             }
         case WM_GETMINMAXINFO: {
@@ -563,6 +546,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         mmi->ptMaxPosition.y = rcDesktop.top;
                     else
                         mmi->ptMaxPosition.y = 0;
+                    if(myGlobals.m_MathModAvail) {
+                        if(CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {
+                            RECT rc;
+                            HWND hwndMath = FindWindowA("TfrmPreview", "Preview");
+                            GetWindowRect(hwndMath, &rc);
+                            mmi->ptMaxSize.y -= (rc.bottom - rc.top);
+                        }
+                    }
                 }
                 return 0;
             }
@@ -577,7 +568,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     			mathWndInfo.left=windRect.left;
     			mathWndInfo.right=windRect.right - 5;
     			mathWndInfo.bottom=windRect.bottom - 5;
-                CallService(MTH_Set_Srmm_HWND,0,(LPARAM) pContainer->hwndActive); 
                 CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
     		}
             break;
@@ -652,7 +642,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 #ifdef __MATHMOD_SUPPORT    			
                 //mathMod begin
-    			if(myGlobals.m_MathModAvail && !(pContainer->dwFlags & CNT_SIZINGLOOP)) {  //start scope
+    			if(myGlobals.m_MathModAvail) {  //start scope
     						TMathWindowInfo mathWndInfo;
     												
     						RECT windRect;
@@ -661,10 +651,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     						mathWndInfo.top=windRect.top;
     						mathWndInfo.left=windRect.left;
     						mathWndInfo.right=windRect.right - 5;
-    						mathWndInfo.bottom=windRect.bottom;
-                            CallService(MTH_Set_Srmm_HWND,0,(LPARAM) pContainer->hwndActive); 
+    						mathWndInfo.bottom=windRect.bottom - 5;
     						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-                            //ResizeMathWindow(&windRect);
     			}  // end scope
     			//mathMod end
 #endif                

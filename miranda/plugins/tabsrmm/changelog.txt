@@ -1,3 +1,6 @@
+
+VOODOO
+PROWER
                                   Project Information:
                                   ====================
 
@@ -15,6 +18,17 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.95 - 2005/04/15
+
+        + Icon packs have been updated with proxal icons. Both the XP and the default
+          (98/ME) packs are now using the icons from the proxal set).
+          
+        * no more smiley button in forwarding sessions, both for smileyadd and ieview.
+          Depending on the smiley pack configuration, smileyadd or ieview may crash,
+          because forwarding windows are not assigned to a specific protocol.
+          
+        ! quoting selection with ieview may fail in a few very rare cases.
+        
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.
@@ -22,6 +36,9 @@ Version 0.9.9.94 - 2005/04/11
         + added support for the Math Module plugin. Requires recent MathModule
           version. MathMod support can be activated on the Message Log options
           page (only, if the plugin is active, otherwise the option is grayed out)
+          
+        * attempt to fix a rich edit "feature" which may sometimes  automatically change 
+          input locale (keyboard layout).
 
 Version 0.9.9.93 - 2005/04/11
 
