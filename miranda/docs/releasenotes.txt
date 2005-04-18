@@ -29,6 +29,17 @@ to list all the important ones without getting too technical.
 If you want to see the full changelogs, go here:
 http://www.miranda-im.org/testing/
 
+* New in 0.4.0.1
+Bugfixes:
+ - Plugin options are not replaceable by a plugin
+ - Sending files from the root directory added an extra '\'
+ - Transparency focus issues in the contact list
+ - Log didn't scroll to the bottom when showing avatar in message window
+ - AIM: aim: links didn't register correctly
+
+Enhancements:
+ - Prevent plugins from overriding the plugin options dialog
+
 * New in 0.4
 Bugfixes:
  - Crashes after warning about unsuccessful search
