@@ -24,6 +24,7 @@ Bugfixes:
   Manage server-list dialog leaked memory
   Synchronize visibility items was not working properly
   Our avatar image was not linked to our ContactPhoto
+  Added workaround for DB Blob caching issues
 
 Improvements:
   If Update details from server is on, user group are also updated
