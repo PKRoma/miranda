@@ -33,6 +33,7 @@
 [Enter password for]
 [Jabber Authentication]
 [Authentication failed for]
+[CHAT plugin is required for conferences. Install it before chatting]
 ; [JABBER] Registration dialog
 [Jabber Account Registration]
 [Register]

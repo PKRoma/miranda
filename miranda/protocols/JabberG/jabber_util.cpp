@@ -129,23 +129,21 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
-			DBVARIANT dbv;
-			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-				if ( !lstrcmpi( dbv.pszVal, jid )) {	// exact match ( node@domain/resource )
-						hContactMatched = hContact;
-						JFreeVariant( &dbv );
-						break;
-					}
+			char szJid[ JABBER_MAX_JID_LEN ];
+			if ( JGetStaticString( "jid", hContact, szJid, sizeof szJid ))
+				if ( JGetStaticString( "ChatRoomID", hContact, szJid, sizeof szJid ))
+					continue;
 
-					// match only node@domain part
-				char szTempJid[ JABBER_MAX_JID_LEN ];
-				if ( !lstrcmpi( JabberStripJid( dbv.pszVal, szTempJid, sizeof szTempJid ), s )) {
-						hContactMatched = hContact;
-						JFreeVariant( &dbv );
-						break;
-				}
+			if ( !lstrcmpi( szJid, jid )) {	// exact match ( node@domain/resource )
+				hContactMatched = hContact;
+				break;
+			}
 
-				JFreeVariant( &dbv );
+			// match only node@domain part
+			char szTempJid[ JABBER_MAX_JID_LEN ];
+			if ( !lstrcmpi( JabberStripJid( szJid, szTempJid, sizeof szTempJid ), s )) {
+				hContactMatched = hContact;
+				break;
 		}	}
 
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
@@ -957,10 +955,10 @@ void __stdcall JabberSendPresence( int status )
 	if ( status == ID_STATUS_INVISIBLE ) {
 		i = 0;
 		while (( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0 ) {
-			if (( item=JabberListGetItemPtrFromIndex( i )) != NULL ) {
+			if (( item=JabberListGetItemPtrFromIndex( i )) != NULL )
 				// Quit all chatrooms when change to invisible
-				PostMessage( item->hwndGcDlg, WM_JABBER_GC_FORCE_QUIT, 0, 0 );
-			}
+				JabberGcQuit( item, 0, 0 );
+
 			i++;
 		}
 	}
@@ -972,52 +970,7 @@ void __stdcall JabberSendPresence( int status )
 				JabberSendPresenceTo( status, item->jid, NULL );
 			}
 			i++;
-		}
-	}
-}
-
-char* __stdcall JabberRtfEscape( char* str )
-{
-	char* escapedStr;
-	int size;
-	char* p, *q;
-
-	if ( str == NULL )
-		return NULL;
-
-	for ( p=str,size=0; *p!='\0'; p++ ) {
-		if ( *p=='\\' || *p=='{' || *p=='}' )
-			size += 2;
-		else if ( *p=='\n' || *p=='\t' )
-			size += 5;
-		else
-			size++;
-	}
-
-	if (( escapedStr=( char* )malloc( size+1 )) == NULL )
-		return NULL;
-
-	for ( p=str,q=escapedStr; *p!='\0'; p++ ) {
-		if ( strchr( "\\{}", *p ) != NULL ) {
-			*q++ = '\\';
-			*q++ = *p;
-		}
-		else if ( *p == '\n' ) {
-			strcpy( q, "\\par " );
-			q += 5;
-		}
-		else if ( *p == '\t' ) {
-			strcpy( q, "\\tab " );
-			q += 5;
-		}
-		else {
-			*q++ = *p;
-		}
-	}
-	*q = '\0';
-
-	return escapedStr;
-}
+}	}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )
 {

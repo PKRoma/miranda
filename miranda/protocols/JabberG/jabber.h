@@ -54,6 +54,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_utils.h>
 #include <m_message.h>
 #include <m_skin.h>
+
+#include "sdk/m_chat.h"
+
 #include "jabber_xml.h"
 #include "jabber_byte.h"
 
@@ -65,20 +68,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define JABBER_MAX_JID_LEN  256
 
 // User-defined message
-#define WM_JABBER_REGDLG_UPDATE				WM_USER + 100
-#define WM_JABBER_AGENT_REFRESH				WM_USER + 101
-#define WM_JABBER_TRANSPORT_REFRESH			WM_USER + 102
-#define WM_JABBER_REGINPUT_ACTIVATE			WM_USER + 103
-#define WM_JABBER_REFRESH					WM_USER + 104
-#define WM_JABBER_CHECK_ONLINE				WM_USER + 105
-#define WM_JABBER_CHANGED					WM_USER + 106
-#define WM_JABBER_ACTIVATE					WM_USER + 107
-#define WM_JABBER_SET_FONT					WM_USER + 108
-#define WM_JABBER_FLASHWND					WM_USER + 109
-#define WM_JABBER_GC_MEMBER_ADD				WM_USER + 110
-#define WM_JABBER_GC_FORCE_QUIT				WM_USER + 111
-#define WM_JABBER_SHUTDOWN					WM_USER + 112
-#define WM_JABBER_SMILEY					WM_USER + 113
+#define WM_JABBER_REGDLG_UPDATE        WM_USER + 100
+#define WM_JABBER_AGENT_REFRESH        WM_USER + 101
+#define WM_JABBER_TRANSPORT_REFRESH    WM_USER + 102
+#define WM_JABBER_REGINPUT_ACTIVATE    WM_USER + 103
+#define WM_JABBER_REFRESH              WM_USER + 104
+#define WM_JABBER_CHECK_ONLINE         WM_USER + 105
+#define WM_JABBER_CHANGED              WM_USER + 106
+#define WM_JABBER_ACTIVATE             WM_USER + 107
+#define WM_JABBER_SET_FONT             WM_USER + 108
+#define WM_JABBER_FLASHWND             WM_USER + 109
+#define WM_JABBER_GC_MEMBER_ADD        WM_USER + 110
+#define WM_JABBER_GC_FORCE_QUIT        WM_USER + 111
+#define WM_JABBER_SHUTDOWN             WM_USER + 112
+#define WM_JABBER_SMILEY               WM_USER + 113
+#define WM_JABBER_JOIN                 WM_USER + 114
+#define WM_JABBER_ADD_TO_ROSTER        WM_USER + 115
 // Error code
 #define JABBER_ERROR_REDIRECT				302
 #define JABBER_ERROR_BAD_REQUEST			400
@@ -277,7 +282,6 @@ typedef struct {
 	HWND hwndSetTopic;
 	HWND hwndChangeNick;
 	HWND hwndKickReason;
-	HWND hwndBanReason;
 	HWND hwndDestroyReason;
 	int nFlash;
 } JABBER_GCLOG_INFO;
@@ -285,8 +289,6 @@ typedef struct {
 typedef enum {
 	MUC_SETTOPIC,
 	MUC_CHANGENICK,
-	MUC_KICKREASON,
-	MUC_BANREASON,
 	MUC_DESTROYREASON,
 	MUC_ADDJID
 } JABBER_GCLOG_INPUT_TYPE;
@@ -300,6 +302,8 @@ typedef struct {
 
 typedef void ( *JABBER_FORM_SUBMIT_FUNC )( char* submitStr, void *userdata );
 typedef void ( __cdecl *JABBER_THREAD_FUNC )( void * );
+
+#include "jabber_list.h"
 
 /*******************************************************************
  * Global variables
@@ -321,24 +325,15 @@ extern BOOL jabberConnected;
 extern BOOL jabberOnline;
 extern int jabberStatus;
 extern int jabberDesiredStatus;
-//extern char* jabberModeMsg;
+
 extern CRITICAL_SECTION modeMsgMutex;
 extern JABBER_MODEMSGS modeMsgs;
 extern BOOL modeMsgStatusChangePending;
-extern BOOL jabberChangeStatusMessageOnly;
-extern BOOL jabberSendKeepAlive;
-extern HICON jabberIcon[JABBER_ICON_TOTAL];
 
-extern HANDLE hEventSettingChanged;
-extern HANDLE hEventContactDeleted;
-
-extern HANDLE hMenuAgent;
-extern HANDLE hMenuChangePassword;
-extern HANDLE hMenuGroupchat;
-extern HANDLE hMenuRequestAuth;
-extern HANDLE hMenuGrantAuth;
-
-extern HANDLE hWndListGcLog;
+extern BOOL   jabberChangeStatusMessageOnly;
+extern BOOL   jabberSendKeepAlive;
+extern HICON  jabberIcon[JABBER_ICON_TOTAL];
+extern BOOL   jabberChatDllPresent;
 
 extern HWND hwndJabberAgents;
 extern HWND hwndAgentReg;
@@ -365,6 +360,7 @@ extern HWND hwndMucOwnerList;
 HANDLE __stdcall  JCreateServiceFunction( const char* szService, MIRANDASERVICE serviceProc );
 int    __stdcall  JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 DWORD  __stdcall  JGetByte( const char* valueName, int parDefltValue );
+DWORD  __stdcall  JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );
 char*  __stdcall  JGetContactName( HANDLE hContact );
 DWORD  __stdcall  JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
 int    __stdcall  JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
@@ -424,14 +420,13 @@ time_t        __stdcall JabberIsoToUnixTime( char* stamp );
 int           __stdcall JabberCountryNameToId( char* ctry );
 void          __stdcall JabberSendPresenceTo( int status, char* to, char* extra );
 void          __stdcall JabberSendPresence( int );
-char*         __stdcall JabberRtfEscape( char* str );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 char*         __stdcall JabberGetClientJID( const char* jid, char*, size_t );
 char*         __stdcall JabberStripJid( const char* jid, char* dest, size_t destLen );
 
-
 //---- jabber_misc.c ------------------------------------------------
 
+void   JabberChatDllError( void );
 void   JabberContactListCreateGroup( char* groupName );
 void   JabberDBAddAuthRequest( char* jid, char* nick );
 HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripResource );
@@ -451,16 +446,11 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
 void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
 void JabberGroupchatProcessInvite( char* roomJid, char* from, char* reason, char* password );
 
-//---- jabber_groupchatlog.c ----------------------------------------
+//---- jabber_chat.cpp ----------------------------------------------
 
-void JabberGcLogInit();
-void JabberGcLogUninit();
-void JabberGcLogLoadFont( JABBER_GCLOG_FONT *fontInfo );
-void JabberGcLogCreate( char* jid );
-void JabberGcLogAppend( char* jid, time_t timestamp, char* str );
-void JabberGcLogUpdateMemberStatus( char* jid );
-void JabberGcLogSetTopic( char* jid, char* str );
-BOOL CALLBACK JabberGcLogInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+void JabberGcLogCreate( JABBER_LIST_ITEM* item );
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick );
+void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 
 //---- jabber_form.c ------------------------------------------------
 
@@ -476,7 +466,9 @@ void JabberFtHandleSiRequest( XmlNode *iqNode );
 void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft );
 BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
 
-#include "jabber_list.h"
+//---- jabber_svc.c -------------------------------------------------
+
+void JabberEnableMenuItems( BOOL bEnable );
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper

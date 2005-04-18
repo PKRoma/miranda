@@ -35,10 +35,8 @@
 #define IDI_AGENTS                      154
 #define IDI_VCARD                       155
 #define IDI_WRITE                       162
-#define IDD_GROUPCHAT_LOG               163
 #define IDI_SAVE                        166
 #define IDD_GROUPCHAT_INPUT             167
-#define IDR_CONTEXT                     168
 #define IDD_ADVSEARCH_TLEN              169
 #define IDD_JIDLIST                     171
 #define IDI_GCOWNER                     173
@@ -197,22 +195,22 @@
 #define IDC_PLAN                        1415
 #define IDC_PERSONALGROUP               1434
 #define IDC_EXTRAGROUP                  1436
-#define IDM_MESSAGE                     40002
-#define IDM_CLEAR                       40003
-#define IDM_VOICE                       40005
-#define IDM_BAN                         40006
-#define IDM_ADMIN                       40007
-#define IDM_OWNER                       40008
-#define IDM_CONFIG                      40009
-#define IDM_KICK                        40011
-#define IDM_NICK                        40012
-#define IDM_MODERATOR                   40013
-#define IDM_DESTROY                     40014
-#define IDM_MEMBER                      40015
-#define IDM_INVITE                      40016
+#define IDM_MESSAGE                     10002
+#define IDM_CLEAR                       10003
+#define IDM_VOICE                       10005
+#define IDM_BAN                         10006
+#define IDM_ADMIN                       10007
+#define IDM_OWNER                       10008
+#define IDM_CONFIG                      10009
+#define IDM_KICK                        10011
+#define IDM_NICK                        10012
+#define IDM_MODERATOR                   10013
+#define IDM_DESTROY                     10014
+#define IDM_MEMBER                      10015
+#define IDM_INVITE                      10016
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        185

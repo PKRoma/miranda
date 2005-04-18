@@ -24,6 +24,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_list.h"
 
 ///////////////////////////////////////////////////////////////////////////////
+// JabberChatDllError() - missing CHAT.DLL 
+
+void JabberChatDllError()
+{
+	MessageBox( NULL, 
+		JTranslate( "CHAT plugin is required for conferences. Install it before chatting" ), 
+		JTranslate( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // JabberContactListCreateGroup()
 
 static void JabberContactListCreateClistGroup( char* groupName )

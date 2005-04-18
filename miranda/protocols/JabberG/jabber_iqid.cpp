@@ -36,7 +36,6 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 	char* type;
 	char* str;
 	char text[256];
-	int iqId;
 
 	// RECVED: result of the request for authentication method
 	// ACTION: send account authentication information to log in
@@ -69,7 +68,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 		}	}
 
 		if (( str=JabberTextEncode( info->username )) != NULL ) {
-			iqId = JabberSerialNext();
+			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultSetAuth );
 			JabberSend( info->s, "<iq type='set' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:auth'><username>%s</username>%s</query></iq>", iqId, str, text );
 			free( str );
@@ -117,6 +116,21 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		jabberThreadInfo = NULL;	// To disallow auto reconnect
 }	}
+
+void CALLBACK sttCreateRoom( ULONG dwParam )
+{
+	char* jid = ( char* )dwParam, *p;
+
+	GCWINDOW gcw = {0};
+	gcw.cbSize = sizeof(GCWINDOW);
+	gcw.iType = GCW_CHATROOM;
+	gcw.pszID = jid;
+	gcw.pszModule = jabberProtoName;
+	gcw.pszName = strcpy(( char* )alloca( strlen(jid)+1 ), jid );
+	if (( p = strchr( gcw.pszName, '@' )) != NULL )
+		*p = 0;
+	CallService( MS_GC_NEWCHAT, 0, ( LPARAM )&gcw );
+}
 
 void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 {
@@ -167,6 +181,10 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 								// Add the jid ( with empty resource ) to Miranda contact list.
 								hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
 							}
+                     
+							if ( JGetByte( hContact, "ChatRoom", 0 ))
+								QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
+
 							DBWriteContactSettingString( hContact, "CList", "Nick", nick );
 							if ( item->group ) 
 								free( item->group );
@@ -226,14 +244,7 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 			}
 
 			jabberOnline = TRUE;
-
-			CLISTMENUITEM clmi;
-			memset( &clmi, 0, sizeof( CLISTMENUITEM ));
-			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_FLAGS;
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+			JabberEnableMenuItems( TRUE );
 
 			if ( hwndJabberGroupchat )
 				SendMessage( hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );

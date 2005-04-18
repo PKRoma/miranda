@@ -43,6 +43,11 @@ DWORD __stdcall JGetByte( const char* valueName, int parDefltValue )
 	return DBGetContactSettingByte( NULL, jabberProtoName, valueName, parDefltValue );
 }
 
+DWORD __stdcall JGetByte( HANDLE hContact, const char* valueName, int parDefltValue )
+{
+	return DBGetContactSettingByte( hContact, jabberProtoName, valueName, parDefltValue );
+}
+
 char* __stdcall JGetContactName( HANDLE hContact )
 {
 	return ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, WPARAM( hContact ), 0 );

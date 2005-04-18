@@ -316,7 +316,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 							gcLogInputInfo->gcLogInfo = NULL;
 							gcLogInputInfo->jidListInfo = jidListInfo;
 							gcLogInputInfo->nick = NULL;
-							jidListInfo->hwndAddJid = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), hwndDlg, JabberGcLogInputDlgProc, ( LPARAM )gcLogInputInfo );
+//							jidListInfo->hwndAddJid = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), hwndDlg, JabberGcLogInputDlgProc, ( LPARAM )gcLogInputInfo );
 						}
 					}
 					else {
@@ -446,45 +446,40 @@ static VOID CALLBACK JabberMucJidListCreateDialogApcProc( DWORD param )
 	JABBER_MUC_JIDLIST_INFO *jidListInfo;
 	HWND *pHwndJidList;
 
-	if (( jidListInfo=( JABBER_MUC_JIDLIST_INFO * ) param ) != NULL ) {
-		if (( iqNode=jidListInfo->iqNode ) != NULL ) {
-			if (( from=JabberXmlGetAttrValue( iqNode, "from" )) != NULL ) {
-				if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-					switch ( jidListInfo->type ) {
-					case MUC_VOICELIST:
-						pHwndJidList = &hwndMucVoiceList;
-						break;
-					case MUC_MEMBERLIST:
-						pHwndJidList = &hwndMucMemberList;
-						break;
-					case MUC_MODERATORLIST:
-						pHwndJidList = &hwndMucModeratorList;
-						break;
-					case MUC_BANLIST:
-						pHwndJidList = &hwndMucBanList;
-						break;
-					case MUC_ADMINLIST:
-						pHwndJidList = &hwndMucAdminList;
-						break;
-					case MUC_OWNERLIST:
-						pHwndJidList = &hwndMucOwnerList;
-						break;
-					default:
-						free( jidListInfo );
-						return;
-					}
-					if ( *pHwndJidList!=NULL && IsWindow( *pHwndJidList )) {
-						SetForegroundWindow( *pHwndJidList );
-						SendMessage( *pHwndJidList, WM_JABBER_REFRESH, 0, ( LPARAM )jidListInfo );
-					}
-					else {
-						*pHwndJidList = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_JIDLIST ), NULL, JabberMucJidListDlgProc, ( LPARAM )jidListInfo );
-					}
-					return;
-				}
-			}
-		}
+	if (( jidListInfo=( JABBER_MUC_JIDLIST_INFO * ) param ) == NULL ) return;
+	if (( iqNode=jidListInfo->iqNode ) == NULL )                      return;
+	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL )     return;
+	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL )   return;
+
+	switch ( jidListInfo->type ) {
+	case MUC_VOICELIST:
+		pHwndJidList = &hwndMucVoiceList;
+		break;
+	case MUC_MEMBERLIST:
+		pHwndJidList = &hwndMucMemberList;
+		break;
+	case MUC_MODERATORLIST:
+		pHwndJidList = &hwndMucModeratorList;
+		break;
+	case MUC_BANLIST:
+		pHwndJidList = &hwndMucBanList;
+		break;
+	case MUC_ADMINLIST:
+		pHwndJidList = &hwndMucAdminList;
+		break;
+	case MUC_OWNERLIST:
+		pHwndJidList = &hwndMucOwnerList;
+		break;
+	default:
+		free( jidListInfo );
+		return;
 	}
+
+	if ( *pHwndJidList!=NULL && IsWindow( *pHwndJidList )) {
+		SetForegroundWindow( *pHwndJidList );
+		SendMessage( *pHwndJidList, WM_JABBER_REFRESH, 0, ( LPARAM )jidListInfo );
+	}
+	else *pHwndJidList = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_JIDLIST ), NULL, JabberMucJidListDlgProc, ( LPARAM )jidListInfo );
 }
 
 static void JabberIqResultMucGetJidList( XmlNode *iqNode, JABBER_MUC_JIDLIST_TYPE listType )
@@ -505,12 +500,8 @@ static void JabberIqResultMucGetJidList( XmlNode *iqNode, JABBER_MUC_JIDLIST_TYP
 				else
 					JabberMucJidListCreateDialogApcProc(( DWORD )jidListInfo );
 			}
-			else {
-				free( jidListInfo );
-			}
-		}
-	}
-}
+			else free( jidListInfo );
+}	}	}
 
 void JabberIqResultMucGetVoiceList( XmlNode *iqNode, void *userdata )
 {
@@ -547,4 +538,3 @@ void JabberIqResultMucGetOwnerList( XmlNode *iqNode, void *userdata )
 	JabberLog( "<iq/> iqResultMucGetOwnerList" );
 	JabberIqResultMucGetJidList( iqNode, MUC_OWNERLIST );
 }
-

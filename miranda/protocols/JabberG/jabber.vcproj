@@ -222,6 +222,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_chat.cpp">
+			</File>
+			<File
 				RelativePath="jabber_file.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -283,26 +286,6 @@
 			</File>
 			<File
 				RelativePath="jabber_groupchat.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;JABBER_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;JABBER_EXPORTS;$(NoInherit)"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="jabber_groupchatlog.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool

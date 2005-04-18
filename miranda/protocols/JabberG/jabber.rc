@@ -406,53 +406,37 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,92,58,50,14
 END
 
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 222, 217
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 222, 148
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Multi-User Conference",IDC_STATIC,2,3,216,67
-    LTEXT           "Font:",IDC_STATIC,9,19,28,8
-    CTEXT           "",IDC_FONTSHOW,40,17,116,12,SS_CENTERIMAGE,
-                    WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Change...",IDC_FONT,162,17,50,12
-    LTEXT           "Send message on:",IDC_STATIC,9,32,74,8
-    CONTROL         "Enter",IDC_ENTER,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,30,44,50,10
-    CONTROL         "Ctrl+Enter",IDC_CTRLENTER,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,30,54,56,10
-    CONTROL         "Flash window on chat activity",IDC_FLASH,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,97,33,116,10
-    CONTROL         "Show time",IDC_TIME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,97,44,114,10
-    CONTROL         "Show date",IDC_DATE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,97,55,105,10
-    GROUPBOX        "File Transfer",IDC_STATIC,2,73,216,71
+    GROUPBOX        "File Transfer",IDC_STATIC,2,3,216,71
     CONTROL         "Allow file sending through bytestream proxy server",
                     IDC_PROXY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
-                    WS_TABSTOP,9,112,202,10
-    EDITTEXT        IDC_PROXY_ADDR,117,123,81,12,ES_AUTOHSCROLL | 
-                    WS_DISABLED | WS_GROUP
+                    WS_TABSTOP,9,42,202,10
+    EDITTEXT        IDC_PROXY_ADDR,117,53,81,12,ES_AUTOHSCROLL | WS_DISABLED | 
+                    WS_GROUP
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,100,101,10
-    EDITTEXT        IDC_DIRECT_ADDR,117,99,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,2,147,216,67
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,30,101,10
+    EDITTEXT        IDC_DIRECT_ADDR,117,29,81,12,ES_AUTOHSCROLL
+    GROUPBOX        "Miscellaneous",IDC_STATIC,2,77,216,66
     CONTROL         "Show transport agents on contact list",
                     IDC_SHOW_TRANSPORT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,162,202,11
+                    WS_TABSTOP,9,90,202,11
     CONTROL         "Automatically add contact when accept authorization",
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,174,203,12
+                    WS_TABSTOP,9,103,203,12
     CONTROL         "Send messages slower, but with full acknowledgement",
                     IDC_MSG_ACK,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,186,203,12
+                    WS_TABSTOP,9,116,203,12
     CONTROL         "Allow file sending through direct peer-to-peer connection",
-                    IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,88,
+                    IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,18,
                     202,10
     CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,124,102,10
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,54,102,10
     CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,198,75,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,128,75,10
 END
 
 IDD_GROUPCHAT DIALOGEX 0, 0, 306, 208
@@ -469,7 +453,6 @@ BEGIN
     CONTROL         "List1",IDC_ROOM,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | 
                     WS_TABSTOP,5,24,294,160
-    PUSHBUTTON      "Join...",IDC_JOIN,5,189,50,14
     PUSHBUTTON      "Close",IDCLOSE,249,189,50,14
 END
 
@@ -492,31 +475,9 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,106,75,50,14
 END
 
-IDD_GROUPCHAT_LOG DIALOGEX 0, 0, 236, 146
-STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Jabber Groupchat"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    EDITTEXT        IDC_EDIT,7,126,222,13,ES_MULTILINE | ES_AUTOVSCROLL | 
-                    WS_VSCROLL
-    PUSHBUTTON      "Topic:",IDC_SET,7,3,34,12
-    CONTROL         "",IDC_TOPIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,49,4,
-                    180,8
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_READONLY | WS_VSCROLL | WS_TABSTOP,7,20,170,103,
-                    WS_EX_CLIENTEDGE
-    CONTROL         "",IDC_VSPLIT,"Static",SS_ENHMETAFILE,177,20,3,103
-    LISTBOX         IDC_LIST,181,20,48,103,LBS_SORT | LBS_OWNERDRAWFIXED | 
-                    LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
-                    WS_TABSTOP
-    CONTROL         "",IDC_HSPLIT,"Static",SS_ENHMETAFILE,7,123,222,2
-END
-
 IDD_GROUPCHAT_INPUT DIALOGEX 0, 0, 275, 46
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | 
-    DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+    DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -734,7 +695,7 @@ BEGIN
         RIGHTMARGIN, 218
         VERTGUIDE, 9
         TOPMARGIN, 3
-        BOTTOMMARGIN, 214
+        BOTTOMMARGIN, 143
     END
 
     IDD_GROUPCHAT, DIALOG
@@ -751,14 +712,6 @@ BEGIN
         RIGHTMARGIN, 201
         TOPMARGIN, 7
         BOTTOMMARGIN, 89
-    END
-
-    IDD_GROUPCHAT_LOG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 229
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 139
     END
 
     IDD_GROUPCHAT_INPUT, DIALOG
@@ -828,46 +781,6 @@ IDI_GCOWNER             ICON                    "icos\\gcowner.ico"
 IDI_GCADMIN             ICON                    "icos\\gcadmin.ico"
 IDI_GCMODERATOR         ICON                    "icos\\gcmodera.ico"
 IDI_GCVOICE             ICON                    "icos\\gcvoice.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_CONTEXT MENU 
-BEGIN
-    POPUP "List"
-    BEGIN
-        MENUITEM "&Message",                    IDM_MESSAGE
-        MENUITEM SEPARATOR
-        MENUITEM "Kick",                        IDM_KICK, GRAYED
-        MENUITEM "Ban",                         IDM_BAN, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "Toggle &Voice",               IDM_VOICE, GRAYED
-        MENUITEM "Toggle Moderator",            IDM_MODERATOR, GRAYED
-        MENUITEM "Toggle Admin",                IDM_ADMIN, GRAYED
-        MENUITEM "Toggle Owner",                IDM_OWNER, GRAYED
-    END
-    POPUP "Log"
-    BEGIN
-        MENUITEM "C&lear Log",                  IDM_CLEAR
-        MENUITEM SEPARATOR
-        MENUITEM "&Voice List...",              IDM_VOICE, GRAYED
-        MENUITEM "&Ban List...",                IDM_BAN, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "&Member List...",             IDM_MEMBER, GRAYED
-        MENUITEM "Mo&derator List...",          IDM_MODERATOR, GRAYED
-        MENUITEM "&Admin List...",              IDM_ADMIN, GRAYED
-        MENUITEM "&Owner List...",              IDM_OWNER, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "Change &Nickname...",         IDM_NICK
-        MENUITEM "&Invite a User...",           IDM_INVITE
-        MENUITEM "Room Con&figuration...",      IDM_CONFIG, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "Destroy Room...",             IDM_DESTROY, GRAYED
-    END
-END
-
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

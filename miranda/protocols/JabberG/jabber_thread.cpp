@@ -96,7 +96,6 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 	int socket;
 	int oldStatus;
 	char* str;
-	CLISTMENUITEM clmi;
 	PVOID ssl;
 	BOOL sslMode;
 	char* szLogBuffer;
@@ -390,18 +389,12 @@ LBL_Exit:
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			jabberOnline = FALSE;
 			jabberConnected = FALSE;
-			memset( &clmi, 0, sizeof( CLISTMENUITEM ));
-			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+			JabberEnableMenuItems( FALSE );
 			if ( hwndJabberChangePassword ) {
 				//DestroyWindow( hwndJabberChangePassword );
 				// Since this is a different thread, simulate the click on the cancel button instead
 				SendMessage( hwndJabberChangePassword, WM_COMMAND, MAKEWORD( IDCANCEL, 0 ), 0 );
 			}
-			WindowList_Broadcast( hWndListGcLog, WM_JABBER_CHECK_ONLINE, 0, 0 );
 			JabberListRemoveList( LIST_CHATROOM );
 			if ( hwndJabberAgents )
 				SendMessage( hwndJabberAgents, WM_JABBER_CHECK_ONLINE, 0, 0 );
@@ -794,9 +787,8 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 					JabberLog( "Receive presence offline from %s ( who is not in my roster )", from );
 					JabberListAdd( LIST_ROSTER, from );
 				}
-				else {
-					JabberListRemoveResource( LIST_ROSTER, from );
-				}
+				else JabberListRemoveResource( LIST_ROSTER, from );
+
 				status = ID_STATUS_OFFLINE;
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 					// Determine status to show for the contact based on the remaining resources
