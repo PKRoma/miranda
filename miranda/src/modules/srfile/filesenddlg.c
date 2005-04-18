@@ -107,8 +107,7 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 				// Add path to filename and copy into array
 				CopyMemory(dat->files[nTemp], buf, fileOffset - 1);
 				dat->files[nTemp][fileOffset-1] = '\\';
-				strcpy(dat->files[nTemp] + fileOffset, pBuf);
-
+				strcpy(dat->files[nTemp] + fileOffset - (buf[fileOffset-2]=='\\'?1:0), pBuf);
 				// Move pointers to next file...
 				pBuf += lstrlen(pBuf) + 1;
 				nTemp++;
