@@ -989,6 +989,8 @@ int DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *s
 {
   DBCONTACTWRITESETTING cws;
 
+  DBDeleteContactSetting(hContact, szModule, szSetting); // this is workaround for DB blob caching problems
+
   cws.szModule=szModule;
   cws.szSetting=szSetting;
   cws.value.type=DBVT_BLOB;
