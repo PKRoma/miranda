@@ -814,6 +814,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
 
           SAFE_FREE(&ac->szFile);
+          SAFE_FREE(&szMyFile);
           SAFE_FREE(&ac->hash);
           SAFE_FREE(&ac);
 
@@ -877,6 +878,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
         }
         SAFE_FREE(&ac->szFile);
+        SAFE_FREE(&szMyFile);
         SAFE_FREE(&ac->hash);
         SAFE_FREE(&ac);
       }
