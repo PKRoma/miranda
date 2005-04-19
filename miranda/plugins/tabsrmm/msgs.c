@@ -347,7 +347,8 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
     
     if (hwndExisting != NULL) {
         SendMessage(hwndExisting, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
-		ActivateExistingTab(pContainer, hwndExisting);
+        if(pContainer != NULL)
+            ActivateExistingTab(pContainer, hwndExisting);
     }
     else {
         TCHAR szName[CONTAINER_NAMELEN + 1];
@@ -1076,6 +1077,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 	// hide the active message dialog
 	dat = (struct MessageWindowData *) GetWindowLong(hwndChild, GWL_USERDATA);	// needed to obtain the hContact for the message window
 	if(dat) {
+        if(IsIconic(pContainer->hwnd))
+            SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 		ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
 		nmhdr.code = TCN_SELCHANGE;
 		TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetTabIndexFromHWND(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), hwndChild));
@@ -1083,8 +1086,6 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 		SetForegroundWindow(hwndChild);
 		SetActiveWindow(hwndChild);
     	SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-        if(IsIconic(pContainer->hwnd))
-            SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 		return TRUE;
 	} else
 		return FALSE;

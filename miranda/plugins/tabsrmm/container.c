@@ -546,6 +546,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         mmi->ptMaxPosition.y = rcDesktop.top;
                     else
                         mmi->ptMaxPosition.y = 0;
+#if defined(__MATHMOD_SUPPORT)
                     if(myGlobals.m_MathModAvail) {
                         if(CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {
                             RECT rc;
@@ -554,6 +555,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             mmi->ptMaxSize.y -= (rc.bottom - rc.top);
                         }
                     }
+#endif
                 }
                 return 0;
             }

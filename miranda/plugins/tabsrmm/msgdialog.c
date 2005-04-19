@@ -3876,7 +3876,7 @@ verify:
                     PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
                 else {
                     SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
-                    SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+                    //SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
                 }
                 //SetWindowLong(hwndDlg, GWL_USERDATA, 0);
                 
@@ -3986,10 +3986,11 @@ verify:
 
             // metacontacts support
 
+            /*
             if(dat->bIsMeta) {
                 DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
                 CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
-            }
+            } */
             
 // XXX tab support
             {

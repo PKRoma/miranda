@@ -357,8 +357,11 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CheckDlgButton(hwndDlg, IDC_TSFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 0));
             CheckDlgButton(hwndDlg, IDC_RTLDEFAULT, DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0));
             CheckDlgButton(hwndDlg, IDC_MATHMODSUPPORT, DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0));
+#if defined(__MATHMOD_SUPPORT)
             EnableWindow(GetDlgItem(hwndDlg, IDC_MATHMODSUPPORT), ServiceExists(MATH_RTF_REPLACE_FORMULAE));
-            
+#else            
+            EnableWindow(GetDlgItem(hwndDlg, IDC_MATHMODSUPPORT), FALSE);
+#endif            
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATWHOLEWORDSONLY), IsDlgButtonChecked(hwndDlg, IDC_FORMATTING));
             
             CheckDlgButton(hwndDlg, IDC_MSGLOGPLUGIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0));
@@ -1725,8 +1728,9 @@ void ReloadGlobals()
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
      myGlobals.m_SplitterMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 0);
-     myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
+     myGlobals.m_MathModAvail = 0;
 #ifdef __MATHMOD_SUPPORT    		
+     myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
      if(myGlobals.m_MathModAvail) {
          char *szDelim = (char *)CallService(MATH_GET_STARTDELIMITER, 0, 0);
          if(szDelim) {
