@@ -34,7 +34,7 @@ int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
     //LOG(("send socket: %d, %d bytes", s, len));
 
     if (yahooStatus == ID_STATUS_OFFLINE) {
-		YAHOO_DebugLog("WE OFFLINE ALREADY!!");
+		LOG(("WE OFFLINE ALREADY!!"));
         return 0;
 	}
 
@@ -50,9 +50,12 @@ int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 
 int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 {
+	int RecvResult;
 	//LOG(("Recv socket: %d", s));
+	if (yahooStatus == ID_STATUS_OFFLINE) 
+		LOG(("WARNING:WE ARE OFFLINE!!"));
 	
-	int RecvResult = Netlib_Recv((HANDLE)s, buf, len, 0);
+	RecvResult = Netlib_Recv((HANDLE)s, buf, len, 0);
 	
 	//LOG(("Got bytes: %d, len: %d", RecvResult, len));
 	
@@ -82,6 +85,7 @@ void __cdecl yahoo_server_main(void *empty)
 	yahoo_set_log_level(do_yahoo_debug);
 
 	//ext_yahoo_log("Before Yahoo Login Need Status: %d", status);
+	poll_loop = 1; /* set this so we start looping */
 	
 	ext_yahoo_login(status);
 
