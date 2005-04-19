@@ -76,6 +76,30 @@ static char *MsgServiceName(HANDLE hContact)
     return PSS_MESSAGE;
 }
 
+// mod from tabsrmm
+static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilename) {
+	*pppFiles=(char**)realloc(*pppFiles,(++*totalCount+1)*sizeof(char*));
+	(*pppFiles)[*totalCount]=NULL;
+	(*pppFiles)[*totalCount-1]=_strdup(szFilename);
+	if(GetFileAttributesA(szFilename)&FILE_ATTRIBUTE_DIRECTORY) {
+		WIN32_FIND_DATAA fd;
+		HANDLE hFind;
+		char szPath[MAX_PATH];
+		lstrcpyA(szPath,szFilename);
+		lstrcatA(szPath,"\\*");
+		if(hFind=FindFirstFileA(szPath,&fd)) {
+			do {
+				if(!lstrcmpA(fd.cFileName,".") || !lstrcmpA(fd.cFileName,"..")) continue;
+				lstrcpyA(szPath,szFilename);
+				lstrcatA(szPath,"\\");
+				lstrcatA(szPath,fd.cFileName);
+				AddToFileList(pppFiles,totalCount,szPath);
+			} while(FindNextFileA(hFind,&fd));
+			FindClose(hFind);
+		}
+	}
+}
+
 static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
 {
 	int i;
@@ -755,17 +779,42 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return TRUE;
 		}
 	case WM_CONTEXTMENU:
-		{
-			if (dat->hwndStatus && dat->hwndStatus == (HWND) wParam) {
-				POINT pt;
-				HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+	{
+		if (dat->hwndStatus && dat->hwndStatus == (HWND) wParam) {
+			POINT pt;
+			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
 
-				GetCursorPos(&pt);
-				TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
-				DestroyMenu(hMenu);
-			}
-			break;
+			GetCursorPos(&pt);
+			TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
+			DestroyMenu(hMenu);
 		}
+		break;
+	}
+	// Mod from tabsrmm
+	case WM_DROPFILES:
+	{
+		if (dat->szProto==NULL) break;
+		if (!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1,0)&PF1_FILESEND)) break;
+		if (dat->wStatus==ID_STATUS_OFFLINE) break;
+		if (dat->hContact!=NULL) {
+			HDROP hDrop;
+			char **ppFiles=NULL;
+			char szFilename[MAX_PATH];
+			int fileCount,totalCount=0,i;
+
+			hDrop=(HDROP)wParam;
+			fileCount=DragQueryFile(hDrop,-1,NULL,0);
+			ppFiles=NULL;
+			for(i=0;i<fileCount;i++) {
+				DragQueryFileA(hDrop, i, szFilename, sizeof(szFilename));
+				AddToFileList(&ppFiles, &totalCount, szFilename);
+			}
+			CallServiceSync(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
+			for(i=0;ppFiles[i];i++) free(ppFiles[i]);
+			free(ppFiles);
+		}
+		break;
+	}
 	case HM_AVATARACK:
 	{
 		ACKDATA *pAck = (ACKDATA *)lParam;

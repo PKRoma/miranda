@@ -99,11 +99,12 @@ IDD_MSG DIALOGEX 0, 0, 184, 78
 STYLE DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
     WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
+EXSTYLE WS_EX_ACCEPTFILES
 CAPTION "Message Session"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_MESSAGE,1,49,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_WANTRETURN | WS_VSCROLL
+                    ES_WANTRETURN | WS_VSCROLL,WS_EX_ACCEPTFILES
     DEFPUSHBUTTON   "&Send",IDOK,143,48,39,15
     PUSHBUTTON      "Close",IDCANCEL,129,0,54,15,NOT WS_VISIBLE
     CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW,2,5,12,12
@@ -294,12 +295,10 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_USERDETAILS         ICON    DISCARDABLE     "res/Details8.ico"
-IDI_TIMESTAMP           ICON    DISCARDABLE     "res/Clock8.ico"
 IDI_ADDCONTACT          ICON    DISCARDABLE     "../../src/res/addcontact.ico"
 IDI_HISTORY             ICON    DISCARDABLE     "res/History8.ico"
 IDI_DOWNARROW           ICON    DISCARDABLE     "res/Downarrow8.ico"
 IDI_TYPING              ICON    DISCARDABLE     "res/Typing8.ico"
-IDI_TIMESTAMP32         ICON    DISCARDABLE     "res/Clock32.ico"
 IDI_TYPING32            ICON    DISCARDABLE     "res/Typing32.ico"
 IDI_DOWNARROW32         ICON    DISCARDABLE     "res/Downarrow32.ico"
 IDI_HISTORY32           ICON    DISCARDABLE     "res/History32.ico"

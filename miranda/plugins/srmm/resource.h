@@ -7,7 +7,6 @@
 #define IDI_HISTORY                     174
 #define IDR_CONTEXT                     180
 #define IDC_DROP                        183
-#define IDI_TIMESTAMP                   208
 #define IDI_ADDCONTACT                  210
 #define IDC_HYPERLINKHAND               214
 #define IDC_DROPUSER                    215
@@ -16,7 +15,6 @@
 #define IDD_OPT_MSGLOG                  245
 #define IDI_DOWNARROW                   264
 #define IDI_TYPING                      268
-#define IDI_TIMESTAMP32                 269
 #define IDI_TYPING32                    270
 #define IDI_DOWNARROW32                 271
 #define IDI_HISTORY32                   272
@@ -62,7 +60,6 @@
 #define IDC_FONTCOLOUR                  1282
 #define IDC_STMSGLOGGROUP               1442
 #define IDC_PROTOCOL                    1580
-#define IDC_TYPINGNOTIFY                1581
 #define IDC_ERRORTEXT                   1596
 #define IDC_SHOWNOTIFY                  1600
 #define IDC_STATUSWIN                   1601
