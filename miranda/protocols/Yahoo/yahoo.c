@@ -1738,8 +1738,6 @@ int ext_yahoo_connect(char *h, int p)
     ncon.wPort = p;
     ncon.flags = 0;
 
-	//poll_loop = 1;
-	
     con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) & ncon);
     if (!con) 
         return -1;
