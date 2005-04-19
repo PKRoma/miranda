@@ -646,7 +646,7 @@ int YahooRecvAwayMessage(WPARAM wParam,LPARAM lParam)
 
 static void __cdecl yahoo_get_infothread(HANDLE hContact) 
 {
-	SleepEx(500, FALSE);
+	SleepEx(500, TRUE);
     ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
