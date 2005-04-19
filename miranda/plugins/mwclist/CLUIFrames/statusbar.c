@@ -168,6 +168,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 
 	GetClientRect(hwnd,&clRect);
 	if(rcPaint==NULL) rcPaint=&clRect;
+	if (rcPaint->right-rcPaint->left==0||rcPaint->top-rcPaint->bottom==0) rcPaint=&clRect;
 	y=-yScroll;
 	hdcMem=CreateCompatibleDC(hdc);
 	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
@@ -278,6 +279,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 				SendMessage(hwnd,SB_GETRECT,(WPARAM)nPanel,(LPARAM)&rc);
 				//rc.left+=startoffset;
 				//if (rc.left>=rc.right) rc.left=rc.right-1;
+				rc.top=0;
 				rc.left=nPanel*sectwidth+startoffset;
 				rc.right=rc.left+sectwidth-1;
 				ds.rcItem=rc;
@@ -630,14 +632,15 @@ int RecreateStatusBar(HWND parent)
 	OldWindowProc=(WNDPROC)GetWindowLong(hwndStatus,GWL_WNDPROC);
 	SetWindowLong(hwndStatus,GWL_WNDPROC,(LONG)&StatusBarOwnerDrawProc);
 	CreateStatusBarFrame();
-	CluiProtocolStatusChanged(0,0);
+		
 
 	{
 
 	SetWindowPos(helperhwnd,NULL,1,1,
 					1,1,SWP_NOZORDER);
 
-		CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
+	CluiProtocolStatusChanged(0,0);
+	CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
 	};
 
 return 0;

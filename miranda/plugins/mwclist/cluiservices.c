@@ -65,6 +65,8 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	if (storedcount==-1){return(0);};
 	
+	OutputDebugStr("CluiProtocolStatusChanged");
+	OutputDebugStr("\r\n");
 	{
 		//free protocol data
 	int nPanel;
@@ -206,6 +208,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	}
 
 		CreateTimerForConnectingIcon(wParam,lParam);
+		InvalidateRect(hwndStatus,NULL,FALSE);
 	
 	return 0;
 }

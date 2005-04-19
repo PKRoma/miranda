@@ -56,7 +56,7 @@ void StatusUpdaterThread(HWND hwndDlg)
 	curdelay=DBGetContactSettingByte(hContact,"CList","StatusMsgAutoDelay",15000);
 	if (curdelay<5000) curdelay=5000;
 	
-	if ((GetTickCount()-lastcheck)>curdelay)
+	if ((int)(GetTickCount()-lastcheck)>curdelay)
 	{
 		lastcheck=GetTickCount();
 		if (DBGetContactSettingByte(hContact,"CList","StatusMsgAuto",0)) {

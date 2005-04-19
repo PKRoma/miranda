@@ -574,8 +574,10 @@ HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIco
 
 				if (Name!=NULL&&strlen(Name)!=0)
 				{				
+					char iconame[256];
 
-							if(ServiceExists(MS_SKIN2_ADDICON))
+					_snprintf(iconame,sizeof(iconame),"genmenu_%s",Name);
+						if(ServiceExists(MS_SKIN2_ADDICON))
 								{
 
 							if (RegisterIt)
@@ -583,7 +585,7 @@ HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIco
 						
 								sid.cbSize = sizeof(sid);
 								sid.pszSection = Translate(SectName);				
-								sid.pszName=Name;
+								sid.pszName=iconame;
 								sid.pszDefaultFile=NULL;
 								sid.pszDescription=Description;
 								sid.hDefaultIcon=hIcon;
@@ -592,7 +594,7 @@ HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIco
 								
 								if(RegistredOk) *RegistredOk=TRUE;
 							};
-							return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)Name));
+							return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconame));
 							}
 		};
 	
@@ -1244,7 +1246,15 @@ int RegisterOneIcon(int mo,int mi)
 					MenuObjects[mo].MenuItems[mi].mi.pszName,
 					ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0),
 					TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
-				if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
+				
+				if (newIcon) 
+				{
+					if (MenuObjects[mo].MenuItems[mi].iconId==-1)
+					MenuObjects[mo].MenuItems[mi].iconId=ImageList_AddIcon(MenuObjects[mo].hMenuIcons,newIcon);
+					else  MenuObjects[mo].MenuItems[mi].iconId=ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
+
+				}	
+					
 			};
 
 		return 0;

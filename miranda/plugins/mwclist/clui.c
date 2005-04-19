@@ -85,6 +85,7 @@ extern void TrayIconUpdateBase(const char *szChangedProto);
 extern void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis);
 extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
 extern void InitGroupMenus();
+extern int UseOwnerDrawStatusBar;
 
 void InvalidateDisplayNameCacheEntry(HANDLE hContact);
 
@@ -474,7 +475,10 @@ int GetStatsuBarProtoRect(HWND hwnd,char *szProto,RECT *rc)
 {
 	int nParts,nPanel;
 	ProtocolData *PD;
+	int startoffset=DBGetContactSettingDword(NULL,"StatusBar","FirstIconOffset",0);
 	
+	if (!UseOwnerDrawStatusBar) startoffset=0;
+
 	nParts=SendMessage(hwnd,SB_GETPARTS,0,0);
 	FillMemory(rc,sizeof(RECT),0);
 
@@ -489,6 +493,8 @@ int GetStatsuBarProtoRect(HWND hwnd,char *szProto,RECT *rc)
 	if (!strcmp(szProto,PD->RealName))
 		{
 			SendMessage(hwnd,SB_GETRECT,(WPARAM)nPanel,(LPARAM)rc);
+			rc->left+=startoffset;
+			rc->right+=startoffset;
 			return(0);
 		};
 	};
@@ -778,6 +784,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					RECT rc;
 					GetStatsuBarProtoRect(hwndStatus,pt->szProto,&rc);
 					rc.right=rc.left+GetSystemMetrics(SM_CXSMICON)+1;
+					rc.top=0;
 #ifdef _DEBUG
 				{
 					//char buf[512];
