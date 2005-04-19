@@ -1738,36 +1738,11 @@ int ext_yahoo_connect(char *h, int p)
     ncon.wPort = p;
     ncon.flags = 0;
 
-	poll_loop = 1;
-/*    if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hNetlib, (LPARAM) & nlus) && !(nlus.useProxy && nlus.dnsThroughProxy)) {
-        struct in_addr addr;
-        DWORD ip = aim_toc_dnslookup(host);
-
-        if (ip) {
-            addr.S_un.S_addr = ip;
-            _snprintf(host, sizeof(host), "%s", inet_ntoa(addr));
-            ncon.szHost = host;
-        }
-    }
-    LOG(("connecting to %s:%d", host, ncon.wPort));*/
+	//poll_loop = 1;
 	
     con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) & ncon);
-    if (!con) {
-        char z[1024];
-        
-        yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
-
-		if (YAHOO_GetByte( "ShowErrors", 1 )) {
-			wsprintf(z, Translate("Connection to %s:%d failed"), ncon.szHost, ncon.wPort);
-			if (!YAHOO_ShowPopup(Translate("Yahoo Error"), z, YAHOO_NOTIFY_POPUP)) {
-				if (YAHOO_hasnotification())
-					 YAHOO_shownotification(Translate("Yahoo Error"), z, NIIF_ERROR);
-				else
-					 MessageBox(NULL, z, Translate("Yahoo Error"), MB_OK | MB_ICONINFORMATION);
-			}
-		}
+    if (!con) 
         return -1;
-    }
 
     return (int)con;
 }
