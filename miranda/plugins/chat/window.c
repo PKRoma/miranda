@@ -1996,15 +1996,15 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (RestoreWindowPosition(hwndDlg, dat->hContact, "Chat", "room", SW_HIDE)) 
 					break;
 				if (!RestoreWindowPosition(hwndDlg, NULL, "Chat", "room", SW_HIDE))
-					SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
+					SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW|SWP_NOACTIVATE);
 			}
 			else
-				SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
+				SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW|SWP_NOACTIVATE);
 
 			if(hWnd && DBGetContactSettingByte(NULL, "Chat", "CascadeWindows", 1))
 			{
 				RECT rcThis, rcNew;
-				int dwFlag = SWP_NOZORDER | SWP_NOSIZE;
+				int dwFlag = SWP_NOZORDER | SWP_NOSIZE|SWP_NOACTIVATE;
 				if(!IsWindowVisible ((HWND)wParam))
 					dwFlag |= SWP_HIDEWINDOW;
 
