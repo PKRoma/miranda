@@ -73,6 +73,9 @@ HICON jabberIcon[JABBER_ICON_TOTAL];
 HMODULE hLibSSL = NULL;
 PVOID jabberSslCtx;
 
+const char xmlnsAdmin[]  = "<query xmlns='http://jabber.org/protocol/muc#admin'>";
+const char xmlnsOwner[]  = "<query xmlns='http://jabber.org/protocol/muc#owner'>";
+
 HWND hwndJabberAgents = NULL;
 HWND hwndJabberGroupchat = NULL;
 HWND hwndJabberJoinGroupchat = NULL;
@@ -191,7 +194,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		hChatMenu = HookEvent( ME_GC_BUILDMENU, JabberGcMenuHook );
 
 		char szEvent[ 200 ];
-		_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", jabberProtoName );
+		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", jabberProtoName );
 		hInitChat = CreateHookableEvent( szEvent );
 		hEvInitChat = HookEvent( szEvent, JabberGcInit );
 	}

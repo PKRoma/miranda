@@ -58,7 +58,7 @@ void __stdcall JabberLog( const char* fmt, ... )
 	va_list vararg;
 	va_start( vararg, fmt );
 	char* str = ( char* )alloca( 32000 );
-	_vsnprintf( str, 32000, fmt, vararg );
+	mir_vsnprintf( str, 32000, fmt, vararg );
 	va_end( vararg );
 
 	JCallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
@@ -530,7 +530,7 @@ char* __stdcall JabberErrorMsg( XmlNode *errorNode )
 
 	errorStr = ( char* )malloc( 256 );
 	if ( errorNode == NULL ) {
-		_snprintf( errorStr, 256, "%s -1: %s", JTranslate( "Error" ), JTranslate( "Unknown error message" ));
+		mir_snprintf( errorStr, 256, "%s -1: %s", JTranslate( "Error" ), JTranslate( "Unknown error message" ));
 		return errorStr;
 	}
 
@@ -538,9 +538,9 @@ char* __stdcall JabberErrorMsg( XmlNode *errorNode )
 	if (( str=JabberXmlGetAttrValue( errorNode, "code" )) != NULL )
 		errorCode = atoi( str );
 	if (( str=errorNode->text ) != NULL )
-		_snprintf( errorStr, 256, "%s %d: %s\r\n%s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )), str );
+		mir_snprintf( errorStr, 256, "%s %d: %s\r\n%s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )), str );
 	else
-		_snprintf( errorStr, 256, "%s %d: %s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )) );
+		mir_snprintf( errorStr, 256, "%s %d: %s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )) );
 	return errorStr;
 }
 
@@ -889,10 +889,10 @@ void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 	// Note: jabberModeMsg is already encoded using JabberTextEncode()
 	EnterCriticalSection( &modeMsgMutex );
 
-	_snprintf( priorityStr, sizeof( priorityStr ), "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
+	mir_snprintf( priorityStr, sizeof( priorityStr ), "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
 
 	if ( to != NULL )
-		_snprintf( toStr, sizeof( toStr ), " to='%s'", UTF8(to));
+		mir_snprintf( toStr, sizeof( toStr ), " to='%s'", UTF8(to));
 	else
 		toStr[0] = '\0';
 
@@ -1020,7 +1020,7 @@ char* __stdcall JabberGetClientJID( const char* jid, char* dest, size_t destLen 
 	if ( p == NULL ) {
 		char* resource = JabberListGetBestResourceNamePtr( jid );
 		if ( resource != NULL )
-			_snprintf( dest+len, destLen-len-1, "/%s", resource );
+			mir_snprintf( dest+len, destLen-len-1, "/%s", resource );
 	}
 
 	return dest;

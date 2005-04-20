@@ -50,7 +50,7 @@ int JabberOptInit( WPARAM wParam, LPARAM lParam )
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pszTemplate = MAKEINTRESOURCE( IDD_OPT_JABBER2 );
-	_snprintf( str, sizeof( str ), "%s %s", jabberModuleName, JTranslate( "Advanced" ));
+	mir_snprintf( str, sizeof( str ), "%s %s", jabberModuleName, JTranslate( "Advanced" ));
 	str[sizeof( str )-1] = '\0';
 	odp.pszTitle = str;
 	odp.pfnDlgProc = JabberAdvOptDlgProc;

@@ -49,12 +49,12 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 				wsprintf( text, "%s%s", streamId, str );
 				free( str );
 				if (( str=JabberSha1( text )) != NULL ) {
-					_snprintf( text, sizeof( text ), "<digest>%s</digest>", str );
+					mir_snprintf( text, sizeof( text ), "<digest>%s</digest>", str );
 					free( str );
 			}	}
 		}
 		else if ( JabberXmlGetChild( queryNode, "password" ) != NULL ) {
-			_snprintf( text, sizeof( text ), "<password>%s</password>", UTF8( info->password ));
+			mir_snprintf( text, sizeof( text ), "<password>%s</password>", UTF8( info->password ));
 		}
 		else {
 			JabberLog( "No known authentication mechanism accepted by the server." );
@@ -63,7 +63,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 		}
 		if ( JabberXmlGetChild( queryNode, "resource" ) != NULL ) {
 			if (( str=JabberTextEncode( info->resource )) != NULL ) {
-				_snprintf( text+strlen( text ), sizeof( text )-strlen( text ), "<resource>%s</resource>", str );
+				mir_snprintf( text+strlen( text ), sizeof( text )-strlen( text ), "<resource>%s</resource>", str );
 				free( str );
 		}	}
 
@@ -111,7 +111,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		char text[128];
 
 		JabberSend( info->s, "</stream:stream>" );
-		_snprintf( text, sizeof( text ), "%s %s@%s.", JTranslate( "Authentication failed for" ), info->username, info->server );
+		mir_snprintf( text, sizeof( text ), "%s %s@%s.", JTranslate( "Authentication failed for" ), info->username, info->server );
 		MessageBox( NULL, text, JTranslate( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		jabberThreadInfo = NULL;	// To disallow auto reconnect
@@ -497,9 +497,9 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 							JabberTextDecode( m->text );
 							if ( hContact != NULL ) {
 								if (( o=JabberXmlGetChild( n, "EXTADR" )) != NULL && o->text != NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else if (( o=JabberXmlGetChild( n, "EXTADD" ))!=NULL && o->text!=NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else
 									strncpy( text, m->text, sizeof( text ));
 								text[sizeof( text )-1] = '\0';
@@ -545,9 +545,9 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 							JabberStringDecode( m->text );
 							if ( hContact != NULL ) {
 								if (( o=JabberXmlGetChild( n, "EXTADR" ))!=NULL && o->text!=NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else if (( o=JabberXmlGetChild( n, "EXTADD" ))!=NULL && o->text!=NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else
 									strncpy( text, m->text, sizeof( text ));
 								text[sizeof( text )-1] = '\0';

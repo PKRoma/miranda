@@ -95,7 +95,7 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 		if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
 			strcpy( szServer, "jabber.org" );
 
-		_snprintf( jsb->jid, sizeof jsb->jid, "%s@%s", szJid, szServer );
+		mir_snprintf( jsb->jid, sizeof jsb->jid, "%s@%s", szJid, szServer );
 	}
 	else strncpy( jsb->jid, szJid, sizeof jsb->jid );
 

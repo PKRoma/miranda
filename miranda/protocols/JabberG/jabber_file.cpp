@@ -284,7 +284,7 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 	hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 	ft->hFileEvent = hEvent;
 
-	_snprintf( szPort, sizeof( szPort ), "%d", nlb.wPort );
+	mir_snprintf( szPort, sizeof( szPort ), "%d", nlb.wPort );
 	item = JabberListAdd( LIST_FILE, szPort );
 	item->ft = ft;
 
@@ -393,7 +393,7 @@ static void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemot
 		return;
 	}
 
-	_snprintf( szPort, sizeof( szPort ), "%d", localPort );
+	mir_snprintf( szPort, sizeof( szPort ), "%d", localPort );
 	JabberLog( "File server incoming connection accepted: local_port=%s", szPort );
 
 	if (( item=JabberListGetItemPtr( LIST_FILE, szPort )) == NULL ) {

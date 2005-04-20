@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <malloc.h>
 
+#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
+
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -350,6 +352,8 @@ extern HWND hwndMucModeratorList;
 extern HWND hwndMucBanList;
 extern HWND hwndMucAdminList;
 extern HWND hwndMucOwnerList;
+
+extern const char xmlnsOwner[], xmlnsAdmin[];
 
 /*******************************************************************
  * Function declarations

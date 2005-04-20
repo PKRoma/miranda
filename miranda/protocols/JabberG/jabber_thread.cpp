@@ -155,13 +155,13 @@ LBL_Exit:
 		}
 		else strcpy( info->resource, "Miranda" );
 
-		_snprintf( jidStr, sizeof( jidStr ), "%s@%s/%s", info->username, info->server, info->resource );
+		mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s/%s", info->username, info->server, info->resource );
 		str = JabberTextEncode( jidStr );
 		strncpy( info->fullJID, str, sizeof( info->fullJID )-1 );
 		free( str );
 
 		if ( JGetByte( "SavePassword", TRUE ) == FALSE ) {
-			_snprintf( jidStr, sizeof( jidStr ), "%s@%s", info->username, info->server );
+			mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s", info->username, info->server );
 			// Ugly hack: continue logging on only the return value is &( onlinePassword[0] )
 			// because if WM_QUIT while dialog box is still visible, p is returned with some
 			// exit code which may not be NULL.
