@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             April 2005 (v0.4rc3)
+                             April 2005 (v0.4.0.1)
 
                           http://www.miranda-im.org
 
@@ -27,7 +27,7 @@ This section lists some of the changes between different releases. We have tried
 to list all the important ones without getting too technical. 
 
 If you want to see the full changelogs, go here:
-http://www.miranda-im.org/testing/
+http://files.miranda-im.org/testing/ChangeLog
 
 * New in 0.4.0.1
 Bugfixes:
@@ -39,6 +39,7 @@ Bugfixes:
 
 Enhancements:
  - Prevent plugins from overriding the plugin options dialog
+
 
 * New in 0.4
 Bugfixes:
