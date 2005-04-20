@@ -365,10 +365,10 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
 
 
-  _snprintf(szBuffer, sizeof szBuffer, "%s server connection", gpszICQProtoName);
+  mir_snprintf(szBuffer, sizeof szBuffer, Translate("%s server connection"), gpszICQProtoName);
   nlu.cbSize = sizeof(nlu);
   nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS; 
-  nlu.szDescriptiveName = Translate(szBuffer);
+  nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = gpszICQProtoName;
 
   if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0))
@@ -383,9 +383,9 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   }
 	ghServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  _snprintf(szBuffer, sizeof szBuffer, "%s client-to-client connections", gpszICQProtoName);
+  mir_snprintf(szBuffer, sizeof szBuffer, Translate("%s client-to-client connections"), gpszICQProtoName);
   nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-  nlu.szDescriptiveName = Translate(szBuffer);
+  nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = pszP2PName;
   nlu.minIncomingPorts = 1;
   hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
