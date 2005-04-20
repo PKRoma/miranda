@@ -56,6 +56,7 @@ void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *sz
 char *GetThemeFileName(int iMode);
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
+int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 
 /*
  * calculates avatar layouting, based on splitter position to find the optimal size
@@ -411,7 +412,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
                     while(hContact) {
                         DBWriteContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
-                        DBWriteContactSettingDword(hContact, SRMSGMOD, "splitsplity", dat->splitterY);
+                        DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
                         hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
                     }
                     WindowList_Broadcast(hMessageWindowList, DM_FORCEDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
@@ -454,8 +455,10 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iS
             _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? "enabled" : "disabled");
             SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
         }
-        _snprintf(szTipText, sizeof(szTipText), "Session stats: Active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szTipText);
+        //_snprintf(szTipText, sizeof(szTipText), "Session stats: Active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
+        //SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szTipText);
+        _snprintf(szTipText, sizeof(szTipText), "Sounds are %s (click to toggle, SHIFT-click to apply for all containers)", dat->pContainer->dwFlags & CNT_NOSOUND ? "off" : "on");
+        SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
     }
 }
 
@@ -482,6 +485,7 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
             else
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[15]);
         }
+        SendMessage(dat->pContainer->hwndStatus, SB_SETICON, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)(dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22]));
         UpdateReadChars(hwndDlg, dat);
         UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
     }
@@ -1399,21 +1403,42 @@ void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
 
 void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
+    if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
+        return;             // do not save "invalid" splitter values
+        
     if(myGlobals.m_SplitterMode || dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)
-        DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
+        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
     else
-        DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
+        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", dat->splitterY);
 }
 
 void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(!myGlobals.m_SplitterMode && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
-        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
+        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150);
     else
-        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150));
+        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150));
 
-    if(dat->splitterY < MINSPLITTERY || dat->splitterY == -1) {
-        if(!dat->showPic)
-            dat->splitterY = MINSPLITTERY;
+    if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
+        dat->splitterY = 150;
+}
+
+void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
+{
+    int iPlay = 0;
+    
+    DWORD dwFlags = pContainer->dwFlags;
+    if(dwFlags & CNT_NOSOUND)
+        iPlay = FALSE;
+    else if(dwFlags & CNT_SYNCSOUNDS) {
+        iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
+    }
+    else
+        iPlay = TRUE;
+    if (iPlay) {
+        if(GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
+            SkinPlaySound("RecvMsgActive");
+        else 
+            SkinPlaySound("RecvMsgInactive");
     }
 }

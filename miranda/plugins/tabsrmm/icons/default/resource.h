@@ -28,8 +28,8 @@
 #define IDI_FONTUNDERLINE               24
 #define IDI_FONTFACE                    25
 #define IDI_FONTCOLOR                   26
-#define IDI_RESERVED7                   27
-#define IDI_RESERVED8                   28
+#define IDI_SOUNDSON                    27
+#define IDI_SOUNDSOFF                   28
 #define IDI_RESERVED9                   29
 #define IDI_RESERVED10                  30
 #define IDB_UNKNOWNAVATAR               100

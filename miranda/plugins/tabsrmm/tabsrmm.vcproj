@@ -481,6 +481,8 @@
 				RelativePath=".\containeroptions.c">
 			</File>
 			<File
+				RelativePath="eventpopups.c"/>
+			<File
 				RelativePath=".\formatting.cpp">
 				<FileConfiguration
 					Name="Release Unicode|Win32">
@@ -833,6 +835,8 @@
 			<File
 				RelativePath="msgs.h">
 			</File>
+			<File
+				RelativePath="nen.h"/>
 			<File
 				RelativePath="resource.h">
 			</File>

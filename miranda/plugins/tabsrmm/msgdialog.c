@@ -67,6 +67,7 @@ void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const cha
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 HMENU BuildMCProtocolMenu(HWND hwndDlg);
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild);
 
 char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
@@ -1020,7 +1021,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
-                                   
+
+                dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
+
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
                 if (dat->hContact) {
                     int  pCaps;
@@ -1717,10 +1720,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                         SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     }
-                    if (dat->splitterY < MINSPLITTERY) {
-                        if(dat->showPic)
-                            LoadSplitter(hwndDlg, dat);
-                    }
+                    if (dat->splitterY < MINSPLITTERY)
+                        LoadSplitter(hwndDlg, dat);
                 }
 
                 // dynamic toolbar layout...
@@ -1822,25 +1823,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  * attempt to fix splitter troubles..
                  * hardcoded limits... better solution is possible, but this works for now
                  */
-                 //   if (dat->showPic) {
-                        // handle dynamic resizing of picture while splitter is moving...
-                        if (dat->splitterY <= MINSPLITTERY)           // min splitter size
-                            dat->splitterY = oldSplitterY;
-                        else if (dat->splitterY > ((rc.bottom - rc.top) - 50)) 
-                            dat->splitterY = oldSplitterY;
-                        else {
-                            if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
-                                dat->dynaSplitter = (rc.bottom - pt.y) - 8;
-                                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                            }
-                            else {
-                                dat->dynaSplitter = (rc.bottom - pt.y) - 8;
-                                if(dat->splitterY <= dat->bottomOffset)           // min splitter size
-                                    dat->splitterY = oldSplitterY;
-                                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                            }
+                    if (dat->splitterY <= MINSPLITTERY)           // min splitter size
+                        dat->splitterY = oldSplitterY;
+                    else if (dat->splitterY > ((rc.bottom - rc.top) - 50)) 
+                        dat->splitterY = oldSplitterY;
+                    else {
+                        if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
+                            dat->dynaSplitter = (rc.bottom - pt.y) - 8;
+                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                         }
-                 //   }
+                        else {
+                            dat->dynaSplitter = (rc.bottom - pt.y) - 8;
+                            if(dat->splitterY <= dat->bottomOffset)           // min splitter size
+                                dat->splitterY = oldSplitterY;
+                            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+                        }
+                    }
                 }
                 SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
                 break;
@@ -1981,6 +1979,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                             }
                         }
+                        tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 1, dat->pContainer, hwndDlg);
                     }
                     
                     if ((HANDLE) lParam != dat->hDbEventFirst) {
@@ -2053,6 +2052,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                         dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                     }
+                    /*
+                     * play a sound
+                     */
+                    if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
+                        PlayIncomingSound(dat->pContainer, hwndDlg);
                 }
                 break;
             }
@@ -3532,6 +3536,9 @@ verify:
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
             }
             DBWriteContactSettingDword(NULL, SRMSGMOD, "multisplit", dat->multiSplitterX);
+            break;
+        case DM_ACTIVATEME:
+            ActivateExistingTab(dat->pContainer, hwndDlg);
             break;
             /*
              * sent by the select container dialog box when a container was selected...

@@ -54,8 +54,8 @@ IDI_FONTITALIC          ICON                    "..\\..\\res\\proxal\\italic.ico
 IDI_FONTUNDERLINE       ICON                    "..\\..\\res\\proxal\\underline.ico"
 IDI_FONTFACE            ICON                    "..\\..\\res\\proxal\\font.ico"
 IDI_FONTCOLOR           ICON                    "..\\..\\res\\proxal\\color.ico"
-IDI_RESERVED7           ICON                    "..\\..\\res\\empty.ico"
-IDI_RESERVED8           ICON                    "..\\..\\res\\empty.ico"
+IDI_SOUNDSON            ICON                    "..\\..\\res\\proxal\\sounds_on.ico"
+IDI_SOUNDSOFF           ICON                    "..\\..\\res\\proxal\\sounds_off.ico"
 IDI_RESERVED9           ICON                    "..\\..\\res\\empty.ico"
 IDI_RESERVED10          ICON                    "..\\..\\res\\empty.ico"
 

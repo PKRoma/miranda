@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // #define _STREAMTHREADING 1
 // #define WANT_UGLY_HOOK 1
 
-// #define __MATHMOD_SUPPORT 0
+#define __MATHMOD_SUPPORT 1
 #define _RELEASE_BUILD 1
 
 #ifdef __GNUWIN32__
@@ -72,7 +72,7 @@ typedef struct _settextex {
 #endif
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 22
+#define NR_BUTTONBARICONS 24
 
 #include <richedit.h>
 #include <richole.h>
@@ -198,7 +198,7 @@ struct ProtocolData {
 #define DM_FORCESCROLL       (WM_USER+44)
 #define DM_QUERYCLIENTAREA   (WM_USER+45)
 #define DM_QUERYRECENT       (WM_USER+47)
-#define DM_FREEEEEEEEEEEEEE  (WM_USER+46)                   // ** free **
+#define DM_ACTIVATEME        (WM_USER+46)                   // ** free **
 #define DM_REGISTERHOTKEYS   (WM_USER+48)
 #define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)
@@ -423,8 +423,8 @@ struct MsgLogIcon {
 #define IDI_FONTUNDERLINE 24    /* underline */
 #define IDI_FONTFACE 25         /* font face (currently not in use) */
 #define IDI_FONTCOLOR 26        /* font color (not in use yet) */
-#define IDI_RESERVED7 27
-#define IDI_RESERVED8 28
+#define IDI_SOUNDSON  27
+#define IDI_SOUNDSOFF 28
 #define IDI_RESERVED9 29
 #define IDI_RESERVED10 30
 

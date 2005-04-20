@@ -27,6 +27,9 @@ $Id$
 #pragma hdrstop
 #include "m_message.h"
 #include "msgs.h"
+#include "msgdlgutils.h"
+#include "m_popup.h"
+#include "nen.h"
 #include "m_smileyadd.h"
 #include "m_ieview.h"
 #include "m_metacontacts.h"
@@ -45,12 +48,13 @@ $Id$
 #endif
 
 MYGLOBALS myGlobals;
+NEN_OPTIONS nen_options;
 
 static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList;
-static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
+static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
 
@@ -118,6 +122,7 @@ HMODULE g_hIconDLL = 0;
 // nls stuff...
 
 void BuildCodePageList();
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam);
 
 /*
  * installed as a WH_GETMESSAGE hook in order to process unicode messages.
@@ -337,6 +342,15 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+static int DispatchNewEvent(WPARAM wParam, LPARAM lParam) {
+	if (wParam) {
+        HWND h = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
+		if(h)
+            SendMessage(h, HM_DBEVENTADDED, wParam, lParam);
+	}
+	return 0;
+}
+
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
     HWND hwndExisting;
@@ -363,11 +377,11 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 
 static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
+    HWND hwnd;
     CLISTEVENT cle;
     DBEVENTINFO dbei;
     char *contactName;
     char toolTip[256];
-    HWND hwnd;
     BYTE bAutoPopup = FALSE, bAutoCreate = FALSE, bAutoContainer = FALSE, bAllowAutoCreate = 0;
     struct ContainerWindowData *pContainer = 0;
     TCHAR szName[CONTAINER_NAMELEN + 1];
@@ -378,41 +392,25 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     dbei.cbBlob = 0;
     CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
+    if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ)
+        return 0;
+    
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+
     hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
     if (hwnd) {
         struct ContainerWindowData *pTargetContainer = 0;
-        int iPlay = 0;
-        
-        if(dbei.flags & DBEF_SENT) {
-            SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
-            return 0;
-        }
         if(dbei.eventType == EVENTTYPE_MESSAGE) {
             SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
-            if (pTargetContainer) {
-                DWORD dwFlags = pTargetContainer->dwFlags;
-                if(dwFlags & CNT_NOSOUND)
-                    iPlay = FALSE;
-                else if(dwFlags & CNT_SYNCSOUNDS) {
-                    iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
-                }
-                else
-                    iPlay = TRUE;
-            }
-            if (iPlay)
-                SkinPlaySound("RecvMsg");
+            if (pTargetContainer)
+                PlayIncomingSound(pTargetContainer, hwnd);
         }
-        SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
         return 0;
     }
 
     /*
      * if no window is open, we are not interested in anything else but unread message events
      */
-    
-    if (dbei.flags & (DBEF_SENT | DBEF_READ) || dbei.eventType != EVENTTYPE_MESSAGE)
-        return 0;
     
     /* new message */
     SkinPlaySound("AlertMsg");
@@ -924,8 +922,11 @@ int LoadSendRecvMessageModule(void)
     OleInitialize(NULL);
     InitREOleCallback();
     ZeroMemory((void *)&myGlobals, sizeof(myGlobals));
+    ZeroMemory((void *)&nen_options, sizeof(nen_options));
+    
     hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
     InitOptions();
+    hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
     hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
     hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
     hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
@@ -940,14 +941,17 @@ int LoadSendRecvMessageModule(void)
     
     InitAPI();
     
-    SkinAddNewSound("RecvMsg", Translate("Message: Queued Incoming"), "message.wav");
-    SkinAddNewSound("AlertMsg", Translate("Message: Incoming"), "messagealert.wav");
-    SkinAddNewSound("SendMsg", Translate("Message: Outgoing"), "outgoing.wav");
+    SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
+    SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
+    SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
+    SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
     myGlobals.hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
     myGlobals.hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
     myGlobals.hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
     if (myGlobals.hCurHyperlinkHand == NULL)
         myGlobals.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
+
+    NEN_ReadOptions();
     return 0;
 }
 
@@ -1455,6 +1459,8 @@ static ICONDESC myIcons[] = {
     "tabSRMM_underline", "Format underline", &myGlobals.g_buttonBarIcons[19], -IDI_FONTUNDERLINE, 1,
     "tabSRMM_face", "Font face", &myGlobals.g_buttonBarIcons[20], -IDI_FONTFACE, 1,
     "tabSRMM_color", "Font color", &myGlobals.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
+    "tabSRMM_sounds_on", "Sounds are On", &myGlobals.g_buttonBarIcons[22], -IDI_SOUNDSON, 1,
+    "tabSRMM_sounds_off", "Sounds are off", &myGlobals.g_buttonBarIcons[23], -IDI_SOUNDSOFF, 1,
     NULL, NULL, NULL, 0
 };
 

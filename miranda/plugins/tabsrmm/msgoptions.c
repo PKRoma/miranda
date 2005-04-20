@@ -57,6 +57,8 @@ void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const cha
 static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
 #define FONTF_UNDERLINE 4
@@ -1480,37 +1482,24 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
-/*
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGLOG);
-    odp.pszTitle = Translate("Messaging Log");
-    odp.pfnDlgProc = DlgProcLogOptions;
-    odp.nIDBottomSimpleControl = IDC_STMSGLOGGROUP;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-*/
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
     odp.pszTitle = Translate("Typing Notify");
     odp.pfnDlgProc = DlgProcTypeOptions;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-/*
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_TABBEDMSG);
-	odp.pszTitle = Translate("Message tabs");
-	odp.pfnDlgProc = DlgProcTabbedOptions;
-	odp.nIDBottomSimpleControl = 0;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CONTAINERS);
-	odp.pszTitle = Translate("Message containers");
-	odp.pfnDlgProc = DlgProcContainerOptions;
-	odp.nIDBottomSimpleControl = 0;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
- */
+    
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGWINDOWFONTS);
     odp.pszTitle = Translate("Fonts and colors");
     odp.pfnDlgProc = DlgProcMsgWindowFonts;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-   
+
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_POPUP_OPT);
+    odp.pszTitle = Translate("Event popups");
+    odp.pfnDlgProc = DlgProcPopupOpts;
+    odp.nIDBottomSimpleControl = 0;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+    
     return 0;
 }
 

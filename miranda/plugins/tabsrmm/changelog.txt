@@ -1,6 +1,3 @@
-
-VOODOO
-PROWER
                                   Project Information:
                                   ====================
 
@@ -29,6 +26,23 @@ Version 0.9.9.95 - 2005/04/15
           
         ! quoting selection with ieview may fail in a few very rare cases.
         
+        * Splitter position is now saved in a private database entry. It is no longer
+          shared with SRMM or other SRMM-based message windows. As a result, message 
+          windows may come up with a default splitter position.
+        
+        + added support for SRMM-style "focused" and "unfocused" incoming message
+          sounds. Focused, in that context, means that the container needs to be the 
+          foreground window and the tab needs to be active. All inactive tabs or containers
+          are considered "unfocused".
+          
+          Sound effects can be configured under Miranda Options->Events->Sounds
+          
+        + added quick sound toggle switch on the status bar. The icon shows whether
+          sounds are off or on. Clicking the icon will toggle sound effects, holding
+          SHIFT while clicking the icon will apply the current state to all *open*
+          containers. Sound toggle is a per container setting and will be saved when
+          you close a container.
+          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

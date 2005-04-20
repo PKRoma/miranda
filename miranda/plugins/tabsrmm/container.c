@@ -591,16 +591,17 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 if (pContainer->hwndStatus) {
                     RECT rcs;
-                    int statwidths[4];
+                    int statwidths[5];
                     
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (myGlobals.g_SecureIMAvail ? 26 : 0);
-                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH - 8) - (myGlobals.g_SecureIMAvail ? 26 : 0);
-                    statwidths[2] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
-                    statwidths[3] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM) statwidths);
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
+                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH - 8) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
+                    statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (38 + 24) : 38);
+                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
+                    statwidths[4] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                 }
                 else
@@ -860,16 +861,27 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                             nParts = SendMessage(pContainer->hwndStatus, SB_GETPARTS, 0, 0);
                             if (nm->dwItemSpec == 0xFFFFFFFE) {
-                                nPanel = nParts -1;
+                                nPanel = nParts -2;
                                 SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
-                                if (nm->pt.x < rc.left) 
-                                    return FALSE;
+                                if (nm->pt.x > rc.left && nm->pt.x < rc.right) 
+                                    goto panel_found;
+                                else {
+                                    nPanel = nParts -1;
+                                    SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
+                                    if (nm->pt.x < rc.left) 
+                                        return FALSE;
+                                }
                             } 
                             else { 
                                 nPanel = nm->dwItemSpec; 
                             }
+panel_found:                            
                             if(nPanel == nParts - 1)
                                 SendMessage(pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
+                            else if(nPanel == nParts - 2) {
+                                pContainer->dwFlags ^= CNT_NOSOUND;
+                                SendMessage(pContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
+                            }
                         }
                     }
                     break;
@@ -1342,16 +1354,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 
                 if(pContainer->hwndStatus) {
-                    /* RECT rcs;
-                    int statwidths[4];
-
-                    GetWindowRect(pContainer->hwndStatus, &rcs);
-
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[2] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 23 : -1;
-                    statwidths[3] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM) statwidths); */
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
                     SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);
