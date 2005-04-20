@@ -55,7 +55,7 @@ void aim_gchat_getlogdir(char *szLog, int size)
     DBVARIANT dbv;
 
     if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_GL, &dbv)) {
-        _snprintf(szLog, size, "%s", dbv.pszVal);
+        mir_snprintf(szLog, size, "%s", dbv.pszVal);
         DBFreeVariant(&dbv);
     }
     else {
@@ -65,7 +65,7 @@ void aim_gchat_getlogdir(char *szLog, int size)
         lstrcat(szDbPath, "\\");
         lstrcat(szDbPath, Translate("AIM Chat Logs"));
         lstrcat(szDbPath, "\\");
-        _snprintf(szLog, size, "%s", szDbPath);
+        mir_snprintf(szLog, size, "%s", szDbPath);
     }
 }
 
@@ -94,7 +94,7 @@ static void aim_gchat_warn(char *szUser, int groupid)
     if (aim_util_isonline()) {
         char buf[MSG_LEN * 2];
 
-        _snprintf(buf, sizeof(buf), "toc_chat_evil %d %s \"norm\"", groupid, szUser);
+        mir_snprintf(buf, sizeof(buf), "toc_chat_evil %d %s \"norm\"", groupid, szUser);
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
     }
 }
@@ -108,7 +108,7 @@ static void aim_gchat_storechat(char *szRoom)
     if (!strcmp(szRoom, MIRANDANAME))
         return;
     for (i = 0; i < 10; i++) {
-        _snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
+        mir_snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
         if (!DBGetContactSetting(NULL, AIM_PROTO, buf, &dbv)) {
             if (!strcmp(dbv.pszVal, szRoom)) {
                 DBFreeVariant(&dbv);
@@ -118,14 +118,14 @@ static void aim_gchat_storechat(char *szRoom)
         }
     }
     for (i = 8; i >= 0; i--) {
-        _snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
+        mir_snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
         if (!DBGetContactSetting(NULL, AIM_PROTO, buf, &dbv)) {
-            _snprintf(nbuf, sizeof(nbuf), "%s%d", AIM_GCHAT_PREFIX, i + 1);
+            mir_snprintf(nbuf, sizeof(nbuf), "%s%d", AIM_GCHAT_PREFIX, i + 1);
             DBWriteContactSettingString(NULL, AIM_PROTO, nbuf, dbv.pszVal);
             DBFreeVariant(&dbv);
         }
     }
-    _snprintf(buf, sizeof(buf), "%s0", AIM_GCHAT_PREFIX, 0);
+    mir_snprintf(buf, sizeof(buf), "%s0", AIM_GCHAT_PREFIX, 0);
     DBWriteContactSettingString(NULL, AIM_PROTO, buf, szRoom);
 }
 
@@ -134,10 +134,10 @@ void aim_gchat_joinrequest(char *room, int exchange)
     char snd[MSG_LEN * 2];
     char szRoom[MSG_LEN];
 
-    _snprintf(szRoom, sizeof(szRoom), "%s", room);
+    mir_snprintf(szRoom, sizeof(szRoom), "%s", room);
     aim_util_escape(szRoom);
     LOG(LOG_DEBUG, "Sending join request for \"%s\", exchange=%d", room, exchange);
-    _snprintf(snd, sizeof(snd), "toc_chat_join %d \"%s\"", exchange, szRoom);
+    mir_snprintf(snd, sizeof(snd), "toc_chat_join %d \"%s\"", exchange, szRoom);
     aim_toc_sflapsend(snd, -1, TYPE_DATA);
 }
 
@@ -188,7 +188,7 @@ static void __cdecl aim_gchat_chatinvitethread(void *cinfo)
 	
     if (DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_GCHATINVITE), NULL, aim_gchat_invitedlg, (LPARAM) info) == IDOK) {
         char snd[MSG_LEN * 2];
-        _snprintf(snd, sizeof(snd), "toc_chat_accept %s", info->chatid);
+        mir_snprintf(snd, sizeof(snd), "toc_chat_accept %s", info->chatid);
         aim_toc_sflapsend(snd, -1, TYPE_DATA);
     }
 	inviteList = tlist_remove(inviteList, (void*)info);
@@ -239,9 +239,9 @@ void aim_gchat_chatinvite(char *szRoom, char *szUser, char *chatid, char *msg)
 	cle.hDbEvent=(HANDLE)NULL;
 	cle.lParam = (LPARAM)info;
 	cle.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GCHAT));
-	_snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInviteCList", AIM_PROTO);
+	mir_snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInviteCList", AIM_PROTO);
 	cle.pszService = szService;
-	_snprintf(szTip, sizeof(szTip), Translate("Chat invitation from %s"), (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+	mir_snprintf(szTip, sizeof(szTip), Translate("Chat invitation from %s"), (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
 	cle.pszTooltip = szTip;
 	CallServiceSync(MS_CLIST_ADDEVENT, (WPARAM)hContact, (LPARAM)&cle);
 }
@@ -250,7 +250,7 @@ static void aim_gchat_exitnotice(int dwRoom)
 {
     char snd[MSG_LEN * 2];
 
-    _snprintf(snd, sizeof(snd), "toc_chat_leave %d", dwRoom);
+    mir_snprintf(snd, sizeof(snd), "toc_chat_leave %d", dwRoom);
     aim_toc_sflapsend(snd, -1, TYPE_DATA);
 }
 
@@ -259,7 +259,7 @@ static void aim_gchat_send(int dwRoom, char *msg)
     char snd[MSG_LEN * 2];
 
     aim_util_escape(msg);
-    _snprintf(snd, sizeof(snd), "toc_chat_send %d \"%s\"", dwRoom, msg);
+    mir_snprintf(snd, sizeof(snd), "toc_chat_send %d \"%s\"", dwRoom, msg);
     aim_toc_sflapsend(snd, -1, TYPE_DATA);
 }
 
@@ -288,7 +288,7 @@ static BOOL CALLBACK aim_gchat_joinproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
             char ex[10];
 
             TranslateDialogDefault(hwndDlg);
-            _snprintf(ex, sizeof(ex), "%d", AIM_GROUPCHAT_DEFEXCHANGE);
+            mir_snprintf(ex, sizeof(ex), "%d", AIM_GROUPCHAT_DEFEXCHANGE);
             SetDlgItemText(hwndDlg, IDC_EXCHANGE, ex);
             SendDlgItemMessage(hwndDlg, IDC_EXCHANGESPIN, UDM_SETRANGE, 0, MAKELONG(6, 4));
             SendDlgItemMessage(hwndDlg, IDC_EXCHANGESPIN, UDM_SETPOS, 0, MAKELONG(AIM_GROUPCHAT_DEFEXCHANGE, 0));
@@ -308,7 +308,7 @@ static BOOL CALLBACK aim_gchat_joinproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 char buf[64];
 
                 for (i = 0; i < 10; i++) {
-                    _snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
+                    mir_snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
                     if (!DBGetContactSetting(NULL, AIM_PROTO, buf, &dbv)) {
                         SendDlgItemMessage(hwndDlg, IDC_CHATNAME, CB_ADDSTRING, 0, (LPARAM) dbv.pszVal);
                         DBFreeVariant(&dbv);
@@ -335,7 +335,7 @@ static BOOL CALLBACK aim_gchat_joinproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         int i;
 
                         for (i = 0; i < 10; i++) {
-                            _snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
+                            mir_snprintf(buf, sizeof(buf), "%s%d", AIM_GCHAT_PREFIX, i);
                             DBDeleteContactSetting(NULL, AIM_PROTO, buf);
                         }
                         SendMessage(hwndDlg, DM_RESETROOMLIST, 0, 0);
@@ -529,7 +529,7 @@ static BOOL CALLBACK aim_gchat_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 dbtts.cbDest = sizeof(str);
                 dbtts.szDest = str;
                 CallService(MS_DB_TIME_TIMESTAMPTOSTRING, (WPARAM) time(NULL), (LPARAM) & dbtts);
-                _snprintf(log, sizeof(log), Translate("[%s] *** Chat session started"), str);
+                mir_snprintf(log, sizeof(log), Translate("[%s] *** Chat session started"), str);
                 aim_gchat_logchat(hRooms[dat->roomid].szRoom, log);
                 aim_gchat_logchat(hRooms[dat->roomid].szRoom, "\n");
             }
@@ -607,7 +607,7 @@ static BOOL CALLBACK aim_gchat_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 dbtts.cbDest = sizeof(str);
                 dbtts.szDest = str;
                 CallService(MS_DB_TIME_TIMESTAMPTOSTRING, (WPARAM) time(NULL), (LPARAM) & dbtts);
-                _snprintf(log, sizeof(log), Translate("[%s] *** Chat session ended"), str);
+                mir_snprintf(log, sizeof(log), Translate("[%s] *** Chat session ended"), str);
                 aim_gchat_logchat(hRooms[dat->roomid].szRoom, log);
                 aim_gchat_logchat(hRooms[dat->roomid].szRoom, "\n");
             }
@@ -787,9 +787,9 @@ static BOOL CALLBACK aim_gchat_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             char buf[256];
             int i = (int) SendDlgItemMessage(hwndDlg, IDC_LIST, LB_GETCOUNT, 0, 0);
 
-            _snprintf(buf, sizeof(buf), "%d %s", i, i == 1 ? Translate("User") : Translate("Users"));
+            mir_snprintf(buf, sizeof(buf), "%d %s", i, i == 1 ? Translate("User") : Translate("Users"));
             SetWindowText(GetDlgItem(hwndDlg, IDC_USERS), buf);
-            _snprintf(buf, sizeof(buf), Translate("%s - AIM Group Chat, %d user(s)"), hRooms[dat->roomid].szRoom, i);
+            mir_snprintf(buf, sizeof(buf), Translate("%s - AIM Group Chat, %d user(s)"), hRooms[dat->roomid].szRoom, i);
             SetWindowText(hwndDlg, buf);
             break;
         }
@@ -1160,9 +1160,9 @@ void aim_gchat_sendmessage(int dwRoom, char *szUser, char *szMessage, int whispe
     strcpy(cmsg.szRoom, hRooms[i].szRoom);
     aim_util_striphtml(tmp, szMessage, sizeof(tmp));
     if (whisper)
-        _snprintf(tmp2, sizeof(tmp2), "%s %s", Translate("(Private)"), tmp);
+        mir_snprintf(tmp2, sizeof(tmp2), "%s %s", Translate("(Private)"), tmp);
     else
-        _snprintf(tmp2, sizeof(tmp2), "%s", tmp);
+        mir_snprintf(tmp2, sizeof(tmp2), "%s", tmp);
     strcpy(msg.szMessage, tmp2);
     cmsg.dwType = AIM_GCHAT_CHANMESS;
     cmsg.msg = &msg;
@@ -1213,9 +1213,9 @@ static void aim_gchat_sendinvite(char *szUser, int groupid, char *msg)
     char szMsg[MSG_LEN];
     char buf[MSG_LEN * 2];
 
-    _snprintf(szMsg, sizeof(szMsg), "%s", msg);
+    mir_snprintf(szMsg, sizeof(szMsg), "%s", msg);
     aim_util_escape(szMsg);
-    _snprintf(buf, sizeof(buf), "toc_chat_invite %d \"%s\" %s", groupid, szMsg, szUser);
+    mir_snprintf(buf, sizeof(buf), "toc_chat_invite %d \"%s\" %s", groupid, szMsg, szUser);
     aim_toc_sflapsend(buf, -1, TYPE_DATA);
 }
 
@@ -1350,17 +1350,17 @@ void aim_gchat_init()
     char pszTitle[256];
 
     if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        _snprintf(pszTitle, sizeof(pszTitle), "%s (%s)", AIM_PROTONAME, AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), "%s (%s)", AIM_PROTONAME, AIM_PROTO);
     }
     else
-        _snprintf(pszTitle, sizeof(pszTitle), "%s", AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), "%s", AIM_PROTO);
     pthread_mutex_init(&roomMutex);
     pthread_mutex_init(&findMutex);
     hRooms = NULL;
     hRoomsCount = 0;
-    _snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInviteCList", AIM_PROTO);
+    mir_snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInviteCList", AIM_PROTO);
     CreateServiceFunction(szService, aim_gchat_inviteservice);
-    _snprintf(szService, sizeof(szService), "%s/AIM/OpenGroupChat", AIM_PROTO);
+    mir_snprintf(szService, sizeof(szService), "%s/AIM/OpenGroupChat", AIM_PROTO);
     CreateServiceFunction(szService, aim_gchat_join);
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
@@ -1373,7 +1373,7 @@ void aim_gchat_init()
         mi.pszService = szService;
         hMenuGroupChat = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) & mi);
     }
-    _snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInvite", AIM_PROTO);
+    mir_snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInvite", AIM_PROTO);
     CreateServiceFunction(szService, aim_gchat_invitereq);
     mi.position = -2000080000;
     mi.flags = CMIF_NOTOFFLINE;
@@ -1572,7 +1572,7 @@ static void aim_gchat_trayupdate()
                 nnid.hWnd = hTray;
                 nnid.uFlags = NIF_TIP;
 
-                _snprintf(szTmp, sizeof(szTmp), Translate("AIM Group Chats (%d)"), dwShow);
+                mir_snprintf(szTmp, sizeof(szTmp), Translate("AIM Group Chats (%d)"), dwShow);
                 lstrcpyn(nnid.szTip, dwShow > 1 ? szTmp : Translate("AIM Group Chat"), sizeof(nnid.szTip));
                 Shell_NotifyIcon(NIM_MODIFY, &nnid);
             }

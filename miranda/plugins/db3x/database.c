@@ -177,7 +177,7 @@ void DBLog(const char *file,int line,const char *fmt,...)
 	char str[1024];
 
 	va_start(vararg,fmt);
-	_vsnprintf(str,sizeof(str),fmt,vararg);
+	mir_vsnprintf(str,sizeof(str),fmt,vararg);
 	va_end(vararg);
 	fp=fopen("c:\\mirandadatabase.log.txt","at");
 	fprintf(fp,"%u: %s %d: %s\n",GetTickCount(),file,line,str);

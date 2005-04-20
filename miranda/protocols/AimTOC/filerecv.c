@@ -34,7 +34,7 @@ void aim_filerecv_deny(char *user, char *cookie)
 {
     char buf[MSG_LEN];
 
-    _snprintf(buf, sizeof(buf), "toc_rvous_cancel %s %s %s", user, cookie, UID_AIM_FILE_RECV);
+    mir_snprintf(buf, sizeof(buf), "toc_rvous_cancel %s %s %s", user, cookie, UID_AIM_FILE_RECV);
     aim_toc_sflapsend(buf, -1, TYPE_DATA);
 }
 
@@ -42,7 +42,7 @@ void aim_filerecv_accept(char *user, char *cookie)
 {
     char buf[MSG_LEN];
 
-    _snprintf(buf, sizeof(buf), "toc_rvous_accept %s %s %s", user, cookie, UID_AIM_FILE_RECV);
+    mir_snprintf(buf, sizeof(buf), "toc_rvous_accept %s %s %s", user, cookie, UID_AIM_FILE_RECV);
     aim_toc_sflapsend(buf, -1, TYPE_DATA);
 }
 
@@ -125,7 +125,7 @@ static int aim_filerecv_openfile(struct aim_filerecv_request *ft) {
     szfilename = szname = 0;
     if (ft->filename) szfilename = aim_filerecv_fixpath(ft->filename);
     if (ft->hdr.name) szname = aim_filerecv_fixpath(ft->hdr.name);
-	_snprintf(file, sizeof(file), "%s\\%s%s%s", ft->savepath, szfilename, ntohs(ft->hdr.totfiles)==1?"":"\\", ntohs(ft->hdr.totfiles)==1?"":szname);
+	mir_snprintf(file, sizeof(file), "%s\\%s%s%s", ft->savepath, szfilename, ntohs(ft->hdr.totfiles)==1?"":"\\", ntohs(ft->hdr.totfiles)==1?"":szname);
 	XFREE(szfilename);
     XFREE(szname);
     aim_filerecv_mkdir(file);

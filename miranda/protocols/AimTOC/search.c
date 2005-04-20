@@ -59,13 +59,13 @@ void aim_search_name(PROTOSEARCHBYNAME * psbn)
     char snd[MSG_LEN * 2], *ret;
     char nick[MSG_LEN], fname[MSG_LEN], lname[MSG_LEN];
 
-    _snprintf(nick, sizeof(nick), "%s", psbn->pszNick ? psbn->pszNick : "");
-    _snprintf(fname, sizeof(fname), "%s", psbn->pszFirstName ? psbn->pszFirstName : "");
-    _snprintf(lname, sizeof(lname), "%s", psbn->pszLastName ? psbn->pszLastName : "");
+    mir_snprintf(nick, sizeof(nick), "%s", psbn->pszNick ? psbn->pszNick : "");
+    mir_snprintf(fname, sizeof(fname), "%s", psbn->pszFirstName ? psbn->pszFirstName : "");
+    mir_snprintf(lname, sizeof(lname), "%s", psbn->pszLastName ? psbn->pszLastName : "");
     aim_util_escape(nick);
     aim_util_escape(fname);
     aim_util_escape(lname);
-    _snprintf(snd, sizeof(snd), "toc_dir_search %s::%s:::::", strlen(nick) ? nick : fname, lname);
+    mir_snprintf(snd, sizeof(snd), "toc_dir_search %s::%s:::::", strlen(nick) ? nick : fname, lname);
     ret = _strdup(snd);
     pthread_create(aim_search_genericthread, (void *) ret);
 }
@@ -75,7 +75,7 @@ void aim_search_email(char *email)
     char snd[MSG_LEN * 2], *ret;
 
     aim_util_escape(email);
-    _snprintf(snd, sizeof(snd), "toc_dir_search :::::::%s", email);
+    mir_snprintf(snd, sizeof(snd), "toc_dir_search :::::::%s", email);
     ret = _strdup(snd);
     pthread_create(aim_search_genericthread, (void *) ret);
 }

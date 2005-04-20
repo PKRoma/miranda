@@ -43,7 +43,7 @@ static char *aim_gchatlog_setstyle(int style)
     LOGFONT lf;
 
     LoadGroupChatFont(style, &lf, NULL);
-    _snprintf(szStyle, sizeof(szStyle), "\\f%u\\cf%u\\b%d\\i%d\\fs%u", style, style, lf.lfWeight >= FW_BOLD ? 1 : 0, lf.lfItalic,
+    mir_snprintf(szStyle, sizeof(szStyle), "\\f%u\\cf%u\\b%d\\i%d\\fs%u", style, style, lf.lfWeight >= FW_BOLD ? 1 : 0, lf.lfItalic,
               2 * abs(lf.lfHeight) * 74 / logPixelSY);
     return szStyle;
 }
@@ -55,7 +55,7 @@ static void aim_gchatlog_appendtobuffer(char **buffer, int *cbBufferEnd, int *cb
 
     va_start(va, fmt);
     for (;;) {
-        charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+        charsDone = mir_vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
         if (charsDone >= 0)
             break;
         *cbBufferAlloced += 1024;
@@ -73,7 +73,7 @@ static int aim_gchatlog_appendtobufferwithrtf(char **buffer, int *cbBufferEnd, i
 
     va_start(va, fmt);
     for (;;) {
-        charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+        charsDone = mir_vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
         if (charsDone >= 0)
             break;
         *cbBufferAlloced += 1024;
@@ -187,11 +187,11 @@ static char *aim_gchatlog_creatertfbuffer(struct LogStreamData *streamData)
             CallService(MS_DB_TIME_TIMESTAMPTOSTRING, (WPARAM) time(NULL), (LPARAM) & dbtts);
             aim_gchatlog_appendtobuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", aim_gchatlog_setstyle(GCHATFONTID_DATE));
             streamData->charsOutput += aim_gchatlog_appendtobufferwithrtf(&buffer, &bufferEnd, &bufferAlloced, "[%s] ", str);
-			_snprintf(log, sizeof(log), "[%s] ", str);
+			mir_snprintf(log, sizeof(log), "[%s] ", str);
 			aim_gchat_logchat(streamData->msgdat->szRoom, log);
         }
         aim_gchatlog_appendtobuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", aim_gchatlog_setstyle(GCHATFONTID_MYPARTS));
-        _snprintf(log, sizeof(log), Translate("*** %s has %s %s"), streamData->msgdat->szUser,
+        mir_snprintf(log, sizeof(log), Translate("*** %s has %s %s"), streamData->msgdat->szUser,
                   streamData->msgdat->dwType == AIM_GCHAT_CHANPART ? Translate("left") : Translate("joined"), streamData->msgdat->szRoom);
         aim_gchat_logchat(streamData->msgdat->szRoom, log);
         aim_gchat_logchat(streamData->msgdat->szRoom, "\n");
@@ -218,11 +218,11 @@ static char *aim_gchatlog_creatertfbuffer(struct LogStreamData *streamData)
             aim_gchatlog_appendtobuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ",
                                         aim_gchatlog_setstyle(me ? GCHATFONTID_MYDATE : GCHATFONTID_DATE));
             streamData->charsOutput += aim_gchatlog_appendtobufferwithrtf(&buffer, &bufferEnd, &bufferAlloced, "[%s] ", str);
-			_snprintf(log, sizeof(log), "[%s] ", str);
+			mir_snprintf(log, sizeof(log), "[%s] ", str);
 			aim_gchat_logchat(streamData->msgdat->szRoom, log);
         }
         aim_gchatlog_appendtobuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", aim_gchatlog_setstyle(me ? GCHATFONTID_MYNAME : GCHATFONTID_NAME));
-        _snprintf(log, sizeof(log), "<%s> %s", streamData->msgdat->msg->szUser, msg);
+        mir_snprintf(log, sizeof(log), "<%s> %s", streamData->msgdat->msg->szUser, msg);
         aim_gchat_logchat(streamData->msgdat->szRoom, log);
         aim_gchat_logchat(streamData->msgdat->szRoom, "\n");
         streamData->charsOutput += aim_gchatlog_appendtobufferwithrtf(&buffer, &bufferEnd, &bufferAlloced, " <%s> ", streamData->msgdat->msg->szUser);

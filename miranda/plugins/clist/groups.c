@@ -72,7 +72,7 @@ static int CreateGroup(WPARAM wParam, LPARAM lParam)
         itoa(wParam - 1, str, 10);
         if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
             return 0;
-        _snprintf(newBaseName, sizeof(newBaseName), "%s\\%s", dbv.pszVal + 1, Translate("New Group"));
+        mir_snprintf(newBaseName, sizeof(newBaseName), "%s\\%s", dbv.pszVal + 1, Translate("New Group"));
         mir_free(dbv.pszVal);
     }
     else
@@ -81,7 +81,7 @@ static int CreateGroup(WPARAM wParam, LPARAM lParam)
     i = 1;
     lstrcpyn(newName + 1, newBaseName, sizeof(newName) - 1);
     while (GroupNameExists(newName + 1, -1))
-        _snprintf(newName + 1, sizeof(newName) - 1, "%s (%d)", newBaseName, ++i);
+        mir_snprintf(newName + 1, sizeof(newName) - 1, "%s (%d)", newBaseName, ++i);
     newName[0] = 1 | GROUPF_EXPANDED;   //1 is required so we never get '\0'
     DBWriteContactSettingString(NULL, "CListGroups", str, newName);
     CallService(MS_CLUI_GROUPADDED, newId + 1, 1);
@@ -172,7 +172,7 @@ static int DeleteGroup(WPARAM wParam, LPARAM lParam)
                 break;
             if (!strncmp(dbv.pszVal + 1, name, len) && dbv.pszVal[len + 1] == '\\' && strchr(dbv.pszVal + len + 2, '\\') == NULL) {
                 if (szNewParent[0])
-                    _snprintf(szNewName, sizeof(szNewName), "%s\\%s", szNewParent, dbv.pszVal + len + 2);
+                    mir_snprintf(szNewName, sizeof(szNewName), "%s\\%s", szNewParent, dbv.pszVal + len + 2);
                 else
                     lstrcpyn(szNewName, dbv.pszVal + len + 2, sizeof(szNewName));
                 RenameGroup(i + 1, (LPARAM) szNewName);
@@ -230,7 +230,7 @@ static int RenameGroupWithMove(int groupId, const char *szName, int move)
             if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv))
                 break;
             if (!strncmp(dbv.pszVal + 1, oldName, len) && dbv.pszVal[len + 1] == '\\' && strchr(dbv.pszVal + len + 2, '\\') == NULL) {
-                _snprintf(szNewName, sizeof(szNewName), "%s\\%s", szName, dbv.pszVal + len + 2);
+                mir_snprintf(szNewName, sizeof(szNewName), "%s\\%s", szName, dbv.pszVal + len + 2);
                 RenameGroupWithMove(i, szNewName, 0);   //luckily, child groups will never need reordering
             }
             DBFreeVariant(&dbv);

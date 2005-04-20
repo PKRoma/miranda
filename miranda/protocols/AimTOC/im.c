@@ -29,7 +29,7 @@ static void __cdecl aim_im_sendackfail(HANDLE hContact)
     char buf[256], *contactName;
 
     contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0);
-    _snprintf(buf, sizeof(buf), Translate("%s is currently offline.  Please try again later when the user is online."),
+    mir_snprintf(buf, sizeof(buf), Translate("%s is currently offline.  Please try again later when the user is online."),
               contactName ? contactName : Translate("User"));
     SleepEx(1000, TRUE);
     ProtoBroadcastAck(AIM_PROTO, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (int) buf);
@@ -69,7 +69,7 @@ int aim_im_sendmessage(HANDLE hContact, char *msg, int automsg)
             DBFreeVariant(&dbv);
             return (int) (HANDLE) 1;
         }
-        _snprintf(buf, MSG_LEN - 8, "toc_send_im %s \"%s\"%s", dbv.pszVal, tmp, automsg ? " auto" : "");
+        mir_snprintf(buf, MSG_LEN - 8, "toc_send_im %s \"%s\"%s", dbv.pszVal, tmp, automsg ? " auto" : "");
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
         free(tmp);
         DBFreeVariant(&dbv);

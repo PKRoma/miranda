@@ -131,12 +131,12 @@ static char *TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
         szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
         if (szPrefix && szPrefix[0]) {
             if (DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT))
-                _snprintf(szTip, sizeof(szTip), "%s%s%s %s", szPrefix, szSeparator, szProtoName, szStatus);
+                mir_snprintf(szTip, sizeof(szTip), "%s%s%s %s", szPrefix, szSeparator, szProtoName, szStatus);
             else
                 lstrcpyn(szTip, szPrefix, sizeof(szTip));
         }
         else
-            _snprintf(szTip, sizeof(szTip), "%s %s", szProtoName, szStatus);
+            mir_snprintf(szTip, sizeof(szTip), "%s %s", szProtoName, szStatus);
     }
     return szTip;
 }

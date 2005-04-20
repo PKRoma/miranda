@@ -287,7 +287,7 @@ static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wPara
                 char szFinal[256];
 
                 GetDlgItemText(hWnd, IDC_TOPLINE, szFormat, sizeof(szFormat));
-                _snprintf(szFinal, sizeof(szFinal), szFormat, (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, lParam, 0));
+                mir_snprintf(szFinal, sizeof(szFinal), szFormat, (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, lParam, 0));
                 SetDlgItemText(hWnd, IDC_TOPLINE, szFinal);
             }
             SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);

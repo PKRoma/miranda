@@ -59,7 +59,7 @@ char *GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
     }
     if (onlineCount == 0 && dat->exStyle & CLS_EX_HIDECOUNTSWHENEMPTY)
         return "";
-    _snprintf(szName, sizeof(szName), "(%u/%u)", onlineCount, totalCount);
+    mir_snprintf(szName, sizeof(szName), "(%u/%u)", onlineCount, totalCount);
     return szName;
 }
 
@@ -379,7 +379,7 @@ void EndRename(HWND hwnd, struct ClcData *dat, int save)
                 if (contact->type == CLCIT_GROUP && !strstr(text, "\\")) {
                     char szFullName[256];
                     if (contact->group->parent && contact->group->parent->parent)
-                        _snprintf(szFullName, sizeof(szFullName), "%s\\%s",
+                        mir_snprintf(szFullName, sizeof(szFullName), "%s\\%s",
                                   (char *) CallService(MS_CLIST_GROUPGETNAME2, (WPARAM) contact->group->parent->groupId, (LPARAM) (int *) NULL),
                                   text);
                     else

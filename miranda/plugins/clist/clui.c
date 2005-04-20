@@ -124,7 +124,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             char p[MAX_PATH];
             CallService(MS_DB_GETPROFILEPATH, sizeof(path), (LPARAM) & path);
             CallService(MS_DB_GETPROFILENAME, sizeof(file), (LPARAM) & file);
-            _snprintf(p, sizeof(p), "%s\\%s", path, file);
+            mir_snprintf(p, sizeof(p), "%s\\%s", path, file);
             rc = lstrcmp(profile, p) == 0;
             ReplyMessage(rc);
             if (rc)

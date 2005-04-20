@@ -27,7 +27,7 @@ static void aim_idle_set(int idle)
     if (aim_util_isonline()) {
         char buf[MSG_LEN];
 
-        _snprintf(buf, sizeof(buf), "toc_set_idle %d", idle);
+        mir_snprintf(buf, sizeof(buf), "toc_set_idle %d", idle);
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
         nIdle = idle;
         return;

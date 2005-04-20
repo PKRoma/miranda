@@ -133,7 +133,7 @@ HANDLE aim_buddy_get(char *nick, int create, int inlist, int noadd, char *group)
     if (aim_util_isonline() && !noadd) {
         char buf[MSG_LEN];
 
-        _snprintf(buf, sizeof(buf), "toc_add_buddy %s", sn);
+        mir_snprintf(buf, sizeof(buf), "toc_add_buddy %s", sn);
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
     }
     pthread_mutex_unlock(&buddyMutex);
@@ -152,10 +152,10 @@ void aim_buddy_updatemode(HANDLE hContact)
             && !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)) {
             char buf[MSG_LEN * 2];
             if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0)) {
-                _snprintf(buf, sizeof(buf), "toc_add_deny %s", dbv.pszVal);
+                mir_snprintf(buf, sizeof(buf), "toc_add_deny %s", dbv.pszVal);
             }
             else {
-                _snprintf(buf, sizeof(buf), "toc_add_permit %s", dbv.pszVal);
+                mir_snprintf(buf, sizeof(buf), "toc_add_permit %s", dbv.pszVal);
             }
             aim_toc_sflapsend(buf, -1, TYPE_DATA);
             DBFreeVariant(&dbv);
@@ -301,14 +301,14 @@ void aim_buddy_parseconfig(char *config)
                 if (c == NULL)
                     break;
                 if (*c == 'g') {
-                    _snprintf(group, sizeof(group), c + 2);
+                    mir_snprintf(group, sizeof(group), c + 2);
                     LOG(LOG_DEBUG, "Parsed group from server config: (%s)", group);
                 }
                 else if (*c == 'b') {
                     char nm[80], *a;
                     if ((a = strchr(c + 2, ':')) != NULL)
                         *a++ = '\0';
-                    _snprintf(nm, sizeof(nm), c + 2);
+                    mir_snprintf(nm, sizeof(nm), c + 2);
                     if (!aim_buddy_delaydeletecheck(nm)) {
                         LOG(LOG_DEBUG, "Parsed buddy from server config (%s) in %s", nm, group);
                         hContact = aim_buddy_get(nm, 1, 1, 1, group);
@@ -320,7 +320,7 @@ void aim_buddy_parseconfig(char *config)
                 }
                 else if (*c == 'd') {
                     char nm[80];
-                    _snprintf(nm, sizeof(nm), c + 2);
+                    mir_snprintf(nm, sizeof(nm), c + 2);
                     LOG(LOG_DEBUG, "Parsed deny mode from server config (%s)", nm);
                     hContact = aim_buddy_get(nm, 1, 0, 0, group);
                     if (hContact) {
@@ -331,7 +331,7 @@ void aim_buddy_parseconfig(char *config)
                 }
                 else if (*c == 'p') {
                     char nm[80];
-                    _snprintf(nm, sizeof(nm), c + 2);
+                    mir_snprintf(nm, sizeof(nm), c + 2);
                     LOG(LOG_DEBUG, "Parsed permit mode from server config (%s)", nm);
                     hContact = aim_buddy_get(nm, 1, 0, 0, group);
                     if (hContact) {
@@ -390,8 +390,8 @@ void aim_buddy_updateconfig(int ssilist)
     if (!aim_util_isonline())
         return;
 
-	n = _snprintf(buf, sizeof(buf), "toc_add_buddy");
-    m = _snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
+	n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
+    m = mir_snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
 
     hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
     while (hContact) {
@@ -405,17 +405,17 @@ void aim_buddy_updateconfig(int ssilist)
                 if (!ssilist||!DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0)) {
                     if (strlen(dbv.pszVal) + n + 32 > MSG_LEN) {
                         aim_toc_sflapsend(buf, -1, TYPE_DATA);
-                        n = _snprintf(buf, sizeof(buf), "toc_add_buddy");
+                        n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
                     }
                     if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0)) {
                         LOG(LOG_DEBUG, "Setting deny mode for %s", dbv.pszVal);
                         if (strlen(dbv.pszVal) + m + 32 > MSG_LEN) {
                             aim_toc_sflapsend(dbuf, -1, TYPE_DATA);
-                            m = _snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
+                            m = mir_snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
                         }
-                        m += _snprintf(dbuf + m, sizeof(dbuf) - m, " %s", dbv.pszVal);
+                        m += mir_snprintf(dbuf + m, sizeof(dbuf) - m, " %s", dbv.pszVal);
                     }
-                    n += _snprintf(buf + n, sizeof(buf) - n, " %s", dbv.pszVal);
+                    n += mir_snprintf(buf + n, sizeof(buf) - n, " %s", dbv.pszVal);
                 }
             }
             if (dbv.pszVal)

@@ -191,7 +191,7 @@ static void aim_links_register()
 	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\DefaultIcon", &hkey) == ERROR_SUCCESS) {
 		char szIcon[MAX_PATH];
 
-		_snprintf(szIcon, sizeof(szIcon), "%s,0", szShort);
+		mir_snprintf(szIcon, sizeof(szIcon), "%s,0", szShort);
 		RegSetValue(hkey, NULL, REG_SZ, szIcon, strlen(szIcon));
 		RegCloseKey(hkey);
 	}
@@ -202,10 +202,10 @@ static void aim_links_register()
     if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command", &hkey) == ERROR_SUCCESS) {
         // MSVC exports differently than gcc/mingw
 #ifdef _MSC_VER
-        _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,_aim_links_exec@16 %%1", szShort);
+        mir_snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,_aim_links_exec@16 %%1", szShort);
         LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #else
-        _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
+        mir_snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
         LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #endif
         RegSetValue(hkey, NULL, REG_SZ, szExe, strlen(szExe));

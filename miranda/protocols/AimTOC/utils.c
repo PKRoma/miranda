@@ -106,7 +106,7 @@ void aim_util_striphtml(char *dest, const char *src, size_t destsize)
     char *ptrl;
     char *rptr;
 
-    _snprintf(dest, destsize, "%s", src);
+    mir_snprintf(dest, destsize, "%s", src);
     while ((ptr = strstr(dest, "<P>")) != NULL || (ptr = strstr(dest, "<p>")) != NULL) {
         memmove(ptr + 4, ptr + 3, strlen(ptr + 3) + 1);
         *ptr = '\r';
@@ -294,7 +294,7 @@ void aim_util_statusupdate()
             free(szStatus);
             szStatus = NULL;
         }
-        _snprintf(snd, MSG_LEN, "toc_set_away");
+        mir_snprintf(snd, MSG_LEN, "toc_set_away");
         hLastStatusUpdate = 0;
     }
     else {
@@ -309,7 +309,7 @@ void aim_util_statusupdate()
         szTmp = malloc(strlen(szStatus) + MSG_LEN);
         strcpy(szTmp, szStatus);
         aim_util_escape(szTmp);
-        _snprintf(snd, MSG_LEN, "toc_set_away \"%s\"", szTmp);
+        mir_snprintf(snd, MSG_LEN, "toc_set_away \"%s\"", szTmp);
         free(szTmp);
         if ((GetTickCount() - hLastStatusUpdate) < 1000) {
             LOG(LOG_WARN, "Sending status message updates too fast.  Ignoring request.");
@@ -335,7 +335,7 @@ static void __cdecl aim_util_parseurlthread(void *url)
         char szURL[256];
 
         ZeroMemory(&nlhr, sizeof(nlhr));
-        _snprintf(szURL, 256, "http://%s/%s", AIM_TOC_HOST, (char *) url);
+        mir_snprintf(szURL, 256, "http://%s/%s", AIM_TOC_HOST, (char *) url);
         nlhr.cbSize = sizeof(nlhr);
         nlhr.requestType = REQUEST_GET;
         nlhr.flags = NLHRF_DUMPASTEXT;
@@ -368,28 +368,28 @@ static void __cdecl aim_util_parseurlthread(void *url)
                                 nick[0] = 0;
                                 fname[0] = 0;
                                 lname[0] = 0;
-                                _snprintf(data, sizeof(data), "%s", str);
+                                mir_snprintf(data, sizeof(data), "%s", str);
                                 if (sstr = strstr(data, "<TR><TD>Screen Name:</TD><TD><B>")) {
                                     sstr += 32;
                                     if (sstrend = strstr(sstr, "</B></TD></TR>")) {
                                         *sstrend = '\0';
-                                        _snprintf(nick, sizeof(nick), "%s", sstr);
+                                        mir_snprintf(nick, sizeof(nick), "%s", sstr);
                                     }
                                 }
-                                _snprintf(data, sizeof(data), "%s", str);
+                                mir_snprintf(data, sizeof(data), "%s", str);
                                 if (sstr = strstr(data, "<TR><TD>First Name:</TD><TD><B>")) {
                                     sstr += 31;
                                     if (sstrend = strstr(sstr, "</B></TD></TR>")) {
                                         *sstrend = '\0';
-                                        _snprintf(fname, sizeof(fname), "%s", sstr);
+                                        mir_snprintf(fname, sizeof(fname), "%s", sstr);
                                     }
                                 }
-                                _snprintf(data, sizeof(data), "%s", str);
+                                mir_snprintf(data, sizeof(data), "%s", str);
                                 if (sstr = strstr(data, "<TR><TD>Last Name:</TD><TD><B>")) {
                                     sstr += 30;
                                     if (sstrend = strstr(sstr, "</B></TD></TR>")) {
                                         *sstrend = '\0';
-                                        _snprintf(lname, sizeof(lname), "%s", sstr);
+                                        mir_snprintf(lname, sizeof(lname), "%s", sstr);
                                     }
                                 }
                                 ZeroMemory(&psr, sizeof(psr));
@@ -459,7 +459,7 @@ void aim_util_formatnick(char *nick)
 {
     char buf[MSG_LEN * 2];
 
-    _snprintf(buf, sizeof(buf), "toc_format_nickname \"%s\"", nick);
+    mir_snprintf(buf, sizeof(buf), "toc_format_nickname \"%s\"", nick);
     aim_toc_sflapsend(buf, -1, TYPE_DATA);
 }
 
@@ -571,10 +571,10 @@ void aim_utils_logversion()
     char str[256];
 
 #ifdef AIM_CVSBUILD
-    _snprintf(str, sizeof(str), "AimTOC v%d.%d.%d.%da (%s %s)", (pluginInfo.version >> 24) & 0xFF, (pluginInfo.version >> 16) & 0xFF,
+    mir_snprintf(str, sizeof(str), "AimTOC v%d.%d.%d.%da (%s %s)", (pluginInfo.version >> 24) & 0xFF, (pluginInfo.version >> 16) & 0xFF,
               (pluginInfo.version >> 8) & 0xFF, pluginInfo.version & 0xFF, __DATE__, __TIME__);
 #else
-    _snprintf(str, sizeof(str), "AimTOC v%d.%d.%d.%d", (pluginInfo.version >> 24) & 0xFF, (pluginInfo.version >> 16) & 0xFF,
+    mir_snprintf(str, sizeof(str), "AimTOC v%d.%d.%d.%d", (pluginInfo.version >> 24) & 0xFF, (pluginInfo.version >> 16) & 0xFF,
               (pluginInfo.version >> 8) & 0xFF, pluginInfo.version & 0xFF);
 #endif
     LOG(LOG_INFO, str);

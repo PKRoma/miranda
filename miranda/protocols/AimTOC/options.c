@@ -31,10 +31,10 @@ int aim_options_init(WPARAM wParam, LPARAM lParam)
 
     ZeroMemory(&odp, sizeof(odp));
     if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        _snprintf(pszTitle, sizeof(pszTitle), "(%s) %s", AIM_PROTO, AIM_PROTONAME);
+        mir_snprintf(pszTitle, sizeof(pszTitle), "(%s) %s", AIM_PROTO, AIM_PROTONAME);
     }
     else
-        _snprintf(pszTitle, sizeof(pszTitle), "AIM");
+        mir_snprintf(pszTitle, sizeof(pszTitle), "AIM");
     odp.cbSize = sizeof(odp);
     odp.position = 1003000;
     odp.hInstance = hInstance;
@@ -46,19 +46,19 @@ int aim_options_init(WPARAM wParam, LPARAM lParam)
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
     odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_AIMCONTACTS);
     if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        _snprintf(pszTitle, sizeof(pszTitle), Translate("(%s) AIM Contacts"), AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), Translate("(%s) AIM Contacts"), AIM_PROTO);
     }
     else
-        _snprintf(pszTitle, sizeof(pszTitle), Translate("AIM Contacts"));
+        mir_snprintf(pszTitle, sizeof(pszTitle), Translate("AIM Contacts"));
     odp.pszTitle = pszTitle;
     odp.pfnDlgProc = aim_options_contactoptsproc;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
     odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_AIMGCHAT);
     if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        _snprintf(pszTitle, sizeof(pszTitle), Translate("(%s) AIM Group Chat"), AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), Translate("(%s) AIM Group Chat"), AIM_PROTO);
     }
     else
-        _snprintf(pszTitle, sizeof(pszTitle), Translate("AIM Group Chat"));
+        mir_snprintf(pszTitle, sizeof(pszTitle), Translate("AIM Group Chat"));
     odp.pszTitle = pszTitle;
     odp.pfnDlgProc = aim_options_gchatoptsproc;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
@@ -259,28 +259,28 @@ void LoadGroupChatFont(int i, LOGFONT * lf, COLORREF * colour)
     DBVARIANT dbv;
 
     if (colour) {
-        _snprintf(str, sizeof(str), "GCFont%dColor", i);
+        mir_snprintf(str, sizeof(str), "GCFont%dColor", i);
         *colour = DBGetContactSettingDword(NULL, AIM_PROTO, str, fontOptionsList[i].defColour);
     }
     if (lf) {
-        _snprintf(str, sizeof(str), "GCFont%dSize", i);
+        mir_snprintf(str, sizeof(str), "GCFont%dSize", i);
         lf->lfHeight = (char) DBGetContactSettingByte(NULL, AIM_PROTO, str, fontOptionsList[i].defSize);
         lf->lfWidth = 0;
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
-        _snprintf(str, sizeof(str), "GCFont%dStyle", i);
+        mir_snprintf(str, sizeof(str), "GCFont%dStyle", i);
         style = DBGetContactSettingByte(NULL, AIM_PROTO, str, fontOptionsList[i].defStyle);
         lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
         lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
         lf->lfUnderline = 0;
         lf->lfStrikeOut = 0;
-        _snprintf(str, sizeof(str), "GCFont%dCharSet", i);
+        mir_snprintf(str, sizeof(str), "GCFont%dCharSet", i);
         lf->lfCharSet = DBGetContactSettingByte(NULL, AIM_PROTO, str, fontOptionsList[i].defCharset);
         lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-        _snprintf(str, sizeof(str), "GCFont%dFace", i);
+        mir_snprintf(str, sizeof(str), "GCFont%dFace", i);
         if (DBGetContactSetting(NULL, AIM_PROTO, str, &dbv))
             lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
         else {
@@ -581,15 +581,15 @@ static BOOL CALLBACK aim_options_gchatoptsproc(HWND hwndDlg, UINT msg, WPARAM wP
                         int i;
                         char str[32];
                         for (i = 0; i < sizeof(fontOptionsList) / sizeof(fontOptionsList[0]); i++) {
-                            _snprintf(str, sizeof(str), "GCFont%dFace", i);
+                            mir_snprintf(str, sizeof(str), "GCFont%dFace", i);
                             DBWriteContactSettingString(NULL, AIM_PROTO, str, fontOptionsList[i].szFace);
-                            _snprintf(str, sizeof(str), "GCFont%dSize", i);
+                            mir_snprintf(str, sizeof(str), "GCFont%dSize", i);
                             DBWriteContactSettingByte(NULL, AIM_PROTO, str, fontOptionsList[i].size);
-                            _snprintf(str, sizeof(str), "GCFont%dStyle", i);
+                            mir_snprintf(str, sizeof(str), "GCFont%dStyle", i);
                             DBWriteContactSettingByte(NULL, AIM_PROTO, str, fontOptionsList[i].style);
-                            _snprintf(str, sizeof(str), "GCFont%dCharSet", i);
+                            mir_snprintf(str, sizeof(str), "GCFont%dCharSet", i);
                             DBWriteContactSettingByte(NULL, AIM_PROTO, str, fontOptionsList[i].charset);
-                            _snprintf(str, sizeof(str), "GCFont%dColor", i);
+                            mir_snprintf(str, sizeof(str), "GCFont%dColor", i);
                             DBWriteContactSettingDword(NULL, AIM_PROTO, str, fontOptionsList[i].colour);
                         }
                     }

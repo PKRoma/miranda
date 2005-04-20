@@ -24,7 +24,7 @@ struct toc_data *tdt = NULL;
 static int CallProtoServiceSync(const char *proto, const char *service, WPARAM wParam, LPARAM lParam) {
 	char szProtoService[MAX_PATH];
 
-	_snprintf(szProtoService,sizeof(szProtoService),"%s%s",proto,service);
+	mir_snprintf(szProtoService,sizeof(szProtoService),"%s%s",proto,service);
 	return CallServiceSync(szProtoService,wParam,lParam);
 }
 
@@ -41,11 +41,11 @@ HANDLE aim_toc_connect()
 
     hServerSideList = importBuddies||firstRun;
 	if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_TS, &dbv)) {
-		_snprintf(host, sizeof(host), "%s", dbv.pszVal);
+		mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
-		_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
+		mir_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
 
 	nlus.cbSize = sizeof(nlus);
 	ncon.cbSize = sizeof(ncon);
@@ -56,7 +56,7 @@ HANDLE aim_toc_connect()
 	}
 	con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
     if (!con) {
-		_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
+		mir_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
 		ncon.szHost = host;
 		ncon.wPort = AIM_TOC_PORT;
 		if (!con) {
@@ -175,33 +175,33 @@ static void toc_peformerror(int e)
     switch (e) {
             // Misc Errors
         case 903:
-            _snprintf(buf, sizeof(buf), Translate("A message has been dropped.  You are exceeding the server speed limit."));
+            mir_snprintf(buf, sizeof(buf), Translate("A message has been dropped.  You are exceeding the server speed limit."));
         case 960:
-            _snprintf(buf, sizeof(buf), Translate("You are sending messages too fast.  Some messages may have been dropped."));
+            mir_snprintf(buf, sizeof(buf), Translate("You are sending messages too fast.  Some messages may have been dropped."));
             break;
         case 961:
-            _snprintf(buf, sizeof(buf), Translate("You missed a message because it was too big."));
+            mir_snprintf(buf, sizeof(buf), Translate("You missed a message because it was too big."));
             break;
         case 962:
-            _snprintf(buf, sizeof(buf), Translate("You missed a message because it was sent too fast."));
+            mir_snprintf(buf, sizeof(buf), Translate("You missed a message because it was sent too fast."));
             break;
             // Login Errors
         case 980:
-            _snprintf(buf, sizeof(buf), Translate("Incorrect nickname or password.  Please change your login details and try again."));
+            mir_snprintf(buf, sizeof(buf), Translate("Incorrect nickname or password.  Please change your login details and try again."));
             break;
         case 981:
-            _snprintf(buf, sizeof(buf), Translate("The service is temporarily unavailable.  Please try again later."));
+            mir_snprintf(buf, sizeof(buf), Translate("The service is temporarily unavailable.  Please try again later."));
             break;
         case 982:
-            _snprintf(buf, sizeof(buf), Translate("Your warning level is currently too high to sign on.  Please try again later."));
+            mir_snprintf(buf, sizeof(buf), Translate("Your warning level is currently too high to sign on.  Please try again later."));
             break;
         case 983:
-            _snprintf(buf, sizeof(buf),
+            mir_snprintf(buf, sizeof(buf),
                       Translate
                       ("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."));
             break;
         case 989:
-            _snprintf(buf, sizeof(buf), Translate("An unknown signon error has occurred.  Please try again later."));
+            mir_snprintf(buf, sizeof(buf), Translate("An unknown signon error has occurred.  Please try again later."));
             break;
     }
     if (buf[0]) {
@@ -240,11 +240,11 @@ int aim_toc_parse(char *buf, int len)
         else
             LOG(LOG_DEBUG, "Received SFLAP SIGNON");
         if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_AS, &dbv)) {
-            _snprintf(host, sizeof(host), "%s", dbv.pszVal);
+            mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
             DBFreeVariant(&dbv);
         }
         else
-            _snprintf(host, sizeof(host), "%s", AIM_AUTH_HOST);
+            mir_snprintf(host, sizeof(host), "%s", AIM_AUTH_HOST);
         port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_AT, AIM_AUTH_PORT);
         if (port == 0) {
             port = aim_util_randomnum(AIM_AUTH_PORTLOW, AIM_AUTH_PORTHIGH);
@@ -252,14 +252,14 @@ int aim_toc_parse(char *buf, int len)
         }
         tdt->seqno = ntohs(hdr->seqno);
         tdt->state = STATE_SIGNON;
-        _snprintf(so.username, sizeof(so.username), "%s", tdt->username);
+        mir_snprintf(so.username, sizeof(so.username), "%s", tdt->username);
         so.ver = htonl(1);
         so.tag = htons(1);
         so.namelen = htons(strlen(so.username));
         if (aim_toc_sflapsend((char *) &so, ntohs(so.namelen) + 8, TYPE_SIGNON)) {
             return -1;
         }
-        _snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
+        mir_snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
                   aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
         if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
             return -1;
@@ -287,9 +287,9 @@ int aim_toc_parse(char *buf, int len)
         }
         aim_userinfo_send();
         aim_buddy_updateconfig(0);
-        _snprintf(snd, sizeof(snd), "toc_init_done");
+        mir_snprintf(snd, sizeof(snd), "toc_init_done");
         aim_toc_sflapsend(snd, -1, TYPE_DATA);
-        _snprintf(snd, sizeof(snd), "toc_set_caps %s %s %s", UID_ICQ_SUPPORT, UID_AIM_CHAT, UID_AIM_FILE_RECV);
+        mir_snprintf(snd, sizeof(snd), "toc_set_caps %s %s %s", UID_ICQ_SUPPORT, UID_AIM_CHAT, UID_AIM_FILE_RECV);
         aim_toc_sflapsend(snd, -1, TYPE_DATA);
         return len;
     }
@@ -317,19 +317,19 @@ int aim_toc_parse(char *buf, int len)
             DBVARIANT dbv;
 
             if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_AS, &dbv)) {
-                _snprintf(host, sizeof(host), "%s", dbv.pszVal);
+                mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
             else
-                _snprintf(host, sizeof(host), "%s", AIM_AUTH_HOST);
+                mir_snprintf(host, sizeof(host), "%s", AIM_AUTH_HOST);
             port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_AT, AIM_AUTH_PORT);
             tdt->state = STATE_ONLINE;
-            _snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
+            mir_snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
                       aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
             if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
                 return -1;
             }
-            _snprintf(snd, sizeof(snd), "toc_init_done");
+            mir_snprintf(snd, sizeof(snd), "toc_init_done");
             aim_toc_sflapsend(snd, -1, TYPE_DATA);
         }
         return len;
@@ -445,7 +445,7 @@ int aim_toc_parse(char *buf, int len)
             int len = strlen(Translate(AIM_STR_AR)) + 2 + strlen(message) + 1;
             char *m = malloc(len);
             msg = malloc(len);
-            _snprintf(m, len, "%s: %s", Translate(AIM_STR_AR), message);
+            mir_snprintf(m, len, "%s: %s", Translate(AIM_STR_AR), message);
             aim_util_striphtml(msg, m, len);
             free(m);
         }
@@ -632,7 +632,7 @@ int aim_toc_parse(char *buf, int len)
             ft->user = _strdup(aim_util_normalize(user));
             ft->size = totalsize;
             ft->files = files;
-            _snprintf(ft->UID, sizeof(ft->UID), "%s", UID_AIM_FILE_RECV);
+            mir_snprintf(ft->UID, sizeof(ft->UID), "%s", UID_AIM_FILE_RECV);
             ft->hContact = hContact;
             free(tmp);
             for (i--; i >= 0; i--)

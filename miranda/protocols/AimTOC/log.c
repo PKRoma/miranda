@@ -39,7 +39,7 @@ int LOG(int level, const char *fmt, ...)
     if (!hNetlib)
         return 0;
     va_start(va, fmt);
-    _vsnprintf(szText, sizeof(szText), fmt, va);
+    mir_vsnprintf(szText, sizeof(szText), fmt, va);
     va_end(va);
     #ifdef AIM_CVSBUILD
     if (lfp) {
@@ -61,7 +61,7 @@ int PLOG(int level, const char *fmt, ...)
     if (!hNetlibPeer)
         return 0;
     va_start(va, fmt);
-    _vsnprintf(szText, sizeof(szText), fmt, va);
+    mir_vsnprintf(szText, sizeof(szText), fmt, va);
     va_end(va);
     #ifdef AIM_CVSBUILD
     if (lfp) {
@@ -89,7 +89,7 @@ void log_init() {
     
     if (DBGetContactSettingByte(NULL, AIM_PROTO, "LogToFile", 0)) {
         GetMirandaPath(szPath, sizeof(szPath));
-        _snprintf(szFullPath, sizeof(szFullPath), "%s\\aim.log");
+        mir_snprintf(szFullPath, sizeof(szFullPath), "%s\\aim.log");
         lfp = fopen(szFullPath, "w");
     }
 #endif
