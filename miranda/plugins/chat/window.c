@@ -317,7 +317,7 @@ static BOOL IsHighlighted(CHATWINDOWDATA * dat, char * pszText)
 
 				p2[1] = 's';
 				lstrcpyn(szTemp, szWord1, 999);
-				_snprintf(szWord1, sizeof(szWord1), szTemp, dat->pMe->pszNick);
+				mir_snprintf(szWord1, sizeof(szWord1), szTemp, dat->pMe->pszNick);
 			}
 
 			// time to get the next/first word in the incoming text string
@@ -1287,9 +1287,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 				char szTemp[256];
 				if(dat->iType == GCW_SERVER)
-					_snprintf(szTemp, sizeof(szTemp), "Server: %s", newData->pszName);
+					mir_snprintf(szTemp, sizeof(szTemp), "Server: %s", newData->pszName);
 				else
-					_snprintf(szTemp, sizeof(szTemp), "%s", newData->pszName);
+					mir_snprintf(szTemp, sizeof(szTemp), "%s", newData->pszName);
 
 				dat->hContact = CList_AddRoom(newData->pszModule, newData->pszID, szTemp, newData->iType); 
 			}
@@ -1432,15 +1432,15 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			switch(dat->iType)
 			{
 			case GCW_CHATROOM:
-				_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Chat Room (%u user)"):Translate("%s: Chat Room (%u users)"), dat->pszName, dat->nUsersInNicklist);
+				mir_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Chat Room (%u user)"):Translate("%s: Chat Room (%u users)"), dat->pszName, dat->nUsersInNicklist);
 //				removed due to excessive disk writes on busy channels
 //				DBWriteContactSettingDword(dat->hContact, dat->pszModule , "Count", dat->nUsersInNicklist);
 				break;
 			case GCW_PRIVMESS:
-				_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Message Session"):Translate("%s: Message Session (%u users)"), dat->pszName, dat->nUsersInNicklist);
+				mir_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Message Session"):Translate("%s: Message Session (%u users)"), dat->pszName, dat->nUsersInNicklist);
 				break;
 			case GCW_SERVER:
-				_snprintf(szTemp, sizeof(szTemp), "%s: Server", dat->pszName);
+				mir_snprintf(szTemp, sizeof(szTemp), "%s: Server", dat->pszName);
 				break;
 			default:break;
 			}
@@ -1680,7 +1680,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						if(bHighl)
 						{
 							char szTemp[256];
-							_snprintf(szTemp, 256, Translate("%s wants your attention in room %s"), nlu->pszName, dat->pszName);
+							mir_snprintf(szTemp, 256, Translate("%s wants your attention in room %s"), nlu->pszName, dat->pszName);
 							SendMessage(hwndDlg, GC_HIGHLIGHT, 0, (LPARAM)&szTemp);
 						}
 						else
@@ -1871,9 +1871,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat->pszName = realloc(dat->pszName, lstrlen(nlu->pszText)+1);
 			lstrcpyn(dat->pszName, nlu->pszText, lstrlen(nlu->pszText)+1);
 			if(dat->iType == GCW_SERVER)
-				_snprintf(szTemp, sizeof(szTemp), "Server: %s", nlu->pszText);
+				mir_snprintf(szTemp, sizeof(szTemp), "Server: %s", nlu->pszText);
 			else
-				_snprintf(szTemp, sizeof(szTemp), "%s", nlu->pszText);
+				mir_snprintf(szTemp, sizeof(szTemp), "%s", nlu->pszText);
 
 			DBWriteContactSettingString(dat->hContact,dat->pszModule , "Nick", szTemp);
 			SendMessage(hwndDlg, GC_UPDATEWINDOW, 0, 0);
@@ -2158,9 +2158,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 									int start = LOWORD(lResult);
 									char * pszName = (char *) malloc(lstrlen(((USERINFO *)tvi.lParam)->pszUID) + 3);
 									if(start == 0)
-										_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+3, "%s: ", ((USERINFO *)tvi.lParam)->pszUID);
+										mir_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+3, "%s: ", ((USERINFO *)tvi.lParam)->pszUID);
 									else
-										_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+2, "%s ", ((USERINFO *)tvi.lParam)->pszUID);
+										mir_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+2, "%s ", ((USERINFO *)tvi.lParam)->pszUID);
 
 									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, FALSE, (LPARAM) pszName);
 									PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0);
@@ -2448,14 +2448,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if (pInfo)
 					{
 
-						_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:dat->pszModule);
+						mir_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:dat->pszModule);
 						ValidateFilename(szName);
-						_snprintf(szFolder, MAX_PATH,"%s\\%s", g_LogOptions.pszLogDir, szName );
+						mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_LogOptions.pszLogDir, szName );
 											
-						_snprintf(szName, MAX_PATH,"%s.log",dat->pszID);
+						mir_snprintf(szName, MAX_PATH,"%s.log",dat->pszID);
 						ValidateFilename(szName);
 
-						_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
+						mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
 						
 						ShellExecute(hwndDlg, "open", szFile, NULL, NULL, SW_SHOW);
 					}

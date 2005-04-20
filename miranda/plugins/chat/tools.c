@@ -154,9 +154,9 @@ static int ShowPopup (HANDLE hContact, HWND hWnd, HICON hIcon, char* pszProtoNam
 		pd.lchIcon = LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_CHANMGR));
 
 	if(!bBroadcast)
-		_snprintf(pd.lpzContactName, MAX_CONTACTNAME, "%s - %s", pszProtoName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
+		mir_snprintf(pd.lpzContactName, MAX_CONTACTNAME, "%s - %s", pszProtoName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
 	else
-		_snprintf(pd.lpzContactName, MAX_CONTACTNAME, "%s", pszProtoName);
+		mir_snprintf(pd.lpzContactName, MAX_CONTACTNAME, "%s", pszProtoName);
 
 	lstrcpyn(pd.lpzText, Translate(szBuf), MAX_SECONDLINE);
 

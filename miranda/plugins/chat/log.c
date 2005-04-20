@@ -89,7 +89,7 @@ void ValidateFilename (char * filename)
 static char *Log_SetStyle(int style, int fontindex)
 {
     static char szStyle[128];
-    _snprintf(szStyle, sizeof(szStyle), "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", style, style+1, aFonts[fontindex].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[fontindex].lf.lfItalic, 2 * abs(aFonts[fontindex].lf.lfHeight) * 74 / logPixelSY);
+    mir_snprintf(szStyle, sizeof(szStyle), "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", style, style+1, aFonts[fontindex].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[fontindex].lf.lfItalic, 2 * abs(aFonts[fontindex].lf.lfHeight) * 74 / logPixelSY);
    return szStyle;
 }
 
@@ -100,7 +100,7 @@ static void Log_Append(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, co
 
 	va_start(va, fmt);
 	for (;;) {
-		charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+		charsDone = mir_vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
 		if (charsDone >= 0)
 			break;
 		*cbBufferAlloced += 1024;
@@ -117,7 +117,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 
     va_start(va, fmt);
     for (;;) {
-        charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+        charsDone = mir_vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
         if (charsDone >= 0)
             break;
         *cbBufferAlloced += 1024;
@@ -156,7 +156,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 			switch ((*buffer)[i + 1])
 			{
 			case '%':
-				_snprintf(szTemp, sizeof(szTemp), "%s", "%");
+				mir_snprintf(szTemp, sizeof(szTemp), "%s", "%");
 				iOldCount = 2;
 				break;
 			case 'c':
@@ -165,7 +165,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 					szTemp[0] = '\0';
 				else
 				{
-					_snprintf(szTemp, sizeof(szTemp), ((*buffer)[i + 1]=='c')?"\\cf%u ":"\\highlight%u ", streamData->iColCount);
+					mir_snprintf(szTemp, sizeof(szTemp), ((*buffer)[i + 1]=='c')?"\\cf%u ":"\\highlight%u ", streamData->iColCount);
 					streamData->iColCount++;
 				}
 				iOldCount = 11;
@@ -176,7 +176,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 					szTemp[0] = '\0';
 				else
 				{
-					_snprintf(szTemp, sizeof(szTemp), ((*buffer)[i + 1]=='C')?"\\cf2 ":"\\highlight0 ");
+					mir_snprintf(szTemp, sizeof(szTemp), ((*buffer)[i + 1]=='C')?"\\cf2 ":"\\highlight0 ");
 				}
 				iOldCount = 2;
 				break;
@@ -187,7 +187,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 					szTemp[0] = '\0';
 				else
 				{
-					_snprintf(szTemp, sizeof(szTemp), (*buffer)[i + 1] == 'u'?"\\%cl ":"\\%c ", (*buffer)[i + 1]);
+					mir_snprintf(szTemp, sizeof(szTemp), (*buffer)[i + 1] == 'u'?"\\%cl ":"\\%c ", (*buffer)[i + 1]);
 				}
 				iOldCount = 2;
 				break;
@@ -198,7 +198,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 					szTemp[0] = '\0';
 				else
 				{
-					_snprintf(szTemp, sizeof(szTemp), (*buffer)[i + 1] == 'U'?"\\%cl0 ":"\\%c0 ", (char)CharLower((LPTSTR)(*buffer)[i + 1]));
+					mir_snprintf(szTemp, sizeof(szTemp), (*buffer)[i + 1] == 'U'?"\\%cl0 ":"\\%c0 ", (char)CharLower((LPTSTR)(*buffer)[i + 1]));
 				}
 				iOldCount = 2;
 				break;
@@ -207,7 +207,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 					szTemp[0] = '\0';
 				else
 				{
-					_snprintf(szTemp, sizeof(szTemp), "%s ", Log_SetStyle(2, EventToIndex(streamData->lin)));
+					mir_snprintf(szTemp, sizeof(szTemp), "%s ", Log_SetStyle(2, EventToIndex(streamData->lin)));
 				}
 				iOldCount = 2;
 				break;
@@ -267,9 +267,9 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	if(streamData->lin->pszNick )
 	{
 		if(streamData->lin->pszUserInfo)
-			_snprintf(szTemp, sizeof(szTemp), "%s (%s)", streamData->lin->pszNick, streamData->lin->pszUserInfo);
+			mir_snprintf(szTemp, sizeof(szTemp), "%s (%s)", streamData->lin->pszNick, streamData->lin->pszUserInfo);
 		else
-			_snprintf(szTemp, sizeof(szTemp), "%s", streamData->lin->pszNick);
+			mir_snprintf(szTemp, sizeof(szTemp), "%s", streamData->lin->pszNick);
 		pszNick = szTemp;
 	}
 
@@ -523,17 +523,17 @@ static BOOL LogToFile(LOGSTREAMDATA * streamData)
     buffer = (char *) malloc(bufferAlloced);
     buffer[0] = '\0';
 
-	_snprintf(szName, MAX_PATH,"%s",pszModName?pszModName:streamData->data->pszModule);
+	mir_snprintf(szName, MAX_PATH,"%s",pszModName?pszModName:streamData->data->pszModule);
 	ValidateFilename(szName);
-	_snprintf(szFolder, MAX_PATH,"%s\\%s", g_LogOptions.pszLogDir, szName );
+	mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_LogOptions.pszLogDir, szName );
 
 	if(!PathIsDirectory(szFolder))
 		CreateDirectory(szFolder, NULL);
 
-	_snprintf(szName, MAX_PATH,"%s.log",streamData->data->pszID);
+	mir_snprintf(szName, MAX_PATH,"%s.log",streamData->data->pszID);
 	ValidateFilename(szName);
 
-	_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
+	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
 
 
 	hFile = fopen(szFile,"at+");
