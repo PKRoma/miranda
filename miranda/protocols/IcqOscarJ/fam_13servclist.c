@@ -829,7 +829,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", wGroupId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
-          if (wOldGroupId != wGroupId && DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD))
+          if (!bAdded && (wOldGroupId != wGroupId) && DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD))
           { // contact has been moved on the server
             char* szOldGroup = getServerGroupName(wOldGroupId);
             char* szGroup = getServerGroupName(wGroupId);
@@ -847,7 +847,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
               if (!szOldGroup) szOldGroup = _strdup(DEFAULT_SS_GROUP);
             }
 
-            if (!szGroup || strlen(szGroup)>strlen(szOldGroup) || strncmp(szGroup, szOldGroup, strlen(szGroup)))
+            if (!szGroup || strlen(szGroup)>=strlen(szOldGroup) || strncmp(szGroup, szOldGroup, strlen(szGroup)))
             { // contact moved to new group or sub-group or not to master group
               bRegroup = 1;
             }
