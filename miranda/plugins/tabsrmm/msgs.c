@@ -77,7 +77,7 @@ HHOOK g_hMsgHook = 0;
 #endif
 
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
-HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer);
+HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent);
 int GetProtoIconFromList(const char *szProto, int iStatus);
 void CreateImageList(BOOL bInitial);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
@@ -370,7 +370,7 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
         pContainer = FindContainerByName(szName);
         if (pContainer == NULL)
             pContainer = CreateContainer(szName, FALSE, hContact);
-		CreateNewTabForContact (pContainer, hContact, 0, NULL, TRUE, TRUE);
+		CreateNewTabForContact (pContainer, hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
     }
     return 0;
 }
@@ -444,14 +444,11 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     }
     if (bAllowAutoCreate && (bAutoPopup || bAutoCreate)) {
         BOOL bActivate = TRUE, bPopup = TRUE;
-        struct NewMessageWindowLParam newData = { 0 };
-        newData.hContact = (HANDLE) wParam;
-        newData.isSend = 0;
         if(bAutoPopup) {
             bActivate = bPopup = TRUE;
             if((pContainer = FindContainerByName(szName)) == NULL);
                 pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
-            CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup);
+            CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, FALSE, 0);
             return 0;
         }
         else {
@@ -465,18 +462,18 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
                 }
                 if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
                     if((pContainer = FindMatchingContainer(_T("default"), (HANDLE)wParam)) != NULL) {
-                        CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup);
+                        CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
                         return 0;
                     }
                     else if(bAutoContainer) {
                         pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
-                        CreateNewTabForContact(pContainer,  (HANDLE) wParam,  0, NULL, bActivate, bPopup);
+                        CreateNewTabForContact(pContainer,  (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
                         SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
                         return 0;
                     }
                 }
                 else {
-                    CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup);
+                    CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
                     return 0;
                 }
                     
@@ -484,7 +481,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
             else {
                 if(bAutoContainer) {
                     pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
-                    CreateNewTabForContact(pContainer,  (HANDLE) wParam,  0, NULL, bActivate, bPopup);
+                    CreateNewTabForContact(pContainer,  (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
                     SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
                     return 0;
                 }
@@ -541,7 +538,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         pContainer = FindContainerByName(szName);
         if (pContainer == NULL)
             pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
-		CreateNewTabForContact(pContainer, (HANDLE) wParam, !isSplit, (const char *) lParam, TRUE, TRUE);
+		CreateNewTabForContact(pContainer, (HANDLE) wParam, !isSplit, (const char *) lParam, TRUE, TRUE, FALSE, 0);
     }
     return 0;
 }
@@ -561,7 +558,7 @@ static int ForwardMessage(WPARAM wParam, LPARAM lParam)
         pContainer = CreateContainer(_T("default"), FALSE, 0);
     
 	hwndOld = pContainer->hwndActive;
-	hwndNew = CreateNewTabForContact(pContainer, 0, 0, (const char *) lParam, TRUE, TRUE);
+	hwndNew = CreateNewTabForContact(pContainer, 0, 0, (const char *) lParam, TRUE, TRUE, FALSE, 0);
 	if(hwndNew) {
 		if(hwndOld)
 			ShowWindow(hwndOld, SW_HIDE);
@@ -1110,7 +1107,7 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
  * bPopupContainer: restore container if it was minimized, otherwise flash it...
  */
 
-HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTab, BOOL bPopupContainer)
+HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent)
 {
 	char *contactName, *szProto, *szStatus, tabtitle[128], newcontactname[128];
 	WORD wStatus;
@@ -1188,6 +1185,8 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	newData.pContainer = pContainer;
     newData.iActivate = (int) bActivateTab;
     pContainer->iChilds++;
+    newData.bWantPopup = bWantPopup;
+    newData.hdbEvent = hdbEvent;
     hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), GetDlgItem(pContainer->hwnd, IDC_MSGTABS), DlgProcMessage, (LPARAM) &newData);
     SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
     // if the container is minimized, then pop it up...

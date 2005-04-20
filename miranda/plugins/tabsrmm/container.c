@@ -879,6 +879,15 @@ panel_found:
                             if(nPanel == nParts - 1)
                                 SendMessage(pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
                             else if(nPanel == nParts - 2) {
+                                if(GetKeyState(VK_SHIFT) & 0x8000) {
+                                    struct ContainerWindowData *piContainer = pFirstContainer;
+                                    while(piContainer) {
+                                        piContainer->dwFlags = ((pContainer->dwFlags & CNT_NOSOUND) ? piContainer->dwFlags | CNT_NOSOUND : piContainer->dwFlags & ~CNT_NOSOUND);
+                                        SendMessage(piContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
+                                        piContainer = piContainer->pNextContainer;
+                                    }
+                                    break;
+                                }
                                 pContainer->dwFlags ^= CNT_NOSOUND;
                                 SendMessage(pContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
                             }

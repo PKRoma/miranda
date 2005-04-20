@@ -1198,6 +1198,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
+                /*
+                 * show a popup if wanted...
+                 */
+                if(newData->bWantPopup) {
+                    DBEVENTINFO dbei = {0};
+                    newData->bWantPopup = FALSE;
+                    CallService(MS_DB_EVENT_GET, (WPARAM)newData->hdbEvent, (LPARAM)&dbei);
+                    tabSRMM_ShowPopup((WPARAM)dat->hContact, (LPARAM)newData->hdbEvent, dbei.eventType, 0, 0, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+                }
                 if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
                     dat->pContainer->dwFlags &= ~CNT_CREATE_MINIMIZED;
                     dat->pContainer->dwFlags |= CNT_DEFERREDCONFIGURE;

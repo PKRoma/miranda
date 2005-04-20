@@ -96,6 +96,8 @@ struct NewMessageWindowLParam {
     int iActivate;
     TCITEM item;
 	struct ContainerWindowData *pContainer;		// parent container description
+    BOOL bWantPopup;
+    HANDLE hdbEvent;
 };
 
 #define MAX_QUEUED_EVENTS 100
