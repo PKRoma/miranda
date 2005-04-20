@@ -77,7 +77,7 @@ static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 static int TranslateDialog(WPARAM wParam,LPARAM lParam)
 {
 	LANGPACKTRANSLATEDIALOG *lptd=(LANGPACKTRANSLATEDIALOG*)lParam;
-	if(lptd->cbSize!=sizeof(LANGPACKTRANSLATEDIALOG)) return 1;
+	if(lptd==NULL||lptd->cbSize!=sizeof(LANGPACKTRANSLATEDIALOG)) return 1;
 	if(!(lptd->flags&LPTDF_NOTITLE)) {
 		char title[256];
 		GetWindowText(lptd->hwndDlg,title,sizeof(title));

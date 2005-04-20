@@ -50,7 +50,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
             struct ClcContact *groupContact;
             struct ClcGroup *group;
             CLCINFOITEM *cii = (CLCINFOITEM *) lParam;
-            if (cii->cbSize != sizeof(CLCINFOITEM))
+            if (cii==NULL || cii->cbSize != sizeof(CLCINFOITEM))
                 return (LRESULT) (HANDLE) NULL;
             if (cii->hParentGroup == NULL)
                 group = &dat->list;

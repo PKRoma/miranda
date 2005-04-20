@@ -138,7 +138,7 @@ static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
     int i;
     HMENU hMenu;
 
-    if (mi->cbSize != sizeof(CLISTMENUITEM))
+    if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
         return 0;
     mainMenuItem = (struct CListMenuItem *) mir_realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
     mainMenuItem[mainItemCount].id = nextMenuId++;
@@ -256,7 +256,7 @@ static int AddContactMenuItem(WPARAM wParam, LPARAM lParam)
 {
     CLISTMENUITEM *mi = (CLISTMENUITEM *) lParam;
 
-    if (mi->cbSize != sizeof(CLISTMENUITEM))
+    if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
         return 0;
     contextMenuItem = (struct CListMenuItem *) mir_realloc(contextMenuItem, sizeof(struct CListMenuItem) * (contextItemCount + 1));
     contextMenuItem[contextItemCount].id = nextMenuId++;
@@ -279,7 +279,7 @@ static int ModifyCustomMenuItem(WPARAM wParam, LPARAM lParam)
     CLISTMENUITEM *mi = (CLISTMENUITEM *) lParam;
     MENUITEMINFO mii;
 
-    if (mi->cbSize != sizeof(CLISTMENUITEM))
+    if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
         return 1;
     if (wParam & MENU_CUSTOMITEMMAIN) {
         if ((int) (wParam & ~MENU_CUSTOMITEMMAIN) >= mainItemCount)

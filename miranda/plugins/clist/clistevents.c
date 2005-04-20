@@ -98,7 +98,7 @@ static int AddEvent(WPARAM wParam, LPARAM lParam)
     CLISTEVENT *cle = (CLISTEVENT *) lParam;
     int i;
 
-    if (cle->cbSize != sizeof(CLISTEVENT))
+    if (cle==NULL || cle->cbSize != sizeof(CLISTEVENT))
         return 1;
     event = (struct CListEvent *) mir_realloc(event, sizeof(struct CListEvent) * (eventCount + 1));
     if (cle->flags & CLEF_URGENT) {
