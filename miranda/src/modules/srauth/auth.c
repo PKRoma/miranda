@@ -69,7 +69,7 @@ static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
 
 	if(dbei.eventType==EVENTTYPE_AUTHREQUEST)
 	{
-		_snprintf(szTooltip,256,Translate("%u requests authorization"),*((PDWORD)dbei.pBlob));
+		mir_snprintf(szTooltip,256,Translate("%u requests authorization"),*((PDWORD)dbei.pBlob));
 
 		cli.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 		cli.pszService=MS_AUTH_SHOWREQUEST;
@@ -78,7 +78,7 @@ static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
 	}
 	else if(dbei.eventType==EVENTTYPE_ADDED)
 	{
-		_snprintf(szTooltip,256,Translate("%u added you to their contact list"),*((PDWORD)dbei.pBlob));
+		mir_snprintf(szTooltip,256,Translate("%u added you to their contact list"),*((PDWORD)dbei.pBlob));
 
 		cli.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 		cli.pszService=MS_AUTH_SHOWADDED;

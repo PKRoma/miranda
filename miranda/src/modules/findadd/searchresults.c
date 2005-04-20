@@ -191,7 +191,7 @@ static void BeginSearchFailed(void * arg)
 {
 	char buf[128];
 	if ( arg != NULL ) { 
-		_snprintf(buf,sizeof(buf),Translate("Could not start a search on '%s', there was a problem - is %s connected?"),arg,arg);
+		mir_snprintf(buf,sizeof(buf),Translate("Could not start a search on '%s', there was a problem - is %s connected?"),arg,arg);
 		free((char*)arg);
 	}
 	else strncpy(buf,Translate("Could not search on any of the protocols, are you online?"),sizeof(buf));

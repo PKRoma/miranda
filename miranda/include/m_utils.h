@@ -287,6 +287,28 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //Returns numbers of chars copied.
 #define MS_UTILS_PATHTOABSOLUTE "Utils/PathToAbsolute"
 
+// Added in 0.4.0.1
+// Here are some string wrappers that are more safe than the win32 versions
+
+static __inline int mir_snprintf(char *buffer, size_t count, const char* fmt, ...) {
+	va_list va;
+	int len;
+
+	va_start(va, fmt);
+	len = _vsnprintf(buffer, count-1, fmt, va);
+	va_end(va);
+	buffer[count-1] = 0;
+	return len;
+}
+
+static __inline int mir_vsnprintf(char *buffer, size_t count, const char* fmt, va_list va) {
+	int len;
+
+	len = _vsnprintf(buffer, count-1, fmt, va);
+	buffer[count-1] = 0;
+	return len;
+}
+
 #endif // M_UTILS_H__
 
 

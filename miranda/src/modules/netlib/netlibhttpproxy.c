@@ -59,7 +59,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 	if ((nlc->nlhpi.flags&NLHPIF_USEGETSEQUENCE) && (nlc->nlhpi.szHttpGetUrl != NULL)) {
 		EnterCriticalSection(&nlc->csHttpSequenceNums);
 
-		_snprintf(szUrl,sizeof(szUrl),"%s%u",nlc->nlhpi.szHttpGetUrl,nlc->nlhpi.firstGetSequence);
+		mir_snprintf(szUrl,sizeof(szUrl),"%s%u",nlc->nlhpi.szHttpGetUrl,nlc->nlhpi.firstGetSequence);
 		nlc->nlhpi.firstGetSequence++;
 		if(nlc->nlhpi.flags&NLHPIF_GETPOSTSAMESEQUENCE) nlc->nlhpi.firstPostSequence++;
 		LeaveCriticalSection(&nlc->csHttpSequenceNums);
@@ -168,7 +168,7 @@ int NetlibHttpGatewayOLDPost(struct NetlibConnection *nlc,const char *buf,int le
 	if(flags&MSG_NODUMP) nlhrSend.flags|=NLHRF_NODUMP;
 	if(nlc->nlhpi.flags&NLHPIF_USEPOSTSEQUENCE) {
 		EnterCriticalSection(&nlc->csHttpSequenceNums);
-		_snprintf(szUrl,sizeof(szUrl),"%s%u",nlc->nlhpi.szHttpPostUrl,nlc->nlhpi.firstPostSequence);
+		mir_snprintf(szUrl,sizeof(szUrl),"%s%u",nlc->nlhpi.szHttpPostUrl,nlc->nlhpi.firstPostSequence);
 		nlc->nlhpi.firstPostSequence++;
 		if(nlc->nlhpi.flags&NLHPIF_GETPOSTSAMESEQUENCE) nlc->nlhpi.firstGetSequence++;
 		LeaveCriticalSection(&nlc->csHttpSequenceNums);

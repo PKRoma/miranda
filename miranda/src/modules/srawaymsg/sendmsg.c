@@ -186,7 +186,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			OldMessageEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
 			{	char str[256],format[128];
 				GetWindowText(hwndDlg,format,sizeof(format));
-				_snprintf(str,sizeof(str),format,(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dat->statusMode,0));
+				mir_snprintf(str,sizeof(str),format,(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dat->statusMode,0));
 				SetWindowText(hwndDlg,str);
 			}
 			GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
@@ -204,7 +204,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 		case WM_TIMER:
 			if(dat->countdown==-1) {DestroyWindow(hwndDlg); break;}
 			{	char str[64];
-				_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
+				mir_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
 				SetDlgItemText(hwndDlg,IDOK,str);
 			}
 			dat->countdown--;

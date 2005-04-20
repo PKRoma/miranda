@@ -80,7 +80,7 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 		cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_FILE);
 		cle.pszService="SRFile/RecvFile";
 		contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
-		_snprintf(szTooltip,sizeof(szTooltip),Translate("File from %s"),contactName);
+		mir_snprintf(szTooltip,sizeof(szTooltip),Translate("File from %s"),contactName);
 		cle.pszTooltip=szTooltip;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 	}
@@ -123,10 +123,10 @@ void GetSensiblyFormattedSize(DWORD size,char *szOut,int cchOut,int unitsOverrid
 	}
 	if(unitsUsed) *unitsUsed=unitsOverride;
 	switch(unitsOverride) {
-		case UNITS_BYTES: _snprintf(szOut,cchOut,"%u%s%s",size,appendUnits?" ":"",appendUnits?Translate("bytes"):""); break;
-		case UNITS_KBPOINT1: _snprintf(szOut,cchOut,"%.1lf%s",size/1024.0,appendUnits?" KB":""); break;
-		case UNITS_KBPOINT0: _snprintf(szOut,cchOut,"%u%s",size/1024,appendUnits?" KB":""); break;
-		default: _snprintf(szOut,cchOut,"%.2lf%s",size/1048576.0,appendUnits?" MB":""); break;
+		case UNITS_BYTES: mir_snprintf(szOut,cchOut,"%u%s%s",size,appendUnits?" ":"",appendUnits?Translate("bytes"):""); break;
+		case UNITS_KBPOINT1: mir_snprintf(szOut,cchOut,"%.1lf%s",size/1024.0,appendUnits?" KB":""); break;
+		case UNITS_KBPOINT0: mir_snprintf(szOut,cchOut,"%u%s",size/1024,appendUnits?" KB":""); break;
+		default: mir_snprintf(szOut,cchOut,"%.2lf%s",size/1048576.0,appendUnits?" MB":""); break;
 	}
 }
 
@@ -276,7 +276,7 @@ int LoadSendRecvFileModule(void)
 	    if(!DBGetContactSetting(NULL,"SRFile","RecvFilesDir",&dbv)) {
             char szPath[MAX_PATH];
 
-            _snprintf(szPath, sizeof(szPath), "%s%s%s", dbv.pszVal, dbv.pszVal[strlen(dbv.pszVal)-1]=='\\'?"":"\\" , "%userid%");
+            mir_snprintf(szPath, sizeof(szPath), "%s%s%s", dbv.pszVal, dbv.pszVal[strlen(dbv.pszVal)-1]=='\\'?"":"\\" , "%userid%");
             DBFreeVariant(&dbv);
             DBWriteContactSettingString(NULL,"SRFile","RecvFilesDirAdv",szPath);
             DBDeleteContactSetting(NULL,"SRFile","RecvFilesDir"); 

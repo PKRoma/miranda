@@ -170,7 +170,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					name = (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 
 				GetWindowText(hwndDlg,oldTitle,sizeof(oldTitle));
-				_snprintf(newTitle,sizeof(newTitle),oldTitle,name);
+				mir_snprintf(newTitle,sizeof(newTitle),oldTitle,name);
 				SetWindowText(hwndDlg,newTitle);
 				SetDlgItemText(hwndDlg,IDC_NAME,name);
 

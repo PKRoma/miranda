@@ -73,14 +73,14 @@ static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARA
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
 	char searchspec[MAX_PATH];
-	_snprintf(searchspec, sizeof(searchspec), "%s\\*.dat", szProfileDir);
+	mir_snprintf(searchspec, sizeof(searchspec), "%s\\*.dat", szProfileDir);
 	hFind = FindFirstFile(searchspec, &ffd);
 	if ( hFind != INVALID_HANDLE_VALUE ) {
 		do { 			
 			if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
 			{
 				char buf[MAX_PATH];
-				_snprintf(buf,sizeof(buf),"%s\\%s",szProfileDir, ffd.cFileName);
+				mir_snprintf(buf,sizeof(buf),"%s\\%s",szProfileDir, ffd.cFileName);
 				if ( !callback(buf, ffd.cFileName, lParam) ) break;
 			}
 		} while ( FindNextFile(hFind, &ffd) );
@@ -177,7 +177,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				if ( curSel == CB_ERR ) break; // should never happen				
 				GetWindowText(GetDlgItem(hwndDlg,IDC_PROFILENAME),szName,sizeof(szName));
 				if ( lstrlen(szName) == 0 ) break;
-				_snprintf(dat->pd->szProfile,MAX_PATH,"%s\\%s.dat",dat->pd->szProfileDir,szName);
+				mir_snprintf(dat->pd->szProfile,MAX_PATH,"%s\\%s.dat",dat->pd->szProfileDir,szName);
 				dat->pd->newProfile=1;
 				dat->pd->dblink=(DATABASELINK *)SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETITEMDATA,(WPARAM)curSel,0);
 				
@@ -212,7 +212,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		FILE * fp = fopen(fullpath, "r+");
 		item.iImage = fp != NULL ? 0 : 1;
 		if ( stat(fullpath, &statbuf) == 0) {
-			_snprintf(sizeBuf,sizeof(sizeBuf),"%u KB", statbuf.st_size / 1024);			
+			mir_snprintf(sizeBuf,sizeof(sizeBuf),"%u KB", statbuf.st_size / 1024);			
 		}
 		if ( fp ) fclose(fp);
 	}
@@ -298,7 +298,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						item.pszText = profile;
 						item.cchTextMax = sizeof(profile);						
 						if ( ListView_GetItem(hwndList, &item) && dat ) {
-							_snprintf(dat->pd->szProfile, MAX_PATH, "%s\\%s.dat", dat->pd->szProfileDir, profile);
+							mir_snprintf(dat->pd->szProfile, MAX_PATH, "%s\\%s.dat", dat->pd->szProfileDir, profile);
 							if ( hdr->code == NM_DBLCLK ) EndDialog(GetParent(hwndDlg), 1);								
 						}						
 						return TRUE;

@@ -84,7 +84,7 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	unsigned int found=0;
-	_snprintf(searchspec,sizeof(searchspec),"%s\\*.dat", profiledir);
+	mir_snprintf(searchspec,sizeof(searchspec),"%s\\*.dat", profiledir);
 	hFind = FindFirstFile(searchspec, &ffd);
 	if ( hFind != INVALID_HANDLE_VALUE ) 
 	{
@@ -92,7 +92,7 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
 		if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
 		{
 			// copy the profile name early cos it might be the only one
-			_snprintf(szProfile, cch, "%s\\%s", profiledir, ffd.cFileName);
+			mir_snprintf(szProfile, cch, "%s\\%s", profiledir, ffd.cFileName);
 			found++;
 			// this might be the only dat but there might be a few wrong things returned before another *.dat
 			while ( FindNextFile(hFind,&ffd) ) {
@@ -150,7 +150,7 @@ static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
 	int rc;
 	if ( getProfileCmdLineArgs(buf,sizeof(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
-		if ( !isValidProfileName(buf) ) _snprintf(buf,sizeof(buf)-5,"%s.dat",buf);
+		if ( !isValidProfileName(buf) ) mir_snprintf(buf,sizeof(buf)-5,"%s.dat",buf);
 		// expand the relative to a full path , which might fail
 		if ( _fullpath(szProfile, buf, cch) != 0 ) {
 			hFile=CreateFile(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -202,7 +202,7 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 	file++;
 	if ( hFile != INVALID_HANDLE_VALUE ) {		
 		CloseHandle(hFile);		
-		_snprintf(buf,sizeof(buf),Translate("The profile '%s' already exists. Do you want to move it to the "
+		mir_snprintf(buf,sizeof(buf),Translate("The profile '%s' already exists. Do you want to move it to the "
 			"Recycle Bin? \n\nWARNING: The profile will be deleted if Recycle Bin is disabled.\nWARNING: A profile may contain confidential information and should be properly deleted."),file);
 		// file already exists!
 		if ( MessageBox(hwndDlg, buf, Translate("The profile already exists"), MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2) != IDYES ) return 0;
@@ -214,9 +214,9 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 			sf.wFunc=FO_DELETE;
 			sf.pFrom=szName;
 			sf.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
-			_snprintf(szName,sizeof(szName),"%s\0",profile);
+			mir_snprintf(szName,sizeof(szName),"%s\0",profile);
 			if ( SHFileOperation(&sf) != 0 ) {
-				_snprintf(buf,sizeof(buf),Translate("Couldn't move '%s' to the Recycle Bin, Please select another profile name."),file);
+				mir_snprintf(buf,sizeof(buf),Translate("Couldn't move '%s' to the Recycle Bin, Please select another profile name."),file);
 				MessageBox(0,buf,Translate("Problem moving profile"),MB_ICONINFORMATION|MB_OK);
 				return 0;
 			}
@@ -225,7 +225,7 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 	}
 	// ask the database to create the profile
 	if ( link->makeDatabase(profile,&err) ) { 
-		_snprintf(buf,sizeof(buf),Translate("Unable to create the profile '%s', the error was %x"),file, err);
+		mir_snprintf(buf,sizeof(buf),Translate("Unable to create the profile '%s', the error was %x"),file, err);
 		MessageBox(hwndDlg,buf,Translate("Problem creating profile"),MB_ICONERROR|MB_OK);
 		return 0;
 	}
@@ -321,7 +321,7 @@ int LoadDatabaseModule(void)
 				// no plugins at all
 				char buf[256];
 				char * p = strrchr(szProfile,'\\');
-				_snprintf(buf,sizeof(buf),Translate("Miranda is unable to open '%s' because you do not have any profile plugins installed.\nYou need to install dbx_3x.dll or equivalent."), p ? ++p : szProfile );
+				mir_snprintf(buf,sizeof(buf),Translate("Miranda is unable to open '%s' because you do not have any profile plugins installed.\nYou need to install dbx_3x.dll or equivalent."), p ? ++p : szProfile );
 				MessageBox(0,buf,Translate("No profile support installed!"),MB_OK | MB_ICONERROR);
 				break;
 			}
@@ -337,7 +337,7 @@ int LoadDatabaseModule(void)
 					// file isn't locked, just no driver could open it.
 					char buf[256];
 					char * p = strrchr(szProfile,'\\');
-					_snprintf(buf,sizeof(buf),Translate("Miranda was unable to open '%s', its in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
+					mir_snprintf(buf,sizeof(buf),Translate("Miranda was unable to open '%s', its in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
 					MessageBox(0,buf,Translate("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
 					CloseHandle(hFile);					
 				}

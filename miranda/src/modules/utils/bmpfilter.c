@@ -38,7 +38,7 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 	int filenameLen;
     
     if (!CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
-        _snprintf(szFilename, sizeof(szFilename), "%s", szFile);
+        mir_snprintf(szFilename, sizeof(szFilename), "%s", szFile);
 	filenameLen=lstrlen(szFilename);
 	if(filenameLen>4) {
 		if(!lstrcmpi(szFilename+filenameLen-4,".bmp") || !lstrcmpi(szFilename+filenameLen-4,".rle")) {

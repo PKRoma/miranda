@@ -160,7 +160,7 @@ static HICON ImportIcon(const char *szProto,int n)
 			szSetting[0]='p';
 			_itoa(i,szSetting+1,10);
 			if(DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) break;
-			_snprintf(szSetting,sizeof(szSetting),"%s%d",dbv.pszVal,skinIconStatusToIdStatus[n]);
+			mir_snprintf(szSetting,sizeof(szSetting),"%s%d",dbv.pszVal,skinIconStatusToIdStatus[n]);
 			free(dbv.pszVal);
 			if(!DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) {
 				hIcon=ExtractIconFromPath(dbv.pszVal);
@@ -177,7 +177,7 @@ static HICON ImportIcon(const char *szProto,int n)
 	use the index 'n' directly. */
 	if (szProto) {
 	//
-		_snprintf(szSetting,sizeof(szSetting),"%s%d",szProto,skinIconStatusToIdStatus[n]);
+		mir_snprintf(szSetting,sizeof(szSetting),"%s%d",szProto,skinIconStatusToIdStatus[n]);
 	} else {
 		_itoa(n,szSetting,10);
 	} //if
@@ -197,7 +197,7 @@ static HICON ImportIcon(const char *szProto,int n)
 		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
 		str=strrchr(szPath,'\\');
 		if(str!=NULL) *str=0;
-		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, szProto, -(int)skinIconStatusToResourceId[n]);
+		mir_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, szProto, -(int)skinIconStatusToResourceId[n]);
 		hIcon=ExtractIconFromPath(szFullPath);
 		if (hIcon) return hIcon;
 		/* looking for a protocol icon and it wasn't found, use internal */
@@ -345,7 +345,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				char str[128],protoName[96];
 				if(protoList[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protoList[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
 				CallProtoService(protoList[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
-				_snprintf(str,sizeof(str),Translate("%s Icons"),protoName);
+				mir_snprintf(str,sizeof(str),Translate("%s Icons"),protoName);
 				j=SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_ADDSTRING,0,(LPARAM)str);
 				SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_SETITEMDATA,j,(LPARAM)protoList[i]);
 			}
@@ -356,7 +356,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				dat->protoIcons[i].proto=proto;
 				dat->protoIcons[i].iconPath=(char**)malloc(sizeof(char*)*sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]));
 				for(j=0;j<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);j++) {
-					_snprintf(szSetting,sizeof(szSetting),"%s%d",proto->szName,skinIconStatusToIdStatus[j]);
+					mir_snprintf(szSetting,sizeof(szSetting),"%s%d",proto->szName,skinIconStatusToIdStatus[j]);
 					if(DBGetContactSetting(NULL,"Icons",szSetting,&dbv))
 						dat->protoIcons[i].iconPath[j]=NULL;
 					else {
@@ -426,7 +426,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
 						str=strrchr(szPath,'\\');
 						if(str!=NULL) *str=0;
-						_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, dat->protoIcons[i].proto->szName, -(int)skinIconStatusToResourceId[lvi.iItem]);
+						mir_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, dat->protoIcons[i].proto->szName, -(int)skinIconStatusToResourceId[lvi.iItem]);
 						hIcon=ExtractIconFromPath(szFullPath);
 					}
 					if(hIcon==NULL) hIcon=ExtractIconFromPath(dat->mainStatusPath[lvi.iItem]);
@@ -667,7 +667,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					for(i=0;i<dat->protoCount;i++) {
 						for(j=0;j<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);j++) {
 							flags=(DWORD)CallProtoService(dat->protoIcons[i].proto->szName,PS_GETCAPS,PFLAGNUM_2,0);
-							_snprintf(szSetting,sizeof(szSetting),"%s%d",dat->protoIcons[i].proto->szName,skinIconStatusToIdStatus[j]);
+							mir_snprintf(szSetting,sizeof(szSetting),"%s%d",dat->protoIcons[i].proto->szName,skinIconStatusToIdStatus[j]);
 							if(dat->protoIcons[i].iconPath[j]==NULL || !(flags&skinIconStatusToPf2[j]))
 								DBDeleteContactSetting(NULL,"Icons",szSetting);
 							else

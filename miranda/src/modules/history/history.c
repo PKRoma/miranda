@@ -83,8 +83,8 @@ int LoadHistoryModule(void)
 static void GetMessageDescription(int type,DBEVENTINFO *dbei,char *buf,int cbBuf)
 {
 	if(type==SUMMARY) {
-		if(dbei->flags&DBEF_SENT) _snprintf(buf,cbBuf,Translate("Outgoing Message"));
-		else _snprintf(buf,cbBuf,Translate("Incoming Message"));
+		if(dbei->flags&DBEF_SENT) mir_snprintf(buf,cbBuf,Translate("Outgoing Message"));
+		else mir_snprintf(buf,cbBuf,Translate("Incoming Message"));
 	}
 	else {
 		strncpy(buf,dbei->pBlob,cbBuf);
@@ -95,8 +95,8 @@ static void GetMessageDescription(int type,DBEVENTINFO *dbei,char *buf,int cbBuf
 static void GetUrlDescription(int type,DBEVENTINFO *dbei,char *buf,int cbBuf)
 {
 	if(type==SUMMARY) {
-		if(dbei->flags&DBEF_SENT) _snprintf(buf,cbBuf,Translate("Outgoing URL"));
-		else _snprintf(buf,cbBuf,Translate("Incoming URL"));
+		if(dbei->flags&DBEF_SENT) mir_snprintf(buf,cbBuf,Translate("Outgoing URL"));
+		else mir_snprintf(buf,cbBuf,Translate("Incoming URL"));
 	}
 	else {
 		CopyMemory(buf,dbei->pBlob,min((DWORD)cbBuf,dbei->cbBlob));
@@ -123,8 +123,8 @@ static void GetAddedDescription(int type,DBEVENTINFO *dbei,char *buf,int cbBuf)
 static void GetFileDescription(int type,DBEVENTINFO *dbei,char *buf,int cbBuf)
 {
 	if(type==SUMMARY) {
-		if(dbei->flags&DBEF_SENT) _snprintf(buf,cbBuf,Translate("Outgoing File"));
-		else _snprintf(buf,cbBuf,Translate("Incoming File"));
+		if(dbei->flags&DBEF_SENT) mir_snprintf(buf,cbBuf,Translate("Outgoing File"));
+		else mir_snprintf(buf,cbBuf,Translate("Incoming File"));
 	}
 	else {
 		CopyMemory(buf,dbei->pBlob+sizeof(DWORD),min((DWORD)cbBuf,dbei->cbBlob-sizeof(DWORD)));
@@ -235,7 +235,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             WindowList_Add(hWindowList,hwndDlg,hContact);			
 			Utils_RestoreWindowPosition(hwndDlg,hContact,"History","");
 			contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0);
-			_snprintf(str,sizeof(str),Translate("History for %s"),contactName);
+			mir_snprintf(str,sizeof(str),Translate("History for %s"),contactName);
 			SetWindowText(hwndDlg,str);
 			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HISTORY)));
 			SendMessage(hwndDlg,DM_HREBUILD,0,0);

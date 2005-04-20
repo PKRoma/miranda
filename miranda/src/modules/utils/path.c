@@ -37,20 +37,20 @@ static int pathToRelative(WPARAM wParam, LPARAM lParam)
     char *pOut = (char*)lParam;
     if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
     if (!pathIsAbsolute(pSrc)) {
-        _snprintf(pOut, MAX_PATH, "%s", pSrc);
+        mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
         return strlen(pOut);
     }
     else {
         char szTmp[MAX_PATH];
 
-        _snprintf(szTmp, sizeof(szTmp), "%s", pSrc);
+        mir_snprintf(szTmp, sizeof(szTmp), "%s", pSrc);
         strlwr(szTmp);
         if (strstr(szTmp, szMirandaPath)) {
-            _snprintf(pOut, MAX_PATH, "%s", pSrc+strlen(szMirandaPath));
+            mir_snprintf(pOut, MAX_PATH, "%s", pSrc+strlen(szMirandaPath));
             return strlen(pOut);
         }
         else {
-            _snprintf(pOut, MAX_PATH, "%s", pSrc);
+            mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
             return strlen(pOut);
         }
     }
@@ -61,11 +61,11 @@ static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
     char *pOut = (char*)lParam;
     if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
     if (pathIsAbsolute(pSrc)||!isalnum(pSrc[0])) {
-        _snprintf(pOut, MAX_PATH, "%s", pSrc);
+        mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
         return strlen(pOut);
     }
     else {
-        _snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc);
+        mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc);
         return strlen(pOut);
     }
 }

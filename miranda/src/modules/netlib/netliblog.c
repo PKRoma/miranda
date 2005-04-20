@@ -259,10 +259,10 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 			GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,NULL,NULL,szTime,sizeof(szTime)-1);
 			break;
 		case TIMEFORMAT_MILLISECONDS:
-			_snprintf(szTime,sizeof(szTime)-1,"%I64u.%03I64u",liTimeNow.QuadPart/perfCounterFreq,1000*(liTimeNow.QuadPart%perfCounterFreq)/perfCounterFreq);
+			mir_snprintf(szTime,sizeof(szTime)-1,"%I64u.%03I64u",liTimeNow.QuadPart/perfCounterFreq,1000*(liTimeNow.QuadPart%perfCounterFreq)/perfCounterFreq);
 			break;
 		case TIMEFORMAT_MICROSECONDS:
-			_snprintf(szTime,sizeof(szTime)-1,"%I64u.%06I64u",liTimeNow.QuadPart/perfCounterFreq,1000000*(liTimeNow.QuadPart%perfCounterFreq)/perfCounterFreq);
+			mir_snprintf(szTime,sizeof(szTime)-1,"%I64u.%06I64u",liTimeNow.QuadPart/perfCounterFreq,1000000*(liTimeNow.QuadPart%perfCounterFreq)/perfCounterFreq);
 			break;
 		default:
 			szTime[0]='\0';
@@ -339,7 +339,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
 	nlu = nlc ? nlc->nlu : NULL;
-	titleLineLen = _snprintf(szTitleLine,sizeof(szTitleLine), "(%p:%u) Data %s%s\n", nlc, nlc?nlc->s:0, sent?"sent":"received", flags & MSG_DUMPPROXY?" (proxy)":"");
+	titleLineLen = mir_snprintf(szTitleLine,sizeof(szTitleLine), "(%p:%u) Data %s%s\n", nlc, nlc?nlc->s:0, sent?"sent":"received", flags & MSG_DUMPPROXY?" (proxy)":"");
 	ReleaseMutex(hConnectionHeaderMutex);
 
 	// Text data

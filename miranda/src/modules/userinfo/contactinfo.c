@@ -107,7 +107,7 @@ static BOOL CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					{	char szPhone[96],szArea[32],szNumber[64];
 						GetDlgItemText(hwndDlg,IDC_AREA,szArea,sizeof(szArea));
 						GetDlgItemText(hwndDlg,IDC_NUMBER,szNumber,sizeof(szNumber));
-						_snprintf(szPhone,sizeof(szPhone),"+%u (%s) %s",SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_GETCURSEL,0,0),0),szArea,szNumber);
+						mir_snprintf(szPhone,sizeof(szPhone),"+%u (%s) %s",SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_GETCURSEL,0,0),0),szArea,szNumber);
 						noRecursion=1;
 						SetDlgItemText(hwndDlg,IDC_PHONE,szPhone);
 						noRecursion=0;

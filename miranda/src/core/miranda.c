@@ -179,7 +179,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 #ifdef _DEBUG
 		{
 			char szBuf[64];
-			_snprintf(szBuf,sizeof(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
+			mir_snprintf(szBuf,sizeof(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
 			OutputDebugString(szBuf);
 		}
 #endif

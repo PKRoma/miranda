@@ -230,7 +230,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if (tvi.lParam==-1) break;
                 str[0] = 0;
                 if (soundList[tvi.lParam].tempFile) {
-                    _snprintf(strFull, sizeof(strFull), "%s", soundList[tvi.lParam].tempFile);
+                    mir_snprintf(strFull, sizeof(strFull), "%s", soundList[tvi.lParam].tempFile);
                 }
                 else {
                     if (DBGetContactSettingByte(NULL, "SkinSoundsOff", soundList[tvi.lParam].name, 0)==0) {
@@ -242,7 +242,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         }
                     }
                 }
-                _snprintf(strFull, sizeof(strFull), "%s", soundList[tvi.lParam].tempFile?soundList[tvi.lParam].tempFile:"");
+                mir_snprintf(strFull, sizeof(strFull), "%s", soundList[tvi.lParam].tempFile?soundList[tvi.lParam].tempFile:"");
                 CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)strFull, (LPARAM)str);
 				ZeroMemory(&ofn, sizeof(ofn));
 				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
@@ -321,7 +321,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 char buf[256];
                                 DBVARIANT dbv;
                                 
-                                _snprintf(buf, sizeof(buf), "%s: %s", soundList[tvi.lParam].section, soundList[tvi.lParam].description);
+                                mir_snprintf(buf, sizeof(buf), "%s: %s", soundList[tvi.lParam].section, soundList[tvi.lParam].description);
                                 SetDlgItemText(hwndDlg, IDC_NAMEVAL, buf);
                                 if (soundList[tvi.lParam].tempFile) 
                                     SetDlgItemText(hwndDlg, IDC_LOCATION, soundList[tvi.lParam].tempFile);

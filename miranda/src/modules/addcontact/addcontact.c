@@ -53,10 +53,10 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				
 				szName=acs->handleType==HANDLE_CONTACT?(char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)acs->handle,0):(acs->handleType==HANDLE_EVENT?szUin:acs->psr->nick);
 				if (szName && strlen(szName)) {
-					_snprintf(szTitle,128,Translate("Add %s"),szName);
+					mir_snprintf(szTitle,128,Translate("Add %s"),szName);
 				}
 				else {
-					_snprintf(szTitle,128,Translate("Add Contact"),szName);
+					mir_snprintf(szTitle,128,Translate("Add Contact"),szName);
 				}
 				SetWindowText(hdlg,szTitle);
 				

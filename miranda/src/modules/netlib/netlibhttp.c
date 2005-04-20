@@ -49,7 +49,7 @@ static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,.
 	}
 	va_start(va,fmt);
 	for(;;) {
-		charsDone=_vsnprintf(rcb->sz+rcb->iEnd,rcb->cbAlloced-rcb->iEnd,fmt,va);
+		charsDone=mir_vsnprintf(rcb->sz+rcb->iEnd,rcb->cbAlloced-rcb->iEnd,fmt,va);
 		if(charsDone>=0) break;
 		rcb->cbAlloced+=512;
 		rcb->sz=(char*)realloc(rcb->sz,rcb->cbAlloced);
@@ -348,7 +348,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		else {
 			NETLIBBASE64 nlb64;
 			char szAuth[512];
-			_snprintf(szAuth,sizeof(szAuth),"%s:%s",nlc->nlu->settings.szProxyAuthUser,nlc->nlu->settings.szProxyAuthPassword);
+			mir_snprintf(szAuth,sizeof(szAuth),"%s:%s",nlc->nlu->settings.szProxyAuthUser,nlc->nlu->settings.szProxyAuthPassword);
 			nlb64.cbDecoded=lstrlen(szAuth);
 			nlb64.pbDecoded=szAuth;
 			nlb64.cchEncoded=Netlib_GetBase64EncodedBufferSize(nlb64.cbDecoded);
@@ -670,9 +670,9 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			pspace=strchr(szMirandaVer,' ');
 			if(pspace) {
 				*pspace++='\0';
-				_snprintf(szUserAgent,sizeof(szUserAgent),"Miranda/%s (%s)",szMirandaVer,pspace);
+				mir_snprintf(szUserAgent,sizeof(szUserAgent),"Miranda/%s (%s)",szMirandaVer,pspace);
 			}
-			else _snprintf(szUserAgent,sizeof(szUserAgent),"Miranda/%s",szMirandaVer);
+			else mir_snprintf(szUserAgent,sizeof(szUserAgent),"Miranda/%s",szMirandaVer);
 		}
 		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
 			if(!doneUserAgentHeader) free(nlhrSend.headers);
