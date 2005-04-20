@@ -185,7 +185,7 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 							if ( JGetByte( hContact, "ChatRoom", 0 ))
 								QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
 
-							DBWriteContactSettingString( hContact, "CList", "Nick", nick );
+							DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
 							if ( item->group ) 
 								free( item->group );
 
