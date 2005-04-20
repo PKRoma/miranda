@@ -82,7 +82,7 @@ ID = indent
 ifdef DEBUG
 BIN = ..\..\bin\debug\plugins\AIM.dll
 else
-BIN = ..\..\rin\release\plugins\AIM.dll
+BIN = ..\..\bin\release\plugins\AIM.dll
 endif
 
 # Defines
