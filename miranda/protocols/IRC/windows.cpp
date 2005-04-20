@@ -566,7 +566,7 @@ BOOL CALLBACK InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if (lstrlen(prefs->AlternativeNick) == 0)
 					{
 						char szTemp[30];
-						_snprintf(szTemp, sizeof(szTemp), "%s%u", l, rand()%9999);
+						mir_snprintf(szTemp, sizeof(szTemp), "%s%u", l, rand()%9999);
 						DBWriteContactSettingString(NULL, IRCPROTONAME, "AlernativeNick", szTemp);
 						lstrcpyn(prefs->AlternativeNick, szTemp, 30);					
 					}
@@ -1165,7 +1165,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (g_ircSession)
 				{
 					char temp[1000];
-					_snprintf(temp, sizeof(temp), "Topic%s%s", window, g_ircSession.GetInfo().sNetwork.c_str());
+					mir_snprintf(temp, sizeof(temp), "Topic%s%s", window, g_ircSession.GetInfo().sNetwork.c_str());
 
 					DBVARIANT dbv;
   					if (!DBGetContactSetting(NULL, IRCPROTONAME, temp, &dbv) && dbv.type == DBVT_ASCIIZ) 
@@ -1344,7 +1344,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					SetWindowText(GetDlgItem(addban_hWnd, IDC_TEXT), Translate(	"Please enter the hostmask (nick!user@host)"	));
 					SetWindowText(GetDlgItem(addban_hWnd, IDC_EDIT), user.c_str());
 					char temp2[450];
-					_snprintf(temp2, 450, "/MODE %s -%s %s%s/MODE %s +%s %s", window, mode, user.c_str(), "%newl", window, mode, "%question");
+					mir_snprintf(temp2, 450, "/MODE %s -%s %s%s/MODE %s +%s %s", window, mode, user.c_str(), "%newl", window, mode, "%question");
 					SetDlgItemText(addban_hWnd, IDC_HIDDENEDIT, temp2);
 					PostMessage(addban_hWnd, IRC_ACTIVATE, 0, 0);
 				}
@@ -1418,7 +1418,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SetDlgItemText(addban_hWnd, IDC_CAPTION, temp);
 				SetWindowText(GetDlgItem(addban_hWnd, IDC_TEXT), Translate(	"Please enter the hostmask (nick!user@host)"	));
 				char temp2[450];
-				_snprintf(temp2, 450, "/MODE %s %s %s", window, mode, "%question");
+				mir_snprintf(temp2, 450, "/MODE %s %s %s", window, mode, "%question");
 				SetDlgItemText(addban_hWnd, IDC_HIDDENEDIT, temp2);
 				PostMessage(addban_hWnd, IRC_ACTIVATE, 0, 0);
 			}
@@ -1592,9 +1592,9 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						lstrcat(temp, window);
 						lstrcat(temp, " ");
 						if(lstrlen(toremove))
-							_snprintf(temp, 499, "%s-%s", temp, toremove);
+							mir_snprintf(temp, 499, "%s-%s", temp, toremove);
 						if(lstrlen(toadd))
-							_snprintf(temp, 499, "%s+%s", temp, toadd);
+							mir_snprintf(temp, 499, "%s+%s", temp, toadd);
 						if (!appendixremove.empty())
 							lstrcat(temp, appendixremove.c_str());
 						if (!appendixadd.empty())
@@ -1673,7 +1673,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			if (S != "" && g_ircSession)
 			{
-				_snprintf(temp, sizeof(temp), "Topic%s%s", window, g_ircSession.GetInfo().sNetwork.c_str());
+				mir_snprintf(temp, sizeof(temp), "Topic%s%s", window, g_ircSession.GetInfo().sNetwork.c_str());
 				DBWriteContactSettingString(NULL, IRCPROTONAME, temp, S.c_str());
 			}
 			DestroyWindow(hwndDlg);

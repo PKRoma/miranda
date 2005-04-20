@@ -464,7 +464,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_ADDSTRING, (WPARAM)0,(LPARAM) "8192");
 			int j = DBGetContactSettingWord(NULL, IRCPROTONAME, "DCCPacketSize", 1024*4);
 			char szTemp[10];
-			_snprintf(szTemp, sizeof(szTemp), "%u", j);
+			mir_snprintf(szTemp, sizeof(szTemp), "%u", j);
 			int i = SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) szTemp);
 			if(i== CB_ERR)
 				int i = SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) "4096");
@@ -919,7 +919,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							if (PerformlistModified) {
 								PerformlistModified = false;
 								char filepath[MAX_PATH];
-								_snprintf(filepath, sizeof(filepath), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
+								mir_snprintf(filepath, sizeof(filepath), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
 								int i = SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCOUNT, 0, 0);
 								FILE *hFile = fopen(filepath,"wb");
 								if (hFile && i != CB_ERR && i !=0)
@@ -1415,7 +1415,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 							if (ServerlistModified) {
 								ServerlistModified = false;
 								char filepath[MAX_PATH];
-								_snprintf(filepath, sizeof(filepath), "%s\\%s_servers.ini", mirandapath, IRCPROTONAME);
+								mir_snprintf(filepath, sizeof(filepath), "%s\\%s_servers.ini", mirandapath, IRCPROTONAME);
 								FILE *hFile2 = fopen(filepath,"w");
 								if (hFile2)
 								{
@@ -1428,9 +1428,9 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 											{
 												char TextLine[512];
 												if(pData->iSSL > 0)
-													_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:SSL%u%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->iSSL, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
+													mir_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:SSL%u%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->iSSL, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
 												else
-													_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
+													mir_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
 												fputs(TextLine, hFile2);
 
 											}

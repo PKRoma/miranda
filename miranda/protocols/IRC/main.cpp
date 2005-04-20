@@ -42,11 +42,11 @@ PLUGININFO			pluginInfo=
 {						// Information about the plugin
 						sizeof( PLUGININFO ),
 						"IRC Protocol",
-						PLUGIN_MAKE_VERSION( 0,5,1,2 ),
+						PLUGIN_MAKE_VERSION( 0,5,1,3 ),
 						"IRC protocol for Miranda IM.",
-						"MatriX ' m3x",
+						"MatriX",
 						"i_am_matrix@users.sourceforge.net",
-						"© 2004 Jörgen Persson",
+						"© 2003 - 2005 Jörgen Persson",
 						"http://members.chello.se/matrix/",
 						0,	
 						0
@@ -89,9 +89,9 @@ static void GetModuleName( void )	 // ripped from msn
 		CharUpper(IRCPROTONAME);
 
 		if (lstrcmpi(IRCPROTONAME, "IRC"))
-			_snprintf(ALTIRCPROTONAME, lstrlen( IRCPROTONAME ) + 7 , "IRC (%s)", IRCPROTONAME);
+			mir_snprintf(ALTIRCPROTONAME, lstrlen( IRCPROTONAME ) + 7 , "IRC (%s)", IRCPROTONAME);
 		else
-			_snprintf(ALTIRCPROTONAME, lstrlen( IRCPROTONAME ) + 7 , "%s", IRCPROTONAME);
+			mir_snprintf(ALTIRCPROTONAME, lstrlen( IRCPROTONAME ) + 7 , "%s", IRCPROTONAME);
 	}
 }
 
@@ -124,7 +124,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 		char szVersion[] = "0.4"; // minimum required version
 		char szText[] = "The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?";
 		char * szTemp = new char[lstrlen (szVersion) + lstrlen(szText) + 10];
-		_snprintf(szTemp, lstrlen (szVersion) + lstrlen(szText) + 10, szText, szVersion);
+		mir_snprintf(szTemp, lstrlen (szVersion) + lstrlen(szText) + 10, szText, szVersion);
 		if(IDYES == MessageBoxA(0,Translate(szTemp),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
 		delete[] szTemp;
