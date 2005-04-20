@@ -218,7 +218,8 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
     va_start(va, fmt);
     for (;;) {
         charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
-        if (charsDone >= 0)
+        //if (charsDone >= 0)
+        if (charsDone >= 0 && charsDone < *cbBufferAlloced - *cbBufferEnd)
             break;
         *cbBufferAlloced += 1024;
         *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
@@ -312,7 +313,8 @@ static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEn
     va_start(va, fmt);
     for (;;) {
         charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
-        if (charsDone >= 0)
+        //if (charsDone >= 0)
+        if (charsDone >= 0 && charsDone < *cbBufferAlloced - *cbBufferEnd)
             break;
         *cbBufferAlloced += 1024;
         *buffer = (char *) realloc(*buffer, *cbBufferAlloced);

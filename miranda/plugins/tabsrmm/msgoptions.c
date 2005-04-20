@@ -54,7 +54,7 @@ void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals(),
 void CreateImageList(BOOL bInitial);
 
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
-static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -743,8 +743,11 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                     EnableWindow(GetDlgItem(hwndDlg, IDC_POPUPCONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                     break;
                 case IDC_SETUPAUTOCREATEMODES:
-                    CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hwndDlg, DlgProcSetupStatusModes);
-                    break;
+                    {
+                        HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hwndDlg, DlgProcSetupStatusModes, DBGetContactSettingDword(0, SRMSGMOD_T, "autopopupmask", -1));
+                        SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hwndDlg);
+                        break;
+                    }
                 case IDC_CUT_TABTITLE:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
                     break;
@@ -752,6 +755,9 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
            
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
+        case DM_STATUSMASKSET:
+            DBWriteContactSettingDword(0, SRMSGMOD_T, "autopopupmask", (DWORD)lParam);
+            break;
         case WM_NOTIFY:
             switch (((LPNMHDR) lParam)->idFrom) {
                 case 0:
@@ -1509,10 +1515,11 @@ int InitOptions(void)
     return 0;
 }
 
-static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    DWORD dwStatusMask = DBGetContactSettingDword(NULL, SRMSGMOD_T, "autopopupmask", -1);
+    DWORD dwStatusMask = GetWindowLong(hwndDlg, GWL_USERDATA);
     static DWORD dwNewStatusMask = 0;
+    static HWND hwndParent = 0;
     
     switch (msg) {
         case WM_INITDIALOG:
@@ -1520,6 +1527,9 @@ static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wPar
             int i;
             
             TranslateDialogDefault(hwndDlg);
+            SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+            dwStatusMask = lParam;
+            
             SetWindowTextA(hwndDlg, Translate("Choose status modes"));
             for(i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
                 SetWindowTextA(GetDlgItem(hwndDlg, i), Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0)));
@@ -1532,6 +1542,9 @@ static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wPar
             ShowWindow(hwndDlg, SW_SHOWNORMAL);
             return TRUE;
         }
+        case DM_SETPARENTDIALOG:
+            hwndParent = (HWND)lParam;
+            break;
         case DM_GETSTATUSMASK:
             {
                 if(IsDlgButtonChecked(hwndDlg, IDC_ALWAYS))
@@ -1551,7 +1564,7 @@ static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wPar
                     case IDCANCEL:
                         if(LOWORD(wParam) == IDOK) {
                             SendMessage(hwndDlg, DM_GETSTATUSMASK, 0, 0);
-                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "autopopupmask", dwNewStatusMask);
+                            SendMessage(hwndParent, DM_STATUSMASKSET, 0, (LPARAM)dwNewStatusMask);
                         }
                         DestroyWindow(hwndDlg);
                         break;
@@ -1566,6 +1579,9 @@ static BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wPar
                         break;
                 }
             }
+        case WM_DESTROY:
+            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+            break;
         default:
             break;
     }

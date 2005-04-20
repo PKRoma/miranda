@@ -82,6 +82,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define OPT_NUMBER_MSG "NumberMsg"
 #define OPT_SHOW_ON "ShowOldOrNew"
 #define OPT_NORSS "NoRSSAnnounces"
+#define OPT_DISABLE "Disabled"
 
 typedef struct {
     BOOL bPreview;
@@ -113,6 +114,8 @@ typedef struct {
 	BYTE iNumberMsg;
 	BOOL bShowON;
 	BOOL bNoRSS;
+    int  iDisable;
+    int  dwStatusMask;
 } NEN_OPTIONS;
 
 int NEN_ReadOptions(void);

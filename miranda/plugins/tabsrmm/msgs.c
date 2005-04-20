@@ -122,7 +122,7 @@ HMODULE g_hIconDLL = 0;
 // nls stuff...
 
 void BuildCodePageList();
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam);
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto);
 
 /*
  * installed as a WH_GETMESSAGE hook in order to process unicode messages.
@@ -392,12 +392,19 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     dbei.cbBlob = 0;
     CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
-    if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ)
+    hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
+    if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ) {
+        /*
+         * care about popups for non-message events for contacts w/o an openend window
+         * if a window is open, the msg window itself will care about showing the popup
+         */
+        if(dbei.eventType != EVENTTYPE_MESSAGE && dbei.eventType != EVENTTYPE_STATUSCHANGE && hwnd == NULL && !(dbei.flags & DBEF_SENT))
+            tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule);
         return 0;
+    }
     
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 
-    hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
     if (hwnd) {
         struct ContainerWindowData *pTargetContainer = 0;
         if(dbei.eventType == EVENTTYPE_MESSAGE) {
@@ -429,10 +436,11 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     else {
         char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
         DWORD dwStatus = 0;
-        if(szProto)
+        if(szProto) {
             dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-        if(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & dwStatusMask))              // should never happen, but...
-            bAllowAutoCreate = TRUE;
+            if(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & dwStatusMask))              // should never happen, but...
+                bAllowAutoCreate = TRUE;
+        }
     }
     if (bAllowAutoCreate && (bAutoPopup || bAutoCreate)) {
         BOOL bActivate = TRUE, bPopup = TRUE;
@@ -493,6 +501,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
     cle.pszTooltip = toolTip;
     CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
+    tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule);
     return 0;
 }
 

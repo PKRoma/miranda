@@ -198,11 +198,11 @@ struct ProtocolData {
 #define DM_FORCESCROLL       (WM_USER+44)
 #define DM_QUERYCLIENTAREA   (WM_USER+45)
 #define DM_QUERYRECENT       (WM_USER+47)
-#define DM_ACTIVATEME        (WM_USER+46)                   // ** free **
+#define DM_ACTIVATEME        (WM_USER+46)
 #define DM_REGISTERHOTKEYS   (WM_USER+48)
 #define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)
-#define DM_FREEEEEEEEEEEE    (WM_USER+51)                   // ** free **
+#define DM_STATUSMASKSET     (WM_USER+51)       
 #define DM_CONTACTSETTINGCHANGED (WM_USER+52)
 #define DM_PICTURECHANGED    (WM_USER+53)
 #define DM_PROTOACK          (WM_USER+54)
@@ -223,6 +223,9 @@ struct ProtocolData {
 #define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
 #define DM_SECURE_CHANGED    (WM_USER+70)
 #define DM_QUERYSTATUS       (WM_USER+71)
+#define DM_SETPARENTDIALOG   (WM_USER+72)
+#define DM_HANDLECLISTEVENT  (WM_USER+73)
+
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 
@@ -423,8 +426,8 @@ struct MsgLogIcon {
 #define IDI_FONTUNDERLINE 24    /* underline */
 #define IDI_FONTFACE 25         /* font face (currently not in use) */
 #define IDI_FONTCOLOR 26        /* font color (not in use yet) */
-#define IDI_SOUNDSON  27
-#define IDI_SOUNDSOFF 28
+#define IDI_SOUNDSON  27        /* msg window sounds are enabled */
+#define IDI_SOUNDSOFF 28        /* msg window sounds are disabled */
 #define IDI_RESERVED9 29
 #define IDI_RESERVED10 30
 

@@ -67,7 +67,7 @@ void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const cha
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 HMENU BuildMCProtocolMenu(HWND hwndDlg);
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild);
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto);
 
 char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
@@ -1979,7 +1979,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                             }
                         }
-                        tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 1, dat->pContainer, hwndDlg);
+                        tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 1, dat->pContainer, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
                     }
                     
                     if ((HANDLE) lParam != dat->hDbEventFirst) {

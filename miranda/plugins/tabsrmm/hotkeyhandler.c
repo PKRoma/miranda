@@ -118,15 +118,23 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
-        /*
-        case HM_DBEVENTADDED:
-            if(wParam) {
-                HWND hwndTarget = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
-                if(hwndTarget)
-                    SendMessage(hwndTarget, HM_DBEVENTADDED, wParam, lParam);
+            /*
+             * handle an event from the popup module (mostly window activation). Since popups may run in different threads, the message
+             * is posted to our invisible hotkey handler which does always run within the main thread.
+             * wParam is the hContact
+             */
+        case DM_HANDLECLISTEVENT:
+            {
+                CLISTEVENT *cle = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, wParam, 0);
+                if (cle) {
+                    if (ServiceExists(cle->pszService)) {
+                        CallService(cle->pszService, (WPARAM)NULL, (LPARAM)cle);
+                        CallService(MS_CLIST_REMOVEEVENT, (WPARAM)cle->hContact, (LPARAM)cle->hDbEvent);
+                    }
+                    
+                }
+                break;
             }
-            break;
-        */
         case DM_REGISTERHOTKEYS:
             {
                 int iWantHotkeys = DBGetContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", 0);

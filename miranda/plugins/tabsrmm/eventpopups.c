@@ -37,12 +37,17 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #include "nen.h"
 #include "../../include/m_icq.h"
 
+extern HINSTANCE g_hInst;
 extern NEN_OPTIONS nen_options;
 BOOL bWmNotify = FALSE;
 extern HANDLE hMessageWindowList;
+extern MYGLOBALS myGlobals;
 
 PLUGIN_DATA *PopUpList[20];
 static int PopupCount = 0;
+
+extern BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+int PopupPreview(NEN_OPTIONS *pluginOptions);
 
 int NEN_ReadOptions(void)
 {
@@ -78,6 +83,8 @@ int NEN_ReadOptions(void)
     options->iNumberMsg = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, TRUE);
     options->bShowON = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_ON, TRUE);
     options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, FALSE);
+    options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
+    options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", -1);
     return 0;
 }
 
@@ -113,6 +120,7 @@ int NEN_WriteOptions(void)
     DBWriteContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
     DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
     DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_DISABLE, (BYTE)options->iDisable);
     return 0;
 }
 
@@ -189,14 +197,25 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
             CheckDlgButton(hWnd, IDC_NORSS, options->bNoRSS);
             CheckDlgButton(hWnd, IDC_CHKPREVIEW, options->bPreview);
+            CheckDlgButton(hWnd, IDC_DISABLEALLPOPUPS, options->iDisable);
             bWmNotify = FALSE;
             return TRUE;
+        case DM_STATUSMASKSET:
+            DBWriteContactSettingDword(0, MODULE, "statusmask", (DWORD)lParam);
+            options->dwStatusMask = (int)lParam;
+            break;
         case WM_COMMAND:
             if (!bWmNotify) {
                 switch (LOWORD(wParam)) {
                     case IDC_PREVIEW:
                         PopupPreview(options);
                         break;
+                    case IDC_POPUPSTATUSMODES:
+                        {   
+                            HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", -1));
+                            SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
+                            break;
+                        }
                     default:
                             //update options
                         options->maskNotify = (IsDlgButtonChecked(hWnd, IDC_CHKNOTIFY_MESSAGE)?MASK_MESSAGE:0) |
@@ -229,6 +248,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         options->bShowON = !IsDlgButtonChecked(hWnd, IDC_RDNEW);
                         options->iNumberMsg = GetDlgItemInt(hWnd, IDC_NUMBERMSG, NULL, FALSE);
                         options->bNoRSS = IsDlgButtonChecked(hWnd, IDC_NORSS);
+                        options->iDisable = IsDlgButtonChecked(hWnd, IDC_DISABLEALLPOPUPS);
 
                         EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
                         EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
@@ -446,18 +466,12 @@ int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
     EVENT_DATA_EX* eventData;
 
     if (mask & MASK_OPEN) {
-        CLISTEVENT* cle;
         HWND hwndExisting = 0;
 
         if((hwndExisting = WindowList_Find(hMessageWindowList, pdata->hContact)) != 0)
-            SendMessage(hwndExisting, DM_ACTIVATEME, 0, 0);          // ask the message window about its parent...
-        else {
-            cle = (CLISTEVENT*)CallService(MS_CLIST_GETEVENT, (WPARAM)pdata->hContact, 0);
-            if (cle) {
-                if (ServiceExists(cle->pszService))
-                    CallService(cle->pszService, (WPARAM)NULL, (LPARAM)cle);
-            }
-        }
+            PostMessage(hwndExisting, DM_ACTIVATEME, 0, 0);          // ask the message tab to activate itself (post it, may run in a different thread)
+        else
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, 0);
     }
 
     if (mask & MASK_REMOVE) {
@@ -651,8 +665,23 @@ int PopupPreview(NEN_OPTIONS *pluginOptions)
     return 0;
 }
 
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild)
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto)
 {
+    if(nen_options.iDisable)                          // no popups at all. Period
+        return 0;
+    
+    /*
+     * check the status mode against the status mask
+     */
+    _DebugPopup(0, "check proto: %s, mask: %d", szProto, nen_options.dwStatusMask);
+    if(nen_options.dwStatusMask != -1) {
+        DWORD dwStatus = 0;
+        if(szProto != NULL) {
+            dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+            if(!(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & nen_options.dwStatusMask)))              // should never happen, but...
+                return 0;
+        }
+    }
     if(windowOpen && pContainer != 0) {                // message window is open, need to check the container config if we want to see a popup nonetheless
         if (pContainer->dwFlags & CNT_DONTREPORT && IsIconic(pContainer->hwnd))
                 goto passed;

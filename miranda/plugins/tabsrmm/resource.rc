@@ -32,9 +32,9 @@ IDD_POPUP_OPT DIALOGEX 0, 0, 314, 240
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "General Options",IDC_STATIC,6,6,199,33
+    GROUPBOX        "General Options",IDC_STATIC,6,6,199,36
     CONTROL         "Show Preview of Event in Popup",IDC_CHKPREVIEW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,21,120,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,27,120,10
     GROUPBOX        "Popup Options",IDC_STATIC,6,43,199,82
     LTEXT           "Message",IDC_STATIC,11,72,44,13
     LTEXT           "URL",IDC_STATIC,11,85,44,13
@@ -109,8 +109,10 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,212,173,77,10
     CONTROL         "No popups for RSS",IDC_NORSS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,211,203,95,11
-    PUSHBUTTON      "Sbow popups when Status is...",IDC_BUTTON1,21,203,178,
-                    12,WS_DISABLED
+    PUSHBUTTON      "Sbow popups when Status is...",IDC_POPUPSTATUSMODES,21,
+                    203,178,12
+    CONTROL         "Disable all Popups",IDC_DISABLEALLPOPUPS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,14,167,10
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
