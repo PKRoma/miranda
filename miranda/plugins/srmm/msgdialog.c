@@ -1,7 +1,7 @@
 /*
 SRMM
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2005 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -69,7 +69,7 @@ static char *MsgServiceName(HANDLE hContact)
     if (szProto == NULL)
         return PSS_MESSAGE;
 
-    _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
+    mir_snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
     if (ServiceExists(szServiceName))
         return PSS_MESSAGE "W";
 #endif
@@ -954,11 +954,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 					switch (ci.type) {
 						case CNFT_ASCIIZ:
-							_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+							mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 							miranda_sys_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
-							_snprintf(buf, sizeof(buf), "%u", ci.dVal);
+							mir_snprintf(buf, sizeof(buf), "%u", ci.dVal);
 							break;
 					}
 				}
@@ -988,7 +988,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbtts.cbDest = sizeof(time);
 				dbtts.szDest = time;
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-				_snprintf(fmt, sizeof(fmt), Translate("Last message received on %s at %s."), date, time);
+				mir_snprintf(fmt, sizeof(fmt), Translate("Last message received on %s at %s."), date, time);
 				SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
 				SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
 			}
@@ -1053,20 +1053,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 						switch (ci.type) {
 						case CNFT_ASCIIZ:
-							_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+							mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 							miranda_sys_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
-							_snprintf(buf, sizeof(buf), "%u", ci.dVal);
+							mir_snprintf(buf, sizeof(buf), "%u", ci.dVal);
 							break;
 						}
 					}
 					SetDlgItemTextA(hwndDlg, IDC_NAME, buf[0] ? buf : contactName);
 					szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE), 0);
 					if (statusIcon)
-						_snprintf(newtitle, sizeof(newtitle), "%s - %s", contactName, Translate(pszNewTitleEnd));
+						mir_snprintf(newtitle, sizeof(newtitle), "%s - %s", contactName, Translate(pszNewTitleEnd));
 					else
-						_snprintf(newtitle, sizeof(newtitle), "%s (%s): %s", contactName, szStatus, Translate(pszNewTitleEnd));
+						mir_snprintf(newtitle, sizeof(newtitle), "%s (%s): %s", contactName, szStatus, Translate(pszNewTitleEnd));
 					if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
 						if (statusIcon) {
@@ -1086,13 +1086,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							char *szNewStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wStatus, 0);
 
 							if (dat->wStatus == ID_STATUS_OFFLINE) {
-								_snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+								mir_snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+								SendMessage(hwndDlg, DM_TYPING, 0, 0);
 							}
 							else if (dat->wOldStatus == ID_STATUS_OFFLINE) {
-								_snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
+								mir_snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
 							}
 							else {
-								_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
+								mir_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
 							}
 							iLen = strlen(buffer) + 1;
 							MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR) & buffer[iLen], iLen);
@@ -1120,6 +1121,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 			break;
+		}
+	case DM_GETWINDOWSTATE:
+		{
+			UINT state = 0;
+			
+			state |= MSG_WINDOW_STATE_EXISTS;
+			if (IsWindowVisible(hwndDlg)) 
+				state |= MSG_WINDOW_STATE_VISIBLE;
+			if (GetFocus()==hwndDlg) 
+				state |= MSG_WINDOW_STATE_FOCUS;
+			if (IsIconic(hwndDlg))
+				state |= MSG_WINDOW_STATE_ICONIC;
+			return state;
+
 		}
 	case DM_CASCADENEWWINDOW:
 		if ((HWND) wParam == hwndDlg)
@@ -1307,7 +1322,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					char szBuf[256];
 					char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
-					_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
+					mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
 					dat->nTypeSecs--;
 					SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
 					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) g_dat->hIcons[SMF_ICON_TYPING]);

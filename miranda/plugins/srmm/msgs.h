@@ -1,7 +1,7 @@
 /*
 SRMM
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2005 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -86,6 +86,7 @@ struct MessageWindowData
 #define DM_UPDATESIZEBAR     (WM_USER+27)
 #define HM_AVATARACK         (WM_USER+28)
 #define HM_ACKEVENT          (WM_USER+29)
+#define DM_GETWINDOWSTATE    (WM_USER+30)
 
 #define EVENTTYPE_STATUSCHANGE 25368
 

@@ -20,6 +20,9 @@ Changes
  - Log window didn't scroll correctly when avatar was loaded
  - Added show seconds option to log window timestamp
  - Drag and drop file transfer support
+ - Updated internal API to 0.0.0.3
+ - Fix some possible buffer overflow issues
+ - Hide typing notification when user goes offline
 
 2.1.0.0
  - Show avatars for protocols that support them
