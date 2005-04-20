@@ -44,7 +44,11 @@ pthread_mutex_t connectionHandleMutex;
 
 PLUGININFO pluginInfo={
 		sizeof(PLUGININFO),
+#ifdef YAHOO_CVSBUILD
+		"Yahoo Protocol Beta/Nightly",
+#else
 		"Yahoo Protocol",
+#endif
 		__VERSION_DWORD,
 		"Yahoo Protocol support via libyahoo2 library.",
 		"Gennady Feldman",
