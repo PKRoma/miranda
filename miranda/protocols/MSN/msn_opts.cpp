@@ -260,7 +260,7 @@ LBL_Continue:
 
 				if ( strchr( szFile, ' ' ) != NULL ) {
 					char tmpBuf[ MAX_PATH+2 ];
-					_snprintf( tmpBuf, sizeof( tmpBuf ), "\"%s\"", szFile );
+					mir_snprintf( tmpBuf, sizeof( tmpBuf ), "\"%s\"", szFile );
 					strcpy( szFile, tmpBuf );
 				}
 
@@ -657,7 +657,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
 	char szTitle[200];
-	_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Network" ));
+	mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Network" ));
 
 	odp.position		= -790000001;
 	odp.pszTemplate	= MAKEINTRESOURCE(IDD_OPT_MSN_CONN);
@@ -667,7 +667,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc		= DlgProcMsnConnOpts;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
-	_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Server Lists" ));
+	mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Server Lists" ));
 
 	odp.position		= -790000002;
 	odp.pszTemplate	= MAKEINTRESOURCE(IDD_LISTSMGR);
@@ -765,7 +765,7 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 	}
 
 	char hippy[ 2048 ];
-	long challen = _snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, time(NULL) - sl, passwd );
+	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, time(NULL) - sl, passwd );
 
 	//Digest it
 	unsigned char digest[16];
@@ -801,7 +801,7 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 
 	char url[ 256 ];
 	if ( rru && passport )
-		_snprintf( url, sizeof( url ), "file://%s", tPathName );
+		mir_snprintf( url, sizeof( url ), "file://%s", tPathName );
 	else
 		strcpy( url, "http://go.msn.com/0/1" );
 

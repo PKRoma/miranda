@@ -135,7 +135,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		DBDeleteContactSetting( NULL, msnProtocolName, "YourPort" );
 	}
 
-	_snprintf( szBuffer, sizeof szBuffer, "%s plugin connections", msnProtocolName );
+	mir_snprintf( szBuffer, sizeof szBuffer, "%s plugin connections", msnProtocolName );
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
@@ -212,7 +212,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		hChatMenu = HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook );
 
 		char szEvent[ 200 ];
-		_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", msnProtocolName );
+		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", msnProtocolName );
 		hInitChat = CreateHookableEvent( szEvent );
 		hEvInitChat = HookEvent( szEvent, MSN_ChatInit );
 	}
@@ -252,7 +252,7 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 	CharUpper( protocolname );
 	msnProtocolName = strdup( protocolname );
 
-	_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
+	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
 	ModuleName = strdup( path );
 
 //	Uninstalling purposes

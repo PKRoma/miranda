@@ -4,6 +4,11 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.0.2
+===============
+[!] bug #0000913 fixed: no zero-termination after _snprintf (potential
+security issue)
+
 Version 0.4.0.1
 ===============
 [+] wish #0000971 fixed: Block & Unblock actions must be separated

@@ -108,7 +108,7 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 	char* p = strchr( tUserEmail, '@' );
 	if ( p != NULL )
 	{	*p = 0;
-		_snprintf( tBuffer, SSL_BUF_SIZE, "%s%%40%s", tUserEmail, p+1 );
+		mir_snprintf( tBuffer, SSL_BUF_SIZE, "%s%%40%s", tUserEmail, p+1 );
 		strcpy( tUserEmail, tBuffer );
 	}
 
@@ -128,7 +128,7 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 				return NULL;
 			}
 
-			_snprintf( tBuffer, SSL_BUF_SIZE, "%s:%d", szProxy, tPortNumber );
+			mir_snprintf( tBuffer, SSL_BUF_SIZE, "%s:%d", szProxy, tPortNumber );
 
 			tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, tInternetFlags );
 		}
@@ -182,7 +182,7 @@ static char* sttSslGet( char* parUrl, char* parChallenge )
 				MSN_GetStaticString( "Password", NULL, tPassword, sizeof tPassword );
 				MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tPassword )+1, ( LPARAM )tPassword );
 
-				int tBytes = _snprintf( tBuffer, SSL_BUF_SIZE,
+				int tBytes = mir_snprintf( tBuffer, SSL_BUF_SIZE,
 					"Authorization: Passport1.4 OrgVerb=GET,OrgURL=http%%3A%%2F%%2Fmessenger%%2Emsn%%2Ecom,sign-in=%s,pwd=",
 					tUserEmail );
 

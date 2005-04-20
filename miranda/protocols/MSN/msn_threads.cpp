@@ -90,7 +90,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			_chdir( ft->std.workingDir );
 
 			char filefull[ 1024 ];
-			_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
+			mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
 			ft->std.currentFile = strdup( filefull );
 
 			if ( msnRunningUnderNT )
@@ -153,7 +153,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			}
 
 			char tCommand[ 30 ];
-			_snprintf( tCommand, sizeof( tCommand ), "FIL %i\r\n", info->mMsnFtp->std.totalBytes );
+			mir_snprintf( tCommand, sizeof( tCommand ), "FIL %i\r\n", info->mMsnFtp->std.totalBytes );
 			info->send( tCommand, strlen( tCommand ));
 			break;
 		}
@@ -183,7 +183,7 @@ LBL_InvalidCommand:
 					if ( info->mCaller == 0 )  //receive
 					{
 						char tCommand[ MSN_MAX_EMAIL_LEN + 50 ];
-						_snprintf( tCommand, sizeof( tCommand ), "USR %s %s\r\n", dbv.pszVal, info->mCookie );
+						mir_snprintf( tCommand, sizeof( tCommand ), "USR %s %s\r\n", dbv.pszVal, info->mCookie );
 						info->send( tCommand, strlen( tCommand ));
 					}
 					else if ( info->mCaller == 2 )  //send
@@ -712,12 +712,12 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 {
 	if ( mSessionID[0] == 0 ) {
 		if ( mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH )
-			_snprintf( dest, destlen, sttFormatString, "NS", "messenger.hotmail.com" );
+			mir_snprintf( dest, destlen, sttFormatString, "NS", "messenger.hotmail.com" );
 		else
-			_snprintf( dest, destlen, sttFormatString, "SB", mServer );
+			mir_snprintf( dest, destlen, sttFormatString, "SB", mServer );
 		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
 	}
-	else _snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
+	else mir_snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
 		mGatewayIP, ( isPoll ) ? "Action=poll&" : "", mSessionID );
 }
 

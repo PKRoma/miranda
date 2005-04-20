@@ -117,7 +117,7 @@ static int sttCreateListener(
 		newThread->startThread( thrdFunc );
 	}
 
-	int cbBodyLen = _snprintf( szBody, cbBody,
+	int cbBodyLen = mir_snprintf( szBody, cbBody,
 		"Bridge: TCPv1\r\n"
 		"Listening: true\r\n"
 		"Nonce: %s\r\n"
@@ -357,7 +357,7 @@ void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus 
 
 	char szContents[ 50 ];
 	p2p_sendSlp( info, ft, tHeaders, lStatus, szContents,
-		_snprintf( szContents, sizeof szContents, "SessionID: %ld\r\n\r\n%c", ft->p2p_sessionid, 0 ));
+		mir_snprintf( szContents, sizeof szContents, "SessionID: %ld\r\n\r\n%c", ft->p2p_sessionid, 0 ));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -905,7 +905,7 @@ static void sttInitFileTransfer(
 
 		int tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
-		int tCommentLen = _snprintf( tComment, sizeof( tComment ), "%ld bytes", ft->std.currentFileSize );
+		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%ld bytes", ft->std.currentFileSize );
 		char* szBlob = ( char* )malloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
 		*( PDWORD )szBlob = ( DWORD )ft;
 		strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
@@ -1011,7 +1011,7 @@ static void sttInitDirectTransfer(
 		cbBodyLen = sttCreateListener( info, ft, ( pThreadFunc )p2p_filePassiveRecvThread, szBody, sizeof szBody );
 
 	if ( !cbBodyLen )
-		cbBodyLen = _snprintf( szBody, sizeof szBody,
+		cbBodyLen = mir_snprintf( szBody, sizeof szBody,
 			"Bridge: TCPv1\r\n"
 			"Listening: false\r\n"
 			"Nonce: %s\r\n\r\n%c", sttVoidNonce, 0 );
@@ -1052,7 +1052,7 @@ static void sttInitDirectTransfer2(
 		newThread->mP2pSession = ft;
 		newThread->mParentThread = info;
 		strncpy( newThread->mCookie, szNonce, sizeof newThread->mCookie );
-		_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szInternalAddress, szInternalPort );
+		mir_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szInternalAddress, szInternalPort );
 		newThread->startThread(( pThreadFunc )p2p_fileActiveRecvThread );
 	}
 	else p2p_sendStatus( ft, info, 603 );
@@ -1111,7 +1111,7 @@ LBL_Close:
 			}
 
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
-		cbBody = _snprintf( szBody, 1024,
+		cbBody = mir_snprintf( szBody, 1024,
 			"Bridges: TCPv1\r\nNetID: 0\r\nConn-Type: %s\r\nUPnPNat: false\r\nICF: false\r\n\r\n%c",
 			( bAllowIncoming ) ? "Direct-Connect" : "Unknown-Connect", 0 );
 	}
@@ -1135,7 +1135,7 @@ LBL_Close:
 				newThread->mP2pSession = ft;
 				newThread->mParentThread = info;
 				strncpy( newThread->mCookie, szNonce, sizeof newThread->mCookie );
-				_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szExternalAddress, szExternalPort );
+				mir_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szExternalAddress, szExternalPort );
 				newThread->startThread(( pThreadFunc )p2p_filePassiveSendThread );
 				return;
 			}
@@ -1150,7 +1150,7 @@ LBL_Close:
 			newThread->mP2pSession = ft;
 			newThread->mParentThread = info;
 			strncpy( newThread->mCookie, szNonce, sizeof newThread->mCookie );
-			_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szInternalAddress, szInternalPort );
+			mir_snprintf( newThread->mServer, sizeof newThread->mServer, "%s:%s", szInternalAddress, szInternalPort );
 			newThread->startThread(( pThreadFunc )p2p_filePassiveSendThread );
 			return;
 		}
@@ -1469,7 +1469,7 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	}
 
 	char* body = ( char* )alloca( 2000 );
-	int tBytes = _snprintf( body, 2000,
+	int tBytes = mir_snprintf( body, 2000,
 		"EUF-GUID: %s\r\n"
 		"SessionID: %ld\r\n"
 		"AppID: %d\r\n"

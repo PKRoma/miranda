@@ -113,7 +113,7 @@ LBL_RecvAgain:
 					getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), QI->datalen == 0 );
 
 					char* tBuffer = ( char* )alloca( QI->datalen+400 );
-					int cbBytes = _snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
+					int cbBytes = mir_snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
 						szHttpPostUrl, MSN_USER_AGENT, mGatewayIP, QI->datalen, "" );
 					memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
 					cbBytes += QI->datalen;
@@ -149,7 +149,7 @@ LBL_RecvAgain:
 		getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), true );
 
 		char szCommand[ 400 ];
-		int cbBytes = _snprintf( szCommand, sizeof( szCommand ),
+		int cbBytes = mir_snprintf( szCommand, sizeof( szCommand ),
 			sttGatewayHeader, szHttpPostUrl, MSN_USER_AGENT, mGatewayIP, 0, "" );
 
 		NETLIBBUFFER nlb = { szCommand, cbBytes, 0 };

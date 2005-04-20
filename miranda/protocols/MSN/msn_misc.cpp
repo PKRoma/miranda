@@ -230,9 +230,9 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen,
 
 	int tPathLen = strlen( pszDest );
 	if ( bOldFormat )
-		tPathLen += _snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\", msnProtocolName );
+		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\", msnProtocolName );
 	else
-		tPathLen += _snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\"  );
+		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\"  );
 	CreateDirectory( pszDest, NULL );
 
 	if ( hContact != NULL ) {
@@ -249,7 +249,7 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen,
 			MD5Update( &ctx, ( BYTE* )szEmail, strlen( szEmail ));
 			MD5Final(( BYTE* )digest, &ctx );
 
-			tPathLen += _snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%08lX%08lX%08lX%08lX",
+			tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%08lX%08lX%08lX%08lX",
 				digest[0], digest[1], digest[2], digest[3] );
 		}
 
@@ -259,7 +259,7 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen,
 		if ( bOldFormat )
 			strcpy( pszDest + tPathLen, "avatar.png" );
 		else
-			_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", msnProtocolName );
+			mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", msnProtocolName );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +333,7 @@ LONG ThreadData::sendMessage( const char* parMsg, int parFlags )
 			tFontStyle[ 0 ] = 0;
 		}
 
-		_snprintf( tHeader + sizeof( sttHeaderStart )-1, sizeof( tHeader )-sizeof( sttHeaderStart ),
+		mir_snprintf( tHeader + sizeof( sttHeaderStart )-1, sizeof( tHeader )-sizeof( sttHeaderStart ),
 			"Content-Type: text/plain; charset=UTF-8\r\n"
 			"X-MMS-IM-Format: FN=%s; EF=%s; CO=%06X; CS=0; PF=31\r\n\r\n",
 			tFontName, tFontStyle, tFontColor );
@@ -358,7 +358,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 	char* buf = ( char* )alloca( datLen + 100 );
 
 	LONG thisTrid = MyInterlockedIncrement( &mTrid );
-	int nBytes = _snprintf( buf, 100, "MSG %d %c %d\r\n%s",
+	int nBytes = mir_snprintf( buf, 100, "MSG %d %c %d\r\n%s",
 		thisTrid, msgType, datLen + sizeof(sttHeaderStart)-1, sttHeaderStart );
 	memcpy( buf + nBytes, data, datLen );
 	send( buf, nBytes + datLen );
@@ -442,7 +442,7 @@ void __cdecl MSN_ShowError( const char* msgtext, ... )
 	va_list tArgs;
 
 	va_start( tArgs, msgtext );
-	_vsnprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( msgtext ), tArgs );
+	mir_vsnprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( msgtext ), tArgs );
 	va_end( tArgs );
 
 	if ( MyOptions.ShowErrorsAsPopups )
@@ -794,7 +794,7 @@ int filetransfer::create()
 	_chdir( std.workingDir );
 
 	char filefull[ MAX_PATH ];
-	_snprintf( filefull, sizeof filefull, "%s\\%s", std.workingDir, std.currentFile );
+	mir_snprintf( filefull, sizeof filefull, "%s\\%s", std.workingDir, std.currentFile );
 	std.currentFile = strdup( filefull );
 
 	if ( hWaitEvent != INVALID_HANDLE_VALUE )
@@ -816,7 +816,7 @@ int filetransfer::create()
 				WideCharToMultiByte( CP_ACP, 0, 
 					( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName, 
 					-1, tShortName, sizeof tShortName, 0, 0 );
-				_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
+				mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
 				std.currentFile = strdup( filefull );
 		}	}
 	}
@@ -865,7 +865,7 @@ char* TWinErrorCode::getText()
 		if ( tBytes == 0 )
 		{
 			mErrorText = ( LPTSTR )LocalAlloc( LMEM_FIXED, 100 );
-			tBytes = _snprintf( mErrorText, 100, "unknown Windows error code %d", mErrorCode );
+			tBytes = mir_snprintf( mErrorText, 100, "unknown Windows error code %d", mErrorCode );
 		}
 
 		*mErrorText = tolower( *mErrorText );
