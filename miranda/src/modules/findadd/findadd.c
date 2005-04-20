@@ -34,6 +34,18 @@ static HWND hwndFindAdd=NULL;
 static HANDLE hHookModulesLoaded = 0;
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 
+// from msn_libstr.cpp
+static char* FindAddTrimR(char *s) {
+	char* p = s+strlen(s)-1;
+
+	while (p>=s) {  
+		if (*p!=' '&&*p!='\t'&&*p!='\n'&&*p!='\r')
+			break;
+		*p--=0;
+   }
+   return s;
+}
+
 static int FindAddDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 {
 	static int y,nextY,oldTop;
@@ -582,6 +594,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if(IsDlgButtonChecked(hwndDlg,IDC_BYPROTOID)) {
 						char str[256];
 						GetDlgItemText(hwndDlg,IDC_PROTOID,str,sizeof(str));
+						FindAddTrimR(str);
 						if(str[0]==0)
 							MessageBox(hwndDlg,Translate("You haven't filled in the search field. Please enter a search term and try again."),Translate("Search"),MB_OK);
 						else
@@ -590,6 +603,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					else if(IsDlgButtonChecked(hwndDlg,IDC_BYEMAIL)) {
 						char str[256];
 						GetDlgItemText(hwndDlg,IDC_EMAIL,str,sizeof(str));
+						FindAddTrimR(str);
 						if(str[0]==0)
 							MessageBox(hwndDlg,Translate("You haven't filled in the search field. Please enter a search term and try again."),Translate("Search"),MB_OK);
 						else

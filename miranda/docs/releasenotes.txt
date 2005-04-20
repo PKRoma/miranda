@@ -35,6 +35,7 @@ Bugfixes:
  - Sending files from the root directory added an extra '\'
  - Transparency focus issues in the contact list
  - Log didn't scroll to the bottom when showing avatar in message window
+ - Trailing spaces removed from search by user id and email
  - AIM: aim: links didn't register correctly
 
 Enhancements:
