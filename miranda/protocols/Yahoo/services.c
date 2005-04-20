@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <time.h>
+#include <io.h>
 #include "pthread.h"
 #include "yahoo.h"
 
@@ -168,13 +169,15 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
 		
 
-		if (errmsg[0] == '\0') 
-		if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
-			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-			lstrcpyn(ylad->password, dbv.pszVal, 255);
-			DBFreeVariant(&dbv);
-		}  else
-			lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
+		if (errmsg[0] == '\0') {
+			if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
+				CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				lstrcpyn(ylad->password, dbv.pszVal, 255);
+				DBFreeVariant(&dbv);
+			}  else {
+				lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
+			}
+		}
 
 		if (errmsg[0] != '\0'){
 			FREE(ylad);
@@ -442,15 +445,20 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 {
     PROTOSEARCHRESULT *psr=(PROTOSEARCHRESULT*)lParam;
 	
-	YAHOO_DebugLog("YahooAddToList -> %s", psr->nick);
-	if (!yahooLoggedIn)
-		return 0;
+	YAHOO_DebugLog("[YahooAddToList]");
 	
-	if ( psr->cbSize != sizeof( PROTOSEARCHRESULT ))
+	if (!yahooLoggedIn){
+		YAHOO_DebugLog("[YahooAddToList] WARNING: WE ARE OFFLINE!");
+		return 0;
+	}
+	
+	if (psr == NULL || psr->cbSize != sizeof( PROTOSEARCHRESULT ))
 		return 0;
 
-    if (find_buddy(psr->nick) != NULL)
+	if (find_buddy(psr->nick) != NULL) {
+		YAHOO_DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", psr->nick);
 		return 0;
+	}
 	
 	YAHOO_DebugLog("Adding buddy:%s", psr->nick);
     return (int)add_buddy(psr->nick, psr->nick, wParam);
@@ -1106,7 +1114,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		AI->format = PA_FORMAT_BMP;
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
 		
-		if (access( AI->filename, 0 ) == 0 ) {
+		if (_access( AI->filename, 0 ) == 0 ) {
 			return GAIR_SUCCESS;
 		} else {
 			/* need to request it again? */
