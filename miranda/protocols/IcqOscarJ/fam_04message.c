@@ -1865,7 +1865,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 		case 0x0018:     // Not while on AOL
 		default:
 			if (pszErrorMessage = malloc(256))
-				_snprintf(pszErrorMessage, 256, Translate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
+				mir_snprintf(pszErrorMessage, 256, Translate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
 			break;
 
 		}

@@ -288,9 +288,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 			pBuffer += 4;      /* warning level & user class */
 			wBufferLength -= 5 + bUinLen;
 
-			if (pSnacHeader->dwRef == 0x0e0000) // This is during the login sequence
+			if (pSnacHeader->dwRef == ICQ_CLIENT_REQINFO<<0x10) // This is during the login sequence
 			{
-
 				// TLV(x01) User type?
 				// TLV(x0C) Empty CLI2CLI Direct connection info
 				// TLV(x0A) External IP
@@ -340,7 +339,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 				// Start sending Keep-Alive packets
 				if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
 					forkthread(icq_keepAliveThread, 0, NULL);
-
 			}
 		}
 		break;

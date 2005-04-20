@@ -109,7 +109,7 @@ void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
   tPathLen = strlen(pszDest);
-  tPathLen += _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
+  tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
   CreateDirectory(pszDest, NULL);
 
   if (dwUin != 0) 

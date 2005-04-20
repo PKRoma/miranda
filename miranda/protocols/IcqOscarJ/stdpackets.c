@@ -71,7 +71,7 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 	unsigned char nUinLen;
 
 
-	_snprintf(szUin, 10, "%d", dwUin);
+	mir_snprintf(szUin, 10, "%d", dwUin);
 	nUinLen = strlen(szUin);
 
 	p->wLen = 21 + nUinLen + wLen;
@@ -172,7 +172,7 @@ static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimesta
 	unsigned char nUinLen;
 
 
-	_snprintf(szUin, 10, "%d", dwUin);
+	mir_snprintf(szUin, 10, "%d", dwUin);
 	nUinLen = strlen(szUin);
 
 	p->wLen = nUinLen + 74 + wLen;
@@ -671,7 +671,7 @@ void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, co
 	dwMsgID1 = time(NULL);
 	dwMsgID2 = RandRange(0, 0x00FF);
 
-	_snprintf(szUin, 10, "%d", dwUin);
+	mir_snprintf(szUin, 10, "%d", dwUin);
 	nUinLen = strlen(szUin);
 
 
@@ -779,7 +779,7 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
 
 	if (!accepted) szFiles = "";
 
-	_snprintf(szUin, 10, "%d", dwUin);
+	mir_snprintf(szUin, 10, "%d", dwUin);
 	nUinLen = strlen(szUin);
 
 	// 202 + UIN len + file description (no null) + file name (null included)
@@ -887,7 +887,7 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
 	if (!accepted) szFiles = "";
 
 
-	_snprintf(szUin, 10, "%d", dwUin);
+	mir_snprintf(szUin, 10, "%d", dwUin);
 	nUinLen = strlen(szUin);
 
 	// 150 + UIN len + file description (with null) + file name (2 nulls)
@@ -1289,7 +1289,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 	if (szBuffer = (char *)malloc(nBufferSize))
 	{
 
-		wBufferLen = _snprintf(szBuffer, nBufferSize,
+		wBufferLen = mir_snprintf(szBuffer, nBufferSize,
 			"<icq_sms_message>"
 			"<destination>"
             "%s"   /* phone number */

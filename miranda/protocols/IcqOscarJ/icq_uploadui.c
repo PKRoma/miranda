@@ -132,7 +132,7 @@ static void AppendToUploadLog(HWND hwndDlg, const char *fmt, ...)
   int iItem;
 
   va_start(va, fmt);
-  _vsnprintf(szText, sizeof(szText), fmt, va);
+  mir_vsnprintf(szText, sizeof(szText), fmt, va);
   va_end(va);
 
   iItem = SendDlgItemMessage(hwndDlg, IDC_LOG, LB_ADDSTRING, 0, (LPARAM)szText);

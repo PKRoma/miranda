@@ -75,7 +75,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 	// Add "contacts" option
 	nNameLen = strlen(Translate(gpszICQProtoName)) + 1 + strlen(Translate("Contacts"));
 	pszTreeItemName = calloc(1, nNameLen+1);
-	_snprintf(pszTreeItemName, nNameLen, "%s %s", Translate(gpszICQProtoName), Translate("Contacts"));
+	mir_snprintf(pszTreeItemName, nNameLen, "%s %s", Translate(gpszICQProtoName), Translate("Contacts"));
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS);
     odp.pszTitle = pszTreeItemName;
 	odp.pfnDlgProc = DlgProcIcqContactsOpts;
@@ -86,7 +86,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 	// Add "privacy" option
 	nNameLen = strlen(Translate(gpszICQProtoName)) + 1 + strlen(Translate("Privacy"));
 	pszTreeItemName = calloc(1, nNameLen+1);
-	_snprintf(pszTreeItemName, nNameLen, "%s %s", Translate(gpszICQProtoName), Translate("Privacy"));
+	mir_snprintf(pszTreeItemName, nNameLen, "%s %s", Translate(gpszICQProtoName), Translate("Privacy"));
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY);
 	odp.pszTitle = pszTreeItemName;
 	odp.pfnDlgProc = DlgProcIcqPrivacyOpts;

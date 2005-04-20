@@ -281,24 +281,24 @@ static void handleSignonError(WORD wError)
 	case 0x06:
 	case 0x07:
 		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
-		_snprintf(msg, 250, Translate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
+		mir_snprintf(msg, 250, Translate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
 	case 0x014:
-		_snprintf(msg, 250, Translate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
+		mir_snprintf(msg, 250, Translate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
 	case 0x015:
 	case 0x016:
-		_snprintf(msg, 250, Translate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
+		mir_snprintf(msg, 250, Translate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
 	case 0x18:
 	case 0x1D:
-		_snprintf(msg, 250, Translate("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
+		mir_snprintf(msg, 250, Translate("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
@@ -314,7 +314,7 @@ static void handleSignonError(WORD wError)
 		break;
 
 	default:
-		_snprintf(msg, 50, Translate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
+		mir_snprintf(msg, 50, Translate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 	}
@@ -337,7 +337,7 @@ static void handleRuntimeError(WORD wError)
 	}
 
 	default:
-		_snprintf(msg, 50, Translate("Unknown runtime error: 0x%02x"), wError);
+		mir_snprintf(msg, 50, Translate("Unknown runtime error: 0x%02x"), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 	}

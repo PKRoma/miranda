@@ -1507,7 +1507,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 							}
 							else
 							{
-								_snprintf(szFiles, 64, "%d Files", ft->dwFileCount);
+								mir_snprintf(szFiles, 64, "%d Files", ft->dwFileCount);
 								pszFiles = szFiles;
 							}
 

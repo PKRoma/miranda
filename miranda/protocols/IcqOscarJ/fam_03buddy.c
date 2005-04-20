@@ -272,11 +272,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       { // This is probably an Licq client
         DWORD ver = dwFT1 & 0xFFFF;
         if (ver % 10){
-          _snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
+          mir_snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
         }
         else
         {
-          _snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
+          mir_snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
         }
         if (dwFT1 & 0x00800000)
           strcat(szClientBuf, "/SSL");
@@ -298,9 +298,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         unsigned ver3 = (dwFT2>>8)&0xFF;
         
         if (ver3) 
-          _snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
+          mir_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
         else  
-          _snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
+          mir_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
         szClient = szClientBuf;
       }
       else if (dwFT1 == 0xFFFFFF7F)
@@ -537,7 +537,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               szClient = "Kopete";
             else
             {
-              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
               szClient = szClientBuf;
             }
           }
@@ -547,9 +547,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver2 = (*capId)[0xD];
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
             else  
-              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
             if ((*capId)[0xF] & 0x80) 
               strcat(szClientBuf,"/Win32");
             else if ((*capId)[0xF] & 0x40) 
@@ -562,9 +562,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver2 = (*capId)[0xD] % 100;
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
             else  
-              _snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
             if ((*capId)[0xF]) 
               strcat(szClientBuf,"/SSL");
             szClient = szClientBuf;
@@ -576,11 +576,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xE];
             unsigned ver4 = (*capId)[0xF];
             if (ver4) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
             else
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capmIcq, 0xC))
@@ -590,11 +590,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xE];
             unsigned ver4 = (*capId)[0xF];
             if (ver4) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
             else
-              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capIm2, 0x10))
@@ -608,18 +608,18 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xA];
             unsigned ver4 = (*capId)[9];
             if (ver4) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
             else
-              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capQip, 0xE))
           {
             char v1 = (*capId)[0xE];
             char v2 = (*capId)[0xF];
-            _snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
+            mir_snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
             szClient = szClientBuf;
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))

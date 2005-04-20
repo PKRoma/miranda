@@ -787,7 +787,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 
 				if (wEmailLength > 1)
 				{ 
-					_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
+					mir_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, pszDatabaseKey, &databuf, &wPacketLen);
 
 					// Stop on parsing errors
@@ -813,7 +813,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				// We only delete e-mails when the parsing was successful since nCount
 				// may be incorrect otherwise
-				_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
+				mir_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
 				DBDeleteContactSetting(hContact, gpszICQProtoName, pszDatabaseKey);
 			}
 
@@ -837,10 +837,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				if (i < count)
 				{
-					_snprintf(idstr, 33, "Interest%dCat", i);
+					mir_snprintf(idstr, 33, "Interest%dCat", i);
 					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, interestsField, &databuf, &wPacketLen);
 
-					_snprintf(idstr, 33, "Interest%dText", i);
+					mir_snprintf(idstr, 33, "Interest%dText", i);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, &databuf, &wPacketLen);
 
 					if (!bOK)
@@ -849,10 +849,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				else
 				{
 					// Delete older entries if the count has decreased since last update
-					_snprintf(idstr, 33, "Interest%dCat", i);
+					mir_snprintf(idstr, 33, "Interest%dCat", i);
 					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
 
-					_snprintf(idstr, 33, "Interest%dText", i);
+					mir_snprintf(idstr, 33, "Interest%dText", i);
 					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
 				}
 			}
@@ -876,10 +876,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				if (i < count)
 				{
-					_snprintf(idstr, 33, "Past%d", i);
+					mir_snprintf(idstr, 33, "Past%d", i);
 					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, pastField, &databuf, &wPacketLen);
 
-					_snprintf(idstr, 33, "Past%dText", i);
+					mir_snprintf(idstr, 33, "Past%dText", i);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, &databuf, &wPacketLen);
 
 					if (!bOK)
@@ -888,10 +888,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				else
 				{
 					// Delete older entries if the count has decreased since last update
-					_snprintf(idstr, 33, "Past%d", i);
+					mir_snprintf(idstr, 33, "Past%d", i);
 					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
 
-					_snprintf(idstr, 33, "Past%dText", i);
+					mir_snprintf(idstr, 33, "Past%dText", i);
 					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
 				}
 			}
@@ -904,10 +904,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				if (i < count)
 				{
-					_snprintf(idstr, 33, "Affiliation%d", i);
+					mir_snprintf(idstr, 33, "Affiliation%d", i);
 					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, affiliationField, &databuf, &wPacketLen);
 
-					_snprintf(idstr, 33, "Affiliation%dText", i);
+					mir_snprintf(idstr, 33, "Affiliation%dText", i);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, &databuf, &wPacketLen);
 
 					if (!bOK)
@@ -916,10 +916,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				else 
 				{
 					// Delete older entries if the count has decreased since last update
-					_snprintf(idstr, 33, "Affiliation%d", i);
+					mir_snprintf(idstr, 33, "Affiliation%d", i);
 					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
 					
-					_snprintf(idstr, 33, "Affiliation%dText", i);
+					mir_snprintf(idstr, 33, "Affiliation%dText", i);
 					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
 				}
 			}

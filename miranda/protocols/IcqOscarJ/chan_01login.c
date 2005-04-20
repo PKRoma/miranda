@@ -62,7 +62,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 #ifdef _DEBUG
 		Netlib_Logf(ghServerNetlibUser, "Received SRV_HELLO from login server");
 #endif
-		_snprintf(szUin, sizeof(szUin), "%d", dwLocalUIN);
+		mir_snprintf(szUin, sizeof(szUin), "%d", dwLocalUIN);
 		wUinLen = strlen(szUin);
 
 		packet.wLen = 66 + strlen(CLIENT_ID_STRING) + wUinLen + info->wPassLen;

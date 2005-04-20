@@ -126,7 +126,7 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 			break;
 	}
 
-	_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
+	mir_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
 	icq_LogMessage(level, szBuf);
 
 }

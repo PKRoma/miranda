@@ -1037,7 +1037,7 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 	  char* pszBuf;
 
 
-	  titleLineLen = _snprintf(szTitleLine, 128, "DECRYPTED\n");
+	  titleLineLen = mir_snprintf(szTitleLine, 128, "DECRYPTED\n");
 	  szBuf = (char*)malloc(titleLineLen + ((wLen+15)>>4) * 76 + 1);
 	  CopyMemory(szBuf, szTitleLine, titleLineLen);
 	  pszBuf = szBuf + titleLineLen;
