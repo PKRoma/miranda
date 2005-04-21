@@ -654,7 +654,7 @@ static int Netlib_Logf(HANDLE hUser,const char *fmt,...)
 	char szText[1024];
 
 	va_start(va,fmt);
-	_vsnprintf(szText,sizeof(szText),fmt,va);
+	mir_vsnprintf(szText,sizeof(szText),fmt,va);
 	va_end(va);
 	return CallService(MS_NETLIB_LOG,(WPARAM)hUser,(LPARAM)szText);
 }
