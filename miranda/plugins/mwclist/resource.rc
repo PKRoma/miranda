@@ -407,7 +407,7 @@ END
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 256
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Fonts",IDC_STATIC,5,5,269,125
     COMBOBOX        IDC_FONTID,12,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
@@ -451,8 +451,8 @@ BEGIN
     GROUPBOX        "Additional Colours",IDC_STATIC,4,171,121,79
     LTEXT           "Selected text:",IDC_STATIC,12,186,65,8
     CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,77,184,29,12
-    LTEXT           "Hottrack text:",IDC_STATIC,12,202,65,8
-    CONTROL         "",IDC_HOTCOLOUR,"ColourPicker",WS_TABSTOP,77,200,29,12
+    LTEXT           "Hottrack text:",IDC_STATIC,12,201,65,8
+    CONTROL         "",IDC_HOTCOLOUR,"ColourPicker",WS_TABSTOP,77,199,29,12
     CONTROL         "Gamma correction",IDC_GAMMACORRECT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,235,95,10
     LTEXT           "Quicksearch text:",IDC_STATIC,12,218,65,8
@@ -462,13 +462,13 @@ BEGIN
     LTEXT           "Colour:",IDC_STCOLOURTEXT,228,102,37,8,NOT WS_VISIBLE
     GROUPBOX        "Selection Mode",IDC_STATIC,130,171,144,79
     CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
-                    145,185,39,10
+                    145,185,120,10
     CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
-                    BS_AUTORADIOBUTTON,145,215,61,10
+                    BS_AUTORADIOBUTTON,145,215,120,10
     CONTROL         "Full selection",IDC_HILIGHTMODE1,"Button",
-                    BS_AUTORADIOBUTTON,145,200,57,10
+                    BS_AUTORADIOBUTTON,145,200,120,10
     CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
-                    BS_AUTORADIOBUTTON,145,230,55,10
+                    BS_AUTORADIOBUTTON,145,230,120,10
 END
 
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 151
@@ -684,7 +684,7 @@ BEGIN
         HORZGUIDE, 94
         HORZGUIDE, 152
         HORZGUIDE, 190
-        HORZGUIDE, 206
+        HORZGUIDE, 205
         HORZGUIDE, 222
     END
 
