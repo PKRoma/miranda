@@ -37,6 +37,12 @@ static HANDLE hSettingChanged1;
 static HANDLE hSettingChanged2;
 extern void InitDisplayNameCache(SortedList *list);
 extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
+
+extern int BgStatusBarChange(WPARAM wParam,LPARAM lParam);
+
+extern int BgClcChange(WPARAM wParam,LPARAM lParam);
+
+
 int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
 extern int sortByStatus;
@@ -192,6 +198,14 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		clcProto[hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
 		hClcProtoCount++;
 	}
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"StatusBar Background/StatusBar",0);
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"List Background/CLC",0);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgClcChange);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
+	
+	
+	
+	
 	return 0;
 }
 
@@ -293,6 +307,9 @@ int LoadCLCModule(void)
 	HookEvent(ME_OPT_INITIALISE,ClcOptInit);
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,ClcProtoAck);
 	HookEvent(ME_SYSTEM_SHUTDOWN,ClcShutdown);
+
+
+
 	return 0;
 }
 

@@ -103,6 +103,20 @@ void GetFontSetting(int i,LOGFONT *lf,COLORREF *colour)
 	lf->lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
 }
 
+
+int BgClcChange(WPARAM wParam,LPARAM lParam)
+{
+ClcOptionsChanged();
+return 0;
+}
+
+int BgStatusBarChange(WPARAM wParam,LPARAM lParam)
+{
+	ClcOptionsChanged();
+	OnStatusBarBackgroundChange();
+return 0;
+}
+
 int ClcOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
@@ -140,6 +154,8 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
+
+	
 
 	return 0;
 }
