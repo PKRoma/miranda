@@ -849,7 +849,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 		HANDLE hContact;
 		DBVARIANT dbv;
 		JABBER_LIST_ITEM *item;
-		char* szProto, *nick, *jid, *group;
+		char* szProto, *nick, *jid;
 
 		hContact = ( HANDLE ) wParam;
 		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
@@ -874,14 +874,12 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 						// Note: we need to compare with item->group to prevent infinite loop
 						if ( cws->value.type==DBVT_DELETED && item->group!=NULL ) {
 							JabberLog( "Group set to nothing" );
-							JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>", nick, UTF8(item->jid));
+							JabberAddContactToRoster( item->jid, nick, NULL );
 						}
 						else if ( cws->value.type==DBVT_ASCIIZ && cws->value.pszVal!=NULL && ( item->group==NULL || strcmp( cws->value.pszVal, item->group )) ) {
 							JabberLog( "Group set to %s", cws->value.pszVal );
-							if (( group=JabberTextEncode( cws->value.pszVal )) != NULL ) {
-								JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>", nick, UTF8(item->jid), group );
-								free( group );
-						}	}
+							JabberAddContactToRoster( item->jid, nick, cws->value.pszVal );
+						}
 
 						free( nick );
 				}	}
@@ -909,12 +907,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 					if ( newNick!=NULL && ( item->nick==NULL || ( item->nick!=NULL && strcmp( item->nick, newNick )) )) {
 						if (( nick=JabberTextEncode( newNick )) != NULL ) {
 							JabberLog( "Nick set to %s", newNick );
-							if ( item->group!=NULL && ( group=JabberTextEncode( item->group ))!=NULL ) {
-								JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>", nick, UTF8(jid), group );
-								free( group );
-							}
-							else
-								JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'></item></query></iq>", nick, UTF8(jid));
+							JabberAddContactToRoster( jid, nick, item->group );
 							free( nick );
 				}	}	}
 
@@ -923,7 +916,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 
 		// A temporary contact has been added permanently
 		else if ( !strcmp( cws->szSetting, "NotOnList" )) {
-			char* jid, *nick, *pGroup;
+			char* jid, *nick;
 
 			if ( cws->value.type==DBVT_DELETED || ( cws->value.type==DBVT_BYTE && cws->value.bVal==0 )) {
 				if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
@@ -943,17 +936,12 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 					if ( nick != NULL ) {
 						JabberLog( "jid=%s nick=%s", jid, nick );
 						if ( !DBGetContactSetting( hContact, "CList", "Group", &dbv )) {
-							if (( pGroup=JabberTextEncode( dbv.pszVal )) != NULL ) {
-								JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>", nick, UTF8(jid), pGroup );
-								JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", UTF8(jid));
-								free( pGroup );
-							}
+							JabberAddContactToRoster( jid, nick, dbv.pszVal );
 							JFreeVariant( &dbv );
 						}
-						else {
-							JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>", nick, UTF8(jid));
-							JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", UTF8(jid));
-						}
+						else JabberAddContactToRoster( jid, nick, NULL );
+						JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", UTF8(jid));
+
 						free( nick );
 						DBDeleteContactSetting( hContact, "CList", "Hidden" );
 					}

@@ -24,6 +24,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_list.h"
 
 ///////////////////////////////////////////////////////////////////////////////
+// JabberAddContactToRoster() - adds a contact to the roster
+
+void JabberAddContactToRoster( const char* jid, const char* nick, const char* grpName )
+{
+	if ( grpName != NULL )
+		JabberSend( jabberThreadInfo->s, 
+			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>", 
+			UTF8(nick), UTF8(jid), UTF8(grpName));
+	else
+		JabberSend( jabberThreadInfo->s, 
+			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>", 
+			UTF8(nick), UTF8(jid));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // JabberChatDllError() - missing CHAT.DLL 
 
 void JabberChatDllError()

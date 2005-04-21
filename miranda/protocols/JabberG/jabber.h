@@ -430,6 +430,7 @@ char*         __stdcall JabberStripJid( const char* jid, char* dest, size_t dest
 
 //---- jabber_misc.c ------------------------------------------------
 
+void   JabberAddContactToRoster( const char* jid, const char* nick, const char* grpName );
 void   JabberChatDllError( void );
 void   JabberContactListCreateGroup( char* groupName );
 void   JabberDBAddAuthRequest( char* jid, char* nick );
