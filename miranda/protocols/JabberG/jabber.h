@@ -144,13 +144,6 @@ enum {
 };
 
 /*******************************************************************
- * Macro definitions
- *******************************************************************/
-
-#define JabberSendInvisiblePresence()	JabberSendVisibleInvisiblePresence( TRUE )
-#define JabberSendVisiblePresence()		JabberSendVisibleInvisiblePresence( FALSE )
-
-/*******************************************************************
  * Global data structures and data type definitions
  *******************************************************************/
 typedef HANDLE JABBER_SOCKET;

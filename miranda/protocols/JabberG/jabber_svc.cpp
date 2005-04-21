@@ -519,18 +519,18 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 		jid = dbv.pszVal;
 		switch ( ccs->wParam ) {
 		case ID_STATUS_ONLINE:
-			if ( jabberStatus==ID_STATUS_INVISIBLE || oldMode==ID_STATUS_OFFLINE )
+			if ( jabberStatus == ID_STATUS_INVISIBLE || oldMode == ID_STATUS_OFFLINE )
 				JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", UTF8(jid));
 			break;
 		case ID_STATUS_OFFLINE:
-			if ( jabberStatus!=ID_STATUS_INVISIBLE || oldMode==ID_STATUS_ONLINE )
-				JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(jid));
+			if ( jabberStatus != ID_STATUS_INVISIBLE || oldMode == ID_STATUS_ONLINE )
+				JabberSendPresenceTo( ID_STATUS_INVISIBLE, jid, NULL );
 			break;
 		case 0:
-			if ( oldMode==ID_STATUS_ONLINE && jabberStatus==ID_STATUS_INVISIBLE )
-				JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(jid));
-			else if ( oldMode==ID_STATUS_OFFLINE && jabberStatus!=ID_STATUS_INVISIBLE )
-				JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", UTF8(jid));
+			if ( oldMode == ID_STATUS_ONLINE && jabberStatus == ID_STATUS_INVISIBLE )
+				JabberSendPresenceTo( ID_STATUS_INVISIBLE, jid, NULL );
+			else if ( oldMode == ID_STATUS_OFFLINE && jabberStatus != ID_STATUS_INVISIBLE )
+				JabberSendPresenceTo( jabberStatus, jid, NULL );
 			break;
 		}
 		JFreeVariant( &dbv );

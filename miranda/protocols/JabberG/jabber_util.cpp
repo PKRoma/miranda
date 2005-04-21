@@ -546,29 +546,23 @@ char* __stdcall JabberErrorMsg( XmlNode *errorNode )
 
 void __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible )
 {
-	JABBER_LIST_ITEM *item;
-	HANDLE hContact;
-	WORD apparentMode;
-	int i;
-
 	if ( !jabberOnline ) return;
 
-	i = 0;
-	while (( i=JabberListFindNext( LIST_ROSTER, i )) >= 0 ) {
-		if (( item=JabberListGetItemPtrFromIndex( i )) != NULL ) {
-			if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
-				apparentMode = JGetWord( hContact, "ApparentMode", 0 );
-				if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
-					JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(item->jid));
-				}
-				else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE ) {
-					JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", UTF8(item->jid));
-				}
-			}
-		}
-		i++;
-	}
-}
+	for ( int i = 0; ( i=JabberListFindNext( LIST_ROSTER, i )) >= 0; i++ ) {
+		JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+		if ( item == NULL )
+			continue;
+
+		HANDLE hContact = JabberHContactFromJID( item->jid );
+		if ( hContact == NULL )
+			continue;
+
+		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
+		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE )
+			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(item->jid));
+		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
+			JabberSendPresenceTo( jabberStatus, item->jid, NULL );
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberTextEncodeW - prepare a string for transmission
@@ -880,58 +874,60 @@ int __stdcall JabberCountryNameToId( char* ctry )
 
 void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 {
-	char priorityStr[32];
-	char toStr[512];
-
 	if ( !jabberOnline ) return;
 
 	// Send <presence/> update for status ( we won't handle ID_STATUS_OFFLINE here )
 	// Note: jabberModeMsg is already encoded using JabberTextEncode()
 	EnterCriticalSection( &modeMsgMutex );
 
-	mir_snprintf( priorityStr, sizeof( priorityStr ), "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
+	char priorityStr[ 32 ];
+	mir_snprintf( priorityStr, sizeof priorityStr, "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
 
+	char toStr[ 512 ];
 	if ( to != NULL )
-		mir_snprintf( toStr, sizeof( toStr ), " to='%s'", UTF8(to));
+		mir_snprintf( toStr, sizeof toStr, " to='%s'", UTF8(to));
 	else
 		toStr[0] = '\0';
+
+	if ( extra == NULL )
+		extra = "";
 
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
 		if ( modeMsgs.szOnline )
-			JabberSend( jabberThreadInfo->s, "<presence%s><status>%s</status>%s%s</presence>", toStr, modeMsgs.szOnline, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><status>%s</status>%s%s</presence>", toStr, modeMsgs.szOnline, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_INVISIBLE:
-		JabberSend( jabberThreadInfo->s, "<presence type='invisible'%s>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+		JabberSend( jabberThreadInfo->s, "<presence type='invisible'%s>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_AWAY:
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
 		if ( modeMsgs.szAway )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szAway, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szAway, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_NA:
 		if ( modeMsgs.szNa )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szNa, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szNa, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
 		if ( modeMsgs.szDnd )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szDnd, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szDnd, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_FREECHAT:
 		if ( modeMsgs.szFreechat )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szFreechat, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szFreechat, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	default:
 		// Should not reach here
@@ -946,11 +942,7 @@ void __stdcall JabberSendPresence( int status )
 	int i;
 
 	JabberSendPresenceTo( status, NULL, NULL );
-
-	if ( status == ID_STATUS_INVISIBLE )
-		JabberSendVisiblePresence();
-	else
-		JabberSendInvisiblePresence();
+	JabberSendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
 
 	if ( status == ID_STATUS_INVISIBLE ) {
 		i = 0;
