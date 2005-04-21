@@ -98,7 +98,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	SkinPlaySound("AlertMsg");
 	{
 		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
-		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE)))) {
+		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
 			struct NewMessageWindowLParam newData = { 0 };
 			newData.hContact = (HANDLE) wParam;
 			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
@@ -257,7 +257,7 @@ static void RestoreUnreadMessageAlerts(void)
 					continue;
 				{
 					char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-					if (szProto && (g_dat->openFlags & SRMMStatusToPf2(DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE)))) {
+					if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
 						autoPopup = 1;
 					}
 				}
