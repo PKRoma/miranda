@@ -121,12 +121,11 @@ typedef struct {
 int NEN_ReadOptions(void);
 int NEN_WriteOptions(void);
 
-typedef struct EVENT_DATA_EX{
+typedef struct EVENT_DATA {
 	HANDLE hEvent;
-	int number;
-	struct EVENT_DATA_EX* next;
-	struct EVENT_DATA_EX* prev;
-} EVENT_DATA_EX;
+    char szText[MAX_SECONDLINE + 2];
+    DWORD timestamp;
+} EVENT_DATA;
 
 typedef struct {
     UINT eventType;
@@ -134,12 +133,14 @@ typedef struct {
     NEN_OPTIONS *pluginOptions;
 	POPUPDATAEX* pud;
 	HWND hWnd;
-	struct EVENT_DATA_EX* firstEventData;
-	struct EVENT_DATA_EX* firstShowEventData;
-	struct EVENT_DATA_EX* lastEventData;
-	long countEvent;
 	long iSeconds;
+    char szHeader[256];
+    int  nrMerged;
+    EVENT_DATA *eventData;
+    int  nrEventsAlloced;
 } PLUGIN_DATA;
+
+#define NR_MERGED 5
 
 #define TIMER_TO_ACTION 50685
 

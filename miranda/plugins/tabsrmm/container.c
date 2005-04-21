@@ -1533,6 +1533,10 @@ panel_found:
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
     			DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);
+#if defined(__MATHMOD_SUPPORT)
+                if(myGlobals.m_MathModAvail)
+                    CallService(MTH_HIDE, 0, 0);
+#endif                
                 if (pContainer)
                     free(pContainer);
     			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
