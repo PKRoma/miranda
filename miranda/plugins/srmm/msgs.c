@@ -31,6 +31,33 @@ int hMsgMenuItemCount = 0;
 
 extern HINSTANCE g_hInst;
 
+static int SRMMStatusToPf2(int status)
+{
+    switch (status) {
+        case ID_STATUS_ONLINE:
+            return PF2_ONLINE;
+        case ID_STATUS_AWAY:
+            return PF2_SHORTAWAY;
+        case ID_STATUS_DND:
+            return PF2_HEAVYDND;
+        case ID_STATUS_NA:
+            return PF2_LONGAWAY;
+        case ID_STATUS_OCCUPIED:
+            return PF2_LIGHTDND;
+        case ID_STATUS_FREECHAT:
+            return PF2_FREECHAT;
+        case ID_STATUS_INVISIBLE:
+            return PF2_INVISIBLE;
+        case ID_STATUS_ONTHEPHONE:
+            return PF2_ONTHEPHONE;
+        case ID_STATUS_OUTTOLUNCH:
+            return PF2_OUTTOLUNCH;
+        case ID_STATUS_OFFLINE:
+            return MODEF_OFFLINE;
+    }
+    return 0;
+}
+
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	struct NewMessageWindowLParam newData = { 0 };
@@ -69,14 +96,15 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	}
 	/* new message */
 	SkinPlaySound("AlertMsg");
-
-	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP)) {
-		struct NewMessageWindowLParam newData = { 0 };
-		newData.hContact = (HANDLE) wParam;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
-		return 0;
+	{
+		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
+		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE)))) {
+			struct NewMessageWindowLParam newData = { 0 };
+			newData.hContact = (HANDLE) wParam;
+			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
+			return 0;
+		}
 	}
-
 	ZeroMemory(&cle, sizeof(cle));
 	cle.cbSize = sizeof(cle);
 	cle.hContact = (HANDLE) wParam;
@@ -208,8 +236,8 @@ static void RestoreUnreadMessageAlerts(void)
 	DBEVENTINFO dbei = { 0 };
 	char toolTip[256];
 	int windowAlreadyExists;
-	int autoPopup = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
 	HANDLE hDbEvent, hContact;
+	int autoPopup;
 
 	dbei.cbSize = sizeof(dbei);
 	cle.cbSize = sizeof(cle);
@@ -220,13 +248,19 @@ static void RestoreUnreadMessageAlerts(void)
 	while (hContact) {
 		hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) hContact, 0);
 		while (hDbEvent) {
+			autoPopup = 0;
 			dbei.cbBlob = 0;
 			CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
 			if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && dbei.eventType == EVENTTYPE_MESSAGE) {
 				windowAlreadyExists = WindowList_Find(g_dat->hMessageWindowList, hContact) != NULL;
 				if (windowAlreadyExists)
 					continue;
-
+				{
+					char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+					if (szProto && (g_dat->openFlags & SRMMStatusToPf2(DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE)))) {
+						autoPopup = 1;
+					}
+				}
 				if (autoPopup && !windowAlreadyExists) {
 					struct NewMessageWindowLParam newData = { 0 };
 					newData.hContact = hContact;

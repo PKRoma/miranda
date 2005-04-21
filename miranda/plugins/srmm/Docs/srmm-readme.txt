@@ -23,6 +23,7 @@ Changes
  - Updated internal API to 0.0.0.3
  - Fix some possible buffer overflow issues
  - Hide typing notification when user goes offline
+ - Auto popup option is now set per status
 
 2.1.0.0
  - Show avatars for protocols that support them

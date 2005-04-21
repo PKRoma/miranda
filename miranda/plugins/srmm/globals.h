@@ -47,6 +47,7 @@ struct GlobalMessageData
 	unsigned int flags;
 	HICON hIcons[5];
 	HANDLE hMessageWindowList;
+	DWORD openFlags;
 };
 
 void InitGlobals();

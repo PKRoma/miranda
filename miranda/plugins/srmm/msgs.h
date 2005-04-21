@@ -126,12 +126,12 @@ extern const int msgDlgFontCount;
 
 #define SRMMMOD                    "SRMM"
 
+#define SRMSGSET_POPFLAGS         "PopupFlags"
+#define SRMSGDEFSET_POPFLAGS      PF2_ONLINE|PF2_FREECHAT|PF2_INVISIBLE
 #define SRMSGSET_SHOWBUTTONLINE    "ShowButtonLine"
 #define SRMSGDEFSET_SHOWBUTTONLINE 1
 #define SRMSGSET_SHOWINFOLINE      "ShowInfoLine"
 #define SRMSGDEFSET_SHOWINFOLINE   1
-#define SRMSGSET_AUTOPOPUP         "AutoPopupMsg"
-#define SRMSGDEFSET_AUTOPOPUP      0
 #define SRMSGSET_AUTOMIN           "AutoMin"
 #define SRMSGDEFSET_AUTOMIN        0
 #define SRMSGSET_AUTOCLOSE         "AutoClose"

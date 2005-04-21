@@ -89,6 +89,56 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
 		}
 	}
 }
+struct CheckBoxValues_t
+{
+    DWORD style;
+    char *szDescr;
+};
+static const struct CheckBoxValues_t statusValues[] = {
+    {MODEF_OFFLINE, "Offline"},
+    {PF2_ONLINE, "Online"},
+    {PF2_SHORTAWAY, "Away"},
+    {PF2_LONGAWAY, "NA"},
+    {PF2_LIGHTDND, "Occupied"},
+    {PF2_HEAVYDND, "DND"},
+    {PF2_FREECHAT, "Free for chat"},
+    {PF2_INVISIBLE, "Invisible"},
+    {PF2_OUTTOLUNCH, "Out to lunch"},
+    {PF2_ONTHEPHONE, "On the phone"}
+};
+
+static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *values, int nValues, DWORD style)
+{
+    TVINSERTSTRUCT tvis;
+    int i;
+
+    tvis.hParent = NULL;
+    tvis.hInsertAfter = TVI_LAST;
+    tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
+    for (i = 0; i < nValues; i++) {
+        tvis.item.lParam = values[i].style;
+        tvis.item.pszText = Translate(values[i].szDescr);
+        tvis.item.stateMask = TVIS_STATEIMAGEMASK;
+        tvis.item.state = INDEXTOSTATEIMAGEMASK((style & tvis.item.lParam) != 0 ? 2 : 1);
+        TreeView_InsertItem(hwndTree, &tvis);
+    }
+}
+
+static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
+{
+    DWORD flags = 0;
+    TVITEM tvi;
+
+    tvi.mask = TVIF_HANDLE | TVIF_PARAM | TVIF_STATE;
+    tvi.hItem = TreeView_GetRoot(hwndTree);
+    while (tvi.hItem) {
+        TreeView_GetItem(hwndTree, &tvi);
+        if (((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 2))
+            flags |= tvi.lParam;
+        tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
+    }
+    return flags;
+}
 
 static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -98,9 +148,11 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			DWORD msgTimeout, avatarHeight;
 
 			TranslateDialogDefault(hwndDlg);
+			SetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
+			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, sizeof(statusValues) / sizeof(statusValues[0]),
+                             DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
 			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, g_dat->flags&SMF_SHOWBTNS);
 			CheckDlgButton(hwndDlg, IDC_SHOWINFOLINE, g_dat->flags&SMF_SHOWINFO);
-			CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
 			CheckDlgButton(hwndDlg, IDC_AUTOCLOSE, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE));
 			CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT));
@@ -167,15 +219,33 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			break;
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
+                case IDC_POPLIST:
+                    if (((LPNMHDR) lParam)->code == NM_CLICK) {
+                        TVHITTESTINFO hti;
+                        hti.pt.x = (short) LOWORD(GetMessagePos());
+                        hti.pt.y = (short) HIWORD(GetMessagePos());
+                        ScreenToClient(((LPNMHDR) lParam)->hwndFrom, &hti.pt);
+                        if (TreeView_HitTest(((LPNMHDR) lParam)->hwndFrom, &hti))
+                            if (hti.flags & TVHT_ONITEMSTATEICON) {
+                                TVITEM tvi;
+                                tvi.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+                                tvi.hItem = hti.hItem;
+                                TreeView_GetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
+                                tvi.iImage = tvi.iSelectedImage = tvi.iImage == 1 ? 2 : 1;
+                                TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
+                                SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                            }
+                    }
+                    break;
 				case 0:
 					switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY:
 						{
 							DWORD msgTimeout, avatarHeight;
-
+							
+							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg, IDC_POPLIST)));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONLINE));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWINFOLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINFOLINE));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOMIN));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCLOSE));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));

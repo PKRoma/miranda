@@ -28,56 +28,58 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 209
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 234
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,0,310,206
-    CONTROL         "Automatically pop up the window when a message is received",
-                    IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,16,
-                    300,10
+    GROUPBOX        "Message Window Options",IDC_STATIC,2,0,310,231
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,28,212,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,58,212,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,40,221,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,70,221,10
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,52,
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,82,
                     273,10
     CONTROL         "Save the window size and location individually for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,64,300,10
+                    8,94,300,10
     CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,76,136,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,106,136,10
     CONTROL         "Show 'Send' button",IDC_SHOWSENDBTN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,144,135,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,174,135,10
     CONTROL         "Show username on top row",IDC_SHOWINFOLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,157,138,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,187,138,10
     CONTROL         "Show toolbar buttons on top row",IDC_SHOWBUTTONLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,170,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,200,137,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,144,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,174,137,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,157,137,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,187,137,10
     CONTROL         "Show character count",IDC_CHARCOUNT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,170,133,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,148,200,133,10
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,186,211,8
-    EDITTEXT        IDC_SECONDS,223,184,25,12,ES_AUTOHSCROLL
+                    IDC_STATIC,8,216,211,8
+    EDITTEXT        IDC_SECONDS,223,214,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,186,44,8
     CONTROL         "Support control up/down in message area to show previously sent messages",
                     IDC_CTRLSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    88,298,10
+                    118,298,10
     CONTROL         "Delete temporary contacts when closing message window",
-                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,100,
+                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,130,
                     287,10
     CONTROL         "Enable avatar support in the message window",
                     IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,113,279,10
+                    8,143,279,10
     CONTROL         "Limit avatar height to ",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,127,106,10
-    EDITTEXT        IDC_AVATARHEIGHT,148,126,28,13,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_STATIC,181,128,35,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,157,106,10
+    EDITTEXT        IDC_AVATARHEIGHT,148,156,28,13,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_STATIC,181,158,35,8
+    CONTROL         "Tree1",IDC_POPLIST,"SysTreeView32",TVS_DISABLEDRAGDROP | 
+                    TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | WS_BORDER | 
+                    WS_TABSTOP,163,14,98,42
+    LTEXT           "Automatically popup window when:",IDC_STATIC,10,15,141,
+                    13
 END
 
 IDD_MSGSENDERROR DIALOGEX 0, 0, 187, 97
@@ -217,7 +219,7 @@ BEGIN
         VERTGUIDE, 148
         VERTGUIDE, 300
         VERTGUIDE, 310
-        BOTTOMMARGIN, 206
+        BOTTOMMARGIN, 231
     END
 
     IDD_MSGSENDERROR, DIALOG

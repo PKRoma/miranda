@@ -25,7 +25,6 @@
 #define IDI_NOTICE                      282
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
-#define IDC_AUTOPOPUP                   1003
 #define IDC_AUTOCLOSE                   1004
 #define IDC_AUTOMIN                     1005
 #define IDC_NAME                        1009
@@ -77,6 +76,7 @@
 #define IDC_LIMITAVATARH                1612
 #define IDC_AVATARHEIGHT                1613
 #define IDC_SHOWSECS                    1614
+#define IDC_POPLIST                     1616
 #define IDM_COPY                        40001
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
@@ -91,7 +91,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        285
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1615
+#define _APS_NEXT_CONTROL_VALUE         1617
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

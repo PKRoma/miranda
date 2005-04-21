@@ -80,6 +80,7 @@ void ReloadGlobals() {
 		g_dat->flags |= SMF_SHOWSECS;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDENAMES, SRMSGDEFSET_HIDENAMES))
 		g_dat->flags |= SMF_HIDENAMES;
+	g_dat->openFlags = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS);
 }
 
 static int dbaddedevent(WPARAM wParam, LPARAM lParam) {
