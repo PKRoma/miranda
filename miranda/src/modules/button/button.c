@@ -138,12 +138,6 @@ static TBStateConvert2Flat(int state) {
 	return TS_NORMAL;
 }
 
-static void NCPainWorker(MButtonCtrl *ctl, HDC hdcPaint) {
-	if (hdcPaint) {
-
-	}
-}
-
 static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 	if (hdcPaint) {
 		HDC hdcMem;
@@ -367,6 +361,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			break;
 		}
 		case WM_NCPAINT:
+		case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
 			HDC hdcPaint;
