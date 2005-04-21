@@ -8,6 +8,7 @@ Version 0.4.0.2
 ===============
 [+] added CHAT.DLL support
 [+] wish #0000862: Jabber conferences in contact list
+[!] bug #0001105 fixed: Miranda process do not die when shutdown (thanks baronng for a patch)
 
 Version 0.4.0.1
 ===============

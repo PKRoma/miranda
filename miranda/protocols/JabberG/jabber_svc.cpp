@@ -407,7 +407,9 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 			if ( jabberConnected ) {
 				JabberSend( s, "</stream:stream>" );
 				jabberConnected = jabberOnline = FALSE;
-		}	}
+			}
+			Netlib_CloseHandle(s); // New Line
+		}
 
 		int oldStatus = jabberStatus;
 		jabberStatus = jabberDesiredStatus = ID_STATUS_OFFLINE;
@@ -724,9 +726,7 @@ int JabberFileCancel( WPARAM wParam, LPARAM lParam )
 			JabberLog( "ft->s is now NULL, ft->state is now FT_ERROR" );
 		}
 	}
-	else {
-		JabberFtCancel( ft );
-	}
+	else JabberFtCancel( ft );
 	return 0;
 }
 
