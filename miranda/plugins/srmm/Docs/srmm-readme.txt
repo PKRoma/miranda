@@ -89,7 +89,7 @@ http://bugs.miranda-im.org/
 Contact
 -------
 Current maintainer is Robert Rainwater.
-E-mail: rianwater at miranda-im.org
+E-mail: rainwater at miranda-im.org
 
 
 
