@@ -37,6 +37,7 @@ $Id$
 #include "msgs.h"
 #include "m_message.h"
 #include "m_popup.h"
+#include "nen.h"
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 
@@ -57,6 +58,8 @@ $Id$
 #endif
 
 extern MYGLOBALS myGlobals;
+extern NEN_OPTIONS nen_options;
+
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -67,7 +70,7 @@ void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const cha
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 HMENU BuildMCProtocolMenu(HWND hwndDlg);
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto);
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct MessageWindowData *dat);
 
 char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
@@ -1205,7 +1208,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     DBEVENTINFO dbei = {0};
                     newData->bWantPopup = FALSE;
                     CallService(MS_DB_EVENT_GET, (WPARAM)newData->hdbEvent, (LPARAM)&dbei);
-                    tabSRMM_ShowPopup((WPARAM)dat->hContact, (LPARAM)newData->hdbEvent, dbei.eventType, 0, 0, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+                    tabSRMM_ShowPopup((WPARAM)dat->hContact, (LPARAM)newData->hdbEvent, dbei.eventType, 0, 0, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat);
                 }
                 if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
                     dat->pContainer->dwFlags &= ~CNT_CREATE_MINIMIZED;
@@ -1249,7 +1252,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     char szBuf[80];
                     char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
-                    _snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), szContactName);
+                    mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), szContactName);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                     break;
@@ -1271,9 +1274,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
                     }
                     if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
-                        _snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
+                        mir_snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
                     else
-                        _snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
+                        mir_snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
                 } else {
@@ -1495,11 +1498,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                             if (strlen(newcontactname) != 0 && szStatus != NULL) {
                                 if (myGlobals.m_StatusOnTabs)
-                                    _snprintf(newtitle, 127, "%s (%s)", newcontactname, szStatus);
+                                    mir_snprintf(newtitle, 127, "%s (%s)", newcontactname, szStatus);
                                 else
-                                    _snprintf(newtitle, 127, "%s", newcontactname);
+                                    mir_snprintf(newtitle, 127, "%s", newcontactname);
                             } else
-                                _snprintf(newtitle, 127, "%s", "Forward");
+                                mir_snprintf(newtitle, 127, "%s", "Forward");
                             
                             item.mask |= TCIF_TEXT;
                         }
@@ -1507,7 +1510,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         }
-                        _snprintf(fulluin, sizeof(fulluin), Translate("UIN: %s (SHIFT click copies it to the clipboard)"), iHasName ? dat->uin : Translate("No UIN"));
+                        mir_snprintf(fulluin, sizeof(fulluin), Translate("UIN: %s (SHIFT click copies it to the clipboard)"), iHasName ? dat->uin : Translate("No UIN"));
                         SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)fulluin : (WPARAM)"", 0);
                         
                     }
@@ -1527,11 +1530,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             
                             if(dat->szProto != NULL) {
                                 if(dat->wStatus == ID_STATUS_OFFLINE)
-                                    _snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+                                    mir_snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
                                 else if(dat->wOldStatus == ID_STATUS_OFFLINE)
-                                    _snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
+                                    mir_snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
                                 else
-                                    _snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
+                                    mir_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
                             }
                             iLen = strlen(buffer) + 1;
                             MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], iLen);
@@ -1624,6 +1627,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
+                if(nen_options.bTraySupport && myGlobals.m_UnreadInTray > 0) {
+                    if(DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND) != 0)
+                        myGlobals.m_UnreadInTray--;
+                }
 #if defined(__MATHMOD_SUPPORT)
                 if(myGlobals.m_MathModAvail) {
                     CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE)); 
@@ -1672,6 +1679,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
+                /*
+                 * delete ourself from the tray menu..
+                 */
+                if(nen_options.bTraySupport && myGlobals.m_UnreadInTray > 0) {
+                    if(DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND) != 0)
+                        myGlobals.m_UnreadInTray--;
+                }
 #if defined(__MATHMOD_SUPPORT)
                 if(myGlobals.m_MathModAvail) {
                     CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE)); 
@@ -1988,7 +2002,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                             }
                         }
-                        tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 1, dat->pContainer, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+                        tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 1, dat->pContainer, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat);
                     }
                     
                     if ((HANDLE) lParam != dat->hDbEventFirst) {
@@ -2082,7 +2096,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 if(iIndex < NR_SENDJOBS) {      // single sendjob timer
                     KillTimer(hwndDlg, wParam);
-                    _snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
+                    mir_snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
                     sendJobs[iIndex].iStatus = SQ_ERROR;
                     if(!(dat->dwFlags & MWF_ERRORSTATE))
                         HandleQueueError(hwndDlg, dat, iIndex);
@@ -2125,7 +2139,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         char szBuf[256];
                         char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
-                        _snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), szContactName);
+                        mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), szContactName);
                         dat->nTypeSecs--;
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
                             SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
@@ -3460,12 +3474,12 @@ quote_from_last:
                     if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
                         char szErrMsg[256];
                         char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
-                        _snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", contactName);
+                        mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", contactName);
                         LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
                         goto verify;
                     }
                     else {
-                        _snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "Delivery failure: %s", (char *)ack->lParam);
+                        mir_snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "Delivery failure: %s", (char *)ack->lParam);
                         sendJobs[iFound].iStatus = SQ_ERROR;
                         KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
                         if(!(dat->dwFlags & MWF_ERRORSTATE))
@@ -3498,7 +3512,7 @@ quote_from_last:
                 if(sendJobs[iFound].hContact[i] != sendJobs[iFound].hOwner) {
                     char szErrMsg[256];
                     char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
-                    _snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", contactName);
+                    mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", contactName);
                     LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
                 }
 
@@ -3749,7 +3763,7 @@ verify:
             char *szProto;
             if((isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1)) >= 0) {
                 char szTemp[64];
-                _snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
+                mir_snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
                 if(DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0) == ID_STATUS_OFFLINE) {
                     _DebugPopup(dat->hContact, Translate("MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection."), isForced);
                     CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
@@ -3979,6 +3993,9 @@ verify:
 // END MOD#33
             if (dat->hSmileyIcon)
                 DeleteObject(dat->hSmileyIcon);
+
+            if(nen_options.bTraySupport)                // remove me from the tray menu (if still there)
+                DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
             
             WindowList_Remove(hMessageWindowList, hwndDlg);
             SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);

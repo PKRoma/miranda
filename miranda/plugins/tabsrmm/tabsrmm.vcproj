@@ -796,6 +796,8 @@
 			<File
 				RelativePath=".\themes.c">
 			</File>
+			<File
+				RelativePath="trayicon.c"/>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -803,6 +805,8 @@
 			<File
 				RelativePath="commonheaders.h">
 			</File>
+			<File
+				RelativePath="functions.h"/>
 			<File
 				RelativePath="IcoLib.h">
 			</File>

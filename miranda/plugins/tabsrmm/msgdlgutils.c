@@ -39,6 +39,7 @@ $Id$
 #include "msgs.h"
 #include "m_message.h"
 #include "m_popup.h"
+#include "nen.h"
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
@@ -47,6 +48,7 @@ $Id$
 #include <math.h>
 
 extern MYGLOBALS myGlobals;
+extern NEN_OPTIONS nen_options;
 
 extern HMODULE g_hInst;
 extern HANDLE hMessageWindowList;
@@ -872,11 +874,17 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
     CLISTEVENT cle;
     char toolTip[256], *contactName;
 
-    if(!myGlobals.m_FlashOnClist)
+    if(!myGlobals.m_FlashOnClist && nen_options.bTraySupport == FALSE)
         return;
 
     if(hEvent == 0)
         return;
+
+    if(nen_options.bTraySupport == TRUE) {
+        if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE)
+            UpdateTrayMenu(dat, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->hContact);
+        return;
+    }
     
     if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE && !(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST)) {
         ZeroMemory(&cle, sizeof(cle));

@@ -52,10 +52,13 @@ $Id$
 #include "../../include/m_history.h"
 #include "../../include/m_addcontact.h"
 #include "msgs.h"
+#include "m_popup.h"
+#include "nen.h"
 #include "m_message.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
 #include "m_snapping_windows.h"
+#include "functions.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -68,6 +71,7 @@ $Id$
 char *szWarnClose = "Do you really want to close this session?";
 
 extern MYGLOBALS myGlobals;
+extern NEN_OPTIONS nen_options;
 
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
@@ -341,7 +345,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                 }
                 else {
-                    _snprintf(szCName, 40, "%s%d", szSetting, pContainer->iContainerIndex);
+                    mir_snprintf(szCName, 40, "%s%d", szSetting, pContainer->iContainerIndex);
                     if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, szCName)) {
                         if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, szCName))
                             if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
@@ -694,11 +698,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 else
                     break;
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWUIN)
-                    _snprintf(temp, sizeof(temp), "%s - %s", contactName, uin);
+                    mir_snprintf(temp, sizeof(temp), "%s - %s", contactName, uin);
                 else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                    _snprintf(temp, sizeof(temp), "%s", contactName);
+                    mir_snprintf(temp, sizeof(temp), "%s", contactName);
                 else if(pContainer->dwFlags & CNT_TITLE_SHOWUIN)
-                    _snprintf(temp, sizeof(temp), "%s", uin);
+                    mir_snprintf(temp, sizeof(temp), "%s", uin);
                     
                 if((pContainer->dwFlags & CNT_TITLE_SHOWNAME || pContainer->dwFlags & CNT_TITLE_SHOWUIN) && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
                     szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
@@ -802,8 +806,43 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM)pContainer);
 					break;
                 case SC_MAXIMIZE:
+                    pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
+                    break;
                 case SC_RESTORE:
                     pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
+                    if(nen_options.bTraySupport && nen_options.bMinimizeToTray && pContainer->bInTray) {
+                        if(pContainer->bInTray == 2) {
+                            MaximiseFromTray(hwndDlg, FALSE, &pContainer->restoreRect);
+                            PostMessage(hwndDlg, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+                        }
+                        else
+                            MaximiseFromTray(hwndDlg, TRUE, &pContainer->restoreRect);
+                        DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex, MF_BYCOMMAND);
+                        pContainer->bInTray = 0;
+                        return 0;
+                    }
+                    break;
+                case SC_MINIMIZE:
+                    if(nen_options.bTraySupport && nen_options.bMinimizeToTray) {
+                        TCHAR szTitle[25], szFinalTitle[30];
+                        MENUITEMINFO mii;
+                        GetWindowText(hwndDlg, szTitle, 25);
+                        szTitle[24] = 0;
+                        if(GetWindowTextLength(hwndDlg) > 20)
+                            _sntprintf(szFinalTitle, 28, _T("%20.20s..."), szTitle);
+                        else
+                            _tcscpy(szFinalTitle, szTitle);
+                        InsertMenu(myGlobals.g_hMenuTrayUnread, 0, MF_BYPOSITION, (UINT_PTR)pContainer->iContainerIndex, szFinalTitle);
+                        ZeroMemory((void *)&mii, sizeof(mii));
+                        mii.cbSize = sizeof(mii);
+                        mii.fMask = MIIM_DATA;
+                        mii.dwItemData = (DWORD)hwndDlg;
+                        SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, pContainer->iContainerIndex, FALSE, &mii);
+                        pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
+                        GetWindowRect(hwndDlg, &pContainer->restoreRect);
+                        MinimiseToTray(hwndDlg, TRUE);
+                        return 0;
+                    }
                     break;
             }
             break;
@@ -940,7 +979,7 @@ panel_found:
                                             iStatus = cdat->wStatus;
                                             szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, cdat->szProto == NULL ? ID_STATUS_OFFLINE : iStatus, 0);
                                             nmtt->hinst = NULL;
-                                            _snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
+                                            mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
 #if defined ( _UNICODE )
                                             MultiByteToWideChar(CP_ACP, 0, szTtitle, -1, w_contactName, sizeof(w_contactName));
                                             lstrcpynW(nmtt->szText, w_contactName, 80);
@@ -1003,7 +1042,7 @@ panel_found:
                                     break;
                                 item.mask = TCIF_PARAM;
                                 TabCtrl_GetItem(hwndTab, iItem, &item);
-                                _snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
+                                mir_snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
                                 if(iSelection - IDM_CONTAINERMENU >= 0) {
                                     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined (_UNICODE)
@@ -1239,9 +1278,9 @@ panel_found:
             dwGlobalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
             
             if(pContainer->isCloned && pContainer->hContactFrom != 0) {
-                _snprintf(szCname, 40, "%s_Flags", szSetting);
+                mir_snprintf(szCname, 40, "%s_Flags", szSetting);
                 dwLocalFlags = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
-                _snprintf(szCname, 40, "%s_Trans", szSetting);
+                mir_snprintf(szCname, 40, "%s_Trans", szSetting);
                 dwLocalTrans = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
                 if(dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
                     overridePerContact = 1;
@@ -1249,9 +1288,9 @@ panel_found:
                     overridePerContact = 0;
             }
             if(overridePerContact) {
-                _snprintf(szCname, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
+                mir_snprintf(szCname, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
                 dwLocalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
-                _snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
+                mir_snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
                 dwLocalTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
             }
 
@@ -1739,8 +1778,8 @@ int CutContactName(char *oldname, char *newname, int size)
         strncpy(newname, oldname, size);
     else {
 		char fmt[20];
-		_snprintf(fmt, 18, "%%%d.%ds...", cutMax, cutMax);
-		_snprintf(newname, size - 1, fmt, oldname);
+		mir_snprintf(fmt, 18, "%%%d.%ds...", cutMax, cutMax);
+		mir_snprintf(newname, size - 1, fmt, oldname);
     }
     return 0;
 }
@@ -2229,17 +2268,17 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
     isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
     
     for(i = 0; i < iNumProtos; i++) {
-        _snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
+        mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
         if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
-        _snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
+        mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
         if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0) {
             nick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, 0);
-            _snprintf(szTemp, sizeof(szTemp), "Status%d", i);
+            mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
             wStatus = (WORD)DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0);
             szStatusText = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, 0);
         }
-        _snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s [%s] %s", dbv.pszVal, nick, szStatusText, i == isForced ? Translate("(Forced)") : "");
+        mir_snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s [%s] %s", dbv.pszVal, nick, szStatusText, i == isForced ? Translate("(Forced)") : "");
         iChecked = MF_UNCHECKED;
         if(hContactMostOnline != 0 && hContactMostOnline == handle)
             iChecked = MF_CHECKED;

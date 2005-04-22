@@ -116,10 +116,11 @@ typedef struct {
 	BOOL bNoRSS;
     int  iDisable;
     int  dwStatusMask;
+    BOOL bTraySupport;
+    BOOL bTrayExist;
+    BOOL bMinimizeToTray;
+    BOOL bBalloons;
 } NEN_OPTIONS;
-
-int NEN_ReadOptions(void);
-int NEN_WriteOptions(void);
 
 typedef struct EVENT_DATA {
 	HANDLE hEvent;

@@ -227,6 +227,7 @@ struct ProtocolData {
 #define DM_QUERYSTATUS       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)
 #define DM_HANDLECLISTEVENT  (WM_USER+73)
+#define DM_TRAYICONNOTIFY    (WM_USER+74)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)

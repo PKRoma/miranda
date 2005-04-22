@@ -34,6 +34,7 @@ $Id$
 #include "m_ieview.h"
 #include "m_metacontacts.h"
 #include "IcoLib.h"
+#include "functions.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -76,24 +77,6 @@ HANDLE g_hEvent_MsgWin;
 HHOOK g_hMsgHook = 0;
 #endif
 
-int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
-HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent);
-int GetProtoIconFromList(const char *szProto, int iStatus);
-void CreateImageList(BOOL bInitial);
-int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
-void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iNum);
-void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread);
-
-// the cached message log icons
-void CacheMsgLogIcons();
-void UncacheMsgLogIcons();
-void CacheLogFonts();
-void ConvertAllToUTF8();
-void InitAPI();
-void ReloadGlobals();
-void LoadIconTheme();
-int LoadFromIconLib();
-int SetupIconLibConfig();
 HICON LoadOneIcon(int iconId, char *szName);
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
@@ -122,7 +105,7 @@ HMODULE g_hIconDLL = 0;
 // nls stuff...
 
 void BuildCodePageList();
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto);
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct MessageWindowData *dat);
 
 /*
  * installed as a WH_GETMESSAGE hook in order to process unicode messages.
@@ -399,7 +382,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
          * if a window is open, the msg window itself will care about showing the popup
          */
         if(dbei.eventType != EVENTTYPE_MESSAGE && dbei.eventType != EVENTTYPE_STATUSCHANGE && hwnd == NULL && !(dbei.flags & DBEF_SENT))
-            tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule);
+            tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
         return 0;
     }
     
@@ -488,17 +471,27 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
             }
         }
     }
-    ZeroMemory(&cle, sizeof(cle));
-    cle.cbSize = sizeof(cle);
-    cle.hContact = (HANDLE) wParam;
-    cle.hDbEvent = (HANDLE) lParam;
-    cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-    cle.pszService = "SRMsg/ReadMessage";
-    contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-    _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
-    cle.pszTooltip = toolTip;
-    CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
-    tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule);
+
+    /*
+     * for tray support, we add the event to the tray menu. otherwise we send it back to
+     * the contact list for flashing
+     */
+    
+    if(nen_options.bTraySupport)
+        UpdateTrayMenu(0, dbei.szModule, (HANDLE)wParam);
+    else {
+        ZeroMemory(&cle, sizeof(cle));
+        cle.cbSize = sizeof(cle);
+        cle.hContact = (HANDLE) wParam;
+        cle.hDbEvent = (HANDLE) lParam;
+        cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+        cle.pszService = "SRMsg/ReadMessage";
+        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
+        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+        cle.pszTooltip = toolTip;
+        CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
+    }
+    tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
     return 0;
 }
 
@@ -727,6 +720,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     DBVARIANT dbv;
     
     ReloadGlobals();
+    NEN_ReadOptions(&nen_options);
 
     //LoadMsgLogIcons();
     ZeroMemory(&mi, sizeof(mi));
@@ -822,6 +816,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     CacheLogFonts();
     BuildCodePageList();
     ZeroMemory((void *)sendJobs, sizeof(struct SendJob) * NR_SENDJOBS);
+    if(nen_options.bTraySupport)
+        CreateSystrayIcon(TRUE);
     return 0;
 }
 
@@ -880,6 +876,7 @@ int SplitmsgShutdown(void)
         DeleteObject(myGlobals.g_hbmUnknown);
     if(protoIconData != 0)
         free(protoIconData);
+    CreateSystrayIcon(FALSE);
     return 0;
 }
 
@@ -957,7 +954,6 @@ int LoadSendRecvMessageModule(void)
     if (myGlobals.hCurHyperlinkHand == NULL)
         myGlobals.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 
-    NEN_ReadOptions();
     return 0;
 }
 

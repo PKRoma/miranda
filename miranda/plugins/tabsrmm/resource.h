@@ -240,6 +240,7 @@
 #define IDC_TRANSPARENCY                1637
 #define IDC_AUTOCREATECONTAINER         1637
 #define IDC_LIMITAVATARS                1637
+#define IDC_USESHELLNOTIFY              1637
 #define IDC_DONTREPORT                  1638
 #define IDC_SPIN1                       1639
 #define IDC_CNTLIST                     1640
@@ -325,6 +326,7 @@
 #define IDC_AUTOCLOSELAST               1692
 #define IDC_MARKFOLLOWUPTIMESTAMP       1692
 #define IDC_CHECKICONDLL                1692
+#define IDC_ENABLETRAYSUPPORT           1692
 #define IDC_HIDEMENUBAR                 1693
 #define IDC_TABSATBOTTOM                1694
 #define IDC_STATICCONTROL               1695
@@ -336,6 +338,7 @@
 #define IDC_EVENTAPI                    1699
 #define IDC_STATICICON                  1699
 #define IDC_INDENTWITHTABS              1699
+#define IDC_MINIMIZETOTRAY              1699
 #define IDC_CHECK7                      1700
 #define IDC_DELETETEMP                  1700
 #define IDC_FORMATTING                  1700
@@ -368,6 +371,8 @@
 #define IDC_RTLDEFAULT                  1714
 #define IDC_CHECK10                     1715
 #define IDC_MATHMODSUPPORT              1715
+#define IDC_MESSAGEPREVIEWLIMIT         1716
+#define IDC_MESSAGEPREVIEWLIMITSPIN     1717
 #define IDD_MSGSPLITNEW                 2000
 #define IDD_OPT_MSGWINDOWFONTS          2001
 #define IDM_COPY                        40001
@@ -516,6 +521,9 @@
 #define ID_MODE_GLOBAL                  40207
 #define ID_MODE_PERCONTACT              40208
 #define ID_MODE_PRIVATE                 40209
+#define ID_UNREADMENU_TEST              40212
+#define ID_UNREADMENU_FOOBAR            40213
+#define ID_UNREADMENU_                  40214
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -523,8 +531,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40212
-#define _APS_NEXT_CONTROL_VALUE         1716
+#define _APS_NEXT_COMMAND_VALUE         40215
+#define _APS_NEXT_CONTROL_VALUE         1718
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

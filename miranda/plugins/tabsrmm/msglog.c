@@ -217,9 +217,8 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 
     va_start(va, fmt);
     for (;;) {
-        charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
-        //if (charsDone >= 0)
-        if (charsDone >= 0 && charsDone < *cbBufferAlloced - *cbBufferEnd)
+        charsDone = mir_vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+        if (charsDone >= 0)
             break;
         *cbBufferAlloced += 1024;
         *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
@@ -312,9 +311,8 @@ static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEn
 
     va_start(va, fmt);
     for (;;) {
-        charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
-        //if (charsDone >= 0)
-        if (charsDone >= 0 && charsDone < *cbBufferAlloced - *cbBufferEnd)
+        charsDone = mir_vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+        if (charsDone >= 0)
             break;
         *cbBufferAlloced += 1024;
         *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
@@ -899,10 +897,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 
     strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
     
-    _snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
+    mir_snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", rtfFonts[H_MSGFONTID_YOURTIME]);
     strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
-    _snprintf(szMicroLf, sizeof(szMicroLf), "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
-    _snprintf(szExtraLf, sizeof(szExtraLf), dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? "\\par\\sl-%d\\highlight%s \\par" : "\\par\\sl-%d \\par", dwExtraLf * 15, "%d");
+    mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s\\par\\sl-1%s", rtfFonts[MSGDLGFONTCOUNT], rtfFonts[MSGDLGFONTCOUNT]);
+    mir_snprintf(szExtraLf, sizeof(szExtraLf), dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? "\\par\\sl-%d\\highlight%s \\par" : "\\par\\sl-%d \\par", dwExtraLf * 15, "%d");
               
     strcpy(szMsgPrefixColon, dat->dwFlags & MWF_LOG_INDENT ? (dat->dwFlags & MWF_LOG_INDENTWITHTABS ? ":\\tab " : ": ") : ": ");
     strcpy(szMsgPrefixNoColon, dat->dwFlags & MWF_LOG_INDENT ? (dat->dwFlags & MWF_LOG_INDENTWITHTABS ? "\\tab " : " ") : " ");

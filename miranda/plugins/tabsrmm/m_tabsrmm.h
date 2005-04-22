@@ -86,6 +86,8 @@ struct ContainerWindowData {
     DWORD dwLastActivity;
     int hIcon;                // current window icon stick indicator
     DWORD dwFlashingStarted;
+    int bInTray;              // 1 = in tray normal, 2 = in tray (was maximized)
+    RECT restoreRect;
 };
 
 #define STICK_ICON_MSG 10
@@ -185,6 +187,7 @@ struct MessageWindowData {
     char uin[80];
     BOOL bNotOnList;
     int  iAvatarDisplayMode;
+    int  iUnread;
 };
 
 typedef struct _recentinfo {
@@ -204,7 +207,7 @@ typedef struct _globals {
     int g_IconMsgEvent, g_IconTypingEvent, g_IconError, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HIMAGELIST g_hImageList;
     int g_nrProtos;
-    HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding;
+    HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
     int  g_wantSnapping;
     HICON g_buttonBarIcons[NR_BUTTONBARICONS];
     TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
@@ -243,6 +246,9 @@ typedef struct _globals {
     int m_SplitterMode;
     int m_MathModAvail;
     TCHAR m_MathModStartDelimiter[40];
+    int m_UnreadInTray;
+    int m_TrayFlashes;
+    int m_TrayFlashState;
     
 } MYGLOBALS;
 

@@ -37,10 +37,12 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"
+#include "m_message.h"
 
 extern struct ContainerWindowData *pFirstContainer;
 extern HANDLE hMessageWindowList;
 extern struct SendJob sendJobs[NR_SENDJOBS];
+extern MYGLOBALS myGlobals;
 
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
@@ -118,6 +120,62 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
+        case DM_TRAYICONNOTIFY:
+            {
+                int iSelection;
+                
+                if(wParam == 100) {
+                    switch(lParam) {
+                        case WM_LBUTTONUP:
+                        {
+                            POINT pt;
+                            MENUITEMINFO mii;
+                            GetCursorPos(&pt);
+                            SetForegroundWindow(hwndDlg);
+                            if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 1) {
+                                iSelection = TrackPopupMenu(myGlobals.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                                ZeroMemory((void *)&mii, sizeof(mii));
+                                mii.cbSize = sizeof(mii);
+                                mii.fMask = MIIM_DATA;
+                                GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, iSelection, FALSE, &mii);
+                                if(mii.dwItemData != 0) {
+                                    if(IsWindow((HWND)mii.dwItemData))
+                                        PostMessage((HWND)mii.dwItemData, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                }
+                                else {
+                                    HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
+                                    if(hWnd) {
+                                        struct ContainerWindowData *pContainer = 0;
+                                        SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                                        if(pContainer)
+                                            ActivateExistingTab(pContainer, hWnd);
+                                    }
+                                    else
+                                        CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
+                                }
+                            }
+                            PostMessage(hwndDlg, WM_NULL, 0, 0);
+                            break;
+                        }
+                        case WM_LBUTTONDBLCLK:
+                        {
+                            struct ContainerWindowData *pContainer = pFirstContainer;
+                            
+                            while(pContainer != 0) {
+                                if(pContainer->bInTray) {
+                                    SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                    return 0;
+                                }
+                                pContainer = pContainer->pNextContainer;
+                            }
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+                break;
+            }
             /*
              * handle an event from the popup module (mostly window activation). Since popups may run in different threads, the message
              * is posted to our invisible hotkey handler which does always run within the main thread.
@@ -164,33 +222,15 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
-
-            /*
-             * this is called by the event hook whenever a contact setting changes...
-             * we need to process the request as quickly as possible, otherwise it
-             * would slow down things a lot when many settings are commited to the
-             * database.
-             */
-        /*
-        case DM_CONTACTSETTINGCHANGED:
-        {
-            DBCONTACTWRITESETTING *dbcws = (DBCONTACTWRITESETTING *)lParam;
-
-            HANDLE hwnd = WindowList_Find(hMessageWindowList,(HANDLE)wParam);
-
-            if(hwnd == 0)       // we are not interested in this event if there is no open message window/tab
-                return 0;       // for the hContact.
-            
-            if(strlen(dbcws->szModule) != 12)
-                return 0;
-            if(strncmp(dbcws->szModule, "ContactPhoto", 12))
-                return 0;
-
-            SendMessage(hwnd, DM_PICTURECHANGED, 0, 0);
-            return 0;
-        }
-        */
-        
+        case WM_TIMER:
+            if(wParam == 1000) {
+                if((myGlobals.m_TrayFlashes = myGlobals.m_UnreadInTray > 0 ? 1 : 0) != 0) {
+                    FlashTrayIcon(0);
+                }
+                else
+                    FlashTrayIcon(1);
+                
+            }
         case DM_FORCEUNREGISTERHOTKEYS:
             UnregisterHotKey(hwndDlg, 0xc001);
             UnregisterHotKey(hwndDlg, 0xc002);
