@@ -22,6 +22,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SRMM_RICHUTIL_H
 #define SRMM_RICHUTIL_H
 
+#define RWinVerMajor()      LOBYTE(LOWORD(GetVersion()))
+#define RIsWinVerXPPlus()   (RWinVerMajor()>=5 && LOWORD(GetVersion())!=5)
+
+#ifndef WM_THEMECHANGED
+#define WM_THEMECHANGED		0x031A
+#endif
 #ifndef EP_EDITTEXT
 #define EP_EDITTEXT 1
 #endif
@@ -39,6 +45,7 @@ typedef struct {
 	HWND hwnd;
 	RECT rect;
 	int hasUglyBorder;
+	WNDPROC origProc;
 } TRichUtil;
 
 void RichUtil_Load();
