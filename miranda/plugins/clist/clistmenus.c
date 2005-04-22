@@ -452,7 +452,7 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
 				continue;
 			if (!strcmp(contextMenuItem[i].mi.pszName,"&File"))
 				continue;
-			if (!strcmp(contextMenuItem[i].mi.pszName,"&User details"))
+			if (!strcmp(contextMenuItem[i].mi.pszName,"User &Details"))
 				continue;
 			if (!strcmp(contextMenuItem[i].mi.pszName,"View &History"))
 				continue;
