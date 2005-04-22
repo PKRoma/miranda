@@ -448,13 +448,13 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
             continue;
 		// Begin Ugly hack to hide chat room menus
 		if (chatRoom) {
-			if (!strcmp(contextMenuItem[i].mi.pszName,"&Message"))
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("&Message")))
 				continue;
-			if (!strcmp(contextMenuItem[i].mi.pszName,"&File"))
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("&File")))
 				continue;
-			if (!strcmp(contextMenuItem[i].mi.pszName,"User &Details"))
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("User &Details")))
 				continue;
-			if (!strcmp(contextMenuItem[i].mi.pszName,"View &History"))
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("View &History")))
 				continue;
 		}
 		// End ugly hack
