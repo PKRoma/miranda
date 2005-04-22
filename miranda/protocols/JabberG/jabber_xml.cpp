@@ -111,7 +111,7 @@ int JabberXmlParse( XmlState *xmlState, char* buffer, int datalen )
 	eob = buffer + datalen;
 	num = 0;
 	// Skip leading whitespaces
-	for ( p=buffer; p<eob && isspace( *p ); p++,num++ );
+	for ( p=buffer; p<eob && isspace( BYTE( *p )); p++,num++ );
 	while ( num < datalen ) {
 		if ( *p == '<' ) {	// found starting bracket
 			for ( q=p+1; q<eob && *q!='>'; q++ );
@@ -157,7 +157,7 @@ int JabberXmlParse( XmlState *xmlState, char* buffer, int datalen )
 				p = q + 1;
 				if ( elemType==ELEM_CLOSE || elemType==ELEM_OPENCLOSE ) {
 					// Skip whitespaces after end tags
-					for ( ; p<eob && isspace( *p ); p++,num++ );
+					for ( ; p<eob && isspace( BYTE( *p )); p++,num++ );
 				}
 			}
 			else
