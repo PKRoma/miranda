@@ -1072,11 +1072,10 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 		{
 			BYTE bDcc = DBGetContactSettingByte((HANDLE) wParam, IRCPROTONAME, "DCC", 0) ;
 
-			clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS;
+			clmi.flags = CMIF_HIDDEN | CMIM_FLAGS;
 
-			clmi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-			clmi.pszName = Translate("&Message");
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
+			clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS;
 
 			if(bDcc)
 			{
@@ -1091,7 +1090,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 				if(!g_ircSession)
 					clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
 				clmi.hIcon = (HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_WHOIS),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED);  
-				clmi.pszName = Translate("User &details");
+				clmi.pszName = Translate("&WhoIs info");
 				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
 
 			}
@@ -1149,8 +1148,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 static int Service_GetCaps(WPARAM wParam,LPARAM lParam)
 {
 	if(wParam==PFLAGNUM_1)
-		return PF1_BASICSEARCH | PF1_MODEMSG | PF1_FILE |PF1_CANRENAMEFILE | PF1_PEER2PEER
-; 
+		return PF1_BASICSEARCH | PF1_MODEMSG | PF1_FILE |PF1_CANRENAMEFILE | PF1_PEER2PEER | PF1_IM;
 	if(wParam==PFLAGNUM_2)
 		return PF2_ONLINE|PF2_SHORTAWAY;
 	if(wParam==PFLAGNUM_3)
