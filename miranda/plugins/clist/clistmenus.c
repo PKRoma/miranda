@@ -429,6 +429,7 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
     int isOnline, isOnList;
     HANDLE hContact = (HANDLE) wParam;
     int prevPosition;
+	int chatRoom;
     DWORD miim_bitmap_verSpecific;
     char *szProto;
 
@@ -437,15 +438,27 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
     isOnList = 0 == DBGetContactSettingByte(hContact, "CList", "NotOnList", 0);
     isOnline = szProto != NULL && ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-
+	chatRoom = szProto?DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0):0;
     itemOrder = (int *) mir_alloc(sizeof(int) * contextItemCount);
     itemCount = 0;
     for (i = 0; i < contextItemCount; i++) {
         if (contextMenuItem[i].id == 0)
             continue;
+        if (szProto == NULL)
+            continue;
+		// Begin Ugly hack to hide chat room menus
+		if (chatRoom) {
+			if (!strcmp(contextMenuItem[i].mi.pszName,"&Message"))
+				continue;
+			if (!strcmp(contextMenuItem[i].mi.pszName,"&File"))
+				continue;
+			if (!strcmp(contextMenuItem[i].mi.pszName,"&User details"))
+				continue;
+			if (!strcmp(contextMenuItem[i].mi.pszName,"View &History"))
+				continue;
+		}
+		// End ugly hack
         if (contextMenuItem[i].mi.pszContactOwner != NULL) {
-            if (szProto == NULL)
-                continue;
             if (strcmp(contextMenuItem[i].mi.pszContactOwner, szProto))
                 continue;
         }
