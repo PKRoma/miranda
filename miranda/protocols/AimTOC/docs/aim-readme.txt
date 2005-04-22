@@ -38,6 +38,7 @@ History
 -------
 1.1.0.0
  - AIM links option didn't register correctly
+ - Security fixes
 
 1.0.9.6
  - Show mobile users as 'on the phone'
