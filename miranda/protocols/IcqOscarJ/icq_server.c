@@ -48,7 +48,6 @@ extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
 HANDLE hServerConn;
 DWORD dwLocalInternalIP, dwLocalExternalIP;
-int gtOnlineSince = 0;
 WORD wListenPort;
 WORD wLocalSequence;
 DWORD dwLocalDirectConnCookie;
@@ -73,8 +72,6 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   dwLocalDirectConnCookie = rand() ^ (rand() << 16);
 
   ResetSettingsOnConnect();
-
-  gtOnlineSince = time(NULL);
 
 	// Connect to the login server
 	Netlib_Logf(ghServerNetlibUser, "Authenticating to server");
@@ -175,9 +172,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 			(HANDLE)oldStatus, gnCurrentStatus);
 	}
 
-  gtOnlineSince = 0;
-
-	// Offline all contacts
+  // Offline all contacts
 	{
 		HANDLE hContact;
 		char* szProto;
@@ -202,6 +197,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 		}
 	}
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", 0); // clear logon time
 
   FlushServerIDs(); // clear server IDs list
   FlushPendingOperations(); // clear pending operations list
@@ -220,6 +216,8 @@ void icq_serverDisconnect()
 
 	if (hServerConn)
 	{
+    int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, (LPARAM)0);
+    if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
 		Netlib_CloseHandle(hServerConn);
 		hServerConn = NULL;
 		LeaveCriticalSection(&connectionHandleMutex);
