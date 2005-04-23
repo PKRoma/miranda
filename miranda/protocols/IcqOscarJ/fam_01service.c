@@ -290,19 +290,27 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 			if (pSnacHeader->dwRef == ICQ_CLIENT_REQINFO<<0x10) // This is during the login sequence
 			{
+        DWORD dwValue;
+
 				// TLV(x01) User type?
 				// TLV(x0C) Empty CLI2CLI Direct connection info
 				// TLV(x0A) External IP
 				// TLV(x0F) Number of seconds that user has been online
 				// TLV(x02) TIME MEMBERTIME The member since time (not sent)
 				// TLV(x03) The online since time.
-				// TLV(x05) Some unknown time. (not sent)
+				// TLV(x05) Member of ICQ since. (not sent)
 				// TLV(x0A) External IP again
 				// TLV(x06) The current online status.
 				// TLV(x1E) Unknown: empty.
 				chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
-				dwLocalExternalIP = getDWordFromChain(chain, 10, 1);
+				dwLocalExternalIP = getDWordFromChain(chain, 10, 1); 
+
+        dwValue = getDWordFromChain(chain, 5, 1); 
+        if (dwValue) DBWriteContactSettingDword(NULL, gpszICQProtoName, "MemberTS", dwValue);
+
+        DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", time(NULL));
+
 				disposeChain(&chain);
 
 				// If we are in SSI mode, this is sent after the list is acked instead
