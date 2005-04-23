@@ -204,6 +204,8 @@ void P2pSessions_Uninit()
 
 	for ( int i=0; i < sessionCount; i++ )
 		delete sessionList[i];
+	if ( sessionList != NULL )
+		free( sessionList );
 
 	LeaveCriticalSection( &sessionLock );
 	DeleteCriticalSection( &sessionLock );

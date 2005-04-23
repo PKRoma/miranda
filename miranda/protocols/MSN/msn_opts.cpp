@@ -58,6 +58,12 @@ static void sttSetAvatar( HWND hwndDlg )
 	if ( hBitmap == NULL )
 		return;
 
+	if ( pDib != NULL ) {
+	   GlobalFree( pDib );
+		pDib = NULL;
+		pDibBits = NULL;
+	}
+
 	if ( MSN_BitmapToAvatarDibBits( hBitmap, pDib, pDibBits ) != ERROR_SUCCESS )
 		return;
 
