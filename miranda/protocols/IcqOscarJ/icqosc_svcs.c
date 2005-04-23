@@ -152,7 +152,9 @@ int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
 
 	if (bPrivacy) return 0;
 
-	icq_setidle(bIdle ? 1 : 0);
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", bIdle ? time(0) : 0);
+
+  icq_setidle(bIdle ? 1 : 0);
 
 	return 0;
 }
