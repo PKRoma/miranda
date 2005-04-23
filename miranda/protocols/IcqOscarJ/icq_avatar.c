@@ -825,6 +825,13 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         pBuffer += (ac->hashlen<<1) + 1;
         unpackWord(&pBuffer, &datalen);
 
+        wBufferLength -= 4 + len + (ac->hashlen<<1);
+        if (datalen > wBufferLength)
+        {
+          datalen = wBufferLength;
+          Netlib_Logf(ghServerNetlibUser, "Avatar reply broken, trying to do my best.");
+        }
+
         if (datalen > 4)
         { // store to file...
           int dwPaFormat;
