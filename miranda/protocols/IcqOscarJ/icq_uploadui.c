@@ -118,9 +118,6 @@ static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
   if (phItemAll)
     SendMessage(hwndDlg, CLM_SETCHECKMARK, (WPARAM)phItemAll, bAll);
 
-	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
-		SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
-
   bListInit = 0;
 
   return bAll;
@@ -978,6 +975,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               HANDLE hItem;
               char* szProto;
               int bCheck;
+
+             	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
+            		SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
 
               // Delete non-icq contacts
               hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
