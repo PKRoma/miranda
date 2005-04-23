@@ -428,7 +428,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
                 GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
                 if (access(szAvatar, 0) == 0)
                 { // the file exists, so try to update photo setting
-                  if (dwPaFormat != PA_FORMAT_XML)
+                  if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
                   {
                     LinkContactPhotoToFile(hContact, szAvatar);
                   }
