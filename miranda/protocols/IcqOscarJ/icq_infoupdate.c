@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -42,6 +43,7 @@ static CRITICAL_SECTION listmutex;
 static HANDLE hQueueEvent = NULL;
 static HANDLE hDummyEvent = NULL;
 static int nUserCount = 0;
+static int bPendingUsers = 0;
 static BOOL bEnabled = TRUE;
 typedef struct s_userinfo {
 	DWORD dwUin;
@@ -62,17 +64,14 @@ void __cdecl icq_InfoUpdateThread(void* arg);
 
 void icq_InitInfoUpdate(void)
 {
-
 	int i;
 	
-
 	// Create wait objects
 	hQueueEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	hDummyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	
 	if (hQueueEvent && hDummyEvent)
 	{
-
 		// Init mutexes
 		InitializeCriticalSection(&listmutex);
 		
@@ -84,19 +83,17 @@ void icq_InitInfoUpdate(void)
 		}
 		
 		forkthread(icq_InfoUpdateThread, 0, 0);
-
 	}
 
+  bPendingUsers = 0;
 }
 
 // Returns TRUE if user was queued
 // Returns FALSE if the list was full
 BOOL icq_QueueUser(HANDLE hContact)
 {
-
 	if (nUserCount < LISTSIZE)
 	{
-
 		int i, nChecked = 0, nFirstFree = -1;
 		BOOL bFound = FALSE;
 
@@ -139,27 +136,28 @@ BOOL icq_QueueUser(HANDLE hContact)
 		LeaveCriticalSection(&listmutex);
 
 		return TRUE;
-
 	}
 
-	return FALSE;
-
+  return FALSE;
 }
 
 
 
 void icq_DequeueUser(DWORD dwUin)
 {
-
-	if (nUserCount > 0) {
+	if (nUserCount > 0) 
+  {
 		int i, nChecked = 0;
 		// Check if in list
 		EnterCriticalSection(&listmutex);
-		for (i = 0; (i<LISTSIZE && nChecked<nUserCount); i++) {
-			if (userList[i].dwUin) {
+		for (i = 0; (i<LISTSIZE && nChecked<nUserCount); i++) 
+    {
+			if (userList[i].dwUin) 
+      {
 				nChecked++;
 				// Remove from list
-				if (userList[i].dwUin == dwUin) {
+				if (userList[i].dwUin == dwUin) 
+        {
 #ifdef _DEBUG
 					Netlib_Logf(ghServerNetlibUser, "Dequeued user %u", userList[i].dwUin);
 #endif
@@ -172,19 +170,22 @@ void icq_DequeueUser(DWORD dwUin)
 		}
 		LeaveCriticalSection(&listmutex);
 	}
-	
 }
 
 
 
 void icq_RescanInfoUpdate()
 {
-
 	HANDLE hContact = NULL;
 	char* szProto = NULL;
 	DWORD dwUin = 0;
 	DWORD dwCurrentTime = 0;
+  BOOL bOldEnable = bEnabled;
 
+  bPendingUsers = 0;
+  /* This is here, cause we do not want to emit large number of reuqest at once,
+    fill queue, and let thread deal with it */
+  bEnabled = 0; // freeze thread
 	// Queue all outdated users
 	dwCurrentTime = time(NULL);
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -199,49 +200,54 @@ void icq_RescanInfoUpdate()
 				dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 				// Queue user
 				if (!icq_QueueUser(hContact))
-					break; // Early exit when list is full
+        { // The queue is full, pause queuing contacts
+          bPendingUsers = 1;
+					break; 
+        }
 			}
 		}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
-
+  icq_EnableUserLookup(bOldEnable); // wake up thread
 }
 
 
 
 void icq_EnableUserLookup(BOOL bEnable)
 {
-
 	bEnabled = bEnable;
 
 	// Notify worker thread
 	if (bEnabled && hQueueEvent)
 		SetEvent(hQueueEvent);
-
 }
 
 
 
 void __cdecl icq_InfoUpdateThread(void* arg)
 {
-
 	int i;
 	DWORD dwWait;
 	BOOL bKeepRunning = TRUE;
-	
 
 	while (bKeepRunning)
 	{
-
 		// Wait for a while
 		ResetEvent(hQueueEvent);
 
-		if ((nUserCount > 0) && bEnabled && icqOnline)
-			dwWait = WaitForSingleObjectEx(hDummyEvent, 2500, TRUE);
-		else
-			dwWait = WaitForSingleObjectEx(hQueueEvent, INFINITE, TRUE);
+    if (!nUserCount && bPendingUsers) // whole queue processed, check if more users needs updating
+      icq_RescanInfoUpdate();
 
-		switch (dwWait) {
+		if ((nUserCount > 0) && bEnabled && icqOnline)
+			dwWait = WaitForSingleObjectEx(hDummyEvent, 3000, TRUE);
+		else
+    { // we need to slow down the process or icq will kick us
+      dwWait = WaitForSingleObjectEx(hDummyEvent, 1000, TRUE);
+			dwWait = WaitForSingleObjectEx(hQueueEvent, INFINITE, TRUE);
+    }
+
+		switch (dwWait) 
+    {
 		case WAIT_IO_COMPLETION:
 			// Possible shutdown in progress
 			if (Miranda_Terminated())
@@ -251,6 +257,8 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 		case WAIT_OBJECT_0:
 		case WAIT_TIMEOUT:
 			// Time to check for new users
+      if (!bEnabled) continue; // we can't send requests now
+
 #ifdef _DEBUG
 			Netlib_Logf(ghServerNetlibUser, "Users %u", nUserCount);
 #endif
@@ -296,11 +304,9 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 			bKeepRunning = FALSE;
 			break;
 		}
-
 	}
 
 	return;
-
 }
 
 
@@ -312,5 +318,4 @@ void icq_InfoUpdateCleanup(void)
 	DeleteCriticalSection(&listmutex);
 	CloseHandle(hQueueEvent);
 	CloseHandle(hDummyEvent);
-
 }
