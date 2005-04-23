@@ -45,7 +45,6 @@ extern HANDLE hInst;
 extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
-extern int gtOnlineSince;
 
 extern char* calcMD5Hash(char* szFile);
 
@@ -144,6 +143,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 break;
 
               SetValue(hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, 0);
+              SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
+              SetValue(hwndDlg, IDC_IDLETIME, hContact, szProto, "IdleTS", SVS_TIMESTAMP);
 
               if (hContact)
               {
@@ -152,11 +153,9 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
-                SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
                 if (DBGetContactSettingDword(hContact, szProto, "ClientID", 0) == 1)
                   DBWriteContactSettingDword(hContact, szProto, "TickTS", 0);
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
-                SetValue(hwndDlg, IDC_IDLETIME, hContact, szProto, "IdleTS", SVS_TIMESTAMP);
               }
               else
               {
@@ -165,9 +164,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)8, SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
-                SetValue(hwndDlg, IDC_ONLINESINCE, hContact, (char*)DBVT_DWORD, (char*)gtOnlineSince, SVS_TIMESTAMP);
-                SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, (char*)DBVT_DELETED, "TickTS", SVS_TIMESTAMP);
-                SetValue(hwndDlg, IDC_IDLETIME, hContact, (char*)DBVT_DELETED, "IdleTS", SVS_TIMESTAMP);
+                SetDlgItemText(hwndDlg, IDC_SUPTIME, Translate("Member since:"));
+                SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
               }
             }
             break;
