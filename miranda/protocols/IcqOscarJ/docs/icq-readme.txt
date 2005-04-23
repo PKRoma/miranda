@@ -25,9 +25,14 @@ Bugfixes:
   Synchronize visibility items was not working properly
   Our avatar image was not linked to our ContactPhoto
   Added workaround for DB Blob caching issues
+  Fixed occasional crash on login (missing TLV validity checks)
+  Fixed slow update of nicks when users imported from server-list
+  Fixed auto info update mechanism, do not progress too fast, do not drop processing
+  Fixed empty groups are always hidden in Manage Server List, cannot be used either
 
 Improvements:
   If Update details from server is on, user group are also updated
+  Changed System Uptime to Member since in my details
 
 
 0.3.5
