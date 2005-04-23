@@ -608,14 +608,14 @@ bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 					bAdd = false;
 					sModes += "-";
 				}
-				if (*p1 == 'l' && bAdd)
+				if (*p1 == 'l' && bAdd && iParametercount < pmsg->parameters.size())
 				{
 					bContainsValidModes = true;
 					sModes += "l";
 					sParams += " " + pmsg->parameters[iParametercount];
 					iParametercount++;
 				}
-				if (*p1 == 'b' || *p1 == 'k')
+				if (*p1 == 'b' || *p1 == 'k' && iParametercount < pmsg->parameters.size())
 				{
 					bContainsValidModes = true;
 					sModes += *p1;
