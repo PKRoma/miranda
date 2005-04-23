@@ -41,6 +41,16 @@ IDI_ICQC7               ICON    DISCARDABLE     "res\\7.ico"
 IDI_ICQC8               ICON    DISCARDABLE     "res\\8.ico"
 IDI_EMAIL               ICON    DISCARDABLE     "res\\sendmail.ico"
 IDI_NEWGROUP2           ICON    DISCARDABLE     "res\\addgoupp.ico"
+IDI_CLIENTTRILLIAN      ICON    DISCARDABLE     "res\\Trillian.ico"
+IDI_CLIENTMIRANDA       ICON    DISCARDABLE     "res\\Miranda.ico"
+IDI_CLIENTRQ            ICON    DISCARDABLE     "res\\&RQ.ico"
+IDI_CLIENTGAIM          ICON    DISCARDABLE     "res\\Gaim.ico"
+IDI_CLIENTIM2           ICON    DISCARDABLE     "res\\IM2.ico"
+IDI_CLIENTKOPETE        ICON    DISCARDABLE     "res\\Kopete.ico"
+IDI_CLIENTLICQ          ICON    DISCARDABLE     "res\\Licq.ico"
+IDI_CLIENTQIP           ICON    DISCARDABLE     "res\\QIP.ico"
+IDI_CLIENTSIM           ICON    DISCARDABLE     "res\\Sim.ico"
+IDI_MIRANDA2            ICON    DISCARDABLE     "res\\mirandaclassic.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -54,6 +64,39 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+END
+
+IDD_OPT_CLCBKG DIALOGEX 0, 0, 234, 164
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Settings",IDC_STATIC,4,19,226,141
+    LTEXT           "Background colour:",IDC_BC_STATIC,12,35,72,8,NOT 
+                    WS_GROUP
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,84,34,32,10
+    LTEXT           "Selection colour:",IDC_SC_STATIC,12,51,72,8
+    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,84,50,32,10
+    CONTROL         "Use background bitmap",IDC_BITMAP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,68,161,10
+    EDITTEXT        IDC_FILENAME,22,82,184,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,208,82,15,11
+    CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,99,98,10
+    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,99,101,10
+    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,112,98,10
+    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,125,98,10
+    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,121,125,100,10
+    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,112,101,10
+    CONTROL         "Tile vertically according to Row Height",IDC_TILEVROWH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,140,205,10
+    COMBOBOX        IDC_BKGRLIST,4,5,226,155,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -71,6 +114,11 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 88
+    END
+
+    IDD_OPT_CLCBKG, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 149
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -407,7 +455,7 @@ END
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 256
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Fonts",IDC_STATIC,5,5,269,125
     COMBOBOX        IDC_FONTID,12,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
@@ -471,7 +519,7 @@ BEGIN
                     BS_AUTORADIOBUTTON,145,230,120,10
 END
 
-IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 151
+IDD_OPT_CLCBKG_ DIALOGEX 0, 0, 235, 151
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -688,7 +736,7 @@ BEGIN
         HORZGUIDE, 222
     END
 
-    IDD_OPT_CLCBKG, DIALOG
+    IDD_OPT_CLCBKG_, DIALOG
     BEGIN
         LEFTMARGIN, 4
         RIGHTMARGIN, 231

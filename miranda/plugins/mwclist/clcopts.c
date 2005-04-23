@@ -131,12 +131,16 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc=DlgProcClcMainOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	
+	if (!ServiceExists(MS_BACKGROUNDCONFIG_REGISTER))
+	{
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCBKG);
 	odp.pszTitle=Translate("List Background");
 	odp.pfnDlgProc=DlgProcClcBkgOpts;
 	odp.flags=ODPF_BOLDGROUPS;
-	
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	}
+
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCTEXT);
 	odp.pszTitle=Translate("List Text");
 	odp.pfnDlgProc=DlgProcClcTextOpts;
@@ -147,13 +151,14 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc=DlgProcClcMetaOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-
+	if (!ServiceExists(MS_BACKGROUNDCONFIG_REGISTER))
+	{
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCBKG);
 	odp.pszTitle=Translate("StatusBar Background");
 	odp.pfnDlgProc=DlgProcStatusBarBkgOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
+	}
 
 	
 

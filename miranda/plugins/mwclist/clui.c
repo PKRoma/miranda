@@ -374,6 +374,16 @@ DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
 			SetAllExtraIcons(hwndContactTree,(HANDLE)wParam);
 			return(0);
 		};
+
+		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szModule,"ICQ"))
+		{
+			if (!strcmp(dbcws->szSetting,(HANDLE)"MirVer"))
+			{		
+				SetAllExtraIcons(hwndContactTree,(HANDLE)wParam);
+				return(0);
+			};
+		
+		};
 		
 		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szModule,"UserInfo"))
 		{

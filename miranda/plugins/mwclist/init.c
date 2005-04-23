@@ -30,6 +30,10 @@ static HANDLE hCListShutdown = 0;
 extern HWND hwndContactList;
 extern int LoadMoveToGroup();
 
+//from bgrcfg
+extern int BGModuleLoad();
+extern int BGModuleUnload();
+
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"MultiWindow Contact List",
@@ -118,6 +122,8 @@ OutputDebugString("CListInitialise ClistMW\r\n");
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
 	LoadMoveToGroup();
+	BGModuleLoad();	
+
 OutputDebugString("CListInitialise ClistMW...Done\r\n");
 }
 __except (exceptFunction(GetExceptionInformation()) ) 
@@ -141,6 +147,7 @@ int __declspec(dllexport) Unload(void)
 {
 	OutputDebugString("Unloading ClistMW\r\n");
 	if (IsWindow(hwndContactList)) DestroyWindow(hwndContactList);
+	BGModuleUnload();
 	hwndContactList=0;
 	return 0;
 }

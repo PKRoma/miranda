@@ -117,6 +117,10 @@ SOURCE=.\CLUIFrames\protocolorder.c
 # End Group
 # Begin Source File
 
+SOURCE=.\BkgrCfg.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\clc.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"
@@ -465,6 +469,10 @@ SOURCE=.\CLUIFrames\statusbar.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\BkgrCfg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\clc.h
 # End Source File
 # Begin Source File
@@ -519,6 +527,10 @@ SOURCE=.\statusmodes.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=".\res\&RQ.ico"
+# End Source File
 # Begin Source File
 
 SOURCE=.\res\1.ico
@@ -621,6 +633,10 @@ SOURCE=.\res\freechat.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\Gaim.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\globus.ico
 # End Source File
 # Begin Source File
@@ -645,7 +661,19 @@ SOURCE=.\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\IM2.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\invisible.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Kopete.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Licq.ico
 # End Source File
 # Begin Source File
 
@@ -654,6 +682,10 @@ SOURCE=.\res\message.ico
 # Begin Source File
 
 SOURCE=.\res\miranda.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\mirandaclassic.ico
 # End Source File
 # Begin Source File
 
@@ -701,6 +733,10 @@ SOURCE=.\res\outtolun.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\QIP.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\rename.ico
 # End Source File
 # Begin Source File
@@ -721,6 +757,10 @@ SOURCE=.\res\sendmail.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\Sim.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\smalldot.ico
 # End Source File
 # Begin Source File
@@ -738,6 +778,10 @@ SOURCE=.\res\sortcolu.bmp
 # Begin Source File
 
 SOURCE=.\res\timestamp.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Trillian.ico
 # End Source File
 # Begin Source File
 

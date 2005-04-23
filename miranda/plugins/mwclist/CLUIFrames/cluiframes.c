@@ -182,6 +182,9 @@ static int RemoveItemFromList(int pos,wndFrame **lpFrames,int *FrameItemCount)
 static int id2pos(int id)
 {
 	int i;
+
+	if (FramesSysNotStarted) return -1;
+
 	for (i=0;i<nFramescount;i++)
 	{
 		if (Frames[i].id==id) return(i);
@@ -630,10 +633,10 @@ int LocateStorePosition(int Frameid,int maxstored)
 		if(frmname==NULL) continue;
 		if(strcmpi(frmname,Frames[Frameid].name)==0) {
 			storpos=i;
-			free(frmname);
+			mir_free(frmname);
 			break;
 		}
-		free(frmname);
+		mir_free(frmname);
 	}
 	return storpos;
 }
@@ -2169,6 +2172,164 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static	HBITMAP hBmpBackground;
+static int backgroundBmpUse;
+static COLORREF bkColour;
+static COLORREF SelBkColour;
+boolean AlignCOLLIconToLeft; //will hide frame icon
+
+int OnFrameTitleBarBackgroundChange()
+{
+		{	
+		DBVARIANT dbv;
+
+		AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
+
+		bkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
+		SelBkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","SelBkColour",0);
+		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
+		if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+			if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
+				hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+				mir_free(dbv.pszVal);
+			}
+		}
+		backgroundBmpUse=DBGetContactSettingWord(NULL,"FrameTitleBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
+		};
+		
+//		RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
+//		if (hwndStatus) InvalidateRect(hwndStatus,NULL,TRUE);
+		CLUIFramesOnClistResize(0,0);
+	return 0;
+}
+
+void DrawBackGroundTTB(HWND hwnd,HDC mhdc)
+{
+	HDC hdcMem,hdc;
+	RECT clRect,*rcPaint;
+
+	int yScroll=0;
+	int y;
+	PAINTSTRUCT paintst={0};	
+	HBITMAP hBmpOsb;
+	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
+	int grey=0;
+	HFONT oFont;
+	HBRUSH hBrushAlternateGrey=NULL;
+
+	HFONT hFont;
+
+	//InvalidateRect(hwnd,0,FALSE);
+	
+	hFont=(HFONT)SendMessage(hwnd,WM_GETFONT,0,0);
+	
+	if (mhdc)
+	{
+	hdc=mhdc;
+	rcPaint=NULL;
+	}else
+	{
+	hdc=BeginPaint(hwnd,&paintst);
+	rcPaint=&(paintst.rcPaint);
+	}
+
+	GetClientRect(hwnd,&clRect);
+	if(rcPaint==NULL) rcPaint=&clRect;
+	if (rcPaint->right-rcPaint->left==0||rcPaint->top-rcPaint->bottom==0) rcPaint=&clRect;
+	y=-yScroll;
+	hdcMem=CreateCompatibleDC(hdc);
+	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
+	SelectObject(hdcMem,hBmpOsb);
+	oFont=SelectObject(hdcMem,hFont);
+	SetBkMode(hdcMem,TRANSPARENT);
+	{	HBRUSH hBrush,hoBrush;
+		
+		hBrush=CreateSolidBrush(bkColour);
+		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
+		FillRect(hdcMem,rcPaint,hBrush);
+		SelectObject(hdcMem,hoBrush);
+		DeleteObject(hBrush);
+		if(hBmpBackground) {
+			BITMAP bmp;
+			HDC hdcBmp;
+			int x,y;
+			int maxx,maxy;
+			int destw,desth;
+
+			GetObject(hBmpBackground,sizeof(bmp),&bmp);
+			hdcBmp=CreateCompatibleDC(hdcMem);
+			SelectObject(hdcBmp,hBmpBackground);
+			y=backgroundBmpUse&CLBF_SCROLL?-yScroll:0;
+			maxx=backgroundBmpUse&CLBF_TILEH?clRect.right:1;
+			maxy=backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
+			switch(backgroundBmpUse&CLBM_TYPE) {
+				case CLB_STRETCH:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						if(clRect.right*bmp.bmHeight<clRect.bottom*bmp.bmWidth) {
+							desth=clRect.bottom;
+							destw=desth*bmp.bmWidth/bmp.bmHeight;
+						}
+						else {
+							destw=clRect.right;
+							desth=destw*bmp.bmHeight/bmp.bmWidth;
+						}
+					}
+					else {
+						destw=clRect.right;
+						desth=clRect.bottom;
+					}
+					break;
+				case CLB_STRETCHH:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						destw=clRect.right;
+						desth=destw*bmp.bmHeight/bmp.bmWidth;
+					}
+					else {
+						destw=clRect.right;
+						desth=bmp.bmHeight;
+					}
+					break;
+				case CLB_STRETCHV:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						desth=clRect.bottom;
+						destw=desth*bmp.bmWidth/bmp.bmHeight;
+					}
+					else {
+						destw=bmp.bmWidth;
+						desth=clRect.bottom;
+					}
+					break;
+				default:    //clb_topleft
+					destw=bmp.bmWidth;
+					desth=bmp.bmHeight;
+					break;
+			}
+			desth=clRect.bottom -clRect.top;
+			for(;y<maxy;y+=desth) {
+				if(y<rcPaint->top-desth) continue;
+				for(x=0;x<maxx;x+=destw)
+					StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
+			}
+			DeleteDC(hdcBmp);
+		}
+	}		
+	
+	{
+		
+		BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,SRCCOPY);
+		
+		DeleteObject(hBmpOsb);
+		DeleteDC(hdcMem);
+		paintst.fErase=FALSE;
+		//DeleteObject(hFont);
+		if (!mhdc)
+		{		
+		EndPaint(hwnd,&paintst);	
+		}
+	}
+}
+
+
 static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 {
 					HDC hdcMem;
@@ -2194,29 +2355,55 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 					hBack=GetSysColorBrush(COLOR_3DFACE);
 					SelectObject(hdcMem,hBack);
 
-					FillRect(hdcMem,&rect,hBack);
+					//FillRect(hdcMem,&rect,hBack);
+					
+
 					lockfrm();
 					pos=id2pos(Frameid);
 
 					if (pos>=0&&pos<nFramescount)
 					{
+					
 					GetClientRect(Frames[pos].TitleBar.hwnd,&Frames[pos].TitleBar.wndSize);
 					{
 						//set font charset
 						HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
 						SelectObject(hdcMem,hf);
 
-					
-						if(Frames[pos].TitleBar.hicon!=NULL)	{
-							//(TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)
-							DrawIconEx(hdcMem,2,((TitleBarH>>1)-(GetSystemMetrics(SM_CYSMICON)>>1)),Frames[pos].TitleBar.hicon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-							TextOut(hdcMem,GetSystemMetrics(SM_CYSMICON)+4,2,Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
+						DrawBackGroundTTB(Frames[pos].TitleBar.hwnd,hdcMem);
+						//hFront=CreateSolidPe (SelBkColour);
+						//SelectObject(hdcMem,hFront);
+						if (SelBkColour) SetTextColor(hdcMem,SelBkColour);
+
+						
+						if (!AlignCOLLIconToLeft)
+						{
+						
+									if(Frames[pos].TitleBar.hicon!=NULL)	{
+										//(TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)
+										DrawIconEx(hdcMem,2,((TitleBarH>>1)-(GetSystemMetrics(SM_CYSMICON)>>1)),Frames[pos].TitleBar.hicon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+										TextOut(hdcMem,GetSystemMetrics(SM_CYSMICON)+4,2,Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
+									}
+									else
+										TextOut(hdcMem,2,2,Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
+
+						}else
+						{
+						TextOut(hdcMem,GetSystemMetrics(SM_CXSMICON)+2,2,Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
+						}
+						
+						
+						if (!AlignCOLLIconToLeft)
+						{						
+						DrawIconEx(hdcMem,Frames[pos].TitleBar.wndSize.right-GetSystemMetrics(SM_CXSMICON)-2,((TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 						}
 						else
-							TextOut(hdcMem,2,2,Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
-
-						DrawIconEx(hdcMem,Frames[pos].TitleBar.wndSize.right-GetSystemMetrics(SM_CXSMICON)-2,((TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+						{
+						DrawIconEx(hdcMem,0,((TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+						}
+						
 						DeleteObject(hf);
+						//DeleteObject(hFront);
 						}
 					};
 					ulockfrm();
@@ -3112,6 +3299,7 @@ int LoadCLUIFramesModule(void)
 
 	CreateServiceFunction("Set_Floating",CLUIFrameSetFloat);
 	hWndExplorerToolBar	=FindWindowEx(0,0,"Shell_TrayWnd",NULL);
+	OnFrameTitleBarBackgroundChange(0,0);
 	FramesSysNotStarted=FALSE;
 	return 0;
 }

@@ -41,6 +41,7 @@ extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
 extern int BgStatusBarChange(WPARAM wParam,LPARAM lParam);
 
 extern int BgClcChange(WPARAM wParam,LPARAM lParam);
+extern int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
 
 
 int hClcProtoCount = 0;
@@ -200,10 +201,10 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	}
 	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"StatusBar Background/StatusBar",0);
 	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"List Background/CLC",0);
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"Frames TitleBar BackGround/FrameTitleBar",0);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgClcChange);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
-	
-	
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,OnFrameTitleBarBackgroundChange);
 	
 	
 	return 0;

@@ -71,6 +71,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include ".\CLUIFrames\cluiframes.h"
 #include ".\CLUIFrames\m_cluiframes.h"
 #include  "m_metacontacts.h"
+#include "BkgrCfg.h"
 
 #define CLS_CONTACTLIST 1
 
@@ -176,7 +177,7 @@ static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSett
 	DBVARIANT dbv;
 	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
 	if(dbv.type==DBVT_ASCIIZ)
-		str=strdup(dbv.pszVal);
+		str=mir_strdup(dbv.pszVal);
 	DBFreeVariant(&dbv);
 	return str;
 }

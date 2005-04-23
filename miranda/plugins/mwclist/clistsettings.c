@@ -41,7 +41,7 @@ int GetStatusForContact(HANDLE hContact,char *szProto);
 char *UnknownConctactTranslatedName;
 extern boolean OnModulesLoadedCalled;
 void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
-
+extern int GetClientIconByMirVer(pdisplayNameCacheEntry pdnce);
 
 static int DumpElem( pdisplayNameCacheEntry pdnce )
 {
@@ -320,6 +320,20 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 			pdnce->IsExpanded=DBGetContactSettingByte(pdnce->hContact,"CList","Expanded",0);
 		}
 
+		if (pdnce->MirVer==NULL||pdnce->ci.idxClientIcon==-1||pdnce->ci.idxClientIcon==0)
+		{
+			if (pdnce->MirVer) mir_free(pdnce->MirVer);
+			pdnce->MirVer=DBGetString(pdnce->hContact,"ICQ","MirVer");
+			pdnce->ci.ClientID=-1;
+			pdnce->ci.idxClientIcon=-1;
+			if (pdnce->MirVer!=NULL)
+			{
+			GetClientIconByMirVer(pdnce);
+			}
+			
+		}
+
+
 
 	}
 }
@@ -385,6 +399,11 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 				pdnce->isUnknown=FALSE;
 				pdnce->noHiddenOffline=-1;
 				pdnce->IsExpanded=-1;
+				if (pdnce->MirVer) mir_free(pdnce->MirVer);
+				pdnce->MirVer=NULL;
+
+				pdnce->ci.ClientID=-1;
+				pdnce->ci.idxClientIcon=-1;
 
 				return;
 			}
@@ -395,6 +414,10 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 				if (pdnce->szGroup) mir_free(pdnce->szGroup);
 				pdnce->szGroup=NULL;
 				pdnce->szProto=NULL;
+				pdnce->MirVer=NULL;
+				pdnce->ci.ClientID=-1;
+				pdnce->ci.idxClientIcon=-1;
+
 				return;
 			}
 			// in other cases clear all binary cache
@@ -407,6 +430,11 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 				pdnce->isUnknown=FALSE;
 				pdnce->noHiddenOffline=-1;
  				pdnce->IsExpanded=-1;
+				if (pdnce->MirVer) mir_free(pdnce->MirVer);
+				pdnce->MirVer=NULL;
+				pdnce->ci.ClientID=-1;
+				pdnce->ci.idxClientIcon=-1;
+
 		};
 };
 void InvalidateDisplayNameCacheEntry(HANDLE hContact)
@@ -624,6 +652,12 @@ __try
 				//OutputDebugString(buf);
 			}			
 				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
+				/*
+				if (!strcmp(cws->szSetting, "MirVer")) {
+				
+				
+				};
+				*/
 
 				if (!strcmp(cws->szSetting, "Status")) {				
 				if (!(pdnce->Hidden==1)) {

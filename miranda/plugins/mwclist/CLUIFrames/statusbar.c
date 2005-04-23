@@ -539,7 +539,7 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 				OldRc=rc;
 			if (canloadstatusbar)
 			{	
-				if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
+				if(DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",0)||DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
 					CluiProtocolStatusChanged(0,0);
 					}
 			};
@@ -623,7 +623,7 @@ int RecreateStatusBar(HWND parent)
 			//create the status wnd
 	hwndStatus = CreateStatusWindow(
 				
-				(DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE)?SBARS_SIZEGRIP:0)|
+				(DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE)&&(!UseOwnerDrawStatusBar)?SBARS_SIZEGRIP:0)|
 				WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", helperhwnd, 0);
 
 	

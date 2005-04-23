@@ -102,7 +102,7 @@ int CheckProtocolOrder()
 				if (curproto==NULL){protochanged=TRUE;break;};
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)curproto)==0){protochanged=TRUE;break;};		
 				
-				if (curproto!=NULL){ free(curproto);};
+				if (curproto!=NULL){ mir_free(curproto);};
 			};
 	};		
 	if (protochanged)

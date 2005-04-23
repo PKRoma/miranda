@@ -17,6 +17,10 @@ extern HIMAGELIST hCListImages;
 void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void LoadExtraImageFunc();
 extern HICON LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx);
+extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
+boolean ImageCreated=FALSE;
+void ReloadExtraIcons();
+
 boolean isColumnVisible(int extra)
 {
 	switch(extra)
@@ -84,7 +88,131 @@ int ExtraToColumnNum(int extra)
 	return(-1);
 };
 
+#define ClientNumber 9
 
+char *ClientNames[ClientNumber]=
+{"Miranda","RQ","Trillian","GAIM","IM2","Kopete","LICQ","QIP","SIM"};
+char *ClientNamesDesc[ClientNumber]=
+{"Miranda Client Icon","RQ Client Icon","Trillian Client Icon","GAIM Client Icon","IM2 Client Icon","Kopete Client Icon",
+"LICQ Client Icon","QIP Client Icon","SIM Client Icon"};
+
+int ClientICOIDX[ClientNumber]=
+{IDI_CLIENTMIRANDA,IDI_CLIENTRQ,IDI_CLIENTTRILLIAN,IDI_CLIENTGAIM,IDI_CLIENTIM2,IDI_CLIENTKOPETE,IDI_CLIENTLICQ,IDI_CLIENTQIP,IDI_CLIENTSIM};
+
+
+int ClientImageListIdx[ClientNumber]={0};
+
+
+int GetClientWorker(char *Clientstr,ClientIcon *cli)
+{
+	if (!cli) return 0;
+	cli->ClientID=-1;
+	cli->idxClientIcon=-1;
+	if (strstr(Clientstr,"Miranda"))
+	{
+		cli->ClientID=0;cli->idxClientIcon=ClientImageListIdx[0];
+
+		return 0;
+	}
+
+	if (strstr(Clientstr,"&RQ"))
+	{
+		cli->ClientID=1;cli->idxClientIcon=ClientImageListIdx[1];
+
+		return 0;
+	}	
+
+	if (strstr(Clientstr,"Trillian"))
+	{
+		cli->ClientID=2;cli->idxClientIcon=ClientImageListIdx[2];
+
+		return 0;
+	}
+
+	if (strstr(Clientstr,"Gaim"))
+	{
+		cli->ClientID=3;cli->idxClientIcon=ClientImageListIdx[3];
+
+		return 0;
+	}
+
+	if (strstr(Clientstr,"IM2"))
+	{
+		cli->ClientID=4;cli->idxClientIcon=ClientImageListIdx[4];
+
+		return 0;
+	}
+
+	if (strstr(Clientstr,"opete"))
+	{
+		cli->ClientID=5;cli->idxClientIcon=ClientImageListIdx[5];
+
+		return 0;
+	}
+
+	if (strstr(Clientstr,"Licq"))
+	{
+		cli->ClientID=6;cli->idxClientIcon=ClientImageListIdx[6];
+
+		return 0;
+	}
+
+	if (strstr(Clientstr,"QIP"))
+	{
+		cli->ClientID=7;cli->idxClientIcon=ClientImageListIdx[7];
+
+		return 0;
+	}
+	if (strstr(Clientstr,"SIM"))
+	{
+		cli->ClientID=8;cli->idxClientIcon=ClientImageListIdx[8];
+
+		return 0;
+	}
+	return 0;
+}
+
+
+int GetClientIconByMirVer(pdisplayNameCacheEntry pdnce)
+{
+	if (pdnce&&pdnce->protoNotExists==FALSE&&(!pdnce->isUnknown)&&pdnce->szProto&&pdnce->MirVer)
+	{
+		if (strlen(pdnce->szProto)>0&&strlen(pdnce->MirVer)>0)
+		{
+				if (strstr(pdnce->szProto,"ICQ")!=NULL)
+				{
+					GetClientWorker(pdnce->MirVer,&pdnce->ci);
+				}
+		}
+
+	}
+return 0;
+}
+
+void LoadClientIcons()
+{
+
+	int i;
+	HICON hicon;
+	char name[256];
+	for (i=0;i<ClientNumber;i++)
+	{
+		_snprintf(name,sizeof(name),"ClientIcons_%s",ClientNames[i]);
+		
+		if (ClientImageListIdx[i]==0)
+		{
+		hicon=LoadIconFromExternalFile("clisticons.dll",i+100,TRUE,TRUE,name,"Contact List",ClientNamesDesc[i],-ClientICOIDX[i]);
+		if (hicon) ClientImageListIdx[i]=ImageList_AddIcon(hExtraImageList,hicon );		
+		}else
+		{
+		hicon=LoadIconFromExternalFile("clisticons.dll",i+100,TRUE,FALSE,name,"Contact List",ClientNamesDesc[i],-ClientICOIDX[i]);			
+		if (hicon) ClientImageListIdx[i]=ImageList_ReplaceIcon(hExtraImageList,ClientImageListIdx[i],hicon );		
+		};
+		
+	}
+
+
+}
 
 
 
@@ -125,6 +253,7 @@ void SetNewExtraColumnCount()
 	DBWriteContactSettingByte(NULL,CLUIFrameModule,"EnabledColumnCount",(BYTE)newcount);
 	EnabledColumnCount=newcount;
 	SendMessage(hwndContactTree,CLM_SETEXTRACOLUMNS,EnabledColumnCount,0);
+	
 };
 
 int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
@@ -138,6 +267,8 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 
 				hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List","Web Icon",-IDI_GLOBUS);
 				ExtraImageIconsIndex[2]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[2],hicon );		
+				
+				LoadClientIcons();
 				return 0;
 };
 void ReloadExtraIcons()
@@ -153,6 +284,9 @@ void ReloadExtraIcons()
 				//hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,1,256);
 				
 				hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
+				memset(ClientImageListIdx,0,sizeof(ClientImageListIdx));
+
+				
 				//adding protocol icons
 				CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	
@@ -170,6 +304,7 @@ void ReloadExtraIcons()
 				ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );				
 				
 				
+				
 
 
 				//calc only needed protocols
@@ -177,11 +312,14 @@ void ReloadExtraIcons()
 				if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
 				ImageList_AddIcon(hExtraImageList,LoadSkinnedProtoIcon(protos[i]->szName,ID_STATUS_ONLINE));
 				}
-				
+				LoadClientIcons();
 				SendMessage(hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hExtraImageList);		
 				//SetAllExtraIcons(hImgList);
 				SetNewExtraColumnCount();
+				
 				NotifyEventHooks(hExtraImageListRebuilding,0,0);
+				ImageCreated=TRUE;
+				OutputDebugString("ReloadExtraIcons Done\r\n");
 			}
 
 };
@@ -226,14 +364,17 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	char *(ImgIndex[64]);
 	int maxpr,count,i;
 	PROTOCOLDESCRIPTOR **protos;
+	pdisplayNameCacheEntry pdnce;
 	int em,pr,sms,a1,a2;
 	int tick=0;
 	int inphcont=(int)hContact;
+	
 
 	hcontgiven=(hContact!=0);
 
 	if (hwndContactTree==0){return;};
 	tick=GetTickCount();
+	if (ImageCreated==FALSE) ReloadExtraIcons();
 
 	SetNewExtraColumnCount();
 	{
@@ -273,11 +414,16 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	}	
 	
 	do {
+
 		szProto=NULL;
-		//hItem=(HANDLE)SendMessage(hwndList,CLM_FINDCONTACT,(WPARAM)hContact,0);
 		hItem=hContact;
+		
 		if (hItem==0){continue;};
-		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);		
+		pdnce=GetDisplayNameCacheEntry(hItem);
+		if (pdnce==NULL) {continue;};
+		
+//		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);		
+		szProto=pdnce->szProto;
 
 		{
 		DBVARIANT dbv={0};
@@ -330,41 +476,41 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 
 		if(ExtraToColumnNum(EXTRA_ICON_PROTO)!=-1) {
 
-			if(szProto==NULL) continue;
-			
-			for (i=0;i<maxpr;i++)
-			{
-				if(!strcmp(ImgIndex[i],szProto))
-				{
-					/*
+			if(szProto==NULL) {continue;};
+
+			if (pdnce->ci.idxClientIcon!=0&&pdnce->ci.idxClientIcon!=-1)
+			{			
+							PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),pdnce->ci.idxClientIcon));	
+			}else
+			{					
+					for (i=0;i<maxpr;i++)
 					{
-					//testing iec
-					IconExtraColumn iec;
-					iec.cbSize=sizeof(iec);
-					iec.ColumnType=EXTRA_ICON_ADV2;
-					iec.hImage=i+2;
-					SetIconForExtraColumn(hContact,&iec);
-					};
-					*/
-					PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),i+3));	
-					break;
-				};
-			};				
-		}
-	
-		
+						if(!strcmp(ImgIndex[i],szProto))
+						{
+
+							PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),i+3));	
+							break;
+						};
+					};				
+			};
+		};
 		NotifyEventHooks(hExtraImageApplying,(WPARAM)hContact,0);
 	  if (hcontgiven) break;
-	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
+
+  } while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 	
 	tick=GetTickCount()-tick;
+	if (tick>0)
 	{
 		char buf[256];
 		wsprintf(buf,"SetAllExtraIcons %d ms, for %x\r\n",tick,inphcont);
 		OutputDebugString(buf);
 		DBWriteContactSettingDword((HANDLE)0,"CLUI","PF:Last SetAllExtraIcons Time:",tick);
 	}	
+
+  
 }
+
 
 
 void LoadExtraImageFunc()
@@ -375,7 +521,8 @@ void LoadExtraImageFunc()
 	hExtraImageListRebuilding=CreateHookableEvent(ME_CLIST_EXTRA_LIST_REBUILD);
 	hExtraImageApplying=CreateHookableEvent(ME_CLIST_EXTRA_IMAGE_APPLY);
 	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
-	
+//	ReloadExtraIcons();
+		
 
 };
 
