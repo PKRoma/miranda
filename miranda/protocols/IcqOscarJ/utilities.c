@@ -558,18 +558,17 @@ void ResetSettingsOnListReload()
 
 void ResetSettingsOnConnect()
 {
-
 	HANDLE hContact;
 	char *szProto;
 
 	// Reset a bunch of session specific settings
   DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
 	while (hContact)
 	{
-
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
@@ -584,19 +583,18 @@ void ResetSettingsOnConnect()
 		}
 
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-
 	}
-
 }
 
 
 
 void ResetSettingsOnLoad()
 {
-
 	HANDLE hContact;
 	char *szProto;
 
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", 0);
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -613,23 +611,19 @@ void ResetSettingsOnLoad()
 		}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
-
 }
 
 
 
 int RandRange(int nLow, int nHigh)
 {
-
 	return nLow + (int)((nHigh-nLow+1)*rand()/(RAND_MAX+1.0));
-
 }
 
 
 
 BOOL IsStringUIN(char* pszString)
 {
-
 	int i;
 	int nLen = strlen(pszString);
 
@@ -646,14 +640,12 @@ BOOL IsStringUIN(char* pszString)
 	}
 
 	return FALSE;
-
 }
 
 
 
 void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 {
-
 	DWORD dwUin;
 	void* pvExtra;
 
@@ -673,7 +665,6 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 	SAFE_FREE(&pArguments);
 
 	return;
-
 }
 
 
