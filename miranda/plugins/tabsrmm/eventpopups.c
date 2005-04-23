@@ -29,6 +29,9 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
   Additional code (popup merging, options) by Prezes
   
 */
+#define __TSR_CXX
+
+#define _WIN32_IE 0x0500
 
 #include "commonheaders.h"
 #pragma hdrstop
@@ -39,6 +42,9 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #include "functions.h"
 
 #include "../../include/m_icq.h"
+
+#if !defined(__GNUWIN32__)
+
 
 #define NIF_STATE       0x00000008
 #define NIF_INFO        0x00000010
@@ -63,8 +69,9 @@ typedef struct
     };
     TCHAR szInfoTitle[64];
     DWORD dwInfoFlags;
-}
-NOTIFYICONDATA_NEW;
+} NOTIFYICONDATA_NEW;
+
+#endif
 
 extern HINSTANCE g_hInst;
 extern NEN_OPTIONS nen_options;
@@ -97,10 +104,10 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->maskActR = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
     options->maskActTE = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR);
     options->bMergePopup = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, TRUE);
-    options->iDelayMsg = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, DEFAULT_DELAY);
-    options->iDelayUrl = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_URL, DEFAULT_DELAY);
-    options->iDelayFile = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, DEFAULT_DELAY);
-    options->iDelayOthers = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, DEFAULT_DELAY);
+    options->iDelayMsg = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
+    options->iDelayUrl = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)DEFAULT_DELAY);
+    options->iDelayFile = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, (DWORD)DEFAULT_DELAY);
+    options->iDelayOthers = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
     options->iDelayDefault = (int)DBGetContactSettingRangedWord(NULL, "PopUp", "Seconds",
                                                                 SETTING_LIFETIME_DEFAULT, SETTING_LIFETIME_MIN, SETTING_LIFETIME_MAX);
     options->bShowDate = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_DATE, TRUE);
@@ -110,7 +117,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bShowON = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_ON, TRUE);
     options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, FALSE);
     options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
-    options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", -1);
+    options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD)-1);
     options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 0);
     options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
     options->bBalloons = (BOOL)DBGetContactSettingByte(NULL, MODULE, "balloons", 0);
@@ -246,7 +253,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         break;
                     case IDC_POPUPSTATUSMODES:
                         {   
-                            HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", -1));
+                            HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD)-1));
                             SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
                             break;
                         }
@@ -270,10 +277,10 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
                         options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
                         options->bPreview = IsDlgButtonChecked(hWnd, IDC_CHKPREVIEW);
-                        options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
-                        options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
-                        options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
-                        options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
+                        options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
+                        options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
+                        options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
+                        options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
                         options->bMergePopup = IsDlgButtonChecked(hWnd, IDC_CHKMERGEPOPUP);
                         options->bShowDate = IsDlgButtonChecked(hWnd, IDC_CHKSHOWDATE);
                         options->bShowTime = IsDlgButtonChecked(hWnd, IDC_CHKSHOWTIME);
@@ -459,10 +466,10 @@ int PopupUpdate(HANDLE hContact, HANDLE hEvent)
                 strncpy(formatTime, "%Y.%m.%d ", sizeof(formatTime));
             if (pdata->pluginOptions->bShowTime)
                 strncat(formatTime, "%H:%M", sizeof(formatTime));
-            strftime(timestamp,sizeof(timestamp), formatTime, localtime(&dbe.timestamp));
+            strftime(timestamp,sizeof(timestamp), formatTime, localtime((time_t *)&dbe.timestamp));
             mir_snprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, "\n[b][i]%s[/i][/b]\n", timestamp);
         }
-        strncat(pdata->eventData[pdata->nrMerged].szText, GetPreview(dbe.eventType, dbe.pBlob), MAX_SECONDLINE);
+        strncat(pdata->eventData[pdata->nrMerged].szText, GetPreview(dbe.eventType, (char *)dbe.pBlob), MAX_SECONDLINE);
         pdata->eventData[pdata->nrMerged].szText[MAX_SECONDLINE - 1] = 0;
 
         /*
@@ -660,7 +667,7 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     if (hContact) {
         //get the needed event data
         strncpy(pud.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), MAX_CONTACTNAME);
-        strncpy(pud.lpzText, GetPreview(dbe.eventType, dbe.pBlob), MAX_SECONDLINE);
+        strncpy(pud.lpzText, GetPreview(dbe.eventType, (char *)dbe.pBlob), MAX_SECONDLINE);
     } else {
         strncpy(pud.lpzContactName, "Plugin Test", MAX_CONTACTNAME);
         strncpy(pud.lpzText, sampleEvent, MAX_SECONDLINE);
@@ -691,7 +698,7 @@ int PopupPreview(NEN_OPTIONS *pluginOptions)
     PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_MESSAGE);
     PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_URL);
     PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_FILE);
-    PopupShow(pluginOptions, NULL, NULL, -1);
+    PopupShow(pluginOptions, NULL, NULL, (DWORD)-1);
 
     return 0;
 }
@@ -701,7 +708,7 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 {
     DBEVENTINFO dbei = {0};
     char *szPreview;
-    NOTIFYICONDATA_NEW nim;
+    NOTIFYICONDATA nim;
     char szTitle[64], *nickName = NULL;
     
     ZeroMemory((void *)&nim, sizeof(nim));
@@ -791,31 +798,72 @@ nounicode:
     return 0;
 }
 
+void UpdateTrayMenuState(struct MessageWindowData *dat)
+{
+    MENUITEMINFOA mii = {0};
+    char szMenuEntry[80];
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_DATA;
+    
+    if(nen_options.bTraySupport && dat->hContact != 0) {
+        GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+        myGlobals.m_UnreadInTray -= mii.dwItemData;
+        //_DebugPopup(dat->hContact, "updated: %d events, %d total", mii.dwItemData, myGlobals.m_UnreadInTray);
+        if(mii.dwItemData > 0) {
+            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus, 0);
+            mii.fMask |= MIIM_STRING;
+            mii.dwTypeData = szMenuEntry;
+            mii.fType = MFT_STRING;
+            mii.cch = lstrlenA(szMenuEntry) + 1;
+        }
+        mii.dwItemData = 0;
+        SetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+    }
+}
 /*
  * if we want tray support, add the contact to the list of unread sessions in the tray menu
  */
 
-int UpdateTrayMenu(struct MessageWindowData *dat, char *szProto, HANDLE hContact)
+int UpdateTrayMenu(struct MessageWindowData *dat, char *szProto, HANDLE hContact, BOOL fromEvent)
 {
     if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
         char szMenuEntry[80];
         char *szStatus = NULL;
-        char *szNick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
+        MENUITEMINFO mii = {0};
+        char *szNick;
+
+        mii.cbSize = sizeof(mii);
+        mii.fMask = MIIM_DATA;
+
         if(dat != 0) {
-            dat->iUnread++;
-            szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus, 0);
+            mii.fMask |= MIIM_BITMAP;
+            mii.hbmpItem = HBMMENU_SYSTEM;
+            szNick = dat->szNickname;
+            GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+            mii.dwItemData++;
+            szStatus = dat->szStatus;
             mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szStatus, dat->iUnread);
+            DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
+            AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+            myGlobals.m_UnreadInTray++;
+            SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
         else {
+            szNick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
             szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szNick, szStatus);
+            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szStatus, fromEvent ? 1 : 0);
+            if(CheckMenuItem(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
+                AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+                mii.dwItemData = fromEvent ? 1 : 0;
+                myGlobals.m_UnreadInTray += mii.dwItemData;
+            }
+            else {
+                GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+                mii.dwItemData += (fromEvent ? 1 : 0);
+                myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
+            }
+            SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
-        if(CheckMenuItem(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
-            InsertMenuA(myGlobals.g_hMenuTrayUnread, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
-            myGlobals.m_UnreadInTray++;
-        }
-        else
-            ModifyMenuA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
     }
     return 0;
 }

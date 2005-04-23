@@ -509,8 +509,6 @@ Beim Verstecken von toolbar Schaltflächen
 Verstecke Formatierungselemente zuerst
 [Hide standard buttons first]
 Verstecke Standardelemente zuerst
-[Send formatting info]
-Formatierungscodes senden
 [Also, allow a hidden send button]
 Sendeschaltfläche ebenfalls verstecken
 [Flash contact list and tray icons for new events in unfocused windows]
@@ -879,4 +877,20 @@ Nachrichtenverlauf
 [Font face]
 
 [Font color]
+[Send Text Formatting]
+Textformatierung senden
+[Global]
+Global
+[This Contact]
+Für diesen Kontakt
+[BBCode]
+BBCodes
+[Simple Tags (*/_)]
+Einfache tags (*/ und _)
+[Force Off]
+Niemals senden
+[Off]
+Aus
+[Global Setting]
+Globale Einstellung nutzen
 

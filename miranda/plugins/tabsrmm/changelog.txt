@@ -43,6 +43,26 @@ Version 0.9.9.95 - 2005/04/15
           containers. Sound toggle is a per container setting and will be saved when
           you close a container.
           
+        + save the font for the input area under SRMsg aswell so that the MSN plugin
+          will find it.
+          
+        + the rich edit log can now recognize simple BBCode tags for formatting text in
+          bold, italic and underline.
+          
+        + The parser has been updated and can now convert the rich edit output from the
+          message input box into bbcodes. It can still parse to "simple" tags (the */_
+          stuff) though. There is a new submenu in the protocol menu on the toolbar which
+          allows you to select which formatting method you want. You can also set this
+          "per contact" since not everybodys IM client can handle bbcodes.
+          
+        + the message grouping mode has been overhauled. Just check it out - it looks 
+          better :)
+          
+        + integrated an own version of event notifications. tabSRMM no longer requires a
+          EventNotify plugin. This stuff has a lot of options, including support for system
+          tray baloon tooltips instead of popups (these can announce unicode messages). Also,
+          a very comprehensive system tray support has been added. 
+          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

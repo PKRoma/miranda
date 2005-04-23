@@ -478,7 +478,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
      */
     
     if(nen_options.bTraySupport)
-        UpdateTrayMenu(0, dbei.szModule, (HANDLE)wParam);
+        UpdateTrayMenu(0, dbei.szModule, (HANDLE)wParam, TRUE);
     else {
         ZeroMemory(&cle, sizeof(cle));
         cle.cbSize = sizeof(cle);

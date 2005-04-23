@@ -872,7 +872,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
 {
     CLISTEVENT cle;
-    char toolTip[256], *contactName;
+    char toolTip[256];
 
     if(!myGlobals.m_FlashOnClist && nen_options.bTraySupport == FALSE)
         return;
@@ -882,7 +882,7 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
 
     if(nen_options.bTraySupport == TRUE) {
         if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE)
-            UpdateTrayMenu(dat, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->hContact);
+            UpdateTrayMenu(dat, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->hContact, FALSE);
         return;
     }
     
@@ -893,8 +893,7 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
         cle.hDbEvent = hEvent;
         cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
         cle.pszService = "SRMsg/ReadMessage";
-        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
-        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), dat->szNickname);
         cle.pszTooltip = toolTip;
         CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
         dat->dwEventIsShown |= MWF_SHOW_FLASHCLIST;
@@ -1050,7 +1049,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!(lf.lfWeight == FW_BOLD)) {          // only allow bold if the font itself isn't a bold one, otherwise just strip it..
-                        if(dat->hwndLog)
+                        if(dat->SendFormat == SENDFORMAT_BBCODE)
                             _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
                         else
                             _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
@@ -1063,7 +1062,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!lf.lfItalic) {                       // same as for bold
-                        if(dat->hwndLog)
+                        if(dat->SendFormat == SENDFORMAT_BBCODE)
                             _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
                         else
                             _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
@@ -1081,7 +1080,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					else
 						iRemoveChars = 3;
                     if(!lf.lfUnderline)  {                   // same as for bold
-                        if(dat->hwndLog)
+                        if(dat->SendFormat == SENDFORMAT_BBCODE)
                             _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
                         else
                             _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));

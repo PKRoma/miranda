@@ -136,46 +136,39 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         case WM_LBUTTONUP:
                         {
                             POINT pt;
-                            MENUITEMINFO mii;
                             GetCursorPos(&pt);
                             SetForegroundWindow(hwndDlg);
                             if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 1) {
+                                HWND hWnd;
                                 iSelection = TrackPopupMenu(myGlobals.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
-                                ZeroMemory((void *)&mii, sizeof(mii));
-                                mii.cbSize = sizeof(mii);
-                                mii.fMask = MIIM_DATA;
-                                GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, iSelection, FALSE, &mii);
-                                if(mii.dwItemData != 0) {
-                                    if(IsWindow((HWND)mii.dwItemData))
-                                        PostMessage((HWND)mii.dwItemData, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
+                                if(hWnd) {
+                                    struct ContainerWindowData *pContainer = 0;
+                                    SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                                    if(pContainer)
+                                        ActivateExistingTab(pContainer, hWnd);
                                 }
-                                else {
-                                    HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
-                                    if(hWnd) {
-                                        struct ContainerWindowData *pContainer = 0;
-                                        SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-                                        if(pContainer)
-                                            ActivateExistingTab(pContainer, hWnd);
-                                    }
-                                    else
-                                        CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
-                                }
+                                else
+                                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
                             }
                             PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
                         case WM_LBUTTONDBLCLK:
                         {
-                            struct ContainerWindowData *pContainer = pFirstContainer;
-                            
+                            int iCount = GetMenuItemCount(myGlobals.g_hMenuTrayUnread);
                             SetForegroundWindow(hwndDlg);
-                            while(pContainer != 0) {
-                                if(pContainer->bInTray) {
-                                    SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-                                    SetForegroundWindow(pContainer->hwnd);
-                                    return 0;
+                            if(iCount > 0) {
+                                UINT uid = GetMenuItemID(myGlobals.g_hMenuTrayUnread, iCount - 1);
+                                HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)uid);
+                                if(hWnd) {
+                                    struct ContainerWindowData *pContainer = 0;
+                                    SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                                    if(pContainer)
+                                        ActivateExistingTab(pContainer, hWnd);
                                 }
-                                pContainer = pContainer->pNextContainer;
+                                else
+                                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)hWnd, 0);
                             }
                             PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;

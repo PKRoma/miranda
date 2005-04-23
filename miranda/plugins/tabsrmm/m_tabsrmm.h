@@ -52,6 +52,10 @@
 #define SMODE_FORCEANSI 4
 #define SMODE_SENDLATER 8
 
+#define SENDFORMAT_BBCODE 2
+#define SENDFORMAT_SIMPLE 1
+#define SENDFORMAT_NONE 0
+
 #define AVATARMODE_DYNAMIC 0
 #define AVATARMODE_STATIC 1
 
@@ -171,6 +175,8 @@ struct MessageWindowData {
     HBITMAP hSmileyIcon;
     char *szProto;
     char *szMetaProto;
+    char szNickname[84];
+    char *szStatus;
     WORD wStatus, wMetaStatus;
     int iLastEventType;
     time_t lastEventTime;
@@ -188,6 +194,7 @@ struct MessageWindowData {
     BOOL bNotOnList;
     int  iAvatarDisplayMode;
     int  iUnread;
+    int  SendFormat;
 };
 
 typedef struct _recentinfo {

@@ -49,6 +49,8 @@ void CreateSystrayIcon(int create)
     if(create && !nen_options.bTrayExist) {
         Shell_NotifyIcon(NIM_ADD, &nim);
         myGlobals.g_hMenuTrayUnread = GetSubMenu(myGlobals.g_hMenuContext, 5);
+        if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 1)
+            DeleteMenu(myGlobals.g_hMenuTrayUnread, 0, MF_BYPOSITION);
         nen_options.bTrayExist = TRUE;
         SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
     }

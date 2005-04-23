@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __MATHMOD_SUPPORT 1
 #define _RELEASE_BUILD 1
 
-#ifdef __GNUWIN32__
+#ifdef ___FOO_WAS__GNUWIN32__
 #define COLOR_HOTLIGHT 26
 #define SB_SETICON (WM_USER+15)
 #define SB_SETTIPTEXTA (WM_USER+16)

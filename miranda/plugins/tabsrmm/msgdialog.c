@@ -43,6 +43,7 @@ $Id$
 
 #include "sendqueue.h"
 #include "msgdlgutils.h"
+#include "functions.h"
 
 #ifdef __GNUWIN32__
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
@@ -102,7 +103,6 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigne
 struct ContainerWindowData *FindContainerByName(const TCHAR *name);
 int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iMode, HANDLE hContactFrom);
-HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer);
 
 static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
@@ -228,7 +228,7 @@ void SetDialogToType(HWND hwndDlg)
 // IEVIew MOD End
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), dat->dwFlags & MWF_ERRORSTATE ? SW_SHOW : SW_HIDE);
 
-    if(!myGlobals.m_SendFormat)
+    if(!dat->SendFormat)
         ShowMultipleControls(hwndDlg, &formatControls[1], 3, SW_HIDE);
     
 // smileybutton stuff...
@@ -855,8 +855,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
                 dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
                 dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
-                if(dat->hContact && dat->szProto != NULL)
+                if(dat->hContact && dat->szProto != NULL) {
                     dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+                    mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
+                    dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
+                }
                 else
                     dat->wStatus = ID_STATUS_OFFLINE;
                 
@@ -1025,6 +1028,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
 
+                /*
+                 * add us to the tray list (if it exists)
+                 */
+
+                if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
+                    UpdateTrayMenu(0, dat->szProto, dat->hContact, FALSE);
+                    
                 dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
 
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
@@ -1250,9 +1260,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 if(dat->showTyping) {
                     char szBuf[80];
-                    char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
-                    mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), szContactName);
+                    mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), dat->szNickname);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                     break;
@@ -1292,14 +1301,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             
         case DM_CONFIGURETOOLBAR:
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
-            if(lParam == 1)
+            if(lParam == 1) {
+                dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
+                if(dat->SendFormat == -1)           // per contact override to disable it..
+                    dat->SendFormat = 0;
                 SetDialogToType(hwndDlg);
+            }
             dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
             dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
             
             dat->iButtonBarNeeds += (dat->showUIElements) ? 28 : 0;
             dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 122 : 82) : 0);
-            if(!myGlobals.m_SendFormat)
+            if(!dat->SendFormat)
                 dat->iButtonBarReallyNeeds -= 78;
             if(lParam == 1) {
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
@@ -1367,6 +1380,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3,3));     // XXX margins in the message area as well
             
             dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
+
+            dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
+            if(dat->SendFormat == -1)           // per contact override to disable it..
+                dat->SendFormat = 0;
             
             SetDialogToType(hwndDlg);
             SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
@@ -1454,14 +1471,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 wchar_t w_newtitle[256];
 #endif
                 char newtitle[128], *szProto = 0, *szOldMetaProto = 0;
-                char *szStatus = NULL, *contactName, *pszNewTitleEnd, newcontactname[128], *temp;
+                char *pszNewTitleEnd, newcontactname[128], *temp;
                 TCITEM item;
                 int    iHash = 0;
 
                 DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
 
                 ZeroMemory((void *)newcontactname,  sizeof(newcontactname));
-
+                dat->szNickname[0] = 0;
+                dat->szStatus = NULL;
+                
                 pszNewTitleEnd = "Message Session";
                 
                 if(dat->iTabID == -1)
@@ -1478,27 +1497,27 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             GetContactUIN(hwndDlg, dat);
                         }
                         
-                        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
+                        mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
                         iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
                     /*
                      * cut nickname on tabs...
                      */
-                        temp = contactName;
+                        temp = dat->szNickname;
                         while(*temp)
-                            iHash += (*(temp++) * (int)(temp - contactName + 1));
+                            iHash += (*(temp++) * (int)(temp - dat->szNickname + 1));
 
                         dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
                         
                         if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
                             if (myGlobals.m_CutContactNameOnTabs)
-                                CutContactName(contactName, newcontactname, sizeof(newcontactname));
+                                CutContactName(dat->szNickname, newcontactname, sizeof(newcontactname));
                             else
-                                strncpy(newcontactname, contactName, sizeof(newcontactname));
+                                strncpy(newcontactname, dat->szNickname, sizeof(newcontactname));
 
-                            szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
-                            if (strlen(newcontactname) != 0 && szStatus != NULL) {
+                            dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
+                            if (strlen(newcontactname) != 0 && dat->szStatus != NULL) {
                                 if (myGlobals.m_StatusOnTabs)
-                                    mir_snprintf(newtitle, 127, "%s (%s)", newcontactname, szStatus);
+                                    mir_snprintf(newtitle, 127, "%s (%s)", newcontactname, dat->szStatus);
                                 else
                                     mir_snprintf(newtitle, 127, "%s", newcontactname);
                             } else
@@ -1526,7 +1545,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             int iLen;
                             
                             char *szOldStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wOldStatus, 0);
-                            char *szNewStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, 0);
+                            char *szNewStatus = dat->szStatus;
                             
                             if(dat->szProto != NULL) {
                                 if(dat->wStatus == ID_STATUS_OFFLINE)
@@ -1627,10 +1646,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
-                if(nen_options.bTraySupport && myGlobals.m_UnreadInTray > 0) {
-                    if(DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND) != 0)
-                        myGlobals.m_UnreadInTray--;
-                }
+                UpdateTrayMenuState(dat);
                 if(myGlobals.m_TipOwner == dat->hContact)
                     RemoveBalloonTip();
 #if defined(__MATHMOD_SUPPORT)
@@ -1677,6 +1693,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0)
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 
+                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
@@ -1684,10 +1701,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 /*
                  * delete ourself from the tray menu..
                  */
-                if(nen_options.bTraySupport && myGlobals.m_UnreadInTray > 0) {
-                    if(DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND) != 0)
-                        myGlobals.m_UnreadInTray--;
-                }
+                UpdateTrayMenuState(dat);
                 if(myGlobals.m_TipOwner == dat->hContact)
                     RemoveBalloonTip();
 #if defined(__MATHMOD_SUPPORT)
@@ -1772,7 +1786,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 if(dat->hContact != 0 && dat->showUIElements != 0) {
                     const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
-                    if(!myGlobals.m_SendFormat)
+                    if(!dat->SendFormat)
                         hideThisControls = controlsToHide2;
                     for(i = 0;;i++) {
                         if(hideThisControls[i] == -1)
@@ -2141,9 +2155,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 } else {
                     if (dat->nTypeSecs > 0) {
                         char szBuf[256];
-                        char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
-                        mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), szContactName);
+                        mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), dat->szNickname);
                         dat->nTypeSecs--;
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
                             SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
@@ -2590,13 +2603,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
                     
 #if defined( _UNICODE )
-                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
+                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
                     if(streamOut != NULL) {
                         decoded = Utf8Decode(streamOut);
                         converted = (TCHAR *)malloc((lstrlenW(decoded) + 2) * sizeof(WCHAR));
                         if(converted != NULL) {
                             _tcscpy(converted, decoded);
-                            if(myGlobals.m_SendFormat) {
+                            if(dat->SendFormat) {
                                 DoRtfToTags(converted, dat);
                                 DoTrimMessage(converted);
                             }
@@ -2613,12 +2626,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         free(streamOut);
                     }
 #else                    
-                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
+                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
                     if(streamOut != NULL) {
                         converted = (TCHAR *)malloc((lstrlenA(streamOut) + 2)* sizeof(TCHAR));
                         if(converted != NULL) {
                             _tcscpy(converted, streamOut);
-                            if(myGlobals.m_SendFormat) {
+                            if(dat->SendFormat) {
                                 DoRtfToTags(converted, dat);
                                 DoTrimMessage(converted);
                             }
@@ -2661,9 +2674,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         char *szFromStream = NULL;
 
 #if defined(_UNICODE)
-                        szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
+                        szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
 #else
-                        szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, myGlobals.m_SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
+                        szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
 #endif
                         ZeroMemory((void *)&tci, sizeof(tci));
                         tci.mask = TCIF_PARAM;
@@ -2925,10 +2938,14 @@ quote_from_last:
                     RECT rc;
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 4);
                     int iSelection;
-
+                    int iOldGlobalSendFormat = myGlobals.m_SendFormat;
+                    
                     if(dat->hContact) {
                         unsigned int iOldIEView = GetIEViewMode(hwndDlg, dat);
                         unsigned int iNewIEView = 0;
+                        int iLocalFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", 0);
+                        int iNewLocalFormat = iLocalFormat;
+                        
                         GetWindowRect(GetDlgItem(hwndDlg, IDC_PROTOMENU), &rc);
 
                         EnableMenuItem(submenu, 0, MF_BYPOSITION | (ServiceExists(MS_IEVIEW_WINDOW) ? MF_ENABLED : MF_GRAYED));
@@ -2944,7 +2961,20 @@ quote_from_last:
 
                         EnableMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_GRAYED : MF_ENABLED));
                         EnableMenuItem(submenu, ID_MODE_PERCONTACT, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_GRAYED : MF_ENABLED));
-                        
+
+                        /*
+                         * formatting menu..
+                         */
+
+                        CheckMenuItem(submenu, ID_GLOBAL_BBCODE, MF_BYCOMMAND | ((myGlobals.m_SendFormat == SENDFORMAT_BBCODE) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_GLOBAL_SIMPLETAGS, MF_BYCOMMAND | ((myGlobals.m_SendFormat == SENDFORMAT_SIMPLE) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_GLOBAL_OFF, MF_BYCOMMAND | ((myGlobals.m_SendFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
+
+                        CheckMenuItem(submenu, ID_THISCONTACT_GLOBALSETTING, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_THISCONTACT_BBCODE, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_BBCODE) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_THISCONTACT_SIMPLETAGS, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_SIMPLE) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_THISCONTACT_OFF, MF_BYCOMMAND | ((iLocalFormat == -1) ? MF_CHECKED : MF_UNCHECKED));
+
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                         switch(iSelection) {
                             case ID_IEVIEWSETTING_USEGLOBAL:
@@ -2975,6 +3005,40 @@ quote_from_last:
                                 dat->dwEventIsShown ^= MWF_SHOW_SPLITTEROVERRIDE;
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", (BYTE)(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE));
                                 break;
+                            case ID_GLOBAL_BBCODE:
+                                myGlobals.m_SendFormat = SENDFORMAT_BBCODE;
+                                break;
+                            case ID_GLOBAL_SIMPLETAGS:
+                                myGlobals.m_SendFormat = SENDFORMAT_SIMPLE;
+                                break;
+                            case ID_GLOBAL_OFF:
+                                myGlobals.m_SendFormat = SENDFORMAT_NONE;
+                                break;
+                            case ID_THISCONTACT_GLOBALSETTING:
+                                iNewLocalFormat = 0;
+                                break;
+                            case ID_THISCONTACT_BBCODE:
+                                iNewLocalFormat = SENDFORMAT_BBCODE;
+                                break;
+                            case ID_THISCONTACT_SIMPLETAGS:
+                                iNewLocalFormat = SENDFORMAT_SIMPLE;
+                                break;
+                            case ID_THISCONTACT_OFF:
+                                iNewLocalFormat = -1;
+                                break;
+                        }
+                        if(iNewLocalFormat == 0)
+                            DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "sendformat");
+                        else if(iNewLocalFormat != iLocalFormat)
+                            DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", iNewLocalFormat);
+                        
+                        if(myGlobals.m_SendFormat != iOldGlobalSendFormat)
+                            DBWriteContactSettingDword(0, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
+                        if(iNewLocalFormat != iLocalFormat || myGlobals.m_SendFormat != iOldGlobalSendFormat) {
+                            dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
+                            if(dat->SendFormat == -1)           // per contact override to disable it..
+                                dat->SendFormat = 0;
+                            WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
                         }
                         iNewIEView = GetIEViewMode(hwndDlg, dat);
                         if(iNewIEView != iOldIEView) {
@@ -3477,8 +3541,7 @@ quote_from_last:
                      */
                     if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
                         char szErrMsg[256];
-                        char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
-                        mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", contactName);
+                        mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", dat->szNickname);
                         LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
                         goto verify;
                     }
@@ -3515,8 +3578,7 @@ quote_from_last:
 
                 if(sendJobs[iFound].hContact[i] != sendJobs[iFound].hOwner) {
                     char szErrMsg[256];
-                    char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
-                    mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", contactName);
+                    mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", dat->szNickname);
                     LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
                 }
 
@@ -3587,8 +3649,10 @@ verify:
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "container", szNewName);
 #endif                
                 WindowList_Remove(hMessageWindowList, hwndDlg);
-                CreateNewTabForContact(pNewContainer, dat->hContact, 0, NULL, TRUE, TRUE);
+                CreateNewTabForContact(pNewContainer, dat->hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
                 SendMessage(hwndDlg, WM_CLOSE, 0, 1);
+                if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
+                    UpdateTrayMenu(0, dat->szProto, dat->hContact, FALSE);
                 if (iOldItems > 1) {                // there were more than 1 tab, container is still valid
                     RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
                 }
@@ -3724,7 +3788,7 @@ verify:
             
             strncpy(szFilter, "Rich Edit file_*.rtf", MAX_PATH);
             szFilter[14] = '\0';
-            strncpy(szFilename, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0), MAX_PATH);
+            strncpy(szFilename, dat->szNickname, MAX_PATH);
             strncat(szFilename, ".rtf", MAX_PATH);
             ofn.lStructSize=sizeof(ofn);
             ofn.hwndOwner=hwndDlg;
@@ -3998,8 +4062,10 @@ verify:
             if (dat->hSmileyIcon)
                 DeleteObject(dat->hSmileyIcon);
 
-            if(nen_options.bTraySupport)                // remove me from the tray menu (if still there)
+            if(nen_options.bTraySupport) {
+                UpdateTrayMenuState(dat);               // remove me from the tray menu (if still there)
                 DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
+            }
             
             WindowList_Remove(hMessageWindowList, hwndDlg);
             SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);

@@ -533,6 +533,18 @@
 #define ID_TRAYCONTEXT_RESTOREALLMESSAGECONTAINERS 40222
 #define ID_TRAYCONTEXT_DON40223         40223
 #define ID_TRAYCONTEXT_BE               40224
+#define ID_RECENTSESSIONS_2             40225
+#define ID_PROTOMENU_SENDTEXTFORMATTING 40226
+#define ID_SENDTEXTFORMATTING_GLOBAL    40227
+#define ID_Menu40228                    40228
+#define ID_GLOBAL_SIMPLETAGS            40229
+#define ID_GLOBAL_OFF                   40230
+#define ID_SENDTEXTFORMATTING_THISCONTACT 40231
+#define ID_THISCONTACT_GLOBALSETTING    40232
+#define ID_THISCONTACT_BBCODE           40233
+#define ID_THISCONTACT_SIMPLETAGS       40234
+#define ID_THISCONTACT_OFF              40235
+#define ID_GLOBAL_BBCODE                40236
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -540,7 +552,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40225
+#define _APS_NEXT_COMMAND_VALUE         40237
 #define _APS_NEXT_CONTROL_VALUE         1718
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

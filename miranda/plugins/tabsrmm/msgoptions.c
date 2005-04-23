@@ -204,7 +204,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_AUTOCLOSELAST, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocloselast", 0));
 
             CheckDlgButton(hwndDlg, IDC_ALWAYSFULLWIDTHTOOLBAR, DBGetContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", 0));
-            CheckDlgButton(hwndDlg, IDC_SENDFORMAT, DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendformat", 0));
             CheckDlgButton(hwndDlg, IDC_ALLOWSENDBUTTONHIDE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0));
             
             EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCLOSELAST), GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE) > 0);
@@ -265,7 +264,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELETETEMP));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flashcl", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLASHCLIST));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ALWAYSFULLWIDTHTOOLBAR));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "sendformat", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SENDFORMAT));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hidesend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ALLOWSENDBUTTONHIDE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", (BYTE)SendDlgItemMessage(hwndDlg, IDC_TOOLBARHIDEMODE, CB_GETCURSEL, 0, 0));
                             
@@ -1439,6 +1437,20 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 									DBWriteContactSettingDword(NULL,SRFONTSETTINGMODULE,str,fontSettings[i].colour);
 									sprintf(str,"Font%dAs",i);
 									DBWriteContactSettingWord(NULL,SRFONTSETTINGMODULE,str,(WORD)((fontSettings[i].sameAsFlags<<8)|fontSettings[i].sameAs));
+                                    if(i == MSGFONTID_MESSAGEAREA) {
+                                        sprintf(str,"Font%d",i);
+                                        DBWriteContactSettingString(NULL,"SRMsg",str,fontSettings[i].szFace);
+                                        sprintf(str,"Font%dSet",i);
+                                        DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].charset);
+                                        sprintf(str,"Font%dSize",i);
+                                        DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].size);
+                                        sprintf(str,"Font%dSty",i);
+                                        DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].style);
+                                        sprintf(str,"Font%dCol",i);
+                                        DBWriteContactSettingDword(NULL,"SRMsg",str,fontSettings[i].colour);
+                                        sprintf(str,"Font%dAs",i);
+                                        DBWriteContactSettingWord(NULL,"SRMsg",str,(WORD)((fontSettings[i].sameAsFlags<<8)|fontSettings[i].sameAs));
+                                    }
 								}
                                 dwFlags = IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG) ? dwFlags | MWF_LOG_INDIVIDUALBKG : dwFlags & ~MWF_LOG_INDIVIDUALBKG;
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);

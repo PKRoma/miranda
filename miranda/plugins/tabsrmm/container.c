@@ -667,7 +667,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             } 
         case DM_UPDATETITLE: {
                 HANDLE hContact = (HANDLE) wParam;
-                char *szProto = 0, *szStatus = 0, *contactName = 0, temp[200];
+                char *szProto = 0, *szStatus = 0, *contactName = NULL, temp[200];
                 TCHAR newtitle[256], oldtitle[256];
                 WORD wStatus = -1;
                 TCHAR tTemp[204];
@@ -688,7 +688,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                    contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0);
+                    contactName = dat->szNickname;
                 
                 temp[0] = '\0';
                 tTemp[0] = '\0';
@@ -705,7 +705,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     mir_snprintf(temp, sizeof(temp), "%s", uin);
                     
                 if((pContainer->dwFlags & CNT_TITLE_SHOWNAME || pContainer->dwFlags & CNT_TITLE_SHOWUIN) && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
-                    szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
+                    szStatus = dat->szStatus;
                     if(szStatus != NULL) {
                         strncat(temp, " (", sizeof(temp));
                         strncat(temp, szStatus, sizeof(temp));
@@ -824,6 +824,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 case SC_MINIMIZE:
                     if(nen_options.bTraySupport && nen_options.bMinimizeToTray) {
+                        /*
                         TCHAR szTitle[25], szFinalTitle[30];
                         MENUITEMINFO mii;
                         GetWindowText(hwndDlg, szTitle, 25);
@@ -838,6 +839,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         mii.fMask = MIIM_DATA;
                         mii.dwItemData = (DWORD)hwndDlg;
                         SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, pContainer->iContainerIndex + 1, FALSE, &mii);
+                        */
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
                         MinimiseToTray(hwndDlg, TRUE);
@@ -959,7 +961,6 @@ panel_found:
                             struct MessageWindowData *cdat = 0;
                             char *contactName = 0, *szStatus = 0;
                             char szTtitle[80];
-                            WORD iStatus;
 #if defined ( _UNICODE )
                             wchar_t w_contactName[80];
 #endif
@@ -973,11 +974,10 @@ panel_found:
                             if (item.lParam) {
                                 cdat = (struct MessageWindowData *) GetWindowLong((HWND)item.lParam, GWL_USERDATA);
                                 if (cdat) {
-                                    contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) cdat->hContact, 0);
+                                    contactName = cdat->szNickname;
                                     if (contactName) {
                                         if (cdat->szProto) {
-                                            iStatus = cdat->wStatus;
-                                            szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, cdat->szProto == NULL ? ID_STATUS_OFFLINE : iStatus, 0);
+                                            szStatus = cdat->szStatus;
                                             nmtt->hinst = NULL;
                                             mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
 #if defined ( _UNICODE )

@@ -528,8 +528,6 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 
 [Hide standard buttons first]
 
-[Send formatting info]
-
 [Also, allow a hidden send button]
 
 [Flash contact list and tray icons for new events in unfocused windows]
@@ -913,4 +911,51 @@ tabSRMM Version 0.9.9.0 - 2005/01/10
 [Font face]
 
 [Font color]
+
+[Send Text Formatting]
+
+[Global]
+
+[This Contact]
+
+[BBCode]
+
+[Simple Tags (*/_)]
+
+[Force Off]
+
+[Off]
+
+[Global Setting]
+
+;
+; tray icon stuff and event notifications...
+;
+[Enable system tray support]
+
+[Minimize containers to system tray]
+
+[Show baloon tooltips instead of popups]
+
+[Show popups when Status is...]
+
+[No popups for RSS]
+
+[Recent Sessions]
+
+[Favorites]
+
+[Disable All Popups]
+
+[Don't create Windows automatically]
+
+[Hide all Message Containers]
+
+[Restore all Message Containers]
+
+[Don't play Sounds]
+
+[Be "Super Quiet]
+
+[Sounds are %s (click to toggle, SHIFT-click to apply for all containers)]
 
