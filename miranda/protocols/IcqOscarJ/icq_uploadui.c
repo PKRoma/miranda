@@ -118,6 +118,9 @@ static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
   if (phItemAll)
     SendMessage(hwndDlg, CLM_SETCHECKMARK, (WPARAM)phItemAll, bAll);
 
+	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
+		SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
+
   bListInit = 0;
 
   return bAll;
@@ -990,7 +993,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
               }
 
-              bCheck = UpdateCheckmarks(hwndDlg, NULL);
+              if (!bListInit) // do not enter twice
+                bCheck = UpdateCheckmarks(hwndDlg, NULL);
 
               if (!hItemAll) // Add the "All contacts" item
               {
