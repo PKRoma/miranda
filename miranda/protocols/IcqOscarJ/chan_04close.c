@@ -69,6 +69,8 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	NETLIBOPENCONNECTION nloc = {0};
 
 
+  // TODO: implement proxy connection walkie - will solve gateway problems, in 0.3.6+
+
   Netlib_CloseHandle(hServerConn);
   hServerConn = NULL;
 
@@ -100,7 +102,8 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		disposeChain(&chain);
 		handleSignonError(wError);
 
-		return;
+    // we return only if the server did not gave us cookie (possible to connect with soft error)
+    if (getLenFromChain(chain, 0x06, 1) == 0) return;
 	}
 
 	// TLV 9 errors (runtime errors?)
@@ -305,6 +308,9 @@ static void handleSignonError(WORD wError)
 	case 0x1B:
 		icq_LogMessage(LOG_FATAL, Translate("Connection failed.\nThe server did not accept this client version."));
 		break;
+
+  case 0x1C:
+    icq_LogMessage(LOG_WARNING, Translate("The server sent warning, this version is getting old.\nTry to look for a new one."));
 
 	case 0x1E:
 		icq_LogMessage(LOG_FATAL, Translate("Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected."));
