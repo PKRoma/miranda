@@ -760,6 +760,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           DWORD dwUin;
           int bAdded = 0;
           int bRegroup = 0;
+          int bNicked = 0;
           WORD wOldGroupId;
 
           // This looks like a real contact
@@ -899,6 +900,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 										Netlib_Logf(ghServerNetlibUser, "Failed to convert Nickname '%s' from UTF-8", pszNick);
 									}
 
+                  bNicked = 1;
+
 									// Write nickname to database
 									if (DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
@@ -930,6 +933,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 								Netlib_Logf(ghServerNetlibUser, "Invalid nickname");
 							}
 						}
+            if (bAdded && !bNicked)
+              icq_QueueUser(hContact); // queue user without nick for fast auto info update
 
 						// Look for comment TLV and copy it to the db if necessary
 						if (pTLV = getTLV(pChain, 0x013C, 1))
@@ -1344,6 +1349,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 	{
 		// No contacts left to sync
 		bIsSyncingCL = FALSE;
+
+    icq_RescanInfoUpdate();
 
 		if (wLen >= 4)
 		{
