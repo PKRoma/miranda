@@ -19,6 +19,8 @@ void GetTrayWindowRect(LPRECT lprect);
 BOOL RemoveTaskbarIcon(HWND hWnd);
 void MinimiseToTray(HWND hWnd, BOOL bForceAnimation);
 void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rc);
+void RemoveBalloonTip();
+void FlashTrayIcon(int mode);
 
 /*
  * msgs.c

@@ -319,7 +319,6 @@
 #define IDC_EXTRAMICROLF                1690
 #define IDC_SENDFORMAT                  1690
 #define IDC_FLATMSGLOG                  1690
-#define IDC_DISABLEALLPOPUPS            1690
 #define IDC_LONGDATES                   1691
 #define IDC_CHECK3                      1692
 #define IDC_CNTNOSTATUSBAR              1692
@@ -524,6 +523,16 @@
 #define ID_UNREADMENU_TEST              40212
 #define ID_UNREADMENU_FOOBAR            40213
 #define ID_UNREADMENU_                  40214
+#define ID_TRAYCONTEXT_RECENTSESSIONS   40215
+#define ID_RECENTSESSIONS_1             40216
+#define ID_TRAYCONTEXT_FAVORITES        40217
+#define ID_FAVORITES_1                  40218
+#define ID_TRAYCONTEXT_DISABLEALLPOPUPS 40219
+#define ID_TRAYCONTEXT_DON              40220
+#define ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS 40221
+#define ID_TRAYCONTEXT_RESTOREALLMESSAGECONTAINERS 40222
+#define ID_TRAYCONTEXT_DON40223         40223
+#define ID_TRAYCONTEXT_BE               40224
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -531,7 +540,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40215
+#define _APS_NEXT_COMMAND_VALUE         40225
 #define _APS_NEXT_CONTROL_VALUE         1718
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

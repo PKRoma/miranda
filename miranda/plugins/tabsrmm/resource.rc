@@ -933,6 +933,29 @@ BEGIN
     BEGIN
         MENUITEM SEPARATOR
     END
+    POPUP "Traycontext"
+    BEGIN
+        POPUP "Recent Sessions"
+        BEGIN
+            MENUITEM "1",                           ID_RECENTSESSIONS_1
+        END
+        MENUITEM SEPARATOR
+        POPUP "Favorites"
+        BEGIN
+            MENUITEM "1",                           ID_FAVORITES_1
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Disable All Popups",          ID_TRAYCONTEXT_DISABLEALLPOPUPS
+
+        MENUITEM "Don't create Windows automatically", ID_TRAYCONTEXT_DON
+        MENUITEM "Hide all Message Containers", ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS
+
+        MENUITEM "Restore All Message Containers", 
+                                                ID_TRAYCONTEXT_RESTOREALLMESSAGECONTAINERS
+
+        MENUITEM "Don't play Sounds",           ID_TRAYCONTEXT_DON40223
+        MENUITEM "Be ""Super Quiet""",          ID_TRAYCONTEXT_BE
+    END
 END
 
 #endif    // Englisch (USA) resources

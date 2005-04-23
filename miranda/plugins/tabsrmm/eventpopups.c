@@ -114,6 +114,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 0);
     options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
     options->bBalloons = (BOOL)DBGetContactSettingByte(NULL, MODULE, "balloons", 0);
+    options->iAutoRestore = 0;
     return 0;
 }
 
@@ -228,7 +229,6 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
             CheckDlgButton(hWnd, IDC_NORSS, options->bNoRSS);
             CheckDlgButton(hWnd, IDC_CHKPREVIEW, options->bPreview);
-            CheckDlgButton(hWnd, IDC_DISABLEALLPOPUPS, options->iDisable);
             CheckDlgButton(hWnd, IDC_ENABLETRAYSUPPORT, options->bTraySupport);
             CheckDlgButton(hWnd, IDC_MINIMIZETOTRAY, options->bMinimizeToTray);
             CheckDlgButton(hWnd, IDC_USESHELLNOTIFY, options->bBalloons);
@@ -282,7 +282,6 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         options->bShowON = !IsDlgButtonChecked(hWnd, IDC_RDNEW);
                         options->iNumberMsg = GetDlgItemInt(hWnd, IDC_NUMBERMSG, NULL, FALSE);
                         options->bNoRSS = IsDlgButtonChecked(hWnd, IDC_NORSS);
-                        options->iDisable = IsDlgButtonChecked(hWnd, IDC_DISABLEALLPOPUPS);
                         options->bTraySupport = IsDlgButtonChecked(hWnd, IDC_ENABLETRAYSUPPORT);
                         options->bMinimizeToTray = IsDlgButtonChecked(hWnd, IDC_MINIMIZETOTRAY);
                         options->bBalloons = IsDlgButtonChecked(hWnd, IDC_USESHELLNOTIFY);
@@ -515,10 +514,8 @@ int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
     }
     if (mask & MASK_REMOVE) {
         int i;
-        for(i = 0; i < pdata->nrMerged; i++) {
-            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
-            CallService(MS_DB_EVENT_MARKREAD, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
-        }
+        for(i = 0; i < pdata->nrMerged; i++)
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
         PopUpList[NumberPopupData(pdata->hContact)] = NULL;
     }
     if (mask & MASK_DISMISS) {
@@ -788,6 +785,7 @@ nounicode:
         nim.szInfo[250] = 0;
     }
     Shell_NotifyIcon(NIM_MODIFY, (NOTIFYICONDATA *)&nim);
+    myGlobals.m_TipOwner = (HANDLE)wParam;
     if(dbei.pBlob)
         free(dbei.pBlob);
     return 0;
@@ -813,7 +811,7 @@ int UpdateTrayMenu(struct MessageWindowData *dat, char *szProto, HANDLE hContact
             mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szNick, szStatus);
         }
         if(CheckMenuItem(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
-            AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+            InsertMenuA(myGlobals.g_hMenuTrayUnread, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
             myGlobals.m_UnreadInTray++;
         }
         else
@@ -838,7 +836,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
         }
     }
     if(windowOpen && pContainer != 0) {                // message window is open, need to check the container config if we want to see a popup nonetheless
-        if (pContainer->dwFlags & CNT_DONTREPORT && IsIconic(pContainer->hwnd))
+        if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd) || pContainer->bInTray))        // in tray counts as "minimised"
                 goto passed;
         if (pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED) {
             if (!IsIconic(pContainer->hwnd) && GetForegroundWindow() != pContainer->hwnd && GetActiveWindow() != pContainer->hwnd)

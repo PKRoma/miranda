@@ -34,6 +34,7 @@ $Id$
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
+extern struct ContainerWindowData *pFirstContainer;
 
 void CreateSystrayIcon(int create)
 {
@@ -52,9 +53,22 @@ void CreateSystrayIcon(int create)
         SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
     }
     else if(create == FALSE && nen_options.bTrayExist) {
+        struct ContainerWindowData *pContainer = pFirstContainer;
+        
         Shell_NotifyIcon(NIM_DELETE, &nim);
         nen_options.bTrayExist = FALSE;
         KillTimer(myGlobals.g_hwndHotkeyHandler, 1000);
+        /*
+         * check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
+         * need to temporarily re-enable tray support, because the container checks for it.
+         */
+        nen_options.bTraySupport = TRUE;
+        while(pContainer) {
+            if(pContainer->bInTray)
+                SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+            pContainer = pContainer->pNextContainer;
+        }
+        nen_options.bTraySupport = FALSE;
     }
 }
 
@@ -147,7 +161,8 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
  * mode = 1 - restore the original icon
  */
 
-void FlashTrayIcon(int mode) {
+void FlashTrayIcon(int mode)
+{
     NOTIFYICONDATA nim;
 
     nim.cbSize = sizeof(nim);
@@ -159,4 +174,17 @@ void FlashTrayIcon(int mode) {
     myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
     if(mode)
         myGlobals.m_TrayFlashState = 0;
+}
+
+void RemoveBalloonTip()
+{
+    NOTIFYICONDATA nim;
+
+    nim.cbSize = sizeof(nim);
+    nim.hWnd = myGlobals.g_hwndHotkeyHandler;
+    nim.uID = 100;
+    nim.uFlags = NIF_INFO;
+    nim.szInfo[0] = 0;
+    Shell_NotifyIcon(NIM_MODIFY, &nim);
+    myGlobals.m_TipOwner = (HANDLE)0;
 }

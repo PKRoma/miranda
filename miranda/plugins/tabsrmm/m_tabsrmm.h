@@ -249,7 +249,7 @@ typedef struct _globals {
     int m_UnreadInTray;
     int m_TrayFlashes;
     int m_TrayFlashState;
-    
+    HANDLE m_TipOwner;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

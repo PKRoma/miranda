@@ -120,6 +120,7 @@ typedef struct {
     BOOL bTrayExist;
     BOOL bMinimizeToTray;
     BOOL bBalloons;
+    int  iAutoRestore;
 } NEN_OPTIONS;
 
 typedef struct EVENT_DATA {

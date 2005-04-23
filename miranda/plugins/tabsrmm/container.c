@@ -817,7 +817,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         }
                         else
                             MaximiseFromTray(hwndDlg, TRUE, &pContainer->restoreRect);
-                        DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex, MF_BYCOMMAND);
+                        DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
                         pContainer->bInTray = 0;
                         return 0;
                     }
@@ -832,12 +832,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             _sntprintf(szFinalTitle, 28, _T("%20.20s..."), szTitle);
                         else
                             _tcscpy(szFinalTitle, szTitle);
-                        InsertMenu(myGlobals.g_hMenuTrayUnread, 0, MF_BYPOSITION, (UINT_PTR)pContainer->iContainerIndex, szFinalTitle);
+                        AppendMenu(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND, (UINT_PTR)pContainer->iContainerIndex + 1, szFinalTitle);
                         ZeroMemory((void *)&mii, sizeof(mii));
                         mii.cbSize = sizeof(mii);
                         mii.fMask = MIIM_DATA;
                         mii.dwItemData = (DWORD)hwndDlg;
-                        SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, pContainer->iContainerIndex, FALSE, &mii);
+                        SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, pContainer->iContainerIndex + 1, FALSE, &mii);
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
                         MinimiseToTray(hwndDlg, TRUE);
@@ -2303,6 +2303,20 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount)
 {
     FLASHWINFO fwi;
+    
+    if(pContainer->bInTray && iMode != 0 && nen_options.iAutoRestore > 0) {
+        BOOL old = nen_options.bMinimizeToTray;
+        nen_options.bMinimizeToTray = FALSE;
+        //SendMessage(pContainer->hwnd, WM_SETREDRAW, FALSE, 0);
+        ShowWindow(pContainer->hwnd, SW_HIDE);
+        SetParent(pContainer->hwnd, NULL);
+        SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+        nen_options.bMinimizeToTray = old;
+        //SendMessage(pContainer->hwnd, WM_SETREDRAW, TRUE, 0);
+        SetWindowLong(pContainer->hwnd, GWL_STYLE, GetWindowLong(pContainer->hwnd, GWL_STYLE) | WS_VISIBLE);
+        DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
+        pContainer->bInTray = 0;
+    }
     
     if(pContainer->dwFlags & CNT_NOFLASH)                   // container should never flash
         return;

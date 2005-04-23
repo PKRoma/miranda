@@ -1631,6 +1631,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND) != 0)
                         myGlobals.m_UnreadInTray--;
                 }
+                if(myGlobals.m_TipOwner == dat->hContact)
+                    RemoveBalloonTip();
 #if defined(__MATHMOD_SUPPORT)
                 if(myGlobals.m_MathModAvail) {
                     CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE)); 
@@ -1686,6 +1688,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND) != 0)
                         myGlobals.m_UnreadInTray--;
                 }
+                if(myGlobals.m_TipOwner == dat->hContact)
+                    RemoveBalloonTip();
 #if defined(__MATHMOD_SUPPORT)
                 if(myGlobals.m_MathModAvail) {
                     CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE)); 

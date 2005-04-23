@@ -30,19 +30,26 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
     a) global hotkeys (they need to work even if NO message window is open, that's
        why we handle it here.
 
-    b) the event hook which is fired whenever a contact setting is changed. We need
-       this hook for detecting changes to the user picture.
+    b) event notify stuff, messages posted from the popups to avoid threading
+       issues.
+
+    c) tray icon handling - cares about the events sent by the tray icon, handles
+       the menus, doubleclicks and so on.
 */
 
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"
 #include "m_message.h"
+#include "m_popup.h"
+#include "nen.h"
+#include "functions.h"
 
 extern struct ContainerWindowData *pFirstContainer;
 extern HANDLE hMessageWindowList;
 extern struct SendJob sendJobs[NR_SENDJOBS];
 extern MYGLOBALS myGlobals;
+extern NEN_OPTIONS nen_options;
 
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
@@ -161,13 +168,27 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         {
                             struct ContainerWindowData *pContainer = pFirstContainer;
                             
+                            SetForegroundWindow(hwndDlg);
                             while(pContainer != 0) {
                                 if(pContainer->bInTray) {
                                     SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                    SetForegroundWindow(pContainer->hwnd);
                                     return 0;
                                 }
                                 pContainer = pContainer->pNextContainer;
                             }
+                            PostMessage(hwndDlg, WM_NULL, 0, 0);
+                            break;
+                        }
+                        case WM_RBUTTONUP:
+                        {
+                            HMENU submenu = GetSubMenu(myGlobals.g_hMenuContext, 6);
+                            POINT pt;
+
+                            SetForegroundWindow(hwndDlg);
+                            GetCursorPos(&pt);
+                            iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                            PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
                         default:
@@ -183,16 +204,30 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
              */
         case DM_HANDLECLISTEVENT:
             {
-                CLISTEVENT *cle = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, wParam, 0);
-                if (cle) {
-                    if (ServiceExists(cle->pszService)) {
-                        CallService(cle->pszService, (WPARAM)NULL, (LPARAM)cle);
-                        CallService(MS_CLIST_REMOVEEVENT, (WPARAM)cle->hContact, (LPARAM)cle->hDbEvent);
+                /*
+                 * if tray support is on, no clist events will be created when a message arrives for a contact
+                 * w/o an open window. So we just open it manually...
+                 */
+                if(nen_options.bTraySupport)
+                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)wParam, 0);
+                else {
+                    CLISTEVENT *cle = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, wParam, 0);
+                    if (cle) {
+                        if (ServiceExists(cle->pszService)) {
+                            CallService(cle->pszService, (WPARAM)NULL, (LPARAM)cle);
+                            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)cle->hContact, (LPARAM)cle->hDbEvent);
+                        }
                     }
-                    
                 }
                 break;
             }
+            /*
+             * sent from the popup to "dismiss" the event. we should do this in the main thread
+             */
+        case DM_REMOVECLISTEVENT:
+            CallService(MS_CLIST_REMOVEEVENT, wParam, lParam);
+            CallService(MS_DB_EVENT_MARKREAD, wParam, lParam);
+            break;
         case DM_REGISTERHOTKEYS:
             {
                 int iWantHotkeys = DBGetContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", 0);
@@ -231,6 +266,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     FlashTrayIcon(1);
                 
             }
+            break;
         case DM_FORCEUNREGISTERHOTKEYS:
             UnregisterHotKey(hwndDlg, 0xc001);
             UnregisterHotKey(hwndDlg, 0xc002);

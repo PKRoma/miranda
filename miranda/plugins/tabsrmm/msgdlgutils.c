@@ -1049,8 +1049,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
-                    if(!(lf.lfWeight == FW_BOLD))           // only allow bold if the font itself isn't a bold one, otherwise just strip it..
-                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+                    if(!(lf.lfWeight == FW_BOLD)) {          // only allow bold if the font itself isn't a bold one, otherwise just strip it..
+                        if(dat->hwndLog)
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
+                        else
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+                    }
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\i"))) // italics
@@ -1058,8 +1062,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
-                    if(!lf.lfItalic)                        // same as for bold
-                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+                    if(!lf.lfItalic) {                       // same as for bold
+                        if(dat->hwndLog)
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
+                        else
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+                    }
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\ul"))) // underlined
@@ -1072,8 +1080,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 						iRemoveChars = 4;
 					else
 						iRemoveChars = 3;
-                    if(!lf.lfUnderline)                     // same as for bold
-                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+                    if(!lf.lfUnderline)  {                   // same as for bold
+                        if(dat->hwndLog)
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
+                        else
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+                    }
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\tab"))) // tab
