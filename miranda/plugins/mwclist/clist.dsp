@@ -661,6 +661,38 @@ SOURCE=.\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\Icq2000.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2001.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2003.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2gof.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2goJ.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\IcqL4.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\IcqL5.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\IcqLite.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\IM2.ico
 # End Source File
 # Begin Source File

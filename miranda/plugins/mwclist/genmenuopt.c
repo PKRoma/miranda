@@ -660,7 +660,7 @@ int GenMenuOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position=-1000000000;
 	odp.hInstance=g_hInst;
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_GENMENU);
-	odp.pszGroup=Translate("GenMenu");
+	odp.pszGroup=Translate("Customize");
 	odp.pszTitle=Translate("MenuOrder");
 	odp.pfnDlgProc=GenMenuOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;

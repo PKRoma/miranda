@@ -489,9 +489,15 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				}
 				else TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),Drawing->szText,lstrlen(Drawing->szText));
 				if(dat->exStyle&CLS_EX_LINEWITHGROUPS) {
+				//calc if extra icons present
+				int enabledextraicons=0;
+				for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
+					if(Drawing->iExtraImage[iImage]==0xFF) continue;
+					enabledextraicons++;
+				};
 					rc.top=y+(dat->rowHeight>>1); rc.bottom=rc.top+2;
 					rc.left=dat->leftMargin+subident+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace+width+3;
-					rc.right=clRect.right-1-dat->extraColumnSpacing*dat->extraColumnsCount;
+					rc.right=clRect.right-1-dat->extraColumnSpacing*enabledextraicons;
 					if(rc.right-rc.left>1) DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
 				}
 			}

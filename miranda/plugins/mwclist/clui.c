@@ -213,7 +213,7 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 				sid.cbSize = sizeof(sid);
 				sid.pszSection = Translate(SectName);				
 				sid.pszName=IconName;
-				sid.pszDescription=Description;
+				sid.pszDescription=Translate(Description);
 				sid.pszDefaultFile=szMyPath;
 				sid.iDefaultIndex=internalidx;
 				CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
@@ -1028,7 +1028,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						//	break;
 						}
 						lastreqh=nmc->pt.y;
-						newHeight=max(nmc->pt.y,3)+1+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
+						newHeight=max(nmc->pt.y,3)+4+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
 						if (newHeight==(rcWindow.bottom-rcWindow.top)) break;
 
 						if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)

@@ -88,16 +88,23 @@ int ExtraToColumnNum(int extra)
 	return(-1);
 };
 
-#define ClientNumber 9
+#define ClientNumber 17
 
 char *ClientNames[ClientNumber]=
-{"Miranda","RQ","Trillian","GAIM","IM2","Kopete","LICQ","QIP","SIM"};
+{"Miranda","&RQ","Trillian","Gaim","IM2","Kopete","Licq","QIP","SIM"
+,"ICQ 2000","ICQ 2001b","ICQ 200","ICQ2Go! (Flash)","ICQ2Go! (Java)","ICQ Lite v5","ICQ Lite v4","ICQ Lite"
+
+};
 char *ClientNamesDesc[ClientNumber]=
-{"Miranda Client Icon","RQ Client Icon","Trillian Client Icon","GAIM Client Icon","IM2 Client Icon","Kopete Client Icon",
-"LICQ Client Icon","QIP Client Icon","SIM Client Icon"};
+{"Miranda","&RQ","Trillian","GAIM","IM2","Kopete",
+"LICQ","QIP","SIM",
+"ICQ2000","ICQ2001","ICQ2003","ICQ2Go! (Flash)","ICQ2Go! (Java)","ICQ Lite v5","ICQ Lite v4","ICQ Lite"
+};
 
 int ClientICOIDX[ClientNumber]=
-{IDI_CLIENTMIRANDA,IDI_CLIENTRQ,IDI_CLIENTTRILLIAN,IDI_CLIENTGAIM,IDI_CLIENTIM2,IDI_CLIENTKOPETE,IDI_CLIENTLICQ,IDI_CLIENTQIP,IDI_CLIENTSIM};
+{IDI_CLIENTMIRANDA,IDI_CLIENTRQ,IDI_CLIENTTRILLIAN,IDI_CLIENTGAIM,IDI_CLIENTIM2,IDI_CLIENTKOPETE,IDI_CLIENTLICQ,IDI_CLIENTQIP,IDI_CLIENTSIM,
+IDI_CLIENTICQ2000,IDI_CLIENTICQ2001,IDI_CLIENTICQ2003,IDI_CLIENTICQGOF,IDI_CLIENTICQGOJ,IDI_CLIENTICQLITE5,IDI_CLIENTICQLITE4,IDI_CLIENTICQLITE
+};
 
 
 int ClientImageListIdx[ClientNumber]={0};
@@ -105,70 +112,22 @@ int ClientImageListIdx[ClientNumber]={0};
 
 int GetClientWorker(char *Clientstr,ClientIcon *cli)
 {
+	int i;
 	if (!cli) return 0;
 	cli->ClientID=-1;
 	cli->idxClientIcon=-1;
-	if (strstr(Clientstr,"Miranda"))
+	
+	for (i=0;i<ClientNumber;i++)
 	{
-		cli->ClientID=0;cli->idxClientIcon=ClientImageListIdx[0];
+		if (strstr(Clientstr,ClientNames[i]))
+		{
+			cli->ClientID=i;cli->idxClientIcon=ClientImageListIdx[i];
 
-		return 0;
+			return 0;
+		}
+
 	}
 
-	if (strstr(Clientstr,"&RQ"))
-	{
-		cli->ClientID=1;cli->idxClientIcon=ClientImageListIdx[1];
-
-		return 0;
-	}	
-
-	if (strstr(Clientstr,"Trillian"))
-	{
-		cli->ClientID=2;cli->idxClientIcon=ClientImageListIdx[2];
-
-		return 0;
-	}
-
-	if (strstr(Clientstr,"Gaim"))
-	{
-		cli->ClientID=3;cli->idxClientIcon=ClientImageListIdx[3];
-
-		return 0;
-	}
-
-	if (strstr(Clientstr,"IM2"))
-	{
-		cli->ClientID=4;cli->idxClientIcon=ClientImageListIdx[4];
-
-		return 0;
-	}
-
-	if (strstr(Clientstr,"opete"))
-	{
-		cli->ClientID=5;cli->idxClientIcon=ClientImageListIdx[5];
-
-		return 0;
-	}
-
-	if (strstr(Clientstr,"Licq"))
-	{
-		cli->ClientID=6;cli->idxClientIcon=ClientImageListIdx[6];
-
-		return 0;
-	}
-
-	if (strstr(Clientstr,"QIP"))
-	{
-		cli->ClientID=7;cli->idxClientIcon=ClientImageListIdx[7];
-
-		return 0;
-	}
-	if (strstr(Clientstr,"SIM"))
-	{
-		cli->ClientID=8;cli->idxClientIcon=ClientImageListIdx[8];
-
-		return 0;
-	}
 	return 0;
 }
 
@@ -201,11 +160,11 @@ void LoadClientIcons()
 		
 		if (ClientImageListIdx[i]==0)
 		{
-		hicon=LoadIconFromExternalFile("clisticons.dll",i+100,TRUE,TRUE,name,"Contact List",ClientNamesDesc[i],-ClientICOIDX[i]);
+		hicon=LoadIconFromExternalFile("clisticons.dll",i+100,TRUE,TRUE,name,"Contact List/Client Icons",ClientNamesDesc[i],-ClientICOIDX[i]);
 		if (hicon) ClientImageListIdx[i]=ImageList_AddIcon(hExtraImageList,hicon );		
 		}else
 		{
-		hicon=LoadIconFromExternalFile("clisticons.dll",i+100,TRUE,FALSE,name,"Contact List",ClientNamesDesc[i],-ClientICOIDX[i]);			
+		hicon=LoadIconFromExternalFile("clisticons.dll",i+100,TRUE,FALSE,name,"Contact List/Client Icons",ClientNamesDesc[i],-ClientICOIDX[i]);			
 		if (hicon) ClientImageListIdx[i]=ImageList_ReplaceIcon(hExtraImageList,ClientImageListIdx[i],hicon );		
 		};
 		
@@ -483,15 +442,18 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 							PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),pdnce->ci.idxClientIcon));	
 			}else
 			{					
+				if (!(DBGetContactSettingByte(NULL,"CLUIFrames","ProtoIconOnlyForICQ",0)&&(strcmp(szProto,"ICQ"))))
+				{				
 					for (i=0;i<maxpr;i++)
-					{
-						if(!strcmp(ImgIndex[i],szProto))
 						{
+							if(!strcmp(ImgIndex[i],szProto))
+							{
 
-							PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),i+3));	
-							break;
-						};
-					};				
+								PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),i+3));	
+								break;
+							};
+						};				
+				};
 			};
 		};
 		NotifyEventHooks(hExtraImageApplying,(WPARAM)hContact,0);

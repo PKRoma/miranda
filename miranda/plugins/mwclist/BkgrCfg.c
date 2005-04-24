@@ -343,7 +343,7 @@ int OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.position = 0;
 	odp.hInstance = g_hInst;
 	odp.pszGroup = Translate("Customize");
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_CLCBKG);
+	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_CLCBKG2);
 	odp.pszTitle = Translate("Backgrounds");
 	odp.pfnDlgProc = DlgProcBkgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
