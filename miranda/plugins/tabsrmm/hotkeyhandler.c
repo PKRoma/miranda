@@ -37,6 +37,8 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
        the menus, doubleclicks and so on.
 */
 
+#define _WIN32_IE 0x0501
+
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"
@@ -127,6 +129,43 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
+        case WM_MEASUREITEM:
+            {
+                LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
+                lpmi->itemHeight = 0;
+                lpmi->itemWidth = GetSystemMetrics(SM_CXSMICON) + 10;
+                return TRUE;
+            }
+        case WM_DRAWITEM:
+            {
+                LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+                struct MessageWindowData *dat = 0;
+                if(dis->CtlType == ODT_MENU) {
+                    HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)dis->itemID);
+                    if(hWnd)
+                        dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
+                    
+                    if (dis->itemData >= 0) {
+                        HICON hIcon;
+
+                        if(dis->itemData > 0)
+                            hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+                        else if(dat != NULL)
+                            hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
+                        else
+                            hIcon = myGlobals.g_iconContainer;
+                        
+                        DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
+                                  (dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
+                                  (dis->itemState & ODS_SELECTED ? 1 : 0),
+                                  (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
+                                  DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+
+                        return TRUE;
+                    }
+                }
+            }
+            break;
         case DM_TRAYICONNOTIFY:
             {
                 int iSelection;
@@ -138,7 +177,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             POINT pt;
                             GetCursorPos(&pt);
                             SetForegroundWindow(hwndDlg);
-                            if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 1) {
+                            if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 0) {
                                 HWND hWnd;
                                 iSelection = TrackPopupMenu(myGlobals.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                                 hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
@@ -183,6 +222,19 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                             PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
+                        }
+                        case NIN_BALLOONUSERCLICK:
+                        {
+                            HWND hWnd = WindowList_Find(hMessageWindowList, myGlobals.m_TipOwner);
+
+                            if(hWnd) {
+                                struct ContainerWindowData *pContainer = 0;
+                                SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                                if(pContainer)
+                                    ActivateExistingTab(pContainer, hWnd);
+                            }
+                            else
+                                CallService(MS_MSG_SENDMESSAGE, (WPARAM)hWnd, 0);
                         }
                         default:
                             break;

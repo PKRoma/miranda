@@ -48,9 +48,8 @@ void CreateSystrayIcon(int create)
     nim.uCallbackMessage = DM_TRAYICONNOTIFY;
     if(create && !nen_options.bTrayExist) {
         Shell_NotifyIcon(NIM_ADD, &nim);
-        myGlobals.g_hMenuTrayUnread = GetSubMenu(myGlobals.g_hMenuContext, 5);
-        if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 1)
-            DeleteMenu(myGlobals.g_hMenuTrayUnread, 0, MF_BYPOSITION);
+        //myGlobals.g_hMenuTrayUnread = GetSubMenu(myGlobals.g_hMenuContext, 5);
+        myGlobals.g_hMenuTrayUnread = CreatePopupMenu();
         nen_options.bTrayExist = TRUE;
         SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
     }
@@ -59,6 +58,10 @@ void CreateSystrayIcon(int create)
         
         Shell_NotifyIcon(NIM_DELETE, &nim);
         nen_options.bTrayExist = FALSE;
+        if(myGlobals.g_hMenuTrayUnread != 0) {
+            DestroyMenu(myGlobals.g_hMenuTrayUnread);
+            myGlobals.g_hMenuTrayUnread = 0;
+        }
         KillTimer(myGlobals.g_hwndHotkeyHandler, 1000);
         /*
          * check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)

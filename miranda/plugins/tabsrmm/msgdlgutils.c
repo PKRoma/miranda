@@ -44,6 +44,7 @@ $Id$
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
 #include "m_ieview.h"
+#include "functions.h"
 
 #include <math.h>
 
@@ -882,7 +883,7 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
 
     if(nen_options.bTraySupport == TRUE) {
         if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE)
-            UpdateTrayMenu(dat, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->hContact, FALSE);
+            UpdateTrayMenu(dat, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->hContact, FALSE);
         return;
     }
     

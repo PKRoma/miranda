@@ -63,6 +63,8 @@ Version 0.9.9.95 - 2005/04/15
           tray baloon tooltips instead of popups (these can announce unicode messages). Also,
           a very comprehensive system tray support has been added. 
           
+        ! fixed a very rare unicode-related problem when using ieview.
+        
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

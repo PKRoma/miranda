@@ -1033,7 +1033,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  */
 
                 if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
-                    UpdateTrayMenu(0, dat->szProto, dat->hContact, FALSE);
+                    UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
                     
                 dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
 
@@ -1507,6 +1507,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             iHash += (*(temp++) * (int)(temp - dat->szNickname + 1));
 
                         dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+                        dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                         
                         if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
                             if (myGlobals.m_CutContactNameOnTabs)
@@ -1514,7 +1515,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             else
                                 strncpy(newcontactname, dat->szNickname, sizeof(newcontactname));
 
-                            dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                             if (strlen(newcontactname) != 0 && dat->szStatus != NULL) {
                                 if (myGlobals.m_StatusOnTabs)
                                     mir_snprintf(newtitle, 127, "%s (%s)", newcontactname, dat->szStatus);
@@ -1594,8 +1594,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     dat->iOldHash = iHash;
                     dat->wOldStatus = dat->wStatus;
+                    
+                    UpdateTrayMenuState(dat, TRUE);
                 }
-                
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
                 if(dat->bIsMeta) {
                     PostMessage(hwndDlg, DM_UPDATEMETACONTACTINFO, 0, 0);
@@ -1646,7 +1647,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
-                UpdateTrayMenuState(dat);
+                UpdateTrayMenuState(dat, FALSE);
                 if(myGlobals.m_TipOwner == dat->hContact)
                     RemoveBalloonTip();
 #if defined(__MATHMOD_SUPPORT)
@@ -1701,7 +1702,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 /*
                  * delete ourself from the tray menu..
                  */
-                UpdateTrayMenuState(dat);
+                UpdateTrayMenuState(dat, FALSE);
                 if(myGlobals.m_TipOwner == dat->hContact)
                     RemoveBalloonTip();
 #if defined(__MATHMOD_SUPPORT)
@@ -3652,7 +3653,7 @@ verify:
                 CreateNewTabForContact(pNewContainer, dat->hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
                 SendMessage(hwndDlg, WM_CLOSE, 0, 1);
                 if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
-                    UpdateTrayMenu(0, dat->szProto, dat->hContact, FALSE);
+                    UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
                 if (iOldItems > 1) {                // there were more than 1 tab, container is still valid
                     RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
                 }
@@ -4063,7 +4064,7 @@ verify:
                 DeleteObject(dat->hSmileyIcon);
 
             if(nen_options.bTraySupport) {
-                UpdateTrayMenuState(dat);               // remove me from the tray menu (if still there)
+                UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
                 DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
             }
             

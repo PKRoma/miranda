@@ -23,6 +23,7 @@ CFG=tabSRMM - Win32 Debug
 !MESSAGE "tabSRMM - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Release - MATHMOD" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Release-Unicode-MATHMOD" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release Unicode 98" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -183,6 +184,31 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Release\Plugins\tabsrmm_mathmod_w.dll" /incremental:no /pdbtype:sept /subsystem:windows /implib:".\Release_Unicode/srmm.lib" /machine:ix86 
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Release\Plugins\tabsrmm_mathmod_w.dll" /incremental:no /pdbtype:sept /subsystem:windows /implib:".\Release_Unicode/srmm.lib" /machine:ix86 
 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "$(ConfigurationName)"
+# PROP BASE Intermediate_Dir "$(ConfigurationName)"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "$(ConfigurationName)"
+# PROP Intermediate_Dir "$(ConfigurationName)"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MT /W3 /O1 /Ob1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /GF /YX /Fp".\Release_Unicode/srmm.pch" /Fo".\Release_Unicode/" /Fd".\Release_Unicode/" /c /GX 
+# ADD CPP /nologo /MT /W3 /O1 /Ob1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /GF /YX /Fp".\Release_Unicode/srmm.pch" /Fo".\Release_Unicode/" /Fd".\Release_Unicode/" /c /GX 
+# ADD BASE MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release_Unicode\srmm.tlb" /win32 
+# ADD MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release_Unicode\srmm.tlb" /win32 
+# ADD BASE RSC /l 2057 /d "NDEBUG" /d "UNICODE" 
+# ADD RSC /l 2057 /d "NDEBUG" /d "UNICODE" 
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo 
+# ADD BSC32 /nologo 
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib unicows.lib /nologo /dll /out:"..\..\Bin\Release\Plugins\tabsrmm_unicode98.dll" /incremental:no /pdbtype:sept /subsystem:windows /base:"0x6a540000" /implib:".\Release_Unicode/srmm.lib" /machine:ix86 
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib unicows.lib /nologo /dll /out:"..\..\Bin\Release\Plugins\tabsrmm_unicode98.dll" /incremental:no /pdbtype:sept /subsystem:windows /base:"0x6a540000" /implib:".\Release_Unicode/srmm.lib" /machine:ix86 
+
 !ENDIF
 
 # Begin Target
@@ -193,6 +219,7 @@ LINK32=link.exe
 # Name "tabSRMM - Win32 Debug Unicode"
 # Name "tabSRMM - Win32 Release - MATHMOD"
 # Name "tabSRMM - Win32 Release-Unicode-MATHMOD"
+# Name "tabSRMM - Win32 Release Unicode 98"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -206,12 +233,19 @@ SOURCE=.\containeroptions.c
 # End Source File
 # Begin Source File
 
+SOURCE=eventpopups.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\formatting.cpp
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
 # ADD CPP /nologo /EHsc /GX 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /nologo /EHsc /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
 
 # ADD CPP /nologo /EHsc /GX 
 !ENDIF
@@ -247,6 +281,9 @@ SOURCE=msgdialog.c
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release-Unicode-MATHMOD"
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "__MATHMOD_SUPPORT" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
+
+# ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
 !ENDIF
 
 # End Source File
@@ -276,6 +313,9 @@ SOURCE=msglog.c
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release-Unicode-MATHMOD"
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "__MATHMOD_SUPPORT" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
+
+# ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
 !ENDIF
 
 # End Source File
@@ -299,6 +339,9 @@ SOURCE=msgoptions.c
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /GX 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release-Unicode-MATHMOD"
+
+# ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
 !ENDIF
@@ -326,6 +369,9 @@ SOURCE=msgs.c
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release-Unicode-MATHMOD"
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "__MATHMOD_SUPPORT" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
+
+# ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
 !ENDIF
 
 # End Source File
@@ -359,12 +405,19 @@ SOURCE=srmm.c
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release-Unicode-MATHMOD"
 
 # ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "__MATHMOD_SUPPORT" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
+
+# ADD CPP /nologo /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GX 
 !ENDIF
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\themes.c
+# End Source File
+# Begin Source File
+
+SOURCE=trayicon.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -376,7 +429,23 @@ SOURCE=commonheaders.h
 # End Source File
 # Begin Source File
 
+SOURCE=functions.h
+# End Source File
+# Begin Source File
+
+SOURCE=IcoLib.h
+# End Source File
+# Begin Source File
+
 SOURCE=ImageDataObject.h
+# End Source File
+# Begin Source File
+
+SOURCE=m_ieview.h
+# End Source File
+# Begin Source File
+
+SOURCE=m_MathModule.h
 # End Source File
 # Begin Source File
 
@@ -392,6 +461,14 @@ SOURCE=.\m_popup.h
 # End Source File
 # Begin Source File
 
+SOURCE=m_smileyadd.h
+# End Source File
+# Begin Source File
+
+SOURCE=m_Snapping_windows.h
+# End Source File
+# Begin Source File
+
 SOURCE=m_tabsrmm.h
 # End Source File
 # Begin Source File
@@ -401,6 +478,10 @@ SOURCE=msgdlgutils.h
 # Begin Source File
 
 SOURCE=msgs.h
+# End Source File
+# Begin Source File
+
+SOURCE=nen.h
 # End Source File
 # Begin Source File
 
@@ -648,6 +729,10 @@ SOURCE=.\changelog.txt
 # End Source File
 # Begin Source File
 
+SOURCE=langpacks\langpack_tabsrmm_german.txt
+# End Source File
+# Begin Source File
+
 SOURCE=MAKEFILE.W32
 # End Source File
 # Begin Source File
@@ -673,10 +758,6 @@ SOURCE=.\readme.txt
 # Begin Source File
 
 SOURCE=langpacks\template
-# End Source File
-# Begin Source File
-
-SOURCE=translation.txt
 # End Source File
 # End Group
 # End Target

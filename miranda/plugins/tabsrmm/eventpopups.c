@@ -797,25 +797,32 @@ nounicode:
     return 0;
 }
 
-void UpdateTrayMenuState(struct MessageWindowData *dat)
+/*
+ * updates the menu entry...
+ * bForced is used to only update the status, nickname etc. and does NOT update the unread count
+ */
+void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
 {
     MENUITEMINFOA mii = {0};
     char szMenuEntry[80];
     mii.cbSize = sizeof(mii);
-    mii.fMask = MIIM_DATA;
+    mii.fMask = MIIM_DATA | MIIM_BITMAP;
     
     if(nen_options.bTraySupport && dat->hContact != 0) {
         GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
-        myGlobals.m_UnreadInTray -= mii.dwItemData;
+        if(!bForced)
+            myGlobals.m_UnreadInTray -= mii.dwItemData;
         //_DebugPopup(dat->hContact, "updated: %d events, %d total", mii.dwItemData, myGlobals.m_UnreadInTray);
-        if(mii.dwItemData > 0) {
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus, 0);
+        if(mii.dwItemData > 0 || bForced) {
+            if(!bForced)
+                mii.dwItemData = 0;
+            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus, mii.dwItemData);
+//            _DebugPopup(dat->hContact, "%s (forced: %d)", szMenuEntry, bForced);
             mii.fMask |= MIIM_STRING;
             mii.dwTypeData = szMenuEntry;
-            mii.fType = MFT_STRING;
             mii.cch = lstrlenA(szMenuEntry) + 1;
         }
-        mii.dwItemData = 0;
+        mii.hbmpItem = HBMMENU_CALLBACK;
         SetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
     }
 }
@@ -823,45 +830,53 @@ void UpdateTrayMenuState(struct MessageWindowData *dat)
  * if we want tray support, add the contact to the list of unread sessions in the tray menu
  */
 
-int UpdateTrayMenu(struct MessageWindowData *dat, char *szProto, HANDLE hContact, BOOL fromEvent)
+int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, BOOL fromEvent)
 {
     if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
         char szMenuEntry[80];
-        char *szStatus = NULL;
-        MENUITEMINFO mii = {0};
+        MENUITEMINFOA mii = {0};
+        WORD wMyStatus;
+        char *szMyStatus;
         char *szNick;
-
         mii.cbSize = sizeof(mii);
-        mii.fMask = MIIM_DATA;
+        mii.fMask = MIIM_DATA | MIIM_ID | MIIM_BITMAP;
 
+        if(szProto == NULL)
+            return 0;                                     // should never happen...
+            
+        wMyStatus = (wStatus == 0) ? DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE) : wStatus;
+        szMyStatus = (szStatus == NULL) ? (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wMyStatus, 0) : szStatus;
+        mii.wID = (UINT)hContact;
+        mii.hbmpItem = HBMMENU_CALLBACK;
+        
         if(dat != 0) {
-            mii.fMask |= MIIM_BITMAP;
-            mii.hbmpItem = HBMMENU_SYSTEM;
             szNick = dat->szNickname;
-            GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+            GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
             mii.dwItemData++;
-            szStatus = dat->szStatus;
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szStatus, dat->iUnread);
+            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData);
             DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
             AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
             myGlobals.m_UnreadInTray++;
-            SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+            SetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
         else {
             szNick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
-            szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szStatus, fromEvent ? 1 : 0);
             if(CheckMenuItem(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
+                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, fromEvent ? 1 : 0);
                 AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
                 mii.dwItemData = fromEvent ? 1 : 0;
                 myGlobals.m_UnreadInTray += mii.dwItemData;
             }
             else {
-                GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+                GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
                 mii.dwItemData += (fromEvent ? 1 : 0);
                 myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
+                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData);
+                mii.fMask |= MIIM_STRING;
+                mii.cch = lstrlenA(szMenuEntry) + 1;
+                mii.dwTypeData = szMenuEntry;
             }
-            SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+            SetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
     }
     return 0;
