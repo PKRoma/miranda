@@ -143,9 +143,10 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 		headerCount++;
 	}
 
-	mCount = headerCount;
-	mVals = ( MimeHeader* )malloc( sizeof( MimeHeader )*headerCount );
-	memcpy( mVals, headers, sizeof( MimeHeader )*headerCount );
+	if (( mCount = headerCount ) != 0 ) {
+		mVals = ( MimeHeader* )malloc( sizeof( MimeHeader )*headerCount );
+		memcpy( mVals, headers, sizeof( MimeHeader )*headerCount );
+	}
 	return parString;
 }
 
