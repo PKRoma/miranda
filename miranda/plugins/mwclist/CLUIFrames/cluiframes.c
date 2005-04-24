@@ -1751,7 +1751,9 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	// create frame
 	Frames[nFramescount].TitleBar.hwnd
 		=CreateWindow(CLUIFrameTitleBarClassName,Frames[nFramescount].name,
-					WS_BORDER|WS_CHILD|WS_CLIPCHILDREN|
+		(DBGetContactSettingByte(0,CLUIFrameModule,"RemoveAllTitleBarBorders",0)?0:WS_BORDER)
+					
+					|WS_CHILD|WS_CLIPCHILDREN|
 					(Frames[nFramescount].TitleBar.ShowTitleBar?WS_VISIBLE:0)|
 					WS_CLIPCHILDREN,
 					0,0,0,0,hwndContactList,NULL,g_hInst,NULL);
