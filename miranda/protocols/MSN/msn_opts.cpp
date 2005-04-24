@@ -99,7 +99,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	case WM_INITDIALOG: {
 		TranslateDialogDefault( hwndDlg );
 
-		char tBuffer[ 256 ];
+		char tBuffer[ MAX_PATH ];
 		if ( !MSN_GetStaticString( "e-mail", NULL, tBuffer, sizeof( tBuffer )))
 			SetDlgItemText( hwndDlg, IDC_HANDLE, tBuffer );
 
