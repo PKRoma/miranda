@@ -442,7 +442,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 							PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),pdnce->ci.idxClientIcon));	
 			}else
 			{					
-				if (!(DBGetContactSettingByte(NULL,"CLUIFrames","ProtoIconOnlyForICQ",0)&&(strcmp(szProto,"ICQ"))))
+				if (!(DBGetContactSettingByte(NULL,"CLUIFrames","ProtoIconOnlyForICQ",0)&&(!strstr(szProto,"ICQ"))))
 				{				
 					for (i=0;i<maxpr;i++)
 						{

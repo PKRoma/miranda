@@ -375,7 +375,7 @@ DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
 			return(0);
 		};
 
-		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szModule,"ICQ"))
+		if (dbcws->value.type==DBVT_ASCIIZ&&strstr(dbcws->szModule,"ICQ"))
 		{
 			if (!strcmp(dbcws->szSetting,(HANDLE)"MirVer"))
 			{		
@@ -1008,6 +1008,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						NMCLISTCONTROL *nmc=(NMCLISTCONTROL*)lParam;
 						RECT rcWindow,rcTree,rcWorkArea;
 						int maxHeight,newHeight;
+						int winstyle;
 
 						if (disableautoupd==1){break;};
 						if(!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) break;
@@ -1018,6 +1019,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",75);
 						GetWindowRect(hwnd,&rcWindow);
 						GetWindowRect(hwndContactTree,&rcTree);
+						winstyle=GetWindowLong(hwndContactTree,GWL_STYLE);
+
 						SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);
 						if (nmc->pt.y>(rcWorkArea.bottom-rcWorkArea.top)) 
 						{
@@ -1028,7 +1031,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						//	break;
 						}
 						lastreqh=nmc->pt.y;
-						newHeight=max(nmc->pt.y,3)+4+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
+						newHeight=max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
 						if (newHeight==(rcWindow.bottom-rcWindow.top)) break;
 
 						if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)

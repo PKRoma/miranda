@@ -323,7 +323,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 		if (pdnce->MirVer==NULL||pdnce->ci.idxClientIcon==-1||pdnce->ci.idxClientIcon==0)
 		{
 			if (pdnce->MirVer) mir_free(pdnce->MirVer);
-			pdnce->MirVer=DBGetString(pdnce->hContact,"ICQ","MirVer");
+			pdnce->MirVer=DBGetString(pdnce->hContact,pdnce->szProto,"MirVer");
 			pdnce->ci.ClientID=-1;
 			pdnce->ci.idxClientIcon=-1;
 			if (pdnce->MirVer!=NULL)
