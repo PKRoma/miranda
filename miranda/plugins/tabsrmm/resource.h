@@ -545,6 +545,9 @@
 #define ID_THISCONTACT_SIMPLETAGS       40234
 #define ID_THISCONTACT_OFF              40235
 #define ID_GLOBAL_BBCODE                40236
+#define ID_PROTOMENU_FAVORITES          40237
+#define ID_FAVORITES_ADDCONTACTTOFAVORITES 40238
+#define ID_FAVORITES_REMOVECONTACTFROMFAVORITES 40239
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -552,7 +555,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         40237
+#define _APS_NEXT_COMMAND_VALUE         40240
 #define _APS_NEXT_CONTROL_VALUE         1718
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

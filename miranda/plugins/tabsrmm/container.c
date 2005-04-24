@@ -54,7 +54,6 @@ $Id$
 #include "msgs.h"
 #include "m_popup.h"
 #include "nen.h"
-#include "m_message.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
 #include "m_snapping_windows.h"

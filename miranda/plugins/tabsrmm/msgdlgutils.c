@@ -37,7 +37,6 @@ $Id$
 #include "../../include/m_addcontact.h"
 
 #include "msgs.h"
-#include "m_message.h"
 #include "m_popup.h"
 #include "nen.h"
 #include "m_smileyadd.h"

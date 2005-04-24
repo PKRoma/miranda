@@ -946,6 +946,14 @@ BEGIN
                 MENUITEM "Force Off",                   ID_THISCONTACT_OFF
             END
         END
+        POPUP "Favorites"
+        BEGIN
+            MENUITEM "Add Contact to Favorites",    ID_FAVORITES_ADDCONTACTTOFAVORITES
+
+            MENUITEM "Remove Contact from Favorites", 
+                                                    ID_FAVORITES_REMOVECONTACTFROMFAVORITES
+
+        END
     END
     POPUP "Unread Menu"
     BEGIN
@@ -953,15 +961,9 @@ BEGIN
     END
     POPUP "Traycontext"
     BEGIN
-        POPUP "Recent Sessions"
-        BEGIN
-            MENUITEM "1",                           ID_RECENTSESSIONS_2
-        END
+        MENUITEM "Recent Sessions",             65535
         MENUITEM SEPARATOR
-        POPUP "Favorites"
-        BEGIN
-            MENUITEM "1",                           ID_FAVORITES_1
-        END
+        MENUITEM "Favorites",                   65535
         MENUITEM SEPARATOR
         MENUITEM "Disable All Popups",          ID_TRAYCONTEXT_DISABLEALLPOPUPS
 

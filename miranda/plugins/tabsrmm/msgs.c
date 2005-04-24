@@ -25,7 +25,6 @@ $Id$
 */
 #include "commonheaders.h"
 #pragma hdrstop
-#include "m_message.h"
 #include "msgs.h"
 #include "msgdlgutils.h"
 #include "m_popup.h"
@@ -141,6 +140,40 @@ static int ContactSecureChanged(WPARAM wParam, LPARAM lParam)
         SendMessage(hwnd, DM_SECURE_CHANGED, 0, 0);
     }
     return 0;
+}
+
+/*
+ * Message API 0.0.0.3 services
+ */
+
+static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+{
+	char *szBuf = (char*)wParam;
+	int size = (int)lParam;
+	mir_snprintf(szBuf, size, "tabSRMM");
+	return 0;
+}
+
+static int GetWindowData(WPARAM wParam, LPARAM lParam)
+{
+	MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
+	MessageWindowOutputData *mwod = (MessageWindowOutputData*)lParam;
+	HWND hwnd;
+
+	if( mwid == NULL || mwod == NULL) 
+        return 1;
+	if(mwid->cbSize != sizeof(MessageWindowInputData) || mwod->cbSize != sizeof(MessageWindowOutputData)) 
+        return 1;
+	if(mwid->hContact == NULL) 
+        return 1;
+	if(mwid->uFlags != MSG_WINDOW_UFLAG_MSG_BOTH) 
+        return 1;
+	hwnd = WindowList_Find(hMessageWindowList, mwid->hContact);
+	mwod->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
+	mwod->hwndWindow = hwnd;
+	mwod->local = 0;
+	mwod->uState = SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
+	return 0;
 }
 
 /*
@@ -628,12 +661,17 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 {
     DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
-    char *szProto;
+    char *szProto = NULL;
 
     HANDLE hwnd = WindowList_Find(hMessageWindowList,(HANDLE)wParam);
 
-    if(hwnd == 0)       // we are not interested in this event if there is no open message window/tab
+    if(hwnd == 0) {      // we are not interested in this event if there is no open message window/tab
+        if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
+            AddContactToFavorites((HANDLE)wParam, NULL, NULL, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites);
+        if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isRecent", 0))
+            AddContactToFavorites((HANDLE)wParam, NULL, NULL, NULL, 0, 0, 0, myGlobals.g_hMenuRecent);
         return 0;       // for the hContact.
+    }
 
     if(!strncmp(cws->szModule, "ContactPhoto", 12)) {
         SendMessage(hwnd, DM_PICTURECHANGED, 0, 0);
@@ -928,6 +966,7 @@ int LoadSendRecvMessageModule(void)
     ZeroMemory((void *)&nen_options, sizeof(nen_options));
     
     hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
+    
     InitOptions();
     hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
     hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
@@ -1385,6 +1424,8 @@ void InitAPI()
 #endif
     CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
     CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
+    CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
+    CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
     CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
     CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
 

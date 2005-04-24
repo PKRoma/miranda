@@ -35,7 +35,6 @@ $Id$
 #include "../../include/m_addcontact.h"
 #include "../../include/m_file.h"
 #include "msgs.h"
-#include "m_message.h"
 #include "m_popup.h"
 #include "nen.h"
 #include "m_smileyadd.h"
@@ -1354,6 +1353,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
 
+            if(dat->hContact);
+                dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isRecent", 0));
+
+
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
                 DWORD dwForcedContactNum = 0;
                 CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
@@ -1384,7 +1387,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
             if(dat->SendFormat == -1)           // per contact override to disable it..
                 dat->SendFormat = 0;
-            
+
             SetDialogToType(hwndDlg);
             SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
 
@@ -1596,6 +1599,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->wOldStatus = dat->wStatus;
                     
                     UpdateTrayMenuState(dat, TRUE);
+                    if(LOWORD(dat->dwIsFavoritOrRecent))
+                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuFavorites);
+                    if(DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isRecent", 0)) {
+                        dat->dwIsFavoritOrRecent |= 0x00010000;
+                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuRecent);
+                    }
+                    else
+                        dat->dwIsFavoritOrRecent &= 0x0000ffff;
                 }
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
                 if(dat->bIsMeta) {
@@ -2976,6 +2987,9 @@ quote_from_last:
                         CheckMenuItem(submenu, ID_THISCONTACT_SIMPLETAGS, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_SIMPLE) ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_THISCONTACT_OFF, MF_BYCOMMAND | ((iLocalFormat == -1) ? MF_CHECKED : MF_UNCHECKED));
 
+                        EnableMenuItem(submenu, ID_FAVORITES_ADDCONTACTTOFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_ENABLED : MF_GRAYED);
+                        EnableMenuItem(submenu, ID_FAVORITES_REMOVECONTACTFROMFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_GRAYED : MF_ENABLED);
+                        
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                         switch(iSelection) {
                             case ID_IEVIEWSETTING_USEGLOBAL:
@@ -3026,6 +3040,16 @@ quote_from_last:
                                 break;
                             case ID_THISCONTACT_OFF:
                                 iNewLocalFormat = -1;
+                                break;
+                            case ID_FAVORITES_ADDCONTACTTOFAVORITES:
+                                DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
+                                dat->dwIsFavoritOrRecent |= 0x00000001;
+                                AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuFavorites);
+                                break;
+                            case ID_FAVORITES_REMOVECONTACTFROMFAVORITES:
+                                DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
+                                dat->dwIsFavoritOrRecent &= 0xffff0000;
+                                DeleteMenu(myGlobals.g_hMenuFavorites, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
                                 break;
                         }
                         if(iNewLocalFormat == 0)
@@ -3854,6 +3878,20 @@ verify:
         case WM_INPUTLANGCHANGE:
             return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
 
+    	case DM_GETWINDOWSTATE:
+    		{
+    			UINT state = 0;
+    			
+    			state |= MSG_WINDOW_STATE_EXISTS;
+    			if (IsWindowVisible(hwndDlg)) 
+    				state |= MSG_WINDOW_STATE_VISIBLE;
+    			if (GetForegroundWindow() == dat->pContainer->hwnd) 
+    				state |= MSG_WINDOW_STATE_FOCUS;
+    			if (IsIconic(dat->pContainer->hwnd))
+    				state |= MSG_WINDOW_STATE_ICONIC;
+    			return state;
+    
+    		}
 // BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:
 		{	
@@ -3983,6 +4021,7 @@ verify:
             }
         case WM_DESTROY:
             TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
+            AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuRecent);
 // BEGIN MOD#26: Autosave notsent message (by Corsario & bi0)
 			if(dat->hContact) {
 				TCHAR *AutosaveMessage;

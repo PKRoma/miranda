@@ -42,7 +42,6 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"
-#include "m_message.h"
 #include "m_popup.h"
 #include "nen.h"
 #include "functions.h"
@@ -133,14 +132,21 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             {
                 LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
                 lpmi->itemHeight = 0;
-                lpmi->itemWidth = GetSystemMetrics(SM_CXSMICON) + 10;
+                lpmi->itemWidth = 0; //GetSystemMetrics(SM_CXSMICON);
                 return TRUE;
             }
         case WM_DRAWITEM:
             {
                 LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
                 struct MessageWindowData *dat = 0;
-                if(dis->CtlType == ODT_MENU) {
+                if(dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)myGlobals.g_hMenuFavorites || dis->hwndItem == (HWND)myGlobals.g_hMenuRecent)) {
+                    DrawState(dis->hDC, NULL, NULL, (LPARAM) dis->itemData, 0,
+                              (dis->itemState & ODS_SELECTED ? 1 : 0),
+                              (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
+                              DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+                    return TRUE;
+                }
+                else if(dis->CtlType == ODT_MENU) {
                     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)dis->itemID);
                     if(hWnd)
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
@@ -156,7 +162,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             hIcon = myGlobals.g_iconContainer;
                         
                         DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                                  (dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
+                                  //(dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
                                   (dis->itemState & ODS_SELECTED ? 1 : 0),
                                   (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
                                   DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
@@ -205,21 +211,41 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                     SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
                                     if(pContainer)
                                         ActivateExistingTab(pContainer, hWnd);
+                                    SetFocus(hWnd);
                                 }
                                 else
-                                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)hWnd, 0);
+                                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)uid, 0);
                             }
                             PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
                         case WM_RBUTTONUP:
                         {
-                            HMENU submenu = GetSubMenu(myGlobals.g_hMenuContext, 6);
+                            HMENU submenu = myGlobals.g_hMenuTrayContext;
                             POINT pt;
 
                             SetForegroundWindow(hwndDlg);
                             GetCursorPos(&pt);
                             iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                            if(iSelection) {
+                                MENUITEMINFO mii = {0};
+
+                                _DebugPopup(0, "selected: %d");
+                                mii.cbSize = sizeof(mii);
+                                mii.fMask = MIIM_DATA | MIIM_ID;
+                                GetMenuItemInfo(submenu, (UINT_PTR)iSelection, FALSE, &mii);
+                                if(mii.dwItemData != 0) {                       // this must be an itm of the fav or recent menu
+                                    HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
+                                    if(hWnd) {
+                                        struct ContainerWindowData *pContainer = 0;
+                                        SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                                        if(pContainer)
+                                            ActivateExistingTab(pContainer, hWnd);
+                                    }
+                                    else
+                                        CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
+                                }
+                            }
                             PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
