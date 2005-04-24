@@ -29,7 +29,6 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
   Additional code (popup merging, options) by Prezes
   
 */
-#define __TSR_CXX
 
 #define _WIN32_IE 0x0500
 

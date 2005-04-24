@@ -28,13 +28,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __MATHMOD_SUPPORT 1
 #define _RELEASE_BUILD 1
 
-#ifdef ___FOO_WAS__GNUWIN32__
+#ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
+#if !defined(SB_SETICON)
+
 #define SB_SETICON (WM_USER+15)
 #define SB_SETTIPTEXTA (WM_USER+16)
+#define TCS_BOTTOM 0x0002
+
+#endif
+
 #define GT_SELECTION 2
 #define ST_SELECTION 2
-#define TCS_BOTTOM 0x0002
 #define ST_DEFAULT 0
 #define CFM_WEIGHT 0x0040000
 #define SBT_TOOLTIPS 0x0800
@@ -45,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FLASHW_ALL (FLASHW_TRAY | FLASHW_CAPTION)
 #define FLASHW_TIMERNOFG 0x0000000C
 #define FLASHW_TIMER 0x00000004
+#define IMF_AUTOKEYBOARD 0x0001
 
 typedef struct __gettextex
 {
@@ -56,6 +62,7 @@ typedef struct __gettextex
 	LPBOOL	lpUsedDefChar;	// Pointer to flag set when def char used	
 } _GETTEXTEX;
 
+#ifndef _WIN32_IE
 typedef struct tagNMMOUSE {
     NMHDR   hdr;
     DWORD_PTR dwItemSpec;
@@ -63,6 +70,7 @@ typedef struct tagNMMOUSE {
     POINT   pt;
     LPARAM  dwHitInfo; // any specifics about where on the item or control the mouse is
 } NMMOUSE, *LPNMMOUSE;
+#endif
 
 typedef struct _settextex {
     DWORD	flags;

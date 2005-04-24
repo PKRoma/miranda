@@ -34,7 +34,7 @@ Release_MINGW32_UNICODE/trayicon.o: trayicon.c
 	$(CC) -c trayicon.c -o Release_MINGW32_UNICODE/trayicon.o $(CFLAGS)
 
 Release_MINGW32_UNICODE/eventpopups.o: eventpopups.c
-	$(CPP) -c eventpopups.c -o Release_MINGW32_UNICODE/eventpopups.o $(CFLAGS)
+	$(CC) -c eventpopups.c -o Release_MINGW32_UNICODE/eventpopups.o $(CFLAGS)
 
 Release_MINGW32_UNICODE/ImageDataObject.o: ImageDataObject.cpp
 	$(CPP) -c ImageDataObject.cpp -o Release_MINGW32_UNICODE/ImageDataObject.o $(CFLAGS)

@@ -924,6 +924,8 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
             event.dwFlags |= IEEF_NO_UNICODE;
             event.codepage = dat->codePage;
         }
+        else
+            event.codepage = 0;
 #else
         event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
         event.codepage = 0;
