@@ -109,7 +109,7 @@ static const struct CheckBoxValues_t statusValues[] = {
 
 static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *values, int nValues, DWORD style)
 {
-    TVINSERTSTRUCT tvis;
+    TVINSERTSTRUCTA tvis;
     int i;
 
     tvis.hParent = NULL;
@@ -120,7 +120,7 @@ static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *value
         tvis.item.pszText = Translate(values[i].szDescr);
         tvis.item.stateMask = TVIS_STATEIMAGEMASK;
         tvis.item.state = INDEXTOSTATEIMAGEMASK((style & tvis.item.lParam) != 0 ? 2 : 1);
-        TreeView_InsertItem(hwndTree, &tvis);
+		SendMessage(hwndTree, TVM_INSERTITEMA, 0, (LPARAM)&tvis);
     }
 }
 
