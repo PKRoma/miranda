@@ -150,6 +150,8 @@ static void SetDialogToType(HWND hwndDlg)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDOK), (g_dat->flags&SMF_SENDBTN) ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))?TRUE:FALSE);
+	if (dat->avatarPic==0||!(g_dat->flags&SMF_AVATAR))
+		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
 	SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	pl.length = sizeof(pl);
