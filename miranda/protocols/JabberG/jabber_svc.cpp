@@ -888,8 +888,6 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 
 		// A contact is renamed
 		else if ( !strcmp( cws->szSetting, "MyHandle" )) {
-			char* newNick;
-
 			hContact = ( HANDLE ) wParam;
 			szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 			if ( szProto==NULL || strcmp( szProto, jabberProtoName )) return 0;
@@ -897,19 +895,17 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
 				jid = dbv.pszVal;
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
+					char* newNick = NULL;
 					if ( cws->value.type == DBVT_DELETED )
 						newNick = ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM ) hContact, GCDNF_NOMYHANDLE );
 					else if ( cws->value.type==DBVT_ASCIIZ && cws->value.pszVal!=NULL )
 						newNick = cws->value.pszVal;
-					else
-						newNick = NULL;
+
 					// Note: we need to compare with item->nick to prevent infinite loop
-					if ( newNick!=NULL && ( item->nick==NULL || ( item->nick!=NULL && strcmp( item->nick, newNick )) )) {
-						if (( nick=JabberTextEncode( newNick )) != NULL ) {
-							JabberLog( "Nick set to %s", newNick );
-							JabberAddContactToRoster( jid, nick, item->group );
-							free( nick );
-				}	}	}
+					if ( newNick != NULL && ( item->nick == NULL || ( item->nick!=NULL && strcmp( item->nick, newNick )) )) {
+						JabberLog( "Nick set to %s", newNick );
+						JabberAddContactToRoster( jid, newNick, item->group );
+				}	}
 
 				JFreeVariant( &dbv );
 		}	}
