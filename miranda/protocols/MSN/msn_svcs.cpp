@@ -746,6 +746,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 
 	filetransfer* sft = new filetransfer();
 	sft->std.totalFiles = 1;
+	sft->std.files = files;
 	sft->std.currentFile = strdup( files[0] );
 	sft->std.totalBytes = sft->std.currentFileSize = tFileSize;
 	sft->std.hContact = ccs->hContact;
