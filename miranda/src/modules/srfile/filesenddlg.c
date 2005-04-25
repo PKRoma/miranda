@@ -343,6 +343,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);	
 			FreeFilesMatrix(&dat->files);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldSendEditProc);
+			DestroyIcon(dat->hUIIcons[2]);
 			DestroyIcon(dat->hUIIcons[1]);
 			DestroyIcon(dat->hUIIcons[0]);			
 			free(dat);
