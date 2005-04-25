@@ -55,9 +55,9 @@ static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
 static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
 {
 	CLISTMENUITEM mi;
-	DBVARIANT dbv;
+	DBVARIANT dbv = { 0 };
 	char *szProto;
-
+	
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIM_FLAGS;
@@ -67,9 +67,8 @@ static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
 		if (DBGetContactSetting((HANDLE)wParam, "UserInfo", "Mye-mail0", &dbv))
 			mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
 	}
-
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hEMailMenuItem, (LPARAM)&mi);
-
+	if (dbv.pszVal) DBFreeVariant(&dbv);
 	return 0;
 }
 
