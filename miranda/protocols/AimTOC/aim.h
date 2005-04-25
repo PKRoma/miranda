@@ -148,18 +148,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_SS		"SSExtra"        // Support server-side list
 #define AIM_KEY_SM      "SSMode"         // Mode
 #define AIM_KEY_SE      "ShowErrors"     // Show error popups
-#define AIM_KEY_GC      "GroupChatPos"   // Group chat size keys
-#define AIM_KEY_GF      "GroupChatFlash" // Flash dialog
-#define AIM_KEY_GD      "GroupChatDate"  // Show time
-#define AIM_KEY_GY      "GroupChatDateF" // Show date
-#define AIM_KEY_GJ      "GroupChatJoin"  // Show joins/parts
-#define AIM_KEY_GS      "GroupChatSplitY"// SplitterY position
-#define AIM_KEY_GE      "GroupChatEnter" // Send on enter
-#define AIM_KEY_GB      "GroupChatBg"    // BGColor
 #define AIM_KEY_GI		"GroupChatIgInv" // Ignore invites
 #define AIM_KEY_GM		"GroupChatMnMnu" // Main menu visibility
-#define AIM_KEY_GZ		"GroupLogChats"  // Log chats
-#define AIM_KEY_GL		"GroupLogDir"    // Log directory
 #define AIM_KEY_GT		"GroupMin2Tray"  // Minimize to tray
 #define AIM_KEY_AL		"AIMLinks"       // aim: links support
 #define AIM_KEY_PM      "PasswordMenu"   // Show password menu

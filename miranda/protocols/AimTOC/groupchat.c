@@ -150,6 +150,7 @@ void aim_gchat_delete_by_contact(HANDLE hContact)
 {
     DBVARIANT dbv;
 
+	if (!ServiceExists(MS_GC_REGISTER)) return;
     if (!DBGetContactSetting(hContact, AIM_PROTO, "ChatRoomID", &dbv)) {
         TChatRoom *r = aim_gchat_find_by_name(dbv.pszVal);
 
@@ -270,7 +271,8 @@ void aim_gchat_joinrequest(char *room, int exchange)
 {
     char snd[MSG_LEN * 2];
     char szRoom[MSG_LEN];
-
+	
+	if (!ServiceExists(MS_GC_REGISTER)) return;
     mir_snprintf(szRoom, sizeof(szRoom), "%s", room);
     aim_util_escape(szRoom);
     LOG(LOG_DEBUG, "Sending join request for \"%s\", exchange=%d", room, exchange);
@@ -280,47 +282,51 @@ void aim_gchat_joinrequest(char *room, int exchange)
 
 void aim_gchat_chatinvite(char *szRoom, char *szUser, char *chatid, char *msg)
 {
-    struct aim_gchat_chatinfo *info = (struct aim_gchat_chatinfo *) malloc(sizeof(struct aim_gchat_chatinfo));
-    HANDLE hContact;
-    char szService[256], szTip[256];
-    CLISTEVENT cle;
+	if (!ServiceExists(MS_GC_REGISTER)) return;
+	{
+		struct aim_gchat_chatinfo *info = (struct aim_gchat_chatinfo *) malloc(sizeof(struct aim_gchat_chatinfo));
+		HANDLE hContact;
+		char szService[256], szTip[256];
+		CLISTEVENT cle;
 
-    ZeroMemory(info, sizeof(info));
-    // Check to see if we are ignoring invites
-    if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_GI, AIM_KEY_GI_DEF))
-        return;
+		ZeroMemory(info, sizeof(info));
+		// Check to see if we are ignoring invites
+		if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_GI, AIM_KEY_GI_DEF))
+			return;
 
-    // Only accept chat invites from contacts in your list
-    hContact = aim_buddy_get(szUser, 0, 0, 0, NULL);
-    if (hContact == NULL)
-        return;
+		// Only accept chat invites from contacts in your list
+		hContact = aim_buddy_get(szUser, 0, 0, 0, NULL);
+		if (hContact == NULL)
+			return;
 
-    lstrcpyn(info->szRoom, szRoom, sizeof(info->szRoom));
-    lstrcpyn(info->szUser, szUser, sizeof(info->szUser));
-    lstrcpyn(info->szMsg, msg, sizeof(info->szMsg));
-    lstrcpyn(info->chatid, chatid, sizeof(info->chatid));
-    pthread_mutex_lock(&inviteMutex);
-    inviteList = tlist_append(inviteList, (void *) info);
-    pthread_mutex_unlock(&inviteMutex);
+		lstrcpyn(info->szRoom, szRoom, sizeof(info->szRoom));
+		lstrcpyn(info->szUser, szUser, sizeof(info->szUser));
+		lstrcpyn(info->szMsg, msg, sizeof(info->szMsg));
+		lstrcpyn(info->chatid, chatid, sizeof(info->chatid));
+		pthread_mutex_lock(&inviteMutex);
+		inviteList = tlist_append(inviteList, (void *) info);
+		pthread_mutex_unlock(&inviteMutex);
 
-    ZeroMemory(&cle, sizeof(cle));
-    cle.cbSize = sizeof(cle);
-    cle.hContact = (HANDLE) hContact;
-    cle.hDbEvent = (HANDLE) NULL;
-    cle.lParam = (LPARAM) info;
-    cle.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GCHAT));
-    mir_snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInviteCList", AIM_PROTO);
-    cle.pszService = szService;
-    mir_snprintf(szTip, sizeof(szTip), Translate("Chat invitation from %s"),
-                 (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
-    cle.pszTooltip = szTip;
-    CallServiceSync(MS_CLIST_ADDEVENT, (WPARAM) hContact, (LPARAM) & cle);
+		ZeroMemory(&cle, sizeof(cle));
+		cle.cbSize = sizeof(cle);
+		cle.hContact = (HANDLE) hContact;
+		cle.hDbEvent = (HANDLE) NULL;
+		cle.lParam = (LPARAM) info;
+		cle.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GCHAT));
+		mir_snprintf(szService, sizeof(szService), "%s/AIM/GroupChatInviteCList", AIM_PROTO);
+		cle.pszService = szService;
+		mir_snprintf(szTip, sizeof(szTip), Translate("Chat invitation from %s"),
+					 (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
+		cle.pszTooltip = szTip;
+		CallServiceSync(MS_CLIST_ADDEVENT, (WPARAM) hContact, (LPARAM) & cle);
+	}
 }
 
 void aim_gchat_updatestatus()
 {
     CLISTMENUITEM cli;
 
+	if (!ServiceExists(MS_GC_REGISTER)) return;
     ZeroMemory(&cli, sizeof(cli));
     cli.cbSize = sizeof(cli);
     if (!aim_util_isonline()) {
@@ -580,6 +586,7 @@ static void __cdecl aim_gchat_create_t(void *room)
 
 void aim_gchat_create(int dwRoom, char *szRoom)
 {
+	if (!ServiceExists(MS_GC_REGISTER)) return;
     if (dwRoom && szRoom) {
         TChatRoom *r = (TChatRoom *) malloc(sizeof(TChatRoom));
 
@@ -593,23 +600,29 @@ void aim_gchat_create(int dwRoom, char *szRoom)
 
 void aim_gchat_sendmessage(int dwRoom, char *szUser, char *szMessage, int whisper)
 {
-    TChatRoom *r = aim_gchat_find(dwRoom);
+	if (!ServiceExists(MS_GC_REGISTER)) return;
+	{
+		TChatRoom *r = aim_gchat_find(dwRoom);
 
-    if (r) {
-        char szStrip[2000];
+		if (r) {
+			char szStrip[2000];
 
-        aim_util_striphtml(szStrip, szMessage, sizeof(szStrip));
-        aim_gchat_event(r->szRoom, GC_EVENT_MESSAGE, szStrip, szUser, 0, 0);
-    }
+			aim_util_striphtml(szStrip, szMessage, sizeof(szStrip));
+			aim_gchat_event(r->szRoom, GC_EVENT_MESSAGE, szStrip, szUser, 0, 0);
+		}
+	}
 }
 
 void aim_gchat_updatebuddy(int dwRoom, char *szUser, int joined)
 {
-    TChatRoom *r = aim_gchat_find(dwRoom);
-
-    if (r) {
-        aim_gchat_event(r->szRoom, joined ? GC_EVENT_JOIN : GC_EVENT_PART, 0, szUser, Translate("Users"), 0);
-    }
+	if (!ServiceExists(MS_GC_REGISTER)) return;
+	{
+		TChatRoom *r = aim_gchat_find(dwRoom);
+		
+		if (r) {
+			aim_gchat_event(r->szRoom, joined ? GC_EVENT_JOIN : GC_EVENT_PART, 0, szUser, Translate("Users"), 0);
+		}
+	}
 }
 
 static int aim_gchat_preshutdown(WPARAM wParam, LPARAM lParam)
