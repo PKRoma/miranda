@@ -2,7 +2,7 @@
 
 static TList *rooms = NULL, *inviteList = NULL;
 static pthread_mutex_t roomMutex, inviteMutex;
-static HANDLE hGChatPreHook, hGChatHook, hGChatEvtHook, hMenuGroupChat, hGChatDelete, hGChatMenu, hInviteList;
+static HANDLE hGChatPreHook, hGChatHook, hGChatEvtHook, hMenuGroupChat, hGChatDelete, hGChatMenu, hInviteList, hGChatShowM;
 
 struct aim_gchat_chatinfo
 {
@@ -376,7 +376,7 @@ static BOOL CALLBACK aim_gchat_invitereqdlg(HWND hwndDlg, UINT msg, WPARAM wPara
                         if (r->szRoom) {
                             found = 1;
                             item = SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_ADDSTRING, 0, (LPARAM) r->szRoom);
-                            SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_SETITEMDATA, item, (LPARAM) r->szRoom);
+                            SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_SETITEMDATA, item, (LPARAM) r->dwRoom);
                         }
                     }
                 }
@@ -406,11 +406,11 @@ static BOOL CALLBACK aim_gchat_invitereqdlg(HWND hwndDlg, UINT msg, WPARAM wPara
                     GetWindowText(GetDlgItem(hwndDlg, IDC_MESSAGE), szMsg, sizeof(szMsg));
                     groupid = SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_GETCURSEL, 0, 0), 0);
                     if (!DBGetContactSetting(dat, AIM_PROTO, AIM_KEY_UN, &dbv)) {
-                        char buf[MSG_LEN * 2];
+                        char buf[MSG_LEN * 2], nmsg[128];
 
-                        mir_snprintf(szMsg, sizeof(szMsg), "%s", msg);
+                        mir_snprintf(nmsg, sizeof(nmsg), "%s", szMsg);
                         aim_util_escape(szMsg);
-                        mir_snprintf(buf, sizeof(buf), "toc_chat_invite %d \"%s\" %s", groupid, szMsg, dbv.pszVal);
+                        mir_snprintf(buf, sizeof(buf), "toc_chat_invite %d \"%s\" %s", groupid, nmsg, dbv.pszVal);
                         aim_toc_sflapsend(buf, -1, TYPE_DATA);
                         DBFreeVariant(&dbv);
                     }
@@ -608,7 +608,7 @@ void aim_gchat_sendmessage(int dwRoom, char *szUser, char *szMessage, int whispe
 			char szStrip[2000];
 
 			aim_util_striphtml(szStrip, szMessage, sizeof(szStrip));
-			aim_gchat_event(r->szRoom, whisper?GC_EVENT_NOTICE:GC_EVENT_MESSAGE, szWhisper, szUser, 0, 0);
+			aim_gchat_event(r->szRoom, whisper?GC_EVENT_NOTICE:GC_EVENT_MESSAGE, szStrip, szUser, 0, 0);
 		}
 	}
 }
@@ -648,12 +648,14 @@ static int aim_gchat_prebuildmenu(WPARAM wParam, LPARAM lParam)
         CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hGChatMenu, (LPARAM) & mi);
         mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
         CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hGChatDelete, (LPARAM) & mi);
+        CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hGChatShowM, (LPARAM) & mi);
     }
     else {
         mi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE | CMIF_HIDDEN;
         CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hGChatMenu, (LPARAM) & mi);
         mi.flags = CMIM_FLAGS;
         CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hGChatDelete, (LPARAM) & mi);
+        CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hGChatShowM, (LPARAM) & mi);
     }
     return 0;
 }
@@ -749,7 +751,7 @@ void aim_gchat_init()
     mi.pszContactOwner = AIM_PROTO;
     mi.pszName = Translate("&Show Channel");
     mi.pszService = szService;
-    hGChatDelete = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+    hGChatShowM = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
     mir_snprintf(szService, sizeof(szService), "%s/AIM/GroupChatDelete", AIM_PROTO);
     CreateServiceFunction(szService, aim_gchat_menudelete);
