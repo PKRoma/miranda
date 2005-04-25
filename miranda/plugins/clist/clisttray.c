@@ -359,6 +359,7 @@ static int TrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto)
         trayIcon[i].hBaseIcon = hIcon;
         return i;
     }
+	DestroyIcon(hIcon);
     return -1;
 }
 
