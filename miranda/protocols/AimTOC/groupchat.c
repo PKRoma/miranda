@@ -608,7 +608,7 @@ void aim_gchat_sendmessage(int dwRoom, char *szUser, char *szMessage, int whispe
 			char szStrip[2000];
 
 			aim_util_striphtml(szStrip, szMessage, sizeof(szStrip));
-			aim_gchat_event(r->szRoom, GC_EVENT_MESSAGE, szStrip, szUser, 0, 0);
+			aim_gchat_event(r->szRoom, whisper?GC_EVENT_NOTICE:GC_EVENT_MESSAGE, szWhisper, szUser, 0, 0);
 		}
 	}
 }
