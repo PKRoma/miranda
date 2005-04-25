@@ -31,7 +31,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 312, 234
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Options",IDC_STATIC,2,0,310,231
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
@@ -103,7 +103,7 @@ STYLE DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
     WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES
 CAPTION "Message Session"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_MESSAGE,1,49,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL,WS_EX_ACCEPTFILES
@@ -130,7 +130,7 @@ END
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 306, 229
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,158,158
     CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
@@ -297,7 +297,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_USERDETAILS         ICON    DISCARDABLE     "res/Details8.ico"
-IDI_ADDCONTACT          ICON    DISCARDABLE     "../../src/res/addcontact.ico"
+IDI_ADDCONTACT          ICON    DISCARDABLE     "res\\add8.ico"
 IDI_HISTORY             ICON    DISCARDABLE     "res/History8.ico"
 IDI_DOWNARROW           ICON    DISCARDABLE     "res/Downarrow8.ico"
 IDI_TYPING              ICON    DISCARDABLE     "res/Typing8.ico"
@@ -308,6 +308,7 @@ IDI_USERDETAILS32       ICON    DISCARDABLE     "res/Details32.ico"
 IDI_OUTGOING            ICON    DISCARDABLE     "res\\outgoing.ico"
 IDI_INCOMING            ICON    DISCARDABLE     "res\\incoming.ico"
 IDI_NOTICE              ICON    DISCARDABLE     "res\\notice.ico"
+IDI_ADDCONTACT32        ICON    DISCARDABLE     "res\\add32.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

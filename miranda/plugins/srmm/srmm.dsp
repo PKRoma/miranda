@@ -218,6 +218,10 @@ SOURCE=.\richutil.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\res\add32.ico
+# End Source File
+# Begin Source File
+
 SOURCE="..\..\Miranda-IM\res\addcontact.ico"
 # End Source File
 # Begin Source File
