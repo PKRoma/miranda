@@ -36,6 +36,9 @@ Requirements
 
 History
 -------
+1.2.0.0
+ - Chat support uses Chat plugin
+
 1.1.0.0
  - AIM links option didn't register correctly
  - Security fixes

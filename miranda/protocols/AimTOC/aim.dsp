@@ -117,10 +117,6 @@ SOURCE=.\groupchat.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\groupchatlog.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\groups.c
 # End Source File
 # Begin Source File
@@ -222,10 +218,6 @@ SOURCE=.\firstrun.h
 # Begin Source File
 
 SOURCE=.\groupchat.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\groupchatlog.h
 # End Source File
 # Begin Source File
 

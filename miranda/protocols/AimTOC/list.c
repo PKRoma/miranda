@@ -22,59 +22,63 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include "list.h"
 
-TList *tlist_append(TList *list, void *data) {
-	TList *n;
-	TList *new_list = malloc(sizeof(TList));
-	TList *attach_to = NULL;
+TList *tlist_append(TList * list, void *data)
+{
+    TList *n;
+    TList *new_list = malloc(sizeof(TList));
+    TList *attach_to = NULL;
 
-	new_list->next = NULL;
-	new_list->data = data;
-	for (n=list; n!=NULL; n=n->next) {
-		attach_to = n;
-	}
-	if (attach_to==NULL) {
-		new_list->prev = NULL;
-		return new_list;
-	} 
-	else {
-		new_list->prev = attach_to;
-		attach_to->next = new_list;
-		return list;
-	}
+    new_list->next = NULL;
+    new_list->data = data;
+    for (n = list; n != NULL; n = n->next) {
+        attach_to = n;
+    }
+    if (attach_to == NULL) {
+        new_list->prev = NULL;
+        return new_list;
+    }
+    else {
+        new_list->prev = attach_to;
+        attach_to->next = new_list;
+        return list;
+    }
 }
 
-TList *tlist_remove_link(TList *list, const TList *link) {
-	if (!link)
-		return list;
+TList *tlist_remove_link(TList * list, const TList * link)
+{
+    if (!link)
+        return list;
 
-	if (link->next)
-		link->next->prev = link->prev;
-	if (link->prev)
-		link->prev->next = link->next;
-	if (link==list)
-		list = link->next;
-	return list;
+    if (link->next)
+        link->next->prev = link->prev;
+    if (link->prev)
+        link->prev->next = link->next;
+    if (link == list)
+        list = link->next;
+    return list;
 }
 
-TList *tlist_remove(TList *list, void *data) {
-	TList *n;
+TList *tlist_remove(TList * list, void *data)
+{
+    TList *n;
 
-	for (n=list; n!=NULL; n=n->next) {
-		if (n->data==data) {
-			TList *newlist = tlist_remove_link(list, n);
-			free(n);
-			return newlist;
-		}
-	}
-	return list;
+    for (n = list; n != NULL; n = n->next) {
+        if (n->data == data) {
+            TList *newlist = tlist_remove_link(list, n);
+            free(n);
+            return newlist;
+        }
+    }
+    return list;
 }
 
-void tlist_free(TList *list) {
-	TList *n = list;
+void tlist_free(TList * list)
+{
+    TList *n = list;
 
-	while (n!=NULL) {
-		TList *next = n->next;
-		free(n);
-		n = next;
-	}
+    while (n != NULL) {
+        TList *next = n->next;
+        free(n);
+        n = next;
+    }
 }

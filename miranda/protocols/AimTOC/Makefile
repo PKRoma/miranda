@@ -29,7 +29,6 @@ SRC = aim.c \
       filerecv.c \
       firstrun.c \
       groupchat.c \
-      groupchatlog.c \
       groups.c \
       idle.c \
       im.c \

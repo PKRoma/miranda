@@ -38,6 +38,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IDI_GCHATA          205
 #define IDI_PASSWORD        206
 #define IDI_BLANK           207
+#define IDI_GSHOW           208
+#define IDI_GDELETE         209
 #define IDD_OPT_AIM			301
 #define IDD_AIMLOGIN		302
 #define IDD_INFO_AIM		303
@@ -45,7 +47,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IDD_AIMWARNED		305
 #define IDD_OPT_AIMCONTACTS	306
 #define IDD_GROUPCHATJOIN   307
-#define IDD_GROUPCHAT       308
 #define IDD_OPT_AIMGCHAT    309
 #define IDD_GCHATINVITE     310
 #define IDD_GCHATINVITEREQ  311

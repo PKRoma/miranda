@@ -56,7 +56,7 @@ void aim_util_broadcaststatus(int s)
     }
     ProtoBroadcastAck(AIM_PROTO, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, aimStatus);
     LOG(LOG_DEBUG, "Broadcasted new status (%s)", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, aimStatus, 0));
-    aim_gchat_updatemenu();
+    aim_gchat_updatestatus();
     aim_password_updatemenu();
 }
 
@@ -66,7 +66,12 @@ int aim_util_userdeleted(WPARAM wParam, LPARAM lParam)
         return 0;
     if (!aim_util_isonline())
         return 0;
-    aim_buddy_delete((HANDLE) wParam);
+    if (DBGetContactSettingByte((HANDLE) wParam, AIM_PROTO, AIM_CHAT, 0) == 0) {
+        aim_buddy_delete((HANDLE) wParam);
+    }
+    else {
+        aim_gchat_delete_by_contact((HANDLE) wParam);
+    }
     return 0;
 }
 
@@ -340,14 +345,14 @@ static void __cdecl aim_util_parseurlthread(void *url)
         nlhr.requestType = REQUEST_GET;
         nlhr.flags = NLHRF_DUMPASTEXT;
         nlhr.szUrl = szURL;
-        nlhr.headersCount=3;
-		nlhr.headers=headers;
-		headers[0].szName="User-Agent";
-		headers[0].szValue="Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)";
-		headers[1].szName="Host";
-		headers[1].szValue=AIM_TOC_HOST;
-		headers[2].szName="Accept";
-		headers[2].szValue="*/*";
+        nlhr.headersCount = 3;
+        nlhr.headers = headers;
+        headers[0].szName = "User-Agent";
+        headers[0].szValue = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)";
+        headers[1].szName = "Host";
+        headers[1].szValue = AIM_TOC_HOST;
+        headers[2].szName = "Accept";
+        headers[2].szValue = "*/*";
         nlreply = (NETLIBHTTPREQUEST *) CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM) hNetlib, (LPARAM) & nlhr);
         if (nlreply) {
             if (nlreply->resultCode >= 200 && nlreply->resultCode < 300 && nlreply->dataLength) {
@@ -572,10 +577,10 @@ void aim_utils_logversion()
 
 #ifdef AIM_CVSBUILD
     mir_snprintf(str, sizeof(str), "AimTOC v%d.%d.%d.%da (%s %s)", (pluginInfo.version >> 24) & 0xFF, (pluginInfo.version >> 16) & 0xFF,
-              (pluginInfo.version >> 8) & 0xFF, pluginInfo.version & 0xFF, __DATE__, __TIME__);
+                 (pluginInfo.version >> 8) & 0xFF, pluginInfo.version & 0xFF, __DATE__, __TIME__);
 #else
     mir_snprintf(str, sizeof(str), "AimTOC v%d.%d.%d.%d", (pluginInfo.version >> 24) & 0xFF, (pluginInfo.version >> 16) & 0xFF,
-              (pluginInfo.version >> 8) & 0xFF, pluginInfo.version & 0xFF);
+                 (pluginInfo.version >> 8) & 0xFF, pluginInfo.version & 0xFF);
 #endif
     LOG(LOG_INFO, str);
 #ifdef AIM_CVSBUILD

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int importBuddies = 0;
 static BOOL CALLBACK aim_options_generaloptsproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK aim_options_contactoptsproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK aim_options_gchatoptsproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+//static BOOL CALLBACK aim_options_gchatoptsproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int aim_options_init(WPARAM wParam, LPARAM lParam)
 {
@@ -53,15 +53,15 @@ int aim_options_init(WPARAM wParam, LPARAM lParam)
     odp.pszTitle = pszTitle;
     odp.pfnDlgProc = aim_options_contactoptsproc;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-    odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_AIMGCHAT);
-    if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        mir_snprintf(pszTitle, sizeof(pszTitle), Translate("(%s) AIM Group Chat"), AIM_PROTO);
-    }
-    else
-        mir_snprintf(pszTitle, sizeof(pszTitle), Translate("AIM Group Chat"));
-    odp.pszTitle = pszTitle;
-    odp.pfnDlgProc = aim_options_gchatoptsproc;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+    /*odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_AIMGCHAT);
+       if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
+       mir_snprintf(pszTitle, sizeof(pszTitle), Translate("(%s) AIM Group Chat"), AIM_PROTO);
+       }
+       else
+       mir_snprintf(pszTitle, sizeof(pszTitle), Translate("AIM Group Chat"));
+       odp.pszTitle = pszTitle;
+       odp.pfnDlgProc = aim_options_gchatoptsproc;
+       CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp); */
     return 0;
 }
 
@@ -227,6 +227,7 @@ static BOOL CALLBACK aim_options_contactoptsproc(HWND hwndDlg, UINT msg, WPARAM 
     return FALSE;
 }
 
+/*
 struct FontOptionsList
 {
     char *szDescr;
@@ -593,7 +594,6 @@ static BOOL CALLBACK aim_options_gchatoptsproc(HWND hwndDlg, UINT msg, WPARAM wP
                             DBWriteContactSettingDword(NULL, AIM_PROTO, str, fontOptionsList[i].colour);
                         }
                     }
-                    aim_gchat_updatechats();
                     break;
                 }
             }
@@ -601,4 +601,4 @@ static BOOL CALLBACK aim_options_gchatoptsproc(HWND hwndDlg, UINT msg, WPARAM wP
         }
     }
     return FALSE;
-}
+}*/

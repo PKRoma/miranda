@@ -67,4 +67,4 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_AUTH_PORTLOW  1000
 #define AIM_AUTH_PORTHIGH 10000
 
-#define AIM_SERVERSIDE_GROUP	Translate("Miranda")        // Default group for miranda specific contacts stored on server
+#define AIM_SERVERSIDE_GROUP	Translate("Miranda")    // Default group for miranda specific contacts stored on server

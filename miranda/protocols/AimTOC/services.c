@@ -38,9 +38,9 @@ static int aim_getcaps(WPARAM wParam, LPARAM lParam)
         case PFLAGNUM_4:
             ret = PF4_NOCUSTOMAUTH;
             break;
-		case 5: /* this is PFLAGNUM_5 change when alpha SDK is released */
-			ret = PF2_ONTHEPHONE;
-			break;
+        case 5:                /* this is PFLAGNUM_5 change when alpha SDK is released */
+            ret = PF2_ONTHEPHONE;
+            break;
         case PFLAG_UNIQUEIDTEXT:
             ret = (int) Translate("Screenname");
             break;
@@ -94,7 +94,7 @@ static int aim_getstatus(WPARAM wParam, LPARAM lParam)
 static int aim_setstatus(WPARAM wParam, LPARAM lParam)
 {
     int status = (int) wParam;
-	LOG(LOG_DEBUG, "PS_SETSTATUS: %d", wParam);
+    LOG(LOG_DEBUG, "PS_SETSTATUS: %d", wParam);
     if (aimStatus == status)
         return 0;
     LOG(LOG_DEBUG, "Set Status to %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0));
@@ -104,9 +104,9 @@ static int aim_setstatus(WPARAM wParam, LPARAM lParam)
         aim_buddy_offlineall();
     }
     else if (!aim_util_isonline()) {
-		if (aimStatus==ID_STATUS_CONNECTING) {
-			return 0;
-		}
+        if (aimStatus == ID_STATUS_CONNECTING) {
+            return 0;
+        }
         aim_utils_logversion();
         status = status == ID_STATUS_ONLINE || status == ID_STATUS_FREECHAT ? ID_STATUS_ONLINE : ID_STATUS_AWAY;
         DBWriteContactSettingWord(NULL, AIM_PROTO, AIM_KEY_IS, status);

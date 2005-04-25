@@ -35,11 +35,12 @@ static void aim_idle_set(int idle)
     nIdle = 0;
 }
 
-int aim_idle_hook(WPARAM wParam, LPARAM lParam) {
-    BOOL bIdle = (lParam&IDF_ISIDLE);
-    BOOL bPrivacy = (lParam&IDF_PRIVACY);
+int aim_idle_hook(WPARAM wParam, LPARAM lParam)
+{
+    BOOL bIdle = (lParam & IDF_ISIDLE);
+    BOOL bPrivacy = (lParam & IDF_PRIVACY);
 
-    if (bPrivacy&&nIdle) {
+    if (bPrivacy && nIdle) {
         aim_idle_set(0);
         return 0;
     }
@@ -52,10 +53,11 @@ int aim_idle_hook(WPARAM wParam, LPARAM lParam) {
 
             ZeroMemory(&mii, sizeof(mii));
             mii.cbSize = sizeof(mii);
-            CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM)&mii);
-            aim_idle_set(mii.idleTime*60);
+            CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM) & mii);
+            aim_idle_set(mii.idleTime * 60);
         }
-        else aim_idle_set(0);
+        else
+            aim_idle_set(0);
     }
     return 0;
 }

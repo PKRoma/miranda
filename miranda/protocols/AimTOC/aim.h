@@ -59,6 +59,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_addcontact.h>
 #include <m_idle.h>
 #include "sdkex/m_smileyadd.h"
+#include "sdkex/m_chat.h"
 #include "pthread.h"
 #include "buddies.h"
 #include "config.h"
@@ -66,7 +67,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "filerecv.h"
 #include "firstrun.h"
 #include "groupchat.h"
-#include "groupchatlog.h"
 #include "groups.h"
 #include "idle.h"
 #include "im.h"
@@ -104,6 +104,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define XFREE(x) if (x) free(x)
 
 #define AIM_PROTONAME	"AIM"   // Protocol Name
+
+// Chat
+#define AIM_CHAT        "ChatRoom"
 
 // URLs
 #define AIM_REGISTER	"http://aim.aol.com/aimnew/newreg/register2.adp"

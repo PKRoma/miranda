@@ -43,10 +43,10 @@ static char *aim_gettimefmt(time_t sec)
     min = (sec % (60 * 60)) / 60;
     if (days)
         mir_snprintf(ret, 256, "%d %s, %d %s, %d %s", days, days == 1 ? Translate("day") : Translate("days"), hrs,
-                  hrs == 1 ? Translate("hour") : Translate("hours"), min, min == 1 ? Translate("minute") : Translate("minutes"));
+                     hrs == 1 ? Translate("hour") : Translate("hours"), min, min == 1 ? Translate("minute") : Translate("minutes"));
     else if (hrs)
         mir_snprintf(ret, 256, "%d %s, %d %s", hrs, hrs == 1 ? Translate("hour") : Translate("hours"), min,
-                  min == 1 ? Translate("minute") : Translate("minutes"));
+                     min == 1 ? Translate("minute") : Translate("minutes"));
     else if (min || sec == 0)
         mir_snprintf(ret, 256, "%d %s", min, min == 1 ? Translate("minute") : Translate("minutes"));
     else
@@ -67,7 +67,8 @@ static char *aim_gettimefmtshort(time_t sec)
     if (days)
         mir_snprintf(ret, 256, "%d %s", days, days == 1 ? Translate("day") : Translate("days"));
     else if (hrs)
-        mir_snprintf(ret, 256, "%d %s, %d %s", hrs, hrs == 1 ? Translate("hr") : Translate("hrs"), min, min == 1 ? Translate("min") : Translate("mins"));
+        mir_snprintf(ret, 256, "%d %s, %d %s", hrs, hrs == 1 ? Translate("hr") : Translate("hrs"), min,
+                     min == 1 ? Translate("min") : Translate("mins"));
     else if (min || sec == 0)
         mir_snprintf(ret, 256, "%d %s", min, min == 1 ? Translate("min") : Translate("mins"));
     else
@@ -217,7 +218,7 @@ static BOOL CALLBACK aim_infodlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             }
             // Status
             mir_snprintf(buf, sizeof(buf), "%s %s%s%s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), t > 0 ? "(" : "",
-                      t > 0 ? Translate("Idle") : "", t > 0 ? ")" : "");
+                         t > 0 ? Translate("Idle") : "", t > 0 ? ")" : "");
             SetWindowText(GetDlgItem(hwndDlg, IDC_STATUS), buf);
             if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_PR, &dbv)) {
                 SetWindowText(GetDlgItem(hwndDlg, IDC_INFO), dbv.pszVal);

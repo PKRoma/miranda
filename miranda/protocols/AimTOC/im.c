@@ -30,7 +30,7 @@ static void __cdecl aim_im_sendackfail(HANDLE hContact)
 
     contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0);
     mir_snprintf(buf, sizeof(buf), Translate("%s is currently offline.  Please try again later when the user is online."),
-              contactName ? contactName : Translate("User"));
+                 contactName ? contactName : Translate("User"));
     SleepEx(1000, TRUE);
     ProtoBroadcastAck(AIM_PROTO, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (int) buf);
 }

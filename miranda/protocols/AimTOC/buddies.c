@@ -85,18 +85,20 @@ HANDLE aim_buddy_get(char *nick, int create, int inlist, int noadd, char *group)
     while (hContact) {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
         if (szProto != NULL && !strcmp(szProto, AIM_PROTO)) {
-            if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)) {
-                if (!strcmp(dbv.pszVal, sn)) {
-                    if (inlist) {
-                        DBDeleteContactSetting(hContact, "CList", "NotOnList");
-                        DBDeleteContactSetting(hContact, "CList", "Hidden");
+            if (DBGetContactSettingByte(hContact, AIM_PROTO, AIM_CHAT, 0) == 0) {
+                if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)) {
+                    if (!strcmp(dbv.pszVal, sn)) {
+                        if (inlist) {
+                            DBDeleteContactSetting(hContact, "CList", "NotOnList");
+                            DBDeleteContactSetting(hContact, "CList", "Hidden");
+                        }
+                        DBFreeVariant(&dbv);
+                        pthread_mutex_unlock(&buddyMutex);
+                        return hContact;
                     }
-                    DBFreeVariant(&dbv);
-                    pthread_mutex_unlock(&buddyMutex);
-                    return hContact;
+                    else
+                        DBFreeVariant(&dbv);
                 }
-                else
-                    DBFreeVariant(&dbv);
             }
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -174,10 +176,12 @@ void aim_buddy_offlineall()
     while (hContact) {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
         if (szProto != NULL && !strcmp(szProto, AIM_PROTO)) {
-            DBWriteContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE);
-            DBWriteContactSettingDword(hContact, AIM_PROTO, AIM_KEY_OT, 0);     // reset online time
-            DBWriteContactSettingDword(hContact, AIM_PROTO, AIM_KEY_IT, 0);     // reset idle time
-            DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0);
+            if (DBGetContactSettingByte(hContact, AIM_PROTO, AIM_CHAT, 0) == 0) {
+                DBWriteContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE);
+                DBWriteContactSettingDword(hContact, AIM_PROTO, AIM_KEY_OT, 0); // reset online time
+                DBWriteContactSettingDword(hContact, AIM_PROTO, AIM_KEY_IT, 0); // reset idle time
+                DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0);
+            }
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
@@ -214,7 +218,8 @@ static void aim_buddy_updatedetails(HANDLE hContact, char *nick, char *sn, int o
     int current = DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE);
     int newstatus = online ? type & USER_UNAVAILABLE ? ID_STATUS_AWAY : ID_STATUS_ONLINE : ID_STATUS_OFFLINE;
 
-	if ( type & USER_WIRELESS ) newstatus = ID_STATUS_ONTHEPHONE;
+    if (type & USER_WIRELESS)
+        newstatus = ID_STATUS_ONTHEPHONE;
 
     if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_NK, &dbv)) {
         if (strcmp(dbv.pszVal, nick)) {
@@ -270,14 +275,16 @@ void aim_buddy_update(char *nick, int online, int type, int idle, int evil, time
     while (hContact) {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
         if (szProto != NULL && !strcmp(szProto, AIM_PROTO)) {
-            if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)) {
-                if (!strcmp(dbv.pszVal, sn)) {
-                    aim_buddy_updatedetails(hContact, nick, dbv.pszVal, online, type, idle, evil, signon, idle_time);
-                    DBFreeVariant(&dbv);
-                    return;
+            if (DBGetContactSettingByte(hContact, AIM_PROTO, AIM_CHAT, 0) == 0) {
+                if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)) {
+                    if (!strcmp(dbv.pszVal, sn)) {
+                        aim_buddy_updatedetails(hContact, nick, dbv.pszVal, online, type, idle, evil, signon, idle_time);
+                        DBFreeVariant(&dbv);
+                        return;
+                    }
+                    else
+                        DBFreeVariant(&dbv);
                 }
-                else
-                    DBFreeVariant(&dbv);
             }
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -292,7 +299,7 @@ void aim_buddy_parseconfig(char *config)
         char *c, group[256];
         HANDLE hContact;
         TList *buddies = NULL;
-        
+
         LOG(LOG_DEBUG, "Parsing configuation from server");
         group[0] = '\0';
         if (config != NULL) {
@@ -347,7 +354,7 @@ void aim_buddy_parseconfig(char *config)
                 }
             } while ((c = strtok(NULL, "\n")));
         }
-        {   // Update new contacts on the server
+        {                       // Update new contacts on the server
             if (buddies) {
                 TList *n = buddies;
                 char *un;
@@ -357,17 +364,18 @@ void aim_buddy_parseconfig(char *config)
 
                 strcpy(mbuf, "toc_add_buddy ");
                 buflen = strlen(mbuf);
-                while(n) {
-                    un = (char*)n->data;
-                    if (un&&strlen(un)&&(buflen+strlen(un)+1<MSG_LEN*2)) {
+                while (n) {
+                    un = (char *) n->data;
+                    if (un && strlen(un) && (buflen + strlen(un) + 1 < MSG_LEN * 2)) {
                         strcat(mbuf, aim_util_normalize(un));
                         strcat(mbuf, " ");
                         buflen = strlen(mbuf);
                     }
-                    if (un) free((char*)n->data);
+                    if (un)
+                        free((char *) n->data);
                     n = n->next;
                 }
-                if (strlen(mbuf)>strlen("toc_add_buddy ")) {
+                if (strlen(mbuf) > strlen("toc_add_buddy ")) {
                     LOG(LOG_DEBUG, "Updating new contacts on the server");
                     aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
                 }
@@ -390,36 +398,38 @@ void aim_buddy_updateconfig(int ssilist)
     if (!aim_util_isonline())
         return;
 
-	n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
+    n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
     m = mir_snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
 
     hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
     while (hContact) {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
         if (szProto != NULL && !strcmp(szProto, AIM_PROTO)) {
-            ZeroMemory(&dbv, sizeof(dbv));
-            if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)
-                && !DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_DU, 0) // User is being deleted, don't add
-                && !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)
-                && !aim_buddy_delaydeletecheck(dbv.pszVal)) {
-                if (!ssilist||!DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0)) {
-                    if (strlen(dbv.pszVal) + n + 32 > MSG_LEN) {
-                        aim_toc_sflapsend(buf, -1, TYPE_DATA);
-                        n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
-                    }
-                    if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0)) {
-                        LOG(LOG_DEBUG, "Setting deny mode for %s", dbv.pszVal);
-                        if (strlen(dbv.pszVal) + m + 32 > MSG_LEN) {
-                            aim_toc_sflapsend(dbuf, -1, TYPE_DATA);
-                            m = mir_snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
+            if (DBGetContactSettingByte(hContact, AIM_PROTO, AIM_CHAT, 0) == 0) {
+                ZeroMemory(&dbv, sizeof(dbv));
+                if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)
+                    && !DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_DU, 0)     // User is being deleted, don't add
+                    && !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)
+                    && !aim_buddy_delaydeletecheck(dbv.pszVal)) {
+                    if (!ssilist || !DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0)) {
+                        if (strlen(dbv.pszVal) + n + 32 > MSG_LEN) {
+                            aim_toc_sflapsend(buf, -1, TYPE_DATA);
+                            n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
                         }
-                        m += mir_snprintf(dbuf + m, sizeof(dbuf) - m, " %s", dbv.pszVal);
+                        if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0)) {
+                            LOG(LOG_DEBUG, "Setting deny mode for %s", dbv.pszVal);
+                            if (strlen(dbv.pszVal) + m + 32 > MSG_LEN) {
+                                aim_toc_sflapsend(dbuf, -1, TYPE_DATA);
+                                m = mir_snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
+                            }
+                            m += mir_snprintf(dbuf + m, sizeof(dbuf) - m, " %s", dbv.pszVal);
+                        }
+                        n += mir_snprintf(buf + n, sizeof(buf) - n, " %s", dbv.pszVal);
                     }
-                    n += mir_snprintf(buf + n, sizeof(buf) - n, " %s", dbv.pszVal);
                 }
+                if (dbv.pszVal)
+                    DBFreeVariant(&dbv);
             }
-            if (dbv.pszVal)
-                DBFreeVariant(&dbv);
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }

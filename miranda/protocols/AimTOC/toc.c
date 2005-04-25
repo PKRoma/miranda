@@ -21,67 +21,68 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct toc_data *tdt = NULL;
 
-static int CallProtoServiceSync(const char *proto, const char *service, WPARAM wParam, LPARAM lParam) {
-	char szProtoService[MAX_PATH];
+static int CallProtoServiceSync(const char *proto, const char *service, WPARAM wParam, LPARAM lParam)
+{
+    char szProtoService[MAX_PATH];
 
-	mir_snprintf(szProtoService,sizeof(szProtoService),"%s%s",proto,service);
-	return CallServiceSync(szProtoService,wParam,lParam);
+    mir_snprintf(szProtoService, sizeof(szProtoService), "%s%s", proto, service);
+    return CallServiceSync(szProtoService, wParam, lParam);
 }
 
 HANDLE aim_toc_connect()
 {
     NETLIBOPENCONNECTION ncon = { 0 };
     NETLIBUSERSETTINGS nlus = { 0 };
-	SOCKET s;
+    SOCKET s;
     HANDLE con;
     char host[256];
     DBVARIANT dbv;
-	SOCKADDR_IN saddr;
-	int len;
+    SOCKADDR_IN saddr;
+    int len;
 
-    hServerSideList = importBuddies||firstRun;
-	if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_TS, &dbv)) {
-		mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	else
-		mir_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
-
-	nlus.cbSize = sizeof(nlus);
-	ncon.cbSize = sizeof(ncon);
-	ncon.szHost = host;
-	ncon.wPort = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT, AIM_TOC_PORT);
-	if (ncon.wPort == 0) {
-		ncon.wPort = aim_util_randomnum(AIM_TOC_PORTLOW, AIM_TOC_PORTHIGH);
-	}
-	con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
-    if (!con) {
-		mir_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
-		ncon.szHost = host;
-		ncon.wPort = AIM_TOC_PORT;
-		if (!con) {
-			aim_util_broadcaststatus(ID_STATUS_OFFLINE);
-			LOG(LOG_DEBUG, "Connection to %s:%d failed", ncon.szHost, ncon.wPort);
-			return NULL;
-		}
+    hServerSideList = importBuddies || firstRun;
+    if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_TS, &dbv)) {
+        mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
+        DBFreeVariant(&dbv);
     }
-	if (Miranda_Terminated() || CallProtoServiceSync(AIM_PROTO,PS_GETSTATUS,0,0)!=ID_STATUS_CONNECTING) {
-		Netlib_CloseHandle(con);
-		return NULL;
-	}
-	if ((CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hNetlib, (LPARAM) & nlus) && !(nlus.useProxy && nlus.dnsThroughProxy))&&
-				(s=CallService(MS_NETLIB_GETSOCKET, (WPARAM) con, 0))!=INVALID_SOCKET) {
-		if (getpeername(s, (SOCKADDR *)&saddr, &len)==0) {
-			DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, inet_ntoa(saddr.sin_addr));
-		}
-		else {
-			DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, host);
-		}
-	}
-	else {
-		DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, host);
-	}
-    
+    else
+        mir_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
+
+    nlus.cbSize = sizeof(nlus);
+    ncon.cbSize = sizeof(ncon);
+    ncon.szHost = host;
+    ncon.wPort = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT, AIM_TOC_PORT);
+    if (ncon.wPort == 0) {
+        ncon.wPort = aim_util_randomnum(AIM_TOC_PORTLOW, AIM_TOC_PORTHIGH);
+    }
+    con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
+    if (!con) {
+        mir_snprintf(host, sizeof(host), "%s", AIM_TOC_HOST);
+        ncon.szHost = host;
+        ncon.wPort = AIM_TOC_PORT;
+        if (!con) {
+            aim_util_broadcaststatus(ID_STATUS_OFFLINE);
+            LOG(LOG_DEBUG, "Connection to %s:%d failed", ncon.szHost, ncon.wPort);
+            return NULL;
+        }
+    }
+    if (Miranda_Terminated() || CallProtoServiceSync(AIM_PROTO, PS_GETSTATUS, 0, 0) != ID_STATUS_CONNECTING) {
+        Netlib_CloseHandle(con);
+        return NULL;
+    }
+    if ((CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hNetlib, (LPARAM) & nlus) && !(nlus.useProxy && nlus.dnsThroughProxy)) &&
+        (s = CallService(MS_NETLIB_GETSOCKET, (WPARAM) con, 0)) != INVALID_SOCKET) {
+        if (getpeername(s, (SOCKADDR *) & saddr, &len) == 0) {
+            DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, inet_ntoa(saddr.sin_addr));
+        }
+        else {
+            DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, host);
+        }
+    }
+    else {
+        DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, host);
+    }
+
     importBuddies = 0;
     return con;
 }
@@ -138,7 +139,7 @@ int aim_toc_login(HANDLE hConn)
     tdt = malloc(sizeof(struct toc_data));
     tdt->password = NULL;
     tdt->username = NULL;
-	tdt->state = STATE_OFFLINE;
+    tdt->state = STATE_OFFLINE;
     hServerConn = hConn;
     hServerPacketRecver = NULL;
     if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_PW, &dbv)) {
@@ -197,8 +198,8 @@ static void toc_peformerror(int e)
             break;
         case 983:
             mir_snprintf(buf, sizeof(buf),
-                      Translate
-                      ("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."));
+                         Translate
+                         ("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."));
             break;
         case 989:
             mir_snprintf(buf, sizeof(buf), Translate("An unknown signon error has occurred.  Please try again later."));
@@ -260,7 +261,7 @@ int aim_toc_parse(char *buf, int len)
             return -1;
         }
         mir_snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
-                  aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
+                     aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
         if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
             return -1;
         }
@@ -325,7 +326,7 @@ int aim_toc_parse(char *buf, int len)
             port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_AT, AIM_AUTH_PORT);
             tdt->state = STATE_ONLINE;
             mir_snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
-                      aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
+                         aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
             if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
                 return -1;
             }

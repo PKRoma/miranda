@@ -71,7 +71,8 @@ int aim_modulesloaded(WPARAM wParam, LPARAM lParam)
     hServerSideList = importBuddies;
     aim_evil_init();
     aim_userinfo_init();
-    aim_gchat_init();
+    if (ServiceExists(MS_GC_REGISTER))
+        aim_gchat_init();
     aim_idle_init();
     aim_keepalive_init();
     aim_links_init();
@@ -121,7 +122,8 @@ int __declspec(dllexport) Unload()
     }
     aim_evil_destroy();
     aim_userinfo_destroy();
-    aim_gchat_destroy();
+    if (ServiceExists(MS_GC_REGISTER))
+        aim_gchat_destroy();
     aim_idle_destroy();
     aim_keepalive_destroy();
     aim_links_destroy();
