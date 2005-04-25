@@ -42,7 +42,7 @@ PLUGININFO pluginInfo = {
 	0
 };
 
-HANDLE hMainThread;
+HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
 char* jabberProtoName;	// "JABBER"
 char* jabberModuleName;	// "Jabber"
@@ -321,11 +321,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	for ( i=0; i < JABBER_ICON_TOTAL; i++ )
 		DestroyIcon( jabberIcon[i] );
 
-#ifdef _DEBUG
-	OutputDebugString( "Finishing Unload, returning to Miranda" );
-	//OutputDebugString( "========== Memory leak from JABBER" );
-	//_CrtDumpMemoryLeaks();
-	//OutputDebugString( "========== End memory leak from JABBER" );
-#endif
+	if ( hMainThread ) CloseHandle( hMainThread );
 	return 0;
 }
