@@ -222,6 +222,10 @@ SOURCE=.\res\add32.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\add8.ico
+# End Source File
+# Begin Source File
+
 SOURCE="..\..\Miranda-IM\res\addcontact.ico"
 # End Source File
 # Begin Source File
