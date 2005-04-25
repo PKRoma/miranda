@@ -453,9 +453,7 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 				ft->wszFileName = NULL;
 			}
 
-			if ( ft->std.currentFile != NULL )
-				free( ft->std.currentFile );
-			ft->std.currentFile = strdup( pfr->szFilename );
+			replaceStr( ft->std.currentFile, pfr->szFilename );
 	}	}
 
 	SetEvent( ft->hWaitEvent );

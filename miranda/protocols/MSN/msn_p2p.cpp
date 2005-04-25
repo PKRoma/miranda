@@ -845,8 +845,8 @@ static void sttInitFileTransfer(
 	ft->p2p_sessionid = atol( szSessionID );
 	ft->p2p_msgid = ft->p2p_acksessid + 5;
 	ft->p2p_ackID = ft->p2p_appID * 1000;
-	ft->p2p_callID = strdup( szCallID );
-	ft->p2p_branch = strdup( szBranch );
+	replaceStr( ft->p2p_callID, szCallID );
+	replaceStr( ft->p2p_branch, szBranch );
 	ft->p2p_dest = strdup( szContactEmail );
 	ft->mOwnsThread = info->mMessageCount == 0;
 
@@ -888,7 +888,7 @@ static void sttInitFileTransfer(
 		MSN_DebugLog( "File name: '%s'", szFileName );
 
 		ft->std.hContact = info->mJoinedContacts[0];
-		ft->std.currentFile = strdup( szFileName );
+		replaceStr( ft->std.currentFile, szFileName );
 		ft->std.totalBytes =	ft->std.currentFileSize = *( long* )&szContext[ 8 ];
 		ft->std.totalFiles = 1;
 
@@ -906,7 +906,7 @@ static void sttInitFileTransfer(
 		int tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
 		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%ld bytes", ft->std.currentFileSize );
-		char* szBlob = ( char* )malloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
+		char* szBlob = ( char* )alloca( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
 		*( PDWORD )szBlob = ( DWORD )ft;
 		strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
 		strcpy( szBlob + sizeof( DWORD ) + tFileNameLen + 1, tComment );
@@ -1085,8 +1085,8 @@ LBL_Close:
 	}
 
 	if ( !ft->std.sending ) {
-      ft->p2p_branch = strdup( szBranch );
-		ft->p2p_callID = strdup( szCallID );
+      replaceStr( ft->p2p_branch, szBranch );
+		replaceStr( ft->p2p_callID, szCallID );
 		return;
 	}
 

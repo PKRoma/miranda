@@ -795,7 +795,7 @@ int filetransfer::create()
 
 	char filefull[ MAX_PATH ];
 	mir_snprintf( filefull, sizeof filefull, "%s\\%s", std.workingDir, std.currentFile );
-	std.currentFile = strdup( filefull );
+	replaceStr( std.currentFile, filefull );
 
 	if ( hWaitEvent != INVALID_HANDLE_VALUE )
 		CloseHandle( hWaitEvent );

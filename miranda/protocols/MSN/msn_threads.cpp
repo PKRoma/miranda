@@ -91,7 +91,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 
 			char filefull[ 1024 ];
 			mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
-			ft->std.currentFile = strdup( filefull );
+			replaceStr( ft->std.currentFile, filefull );
 
 			if ( msnRunningUnderNT )
 				ft->fileId = _wopen( ft->wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);

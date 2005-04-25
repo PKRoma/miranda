@@ -336,7 +336,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
-		ft->std.currentFile = strdup( Appfile );
+		replaceStr( ft->std.currentFile, Appfile );
 		Utf8Decode( ft->std.currentFile, &ft->wszFileName );
 		ft->fileId = -1;
 		ft->std.currentFileSize = atol( Appfilesize );
