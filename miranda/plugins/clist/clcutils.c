@@ -72,6 +72,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     SIZE textSize;
     HDC hdc;
     RECT clRect;
+	HFONT hFont;
     DWORD style = GetWindowLong(hwnd, GWL_STYLE);
 
     if (flags)
@@ -141,9 +142,9 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     }
     hdc = GetDC(hwnd);
     if (hitcontact->type == CLCIT_GROUP)
-        SelectObject(hdc, dat->fontInfo[FONTID_GROUPS].hFont);
+		hFont = SelectObject(hdc, dat->fontInfo[FONTID_GROUPS].hFont);
     else
-        SelectObject(hdc, dat->fontInfo[FONTID_CONTACTS].hFont);
+        hFont = SelectObject(hdc, dat->fontInfo[FONTID_CONTACTS].hFont);
     GetTextExtentPoint32(hdc, hitcontact->szText, lstrlen(hitcontact->szText), &textSize);
     width = textSize.cx;
     if (hitcontact->type == CLCIT_GROUP) {
@@ -157,6 +158,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
             width += textSize.cx;
         }
     }
+	SelectObject(hdc, hFont);
     ReleaseDC(hwnd, hdc);
     if (testx < dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4) {
         if (flags)
@@ -635,6 +637,8 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
         LOGFONT lf;
         SIZE fontSize;
         HDC hdc = GetDC(hwnd);
+		HFONT hFont = NULL, hFont1;
+
         for (i = 0; i <= FONTID_MAX; i++) {
             if (!dat->fontInfo[i].changed)
                 DeleteObject(dat->fontInfo[i].hFont);
@@ -650,10 +654,14 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
             }
             dat->fontInfo[i].changed = 0;
             SelectObject(hdc, dat->fontInfo[i].hFont);
+			hFont1 = SelectObject(hdc, dat->fontInfo[i].hFont);
+			if (hFont==NULL)
+				hFont = hFont1;
             GetTextExtentPoint32(hdc, "x", 1, &fontSize);
             dat->fontInfo[i].fontHeight = fontSize.cy;
             //if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
         }
+		SelectObject(hdc,hFont);
         ReleaseDC(hwnd, hdc);
     }
     dat->leftMargin = DBGetContactSettingByte(NULL, "CLC", "LeftMargin", CLCDEFAULT_LEFTMARGIN);
