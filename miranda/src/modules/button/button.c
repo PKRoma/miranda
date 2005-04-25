@@ -240,11 +240,12 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			char szText[MAX_PATH];
 			SIZE sz;
 			RECT rcText;
+			HFONT hOldFont;
 
 			CopyRect(&rcText, &rcClient);
 			GetWindowText(ctl->hwnd, szText, sizeof(szText));
 			SetBkMode(hdcMem, TRANSPARENT);
-			SelectObject(hdcMem, ctl->hFont);
+			hOldFont = SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
 			SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
 			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
@@ -259,6 +260,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			}
 			SelectObject(hdcMem, ctl->hFont);
 			DrawState(hdcMem,NULL,NULL,(LPARAM)szText,0,(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
+			SelectObject(hdcMem, hOldFont);
 		}
 		BitBlt(hdcPaint, 0, 0, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top, hdcMem, 0, 0, SRCCOPY);
 		SelectObject(hdcMem, hOld);
