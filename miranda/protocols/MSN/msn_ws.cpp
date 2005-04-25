@@ -30,6 +30,8 @@ static char sttGatewayHeader[] =
 	"Connection: keep-alive\r\n"
 	"Content-Length: %d\r\n\r\n%s";
 
+extern int msnPingTimeout, msnPingTimeoutCurrent;
+
 //=======================================================================================
 
 int ThreadData::send( char* data, int datalen )
@@ -38,6 +40,9 @@ int ThreadData::send( char* data, int datalen )
 		return 0;
 
 	NETLIBBUFFER nlb = { data, datalen, 0 };
+
+	if ( mType == SERVER_NOTIFICATION )
+		msnPingTimeoutCurrent = msnPingTimeout;
 
 	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS && mP2pSession != NULL )) {
 		if ( datalen != 5 && memcmp( data, "PNG\r\n", 5 ) != 0 )
