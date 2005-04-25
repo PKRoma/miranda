@@ -846,26 +846,26 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 	if ( !jabberConnected ) return 0;
 
 	if ( !strcmp( cws->szModule, "CList" )) {
-		HANDLE hContact;
 		DBVARIANT dbv;
-		JABBER_LIST_ITEM *item;
-		char* szProto, *nick, *jid;
 
-		hContact = ( HANDLE ) wParam;
-		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto==NULL || strcmp( szProto, jabberProtoName )) return 0;
+		HANDLE hContact = ( HANDLE ) wParam;
+		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( szProto == NULL || strcmp( szProto, jabberProtoName )) 
+			return 0;
 
 		// A contact's group is changed
 		if ( !strcmp( cws->szSetting, "Group" )) {
-			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-				if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
-					JFreeVariant( &dbv );
+			char jid[ JABBER_MAX_JID_LEN ];
+			if ( !JGetStaticString( "jid", hContact, jid, sizeof jid )) {
+				JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid );
+				if ( item != NULL ) {
+					char* nick;
 					if ( !DBGetContactSetting( hContact, "CList", "MyHandle", &dbv )) {
-						nick = JabberTextEncode( dbv.pszVal );
+						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
 					else if ( !DBGetContactSetting( hContact, "CList", "Nick", &dbv )) {
-						nick = JabberTextEncode( dbv.pszVal );
+						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
 					else nick = JabberNickFromJID( item->jid );
@@ -890,11 +890,13 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 		else if ( !strcmp( cws->szSetting, "MyHandle" )) {
 			hContact = ( HANDLE ) wParam;
 			szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( szProto==NULL || strcmp( szProto, jabberProtoName )) return 0;
+			if ( szProto==NULL || strcmp( szProto, jabberProtoName )) 
+				return 0;
 
-			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-				jid = dbv.pszVal;
-				if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
+			char jid[ JABBER_MAX_JID_LEN ];
+			if ( !JGetStaticString( "jid", hContact, jid, sizeof jid )) {
+				JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid );
+				if ( item != NULL ) {
 					char* newNick = NULL;
 					if ( cws->value.type == DBVT_DELETED )
 						newNick = ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM ) hContact, GCDNF_NOMYHANDLE );
@@ -905,43 +907,38 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 					if ( newNick != NULL && ( item->nick == NULL || ( item->nick!=NULL && strcmp( item->nick, newNick )) )) {
 						JabberLog( "Nick set to %s", newNick );
 						JabberAddContactToRoster( jid, newNick, item->group );
-				}	}
-
-				JFreeVariant( &dbv );
-		}	}
+		}	}	}	}
 
 		// A temporary contact has been added permanently
 		else if ( !strcmp( cws->szSetting, "NotOnList" )) {
-			char* jid, *nick;
-
-			if ( cws->value.type==DBVT_DELETED || ( cws->value.type==DBVT_BYTE && cws->value.bVal==0 )) {
-				if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-					jid = _strdup( dbv.pszVal );
-					JFreeVariant( &dbv );
+			if ( cws->value.type == DBVT_DELETED || ( cws->value.type==DBVT_BYTE && cws->value.bVal==0 )) {
+				char jid[ JABBER_MAX_JID_LEN ];
+				if ( !JGetStaticString( "jid", hContact, jid, sizeof jid )) {
+					char *nick;
 					JabberLog( "Add %s permanently to list", jid );
 					if ( !DBGetContactSetting( hContact, "CList", "MyHandle", &dbv )) {
-						nick = JabberUtf8Encode( dbv.pszVal );
+						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
 					else if ( !DBGetContactSetting( hContact, "CList", "Nick", &dbv )) {
-						nick = JabberUtf8Encode( dbv.pszVal );
+						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
 					else nick = JabberNickFromJID( jid );
 
-					if ( nick != NULL ) {
-						JabberLog( "jid=%s nick=%s", jid, nick );
-						if ( !DBGetContactSetting( hContact, "CList", "Group", &dbv )) {
-							JabberAddContactToRoster( jid, nick, dbv.pszVal );
-							JFreeVariant( &dbv );
-						}
-						else JabberAddContactToRoster( jid, nick, NULL );
-						JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", UTF8(jid));
+					if ( nick == NULL )
+						return 0;
 
-						free( nick );
-						DBDeleteContactSetting( hContact, "CList", "Hidden" );
+					JabberLog( "jid=%s nick=%s", jid, nick );
+					if ( !DBGetContactSetting( hContact, "CList", "Group", &dbv )) {
+						JabberAddContactToRoster( jid, nick, dbv.pszVal );
+						JFreeVariant( &dbv );
 					}
-					free( jid );
+					else JabberAddContactToRoster( jid, nick, NULL );
+					JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", UTF8(jid));
+
+					free( nick );
+					DBDeleteContactSetting( hContact, "CList", "Hidden" );
 	}	}	}	}
 
 	return 0;
