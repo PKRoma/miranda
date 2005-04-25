@@ -72,9 +72,9 @@ extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 #if defined(_UNICODE)
-    extern WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly);
+    extern WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int bWordsOnly);
 #else
-    extern char *FormatRaw(const char *msg, int bWordsOnly);
+    extern char *FormatRaw(DWORD dwFlags, const char *msg, int bWordsOnly);
 #endif
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
@@ -436,6 +436,11 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", RGB(224,224,224));
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour) -10, GetGValue(colour) -10, GetBValue(colour) -10);
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour) -10, GetGValue(colour) -10, GetBValue(colour) -10);
+
     // RTL-Support
 	if (dat->dwFlags & MWF_LOG_RTL) 
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\rtlpar");
@@ -559,7 +564,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     }
     /* OnO: highlight start */
     if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + ((dat->dwFlags & MWF_LOG_NEWLINE && g_groupBreak && dbei.eventType != EVENTTYPE_STATUSCHANGE && dat->dwEventIsShown & MWF_SHOW_SHADEHEADERS) ? 5 : 1) + ((isSent) ? 1 : 0));
     else if(dat->dwFlags & MWF_LOG_GRID)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 3);
 
@@ -664,7 +669,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 
         if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[MSGFONTID_YOURTIME]);
-            AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s %s ", szFinalTimestamp, szFinalTimestamp + 256);
+            AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s %s ", szFinalTimestamp, szFinalTimestamp_Time);
             if(dbei.eventType == EVENTTYPE_STATUSCHANGE) {
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[MSGFONTID_YOURNAME]);
                 AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s ", szName);
@@ -731,12 +736,17 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMsgPrefixColon);
         
 // events in a new line
-	if(dat->dwFlags & MWF_LOG_NEWLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG && g_groupBreak == TRUE && !(dat->dwFlags & MWF_LOG_GROUPMODE))
-		AppendToBufferWithRTF(0, &buffer,&bufferEnd,&bufferAlloced,"\r\n");
+	if(dat->dwFlags & MWF_LOG_NEWLINE && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_ERRMSG && g_groupBreak == TRUE && !(dat->dwFlags & MWF_LOG_GROUPMODE)) {
+        if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
+        AppendToBufferWithRTF(0, &buffer,&bufferEnd,&bufferAlloced,"\r\n");
+    }
 
     if(dat->dwFlags & MWF_LOG_GROUPMODE && dat->dwEventIsShown & MWF_SHOW_MARKFOLLOWUPTS && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
         if(g_groupBreak && dat->dwFlags & MWF_LOG_NEWLINE) {
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+            if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG && dat->dwEventIsShown & MWF_SHOW_SHADEHEADERS)
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
             if(dat->dwFlags & MWF_LOG_SYMBOLS)
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %c%s  ", isSent ? rtfFonts[MSGFONTID_SYMBOLS_OUT] : rtfFonts[MSGFONTID_SYMBOLS_IN], c, rtfFonts[H_MSGFONTID_DIVIDERS]);
         }
@@ -748,6 +758,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     else if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
         if(g_groupBreak && dat->dwFlags & MWF_LOG_NEWLINE) {
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+            if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG && dat->dwEventIsShown & MWF_SHOW_SHADEHEADERS)
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
             if(dat->dwFlags & MWF_LOG_SYMBOLS)
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %c%s  ", isSent ? rtfFonts[MSGFONTID_SYMBOLS_OUT] : rtfFonts[MSGFONTID_SYMBOLS_IN], c, rtfFonts[H_MSGFONTID_DIVIDERS]);
         }
@@ -765,6 +777,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 #if defined( _UNICODE )
             wchar_t *msg;
             int wlen;
+            wchar_t *formatted;
 #else
             BYTE *msg;
 #endif
@@ -786,12 +799,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
                     if(wlen <= (msglen - 1) && wlen > 0){
                         TrimMessage(msg);
-                        if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
-                            TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
-                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
-                        }
-                        else
-                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg, 0);
+                        formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
+                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
                     }
                     else
                         goto nounicode;
@@ -801,12 +810,8 @@ nounicode:
                     msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
                     MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
                     TrimMessage(msg);
-                    if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
-                        TCHAR *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
-                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
-                    }
-                    else
-                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, msg, 0);
+                    formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
+                    AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
                 }
             }
 #else   // unicode
@@ -814,12 +819,8 @@ nounicode:
             if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                 dat->stats.lastReceivedChars = lstrlenA(msg);
             TrimMessage(msg);
-            if(dat->dwFlags & MWF_LOG_TEXTFORMAT) {
-                char *formatted = FormatRaw(msg, myGlobals.m_FormatWholeWordsOnly);
-                AppendToBufferWithRTF(1, &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
-            }
-            else
-                AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", msg);
+            formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
+            AppendToBufferWithRTF(1, &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
 #endif      // unicode
 
             if(dbei.eventType == EVENTTYPE_ERRMSG) {
@@ -1263,8 +1264,6 @@ static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int g
         strncpy(szResult, found + 1, 100);
         *found = 0;
     }
-    if(szResult[0] && !(dat->dwFlags & MWF_LOG_GROUPMODE))
-        strncat(szResult, " ", 1);
     return szResult;
 }   
 

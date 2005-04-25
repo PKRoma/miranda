@@ -111,6 +111,7 @@ typedef struct {
 #define MWF_SHOW_MARKFOLLOWUPTS 32
 #define MWF_SHOW_FLASHCLIST 64
 #define MWF_SHOW_SPLITTEROVERRIDE 128
+#define MWF_SHOW_SHADEHEADERS 256
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -259,9 +260,9 @@ struct MessageWindowData {
     char uin[80];
     BOOL bNotOnList;
     int  iAvatarDisplayMode;
-    int  iUnread;
     int  SendFormat;
     DWORD dwIsFavoritOrRecent;
+    DWORD dwLastUpdate;
 };
 
 typedef struct _recentinfo {

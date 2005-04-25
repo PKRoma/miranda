@@ -1354,7 +1354,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
 
             if(dat->hContact);
-                dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isRecent", 0));
+                dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
 
 
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
@@ -1372,6 +1372,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= MWF_SHOW_MICROLF;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
+            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "h_shading", 0) ? MWF_SHOW_SHADEHEADERS : 0;
             
             dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
             
@@ -1601,7 +1602,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     UpdateTrayMenuState(dat, TRUE);
                     if(LOWORD(dat->dwIsFavoritOrRecent))
                         AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuFavorites);
-                    if(DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isRecent", 0)) {
+                    if(DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0)) {
                         dat->dwIsFavoritOrRecent |= 0x00010000;
                         AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuRecent);
                     }
@@ -1626,6 +1627,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             break;
         case WM_SETFOCUS:
+            if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
+                SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                return 1;
+            }
             if (dat->iTabID >= 0) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 dat->dwTickLastEvent = 0;
@@ -1667,6 +1673,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     updateMathWindow(hwndDlg, dat);
                 }
 #endif                
+                dat->dwLastUpdate = GetTickCount();
             }
             return 1;
         case WM_ACTIVATE:
@@ -1674,13 +1681,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             //fall through
         case WM_MOUSEACTIVATE:
+            if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200)
+                break;
             if (dat->iTabID == -1) {
                 _DebugPopup(dat->hContact, "ACTIVATE Critical: iTabID == -1");
                 break;
             } else {
                 dat->dwFlags &= ~MWF_DIVIDERSET;
-                /* if(dat->pContainer->dwTickLastEvent == dat->dwTickLastEvent)
-                    dat->pContainer->dwTickLastEvent = 0; */
                 dat->dwTickLastEvent = 0;
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
                     FlashTab(hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, 0, dat->iTabImage);
@@ -1722,8 +1729,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     updateMathWindow(hwndDlg, dat);
                 }
 #endif                
+                dat->dwLastUpdate = GetTickCount();
             }
-            break;
+            return 1;
         case WM_GETMINMAXINFO:
             {
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
@@ -2227,7 +2235,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 dbei.cbBlob = lstrlenA(szNote) + 1;
                                 dbei.pBlob = (PBYTE) szNote;
                                 StreamInEvents(hwndDlg,  0, 1, 1, &dbei);
-                                SkinPlaySound("SendMsg");
+                                if(!nen_options.iNoSounds && !(dat->pContainer->dwFlags & CNT_NOSOUND))
+                                    SkinPlaySound("SendMsg");
                                 if (dat->hDbEventFirst == NULL)
                                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
                                 SaveInputHistory(hwndDlg, dat, 0, 0);
@@ -3322,6 +3331,36 @@ quote_from_last:
                                         }
                                         break;
                                     }
+                                    /*
+                                     * auto-select-and-copy handling...
+                                     */
+                                case WM_LBUTTONUP:
+                                    if(((NMHDR *) lParam)->idFrom == IDC_LOG) {
+                                        CHARRANGE cr;
+                                        SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXGETSEL, 0, (LPARAM)&cr);
+                                        if(cr.cpMax != cr.cpMin) {
+                                            cr.cpMax = cr.cpMin = -1;
+                                            if(GetKeyState(VK_CONTROL) & 0x8000) {
+                                                SETTEXTEX stx = {ST_SELECTION,CP_UTF8};
+                                                char *streamOut = NULL;
+                                                if(GetKeyState(VK_MENU) & 0x8000)
+                                                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SFF_SELECTION|SF_USECODEPAGE));
+                                                else
+                                                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, (CP_UTF8 << 16) | (SF_TEXT|SFF_SELECTION|SF_USECODEPAGE));
+                                                if(streamOut) {
+                                                    SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)streamOut);
+                                                    free(streamOut);
+                                                }
+                                                SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
+                                            }
+                                            else if(GetKeyState(VK_SHIFT) & 0x8000) {
+                                                SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_COPY, 0, 0);
+                                                SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
+                                            }
+                                            SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                                        }
+                                    }
+                                    break;
                                 case WM_MOUSEMOVE:
                                     {
                                         HCURSOR hCur = GetCursor();
@@ -3594,7 +3633,8 @@ quote_from_last:
 #endif
                 dbei.pBlob = (PBYTE) sendJobs[iFound].sendBuffer;
                 hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) sendJobs[iFound].hContact[i], (LPARAM) & dbei);
-                SkinPlaySound("SendMsg");
+                if(!nen_options.iNoSounds && !(dat->pContainer->dwFlags & CNT_NOSOUND))
+                    SkinPlaySound("SendMsg");
 
                 /*
                  * if this is a multisend job, AND the ack was from a different contact (not the session "owner" hContact)

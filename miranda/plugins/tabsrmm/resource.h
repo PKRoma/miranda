@@ -213,6 +213,7 @@
 #define IDC_DRAWGRID                    1628
 #define IDC_LIMITTABS                   1628
 #define IDC_WANTVERTICALGRID            1628
+#define IDC_LIMITPREVIEW                1628
 #define IDC_AUTOLOCALE                  1629
 #define IDC_DONTREPORTUNFOCUSED2        1629
 #define IDC_GCHECK                      1630
@@ -326,6 +327,7 @@
 #define IDC_MARKFOLLOWUPTIMESTAMP       1692
 #define IDC_CHECKICONDLL                1692
 #define IDC_ENABLETRAYSUPPORT           1692
+#define IDC_HEADERSHADING               1692
 #define IDC_HIDEMENUBAR                 1693
 #define IDC_TABSATBOTTOM                1694
 #define IDC_STATICCONTROL               1695

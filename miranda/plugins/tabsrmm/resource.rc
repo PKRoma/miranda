@@ -87,7 +87,7 @@ BEGIN
                     WS_TABSTOP,114,193,84,10
     CONTROL         "Show Headers",IDC_CHKSHOWHEADERS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,204,84,10
-    CONTROL         "Limit Message preview to",IDC_CHECK2,"Button",
+    CONTROL         "Limit Message preview to",IDC_LIMITPREVIEW,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,11,218,124,12
     EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,142,218,37,14,ES_AUTOHSCROLL
     CONTROL         "",IDC_MESSAGEPREVIEWLIMITSPIN,"msctls_updown32",
@@ -697,6 +697,8 @@ BEGIN
     LTEXT           "Horizontal grid lines:",IDC_STATIC,171,192,78,10
     CONTROL         "Also draw vertical grid lines",IDC_WANTVERTICALGRID,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,192,148,10
+    CONTROL         "Shade headers darker",IDC_HEADERSHADING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,207,133,8
 END
 
 

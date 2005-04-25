@@ -121,6 +121,9 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
     options->bBalloons = (BOOL)DBGetContactSettingByte(NULL, MODULE, "balloons", 0);
     options->iAutoRestore = 0;
+    options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
+    options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
+    options->iLimitPreview = (int)DBGetContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, 0);
     return 0;
 }
 
@@ -158,6 +161,9 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingByte(NULL, MODULE, "traysupport", (BYTE)options->bTraySupport);
     DBWriteContactSettingByte(NULL, MODULE, "mintotray", (BYTE)options->bMinimizeToTray);
     DBWriteContactSettingByte(NULL, MODULE, "balloons", (BYTE)options->bBalloons);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
     return 0;
 }
 
@@ -203,6 +209,8 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             CheckDlgButton(hWnd, IDC_CHKINFINITE_URL, options->iDelayUrl == -1?BST_CHECKED:BST_UNCHECKED);
             CheckDlgButton(hWnd, IDC_CHKINFINITE_FILE, options->iDelayFile == -1?BST_CHECKED:BST_UNCHECKED);
             CheckDlgButton(hWnd, IDC_CHKINFINITE_OTHERS, options->iDelayOthers == -1?BST_CHECKED:BST_UNCHECKED);
+            CheckDlgButton(hWnd, IDC_CHKWINDOWCHECK, options->bWindowCheck);
+            CheckDlgButton(hWnd, IDC_NORSS, options->bNoRSS);
             SetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1?options->iDelayMsg:0, TRUE);
             SetDlgItemInt(hWnd, IDC_DELAY_URL, options->iDelayUrl != -1?options->iDelayUrl:0, TRUE);
             SetDlgItemInt(hWnd, IDC_DELAY_FILE, options->iDelayFile != -1?options->iDelayFile:0, TRUE);
@@ -238,6 +246,10 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             CheckDlgButton(hWnd, IDC_ENABLETRAYSUPPORT, options->bTraySupport);
             CheckDlgButton(hWnd, IDC_MINIMIZETOTRAY, options->bMinimizeToTray);
             CheckDlgButton(hWnd, IDC_USESHELLNOTIFY, options->bBalloons);
+            SetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, options->iLimitPreview, FALSE);
+            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, 50));
+            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
+            CheckDlgButton(hWnd, IDC_LIMITPREVIEW, (options->iLimitPreview > 0) ? 1 : 0);
             bWmNotify = FALSE;
             return TRUE;
         case DM_STATUSMASKSET:
@@ -291,6 +303,12 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         options->bTraySupport = IsDlgButtonChecked(hWnd, IDC_ENABLETRAYSUPPORT);
                         options->bMinimizeToTray = IsDlgButtonChecked(hWnd, IDC_MINIMIZETOTRAY);
                         options->bBalloons = IsDlgButtonChecked(hWnd, IDC_USESHELLNOTIFY);
+                        options->bWindowCheck = IsDlgButtonChecked(hWnd, IDC_CHKWINDOWCHECK);
+                        options->bNoRSS = IsDlgButtonChecked(hWnd, IDC_NORSS);
+                        if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
+                            options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
+                        else
+                            options->iLimitPreview = 0;
                         EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
                         EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
                         EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
@@ -308,6 +326,8 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         EnableWindow(GetDlgItem(hWnd, IDC_LBNUMBERMSG), options->bMergePopup);
                         EnableWindow(GetDlgItem(hWnd, IDC_RDNEW), options->bMergePopup && options->iNumberMsg);
                         EnableWindow(GetDlgItem(hWnd, IDC_RDOLD), options->bMergePopup && options->iNumberMsg);
+                        EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+                        EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
                             //disable delay textbox when infinite is checked
                         EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
                         EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
@@ -897,7 +917,12 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
                 return 0;
         }
     }
+    if(nen_options.bNoRSS && szProto != NULL && !strncmp(szProto, "RSS", 3))
+        return 0;                                        // filter out RSS popups
+                                                       // 
     if(windowOpen && pContainer != 0) {                // message window is open, need to check the container config if we want to see a popup nonetheless
+        if(nen_options.bWindowCheck)                   // no popups at all for open windows... no exceptions
+            return 0;
         if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd) || pContainer->bInTray))        // in tray counts as "minimised"
                 goto passed;
         if (pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED) {

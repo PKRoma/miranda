@@ -36,6 +36,7 @@ License: GPL
 #include <vector>
 #include <set>
 #include <fstream>
+#define MWF_LOG_TEXTFORMAT 0x2000000
 
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 
@@ -58,7 +59,7 @@ static WCHAR *formatting_strings_end[] = { L"%b0 ", L"%i0 ", L"%u0 " };
  * if bWordsOnly is != 0, then only formatting tags 
  */
 
-extern "C" const WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly)
+extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int bWordsOnly)
 {
     static std::wstring message(msg);
     unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
@@ -92,6 +93,9 @@ extern "C" const WCHAR *FormatRaw(const WCHAR *msg, int bWordsOnly)
         message.insert(beginmark, L" ");
         message.replace(beginmark, 4, formatting_strings_begin[i]);
     }
+
+    if(!(dwFlags & MWF_LOG_TEXTFORMAT))
+        goto nosimpletags;
     
     while((beginmark = message.find_first_of(L"*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
@@ -135,7 +139,7 @@ ok:
         message.insert(beginmark, L"%%%");
         message.replace(beginmark, 4, formatting_strings_begin[index]);
     }
-    //MessageBoxW(0, message.c_str(), L"foo", MB_OK);
+nosimpletags:
     return(message.c_str());
 }
 
@@ -154,7 +158,7 @@ static char *formatting_strings_end[] = { "%b0 ", "%i0 ", "%u0 " };
  * this translates formatting tags into rtf sequences...
  */
 
-extern "C" const char *FormatRaw(const char *msg, int bWordsOnly)
+extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int bWordsOnly)
 {
     static std::string message(msg);
     unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
@@ -190,6 +194,9 @@ extern "C" const char *FormatRaw(const char *msg, int bWordsOnly)
         message.replace(beginmark, 4, formatting_strings_begin[i]);
     }
 
+    if(!(dwFlags & MWF_LOG_TEXTFORMAT))            // skip */_ stuff if not enabled
+        goto nosimpletags;
+    
     while((beginmark = message.find_first_of("*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
         if(bWordsOnly) {
@@ -232,6 +239,7 @@ ok:
         message.insert(beginmark, "%%%");
         message.replace(beginmark, 4, formatting_strings_begin[index]);
     }
+nosimpletags:
     return(message.c_str());
 }
 

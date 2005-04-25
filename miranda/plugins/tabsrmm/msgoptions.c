@@ -1158,6 +1158,8 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                 SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 CheckDlgButton(hwndDlg, IDC_USEINDIVIDUALBKG, dwFlags & MWF_LOG_INDIVIDUALBKG);
                 CheckDlgButton(hwndDlg, IDC_WANTVERTICALGRID, DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0));
+                CheckDlgButton(hwndDlg, IDC_HEADERSHADING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "h_shading", 0));
+                
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), dwFlags & MWF_LOG_INDIVIDUALBKG);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), dwFlags & MWF_LOG_INDIVIDUALBKG);
 
@@ -1461,6 +1463,7 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", IsDlgButtonChecked(hwndDlg, IDC_WANTVERTICALGRID));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
+                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "h_shading", IsDlgButtonChecked(hwndDlg, IDC_HEADERSHADING));
                                 
                                 ReloadGlobals();
                                 UncacheMsgLogIcons();

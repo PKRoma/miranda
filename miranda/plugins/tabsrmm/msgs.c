@@ -436,8 +436,12 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
      */
     
     /* new message */
-    SkinPlaySound("AlertMsg");
+    if(!nen_options.iNoSounds)
+        SkinPlaySound("AlertMsg");
 
+    if(nen_options.iNoAutoPopup)
+        goto nowindowcreate;
+    
     GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 
     bAutoPopup = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
@@ -509,7 +513,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
      * for tray support, we add the event to the tray menu. otherwise we send it back to
      * the contact list for flashing
      */
-    
+nowindowcreate:    
     if(nen_options.bTraySupport)
         UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, TRUE);
     else {
@@ -666,10 +670,13 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     HANDLE hwnd = WindowList_Find(hMessageWindowList,(HANDLE)wParam);
 
     if(hwnd == 0) {      // we are not interested in this event if there is no open message window/tab
+        szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+        if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
+            return 0;                       // filter out settings we aren't interested in...
         if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
-            AddContactToFavorites((HANDLE)wParam, NULL, NULL, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites);
+            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites);
         if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isRecent", 0))
-            AddContactToFavorites((HANDLE)wParam, NULL, NULL, NULL, 0, 0, 0, myGlobals.g_hMenuRecent);
+            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuRecent);
         return 0;       // for the hContact.
     }
 

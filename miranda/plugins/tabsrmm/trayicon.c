@@ -21,6 +21,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 $Id$
+
+Functions, concerning tabSRMMs system tray support. There is more in eventpopups.c
+
 */
 
 #define _WIN32_IE 0x0500
@@ -36,6 +39,10 @@ extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern struct ContainerWindowData *pFirstContainer;
 
+/*
+ * create a system tray icon, create all necessary submenus
+ */
+ 
 void CreateSystrayIcon(int create)
 {
     NOTIFYICONDATA nim;
@@ -123,11 +130,20 @@ void GetTrayWindowRect(LPRECT lprect)
     }
 }
 
+/*
+ * this hides the window from the taskbar by re-parenting it to our invisible background
+ * window.
+ */
+
 BOOL RemoveTaskbarIcon(HWND hWnd)
 {
     SetParent(hWnd, myGlobals.g_hwndHotkeyHandler);
     return TRUE;
 }
+
+/*
+ * minimise a window to the system tray, using a simple animation.
+ */
 
 void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
 {
@@ -201,6 +217,14 @@ void RemoveBalloonTip()
  * add a contact to recent or favorites menu
  * mode = 1, add
  * mode = 0, only modify it..
+ * hMenu specifies the menu handle (the menus are identical...)
+ * cares about updating the menu entry. It sets the hIcon (proto status icon) in
+ * dwItemData of the the menu entry, so that the WM_DRAWITEM handler can retrieve it
+ * w/o costly service calls.
+ * 
+ * Also, the function does housekeeping on the Recent Sessions menu to enforce the
+ * maximum number of allowed entries (20 at the moment). The oldest (topmost) entry
+ * is deleted, if necessary.
  */
 
 void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu)
@@ -228,8 +252,10 @@ void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, cha
     mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szNickname, szStatus);
     if(mode) {
         if(hMenu == myGlobals.g_hMenuRecent) {
-            if(CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0)
-                return;             // don't dupicate items on the recent menu
+            if(CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0) {
+                DeleteMenu(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND);
+                goto addnew;                                            // move to the end of the menu...
+            }
             if(GetMenuItemCount(myGlobals.g_hMenuRecent) > 15) {            // throw out oldest entry in the recent menu...
                 UINT uid = GetMenuItemID(hMenu, 0);
                 if(uid) {
@@ -237,30 +263,83 @@ void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, cha
                     DBDeleteContactSetting((HANDLE)uid, SRMSGMOD_T, "isRecent");
                 }
             }
-            DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isRecent", 1);
+addnew:
+            DBWriteContactSettingDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
+            AppendMenuA(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
         }
-        AppendMenuA(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
+        else if(hMenu == myGlobals.g_hMenuFavorites) {              // insert the item sorted...
+            MENUITEMINFOA mii2 = {0};
+            char szBuffer[142];
+            int i, c = GetMenuItemCount(myGlobals.g_hMenuFavorites);
+            mii2.fMask = MIIM_STRING;
+            mii2.cbSize = sizeof(mii2);
+            if(c == 0)
+                InsertMenuA(myGlobals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+            else {
+                for(i = 0; i <= c; i++) {
+                    mii2.cch = 0;
+                    mii2.dwTypeData = NULL;
+                    GetMenuItemInfoA(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
+                    mii2.cch++;
+                    mii2.dwTypeData = szBuffer;
+                    GetMenuItemInfoA(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
+                    if(strncmp((char *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
+                        InsertMenuA(myGlobals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+                        break;
+                    }
+                }
+            }
+        }
     }
     mii.fMask = MIIM_BITMAP | MIIM_DATA;
     if(!mode) {
         mii.fMask |= MIIM_STRING;
         mii.dwTypeData = szMenuEntry;
-        mii.cch = lstrlenA(szMenuEntry);
+        mii.cch = lstrlenA(szMenuEntry) + 1;
     }
     mii.hbmpItem = HBMMENU_CALLBACK;
     mii.dwItemData = (ULONG)hIcon;
     SetMenuItemInfoA(hMenu, (UINT)hContact, FALSE, &mii);
 }
 
+/*
+ * called by CreateSysTrayIcon(), usually on startup or when you activate tray support
+ * at runtime.
+ * scans the contact db for favorites or recent session entries and builds the menus.
+ */
+
+typedef struct _recentEntry {
+    DWORD dwTimestamp;
+    HANDLE hContact;
+} RCENTRY;
 void LoadFavoritesAndRecent()
 {
+    RCENTRY recentEntries[30], rceTemp;
+    DWORD dwRecent;
+    int iIndex = 0, i, j;
     HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
     while(hContact != 0) {
         if(DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
             AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
-        if(DBGetContactSettingWord(hContact, SRMSGMOD_T, "isRecent", 0))
-            AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent);
+        if((dwRecent = DBGetContactSettingDword(hContact, SRMSGMOD_T, "isRecent", 0)) != 0 && iIndex < 20) {
+            recentEntries[iIndex].dwTimestamp = dwRecent;
+            recentEntries[iIndex++].hContact = hContact;
+        }
         hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
     }
+    if(iIndex == 0)
+        return;
+    
+    for(i = 0; i < iIndex - 1; i++) {
+        for(j = 0; j < iIndex - 1; j++) {
+            if(recentEntries[j].dwTimestamp > recentEntries[j+1].dwTimestamp) {
+                rceTemp = recentEntries[j];
+                recentEntries[j] = recentEntries[j+1];
+                recentEntries[j+1] = rceTemp;
+            }
+        }
+    }
+    for(i = 0; i < iIndex; i++)
+        AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent);
 }
 

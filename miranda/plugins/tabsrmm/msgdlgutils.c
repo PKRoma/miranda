@@ -290,11 +290,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     OPENFILENAMEA ofn={0};
 
                     CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
-                    ofn.lStructSize=sizeof(ofn);
+                    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
                     ofn.hwndOwner=0;
                     ofn.lpstrFile = FileName;
                     ofn.lpstrFilter = Filters;
                     ofn.nMaxFile = MAX_PATH;
+                    ofn.nMaxFileTitle = MAX_PATH;
                     ofn.Flags=OFN_HIDEREADONLY;
                     ofn.lpstrInitialDir = ".";
                     *FileName = '\0';
@@ -733,7 +734,6 @@ DWORD WINAPI LoadPictureThread(LPVOID param)
     return 0;
 }
 
-// BEGIN MOD#33: Show contact's picture
 void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread)
 {
     DBVARIANT dbv;
@@ -867,7 +867,6 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
     SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
     SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 }
-// END MOD#33
 
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
 {
@@ -1445,8 +1444,11 @@ void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 {
     int iPlay = 0;
-    
     DWORD dwFlags = pContainer->dwFlags;
+
+    if(nen_options.iNoSounds)
+        return;
+    
     if(dwFlags & CNT_NOSOUND)
         iPlay = FALSE;
     else if(dwFlags & CNT_SYNCSOUNDS) {

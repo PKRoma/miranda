@@ -65,6 +65,27 @@ Version 0.9.9.95 - 2005/04/15
           
         ! fixed a very rare unicode-related problem when using ieview.
         
+        + added message API 0.0.0.3 as outlined in SRMM.
+        
+        + added 2 submenus to the right-click tray menu: "Favorite Contacts" and "Recent
+          Sessions". The first lets you save up to 20 contacts as favorites. To save a
+          contact as favorite, open a message window and click the small dropdown button
+          on the toolbar, right of the user menu button. There is a submenu called "Favorites"
+          which allows you to add or remove a contact from the list of favorites.
+          
+          The "Recent Sessions" list automatically saves the 20 most recently used sessions
+          (whenever you close a message window). Both favorites and recent sessions are
+          stored in the DB, so they will survive a miranda restart.
+        
+        + added "auto select and copy" for the message history log. If you release the left mouse 
+          button when text is selected in the log and while holding SHIFT it will be copied to 
+          the clipboard instantly.
+          * If no modifier is pressed, selection works as always (you have to use Ctrl-C or the 
+            context menu to copy it.
+          * Hold CTRL to instantly insert the selected text in the message input area (plain text)
+            at the current cursor position (may replace any selection in the input area).
+          * Hold CTRL-ALT - as above, but inserts formatted text
+          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

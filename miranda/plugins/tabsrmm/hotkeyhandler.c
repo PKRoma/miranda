@@ -128,11 +128,15 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
+            /*
+             * handle the popup menus (session list, favorites, recents...
+             * just draw some icons, nothing more :)
+             */
         case WM_MEASUREITEM:
             {
                 LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
                 lpmi->itemHeight = 0;
-                lpmi->itemWidth = 0; //GetSystemMetrics(SM_CXSMICON);
+                lpmi->itemWidth = 6; //GetSystemMetrics(SM_CXSMICON);
                 return TRUE;
             }
         case WM_DRAWITEM:
@@ -141,7 +145,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 struct MessageWindowData *dat = 0;
                 if(dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)myGlobals.g_hMenuFavorites || dis->hwndItem == (HWND)myGlobals.g_hMenuRecent)) {
                     DrawState(dis->hDC, NULL, NULL, (LPARAM) dis->itemData, 0,
-                              (dis->itemState & ODS_SELECTED ? 1 : 0),
+                              2 + (dis->itemState & ODS_SELECTED ? 1 : 0),
                               (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
                               DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
                     return TRUE;
@@ -162,8 +166,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             hIcon = myGlobals.g_iconContainer;
                         
                         DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                                  //(dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
-                                  (dis->itemState & ODS_SELECTED ? 1 : 0),
+                                  2 + (dis->itemState & ODS_SELECTED ? 1 : 0),
                                   (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
                                   DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
 
@@ -226,11 +229,15 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
                             SetForegroundWindow(hwndDlg);
                             GetCursorPos(&pt);
+                            CheckMenuItem(submenu, ID_TRAYCONTEXT_DISABLEALLPOPUPS, MF_BYCOMMAND | (nen_options.iDisable ? MF_CHECKED : MF_UNCHECKED));
+                            CheckMenuItem(submenu, ID_TRAYCONTEXT_DON40223, MF_BYCOMMAND | (nen_options.iNoSounds ? MF_CHECKED : MF_UNCHECKED));
+                            CheckMenuItem(submenu, ID_TRAYCONTEXT_DON, MF_BYCOMMAND | (nen_options.iNoAutoPopup ? MF_CHECKED : MF_UNCHECKED));
+                            
                             iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                            
                             if(iSelection) {
                                 MENUITEMINFO mii = {0};
 
-                                _DebugPopup(0, "selected: %d");
                                 mii.cbSize = sizeof(mii);
                                 mii.fMask = MIIM_DATA | MIIM_ID;
                                 GetMenuItemInfo(submenu, (UINT_PTR)iSelection, FALSE, &mii);
@@ -244,6 +251,19 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                     }
                                     else
                                         CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
+                                }
+                                else {
+                                    switch(iSelection) {
+                                        case ID_TRAYCONTEXT_DISABLEALLPOPUPS:
+                                            nen_options.iDisable ^= 1;
+                                            break;
+                                        case ID_TRAYCONTEXT_DON40223:
+                                            nen_options.iNoSounds ^= 1;
+                                            break;
+                                        case ID_TRAYCONTEXT_DON:
+                                            nen_options.iNoAutoPopup ^= 1;
+                                            break;
+                                    }
                                 }
                             }
                             PostMessage(hwndDlg, WM_NULL, 0, 0);
