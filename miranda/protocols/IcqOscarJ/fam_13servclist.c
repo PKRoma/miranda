@@ -1397,7 +1397,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 {
-
 	BYTE nUinLen;
 	BYTE szUin[10];
 	WORD wReasonLen;
@@ -1405,9 +1404,13 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	HANDLE hcontact;
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
+  char* szReason;
+  int nReasonLen;
+  char* szNick;
+  int nNickLen;
 	char* szBlob;
 	char* pCurBlob;
-
+  DBVARIANT dbv;
 
 	unpackByte(&buf, &nUinLen);
 	wLen -= 1;
@@ -1436,6 +1439,23 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	pre.flags=0;
 	pre.timestamp=time(NULL);
 	pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+wReasonLen+5;
+  szReason = (char*)malloc(wReasonLen+1);
+  if (szReason)
+  {
+    memcpy(szReason, buf, wReasonLen);
+    szReason[wReasonLen] = '\0';
+    szReason = detect_decode_utf8(szReason); // detect & decode UTF-8
+  }
+  nReasonLen = strlennull(szReason);
+  // Read nick name from DB
+  if (DBGetContactSetting(ccs.hContact, gpszICQProtoName, "Nick", &dbv))
+    nNickLen = 0;
+  else
+  {
+    szNick = dbv.pszVal;
+    nNickLen = strlennull(szNick);
+  }
+  pre.lParam += nNickLen + nReasonLen;
 
   DBWriteContactSettingByte(ccs.hContact, gpszICQProtoName, "Grant", 1);
 
@@ -1443,16 +1463,33 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	pCurBlob=szBlob=(char *)malloc(pre.lParam);
 	memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
 	memcpy(pCurBlob,&hcontact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
+  if (nNickLen) 
+  { // if we have nick we add it, otherwise keep trailing zero
+    memcpy(pCurBlob, szNick, nNickLen);
+    pCurBlob+=nNickLen;
+  }
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0; pCurBlob++;
-	memcpy(pCurBlob, buf, wReasonLen); pCurBlob += wReasonLen;
+  if (nReasonLen)
+  {
+    memcpy(pCurBlob, szReason, nReasonLen);
+    pCurBlob += nReasonLen;
+  }
+  else
+  {
+	  memcpy(pCurBlob, buf, wReasonLen); 
+    pCurBlob += wReasonLen;
+  }
 	*(char *)pCurBlob = 0;
 	pre.szMessage=(char *)szBlob;
-// TODO: Change for new auth system, include all known informations
 
+// TODO: Change for new auth system, include all known informations
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
+
+  SAFE_FREE(&szReason);
+  DBFreeVariant(&dbv);
 }
 
 
