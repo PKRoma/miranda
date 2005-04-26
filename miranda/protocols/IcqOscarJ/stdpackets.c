@@ -49,6 +49,7 @@ extern WORD wListenPort;
 extern HANDLE hsmsgrequest;
 extern CRITICAL_SECTION modeMsgsMutex;
 extern BYTE gbSsiEnabled;
+extern BYTE gbOverRate;
 extern char gpszICQProtoName[MAX_PATH];
 
 DWORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersOnly);
@@ -66,7 +67,6 @@ DWORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsers
 // This is the part of the message header that is common for all message channels
 static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, DWORD dwID2, DWORD dwUin, WORD wFmt, WORD wLen)
 {
-
 	unsigned char szUin[10];
 	unsigned char nUinLen;
 
@@ -76,13 +76,12 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 
 	p->wLen = 21 + nUinLen + wLen;
 	write_flap(p, ICQ_DATA_CHAN);
-	packFNACHeader(p, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, dwSequence);
+	packFNACHeader(p, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, dwSequence | ICQ_MSG_SRV_SEND<<0x10);
 	packLEDWord(p, dwID1);         // Msg ID part 1
 	packLEDWord(p, dwID2);         // Msg ID part 2
 	packWord(p, wFmt);             // Message channel
 	packByte(p, nUinLen);          // Length of user id
 	packBuffer(p, szUin, nUinLen); // Receiving user's id
-
 }
 
 
@@ -224,7 +223,7 @@ void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char
   request->wFamily = wFamily;
   request->familyhandler = familyhandler;
 
-  wIdent = AllocateCookie(4, 0, request); // generate and alloc cookie
+  wIdent = AllocateCookie(ICQ_CLIENT_NEW_SERVICE, 0, request); // generate and alloc cookie
 
   packet.wLen = 12;
   write_flap(&packet, 2);
@@ -260,11 +259,11 @@ void icq_setidle(int bAllow)
 	}
 }
 
+
 void icq_setstatus(WORD wStatus)
 {
 	icq_packet packet;
 	WORD wFlags = 0;
-
 
 	// Webaware setting bit flag
 	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "WebAware", 0))
@@ -287,7 +286,6 @@ void icq_setstatus(WORD wStatus)
 		break;
 	}
 
-
 	// Pack data in packet
 	packet.wLen = 18;
 	write_flap(&packet, ICQ_DATA_CHAN);
@@ -300,7 +298,6 @@ void icq_setstatus(WORD wStatus)
 	// Send packet
 	sendServPacket(&packet);
 }
-
 
 
 DWORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData)
@@ -585,11 +582,11 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 
 DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
 
+  if (gbOverRate) return 0;
 
 	pCookieData = malloc(sizeof(fam15_cookie_data));
 	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
@@ -610,17 +607,16 @@ DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
 
 DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
 {
-
 	icq_packet packet;
 	DWORD dwCookie;
 
+  if (gbOverRate) return 0;
 
 	dwCookie = GenerateCookie(0);
 
@@ -630,7 +626,6 @@ DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
@@ -1353,7 +1348,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 void icq_sendNewContact(DWORD dwUin)
 {
 	icq_packet packet;
-	char szUin[10];
+	char szUin[UINMAXLEN];
 	int nUinLen;
 
 	_ltoa(dwUin, szUin, 10);
@@ -1467,7 +1462,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
 	// our client side visibility list
 	{
 		int nUinLen;
-		char szUin[10];
+		char szUin[UINMAXLEN];
 		icq_packet packet;
 		WORD wSnac;
 
@@ -1516,16 +1511,26 @@ void icq_sendEntireVisInvisList(int list)
 void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
 {
   icq_packet packet;
-  unsigned char szUin[10];
+  unsigned char szUin[UINMAXLEN];
   unsigned char nUinlen;
+  char* szUtfMsg = NULL;
   WORD nMsglen;
 
   ltoa(dwUin, szUin, 10);
   nUinlen = strlen(szUin);
-  if (szMsg)
-    nMsglen = strlen(szMsg);
+
+  // Prepare custom utf-8 message
+  if (strlennull(szMsg) > 0)
+  {
+    int nResult;
+
+    nResult = utf8_encode(szMsg, &szUtfMsg);
+    nMsglen = strlennull(szUtfMsg);
+  }
   else
+  {
     nMsglen = 0;
+  }
 
   packet.wLen = 15 + nUinlen + nMsglen;
 
@@ -1534,7 +1539,7 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
   packByte(&packet, nUinlen);
   packBuffer(&packet, szUin, nUinlen);
   packWord(&packet, (WORD)nMsglen);
-  packBuffer(&packet, szMsg, nMsglen);
+  packBuffer(&packet, szUtfMsg, nMsglen);
   packWord(&packet, 0);
 
   sendServPacket(&packet);
@@ -1545,13 +1550,26 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
 void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
 {
   icq_packet packet;
-  unsigned char szUin[10];
+  unsigned char szUin[UINMAXLEN];
   unsigned char nUinlen;
+  char* szUtfMsg = NULL;
   WORD nMsglen;
 
   ltoa(dwUin, szUin, 10);
   nUinlen = strlen(szUin);
-  nMsglen = strlen(szMsg);
+
+  // Prepare custom utf-8 message
+  if (strlennull(szMsg) > 0)
+  {
+    int nResult;
+
+    nResult = utf8_encode(szMsg, &szUtfMsg);
+    nMsglen = strlennull(szUtfMsg);
+  }
+  else
+  {
+    nMsglen = 0;
+  }
 
   packet.wLen = 15 + nUinlen + nMsglen;
 
@@ -1560,7 +1578,7 @@ void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
   packByte(&packet, nUinlen);
   packBuffer(&packet, szUin, nUinlen);
   packWord(&packet, (WORD)nMsglen);
-  packBuffer(&packet, szMsg, nMsglen);
+  packBuffer(&packet, szUtfMsg, nMsglen);
   packWord(&packet, 0);
 
   sendServPacket(&packet);
@@ -1572,11 +1590,23 @@ void icq_sendAuthResponseServ(DWORD dwUin, int auth, char *szReason)
 {
   icq_packet p;
   WORD nReasonlen;
-  unsigned char szUin[10], nUinlen;
+  unsigned char szUin[UINMAXLEN], nUinlen;
+  char* szUtfReason = NULL;
 
   ltoa(dwUin, szUin, 10);
   nUinlen = strlen(szUin);
-  nReasonlen = strlen(szReason);
+  // Prepare custom utf-8 reason
+  if (strlennull(szReason) > 0)
+  {
+    int nResult;
+
+    nResult = utf8_encode(szReason, &szUtfReason);
+    nReasonlen = strlennull(szUtfReason);
+  }
+  else
+  {
+    nReasonlen = 0;
+  }
 
   p.wLen = 16 + nUinlen + nReasonlen;
   write_flap(&p, ICQ_DATA_CHAN);
@@ -1585,7 +1615,7 @@ void icq_sendAuthResponseServ(DWORD dwUin, int auth, char *szReason)
   packBuffer(&p, szUin, nUinlen);
   packByte(&p, (BYTE)auth);
   packWord(&p, nReasonlen);
-  packBuffer(&p, szReason, nReasonlen);
+  packBuffer(&p, szUtfReason, nReasonlen);
   packWord(&p, 0);
 
   sendServPacket(&p);
