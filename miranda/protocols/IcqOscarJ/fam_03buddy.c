@@ -94,6 +94,7 @@ capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize)
   return 0;
 }
 
+const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
 const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
@@ -112,13 +113,12 @@ const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xb
 const capstr capXtraz     = {0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0};
 const capstr capIcq5Extra = {0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_SENDFILE
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
-const capstr capXtStatus  = {0x63, 0x65, 0x73, 0x37, 0xA0, 0x3F, 0x49, 0xFF, 0x80, 0xe5, 0xf7, 0x09, 0xcd, 0xe0, 0xa4, 0xee};
 
 char* cliLibicq2k  = "libicq2000";
 char* cliLicqVer   = "Licq %u.%u";
 char* cliLicqVerL  = "Licq %u.%u.%u";
 char* cliCentericq = "Centericq";
-char* cliIcyJuice  = "IcyJuice/Jabber Transport";
+char* cliLibicqUTF = "libicq2000 (Unicode)";
 char* cliTrillian  = "Trillian";
 char* cliQip       = "QIP 200%c%c";
 char* cliIM2       = "IM2";
@@ -264,7 +264,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         }
         else 
         { // Yes this is most probably Miranda, get the version info
-				  szClient = MirandaVersionToString(dwFT2);
+				  szClient = MirandaVersionToString(dwFT2, 0);
 				  dwClientId = 1; // Miranda does not use Tick as msgId
 			  }
       }
@@ -516,10 +516,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           capstr* capId;
 
 					AddCapabilitiesFromBuffer(hContact, pTLV->pData, pTLV->wLen);
-          if (MatchCap(pTLV->pData, pTLV->wLen, &capXtStatus, 0x10))
-          { // TODO: request custom status information
-            Netlib_Logf(ghServerNetlibUser, "Contact is in custom status mode.");
-          }
 
           // check capabilities for client identification
           if (MatchCap(pTLV->pData, pTLV->wLen, &capTrillian, 0x10) || MatchCap(pTLV->pData, pTLV->wLen, &capTrilCrypt, 0x10))
@@ -568,6 +564,14 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             if ((*capId)[0xF]) 
               strcat(szClientBuf,"/SSL");
             szClient = szClientBuf;
+          }
+          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capMirandaIm, 8))
+          { // new Miranda Signature
+            DWORD iver = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
+            DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
+
+            szClient = MirandaVersionToString(iver, mver);
+            dwClientId = 1; // Miranda does not use Tick as msgId
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capKopete, 0xC))
           {
@@ -635,7 +639,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
               szClient = cliCentericq; // centericq added rtf capability to libicq2000
             else if (CheckContactCapabilities(hContact, CAPF_UTF))
-              szClient = cliIcyJuice; // IcyJuice added unicode capability to libicq2000
+              szClient = cliLibicqUTF; // IcyJuice added unicode capability to libicq2000
             // others - like jabber transport uses unmodified library, thus cannot be detected
           }
           else if (szClient == NULL) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
@@ -700,16 +704,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       else
       {
         szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
-
-				// Get Capability Info TLV
-				pTLV = getTLV(pChain, 0x0D, 1);
-				if (pTLV && (pTLV->wLen >= 16))
-				{
-          if (MatchCap(pTLV->pData, pTLV->wLen, &capXtStatus, 0x10))
-          { // TODO: request custom status information
-            Netlib_Logf(ghServerNetlibUser, "Contact is in custom status mode.");
-          }
-        }
       }
 		}
 
