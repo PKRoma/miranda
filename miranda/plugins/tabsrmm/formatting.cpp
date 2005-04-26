@@ -77,14 +77,14 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int bWordsOnl
      * always do bbcode
      */
 
+    beginmark = 0;
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
-            if((tempmark = message.find(w_bbcodes_begin[i], beginmark)) != message.npos)
+            if((tempmark = message.find(w_bbcodes_begin[i], 0)) != message.npos)
                 break;
         }
         if(i >= NR_CODES)
             break;
-
         beginmark = tempmark;
         endindex = i;
         if((endmark = message.find(w_bbcodes_end[i], beginmark)) == message.npos)

@@ -164,7 +164,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingByte(NULL, MODULE, "balloons", (BYTE)options->bBalloons);
     DBWriteContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
     DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
+    DBWriteContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
     return 0;
 }
 
@@ -248,9 +248,11 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             CheckDlgButton(hWnd, IDC_MINIMIZETOTRAY, options->bMinimizeToTray);
             CheckDlgButton(hWnd, IDC_USESHELLNOTIFY, options->bBalloons);
             SetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, options->iLimitPreview, FALSE);
-            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, 50));
-            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
             CheckDlgButton(hWnd, IDC_LIMITPREVIEW, (options->iLimitPreview > 0) ? 1 : 0);
+            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, options->iLimitPreview > 0 ? 50 : 0));
+            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
+            EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+            EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
             bWmNotify = FALSE;
             return TRUE;
         case DM_STATUSMASKSET:
@@ -612,7 +614,8 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     DBEVENTINFO dbe;
     char* sampleEvent;
     long iSeconds;
-
+    int iPreviewLimit = nen_options.iLimitPreview;
+    
     //there has to be a maximum number of popups shown at the same time
     if (PopupCount >= MAX_POPUPS)
         return 2;
@@ -659,7 +662,6 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
             break;
     }
 
-    //get DBEVENTINFO with pBlob if preview is needed (when is test then is off)
     dbe.pBlob = NULL;
 
     if (pluginOptions->bPreview && hContact) {
@@ -683,11 +685,15 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     pud.PluginWindowProc = (WNDPROC)PopupDlgProc;
     pud.PluginData = pdata;
 
-    //if hContact is NULL, then popup is only Test
     if (hContact) {
-        //get the needed event data
         strncpy(pud.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), MAX_CONTACTNAME);
         strncpy(pud.lpzText, GetPreview(dbe.eventType, (char *)dbe.pBlob), MAX_SECONDLINE);
+        pud.lpzText[MAX_SECONDLINE - 1] = 0;
+        if(iPreviewLimit > 4 && iPreviewLimit < lstrlenA(pud.lpzText)) {
+            iPreviewLimit = iPreviewLimit <= MAX_SECONDLINE ? iPreviewLimit : MAX_SECONDLINE;
+            strncpy(&pud.lpzText[iPreviewLimit - 4], "...", 3);
+            pud.lpzText[iPreviewLimit -1] = 0;
+        }
     } else {
         strncpy(pud.lpzContactName, "Plugin Test", MAX_CONTACTNAME);
         strncpy(pud.lpzText, sampleEvent, MAX_SECONDLINE);
@@ -697,14 +703,13 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     pdata->eventData[0].hEvent = hEvent;
     pdata->eventData[0].timestamp = dbe.timestamp;
     strncpy(pdata->eventData[0].szText, pud.lpzText, MAX_SECONDLINE);
-    pdata->eventData[0].szText[MAX_SECONDLINE] = 0;
+    pdata->eventData[0].szText[MAX_SECONDLINE - 1] = 0;
     pdata->nrEventsAlloced = NR_MERGED;
     pdata->nrMerged = 1;
     
     PopupCount++;
 
     PopUpList[NumberPopupData(NULL)] = pdata;
-    //send data to popup plugin
 
     CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&pud, 0);
     if (dbe.pBlob)
@@ -730,6 +735,10 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
     char *szPreview;
     NOTIFYICONDATA nim;
     char szTitle[64], *nickName = NULL;
+    int iPreviewLimit = nen_options.iLimitPreview;
+
+    if(iPreviewLimit > 255 || iPreviewLimit == 0)
+        iPreviewLimit = 255;
     
     ZeroMemory((void *)&nim, sizeof(nim));
     nim.cbSize = sizeof(nim);
@@ -775,9 +784,9 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
             msg = (wchar_t *) &dbei.pBlob[msglen];
             wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
             if(wlen <= (msglen - 1) && wlen > 0) {
-                if(lstrlenW(msg) >= 255) {
-                    wcsncpy(&msg[250], L"...", 3);
-                    msg[255] = 0;
+                if(lstrlenW(msg) >= iPreviewLimit) {
+                    wcsncpy(&msg[iPreviewLimit - 3], L"...", 3);
+                    msg[iPreviewLimit] = 0;
                 }
             }
             else
@@ -787,19 +796,19 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 nounicode:
             msg = (wchar_t *)alloca(2 * (msglen + 1));
             MultiByteToWideChar(CP_ACP, 0, (char *)dbei.pBlob, -1, msg, msglen);
-            if(lstrlenW(msg) >= 255) {
-                wcsncpy(&msg[250], L"...", 3);
-                msg[255] = 0;
+            if(lstrlenW(msg) >= iPreviewLimit) {
+                wcsncpy(&msg[iPreviewLimit - 3], L"...", 3);
+                msg[iPreviewLimit] = 0;
             }
         }
-        wcsncpy(nim.szInfo, msg, 255);
+        wcsncpy(nim.szInfo, msg, 256);
         nim.szInfo[255] = 0;
 #else
-        if(lstrlenA(dbei.pBlob) >= 255) {
-            strncpy(&dbei.pBlob[250], "...", 3);
-            dbei.pBlob[255] = 0;
+        if(lstrlenA(dbei.pBlob) >= iPreviewLimit) {
+            strncpy(&dbei.pBlob[iPreviewLimit - 3], "...", 3);
+            dbei.pBlob[iPreviewLimit] = 0;
         }
-        strncpy(nim.szInfo, dbei.pBlob, 255);
+        strncpy(nim.szInfo, dbei.pBlob, 256);
         nim.szInfo[255] = 0;
 #endif        
     }

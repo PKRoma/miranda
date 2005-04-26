@@ -3713,13 +3713,10 @@ verify:
 #else
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "container", szNewName);
 #endif                
-                WindowList_Remove(hMessageWindowList, hwndDlg);
-                CreateNewTabForContact(pNewContainer, dat->hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
-                SendMessage(hwndDlg, WM_CLOSE, 0, 1);
-                if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
-                    UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
+                PostMessage(myGlobals.g_hwndHotkeyHandler, DM_DOCREATETAB, (WPARAM)pNewContainer, (LPARAM)dat->hContact);
                 if (iOldItems > 1) {                // there were more than 1 tab, container is still valid
-                    RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
+                    SendMessage(dat->pContainer->hwndActive, WM_SIZE, 0, 0);
+                    //RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
                 }
                 SetForegroundWindow(pNewContainer->hwnd);
                 SetActiveWindow(pNewContainer->hwnd);
@@ -4045,8 +4042,6 @@ verify:
                     SetForegroundWindow(dat->pContainer->hwndActive);
                     SetFocus(dat->pContainer->hwndActive);
                     SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
-                    //RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
-                    //UpdateWindow(dat->pContainer->hwndActive);
                 }
                 DestroyWindow(hwndDlg);
                 if(iTabs == 1)

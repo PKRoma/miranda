@@ -51,6 +51,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FLASHW_TIMERNOFG 0x0000000C
 #define FLASHW_TIMER 0x00000004
 #define IMF_AUTOKEYBOARD 0x0001
+#define ODS_INACTIVE        0x0080
+#define NIN_BALLOONUSERCLICK (WM_USER + 5)
 
 typedef struct __gettextex
 {
@@ -238,7 +240,7 @@ struct ProtocolData {
 #define DM_TRAYICONNOTIFY    (WM_USER+74)
 #define DM_REMOVECLISTEVENT  (WM_USER+75)
 #define DM_GETWINDOWSTATE    (WM_USER+76)
-
+#define DM_DOCREATETAB       (WM_USER+77)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 

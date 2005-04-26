@@ -340,6 +340,25 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
+        case DM_DOCREATETAB:
+        {
+            HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)lParam);
+            if(hWnd && IsWindow(hWnd)) {
+                struct ContainerWindowData *pContainer = 0;
+                
+                SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                if(pContainer) {
+                    int iTabs = TabCtrl_GetItemCount(GetDlgItem(pContainer->hwnd, IDC_MSGTABS));
+                    if(iTabs == 1)
+                        SendMessage(pContainer->hwnd, WM_CLOSE, 0, 1);
+                    else
+                        SendMessage(hWnd, WM_CLOSE, 0, 1);
+                    
+                    CreateNewTabForContact((struct ContainerWindowData *)wParam, (HANDLE)lParam, 0, NULL, TRUE, TRUE, FALSE, 0);
+                }
+            }
+            break;
+        }
             /*
              * sent from the popup to "dismiss" the event. we should do this in the main thread
              */

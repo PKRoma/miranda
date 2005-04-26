@@ -1,0 +1,82 @@
+# Project: tabsrmm
+# Makefile created by Dev-C++ 4.9.9.0
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+LIBDIR=c:/dev-cpp/lib
+RES  = tabsrmm_private.res
+OBJ  = Release_MINGW32_ANSI/eventpopups.o Release_MINGW32_ANSI/trayicon.o Release_MINGW32_ANSI/formatting.o Release_MINGW32_ANSI/ImageDataObject.o Release_MINGW32_ANSI/themes.o Release_MINGW32_ANSI/sendqueue.o Release_MINGW32_ANSI/msgdlgutils.o Release_MINGW32_ANSI/container.o Release_MINGW32_ANSI/containeroptions.o Release_MINGW32_ANSI/hotkeyhandler.o Release_MINGW32_ANSI/msgdialog.o Release_MINGW32_ANSI/msglog.o Release_MINGW32_ANSI/msgoptions.o Release_MINGW32_ANSI/msgs.o Release_MINGW32_ANSI/selectcontainer.o Release_MINGW32_ANSI/srmm.o $(RES)
+LINKOBJ  = Release_MINGW32_ANSI/eventpopups.o Release_MINGW32_ANSI/trayicon.o Release_MINGW32_ANSI/formatting.o Release_MINGW32_ANSI/ImageDataObject.o Release_MINGW32_ANSI/themes.o Release_MINGW32_ANSI/sendqueue.o Release_MINGW32_ANSI/msgdlgutils.o Release_MINGW32_ANSI/container.o Release_MINGW32_ANSI/containeroptions.o Release_MINGW32_ANSI/hotkeyhandler.o Release_MINGW32_ANSI/msgdialog.o Release_MINGW32_ANSI/msglog.o Release_MINGW32_ANSI/msgoptions.o Release_MINGW32_ANSI/msgs.o Release_MINGW32_ANSI/selectcontainer.o Release_MINGW32_ANSI/srmm.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)/libgdi32.a $(LIBDIR)/libole32.a $(LIBDIR)/libuser32.a $(LIBDIR)/libcomctl32.a $(LIBDIR)/libuuid.a $(LIBDIR)/libcomdlg32.a  $(LIBDIR)/libstdc++.a -mwindows -s
+INCS =  -I"C:/Dev-Cpp/include"
+CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
+BIN  = Release_MINGW32_ANSI/tabsrmm.dll
+CXXFLAGS = $(CXXINCS) -DBUILDING_DLL=1   -fexpensive-optimizations -O2 -mwindows -fno-exceptions -fno-rtti
+CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -fno-exceptions -O2 -mwindows
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before Release_MINGW32_ANSI/tabsrmm.dll all-after
+
+
+clean: clean-custom
+	rm -f $(OBJ) $(BIN)
+
+DLLWRAP=dllwrap.exe
+DEFFILE=Release_MINGW32_ANSI/libtabsrmm.def
+STATICLIB=Release_MINGW32_ANSI/libtabsrmm.a
+
+$(BIN): $(LINKOBJ)
+	$(DLLWRAP) --output-def $(DEFFILE) --implib $(STATICLIB) $(LINKOBJ) $(LIBS) -o $(BIN)
+
+Release_MINGW32_ANSI/trayicon.o: trayicon.c
+	$(CC) -c trayicon.c -o Release_MINGW32_ANSI/trayicon.o $(CFLAGS)
+
+Release_MINGW32_ANSI/eventpopups.o: eventpopups.c
+	$(CC) -c eventpopups.c -o Release_MINGW32_ANSI/eventpopups.o $(CFLAGS)
+
+Release_MINGW32_ANSI/ImageDataObject.o: ImageDataObject.cpp
+	$(CPP) -c ImageDataObject.cpp -o Release_MINGW32_ANSI/ImageDataObject.o $(CFLAGS)
+
+Release_MINGW32_ANSI/formatting.o: formatting.cpp
+	$(CPP) -c formatting.cpp -o Release_MINGW32_ANSI/formatting.o $(CFLAGS)
+
+Release_MINGW32_ANSI/themes.o: themes.c
+	$(CC) -c themes.c -o Release_MINGW32_ANSI/themes.o $(CFLAGS)
+
+Release_MINGW32_ANSI/sendqueue.o: sendqueue.c
+	$(CC) -c sendqueue.c -o Release_MINGW32_ANSI/sendqueue.o $(CFLAGS)
+
+Release_MINGW32_ANSI/msgdlgutils.o: msgdlgutils.c
+	$(CC) -c msgdlgutils.c -o Release_MINGW32_ANSI/msgdlgutils.o $(CFLAGS)
+
+Release_MINGW32_ANSI/container.o: container.c
+	$(CC) -c container.c -o Release_MINGW32_ANSI/container.o $(CFLAGS)
+
+Release_MINGW32_ANSI/containeroptions.o: containeroptions.c
+	$(CC) -c containeroptions.c -o Release_MINGW32_ANSI/containeroptions.o $(CFLAGS)
+
+Release_MINGW32_ANSI/hotkeyhandler.o: hotkeyhandler.c
+	$(CC) -c hotkeyhandler.c -o Release_MINGW32_ANSI/hotkeyhandler.o $(CFLAGS)
+
+Release_MINGW32_ANSI/msgdialog.o: msgdialog.c
+	$(CC) -c msgdialog.c -o Release_MINGW32_ANSI/msgdialog.o $(CFLAGS)
+
+Release_MINGW32_ANSI/msglog.o: msglog.c
+	$(CC) -c msglog.c -o Release_MINGW32_ANSI/msglog.o $(CFLAGS)
+
+Release_MINGW32_ANSI/msgoptions.o: msgoptions.c
+	$(CC) -c msgoptions.c -o Release_MINGW32_ANSI/msgoptions.o $(CFLAGS)
+
+Release_MINGW32_ANSI/msgs.o: msgs.c
+	$(CC) -c msgs.c -o Release_MINGW32_ANSI/msgs.o $(CFLAGS)
+
+Release_MINGW32_ANSI/selectcontainer.o: selectcontainer.c
+	$(CC) -c selectcontainer.c -o Release_MINGW32_ANSI/selectcontainer.o $(CFLAGS)
+
+Release_MINGW32_ANSI/srmm.o: srmm.c
+	$(CC) -c srmm.c -o Release_MINGW32_ANSI/srmm.o $(CFLAGS)
+
+tabsrmm_private.res: tabsrmm_private.rc
+	$(WINDRES) -i tabsrmm_private.rc -I rc -o tabsrmm_private.res -O coff -D__GNUWIN32

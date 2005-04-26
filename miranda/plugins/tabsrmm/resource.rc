@@ -44,9 +44,9 @@ BEGIN
                     10,46,182,10
     PUSHBUTTON      "Sbow popups when Status is...",IDC_POPUPSTATUSMODES,16,
                     58,178,12
-    GROUPBOX        "Popup Options",IDC_STATIC,6,76,199,82
-    LTEXT           "Text",IDC_STATIC,61,82,23,8
-    LTEXT           "Back-\nground",IDC_STATIC,86,82,29,18
+    GROUPBOX        "Popup Options",IDC_STATIC,6,75,199,85
+    LTEXT           "Text",IDC_STATIC,61,83,23,8
+    LTEXT           "Back-\nground",IDC_STATIC,86,83,29,18
     CTEXT           "Timeout (seconds, 0 = use default)",IDC_STATIC,134,82,
                     62,16
     LTEXT           "Message",IDC_STATIC,11,105,44,13
@@ -79,43 +79,44 @@ BEGIN
     CONTROL         "Don't show Popup when Message-Dialog is already open",
                     IDC_CHKWINDOWCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     10,170,192,10
-    CONTROL         "Merge popups from one user",IDC_CHKMERGEPOPUP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,181,186,10
+    CONTROL         "Merge popups ""per user"" (experimental, unstable)",
+                    IDC_CHKMERGEPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    10,181,186,10
     CONTROL         "Show Date",IDC_CHKSHOWDATE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,20,193,84,10
     CONTROL         "Show Time",IDC_CHKSHOWTIME,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,114,193,84,10
     CONTROL         "Show Headers",IDC_CHKSHOWHEADERS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,204,84,10
-    CONTROL         "Limit Message preview to",IDC_LIMITPREVIEW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,218,124,12
-    EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,142,218,37,14,ES_AUTOHSCROLL
+    CONTROL         "Limit Message preview",IDC_LIMITPREVIEW,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,218,107,12
+    EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,121,217,37,14,ES_AUTOHSCROLL
     CONTROL         "",IDC_MESSAGEPREVIEWLIMITSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,187,219,9,13
+                    UDS_ARROWKEYS,164,219,9,13
     GROUPBOX        "Notify me of ...",IDC_STATIC,208,3,100,53
     CONTROL         "Message",IDC_CHKNOTIFY_MESSAGE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,16,90,10
+                    WS_TABSTOP,212,14,90,10
     CONTROL         "URL",IDC_CHKNOTIFY_URL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,25,90,10
+                    WS_TABSTOP,212,23,90,10
     CONTROL         "File",IDC_CHKNOTIFY_FILE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,35,90,10
+                    WS_TABSTOP,212,33,90,10
     CONTROL         "Others",IDC_CHKNOTIFY_OTHER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,44,90,10
+                    WS_TABSTOP,212,42,90,10
     GROUPBOX        "Left Click Actions",IDC_STATIC,208,56,100,43
     CONTROL         "Dismiss Popup",IDC_CHKACTL_DISMISS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,67,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,212,66,90,10
     CONTROL         "Open Event",IDC_CHKACTL_OPEN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,77,90,10
+                    WS_TABSTOP,212,76,90,10
     CONTROL         "Dismiss Event",IDC_CHKACTL_REMOVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,87,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,212,86,90,10
     GROUPBOX        "Right Click Actions",IDC_STATIC,208,99,100,43
     CONTROL         "Dismiss Popup",IDC_CHKACTR_DISMISS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,110,79,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,212,109,79,10
     CONTROL         "Open Event",IDC_CHKACTR_OPEN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,120,78,10
+                    WS_TABSTOP,212,119,78,10
     CONTROL         "Dismiss Event",IDC_CHKACTR_REMOVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,130,77,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,212,129,77,10
     GROUPBOX        "Time Expires Actions",IDC_STATIC,208,143,100,43
     CONTROL         "Dismiss Popup",IDC_CHKACTTE_DISMISS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,212,153,79,10
@@ -126,6 +127,7 @@ BEGIN
     CONTROL         "No popups for RSS",IDC_NORSS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,211,203,95,11
     PUSHBUTTON      "Preview",IDC_PREVIEW,228,218,60,12
+    LTEXT           "chars",IDC_STATIC,163,219,38,10
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
@@ -156,24 +158,24 @@ BEGIN
     CONTROL         "All modes",IDC_ALWAYS,"Button",BS_AUTOCHECKBOX,19,17,70,
                     14
     GROUPBOX        "Choose modes",IDC_STATUSGROUP,7,7,212,119
-    CONTROL         "",IDC_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,
-                    39,82,11
-    CONTROL         "",IDC_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,54,
-                    82,11
-    CONTROL         "",IDC_NA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,69,82,
-                    11
-    CONTROL         "",IDC_DND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,84,
-                    82,11
-    CONTROL         "",IDC_OCCUPIED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,39,82,11
-    CONTROL         "",IDC_INVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,54,82,11
-    CONTROL         "",IDC_ONTHEPHONE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,69,82,11
-    CONTROL         "",IDC_OUTTOLUNCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,84,82,11
-    CONTROL         "",IDC_FREEFORCHAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    20,99,82,11
+    CONTROL         "",IDS_STATUS_ONLINE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,39,82,11
+    CONTROL         "",IDS_STATUS_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,54,82,11
+    CONTROL         "",IDS_STATUS_NA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,69,82,11
+    CONTROL         "",IDS_STATUS_DND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,84,82,11
+    CONTROL         "",IDS_STATUS_OCCUPIED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,39,82,11
+    CONTROL         "",IDS_STATUS_INVISIBLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,54,82,11
+    CONTROL         "",IDS_STATUS_ONTHEPHONE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,69,82,11
+    CONTROL         "",IDS_STATUS_OUTTOLUNCH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,84,82,11
+    CONTROL         "",IDS_STATUS_FREECHAT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,99,82,11
 END
 
 IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
@@ -1002,176 +1004,120 @@ IDR_MENUBAR MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "Save Message Log As...",      ID_FILE_SAVEMESSAGELOGAS
+        MENUITEM "Save Message Log As...",      40109
         MENUITEM SEPARATOR
-        MENUITEM "Close Message Session\tCtrl-W", 
-                                                ID_FILE_CLOSEMESSAGESESSION
-        MENUITEM "Close Container\tAlt-F4",     ID_FILE_CLOSE
+        MENUITEM "Close Message Session\tCtrl-W", 40086
+        MENUITEM "Close Container\tAlt-F4",     40085
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Show Menu Bar",               ID_VIEW_SHOWMENUBAR
-        MENUITEM "Show Status Bar",             ID_VIEW_SHOWSTATUSBAR
-        MENUITEM "Show Tool Bar",               ID_VIEW_SHOWTOOLBAR
+        MENUITEM "Show Menu Bar",               40076
+        MENUITEM "Show Status Bar",             40077
+        MENUITEM "Show Tool Bar",               40078
         POPUP "Title Bar"
         BEGIN
-            MENUITEM "Show Title Bar",              ID_VIEW_SHOWTITLEBAR
+            MENUITEM "Show Title Bar",              40083
             MENUITEM SEPARATOR
-            MENUITEM "Show Nickname",               ID_TITLEBAR_SHOWNICNAME
-            MENUITEM "Show Status",                 ID_TITLEBAR_SHOWSTATUS
+            MENUITEM "Show Nickname",               40089
+            MENUITEM "Show Status",                 40090
             MENUITEM SEPARATOR
-            MENUITEM "Do not show Container Name",  ID_TITLEBAR_DONOTSHOWCONTAINERNAME
-
-            MENUITEM "Show Container Name as Prefix", 
-                                                    ID_TITLEBAR_SHOWCONTAINERNAME
-
-            MENUITEM "Show Container Name as Suffix", 
-                                                    ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX
-
+            MENUITEM "Do not show Container Name",  40094
+            MENUITEM "Show Container Name as Prefix", 40091
+            MENUITEM "Show Container Name as Suffix", 40092
             MENUITEM SEPARATOR
-            MENUITEM "Use static container Icon",   ID_TITLEBAR_USESTATICCONTAINERICON
-
+            MENUITEM "Use static container Icon",   40126
         END
-        MENUITEM "Tabs at Bottom",              ID_VIEW_TABSATBOTTOM
-        MENUITEM "Vertical maximize",           ID_VIEW_VERTICALMAXIMIZE
+        MENUITEM "Tabs at Bottom",              40093
+        MENUITEM "Vertical maximize",           40143
         MENUITEM SEPARATOR
         POPUP "Window Flashing"
         BEGIN
-            MENUITEM "Use default Value",           ID_WINDOWFLASHING_USEDEFAULTVALUES
-
-            MENUITEM "Flash until focused",         ID_WINDOWFLASHING_FLASHUNTILFOCUSED
-
-            MENUITEM "Disable Flashing",            ID_WINDOWFLASHING_DISABLEFLASHING
-
+            MENUITEM "Use default Value",           40106
+            MENUITEM "Flash until focused",         40107
+            MENUITEM "Disable Flashing",            40108
         END
         MENUITEM SEPARATOR
         POPUP "Avatar"
         BEGIN
-            MENUITEM "Toggle Avatar Display",       ID_PICMENU_TOGGLEAVATARDISPLAY
-
+            MENUITEM "Toggle Avatar Display",       40041
             MENUITEM SEPARATOR
-            MENUITEM "Reset the Avatar",            ID_PICMENU_RESETTHEAVATAR
-
-            MENUITEM "Load a local Picture as Avatar", 
-                                                    ID_PICMENU_LOADALOCALPICTUREASAVATAR
-
-            MENUITEM "Disable automatic Avatar updates", 
-                                                    ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
-
+            MENUITEM "Reset the Avatar",            40071
+            MENUITEM "Load a local Picture as Avatar", 40072
+            MENUITEM "Disable automatic Avatar updates", 40122
             MENUITEM SEPARATOR
-            MENUITEM "Always keep the button bar at full width", 
-                                                    ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
-
+            MENUITEM "Always keep the button bar at full width", 40134
         END
         MENUITEM SEPARATOR
-        MENUITEM "Show Multisend Contact List", ID_VIEW_SHOWMULTISENDCONTACTLIST
-
+        MENUITEM "Show Multisend Contact List", 40087
         MENUITEM SEPARATOR
-        MENUITEM "Stay on Top",                 ID_VIEW_STAYONTOP
+        MENUITEM "Stay on Top",                 40095
     END
-    MENUITEM "&User",                       ID_USER
+    MENUITEM "&User",                       40125
     POPUP "Message &Log"
     BEGIN
         POPUP "Log Items to show"
         BEGIN
             POPUP "Message Icons"
             BEGIN
-                MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
-
-                MENUITEM "Symbols instead of Icons",    ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
-
-                MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
-
+                MENUITEM "Show Icons",                  40131
+                MENUITEM "Symbols instead of Icons",    40132
+                MENUITEM "Use Incoming/Outgoing Icons", 40133
             END
-            MENUITEM "Nickname",                    ID_LOGMENU_SHOWNICKNAME
+            MENUITEM "Nickname",                    40055
             MENUITEM SEPARATOR
-            MENUITEM "Grid Lines",                  ID_MESSAGELOGFORMATTING_SHOWGRID
-
+            MENUITEM "Grid Lines",                  40068
             MENUITEM SEPARATOR
-            MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
-
+            MENUITEM "Log Status Changes",          40120
         END
         MENUITEM SEPARATOR
         POPUP "Timestamp Settings"
         BEGIN
-            MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
-            MENUITEM "Show Date",                   ID_LOGMENU_SHOWDATE
-            MENUITEM "Show Seconds",                ID_LOGMENU_SHOWSECONDS
+            MENUITEM "Show Timestamp",              40047
+            MENUITEM "Show Date",                   40051
+            MENUITEM "Show Seconds",                40052
             MENUITEM SEPARATOR
-            MENUITEM "Use relative Timestamps",     ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS
-
-            MENUITEM "Use long Date Format",        ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT
-
-            MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
-
+            MENUITEM "Use relative Timestamps",     40074
+            MENUITEM "Use long Date Format",        40075
+            MENUITEM "Use Contacts local Time",     40050
         END
         POPUP "Message Log Formatting"
         BEGIN
-            MENUITEM "Indent Message Body",         ID_LOGMENU_INDENTMESSAGEBODY
-
+            MENUITEM "Indent Message Body",         40048
             MENUITEM "Use extra Tabstops to format Indent", 40176
-            MENUITEM "Message Body in a new Line",  ID_LOGMENU_MESSAGEBODYINANEWLINE
-
-            MENUITEM "Underline Timestamp and Nickname", 
-                                                    ID_LOGMENU_UNDERLINETIMESTAMP
-
+            MENUITEM "Message Body in a new Line",  40049
+            MENUITEM "Underline Timestamp and Nickname", 40053
             MENUITEM SEPARATOR
-            MENUITEM "Use multiple Background Colors", 
-                                                    ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS
-
-            MENUITEM "Use Message Grouping",        ID_MESSAGELOGFORMATTING_GROUPMESSAGES
-
-            MENUITEM "Simple Text Formatting",      ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING
-
+            MENUITEM "Use multiple Background Colors", 40069
+            MENUITEM "Use Message Grouping",        40073
+            MENUITEM "Simple Text Formatting",      40130
             MENUITEM SEPARATOR
-            MENUITEM "Use RTL for this Contact",    ID_LOGMENU_ACTIVATERTL
+            MENUITEM "Use RTL for this Contact",    40054
         END
         MENUITEM SEPARATOR
-        MENUITEM "Message Log Settings are global", 
-                                                ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL
-
-        MENUITEM "Apply Message Log Settings to all contacts", 
-                                                ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
-
+        MENUITEM "Message Log Settings are global", 40121
+        MENUITEM "Apply Message Log Settings to all contacts", 40123
         MENUITEM SEPARATOR
-        MENUITEM "Export Message Log Settings...", 
-                                                ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
-
-        MENUITEM "Import Message Log Settings...", 
-                                                ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
-
+        MENUITEM "Export Message Log Settings...", 40128
+        MENUITEM "Import Message Log Settings...", 40129
     END
     POPUP "&Container"
     BEGIN
-        MENUITEM "Container Options...",        ID_CONTAINER_CONTAINEROPTIONS
-
+        MENUITEM "Container Options...",        40114
         MENUITEM SEPARATOR
         POPUP "Event Popups"
         BEGIN
-            MENUITEM "Disable all Event Popups",    ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS
-
+            MENUITEM "Disable all Event Popups",    40098
             MENUITEM SEPARATOR
-            MENUITEM "Show Popups if Window is minimized", 
-                                                    ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED
-
-            MENUITEM "Show Popups if Window is unfocused", 
-                                                    ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED
-
-            MENUITEM "Show Popups for all inactive sessions", 
-                                                    ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS
-
+            MENUITEM "Show Popups if Window is minimized", 40110
+            MENUITEM "Show Popups if Window is unfocused", 40111
+            MENUITEM "Show Popups for all inactive sessions", 40112
         END
         MENUITEM SEPARATOR
-        MENUITEM "Apply Container Options globally", 
-                                                ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY
-
-        MENUITEM "Set current Options as Default Values", 
-                                                ID_OPTIONS_SETCURRENTOPTIONSASDEFAULTVALUES
-
-        MENUITEM "Save current Window Position as Default", 
-                                                ID_OPTIONS_SAVECURRENTWINDOWPOSITIONASDEFAULT
-
+        MENUITEM "Apply Container Options globally", 40099
+        MENUITEM "Set current Options as Default Values", 40100
+        MENUITEM "Save current Window Position as Default", 40113
     END
+    MENUITEM "Test",                        0
 END
 
 
