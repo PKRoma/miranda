@@ -325,9 +325,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 _tcsncat(toInsert, myGlobals.m_MathModStartDelimiter, 30);
                 SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)toInsert);
                 SetKeyboardState(keyState);
-                for(i = 0; i < iLen; i++) {
-                    SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
-                }
+                for(i = 0; i < iLen; i++)
+                    SendMessage(hwnd, WM_KEYDOWN, mwdat->dwFlags & MWF_LOG_RTL ? VK_RIGHT : VK_LEFT, 0);
                 return 0;
             }
             if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
@@ -346,6 +345,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         return 0;
                     case 19:
                         PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDMENU, (LPARAM)GetDlgItem(GetParent(hwnd), IDC_SENDMENU));
+                        return 0;
+                    case 16:
+                        PostMessage(GetParent(hwnd), WM_COMMAND, IDC_PROTOMENU, (LPARAM)GetDlgItem(GetParent(hwnd), IDC_PROTOMENU));
                         return 0;
                 }
                 break;
@@ -398,6 +400,14 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 }
                 if (wParam == VK_F4) {
                     SendMessage(GetParent(hwnd), WM_CLOSE, 1, 0);
+                    return 0;
+                }
+                if (wParam == VK_PRIOR) {
+                    SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
+                    return 0;
+                }
+                if (wParam == VK_NEXT) {
+                    SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
                     return 0;
                 }
                 if (!(GetKeyState(VK_SHIFT) & 0x8000) && (wParam == VK_UP || wParam == VK_DOWN)) {          // input history scrolling (ctrl-up / down)
@@ -510,16 +520,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 else
                     iIndex = bChar - (BYTE)'0';
                 SendMessage(mwdat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_BY_INDEX, (LPARAM)iIndex);
-                return 0;
-            }
-            break;
-        case WM_SYSKEYDOWN:
-            if(wParam == VK_LEFT && GetKeyState(VK_LMENU) & 0x8000) {
-                SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
-                return 0;
-            }
-            if(wParam == VK_RIGHT && GetKeyState(VK_LMENU) & 0x8000) {
-                SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
                 return 0;
             }
             break;

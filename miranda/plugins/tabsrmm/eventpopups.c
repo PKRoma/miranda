@@ -124,6 +124,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
     options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
     options->iLimitPreview = (int)DBGetContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, 0);
+    options->bAnimated = TRUE;
     return 0;
 }
 

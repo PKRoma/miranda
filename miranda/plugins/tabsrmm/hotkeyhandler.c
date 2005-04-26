@@ -263,6 +263,34 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                         case ID_TRAYCONTEXT_DON:
                                             nen_options.iNoAutoPopup ^= 1;
                                             break;
+                                        case ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS:
+                                        {
+                                            struct ContainerWindowData *pContainer = pFirstContainer;
+                                            BOOL bAnimatedState = nen_options.bAnimated;
+
+                                            nen_options.bAnimated = FALSE;
+                                            while(pContainer) {
+                                                if(!pContainer->bInTray)
+                                                    SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
+                                                pContainer = pContainer->pNextContainer;
+                                            }
+                                            nen_options.bAnimated = bAnimatedState;
+                                            break;
+                                        }
+                                        case ID_TRAYCONTEXT_RESTOREALLMESSAGECONTAINERS:
+                                        {
+                                            struct ContainerWindowData *pContainer = pFirstContainer;
+                                            BOOL bAnimatedState = nen_options.bAnimated;
+
+                                            nen_options.bAnimated = FALSE;
+                                            while(pContainer) {
+                                                if(pContainer->bInTray)
+                                                    SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                                pContainer = pContainer->pNextContainer;
+                                            }
+                                            nen_options.bAnimated = bAnimatedState;
+                                            break;
+                                        }
                                     }
                                 }
                             }

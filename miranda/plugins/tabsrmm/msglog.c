@@ -688,7 +688,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
         else {
             if((dat->dwFlags & MWF_LOG_SHOWTIME) && !bHideNick) {		// show both...
                 if(dat->dwFlags & MWF_LOG_SWAPNICK) {		// first nick, then time..
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
                     AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
                     if(!(dat->dwFlags & MWF_LOG_GROUPMODE))
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, ", %s %s%s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp, szFinalTimestamp_Time);
@@ -700,12 +700,12 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
                     }
                 } else {
                     if(!(dat->dwFlags & MWF_LOG_GROUPMODE))
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s%s,", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp, szFinalTimestamp_Time);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s%s,", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp, szFinalTimestamp_Time);
                     else {
                         if(dat->dwFlags & MWF_LOG_SHOWDATES)
-                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s,", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s, ", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
                         if(g_groupBreak && !(dat->dwFlags & MWF_LOG_NEWLINE))
-                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s,", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp_Time);
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s,", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp_Time);
                     }
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
                     AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
@@ -713,10 +713,10 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             }
             else if(dat->dwFlags & MWF_LOG_SHOWTIME && bHideNick) {
                 if(!(dat->dwFlags & MWF_LOG_GROUPMODE))
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp, szFinalTimestamp_Time);
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp, szFinalTimestamp_Time);
                 else  {
                     if(dat->dwFlags & MWF_LOG_SHOWDATES)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
                     if(g_groupBreak && !(dat->dwFlags & MWF_LOG_NEWLINE))
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->dwFlags & MWF_LOG_SHOWDATES ? ", %s %s" : " %s %s" , rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp_Time);
                 }
@@ -744,7 +744,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 
     if(dat->dwFlags & MWF_LOG_GROUPMODE && dat->dwEventIsShown & MWF_SHOW_MARKFOLLOWUPTS && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
         if(g_groupBreak && dat->dwFlags & MWF_LOG_NEWLINE) {
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl0");
             if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG && dat->dwEventIsShown & MWF_SHOW_SHADEHEADERS)
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
             if(dat->dwFlags & MWF_LOG_SYMBOLS)
@@ -757,7 +757,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
     }
     else if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
         if(g_groupBreak && dat->dwFlags & MWF_LOG_NEWLINE) {
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl0");
             if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG && dat->dwEventIsShown & MWF_SHOW_SHADEHEADERS)
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
             if(dat->dwFlags & MWF_LOG_SYMBOLS)
@@ -780,6 +780,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
             wchar_t *formatted;
 #else
             BYTE *msg;
+            char *formatted;
 #endif
             if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
                 if(dbei.eventType == EVENTTYPE_ERRMSG && dbei.cbBlob == 0)

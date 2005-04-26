@@ -815,7 +815,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             PostMessage(hwndDlg, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
                         }
                         else
-                            MaximiseFromTray(hwndDlg, TRUE, &pContainer->restoreRect);
+                            MaximiseFromTray(hwndDlg, nen_options.bAnimated, &pContainer->restoreRect);
                         DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
                         pContainer->bInTray = 0;
                         return 0;
@@ -823,25 +823,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 case SC_MINIMIZE:
                     if(nen_options.bTraySupport && nen_options.bMinimizeToTray) {
-                        /*
-                        TCHAR szTitle[25], szFinalTitle[30];
-                        MENUITEMINFO mii;
-                        GetWindowText(hwndDlg, szTitle, 25);
-                        szTitle[24] = 0;
-                        if(GetWindowTextLength(hwndDlg) > 20)
-                            _sntprintf(szFinalTitle, 28, _T("%20.20s..."), szTitle);
-                        else
-                            _tcscpy(szFinalTitle, szTitle);
-                        AppendMenu(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND, (UINT_PTR)pContainer->iContainerIndex + 1, szFinalTitle);
-                        ZeroMemory((void *)&mii, sizeof(mii));
-                        mii.cbSize = sizeof(mii);
-                        mii.fMask = MIIM_DATA;
-                        mii.dwItemData = (DWORD)hwndDlg;
-                        SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, pContainer->iContainerIndex + 1, FALSE, &mii);
-                        */
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
-                        MinimiseToTray(hwndDlg, TRUE);
+                        MinimiseToTray(hwndDlg, nen_options.bAnimated);
                         return 0;
                     }
                     break;
