@@ -95,7 +95,6 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 	default:
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x04,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
-
 	}
 }
 
@@ -114,7 +113,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 
 	// These two values are some kind of reference, we need to save
 	// them to send file request responses for example
-	unpackLEDWord(&buf, &dwID1);
+	unpackLEDWord(&buf, &dwID1); // TODO: msg cookies should be main
 	wLen -= 4;
 	unpackLEDWord(&buf, &dwID2);
 	wLen -= 4;
@@ -203,7 +202,6 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 
 static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2)
 {
-
 	WORD wTLVType;
 	WORD wTLVLen;
 	BYTE* pDataBuf;
@@ -217,9 +215,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 	// It must be TLV(2)
 	if (wTLVType == 2)
 	{
-
 		oscar_tlv_chain* pChain;
-
 
 		pChain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
@@ -230,7 +226,6 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 		if (pChain)
 		{
-
 			oscar_tlv* pMessageTLV;
 			oscar_tlv* pCapabilityTLV;
 
@@ -239,7 +234,6 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 			pCapabilityTLV = getTLV(pChain, 0x0501, 1);
 			if (pCapabilityTLV && (pCapabilityTLV->wLen > 0))
 			{
-
 				WORD wDataLen;
 				BYTE *pDataBuf;
 
@@ -262,10 +256,8 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 			pMessageTLV = getTLV(pChain, 0x0101, 1);
 			if (pMessageTLV)
 			{
-
 				if (pMessageTLV->wLen > 4)
 				{
-
 					WORD wMsgLen;
 					BYTE* pMsgBuf;
 					WORD wEncoding;
@@ -294,7 +286,6 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 					case 2:
 						{
-
 							WCHAR* usMsg;
 							int nStrSize;
 
@@ -329,7 +320,6 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 						}
 					}
 
-
 					// Create and send the message event
 					ccs.szProtoService = PSR_MESSAGE;
 					ccs.hContact = HContactFromUIN(dwUin, 1);
@@ -347,12 +337,10 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 					// Save tick value
 					DBWriteContactSettingDword(ccs.hContact, gpszICQProtoName, "TickTS", time(NULL) - (dwTS1/1000));
-
 				}
 				else
 				{
 					Netlib_Logf(ghServerNetlibUser, "Ignoring empty message (format 1)");
-
 				}
 			}
 			else
@@ -794,22 +782,18 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 
 static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2)
 {
-
 	WORD wTLVType;
 	WORD wTLVLen;
 	BYTE* pDataBuf;
 	DWORD dwUin2;
 
-
 	// Unpack the first TLV
 	unpackTLV(&buf, &wTLVType, &wTLVLen, &pDataBuf);
 	Netlib_Logf(ghServerNetlibUser, "Message (format 4) - UIN: %u, FirstTLV: %u", dwUin, wTLVType);
 
-
 	// It must be TLV(5)
 	if (wTLVType == 5)
 	{
-
 		BYTE bMsgType;
 		BYTE bFlags;
 		unsigned char* pmsg = pDataBuf;
@@ -820,7 +804,6 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 		if (dwUin2 == dwUin)
 		{
-
 			unpackByte(&pmsg, &bMsgType);
 			unpackByte(&pmsg, &bFlags);
 			unpackLEWord(&pmsg, &wMsgLen);
@@ -828,13 +811,11 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 			handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg);
 
 			Netlib_Logf(ghServerNetlibUser, "TYPE4 message thru server from %d, message type %d", dwUin, bMsgType);
-
 		}
 		else
 		{
 			Netlib_Logf(ghServerNetlibUser, "Ignoring spoofed TYPE4 message thru server from %d", dwUin);
 		}
-
 	}
 	else
 	{
@@ -842,7 +823,6 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 	}
 
 	SAFE_FREE(&pDataBuf);
-
 }
 
 
@@ -877,6 +857,7 @@ int TypeStringToTypeId(const char* pszType)
 		nTypeID = MTYPE_CHAT;
 	}
 	else if (!strcmp(pszType, "File") ||
+    !strcmp(pszType, "Τΰιλ") ||
 		!strcmp(pszType, "File Transfer"))
 	{
 		nTypeID = MTYPE_FILEREQ;
@@ -957,11 +938,8 @@ static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
 
 static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLengthToEnd, WORD wMsgLen, PBYTE buf, BYTE bFlags)
 {
-
-
 	if (bFlags == 3)
 	{
-
 		CCSDATA ccs;
 		PROTORECVEVENT pre;
 		int status;
@@ -1004,7 +982,6 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 		default:
 			Netlib_Logf(ghServerNetlibUser, "handleMessageAck: Ignoring unknown status message from %u", dwUin);
 			return INVALID_HANDLE_VALUE;
-
 		}
 
 
@@ -1018,7 +995,6 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 		pre.lParam = wCookie;
 
 		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
 	}
 	else
 	{
@@ -1026,9 +1002,7 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 		Netlib_Logf(ghServerNetlibUser, "handleMessageAck: Ignored type %u ack message (this should not happen)", type);
 	}
 
-
 	return INVALID_HANDLE_VALUE;
-
 }
 
 
@@ -1531,7 +1505,6 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
 	if (bFlags == 3)     // A status message reply
 	{
-
 		CCSDATA ccs;
 		PROTORECVEVENT pre;
 		int status;
@@ -1771,16 +1744,13 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 		SAFE_FREE(&pCookieData);
 
 		FreeCookie(wCookie);
-
 	}
-
 }
 
 
 // A response to a CLI_SENDMSG
 static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwSequence)
 {
-
 	WORD wError;
 	char* pszErrorMessage;
 	DWORD dwUin;
@@ -1793,8 +1763,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 		return;
 
 	if (FindCookie((WORD)dwSequence, &dwUin, &pCookieData))
-	{
-
+  { // all packet cookies from msg family has command 0 in the queue
 		hContact = HContactFromUIN(dwUin, 0);
 
 		// Error code
@@ -1802,13 +1771,11 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
 		if ((hContact == NULL) || (hContact == INVALID_HANDLE_VALUE))
 		{
-
 			Netlib_Logf(ghServerNetlibUser, "SNAC(4.1) Received a SENDMSG Error (%u) from invalid contact %u", wError, dwUin);
 			SAFE_FREE(&pCookieData);
 			FreeCookie((WORD)dwSequence);
 
 			return;
-
 		}
 
 
@@ -1867,7 +1834,6 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 			if (pszErrorMessage = malloc(256))
 				mir_snprintf(pszErrorMessage, 256, Translate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
 			break;
-
 		}
 
 
@@ -1918,7 +1884,6 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
 static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwSequence)
 {
-
 	DWORD dwUin;
 	WORD wChannel;
 	BYTE nUIDLen;
@@ -2007,21 +1972,16 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 
 				default:
 					break;
-
 				}
-
 			}
-
 		}
 		else
 		{
 			Netlib_Logf(ghServerNetlibUser, "Ignored a server ack I did not ask for");
 		}
-
 	}
 
 	return;
-
 }
 
 
@@ -2127,13 +2087,11 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 		// 3 = Sender too evil (sender warn level > your max_msg_sevil)
 		return;
 		break;
-
 	}
 
 
 	// Create message to notify user
 	{
-
 		CCSDATA ccs;
 		PROTORECVEVENT pre;
 
@@ -2148,17 +2106,13 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 		pre.lParam = 0;
 
 		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
 	}
-
-
 }
 
 
 
 static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
-
 	DWORD dwID1;
 	DWORD dwID2;
 	DWORD dwUin;
@@ -2234,14 +2188,11 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 	default:
 		Netlib_Logf(ghServerNetlibUser, "Unknown typing notification from %u, type %u (ch %u)", dwUin, wNotification, wChannel);
 		break;
-
 	}
-
 
 	// Clean up and return
 	SAFE_FREE(&pszUID);
 	return;
-
 }
 
 
