@@ -29,10 +29,15 @@ Bugfixes:
   Fixed slow update of nicks when users imported from server-list
   Fixed auto info update mechanism, do not progress too fast, do not drop processing
   Fixed empty groups are always hidden in Manage Server List, cannot be used either
+  Fixed occasional crash on avatar retrieval - limit size of image to the size of packet
+  If our rate is high, ignore user requests for status msgs & user details (prevents disconnection)
+  Added temporary solution for roughly translated ICQ 2003b russian
 
 Improvements:
   If Update details from server is on, user group are also updated
   Changed System Uptime to Member since in my details
+  Auth system recognizes & sends UTF-8 messages
+  Miranda version signature improved (preparing for old signature removal in the future)
 
 
 0.3.5
