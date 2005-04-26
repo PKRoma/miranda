@@ -86,6 +86,7 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
   }
   else
   {
+    MIRANDA_VERSION = mirandaVersion;
     return &pluginInfo;
   }
 }

@@ -41,7 +41,8 @@ void UpdateGlobalSettings(void);
 BYTE gbAimEnabled;
 BYTE gbSsiEnabled;
 BYTE gbAvatarsEnabled;
-
+BYTE gbOverRate;
+DWORD MIRANDA_VERSION;
 
 // Debug defines
 #define DBG_CAPCH2
