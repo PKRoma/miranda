@@ -323,7 +323,10 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					HICON hIcon;
 
 					hIcon=(HICON)CallProtoService(szProto,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
-					if (hIcon) DrawIconEx(dis->hDC,dis->rcItem.left,dis->rcItem.top,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+					if (hIcon) {
+						DrawIconEx(dis->hDC,dis->rcItem.left,dis->rcItem.top,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+						DestroyIcon(hIcon);
+					}
 				}
 			}
 			return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
@@ -413,6 +416,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case WM_DESTROY:
 			if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
 			if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);
+			DestroyIcon(dat->hUIIcons[3]);
 			DestroyIcon(dat->hUIIcons[2]);
 			DestroyIcon(dat->hUIIcons[1]);
 			DestroyIcon(dat->hUIIcons[0]);
