@@ -893,20 +893,15 @@ int IcqSetApparentMode(WPARAM wParam, LPARAM lParam)
 
 int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-
 	if (lParam && icqOnline)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
-
 		if (dwUin)
 		{
-
 			int wStatus;
 			int wMessageType = 0;
-
 
 			wStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 
@@ -935,18 +930,14 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 			default:
 				break;
-
 			}
 
 			if (wMessageType)
 				return icq_sendGetAwayMsgServ(dwUin, wMessageType); // Success
-
 		}
-
 	}
 
 	return 0; // Failure
-
 }
 
 
@@ -1036,7 +1027,6 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 			}
 
 			return dwCookie; // Success
-
 		}
 	}
 
@@ -1061,6 +1051,11 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 			{	// send as unicode only if marked as unicode
 				return IcqSendMessage(wParam, lParam);
 			}
+
+      if (!DBGetContactSettingByte(ccs->hContact, gpszICQProtoName, "UnicodeSend", 1))
+      { // has the user blocked sending unicode to that user ?
+        return IcqSendMessage(wParam, lParam);
+      }
 
 			pszText = (wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1); // get the UTF-16 part
 			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
