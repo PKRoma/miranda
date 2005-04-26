@@ -698,6 +698,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		mir_free(bits);
 	}
 	SelectObject(hdcMem,oldfont);
+	SelectObject(hdcMem,oldbmp);
 	DeleteObject(hBmpOsb);
 	DeleteDC(hdcMem);
 

@@ -15,8 +15,9 @@ HWND hwndTopToolBar=0;
 
 static int AddGroupItem(int rootid,char *name,int pos,int poppos,WPARAM wParam)
 {
-	CLISTMENUITEM mi;
+	CLISTMENUITEM mi={0};
 
+	
 	mi.cbSize=sizeof(mi);
 	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCE(IDI_MIRANDA));
 	mi.pszPopupName=(char *)rootid;
@@ -123,7 +124,7 @@ lParam--;
 	{
 		correctgrpname=&(grpname[1]);
 		DBWriteContactSettingString((HANDLE)wParam,"CList","Group",correctgrpname);
-		free(grpname);
+		mir_free(grpname);
 	};
 	
 	

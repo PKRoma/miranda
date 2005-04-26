@@ -655,7 +655,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 	MenuObjects[objidx].MenuItems[miidx].IconRegistred=FALSE;
 	if(TRUE/*pmi->hIcon!=NULL*/) 
 	{
-		MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
+		if(pmi->hIcon!=NULL) MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
 		RegisterOneIcon(objidx,miidx);
 			
 	}
@@ -933,7 +933,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 		if(mi->cbSize!=sizeof(TMO_MenuItem)) continue;
 	
 //
-		RegisterOneIcon(pimoidx,j);
+//		RegisterOneIcon(pimoidx,j);
 		
 		if(checkproc!=NULL)	{
 			CheckParam.lParam=param->lParam;

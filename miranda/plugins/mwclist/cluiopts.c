@@ -106,15 +106,22 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				char *s;
 				char szUin[20];
 
-				if(DBGetContactSetting(NULL,"CList","TitleText",&dbv))
+				if(DBGetContactSetting(NULL,"CList","TitleText",&dbv)==0&&(dbv.pszVal))
+				{
 					s=mir_strdup(dbv.pszVal);
-					else
+					mir_free(dbv.pszVal);
+				}
+				else
+				{
 					s=mir_strdup(MIRANDANAME);
+				};
 
-					dbv.pszVal=s;
+				if(s)
+				{				
+				SetDlgItemText(hwndDlg,IDC_TITLETEXT,s);
+				mir_free(s);
+				}
 
-				SetDlgItemText(hwndDlg,IDC_TITLETEXT,dbv.pszVal);
-				mir_free(dbv.pszVal);
 				SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)MIRANDANAME);
 				wsprintf(szUin,"%u",DBGetContactSettingDword(NULL,"ICQ","UIN",0));
 				SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)szUin);

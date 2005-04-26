@@ -70,9 +70,21 @@ void AddSubcontacts(struct ClcContact * cont)
 
 static int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 {
+	if (group==NULL) return 0;
+
 	if(++group->contactCount>group->allocedCount) {
 		group->allocedCount+=GROUP_ALLOCATE_STEP;
-		group->contact=(struct ClcContact*)mir_realloc(group->contact,sizeof(struct ClcContact)*group->allocedCount);
+		//fixme
+		if(group->contact)	
+			group->contact=(struct ClcContact*)mir_realloc(group->contact,sizeof(struct ClcContact)*group->allocedCount);
+			else 
+			group->contact=(struct ClcContact*)mir_alloc(sizeof(struct ClcContact)*group->allocedCount);
+			
+		if (group->contact==NULL||IsBadCodePtr((FARPROC)group->contact))
+		{
+			OutputDebugString("!!!Bad Realloc AddItemToGroup");
+			DebugBreak();
+		}
 	}
 	memmove(group->contact+iAboveItem+1,group->contact+iAboveItem,sizeof(struct ClcContact)*(group->contactCount-iAboveItem-1));
 	memset(&(group->contact[iAboveItem]),0,sizeof((group->contact[iAboveItem])));
@@ -185,6 +197,8 @@ struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const char *szName,DWORD
 void FreeGroup(struct ClcGroup *group)
 {
 	int i;
+	if (group==NULL||IsBadCodePtr((FARPROC)group)) return;
+
 	for(i=0;i<group->contactCount;i++) {
 		if(group->contact[i].type==CLCIT_GROUP) {
 			FreeGroup(group->contact[i].group);
@@ -240,6 +254,10 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	DBVARIANT dbv;
 	int i;
 	
+	if (cacheEntry==NULL) return NULL;
+	if (group==NULL) return NULL;
+	if (dat==NULL) return NULL;
+
 	hContact=cacheEntry->hContact;
 	//ClearClcContactCache(hContact);
 
@@ -303,6 +321,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 	
 	if (FindItem(hwnd,dat,hContact,NULL,NULL,NULL)==1){return;};	
 	cacheEntry=GetContactFullCacheEntry(hContact);
+	if (cacheEntry==NULL) return;
 	szProto=cacheEntry->szProto;
 
 

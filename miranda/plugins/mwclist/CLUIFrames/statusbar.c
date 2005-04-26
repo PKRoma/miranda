@@ -144,7 +144,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 	int yScroll=0;
 	int y;
 	PAINTSTRUCT paintst={0};	
-	HBITMAP hBmpOsb;
+	HBITMAP hBmpOsb,holdbmp;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	int grey=0;
 	HFONT oFont;
@@ -172,7 +172,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 	y=-yScroll;
 	hdcMem=CreateCompatibleDC(hdc);
 	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
-	SelectObject(hdcMem,hBmpOsb);
+	holdbmp=SelectObject(hdcMem,hBmpOsb);
 	oFont=SelectObject(hdcMem,hFont);
 	SetBkMode(hdcMem,TRANSPARENT);
 	{	HBRUSH hBrush,hoBrush;
@@ -184,14 +184,14 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 		DeleteObject(hBrush);
 		if(hBmpBackground) {
 			BITMAP bmp;
-			HDC hdcBmp;
+			HDC hdcBmp,holdbackbmp;
 			int x,y;
 			int maxx,maxy;
 			int destw,desth;
 
 			GetObject(hBmpBackground,sizeof(bmp),&bmp);
 			hdcBmp=CreateCompatibleDC(hdcMem);
-			SelectObject(hdcBmp,hBmpBackground);
+			holdbackbmp=SelectObject(hdcBmp,hBmpBackground);
 			y=backgroundBmpUse&CLBF_SCROLL?-yScroll:0;
 			maxx=backgroundBmpUse&CLBF_TILEH?clRect.right:1;
 			maxy=backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
@@ -243,6 +243,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 				for(x=0;x<maxx;x+=destw)
 					StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
 			}
+			SelectObject(hdcBmp,holdbackbmp);
 			DeleteDC(hdcBmp);
 		}
 	}
@@ -298,6 +299,8 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 		
 		BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,SRCCOPY);
 		
+		SelectObject(hdcMem,holdbmp);
+		SelectObject(hdcMem,oFont);
 		DeleteObject(hBmpOsb);
 		DeleteDC(hdcMem);
 		paintst.fErase=FALSE;

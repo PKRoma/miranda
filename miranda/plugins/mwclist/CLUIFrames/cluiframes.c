@@ -2213,7 +2213,7 @@ void DrawBackGroundTTB(HWND hwnd,HDC mhdc)
 	int yScroll=0;
 	int y;
 	PAINTSTRUCT paintst={0};	
-	HBITMAP hBmpOsb;
+	HBITMAP hBmpOsb,hOldBmp;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	int grey=0;
 	HFONT oFont;
@@ -2241,7 +2241,7 @@ void DrawBackGroundTTB(HWND hwnd,HDC mhdc)
 	y=-yScroll;
 	hdcMem=CreateCompatibleDC(hdc);
 	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
-	SelectObject(hdcMem,hBmpOsb);
+	hOldBmp=SelectObject(hdcMem,hBmpOsb);
 	oFont=SelectObject(hdcMem,hFont);
 	SetBkMode(hdcMem,TRANSPARENT);
 	{	HBRUSH hBrush,hoBrush;
@@ -2320,6 +2320,8 @@ void DrawBackGroundTTB(HWND hwnd,HDC mhdc)
 		
 		BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,SRCCOPY);
 		
+		SelectObject(hdcMem,hOldBmp);
+		SelectObject(hdcMem,oFont);
 		DeleteObject(hBmpOsb);
 		DeleteDC(hdcMem);
 		paintst.fErase=FALSE;
@@ -2335,10 +2337,12 @@ void DrawBackGroundTTB(HWND hwnd,HDC mhdc)
 static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 {
 					HDC hdcMem;
-					HBITMAP hBmpOsb;
-					HBRUSH hBack;
+					HBITMAP hBmpOsb,hoBmp;
+					HBRUSH hBack,hoBrush;
 					HDC paintDC;
 					int pos;
+					HFONT hoTTBFont;
+
 
 					//GetClientRect(hwnd,&rect);	
 					paintDC=dc;
@@ -2349,13 +2353,13 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 
 					hdcMem=CreateCompatibleDC(paintDC);
 					hBmpOsb=CreateBitmap(rect.right,rect.bottom,1,GetDeviceCaps(paintDC,BITSPIXEL),NULL);
-					SelectObject(hdcMem,hBmpOsb);
+					hoBmp=SelectObject(hdcMem,hBmpOsb);
 		
-					SelectObject(hdcMem,TitleBarFont);
+					hoTTBFont=SelectObject(hdcMem,TitleBarFont);
 					SetBkMode(hdcMem,TRANSPARENT);
 					
 					hBack=GetSysColorBrush(COLOR_3DFACE);
-					SelectObject(hdcMem,hBack);
+					hoBrush=SelectObject(hdcMem,hBack);
 
 					//FillRect(hdcMem,&rect,hBack);
 					
@@ -2369,8 +2373,9 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 					GetClientRect(Frames[pos].TitleBar.hwnd,&Frames[pos].TitleBar.wndSize);
 					{
 						//set font charset
+						HFONT oFont;
 						HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
-						SelectObject(hdcMem,hf);
+						oFont=SelectObject(hdcMem,hf);
 
 						DrawBackGroundTTB(Frames[pos].TitleBar.hwnd,hdcMem);
 						//hFront=CreateSolidPe (SelBkColour);
@@ -2405,12 +2410,17 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 						}
 						
 						DeleteObject(hf);
+						SelectObject(hdcMem,oFont);
 						//DeleteObject(hFront);
 						}
 					};
 					ulockfrm();
 
 					BitBlt(paintDC,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,hdcMem,rect.left,rect.top,SRCCOPY);
+					
+					SelectObject(hdcMem,hoBmp);
+					SelectObject(hdcMem,hoBrush);
+					SelectObject(hdcMem,hoTTBFont);
 					DeleteDC(hdcMem);
 					DeleteObject(hBack);
 					DeleteObject(hBmpOsb);

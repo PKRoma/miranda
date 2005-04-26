@@ -625,6 +625,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 		LOGFONT lf;
 		SIZE fontSize;
 		HDC hdc=GetDC(hwnd);
+		HFONT holdfont;
 		for(i=0;i<=FONTID_MAX;i++) {
 			if(!dat->fontInfo[i].changed) DeleteObject(dat->fontInfo[i].hFont);
 			GetFontSetting(i,&lf,&dat->fontInfo[i].colour);
@@ -638,11 +639,13 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 				lf.lfHeight=height;
 			}
 			dat->fontInfo[i].changed=0;
-			SelectObject(hdc,dat->fontInfo[i].hFont);
+			holdfont=SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc,"x",1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
 			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
+			if(holdfont) SelectObject(hdc,holdfont);
 		}
+		
 		ReleaseDC(hwnd,hdc);
 	}
 	dat->leftMargin=DBGetContactSettingByte(NULL,"CLC","LeftMargin",CLCDEFAULT_LEFTMARGIN);

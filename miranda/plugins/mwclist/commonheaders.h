@@ -106,6 +106,23 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #ifndef MYCMP
 #define MYCMP 1
 
+static int mir_realloc_proxy(void *ptr,int size)
+{
+	if (IsBadCodePtr(ptr))
+	{
+		char buf[256];
+		wsprintf(buf,"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
+		//ASSERT("Bad code ptr");
+		DebugBreak();
+		OutputDebugStr(buf);
+		return 0;
+	}
+	memoryManagerInterface.mmi_realloc(ptr,size);
+	return 0;
+
+}
+
+
 static int mir_free_proxy(void *ptr)
 {
 	if (ptr==NULL||IsBadCodePtr(ptr))

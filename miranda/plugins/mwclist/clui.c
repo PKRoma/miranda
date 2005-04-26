@@ -515,7 +515,7 @@ return (0);
 
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
-	{	LRESULT result;
+	{	LRESULT result=0;
 	MSG m;
 	m.hwnd=hwnd;
 	m.message=msg;

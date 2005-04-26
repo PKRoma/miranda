@@ -325,7 +325,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		case WM_CREATE:
 			WindowList_Add(hClcWindowList,hwnd,NULL);
 			RegisterFileDropping(hwnd);
-			dat=(struct ClcData*)mir_alloc(sizeof(struct ClcData));
+			dat=(struct ClcData*)mir_calloc(1,sizeof(struct ClcData));
+
 			SetWindowLong(hwnd,0,(LONG)dat);
 
 			{	int i;
@@ -404,7 +405,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			KillTimer(hwnd,TIMERID_RENAME);
 			RecalcScrollBar(hwnd,dat);
 			{	//creating imagelist containing blue line for highlight
-				HBITMAP hBmp,hBmpMask,hoBmp;
+				HBITMAP hBmp,hBmpMask,hoBmp,hoMaskBmp;
 				HDC hdc,hdcMem;
 				RECT rc;
 				int depth;
@@ -424,8 +425,9 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				FillRect(hdcMem,&rc,hBrush);
 				DeleteObject(hBrush);
 
-				SelectObject(hdcMem,hBmpMask);
+				hoMaskBmp=SelectObject(hdcMem,hBmpMask);
 				FillRect(hdcMem,&rc,GetStockObject(BLACK_BRUSH));
+				SelectObject(hdcMem,hoMaskBmp);
 				SelectObject(hdcMem,hoBmp);
 				DeleteDC(hdcMem);
 				ReleaseDC(hwnd,hdc);
