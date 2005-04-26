@@ -41,6 +41,7 @@ extern int gnCurrentStatus;
 extern int icqGoingOnlineStatus;
 extern BYTE gbSsiEnabled;
 extern BYTE gbAvatarsEnabled;
+extern BYTE gbOverRate;
 extern int pendingAvatarsStart;
 extern DWORD dwLocalUIN;
 extern DWORD dwLocalInternalIP;
@@ -364,13 +365,15 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       unpackWord(&pBuffer, &wClass);
 
 			if (wStatus == 2 || wStatus == 3)
-			{
+      { // this is only the simplest solution, needs rate management to every section
         ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
+        gbOverRate = 1; // block user requests (user info, status messages, etc.)
 				icq_EnableUserLookup(FALSE);
 			}
 			else if (wStatus == 4)
 			{
         ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
+        gbOverRate = 0; // enable user requests
 				icq_EnableUserLookup(TRUE);
 			}
 		}
@@ -536,6 +539,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
           DBFreeVariant(&dbv);
           break;
+        default:
+          Netlib_Logf(ghServerNetlibUser, "Reiceived UNKNOWN Avatar Status.");
         }
       }
     }
@@ -751,13 +756,13 @@ void setUserInfo()
   wAdditionalData += 16;
 #endif
 
-  packet.wLen = 30 + wAdditionalData;
+  packet.wLen = 46 + wAdditionalData;
   write_flap(&packet, 2);
   packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, ICQ_LOCATION_SET_USER_INFO<<0x10);
 
   /* TLV(5): capability data */
   packWord(&packet, 0x0005);
-  packWord(&packet, (WORD)(16 + wAdditionalData));
+  packWord(&packet, (WORD)(32 + wAdditionalData));
 
 
 #ifdef DBG_CAPMTN
@@ -819,6 +824,11 @@ void setUserInfo()
   packDWord(&packet, 0x4c7f11d1);
   packDWord(&packet, 0x82224445);
   packDWord(&packet, 0x53540000);
+
+  packDWord(&packet, 0x4D697261); // Miranda Signature
+  packDWord(&packet, 0x6E64614D);
+  packDWord(&packet, MIRANDA_VERSION);
+  packDWord(&packet, ICQ_PLUG_VERSION);
 
   sendServPacket(&packet);
 }
@@ -931,23 +941,23 @@ void handleServUINSettings(int nPort, int nIP)
 		packet.wLen = 65;
 		write_flap(&packet, 2);
 		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
-		packDWord(&packet, 0x00060004);	// TLV 6: Status mode and security flags
-		packWord(&packet, wFlags);      // Status flags
-		packWord(&packet, wStatus);     // Status
-		packDWord(&packet, 0x00080002);	// TLV 8: Error code
+		packDWord(&packet, 0x00060004);	            // TLV 6: Status mode and security flags
+		packWord(&packet, wFlags);                  // Status flags
+		packWord(&packet, wStatus);                 // Status
+		packDWord(&packet, 0x00080002);	            // TLV 8: Error code
 		packWord(&packet, 0x0000);
-		packDWord(&packet, 0x000c0025); // TLV C: Direct connection info
+		packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
 		packDWord(&packet, nIP);
 		packDWord(&packet, nPort);
-		packByte(&packet, DC_TYPE);         // TCP/FLAG firewall settings
+		packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
 		packWord(&packet, ICQ_VERSION);
-		packDWord(&packet, 0x00000000);     // DC Cookie (TODO)
-		packDWord(&packet, WEBFRONTPORT);   // Web front port
-		packDWord(&packet, CLIENTFEATURES); // Client features
-		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x80030501);     // Abused timestamp
-		packDWord(&packet, 0x00000000);     // Timestamp
-		packWord(&packet, 0x0000);          // Unknown
+		packDWord(&packet, dwLocalDirectConnCookie);// DC Cookie
+		packDWord(&packet, WEBFRONTPORT);           // Web front port
+		packDWord(&packet, CLIENTFEATURES);         // Client features
+		packDWord(&packet, 0xffffffff);             // Abused timestamp
+		packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
+		packDWord(&packet, 0x00000000);             // Timestamp
+		packWord(&packet, 0x0000);                  // Unknown
 
 		sendServPacket(&packet);
 	}
