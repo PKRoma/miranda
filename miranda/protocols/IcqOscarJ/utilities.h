@@ -62,7 +62,7 @@ int IcqStatusToMiranda(WORD wStatus);
 WORD MirandaStatusToIcq(int nStatus);
 int MirandaStatusToSupported(int nMirandaStatus);
 char *MirandaStatusToString(int);
-char *MirandaVersionToString(int);
+char *MirandaVersionToString(int, int);
 
 void InitCookies(void);
 void UninitCookies(void);

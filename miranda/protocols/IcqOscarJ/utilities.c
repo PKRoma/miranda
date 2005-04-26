@@ -44,6 +44,7 @@ static int cookieCount = 0;
 CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lock
 
 extern BYTE gbSsiEnabled;
+extern BYTE gbOverRate;
 extern char gpszICQProtoName[MAX_PATH];
 extern HANDLE ghServerNetlibUser;
 extern int gnCurrentStatus;
@@ -51,26 +52,20 @@ extern int gnCurrentStatus;
 
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-
 	int i;
-
 
 	for (i = 0; i < cControls; i++)
 		EnableWindow(GetDlgItem(hwndDlg, controls[i]), state);
-
 }
 
 
 
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-
 	int i;
-
 
 	for(i = 0; i < cControls; i++)
 		ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
-
 }
 
 
@@ -79,9 +74,7 @@ void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls,
 // a Miranda style status.
 int IcqStatusToMiranda(WORD nIcqStatus)
 {
-
 	int nMirandaStatus;
-
 
 	// :NOTE: The order in which the flags are compared are important!
 	// I dont like this method but it works.
@@ -108,7 +101,6 @@ int IcqStatusToMiranda(WORD nIcqStatus)
 		nMirandaStatus = ID_STATUS_ONLINE;
 
 	return nMirandaStatus;
-
 }
 
 
@@ -162,7 +154,6 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 		// Since it cant be offline, it must be a new type of online status.
 		nIcqStatus = ICQ_STATUS_ONLINE;
 		break;
-
 	}
 
 	return nIcqStatus;
@@ -205,7 +196,6 @@ int MirandaStatusToSupported(int nMirandaStatus)
 		// Online seems to be a good default.
 		nSupportedStatus = ID_STATUS_ONLINE;
 		break;
-
 	}
 
 	return nSupportedStatus;
@@ -219,10 +209,20 @@ char* MirandaStatusToString(int mirandaStatus)
 }
 
 
+static void verToStr(char* szStr, int v)
+{
+  if (v&0xFF)
+    mir_snprintf(szStr, 64, "%s%u.%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+  else if ((v>>8)&0xFF)
+    mir_snprintf(szStr, 64, "%s%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0x80000000?" alpha":"");
+  else
+    mir_snprintf(szStr, 64, "%s%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, v&0x80000000?" alpha":"");
+}
+
 
 // Dont free the returned string.
 // Function is not multithread safe.
-char* MirandaVersionToString(int v)
+char* MirandaVersionToString(int v, int m)
 {
 	static char szVersion[64];
 
@@ -230,12 +230,23 @@ char* MirandaVersionToString(int v)
 		strcpy(szVersion, "");
 	else
 	{
+    strcpy(szVersion, "Miranda IM ");
+
 		if (v == 1)
-			strcpy(szVersion, "Miranda IM 0.1.2.0 alpha");
+			strcat(szVersion, "0.1.2.0 alpha");
 		else if ((v&0x7FFFFFFF) <= 0x030301)
-			mir_snprintf(szVersion, 63, "Miranda IM %u.%u.%u.%u%s", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
-    else
-			mir_snprintf(szVersion, 63, "Miranda IM (ICQ v%u.%u.%u.%u%s)", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+      verToStr(szVersion, v);
+    else 
+    {
+      if (m)
+      {
+        verToStr(szVersion, m);
+        strcat(szVersion, " ");
+      }
+      strcat(szVersion, "(ICQ v");
+      verToStr(szVersion, v);
+      strcat(szVersion, ")");
+    }
 	}
 
 	return szVersion;
@@ -560,6 +571,8 @@ void ResetSettingsOnConnect()
 {
 	HANDLE hContact;
 	char *szProto;
+
+  gbOverRate = 0; // init
 
 	// Reset a bunch of session specific settings
   DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
