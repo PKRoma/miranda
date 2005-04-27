@@ -2058,7 +2058,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      * play a sound
                      */
                     if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
-                        _DebugPopup(0, "playsound in msgdialog");
+                        PlayIncomingSound(dat->pContainer, hwndDlg);
                 }
                 break;
             }
