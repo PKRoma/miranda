@@ -966,18 +966,42 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, working?0xFFFFFFFF:0, 0);
               for (i=0; i<=FONTID_MAX; i++)
                 SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
+             	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
+            		SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
             }
             break;
             
+          case CLN_NEWCONTACT:
+          case CLN_CONTACTMOVED:
+            {
+              HANDLE hContact;
+              HANDLE hItem = ((NMCLISTCONTROL*)lParam)->hItem;
+              char* szProto;
+
+              // Delete non-icq contacts
+              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+              while (hContact)
+              {
+                if (hItem == (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0))
+                {
+                  szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+                  if (szProto == NULL || lstrcmp(szProto, gpszICQProtoName))
+                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
+                  break; // exit loop
+                }
+                hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+              }
+              if (hItemAll)
+                UpdateAllContactsCheckmark(GetDlgItem(hwndDlg, IDC_CLIST), hItemAll);
+            }
+            break;
+
           case CLN_LISTREBUILT:
             {
               HANDLE hContact;
               HANDLE hItem;
               char* szProto;
               int bCheck;
-
-             	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
-            		SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
 
               // Delete non-icq contacts
               hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
