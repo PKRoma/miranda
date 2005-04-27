@@ -736,6 +736,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					tmi.root=rootmenu;
 					tmi.position=pos++;
 					tmi.pszName=protoName;
+					tmi.hIcon=(HICON)CallProtoService(proto[i]->szName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
 					CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
 		pos+=100000;
 
