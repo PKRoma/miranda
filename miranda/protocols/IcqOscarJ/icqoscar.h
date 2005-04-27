@@ -85,6 +85,7 @@
 #include "icq_http.h"
 #include "icq_fieldnames.h"
 #include "icq_constants.h"
+#include "guids.h"
 #include "icq_infoupdate.h"
 #include "icq_avatar.h"
 #include "init.h"

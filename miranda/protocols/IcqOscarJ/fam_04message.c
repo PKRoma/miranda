@@ -612,8 +612,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 				unpackByte(&pDataBuf, &bMsgType);
 				wLen -= 1;
 
-        // TODO: GUIDs should be defined as constants
-        if (dwGuid1==0xa0e93f37 && dwGuid2==0x4fe9d311 && dwGuid3==0xbcd20004 && dwGuid4==0x0ac96dd96)
+        if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_INFO_PLUGIN))
         { // info manager plugin
           BYTE bLevel;
 
@@ -631,14 +630,14 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
           unpackDWord(&pDataBuf, &dwGuid4);
           wLen -= 16;
 
-          if (dwGuid1==0xF002BF71 && dwGuid2==0x4371D311 && dwGuid3==0x8DD20010 && dwGuid4==0x4B06462E)
+          if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_INFO))
           {
             Netlib_Logf(ghServerNetlibUser, "User %u requests our info plugin list. NOT SUPPORTED YET", dwUin);
           }
           else
             Netlib_Logf(ghServerNetlibUser, "Unknown Info Manager message from %u", dwUin);
         }
-        else if (dwGuid1==0x10cf40d1 && dwGuid2==0x4fe9d311 && dwGuid3==0xbcd20004 && dwGuid4==0x0ac96dd96)
+        else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_STATUS_PLUGIN))
         { // status manager plugin
           BYTE bLevel;
 
@@ -656,7 +655,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
           unpackDWord(&pDataBuf, &dwGuid4);
           wLen -= 16;
 
-          if (dwGuid1==0x10180670 && dwGuid2==0x5471D311 && dwGuid3==0x8DD20010 && dwGuid4==0x4B06462E)
+          if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_STATUS))
           {
             Netlib_Logf(ghServerNetlibUser, "User %u requests our status plugin list. NOT SUPPORTED YET", dwUin);
           }
@@ -832,7 +831,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 //
 
 
-
+// TODO: replace this with GUID identification (0.3.6)
 int TypeStringToTypeId(const char* pszType)
 {
   int nTypeID = 0;

@@ -113,6 +113,10 @@ SOURCE=.\forkthread.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\guids.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\i18n.h
 # End Source File
 # Begin Source File

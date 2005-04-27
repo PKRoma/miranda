@@ -145,6 +145,7 @@ int IcqLoadIcon(WPARAM wParam, LPARAM lParam)
 }
 
 
+
 int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
 {
 	int bIdle = (lParam&IDF_ISIDLE);
@@ -158,6 +159,7 @@ int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
+
 
 
 int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
@@ -205,6 +207,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
   return GAIR_NOAVATAR;
 }
+
 
 
 int IcqSetStatus(WPARAM wParam, LPARAM lParam)
@@ -643,7 +646,6 @@ int IcqAddToList(WPARAM wParam, LPARAM lParam)
 // Todo: This function needs to be rewritten
 int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 {
-
 	DBEVENTINFO dbei = {0};
 	DWORD uin;
 
@@ -661,7 +663,6 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 
 	if (dbei.eventType == EVENTTYPE_CONTACTS)
 	{
-
 		int i;
 		char* pbOffset;
 
@@ -687,7 +688,6 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 				break;
 		}
 		SAFE_FREE(&dbei.pBlob);
-
 	}
 	else if (dbei.eventType != EVENTTYPE_AUTHREQUEST && dbei.eventType != EVENTTYPE_ADDED)
 	{
@@ -702,7 +702,6 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 
 
 	return 0; // Failure
-
 }
 
 
@@ -766,7 +765,7 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
 			if (IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
 				icq_sendFileAcceptDirect(ccs->hContact, ft);
 			else
-				icq_sendFileAcceptServ(dwUin, ft);
+				icq_sendFileAcceptServ(dwUin, ft, 0);
 
 			return ccs->wParam; // Success
 		}
@@ -774,6 +773,8 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
 
 	return 0; // Failure
 }
+
+
 
 int IcqFileDeny(WPARAM wParam, LPARAM lParam)
 {
@@ -787,7 +788,7 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
 
 		if (icqOnline && dwUin && ccs->wParam && ccs->hContact) 
     {
-			icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam);
+			icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam, 0);
 
 			nReturnValue = 0; // Success
 		}
@@ -1034,6 +1035,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 }
 
 
+
 int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 {
 	if (lParam)
@@ -1130,10 +1132,10 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 			}
 			return dwCookie; // Success
 		}
-
 	}
 	return 0; // Failure
 }
+
 
 
 int IcqSendUrl(WPARAM wParam, LPARAM lParam)
@@ -1243,7 +1245,6 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 			}
 
 			return dwCookie; // Success
-
 		}
 	}
 
@@ -1393,7 +1394,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 							SAFE_FREE(&pCookieData);
 							FreeCookie(dwCookie);
 						}
-
 					}
 					else
 					{
@@ -1407,7 +1407,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 					}
 
 					SAFE_FREE(&contacts);
-
 				}
 				else
 				{
@@ -1422,6 +1421,8 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 	// Exit with Failure
 	return 0;
 }
+
+
 
 int IcqSendFile(WPARAM wParam, LPARAM lParam)
 {
@@ -1518,7 +1519,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 								else
 								{
 									Netlib_Logf(ghServerNetlibUser, "Sending v8 file transfer request through server");
-									icq_sendFileSendServv8(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
+									icq_sendFileSendServv8(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize, 0);
 								}
 							}
 						}
@@ -1562,16 +1563,13 @@ int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
 
 int IcqSendYouWereAdded(WPARAM wParam, LPARAM lParam)
 {
-
 	if (lParam && icqOnline)
 	{
-
 		CCSDATA* ccs = (CCSDATA*)lParam;
 
 
 		if (ccs->hContact)
 		{
-
 			DWORD dwUin, dwMyUin;
 
 
@@ -1580,56 +1578,61 @@ int IcqSendYouWereAdded(WPARAM wParam, LPARAM lParam)
 
 			if (dwUin)
 			{
-
 				icq_sendYouWereAddedServ(dwUin, dwMyUin);
 
 				return 0; // Success
-
 			}
-
 		}
-
 	}
 
 	return 1; // Failure
+}
 
+
+
+int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam)
+{
+  if (gnCurrentStatus != ID_STATUS_OFFLINE && gnCurrentStatus != ID_STATUS_CONNECTING && wParam != 0)
+  {
+    DWORD dwUin = DBGetContactSettingDword((HANDLE)wParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+    if (dwUin) // send without reason, do we need any ?
+      icq_sendGrantAuthServ(dwUin, NULL);
+  }
+
+  return 0;
 }
 
 
 
 int IcqSendUserIsTyping(WPARAM wParam, LPARAM lParam)
 {
-
 	int nResult = 1;
 	HANDLE hContact = (HANDLE)wParam;
 
 
 	if (hContact && icqOnline)
 	{
-
 		if (CheckContactCapabilities(hContact, CAPF_TYPING))
 		{
-
-			switch (lParam)
+  		switch (lParam)
 			{
 			case PROTOTYPE_SELFTYPING_ON:
 				sendTypingNotification(hContact, MTN_BEGUN);
 				nResult = 0;
 				break;
+
 			case PROTOTYPE_SELFTYPING_OFF:
 				sendTypingNotification(hContact, MTN_FINISHED);
 				nResult = 0;
 				break;
+
 			default:
 				break;
 			}
-
 		}
-
 	}
 
 	return nResult;
-
 }
 
 
@@ -1792,7 +1795,6 @@ int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 
 int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
 {
-
 	DBEVENTINFO dbei;
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
@@ -1812,19 +1814,4 @@ int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
 	CallService(MS_DB_EVENT_ADD, (WPARAM)NULL, (LPARAM)&dbei);
 
 	return 0;
-
-}
-
-
-
-int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam)
-{
-  if (gnCurrentStatus != ID_STATUS_OFFLINE && gnCurrentStatus != ID_STATUS_CONNECTING && wParam != 0)
-  {
-    DWORD dwUin = DBGetContactSettingDword((HANDLE)wParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
-    if (dwUin) // send without reason, do we need any ?
-      icq_sendGrantAuthServ(dwUin, NULL);
-  }
-
-  return 0;
 }
