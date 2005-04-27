@@ -25,7 +25,7 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 2, 8),
+    PLUGIN_MAKE_VERSION(0, 0, 2, 9),
     "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
@@ -240,13 +240,14 @@ void init_protonames()
 {
 	char text[MAX_PATH], *p, *q;
 	GetModuleFileName(hInstance, text, sizeof(text));
+	GetLongPathName(text, text, sizeof(text));
 
 	if(p = strrchr(text, '\\')) p++;
 	if(q = strrchr(p, '.'))	*q = '\0';
 	if((q = strstr(p, "debug")) && strlen(q) == 5)
 		*q = '\0';
 
-    // We copy to static variable
+	// We copy to static variable
 	strncpy(ggProto, p, sizeof(ggProto));
 	strupr(ggProto);
 	// Is it default GG.dll if yes do Gadu-Gadu as a title
