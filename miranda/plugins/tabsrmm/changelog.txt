@@ -95,6 +95,14 @@ Version 0.9.9.95 - 2005/04/15
         + included a new build of smileyadd which should fix the "gadu gadu" protocol bug (no smileys
           visible on GG). The included smileyadd.dll is for TABSRMM ONLY.
           
+        ! various resource leaks fixed - thanks to ghazan for hunting them down :)
+        
+        ! automatically creating tabs or windows does no longer switch and "steal" keyboard
+          layout (autolocale bug)
+          
+        ! IEview no longer steals focus from the input area when a container has been created in
+          the background (minimized)
+        
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

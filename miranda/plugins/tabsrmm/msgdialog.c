@@ -85,17 +85,6 @@ extern HINSTANCE g_hInst;
 
 void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 
-#if defined(_STREAMTHREADING)
-    #define NR_STREAMJOBS 100
-    
-    extern HANDLE g_hStreamThread;
-    extern int g_StreamThreadRunning;
-    struct StreamJob StreamJobs[NR_STREAMJOBS + 2];
-    int volatile g_StreamJobCurrent = 0;
-    CRITICAL_SECTION sjcs;
-    void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
-#endif
-
 extern char *szWarnClose;
 
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigned int subType);
@@ -118,33 +107,6 @@ const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, I
 struct SendJob sendJobs[NR_SENDJOBS];
 
 static int splitterEdges = TRUE;
-
-#if defined(_STREAMTHREADING)
-
-/*
- * thread used for dispatching icon and smiley replacements. These are time consuming and would block
- * the main thread when opening multiple window with lots of history items.
- */
-
-DWORD WINAPI StreamThread(LPVOID param)
-{
-    do {
-        if(g_StreamJobCurrent == 0) {
-            SuspendThread(g_hStreamThread);                 // nothing to do...
-            continue;
-        }
-        ReplaceIcons(StreamJobs[0].hwndOwner, StreamJobs[0].dat, StreamJobs[0].startAt, StreamJobs[0].fAppend);
-        EnterCriticalSection(&sjcs);
-        StreamJobs[0].dat->pendingStream--;
-        StreamJobs[0].dat->pContainer->pendingStream--;
-        MoveMemory(&StreamJobs[0], &StreamJobs[1], (g_StreamJobCurrent - 1) * sizeof(StreamJobs[0]));
-        g_StreamJobCurrent--;
-        LeaveCriticalSection(&sjcs);
-    } while ( g_StreamThreadRunning );
-	return 0;
-}
-
-#endif
 
 // drop files onto message input area...
 
@@ -1130,36 +1092,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(len)
                         EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
                 }
-                /*
-                 * set locale if saved to contact
-                 */
-                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
-                    DBVARIANT dbv;
-                    int res;
-                    char szKLName[KL_NAMELENGTH+1];
-                    UINT flags = newData->iActivate ? KLF_ACTIVATE : 0;
-
-                    res = DBGetContactSetting(dat->hContact, SRMSGMOD_T, "locale", &dbv);
-                    if (res == 0 && dbv.type == DBVT_ASCIIZ) {
-#if defined ( _UNICODE ) 
-                        dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
-#else
-                        dat->hkl = LoadKeyboardLayout(dbv.pszVal, KLF_ACTIVATE);
-#endif
-                        if (dat->hkl && newData->iActivate)
-                            PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
-                        DBFreeVariant(&dbv);
-                    } else {
-#if defined ( _UNICODE )
-                        GetKeyboardLayoutNameA(szKLName);
-                        dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
-#else
-                        GetKeyboardLayoutName(szKLName);
-                        dat->hkl = LoadKeyboardLayout(szKLName, 0);
-#endif
-                        DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
-                    }
-                }
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
                 if (newData->iActivate) {
                     if(!dat->hThread) {
@@ -1630,6 +1562,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                UpdateStatusBar(hwndDlg, dat);
                 return 1;
             }
             if (dat->iTabID >= 0) {
@@ -1657,8 +1590,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
-                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0)
+                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
+                    if(dat->hkl == 0)
+                        SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+                }
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
                 dat->dwLastActivity = GetTickCount();
@@ -1681,8 +1617,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             //fall through
         case WM_MOUSEACTIVATE:
-            if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200)
+            if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200) {
+                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                UpdateStatusBar(hwndDlg, dat);
                 break;
+            }
             if (dat->iTabID == -1) {
                 _DebugPopup(dat->hContact, "ACTIVATE Critical: iTabID == -1");
                 break;
@@ -1709,9 +1648,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 
-                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0)
+                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
+                    if(dat->hkl == 0)
+                        SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
-
+                }
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
                 dat->dwLastActivity = GetTickCount();
@@ -2117,7 +2058,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      * play a sound
                      */
                     if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
-                        PlayIncomingSound(dat->pContainer, hwndDlg);
+                        _DebugPopup(0, "playsound in msgdialog");
                 }
                 break;
             }
@@ -2321,7 +2262,42 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 break;
             }
+        case DM_LOADLOCALE:
+            /*
+             * set locale if saved to contact
+             */
+            if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
+                break;
+            if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
+                DBVARIANT dbv;
+                int res;
+                char szKLName[KL_NAMELENGTH+1];
+                UINT flags = KLF_ACTIVATE;
+
+                res = DBGetContactSetting(dat->hContact, SRMSGMOD_T, "locale", &dbv);
+                if (res == 0 && dbv.type == DBVT_ASCIIZ) {
+#if defined ( _UNICODE ) 
+                    dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
+#else
+                    dat->hkl = LoadKeyboardLayout(dbv.pszVal, KLF_ACTIVATE);
+#endif
+                    PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+                    DBFreeVariant(&dbv);
+                } else {
+#if defined ( _UNICODE )
+                    GetKeyboardLayoutNameA(szKLName);
+                    dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
+#else
+                    GetKeyboardLayoutName(szKLName);
+                    dat->hkl = LoadKeyboardLayout(szKLName, 0);
+#endif
+                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+                }
+            }
+            break;
         case DM_SETLOCALE:
+            if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
+                break;
             if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
                 if (lParam == 0) {
                     if (GetKeyboardLayout(0) != dat->hkl) {
@@ -2409,6 +2385,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     LoadSplitter(hwndDlg, dat);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                    SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+                    SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                     if(dat->hwndLog != 0)
                         SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -4000,10 +3978,6 @@ verify:
                 if(dat->iOpenJobs > 0 && lParam != 2)
                     return TRUE;
                 
-#if defined(_STREAMTHREADING)
-                if(dat->pendingStream)
-                    return TRUE;
-#endif                
                 if(!lParam) {
                     if (myGlobals.m_WarnOnClose) {
                         if (MessageBoxA(dat->pContainer->hwnd, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO) {
@@ -4141,6 +4115,8 @@ verify:
                 UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
                 DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
             }
+            if(dat->hThread)
+                CloseHandle(dat->hThread);
             
             WindowList_Remove(hMessageWindowList, hwndDlg);
             SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);

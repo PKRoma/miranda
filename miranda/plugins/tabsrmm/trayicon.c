@@ -343,3 +343,12 @@ void LoadFavoritesAndRecent()
         AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent);
 }
 
+void Tray_Setfocus()
+{
+    NOTIFYICONDATA nim = {0};
+    
+    nim.cbSize = sizeof(nim);
+    nim.uID = 100;
+    nim.hWnd = myGlobals.g_hwndHotkeyHandler;
+    Shell_NotifyIcon(NIM_SETFOCUS, &nim);
+}

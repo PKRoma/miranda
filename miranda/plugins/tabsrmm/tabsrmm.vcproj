@@ -794,6 +794,8 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="templates.c"/>
+			<File
 				RelativePath=".\themes.c">
 			</File>
 			<File
@@ -850,6 +852,8 @@
 			<File
 				RelativePath="sendqueue.h">
 			</File>
+			<File
+				RelativePath="templates.h"/>
 		</Filter>
 		<Filter
 			Name="Resource Files"

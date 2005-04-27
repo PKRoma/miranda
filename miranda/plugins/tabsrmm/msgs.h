@@ -21,8 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-
-// #define _STREAMTHREADING 1
 // #define WANT_UGLY_HOOK 1
 
 #define __MATHMOD_SUPPORT 1
@@ -241,6 +239,7 @@ struct ProtocolData {
 #define DM_REMOVECLISTEVENT  (WM_USER+75)
 #define DM_GETWINDOWSTATE    (WM_USER+76)
 #define DM_DOCREATETAB       (WM_USER+77)
+#define DM_LOADLOCALE        (WM_USER+78)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 

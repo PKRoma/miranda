@@ -519,7 +519,6 @@ int PopupUpdate(HANDLE hContact, HANDLE hEvent)
         if(pdata->nrMerged >= pdata->nrEventsAlloced) {
             pdata->nrEventsAlloced += 5;
             pdata->eventData = (EVENT_DATA *)realloc(pdata->eventData, pdata->nrEventsAlloced * sizeof(EVENT_DATA));
-            _DebugPopup(pdata->hContact, "realloced");
         }
         if(dbe.pBlob)
             free(dbe.pBlob);

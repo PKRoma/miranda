@@ -837,20 +837,12 @@ BEGIN
 
         END
         MENUITEM "Show Nickname",               ID_LOGMENU_SHOWNICKNAME
-        MENUITEM "Display Timestamp after Nickname", 
-                                                ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME
-
-        MENUITEM SEPARATOR
         POPUP "Timestamp Settings"
         BEGIN
             MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
             MENUITEM "Show Date",                   ID_LOGMENU_SHOWDATE
             MENUITEM "Show Seconds",                ID_LOGMENU_SHOWSECONDS
             MENUITEM SEPARATOR
-            MENUITEM "Use relative Timestamps",     ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS
-
-            MENUITEM "Use long Date Format",        ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT
-
             MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
 
         END
@@ -859,15 +851,6 @@ BEGIN
         BEGIN
             MENUITEM "Indent Message Body",         ID_LOGMENU_INDENTMESSAGEBODY
 
-            MENUITEM "Use extra Tabstops to format Indent", 
-                                                    ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT
-
-            MENUITEM "Message Body in a new Line",  ID_LOGMENU_MESSAGEBODYINANEWLINE
-
-            MENUITEM "Underline Timestamp and Nickname", 
-                                                    ID_LOGMENU_UNDERLINETIMESTAMP
-
-            MENUITEM SEPARATOR
             MENUITEM "Show grid",                   ID_MESSAGELOGFORMATTING_SHOWGRID
 
             MENUITEM "Use multiple Background Colors", 
@@ -1076,16 +1059,11 @@ BEGIN
             MENUITEM "Show Date",                   40051
             MENUITEM "Show Seconds",                40052
             MENUITEM SEPARATOR
-            MENUITEM "Use relative Timestamps",     40074
-            MENUITEM "Use long Date Format",        40075
             MENUITEM "Use Contacts local Time",     40050
         END
         POPUP "Message Log Formatting"
         BEGIN
             MENUITEM "Indent Message Body",         40048
-            MENUITEM "Use extra Tabstops to format Indent", 40176
-            MENUITEM "Message Body in a new Line",  40049
-            MENUITEM "Underline Timestamp and Nickname", 40053
             MENUITEM SEPARATOR
             MENUITEM "Use multiple Background Colors", 40069
             MENUITEM "Use Message Grouping",        40073
@@ -1117,7 +1095,6 @@ BEGIN
         MENUITEM "Set current Options as Default Values", 40100
         MENUITEM "Save current Window Position as Default", 40113
     END
-    MENUITEM "Test",                        0
 END
 
 

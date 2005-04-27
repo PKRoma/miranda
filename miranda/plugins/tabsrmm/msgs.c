@@ -80,14 +80,6 @@ HICON LoadOneIcon(int iconId, char *szName);
 
 extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 
-#if defined(_STREAMTHREADING)
-    // stream thread stuff...
-    HANDLE g_hStreamThread = 0;
-    int g_StreamThreadRunning = 0;
-    extern CRITICAL_SECTION sjcs;
-    extern DWORD WINAPI StreamThread(LPVOID param);
-#endif
-
 int _log(const char *fmt, ...);
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
@@ -425,8 +417,9 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
         struct ContainerWindowData *pTargetContainer = 0;
         if(dbei.eventType == EVENTTYPE_MESSAGE) {
             SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
-            if (pTargetContainer)
+            if (pTargetContainer) {
                 PlayIncomingSound(pTargetContainer, hwnd);
+            }
         }
         return 0;
     }
@@ -828,17 +821,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
     myGlobals.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
 
-#if defined(_STREAMTHREADING)
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "streamthreading", 0)) {
-        DWORD dwThreadId;
-        InitializeCriticalSection(&sjcs);
-        g_StreamThreadRunning = 1;
-        g_hStreamThread = CreateThread(NULL, 0, StreamThread, NULL, 0, &dwThreadId);
-    }
-    else
-        g_StreamThreadRunning = 0;
-#endif
-
     if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
         myGlobals.g_SmileyAddAvail = 1;
 
@@ -903,18 +885,17 @@ int SplitmsgShutdown(void)
     ImageList_RemoveAll(myGlobals.g_hImageList);
     ImageList_Destroy(myGlobals.g_hImageList);
     DestroyMenu(myGlobals.g_hMenuContext);
+    if(myGlobals.g_hMenuContainer)
+        DestroyMenu(myGlobals.g_hMenuContainer);
+    if(myGlobals.g_hMenuEncoding)
+        DestroyMenu(myGlobals.g_hMenuEncoding);
     UncacheMsgLogIcons();
-#if defined(_STREAMTHREADING)
-    if(g_StreamThreadRunning != 0) {
-        g_StreamThreadRunning = 0;
-        ResumeThread(g_hStreamThread);
-        CloseHandle(g_hStreamThread);
-        DeleteCriticalSection(&sjcs);
-    }
-#endif    
     DestroyIcon(myGlobals.g_iconIn);
     DestroyIcon(myGlobals.g_iconOut);
     DestroyIcon(myGlobals.g_iconErr);
+    DestroyIcon(myGlobals.g_iconContainer);
+    DestroyIcon(myGlobals.g_iconStatus);
+    
     for (i = 0; i < NR_BUTTONBARICONS; i++)
         DestroyIcon(myGlobals.g_buttonBarIcons[i]);
     if(myGlobals.g_hbmUnknown)

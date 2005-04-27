@@ -195,6 +195,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                     SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
                                     if(pContainer)
                                         ActivateExistingTab(pContainer, hWnd);
+                                    SetForegroundWindow(pContainer->hwnd);
                                 }
                                 else
                                     CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
@@ -215,11 +216,12 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                     if(pContainer)
                                         ActivateExistingTab(pContainer, hWnd);
                                     SetFocus(hWnd);
+                                    SetForegroundWindow(pContainer->hwnd);
                                 }
                                 else
                                     CallService(MS_MSG_SENDMESSAGE, (WPARAM)uid, 0);
                             }
-                            PostMessage(hwndDlg, WM_NULL, 0, 0);
+                            Tray_Setfocus();
                             break;
                         }
                         case WM_RBUTTONUP:
@@ -397,12 +399,10 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             }
         case WM_TIMER:
             if(wParam == 1000) {
-                if((myGlobals.m_TrayFlashes = myGlobals.m_UnreadInTray > 0 ? 1 : 0) != 0) {
+                if((myGlobals.m_TrayFlashes = myGlobals.m_UnreadInTray > 0 ? 1 : 0) != 0)
                     FlashTrayIcon(0);
-                }
                 else
                     FlashTrayIcon(1);
-                
             }
             break;
         case DM_FORCEUNREGISTERHOTKEYS:
