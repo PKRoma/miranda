@@ -43,6 +43,15 @@ typedef unsigned short wchar_t;
 #include <stddef.h>
 #include <process.h>
 #include "resource.h"
+
+#ifdef WM_THEMECHANGED
+#undef WM_THEMECHANGED
+#endif
+
+#ifdef CDRF_NOTIFYSUBITEMDRAW
+#undef CDRF_NOTIFYSUBITEMDRAW
+#endif
+
 #include "../../include/win2k.h"
 #include "../../include/newpluginapi.h"
 #include "../../include/m_system.h"
