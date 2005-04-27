@@ -239,16 +239,16 @@ void *__stdcall gg_mainthread(void *empty)
 #ifdef DEBUGMODE
     gg_netlog("gg_mainthread(%x): Server Thread Starting", empty);
 #endif
-
+    // Miranda variables
     CCSDATA ccs;
     PROTORECVEVENT pre;
-    struct gg_login_params p;
-    struct timeval tv;
-    struct gg_event *e;
-    fd_set rd, wd;
-    int ret, connected, hostnum = -1, hostcount = 0;
-    GGHOST hosts[64];
     DBVARIANT dbv;
+    // Gadu-Gadu variables
+    struct gg_login_params p;
+    struct gg_event *e;
+    // Host cycling variables
+    int areconnect, connected, hostnum = -1, hostcount = 0;
+    GGHOST hosts[64];
 	// Gadu-gadu login errors
 	struct { int type; char *str; } reason[] = {
 		{ GG_FAILURE_RESOLVING, 	"Miranda was unable to resolve the name of the Gadu-Gadu server to its numeric address." },
@@ -488,8 +488,10 @@ start:
 		// Reconnect if connection is just broken (but only if user still wants to connect)
 		if((thread == ggThread) && ggDesiredStatus != ID_STATUS_OFFLINE && errno == EACCES &&
 			(gg_failno == GG_FAILURE_CONNECTING || gg_failno == GG_FAILURE_READING || gg_failno == GG_FAILURE_WRITING) &&
-			(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT) || (hostnum > -1 && (hostnum + 1) < hostcount)))
+			(areconnect = DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT) || (hostnum > -1 && (hostnum + 1) < hostcount)))
 		{
+            // It might happen that we want to reconnect but we are in the end of the list
+            if(areconnect && (hostnum + 1) >= hostcount) hostnum = -1;
 			// Sleep 1 second then try to reconnect
 			SleepEx(1000, FALSE);
 			goto start;
