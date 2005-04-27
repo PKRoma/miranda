@@ -706,7 +706,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	storedProtoCount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	
 	for(s=0;s<storedProtoCount;s++) {
-		
+		pos=0;
 		i=GetProtoIndexByPos(proto,protoCount,s);
 		if (i==-1) continue;
 		if((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)) continue;
@@ -727,6 +727,17 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
 			tmi.pszName=protoName;
 			rootmenu=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+
+
+					memset(&tmi,0,sizeof(tmi));
+					tmi.cbSize=sizeof(tmi);
+					tmi.flags=CMIF_CHILDPOPUP;
+					//if(statusModeList[j]==ID_STATUS_OFFLINE){tmi.flags|=CMIF_CHECKED;};
+					tmi.root=rootmenu;
+					tmi.position=pos++;
+					tmi.pszName=protoName;
+					CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+		pos+=100000;
 
 			for(j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
 				if(!(flags&statusModePf2List[j])) 

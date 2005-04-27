@@ -1024,7 +1024,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);
 						if (nmc->pt.y>(rcWorkArea.bottom-rcWorkArea.top)) 
 						{
-							break;
+							//break;
 						};
 						if ((nmc->pt.y)==lastreqh)
 						{
@@ -1044,6 +1044,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						 	rcWindow.bottom=rcWindow.top+newHeight;
 							if(rcWindow.bottom>rcWorkArea.bottom) rcWindow.bottom=rcWorkArea.bottom;
 						}
+						
+						
 						if (requr==1){break;};
 						requr=1;					
 						SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
