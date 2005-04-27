@@ -55,7 +55,6 @@ static void parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, WORD
 
 void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
-
 	switch (pSnacHeader->wSubtype)
 	{
 
@@ -70,34 +69,78 @@ void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_hea
 	default:
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(0x15,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
-		
 	}
-
 }
 
 
 
 static void handleExtensionError(unsigned char *buf, WORD wPackLen)
 {
+  WORD wErrorCode;
 
-	WORD wErrorCode;
-
-	
-	if (wPackLen >= 2)
-	{
-
-		unpackWord(&buf, &wErrorCode);
-		Netlib_Logf(ghServerNetlibUser, "Error: Family x15, error code 0x%02x", wErrorCode);
-
-	}
-	else
+  if (wPackLen < 2)
 	{
 		Netlib_Logf(ghServerNetlibUser, "Error: Family x15");
-	}
 
-	// Catch all errors in debug mode
-	_ASSERTE(0);
-	
+    // Catch all errors in debug mode
+    _ASSERTE(0);	
+	}
+  if (wPackLen >= 2 && wPackLen <= 6)
+  {
+    unpackWord(&buf, &wErrorCode);
+    Netlib_Logf(ghServerNetlibUser, "Error: Family x15, error code 0x%02x", wErrorCode);
+
+    // Catch all errors in debug mode
+    _ASSERTE(0);	
+	}
+	else
+  {
+    oscar_tlv_chain *chain = NULL;
+
+    unpackWord(&buf, &wErrorCode);
+    wPackLen -= 2;
+    chain = readIntoTLVChain(&buf, wPackLen, 0);
+    if (chain)
+    {
+      oscar_tlv* pTLV;
+
+      pTLV = getTLV(chain, 0x21, 1); // get meta error data
+  		if (pTLV && pTLV->wLen >= 8)
+      {
+        unsigned char* pBuffer = pTLV->pData;
+        WORD wData;
+        pBuffer += 6;
+        unpackWord(&pBuffer, &wData); // get request type
+        switch (wData)
+        {
+        case CLI_OFFLINE_MESSAGE_REQ: 
+          Netlib_Logf(ghServerNetlibUser, "Offline messages reuqest failed with error 0x%02x", wData, wErrorCode);
+          break;
+
+        case CLI_DELETE_OFFLINE_MSGS_REQ:
+          Netlib_Logf(ghServerNetlibUser, "Deleting offline messages from server failed with error 0x%02x", wErrorCode);
+          icq_LogMessage(LOG_WARNING, "Deleting Offline Messages from server failed.\nYou will probably receive them again.");
+          break;
+
+        case CLI_META_INFO_REQ:
+          Netlib_Logf(ghServerNetlibUser, "Meta reuqest error 0x%02x received", wErrorCode);
+          break;
+
+        default:
+          Netlib_Logf(ghServerNetlibUser, "Unknown reuqest 0x%02x error 0x%02x received", wData, wErrorCode);
+        }
+      }
+      else
+      {
+        Netlib_Logf(ghServerNetlibUser, "Error: Family x15, error code 0x%02x", wErrorCode);
+      }
+      disposeChain(&chain);
+    }
+    else
+    {
+      Netlib_Logf(ghServerNetlibUser, "Error: Family x15, error code 0x%02x", wErrorCode);
+    }
+  }
 }
 
 
@@ -303,12 +346,9 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 
 static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 {
-
 	BYTE bMissedMessages = 0;
 	icq_packet packet;
 
-
-	_ASSERTE(wPacketLen == 1);
 	if (wPacketLen == 1)
 	{
 		unpackByte(&databuf, &bMissedMessages);
@@ -319,7 +359,6 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 		Netlib_Logf(ghServerNetlibUser, "Error: Malformed end of offline msgs");
 	}
 
-	
 	// Send 'got offline msgs'
 	// This will delete the messages stored on server
 	packet.wLen = 6 + 10 + 10;
@@ -334,7 +373,6 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 
 	// Send it
 	sendServPacket(&packet);
-
 }
 
 
