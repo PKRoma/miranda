@@ -395,7 +395,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 						showweb=FALSE;
 				}
 			
-			 PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_ADV1),(showweb)?2:0xFF));	
+			 SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_ADV1),(showweb)?2:0xFF));	
 		if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 		}
 		}		
@@ -413,7 +413,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 						showemail=FALSE;
 				}
 			
-			 PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
+			 SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
 		if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 		}
 		}
@@ -428,7 +428,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 					if (DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
 						showsms=FALSE;
 				}
-			 PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	
+			 SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	
 		if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 		}
 		}		
@@ -439,7 +439,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 
 			if (pdnce->ci.idxClientIcon!=0&&pdnce->ci.idxClientIcon!=-1)
 			{			
-							PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),pdnce->ci.idxClientIcon));	
+							SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),pdnce->ci.idxClientIcon));	
 			}else
 			{					
 				if (!(DBGetContactSettingByte(NULL,"CLUIFrames","ProtoIconOnlyForICQ",0)&&(!strstr(szProto,"ICQ"))))
@@ -449,7 +449,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 							if(!strcmp(ImgIndex[i],szProto))
 							{
 
-								PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),i+3));	
+								SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),i+3));	
 								break;
 							};
 						};				
