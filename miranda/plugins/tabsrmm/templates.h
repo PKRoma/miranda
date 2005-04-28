@@ -46,12 +46,24 @@ typedef struct _tagTemplateSet {
 } TemplateSet;
 
 typedef struct _tagTemplateEditorInfo {
+    BOOL rtl;
     BOOL changed;           // template in edit field is changed
     BOOL selchanging;
     int  inEdit;            // template currently in editor
     BOOL updateInfo[TMPL_STATUSCHG + 1];        // item states...
+    HWND hwndParent;
+    HANDLE hContact;
 } TemplateEditorInfo;
+
+typedef struct _tagTemplateEditorNew {
+    HANDLE hContact;
+    BOOL   rtl;
+    HWND   hwndParent;
+} TemplateEditorNew;
 
 BOOL CALLBACK DlgProcTemplateEdit(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl);
 void LoadDefaultTemplates();
+
+#define DM_UPDATETEMPLATEPREVIEW (WM_USER + 50)
+

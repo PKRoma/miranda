@@ -368,8 +368,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
                     if(dat->dwFlags != dwOldMsgWindowFlags || dat->dwEventIsShown != dwOldEventIsShown) {
                         WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)pContainer->hwndActive, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                        if(myGlobals.m_IgnoreContactSettings)
-                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+                        _DebugPopup(0, "fixme, msgdlgutils, line 371");
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
                     }
                     break;
                 }

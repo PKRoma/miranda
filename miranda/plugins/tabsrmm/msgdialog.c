@@ -879,7 +879,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 // load log option flags...
                 dat->dwFlags = (DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL);
 
-                if(!myGlobals.m_IgnoreContactSettings) {
+                if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
                     DWORD dwLocalFlags = 0;
                     int dwLocalSmAdd = 0;
                     
@@ -1279,7 +1279,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #endif             
 
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
-                if(myGlobals.m_IgnoreContactSettings) {
+                if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
                     dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
                 }
@@ -1858,7 +1858,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if((HWND) wParam == hwndDlg)
                 SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             else {
-                if(myGlobals.m_IgnoreContactSettings) {
+                if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
                     dat->dwFlags |= (lParam & MWF_LOG_ALL);
                     dat->dwFlags |= MWF_DEFERREDREMAKELOG;
@@ -2931,7 +2931,7 @@ quote_from_last:
 
                     if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
                         WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                        if(myGlobals.m_IgnoreContactSettings)
+                        if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0)
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
                     }
                     break;
@@ -3667,7 +3667,7 @@ verify:
              */
         case DM_SAVEPERCONTACT:
             if (dat->hContact) {
-                if(!myGlobals.m_IgnoreContactSettings)
+                if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) != 0)
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
             }
             DBWriteContactSettingDword(NULL, SRMSGMOD, "multisplit", dat->multiSplitterX);

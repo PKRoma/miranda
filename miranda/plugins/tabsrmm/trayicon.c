@@ -50,9 +50,14 @@ void CreateSystrayIcon(int create)
     nim.cbSize = sizeof(nim);
     nim.hWnd = myGlobals.g_hwndHotkeyHandler;
     nim.uID = 100;
-    nim.uFlags = NIF_ICON | NIF_MESSAGE;
+    nim.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nim.hIcon = myGlobals.g_iconContainer;
     nim.uCallbackMessage = DM_TRAYICONNOTIFY;
+#if defined(_UNICODE)
+    mir_snprintfW(nim.szTip, 64, L"%s", L"tabSRMM");
+#else
+    mir_snprintf(nim.szTip, 64, "%s", "tabSRMM");
+#endif    
     if(create && !nen_options.bTrayExist) {
         Shell_NotifyIcon(NIM_ADD, &nim);
         myGlobals.g_hMenuTrayUnread = CreatePopupMenu();
@@ -260,7 +265,7 @@ void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, cha
                 UINT uid = GetMenuItemID(hMenu, 0);
                 if(uid) {
                     DeleteMenu(hMenu, (UINT_PTR)0, MF_BYPOSITION);
-                    DBDeleteContactSetting((HANDLE)uid, SRMSGMOD_T, "isRecent");
+                    DBWriteContactSettingDword((HANDLE)uid, SRMSGMOD_T, "isRecent", 0);
                 }
             }
 addnew:
@@ -312,6 +317,7 @@ typedef struct _recentEntry {
     DWORD dwTimestamp;
     HANDLE hContact;
 } RCENTRY;
+
 void LoadFavoritesAndRecent()
 {
     RCENTRY recentEntries[30], rceTemp;

@@ -33,7 +33,8 @@ $Id$
 #include "../../include/m_database.h"
 #include "nen.h"
 #include "functions.h"
-#include <colordlg.h>
+#include "msgdlgutils.h"
+
 /*
  * hardcoded default set of templates for both LTR and RTL.
  * cannot be changed and may be used at any time to "revert" to a working layout
@@ -42,10 +43,10 @@ $Id$
 char *TemplateNames[] = {
     "Message In",
     "Message Out",
-    "Group Out (Start)",
     "Group In (Start)",
-    "Group Out (Inner)",
+    "Group Out (Start)",
     "Group In (Inner)",
+    "Group Out (Inner)",
     "Status change"
 };
     
@@ -73,6 +74,8 @@ TemplateSet RTL_Default = { TRUE,
 
 TemplateSet LTR_Active, RTL_Active;
 
+extern struct CREOleCallback reOleCallback;
+
 /*
  * loads template set overrides from hContact into the given set of already existing
  * templates
@@ -91,7 +94,7 @@ void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
             wchar_t *decoded = Utf8Decode(dbv.pszVal);
             mir_snprintfW(tSet->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
 #else
-            mir_snprintf(tSet->szTemplates[i], TEMPLATE_LENGTH, "%s" dbv.pszVal);
+            mir_snprintf(tSet->szTemplates[i], TEMPLATE_LENGTH, "%s", dbv.pszVal);
 #endif            
         }
         DBFreeVariant(&dbv);
@@ -120,15 +123,44 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
      */
     if(dat) {
         teInfo = (TemplateEditorInfo *)dat->pContainer;
-        tSet = dat->ltr_templates;
+        tSet = teInfo->rtl ? dat->rtl_templates : dat->ltr_templates;
     }
     
     switch (msg) {
         case WM_INITDIALOG:
+        {
+            TemplateEditorNew *teNew = (TemplateEditorNew *)lParam;
             dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
+
+            TranslateDialogDefault(hwndDlg);
+            
             ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
-            dat->pContainer = teInfo = (struct ContainerWindowData *)malloc(sizeof(TemplateEditorInfo));
+            dat->pContainer = (struct ContainerWindowData *)malloc(sizeof(TemplateEditorInfo));
+            teInfo = (TemplateEditorInfo *)dat->pContainer;
             ZeroMemory((void *)teInfo, sizeof(TemplateEditorInfo));
+            teInfo->hContact = teNew->hContact;
+            teInfo->rtl = teNew->rtl;
+            teInfo->hwndParent = teNew->hwndParent;
+            
+            dat->ltr_templates = &LTR_Active;
+            dat->rtl_templates = &RTL_Active;
+
+            /*
+             * set hContact to the first found contact so that we can use the Preview window properly
+             * also, set other parameters needed by the streaming function to display events
+             */
+            
+            SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
+            SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
+            SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
+            SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_EXLIMITTEXT, 0, 0x80000000);
+
+            dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+            dat->dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
+            dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
+            mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
+            GetContactUIN(hwndDlg, dat);
+            
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
             ShowWindow(hwndDlg, SW_SHOW);
             SendDlgItemMessage(hwndDlg, IDC_EDITTEMPLATE, EM_LIMITTEXT, (WPARAM)TEMPLATE_LENGTH - 1, 0);
@@ -140,12 +172,11 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)TemplateNames[i]);
                 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
             }
+            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
+            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), FALSE);
 
-            dat->ltr_templates = &LTR_Active;
-            dat->rtl_templates = &RTL_Active;
-            
             return TRUE;
-
+        }
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
                 case IDCANCEL:
@@ -201,10 +232,10 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 #if defined(_UNICODE)
                     {
                         char *encoded = Utf8Encode(newTemplate);
-                        DBWriteContactSettingString(dat->hContact, TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], encoded);
+                        DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], encoded);
                     }
 #else
-                    DBWriteContactSettingString(dat->hContact, TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
+                    DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
 #endif
                     break;
                 }
@@ -230,7 +261,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     teInfo->selchanging = TRUE;
                     CopyMemory(tSet->szTemplates[teInfo->inEdit], LTR_Default.szTemplates[teInfo->inEdit], sizeof(TCHAR) * TEMPLATE_LENGTH);
                     SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit]);
-                    DBDeleteContactSetting(dat->hContact, TEMPLATES_MODULE, TemplateNames[teInfo->inEdit]);
+                    DBDeleteContactSetting(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit]);
                     SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
                     teInfo->selchanging = FALSE;
@@ -240,6 +271,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
                     break;
                 }
+                case IDC_UPDATEPREVIEW:
+                    SendMessage(hwndDlg, DM_UPDATETEMPLATEPREVIEW, 0, 0);
+                    break;
             }
             break;
         case WM_DRAWITEM:
@@ -268,13 +302,25 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 else
                     SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
             }
-                
-            //if(SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETTEXTLEN, (WPARAM)iItem, 0) < 2)
-                //return 0;
-            //SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_GETTEXT, (WPARAM)iItem, (LPARAM)szBuffer);
-            //_DebugPopup(0, "drawitem: %d, %s", szBuffer, TemplateNames[iItem]);
             TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, TemplateNames[iItem], lstrlenA(TemplateNames[iItem]));
             return TRUE;
+        }
+        case DM_UPDATETEMPLATEPREVIEW:
+        {
+            DBEVENTINFO dbei = {0};
+
+            dbei.szModule = dat->szProto;
+            dbei.timestamp = time(NULL);
+            dbei.eventType = EVENTTYPE_MESSAGE;
+            dbei.cbSize = sizeof(dbei);
+            dbei.pBlob = (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+            dbei.cbBlob = lstrlenA(dbei.pBlob) + 1;
+            dbei.flags = 0;
+//            _DebugPopup(0, "%s - %s", dat->szProto, dat->szNickname);
+            SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
+            StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
+            
+            break;
         }
         case WM_DESTROY:
             if(dat->pContainer)
@@ -282,6 +328,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             if(dat)
                 free(dat);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), TRUE);
+            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), TRUE);
+            break;
     }
     return FALSE;
 }

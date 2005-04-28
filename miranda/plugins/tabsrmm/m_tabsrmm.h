@@ -292,7 +292,6 @@ typedef struct _globals {
     int m_SendOnEnter;
     int m_MsgLogHotkeys;
     int m_AutoLocaleSupport;
-    int m_IgnoreContactSettings;
     int m_AutoSwitchTabs;
     int m_CutContactNameOnTabs;
     int m_CutContactNameTo;
@@ -324,6 +323,7 @@ typedef struct _globals {
     int m_TrayFlashes;
     int m_TrayFlashState;
     HANDLE m_TipOwner;
+    HANDLE m_UserMenuItem;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -363,12 +363,6 @@ struct StreamJob {
 //lParam=(LPARAM)(HWND)hwnd - a window handle - SET THIS TO 0 if you want to obtain the window handle
 //from the hContact.
 #define MS_MSG_MOD_MESSAGEDIALOGOPENED "SRMsg_MOD/MessageDialogOpened"
-
-//obtain a pointer to the struct MessageWindowData of the given window.
-//wParam = hContact - ignored if lParam is given.
-//lParam = hwnd
-//returns struct MessageWindowData *dat, 0 if no window is found
-#define MS_MSG_MOD_GETWINDOWDATA "SRMsg_MOD/GetWindowData"
 
 //obtain the message window flags
 //wParam = hContact - ignored if lParam is given.
@@ -432,4 +426,8 @@ typedef struct {
 //wparam=(MessageWindowInputData*)
 //lparam=(MessageWindowData*)
 //returns 0 on success and returns non-zero (1) on error or if no window data exists for that hcontact
+
+// callback for the user menu entry
+
+#define MS_TABMSG_SETUSERPREFS "SRMsg_MOD/SetUserPrefs"
 

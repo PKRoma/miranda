@@ -104,6 +104,8 @@ Version 0.9.9.95 - 2005/04/15
           the background (minimized)
 
         + added option to disable animation when minimizing containers to the system tray
+        
+        + added tooltip for the tray icon so that XP remembers the autohide status of this icon.
           
 Version 0.9.9.94 - 2005/04/11
 

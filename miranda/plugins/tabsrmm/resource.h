@@ -41,7 +41,7 @@
 #define IDC_DROP                        1002
 #define IDC_HYPERLINKHAND               1003
 #define IDC_DROPUSER                    1004
-#define IDC_PREVIEW                     1005
+#define IDC_PREVIEW                     1006
 #define IDC_LOG                         1006
 #define IDC_CHKNOTIFY_MESSAGE           1007
 #define IDC_MESSAGE                     1008
@@ -255,6 +255,7 @@
 #define IDC_UPDATEPREVIEW               1223
 #define IDC_MODIFY                      1223
 #define IDC_CREATENEW                   1224
+#define IDC_RTLMODIFY                   1224
 #define IDC_LOADDEFAULTS                1225
 #define IDC_SENDLATER                   1226
 #define IDC_RETRY                       1227
@@ -363,12 +364,10 @@
 #define IDC_SHOWUIN                     1336
 #define IDC_FORMATWHOLEWORDSONLY        1337
 #define IDC_STATUSGROUP                 1338
-#define IDC_CHECK9                      1339
 #define IDC_ALLOWSENDBUTTONHIDE         1340
 #define IDC_VERTICALMAX                 1341
 #define IDC_TSFIX                       1342
 #define IDC_ICONDLLNAME                 1343
-#define IDC_BUTTON2                     1344
 #define IDC_SAVETEMPLATE                1344
 #define IDC_SELECTICONDLL               1345
 #define IDC_RTLDEFAULT                  1346
@@ -478,9 +477,7 @@
 #define ID_MESSAGELOG_TIMESTAMPSETTINGS 40118
 #define ID_MESSAGELOG_MESSAGELOGFORMATTING 40119
 #define ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES 40120
-#define ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL 40121
 #define ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES 40122
-#define ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS 40123
 #define ID_LOGMENU_MESSAGELOGSETTINGSAREGLOBAL 40124
 #define ID_USER                         40125
 #define ID_TITLEBAR_USESTATICCONTAINERICON 40126

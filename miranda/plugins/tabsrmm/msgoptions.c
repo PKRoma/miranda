@@ -363,7 +363,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
             SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
             SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_INDENT, 0), 0);
-            
             return TRUE;
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
@@ -388,8 +387,17 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         MessageBoxA(0, "Caution: This attempt to fix the 'future timestamp issue' may have side effects. Also, it only works for events while the session is active, NOT for loading the history", "Warning", MB_OK | MB_ICONHAND);
                     break;
                 case IDC_MODIFY:
-                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TEMPLATEEDIT), hwndDlg, DlgProcTemplateEditor, 0);
+                {
+                    TemplateEditorNew teNew = {0, 0, hwndDlg};
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TEMPLATEEDIT), hwndDlg, DlgProcTemplateEditor, (LPARAM)&teNew);
                     break;
+                }
+                case IDC_RTLMODIFY:
+                {
+                    TemplateEditorNew teNew = {0, TRUE, hwndDlg};
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TEMPLATEEDIT), hwndDlg, DlgProcTemplateEditor, (LPARAM)&teNew);
+                    break;
+                }
                 case IDC_INDENT:
                     {
                         int iIndent = IsDlgButtonChecked(hwndDlg, IDC_INDENT);
@@ -1663,7 +1671,6 @@ void ReloadGlobals()
      myGlobals.m_SendOnEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
      myGlobals.m_MsgLogHotkeys = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0);
      myGlobals.m_AutoLocaleSupport = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0);
-     myGlobals.m_IgnoreContactSettings = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
      myGlobals.m_AutoSwitchTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0);
      myGlobals.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
      myGlobals.m_CutContactNameOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0);

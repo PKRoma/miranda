@@ -208,12 +208,10 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (myGlobals.m_IgnoreContactSettings ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_TEXTFORMAT ? MF_CHECKED : MF_UNCHECKED);
         
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
-        EnableMenuItem(submenu, ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS, myGlobals.m_IgnoreContactSettings ? MF_GRAYED : MF_ENABLED);
     }
     else if(menuID == MENU_PICMENU) {
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
@@ -305,7 +303,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
-        int iIgnorePerContact = myGlobals.m_IgnoreContactSettings;
 
         DWORD dwOldFlags = dat->dwFlags;
 
@@ -379,23 +376,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING:
                 dat->dwFlags ^= MWF_LOG_TEXTFORMAT;
                 return 1;
-            case ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL:
-                iIgnorePerContact = !iIgnorePerContact;
-                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", iIgnorePerContact);
-                myGlobals.m_IgnoreContactSettings = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
-                return 1;
-            case ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS:
-                {
-                    HANDLE hContact;
-                    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-                    while(hContact) {
-                        DBWriteContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
-                        DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
-                        hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-                    }
-                    WindowList_Broadcast(hMessageWindowList, DM_FORCEDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                    return 1;
-                }
             case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
                 {
                     char *szFilename = GetThemeFileName(1);

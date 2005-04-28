@@ -175,17 +175,8 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
             * is directly used as the handle for the target window
  */
             
-static int GetMessageWindowData(WPARAM wParam, LPARAM lParam)
+static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
 {
-    HWND hwndTarget = (HWND)lParam;
-
-    if(hwndTarget == 0)
-        hwndTarget = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
-    
-    if(hwndTarget)
-        return GetWindowLong(hwndTarget, GWL_USERDATA);
-    else
-        return 0;
 }
 
 /*
@@ -846,6 +837,15 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(nen_options.bTraySupport)
         CreateSystrayIcon(TRUE);
     LoadDefaultTemplates();
+    
+    ZeroMemory((void *)&mi, sizeof(mi));
+    mi.cbSize = sizeof(mi);
+    mi.position = -500050005;
+    mi.hIcon = myGlobals.g_iconContainer;
+    mi.pszContactOwner = NULL;
+    mi.pszName = Translate( "Messaging &Options" );
+    mi.pszService = MS_TABMSG_SETUSERPREFS;
+    myGlobals.m_UserMenuItem = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
     return 0;
 }
 
@@ -1423,7 +1423,7 @@ void InitAPI()
      */
     
     CreateServiceFunction(MS_MSG_MOD_MESSAGEDIALOGOPENED,MessageWindowOpened); 
-    CreateServiceFunction(MS_MSG_MOD_GETWINDOWDATA,GetMessageWindowData); 
+    CreateServiceFunction(MS_TABMSG_SETUSERPREFS, SetUserPrefs);
     CreateServiceFunction(MS_MSG_MOD_GETWINDOWFLAGS,GetMessageWindowFlags); 
 
     /*

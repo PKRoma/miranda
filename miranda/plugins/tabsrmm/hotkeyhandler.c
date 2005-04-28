@@ -203,7 +203,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
-                        case WM_LBUTTONDBLCLK:
+                        case WM_MBUTTONDOWN:
                         {
                             int iCount = GetMenuItemCount(myGlobals.g_hMenuTrayUnread);
                             SetForegroundWindow(hwndDlg);

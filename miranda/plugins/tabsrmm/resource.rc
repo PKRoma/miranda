@@ -447,6 +447,7 @@ BEGIN
     GROUPBOX        "Standard Set",IDC_STATIC,8,12,140,77
     GROUPBOX        "RTL Set",IDC_STATIC,155,12,140,77
     PUSHBUTTON      "Modify...",IDC_MODIFY,48,26,50,14
+    PUSHBUTTON      "Modify...",IDC_RTLMODIFY,197,25,50,14
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
@@ -835,13 +836,6 @@ BEGIN
         MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
 
         MENUITEM SEPARATOR
-        MENUITEM "Message Log Settings are global", 
-                                                ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL
-
-        MENUITEM "Apply Message Log Settings to all contacts", 
-                                                ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
-
-        MENUITEM SEPARATOR
         MENUITEM "Export Message Log Settings...", 
                                                 ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
 
@@ -961,8 +955,9 @@ BEGIN
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Templates",IDC_STATIC,3,4,108,98
     GROUPBOX        "Preview",IDC_STATIC,117,4,249,98
-    CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_AUTOHSCROLL | WS_BORDER | 
-                    WS_TABSTOP,122,13,236,84
+    CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
+                    122,13,236,84
     EDITTEXT        IDC_EDITTEMPLATE,11,116,344,14,ES_AUTOHSCROLL
     GROUPBOX        "Edit template",IDC_STATIC,3,106,363,105
     PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,267,135,90,15
@@ -1070,9 +1065,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Use RTL for this Contact",    40054
         END
-        MENUITEM SEPARATOR
-        MENUITEM "Message Log Settings are global", 40121
-        MENUITEM "Apply Message Log Settings to all contacts", 40123
         MENUITEM SEPARATOR
         MENUITEM "Export Message Log Settings...", 40128
         MENUITEM "Import Message Log Settings...", 40129

@@ -398,6 +398,7 @@ char* GetPreview(UINT eventType, char* pBlob)
     char* comment1 = NULL;
     char* comment2 = NULL;
     char* commentFix = NULL;
+    static char szPreviewHelp[256];
 
     //now get text
     switch (eventType) {
@@ -405,7 +406,20 @@ char* GetPreview(UINT eventType, char* pBlob)
             if (pBlob) comment1 = pBlob;
             commentFix = Translate(POPUP_COMMENT_MESSAGE);
             break;
-
+        case EVENTTYPE_AUTHREQUEST:
+            if(pBlob) {
+                mir_snprintf(szPreviewHelp, 256, Translate("%s requested authorization"), pBlob + 8);
+                return szPreviewHelp;
+            }
+            commentFix = Translate(POPUP_COMMENT_AUTH);
+            break;
+        case EVENTTYPE_ADDED:
+            if(pBlob) {
+                mir_snprintf(szPreviewHelp, 256, Translate("%s added you to the contact list"), pBlob + 8);
+                return szPreviewHelp;
+            }
+            commentFix = Translate(POPUP_COMMENT_ADDED);
+            break;
         case EVENTTYPE_URL:
             if (pBlob) comment2 = pBlob;
             if (pBlob) comment1 = pBlob + strlen(comment2) + 1;
@@ -421,29 +435,12 @@ char* GetPreview(UINT eventType, char* pBlob)
         case EVENTTYPE_CONTACTS:
             commentFix = Translate(POPUP_COMMENT_CONTACTS);
             break;
-        case EVENTTYPE_ADDED:
-            commentFix = Translate(POPUP_COMMENT_ADDED);
-            break;
-        case EVENTTYPE_AUTHREQUEST:
-            commentFix = Translate(POPUP_COMMENT_AUTH);
-            break;
-
-//blob format is:
-//ASCIIZ    text, usually "Sender IP: xxx.xxx.xxx.xxx\r\n%s"
-//ASCIIZ    from name
-//ASCIIZ    from e-mail
         case ICQEVENTTYPE_WEBPAGER:
             if (pBlob) comment1 = pBlob;
-//			if (pBlob) comment1 = pBlob + strlen(comment2) + 1;
             commentFix = Translate(POPUP_COMMENT_WEBPAGER);
             break;
-//blob format is:
-//ASCIIZ    text, usually of the form "Subject: %s\r\n%s"
-//ASCIIZ    from name
-//ASCIIZ    from e-mail
         case ICQEVENTTYPE_EMAILEXPRESS:
             if (pBlob) comment1 = pBlob;
-//			if (pBlob) comment1 = pBlob + strlen(comment2) + 1;
             commentFix = Translate(POPUP_COMMENT_EMAILEXP);
             break;
 
@@ -618,7 +615,7 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     DBEVENTINFO dbe;
     char* sampleEvent;
     long iSeconds;
-    int iPreviewLimit = nen_options.iLimitPreview;
+    int iPreviewLimit = nen_options.iLimitPreview, result;
     
     //there has to be a maximum number of popups shown at the same time
     if (PopupCount >= MAX_POPUPS)
@@ -668,12 +665,14 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
 
     dbe.pBlob = NULL;
 
-    if (pluginOptions->bPreview && hContact) {
-        dbe.cbSize = sizeof(dbe);
+    dbe.cbSize = sizeof(dbe);
+    if(pluginOptions->bPreview || hContact == 0) {
         dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
         dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
-        CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
     }
+    else
+        dbe.cbBlob = 0;
+    result = CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
 
     pdata = (PLUGIN_DATA*)malloc(sizeof(PLUGIN_DATA));
     ZeroMemory((void *)pdata, sizeof(PLUGIN_DATA));
@@ -689,18 +688,23 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     pud.PluginWindowProc = (WNDPROC)PopupDlgProc;
     pud.PluginData = pdata;
 
-    if (hContact) {
-        strncpy(pud.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), MAX_CONTACTNAME);
-        strncpy(pud.lpzText, GetPreview(dbe.eventType, (char *)dbe.pBlob), MAX_SECONDLINE);
-        pud.lpzText[MAX_SECONDLINE - 1] = 0;
-        if(iPreviewLimit > 4 && iPreviewLimit < lstrlenA(pud.lpzText)) {
-            iPreviewLimit = iPreviewLimit <= MAX_SECONDLINE ? iPreviewLimit : MAX_SECONDLINE;
-            strncpy(&pud.lpzText[iPreviewLimit - 4], "...", 3);
-            pud.lpzText[iPreviewLimit -1] = 0;
-        }
-    } else {
+    if(hContact == 0 && (eventType == EVENTTYPE_MESSAGE || eventType == EVENTTYPE_FILE || eventType == EVENTTYPE_URL || eventType == -1)) {
         strncpy(pud.lpzContactName, "Plugin Test", MAX_CONTACTNAME);
         strncpy(pud.lpzText, sampleEvent, MAX_SECONDLINE);
+    }
+    else {
+        if (hContact) 
+            mir_snprintf(pud.lpzContactName, MAX_CONTACTNAME, "%s", (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+        else
+            mir_snprintf(pud.lpzContactName, MAX_CONTACTNAME, "%s", dbe.szModule);
+
+        mir_snprintf(pud.lpzText, MAX_SECONDLINE, "%s", GetPreview(eventType, (char *)dbe.pBlob));
+    }
+        
+    if(iPreviewLimit > 4 && iPreviewLimit < lstrlenA(pud.lpzText)) {
+        iPreviewLimit = iPreviewLimit <= MAX_SECONDLINE ? iPreviewLimit : MAX_SECONDLINE;
+        strncpy(&pud.lpzText[iPreviewLimit - 4], "...", 3);
+        pud.lpzText[iPreviewLimit -1] = 0;
     }
 
     pdata->eventData = (EVENT_DATA *)malloc(NR_MERGED * sizeof(EVENT_DATA));
@@ -761,16 +765,16 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
         return 0;
     dbei.pBlob = (PBYTE) malloc(dbei.cbBlob);
     CallService(MS_DB_EVENT_GET, (WPARAM) lParam, (LPARAM) & dbei);
-    szPreview = GetPreview(eventType, 0);
+    szPreview = GetPreview(eventType, dbei.pBlob);
     nickName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)wParam, 0);
     if(nickName) {
         if(lstrlenA(nickName) >= 30)
-            mir_snprintf(szTitle, 64, "%27.27s... (%s)", nickName, szPreview);
+            mir_snprintf(szTitle, 64, "%27.27s...", nickName);
         else
-            mir_snprintf(szTitle, 64, "%s (%s)", nickName, szPreview);
+            mir_snprintf(szTitle, 64, "%s", nickName);
     }
     else
-        mir_snprintf(szTitle, 64, "%s", szPreview);
+        mir_snprintf(szTitle, 64, "No Nickname");
 
 #if defined(_UNICODE)
     MultiByteToWideChar(CP_ACP, 0, szTitle, -1, nim.szInfoTitle, 64);
@@ -818,7 +822,7 @@ nounicode:
     }
     else {
 #if defined(_UNICODE)
-        MultiByteToWideChar(CP_ACP, 0, (char *)dbei.pBlob, -1, nim.szInfo, 250);
+        MultiByteToWideChar(CP_ACP, 0, (char *)szPreview, -1, nim.szInfo, 250);
 #else
         strncpy(nim.szInfo, (char *)dbei.pBlob, 250);
 #endif        
