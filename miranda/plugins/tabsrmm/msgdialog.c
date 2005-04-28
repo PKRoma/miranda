@@ -59,7 +59,7 @@ $Id$
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
-
+extern TemplateSet RTL_Active, LTR_Active;
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -1285,16 +1285,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
 
-            if(dat->hContact);
+            if(dat->hContact) {
                 dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
+                dat->ltr_templates = &LTR_Active;
+                dat->rtl_templates = &RTL_Active;
+            }
 
-
+            
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
                 DWORD dwForcedContactNum = 0;
                 CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
                 DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", dwForcedContactNum);
             }
-            
+
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
             
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
@@ -3886,10 +3889,8 @@ verify:
             break;
         }
 		case DM_SECURE_CHANGED:
-		{
 			UpdateStatusBar(hwndDlg, dat);
 			break;
-		}
         case WM_INPUTLANGCHANGE:
             return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
 
@@ -3905,7 +3906,6 @@ verify:
     			if (IsIconic(dat->pContainer->hwnd))
     				state |= MSG_WINDOW_STATE_ICONIC;
     			return state;
-    
     		}
 // BEGIN MOD#11: Files beeing dropped ?
 		case WM_DROPFILES:
@@ -4126,6 +4126,12 @@ verify:
                 WriteStatsOnClose(hwndDlg, dat);
                 dat->stats.bWritten = TRUE;
             }
+
+            if(dat->ltr_templates != (TemplateSet *)&LTR_Active)
+                free(dat->ltr_templates);
+            if(dat->rtl_templates != (TemplateSet *)&RTL_Active)
+                free(dat->rtl_templates);
+            
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);

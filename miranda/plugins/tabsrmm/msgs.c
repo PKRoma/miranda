@@ -845,6 +845,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     ZeroMemory((void *)sendJobs, sizeof(struct SendJob) * NR_SENDJOBS);
     if(nen_options.bTraySupport)
         CreateSystrayIcon(TRUE);
+    LoadDefaultTemplates();
     return 0;
 }
 

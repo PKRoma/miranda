@@ -36,10 +36,22 @@ $Id$
 
 #define TEMPLATE_LENGTH 150
 
+#define TEMPLATES_MODULE "tabSRMM_Templates"
+#define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
+
 typedef struct _tagTemplateSet {
     BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
-    char szTemplates[TMPL_STATUSCHG + 1][TEMPLATE_LENGTH];      // the template strings
+    TCHAR szTemplates[TMPL_STATUSCHG + 1][TEMPLATE_LENGTH];      // the template strings
     char szSetName[20];     // everything in this world needs a name. so does this poor template set.
 } TemplateSet;
 
+typedef struct _tagTemplateEditorInfo {
+    BOOL changed;           // template in edit field is changed
+    BOOL selchanging;
+    int  inEdit;            // template currently in editor
+    BOOL updateInfo[TMPL_STATUSCHG + 1];        // item states...
+} TemplateEditorInfo;
 
+BOOL CALLBACK DlgProcTemplateEdit(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl);
+void LoadDefaultTemplates();

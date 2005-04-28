@@ -40,14 +40,14 @@ $Id$
 #include "m_MathModule.h"
 //mathMod end
 #endif
-#include "templates.h"
-
-extern TemplateSet RTL_Default, LTR_Default;
 
 int _log(const char *fmt, ...);
 //static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak);
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code);
 static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
+
+static char *weekDays[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+static char *months[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
 char szSep0[40], szSep1[152], szSep2[40], szMicroLf[128], szExtraLf[50];
 char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
@@ -476,14 +476,15 @@ int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO * dbei)
 
 static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact, HANDLE hDbEvent, int prefixParaBreak, struct LogStreamData *streamData)
 {
-    char *buffer, c, ci, cc;
+    char *buffer, c;
+    TCHAR ci, cc;
     char *szName, *szFinalTimestamp, szDummy = '\0';
     int bufferAlloced, bufferEnd, iTemplateLen;
     DBEVENTINFO dbei = { 0 };
     int showColon = 0;
     int isSent = 0;
     int iFontIDOffset = 0, i = 0;
-    char *szTemplate;
+    TCHAR *szTemplate;
     DWORD final_time;
     BOOL skipToNext = FALSE, showTime = TRUE;
     struct tm event_time;
@@ -582,7 +583,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         }
         event_time = *localtime(&final_time);
     }
-    this_templateset = dat->dwFlags & MWF_LOG_RTL ? &RTL_Default : &LTR_Default;
+    this_templateset = dat->dwFlags & MWF_LOG_RTL ? dat->rtl_templates : dat->ltr_templates;
     
     if(dbei.eventType == EVENTTYPE_STATUSCHANGE)
         szTemplate = this_templateset->szTemplates[TMPL_STATUSCHG];
@@ -593,7 +594,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         else
             szTemplate = isSent ? this_templateset->szTemplates[TMPL_MSGIN] : this_templateset->szTemplates[TMPL_MSGOUT];
     }
-    iTemplateLen = lstrlenA(szTemplate);
+    iTemplateLen = _tcslen(szTemplate);
     showTime = dat->dwFlags & MWF_LOG_SHOWTIME;
     
     while(i < iTemplateLen) {
@@ -657,7 +658,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                         skipToNext = TRUE;
                     break;
                 case 's':           //second
-                    if(showTime)
+                    if(showTime && dat->dwFlags & MWF_LOG_SHOWSECONDS)
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_sec);
                     else
                         skipToNext = TRUE;
@@ -665,6 +666,12 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 case'o':            // month
                     if(showTime)
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mon + 1);
+                    else
+                        skipToNext = TRUE;
+                    break;
+                case'O':            // month (name)
+                    if(showTime)
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], Translate(months[event_time.tm_mon + 1]));
                     else
                         skipToNext = TRUE;
                     break;
@@ -676,7 +683,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     break;
                 case 'w':           // day of week
                     if(showTime)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_wday + 1);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], Translate(weekDays[event_time.tm_wday + 1]));
                     else
                         skipToNext = TRUE;
                     break;
@@ -732,6 +739,10 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                         skipToNext = TRUE;
                     break;
                 }
+                case 'U':            // UIN
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+                    AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->uin);
+                    break;
                 case 'M':           // message
                 {
                     switch (dbei.eventType) {
@@ -842,7 +853,13 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 i += 2;
         }
         else {
+#if defined(_UNICODE)
+            char temp[24];
+            mir_snprintf(temp, 24, "{\\uc1\\u%d?}", (int)ci);
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, temp);
+#else
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%c", ci);
+#endif            
             i++;
         }
     }

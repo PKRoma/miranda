@@ -236,9 +236,6 @@ struct MessageWindowData {
     HANDLE hThread;
     int doSmileys;
     UINT codePage;
-#if defined(_STREAMTHREADING)
-    int volatile pendingStream;
-#endif    
     HBITMAP hSmileyIcon;
     char *szProto;
     char *szMetaProto;
@@ -257,12 +254,13 @@ struct MessageWindowData {
     HANDLE hMultiSendThread;
     BOOL bIsMeta;
     HANDLE hFlashingEvent;
-    char uin[80];
+    char uin[80], myUin[80];
     BOOL bNotOnList;
     int  iAvatarDisplayMode;
     int  SendFormat;
     DWORD dwIsFavoritOrRecent;
     DWORD dwLastUpdate;
+    TemplateSet *ltr_templates, *rtl_templates;
 };
 
 typedef struct _recentinfo {

@@ -221,7 +221,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                 else
                                     CallService(MS_MSG_SENDMESSAGE, (WPARAM)uid, 0);
                             }
-                            Tray_Setfocus();
+                            PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
                         case WM_RBUTTONUP:

@@ -195,7 +195,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
         CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_MESSAGEBODYINANEWLINE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_NEWLINE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_USECONTACTSLOCALTIME, MF_BYCOMMAND | iLocalTime ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWDATE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWSECONDS ? MF_CHECKED : MF_UNCHECKED);
@@ -204,23 +203,17 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwEventIsShown & MWF_SHOW_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWNICK ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_UNDERLINETIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_UNDERLINE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SWAPNICK ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_LONGDATES ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_USERELATIVEDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (myGlobals.m_IgnoreContactSettings ? MF_CHECKED : MF_UNCHECKED));
-        CheckMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENTWITHTABS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_TEXTFORMAT ? MF_CHECKED : MF_UNCHECKED);
         
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS, myGlobals.m_IgnoreContactSettings ? MF_GRAYED : MF_ENABLED);
-        EnableMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, dat->dwFlags & MWF_LOG_INDENT ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
@@ -321,9 +314,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_LOGMENU_SHOWTIMESTAMP:
                 dat->dwFlags ^= MWF_LOG_SHOWTIME;
                 return 1;
-            case ID_LOGMENU_MESSAGEBODYINANEWLINE:
-                dat->dwFlags  ^= MWF_LOG_NEWLINE;
-                return 1;
             case ID_LOGMENU_USECONTACTSLOCALTIME:
                 iLocalTime ^=1;
                 if(dat->hContact) {
@@ -333,9 +323,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_LOGMENU_INDENTMESSAGEBODY:
                 dat->dwFlags ^= MWF_LOG_INDENT;
-                return 1;
-            case ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT:
-                dat->dwFlags ^= MWF_LOG_INDENTWITHTABS;
                 return 1;
             case ID_LOGMENU_ACTIVATERTL:
                 iRtl ^= 1;
@@ -369,12 +356,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_LOGMENU_SHOWNICKNAME:
                 dat->dwFlags ^= MWF_LOG_SHOWNICK;
                 return 1;
-            case ID_LOGMENU_UNDERLINETIMESTAMP:
-                dat->dwFlags ^= MWF_LOG_UNDERLINE;
-                return 1;
-            case ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME:
-                dat->dwFlags ^= MWF_LOG_SWAPNICK;
-                return 1;
             case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", iLogStatus ? 0 : -1);
                 return 1;
@@ -397,12 +378,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING:
                 dat->dwFlags ^= MWF_LOG_TEXTFORMAT;
-                return 1;
-            case ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT:
-                dat->dwFlags ^= MWF_LOG_LONGDATES;
-                return 1;
-            case ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS:
-                dat->dwFlags ^= MWF_LOG_USERELATIVEDATES;
                 return 1;
             case ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL:
                 iIgnorePerContact = !iIgnorePerContact;
@@ -1232,11 +1207,17 @@ void DoTrimMessage(TCHAR *msg)
         msg[i+1] = '\0';
 }
 
+/*
+ * saves message to the input history.
+ * its using streamout in UTF8 format - no unicode "issues" and all RTF formatting is saved aswell,
+ * so restoring a message from the input history will also restore its formatting
+ */
+
 void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
     int iLength = 0, iStreamLength = 0;
     int oldTop = 0;
-    char *szFromStream = 0;
+    char *szFromStream = NULL;
 
     if(wParam) {
         oldTop = dat->iHistoryTop;
@@ -1283,6 +1264,11 @@ void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
         dat->iHistoryTop = oldTop;
 }
 
+/*
+ * retrieve both buddys and my own UIN for a message session and store them in the message window *dat
+ * respects metacontacts and uses the current protocol if the contact is a MC
+ */
+
 void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 {
     CONTACTINFO ci;
@@ -1302,16 +1288,33 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
     if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
         switch (ci.type) {
             case CNFT_ASCIIZ:
-                _snprintf(dat->uin, sizeof(dat->uin), "%s", ci.pszVal);
+                mir_snprintf(dat->uin, sizeof(dat->uin), "%s", ci.pszVal);
                 miranda_sys_free(ci.pszVal);
                 break;
             case CNFT_DWORD:
-                _snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
+                mir_snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
                 break;
         }
     }
     else
         dat->uin[0] = 0;
+
+    // get own uin...
+    ci.hContact = 0;
+    
+    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+        switch (ci.type) {
+            case CNFT_ASCIIZ:
+                mir_snprintf(dat->myUin, sizeof(dat->myUin), "%s", ci.pszVal);
+                miranda_sys_free(ci.pszVal);
+                break;
+            case CNFT_DWORD:
+                mir_snprintf(dat->myUin, sizeof(dat->myUin), "%u", ci.dVal);
+                break;
+        }
+    }
+    else
+        dat->myUin[0] = 0;
 }
 
 unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)

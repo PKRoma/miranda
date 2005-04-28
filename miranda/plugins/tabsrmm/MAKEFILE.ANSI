@@ -11,13 +11,13 @@ LINKOBJ  = Release_MINGW32_ANSI/templates.o Release_MINGW32_ANSI/eventpopups.o R
 LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)/libgdi32.a $(LIBDIR)/libole32.a $(LIBDIR)/libuser32.a $(LIBDIR)/libcomctl32.a $(LIBDIR)/libuuid.a $(LIBDIR)/libcomdlg32.a  $(LIBDIR)/libstdc++.a -mwindows -s
 INCS =  -I"C:/Dev-Cpp/include"
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
-BIN  = Release_MINGW32_ANSI/tabsrmm.dll
+BIN  = ../../bin/release/plugins/tabsrmm.dll
 CXXFLAGS = $(CXXINCS) -DBUILDING_DLL=1   -fexpensive-optimizations -O2 -mwindows -fno-exceptions -fno-rtti
 CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -fno-exceptions -O2 -mwindows
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before Release_MINGW32_ANSI/tabsrmm.dll all-after
+all: all-before ../../bin/release/plugins/tabsrmm.dll all-after
 
 
 clean: clean-custom

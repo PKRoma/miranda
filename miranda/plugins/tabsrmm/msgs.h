@@ -84,6 +84,7 @@ typedef struct _settextex {
 
 #include <richedit.h>
 #include <richole.h>
+#include "templates.h"
 #include "m_tabsrmm.h"
 
 #define MSGERROR_CANCEL	0
@@ -453,3 +454,15 @@ struct MsgLogIcon {
 TCHAR *Utf8Decode(const char *str);
 char *Utf8Encode(const WCHAR *str);
 
+#if defined(_UNICODE)
+static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* fmt, ...) {
+	va_list va;
+	int len;
+
+	va_start(va, fmt);
+	len = _vsnwprintf(buffer, count-1, fmt, va);
+	va_end(va);
+	buffer[count-1] = 0;
+	return len;
+}
+#endif

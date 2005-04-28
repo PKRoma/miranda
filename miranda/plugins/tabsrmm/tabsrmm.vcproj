@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252" ?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
@@ -481,7 +481,8 @@
 				RelativePath=".\containeroptions.c">
 			</File>
 			<File
-				RelativePath="eventpopups.c"/>
+				RelativePath="eventpopups.c">
+			</File>
 			<File
 				RelativePath=".\formatting.cpp">
 				<FileConfiguration
@@ -794,12 +795,14 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="templates.c"/>
+				RelativePath="templates.c">
+			</File>
 			<File
 				RelativePath=".\themes.c">
 			</File>
 			<File
-				RelativePath="trayicon.c"/>
+				RelativePath="trayicon.c">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -808,7 +811,8 @@
 				RelativePath="commonheaders.h">
 			</File>
 			<File
-				RelativePath="functions.h"/>
+				RelativePath="functions.h">
+			</File>
 			<File
 				RelativePath="IcoLib.h">
 			</File>
@@ -816,9 +820,11 @@
 				RelativePath="ImageDataObject.h">
 			</File>
 			<File
-				RelativePath="m_ieview.h"/>
+				RelativePath="m_ieview.h">
+			</File>
 			<File
-				RelativePath="m_MathModule.h"/>
+				RelativePath="m_MathModule.h">
+			</File>
 			<File
 				RelativePath="m_message.h">
 			</File>
@@ -829,9 +835,11 @@
 				RelativePath=".\m_popup.h">
 			</File>
 			<File
-				RelativePath="m_smileyadd.h"/>
+				RelativePath="m_smileyadd.h">
+			</File>
 			<File
-				RelativePath="m_Snapping_windows.h"/>
+				RelativePath="m_Snapping_windows.h">
+			</File>
 			<File
 				RelativePath="m_tabsrmm.h">
 			</File>
@@ -842,7 +850,8 @@
 				RelativePath="msgs.h">
 			</File>
 			<File
-				RelativePath="nen.h"/>
+				RelativePath="nen.h">
+			</File>
 			<File
 				RelativePath="resource.h">
 			</File>
@@ -853,7 +862,8 @@
 				RelativePath="sendqueue.h">
 			</File>
 			<File
-				RelativePath="templates.h"/>
+				RelativePath="templates.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -886,25 +896,25 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur">
 			</File>
 			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+			</File>
+			<File
 				RelativePath=".\res\error.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico">
+				RelativePath=".\res\angeli-icons\History.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico">
+				RelativePath="..\..\Miranda-IM\res\history.ico">
 			</File>
 			<File
 				RelativePath="res\History32.ico">
@@ -997,10 +1007,10 @@
 				RelativePath=".\resource.rc">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">
@@ -1034,10 +1044,10 @@
 				RelativePath="langpacks\langpack_tabsrmm_german.txt">
 			</File>
 			<File
-				RelativePath="MAKEFILE.W32">
+				RelativePath=".\Makefile.ansi">
 			</File>
 			<File
-				RelativePath="MAKEFILE.W32.ANSI">
+				RelativePath="MAKEFILE.W32">
 			</File>
 			<File
 				RelativePath="MetaContacts.TXT">

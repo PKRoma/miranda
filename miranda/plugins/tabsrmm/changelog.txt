@@ -102,7 +102,9 @@ Version 0.9.9.95 - 2005/04/15
           
         ! IEview no longer steals focus from the input area when a container has been created in
           the background (minimized)
-        
+
+        + added option to disable animation when minimizing containers to the system tray
+          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

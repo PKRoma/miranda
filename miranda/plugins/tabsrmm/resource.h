@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
+#define IDD_TEMPLATEEDIT                1
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -90,17 +91,13 @@
 #define IDC_CLOSEONREPLY                1052
 #define IDC_COLTEXT_OTHERS              1053
 #define IDC_SHOWFILES                   1054
-#define IDC_SHOWSENDBTN                 1055
 #define IDC_MERGEPOPUP                  1056
 #define IDC_CHKINFINITE_MESSAGE         1057
 #define IDC_CHKMERGEPOPUP               1058
 #define IDC_SHOWURLS                    1059
 #define IDC_DELAY_MESSAGE               1060
-#define IDC_SHOWLOGICONS                1061
 #define IDC_DELAY_URL                   1062
-#define IDC_SHOWTIMES                   1063
 #define IDC_DELAY_FILE                  1064
-#define IDC_SHOWDATES                   1065
 #define IDC_DELAY_OTHERS                1066
 #define IDC_CLIST                       1067
 #define IDC_NUMBERMSG                   1068
@@ -190,13 +187,11 @@
 #define IDC_SECONDS                     1152
 #define IDC_NOTIFYTRAY                  1153
 #define IDC_NOTIFYBALLOON               1154
-#define IDC_SHOW_EVENTS_NL              1155
 #define IDC_MathSubst                   1156
 #define IDC_INDENT                      1157
 #define IDC_INDENTAMOUNT                1158
 #define IDC_MSGTABS                     1159
 #define IDC_UNDERLINE                   1160
-#define IDC_SHOWSECONDS                 1161
 #define IDC_WARNONCLOSE                 1162
 #define IDC_CUT_TABTITLE                1163
 #define IDC_CUT_TITLEMAX                1164
@@ -239,7 +234,6 @@
 #define IDC_FLATBUTTONS                 1201
 #define IDC_O_STICKY                    1202
 #define IDC_DIVIDERSUSEPOPUPCONFIG      1203
-#define IDC_INOUTICONS                  1204
 #define IDC_FLASHFOREVER                1205
 #define IDC_DONTFLASH                   1206
 #define IDC_RADIO1                      1207
@@ -249,7 +243,6 @@
 #define IDC_ALWAYS                      1211
 #define IDC_FULLUSERNAME                1212
 #define IDC_CHECK5                      1213
-#define IDC_IGNORECONTACTSETTINGS       1214
 #define IDC_TRANSPARENCY                1215
 #define IDC_AUTOCREATECONTAINER         1216
 #define IDC_LIMITAVATARS                1217
@@ -259,6 +252,8 @@
 #define IDC_CNTLIST                     1221
 #define IDC_NEWCONTAINER                1222
 #define IDC_BUTTON1                     1223
+#define IDC_UPDATEPREVIEW               1223
+#define IDC_MODIFY                      1223
 #define IDC_CREATENEW                   1224
 #define IDC_LOADDEFAULTS                1225
 #define IDC_SENDLATER                   1226
@@ -325,18 +320,15 @@
 #define IDC_STATICTEXT                  1287
 #define IDC_GROUPMODE                   1288
 #define IDC_CHECK1                      1289
+#define IDC_ANIMATED                    1289
 #define IDC_SYNCSOUNDS                  1290
-#define IDC_RELATIVEDATES               1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_USESNAPPING                 1293
 #define IDC_EXTRAMICROLF                1294
 #define IDC_SENDFORMAT                  1295
 #define IDC_FLATMSGLOG                  1296
-#define IDC_LONGDATES                   1297
-#define IDC_CHECK3                      1298
 #define IDC_CNTNOSTATUSBAR              1299
 #define IDC_AUTOCLOSELAST               1300
-#define IDC_MARKFOLLOWUPTIMESTAMP       1301
 #define IDC_CHECKICONDLL                1302
 #define IDC_ENABLETRAYSUPPORT           1303
 #define IDC_HEADERSHADING               1304
@@ -350,7 +342,6 @@
 #define IDC_MICROLF                     1312
 #define IDC_EVENTAPI                    1313
 #define IDC_STATICICON                  1314
-#define IDC_INDENTWITHTABS              1315
 #define IDC_MINIMIZETOTRAY              1316
 #define IDC_CHECK7                      1317
 #define IDC_DELETETEMP                  1318
@@ -368,8 +359,6 @@
 #define IDC_TAB1                        1330
 #define IDC_OPTIONSTAB                  1331
 #define IDC_EXTRALFSPIN                 1332
-#define IDC_SYMBOLS                     1333
-#define IDC_CHECK6                      1334
 #define IDC_ALWAYSFULLWIDTHTOOLBAR      1335
 #define IDC_SHOWUIN                     1336
 #define IDC_FORMATWHOLEWORDSONLY        1337
@@ -380,22 +369,17 @@
 #define IDC_TSFIX                       1342
 #define IDC_ICONDLLNAME                 1343
 #define IDC_BUTTON2                     1344
+#define IDC_SAVETEMPLATE                1344
 #define IDC_SELECTICONDLL               1345
 #define IDC_RTLDEFAULT                  1346
 #define IDC_CHECK10                     1347
 #define IDC_MATHMODSUPPORT              1348
 #define IDC_MESSAGEPREVIEWLIMIT         1349
 #define IDC_MESSAGEPREVIEWLIMITSPIN     1350
-#define IDS_STATUS_OFFLINE               40071
-#define IDS_STATUS_ONLINE                40072
-#define IDS_STATUS_AWAY                  40073
-#define IDS_STATUS_DND                   40074
-#define IDS_STATUS_NA                    40075
-#define IDS_STATUS_OCCUPIED              40076
-#define IDS_STATUS_FREECHAT              40077
-#define IDS_STATUS_INVISIBLE             40078
-#define IDS_STATUS_ONTHEPHONE            40079
-#define IDS_STATUS_OUTTOLUNCH            40080
+#define IDC_TEMPLATELIST                1361
+#define IDC_EDITTEMPLATE                1362
+#define IDC_REVERT                      1363
+#define IDC_FORGET                      1364
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -417,17 +401,14 @@
 #define ID_TABMENU_CONTAINEROPTIONS     40046
 #define ID_LOGMENU_SHOWTIMESTAMP        40047
 #define ID_LOGMENU_INDENTMESSAGEBODY    40048
-#define ID_LOGMENU_MESSAGEBODYINANEWLINE 40049
 #define ID_LOGMENU_USECONTACTSLOCALTIME 40050
 #define ID_LOGMENU_SHOWDATE             40051
 #define ID_LOGMENU_SHOWSECONDS          40052
-#define ID_LOGMENU_UNDERLINETIMESTAMP   40053
 #define ID_LOGMENU_ACTIVATERTL          40054
 #define ID_LOGMENU_SHOWNICKNAME         40055
 #define ID_LOGMENU_SHOWMESSAGEICONS     40056
 #define ID_LOGMENU_LOADDEFAULTS         40057
 #define ID_LOGMENU_SAVETHESESETTINGSASDEFAULTVALUES 40058
-#define ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME 40059
 #define ID_LOGMENU_ALWAYSUSEGLOBALSPLITTERPOSITION 40060
 #define ID_LOGMENU_TIMESTAMPSETTINGS    40061
 #define ID_LOGMENU_MESSAGELOGFORMATTING 40062
@@ -439,15 +420,23 @@
 #define ID_MESSAGELOGFORMATTING_SHOWGRID 40068
 #define ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS 40069
 #define ID_PICMENU_                     40070
+#define IDS_STATUS_OFFLINE              40071
 #define ID_PICMENU_RESETTHEAVATAR       40071
+#define IDS_STATUS_ONLINE               40072
 #define ID_PICMENU_LOADALOCALPICTUREASAVATAR 40072
+#define IDS_STATUS_AWAY                 40073
 #define ID_MESSAGELOGFORMATTING_GROUPMESSAGES 40073
-#define ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS 40074
-#define ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT 40075
+#define IDS_STATUS_DND                  40074
+#define IDS_STATUS_NA                   40075
+#define IDS_STATUS_OCCUPIED             40076
 #define ID_VIEW_SHOWMENUBAR             40076
+#define IDS_STATUS_FREECHAT             40077
 #define ID_VIEW_SHOWSTATUSBAR           40077
+#define IDS_STATUS_INVISIBLE            40078
 #define ID_VIEW_SHOWTOOLBAR             40078
+#define IDS_STATUS_ONTHEPHONE           40079
 #define ID_TOOLBAR_SENDBUTTON           40079
+#define IDS_STATUS_OUTTOLUNCH           40080
 #define ID_TOOLBAR_USERINFORMATION      40080
 #define ID_TOOLBAR_EXTRABUTTONS         40081
 #define ID_VIEW_SHOWAVATAR              40082
@@ -495,7 +484,6 @@
 #define ID_LOGMENU_MESSAGELOGSETTINGSAREGLOBAL 40124
 #define ID_USER                         40125
 #define ID_TITLEBAR_USESTATICCONTAINERICON 40126
-#define ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT 40127
 #define ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS 40128
 #define ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS 40129
 #define ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING 40130
@@ -554,9 +542,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        40182
+#define _APS_NEXT_RESOURCE_VALUE        2
 #define _APS_NEXT_COMMAND_VALUE         40183
-#define _APS_NEXT_CONTROL_VALUE         1361
+#define _APS_NEXT_CONTROL_VALUE         1365
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

@@ -30,6 +30,7 @@ $Id$
 #include "../../include/m_clui.h"
 #include "m_ieview.h"
 
+
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
 #include "m_MathModule.h"
@@ -58,6 +59,7 @@ BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -331,29 +333,15 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETRANGE, 0, MAKELONG(12 * 60, 0));
             SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETPOS, 0, DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME));
 
-            CheckDlgButton(hwndDlg, IDC_SHOWLOGICONS, dwFlags & MWF_LOG_SHOWICONS);
-            CheckDlgButton(hwndDlg, IDC_SHOWNAMES, dwFlags & MWF_LOG_SHOWNICK);
-            CheckDlgButton(hwndDlg, IDC_SHOWTIMES, dwFlags & MWF_LOG_SHOWTIME);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWDATES), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
-            CheckDlgButton(hwndDlg, IDC_SHOWDATES, dwFlags & MWF_LOG_SHOWDATES);
             CheckDlgButton(hwndDlg, IDC_SHOWURLS, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS));
             CheckDlgButton(hwndDlg, IDC_SHOWFILES, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES));
             
 			// XXX options: show event in a new line and indent events (x pixel)
 
-			CheckDlgButton(hwndDlg, IDC_SHOW_EVENTS_NL, dwFlags & MWF_LOG_NEWLINE);
 			CheckDlgButton(hwndDlg, IDC_INDENT, dwFlags & MWF_LOG_INDENT);
-			CheckDlgButton(hwndDlg, IDC_UNDERLINE, dwFlags & MWF_LOG_UNDERLINE);
-			CheckDlgButton(hwndDlg, IDC_SHOWSECONDS, dwFlags & MWF_LOG_SHOWSECONDS);
-            CheckDlgButton(hwndDlg, IDC_SWAPTIMESTAMP, dwFlags & MWF_LOG_SWAPNICK);
             CheckDlgButton(hwndDlg, IDC_DRAWGRID, dwFlags & MWF_LOG_GRID);
             CheckDlgButton(hwndDlg, IDC_GROUPMODE, dwFlags & MWF_LOG_GROUPMODE);
-            CheckDlgButton(hwndDlg, IDC_LONGDATES, dwFlags & MWF_LOG_LONGDATES);
-            CheckDlgButton(hwndDlg, IDC_RELATIVEDATES, dwFlags & MWF_LOG_USERELATIVEDATES);
-            CheckDlgButton(hwndDlg, IDC_INDENTWITHTABS, dwFlags & MWF_LOG_INDENTWITHTABS);
             CheckDlgButton(hwndDlg, IDC_FORMATTING, dwFlags & MWF_LOG_TEXTFORMAT);
-            CheckDlgButton(hwndDlg, IDC_SYMBOLS, dwFlags & MWF_LOG_SYMBOLS);
-            CheckDlgButton(hwndDlg, IDC_FORMATWHOLEWORDSONLY, DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatwords", 0));
             CheckDlgButton(hwndDlg, IDC_TSFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 0));
             CheckDlgButton(hwndDlg, IDC_RTLDEFAULT, DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0));
             CheckDlgButton(hwndDlg, IDC_MATHMODSUPPORT, DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0));
@@ -362,17 +350,9 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 #else            
             EnableWindow(GetDlgItem(hwndDlg, IDC_MATHMODSUPPORT), FALSE);
 #endif            
-            EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATWHOLEWORDSONLY), IsDlgButtonChecked(hwndDlg, IDC_FORMATTING));
-            
             CheckDlgButton(hwndDlg, IDC_MSGLOGPLUGIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0));
             
-            CheckDlgButton(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP, DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP), IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE));
-            
-            CheckDlgButton(hwndDlg, IDC_INOUTICONS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0));
             CheckDlgButton(hwndDlg, IDC_LOGSTATUS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0));
-
-            CheckDlgButton(hwndDlg, IDC_IGNORECONTACTSETTINGS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 1));
             CheckDlgButton(hwndDlg, IDC_LOGHOTKEYS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0));
             
             SetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), FALSE);
@@ -382,10 +362,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), FALSE);
             SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
             SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
-            
-            EnableWindow(GetDlgItem(hwndDlg, IDC_INOUTICONS), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOGICONS), !IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SYMBOLS), !IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
             SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_INDENT, 0), 0);
             
             return TRUE;
@@ -400,16 +376,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
                     EnableWindow(GetDlgItem(hwndDlg, IDC_STMINSOLD), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
                     break;
-                case IDC_SHOWLOGICONS:
-                case IDC_SYMBOLS:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_INOUTICONS), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS) || IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOGICONS), !IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_SYMBOLS), !IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS));
-                    break;
-                case IDC_SHOWTIMES:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWDATES), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWSECONDS), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
-                    break;
                 case IDC_INDENTAMOUNT:
                 case IDC_LOADCOUNTN:
                 case IDC_LOADTIMEN:
@@ -417,15 +383,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
                     break;
-                case IDC_GROUPMODE:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP), IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE));
-                    break;
-                case IDC_FORMATTING:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_FORMATWHOLEWORDSONLY), IsDlgButtonChecked(hwndDlg, IDC_FORMATTING));
-                    break;
                 case IDC_TSFIX:
                     if(IsDlgButtonChecked(hwndDlg, IDC_TSFIX))
                         MessageBoxA(0, "Caution: This attempt to fix the 'future timestamp issue' may have side effects. Also, it only works for events while the session is active, NOT for loading the history", "Warning", MB_OK | MB_ICONHAND);
+                    break;
+                case IDC_MODIFY:
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TEMPLATEEDIT), hwndDlg, DlgProcTemplateEditor, 0);
                     break;
                 case IDC_INDENT:
                     {
@@ -444,8 +407,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case 0:
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY: {
-                            DWORD dwOldFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
-                            DWORD dwFlags = 0;
+                            dwFlags &= ~(MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT);
                             
                             if (IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT))
                                 DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_COUNT);
@@ -455,40 +417,20 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                 DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_UNREAD);
                             DBWriteContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, (WORD) SendDlgItemMessage(hwndDlg, IDC_LOADCOUNTSPIN, UDM_GETPOS, 0, 0));
                             DBWriteContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, (WORD) SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_GETPOS, 0, 0));
-                            dwFlags = (dwOldFlags & (MWF_LOG_INDIVIDUALBKG)) | 
-                                      (IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS) ? MWF_LOG_SHOWICONS : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_SHOWNAMES) ? MWF_LOG_SHOWNICK : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES) ? MWF_LOG_SHOWTIME : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_SHOWDATES) ? MWF_LOG_SHOWDATES : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_DRAWGRID) ? MWF_LOG_GRID : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_GROUPMODE) ? MWF_LOG_GROUPMODE : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_RELATIVEDATES) ? MWF_LOG_USERELATIVEDATES : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_LONGDATES) ? MWF_LOG_LONGDATES : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_INDENTWITHTABS) ? MWF_LOG_INDENTWITHTABS : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_FORMATTING) ? MWF_LOG_TEXTFORMAT : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_SYMBOLS) ? MWF_LOG_SYMBOLS : 0) |
-                                      (IsDlgButtonChecked(hwndDlg, IDC_SWAPTIMESTAMP) ? MWF_LOG_SWAPNICK : 0);
+                            dwFlags |= ((IsDlgButtonChecked(hwndDlg, IDC_DRAWGRID) ? MWF_LOG_GRID : 0) |
+                                          (IsDlgButtonChecked(hwndDlg, IDC_FORMATTING) ? MWF_LOG_TEXTFORMAT : 0));
                             
+                            dwFlags |= (IsDlgButtonChecked(hwndDlg, IDC_INDENT) ? MWF_LOG_INDENT : 0);
+
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LOGHOTKEYS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORECONTACTSETTINGS));
                             
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWURLS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWFILES));
-
-                            // XXX new options (indent, new line)
-
-                            dwFlags |= ((IsDlgButtonChecked(hwndDlg, IDC_SHOW_EVENTS_NL) ? MWF_LOG_NEWLINE : 0) |
-                                       (IsDlgButtonChecked(hwndDlg, IDC_INDENT) ? MWF_LOG_INDENT : 0) |
-                                       (IsDlgButtonChecked(hwndDlg, IDC_UNDERLINE) ? MWF_LOG_UNDERLINE : 0) |
-                                       (IsDlgButtonChecked(hwndDlg, IDC_SHOWSECONDS) ? MWF_LOG_SHOWSECONDS : 0));
 
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", (DWORD) GetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, &translated, FALSE));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", (DWORD) GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "logstatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LOGSTATUS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_INOUTICONS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKFOLLOWUPTIMESTAMP));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "formatwords", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FORMATWHOLEWORDSONLY));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MSGLOGPLUGIN));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "no_future", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TSFIX));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RTLDEFAULT));
@@ -1740,7 +1682,7 @@ void ReloadGlobals()
      myGlobals.m_LimitStaticAvatarHeight = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100);
      myGlobals.m_AvatarDisplayMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatardisplaymode", 0);
      myGlobals.m_SendFormat = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendformat", 0);
-     myGlobals.m_FormatWholeWordsOnly = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "formatwords", 0);
+     myGlobals.m_FormatWholeWordsOnly = 1;
      myGlobals.m_AllowSendButtonHidden = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0);
      myGlobals.m_ToolbarHideMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", 0);
      myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
