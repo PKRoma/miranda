@@ -459,7 +459,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		};
 		NotifyEventHooks(hExtraImageApplying,(WPARAM)hContact,0);
 	  if (hcontgiven) break;
-
+	Sleep(0);
   } while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 	
 	tick=GetTickCount()-tick;
@@ -470,7 +470,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		OutputDebugString(buf);
 		DBWriteContactSettingDword((HANDLE)0,"CLUI","PF:Last SetAllExtraIcons Time:",tick);
 	}	
-
+Sleep(0);
   
 }
 

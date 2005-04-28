@@ -151,7 +151,9 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 			}
 			DBFreeVariant(&dbv);
 		}
-		DBWriteContactSettingString(ack->hContact, "CList", "StatusMsg", (char *)ack->lParam);
+		if(DBGetContactSettingByte(NULL,"CList","ShowStatusMsg",0)||DBGetContactSettingByte(ack->hContact,"CList","StatusMsgAuto",0))
+				DBWriteContactSettingString(ack->hContact, "CList", "StatusMsg", (char *)ack->lParam);
+		
 		return 0;
 	}
 
