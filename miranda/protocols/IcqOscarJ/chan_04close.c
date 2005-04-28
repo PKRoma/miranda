@@ -288,13 +288,14 @@ static void handleSignonError(WORD wError)
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
-	case 0x014:
+	case 0x14:
+  case 0x15:
 		mir_snprintf(msg, 250, Translate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
-	case 0x015:
-	case 0x016:
+	case 0x16:
+	case 0x17:
 		mir_snprintf(msg, 250, Translate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
