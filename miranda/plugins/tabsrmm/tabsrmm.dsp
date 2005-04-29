@@ -413,11 +413,19 @@ SOURCE=srmm.c
 # End Source File
 # Begin Source File
 
+SOURCE=templates.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\themes.c
 # End Source File
 # Begin Source File
 
 SOURCE=trayicon.c
+# End Source File
+# Begin Source File
+
+SOURCE=userprefs.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -495,6 +503,10 @@ SOURCE=.\resrc1.h
 
 SOURCE=sendqueue.h
 # End Source File
+# Begin Source File
+
+SOURCE=templates.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
@@ -537,15 +549,11 @@ SOURCE=res\Details8.ico
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\res\dragcopy.cur
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\Miranda-IM\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\dropuser.cur
+SOURCE=..\..\src\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
@@ -553,15 +561,19 @@ SOURCE=..\..\src\res\dropuser.cur
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Miranda-IM\res\dropuser.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\error.ico
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Miranda-IM\res\history.ico
+SOURCE=.\res\angeli-icons\History.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\angeli-icons\History.ico
+SOURCE=..\..\Miranda-IM\res\history.ico
 # End Source File
 # Begin Source File
 
@@ -685,11 +697,11 @@ SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\angeli-icons\Save.ico
+SOURCE=.\res\save.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\save.ico
+SOURCE=.\res\angeli-icons\Save.ico
 # End Source File
 # Begin Source File
 
@@ -733,11 +745,11 @@ SOURCE=langpacks\langpack_tabsrmm_german.txt
 # End Source File
 # Begin Source File
 
-SOURCE=MAKEFILE.W32
+SOURCE=.\Makefile.ansi
 # End Source File
 # Begin Source File
 
-SOURCE=MAKEFILE.W32.ANSI
+SOURCE=MAKEFILE.W32
 # End Source File
 # Begin Source File
 

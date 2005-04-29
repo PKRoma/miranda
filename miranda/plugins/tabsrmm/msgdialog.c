@@ -44,10 +44,6 @@ $Id$
 #include "msgdlgutils.h"
 #include "functions.h"
 
-#ifdef __GNUWIN32__
-#define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
-#endif
-
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2
 
@@ -274,7 +270,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 return 0;
             }
             if (wParam == 0x0f && GetKeyState(VK_CONTROL) & 0x8000) {
-                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), GetParent(hwnd), DlgProcContainerOptions, (LPARAM) mwdat->pContainer);
+                if(mwdat->pContainer->hWndOptions == 0)
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), GetParent(hwnd), DlgProcContainerOptions, (LPARAM) mwdat->pContainer);
                 return 0;
             }
             if (wParam == 0x0d && (GetKeyState(VK_CONTROL) & 0x8000) && myGlobals.m_MathModAvail) {
@@ -313,6 +310,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         return 0;
                 }
                 break;
+            }
+            break;
+        case WM_MOUSEWHEEL:
+            if(LOWORD(wParam) & MK_SHIFT) {
+                wParam &= ~MK_SHIFT;
+                SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
+                return 0;
             }
         case WM_KEYUP:
             break;
@@ -463,7 +467,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
-        case WM_MOUSEWHEEL:
         case WM_KILLFOCUS:
             break;
         case WM_SYSCHAR:
@@ -2930,9 +2933,12 @@ quote_from_last:
                     isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_LOGMENU);
 
                     if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
-                        WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                        if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0)
+                        if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
+                            WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+                        }
+                        else
+                            SendMessage(hwndDlg, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, 0);
                     }
                     break;
                 }
@@ -2957,12 +2963,8 @@ quote_from_last:
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (myGlobals.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
 
-                        CheckMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | ((myGlobals.m_SplitterMode == 0 && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)) ? MF_CHECKED : MF_UNCHECKED));
-                        CheckMenuItem(submenu, ID_MODE_PERCONTACT, MF_BYCOMMAND | ((myGlobals.m_SplitterMode == 1 && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (!(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE) ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_MODE_PRIVATE, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_CHECKED : MF_UNCHECKED));
-
-                        EnableMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_GRAYED : MF_ENABLED));
-                        EnableMenuItem(submenu, ID_MODE_PERCONTACT, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE ? MF_GRAYED : MF_ENABLED));
 
                         /*
                          * formatting menu..
@@ -2999,16 +3001,12 @@ quote_from_last:
                                 SaveSplitter(hwndDlg, dat);
                                 break;
                             case ID_MODE_GLOBAL:
-                                myGlobals.m_SplitterMode = 0;
-                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 0);
-                                break;
-                            case ID_MODE_PERCONTACT:
-                                myGlobals.m_SplitterMode = 1;
-                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 1);
+                                dat->dwEventIsShown &= ~(MWF_SHOW_SPLITTEROVERRIDE);
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
                                 break;
                             case ID_MODE_PRIVATE:
-                                dat->dwEventIsShown ^= MWF_SHOW_SPLITTEROVERRIDE;
-                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", (BYTE)(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE));
+                                dat->dwEventIsShown |= MWF_SHOW_SPLITTEROVERRIDE;
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 1);
                                 break;
                             case ID_GLOBAL_BBCODE:
                                 myGlobals.m_SendFormat = SENDFORMAT_BBCODE;
@@ -3056,20 +3054,8 @@ quote_from_last:
                             WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
                         }
                         iNewIEView = GetIEViewMode(hwndDlg, dat);
-                        if(iNewIEView != iOldIEView) {
-                            if(iNewIEView) {            // switch from rtf to IEview
-                                SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
-                                EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
-                                ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
-                                SetMessageLog(hwndDlg, dat);
-                            }
-                            else                      // switch from IEView to rtf
-                                SetMessageLog(hwndDlg, dat);
-                            SetDialogToType(hwndDlg);
-                            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                            UpdateContainerMenu(hwndDlg, dat);
-                        }
+                        if(iNewIEView != iOldIEView)
+                            SwitchMessageLog(hwndDlg, dat, iNewIEView);
                     }
                     break;
                 }

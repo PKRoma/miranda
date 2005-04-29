@@ -1696,7 +1696,7 @@ void ReloadGlobals()
      myGlobals.m_FixFutureTimestamps = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 0);
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
-     myGlobals.m_SplitterMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 0);
+     //myGlobals.m_SplitterMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 0);
      myGlobals.m_MathModAvail = 0;
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);

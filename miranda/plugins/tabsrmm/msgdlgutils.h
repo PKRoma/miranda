@@ -48,11 +48,13 @@ void DoTrimMessage(TCHAR *msg);
 void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat);
 void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat);
+void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat);
 void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat);
 void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat);
 void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat);
 void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd);
+void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

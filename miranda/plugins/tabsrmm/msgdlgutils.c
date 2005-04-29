@@ -237,7 +237,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SELECTCONTAINER), hwndDlg, SelectContainerDlgProc, (LPARAM) hwndDlg);
                 return 1;
             case ID_TABMENU_CONTAINEROPTIONS:
-                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) dat->pContainer);
+                if(dat->pContainer->hWndOptions == 0)
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) dat->pContainer);
                 return 1;
             case ID_TABMENU_CLOSECONTAINER:
                 SendMessage(dat->pContainer->hwnd, WM_CLOSE, 0, 0);
@@ -1338,6 +1339,22 @@ void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
     }
 }
 
+void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
+{
+    if(iMode) {            // switch from rtf to IEview
+        SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+        EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
+        SetMessageLog(hwndDlg, dat);
+    }
+    else                      // switch from IEView to rtf
+        SetMessageLog(hwndDlg, dat);
+    SetDialogToType(hwndDlg);
+    SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+    UpdateContainerMenu(hwndDlg, dat);
+}
+
 void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
 {
 //    int historyMode = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
@@ -1407,7 +1424,7 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
         return;             // do not save "invalid" splitter values
         
-    if(myGlobals.m_SplitterMode || dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)
+    if(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)
         DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
     else
         DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", dat->splitterY);
@@ -1415,7 +1432,7 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 
 void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    if(!myGlobals.m_SplitterMode && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
+    if(!(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
         dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150);
     else
         dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150));

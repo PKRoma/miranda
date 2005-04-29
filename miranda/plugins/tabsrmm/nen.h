@@ -129,6 +129,8 @@ typedef struct {
     BOOL bWindowCheck;
     int  iLimitPreview;
     BOOL bAnimated;
+    WORD wMaxRecent;
+    WORD wMaxFavorites;
 } NEN_OPTIONS;
 
 typedef struct EVENT_DATA {

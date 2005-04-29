@@ -802,7 +802,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case IDM_MOREOPTIONS:
                     if(IsIconic(pContainer->hwnd))
                         SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM)pContainer);
+                    if(pContainer->hWndOptions == 0)
+                        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM)pContainer);
 					break;
                 case SC_MAXIMIZE:
                     pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
@@ -1059,7 +1060,8 @@ panel_found:
                                     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SELECTCONTAINER), hwndDlg, SelectContainerDlgProc, (LPARAM) item.lParam);
                                     break;
                                 case ID_TABMENU_CONTAINEROPTIONS: {
-                                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) pContainer);
+                                    if(pContainer->hWndOptions == 0)
+                                        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) pContainer);
                                     break;
                                 case ID_TABMENU_CLOSECONTAINER:
                                     SendMessage(hwndDlg, WM_CLOSE, 0, 0);

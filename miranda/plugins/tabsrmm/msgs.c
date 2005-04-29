@@ -53,7 +53,7 @@ NEN_OPTIONS nen_options;
 static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
-HANDLE hMessageWindowList;
+HANDLE hMessageWindowList, hUserPrefsWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
@@ -64,6 +64,7 @@ HMODULE hDLL;
 PSLWA pSetLayeredWindowAttributes;
 
 extern struct ContainerWindowData *pFirstContainer;
+extern BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // send jobs...
 
@@ -177,6 +178,13 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
             
 static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
 {
+    HWND hWnd = WindowList_Find(hUserPrefsWindowList, (HANDLE)wParam);
+    if(hWnd) {
+        SetFocus(hWnd);
+        return 0;
+    }
+    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS), 0, DlgProcUserPrefs, (LPARAM)wParam);
+    return 0;
 }
 
 /*
@@ -955,6 +963,7 @@ int LoadSendRecvMessageModule(void)
     ZeroMemory((void *)&nen_options, sizeof(nen_options));
     
     hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
+    hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
     
     InitOptions();
     hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);

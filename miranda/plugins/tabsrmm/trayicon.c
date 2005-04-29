@@ -159,7 +159,8 @@ void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
         GetTrayWindowRect(&rectTo);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, &rectTo);
     }
-    RemoveTaskbarIcon(hWnd);
+    //RemoveTaskbarIcon(hWnd);
+    ShowWindow(hWnd, SW_HIDE);              // experimental - now works with docks like rklauncher..
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_VISIBLE);
 }
 
@@ -261,7 +262,7 @@ void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, cha
                 DeleteMenu(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND);
                 goto addnew;                                            // move to the end of the menu...
             }
-            if(GetMenuItemCount(myGlobals.g_hMenuRecent) > 15) {            // throw out oldest entry in the recent menu...
+            if(GetMenuItemCount(myGlobals.g_hMenuRecent) > nen_options.wMaxRecent) {            // throw out oldest entry in the recent menu...
                 UINT uid = GetMenuItemID(hMenu, 0);
                 if(uid) {
                     DeleteMenu(hMenu, (UINT_PTR)0, MF_BYPOSITION);
@@ -320,33 +321,38 @@ typedef struct _recentEntry {
 
 void LoadFavoritesAndRecent()
 {
-    RCENTRY recentEntries[30], rceTemp;
+    RCENTRY *recentEntries, rceTemp;
     DWORD dwRecent;
     int iIndex = 0, i, j;
     HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-    while(hContact != 0) {
-        if(DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-            AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
-        if((dwRecent = DBGetContactSettingDword(hContact, SRMSGMOD_T, "isRecent", 0)) != 0 && iIndex < 20) {
-            recentEntries[iIndex].dwTimestamp = dwRecent;
-            recentEntries[iIndex++].hContact = hContact;
+    recentEntries = (RCENTRY *)malloc((nen_options.wMaxRecent + 1 )* sizeof(RCENTRY));
+    if(recentEntries != NULL) {
+        while(hContact != 0) {
+            if(DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
+                AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
+            if((dwRecent = DBGetContactSettingDword(hContact, SRMSGMOD_T, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
+                recentEntries[iIndex].dwTimestamp = dwRecent;
+                recentEntries[iIndex++].hContact = hContact;
+            }
+            hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
         }
-        hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-    }
-    if(iIndex == 0)
-        return;
-    
-    for(i = 0; i < iIndex - 1; i++) {
-        for(j = 0; j < iIndex - 1; j++) {
-            if(recentEntries[j].dwTimestamp > recentEntries[j+1].dwTimestamp) {
-                rceTemp = recentEntries[j];
-                recentEntries[j] = recentEntries[j+1];
-                recentEntries[j+1] = rceTemp;
+        if(iIndex == 0)
+            return;
+
+        for(i = 0; i < iIndex - 1; i++) {
+            for(j = 0; j < iIndex - 1; j++) {
+                if(recentEntries[j].dwTimestamp > recentEntries[j+1].dwTimestamp) {
+                    rceTemp = recentEntries[j];
+                    recentEntries[j] = recentEntries[j+1];
+                    recentEntries[j+1] = rceTemp;
+                }
             }
         }
+        for(i = 0; i < iIndex; i++)
+            AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent);
+
+        free(recentEntries);
     }
-    for(i = 0; i < iIndex; i++)
-        AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent);
 }
 
 void Tray_Setfocus()

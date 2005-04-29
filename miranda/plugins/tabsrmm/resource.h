@@ -3,6 +3,7 @@
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
+#define IDD_USERPREFS                   2
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -213,6 +214,7 @@
 #define IDC_SHORTCAPTION                1180
 #define IDC_POPUPCONTAINER              1181
 #define IDC_CHECK2                      1182
+#define IDC_PRIVATESPLITTER             1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -237,6 +239,7 @@
 #define IDC_FLASHFOREVER                1205
 #define IDC_DONTFLASH                   1206
 #define IDC_RADIO1                      1207
+#define IDC_LOGISGLOBAL                 1207
 #define IDC_O_FLASHDEFAULT              1208
 #define IDC_FLASHDEFAULT                1209
 #define IDC_DEFAULTCONTAINERMODE        1210
@@ -297,8 +300,11 @@
 #define IDC_SINGLEROWTAB                1263
 #define IDC_STREAMTHREADING             1264
 #define IDC_COMBO1                      1265
+#define IDC_IEVIEWMODE                  1265
 #define IDC_MODIFIERS                   1266
+#define IDC_TEXTFORMATTING              1266
 #define IDC_AVATARMODE                  1267
+#define IDC_BIDI                        1267
 #define IDC_AVATARMODE2                 1268
 #define IDC_NOTIFYTYPE                  1269
 #define IDC_RICHEDIT21                  1270
@@ -322,6 +328,7 @@
 #define IDC_GROUPMODE                   1288
 #define IDC_CHECK1                      1289
 #define IDC_ANIMATED                    1289
+#define IDC_ISFAVORITE                  1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_AVADYNAMIC                  1292
 #define IDC_USESNAPPING                 1293
@@ -379,6 +386,7 @@
 #define IDC_EDITTEMPLATE                1362
 #define IDC_REVERT                      1363
 #define IDC_FORGET                      1364
+#define IDC_LOGISPRIVATE                1365
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -502,7 +510,6 @@
 #define ID_SPLITTER_AUTOSAVEONCLOSE     40146
 #define ID_SPLITTER_SAVENOW             40147
 #define ID_MODE_GLOBAL                  40148
-#define ID_MODE_PERCONTACT              40149
 #define ID_MODE_PRIVATE                 40150
 #define ID_UNREADMENU_TEST              40151
 #define ID_UNREADMENU_FOOBAR            40152
@@ -539,9 +546,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2
+#define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         40183
-#define _APS_NEXT_CONTROL_VALUE         1365
+#define _APS_NEXT_CONTROL_VALUE         1366
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

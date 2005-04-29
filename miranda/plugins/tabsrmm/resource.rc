@@ -194,42 +194,46 @@ BEGIN
                     WS_EX_STATICEDGE
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+IDD_USERPREFS DIALOGEX 0, 0, 278, 237
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    IDD_CHOOSESTATUSMODES, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
-    END
+    GROUPBOX        "Message log settings",IDC_STATIC,2,3,274,40
+    CONTROL         "Global",IDC_LOGISGLOBAL,"Button",BS_AUTORADIOBUTTON,9,
+                    14,59,11
+    CONTROL         "Private",IDC_LOGISPRIVATE,"Button",BS_AUTORADIOBUTTON,9,
+                    27,61,11
+    LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",
+                    IDC_STATIC,73,13,196,24
+    GROUPBOX        "Message log view mode",IDC_STATIC,2,44,274,33
+    COMBOBOX        IDC_IEVIEWMODE,6,58,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Global mode can be set on the message log options page. This option is only available when IEView is installed.",
+                    IDC_STATIC,130,50,141,24
+    GROUPBOX        "Send text formatting option",IDC_STATIC,2,78,274,32
+    COMBOBOX        IDC_TEXTFORMATTING,6,90,119,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",
+                    IDC_STATIC,130,83,141,24
+    GROUPBOX        "Text direction (BiDi)",IDC_STATIC,2,112,274,32
+    COMBOBOX        IDC_BIDI,6,123,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Override means that the contact will use the opposite of the default text direction set on the message log page.",
+                    IDC_STATIC,130,116,141,24
+    GROUPBOX        "Other options",IDC_STATIC,2,147,274,36
+    CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,157,149,11
+    CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,169,256,11
+    GROUPBOX        "Override message window templates",IDC_STATIC,2,185,274,
+                    31
+    PUSHBUTTON      "Standard Templates",IDC_MODIFY,11,198,84,12
+    PUSHBUTTON      "RTL Templates",IDC_RTLMODIFY,181,198,84,12
+    PUSHBUTTON      "Cancel",IDCANCEL,225,219,50,14
+    DEFPUSHBUTTON   "OK",IDOK,168,219,50,14
 END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
@@ -330,12 +334,12 @@ BEGIN
                     IDC_FLASHCLIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
                     33,263,9
     LTEXT           "Notifications:",IDC_STATIC,9,47,92,9
-    COMBOBOX        IDC_NOTIFYTYPE,111,44,66,46,CBS_DROPDOWNLIST | CBS_SORT | 
+    COMBOBOX        IDC_NOTIFYTYPE,111,44,66,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Avatar options",IDC_STATIC,0,62,303,52
     LTEXT           "Display",IDC_STATIC,9,73,56,9
     COMBOBOX        IDC_AVATARDISPLAY,64,70,90,46,CBS_DROPDOWNLIST | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+                    WS_VSCROLL | WS_TABSTOP
     LTEXT           "Limit to",IDC_STATIC,159,72,29,10
     EDITTEXT        IDC_MAXAVATARHEIGHT,197,70,35,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
@@ -347,7 +351,7 @@ BEGIN
                     IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,8,86,276,10
     LTEXT           "Show avatars",IDC_STATIC,10,101,60,10
-    COMBOBOX        IDC_AVATARMODE,65,98,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
+    COMBOBOX        IDC_AVATARMODE,65,98,164,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Behaviour",IDC_STATIC,0,115,303,94
     LTEXT           "Automatically close tabs after",IDC_STATIC,10,124,119,
@@ -365,7 +369,7 @@ BEGIN
     LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,149,133,
                     8
     COMBOBOX        IDC_TOOLBARHIDEMODE,147,147,148,46,CBS_DROPDOWNLIST | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+                    WS_VSCROLL | WS_TABSTOP
     CONTROL         "Also, allow a hidden send button",
                     IDC_ALLOWSENDBUTTONHIDE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,8,160,132,9
@@ -672,6 +676,32 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,207,133,8
 END
 
+IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 214
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LISTBOX         IDC_TEMPLATELIST,8,15,97,82,LBS_OWNERDRAWVARIABLE | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Templates",IDC_STATIC,3,4,108,98
+    GROUPBOX        "Preview",IDC_STATIC,117,4,249,98
+    CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
+                    122,13,236,84
+    EDITTEXT        IDC_EDITTEMPLATE,11,116,344,14,ES_AUTOHSCROLL
+    GROUPBOX        "Edit template",IDC_STATIC,3,106,363,105
+    PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,267,135,90,15
+    PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,267,154,90,15
+    PUSHBUTTON      "Close",IDCANCEL,194,192,66,15
+    PUSHBUTTON      "Revert to Default",IDC_REVERT,267,192,90,15
+    PUSHBUTTON      "Forget",IDC_FORGET,267,173,90,15
+    LTEXT           "Variables (case sensitive!)\n\n%N:\tNickname\n%M:\tMessage\n%S:\tMsg Symbol\n%I:\tMsg Icon\n%D:\tlong Date\n%h:\thour (24)\n%m\tMinute",
+                    IDC_STATIC,11,135,94,73
+    LTEXT           "%s:\tSecond\n%o:\tMonth (number)\n%O:\tMonth (name)\n%d:\tDay of Month\n%w:\tDay of week\n%a:\thour (12)\n%p:\tAM/PM symbol",
+                    IDC_STATIC,102,135,87,73
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -681,6 +711,20 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_CHOOSESTATUSMODES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+
+    IDD_USERPREFS, DIALOG
+    BEGIN
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 233
+    END
+
     IDD_CONTAINEROPTIONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -689,34 +733,6 @@ BEGIN
         BOTTOMMARGIN, 281
     END
 END
-#endif    // APSTUDIO_INVOKED
-
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include <windows.h>\r\n"
-    "#include ""../../include/statusmodes.h""\r\n"
-    "\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\n"
-    "\0"
-END
-
 #endif    // APSTUDIO_INVOKED
 
 
@@ -868,7 +884,6 @@ BEGIN
         POPUP "Splitter"
         BEGIN
             MENUITEM "Global",                      ID_MODE_GLOBAL
-            MENUITEM "Per Contact",                 ID_MODE_PERCONTACT
             MENUITEM "Private",                     ID_MODE_PRIVATE
             MENUITEM SEPARATOR
             MENUITEM "Autosave on Close",           ID_SPLITTER_AUTOSAVEONCLOSE
@@ -926,56 +941,6 @@ BEGIN
         MENUITEM "Be ""Super Quiet""",          ID_TRAYCONTEXT_BE
     END
 END
-
-#endif    // Englisch (USA) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Deutsch (Österreich) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
-#ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 214
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    LISTBOX         IDC_TEMPLATELIST,8,15,97,82,LBS_OWNERDRAWVARIABLE | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Templates",IDC_STATIC,3,4,108,98
-    GROUPBOX        "Preview",IDC_STATIC,117,4,249,98
-    CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
-                    122,13,236,84
-    EDITTEXT        IDC_EDITTEMPLATE,11,116,344,14,ES_AUTOHSCROLL
-    GROUPBOX        "Edit template",IDC_STATIC,3,106,363,105
-    PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,267,135,90,15
-    PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,267,154,90,15
-    PUSHBUTTON      "Close",IDCANCEL,194,192,66,15
-    PUSHBUTTON      "Revert to Default",IDC_REVERT,267,192,90,15
-    PUSHBUTTON      "Forget",IDC_FORGET,267,173,90,15
-    LTEXT           "Variables (case sensitive!)\n\n%N:\tNickname\n%M:\tMessage\n%S:\tMsg Symbol\n%I:\tMsg Icon\n%D:\tlong Date\n%h:\thour (24)\n%m\tMinute",
-                    IDC_STATIC,11,135,94,73
-    LTEXT           "%s:\tSecond\n%o:\tMonth (number)\n%O:\tMonth (name)\n%d:\tDay of Month\n%w:\tDay of week\n%a:\thour (12)\n%p:\tAM/PM symbol",
-                    IDC_STATIC,102,135,87,73
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
 
 IDR_MENUBAR MENU 
 BEGIN
@@ -1137,7 +1102,47 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_PULLDOWNARROW       ICON                    "res/pulldown.ico"
-#endif    // Deutsch (Österreich) resources
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Englisch (USA) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#include ""../../include/statusmodes.h""\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

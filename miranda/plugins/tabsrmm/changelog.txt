@@ -106,6 +106,12 @@ Version 0.9.9.95 - 2005/04/15
         + added option to disable animation when minimizing containers to the system tray
         
         + added tooltip for the tray icon so that XP remembers the autohide status of this icon.
+        
+        + added better mouswheel handling. Holding SHIFT while using the mousewheel in the message 
+          input area will scroll the message log.
+          
+        + various popup fixes - they now show auth and added requests properly (including nickname
+          and protocol from which they came).
           
 Version 0.9.9.94 - 2005/04/11
 

@@ -151,14 +151,12 @@ struct ContainerWindowData {
     HMENU hMenu;
     HWND hwndStatus;
     int statusBarHeight;
-#if defined(_STREAMTHREADING)
-    int volatile pendingStream;
-#endif
     DWORD dwLastActivity;
     int hIcon;                // current window icon stick indicator
     DWORD dwFlashingStarted;
     int bInTray;              // 1 = in tray normal, 2 = in tray (was maximized)
     RECT restoreRect;
+    HWND hWndOptions;
 };
 
 #define STICK_ICON_MSG 10
@@ -316,7 +314,7 @@ typedef struct _globals {
     int m_AvatarDisplayMode;
     int m_RTLDefault;
     int m_SplitterSaveOnClose;
-    int m_SplitterMode;
+    //int m_SplitterMode;
     int m_MathModAvail;
     TCHAR m_MathModStartDelimiter[40];
     int m_UnreadInTray;

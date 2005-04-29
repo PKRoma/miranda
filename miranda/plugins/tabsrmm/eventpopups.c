@@ -125,6 +125,8 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
     options->iLimitPreview = (int)DBGetContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, 0);
     options->bAnimated = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, 1);
+    options->wMaxFavorites = 15;
+    options->wMaxRecent = 15;
     return 0;
 }
 
