@@ -757,7 +757,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					rc.right=clRect.right;
 					rc.top=y+((dat->rowHeight-fontHeight)>>1);
 					rc.bottom=rc.top+textSize.cy;
-					DrawText(hdcMem, group->contact[group->scanIndex].szText,-1,&rc,DT_CENTER | DT_NOPREFIX);
+					DrawText(hdcMem, group->contact[group->scanIndex].szText,-1,&rc,DT_CENTER | DT_NOPREFIX | DT_SINGLELINE);
 				} else 
 					TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),group->contact[group->scanIndex].szText,lstrlen(group->contact[group->scanIndex].szText));
 				
@@ -776,7 +776,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				rc.top=y+((dat->rowHeight-fontHeight)>>1);
 				rc.right=(clRect.right - clRect.left);
 				rc.bottom=rc.top;
-				DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+				DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE);
 			}			
 			if(selected) {
 				if(group->contact[group->scanIndex].type!=CLCIT_DIVIDER) {
@@ -788,7 +788,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					rc.top=y+((dat->rowHeight-fontHeight)>>1);
 					rc.right=(clRect.right - clRect.left);
 					rc.bottom=rc.top;
-					if ( qlen ) DrawText(hdcMem, szText, qlen, &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+					if ( qlen ) DrawText(hdcMem, szText, qlen, &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE);
 				}
 			}
 
