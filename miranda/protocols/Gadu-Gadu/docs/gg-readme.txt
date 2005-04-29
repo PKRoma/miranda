@@ -60,6 +60,19 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.2.9: 2005-04-29
+ - Fix: Status descriptions were not set properly when Miranda wasn't asking
+   for new status. This change may cause incompatibility with status routines
+   different than built-in. Note for misc plugins (mBot, etc.):
+     For avoiding sending gg_setstatus(status, description) twice on
+     miranda_setstatus and miranda_setawaymsg, GG sets status only on
+     miranda_setawaymsg, also this order must be fulfilled to make GG working
+     right with Miranda. (this is how internal module sraway works actually)
+ - When reconnect flag is set and manual server host cycling is on the end of
+   the list, reconnect will go back to the begin
+   (no longer taking address from web at the end)
+ - Fix: Stupid GetModuleFileName returning all lowercase characters from
+   DLL filename > WinNT, now we call GetLongPathName to retrieve valid case
 0.0.2.8: 2005-04-14
  - Server connection (multi)thread controller (Experimental!)
    Miranda won't hang anymore when GG is trying to connect & status change is

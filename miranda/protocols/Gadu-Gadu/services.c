@@ -218,24 +218,13 @@ int gg_setstatus(WPARAM wParam, LPARAM lParam)
         flagSetOnlyStatus = FALSE;
         gg_refreshstatus(ggDesiredStatus);
     }
-    // Miranda won't ask for new status just change it now
-    else if(bScreenSaverRunning ||
-        DBGetContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(wParam, "NoDlg"), 0) ||
-        DBGetContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(wParam, "Ignore"), 0))
-    {
-        flagSetOnlyStatus = FALSE;
-        gg_refreshstatus(ggDesiredStatus);
-    }
-    // Miranda will ask for a status
+    // Miranda will always ask for a new status message
     else
     {
 #ifdef DEBUGMODE
-    gg_netlog("gg_setstatus(): Postponed to gg_setawaymsg().");
+        gg_netlog("gg_setstatus(): Postponed to gg_setawaymsg().");
 #endif
         flagSetOnlyStatus = (ggDesiredStatus == ggStatus);
-        // Refresh status even it will be refreshed again when Miranda will ask
-        // if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SAFESTATUS, GG_KEYDEF_SAFESTATUS))
-        //    gg_refreshstatus(ggDesiredStatus);
     }
     return 0;
 }
@@ -539,7 +528,7 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
     int status = gg_normalizestatus((int) wParam);
 
 #ifdef DEBUGMODE
-    gg_netlog("gg_setawaymsg(): Requesting away message set.");
+    gg_netlog("gg_setawaymsg(): Requesting away message set to \"%s\".", (char *) lParam);
 #endif
     pthread_mutex_lock(&modeMsgsMutex);
 
@@ -567,7 +556,7 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
         if(status == ggDesiredStatus && (ggDesiredStatus == ggStatus && flagSetOnlyStatus))
         {
 #ifdef DEBUGMODE
-        gg_netlog("gg_setawaymsg(): Message hasn't been changed, return.");
+            gg_netlog("gg_setawaymsg(): Message hasn't been changed, return.");
 #endif
             pthread_mutex_unlock(&modeMsgsMutex);
             return 0;
