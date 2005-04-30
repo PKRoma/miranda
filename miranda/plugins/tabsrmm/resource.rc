@@ -224,7 +224,7 @@ BEGIN
                     IDC_STATIC,130,117,141,24
     GROUPBOX        "Other options",IDC_STATIC,2,184,274,36
     CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,194,149,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,194,134,11
     CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,206,256,11
     GROUPBOX        "Override message window templates",IDC_STATIC,2,222,274,
@@ -239,7 +239,12 @@ BEGIN
     LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",
                     IDC_STATIC,130,152,141,24
     CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,127,193,138,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,143,193,126,12
+    CTEXT           "Enabled",IDC_STATIC,118,237,40,10
+    CONTROL         "",IDC_TEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,102,236,11,9
+    CONTROL         "",IDC_RTLTEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,165,236,11,9
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288

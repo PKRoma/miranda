@@ -3311,7 +3311,7 @@ quote_from_last:
                                         SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXGETSEL, 0, (LPARAM)&cr);
                                         if(cr.cpMax != cr.cpMin) {
                                             cr.cpMax = cr.cpMin = -1;
-                                            if(GetKeyState(VK_CONTROL) & 0x8000) {
+                                            if((GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0)){
                                                 SETTEXTEX stx = {ST_SELECTION,CP_UTF8};
                                                 char *streamOut = NULL;
                                                 if(GetKeyState(VK_MENU) & 0x8000)
@@ -3324,7 +3324,7 @@ quote_from_last:
                                                 }
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
                                             }
-                                            else if(GetKeyState(VK_SHIFT) & 0x8000 && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0)) {
+                                            else if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0)) {
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_COPY, 0, 0);
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
                                             }

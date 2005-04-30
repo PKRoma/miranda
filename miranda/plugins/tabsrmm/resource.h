@@ -353,7 +353,6 @@
 #define IDC_CHECK7                      1317
 #define IDC_DELETETEMP                  1318
 #define IDC_FORMATTING                  1319
-#define IDC_DELETETEMP2                 1319
 #define IDC_AUTOSELECTCOPY              1319
 #define IDC_HIDETOOLBAR                 1320
 #define IDC_CHECK8                      1321
@@ -394,6 +393,9 @@
 #define IDC_COLOR4                      1369
 #define IDC_COLOR5                      1370
 #define IDC_FORCEANSI                   1371
+#define IDC_TEMPLOVERRIDE               1372
+#define IDC_TEMPLOVERRIDE2              1373
+#define IDC_RTLTEMPLOVERRIDE            1373
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -555,7 +557,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         40183
-#define _APS_NEXT_CONTROL_VALUE         1372
+#define _APS_NEXT_CONTROL_VALUE         1373
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

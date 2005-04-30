@@ -78,10 +78,9 @@ Version 0.9.9.95 - 2005/04/15
           stored in the DB, so they will survive a miranda restart.
         
         + added "auto select and copy" for the message history log. If you release the left mouse 
-          button when text is selected in the log and while holding SHIFT it will be copied to 
-          the clipboard instantly.
-          * If no modifier is pressed, selection works as always (you have to use Ctrl-C or the 
-            context menu to copy it.
+          button when text is selected in the log it will be copied to the clipboard instantly.
+          You need to enable this on the "General" option page ("Auto-copy message log selection")
+
           * Hold CTRL to instantly insert the selected text in the message input area (plain text)
             at the current cursor position (may replace any selection in the input area).
           * Hold CTRL-ALT - as above, but inserts formatted text

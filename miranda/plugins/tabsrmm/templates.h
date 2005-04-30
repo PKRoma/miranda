@@ -36,6 +36,8 @@ $Id$
 
 #define TEMPLATE_LENGTH 150
 
+#define CUSTOM_COLORS 5
+
 #define TEMPLATES_MODULE "tabSRMM_Templates"
 #define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
 

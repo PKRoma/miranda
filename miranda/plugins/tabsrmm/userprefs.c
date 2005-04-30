@@ -110,7 +110,9 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckDlgButton(hwndDlg, IDC_LOGISGLOBAL, bOverride == 0);
             CheckDlgButton(hwndDlg, IDC_LOGISPRIVATE, bOverride != 0);
             CheckDlgButton(hwndDlg, IDC_PRIVATESPLITTER, bSplit);
-
+            CheckDlgButton(hwndDlg, IDC_TEMPLOVERRIDE, DBGetContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", 0));
+            CheckDlgButton(hwndDlg, IDC_RTLTEMPLOVERRIDE, DBGetContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", 0));
+            
 #if defined(_UNICODE)
             hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
             sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
@@ -199,7 +201,9 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         if(hWnd && dat)
                             dat->sendMode = IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? dat->sendMode | SMODE_FORCEANSI : dat->sendMode & ~SMODE_FORCEANSI;
                     }
-#endif                    
+#endif              
+                    DBWriteContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE));
+                    DBWriteContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE));
                     DestroyWindow(hwndDlg);
                     break;
                 }
