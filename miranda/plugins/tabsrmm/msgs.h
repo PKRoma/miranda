@@ -455,6 +455,11 @@ struct MsgLogIcon {
 TCHAR *Utf8Decode(const char *str);
 char *Utf8Encode(const WCHAR *str);
 
+struct CPTABLE {
+    UINT cpId;
+    char *cpName;
+};
+
 #if defined(_UNICODE)
 static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* fmt, ...) {
 	va_list va;

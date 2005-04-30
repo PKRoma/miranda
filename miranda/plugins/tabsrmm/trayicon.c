@@ -159,8 +159,8 @@ void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
         GetTrayWindowRect(&rectTo);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, &rectTo);
     }
-    //RemoveTaskbarIcon(hWnd);
-    ShowWindow(hWnd, SW_HIDE);              // experimental - now works with docks like rklauncher..
+    RemoveTaskbarIcon(hWnd);
+    //ShowWindow(hWnd, SW_HIDE);              // experimental - now works with docks like rklauncher..
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_VISIBLE);
 }
 

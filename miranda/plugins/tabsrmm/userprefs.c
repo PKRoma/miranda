@@ -43,7 +43,24 @@ Sets things like:
 
 extern MYGLOBALS myGlobals;
 extern HANDLE hMessageWindowList, hUserPrefsWindowList;
-    
+extern struct CPTABLE cpTable[];
+
+static HWND hCpCombo;
+
+static BOOL CALLBACK FillCpCombo(LPCSTR str)
+{
+	int i;
+	UINT cp;
+
+    cp = atoi(str);
+	for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
+	if (cpTable[i].cpName != NULL) {
+        LRESULT iIndex = SendMessageA(hCpCombo, CB_ADDSTRING, -1, (LPARAM) Translate(cpTable[i].cpName));
+        SendMessage(hCpCombo, CB_SETITEMDATA, (WPARAM)iIndex, cpTable[i].cpId);
+    }
+	return TRUE;
+}
+
 BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -52,6 +69,8 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_INITDIALOG:
         {
             char szBuffer[80];
+            DWORD sCodePage;
+            int i;
             char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)lParam, 0);
             BYTE bOverride = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "mwoverride", 0);
             BYTE bIEView = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "ieview", 0);
@@ -91,6 +110,25 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckDlgButton(hwndDlg, IDC_LOGISGLOBAL, bOverride == 0);
             CheckDlgButton(hwndDlg, IDC_LOGISPRIVATE, bOverride != 0);
             CheckDlgButton(hwndDlg, IDC_PRIVATESPLITTER, bSplit);
+
+#if defined(_UNICODE)
+            hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
+            sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+            EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
+            SendDlgItemMessageA(hwndDlg, IDC_CODEPAGES, CB_INSERTSTRING, 0, (LPARAM)Translate("Use default codepage"));
+            if(sCodePage == 0)
+                SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)0, 0);
+            else {
+                for(i = 0; i < SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCOUNT, 0, 0); i++) {
+                    if(SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)i, 0) == sCodePage)
+                        SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)i, 0);
+                }
+            }
+            CheckDlgButton(hwndDlg, IDC_FORCEANSI, DBGetContactSettingByte(hContact, SRMSGMOD_T, "forceansi", 0) ? 1 : 0);
+#else
+            EnableWindow(GetDlgItem(hwndDlg, IDC_CODEPAGES), FALSE);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
+#endif            
             
             ShowWindow(hwndDlg, SW_SHOW);
             return TRUE;
@@ -104,12 +142,13 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 {
                     struct MessageWindowData *dat = 0;
                     int iIndex = CB_ERR;
+                    LRESULT newCodePage;
                     HWND hWnd = WindowList_Find(hMessageWindowList, hContact);
-
+                    DWORD sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
                     if(hWnd)
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
 
-                    if((iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
+                    if(ServiceExists(MS_IEVIEW_EVENT) && (iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
                         DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", iIndex == 2 ? -1 : iIndex);
                         if(hWnd && dat) {
                             SwitchMessageLog(hWnd, dat, GetIEViewMode(hWnd, dat));
@@ -137,6 +176,8 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                     if((iIndex = SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_GETCURSEL, 0, 0)) != CB_ERR) {
                         DBWriteContactSettingDword(hContact, SRMSGMOD_T, "sendformat", iIndex == 3 ? -1 : iIndex);
+                        if(iIndex == 0)
+                            DBDeleteContactSetting(hContact, SRMSGMOD_T, "sendformat");
                         if(hWnd && dat)
                             SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
                     }
@@ -146,6 +187,19 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         DeleteMenu(myGlobals.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
                     DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0);
                     DBWriteContactSettingByte(hContact, SRMSGMOD_T, "splitoverride", IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0);
+#if defined(_UNICODE)
+                    iIndex = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCURSEL, 0, 0);
+                    if((newCodePage = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)iIndex, 0)) != sCodePage) {
+                        DBWriteContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", (DWORD)newCodePage);
+                        if(hWnd && dat)
+                            dat->codePage = newCodePage;
+                    }
+                    if((IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0) != DBGetContactSettingByte(hContact, SRMSGMOD_T, "forceansi", 0)) {
+                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "forceansi", IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0);
+                        if(hWnd && dat)
+                            dat->sendMode = IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? dat->sendMode | SMODE_FORCEANSI : dat->sendMode & ~SMODE_FORCEANSI;
+                    }
+#endif                    
                     DestroyWindow(hwndDlg);
                     break;
                 }

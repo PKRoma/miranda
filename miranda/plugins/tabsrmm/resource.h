@@ -306,6 +306,7 @@
 #define IDC_AVATARMODE                  1267
 #define IDC_BIDI                        1267
 #define IDC_AVATARMODE2                 1268
+#define IDC_CODEPAGES                   1268
 #define IDC_NOTIFYTYPE                  1269
 #define IDC_RICHEDIT21                  1270
 #define IDC_TOOLBARHIDEMODE             1271
@@ -318,8 +319,6 @@
 #define IDC_AVATARSPIN                  1278
 #define IDC_TABLIMITSPIN                1279
 #define IDC_SHOWFORMATTING              1280
-#define IDC_ADDTEXT                     1281
-#define IDC_ADDICON                     1282
 #define IDC_AGGRESSIVEUPDATE            1283
 #define IDC_THINSEPARATORS              1284
 #define IDC_RINDENTSPIN                 1285
@@ -354,6 +353,8 @@
 #define IDC_CHECK7                      1317
 #define IDC_DELETETEMP                  1318
 #define IDC_FORMATTING                  1319
+#define IDC_DELETETEMP2                 1319
+#define IDC_AUTOSELECTCOPY              1319
 #define IDC_HIDETOOLBAR                 1320
 #define IDC_CHECK8                      1321
 #define IDC_FLASHCLIST                  1322
@@ -387,6 +388,12 @@
 #define IDC_REVERT                      1363
 #define IDC_FORGET                      1364
 #define IDC_LOGISPRIVATE                1365
+#define IDC_COLOR1                      1366
+#define IDC_COLOR2                      1367
+#define IDC_COLOR3                      1368
+#define IDC_COLOR4                      1369
+#define IDC_COLOR5                      1370
+#define IDC_FORCEANSI                   1371
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -548,7 +555,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         40183
-#define _APS_NEXT_CONTROL_VALUE         1366
+#define _APS_NEXT_CONTROL_VALUE         1372
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

@@ -113,6 +113,12 @@ Version 0.9.9.95 - 2005/04/15
         + various popup fixes - they now show auth and added requests properly (including nickname
           and protocol from which they came).
           
+        * the "add contact bar" is gone, because it was wasting way too much screenspace and made
+          the dialog layouting more complex than necessary. Instead, 2 buttons (Add it, Don't add)
+          are now visible for any contact which has not been permanently added to your contact list.
+          These buttons appear just right of the message input area (and left of the avatar, if
+          present) and are independent of the toolbar setting.
+          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

@@ -111,7 +111,6 @@ typedef struct {
 #define MWF_SHOW_MARKFOLLOWUPTS 32
 #define MWF_SHOW_FLASHCLIST 64
 #define MWF_SHOW_SPLITTEROVERRIDE 128
-#define MWF_SHOW_SHADEHEADERS 256
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -320,6 +319,7 @@ typedef struct _globals {
     int m_UnreadInTray;
     int m_TrayFlashes;
     int m_TrayFlashState;
+    BOOL m_SuperQuiet;
     HANDLE m_TipOwner;
     HANDLE m_UserMenuItem;
 } MYGLOBALS;

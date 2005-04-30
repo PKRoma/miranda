@@ -187,11 +187,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0), 0);
             SendDlgItemMessage(hwndDlg, IDC_AVATARDISPLAY, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatardisplaymode", 0), 0);
             
-#if defined(_STREAMTHREADING)
-            CheckDlgButton(hwndDlg, IDC_STREAMTHREADING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "streamthreading", 0));
-#else
-            EnableWindow(GetDlgItem(hwndDlg, IDC_STREAMTHREADING), FALSE);
-#endif            
             msgTimeout = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
             SetDlgItemInt(hwndDlg, IDC_SECONDS, msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN ? msgTimeout / 1000 : SRMSGDEFSET_MSGTIMEOUT / 1000, FALSE);
 
@@ -207,7 +202,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
             CheckDlgButton(hwndDlg, IDC_ALWAYSFULLWIDTHTOOLBAR, DBGetContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", 0));
             CheckDlgButton(hwndDlg, IDC_ALLOWSENDBUTTONHIDE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0));
-            
+            CheckDlgButton(hwndDlg, IDC_AUTOSELECTCOPY, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0));
             EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCLOSELAST), GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE) > 0);
             return TRUE;
         }
@@ -287,6 +282,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autocloselast", IsDlgButtonChecked(hwndDlg, IDC_AUTOCLOSELAST));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autocopy", IsDlgButtonChecked(hwndDlg, IDC_AUTOSELECTCOPY));
                             
                             msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000 : SRMSGDEFSET_MSGTIMEOUT;
                             DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
@@ -1108,7 +1104,6 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                 SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 CheckDlgButton(hwndDlg, IDC_USEINDIVIDUALBKG, dwFlags & MWF_LOG_INDIVIDUALBKG);
                 CheckDlgButton(hwndDlg, IDC_WANTVERTICALGRID, DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0));
-                CheckDlgButton(hwndDlg, IDC_HEADERSHADING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "h_shading", 0));
                 
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), dwFlags & MWF_LOG_INDIVIDUALBKG);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), dwFlags & MWF_LOG_INDIVIDUALBKG);
@@ -1413,7 +1408,6 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", IsDlgButtonChecked(hwndDlg, IDC_WANTVERTICALGRID));
                                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
-                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "h_shading", IsDlgButtonChecked(hwndDlg, IDC_HEADERSHADING));
                                 
                                 ReloadGlobals();
                                 UncacheMsgLogIcons();

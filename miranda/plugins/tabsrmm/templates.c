@@ -175,6 +175,12 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), FALSE);
 
+            SendDlgItemMessage(hwndDlg, IDC_COLOR1, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc1", SRMSGDEFSET_BKGCOLOUR));
+            SendDlgItemMessage(hwndDlg, IDC_COLOR2, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc2", SRMSGDEFSET_BKGCOLOUR));
+            SendDlgItemMessage(hwndDlg, IDC_COLOR3, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc3", SRMSGDEFSET_BKGCOLOUR));
+            SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc4", SRMSGDEFSET_BKGCOLOUR));
+            SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", SRMSGDEFSET_BKGCOLOUR));
+            
             return TRUE;
         }
         case WM_COMMAND:
@@ -316,7 +322,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dbei.pBlob = (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
             dbei.cbBlob = lstrlenA(dbei.pBlob) + 1;
             dbei.flags = 0;
-//            _DebugPopup(0, "%s - %s", dat->szProto, dat->szNickname);
             SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
             StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
             
@@ -327,6 +332,13 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 free(dat->pContainer);
             if(dat)
                 free(dat);
+
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc1", SendDlgItemMessage(hwndDlg, IDC_COLOR1, CPM_GETCOLOUR, 0, 0));
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc2", SendDlgItemMessage(hwndDlg, IDC_COLOR2, CPM_GETCOLOUR, 0, 0));
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc3", SendDlgItemMessage(hwndDlg, IDC_COLOR3, CPM_GETCOLOUR, 0, 0));
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc4", SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_GETCOLOUR, 0, 0));
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc5", SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_GETCOLOUR, 0, 0));
+
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), TRUE);
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), TRUE);

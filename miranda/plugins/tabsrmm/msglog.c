@@ -41,7 +41,27 @@ $Id$
 //mathMod end
 #endif
 
-int _log(const char *fmt, ...);
+struct CPTABLE cpTable[] = {
+    {	874,	"Thai" },
+    {	932,	"Japanese" },
+    {	936,	"Simplified Chinese" },
+    {	949,	"Korean" },
+    {	950,	"Traditional Chinese" },
+    {	1250,	"Central European" },
+    {	1251,	"Cyrillic" },
+    {	1252,	"Latin I" },
+    {	1253,	"Greek" },
+    {	1254,	"Turkish" },
+    {	1255,	"Hebrew" },
+    {	1256,	"Arabic" },
+    {	1257,	"Baltic" },
+    {	1258,	"Vietnamese" },
+    {	1361,	"Korean (Johab)" },
+    {   -1,     NULL}
+};
+
+
+    int _log(const char *fmt, ...);
 //static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak);
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code);
 static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
@@ -417,11 +437,19 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", RGB(224,224,224));
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", RGB(224,224,224));
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour) -10, GetGValue(colour) -10, GetBValue(colour) -10);
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(224,224,224));
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour) -10, GetGValue(colour) -10, GetBValue(colour) -10);
+    // custom template colors...
 
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc1", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc2", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc3", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc4", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", RGB(224,224,224));
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    
     // RTL-Support
 	if (dat->dwFlags & MWF_LOG_RTL) 
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\rtlpar");
@@ -550,7 +578,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     }
     /* OnO: highlight start */
     if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + ((dat->dwFlags & MWF_LOG_NEWLINE && g_groupBreak && dbei.eventType != EVENTTYPE_STATUSCHANGE && dat->dwEventIsShown & MWF_SHOW_SHADEHEADERS) ? 5 : 1) + ((isSent) ? 1 : 0));
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
     else if(dat->dwFlags & MWF_LOG_GRID)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 3);
 
@@ -840,16 +868,34 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, isUnderline ? "\\ul0 " : "\\ul ");
                     isUnderline = !isUnderline;
                     break;
-                case '-':
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep0, rtfFonts[MSGDLGFONTCOUNT]);
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 4);
+                case '-':       // grid line
+                {
+                    TCHAR color = szTemplate[i + 2];
+                    if(color >= '0' && color <= '4') {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par%s\\sl-1", rtfFonts[MSGDLGFONTCOUNT]);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 5 + (color - '0'));
+                        i++;
+                    }
+                    else {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par%s\\sl-1", rtfFonts[MSGDLGFONTCOUNT]);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 4);
+                    }
                     break;
+                }
                 case '~':       // font break (switch to default font...)
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
                     break;
                 case 'H':           // highlight
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
+                {
+                    TCHAR color = szTemplate[i + 2];
+                    if(color >= '0' && color <= '4') {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 5 + (color - '0'));
+                        i++;
+                    }
+                    else
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dat->dwFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + 1 + (isSent ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
                     break;
+                }
                 case '|':       // tab
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tab");
                     break;
@@ -896,7 +942,6 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
             case STREAMSTAGE_EVENTS:
                 if (dat->eventsToInsert) {
                     do {
-//                        dat->buffer = CreateRTFFromDbEvent(dat->dlgDat, dat->hContact, dat->hDbEvent, !dat->isEmpty, dat);
                         dat->buffer = Template_CreateRTFFromDbEvent(dat->dlgDat, dat->hContact, dat->hDbEvent, !dat->isEmpty, dat);
                         if (dat->buffer)
                             dat->hDbEventLast = dat->hDbEvent;
@@ -1162,23 +1207,6 @@ static BOOL CALLBACK LangAddCallback(LPCSTR str)
 {
 	int i, count;
 	UINT cp;
-	static struct { UINT cpId; char *cpName; } cpTable[] = {
-		{	874,	"Thai" },
-		{	932,	"Japanese" },
-		{	936,	"Simplified Chinese" },
-		{	949,	"Korean" },
-		{	950,	"Traditional Chinese" },
-		{	1250,	"Central European" },
-		{	1251,	"Cyrillic" },
-		{	1252,	"Latin I" },
-		{	1253,	"Greek" },
-		{	1254,	"Turkish" },
-		{	1255,	"Hebrew" },
-		{	1256,	"Arabic" },
-		{	1257,	"Baltic" },
-		{	1258,	"Vietnamese" },
-		{	1361,	"Korean (Johab)" }
-	};
 
     cp = atoi(str);
 	count = sizeof(cpTable)/sizeof(cpTable[0]);

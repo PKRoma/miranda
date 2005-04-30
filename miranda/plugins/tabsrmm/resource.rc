@@ -194,7 +194,7 @@ BEGIN
                     WS_EX_STATICEDGE
 END
 
-IDD_USERPREFS DIALOGEX 0, 0, 278, 237
+IDD_USERPREFS DIALOGEX 0, 0, 278, 274
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
@@ -220,19 +220,26 @@ BEGIN
     GROUPBOX        "Text direction (BiDi)",IDC_STATIC,2,112,274,32
     COMBOBOX        IDC_BIDI,6,123,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "Override means that the contact will use the opposite of the default text direction set on the message log page.",
-                    IDC_STATIC,130,116,141,24
-    GROUPBOX        "Other options",IDC_STATIC,2,147,274,36
+    LTEXT           "You can force a text direction mode for this contact. Otherwise, it will use the default value set on the message log options page.",
+                    IDC_STATIC,130,117,141,24
+    GROUPBOX        "Other options",IDC_STATIC,2,184,274,36
     CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,157,149,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,194,149,11
     CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,169,256,11
-    GROUPBOX        "Override message window templates",IDC_STATIC,2,185,274,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,206,256,11
+    GROUPBOX        "Override message window templates",IDC_STATIC,2,222,274,
                     31
-    PUSHBUTTON      "Standard Templates",IDC_MODIFY,11,198,84,12
-    PUSHBUTTON      "RTL Templates",IDC_RTLMODIFY,181,198,84,12
-    PUSHBUTTON      "Cancel",IDCANCEL,225,219,50,14
-    DEFPUSHBUTTON   "OK",IDOK,168,219,50,14
+    PUSHBUTTON      "Standard Templates",IDC_MODIFY,11,235,84,12
+    PUSHBUTTON      "RTL Templates",IDC_RTLMODIFY,181,235,84,12
+    PUSHBUTTON      "Cancel",IDCANCEL,225,256,50,14
+    DEFPUSHBUTTON   "OK",IDOK,168,256,50,14
+    GROUPBOX        "ANSI codepage",IDC_STATIC,2,147,274,32
+    COMBOBOX        IDC_CODEPAGES,6,159,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",
+                    IDC_STATIC,130,152,141,24
+    CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,127,193,138,12
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288
@@ -388,6 +395,8 @@ BEGIN
     CONTROL         "Enable event API (support for third party plugins)",
                     IDC_EVENTAPI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,212,
                     288,10
+    CONTROL         "Auto-copy message log selection",IDC_AUTOSELECTCOPY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,185,132,9
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
@@ -672,34 +681,39 @@ BEGIN
     LTEXT           "Horizontal grid lines:",IDC_STATIC,171,192,78,10
     CONTROL         "Also draw vertical grid lines",IDC_WANTVERTICALGRID,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,192,148,10
-    CONTROL         "Shade headers darker",IDC_HEADERSHADING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,207,133,8
 END
 
-IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 214
+IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 239
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LISTBOX         IDC_TEMPLATELIST,8,15,97,82,LBS_OWNERDRAWVARIABLE | 
+    LISTBOX         IDC_TEMPLATELIST,8,15,97,76,LBS_OWNERDRAWVARIABLE | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Templates",IDC_STATIC,3,4,108,98
-    GROUPBOX        "Preview",IDC_STATIC,117,4,249,98
+    GROUPBOX        "Templates",IDC_STATIC,3,4,108,91
+    GROUPBOX        "Preview",IDC_STATIC,117,4,249,91
     CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
-                    122,13,236,84
-    EDITTEXT        IDC_EDITTEMPLATE,11,116,344,14,ES_AUTOHSCROLL
-    GROUPBOX        "Edit template",IDC_STATIC,3,106,363,105
-    PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,267,135,90,15
-    PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,267,154,90,15
-    PUSHBUTTON      "Close",IDCANCEL,194,192,66,15
-    PUSHBUTTON      "Revert to Default",IDC_REVERT,267,192,90,15
-    PUSHBUTTON      "Forget",IDC_FORGET,267,173,90,15
+                    122,13,236,78
+    EDITTEXT        IDC_EDITTEMPLATE,11,107,344,14,ES_AUTOHSCROLL
+    GROUPBOX        "Edit template",IDC_STATIC,3,96,363,142
+    PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,268,161,90,15
+    PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,268,180,90,15
+    PUSHBUTTON      "Close",IDCANCEL,200,218,66,15
+    PUSHBUTTON      "Revert to Default",IDC_REVERT,268,218,90,15
+    PUSHBUTTON      "Forget",IDC_FORGET,268,199,90,15
     LTEXT           "Variables (case sensitive!)\n\n%N:\tNickname\n%M:\tMessage\n%S:\tMsg Symbol\n%I:\tMsg Icon\n%D:\tlong Date\n%h:\thour (24)\n%m\tMinute",
-                    IDC_STATIC,11,135,94,73
+                    IDC_STATIC,11,125,94,73
     LTEXT           "%s:\tSecond\n%o:\tMonth (number)\n%O:\tMonth (name)\n%d:\tDay of Month\n%w:\tDay of week\n%a:\thour (12)\n%p:\tAM/PM symbol",
-                    IDC_STATIC,102,135,87,73
+                    IDC_STATIC,102,125,87,73
+    CONTROL         "",IDC_COLOR1,"ColourPicker",WS_TABSTOP,11,220,24,13
+    LTEXT           "Define up to 5 colors which you can use with some variables",
+                    IDC_STATIC,12,200,174,17
+    CONTROL         "",IDC_COLOR2,"ColourPicker",WS_TABSTOP,43,220,24,13
+    CONTROL         "",IDC_COLOR3,"ColourPicker",WS_TABSTOP,75,220,24,13
+    CONTROL         "",IDC_COLOR4,"ColourPicker",WS_TABSTOP,107,220,24,13
+    CONTROL         "",IDC_COLOR5,"ColourPicker",WS_TABSTOP,139,220,24,13
 END
 
 
@@ -722,7 +736,7 @@ BEGIN
     IDD_USERPREFS, DIALOG
     BEGIN
         TOPMARGIN, 3
-        BOTTOMMARGIN, 233
+        BOTTOMMARGIN, 270
     END
 
     IDD_CONTAINEROPTIONS, DIALOG
@@ -731,6 +745,11 @@ BEGIN
         RIGHTMARGIN, 274
         TOPMARGIN, 7
         BOTTOMMARGIN, 281
+    END
+
+    IDD_TEMPLATEEDIT, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 214
     END
 END
 #endif    // APSTUDIO_INVOKED
