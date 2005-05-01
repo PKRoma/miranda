@@ -36,7 +36,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 #if defined(UNICODE)
-	CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
+    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
@@ -45,7 +45,7 @@ BEGIN
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
-#endif
+#endif                    
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,146,32,24,14,
                     0x18000000L
     CONTROL         "",IDC_SENDMENU,"MButtonClass",WS_TABSTOP,170,32,9,14,
@@ -102,7 +102,10 @@ BEGIN
                     0x18000000L
     CONTROL         "Dont",IDC_CANCELADD,"MButtonClass",WS_TABSTOP,171,64,16,
                     14,0x18000000L
-    ICON            "",IDC_MULTIPLEICON,0,64,16,20,SS_CENTERIMAGE
+    ICON            "",IDC_MULTIPLEICON,0,64,21,20,SS_CENTERIMAGE
+    CONTROL         "",IDC_LOGFROZEN,"MButtonClass",WS_TABSTOP,171,0,16,
+                    14,0x18000000L 
+    LTEXT           "",IDC_LOGFROZENTEXT,10,3,170,10
 END
 
 #endif    // Neutral resources

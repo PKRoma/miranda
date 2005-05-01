@@ -121,6 +121,17 @@ Version 0.9.9.95 - 2005/04/15
         + added support for IEViews "save message log as html" feature. Choose File->Save Message
           Log As..." from the menubar.
           
+        * reorganized message log options. Message log formatting is now global by default. A new 
+          dialog has been added to the user menu (Messaging Options) which allows you to override
+          all "per contact" options.
+          
+        + added hotkey: F12 toggles "freeze message log updates". When enabled, all updates to the
+          message log are frozen until you disable it again. That means, new messages are NOT sent
+          to the message log. However, these messages are not lost, they are internally queued and
+          will be written to the message log when you unfreeze it. This is useful, if you want to
+          read the message log w/o being disturbed by new arriving messages causing the log to scroll
+          to the bottom automatically.
+          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

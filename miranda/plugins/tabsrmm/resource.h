@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by resource.rc
+// Used by msgwindow.rc
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
@@ -142,7 +142,9 @@
 #define IDC_FONTBOLD                    1106
 #define IDC_FONTITALIC                  1107
 #define IDC_FONTUNDERLINE               1108
-#define IDC_FONTCOLOR                   1109
+#define IDC_FONTCOLOR                   1127
+#define IDC_LOGFROZEN                   1109
+#define IDC_LOGFROZENTEXT               1128
 #define IDC_FONTFACE                    1110
 #define IDC_HISTORY                     1111
 #define IDC_CANCELADD                   1112

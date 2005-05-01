@@ -111,6 +111,7 @@ typedef struct {
 #define MWF_SHOW_MARKFOLLOWUPTS 32
 #define MWF_SHOW_FLASHCLIST 64
 #define MWF_SHOW_SPLITTEROVERRIDE 128
+#define MWF_SHOW_SCROLLINGDISABLED 256
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -258,6 +259,10 @@ struct MessageWindowData {
     DWORD dwIsFavoritOrRecent;
     DWORD dwLastUpdate;
     TemplateSet *ltr_templates, *rtl_templates;
+    HANDLE *hQueuedEvents;
+    int    iNextQueuedEvent;
+#define EVENT_QUEUE_SIZE 10
+    int    iEventQueueSize;
 };
 
 typedef struct _recentinfo {

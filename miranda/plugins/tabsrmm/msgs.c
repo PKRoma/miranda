@@ -1505,6 +1505,7 @@ static ICONDESC myIcons[] = {
     "tabSRMM_color", "Font color", &myGlobals.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
     "tabSRMM_sounds_on", "Sounds are On", &myGlobals.g_buttonBarIcons[22], -IDI_SOUNDSON, 1,
     "tabSRMM_sounds_off", "Sounds are off", &myGlobals.g_buttonBarIcons[23], -IDI_SOUNDSOFF, 1,
+    "tabSRMM_log_frozen", "Message Log frozen", &myGlobals.g_buttonBarIcons[24], -IDI_MSGERROR, 1,
     NULL, NULL, NULL, 0
 };
 

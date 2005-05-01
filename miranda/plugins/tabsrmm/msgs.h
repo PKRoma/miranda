@@ -81,7 +81,7 @@ typedef struct _settextex {
 #endif
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 24
+#define NR_BUTTONBARICONS 25
 
 #include <richedit.h>
 #include <richole.h>
@@ -242,9 +242,9 @@ struct ProtocolData {
 #define DM_GETWINDOWSTATE    (WM_USER+76)
 #define DM_DOCREATETAB       (WM_USER+77)
 #define DM_LOADLOCALE        (WM_USER+78)
+#define DM_REPLAYQUEUE       (WM_USER+79)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
-
 #define MINSPLITTERY         52
 #define MINLOGHEIGHT         30
 

@@ -2,7 +2,7 @@
 				------------------------------------------
 
 Project page: http://www.sourceforge.net/projects/tabsrmm/
-Support Forum: http://hell.at.eu.org/forums/
+Support Forum: http://www.miranda.or.at/forums/
 
 ----------------------------------------------------------
 				

@@ -169,6 +169,9 @@ void SetDialogToType(HWND hwndDlg)
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLETOOLBAR), SW_HIDE);
+
+    ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZEN), SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
     
 // IEVIew MOD Begin
     EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), TRUE);
@@ -576,6 +579,14 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
                 OffsetRect(&urc->rcItem, -(rcButton.right - rcButton.left), 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
+        case IDC_RETRY:
+        case IDC_CANCELSEND:
+        case IDC_MSGSENDLATER:
+        case IDC_STATICTEXT:
+        case IDC_STATICERRORICON:
+            if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+                OffsetRect(&urc->rcItem, 0, 24);
+            return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
         case IDC_PROTOCOL:
         case IDC_PROTOMENU:
         case IDC_PIC:
@@ -585,14 +596,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_TIME:
         case IDC_QUOTE:
         case IDC_SAVE:
-        case IDC_RETRY:
-        case IDC_CANCELSEND:
-        case IDC_MSGSENDLATER:
-        case IDC_STATICTEXT:
-        case IDC_STATICERRORICON:
-            if(urc->wId == IDC_RETRY || urc->wId == IDC_CANCELSEND || urc->wId == IDC_MSGSENDLATER || urc->wId == IDC_STATICTEXT || urc->wId == IDC_STATICERRORICON)
-                return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
-
             if(urc->wId != IDC_PROTOCOL && urc->wId != IDC_PROTOMENU)
                 OffsetRect(&urc->rcItem, 12, 0);
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
@@ -607,7 +610,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             }
             if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + (dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC ? 33 : 26))))
                 OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTIPLEICON:
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -633,6 +635,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.bottom += (splitterEdges ? 24 : 26);
             if(!splitterEdges)
                 urc->rcItem.bottom += 2;
+            if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+                urc->rcItem.top += 24;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_SPLITTER:
         case IDC_SPLITTER5:
@@ -688,6 +692,10 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
         case IDC_TYPINGNOTIFY:
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
+        case IDC_LOGFROZEN:
+            return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
+        case IDC_LOGFROZENTEXT:
+            return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
@@ -847,6 +855,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->history[i].lLen = 0;
                     }
                 }
+                dat->hQueuedEvents = malloc(sizeof(HANDLE) * EVENT_QUEUE_SIZE);
+                dat->iEventQueueSize = EVENT_QUEUE_SIZE;
                 dat->iCurrentQueueError = -1;
                 dat->history[dat->iHistorySize].szText = (TCHAR *)malloc((HISTORY_INITIAL_ALLOCSIZE + 1) * sizeof(TCHAR));
                 dat->history[dat->iHistorySize].lLen = HISTORY_INITIAL_ALLOCSIZE;
@@ -954,6 +964,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(GetDlgItem(hwndDlg, IDC_PROTOMENU), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_CANCELADD), BUTTONSETASFLATBTN, 0, 0);
+                    SendMessage(GetDlgItem(hwndDlg, IDC_LOGFROZEN), BUTTONSETASFLATBTN, 0, 0);
                 }
 
                 dat->dwFlags |= MWF_INITMODE;
@@ -981,10 +992,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONADDTOOLTIP, (WPARAM) Translate("Underlined text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font color"), 0);
-
+                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message log updates disabled, click right to unfreeze"));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
-                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
+                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 
@@ -1278,6 +1289,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[20]);
             SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
             SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
+            SendDlgItemMessage(hwndDlg, IDC_LOGFROZEN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[24]);
             break;
         case DM_OPTIONSAPPLIED:
 #ifdef __MATHMOD_SUPPORT            
@@ -1903,10 +1915,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_APPENDTOLOG:
             StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
             break;
+        case DM_REPLAYQUEUE:
+            {
+                int i;
+
+                for(i = 0; i < dat->iNextQueuedEvent; i++) {
+                    if(dat->hQueuedEvents[i] != 0)
+                        StreamInEvents(hwndDlg, dat->hQueuedEvents[i], 1, 1, NULL);
+                }
+                dat->iNextQueuedEvent = 0;
+                break;
+            }
         case DM_SCROLLLOGTOBOTTOM:
             {
                 SCROLLINFO si = { 0 };
 
+                if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+                    break;
                 if(!IsIconic(dat->pContainer->hwnd)) {
                     dat->dwFlags &= ~MWF_DEFERREDSCROLL;
                     if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL) == 0)
@@ -1993,7 +2018,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if ((HANDLE) lParam != dat->hDbEventFirst) {
                         HANDLE nextEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0);
                         if(myGlobals.m_FixFutureTimestamps || nextEvent == 0) {
-                            SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
+                            if(!(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED))
+                                SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
+                            else {                                                  // queue the event in case scrolling is disabled
+                                if(dat->iNextQueuedEvent >= dat->iEventQueueSize) {
+                                    dat->hQueuedEvents = realloc(dat->hQueuedEvents, (dat->iEventQueueSize + 10) * sizeof(HANDLE));
+                                    dat->iEventQueueSize += 10;
+                                }
+                                dat->hQueuedEvents[dat->iNextQueuedEvent++] = (HANDLE)lParam;
+                            }
                             if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
                                 dat->stats.iReceived++;
                                 dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
@@ -2742,7 +2775,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #if !defined(_UNICODE)
                             event.dwFlags |= IEEF_NO_UNICODE;
 #endif                            
-                            event.iType = IEE_GETSELECTION;
+                            event.iType = IEE_GET_SELECTION;
                             selected = (TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
                             if(selected != NULL) {
                                 szQuoted = QuoteText(selected, 64, 0);
@@ -2942,6 +2975,15 @@ quote_from_last:
                     }
                     break;
                 }
+                case IDC_LOGFROZEN:
+                    if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+                        SendMessage(hwndDlg, DM_REPLAYQUEUE, 0, 0);
+                    dat->dwEventIsShown &= ~MWF_SHOW_SCROLLINGDISABLED;
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZEN), SW_HIDE);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
+                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                    break;
                 case IDC_PROTOMENU: {
                     RECT rc;
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 4);
@@ -3249,9 +3291,20 @@ quote_from_last:
                         case EN_MSGFILTER:
                         {
                             DWORD msg = ((MSGFILTER *) lParam)->msg;
+                            WPARAM wp = ((MSGFILTER *) lParam)->wParam;
                             CHARFORMAT2 cf2;
                             
-                            if(msg == WM_CHAR) {
+                            if(msg == WM_KEYDOWN && wp == VK_F12) {
+                                if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+                                    SendMessage(hwndDlg, DM_REPLAYQUEUE, 0, 0);
+                                dat->dwEventIsShown ^= MWF_SHOW_SCROLLINGDISABLED;
+                                ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZEN), dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED ? SW_SHOW : SW_HIDE);
+                                ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED ? SW_SHOW : SW_HIDE);
+                                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                                PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                                break;
+                            }
+                            if(msg == WM_CHAR && wp == 'c') {
                                 if(GetKeyState(VK_CONTROL) & 0x8000) {
                                     SendDlgItemMessage(hwndDlg, ((NMHDR *)lParam)->code, WM_COPY, 0, 0);
                                     break;
@@ -3312,7 +3365,7 @@ quote_from_last:
                                         CHARRANGE cr;
                                         SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXGETSEL, 0, (LPARAM)&cr);
                                         if(cr.cpMax != cr.cpMin) {
-                                            cr.cpMax = cr.cpMin = -1;
+                                            cr.cpMin = cr.cpMax;
                                             if((GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0)){
                                                 SETTEXTEX stx = {ST_SELECTION,CP_UTF8};
                                                 char *streamOut = NULL;
@@ -3822,13 +3875,13 @@ verify:
             EDITSTREAM stream = { 0 };
             char szFilter[MAX_PATH];
             
-            if(hwndLog != 0) {
+            if(dat->hwndLog != 0) {
                 IEVIEWEVENT event = {0};
 
                 event.cbSize = sizeof(IEVIEWEVENT);
                 event.hwnd = dat->hwndLog;
                 event.hContact = dat->hContact;
-                event.iType = IEE_CLEAR_LOG;
+                event.iType = IEE_SAVE_DOCUMENT;
                 event.dwFlags = 0;
                 event.count = 0;
                 event.codepage = 0;
@@ -4108,6 +4161,8 @@ verify:
                         ClearSendJob(i);
                     }
                 }
+                if(dat->hQueuedEvents)
+                    free(dat->hQueuedEvents);
             }
             
 // BEGIN MOD#33: Show contact's picture
