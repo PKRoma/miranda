@@ -117,6 +117,9 @@ Version 0.9.9.95 - 2005/04/15
           are now visible for any contact which has not been permanently added to your contact list.
           These buttons appear just right of the message input area (and left of the avatar, if
           present) and are independent of the toolbar setting.
+
+        + added support for IEViews "save message log as html" feature. Choose File->Save Message
+          Log As..." from the menubar.
           
 Version 0.9.9.94 - 2005/04/11
 

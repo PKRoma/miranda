@@ -3822,22 +3822,36 @@ verify:
             EDITSTREAM stream = { 0 };
             char szFilter[MAX_PATH];
             
-            strncpy(szFilter, "Rich Edit file\0*.rtf", MAX_PATH);
-            strncpy(szFilename, dat->szNickname, MAX_PATH);
-            strncat(szFilename, ".rtf", MAX_PATH);
-            ofn.lStructSize=sizeof(ofn);
-            ofn.hwndOwner=hwndDlg;
-            ofn.lpstrFile = szFilename;
-            ofn.lpstrFilter = szFilter;
-            ofn.lpstrInitialDir = "rtflogs";
-            ofn.nMaxFile = MAX_PATH;
-            ofn.Flags = OFN_HIDEREADONLY;
-            ofn.lpstrDefExt = "rtf";
-            if (GetSaveFileNameA(&ofn)) {
-                stream.dwCookie = (DWORD_PTR)szFilename;
-                stream.dwError = 0;
-                stream.pfnCallback = StreamOut;
-                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
+            if(hwndLog != 0) {
+                IEVIEWEVENT event = {0};
+
+                event.cbSize = sizeof(IEVIEWEVENT);
+                event.hwnd = dat->hwndLog;
+                event.hContact = dat->hContact;
+                event.iType = IEE_CLEAR_LOG;
+                event.dwFlags = 0;
+                event.count = 0;
+                event.codepage = 0;
+                CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+            }
+            else {
+                strncpy(szFilter, "Rich Edit file\0*.rtf", MAX_PATH);
+                strncpy(szFilename, dat->szNickname, MAX_PATH);
+                strncat(szFilename, ".rtf", MAX_PATH);
+                ofn.lStructSize=sizeof(ofn);
+                ofn.hwndOwner=hwndDlg;
+                ofn.lpstrFile = szFilename;
+                ofn.lpstrFilter = szFilter;
+                ofn.lpstrInitialDir = "rtflogs";
+                ofn.nMaxFile = MAX_PATH;
+                ofn.Flags = OFN_HIDEREADONLY;
+                ofn.lpstrDefExt = "rtf";
+                if (GetSaveFileNameA(&ofn)) {
+                    stream.dwCookie = (DWORD_PTR)szFilename;
+                    stream.dwError = 0;
+                    stream.pfnCallback = StreamOut;
+                    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
+                }
             }
             break;
         }
