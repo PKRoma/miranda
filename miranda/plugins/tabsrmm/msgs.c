@@ -1120,14 +1120,15 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 	// hide the active message dialog
 	dat = (struct MessageWindowData *) GetWindowLong(hwndChild, GWL_USERDATA);	// needed to obtain the hContact for the message window
 	if(dat) {
-        if(IsIconic(pContainer->hwnd))
-            SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 		ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
 		nmhdr.code = TCN_SELCHANGE;
 		TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetTabIndexFromHWND(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), hwndChild));
 		SendMessage(pContainer->hwnd, WM_NOTIFY, 0, (LPARAM) &nmhdr);	// just select the tab and let WM_NOTIFY do the rest
-		SetForegroundWindow(hwndChild);
-		SetActiveWindow(hwndChild);
+		//SetForegroundWindow(hwndChild);
+		//SetActiveWindow(hwndChild);
+        SetFocus(hwndChild);
+        if(IsIconic(pContainer->hwnd))
+            SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
     	SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 		return TRUE;
 	} else

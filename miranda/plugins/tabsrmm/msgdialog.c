@@ -1934,7 +1934,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_FORCESCROLL:
             {
                 int len;
-                
+
                 len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
                 break;
@@ -1978,15 +1978,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             }
                         }
                         if((GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd)) {
-                            dat->dwTickLastEvent = GetTickCount();
-                            //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                             if(!iDividerSet)
                                 SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                         }
                         else {
                             if(dat->pContainer->hwndActive != hwndDlg) {
-                                dat->dwTickLastEvent = GetTickCount();
-                                //dat->pContainer->dwTickLastEvent = dat->dwTickLastEvent;
                                 if(!iDividerSet)
                                     SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                             }
@@ -3254,7 +3250,13 @@ quote_from_last:
                         {
                             DWORD msg = ((MSGFILTER *) lParam)->msg;
                             CHARFORMAT2 cf2;
-
+                            
+                            if(msg == WM_CHAR) {
+                                if(GetKeyState(VK_CONTROL) & 0x8000) {
+                                    SendDlgItemMessage(hwndDlg, ((NMHDR *)lParam)->code, WM_COPY, 0, 0);
+                                    break;
+                                }
+                            }
                             if(msg == WM_LBUTTONDOWN || msg == WM_KEYUP || msg == WM_LBUTTONUP) {
                                 int bBold = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD);
                                 int bItalic = IsDlgButtonChecked(hwndDlg, IDC_FONTITALIC);
@@ -3323,12 +3325,13 @@ quote_from_last:
                                                     free(streamOut);
                                                 }
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
+                                                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                                             }
                                             else if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0)) {
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_COPY, 0, 0);
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
+                                                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                                             }
-                                            SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                                         }
                                     }
                                     break;
@@ -3819,8 +3822,7 @@ verify:
             EDITSTREAM stream = { 0 };
             char szFilter[MAX_PATH];
             
-            strncpy(szFilter, "Rich Edit file_*.rtf", MAX_PATH);
-            szFilter[14] = '\0';
+            strncpy(szFilter, "Rich Edit file\0*.rtf", MAX_PATH);
             strncpy(szFilename, dat->szNickname, MAX_PATH);
             strncat(szFilename, ".rtf", MAX_PATH);
             ofn.lStructSize=sizeof(ofn);

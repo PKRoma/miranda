@@ -366,10 +366,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICMENU) == 1)
                     break;
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
-                    if(dat->dwFlags != dwOldMsgWindowFlags || dat->dwEventIsShown != dwOldEventIsShown) {
-                        WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)pContainer->hwndActive, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                        _DebugPopup(0, "fixme, msgdlgutils, line 371");
-                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+                    if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
+                        if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
+                            WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
+                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+                        }
+                        else
+                            SendMessage(hwndDlg, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, 0);
                     }
                     break;
                 }
@@ -931,7 +934,8 @@ panel_found:
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
-                            SetFocus(pContainer->hwndActive);
+                            if(!IsIconic(hwndDlg))
+                                SetFocus(pContainer->hwndActive);
                         }
                         break;
                         /*
