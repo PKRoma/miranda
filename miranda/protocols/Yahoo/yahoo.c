@@ -313,7 +313,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 		pfts.hContact = sf->hContact;
 		pfts.sending = 0;
-		pfts.files = &filename;
+		pfts.files = (char**)&filename;
 		pfts.totalFiles = 1;//ntohs(1);
 		pfts.currentFileNumber = 0;
 		pfts.totalBytes = size;
@@ -923,8 +923,10 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 }
 
 
-static void __cdecl yahoo_recv_avatarthread(struct avatar_info *avt) 
+static void __cdecl yahoo_recv_avatarthread(void *pavt) 
 {
+	struct avatar_info *avt = pavt;
+	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (avt == NULL) {
 		YAHOO_DebugLog("AVT IS NULL!!!");
@@ -1413,7 +1415,7 @@ void ext_yahoo_game_notify(int id, char *me, char *who, int stat)
 
 void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
 {
-    SkinPlaySound( mailsoundname );
+    SkinPlaySound( Translate( "mail" ) );
 
     if (!YAHOO_GetByte( "DisableYahoomail", 0)) {    
         LOG(("ext_yahoo_mail_notify"));

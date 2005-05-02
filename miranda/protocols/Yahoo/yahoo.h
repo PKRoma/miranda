@@ -11,6 +11,7 @@
  * and for answering some of my questions during development of this plugin.
  */
 #include <windows.h>
+#include <stdio.h>
 
 /* 
  * Yahoo Services
@@ -88,7 +89,6 @@ extern HANDLE			hNetlibUser;
 extern HINSTANCE		hinstance;
 extern int				yahooStatus;
 extern char				yahooProtocolName[MAX_PATH];
-extern char		        mailsoundname[MAX_PATH];
 extern BOOL             yahooLoggedIn;
 
 extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];

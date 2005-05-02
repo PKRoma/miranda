@@ -11,13 +11,6 @@
  * and for answering some of my questions during development of this plugin.
  */
 #include <windows.h>
-#include <time.h>
-
-// Yahoo Services
-#include "libyahoo2/yahoo2.h"
-#include "libyahoo2/yahoo2_callbacks.h"
-#include "libyahoo2/yahoo_util.h"
-
 #include "yahoo.h"
 #include <m_system.h>
 #include <time.h>

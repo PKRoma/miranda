@@ -221,7 +221,7 @@ void yahoo_util_broadcaststatus(int s)
         
     yahooStatus = s;
 
-    ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, yahooStatus);
+    ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, (LPARAM)yahooStatus);
 }
 
 
@@ -240,7 +240,7 @@ static void __cdecl yahoo_im_sendackfail_longmsg(HANDLE hContact)
 {
     SleepEx(1000, TRUE);
     ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 
-						Translate("Message is too long: Yahoo messages are limited by 800 UTF8 chars"));
+						(LPARAM)Translate("Message is too long: Yahoo messages are limited by 800 UTF8 chars"));
 }
 
 //=======================================================
@@ -851,8 +851,10 @@ int YAHOOSendTyping(WPARAM wParam, LPARAM lParam)
 //=======================================================
 //Files transfert
 //=======================================================
-static void __cdecl yahoo_recv_filethread(y_filetransfer *sf) 
+static void __cdecl yahoo_recv_filethread(void *psf) 
 {
+	y_filetransfer *sf = psf;
+	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (sf == NULL) {
 		YAHOO_DebugLog("SF IS NULL!!!");
@@ -920,8 +922,10 @@ int YahooFileResume( WPARAM wParam, LPARAM lParam )
 }
 
 /**************** Send File ********************/
-static void __cdecl yahoo_send_filethread(y_filetransfer *sf) 
+static void __cdecl yahoo_send_filethread(void *psf) 
 {
+	y_filetransfer *sf = psf;
+	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (sf == NULL) {
 		YAHOO_DebugLog("SF IS NULL!!!");

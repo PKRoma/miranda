@@ -29,7 +29,7 @@
  */
 HINSTANCE		hinstance;
 PLUGINLINK		*pluginLink;
-char			yahooProtocolName[MAX_PATH], mailsoundname[MAX_PATH];
+char			yahooProtocolName[MAX_PATH];
 
 HANDLE		    hNetlibUser = NULL;
 HANDLE			YahooMenuItems[ MENU_ITEMS_COUNT ];
@@ -250,12 +250,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	
 	lstrcpyn(yahooProtocolName, protocolname, MAX_PATH);
 
-	lstrcpyn( mailsoundname, yahooProtocolName, MAX_PATH - 10);
-	lstrcat( mailsoundname, ": " );
-	lstrcat( mailsoundname,  Translate( "mail" ));
-	
-	SkinAddNewSound( mailsoundname, mailsoundname, "yahoomail.wav" );
-	//SkinAddNewSoundEx( mailsoundname, mailsoundname, Translate( "mail" ), "yahoomail.wav" );
+	SkinAddNewSoundEx(Translate( "mail" ), yahooProtocolName, "New E-mail available in Inbox" );
 
 	// 1.
 	LoadYahooServices();
