@@ -1308,10 +1308,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dat->hbmMsgArea = hbm;
                         else
                             dat->hbmMsgArea = myGlobals.m_hbmMsgArea;
+                        DBFreeVariant(&dbv);
                     }
                 }
-                else
+                else {
+                    if(dat->hbmMsgArea != 0 && dat->hbmMsgArea != myGlobals.m_hbmMsgArea)
+                        DeleteObject(dat->hbmMsgArea);
                     dat->hbmMsgArea = myGlobals.m_hbmMsgArea;
+                }
                 
                 if(dat->hbmMsgArea)
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) | WS_EX_TRANSPARENT);
@@ -3424,6 +3428,10 @@ quote_from_last:
                                     }
                                     /*
                                      * auto-select-and-copy handling...
+                                     * if enabled, releasing the lmb with an active selection automatically copies the selection
+                                     * to the clipboard.
+                                     * holding ctrl while releasing the button pastes the selection to the input area, using plain text
+                                     * holding ctrl-alt does the same, but pastes formatted text
                                      */
                                 case WM_LBUTTONUP:
                                     if(((NMHDR *) lParam)->idFrom == IDC_LOG) {
@@ -3470,12 +3478,16 @@ quote_from_last:
                                         int iSelection;
                                         int oldCodepage = dat->codePage;
                                         int idFrom = ((NMHDR *)lParam)->idFrom;
+                                        int iPrivateBG = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "private_bg", 0);
                                         
                                         hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
                                         if(idFrom == IDC_LOG)
                                             hSubMenu = GetSubMenu(hMenu, 0);
-                                        else
+                                        else {
                                             hSubMenu = GetSubMenu(hMenu, 2);
+                                            EnableMenuItem(hSubMenu, ID_EDITOR_LOADBACKGROUNDIMAGE, MF_BYCOMMAND | (iPrivateBG ? MF_GRAYED : MF_ENABLED));
+                                            EnableMenuItem(hSubMenu, ID_EDITOR_REMOVEBACKGROUNDIMAGE, MF_BYCOMMAND | (iPrivateBG ? MF_GRAYED : MF_ENABLED));
+                                        }
                                         CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
                                         SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
                                         if (sel.cpMin == sel.cpMax) {

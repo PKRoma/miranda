@@ -39,8 +39,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,22,184,10
     CONTROL         "Minimize containers to system tray",IDC_MINIMIZETOTRAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,33,128,10
-    PUSHBUTTON      "Sbow popups when Status is...",IDC_POPUPSTATUSMODES,16,
-                    64,178,12
+    PUSHBUTTON      "Announce events when status is...",IDC_POPUPSTATUSMODES,
+                    16,64,178,12
     GROUPBOX        "Popup Options",IDC_STATIC,6,79,199,81
     LTEXT           "Text",IDC_STATIC,61,88,23,8
     LTEXT           "Back-\nground",IDC_STATIC,86,88,29,18

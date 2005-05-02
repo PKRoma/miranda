@@ -99,7 +99,9 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
 
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newName);
-void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
+#if defined(_UNICODE)
+    void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
+#endif    
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -2166,11 +2168,13 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
     }
 }
 
+#if defined(_UNICODE)
 void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value)
 {
     char *utf8string = Utf8Encode(value);
     DBWriteContactSettingString(hContact, szKey, szSetting, utf8string);
 }
+#endif
 
 HMENU BuildContainerMenu()
 {

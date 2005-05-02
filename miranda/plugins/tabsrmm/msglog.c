@@ -1228,10 +1228,9 @@ void BuildCodePageList()
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code)
 {
     static char szResult[100];
-    
     DBTIMETOSTRING dbtts;
-
     struct tm tm_now, tm_today;
+    
     time_t now = time(NULL);
     time_t today;
     
@@ -1266,6 +1265,8 @@ static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t che
  * taken from jabber protocol implementation and slightly modified
  * return value is static
  */
+
+#if defined(_UNICODE)
 
 TCHAR *Utf8Decode(const char *str)
 {
@@ -1344,3 +1345,4 @@ char *Utf8Encode(const WCHAR *str)
 	return (char *) szOut;
 }
 
+#endif

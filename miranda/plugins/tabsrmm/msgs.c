@@ -914,6 +914,17 @@ int SplitmsgShutdown(void)
     if(protoIconData != 0)
         free(protoIconData);
     CreateSystrayIcon(FALSE);
+    /*
+     * not really needed, but avoid memory leak warnings
+     */
+#if defined(_UNICODE)
+    {
+        wchar_t *dummyW = Utf8Decode("dummy");
+        char *dummy = Utf8Encode(L"dummy");
+        free(dummy);
+        free(dummyW);
+    }
+#endif
     return 0;
 }
 

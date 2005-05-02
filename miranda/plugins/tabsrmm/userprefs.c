@@ -216,8 +216,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         DBWriteContactSettingDword(hContact, SRMSGMOD_T, "sendformat", iIndex == 3 ? -1 : iIndex);
                         if(iIndex == 0)
                             DBDeleteContactSetting(hContact, SRMSGMOD_T, "sendformat");
-                        if(hWnd && dat)
-                            SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
                     }
                     if(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE))
                         AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
@@ -246,9 +244,9 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         char szFilename[MAX_PATH];
                         GetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, szFilename, MAX_PATH - 1);
                         DBWriteContactSettingString(hContact, SRMSGMOD_T, "bgimage", szFilename);
-                        if(hWnd && dat)
-                            SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 0);
                     }
+                    if(hWnd && dat)
+                        SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
                     DestroyWindow(hwndDlg);
                     break;
                 }
