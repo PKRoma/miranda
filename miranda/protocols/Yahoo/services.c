@@ -880,11 +880,17 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 {
     CCSDATA *ccs = (CCSDATA *) lParam;
     y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
-
+	int len;
+	
     //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
     ft->savepath = _strdup((char *) ccs->lParam);
 	
+	len = lstrlen(ft->savepath) - 1;
+	if (ft->savepath[len] == '\\')
+		ft->savepath[len] = '\0';
+	
     pthread_create(yahoo_recv_filethread, (void *) ft);
+	
     return ccs->wParam;
 }
 
@@ -901,13 +907,19 @@ int YahooFileResume( WPARAM wParam, LPARAM lParam )
 	
 	YAHOO_DebugLog("[YahooFileResume]");
 	
-	if ( !yahooLoggedIn || ft == NULL )
+	if ( !yahooLoggedIn || ft == NULL ) {
+		YAHOO_DebugLog("[YahooFileResume] Not loggedin or some other error!");
 		return 1;
+	}
 
 	pfr = (PROTOFILERESUME*)lParam;
 	
 	ft->action = pfr->action;
+	
+	YAHOO_DebugLog("[YahooFileResume] Action: %d", pfr->action);
+	
 	if ( pfr->action == FILERESUME_RENAME ) {
+		YAHOO_DebugLog("[YahooFileResume] Renamed file!");
 		if ( ft->filename != NULL ) {
 			free( ft->filename );
 			ft->filename = NULL;
