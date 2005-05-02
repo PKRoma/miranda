@@ -316,11 +316,17 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             }
             break;
         case WM_MOUSEWHEEL:
-            if(LOWORD(wParam) & MK_SHIFT) {
-                wParam &= ~MK_SHIFT;
-                SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
-                return 0;
-            }
+        {
+            RECT rc;
+            POINT pt;
+            
+            GetCursorPos(&pt);
+            GetWindowRect(hwnd, &rc);
+            if(PtInRect(&rc, pt))
+                break;
+            SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
+            return 0;
+        }
         case WM_KEYUP:
             break;
         case WM_KEYDOWN:
@@ -501,6 +507,21 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             }
         case WM_INPUTLANGCHANGE:
             return DefWindowProc(hwnd, WM_INPUTLANGCHANGE, wParam, lParam);
+        case WM_ERASEBKGND:
+        {
+            HDC hdcMem = CreateCompatibleDC((HDC)wParam);
+            HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, mwdat->hbmMsgArea);
+            RECT rc;
+            BITMAP bminfo;
+
+            GetObject(mwdat->hbmMsgArea, sizeof(bminfo), &bminfo);
+            GetClientRect(hwnd, &rc);
+            SetStretchBltMode((HDC)wParam, HALFTONE);
+            StretchBlt((HDC)wParam, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+            DeleteObject(hbmMem);
+            DeleteDC(hdcMem);
+            return 1;
+        }
     }
     return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -977,6 +998,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(GetDlgItem(hwndDlg, IDC_PIC), BUTTONADDTOOLTIP, (WPARAM) Translate("Avatar Options"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_SMILEYBTN), BUTTONADDTOOLTIP, (WPARAM) Translate("Insert Emoticon"), 0);
 
+                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, "Message Log is frozen");
+                
                 SendDlgItemMessage(hwndDlg, IDC_ADD, BUTTONADDTOOLTIP, (WPARAM) Translate("Add this contact permanently to your contact list"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_CANCELADD, BUTTONADDTOOLTIP, (WPARAM) Translate("Do not add this contact permanently"), 0);
                 
@@ -992,11 +1015,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONADDTOOLTIP, (WPARAM) Translate("Underlined text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font color"), 0);
-                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message log updates disabled, click right to unfreeze"));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE);
+                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 
                 SetWindowTextA(GetDlgItem(hwndDlg, IDC_RETRY), Translate("&Retry"));
@@ -1039,6 +1061,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
+                
                 if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
                 else
@@ -1268,6 +1291,32 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+            }
+
+            /*
+             * message area background image...
+             */
+            
+            if(dat->hContact) {
+                if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "private_bg", 0)) {
+                    DBVARIANT dbv;
+                    if(DBGetContactSetting(dat->hContact, SRMSGMOD_T, "bgimage", &dbv) == 0) {
+                        HBITMAP hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)dbv.pszVal);
+                        if(dat->hbmMsgArea != 0 && dat->hbmMsgArea != myGlobals.m_hbmMsgArea)
+                            DeleteObject(dat->hbmMsgArea);
+                        if(hbm != 0)
+                            dat->hbmMsgArea = hbm;
+                        else
+                            dat->hbmMsgArea = myGlobals.m_hbmMsgArea;
+                    }
+                }
+                else
+                    dat->hbmMsgArea = myGlobals.m_hbmMsgArea;
+                
+                if(dat->hbmMsgArea)
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) | WS_EX_TRANSPARENT);
+                else
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_TRANSPARENT);
             }
             break;
         case DM_LOADBUTTONBARICONS:
@@ -1893,20 +1942,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwFlags |= MWF_DEFERREDREMAKELOG;
             }
             break;
-            /*
-             * inserts a bitmap into the rich edit control, replacing the selected text
-             * wParam = ole interface pointer
-             * lParam = handle to the bitmap.
-             * this is called from the icon replacement code AND smileyadd, if we are
-             * running in multithreaded mode (separate thread for replacing icons and smileys).
-             * needs to work this way, because the ole objects can only be inserted by the thread that "owns" the rich edit control. OLE sucks :)
-             */
-        case DM_INSERTICON:
-            {
-                IRichEditOle *ole = (IRichEditOle *)wParam;
-                ImageDataInsertBitmap(ole, (HBITMAP)lParam);
-                return 0;
-            }
         case DM_REMAKELOG:
             dat->lastEventTime = 0;
             dat->iLastEventType = -1;
@@ -1924,6 +1959,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         StreamInEvents(hwndDlg, dat->hQueuedEvents[i], 1, 1, NULL);
                 }
                 dat->iNextQueuedEvent = 0;
+                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, "Message Log is frozen");
                 break;
             }
         case DM_SCROLLLOGTOBOTTOM:
@@ -2020,12 +2056,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(myGlobals.m_FixFutureTimestamps || nextEvent == 0) {
                             if(!(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED))
                                 SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
-                            else {                                                  // queue the event in case scrolling is disabled
+                            else {
+                                char szBuf[40];
                                 if(dat->iNextQueuedEvent >= dat->iEventQueueSize) {
                                     dat->hQueuedEvents = realloc(dat->hQueuedEvents, (dat->iEventQueueSize + 10) * sizeof(HANDLE));
                                     dat->iEventQueueSize += 10;
                                 }
                                 dat->hQueuedEvents[dat->iNextQueuedEvent++] = (HANDLE)lParam;
+                                mir_snprintf(szBuf, sizeof(szBuf), Translate("Message Log is frozen (%d queued)"), dat->iNextQueuedEvent);
+                                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, szBuf);
+                                RedrawWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), NULL, NULL, RDW_INVALIDATE);
                             }
                             if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
                                 dat->stats.iReceived++;
@@ -3247,7 +3287,13 @@ quote_from_last:
                         updateMathWindow(hwndDlg, dat);
 					//mathMod end
 #endif                     
+                    if ((HIWORD(wParam) == EN_VSCROLL || HIWORD(wParam) == EN_HSCROLL) && dat->hbmMsgArea != 0) {
+                        RECT rc;
+                        GetUpdateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc, FALSE);
+                        InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc, TRUE);
+                    }
                     if (HIWORD(wParam) == EN_CHANGE) {
+                        RECT rc;
                         if(dat->pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);
                         dat->dwFlags |= MWF_NEEDHISTORYSAVE;
@@ -3272,6 +3318,10 @@ quote_from_last:
                                 }
                             }
                         }
+                        if(dat->hbmMsgArea != 0) {
+                            GetUpdateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc, FALSE);
+                            InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc, TRUE);
+                        }
                     }
             }
             break;
@@ -3292,6 +3342,8 @@ quote_from_last:
                         {
                             DWORD msg = ((MSGFILTER *) lParam)->msg;
                             WPARAM wp = ((MSGFILTER *) lParam)->wParam;
+                            LPARAM lp = ((MSGFILTER *) lParam)->lParam;
+                            
                             CHARFORMAT2 cf2;
                             
                             if(msg == WM_KEYDOWN && wp == VK_F12) {
@@ -3304,6 +3356,19 @@ quote_from_last:
                                 PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                                 break;
                             }
+                            if(msg == WM_MOUSEWHEEL && ((NMHDR *)lParam)->idFrom == IDC_LOG) {
+                                RECT rc;
+                                POINT pt;
+
+                                GetCursorPos(&pt);
+                                GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
+                                if(PtInRect(&rc, pt))
+                                    return 0;
+                                SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), WM_MOUSEWHEEL, wp, lp);
+                                ((MSGFILTER *)lParam)->msg = WM_NULL;
+                                return 1;
+                            }
+                                
                             if(msg == WM_CHAR && wp == 'c') {
                                 if(GetKeyState(VK_CONTROL) & 0x8000) {
                                     SendDlgItemMessage(hwndDlg, ((NMHDR *)lParam)->code, WM_COPY, 0, 0);
@@ -3432,6 +3497,7 @@ quote_from_last:
                                                 CheckMenuItem(myGlobals.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
                                             else
                                                 CheckMenuItem(myGlobals.g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
+                                            CheckMenuItem(hSubMenu, ID_LOG_FREEZELOG, MF_BYCOMMAND | (dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED ? MF_CHECKED : MF_UNCHECKED));
                                                 
                                         }
 #endif                                        
@@ -3468,6 +3534,43 @@ quote_from_last:
                                                 case IDM_CLEAR:
                                                     SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
                                                     dat->hDbEventFirst = NULL;
+                                                    break;
+                                                case ID_LOG_FREEZELOG:
+                                                    SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_KEYDOWN, VK_F12, 0);
+                                                    break;
+                                                case ID_EDITOR_LOADBACKGROUNDIMAGE:
+                                                {
+                                                    char FileName[MAX_PATH];
+                                                    char Filters[512];
+                                                    OPENFILENAMEA ofn={0};
+
+                                                    CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
+                                                    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                                                    ofn.hwndOwner=0;
+                                                    ofn.lpstrFile = FileName;
+                                                    ofn.lpstrFilter = Filters;
+                                                    ofn.nMaxFile = MAX_PATH;
+                                                    ofn.nMaxFileTitle = MAX_PATH;
+                                                    ofn.Flags=OFN_HIDEREADONLY;
+                                                    ofn.lpstrInitialDir = ".";
+                                                    *FileName = '\0';
+                                                    ofn.lpstrDefExt="";
+                                                    if (GetOpenFileNameA(&ofn)) {
+                                                        DBWriteContactSettingString(NULL, SRMSGMOD_T, "bgimage", FileName);
+                                                        LoadMsgAreaBackground();
+                                                        WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 0);
+                                                        InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, TRUE);
+                                                    }
+                                                    break;
+                                                }
+                                                case ID_EDITOR_REMOVEBACKGROUNDIMAGE:
+                                                    if(myGlobals.m_hbmMsgArea != 0) {
+                                                        DeleteObject(myGlobals.m_hbmMsgArea);
+                                                        myGlobals.m_hbmMsgArea = 0;
+                                                        WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 0);
+                                                        InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, TRUE);
+                                                        DBWriteContactSettingString(NULL, SRMSGMOD_T, "bgimage", "");
+                                                    }
                                                     break;
                                             }
                                         }
@@ -4165,10 +4268,12 @@ verify:
                     free(dat->hQueuedEvents);
             }
             
-// BEGIN MOD#33: Show contact's picture
             if (dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hContactPic);
-// END MOD#33
+
+            if (dat->hbmMsgArea && dat->hbmMsgArea != myGlobals.m_hbmMsgArea)
+                DeleteObject(dat->hbmMsgArea);
+            
             if (dat->hSmileyIcon)
                 DeleteObject(dat->hSmileyIcon);
 

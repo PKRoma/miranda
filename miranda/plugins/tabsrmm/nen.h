@@ -86,6 +86,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define OPT_WINDOWCHECK "WindowCheck"
 #define OPT_LIMITPREVIEW "LimitPreview"
 #define OPT_MINIMIZEANIMATED "Animated"
+#define OPT_ANNOUNCEMETHOD "method"
 
 typedef struct {
     BOOL bPreview;
@@ -122,7 +123,6 @@ typedef struct {
     BOOL bTraySupport;
     BOOL bTrayExist;
     BOOL bMinimizeToTray;
-    BOOL bBalloons;
     int  iAutoRestore;
     BOOL iNoSounds;
     BOOL iNoAutoPopup;
@@ -131,6 +131,7 @@ typedef struct {
     BOOL bAnimated;
     WORD wMaxRecent;
     WORD wMaxFavorites;
+    int  iAnnounceMethod;
 } NEN_OPTIONS;
 
 typedef struct EVENT_DATA {

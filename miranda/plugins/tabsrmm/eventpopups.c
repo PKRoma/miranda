@@ -119,7 +119,6 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD)-1);
     options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 0);
     options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
-    options->bBalloons = (BOOL)DBGetContactSettingByte(NULL, MODULE, "balloons", 0);
     options->iAutoRestore = 0;
     options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
     options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
@@ -127,6 +126,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bAnimated = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, 1);
     options->wMaxFavorites = 15;
     options->wMaxRecent = 15;
+    options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
     return 0;
 }
 
@@ -163,18 +163,19 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingByte(NULL, MODULE, OPT_DISABLE, (BYTE)options->iDisable);
     DBWriteContactSettingByte(NULL, MODULE, "traysupport", (BYTE)options->bTraySupport);
     DBWriteContactSettingByte(NULL, MODULE, "mintotray", (BYTE)options->bMinimizeToTray);
-    DBWriteContactSettingByte(NULL, MODULE, "balloons", (BYTE)options->bBalloons);
     DBWriteContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
     DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
     DBWriteContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
     DBWriteContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, options->bAnimated);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, options->iAnnounceMethod);
     return 0;
 }
 
 BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     NEN_OPTIONS *options = &nen_options;
-
+    LRESULT iIndex;
+    
     switch (msg) {
         case WM_INITDIALOG:
             TranslateDialogDefault(hWnd);
@@ -251,13 +252,32 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             CheckDlgButton(hWnd, IDC_CHKPREVIEW, options->bPreview);
             CheckDlgButton(hWnd, IDC_ENABLETRAYSUPPORT, options->bTraySupport);
             CheckDlgButton(hWnd, IDC_MINIMIZETOTRAY, options->bMinimizeToTray);
-            CheckDlgButton(hWnd, IDC_USESHELLNOTIFY, options->bBalloons);
             SetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, options->iLimitPreview, FALSE);
             CheckDlgButton(hWnd, IDC_LIMITPREVIEW, (options->iLimitPreview > 0) ? 1 : 0);
             SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, options->iLimitPreview > 0 ? 50 : 0));
             SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
             EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
             EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+            
+            iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("<None>"));
+            SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+            
+            if(ServiceExists(MS_POPUP_ADDPOPUPEX)) {
+                iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("Popups"));
+                SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 1);
+                if(options->iAnnounceMethod == 1)
+                    SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+            }
+            iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("Balloon tooltips"));
+            SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 2);
+            if(options->iAnnounceMethod == 2)
+                SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+            if(ServiceExists("OSD/Announce")) {
+                iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("On screen display"));
+                SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 3);
+                if(options->iAnnounceMethod == 3)
+                    SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+            }
             bWmNotify = FALSE;
             return TRUE;
         case DM_STATUSMASKSET:
@@ -310,10 +330,11 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         options->bNoRSS = IsDlgButtonChecked(hWnd, IDC_NORSS);
                         options->bTraySupport = IsDlgButtonChecked(hWnd, IDC_ENABLETRAYSUPPORT);
                         options->bMinimizeToTray = IsDlgButtonChecked(hWnd, IDC_MINIMIZETOTRAY);
-                        options->bBalloons = IsDlgButtonChecked(hWnd, IDC_USESHELLNOTIFY);
                         options->bWindowCheck = IsDlgButtonChecked(hWnd, IDC_CHKWINDOWCHECK);
                         options->bNoRSS = IsDlgButtonChecked(hWnd, IDC_NORSS);
                         options->bAnimated = IsDlgButtonChecked(hWnd, IDC_ANIMATED);
+                        options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
+                        
                         if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
                             options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
                         else
@@ -830,7 +851,16 @@ nounicode:
 #endif        
         nim.szInfo[250] = 0;
     }
-    Shell_NotifyIcon(NIM_MODIFY, (NOTIFYICONDATA *)&nim);
+    if(nen_options.iAnnounceMethod == 3) {
+        TCHAR *finalOSDString = malloc((_tcslen(nim.szInfo) + _tcslen(nim.szInfoTitle) + 5) * sizeof(TCHAR));
+        _tcscpy(finalOSDString, nim.szInfoTitle);
+        _tcscat(finalOSDString, _T(": "));
+        _tcscat(finalOSDString, nim.szInfo);
+        CallService("OSD/Announce", (WPARAM)finalOSDString, 0);
+        free(finalOSDString);
+    }
+    else
+        Shell_NotifyIcon(NIM_MODIFY, (NOTIFYICONDATA *)&nim);
     myGlobals.m_TipOwner = (HANDLE)wParam;
     if(dbei.pBlob)
         free(dbei.pBlob);
@@ -962,7 +992,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
         return 0;
     }
 passed:
-    if(nen_options.bTraySupport && nen_options.bBalloons) {
+    if((nen_options.bTraySupport && nen_options.iAnnounceMethod == 2) || nen_options.iAnnounceMethod == 3) {
         tabSRMM_ShowBalloon(wParam, lParam, (UINT)eventType);
         return 0;
     }

@@ -263,6 +263,7 @@ struct MessageWindowData {
     int    iNextQueuedEvent;
 #define EVENT_QUEUE_SIZE 10
     int    iEventQueueSize;
+    HBITMAP hbmMsgArea;
 };
 
 typedef struct _recentinfo {
@@ -327,6 +328,7 @@ typedef struct _globals {
     BOOL m_SuperQuiet;
     HANDLE m_TipOwner;
     HANDLE m_UserMenuItem;
+    HBITMAP m_hbmMsgArea;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

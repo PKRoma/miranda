@@ -37,6 +37,7 @@ void CreateImageList(BOOL bInitial);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iNum);
 void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread);
+void LoadMsgAreaBackground();
 
 // the cached message log icons
 void CacheMsgLogIcons();

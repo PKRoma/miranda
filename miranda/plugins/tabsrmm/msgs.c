@@ -909,6 +909,8 @@ int SplitmsgShutdown(void)
         DestroyIcon(myGlobals.g_buttonBarIcons[i]);
     if(myGlobals.g_hbmUnknown)
         DeleteObject(myGlobals.g_hbmUnknown);
+    if(myGlobals.m_hbmMsgArea)
+        DeleteObject(myGlobals.m_hbmMsgArea);
     if(protoIconData != 0)
         free(protoIconData);
     CreateSystrayIcon(FALSE);
@@ -1476,6 +1478,27 @@ void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned i
     NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe);
 }
 
+void LoadMsgAreaBackground()
+{
+    char szFilename[MAX_PATH];
+    DBVARIANT dbv;
+    HBITMAP hbmNew;
+    
+    if(DBGetContactSetting(NULL, SRMSGMOD_T, "bgimage", &dbv) == 0) {
+        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFilename);
+        hbmNew = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM) szFilename);
+        if(myGlobals.m_hbmMsgArea != 0)
+            DeleteObject(myGlobals.m_hbmMsgArea);
+        myGlobals.m_hbmMsgArea = hbmNew;
+        DBFreeVariant(&dbv);
+    }
+    else {
+        if(myGlobals.m_hbmMsgArea != 0)
+            DeleteObject(myGlobals.m_hbmMsgArea);
+        myGlobals.m_hbmMsgArea = 0;
+    }
+        
+}
 static ICONDESC myIcons[] = {
     "tabSRMM_history", "Show History", &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY, 1,
     "tabSRMM_mlog", "Message Log Options", &myGlobals.g_buttonBarIcons[2], -IDI_TIMESTAMP, 1,
@@ -1531,6 +1554,7 @@ int SetupIconLibConfig()
     }
     GetModuleFileNameA(g_hIconDLL, szFilename, MAX_PATH);
     myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+    LoadMsgAreaBackground();
     FreeLibrary(g_hIconDLL);
     g_hIconDLL = 0;
     
@@ -1629,6 +1653,7 @@ void LoadIconTheme()
         UncacheMsgLogIcons();
 
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+        LoadMsgAreaBackground();
         i = 0;
         do {
             if(myIcons[i].szName == NULL)

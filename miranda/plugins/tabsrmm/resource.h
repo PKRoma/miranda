@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by msgwindow.rc
+// Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
@@ -142,9 +142,7 @@
 #define IDC_FONTBOLD                    1106
 #define IDC_FONTITALIC                  1107
 #define IDC_FONTUNDERLINE               1108
-#define IDC_FONTCOLOR                   1127
 #define IDC_LOGFROZEN                   1109
-#define IDC_LOGFROZENTEXT               1128
 #define IDC_FONTFACE                    1110
 #define IDC_HISTORY                     1111
 #define IDC_CANCELADD                   1112
@@ -162,7 +160,9 @@
 #define IDC_MATH_BKGCOLOUR              1124
 #define IDC_BKGOUTGOING                 1125
 #define IDC_BKGINCOMING                 1126
+#define IDC_FONTCOLOR                   1127
 #define IDC_GRIDLINES                   1127
+#define IDC_LOGFROZENTEXT               1128
 #define IDC_FONTCOLOUR                  1128
 #define IDC_SAMPLE                      1129
 #define IDC_FONTSIZE                    1130
@@ -303,6 +303,7 @@
 #define IDC_STREAMTHREADING             1264
 #define IDC_COMBO1                      1265
 #define IDC_IEVIEWMODE                  1265
+#define IDC_ANNOUNCEMETHOD              1265
 #define IDC_MODIFIERS                   1266
 #define IDC_TEXTFORMATTING              1266
 #define IDC_AVATARMODE                  1267
@@ -398,6 +399,10 @@
 #define IDC_TEMPLOVERRIDE               1372
 #define IDC_TEMPLOVERRIDE2              1373
 #define IDC_RTLTEMPLOVERRIDE            1373
+#define IDC_USEPRIVATEIMAGE             1374
+#define IDC_BACKGROUNDIMAGE             1375
+#define IDC_BUTTON2                     1376
+#define IDC_GETBGIMAGE                  1376
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -551,6 +556,9 @@
 #define ID_FAVORITES_ADDCONTACTTOFAVORITES 40180
 #define ID_FAVORITES_REMOVECONTACTFROMFAVORITES 40181
 #define ID_FILE_HTTP                    40182
+#define ID_LOG_FREEZELOG                40183
+#define ID_EDITOR_LOADBACKGROUNDIMAGE   40184
+#define ID_EDITOR_REMOVEBACKGROUNDIMAGE 40185
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -558,8 +566,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3
-#define _APS_NEXT_COMMAND_VALUE         40183
-#define _APS_NEXT_CONTROL_VALUE         1373
+#define _APS_NEXT_COMMAND_VALUE         40186
+#define _APS_NEXT_CONTROL_VALUE         1377
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

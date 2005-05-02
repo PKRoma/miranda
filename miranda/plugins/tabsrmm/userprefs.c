@@ -68,6 +68,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     switch (msg) {
         case WM_INITDIALOG:
         {
+            DBVARIANT dbv;
             char szBuffer[80];
             DWORD sCodePage;
             int i;
@@ -131,7 +132,18 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             EnableWindow(GetDlgItem(hwndDlg, IDC_CODEPAGES), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
 #endif            
-            
+            if(DBGetContactSettingByte(hContact, SRMSGMOD_T, "private_bg", 0)) {
+                CheckDlgButton(hwndDlg, IDC_USEPRIVATEIMAGE, TRUE);
+                EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), TRUE);
+            }
+            else {
+                CheckDlgButton(hwndDlg, IDC_USEPRIVATEIMAGE, FALSE);
+                EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), FALSE);
+            }
+            if(DBGetContactSetting(hContact, SRMSGMOD_T, "bgimage", &dbv) == 0) {
+                SetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
             ShowWindow(hwndDlg, SW_SHOW);
             return TRUE;
         }
@@ -140,6 +152,30 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case IDCANCEL:
                     DestroyWindow(hwndDlg);
                     break;
+                case IDC_USEPRIVATEIMAGE:
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE));
+                    break;
+                case IDC_GETBGIMAGE:
+                    {
+                        char FileName[MAX_PATH];
+                        char Filters[512];
+                        OPENFILENAMEA ofn={0};
+
+                        CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
+                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                        ofn.hwndOwner=0;
+                        ofn.lpstrFile = FileName;
+                        ofn.lpstrFilter = Filters;
+                        ofn.nMaxFile = MAX_PATH;
+                        ofn.nMaxFileTitle = MAX_PATH;
+                        ofn.Flags=OFN_HIDEREADONLY;
+                        ofn.lpstrInitialDir = ".";
+                        *FileName = '\0';
+                        ofn.lpstrDefExt="";
+                        if (GetOpenFileNameA(&ofn))
+                            SetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, FileName);
+                        break;
+                    }
                 case IDOK:
                 {
                     struct MessageWindowData *dat = 0;
@@ -204,6 +240,15 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 #endif              
                     DBWriteContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE));
                     DBWriteContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE));
+
+                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "private_bg", IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE));
+                    if(IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE)) {
+                        char szFilename[MAX_PATH];
+                        GetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, szFilename, MAX_PATH - 1);
+                        DBWriteContactSettingString(hContact, SRMSGMOD_T, "bgimage", szFilename);
+                        if(hWnd && dat)
+                            SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 0);
+                    }
                     DestroyWindow(hwndDlg);
                     break;
                 }

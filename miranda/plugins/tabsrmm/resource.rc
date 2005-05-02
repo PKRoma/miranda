@@ -32,48 +32,45 @@ IDD_POPUP_OPT DIALOGEX 0, 0, 314, 240
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "General Options",IDC_STATIC,6,2,199,71
+    GROUPBOX        "General Options",IDC_STATIC,6,2,199,76
     CONTROL         "Show Preview of Event",IDC_CHKPREVIEW,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,11,184,10
     CONTROL         "Enable system tray support",IDC_ENABLETRAYSUPPORT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,22,184,10
     CONTROL         "Minimize containers to system tray",IDC_MINIMIZETOTRAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,33,128,10
-    CONTROL         "Show baloon tooltips instead of popups",
-                    IDC_USESHELLNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    10,46,182,10
     PUSHBUTTON      "Sbow popups when Status is...",IDC_POPUPSTATUSMODES,16,
-                    58,178,12
-    GROUPBOX        "Popup Options",IDC_STATIC,6,75,199,85
-    LTEXT           "Text",IDC_STATIC,61,83,23,8
-    LTEXT           "Back-\nground",IDC_STATIC,86,83,29,18
-    CTEXT           "Timeout (seconds, 0 = use default)",IDC_STATIC,134,82,
+                    64,178,12
+    GROUPBOX        "Popup Options",IDC_STATIC,6,79,199,81
+    LTEXT           "Text",IDC_STATIC,61,88,23,8
+    LTEXT           "Back-\nground",IDC_STATIC,86,88,29,18
+    CTEXT           "Timeout (seconds, 0 = use default)",IDC_STATIC,134,87,
                     62,16
-    LTEXT           "Message",IDC_STATIC,11,105,44,13
-    CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,105,
+    LTEXT           "Message",IDC_STATIC,11,107,44,13
+    CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,107,
                     24,13
-    CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,86,105,
+    CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,86,107,
                     24,13
-    EDITTEXT        IDC_DELAY_MESSAGE,155,102,26,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_DELAY_MESSAGE,155,104,26,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    LTEXT           "URL",IDC_STATIC,11,118,44,13
-    CONTROL         "",IDC_COLTEXT_URL,"ColourPicker",WS_TABSTOP,56,117,24,
+    LTEXT           "URL",IDC_STATIC,11,120,44,13
+    CONTROL         "",IDC_COLTEXT_URL,"ColourPicker",WS_TABSTOP,56,119,24,
                     13
-    CONTROL         "",IDC_COLBACK_URL,"ColourPicker",WS_TABSTOP,86,117,24,
+    CONTROL         "",IDC_COLBACK_URL,"ColourPicker",WS_TABSTOP,86,119,24,
                     13
-    EDITTEXT        IDC_DELAY_URL,155,115,26,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_COLTEXT_FILE,"ColourPicker",WS_TABSTOP,56,129,24,
+    EDITTEXT        IDC_DELAY_URL,155,117,26,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_COLTEXT_FILE,"ColourPicker",WS_TABSTOP,56,131,24,
                     13
-    CONTROL         "",IDC_COLBACK_FILE,"ColourPicker",WS_TABSTOP,86,129,24,
+    CONTROL         "",IDC_COLBACK_FILE,"ColourPicker",WS_TABSTOP,86,131,24,
                     13
-    EDITTEXT        IDC_DELAY_FILE,155,128,26,13,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Others",IDC_STATIC,12,144,44,13
-    LTEXT           "File",IDC_STATIC,11,131,44,13
-    CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,141,
+    EDITTEXT        IDC_DELAY_FILE,155,130,26,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Others",IDC_STATIC,12,146,44,13
+    LTEXT           "File",IDC_STATIC,11,133,44,13
+    CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,143,
                     24,13
-    CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,86,141,
+    CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,86,143,
                     24,13
-    EDITTEXT        IDC_DELAY_OTHERS,155,141,26,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_DELAY_OTHERS,155,143,26,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
     GROUPBOX        "Message-Event only",IDC_STATIC,6,160,199,77
     CONTROL         "Don't show Popup when Message-Dialog is already open",
@@ -130,6 +127,9 @@ BEGIN
     LTEXT           "chars",IDC_STATIC,163,219,38,10
     CONTROL         "Animated",IDC_ANIMATED,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,141,32,58,12
+    COMBOBOX        IDC_ANNOUNCEMETHOD,100,47,93,13,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Announce with",IDC_STATIC,13,49,82,9
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
@@ -194,7 +194,7 @@ BEGIN
                     WS_EX_STATICEDGE
 END
 
-IDD_USERPREFS DIALOGEX 0, 0, 278, 274
+IDD_USERPREFS DIALOGEX 0, 0, 278, 306
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
@@ -222,29 +222,36 @@ BEGIN
                     WS_TABSTOP
     LTEXT           "You can force a text direction mode for this contact. Otherwise, it will use the default value set on the message log options page.",
                     IDC_STATIC,130,117,141,24
-    GROUPBOX        "Other options",IDC_STATIC,2,184,274,36
+    GROUPBOX        "Other options",IDC_STATIC,2,216,274,36
     CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,194,134,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,226,134,11
     CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,206,256,11
-    GROUPBOX        "Override message window templates",IDC_STATIC,2,222,274,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,237,256,11
+    GROUPBOX        "Override message window templates",IDC_STATIC,2,254,274,
                     31
-    PUSHBUTTON      "Standard Templates",IDC_MODIFY,11,235,84,12
-    PUSHBUTTON      "RTL Templates",IDC_RTLMODIFY,181,235,84,12
-    PUSHBUTTON      "Cancel",IDCANCEL,225,256,50,14
-    DEFPUSHBUTTON   "OK",IDOK,168,256,50,14
+    PUSHBUTTON      "Standard Templates",IDC_MODIFY,11,267,84,12
+    PUSHBUTTON      "RTL Templates",IDC_RTLMODIFY,181,267,84,12
+    PUSHBUTTON      "Cancel",IDCANCEL,225,288,50,14
+    DEFPUSHBUTTON   "OK",IDOK,168,288,50,14
     GROUPBOX        "ANSI codepage",IDC_STATIC,2,147,274,32
     COMBOBOX        IDC_CODEPAGES,6,159,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",
                     IDC_STATIC,130,152,141,24
     CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,143,193,126,12
-    CTEXT           "Enabled",IDC_STATIC,118,237,40,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,143,225,126,12
+    CTEXT           "Enabled",IDC_STATIC,118,269,40,10
     CONTROL         "",IDC_TEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,102,236,11,9
+                    WS_TABSTOP,102,268,11,9
     CONTROL         "",IDC_RTLTEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,165,236,11,9
+                    WS_TABSTOP,165,268,11,9
+    GROUPBOX        "Message input area background image",IDC_STATIC,2,181,
+                    274,32
+    CONTROL         "Use private image",IDC_USEPRIVATEIMAGE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,194,124,10
+    EDITTEXT        IDC_BACKGROUNDIMAGE,143,192,92,13,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "...",IDC_GETBGIMAGE,243,192,24,13
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288
@@ -741,7 +748,7 @@ BEGIN
     IDD_USERPREFS, DIALOG
     BEGIN
         TOPMARGIN, 3
-        BOTTOMMARGIN, 270
+        BOTTOMMARGIN, 302
     END
 
     IDD_CONTAINEROPTIONS, DIALOG
@@ -783,6 +790,7 @@ BEGIN
         MENUITEM "Select &All",                 IDM_SELECTALL
         MENUITEM SEPARATOR
         MENUITEM "Clear Log",                   IDM_CLEAR
+        MENUITEM "Freeze Log",                  ID_LOG_FREEZELOG
     END
     POPUP "LogLink"
     BEGIN
@@ -799,6 +807,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Copy all",                    IDM_COPYALL
         MENUITEM "Select all",                  IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "Load Background Image",       ID_EDITOR_LOADBACKGROUNDIMAGE
+
+        MENUITEM "Remove Background Image",     ID_EDITOR_REMOVEBACKGROUNDIMAGE
+
     END
 END
 
