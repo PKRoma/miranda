@@ -42,7 +42,7 @@ int ThreadData::send( char* data, int datalen )
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
 	if ( mType == SERVER_NOTIFICATION )
-		msnPingTimeoutCurrent = msnPingTimeout;
+		msnPingTimeout = 50;
 
 	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS && mP2pSession != NULL )) {
 		if ( datalen != 5 && memcmp( data, "PNG\r\n", 5 ) != 0 )

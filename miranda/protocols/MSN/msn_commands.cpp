@@ -46,8 +46,7 @@ char* MSPAuth = NULL;
 char* passport = NULL;
 char* rru = NULL;
 
-int msnPingTimeout = 60;
-int msnPingTimeoutCurrent = 60;
+int msnPingTimeout = 50;
 
 unsigned long sl;
 
@@ -1336,7 +1335,7 @@ LBL_InvalidCommand:
 			break;
 
 		case ' GNQ':	//********* QNG: reply to PNG
-			msnPingTimeoutCurrent = msnPingTimeout = trid;
+			msnPingTimeout = trid;
 			if ( msnGetInfoContact != NULL ) {
 				MSN_SendBroadcast( msnGetInfoContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
 				msnGetInfoContact = NULL;

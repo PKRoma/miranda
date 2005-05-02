@@ -38,21 +38,22 @@ static HANDLE hKeepAliveThreadEvt = NULL;
 //	Keep-alive thread for the main connection
 //=======================================================================================
 
-extern int msnPingTimeout, msnPingTimeoutCurrent;
+extern int msnPingTimeout;
 
 void __cdecl msn_keepAliveThread(ThreadData *info)
 {
 	while( TRUE )
 	{
+		int iSaveTimeout = msnPingTimeout;
 
-		while ( msnPingTimeoutCurrent-- > 0 ) {
+		while ( msnPingTimeout-- > 0 ) {
 			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
 				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
 				MSN_DebugLog( "Closing keep-alive thread" );
 				return;
 		}	}
 
-		msnPingTimeoutCurrent = msnPingTimeout;
+		msnPingTimeout = iSaveTimeout;
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
@@ -374,10 +375,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 				info->mBytesInData -= peol - info->mData;
 				memmove( info->mData, peol, info->mBytesInData );
-
-				if ( info->mType == SERVER_NOTIFICATION ) 
-					msnPingTimeoutCurrent = msnPingTimeout;
-
 				MSN_DebugLog( "RECV:%s", msg );
 
 				if ( !isalnum( msg[0] ) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
