@@ -433,8 +433,8 @@ static int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 	int i;
 	
 	NetlibLogShutdown();
-	for(i=0;i<netlibUserCount;i++)
-		NetlibCloseHandle((WPARAM)netlibUser[i],0);
+	for(i=netlibUserCount;i>0;i--)
+		NetlibCloseHandle((WPARAM)netlibUser[i-1],0);
 	if(netlibUser) free(netlibUser);
 	CloseHandle(hConnectionHeaderMutex);
 	DeleteCriticalSection(&csNetlibUser);
