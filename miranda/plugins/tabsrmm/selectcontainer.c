@@ -201,13 +201,14 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     break;          // end of list
 #if defined(_UNICODE)
                 if (dbv.type == DBVT_ASCIIZ) {
-                    WCHAR *wszString = Utf8Decode(dbv.pszVal);
+                    WCHAR *wszString = Utf8_Decode(dbv.pszVal);
                     if (_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
                         iItemNew = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_ADDSTRING, 0, (LPARAM) wszString);
                         if(iItemNew != LB_ERR) 
                             SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETITEMDATA, (WPARAM)iItemNew, (LPARAM)iCounter);
                     }
                     DBFreeVariant(&dbv);
+                    free(wszString);
                 }
 #else
                 if (dbv.type == DBVT_ASCIIZ) {

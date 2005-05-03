@@ -81,8 +81,12 @@ void WriteThemeToINI(const char *szIniFilename)
 
     for(i = 0; i <= TMPL_STATUSCHG; i++) {
 #if defined(_UNICODE)
-        WritePrivateProfileStringA("Templates", TemplateNames[i], Utf8Encode(LTR_Active.szTemplates[i]), szIniFilename);
-        WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], Utf8Encode(RTL_Active.szTemplates[i]), szIniFilename);
+        char *encoded = Utf8_Encode(LTR_Active.szTemplates[i]);
+        WritePrivateProfileStringA("Templates", TemplateNames[i], encoded, szIniFilename);
+        free(encoded);
+        encoded = Utf8_Encode(RTL_Active.szTemplates[i]);
+        WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], encoded, szIniFilename);
+        free(encoded);
 #else
         WritePrivateProfileStringA("Templates", TemplateNames[i], LTR_Active.szTemplates[i], szIniFilename);
         WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], RTL_Active.szTemplates[i], szIniFilename);
@@ -145,13 +149,14 @@ void ReadThemeFromINI(const char *szIniFilename)
             wchar_t *decoded;
             GetPrivateProfileStringA("Templates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
             DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
-            decoded = Utf8Decode(szTemplateBuffer);
+            decoded = Utf8_Decode(szTemplateBuffer);
             mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-
+            free(decoded);
             GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
             DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
-            decoded = Utf8Decode(szTemplateBuffer);
+            decoded = Utf8_Decode(szTemplateBuffer);
             mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+            free(decoded);
 #else
             GetPrivateProfileStringA("Templates", TemplateNames[i], "", LTR_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
             GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", RTL_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);

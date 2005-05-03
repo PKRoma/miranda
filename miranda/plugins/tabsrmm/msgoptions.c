@@ -883,7 +883,9 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
             else {
 #if defined(_UNICODE)
                 if(dbv.type == DBVT_ASCIIZ) {
-                    SetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), Utf8Decode(dbv.pszVal));
+                    WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
+                    SetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), wszTemp);
+                    free(wszTemp);
 #else
                 if(dbv.type == DBVT_ASCIIZ) {
                     SetWindowTextA(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), dbv.pszVal);

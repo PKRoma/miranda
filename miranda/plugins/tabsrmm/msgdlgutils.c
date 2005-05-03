@@ -829,6 +829,8 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
     CLISTEVENT cle;
     char toolTip[256];
 
+    dat->dwTickLastEvent = GetTickCount();
+    
     if(!myGlobals.m_FlashOnClist && nen_options.bTraySupport == FALSE)
         return;
 

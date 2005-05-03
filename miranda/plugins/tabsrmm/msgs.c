@@ -792,8 +792,11 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
 #if defined(_UNICODE)
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
-        if(dbv.type == DBVT_ASCIIZ) 
-            _tcsncpy(myGlobals.g_szDefaultContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
+        if(dbv.type == DBVT_ASCIIZ) {
+            WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
+            _tcsncpy(myGlobals.g_szDefaultContainerName, wszTemp, CONTAINER_NAMELEN);
+            free(wszTemp);
+        }
 #else
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainername", &dbv)) {
         if(dbv.type == DBVT_ASCIIZ)
@@ -917,14 +920,6 @@ int SplitmsgShutdown(void)
     /*
      * not really needed, but avoid memory leak warnings
      */
-#if defined(_UNICODE)
-    {
-        wchar_t *dummyW = Utf8Decode("dummy");
-        char *dummy = Utf8Encode(L"dummy");
-        free(dummy);
-        free(dummyW);
-    }
-#endif
     return 0;
 }
 
@@ -1133,15 +1128,15 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 	// hide the active message dialog
 	dat = (struct MessageWindowData *) GetWindowLong(hwndChild, GWL_USERDATA);	// needed to obtain the hContact for the message window
 	if(dat) {
-		ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
+        ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
 		nmhdr.code = TCN_SELCHANGE;
-		TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetTabIndexFromHWND(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), hwndChild));
-		SendMessage(pContainer->hwnd, WM_NOTIFY, 0, (LPARAM) &nmhdr);	// just select the tab and let WM_NOTIFY do the rest
-		//SetForegroundWindow(hwndChild);
-		//SetActiveWindow(hwndChild);
-        SetFocus(hwndChild);
+        if(TabCtrl_GetItemCount(GetDlgItem(pContainer->hwnd, IDC_MSGTABS)) > 1) {
+            TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetTabIndexFromHWND(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), hwndChild));
+            SendMessage(pContainer->hwnd, WM_NOTIFY, 0, (LPARAM) &nmhdr);	// just select the tab and let WM_NOTIFY do the rest
+        }
         if(IsIconic(pContainer->hwnd))
             SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+        SetFocus(hwndChild);
     	SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 		return TRUE;
 	} else
@@ -1389,8 +1384,9 @@ void ConvertAllToUTF8()
         if(DBGetContactSetting(NULL, "TAB_ContainersW", szCounter, &dbv))
             break;
         if(dbv.type == DBVT_BLOB && dbv.cpbVal > 0) {
-            utf8string = Utf8Encode((WCHAR *)dbv.pbVal);
+            utf8string = Utf8_Encode((WCHAR *)dbv.pbVal);
             DBWriteContactSettingString(NULL, "TAB_ContainersW", szCounter, utf8string);
+            free(utf8string);
         }
         DBFreeVariant(&dbv);
         counter++;
@@ -1401,9 +1397,10 @@ void ConvertAllToUTF8()
     while(hContact) {
         if(!DBGetContactSetting(hContact, SRMSGMOD_T, "containerW", &dbv)) {
             if(dbv.type == DBVT_BLOB && dbv.cpbVal > 0) {
-                utf8string = Utf8Encode((WCHAR *)dbv.pbVal);
+                utf8string = Utf8_Encode((WCHAR *)dbv.pbVal);
                 DBDeleteContactSetting(hContact, SRMSGMOD_T, "containerW");
                 DBWriteContactSettingString(hContact, SRMSGMOD_T, "containerW", utf8string);
+                free(utf8string);
             }
             DBFreeVariant(&dbv);
         }
@@ -1411,8 +1408,10 @@ void ConvertAllToUTF8()
     }
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
         if(dbv.type == DBVT_BLOB) {
+            char *utf8string = Utf8_Encode((WCHAR *)dbv.pbVal);
             DBDeleteContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW");
-            DBWriteContactSettingString(NULL, SRMSGMOD_T, "defaultcontainernameW", Utf8Encode((WCHAR *)dbv.pbVal));
+            DBWriteContactSettingString(NULL, SRMSGMOD_T, "defaultcontainernameW", utf8string);
+            free(utf8string);
         }
         DBFreeVariant(&dbv);
     }

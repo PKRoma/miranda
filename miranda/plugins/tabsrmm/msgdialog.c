@@ -1104,13 +1104,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             /*
              * restore saved msg if any...
              */
-    			if(dat->hContact) {
+                if(dat->hContact) {
     				DBVARIANT dbv;
 #if defined ( _UNICODE )
                     if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW", &dbv)) {
                         SETTEXTEX stx = {ST_DEFAULT, 1200};
-                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 0) // at least the 0x0000 is always there... 
-                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)Utf8Decode(dbv.pszVal));
+                        WCHAR *wszTemp = NULL;
+                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 0) {
+                            wszTemp = Utf8_Decode(dbv.pszVal);
+                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)wszTemp);
+                            free(wszTemp);
+                        }
 #else
     				if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
                         if(dbv.cchVal > 0)
@@ -2581,9 +2585,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(iSelection - IDM_CONTAINERMENU >= 0) {
                     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined(_UNICODE)
-                        WCHAR wszTemp[CONTAINER_NAMELEN + 2];
-                        _tcsncpy(wszTemp, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
+                        WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
                         SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
+                        free(wszTemp);
 #else                        
                         SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
 #endif                        
@@ -2687,23 +2691,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #if defined( _UNICODE )
                     streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
                     if(streamOut != NULL) {
-                        decoded = Utf8Decode(streamOut);
-                        converted = (TCHAR *)malloc((lstrlenW(decoded) + 2) * sizeof(WCHAR));
-                        if(converted != NULL) {
-                            _tcscpy(converted, decoded);
+                        decoded = Utf8_Decode(streamOut);
+                        if(decoded != NULL) {
                             if(dat->SendFormat) {
-                                DoRtfToTags(converted, dat);
-                                DoTrimMessage(converted);
+                                DoRtfToTags(decoded, dat);
+                                DoTrimMessage(decoded);
                             }
-                            bufSize = WideCharToMultiByte(dat->codePage, 0, converted, -1, dat->sendBuffer, 0, 0, 0);
-                            memRequired = bufSize + ((lstrlenW(converted) + 1) * sizeof(WCHAR));
+                            bufSize = WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, 0, 0, 0);
+                            memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
                             if(memRequired > dat->iSendBufferSize) {
                                 dat->sendBuffer = (char *) realloc(dat->sendBuffer, memRequired);
                                 dat->iSendBufferSize = memRequired;
                             }
-                            WideCharToMultiByte(dat->codePage, 0, converted, -1, dat->sendBuffer, bufSize, 0, 0);
-                            CopyMemory(&dat->sendBuffer[bufSize], converted, (lstrlenW(converted) + 1) * sizeof(WCHAR));
-                            free(converted);
+                            WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, bufSize, 0, 0);
+                            CopyMemory(&dat->sendBuffer[bufSize], decoded, (lstrlenW(decoded) + 1) * sizeof(WCHAR));
+                            free(decoded);
                         }
                         free(streamOut);
                     }
@@ -2901,10 +2903,11 @@ quote_from_last:
 #ifdef _UNICODE
                             wchar_t *converted = 0;
                             szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SF_USECODEPAGE|SFF_SELECTION);
-                            szQuoted = QuoteText(Utf8Decode(szFromStream), 64, 0);
+                            converted = Utf8_Decode(szFromStream);
+                            szQuoted = QuoteText(converted, 64, 0);
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
-                            // SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
                             free(szQuoted);
+                            free(converted);
                             free(szFromStream);
 #else
                             szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SFF_SELECTION);

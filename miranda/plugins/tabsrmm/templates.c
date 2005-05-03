@@ -91,8 +91,9 @@ void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
             continue;
         if(dbv.type == DBVT_ASCIIZ) {
 #if defined(_UNICODE)
-            wchar_t *decoded = Utf8Decode(dbv.pszVal);
+            wchar_t *decoded = Utf8_Decode(dbv.pszVal);
             mir_snprintfW(tSet->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+            free(decoded);
 #else
             mir_snprintf(tSet->szTemplates[i], TEMPLATE_LENGTH, "%s", dbv.pszVal);
 #endif            
@@ -237,8 +238,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
 #if defined(_UNICODE)
                     {
-                        char *encoded = Utf8Encode(newTemplate);
+                        char *encoded = Utf8_Encode(newTemplate);
                         DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], encoded);
+                        free(encoded);
                     }
 #else
                     DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);

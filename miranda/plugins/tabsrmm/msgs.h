@@ -35,7 +35,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TCS_BOTTOM 0x0002
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 
+#define TVS_NOHSCROLL 0x8000
+#define TVS_CHECKBOXES          0x0100
+
 #endif
+
 
 #define GT_SELECTION 2
 #define ST_SELECTION 2
@@ -452,8 +456,8 @@ struct MsgLogIcon {
 
 #define MSGDLGFONTCOUNT 22
 
-TCHAR *Utf8Decode(const char *str);
-char *Utf8Encode(const WCHAR *str);
+WCHAR *Utf8_Decode(const char *str);
+char *Utf8_Encode(const WCHAR *str);
 
 struct CPTABLE {
     UINT cpId;

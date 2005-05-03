@@ -576,6 +576,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
         }
     }
+
     /* OnO: highlight start */
     if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
@@ -625,7 +626,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     iTemplateLen = _tcslen(szTemplate);
     showTime = dat->dwFlags & MWF_LOG_SHOWTIME;
     showDate = dat->dwFlags & MWF_LOG_SHOWDATES;
-    
+
     while(i < iTemplateLen) {
         ci = szTemplate[i];
         if(ci == '%') {
@@ -1263,22 +1264,22 @@ static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t che
 /*
  * decodes UTF-8 to unicode
  * taken from jabber protocol implementation and slightly modified
- * return value is static
+ * free() the return value
  */
 
 #if defined(_UNICODE)
 
-TCHAR *Utf8Decode(const char *str)
+WCHAR *Utf8_Decode(const char *str)
 {
 	int i, len;
 	char *p;
-	static TCHAR *wszTemp = NULL;
+	WCHAR *wszTemp = NULL;
 
 	if (str == NULL) return NULL;
 
 	len = strlen(str);
 
-    if ((wszTemp = (TCHAR *) realloc(wszTemp, sizeof(TCHAR) * (len + 1))) == NULL)
+    if ((wszTemp = (WCHAR *) malloc(sizeof(TCHAR) * (len + 2))) == NULL)
 		return NULL;
 	p = (char *) str;
 	i = 0;
@@ -1302,12 +1303,12 @@ TCHAR *Utf8Decode(const char *str)
 /*
  * convert unicode to UTF-8
  * code taken from jabber protocol implementation and slightly modified.
- * return value is static
+ * free() the return value
  */
 
-char *Utf8Encode(const WCHAR *str)
+char *Utf8_Encode(const WCHAR *str)
 {
-	static unsigned char *szOut = NULL;
+	unsigned char *szOut = NULL;
 	int len, i;
 	const WCHAR *wszTemp, *w;
     
@@ -1324,7 +1325,7 @@ char *Utf8Encode(const WCHAR *str)
 		else len += 3;
 	}
 
-	if ((szOut = (unsigned char *) realloc(szOut, len + 1)) == NULL)
+	if ((szOut = (unsigned char *) malloc(len + 2)) == NULL)
 		return NULL;
 
 	i = 0;
