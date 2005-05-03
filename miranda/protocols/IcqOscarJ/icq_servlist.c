@@ -961,7 +961,7 @@ void setServerGroupID(const char* szPath, WORD wGroupID)
 
 
 // copied from groups.c - horrible, but only possible as this is not available as service
-static int GroupNameExists(const char *name,int skipGroup)
+int GroupNameExists(const char *name,int skipGroup)
 {
   char idstr[33];
   DBVARIANT dbv;

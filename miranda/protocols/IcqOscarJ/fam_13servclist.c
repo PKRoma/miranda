@@ -45,6 +45,7 @@ extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 
 extern void setUserInfo();
+extern int GroupNameExists(const char *name,int skipGroup);
 
 BOOL bIsSyncingCL = FALSE;
 
@@ -848,9 +849,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
               if (!szOldGroup) szOldGroup = _strdup(DEFAULT_SS_GROUP);
             }
 
-            if (!szGroup || strlen(szGroup)>=strlen(szOldGroup) || strncmp(szGroup, szOldGroup, strlen(szGroup)))
+            if (!szGroup || strlennull(szGroup)>=strlennull(szOldGroup) || strnicmp(szGroup, szOldGroup, strlennull(szGroup)))
             { // contact moved to new group or sub-group or not to master group
               bRegroup = 1;
+            }
+            if (!stricmp(DEFAULT_SS_GROUP, szGroup) && !GroupNameExists(szGroup, -1))
+            { // is it the default "General" group ? yes, does it exists in CL ?
+              bRegroup = 0; // if no, do not move to it - cause it would hide the contact
             }
             SAFE_FREE(&szGroup);
             SAFE_FREE(&szOldGroup);
