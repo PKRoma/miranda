@@ -176,6 +176,7 @@
 #define IDC_PRESETSINGLE                1138
 #define IDC_STMSGLOGGROUP               1139
 #define IDC_PROTOCOL                    1140
+#define IDC_STMSGLOGGROUP2              1140
 #define IDC_TYPING                      1141
 #define IDC_TYPINGNOTIFY                1142
 #define IDC_PROTOMENU                   1143
@@ -311,7 +312,6 @@
 #define IDC_AVATARMODE2                 1268
 #define IDC_CODEPAGES                   1268
 #define IDC_NOTIFYTYPE                  1269
-#define IDC_RICHEDIT21                  1270
 #define IDC_TOOLBARHIDEMODE             1271
 #define IDC_EMPTYLINEFIX                1272
 #define IDC_SPLITTERSTATICEDGES         1273
@@ -403,6 +403,8 @@
 #define IDC_BACKGROUNDIMAGE             1375
 #define IDC_BUTTON2                     1376
 #define IDC_GETBGIMAGE                  1376
+#define IDC_LOGOPTIONS                  1377
+#define IDC_WINDOWOPTIONS               1378
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -567,7 +569,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         40186
-#define _APS_NEXT_CONTROL_VALUE         1377
+#define _APS_NEXT_CONTROL_VALUE         1379
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

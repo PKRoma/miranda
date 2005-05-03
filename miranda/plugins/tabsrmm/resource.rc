@@ -343,109 +343,78 @@ IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Visual options",IDC_STATIC,0,0,303,62
-    CONTROL         "Place dividers in inactive sessions",IDC_USEDIVIDERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,9,289,11
-    CONTROL         "Use popup configuration for placing dividers",
-                    IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,19,20,271,11
-    CONTROL         "Flash contact list and tray icons for new events in unfocused windows",
-                    IDC_FLASHCLIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    33,263,9
-    LTEXT           "Notifications:",IDC_STATIC,9,47,92,9
-    COMBOBOX        IDC_NOTIFYTYPE,111,44,66,46,CBS_DROPDOWNLIST | 
+    GROUPBOX        "Message window options",IDC_STATIC,1,0,302,86
+    GROUPBOX        "Avatar options",IDC_STATIC,1,88,302,43
+    LTEXT           "Display",IDC_STATIC,9,98,56,9
+    COMBOBOX        IDC_AVATARDISPLAY,64,96,90,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Avatar options",IDC_STATIC,0,62,303,52
-    LTEXT           "Display",IDC_STATIC,9,73,56,9
-    COMBOBOX        IDC_AVATARDISPLAY,64,70,90,46,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Limit to",IDC_STATIC,159,72,29,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,197,70,35,12,ES_AUTOHSCROLL | 
+    LTEXT           "Limit to",IDC_STATIC,159,97,29,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,197,96,35,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,70,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,97,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,242,72,56,11
-    CONTROL         "Always keep the button bar at full width",
-                    IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,86,276,10
-    LTEXT           "Show avatars",IDC_STATIC,10,101,60,10
-    COMBOBOX        IDC_AVATARMODE,65,98,164,46,CBS_DROPDOWNLIST | 
+    LTEXT           "pixels in height",IDC_STATIC,242,98,56,11
+    LTEXT           "Show avatars",IDC_STATIC,10,116,60,10
+    COMBOBOX        IDC_AVATARMODE,114,113,175,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Behaviour",IDC_STATIC,0,115,303,94
-    LTEXT           "Automatically close tabs after",IDC_STATIC,10,124,119,
+    GROUPBOX        "Auto closing of tabs and windows",IDC_STATIC,1,132,302,
+                    35
+    LTEXT           "Automatically close tabs after",IDC_STATIC,10,144,119,
                     11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,131,122,31,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_AUTOCLOSETABTIME,131,142,31,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,158,123,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,176,124,
+                    UDS_ARROWKEYS,158,143,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,176,144,
                     122,11
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    9,135,280,10
-    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,149,133,
+                    9,155,280,10
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,1,169,302,56
+    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,180,133,
                     8
-    COMBOBOX        IDC_TOOLBARHIDEMODE,147,147,148,46,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_TOOLBARHIDEMODE,147,178,148,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Also, allow a hidden send button",
-                    IDC_ALLOWSENDBUTTONHIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,160,132,9
-    CONTROL         "Delete temporary contacts on close",IDC_DELETETEMP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,172,132,9
+    LTEXT           "Display notifications with:",IDC_STATIC,9,197,131,9
+    COMBOBOX        IDC_NOTIFYTYPE,147,194,66,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,196,211,8
-    CONTROL         "Send on SHIFT - Enter",IDC_SENDONSHIFTENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,162,152,10
-    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,173,152,10
-    CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,184,152,10
-    EDITTEXT        IDC_SECONDS,223,194,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,196,44,8
-    CONTROL         "Enable event API (support for third party plugins)",
-                    IDC_EVENTAPI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,212,
-                    288,10
-    CONTROL         "Auto-copy message log selection",IDC_AUTOSELECTCOPY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,185,132,9
+                    IDC_STATIC,8,210,211,8
+    EDITTEXT        IDC_SECONDS,223,208,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,210,44,8
+    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,10,285,72,
+                    WS_EX_STATICEDGE
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Templates",IDC_STMSGLOGGROUP,0,0,303,94
-    CONTROL         "Show file events",IDC_SHOWFILES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,6,106,127,9
-    CONTROL         "Show url events",IDC_SHOWURLS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,117,127,9
-    CONTROL         "Enable message log scrolling hotkeys",IDC_LOGHOTKEYS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,141,142,10
-    CONTROL         "Log status changes",IDC_LOGSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,6,153,142,10
-    CONTROL         "Simple text formatting (*bold* etc.)",IDC_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,126,142,10
-    CONTROL         "Use IEView as default message log",IDC_MSGLOGPLUGIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,148,142,10
-    CONTROL         "RTL is default text direction",IDC_RTLDEFAULT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,155,137,142,10
-    GROUPBOX        "Options",IDC_STATIC,0,95,303,79
-    CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,128,127,9
-    CONTROL         "Indent message body (pixels)",IDC_INDENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,101,141,10
-    LTEXT           "Left",IDC_STATIC,158,114,29,12
-    EDITTEXT        IDC_INDENTAMOUNT,188,112,29,12,ES_AUTOHSCROLL
+    GROUPBOX        "Options",IDC_STATIC,1,0,302,111
+    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,285,95,
+                    WS_EX_STATICEDGE
+    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,1,114,302,29
+    LTEXT           "Left",IDC_STATIC,10,127,29,11
+    EDITTEXT        IDC_INDENTAMOUNT,59,125,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,215,113,10,11
-    LTEXT           "Right",IDC_STATIC,230,114,26,9
-    EDITTEXT        IDC_RIGHTINDENT,259,112,29,12,ES_AUTOHSCROLL | ES_NUMBER
+                    UDS_HOTTRACK,72,126,10,11
+    LTEXT           "Right",IDC_STATIC,121,127,26,9
+    EDITTEXT        IDC_RIGHTINDENT,166,125,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_RINDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,289,112,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,196,125,
                     10,11
-    GROUPBOX        "Load History Events",IDC_STATIC,0,174,303,53
+    LTEXT           "(in pixels)",IDC_STATIC,215,127,74,9
+    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,1,144,302,29
+    PUSHBUTTON      "Standard templates...",IDC_MODIFY,27,154,95,14
+    PUSHBUTTON      "RTL templates",IDC_RTLMODIFY,178,154,95,14
+    GROUPBOX        "Load History Events",IDC_STATIC,1,173,302,53
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,135,10
     CONTROL         "Attempt to fix ""future"" timestamps",IDC_TSFIX,"Button",
@@ -467,12 +436,6 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
                     WS_DISABLED,200,209,10,14
     LTEXT           "minutes old",IDC_STMINSOLD,207,212,90,8,WS_DISABLED
-    CONTROL         "Support Math Module plugin",IDC_MATHMODSUPPORT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,155,159,140,11
-    GROUPBOX        "Standard Set",IDC_STATIC,8,12,140,77
-    GROUPBOX        "RTL Set",IDC_STATIC,155,12,140,77
-    PUSHBUTTON      "Modify...",IDC_MODIFY,48,26,50,14
-    PUSHBUTTON      "Modify...",IDC_RTLMODIFY,197,25,50,14
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256

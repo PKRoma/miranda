@@ -759,6 +759,12 @@ int PopupPreview(NEN_OPTIONS *pluginOptions)
     return 0;
 }
 
+/*
+ * announce via either balloon tooltip or OSD plugin service.
+ * wParam = hContact
+ * lParam = handle of the database event to announce
+ * truncates the announce string at 255 characters (balloon tooltip limitation)
+ */
 
 int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 {
@@ -851,11 +857,14 @@ nounicode:
 #endif        
         nim.szInfo[250] = 0;
     }
-    if(nen_options.iAnnounceMethod == 3) {
-        TCHAR *finalOSDString = malloc((_tcslen(nim.szInfo) + _tcslen(nim.szInfoTitle) + 5) * sizeof(TCHAR));
-        _tcscpy(finalOSDString, nim.szInfoTitle);
-        _tcscat(finalOSDString, _T(": "));
-        _tcscat(finalOSDString, nim.szInfo);
+    if(nen_options.iAnnounceMethod == 3) {                          // announce via OSD service
+        int iLen = _tcslen(nim.szInfo) + _tcslen(nim.szInfoTitle) + 30;
+        TCHAR *finalOSDString = malloc(iLen * sizeof(TCHAR));
+#if defined(_UNICODE)
+        mir_snprintfW(finalOSDString, iLen, L"Message from %s: %s", nim.szInfoTitle, nim.szInfo);
+#else
+        mir_snprintf(finalOSDString, iLen, Translate("Message from %s: %s"), nim.szInfoTitle, nim.szInfo);
+#endif        
         CallService("OSD/Announce", (WPARAM)finalOSDString, 0);
         free(finalOSDString);
     }

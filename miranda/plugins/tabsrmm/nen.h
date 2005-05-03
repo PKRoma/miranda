@@ -30,6 +30,8 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
   
 */
 
+#ifndef _NEN_H_
+#define _NEN_H_
 
 #define MODULE "tabSRMM_NEN"
 
@@ -170,3 +172,4 @@ typedef struct {
 #define MAX_DATASIZE	24
 #define MAX_POPUPS 20
 
+#endif

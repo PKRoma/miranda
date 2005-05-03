@@ -118,7 +118,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             if(dwTimestamp == 0)                                    // dont switch if the active tab has unread events
                                 ActivateTabFromHWND(GetParent(hwndTarget), hwndTarget);
                         }
-                        if(IsIconic(pTargetContainer->hwnd))
+                        if(IsIconic(pTargetContainer->hwnd) || pTargetContainer->bInTray != 0)
                             SendMessage(pTargetContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
                         if(GetForegroundWindow() != pTargetContainer->hwnd || GetActiveWindow() != pTargetContainer->hwnd) {
                             SetActiveWindow(pTargetContainer->hwnd);

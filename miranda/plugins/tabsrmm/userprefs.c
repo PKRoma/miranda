@@ -40,6 +40,9 @@ Sets things like:
 #include "msgs.h"
 #include "m_ieview.h"
 #include "msgdlgutils.h"
+#include "m_popup.h"
+#include "nen.h"
+#include "functions.h"
 
 extern MYGLOBALS myGlobals;
 extern HANDLE hMessageWindowList, hUserPrefsWindowList;
@@ -81,7 +84,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             BYTE bSplit = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "splitoverride", 0);
             hContact = (HANDLE)lParam;
             WindowList_Add(hUserPrefsWindowList, hwndDlg, hContact);
-            mir_snprintf(szBuffer, sizeof(szBuffer), "Set options for %s", contactName);
+            mir_snprintf(szBuffer, sizeof(szBuffer), Translate("Set options for %s"), contactName);
             SetWindowTextA(hwndDlg, szBuffer);
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);

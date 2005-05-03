@@ -460,6 +460,23 @@ struct CPTABLE {
     char *cpName;
 };
 
+#define LOI_TYPE_FLAG 1
+#define LOI_TYPE_SETTING 2
+
+struct LISTOPTIONSGROUP {
+    LRESULT handle;
+    char *szName;
+};
+
+struct LISTOPTIONSITEM {
+    LRESULT handle;
+    char *szName;
+    UINT id;
+    UINT uType;
+    UINT_PTR lParam;
+    UINT uGroup;
+};
+
 #if defined(_UNICODE)
 static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* fmt, ...) {
 	va_list va;
