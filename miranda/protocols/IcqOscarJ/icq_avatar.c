@@ -877,11 +877,9 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           }
         }
         else
-        { // the avatar is empty, delete the hash
-          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, hash deleted.", datalen);
+        { // the avatar is empty
+          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, nothing written.", datalen);
 
-          DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarSaved");
-          DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash");
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
         }
         SAFE_FREE(&ac->szFile);
