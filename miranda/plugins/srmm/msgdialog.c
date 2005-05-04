@@ -614,7 +614,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->hBkgBrush = NULL;
 			dat->hDbEventFirst = NULL;
 			dat->sendBuffer = NULL;
-			dat->splitterPos = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
+			dat->splitterPos = (int) DBGetContactSettingDword(DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT)?dat->hContact:NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
 			dat->windowWasCascaded = 0;
 			dat->nFlash = 0;
 			dat->nTypeSecs = 0;
@@ -1720,8 +1720,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(dat->hwndStatus);
 		tcmdlist_free(dat->cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
-		if (!(g_dat->flags&SMF_AVATAR)||!dat->avatarPic)
-			DBWriteContactSettingDword(NULL, SRMMMOD, "splitterPos", dat->splitterPos);
+		DBWriteContactSettingDword(DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT)?dat->hContact:NULL, SRMMMOD, "splitterPos", dat->splitterPos);
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
