@@ -51,3 +51,18 @@ int LoadFromIconLib();
 int SetupIconLibConfig();
 void CreateSystrayIcon();
 
+BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+int InitOptions(void);
+BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+int InitOptions(void);
+BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO *dbei);
+void StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
+void LoadMsgLogIcons(void);
+void FreeMsgLogIcons(void);
+
+void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
+
+int _DebugPopup(HANDLE hContact, const char *fmt, ...);
+int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
+

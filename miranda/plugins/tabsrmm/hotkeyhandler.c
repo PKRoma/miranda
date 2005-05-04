@@ -37,7 +37,7 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
        the menus, doubleclicks and so on.
 */
 
-#define _WIN32_IE 0x0501
+#define _WIN32_IE 0x501
 
 #include "commonheaders.h"
 #pragma hdrstop

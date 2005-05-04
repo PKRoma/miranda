@@ -96,9 +96,6 @@ typedef struct _settextex {
 #define MSGERROR_RETRY	    1
 #define MSGERROR_SENDLATER  2
 
-int _DebugPopup(HANDLE hContact, const char *fmt, ...);
-int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
-
 #define HISTORY_INITIAL_ALLOCSIZE 300
 
 struct NewMessageWindowLParam {
@@ -160,20 +157,12 @@ struct NewMessageWindowLParam {
         MWF_LOG_SHOWDATES | MWF_LOG_NEWLINE | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | \
         MWF_LOG_UNDERLINE | MWF_LOG_SWAPNICK | MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE | MWF_LOG_USERELATIVEDATES | MWF_LOG_LONGDATES | MWF_LOG_INDENTWITHTABS)
         
-#define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_SHOWNICK | MWF_LOG_SHOWDATES)
-
-struct ErrorDialogData {
-	char title[128];
-	char *pszError;
-	HWND hwnd;
-    BOOL bMustFreeString;
-};
+#define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_SHOWNICK | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS)
 
 struct ProtocolData {
     char szName[30];
     int  iFirstIconID;
 };
-// XXX end mod
 
 #define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)
@@ -189,7 +178,6 @@ struct ProtocolData {
 #define DM_UPDATEWINICON     (WM_USER+21)
 #define DM_UPDATELASTMESSAGE (WM_USER+22)
 
-// special for tabs...
 #define DM_SELECTTAB		 (WM_USER+23)
 #define DM_CLOSETABATMOUSE   (WM_USER+24)
 #define DM_SAVELOCALE        (WM_USER+25)
@@ -270,18 +258,6 @@ struct CREOleCallback {
 	int nextStgId;
 };
 
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int InitOptions(void);
-// XXX container dlg proc
-BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int InitOptions(void);
-// end mod
-BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO *dbei);
-void StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
-void LoadMsgLogIcons(void);
-void FreeMsgLogIcons(void);
-
 #define MSGFONTID_MYMSG		  0
 #define MSGFONTID_MYMISC	  1
 #define MSGFONTID_YOURMSG	  2
@@ -305,7 +281,6 @@ void FreeMsgLogIcons(void);
 #define MSGFONTID_SYMBOLS_IN 20
 #define MSGFONTID_SYMBOLS_OUT 21
 
-void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
 extern const int msgDlgFontCount;
 
 #define LOADHISTORY_UNREAD    0
@@ -316,16 +291,8 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_AUTOPOPUP      0
 #define SRMSGSET_AUTOMIN           "AutoMin"
 #define SRMSGDEFSET_AUTOMIN        0
-#define SRMSGSET_AUTOCLOSE         "AutoClose"
-#define SRMSGDEFSET_AUTOCLOSE      0
-#define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
-#define SRMSGDEFSET_SAVEPERCONTACT 0
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    1
-#define SRMSGSET_CLOSEONREPLY      "CloseOnReply"
-#define SRMSGDEFSET_CLOSEONREPLY   1
-#define SRMSGSET_STATUSICON        "UseStatusWinIcon"
-#define SRMSGDEFSET_STATUSICON     0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
 #define SRMSGDEFSET_MSGTIMEOUT     10000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
@@ -337,14 +304,6 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_LOADTIME          "LoadTime"
 #define SRMSGDEFSET_LOADTIME       10
 
-#define SRMSGSET_SHOWLOGICONS      "ShowLogIcons"
-#define SRMSGDEFSET_SHOWLOGICONS   0
-#define SRMSGSET_HIDENAMES         "HideNames"
-#define SRMSGDEFSET_HIDENAMES      0
-#define SRMSGSET_SHOWTIME          "ShowTime"
-#define SRMSGDEFSET_SHOWTIME       0
-#define SRMSGSET_SHOWDATE          "ShowDate"
-#define SRMSGDEFSET_SHOWDATE       0
 #define SRMSGSET_SHOWURLS          "ShowURLs"
 #define SRMSGDEFSET_SHOWURLS       0
 #define SRMSGSET_SHOWFILES         "ShowFiles"
@@ -379,7 +338,6 @@ extern const int msgDlgFontCount;
 
 #define IDM_STAYONTOP (WM_USER + 1)
 #define IDM_NOTITLE (WM_USER + 2)
-#define IDM_NOREPORTMIN (WM_USER +3)
 #define IDM_MOREOPTIONS (WM_USER +4)
 
 typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);

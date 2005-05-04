@@ -271,7 +271,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, Translate("Stay on Top"));
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, Translate("Hide titlebar"));
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOREPORTMIN, Translate("Don't report if minimized"));
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, Translate("Container options..."));                 
                 
@@ -801,10 +800,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                         break;
                     }
-				case IDM_NOREPORTMIN:
-					CheckMenuItem(GetSystemMenu(hwndDlg, FALSE), IDM_NOREPORTMIN, (pContainer->dwFlags & CNT_DONTREPORT) ? MF_BYCOMMAND | MF_UNCHECKED : MF_BYCOMMAND | MF_CHECKED);
-					pContainer->dwFlags ^= CNT_DONTREPORT;
-					break;
                 case IDM_MOREOPTIONS:
                     if(IsIconic(pContainer->hwnd))
                         SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
@@ -1346,10 +1341,7 @@ panel_found:
 				RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
 
-			
 			CheckMenuItem(hSysmenu, IDM_NOTITLE, (pContainer->dwFlags & CNT_NOTITLE) ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
-
-			CheckMenuItem(hSysmenu, IDM_NOREPORTMIN, pContainer->dwFlags & CNT_DONTREPORT ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
 			CheckMenuItem(hSysmenu, IDM_STAYONTOP, pContainer->dwFlags & CNT_STICKY ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
             SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             if (ws != wsold) {

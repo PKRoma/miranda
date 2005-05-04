@@ -34,6 +34,9 @@ $Id$
 #include "m_smileyadd.h"
 // IEVIew MOD Begin
 #include "m_ieview.h"
+#include "m_popup.h"
+#include "nen.h"
+#include "functions.h"
 // IEVIew MOD End
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -60,9 +63,8 @@ struct CPTABLE cpTable[] = {
     {   -1,     NULL}
 };
 
+int _log(const char *fmt, ...);
 
-    int _log(const char *fmt, ...);
-//static char *MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak);
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code);
 static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
 
@@ -1036,7 +1038,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     ZeroMemory(&ci, sizeof(ci));
     ci.cbSize = sizeof(ci);
     ci.hContact = NULL;
-    ci.szProto = dat->szProto;
+    ci.szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
     ci.dwFlag = CNF_DISPLAY;
     if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
         // CNF_DISPLAY always returns a string type

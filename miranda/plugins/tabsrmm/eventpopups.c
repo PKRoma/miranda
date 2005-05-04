@@ -30,7 +30,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
   
 */
 
-#define _WIN32_IE 0x0500
+#define _WIN32_IE 0x0501
 
 #include "commonheaders.h"
 #pragma hdrstop
@@ -41,36 +41,6 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #include "functions.h"
 
 #include "../../include/m_icq.h"
-
-#if !defined(__GNUWIN32__)
-
-
-#define NIF_STATE       0x00000008
-#define NIF_INFO        0x00000010
-#define NIS_SHAREDICON          0x00000002
-
-typedef struct
-{
-    DWORD cbSize;
-    HWND hWnd;
-    UINT uID;
-    UINT uFlags;
-    UINT uCallbackMessage;
-    HICON hIcon;
-    TCHAR szTip[128];
-    DWORD dwState;
-    DWORD dwStateMask;
-    TCHAR szInfo[256];
-    union
-    {
-        UINT uTimeout;
-        UINT uVersion;
-    };
-    TCHAR szInfoTitle[64];
-    DWORD dwInfoFlags;
-} NOTIFYICONDATA_NEW;
-
-#endif
 
 extern HINSTANCE g_hInst;
 extern NEN_OPTIONS nen_options;

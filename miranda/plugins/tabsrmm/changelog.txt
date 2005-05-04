@@ -133,6 +133,8 @@ Version 0.9.9.95 - 2005/04/15
           pointer in it (no need to change focus).
 
         * replaced the tray-icon double click with a middle mouse button click action.
+        
+        ! fixed: wrong (own) nickname may show up in the message log history for metacontacts.
                   
 Version 0.9.9.94 - 2005/04/11
 

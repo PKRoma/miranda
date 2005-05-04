@@ -19,6 +19,8 @@
 #include "m_smileyadd.h"
 #include "sendqueue.h"
 #include "msgdlgutils.h"
+#include "nen.h"
+#include "functions.h"
 
 extern MYGLOBALS myGlobals;
 

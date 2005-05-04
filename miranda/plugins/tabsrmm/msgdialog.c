@@ -513,7 +513,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, mwdat->hbmMsgArea);
             RECT rc;
             BITMAP bminfo;
-
+            
+            //GetUpdateRect(hwnd, &rc, FALSE);
+            //_DebugPopup(0, "%d, %d, %d, %d", rc.left, rc.top, rc.right, rc.bottom);
             GetObject(mwdat->hbmMsgArea, sizeof(bminfo), &bminfo);
             GetClientRect(hwnd, &rc);
             SetStretchBltMode((HDC)wParam, HALFTONE);
