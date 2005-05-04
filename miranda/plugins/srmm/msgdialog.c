@@ -1289,7 +1289,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_TIMER:
 		if (wParam == TIMERID_MSGSEND) {
 			KillTimer(hwndDlg, wParam);
-			ShowWindow(hwndDlg, SW_SHOWNORMAL);
+			ShowWindow(hwndDlg, SW_SHOW);
 			EnableWindow(hwndDlg, FALSE);
 			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) Translate("The message send timed out."));
 		}
@@ -1664,7 +1664,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			switch (ack->result) {
 				case ACKRESULT_FAILED:
 					KillTimer(hwndDlg, TIMERID_MSGSEND);
-					ShowWindow(hwndDlg, SW_SHOWNORMAL);
+					ShowWindow(hwndDlg, SW_SHOW);
 					EnableWindow(hwndDlg, FALSE);
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup((char *) ack->lParam));
 					return 0;
