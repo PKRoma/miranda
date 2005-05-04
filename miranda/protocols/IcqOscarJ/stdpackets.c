@@ -52,7 +52,7 @@ extern BYTE gbSsiEnabled;
 extern BYTE gbOverRate;
 extern char gpszICQProtoName[MAX_PATH];
 
-DWORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersOnly);
+DWORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wSearchType, WORD wInfoLen, BOOL bOnlineUsersOnly);
 
 
 
@@ -546,7 +546,7 @@ void sendOwnerInfoRequest(void)
 	dwCookie = AllocateCookie(0, dwLocalUIN, (void*)pCookieData);
 
 	packServIcqExtensionHeader(&packet, 6, 0x07D0, (WORD)dwCookie);
-	packLEWord(&packet, 0x04D0);
+	packLEWord(&packet, META_REQUEST_SELF_INFO);
 	packLEDWord(&packet, dwLocalUIN);
 
 	sendServPacket(&packet);
@@ -566,7 +566,7 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
 	packServIcqExtensionHeader(&packet, 6, 0x07D0, (WORD)dwCookie);
-	packLEWord(&packet, 0x04BA);
+	packLEWord(&packet, META_REQUEST_SHORT_INFO);
 	packLEDWord(&packet, dwUin);
 
 	sendServPacket(&packet);
@@ -589,12 +589,12 @@ DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 	if (bMinimal)
 	{
 		pCookieData->bRequestType = REQUESTTYPE_USERMINIMAL;
-		packLEWord(&packet, 0x04BA);
+		packLEWord(&packet, META_REQUEST_SHORT_INFO);
 	}
 	else
 	{
 		pCookieData->bRequestType = REQUESTTYPE_USERDETAILED;
-		packLEWord(&packet, 0x04B2);
+		packLEWord(&packet, META_REQUEST_FULL_INFO);
 	}
 	packLEDWord(&packet, dwUin);
 
@@ -1012,7 +1012,7 @@ void icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, 
 
   packServAdvancedMsgReply(&packet, dwUin, dwTimestamp, dwTimestamp2, wCookie, bMsgType, bMsgFlags, 11);
   packLEWord(&packet, 1);	          // Status message length
-  packByte(&packet, 0);	          // Status message
+  packByte(&packet, 0);	            // Status message
   packLEDWord(&packet, 0x00000000); // Foreground colour
   packLEDWord(&packet, 0x00FFFFFF); // Background colour
 
@@ -1025,39 +1025,35 @@ void icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, 
 
 DWORD SearchByUin(DWORD dwUin)
 {
+  DWORD dwCookie;
+  WORD wInfoLen;
+  icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
+                      // I should be ashamed! ;)
 
-	DWORD dwCookie;
-  WORD wInfoLen = 0;
-	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
-	                    // I should be ashamed! ;)
+  // Calculate data size
+  wInfoLen = 8;
 
+  // Initialize our handy data buffer
+  pBuffer.wPlace = 0;
+  pBuffer.pData = (BYTE *)calloc(1, wInfoLen);
+  pBuffer.wLen = wInfoLen;
 
-	// Calculate data size
-	wInfoLen = 8;
+  // Initialize our handy data buffer
+  packLEWord(&pBuffer, 0x0136);
+  packLEWord(&pBuffer, 0x0004);
+  packLEDWord(&pBuffer, dwUin);
 
-	// Initialize our handy data buffer
-	pBuffer.wPlace = 0;
-	pBuffer.pData = (BYTE *)calloc(1, wInfoLen);
-	pBuffer.wLen = wInfoLen;
+  // Send it off for further packing
+  dwCookie = sendTLVSearchPacket(pBuffer.pData, META_SEARCH_UIN, wInfoLen, FALSE);
+  SAFE_FREE(&pBuffer.pData);
 
-	// Initialize our handy data buffer
-	packLEWord(&pBuffer, 0x0136);
-	packLEWord(&pBuffer, 0x0004);
-	packLEDWord(&pBuffer, dwUin);
-
-	// Send it off for further packing
-	dwCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
-	SAFE_FREE(&pBuffer.pData);
-
-	return dwCookie;
-
+  return dwCookie;
 }
 
 
 
 DWORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
-{
-
+{ // use generic TLV search like icq5 does
 	DWORD dwCookie;
   WORD wInfoLen = 0;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
@@ -1108,21 +1104,17 @@ DWORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
 		packByte(&pBuffer, 0);
 	}
 
-
 	// Send it off for further packing
-	dwCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
+	dwCookie = sendTLVSearchPacket(pBuffer.pData, META_SEARCH_GENERIC, wInfoLen, FALSE);
 	SAFE_FREE(&pBuffer.pData);
 
-
 	return dwCookie;
-
 }
 
 
 
 DWORD SearchByEmail(char* pszEmail)
 {
-
 	DWORD dwCookie;
 	WORD wInfoLen = 0;
 	WORD wEmailLen;
@@ -1131,11 +1123,9 @@ DWORD SearchByEmail(char* pszEmail)
 
 	_ASSERTE(strlennull(pszEmail));
 
-
 	wEmailLen = strlennull(pszEmail);
 	if (wEmailLen > 0)
 	{
-
 		// Calculate data size
 		wInfoLen = wEmailLen + 7;
 
@@ -1152,61 +1142,56 @@ DWORD SearchByEmail(char* pszEmail)
 		packByte(&pBuffer, 0);
 
 		// Send it off for further packing
-		dwCookie = sendTLVSearchPacket(pBuffer.pData, wInfoLen, FALSE);
+		dwCookie = sendTLVSearchPacket(pBuffer.pData, META_SEARCH_EMAIL, wInfoLen, FALSE);
 		SAFE_FREE(&pBuffer.pData);
 	}
 
 	return dwCookie;
-
 }
 
 
 
-DWORD sendTLVSearchPacket(char* pSearchDataBuf, WORD wInfoLen, BOOL bOnlineUsersOnly)
+DWORD sendTLVSearchPacket(char* pSearchDataBuf, WORD wSearchType, WORD wInfoLen, BOOL bOnlineUsersOnly)
 {
-
-	icq_packet packet;
-	DWORD dwCookie;
+  icq_packet packet;
+  DWORD dwCookie;
 
 	_ASSERTE(pSearchDataBuf);
 	_ASSERTE(wInfoLen >= 4);
 
+  dwCookie = GenerateCookie(0);
 
-	dwCookie = GenerateCookie(0);
+  // Pack headers
+  packServIcqExtensionHeader(&packet, (WORD)(wInfoLen + (wSearchType==META_SEARCH_GENERIC?7:2)), CLI_META_INFO_REQ, (WORD)dwCookie);
 
-	// Pack headers
-	packServIcqExtensionHeader(&packet, (WORD)(wInfoLen + 7), CLI_META_INFO_REQ, (WORD)dwCookie);
+  // Pack search type
+  packLEWord(&packet, wSearchType);
 
-	// Pack search type
-	packLEWord(&packet, 0x055f);
+  // Pack search data
+  packBuffer(&packet, pSearchDataBuf, wInfoLen);
 
-	// Pack search data
-	packBuffer(&packet, pSearchDataBuf, wInfoLen);
+  if (wSearchType == META_SEARCH_GENERIC)
+  { // Pack "Online users only" flag - only for generic search
+    packLEWord(&packet, 0x0230);
+    packLEWord(&packet, 0x0001);
+    if (bOnlineUsersOnly)
+      packByte(&packet, 0x0001);
+    else
+      packByte(&packet, 0x0000);
+  }
 
-	// Pack "Online users only" flag
-	packLEWord(&packet, 0x0230);
-	packLEWord(&packet, 0x0001);
-	if (bOnlineUsersOnly)
-		packByte(&packet, 0x0001);
-	else
-		packByte(&packet, 0x0000);
+  // Go!
+  sendServPacket(&packet);
 
-
-	// Go!
-	sendServPacket(&packet);
-
-	return dwCookie;
-
+  return dwCookie;
 }
 
 
 
 DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
-{
-
+{ // TODO: change to TLV based search
 	icq_packet packet;
 	DWORD dwCookie;
-
 
 	dwCookie = GenerateCookie(0);
 
@@ -1217,13 +1202,12 @@ DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 	sendServPacket(&packet);
 
 	return dwCookie;
-
 }
 
 
 
 DWORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDataLen)
-{
+{ // TODO: change to TLV based update - integrate with Change Info (0.3.6)
 	icq_packet packet;
 	DWORD dwCookie;
 

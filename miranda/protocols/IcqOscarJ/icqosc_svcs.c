@@ -536,10 +536,8 @@ int IcqSearchByEmail(WPARAM wParam, LPARAM lParam)
 {
 	if (lParam && icqOnline && (strlen((char*)lParam) > 0))
 	{
-
 		// Success
 		return SearchByEmail((char *)lParam);
-
 	}
 
 	return 0; // Failure
@@ -571,7 +569,7 @@ int IcqCreateAdvSearchUI(WPARAM wParam, LPARAM lParam)
 	if (lParam && hInst)
 	{
 		// Success
-		return (int)CreateDialog(hInst , MAKEINTRESOURCE(IDD_ICQADVANCEDSEARCH), (HWND)lParam, AdvancedSearchDlgProc);
+		return (int)CreateDialog(hInst, MAKEINTRESOURCE(IDD_ICQADVANCEDSEARCH), (HWND)lParam, AdvancedSearchDlgProc);
 	}
 
 	return 0; // Failure

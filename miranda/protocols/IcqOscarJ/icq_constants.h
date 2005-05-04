@@ -309,6 +309,12 @@
 #define SRV_LAST_USER_FOUND         0x01AE // Search: last user found reply
 #define META_REGISTRATION_STATS_ACK 0x0302 // Registration stats ack
 #define SRV_RANDOM_FOUND            0x0366 // Random search server reply
+#define META_REQUEST_FULL_INFO      0x04B2 // Request full user info
+#define META_REQUEST_SHORT_INFO     0x04BA // Request short user info
+#define META_REQUEST_SELF_INFO      0x04D0 // Request full self user info
+#define META_SEARCH_GENERIC         0x055F // Search user by details (TLV)
+#define META_SEARCH_UIN             0x0569 // Search user by UIN (TLV)
+#define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
 #define META_SET_FULLINFO_ACK       0x0C3F // Server ack for set fullinfo command
 #define META_SPAM_REPORT_ACK        0x2012 // Server ack for user spam report
@@ -335,18 +341,18 @@
 #define MFLAG_MULTI                 0x80 // This is multiple recipients message
 
 // Some SSI constants
-#define SSI_ITEM_BUDDY      0x0000  // Buddy record (name: uin for ICQ and screenname for AIM)
-#define SSI_ITEM_GROUP      0x0001  // Group record
-#define SSI_ITEM_PERMIT     0x0002  // Permit record ("Allow" list in AIM, and "Visible" list in ICQ)
-#define SSI_ITEM_DENY       0x0003  // Deny record ("Block" list in AIM, and "Invisible" list in ICQ)
-#define SSI_ITEM_VISIBILITY 0x0004  // Permit/deny settings or/and bitmask of the AIM classes
-#define SSI_ITEM_PRESENCE   0x0005  // Presence info (if others can see your idle status, etc)
-#define SSI_ITEM_UNKNOWN1   0x0009  // Unknown. ICQ2k shortcut bar items ?
-#define SSI_ITEM_IGNORE     0x000e  // Ignore list record.
-#define SSI_ITEM_NONICQ     0x0010  // Non-ICQ contact (to send SMS). Name: 1#EXT, 2#EXT, etc
-#define SSI_ITEM_UNKNOWN2   0x0011  // Unknown.
-#define SSI_ITEM_IMPORT     0x0013  // Item that contain roster import time (name: "Import time")
-#define SSI_ITEM_BUDDYICON  0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
+#define SSI_ITEM_BUDDY              0x0000  // Buddy record (name: uin for ICQ and screenname for AIM)
+#define SSI_ITEM_GROUP              0x0001  // Group record
+#define SSI_ITEM_PERMIT             0x0002  // Permit record ("Allow" list in AIM, and "Visible" list in ICQ)
+#define SSI_ITEM_DENY               0x0003  // Deny record ("Block" list in AIM, and "Invisible" list in ICQ)
+#define SSI_ITEM_VISIBILITY         0x0004  // Permit/deny settings or/and bitmask of the AIM classes
+#define SSI_ITEM_PRESENCE           0x0005  // Presence info (if others can see your idle status, etc)
+#define SSI_ITEM_UNKNOWN1           0x0009  // Unknown. ICQ2k shortcut bar items ?
+#define SSI_ITEM_IGNORE             0x000e  // Ignore list record.
+#define SSI_ITEM_NONICQ             0x0010  // Non-ICQ contact (to send SMS). Name: 1#EXT, 2#EXT, etc
+#define SSI_ITEM_UNKNOWN2           0x0011  // Unknown.
+#define SSI_ITEM_IMPORT             0x0013  // Item that contain roster import time (name: "Import time")
+#define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
 
 
 
