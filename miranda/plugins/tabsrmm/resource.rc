@@ -203,7 +203,7 @@ BEGIN
     GROUPBOX        "Message log settings",IDC_STATIC,2,3,274,40
     CONTROL         "Global",IDC_LOGISGLOBAL,"Button",BS_AUTORADIOBUTTON,9,
                     14,59,11
-    CONTROL         "Private",IDC_LOGISPRIVATE,"Button",BS_AUTORADIOBUTTON,9,
+    CONTROL         "Local",IDC_LOGISPRIVATE,"Button",BS_AUTORADIOBUTTON,9,
                     27,61,11
     LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",
                     IDC_STATIC,73,13,196,24
@@ -212,11 +212,11 @@ BEGIN
                     WS_TABSTOP
     LTEXT           "Global mode can be set on the message log options page. This option is only available when IEView is installed.",
                     IDC_STATIC,130,50,141,24
-    GROUPBOX        "Send text formatting option",IDC_STATIC,2,78,274,32
+    GROUPBOX        "Send text formatting method",IDC_STATIC,2,78,274,33
     COMBOBOX        IDC_TEXTFORMATTING,6,90,119,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",
-                    IDC_STATIC,130,83,141,24
+                    IDC_STATIC,130,85,141,24
     GROUPBOX        "Text direction (BiDi)",IDC_STATIC,2,112,274,32
     COMBOBOX        IDC_BIDI,6,123,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
@@ -229,8 +229,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,237,256,11
     GROUPBOX        "Override message window templates",IDC_STATIC,2,254,274,
                     31
-    PUSHBUTTON      "Standard Templates",IDC_MODIFY,11,267,84,12
-    PUSHBUTTON      "RTL Templates",IDC_RTLMODIFY,181,267,84,12
+    PUSHBUTTON      "Standard templates...",IDC_MODIFY,11,267,84,12
+    PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,181,267,84,12
     PUSHBUTTON      "Cancel",IDCANCEL,225,288,50,14
     DEFPUSHBUTTON   "OK",IDOK,168,288,50,14
     GROUPBOX        "ANSI codepage",IDC_STATIC,2,147,274,32
@@ -358,8 +358,8 @@ BEGIN
     LTEXT           "Show avatars",IDC_STATIC,10,116,60,10
     COMBOBOX        IDC_AVATARMODE,114,113,175,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Auto closing of tabs and windows",IDC_STATIC,1,132,302,
-                    35
+    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,1,132,
+                    302,35
     LTEXT           "Automatically close tabs after",IDC_STATIC,10,144,119,
                     11
     EDITTEXT        IDC_AUTOCLOSETABTIME,131,142,31,12,ES_AUTOHSCROLL | 
@@ -670,7 +670,7 @@ BEGIN
     GROUPBOX        "Preview",IDC_STATIC,117,4,249,91
     CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
-                    122,13,236,78
+                    122,14,236,77
     EDITTEXT        IDC_EDITTEMPLATE,11,107,344,14,ES_AUTOHSCROLL
     GROUPBOX        "Edit template",IDC_STATIC,3,96,363,142
     PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,268,161,90,15
@@ -929,7 +929,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Favorites",                   65535
         MENUITEM SEPARATOR
-        MENUITEM "Disable All Popups",          ID_TRAYCONTEXT_DISABLEALLPOPUPS
+        MENUITEM "Disable All Event Notifications", 
+                                                ID_TRAYCONTEXT_DISABLEALLPOPUPS
 
         MENUITEM "Don't create Windows automatically", ID_TRAYCONTEXT_DON
         MENUITEM "Hide all Message Containers", ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS

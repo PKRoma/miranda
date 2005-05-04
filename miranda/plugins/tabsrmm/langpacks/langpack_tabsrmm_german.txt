@@ -8,6 +8,18 @@ Plugins-included: tabsrmm
 ;
 ; global strings
 ;
+[Sounds are %s (click to toggle, SHIFT-click to apply for all containers)]
+Klänge sind %s (klick schaltet um, SHIFT-klick überträgt Status auf alle offenen container.
+[Secure IM is %s]
+Secure IM ist: %s
+[UIN: %s (SHIFT click copies it to the clipboard)]
+UIN: %s (SHIFT-Klick kopiert die UIN in die Zwischenablage
+[Bold text]
+Fett
+[Italic text]
+Kursiv
+[Underlined text]
+Unterstrichen
 [OK]
 OK
 [Ok]
@@ -124,8 +136,8 @@ Zeige Nachrichtenverlauf
 Einstellungen für den Verlauf
 [Send Message to Multiple Users]
 Nachricht an mehrere Benutzer schicken
-[Quote Text]
-Text zitieren
+[Quote last message OR selected text]
+Letzte Nachricht oder Textmarkierung zitieren
 [Avatar Options]
 Avataroptionen
 [Insert Emoticon]
@@ -368,17 +380,34 @@ Ballontooltip zeigen
 ; ------------------------
 ; ----------------- message log options
 ; ------------------------
+[Message log appearance]
+Verlaufseinstellungen
+[Support for external plugins]
+Unterstützung für externe plugins
+[Indent values]
+Texteinrückung
+[(in pixels)]
+(in pixel)
+[Template sets]
+Formatvorlagen für Nachrichten
+[Standard templates...]
+Normale Vorlagen
+[RTL templates...]
+RTL Vorlagen
 [Items to show]
-Sichbare Elemente
+[Automatically copy selected text]
+Textauswahl im Nachrichtenverlauf automatisch kopieren
+[Indent message body]
+Nachricht einrücken
 [Show file events]
 Dateitransfers zeigen
 [Show url events]
 URL Ereignisse
-[Show icons]
+[Show Icons]
 Symbole zeigen
 [Use symbols instead of icons]
 Textsymbole anstatt Icons
-[Use in/out icons]
+[Use Incoming/Outgoing Icons]
 Ein/Aus Symbole
 [Show nicknames]
 Benutzernamen
@@ -472,7 +501,7 @@ Dynamische Skalierung
 [Limit to]
 Auf
 [pixels in height]
-pixel Höhe limitieren
+pixel Höhe
 [Globally on]
 Global AN
 [On for protocols with avatar support]
@@ -495,8 +524,10 @@ SHIFT + Eingabe sendet Nachricht
 Event API aktivieren
 [Delete temporary contacts on close]
 Temporäre Kontakte beim Schließen löschen
-[Notifications:]
+[Display notifications with:]
 Benachrichtigungen:
+[Automatically close tabs and windows]
+Tabs und Fenster automatisch schließen
 [None]
 Keine
 [Tray notifications]
@@ -509,12 +540,18 @@ Beim Verstecken von toolbar Schaltflächen
 Verstecke Formatierungselemente zuerst
 [Hide standard buttons first]
 Verstecke Standardelemente zuerst
-[Also, allow a hidden send button]
+[Allow the toolbar to hide the send button]
 Sendeschaltfläche ebenfalls verstecken
 [Flash contact list and tray icons for new events in unfocused windows]
 Neue Nachrichten in inaktiven Sitzungen auf Kontaktliste und im Tray blinken
 [Always keep the button bar at full width]
 Toolbar immer auf voller Breite halten
+[Message window behaviour]
+Verhalten des Nachrichtenfensters
+[Sending messages]
+Nachrichten senden
+[Other options]
+Andere Einstellungen
 ; ------------------------
 ; ----------------- container options page (the per container setting stuff)
 ; ------------------------
@@ -611,6 +648,10 @@ Kopieren
 Einfügen
 [Paste formatted Text]
 Einfügen mit Formatierung
+[Load Background Image]
+Hintergrundbild laden
+[Remove Background Image]
+Hintergrundbild entfernen
 [Copy all]
 Alles kopieren
 [Select all]
@@ -656,7 +697,7 @@ Relative Zeitstempel
 [Use long Date Format]
 Langes Datumsformat
 [Use Contacts local Time]
-Lokale Zeit des Kontakts verwenden
+Zeitzone berücksichtigen
 [Message Log Formatting]
 Formatierung des Verlaufs
 [Indent Message Body]
@@ -779,6 +820,8 @@ Aktuelle Fensterposition als Standard
 ;
 ; --------- Send menu
 ;
+[Send Menu]
+Sendeeinstellungen
 [Send &Default]
 &Standard
 [Send to &multiple Users]
@@ -792,6 +835,8 @@ Später senden
 ;
 ; --------- The protocol menu
 ;
+[Protocol Menu]
+Protokollmenü
 [IEView Setting]
 IEView Einstellungen
 [Use global Setting]
@@ -799,7 +844,7 @@ Globale Einstellung verwenden
 [Force IEView]
 IEVIew erzwingen
 [Force Default Message Log]
-Standardverlaufe erzwingen
+Standardverlauf erzwingen
 [Splitter]
 Splitter
 [Global]
@@ -812,6 +857,12 @@ Immer eigene Position verwenden
 Automatisch beim Schließen speichern
 [Save Now]
 Jetzt speichern
+[Favorites]
+Favoriten
+[Add Contact to Favorites]
+Kontakt hinzufügen
+[Remove Contact from Favorites]
+Kontakt entfernen
 ;
 ; option pages titles
 ;
@@ -893,4 +944,103 @@ Niemals senden
 Aus
 [Global Setting]
 Globale Einstellung nutzen
+;
+; user options (preferences) menu
+;
+[&tabSRMM settings]
+tabSRMM Einstellungen
+[Set options for %s]
+Einstellungen für: %s]
+[Message log settings]
+Einstellungen für den Verlauf
+[When set to "Local", current global settings are inherited for this user. Future changes of message log related options will then be private.]
+"Lokal" bedeutet, dass dieser Kontakt private Einstellungen für die Formatierung des Verlaufs verwenden kann.
+[Message log view mode]
+Darstellung des Verlaufs
+[Global mode can be set on the message log options page. This option is only available when IEView is installed.]
+Auswahl zwischen Standard- und IEView-Verlaufsdarstellung. Nur verfügbar, wenn IEView installiert ist.
+[Send text formatting method]
+Formatierungsinformationen senden
+[You can override the global setting for text formatting here. Use "Force Off" to never send formatting info for this contact.]
+Die globale Einstellung kann hier überschrieben werden. "Niemals" unterbindet Textformatierung.
+[Text direction (BiDi)]
+Textrichtung
+[Use Default]
+Standard verwenden]
+[Always LTR]
+Immer links nach rechts
+[Always RTL]
+Immer rechts nach links
+[You can force a text direction mode for this contact. Otherwise, it will use the default value set on the message log options page.]
+Hier können sie eine Textrichtung erzwingen, welche die globale Einstellung überschreibt.
+[ANSI codepage]
+ANSI - Zeichenkonvertierung
+[Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.]
+Code-Tabelle zur Übersetzung von ANSI - Nachrichten. Wirkungslos beim Versand oder Empfang von Unicode Nachrichten.
+[Message input area background image]
+Hintergrundbild für das Nachrichten-Eingabefeld
+[Use private image]
+Eigenes Bild für diesen Kontakt
+[Use private splitter position]
+Private Splitterposition verwenden
+[Contact is a favorite contact]
+Kontakt in der Liste der Favoriten
+[Force ANSI send / receive]
+Nur ANSI senden und empfangen
+[Enabled]
+Aktiv
+[Override message window templates]
+Private Vorlagen für diesen Kontakt verwenden
+;
+; tray menu
+;
+[Recent Sessions]
+Zuletzt geöffnet
+[Disable All Event Notifications]
+Alle Ereignisbenachrichtigungen unterbinden
+[Don't create Windows automatically]
+Keine Nachrichtenfenster automatisch erzeugen
+[Hide all Message Containers]
+Alle Nachrichtenfenster verbergen
+[Restore all Message Containers]
+Verborgene Nachrichtenfenster zeigen
+[Don't play Sounds]
+Keine Soundeffekte beim Eingang von Nachrichten
+[Be "Super Quiet"]
+Alles unterdrücken
 
+;
+; template stuff
+;
+[Message In]
+Eingehende Nachricht
+[Message Out]
+Ausgehende Nachricht
+[Group In (Start)]
+Gruppenstart (eingehend)
+[Group Out (Start)]
+Gruppenstart (ausgehend)
+[Group In (Inner)]
+Eingehend, gruppiert
+[Group Out (Inner)]
+Ausgehend, gruppier
+[Status change]
+Statuswechsel
+[Templates]
+Vorlagen
+[Preview]
+Vorschau
+[Edit template]
+Vorlage bearbeiten
+[Update Preview]
+Vorschau aktualisieren
+[Save Template]
+Vorlage speichern
+[Forget]
+Verwerfen
+[Revert to Default]
+Zurücksetzen
+[Define up to 5 colors which you can use with some variables]
+Frei verwendbare Farben
+[Close]
+Schließen

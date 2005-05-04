@@ -30,8 +30,6 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
   
 */
 
-#define _WIN32_IE 0x0501
-
 #include "commonheaders.h"
 #pragma hdrstop
 #include <malloc.h>

@@ -26,8 +26,6 @@ Functions, concerning tabSRMMs system tray support. There is more in eventpopups
 
 */
 
-#define _WIN32_IE 0x0501
-
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"

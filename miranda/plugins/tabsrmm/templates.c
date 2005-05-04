@@ -51,25 +51,25 @@ char *TemplateNames[] = {
 };
     
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I%S %_%N, %D%_%n%H%S %h:%m:%s:%|%M"),
-    _T("%I%S %_%N, %D%_%n%H%S %h:%m:%s:%|%M"),
-    _T("%I%S %_%N, %D%_%n%H%S %h:%m:%s:%|%M"),
-    _T("%I%S %_%N, %D%_%n%H%S %h:%m:%s:%|%M"),
-    _T("%S %h:%m:%s:%|%M"),
-    _T("%S %h:%m:%s:%|%M"),
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%S %h:%m:%s: %M"),
+    _T("%S %h:%m:%s: %M"),
     _T("%I%S %D, %h:%m:%s, %N %M"),
     "Default LTR"
 };
 
 TemplateSet RTL_Default = { TRUE, 
-    _T("%I%S  %_%N, %D%_%n%H%S  %h:%m:%s:%|%M"),
-    _T("%I%S  %_%N, %D%_%n%H%S  %h:%m:%s:%|%M"),
-    _T("%I%S  %_%N, %D%_%n%H%S  %h:%m:%s:%|%M"),
-    _T("%I%S  %_%N, %D%_%n%H%S  %h:%m:%s:%|%M"),
-    _T("%S  %h:%m:%s:%|%M"),
-    _T("%S  %h:%m:%s:%|%M"),
-    _T("%I%S  %D, %h:%m:%s, %N %M"),
-    "Default LTR"
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s: %M"),
+    _T("%S %h:%m:%s: %M"),
+    _T("%S %h:%m:%s: %M"),
+    _T("%I%S %D, %h:%m:%s, %N %M"),
+    "Default RTL"
 };
 
 TemplateSet LTR_Active, RTL_Active;
@@ -170,7 +170,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
             for(i = 0; i <= TMPL_STATUSCHG; i++) {
-                SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)TemplateNames[i]);
+                SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
                 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
             }
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
@@ -215,7 +215,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             teInfo->changed = TRUE;
                             teInfo->updateInfo[teInfo->inEdit] = TRUE;
                             EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), TRUE);
-                            EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), TRUE);
                             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), TRUE);
                             EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), FALSE);
                             //_DebugPopup(0, "changed for: %d", teInfo->inEdit);
@@ -233,7 +232,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     teInfo->updateInfo[teInfo->inEdit] = FALSE;
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
 #if defined(_UNICODE)
@@ -257,7 +255,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
                     teInfo->selchanging = FALSE;
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
                     break;
@@ -310,7 +307,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 else
                     SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
             }
-            TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, TemplateNames[iItem], lstrlenA(TemplateNames[iItem]));
+            TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, Translate(TemplateNames[iItem]), lstrlenA(Translate(TemplateNames[iItem])));
             return TRUE;
         }
         case DM_UPDATETEMPLATEPREVIEW:

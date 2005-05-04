@@ -854,9 +854,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     mi.position = -500050005;
     mi.hIcon = myGlobals.g_iconContainer;
     mi.pszContactOwner = NULL;
-    mi.pszName = Translate( "Messaging &Options" );
+    mi.pszName = Translate( "&tabSRMM settings" );
     mi.pszService = MS_TABMSG_SETUSERPREFS;
     myGlobals.m_UserMenuItem = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+    PreTranslateDates();
     return 0;
 }
 

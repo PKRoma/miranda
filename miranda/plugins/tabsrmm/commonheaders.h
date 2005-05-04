@@ -33,6 +33,8 @@ typedef unsigned short wchar_t;
 #endif
 #endif
 
+#define _WIN32_IE 0x0501
+
 #include <tchar.h>
 
 #define _WIN32_WINNT 0x0501
@@ -64,3 +66,4 @@ typedef unsigned short wchar_t;
 #include "../../include/m_utils.h"
 #include "../../include/m_skin.h"
 #include "../../include/m_contacts.h"
+

@@ -175,7 +175,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 tvi.hParent = 0;
                 tvi.hInsertAfter = TVI_LAST;
                 tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-                tvi.item.pszText = defaultGroups[i].szName;
+                tvi.item.pszText = Translate(defaultGroups[i].szName);
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
                 tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
                 defaultGroups[i++].handle = SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
@@ -390,7 +390,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 tvi.hParent = 0;
                 tvi.hInsertAfter = TVI_LAST;
                 tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-                tvi.item.pszText = lvGroups[i].szName;
+                tvi.item.pszText = Translate(lvGroups[i].szName);
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
                 tvi.item.state = INDEXTOSTATEIMAGEMASK(1)|TVIS_EXPANDED | TVIS_BOLD;
                 lvGroups[i++].handle = SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);

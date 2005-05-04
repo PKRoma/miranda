@@ -411,12 +411,12 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iS
         char szTipText[256];
 
         if(myGlobals.g_SecureIMAvail && iSecIMStatus >= 0) {
-            _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? "enabled" : "disabled");
+            _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? Translate("enabled") : Translate("disabled"));
             SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
         }
         //_snprintf(szTipText, sizeof(szTipText), "Session stats: Active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
         //SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szTipText);
-        _snprintf(szTipText, sizeof(szTipText), "Sounds are %s (click to toggle, SHIFT-click to apply for all containers)", dat->pContainer->dwFlags & CNT_NOSOUND ? "off" : "on");
+        _snprintf(szTipText, sizeof(szTipText), Translate("Sounds are %s (click to toggle, SHIFT-click to apply for all containers)"), dat->pContainer->dwFlags & CNT_NOSOUND ? "off" : "on");
         SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
     }
 }

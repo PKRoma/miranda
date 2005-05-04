@@ -50,6 +50,7 @@ void LoadIconTheme();
 int LoadFromIconLib();
 int SetupIconLibConfig();
 void CreateSystrayIcon();
+void PreTranslateDates();
 
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);

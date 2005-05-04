@@ -996,7 +996,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_TIME), BUTTONADDTOOLTIP, (WPARAM) Translate("Message Log Options"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_SENDMENU), BUTTONADDTOOLTIP, (WPARAM) Translate("Send Menu"), 0);
-                SendMessage(GetDlgItem(hwndDlg, IDC_QUOTE), BUTTONADDTOOLTIP, (WPARAM) Translate("Quote Text"), 0);
+                SendMessage(GetDlgItem(hwndDlg, IDC_QUOTE), BUTTONADDTOOLTIP, (WPARAM) Translate("Quote last message OR selected text"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_PIC), BUTTONADDTOOLTIP, (WPARAM) Translate("Avatar Options"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_SMILEYBTN), BUTTONADDTOOLTIP, (WPARAM) Translate("Insert Emoticon"), 0);
 
@@ -1186,7 +1186,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
-                dat->dwLastActivity = GetTickCount();
+                dat->dwLastActivity = GetTickCount() - 1000;
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
                 /*
@@ -1871,6 +1871,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
                 }
                 // IEVIew MOD End
+                if(dat->hbmMsgArea)
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, TRUE);
                 break;
             }
         case DM_SPLITTERMOVED:
@@ -1960,6 +1962,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_APPENDTOLOG:
             StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
             break;
+            /*
+             * replays queued events after the message log has been frozen for a while
+             */
         case DM_REPLAYQUEUE:
             {
                 int i;
@@ -1969,7 +1974,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         StreamInEvents(hwndDlg, dat->hQueuedEvents[i], 1, 1, NULL);
                 }
                 dat->iNextQueuedEvent = 0;
-                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, "Message Log is frozen");
+                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message Log is frozen"));
                 break;
             }
         case DM_SCROLLLOGTOBOTTOM:
@@ -3458,7 +3463,7 @@ quote_from_last:
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
                                                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                                             }
-                                            else if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0)) {
+                                            else if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_COPY, 0, 0);
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
                                                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -4036,7 +4041,7 @@ verify:
         {
             if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
                 break;              // don't autoclose if message input area contains text
-            if(dat->dwTickLastEvent > dat->dwLastActivity)
+            if(dat->dwTickLastEvent >= dat->dwLastActivity)
                 break;              // don't autoclose if possibly unread message is waiting
             if(((GetTickCount() - dat->dwLastActivity) / 1000) >= wParam) {
                 if(TabCtrl_GetItemCount(GetParent(hwndDlg)) > 1 || DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocloselast", 0))

@@ -65,11 +65,13 @@ struct CPTABLE cpTable[] = {
 
 int _log(const char *fmt, ...);
 
-static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code);
+static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
 static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
 
 static char *weekDays[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 static char *months[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+static char weekDays_translated[7][30];
+static char months_translated[12][30];
 
 char szSep0[40], szSep1[152], szSep2[40], szMicroLf[128], szExtraLf[50];
 char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
@@ -168,11 +170,7 @@ void CacheLogFonts()
     wsprintfA(rtfFonts[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
     
     strncpy(szToday, Translate("Today"), 20);
-    if(strlen(szToday) > 0)
-        strncat(szToday, ",", 20);
     strncpy(szYesterday, Translate("Yesterday"), 20);
-    if(strlen(szYesterday) > 0)
-        strncat(szYesterday, ",", 20);
 }
 
 void UncacheMsgLogIcons()
@@ -213,6 +211,27 @@ void CacheMsgLogIcons()
         CacheIconToBMP(&msgLogIcons[iCounter++], icons[i], DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(255,255,255)), size, size);
     }
 }
+
+/*
+ * pre-translate day and month names to significantly reduce he number of Translate()
+ * service calls while building the message log
+ */
+
+void PreTranslateDates()
+{
+    int i;
+    char *szTemp;
+    
+    for(i = 0; i <= 6; i++) {
+        szTemp = Translate(weekDays[i]);
+        mir_snprintf(weekDays_translated[i], 28, "%s", szTemp);
+    }
+    for(i = 0; i <= 11; i++) {
+        szTemp = Translate(months[i]);
+        mir_snprintf(months_translated[i], 28, "%s", szTemp);
+    }
+}
+
 static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
     va_list va;
@@ -682,9 +701,10 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     else
                         skipToNext = TRUE;
                     break;
-                case 'h':           // hour
+                case 'a':           // 12 hour
+                case 'h':           // 24 hour
                     if(showTime)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_hour);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, cc == 'h' ? "%s %02d" : "%s %2d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], cc == 'h' ? event_time.tm_hour : (event_time.tm_hour > 12 ? event_time.tm_hour - 12 : event_time.tm_hour));
                     else
                         skipToNext = TRUE;
                     break;
@@ -700,7 +720,13 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     else
                         skipToNext = TRUE;
                     break;
-                case'o':            // month
+                case 'p':            // am/pm symbol
+                    if(showTime)
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_hour > 12 ? "PM" : "AM");
+                    else
+                        skipToNext = TRUE;
+                    break;
+                case 'o':            // month
                     if(showTime && showDate)
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mon);
                     else
@@ -708,7 +734,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     break;
                 case'O':            // month (name)
                     if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], Translate(months[event_time.tm_mon]));
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], months_translated[event_time.tm_mon]);
                     else
                         skipToNext = TRUE;
                     break;
@@ -720,13 +746,22 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     break;
                 case 'w':           // day of week
                     if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], Translate(weekDays[event_time.tm_wday]));
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], weekDays_translated[event_time.tm_wday]);
                     else
                         skipToNext = TRUE;
                     break;
                 case 'y':           // year
                     if(showTime && showDate)
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_year + 1900);
+                    else
+                        skipToNext = TRUE;
+                    break;
+                case 'R':
+                case 'r':           // long date
+                    if(showTime && showDate) {
+                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, cc);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
@@ -1228,7 +1263,7 @@ void BuildCodePageList()
     EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
 }
 
-static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code)
+static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code)
 {
     static char szResult[100];
     DBTIMETOSTRING dbtts;
@@ -1247,15 +1282,19 @@ static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t che
     tm_today.tm_hour = tm_today.tm_min = tm_today.tm_sec = 0;
     today = mktime(&tm_today);
 
-    if(code == 'R' && check >= today) {
+    if((code == 'R' || code == 'r') && check >= today) {
         strcpy(szResult, szToday);
     }
-    else if(code == 'R' && check > (today - 86400)) {
+    else if((code == 'R' || code == 'r') && check > (today - 86400)) {
         strcpy(szResult, szYesterday);
     }
     else {
         if(code == 'D' || code == 'R')
             dbtts.szFormat = "D";
+        else if(code == 'T')
+            dbtts.szFormat = "s";
+        else if(code == 't')
+            dbtts.szFormat = "t";
         else
             dbtts.szFormat = "d";
         CallService(MS_DB_TIME_TIMESTAMPTOSTRING, check, (LPARAM) & dbtts);
