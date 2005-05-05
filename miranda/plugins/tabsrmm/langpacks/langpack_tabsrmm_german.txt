@@ -878,60 +878,63 @@ Nachrichtenverlauf
 ; icon descriptions for IcoLib
 ;
 [Show History]
-
+Verlauf zeigen
 [Message Log Options]
-
+Verlaufseinstellungen
 [Add contact]
-
+Kontakt hinzufügen
 [Multisend indicator]
-
+Senden an meherer Kontakte
 [Contact is typing]
-
+Kontakt tippt eine Nachricht
 [Quote text]
-
+Text zitieren
 [Save and close]
-
+Speichern und schließen
 [Send message]
-
+Nachricht senden
 [Avatar menu]
-
+Avataroptionen
 [Close]
-
+Schließen
 [User menu]
-
+Benutzermenü
 [Message delivery error]
-
+Fehler beim Versand
 [Incoming message]
-
+Eingehende Nachricht
 [Outgoing message]
-
+Ausgehende Nachricht
 [Smiley button]
-
+Smileys
 [Sending typing notify is on]
-
+Tippbenachrichtigung wird gesendet
 [Sending typing notify is off]
-
+Tippbenachrichtigung wird nicht gesendet
 [Static container icon]
-
+Icon für das Nachrichtenfenster
 [SecureIM is on]
-
+Secure IM ist aktiv
 [SecureIM is off]
-
+Secure IM ist nicht aktiv
 [Statuschange]
-
+Statuswechsel
 [Format bold]
-
+Fett
 [Format italic]
-
+Kursiv
 [Format underline]
-
+Unterstrichen
 [Font face]
-
+Schriftart
 [Font color]
+Schriftfarbe
 [Send Text Formatting]
 Textformatierung senden
 [Global]
 Global
+[Local]
+Lokal
 [This Contact]
 Für diesen Kontakt
 [BBCode]
@@ -966,7 +969,7 @@ Die globale Einstellung kann hier überschrieben werden. "Niemals" unterbindet Te
 [Text direction (BiDi)]
 Textrichtung
 [Use Default]
-Standard verwenden]
+Standard verwenden
 [Always LTR]
 Immer links nach rechts
 [Always RTL]

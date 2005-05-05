@@ -561,6 +561,20 @@
 #define ID_LOG_FREEZELOG                40183
 #define ID_EDITOR_LOADBACKGROUNDIMAGE   40184
 #define ID_EDITOR_REMOVEBACKGROUNDIMAGE 40185
+#define ID_FONT_SIZE                    40186
+#define ID_SIZE_LARGE                   40187
+#define ID_SIZE_BIGGER                  40188
+#define ID_SIZE_NORMAL                  40189
+#define ID_SIZE_SMALLER                 40190
+#define ID_SIZE_TINY                    40191
+#define ID_FONT_RED                     40192
+#define ID_FONT_GREEN                   40193
+#define ID_FONT_BLUE                    40194
+#define ID_FONT_MAGENTA                 40195
+#define ID_FONT_YELLOW                  40196
+#define ID_FONT_BLACK                   40197
+#define ID_FONT_WHITE                   40198
+#define ID_FONT_CLEARALLFORMATTING      40199
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -568,7 +582,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3
-#define _APS_NEXT_COMMAND_VALUE         40186
+#define _APS_NEXT_COMMAND_VALUE         40200
 #define _APS_NEXT_CONTROL_VALUE         1379
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

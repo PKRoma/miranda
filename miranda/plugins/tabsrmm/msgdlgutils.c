@@ -60,6 +60,17 @@ void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 
+struct RTFColorTable rtf_ctable[] = {
+    _T("red"), RGB(255, 0, 0), 0, ID_FONT_RED,
+    _T("blue"), RGB(0, 0, 255), 0, ID_FONT_BLUE,
+    _T("green"), RGB(0, 255, 0), 0, ID_FONT_GREEN,
+    _T("magenta"), RGB(255, 0, 255), 0, ID_FONT_MAGENTA,
+    _T("yellow"), RGB(255, 255, 0), 0, ID_FONT_YELLOW,
+    _T("black"), 0, 0, ID_FONT_BLACK,
+    _T("white"), RGB(255, 255, 255), 0, ID_FONT_WHITE,
+    NULL, 0, 0, 0
+};
+
 /*
  * calculates avatar layouting, based on splitter position to find the optimal size
  * for the avatar w/o disturbing the toolbar too much.
@@ -914,6 +925,65 @@ char * Message_GetFromStream(HWND hwndRtf, struct MessageWindowData* dat, DWORD 
 	return pszText; // pszText contains the text
 }
 
+static void CreateColorMap(TCHAR *Text)
+{
+	TCHAR * pszText = Text;
+	TCHAR * p1;
+	TCHAR * p2;
+	TCHAR * pEnd;
+	int iIndex = 1;
+
+//	static const char* lpszFmt = "/red%[^ \x5b,]/red%[^ \x5b,]/red%[^ \x5b,]";
+	static const TCHAR *lpszFmt = _T("\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];");
+	TCHAR szRed[10], szGreen[10], szBlue[10];
+
+	//pszText = _tcsdup(Text);
+
+	p1 = _tcsstr(pszText, _T("\\colortbl"));
+	if(!p1)
+		return;
+
+	pEnd = _tcschr(p1, '}');
+
+	p2 = _tcsstr(p1, _T("\\red"));
+
+	while(p2 && p2 < pEnd)
+	{
+		if( _stscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0 )
+		{
+			int i;
+			for (i = 0;;i ++) {
+                if(rtf_ctable[i].szName == NULL)
+                    break;
+				if(rtf_ctable[i].clr == RGB(_ttoi(szRed), _ttoi(szGreen), _ttoi(szBlue)))
+					rtf_ctable[i].index = iIndex;
+                else 
+                    rtf_ctable[i].index = 0;
+			}
+		}
+		iIndex++;
+		p1 = p2;
+		p1 ++;
+
+		p2 = _tcsstr(p1, _T("\\red"));
+	}
+
+	//free(pszText);
+
+	return ;
+}
+
+int RTFColorToIndex(int iCol)
+{
+    int i = 0;
+    while(rtf_ctable[i].szName != NULL) {
+        if(rtf_ctable[i].index == iCol)
+            return i;
+        i++;
+    }
+    return 0;
+}
+
 BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 {
 	TCHAR * p1;
@@ -922,7 +992,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 	BOOL bTextHasStarted = FALSE;
     LOGFONTA lf;
     COLORREF color;
-
+    static inColor = 0;
+    
 	if(!pszText)
 		return FALSE;
 
@@ -939,10 +1010,11 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
     /*
 	pIndex = malloc(sizeof(int) * MM_FindModule(dat->pszModule)->nColorCount);
 	for(i = 0; i < MM_FindModule(dat->pszModule)->nColorCount ; i++)
-		pIndex[i] = -1;
-	CreateColorMap(pszText, pIndex, dat);
-    */
+		pIndex[i] = -1;*/
+	CreateColorMap(pszText);
+    
 	// scan the file for rtf commands and remove or parse them
+    inColor = 0;
 	p1 = _tcsstr(pszText, _T("\\pard"));
 	if(p1)
 	{
@@ -966,13 +1038,15 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				{
 					TCHAR szTemp[20];
 					int iCol = _ttoi(p1 + 3);
-					//int iInd = RTFColorToIndex(pIndex, iCol, dat);
+					int iInd = RTFColorToIndex(iCol);
 					bJustRemovedRTF = TRUE;
 
+                    MessageBoxW(0, p1, L"foo", MB_OK);
                     _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
 					iRemoveChars = 3 + _tcslen(szTemp);
-					//if(bTextHasStarted || iCol)
-					//	_snprintf(InsertThis, sizeof(InsertThis), ( iCol >0 ) ? _T("%%c%02u") : _T("%%C"), iCol);
+					if(bTextHasStarted || iCol)
+						_sntprintf(InsertThis, sizeof(InsertThis), ( iCol > 1 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd].szName);
+                    inColor = iCol > 1 ? 1 : 0;
 				}
 				else if(p1 == _tcsstr(p1, _T("\\highlight"))) //background color
 				{

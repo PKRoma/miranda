@@ -33,13 +33,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SB_SETICON (WM_USER+15)
 #define SB_SETTIPTEXTA (WM_USER+16)
 #define TCS_BOTTOM 0x0002
-#define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 
 #define TVS_NOHSCROLL 0x8000
 #define TVS_CHECKBOXES          0x0100
 
 #endif
 
+#define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 
 #define GT_SELECTION 2
 #define ST_SELECTION 2

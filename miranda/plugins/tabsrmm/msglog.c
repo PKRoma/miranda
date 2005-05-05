@@ -637,6 +637,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     
     if(dbei.eventType == EVENTTYPE_STATUSCHANGE)
         szTemplate = this_templateset->szTemplates[TMPL_STATUSCHG];
+    else if(dbei.eventType == EVENTTYPE_ERRMSG)
+        szTemplate = this_templateset->szTemplates[TMPL_ERRMSG];
     else {
         if(dat->dwFlags & MWF_LOG_GROUPMODE)
             szTemplate = isSent ? (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTOUT] : this_templateset->szTemplates[TMPL_GRPINNEROUT]) : 
@@ -722,7 +724,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     break;
                 case 'p':            // am/pm symbol
                     if(showTime)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_hour > 12 ? "PM" : "AM");
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_hour > 11 ? "PM" : "AM");
                     else
                         skipToNext = TRUE;
                     break;
@@ -815,6 +817,9 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
                     AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->uin);
                     break;
+                case 'e':
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[MSGFONTID_ERROR], dbei.szModule);
+                    break;
                 case 'M':           // message
                 {
                     switch (dbei.eventType) {
@@ -822,18 +827,12 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                         case EVENTTYPE_STATUSCHANGE:
                         case EVENTTYPE_ERRMSG:
                         {
-                #if defined( _UNICODE )
-                            wchar_t *msg;
+                            TCHAR *msg, *formatted;
                             int wlen;
-                            wchar_t *formatted;
-                #else
-                            BYTE *msg;
-                            char *formatted;
-                #endif
                             if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
                                 if(dbei.eventType == EVENTTYPE_ERRMSG && dbei.cbBlob == 0)
                                     break;
-                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[dbei.eventType == EVENTTYPE_STATUSCHANGE ? H_MSGFONTID_STATUSCHANGES : MSGFONTID_ERROR]);
+                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[dbei.eventType == EVENTTYPE_STATUSCHANGE ? H_MSGFONTID_STATUSCHANGES : MSGFONTID_MYMSG]);
                             }
                             else
                                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
@@ -864,18 +863,13 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                                 }
                             }
                 #else   // unicode
-                            msg = (BYTE *) dbei.pBlob;
+                            msg = (char *) dbei.pBlob;
                             if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                                 dat->stats.lastReceivedChars = lstrlenA(msg);
                             TrimMessage(msg);
                             formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
                             AppendToBufferWithRTF(1, &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
                 #endif      // unicode
-
-                            if(dbei.eventType == EVENTTYPE_ERRMSG) {
-                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\line", rtfFonts[H_MSGFONTID_DIVIDERS]);
-                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
-                            }
                             break;
                         }
                         case EVENTTYPE_URL:

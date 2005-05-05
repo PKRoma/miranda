@@ -59,3 +59,9 @@ void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
+struct RTFColorTable {
+    TCHAR *szName;
+    COLORREF clr;
+    int index;
+    int menuid;
+};

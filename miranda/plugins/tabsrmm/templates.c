@@ -47,7 +47,8 @@ char *TemplateNames[] = {
     "Group Out (Start)",
     "Group In (Inner)",
     "Group Out (Inner)",
-    "Status change"
+    "Status change",
+    "Error message"
 };
     
 TemplateSet LTR_Default = { TRUE, 
@@ -58,6 +59,7 @@ TemplateSet LTR_Default = { TRUE,
     _T("%S %h:%m:%s: %M"),
     _T("%S %h:%m:%s: %M"),
     _T("%I%S %D, %h:%m:%s, %N %M"),
+    _T("%I%S %D, %h:%m:%s, %e%l%M"),
     "Default LTR"
 };
 
@@ -69,6 +71,7 @@ TemplateSet RTL_Default = { TRUE,
     _T("%S %h:%m:%s: %M"),
     _T("%S %h:%m:%s: %M"),
     _T("%I%S %D, %h:%m:%s, %N %M"),
+    _T("%I%S %D, %h:%m:%s, %e%l%M"),
     "Default RTL"
 };
 
@@ -86,7 +89,7 @@ void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
     DBVARIANT dbv = {0};
     int i;
 
-    for(i = 0; i <= TMPL_STATUSCHG; i++) {
+    for(i = 0; i <= TMPL_ERRMSG; i++) {
         if(DBGetContactSetting(hContact, rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[i], &dbv))
             continue;
         if(dbv.type == DBVT_ASCIIZ) {
@@ -169,7 +172,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-            for(i = 0; i <= TMPL_STATUSCHG; i++) {
+            for(i = 0; i <= TMPL_ERRMSG; i++) {
                 SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
                 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
             }

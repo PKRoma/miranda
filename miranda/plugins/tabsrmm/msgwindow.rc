@@ -83,6 +83,8 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,91,32,16,
                     14,0x18000000L
+    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,107,32,16,
+                    14,0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25,
                     WS_EX_LEFTSCROLLBAR
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,

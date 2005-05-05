@@ -941,6 +941,27 @@ BEGIN
         MENUITEM "Don't play Sounds",           ID_TRAYCONTEXT_DON40223
         MENUITEM "Be ""Super Quiet""",          ID_TRAYCONTEXT_BE
     END
+    POPUP "Font"
+    BEGIN
+        POPUP "Size"
+        BEGIN
+            MENUITEM "Large",                       ID_SIZE_LARGE
+            MENUITEM "Bigger",                      ID_SIZE_BIGGER
+            MENUITEM "Normal",                      ID_SIZE_NORMAL
+            MENUITEM "Smaller",                     ID_SIZE_SMALLER
+            MENUITEM "Tiny",                        ID_SIZE_TINY
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Red",                         ID_FONT_RED
+        MENUITEM "Green",                       ID_FONT_GREEN
+        MENUITEM "Blue",                        ID_FONT_BLUE
+        MENUITEM "Magenta",                     ID_FONT_MAGENTA
+        MENUITEM "Yellow",                      ID_FONT_YELLOW
+        MENUITEM "Black",                       ID_FONT_BLACK
+        MENUITEM "White",                       ID_FONT_WHITE
+        MENUITEM SEPARATOR
+        MENUITEM "Clear all Formatting",        ID_FONT_CLEARALLFORMATTING
+    END
 END
 
 IDR_MENUBAR MENU 

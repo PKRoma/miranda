@@ -82,6 +82,7 @@ extern HINSTANCE g_hInst;
 void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
 
 extern char *szWarnClose;
+extern struct RTFColorTable rtf_ctable[];
 
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigned int subType);
 struct ContainerWindowData *FindContainerByName(const TCHAR *name);
@@ -92,9 +93,9 @@ static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
 static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE, IDC_SENDMENU};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
-static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
-static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_PROTOCOL, IDC_FONTUNDERLINE, IDC_HISTORY, -1 };
-static const UINT controlsToHide1[] = { IDOK, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
+static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE, IDC_FONTFACE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
+static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_PROTOCOL, IDC_FONTFACE, IDC_FONTUNDERLINE, IDC_HISTORY, -1 };
+static const UINT controlsToHide1[] = { IDOK, IDC_FONTFACE, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
 static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
@@ -189,7 +190,7 @@ void SetDialogToType(HWND hwndDlg)
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), dat->dwFlags & MWF_ERRORSTATE ? SW_SHOW : SW_HIDE);
 
     if(!dat->SendFormat)
-        ShowMultipleControls(hwndDlg, &formatControls[1], 3, SW_HIDE);
+        ShowMultipleControls(hwndDlg, &formatControls[1], 4, SW_HIDE);
     
 // smileybutton stuff...
     
@@ -1286,12 +1287,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetDialogToType(hwndDlg);
             }
             dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
-            dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
+            //dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
+            dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 204 : 178) : 0);
             
             dat->iButtonBarNeeds += (dat->showUIElements) ? 28 : 0;
             dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 122 : 82) : 0);
             if(!dat->SendFormat)
-                dat->iButtonBarReallyNeeds -= 78;
+                dat->iButtonBarReallyNeeds -= 102;
             if(lParam == 1) {
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
@@ -1366,10 +1368,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
             if(dat->hContact) {
                 dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
-                dat->ltr_templates = &LTR_Active;
-                dat->rtl_templates = &RTL_Active;
             }
 
+            dat->ltr_templates = &LTR_Active;
+            dat->rtl_templates = &RTL_Active;
             
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
                 DWORD dwForcedContactNum = 0;
@@ -2621,7 +2623,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             }
         case WM_MEASUREITEM:
-            return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+            {
+                LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
+                lpmi->itemHeight = 0;
+                lpmi->itemWidth  += 6; //GetSystemMetrics(SM_CXSMICON);
+                return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+            }
         case WM_NCHITTEST:
             SendMessage(dat->pContainer->hwnd, WM_NCHITTEST, wParam, lParam);
             break;
@@ -2630,6 +2637,41 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
                 if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
                     DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, myGlobals.g_buttonBarIcons[5], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
+                    return TRUE;
+                } else if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
+                    RECT rc = { 0 };
+                    HBRUSH old, col;
+                    COLORREF clr;
+                    switch(dis->itemID) {
+                        case ID_FONT_RED:
+                            clr = RGB(255, 0, 0);
+                            break;
+                        case ID_FONT_BLUE:
+                            clr = RGB(0, 0, 255);
+                            break;
+                        case ID_FONT_GREEN:
+                            clr = RGB(0, 255, 0);
+                            break;
+                        case ID_FONT_MAGENTA:
+                            clr = RGB(255, 0, 255);
+                            break;
+                        case ID_FONT_YELLOW:
+                            clr = RGB(255, 255, 0);
+                            break;
+                        case ID_FONT_WHITE:
+                            clr = RGB(255, 255, 255);
+                            break;
+                        default:
+                            clr = 0;
+                    }
+                    col = CreateSolidBrush(clr);
+                    old = SelectObject(dis->hDC, col);
+                    rc.left = 2; rc.top = 4;
+                    rc.right = 18; rc.bottom = 14;
+                    Rectangle(dis->hDC, rc.left - 1, rc.top - 1, rc.right + 1, rc.bottom + 1);
+                    FillRect(dis->hDC, &rc, col);
+                    SelectObject(dis->hDC, old);
+                    DeleteObject(col);
                     return TRUE;
                 } else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && dat->hContactPic && dat->showPic) {
                     HPEN hPen;
@@ -2951,6 +2993,33 @@ quote_from_last:
     					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
                         break;
     				}
+                case IDC_FONTFACE:
+                    {
+                        HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 7);
+                        RECT rc;
+                        int iSelection, i;
+                        CHARFORMAT2 cf = {0};
+                        cf.cbSize = sizeof(CHARFORMAT2);
+                        cf.dwMask = CFM_COLOR;
+                        cf.dwEffects = 0;
+                        
+                        GetWindowRect(GetDlgItem(hwndDlg, IDC_FONTFACE), &rc);
+                        iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                        if(iSelection == ID_FONT_CLEARALLFORMATTING) {
+                            cf.dwMask = CFM_ALL;
+                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                            break;
+                        }
+                        for(i = 0;;i++) {
+                            if(rtf_ctable[i].szName == NULL)
+                                break;
+                            if(rtf_ctable[i].menuid == iSelection) {
+                                cf.crTextColor = rtf_ctable[i].clr;
+                                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                            }
+                        }
+                        break;
+                    }
                 case IDCANCEL: {
                     ShowWindow(dat->pContainer->hwnd, SW_MINIMIZE);
                     return FALSE;
@@ -3866,10 +3935,8 @@ verify:
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "container", szNewName);
 #endif                
                 PostMessage(myGlobals.g_hwndHotkeyHandler, DM_DOCREATETAB, (WPARAM)pNewContainer, (LPARAM)dat->hContact);
-                if (iOldItems > 1) {                // there were more than 1 tab, container is still valid
+                if (iOldItems > 1)                // there were more than 1 tab, container is still valid
                     SendMessage(dat->pContainer->hwndActive, WM_SIZE, 0, 0);
-                    //RedrawWindow(dat->pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE);
-                }
                 SetForegroundWindow(pNewContainer->hwnd);
                 SetActiveWindow(pNewContainer->hwnd);
                 break;

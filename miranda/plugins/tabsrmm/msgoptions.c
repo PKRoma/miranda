@@ -1481,17 +1481,17 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 									sprintf(str,"Font%dAs",i);
 									DBWriteContactSettingWord(NULL,SRFONTSETTINGMODULE,str,(WORD)((fontSettings[i].sameAsFlags<<8)|fontSettings[i].sameAs));
                                     if(i == MSGFONTID_MESSAGEAREA) {
-                                        sprintf(str,"Font%d",i);
+                                        sprintf(str,"Font%d",0);
                                         DBWriteContactSettingString(NULL,"SRMsg",str,fontSettings[i].szFace);
-                                        sprintf(str,"Font%dSet",i);
+                                        sprintf(str,"Font%dSet",0);
                                         DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].charset);
-                                        sprintf(str,"Font%dSize",i);
+                                        sprintf(str,"Font%dSize",0);
                                         DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].size);
-                                        sprintf(str,"Font%dSty",i);
+                                        sprintf(str,"Font%dSty",0);
                                         DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].style);
-                                        sprintf(str,"Font%dCol",i);
+                                        sprintf(str,"Font%dCol",0);
                                         DBWriteContactSettingDword(NULL,"SRMsg",str,fontSettings[i].colour);
-                                        sprintf(str,"Font%dAs",i);
+                                        sprintf(str,"Font%dAs",0);
                                         DBWriteContactSettingWord(NULL,"SRMsg",str,(WORD)((fontSettings[i].sameAsFlags<<8)|fontSettings[i].sameAs));
                                     }
 								}

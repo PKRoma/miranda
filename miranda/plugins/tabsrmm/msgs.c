@@ -458,7 +458,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
         BOOL bActivate = TRUE, bPopup = TRUE;
         if(bAutoPopup) {
             bActivate = bPopup = TRUE;
-            if((pContainer = FindContainerByName(szName)) == NULL);
+            if((pContainer = FindContainerByName(szName)) == NULL)
                 pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
             CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, FALSE, 0);
             return 0;
@@ -755,6 +755,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     PROTOCOLDESCRIPTOR **protocol;
     int protoCount, i;
     DBVARIANT dbv;
+    MENUITEMINFOA mii = {0};
+    HMENU submenu;
     
     ReloadGlobals();
     NEN_ReadOptions(&nen_options);
@@ -809,6 +811,12 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
     myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_BITMAP;
+    mii.hbmpItem = HBMMENU_CALLBACK;
+    submenu = GetSubMenu(myGlobals.g_hMenuContext, 7);
+    for(i = 2; i <= 8; i++)
+        SetMenuItemInfoA(submenu, (UINT_PTR)i, TRUE, &mii);
     BuildContainerMenu();
     
 #if defined(_UNICODE)
