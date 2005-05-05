@@ -54,29 +54,6 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 //mii was extended for NT5/Win98, so need the old length for some stuff
 #define MENUITEMINFO_V4_SIZE (offsetof(MENUITEMINFO,cch)+sizeof((*((MENUITEMINFO*)0)).cch))
 
-// uxtheme.h defines
-#ifndef THEMEAPI
-	#define WM_THEMECHANGED		0x031A // when windows changes themes 
-	#define BP_PUSHBUTTON		1  // Push Button Type
-	#define PBS_NORMAL			1
-	#define PBS_HOT				2
-	#define PBS_PRESSED			3
-	#define PBS_DISABLED		4
-	#define PBS_DEFAULTED		5
-	#define BP_CHECKBOX			3  // CheckBox Type
-	#define TP_BUTTON           1
-    #define TS_NORMAL           1
-    #define TS_HOT              2
-    #define TS_PRESSED          3
-    #define TS_DISABLED         4
-    #define TS_CHECKED          5
-    #define TS_HOTCHECKED       6
-	#define CBS_UNCHECKEDNORMAL 1
-	#define CBS_UNCHECKEDHOT    2
-	#define CBS_CHECKEDNORMAL   5
-	#define CBS_CHECKEDHOT      6
-#endif
-
 #if _MSC_VER >= 1300
 #define NOWIN2K
 #endif
@@ -103,6 +80,29 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #elif !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
 	#pragma message("win2k.h")
+
+	// uxtheme.h defines
+	#ifndef THEMEAPI
+		#define WM_THEMECHANGED		0x031A // when windows changes themes 
+		#define BP_PUSHBUTTON		1  // Push Button Type
+		#define PBS_NORMAL			1
+		#define PBS_HOT				2
+		#define PBS_PRESSED			3
+		#define PBS_DISABLED		4
+		#define PBS_DEFAULTED		5
+		#define BP_CHECKBOX			3  // CheckBox Type
+		#define TP_BUTTON           1
+		#define TS_NORMAL           1
+		#define TS_HOT              2
+		#define TS_PRESSED          3
+		#define TS_DISABLED         4
+		#define TS_CHECKED          5
+		#define TS_HOTCHECKED       6
+		#define CBS_UNCHECKEDNORMAL 1
+		#define CBS_UNCHECKEDHOT    2
+		#define CBS_CHECKEDNORMAL   5
+		#define CBS_CHECKEDHOT      6
+	#endif
 
 	#define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
 
