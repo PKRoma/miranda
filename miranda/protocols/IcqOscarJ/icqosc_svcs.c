@@ -490,11 +490,11 @@ int IcqBasicSearch(WPARAM wParam, LPARAM lParam)
 
     if (strlen(pszSearch))
     {
-      char pszUIN[0x10];
+      char pszUIN[UINMAXLEN] = {0};
       int nHandle = 0;
       unsigned int i, j;
 
-      for (i=j=0; (i<strlen(pszSearch)) && (j<0x10); i++)
+      for (i=j=0; (i<strlen(pszSearch)) && (j<UINMAXLEN); i++)
       { // we take only numbers
         if ((pszSearch[i]>=0x30) && (pszSearch[i]<=0x39))
         {
