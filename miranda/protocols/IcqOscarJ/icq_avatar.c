@@ -189,7 +189,7 @@ int DetectAvatarFormat(char* szFile)
 
 void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called from event
 {
-  avatarthreadstartinfo* atsi = {0};
+  avatarthreadstartinfo* atsi = NULL;
   pthread_t tid;
 
   if (!hConn)
@@ -428,6 +428,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
   {
     int recvResult;
     NETLIBPACKETRECVER packetRecv = {0};
+    DWORD wLastKeepAlive = 0; // we send keep-alive at most one per 30secs
 
     InitializeCriticalSection(&atsi->localSeqMutex);
 
@@ -454,13 +455,24 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           else
             Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Idle.");
 #endif
-          if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
-          { // send keep-alive packet
-            icq_packet packet;
-
-            packet.wLen = 0;
-            write_flap(&packet, ICQ_PING_CHAN);
-            sendAvatarPacket(&packet, atsi);
+          if (GetTickCount() > wLastKeepAlive)
+          { // limit frequency (HACK: on some systems select() does not work well)
+            if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
+            { // send keep-alive packet
+              icq_packet packet;
+ 
+              packet.wLen = 0;
+              write_flap(&packet, ICQ_PING_CHAN);
+              sendAvatarPacket(&packet, atsi);
+            }
+            wLastKeepAlive = GetTickCount() + 57000;
+          }
+          else
+          { // this is bad, the system does not handle select() properly
+#ifdef _DEBUG
+            Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Forcing Idle.");
+#endif
+            Sleep(500); // wait some time, can we do anything else ??
           }
           continue; 
         }

@@ -46,6 +46,7 @@ extern CRITICAL_SECTION connectionHandleMutex;
 extern char gpszICQProtoName[MAX_PATH];
 extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
+extern HANDLE hKeepAliveEvent;
 HANDLE hServerConn;
 DWORD dwLocalInternalIP, dwLocalExternalIP;
 WORD wListenPort;
@@ -231,6 +232,8 @@ void icq_serverDisconnect()
 	}
 	else
 		LeaveCriticalSection(&connectionHandleMutex);
+
+  if (hKeepAliveEvent) SetEvent(hKeepAliveEvent); // signal keep-alive thread to stop
 }
 
 
@@ -362,7 +365,6 @@ void sendServPacket(icq_packet* pPacket)
 
 void icq_login(const char* szPassword)
 {
-
 	DBVARIANT dbvServer = {DBVT_DELETED};
 	serverthread_start_info* stsi;
 	DWORD dwUin;
@@ -401,14 +403,12 @@ void icq_login(const char* szPassword)
 	serverThreadId.hThread = (HANDLE)forkthreadex(NULL, 0, icq_serverThread, stsi, 0, &serverThreadId.dwThreadId);
 
 	DBFreeVariant(&dbvServer);
-
 }
 
 
 
 static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted)
 {
-
 	unsigned int i;
 	unsigned char table[] =
 	{
@@ -422,5 +422,4 @@ static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted
 	{
 		encrypted[i] = (szPassword[i] ^ table[i % 16]);
 	}
-
 }
