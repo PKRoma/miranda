@@ -16,6 +16,9 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
+2.3.0.0
+ - Drag/drop didn't always work from message control
+
 2.2.0.0
  - Log window didn't scroll correctly when avatar was loaded
  - Added show seconds option to log window timestamp

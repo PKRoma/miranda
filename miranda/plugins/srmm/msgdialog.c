@@ -200,6 +200,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
 	switch (msg) {
+	case WM_DROPFILES:
+		SendMessage(GetParent(hwnd), WM_DROPFILES, (WPARAM)wParam, (LPARAM)lParam);
+		break;
 	case EM_SUBCLASSED:
 		dat = (struct MsgEditSubclassData *) malloc(sizeof(struct MsgEditSubclassData));
 		SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
