@@ -101,7 +101,7 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 		int recvResult, bytesParsed;
 
 		JabberLog( "Waiting for data..." );
-		recvResult = Netlib_Recv( s, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, MSG_NODUMP );
+		recvResult = Netlib_Recv( s, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, 0 );
 		if ( recvResult <= 0 )
 			break;
 		datalen += recvResult;
@@ -421,7 +421,7 @@ static void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemot
 		int recvResult, bytesParsed;
 
 		//recvResult = JabberWsRecv( hConnection, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen );
-		recvResult = Netlib_Recv( hConnection, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, MSG_NODUMP );
+		recvResult = Netlib_Recv( hConnection, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, 0 );
 		if ( recvResult <= 0 )
 			break;
 		datalen += recvResult;
@@ -527,7 +527,7 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 				fileBuffer = ( char* )malloc( 2048 );
 				JabberLog( "Sending file data..." );
 				while (( numRead=_read( fileId, fileBuffer, 2048 )) > 0 ) {
-					if ( Netlib_Send( s, fileBuffer, numRead, MSG_NODUMP ) != numRead ) {
+					if ( Netlib_Send( s, fileBuffer, numRead, 0 ) != numRead ) {
 						ft->state = FT_ERROR;
 						break;
 					}

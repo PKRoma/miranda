@@ -226,7 +226,7 @@ static BOOL JabberFtSend( HANDLE hConn, void *userdata )
 	ft->fileReceivedBytes = 0;
 	if (( buffer=( char* )malloc( 2048 )) != NULL ) {
 		while (( numRead=_read( fd, buffer, 2048 )) > 0 ) {
-			if ( Netlib_Send( hConn, buffer, numRead, MSG_NODUMP ) != numRead ) {
+			if ( Netlib_Send( hConn, buffer, numRead, 0 ) != numRead ) {
 				free( buffer );
 				_close( fd );
 				return FALSE;

@@ -63,7 +63,7 @@ int JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen )
 {
 	int len;
 
-	if (( len=Netlib_Send( hConn, data, datalen, /*MSG_NODUMP|*/MSG_DUMPASTEXT ))==SOCKET_ERROR || len!=datalen ) {
+	if (( len=Netlib_Send( hConn, data, datalen, MSG_DUMPASTEXT ))==SOCKET_ERROR || len!=datalen ) {
 		JabberLog( "Netlib_Send() failed, error=%d", WSAGetLastError());
 		return FALSE;
 	}
@@ -74,7 +74,7 @@ int JabberWsRecv( JABBER_SOCKET hConn, char* data, long datalen )
 {
 	int ret;
 
-	ret = Netlib_Recv( hConn, data, datalen, /*MSG_NODUMP|*/MSG_DUMPASTEXT );
+	ret = Netlib_Recv( hConn, data, datalen, MSG_DUMPASTEXT );
 	if( ret == SOCKET_ERROR ) {
 		JabberLog( "Netlib_Recv() failed, error=%d", WSAGetLastError());
 		return 0;

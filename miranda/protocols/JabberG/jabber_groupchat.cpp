@@ -357,9 +357,6 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		{
-			DBVARIANT dbv;
-			char* nick, *room;
-
 			// lParam is the room JID ( room@server ) in UTF-8
 			hwndJabberJoinGroupchat = hwndDlg;
 			TranslateDialogDefault( hwndDlg );
@@ -369,7 +366,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					*p = '\0';
 					// Need to save room name in UTF-8 in case the room codepage is different
 					// from the local code page
-					room = strdup( text );
+					char* room = strdup( text );
 					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) room );
 					SetDlgItemText( hwndDlg, IDC_ROOM, room );
 					SetDlgItemText( hwndDlg, IDC_SERVER, p+1 );
@@ -377,18 +374,19 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				else
 					SetDlgItemText( hwndDlg, IDC_SERVER, text );
 			}
-			if ( !DBGetContactSetting( NULL, jabberProtoName, "Nick", &dbv )) {
-				SetDlgItemText( hwndDlg, IDC_NICK, dbv.pszVal );
-				JFreeVariant( &dbv );
+
+			char szNick[ 256 ];
+			if ( !JGetStaticString( "Nick", NULL, szNick, sizeof szNick )) {
+				SetDlgItemText( hwndDlg, IDC_NICK, szNick );
 			}
 			else {
-				if (( nick=JabberNickFromJID( jabberJID )) != NULL ) {
+				char* nick = JabberNickFromJID( jabberJID );
+				if ( nick != NULL ) {
 					SetDlgItemText( hwndDlg, IDC_NICK, nick );
 					free( nick );
-				}
-			}
-		}
+		}	}	}
 		return TRUE;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_ROOM:
@@ -436,10 +434,10 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		break;
 	case WM_DESTROY:
 		{
-			char* str;
-
-			if (( str=( char* )GetWindowLong( hwndDlg, GWL_USERDATA )) != NULL )
+			char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
+			if ( str != NULL )
 				free( str );
+
 			hwndJabberJoinGroupchat = NULL;
 		}
 		break;

@@ -202,7 +202,7 @@ static HANDLE AddToListByJID( const char* newJid, DWORD flags )
 		JSetString( hContact, "jid", jid );
 		if (( nick=JabberNickFromJID( newJid )) == NULL )
 			nick = _strdup( newJid );
-		DBWriteContactSettingString( hContact, "CList", "Nick", nick );
+		JSetString( hContact, "Nick", nick );
 		free( nick );
 		free( jid );
 
@@ -864,7 +864,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
-					else if ( !DBGetContactSetting( hContact, "CList", "Nick", &dbv )) {
+					else if ( !DBGetContactSetting( hContact, jabberProtoName, "Nick", &dbv )) {
 						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
@@ -920,7 +920,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
-					else if ( !DBGetContactSetting( hContact, "CList", "Nick", &dbv )) {
+					else if ( !DBGetContactSetting( hContact, jabberProtoName, "Nick", &dbv )) {
 						nick = strdup( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}

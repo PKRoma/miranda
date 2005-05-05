@@ -185,7 +185,17 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 							if ( JGetByte( hContact, "ChatRoom", 0 ))
 								QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
 
-							DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+                     char szNick[ 256 ];
+							if ( !JGetStaticString( "Nick", hContact, szNick, sizeof szNick )) {
+								if ( strcmp( nick, szNick ) != 0 )
+									DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+								else
+									DBDeleteContactSetting( hContact, "CList", "MyHandle" );
+								JFreeVariant( &dbv );
+							}
+							else JSetString( hContact, "CList", nick );
+							DBDeleteContactSetting( hContact, "CList", "Nick" );
+
 							if ( item->group ) 
 								free( item->group );
 

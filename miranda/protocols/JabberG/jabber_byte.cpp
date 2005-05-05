@@ -178,7 +178,7 @@ static void JabberByteSendConnection( HANDLE hConn, DWORD dwRemoteIP )
 	jbt->state = JBT_INIT;
 	datalen = 0;
 	while ( jbt->state!=JBT_DONE && jbt->state!=JBT_ERROR ) {
-		recvResult = Netlib_Recv( hConn, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, MSG_NODUMP );
+		recvResult = Netlib_Recv( hConn, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, 0 );
 		if ( recvResult <= 0 ) break;
 		datalen += recvResult;
 		bytesParsed = JabberByteSendParse( hConn, jbt, buffer, datalen );
@@ -223,7 +223,7 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 				jbt->state = JBT_ERROR;
 			}
 			data[0] = 5;
-			Netlib_Send( hConn, ( char* )data, 2, MSG_NODUMP );
+			Netlib_Send( hConn, ( char* )data, 2, 0 );
 		}
 		else
 			jbt->state = JBT_ERROR;
@@ -253,7 +253,7 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 				data[1] = ( i>=20 )?0:2;
 				data[0] = 5;
 				data[3] = 1;
-				Netlib_Send( hConn, ( char* )data, 10, MSG_NODUMP );
+				Netlib_Send( hConn, ( char* )data, 10, 0 );
 				if ( i>=20 && jbt->pfnSend( hConn, jbt->userdata )==TRUE )
 					jbt->state = JBT_DONE;
 				else
@@ -331,12 +331,12 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 				data[0] = 5;
 				data[1] = 1;
 				data[2] = 0;
-				Netlib_Send( hConn, data, 3, MSG_NODUMP );
+				Netlib_Send( hConn, data, 3, 0 );
 
 				jbt->state = JBT_INIT;
 				datalen = 0;
 				while ( jbt->state!=JBT_DONE && jbt->state!=JBT_ERROR && jbt->state!=JBT_SOCKSERR ) {
-					recvResult = Netlib_Recv( hConn, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, MSG_NODUMP );
+					recvResult = Netlib_Recv( hConn, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, 0 );
 					if ( recvResult <= 0 ) break;
 					datalen += recvResult;
 					bytesParsed = JabberByteReceiveParse( hConn, jbt, buffer, datalen );
@@ -393,7 +393,7 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 			szHash = JabberSha1( text );
 			strncpy(( char* )( data+5 ), szHash, 40 );
 			free( szHash );
-			Netlib_Send( hConn, ( char* )data, 47, MSG_NODUMP );
+			Netlib_Send( hConn, ( char* )data, 47, 0 );
 			jbt->state = JBT_CONNECT;
 		}
 		else
