@@ -58,3 +58,8 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
+#ifdef __GNUC__
+#define mir_i64(x) (x##LL)
+#else
+#define mir_i64(x) (x##i64)
+#endif

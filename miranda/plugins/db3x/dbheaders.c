@@ -75,4 +75,4 @@ int CheckDbHeaders(struct DBHeader * hdr)
 int InitialiseDbHeaders(void)
 {
 	return 0;
-} 
+}

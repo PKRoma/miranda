@@ -102,11 +102,12 @@ static int grokHeader( char * profile, int * error )
 }
 
 // returns 0 if all the APIs are injected otherwise, 1
-static int LoadDatabase( char * profile, PLUGINLINK * link )
+static int LoadDatabase( char * profile, void * plink )
 {
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+	PLUGINLINK *link = plink;
 	// don't need thread notifications
 	strncpy(szDbPath, profile, sizeof(szDbPath));
 	// this is like Load()'s pluginLink
