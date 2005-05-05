@@ -538,7 +538,7 @@ static int aim_gchat_recvevent(WPARAM wParam, LPARAM lParam)
 {
     GCHOOK *gch = (GCHOOK *) lParam;
 
-    if (!gch)
+    if (!gch || !gch->pDest)
         return 0;
     if (!strcmpi(gch->pDest->pszModule, AIM_PROTO)) {
         switch (gch->pDest->iType) {
@@ -560,6 +560,20 @@ static int aim_gchat_recvevent(WPARAM wParam, LPARAM lParam)
                 }
                 break;
             }
+			case GC_USER_PRIVMESS:
+			{
+				if (gch->pszUID) {
+					if (aim_util_isme(gch->pszUID))
+						break;
+					if (ServiceExists(MS_MSG_SENDMESSAGE)) {
+						HANDLE hContact = aim_buddy_get(gch->pszUID, 1, 0, 0, NULL);
+						
+						if (hContact) 
+							CallServiceSync(MS_MSG_SENDMESSAGE, (WPARAM) hContact, 0);
+					}
+				}
+				break;
+			}
         }
     }
     return 0;
