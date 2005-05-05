@@ -490,7 +490,7 @@ int IcqBasicSearch(WPARAM wParam, LPARAM lParam)
 
     if (strlen(pszSearch))
     {
-      char pszUIN[UINMAXLEN] = {0};
+      char pszUIN[UINMAXLEN];
       int nHandle = 0;
       unsigned int i, j;
 
@@ -502,6 +502,7 @@ int IcqBasicSearch(WPARAM wParam, LPARAM lParam)
           j++;
         }
       }
+      pszUIN[j] = 0;
       
       if (strlen(pszUIN))
       {
