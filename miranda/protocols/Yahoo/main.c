@@ -138,33 +138,6 @@ __declspec(dllexport)int Unload(void)
 	return 0;
 }
 
-/*
- * Convert old yahoo plugin contact to the new one
- * Parameters: void
- */
- 
- void yahoo_convert_legacy() {
-	HANDLE hContact;
-	DBVARIANT dbv;
-	char *szProto;
-
-	if (DBGetContactSettingByte(NULL, yahooProtocolName, "LegacyConvert", 0)) return;
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-    while (hContact) {
-		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (szProto != NULL && !lstrcmp(szProto, yahooProtocolName)) {
-			if (!DBGetContactSetting(hContact, yahooProtocolName, "id", &dbv)) {
-				 DBWriteContactSettingString(hContact, yahooProtocolName, "yahoo_id", dbv.pszVal);
-				 DBFreeVariant(&dbv);
-				 DBDeleteContactSetting(hContact, yahooProtocolName, "id");
-			}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
-	
-	DBWriteContactSettingByte(NULL, yahooProtocolName, "LegacyConvert", 1);
-}
-
 int YahooIdleEvent(WPARAM wParam, LPARAM lParam);
 
 /*
@@ -185,7 +158,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 #ifdef HTTP_GATEWAY
 	nlu.flags =  NUF_OUTGOING | NUF_HTTPGATEWAY;
 #else
-   	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS;
+   	nlu.flags = /*NUF_INCOMING |*/ NUF_OUTGOING | NUF_HTTPCONNS;
 #endif
 
 	nlu.szSettingsModule = tModule;
@@ -214,8 +187,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	//add as a known module in DB Editor ++
 	CallService("DBEditorpp/RegisterSingleModule",(WPARAM)yahooProtocolName, 0);
 	
-	yahoo_convert_legacy();
-
 	start_timer();
 	return 0;
 }
@@ -232,8 +203,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	PROTOCOLDESCRIPTOR pd;
 	char path[MAX_PATH];
 	char* protocolname;
-	char* fend;
-		
+	
  	pluginLink=link;
 	//
 	// Need to disable threading since we got our own routines.
@@ -243,17 +213,23 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	GetModuleFileName( hinstance, path, sizeof( path ));
 
 	protocolname = strrchr(path,'\\');
-	protocolname++;
-	fend = strrchr(path,'.');
-	*fend = '\0';
-	CharUpper( protocolname );
 	
-	lstrcpyn(yahooProtocolName, protocolname, MAX_PATH);
-
-	SkinAddNewSoundEx(Translate( "mail" ), yahooProtocolName, "New E-mail available in Inbox" );
+	if (protocolname != NULL) {
+		char* fend;
+		
+		protocolname++;
+		fend = strrchr(path,'.');
+		
+		if (fend != NULL)
+			*fend = '\0';
+		
+		CharUpper( protocolname );
+		lstrcpyn(yahooProtocolName, protocolname, MAX_PATH);
+	} else 
+		lstrcpy(yahooProtocolName, "YAHOO");
 
 	// 1.
-	LoadYahooServices();
+	hHookModulesLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 	
 	// 2.
 	ZeroMemory(&pd,sizeof(pd));
@@ -263,12 +239,13 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	CallService(MS_PROTO_REGISTERMODULE,0,(LPARAM)&pd);
 
 	register_callbacks();
-	
 	// 3.
-	hHookModulesLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
-	
 	yahoo_logoff_buddies();
-	
+
+	SkinAddNewSoundEx(Translate( "mail" ), yahooProtocolName, "New E-mail available in Inbox" );
+
+	LoadYahooServices();
+
 	pthread_mutex_init(&connectionHandleMutex);	
     return 0;
 }
