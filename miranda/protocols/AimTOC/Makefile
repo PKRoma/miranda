@@ -91,7 +91,7 @@ DEFINES := $(DEFINES) -D_DEBUG
 endif
 
 # Flags
-LFLAGS  = -shared 
+LFLAGS  = -shared -s
 RCFLAGS = --input-format rc --output-format coff
 ifdef DEBUG
 CFLAGS  = -g $(DEFINES) -I../../include
