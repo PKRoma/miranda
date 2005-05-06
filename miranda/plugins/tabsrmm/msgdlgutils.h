@@ -65,3 +65,6 @@ struct RTFColorTable {
     int index;
     int menuid;
 };
+
+#define MSGDLGFONTCOUNT 22
+

@@ -28,6 +28,7 @@ $Id$
 #pragma hdrstop
 
 #include "msgs.h"
+#include "msgdlgutils.h"
 
 /*
  * writes the current "theme" to .ini file

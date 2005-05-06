@@ -43,6 +43,7 @@ $Id$
 #include "m_MathModule.h"
 //mathMod end
 #endif
+#include "msgdlgutils.h"
 
 struct CPTABLE cpTable[] = {
     {	874,	"Thai" },
@@ -94,6 +95,7 @@ extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 extern void ReleaseRichEditOle(IRichEditOle *ole);
 
 extern MYGLOBALS myGlobals;
+extern struct RTFColorTable rtf_ctable[];
 
 static int logPixelSY;
 
@@ -232,6 +234,14 @@ void PreTranslateDates()
     }
 }
 
+static int GetColorIndex(char *rtffont)
+{
+    char *p;
+    
+    if((p = strstr(rtffont, "\\cf")) != NULL)
+        return atoi(p + 3);
+}
+
 static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
     va_list va;
@@ -251,7 +261,7 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 
 #if defined( _UNICODE )
 
-static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR * line, int iFormatting)
+static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR * line, int mode)
 {
     DWORD textCharsCount = 0;
     char *d;
@@ -268,10 +278,10 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
 
     for (; *line; line++, textCharsCount++) {
         
-        if(iFormatting) {
+        if(1) {
             if(*line == '%' && line[1] != 0) {
                 TCHAR code = line[2];
-                if((code == '0' || code == '1') && line[3] == ' ') {
+                if(((code == '0' || code == '1') && line[3] == ' ') || (line[1] == 'c' && code == 'x')){
                     int begin = (code == '1');
                     switch(line[1]) {
                         case 'b':
@@ -288,6 +298,26 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
                             CopyMemory(d, begin ? "\\ul " : "\\ul0 ", begin ? 4 : 5);
                             d += (begin ? 4 : 5);
                             line += 3;
+                            continue;
+                        case 'c':
+                            begin = (code == 'x');
+                            CopyMemory(d, "\\cf", 3);
+                            if(begin) {
+                                d[3] = (char)line[3];
+                                d[4] = (char)line[4];
+                                d[5] = ' ';
+                                //MessageBoxA(0, d, "ff",MB_OK);
+                            }
+                            else {
+                                char szTemp[10];
+                                int colindex = GetColorIndex(rtfFonts[LOWORD(mode) ? (MSGFONTID_MYMSG + (HIWORD(mode) ? 8 : 0)) : (MSGFONTID_YOURMSG + (HIWORD(mode) ? 8 : 0))]);
+                                _snprintf(szTemp, 4, "%02d", colindex);
+                                d[3] = szTemp[0];
+                                d[4] = szTemp[1];
+                                d[5] = ' ';
+                            }
+                            d += 6;
+                            line += (begin ? 6 : 3);
                             continue;
                     }
                 }
@@ -470,7 +500,15 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
     colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", RGB(224,224,224));
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    
+
+    // bbcode colors...
+
+    i = 0;
+    while(rtf_ctable[i].szName != NULL) {
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(rtf_ctable[i].clr), GetGValue(rtf_ctable[i].clr), GetBValue(rtf_ctable[i].clr));
+        i++;
+    }
+        
     // RTL-Support
 	if (dat->dwFlags & MWF_LOG_RTL) 
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\rtlpar");
@@ -848,7 +886,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                                     if(wlen <= (msglen - 1) && wlen > 0){
                                         TrimMessage(msg);
                                         formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
-                                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
+                                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
+                                        //MessageBoxA(0, buffer, "bar", MB_OK);
                                     }
                                     else
                                         goto nounicode;
@@ -859,7 +898,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                                     MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
                                     TrimMessage(msg);
                                     formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
-                                    AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, 1);
+                                    AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
                                 }
                             }
                 #else   // unicode

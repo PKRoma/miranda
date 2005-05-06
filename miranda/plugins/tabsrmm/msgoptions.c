@@ -29,7 +29,7 @@ $Id$
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
 #include "m_ieview.h"
-
+#include "msgdlgutils.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin

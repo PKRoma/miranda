@@ -135,7 +135,9 @@ Version 0.9.9.95 - 2005/04/15
         * replaced the tray-icon double click with a middle mouse button click action.
         
         ! fixed: wrong (own) nickname may show up in the message log history for metacontacts.
-                  
+
+        + tray icon will now be recreated after explorer has crashed (and restarted).
+                          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.

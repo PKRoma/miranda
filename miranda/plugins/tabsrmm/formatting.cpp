@@ -36,7 +36,11 @@ License: GPL
 #include <vector>
 #include <set>
 #include <fstream>
+#include "msgdlgutils.h"
+
 #define MWF_LOG_TEXTFORMAT 0x2000000
+
+extern "C" RTFColorTable rtf_ctable[];
 
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 
@@ -47,13 +51,13 @@ extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
  * had no other choice as srmm never had an api for this...
  */
 
-static WCHAR *w_bbcodes_begin[] = { L"[b]", L"[i]", L"[u]" };
-static WCHAR *w_bbcodes_end[] = { L"[/b]", L"[/i]", L"[/u]" };
+static WCHAR *w_bbcodes_begin[] = { L"[b]", L"[i]", L"[u]", L"[color=" };
+static WCHAR *w_bbcodes_end[] = { L"[/b]", L"[/i]", L"[/u]", L"[/color]" };
 
-static WCHAR *formatting_strings_begin[] = { L"%b1 ", L"%i1 ", L"%u1 " };
-static WCHAR *formatting_strings_end[] = { L"%b0 ", L"%i0 ", L"%u0 " };
+static WCHAR *formatting_strings_begin[] = { L"%b1 ", L"%i1 ", L"%u1 ", L"%c1 " };
+static WCHAR *formatting_strings_end[] = { L"%b0 ", L"%i0 ", L"%u0 ", L"%c0 " };
 
-#define NR_CODES 3
+#define NR_CODES 4
 /*
  * this translates formatting tags into rtf sequences...
  * if bWordsOnly is != 0, then only formatting tags 
@@ -89,6 +93,30 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int bWordsOnl
         endindex = i;
         if((endmark = message.find(w_bbcodes_end[i], beginmark)) == message.npos)
             break;
+        if(endindex == 3) {                                  // color
+            int closing = message.find_first_of(L"]", beginmark);
+            if(closing == message.npos)
+                continue;                                       // no closing bracket found
+            else {
+                std::wstring colorname = message.substr(beginmark + 7, closing - (beginmark + 7));
+                int ii = 0;
+                wchar_t szTemp[5];
+                while(rtf_ctable[ii].szName != NULL) {
+                    if(colorname == rtf_ctable[ii].szName) {
+                        message.erase(endmark, 4);
+                        message.replace(endmark, 4, L"%c0 ");
+                        message.erase(beginmark, (closing - beginmark));
+                        message.insert(beginmark, L"%cxxx ");
+                        _snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 10 + ii);
+                        message[beginmark + 3] = szTemp[0];
+                        message[beginmark + 4] = szTemp[1];
+                        break;
+                    }
+                    ii++;
+                }
+                continue;
+            }
+        }
         message.replace(endmark, 4, formatting_strings_end[i]);
         message.insert(beginmark, L" ");
         message.replace(beginmark, 4, formatting_strings_begin[i]);

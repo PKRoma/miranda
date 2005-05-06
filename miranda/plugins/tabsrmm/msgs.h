@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #endif
 
+#define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 
 #define GT_SELECTION 2
@@ -411,8 +412,6 @@ struct MsgLogIcon {
 
 #define IDB_UNKNOWNAVATAR 100   /* fallback image for non-existing avatars (BITMAP) */
 #define IDS_IDENTIFY 101        /* string resource to identify icon pack */
-
-#define MSGDLGFONTCOUNT 22
 
 WCHAR *Utf8_Decode(const char *str);
 char *Utf8_Encode(const WCHAR *str);

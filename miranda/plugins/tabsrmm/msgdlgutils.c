@@ -979,7 +979,7 @@ int RTFColorToIndex(int iCol)
     int i = 0;
     while(rtf_ctable[i].szName != NULL) {
         if(rtf_ctable[i].index == iCol)
-            return i;
+            return i + 1;
         i++;
     }
     return 0;
@@ -1044,10 +1044,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 
                     //MessageBoxW(0, p1, L"foo", MB_OK);
                     _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
+                    //MessageBoxW(0, pszText, szTemp, MB_OK);
 					iRemoveChars = 3 + _tcslen(szTemp);
 					if(bTextHasStarted || iCol)
-						_sntprintf(InsertThis, sizeof(InsertThis), ( iCol > 1 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd].szName);
-                    inColor = iCol > 1 ? 1 : 0;
+					//	_sntprintf(InsertThis, sizeof(InsertThis), ( iCol > 1 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd].szName);
+                        _sntprintf(InsertThis, sizeof(InsertThis), ( iInd > 0 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd  - 1].szName);
+                    inColor = iInd > 0 ? 1 : 0;
 				}
 				else if(p1 == _tcsstr(p1, _T("\\highlight"))) //background color
 				{
@@ -1245,7 +1247,6 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 	}
 
 	//free(pIndex);
-
 	return TRUE;
 }
 
