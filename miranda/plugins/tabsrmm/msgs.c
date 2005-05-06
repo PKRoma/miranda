@@ -667,7 +667,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
             return 0;                       // filter out settings we aren't interested in...
         if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
             AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites);
-        if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isRecent", 0))
+        if(DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "isRecent", 0))
             AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuRecent);
         return 0;       // for the hContact.
     }

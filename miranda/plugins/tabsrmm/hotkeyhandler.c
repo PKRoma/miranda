@@ -53,16 +53,20 @@ extern NEN_OPTIONS nen_options;
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
+static UINT WM_TASKBARCREATED;
 
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    if(msg == WM_TASKBARCREATED) {
+        CreateSystrayIcon(FALSE);
+        CreateSystrayIcon(TRUE);
+        return 0;
+    }
     switch(msg) {
         case WM_INITDIALOG:
             SendMessage(hwndDlg, DM_REGISTERHOTKEYS, 0, 0);
-            //g_hSettingChanged = HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED, hwndDlg, DM_CONTACTSETTINGCHANGED);
-            //g_hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PROTOACK);
-            //g_hNewEvent = HookEventMessage(ME_DB_EVENT_ADDED, hwndDlg, HM_DBEVENTADDED);
             g_hotkeyHwnd = hwndDlg;
+            WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
             return TRUE;
         case WM_HOTKEY:
             {

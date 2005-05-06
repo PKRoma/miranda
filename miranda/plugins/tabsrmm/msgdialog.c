@@ -2666,8 +2666,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     col = CreateSolidBrush(clr);
                     old = SelectObject(dis->hDC, col);
-                    rc.left = 2; rc.top = 4;
-                    rc.right = 18; rc.bottom = 14;
+                    rc.left = 2; rc.top = dis->rcItem.top - 4;
+                    rc.right = 18; rc.bottom = dis->rcItem.bottom + 4;
                     Rectangle(dis->hDC, rc.left - 1, rc.top - 1, rc.right + 1, rc.bottom + 1);
                     FillRect(dis->hDC, &rc, col);
                     SelectObject(dis->hDC, old);

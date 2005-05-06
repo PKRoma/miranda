@@ -931,7 +931,7 @@ static void CreateColorMap(TCHAR *Text)
 	TCHAR * p1;
 	TCHAR * p2;
 	TCHAR * pEnd;
-	int iIndex = 1;
+	int iIndex = 1, i = 0;
 
 //	static const char* lpszFmt = "/red%[^ \x5b,]/red%[^ \x5b,]/red%[^ \x5b,]";
 	static const TCHAR *lpszFmt = _T("\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];");
@@ -947,7 +947,10 @@ static void CreateColorMap(TCHAR *Text)
 
 	p2 = _tcsstr(p1, _T("\\red"));
 
-	while(p2 && p2 < pEnd)
+    while(rtf_ctable[i].szName != NULL)
+        rtf_ctable[i++].index = 0;
+    
+    while(p2 && p2 < pEnd)
 	{
 		if( _stscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0 )
 		{
@@ -957,8 +960,6 @@ static void CreateColorMap(TCHAR *Text)
                     break;
 				if(rtf_ctable[i].clr == RGB(_ttoi(szRed), _ttoi(szGreen), _ttoi(szBlue)))
 					rtf_ctable[i].index = iIndex;
-                else 
-                    rtf_ctable[i].index = 0;
 			}
 		}
 		iIndex++;
@@ -1041,7 +1042,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					int iInd = RTFColorToIndex(iCol);
 					bJustRemovedRTF = TRUE;
 
-                    MessageBoxW(0, p1, L"foo", MB_OK);
+                    //MessageBoxW(0, p1, L"foo", MB_OK);
                     _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
 					iRemoveChars = 3 + _tcslen(szTemp);
 					if(bTextHasStarted || iCol)
