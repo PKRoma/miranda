@@ -74,9 +74,10 @@ HANDLE aim_buddy_get(char *nick, int create, int inlist, int noadd, char *group)
     HANDLE hContact;
     DBVARIANT dbv;
     char *szProto;
-    char *sn = aim_util_normalize(nick);
+    char *sn;
 
     pthread_mutex_lock(&buddyMutex);
+	sn = aim_util_normalize(nick);
     if (!strncmp(sn, "pleaseupgrade", strlen("pleaseupgrade"))) {
         pthread_mutex_unlock(&buddyMutex);
         return NULL;

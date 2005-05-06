@@ -53,7 +53,34 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
             s = szData = _strdup((char *) cds->lpData);
             aim_links_normalize(szData);
             s += 4;
-            if (!_strnicmp(s, "goim?", 5)) {
+			if (!_strnicmp(s, "addbuddy?", 9)) { // group is current ignored
+				char *tok, *sn = NULL, *group = NULL;
+				ADDCONTACTSTRUCT acs;
+				PROTOSEARCHRESULT psr;
+				
+				LOG(LOG_DEBUG, "Links: WM_COPYDATA - addbuddy?");
+				s += 9;
+				tok = strtok(s, "&");
+                while (tok != NULL) {
+                    if (!_strnicmp(tok, "screenname=", 11)) {
+                        sn = tok + 11;
+                    }
+                    if (!_strnicmp(tok, "groupname=", 10)) {
+                        group = tok + 10;
+                    }
+                    tok = strtok(NULL, "&");
+                }
+				if (sn&&strlen(sn)&&!aim_util_isme(sn)&&!aim_buddy_get(sn,0,0,0,NULL)) {
+					acs.handleType=HANDLE_SEARCHRESULT;
+					acs.szProto=AIM_PROTO;
+					acs.psr=&psr;
+					memset(&psr,0,sizeof(PROTOSEARCHRESULT));
+					psr.cbSize=sizeof(PROTOSEARCHRESULT);
+					psr.nick=sn;
+					CallService(MS_ADDCONTACT_SHOW,(WPARAM)NULL,(LPARAM)&acs);
+				}
+			}
+            else if (!_strnicmp(s, "goim?", 5)) {
                 char *tok, *sn = NULL, *msg = NULL;
 
                 LOG(LOG_DEBUG, "Links: WM_COPYDATA - goim");
@@ -77,7 +104,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
                         CallService(MS_MSG_SENDMESSAGE, (WPARAM) hContact, (LPARAM) msg);
                 }
             }
-            if (!_strnicmp(s, "gochat?", 7)) {
+            else if (!_strnicmp(s, "gochat?", 7)) {
                 char *tok, *rm = NULL, *ex;
                 int exchange = 0;
 

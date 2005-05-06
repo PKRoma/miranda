@@ -36,6 +36,9 @@ Requirements
 
 History
 -------
+1.3.0.0
+ - Add support for aim:addbuddy? links
+
 1.2.0.0
  - Chat support uses Chat plugin
 
