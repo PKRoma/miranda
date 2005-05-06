@@ -39,6 +39,7 @@
 
 
 extern HANDLE ghServerNetlibUser;
+extern HANDLE hServerConn;
 HANDLE hKeepAliveEvent = NULL;
 
 
@@ -66,7 +67,10 @@ void __cdecl icq_keepAliveThread(void* fa)
       // Send a keep alive packet to server
       packet.wLen = 0;
       write_flap(&packet, ICQ_PING_CHAN);
-      sendServPacket(&packet);
+      if (hServerConn) // connection lost, end
+        sendServPacket(&packet);
+      else 
+        break;
     }
     else if (dwWait == WAIT_IO_COMPLETION)
       // Possible shutdown in progress
