@@ -399,7 +399,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         DBVARIANT dbv;
         int dummy;
         int dwJob = 0;
-        char szAvatar[256];
+        char szAvatar[MAX_PATH];
         int dwPaFormat;
 
         if (gbAvatarsEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLoad", 1))
@@ -407,13 +407,49 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
           if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
           { // we not found old hash, i.e. get new avatar
-            dwJob = 1;
+            DBVARIANT dbvHashFile;
+
+            if (!DBGetContactSetting(hContact, gpszICQProtoName, "AvatarSaved", &dbvHashFile))
+            { // check saved hash and file, if equal only store hash
+              if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
+              { // the hash is different, unlink contactphoto
+                LinkContactPhotoToFile(hContact, NULL);
+                dwJob = 1;
+              }
+              else
+              {
+                dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+
+                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+                if (access(szAvatar, 0) == 0)
+                { // the file is there, link to contactphoto, save hash
+                  Netlib_Logf(ghServerNetlibUser, "Avatar is known, hash stored, linked to file.");
+
+                  if (dummy = DBWriteContactSettingBlob(hContact, gpszICQProtoName, "AvatarHash", pTLV->pData, 0x14))
+                  {
+                    Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
+                  }
+                  if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
+                    LinkContactPhotoToFile(hContact, szAvatar);
+                  else  // the format is not supported unlink
+                    LinkContactPhotoToFile(hContact, NULL);
+
+                  ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+                }
+                else // the file is lost, request avatar again
+                  dwJob = 1;
+              }
+              DBFreeVariant(&dbvHashFile);
+            }
+            else
+              dwJob = 1;
           }
           else
           { // we found hash check if it changed or not
             Netlib_Logf(ghServerNetlibUser, "Old Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", dbv.pbVal[0], dbv.pbVal[1], dbv.pbVal[2], dbv.pbVal[3], dbv.pbVal[4], dbv.pbVal[5], dbv.pbVal[6], dbv.pbVal[7], dbv.pbVal[8], dbv.pbVal[9], dbv.pbVal[10], dbv.pbVal[11], dbv.pbVal[12], dbv.pbVal[13], dbv.pbVal[14], dbv.pbVal[15], dbv.pbVal[16], dbv.pbVal[17], dbv.pbVal[18], dbv.pbVal[19]);
             if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
             { // the hash is different, request new avatar
+              LinkContactPhotoToFile(hContact, NULL); // unlink photo
               dwJob = 1;
             }
             else
@@ -425,7 +461,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               }
               else
               {
-                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
+                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
                 if (access(szAvatar, 0) == 0)
                 { // the file exists, so try to update photo setting
                   if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
@@ -454,7 +490,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
             }
 
-            GetAvatarFileName(dwUIN, szAvatar, 255);
+            GetAvatarFileName(dwUIN, szAvatar, MAX_PATH);
             GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar);
             // avatar request sent or added to queue
           }
@@ -468,6 +504,29 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
           if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
           { // we not found old hash, i.e. store avatar hash
+            DBVARIANT dbvHashFile;
+
+            if (!DBGetContactSetting(hContact, gpszICQProtoName, "AvatarSaved", &dbvHashFile))
+            { // check save hash and file, if equal only store hash
+              if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
+              { // the hash is different, unlink contactphoto
+                LinkContactPhotoToFile(hContact, NULL);
+              }
+              else
+              {
+                dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+
+                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+                if (access(szAvatar, 0) == 0)
+                { // the file is there, link to contactphoto
+                  if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
+                    LinkContactPhotoToFile(hContact, szAvatar);
+                  else  // the format is not supported unlink
+                    LinkContactPhotoToFile(hContact, NULL);
+                }
+              }
+              DBFreeVariant(&dbvHashFile);
+            }
             dwJob = 1;
           }
           else
