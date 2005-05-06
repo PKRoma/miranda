@@ -87,9 +87,9 @@ extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 #if defined(_UNICODE)
-    extern WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int bWordsOnly);
+    extern WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags);
 #else
-    extern char *FormatRaw(DWORD dwFlags, const char *msg, int bWordsOnly);
+    extern char *FormatRaw(DWORD dwFlags, const char *msg, int flags);
 #endif
 
 extern void ReleaseRichEditOle(IRichEditOle *ole);
@@ -240,6 +240,7 @@ static int GetColorIndex(char *rtffont)
     
     if((p = strstr(rtffont, "\\cf")) != NULL)
         return atoi(p + 3);
+    return 0;
 }
 
 static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
@@ -356,7 +357,7 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
 #endif
 
 //same as above but does "\r\n"->"\\par " and "\t"->"\\tab " too
-static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
+static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
     va_list va;
     int charsDone, i;
@@ -373,17 +374,19 @@ static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEn
     *cbBufferEnd += charsDone;
     for (i = *cbBufferEnd - charsDone; (*buffer)[i]; i++) {
 
-        if(iFormatting) {
+        if(1) {
             if((*buffer)[i] == '%' && (*buffer)[i + 1] != 0) {
                 char code = (*buffer)[i + 2];
-                if((code == '0' || code == '1') && (*buffer)[i + 3] == ' '){
+                char tag = (*buffer)[i + 1];
+                
+                if(((code == '0' || code == '1') && (*buffer)[i + 3] == ' ') || (tag == 'c' && (code == 'x' || code == '0'))) {
                     int begin = (code == '1');
 
                     if (*cbBufferEnd + 5 > *cbBufferAlloced) {
                         *cbBufferAlloced += 1024;
                         *buffer = (char *) realloc(*buffer, *cbBufferAlloced);
                     }
-                    switch((*buffer)[i + 1]) {
+                    switch(tag) {
                         case 'b':
                             CopyMemory(*buffer + i, begin ? "\\b1 " : "\\b0 ", 4);
                             continue;
@@ -394,6 +397,19 @@ static int AppendToBufferWithRTF(int iFormatting, char **buffer, int *cbBufferEn
                             MoveMemory(*buffer + i + 2, *buffer + i + 1, *cbBufferEnd - i);
                             CopyMemory(*buffer + i, begin ? "\\ul1 " : "\\ul0 ", 5);
                             *cbBufferEnd += 1;
+                            continue;
+                        case 'c':
+                            begin = (code == 'x');
+                            CopyMemory(*buffer + i, "\\cf", 3);
+                            if(begin) {
+                            }
+                            else {
+                                char szTemp[10];
+                                int colindex = GetColorIndex(rtfFonts[LOWORD(mode) ? (MSGFONTID_MYMSG + (HIWORD(mode) ? 8 : 0)) : (MSGFONTID_YOURMSG + (HIWORD(mode) ? 8 : 0))]);
+                                _snprintf(szTemp, 4, "%02d", colindex);
+                                (*buffer)[i + 3] = szTemp[0];
+                                (*buffer)[i + 4] = szTemp[1];
+                            }
                             continue;
                     }
                 }
@@ -885,7 +901,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                                     wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
                                     if(wlen <= (msglen - 1) && wlen > 0){
                                         TrimMessage(msg);
-                                        formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
+                                        formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
                                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
                                         //MessageBoxA(0, buffer, "bar", MB_OK);
                                     }
@@ -897,7 +913,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                                     msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
                                     MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
                                     TrimMessage(msg);
-                                    formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
+                                    formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
                                     AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
                                 }
                             }
@@ -906,8 +922,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                             if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                                 dat->stats.lastReceivedChars = lstrlenA(msg);
                             TrimMessage(msg);
-                            formatted = FormatRaw(dat->dwFlags, msg, myGlobals.m_FormatWholeWordsOnly);
-                            AppendToBufferWithRTF(1, &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
+                            formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
+                            AppendToBufferWithRTF(MAKELONG(isSent, dat->isHistory), &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
                 #endif      // unicode
                             break;
                         }

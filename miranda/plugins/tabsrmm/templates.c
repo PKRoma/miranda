@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 $Id$
 
 /*
- * templates for the message log...
+ * message log templates supporting functions, including the template editor
  */
 
 #include "commonheaders.h"
@@ -316,14 +316,17 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         case DM_UPDATETEMPLATEPREVIEW:
         {
             DBEVENTINFO dbei = {0};
+            int iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
 
             dbei.szModule = dat->szProto;
             dbei.timestamp = time(NULL);
-            dbei.eventType = EVENTTYPE_MESSAGE;
+            dbei.eventType = (iIndex == 6) ? EVENTTYPE_STATUSCHANGE : EVENTTYPE_MESSAGE;
             dbei.cbSize = sizeof(dbei);
-            dbei.pBlob = (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+            dbei.pBlob = (iIndex == 6) ? (BYTE *)"is now offline (was online)" : (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
             dbei.cbBlob = lstrlenA(dbei.pBlob) + 1;
-            dbei.flags = 0;
+            dbei.flags = (iIndex == 1 || iIndex == 3 || iIndex == 5) ? DBEF_SENT : 0;
+            dat->lastEventTime = (iIndex == 4 || iIndex == 5) ? time(NULL) - 1 : 0;
+            dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
             SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
             StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
             

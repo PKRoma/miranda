@@ -342,6 +342,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, "Draw grid lines", IDC_DRAWGRID, LOI_TYPE_FLAG,  MWF_LOG_GRID, 0,
     0, "Indent message body", IDC_INDENT, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
     0, "Simple text formatting (*bold* etc.)", IDC_FORMATTING, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
+    0, "Support BBCode formatting", IDC_FORMATTING, LOI_TYPE_SETTING, (UINT_PTR)"log_bbcode", 0,
     0, "Place dividers in inactive sessions", IDC_USEDIVIDERS, LOI_TYPE_SETTING, (UINT_PTR)"dividers", 0,
     0, "Use popup configuration for placing dividers", IDC_DIVIDERSUSEPOPUPCONFIG, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
     0, "RTL is default text direction", IDC_RTLDEFAULT, LOI_TYPE_SETTING, (UINT_PTR)"rtldefault", 0,

@@ -815,7 +815,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     mii.fMask = MIIM_BITMAP;
     mii.hbmpItem = HBMMENU_CALLBACK;
     submenu = GetSubMenu(myGlobals.g_hMenuContext, 7);
-    for(i = 2; i <= 8; i++)
+    for(i = 0; i <= 7; i++)
         SetMenuItemInfoA(submenu, (UINT_PTR)i, TRUE, &mii);
     BuildContainerMenu();
     

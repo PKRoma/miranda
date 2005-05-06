@@ -932,7 +932,8 @@ static void CreateColorMap(TCHAR *Text)
 	TCHAR * p2;
 	TCHAR * pEnd;
 	int iIndex = 1, i = 0;
-
+    COLORREF default_color;
+    
 //	static const char* lpszFmt = "/red%[^ \x5b,]/red%[^ \x5b,]/red%[^ \x5b,]";
 	static const TCHAR *lpszFmt = _T("\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];");
 	TCHAR szRed[10], szGreen[10], szBlue[10];
@@ -950,6 +951,8 @@ static void CreateColorMap(TCHAR *Text)
     while(rtf_ctable[i].szName != NULL)
         rtf_ctable[i++].index = 0;
     
+    default_color = (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "Font16Col", 0);
+    
     while(p2 && p2 < pEnd)
 	{
 		if( _stscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0 )
@@ -958,6 +961,8 @@ static void CreateColorMap(TCHAR *Text)
 			for (i = 0;;i ++) {
                 if(rtf_ctable[i].szName == NULL)
                     break;
+                if(rtf_ctable[i].clr == default_color)
+                    continue;
 				if(rtf_ctable[i].clr == RGB(_ttoi(szRed), _ttoi(szGreen), _ttoi(szBlue)))
 					rtf_ctable[i].index = iIndex;
 			}

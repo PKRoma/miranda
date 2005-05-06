@@ -1388,6 +1388,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= MWF_SHOW_MICROLF;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
+            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "log_bbcode", 0) ? MWF_SHOW_BBCODE : 0;
             
             dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
             
@@ -2661,12 +2662,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         case ID_FONT_WHITE:
                             clr = RGB(255, 255, 255);
                             break;
+                        case ID_FONT_DEFAULTCOLOR:
+                            clr = GetSysColor(COLOR_MENU);
+                            break;
                         default:
                             clr = 0;
                     }
                     col = CreateSolidBrush(clr);
                     old = SelectObject(dis->hDC, col);
-                    rc.left = 2; rc.top = dis->rcItem.top - 4;
+                    rc.left = 2; rc.top = dis->rcItem.top - 5;
                     rc.right = 18; rc.bottom = dis->rcItem.bottom + 4;
                     Rectangle(dis->hDC, rc.left - 1, rc.top - 1, rc.right + 1, rc.bottom + 1);
                     FillRect(dis->hDC, &rc, col);
@@ -3006,7 +3010,13 @@ quote_from_last:
                         GetWindowRect(GetDlgItem(hwndDlg, IDC_FONTFACE), &rc);
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                         if(iSelection == ID_FONT_CLEARALLFORMATTING) {
-                            cf.dwMask = CFM_ALL;
+                            cf.dwMask = CFM_BOLD | CFM_COLOR | CFM_ITALIC | CFM_UNDERLINE;
+                            cf.crTextColor = DBGetContactSettingDword(NULL, SRMSGMOD_T, "Font16Col", 0);
+                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                            break;
+                        }
+                        if(iSelection == ID_FONT_DEFAULTCOLOR) {
+                            cf.crTextColor = DBGetContactSettingDword(NULL, SRMSGMOD_T, "Font16Col", 0);
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
                             break;
                         }
