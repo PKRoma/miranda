@@ -455,12 +455,9 @@ static BOOL CALLBACK aim_gchat_joinproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
         }
         case DM_RESETROOMLIST:
         {
+			int i;
             SendDlgItemMessage(hwndDlg, IDC_CHATNAME, CB_RESETCONTENT, 0, 0);
-            SendDlgItemMessage(hwndDlg, IDC_CHATNAME, CB_ADDSTRING, 0, (LPARAM) MIRANDANAME);
-            SendDlgItemMessage(hwndDlg, IDC_CHATNAME, CB_SETCURSEL, 0, 0);
-            SendDlgItemMessage(hwndDlg, IDC_CHATNAME, EM_SETSEL, 0, -1);
             {
-                int i;
                 DBVARIANT dbv;
                 char buf[64];
 
@@ -470,8 +467,13 @@ static BOOL CALLBACK aim_gchat_joinproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         SendDlgItemMessage(hwndDlg, IDC_CHATNAME, CB_ADDSTRING, 0, (LPARAM) dbv.pszVal);
                         DBFreeVariant(&dbv);
                     }
+					else break;
                 }
             }
+			if (i==0)
+				SendDlgItemMessage(hwndDlg, IDC_CHATNAME, CB_ADDSTRING, 0, (LPARAM) MIRANDANAME);
+            SendDlgItemMessage(hwndDlg, IDC_CHATNAME, CB_SETCURSEL, 0, 0);
+            SendDlgItemMessage(hwndDlg, IDC_CHATNAME, EM_SETSEL, 0, -1);
             SetFocus(GetDlgItem(hwndDlg, IDC_CHATNAME));
             break;
         }
