@@ -976,24 +976,48 @@ void ContactPhotoSettingChanged(HANDLE hContact)
 { // the setting was changed - if it is done externaly unlink...
   if (bNoChanging) return;
   bNoChanging = 1;
-  __try
-  {
-    if (!bPhotoLock && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
-      DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
-  }
-  __finally
-  {
-    bNoChanging = 0;
-  }
+
+  if (!bPhotoLock && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
+    DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
+
+  bNoChanging = 0;
 }
 
+static int bdCacheTested = 0;
+static int bdWorkaroundRequired = 0;
+
+void TestDBBlobIssue()
+{
+  DBVARIANT dbv = {0};
+
+  bdCacheTested = 1;
+  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem"); // delete setting
+  DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv); // create crap cache item
+  DBWriteContactSettingBlob(NULL, gpszICQProtoName, "BlobTestItem", "Test", 4); // write blob
+  if (!DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv)) // try to read it back
+  { // we were able to read it, the DB finally work correctly, hurrah
+    DBFreeVariant(&dbv); 
+  }
+  else // the crap is still in the cache, we need to use workaround for avatars to work properly
+  {
+    Netlib_Logf(ghServerNetlibUser, "DB Module contains bug #0001177, using workaround");
+    bdWorkaroundRequired = 1;
+  }
+  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem");
+}
 
 
 int DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *szSetting,const char *val, const int cbVal)
 {
   DBCONTACTWRITESETTING cws;
 
-  DBDeleteContactSetting(hContact, szModule, szSetting); // this is workaround for DB blob caching problems
+  if (!bdCacheTested) TestDBBlobIssue();
+
+  if (bdWorkaroundRequired)
+  { // this is workaround for DB blob caching problems - nasty isn't it
+    DBWriteContactSettingByte(hContact, szModule, szSetting, 1);
+    DBDeleteContactSetting(hContact, szModule, szSetting); 
+  }
 
   cws.szModule=szModule;
   cws.szSetting=szSetting;
