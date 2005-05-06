@@ -324,6 +324,8 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Unload a plugin
 
+extern char* rru;
+
 int __declspec( dllexport ) Unload( void )
 {
 	if ( msnLoggedIn )
@@ -358,6 +360,7 @@ int __declspec( dllexport ) Unload( void )
 	if ( sid ) free( sid );
 	if ( passport ) free( passport );
 	if ( MSPAuth ) free( MSPAuth );
+	if ( rru ) free( rru );
 
 	if ( msnLoginHost ) free( msnLoginHost );
 	if ( msnExternalIP ) free( msnExternalIP );
