@@ -1144,6 +1144,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								SendMessage(hwndStatus,SB_GETRECT,nPanel,(LPARAM)&rc);
 								}else
 								{
+								/*
 									int i;
 									for (i=0;i<nParts;i++)
 									{
@@ -1157,7 +1158,35 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 											break;
 										}
 									}
+*/
+									RECT clrc;
+									int sectwidth;
 
+									memset(&rc,0,sizeof(RECT));
+									GetClientRect(hwndStatus,&clrc);
+									clrc.right-=clrc.left;
+									clrc.right-=startoffset;
+									sectwidth=clrc.right/nParts;
+
+									for (nPanel=0;nPanel<nParts;nPanel++)
+									{
+									PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
+									if(PD==NULL){
+										continue;
+									};
+										rc.top=0;
+										rc.bottom=clrc.bottom;
+										rc.left=nPanel*sectwidth+startoffset;
+										rc.right=rc.left+sectwidth-1;
+										
+										if (PtInRect(&rc,nm->pt))
+										{
+											//nPanel=nPanel;
+											break;
+										}
+
+									};								
+								
 								}
 							
 							}
@@ -1168,12 +1197,19 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								PD=(ProtocolData *)SendMessage(hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
 								if(PD==NULL){return(0);};
 								menuid=nPanel;
-								//menuid=PD->protopos;
-								//menuid=totcount-menuid-1;
-								
+							
 								if (menuid<0){break;};
 								hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 								if(GetSubMenu(hMenu,menuid)) hMenu=GetSubMenu(hMenu,menuid);
+								
+								
+								{
+									char buf[256];
+									
+									sprintf(buf,"nPanel: %d, PD->protopos: %d,PD->RealName %s\r\n",nPanel,PD->protopos,PD->RealName);
+									OutputDebugStr(buf);
+								}
+
 						if (hMenu!=NULL)				
 						{						
 							//pt.x=rc.left;
