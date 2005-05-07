@@ -10,6 +10,25 @@ This Miranda IM plugin makes it possible to connect to the ICQ
 instant messenger network and communicate with other ICQ users.
 
 
+Known Problems
+______________
+
+- In Invisible mode, when other side is not in visible list messages are sometimes 
+  received twice from some clients (it is a problem of that clients, they do send them
+  twice)
+
+- In Invisible mode, when other side is not in visible list messages are not unicode
+  aware. This is because ICQ protocol does not support unicode offline messages.
+
+- When synchronising server-list, users get added with await auth flag or receive added
+  message. The way which ICQ servers handle authorisations, we cannot do it better - when
+  uploading contacts to server account has to be a new one, then contacts can be added
+  and uploaded without auth... If the account is an old one they cannot be added without
+  auth if they require one. So they are added with flag awaiting auth. With the new
+  Manage server list contacts added contacts should never receive auth requests, but 
+  if you have an old account they can receive added notification.
+
+
 Changes
 _______
 
