@@ -1644,7 +1644,6 @@ int IcqSendUserIsTyping(WPARAM wParam, LPARAM lParam)
 
 int IcqRecvAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
 
@@ -1653,14 +1652,12 @@ int IcqRecvAwayMsg(WPARAM wParam,LPARAM lParam)
 		(HANDLE)pre->lParam, (LPARAM)pre->szMessage);
 
 	return 0;
-
 }
 
 
 
 int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 {
-
 	DBEVENTINFO dbei;
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
@@ -1681,15 +1678,16 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 
 	CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
 
-	return 0;
+  // stop contact from typing - some clients do not sent stop notify
+  CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)ccs->hContact, PROTOTYPE_CONTACTTYPING_OFF);
 
+  return 0;
 }
 
 
 
 int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
 {
-
 	DBEVENTINFO dbei;
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
@@ -1712,14 +1710,12 @@ int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
 	CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
 
 	return 0;
-
 }
 
 
 
 int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 {
-
 	DBEVENTINFO dbei = {0};
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
@@ -1755,14 +1751,12 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 	SAFE_FREE(&dbei.pBlob);
 
 	return 0;
-
 }
 
 
 
 int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 {
-
 	DBEVENTINFO dbei;
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
@@ -1787,7 +1781,6 @@ int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 	CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
 
 	return 0;
-
 }
 
 
