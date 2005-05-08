@@ -276,7 +276,7 @@ typedef struct _recentinfo {
 typedef struct _globals {
     // static options, initialised when plugin is loading
     HWND g_hwndHotkeyHandler;
-    HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
+    HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus, g_iconPulldown;
     HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
     // external plugins

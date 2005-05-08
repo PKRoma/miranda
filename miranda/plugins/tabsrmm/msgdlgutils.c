@@ -352,11 +352,11 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_MESSAGEICONS_SHOWICONS:
                 dat->dwFlags ^= MWF_LOG_SHOWICONS;
-                dat->dwFlags = dat->dwFlags & MWF_LOG_SHOWICONS ? dat->dwFlags & ~MWF_LOG_SYMBOLS : dat->dwFlags;
+                //dat->dwFlags = dat->dwFlags & MWF_LOG_SHOWICONS ? dat->dwFlags & ~MWF_LOG_SYMBOLS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
                 dat->dwFlags ^= MWF_LOG_SYMBOLS;
-                dat->dwFlags = dat->dwFlags & MWF_LOG_SYMBOLS ? dat->dwFlags & ~MWF_LOG_SHOWICONS : dat->dwFlags;
+                //dat->dwFlags = dat->dwFlags & MWF_LOG_SYMBOLS ? dat->dwFlags & ~MWF_LOG_SHOWICONS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_USEINCOMING:
                 dat->dwEventIsShown ^= MWF_SHOW_INOUTICONS;
@@ -842,18 +842,17 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
 
     dat->dwTickLastEvent = GetTickCount();
     
-    if(!myGlobals.m_FlashOnClist && nen_options.bTraySupport == FALSE)
-        return;
-
+    if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
+        UpdateTrayMenu(dat, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->hContact, FALSE);
+        if(nen_options.bTraySupport == TRUE)
+            return;
+    }
+    
     if(hEvent == 0)
         return;
 
-    if(nen_options.bTraySupport == TRUE) {
-        if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE)
-            UpdateTrayMenu(dat, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->hContact, FALSE);
+    if(!myGlobals.m_FlashOnClist)
         return;
-    }
-    
     if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE && !(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST)) {
         ZeroMemory(&cle, sizeof(cle));
         cle.cbSize = sizeof(cle);

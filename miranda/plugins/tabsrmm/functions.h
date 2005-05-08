@@ -25,6 +25,7 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
 void LoadFavoritesAndRecent();
 void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu);
 void Tray_Setfocus();
+void CreateTrayMenus(int mode);
 
 /*
  * msgs.c
@@ -66,4 +67,6 @@ void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
 
 int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
+
+void SetFloater(struct ContainerWindowData *pContainer);
 

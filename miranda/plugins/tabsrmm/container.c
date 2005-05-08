@@ -71,6 +71,7 @@ char *szWarnClose = "Do you really want to close this session?";
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
+extern HWND floaterOwner;
 
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
@@ -529,6 +530,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 pContainer->dwFlags &= ~CNT_SIZINGLOOP;
+                SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 break;
             }
         case WM_GETMINMAXINFO: {
@@ -811,7 +813,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 case SC_RESTORE:
                     pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-                    if(nen_options.bTraySupport && nen_options.bMinimizeToTray && pContainer->bInTray) {
+                    if(nen_options.bMinimizeToTray && pContainer->bInTray) {
                         if(pContainer->bInTray == 2) {
                             MaximiseFromTray(hwndDlg, FALSE, &pContainer->restoreRect);
                             PostMessage(hwndDlg, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
@@ -824,7 +826,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                     break;
                 case SC_MINIMIZE:
-                    if(nen_options.bTraySupport && nen_options.bMinimizeToTray) {
+                    if(nen_options.bMinimizeToTray) {
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
                         MinimiseToTray(hwndDlg, nen_options.bAnimated);
@@ -1105,7 +1107,7 @@ panel_found:
         * pass the WM_ACTIVATE msg to the active message dialog child
         */
         case WM_ACTIVATE:
-			if (LOWORD(wParam == WA_INACTIVE)) {
+			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler) {
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
 					pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)HIWORD(pContainer->dwTransparency), LWA_ALPHA);
 			}
@@ -2395,3 +2397,19 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_ENABLED);
 }
 
+void SetFloater(struct ContainerWindowData *pContainer)
+{
+    RECT rc;
+    POINT pt, pt1;
+    int x;
+    GetClientRect(pContainer->hwnd, &rc);
+    pt.x = rc.left;
+    pt.y = rc.top;
+    pt1.x = rc.right;
+    pt1.y = rc.bottom;
+    ClientToScreen(pContainer->hwnd, &pt);
+    ClientToScreen(pContainer->hwnd, &pt1);
+    x = pt1.x - (pContainer->dwFlags & CNT_NOMENUBAR ? 110 : 52);
+    floaterOwner = pContainer->hwnd;
+    SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, x, pt.y - (pContainer->dwFlags & CNT_NOMENUBAR ? 20 : 18), 50, 17, SWP_NOACTIVATE);
+}

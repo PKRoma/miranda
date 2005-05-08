@@ -95,6 +95,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->wMaxFavorites = 15;
     options->wMaxRecent = 15;
     options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
+    options->floaterMode = options->bTraySupport ? 0 : 1;
     return 0;
 }
 
@@ -214,7 +215,6 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
-            EnableWindow(GetDlgItem(hWnd, IDC_MINIMIZETOTRAY), options->bTraySupport);
             EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
             CheckDlgButton(hWnd, IDC_NORSS, options->bNoRSS);
             CheckDlgButton(hWnd, IDC_CHKPREVIEW, options->bPreview);
@@ -342,8 +342,8 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                             options->colBackOthers = SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_GETCOLOUR, 0, 0);
                             options->colTextOthers = SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_GETCOLOUR, 0, 0);
                         }
-                        EnableWindow(GetDlgItem(hWnd, IDC_MINIMIZETOTRAY), options->bTraySupport);
                         EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
+                        options->floaterMode = options->bTraySupport ? 0 : 1;
 
                         SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
                         break;
@@ -855,7 +855,7 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_DATA | MIIM_BITMAP;
     
-    if(nen_options.bTraySupport && dat->hContact != 0) {
+    if(dat->hContact != 0) {
         GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
         if(!bForced)
             myGlobals.m_UnreadInTray -= mii.dwItemData;
@@ -879,7 +879,7 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
 
 int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, BOOL fromEvent)
 {
-    if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
+    if(myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
         char szMenuEntry[80];
         MENUITEMINFOA mii = {0};
         WORD wMyStatus;

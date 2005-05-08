@@ -506,9 +506,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
      * the contact list for flashing
      */
 nowindowcreate:    
-    if(nen_options.bTraySupport)
-        UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, TRUE);
-    else {
+    UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, TRUE);
+    if(!nen_options.bTraySupport) {
         ZeroMemory(&cle, sizeof(cle));
         cle.cbSize = sizeof(cle);
         cle.hContact = (HANDLE) wParam;
@@ -855,6 +854,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     ZeroMemory((void *)sendJobs, sizeof(struct SendJob) * NR_SENDJOBS);
     if(nen_options.bTraySupport)
         CreateSystrayIcon(TRUE);
+    CreateTrayMenus(TRUE);
     LoadDefaultTemplates();
     
     ZeroMemory((void *)&mi, sizeof(mi));
@@ -877,21 +877,32 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-int SplitmsgShutdown(void)
+static void UnloadIcons()
 {
     int i;
+    
+    DestroyIcon(myGlobals.g_iconIn);
+    DestroyIcon(myGlobals.g_iconOut);
+    DestroyIcon(myGlobals.g_iconErr);
+    DestroyIcon(myGlobals.g_iconContainer);
+    DestroyIcon(myGlobals.g_iconStatus);
+    DestroyIcon(myGlobals.g_iconPulldown);
 
-#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
-    if(g_hMsgHook != 0)
-        UnhookWindowsHookEx(g_hMsgHook);
-#endif    
+    for (i = 0; i < NR_BUTTONBARICONS; i++)
+        DestroyIcon(myGlobals.g_buttonBarIcons[i]);
+    if(myGlobals.g_hbmUnknown)
+        DeleteObject(myGlobals.g_hbmUnknown);
+}
+
+
+int SplitmsgShutdown(void)
+{
     DestroyCursor(myGlobals.hCurSplitNS);
     DestroyCursor(myGlobals.hCurHyperlinkHand);
     DestroyCursor(myGlobals.hCurSplitWE);
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
-    //FreeMsgLogIcons();
     FreeLibrary(GetModuleHandleA("riched20"));
 	FreeLibrary(GetModuleHandleA("user32"));
     if(g_hIconDLL)
@@ -911,30 +922,20 @@ int SplitmsgShutdown(void)
     if(myGlobals.g_hMenuEncoding)
         DestroyMenu(myGlobals.g_hMenuEncoding);
     UncacheMsgLogIcons();
-    DestroyIcon(myGlobals.g_iconIn);
-    DestroyIcon(myGlobals.g_iconOut);
-    DestroyIcon(myGlobals.g_iconErr);
-    DestroyIcon(myGlobals.g_iconContainer);
-    DestroyIcon(myGlobals.g_iconStatus);
-    
-    for (i = 0; i < NR_BUTTONBARICONS; i++)
-        DestroyIcon(myGlobals.g_buttonBarIcons[i]);
-    if(myGlobals.g_hbmUnknown)
-        DeleteObject(myGlobals.g_hbmUnknown);
+    UnloadIcons();
     if(myGlobals.m_hbmMsgArea)
         DeleteObject(myGlobals.m_hbmMsgArea);
     if(protoIconData != 0)
         free(protoIconData);
     CreateSystrayIcon(FALSE);
-    /*
-     * not really needed, but avoid memory leak warnings
-     */
+    CreateTrayMenus(FALSE);
     return 0;
 }
 
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
     UncacheMsgLogIcons();
+    UnloadIcons();
     LoadFromIconLib();
     CacheMsgLogIcons();
     return 0;
@@ -1596,6 +1597,10 @@ int SetupIconLibConfig()
     sid.iDefaultIndex = -IDI_PULLDOWNARROW;
     sid.pszDescription = Translate("Pulldown Button");
     CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    sid.pszName = (char *) "tabSRMM_Sessionlist";
+    sid.iDefaultIndex = -IDI_PULLDOWN1ARROW;
+    sid.pszDescription = Translate("Session List");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
     return 1;
 }
 
@@ -1613,7 +1618,7 @@ int LoadFromIconLib()
     } while(++i);
 
     myGlobals.g_buttonBarIcons[16] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_pulldown");
-    
+    myGlobals.g_iconPulldown = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "tabSRMM_Sessionlist");
     ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconError, myGlobals.g_iconErr);
     ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconSend, myGlobals.g_buttonBarIcons[9]);
     ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconTypingEvent, myGlobals.g_buttonBarIcons[5]);
@@ -1680,7 +1685,7 @@ void LoadIconTheme()
             *(myIcons[i].phIcon) = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(abs(myIcons[i].uId)), IMAGE_ICON, myIcons[i].bForceSmall ? cxIcon : 0, myIcons[i].bForceSmall ? cyIcon : 0, 0);
         } while(++i);
         myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
-
+        myGlobals.g_iconPulldown = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWN1ARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
         CacheMsgLogIcons();
 
         WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);

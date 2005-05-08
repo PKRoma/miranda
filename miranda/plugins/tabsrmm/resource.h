@@ -4,6 +4,8 @@
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
+#define IDI_ICON1                       3
+#define IDI_PULLDOWN1ARROW              3
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -138,7 +140,9 @@
 #define IDC_USERMENU                    1102
 #define IDC_RTL                         1103
 #define IDC_PIC                         1104
+#define IDC_SLIST                       1104
 #define IDC_SMILEYBTN                   1105
+#define IDC_TRAYICON                    1105
 #define IDC_FONTBOLD                    1106
 #define IDC_FONTITALIC                  1107
 #define IDC_FONTUNDERLINE               1108
@@ -405,6 +409,7 @@
 #define IDC_GETBGIMAGE                  1376
 #define IDC_LOGOPTIONS                  1377
 #define IDC_WINDOWOPTIONS               1378
+#define IDC_TRAYCONTAINER               1379
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -582,9 +587,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        3
+#define _APS_NEXT_RESOURCE_VALUE        4
 #define _APS_NEXT_COMMAND_VALUE         40201
-#define _APS_NEXT_CONTROL_VALUE         1379
+#define _APS_NEXT_CONTROL_VALUE         1380
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

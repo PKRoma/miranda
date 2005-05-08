@@ -709,6 +709,26 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         if(ci == '%') {
             cc = szTemplate[i + 1];
             skipToNext = FALSE;
+            if(cc == '#') {
+                if(!dat->isHistory) {
+                    skipToNext = TRUE;
+                    goto skip;
+                }
+                else {
+                    i++;
+                    cc = szTemplate[i + 1];
+                }
+            }
+            if(cc == '$') {
+                if(dat->isHistory) {
+                    skipToNext = TRUE;
+                    goto skip;
+                }
+                else {
+                    i++;
+                    cc = szTemplate[i + 1];
+                }
+            }
             switch(cc) {
                 case 'I':
                 {
@@ -987,6 +1007,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tab");
                     break;
             }
+skip:            
             if(skipToNext) {
                 i++;
                 while(szTemplate[i] != '%' && i < iTemplateLen) i++;

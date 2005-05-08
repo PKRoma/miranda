@@ -37,6 +37,34 @@ extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern struct ContainerWindowData *pFirstContainer;
 
+void CreateTrayMenus(int mode)
+{
+    if(mode) {
+        myGlobals.g_hMenuTrayUnread = CreatePopupMenu();
+        myGlobals.g_hMenuFavorites = CreatePopupMenu();
+        myGlobals.g_hMenuRecent = CreatePopupMenu();
+        myGlobals.g_hMenuTrayContext = GetSubMenu(myGlobals.g_hMenuContext, 6);
+        ModifyMenuA(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, Translate("Favorites"));
+        ModifyMenuA(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, Translate("Recent Sessions"));
+        LoadFavoritesAndRecent();
+        SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
+    }
+    else {
+        if(myGlobals.g_hMenuTrayUnread != 0) {
+            DestroyMenu(myGlobals.g_hMenuTrayUnread);
+            myGlobals.g_hMenuTrayUnread = 0;
+        }
+        if(myGlobals.g_hMenuFavorites != 0) {
+            DestroyMenu(myGlobals.g_hMenuFavorites);
+            myGlobals.g_hMenuFavorites = 0;
+        }
+        if(myGlobals.g_hMenuRecent != 0) {
+            DestroyMenu(myGlobals.g_hMenuRecent);
+            myGlobals.g_hMenuRecent = 0;
+        }
+        KillTimer(myGlobals.g_hwndHotkeyHandler, 1000);
+    }
+}
 /*
  * create a system tray icon, create all necessary submenus
  */
@@ -58,34 +86,13 @@ void CreateSystrayIcon(int create)
 #endif    
     if(create && !nen_options.bTrayExist) {
         Shell_NotifyIcon(NIM_ADD, &nim);
-        myGlobals.g_hMenuTrayUnread = CreatePopupMenu();
-        myGlobals.g_hMenuFavorites = CreatePopupMenu();
-        myGlobals.g_hMenuRecent = CreatePopupMenu();
-        myGlobals.g_hMenuTrayContext = GetSubMenu(myGlobals.g_hMenuContext, 6);
-        ModifyMenuA(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, Translate("Favorites"));
-        ModifyMenuA(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, Translate("Recent Sessions"));
-        LoadFavoritesAndRecent();
         nen_options.bTrayExist = TRUE;
-        SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
     }
     else if(create == FALSE && nen_options.bTrayExist) {
         struct ContainerWindowData *pContainer = pFirstContainer;
         
         Shell_NotifyIcon(NIM_DELETE, &nim);
         nen_options.bTrayExist = FALSE;
-        if(myGlobals.g_hMenuTrayUnread != 0) {
-            DestroyMenu(myGlobals.g_hMenuTrayUnread);
-            myGlobals.g_hMenuTrayUnread = 0;
-        }
-        if(myGlobals.g_hMenuFavorites != 0) {
-            DestroyMenu(myGlobals.g_hMenuFavorites);
-            myGlobals.g_hMenuFavorites = 0;
-        }
-        if(myGlobals.g_hMenuRecent != 0) {
-            DestroyMenu(myGlobals.g_hMenuRecent);
-            myGlobals.g_hMenuRecent = 0;
-        }
-        KillTimer(myGlobals.g_hwndHotkeyHandler, 1000);
         /*
          * check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
          * need to temporarily re-enable tray support, because the container checks for it.
@@ -98,6 +105,7 @@ void CreateSystrayIcon(int create)
         }
         nen_options.bTraySupport = FALSE;
     }
+    ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 }
 
 BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
@@ -140,7 +148,7 @@ void GetTrayWindowRect(LPRECT lprect)
 
 BOOL RemoveTaskbarIcon(HWND hWnd)
 {
-    SetParent(hWnd, myGlobals.g_hwndHotkeyHandler);
+    SetParent(hWnd, GetDlgItem(myGlobals.g_hwndHotkeyHandler, IDC_TRAYCONTAINER));
     return TRUE;
 }
 
@@ -155,10 +163,12 @@ void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
 
         GetWindowRect(hWnd, &rectFrom);
         GetTrayWindowRect(&rectTo);
+        if(nen_options.floaterMode > 0)
+            GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectTo);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, &rectTo);
     }
     RemoveTaskbarIcon(hWnd);
-    //ShowWindow(hWnd, SW_HIDE);              // experimental - now works with docks like rklauncher..
+    ShowWindow(hWnd, SW_HIDE);              // experimental - now works with docks like rklauncher..
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_VISIBLE);
 }
 
@@ -168,12 +178,15 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
         RECT rectFrom;
 
         GetTrayWindowRect(&rectFrom);
+        if(nen_options.floaterMode > 0)
+            GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectFrom);
         SetParent(hWnd, NULL);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, rectTo);
     }
     else
         SetParent(hWnd, NULL);
 
+    ShowWindow(hWnd, SW_SHOW);
     SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) | WS_VISIBLE);
     RedrawWindow(hWnd, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME |
                                    RDW_INVALIDATE | RDW_ERASE);
@@ -193,15 +206,25 @@ void FlashTrayIcon(int mode)
 {
     NOTIFYICONDATA nim;
 
-    nim.cbSize = sizeof(nim);
-    nim.hWnd = myGlobals.g_hwndHotkeyHandler;
-    nim.uID = 100;
-    nim.uFlags = NIF_ICON;
-    nim.hIcon = mode ? myGlobals.g_iconContainer : (myGlobals.m_TrayFlashState ? 0 : myGlobals.g_iconContainer);
-    Shell_NotifyIcon(NIM_MODIFY, &nim);
-    myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
-    if(mode)
-        myGlobals.m_TrayFlashState = 0;
+    if(nen_options.bTraySupport) {
+        nim.cbSize = sizeof(nim);
+        nim.hWnd = myGlobals.g_hwndHotkeyHandler;
+        nim.uID = 100;
+        nim.uFlags = NIF_ICON;
+        nim.hIcon = mode ? myGlobals.g_iconContainer : (myGlobals.m_TrayFlashState ? 0 : myGlobals.g_iconContainer);
+        Shell_NotifyIcon(NIM_MODIFY, &nim);
+        myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
+        if(mode)
+            myGlobals.m_TrayFlashState = 0;
+    }
+    else if(IsWindowVisible(myGlobals.g_hwndHotkeyHandler)) {
+        HICON hIcon = mode ? myGlobals.g_iconContainer : (myGlobals.m_TrayFlashState ? 0 : myGlobals.g_iconContainer);
+        
+        SendDlgItemMessage(myGlobals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
+        myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
+        if(mode)
+            myGlobals.m_TrayFlashState = 0;
+    }
 }
 
 void RemoveBalloonTip()

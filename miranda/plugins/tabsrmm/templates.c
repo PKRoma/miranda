@@ -52,24 +52,24 @@ char *TemplateNames[] = {
 };
     
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%S %h:%m:%s: %M"),
-    _T("%S %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%S %h:%m:%s:%! %M"),
+    _T("%S %h:%m:%s:%! %M"),
     _T("%I%S %D, %h:%m:%s, %N %M"),
     _T("%I%S %D, %h:%m:%s, %e%l%M"),
     "Default LTR"
 };
 
 TemplateSet RTL_Default = { TRUE, 
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%I%S %N, %E, %h:%m:%s: %M"),
-    _T("%S %h:%m:%s: %M"),
-    _T("%S %h:%m:%s: %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
+    _T("%S %h:%m:%s:%! %M"),
+    _T("%S %h:%m:%s:%! %M"),
     _T("%I%S %D, %h:%m:%s, %N %M"),
     _T("%I%S %D, %h:%m:%s, %e%l%M"),
     "Default RTL"

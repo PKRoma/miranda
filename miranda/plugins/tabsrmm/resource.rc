@@ -132,12 +132,17 @@ BEGIN
     LTEXT           "Announce with",IDC_STATIC,13,49,82,9
 END
 
-IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-CAPTION "Dialog"
+IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11
+STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_CLIPCHILDREN | 
+    WS_BORDER
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TOOLWINDOW
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    CONTROL         "",IDC_SLIST,"MButtonClass",WS_TABSTOP,20,0,12,9,
+                    0x18000000L
+    LTEXT           "Statisch",IDC_TRAYCONTAINER,19,3,8,8
+    CONTROL         "",IDC_TRAYICON,"MButtonClass",WS_TABSTOP,2,0,12,9,
+                    0x18000000L
 END
 
 IDD_OPTIONSDIALOG DIALOGEX 0, 0, 312, 247
@@ -700,6 +705,11 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_HOTKEYSLAVE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 37
+    END
+
     IDD_CHOOSESTATUSMODES, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -816,7 +826,7 @@ BEGIN
         BEGIN
             MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
 
-            MENUITEM "Symbols instead of Icons",    ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
+            MENUITEM "Show Symbols",                ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
 
             MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
 
@@ -1016,7 +1026,7 @@ BEGIN
             POPUP "Message Icons"
             BEGIN
                 MENUITEM "Show Icons",                  40131
-                MENUITEM "Symbols instead of Icons",    40132
+                MENUITEM "Show Symbols",                40132
                 MENUITEM "Use Incoming/Outgoing Icons", 40133
             END
             MENUITEM "Nickname",                    40055
@@ -1157,6 +1167,27 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // Englisch (USA) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Deutsch (Österreich) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_PULLDOWN1ARROW      ICON                    "res\\pulldown1.ico"
+#endif    // Deutsch (Österreich) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -49,14 +49,20 @@ extern HANDLE hMessageWindowList;
 extern struct SendJob sendJobs[NR_SENDJOBS];
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
+extern PSLWA pSetLayeredWindowAttributes;
 
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
 static UINT WM_TASKBARCREATED;
+HWND floaterOwner;
 
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    static POINT ptLast;
+    static int iMousedown;
+    static RECT rcLast;
+    
     if(msg == WM_TASKBARCREATED) {
         CreateSystrayIcon(FALSE);
         CreateSystrayIcon(TRUE);
@@ -67,7 +73,61 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             SendMessage(hwndDlg, DM_REGISTERHOTKEYS, 0, 0);
             g_hotkeyHwnd = hwndDlg;
             WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
+            SendMessage(GetDlgItem(hwndDlg, IDC_SLIST), BUTTONSETASFLATBTN, 0, 0);
+            SendMessage(GetDlgItem(hwndDlg, IDC_TRAYICON), BUTTONSETASFLATBTN, 0, 0);
+            SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) Translate("tabSRMM Quick Menu"), 0);
+            SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) Translate("Session List"), 0);
+            SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_iconPulldown);
+            SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_iconContainer);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_TRAYCONTAINER), SW_HIDE);
+            if (pSetLayeredWindowAttributes != NULL) 
+                SetWindowLong(hwndDlg, GWL_EXSTYLE, GetWindowLong(hwndDlg, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+            if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "hkh")) {
+                if(Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "hkh"))
+                    SetWindowPos(hwndDlg, 0, 50, 50, 50, 17, SWP_NOZORDER);
+
+            }
+            SendMessage(hwndDlg, DM_HKSAVESIZE, 0, 0);
+            SendMessage(hwndDlg, DM_HKDETACH, 0, 0);
+            ShowWindow(hwndDlg, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
             return TRUE;
+        case WM_COMMAND:
+            SetFocus(floaterOwner);
+            switch(LOWORD(wParam)) {
+                case IDC_TRAYICON:
+                    SendMessage(hwndDlg, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+                    break;
+                case IDC_SLIST:
+                    SendMessage(hwndDlg, DM_TRAYICONNOTIFY, 101, WM_RBUTTONUP);
+                    break;
+            }
+            break;
+        case WM_LBUTTONDOWN:
+            iMousedown = 1;              
+            GetCursorPos(&ptLast);
+            SetCapture(hwndDlg);
+            break;
+        case WM_LBUTTONUP:
+        {
+            iMousedown = 0;
+            ReleaseCapture();
+            SendMessage(hwndDlg, DM_HKSAVESIZE, 0, 0);
+            break;
+        }
+        case WM_MOUSEMOVE:
+            {
+                RECT rc;
+                POINT pt;
+
+                if (iMousedown) {
+                    GetWindowRect(hwndDlg, &rc);
+                    GetCursorPos(&pt);
+                    MoveWindow(hwndDlg, rc.left - (ptLast.x - pt.x), rc.top - (ptLast.y - pt.y), rc.right - rc.left, rc.bottom - rc.top, TRUE);
+                    ptLast = pt;
+                }
+                break;
+            }
         case WM_HOTKEY:
             {
                 struct ContainerWindowData *pCurrent = pFirstContainer, *pTargetContainer = 0;
@@ -181,13 +241,14 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             {
                 int iSelection;
                 
-                if(wParam == 100) {
+                if(wParam == 100 || wParam == 101) {
                     switch(lParam) {
                         case WM_LBUTTONUP:
                         {
                             POINT pt;
                             GetCursorPos(&pt);
-                            SetForegroundWindow(hwndDlg);
+                            if(wParam == 100)
+                                SetForegroundWindow(hwndDlg);
                             if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 0) {
                                 HWND hWnd;
                                 iSelection = TrackPopupMenu(myGlobals.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
@@ -202,7 +263,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                 else
                                     CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
                             }
-                            PostMessage(hwndDlg, WM_NULL, 0, 0);
+                            if(wParam == 100)
+                                PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
                         case WM_MBUTTONDOWN:
@@ -231,7 +293,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             HMENU submenu = myGlobals.g_hMenuTrayContext;
                             POINT pt;
 
-                            SetForegroundWindow(hwndDlg);
+                            if(wParam == 100)
+                                SetForegroundWindow(hwndDlg);
                             GetCursorPos(&pt);
                             CheckMenuItem(submenu, ID_TRAYCONTEXT_DISABLEALLPOPUPS, MF_BYCOMMAND | (nen_options.iDisable ? MF_CHECKED : MF_UNCHECKED));
                             CheckMenuItem(submenu, ID_TRAYCONTEXT_DON40223, MF_BYCOMMAND | (nen_options.iNoSounds ? MF_CHECKED : MF_UNCHECKED));
@@ -298,7 +361,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                     }
                                 }
                             }
-                            PostMessage(hwndDlg, WM_NULL, 0, 0);
+                            if(wParam == 100)
+                                PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
                         case NIN_BALLOONUSERCLICK:
@@ -412,16 +476,36 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             UnregisterHotKey(hwndDlg, 0xc002);
             g_hotkeysEnabled = FALSE;
             break;
+        case DM_HKDETACH:
+            SetWindowPos(hwndDlg, HWND_TOPMOST, rcLast.left, rcLast.top, rcLast.right - rcLast.left, rcLast.bottom - rcLast.top, SWP_NOACTIVATE);
+            if (pSetLayeredWindowAttributes != NULL)
+                pSetLayeredWindowAttributes(hwndDlg, RGB(50, 250, 250), (BYTE)220, LWA_ALPHA);
+            break;
+        case DM_HKSAVESIZE:
+        {
+            WINDOWPLACEMENT wp = {0};
+
+            wp.length = sizeof(wp);
+            GetWindowPlacement(hwndDlg, &wp);
+            rcLast = wp.rcNormalPosition;
+            break;
+        }
+        case WM_ACTIVATE:
+            if (LOWORD(wParam) != WA_ACTIVE)
+                SetWindowPos(hwndDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+            return 0;
+        case WM_CLOSE:
+            return 0;
         case WM_DESTROY:
-            //if (g_hSettingChanged)
-            //    UnhookEvent(g_hSettingChanged);
+        {
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hkhx", rcLast.left);
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hkhy", rcLast.top);
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hkhwidth", rcLast.right - rcLast.left);
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hkhheight", rcLast.bottom - rcLast.top);
             if(g_hotkeysEnabled)
                 SendMessage(hwndDlg, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
-            //if(g_hAckEvent)
-            //    UnhookEvent(g_hAckEvent);
-            //if(g_hNewEvent)
-            //    UnhookEvent(g_hNewEvent);
             break;
+        }
     }
     return FALSE;
 }

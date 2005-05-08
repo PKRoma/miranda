@@ -1036,7 +1036,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  * add us to the tray list (if it exists)
                  */
 
-                if(nen_options.bTraySupport && myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
+                if(myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
                     UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
                     
                 dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
@@ -3057,7 +3057,7 @@ quote_from_last:
                     CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
                     break;
                 case IDC_DETAILS:
-                    CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) dat->hContact, 0);
+                    CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)(dat->bIsMeta ? dat->hSubContact : dat->hContact), 0);
                     break;
                 case IDC_SMILEYBTN:
                     if(dat->doSmileys && (myGlobals.g_SmileyAddAvail || dat->hwndLog != 0)) {
@@ -4376,10 +4376,8 @@ verify:
             if (dat->hSmileyIcon)
                 DeleteObject(dat->hSmileyIcon);
 
-            if(nen_options.bTraySupport) {
-                UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
-                DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
-            }
+            UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
+            DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
             if(dat->hThread)
                 CloseHandle(dat->hThread);
             

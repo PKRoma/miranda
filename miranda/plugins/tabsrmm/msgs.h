@@ -236,6 +236,8 @@ struct ProtocolData {
 #define DM_DOCREATETAB       (WM_USER+77)
 #define DM_LOADLOCALE        (WM_USER+78)
 #define DM_REPLAYQUEUE       (WM_USER+79)
+#define DM_HKDETACH          (WM_USER+80)
+#define DM_HKSAVESIZE        (WM_USER+81)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define MINSPLITTERY         52

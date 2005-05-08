@@ -134,7 +134,12 @@ typedef struct {
     WORD wMaxRecent;
     WORD wMaxFavorites;
     int  iAnnounceMethod;
+    int  floaterMode;
 } NEN_OPTIONS;
+
+#define FLOATER_ATTACHED 1
+#define FLOATER_FREE 2
+#define FLOATER_ALWAYS 4
 
 typedef struct EVENT_DATA {
 	HANDLE hEvent;

@@ -17,6 +17,13 @@ Support: http://hell.at.eu.org/forums/
 
 Version 0.9.9.95 - 2005/04/15
 
+        + added message templates for the default message log. As a result, many options
+          are now different or gone, because they can be replaced by using custom
+          templates in a better way. 
+          
+          Please refer to: http://www.miranda.or.at/forums/index.php/topic,610.0.html
+          for some documentation about available variables and templates in general.
+          
         + Icon packs have been updated with proxal icons. Both the XP and the default
           (98/ME) packs are now using the icons from the proxal set).
           
@@ -138,6 +145,15 @@ Version 0.9.9.95 - 2005/04/15
 
         + tray icon will now be recreated after explorer has crashed (and restarted).
                           
+        * Meta Contacts support: show user details page of current protocol instead of the meta
+          contacts page.
+
+        + added a "floater" to access the session list and tray menus when tray icon support is
+          disabled. The floater is a small window which will stay on top and has 2 icons - one
+          will open the session list, the other will give you access to the tray icon context
+          menu holding some options and the favorites and recent menus.
+          Useful if you don't like the tray icon or usually work with a hidden taskbar.
+          
 Version 0.9.9.94 - 2005/04/11
 
         * small fix with static avatars and toolbar button hiding.
