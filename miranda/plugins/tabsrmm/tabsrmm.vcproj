@@ -1044,7 +1044,7 @@
 			Name="Misc Files"
 			Filter="">
 			<File
-				RelativePath=".\changelog.txt">
+				RelativePath=".\docs\changelog.txt">
 			</File>
 			<File
 				RelativePath="langpacks\langpack_tabsrmm_german.txt">
@@ -1056,19 +1056,16 @@
 				RelativePath="MAKEFILE.W32">
 			</File>
 			<File
-				RelativePath="MetaContacts.TXT">
+				RelativePath=".\docs\MetaContacts.TXT">
 			</File>
 			<File
-				RelativePath="POPUPS.TXT">
+				RelativePath=".\docs\Popups.txt">
 			</File>
 			<File
-				RelativePath="README.ICONS">
+				RelativePath=".\docs\Readme.icons">
 			</File>
 			<File
-				RelativePath=".\readme.txt">
-			</File>
-			<File
-				RelativePath="langpacks\template">
+				RelativePath=".\docs\readme.txt">
 			</File>
 		</Filter>
 	</Files>

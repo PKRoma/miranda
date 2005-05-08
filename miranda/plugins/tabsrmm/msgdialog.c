@@ -615,7 +615,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_PROTOMENU:
         case IDC_PIC:
         case IDC_USERMENU:
-        case IDC_DETAILS:
         case IDC_HISTORY:
         case IDC_TIME:
         case IDC_QUOTE:
@@ -3056,9 +3055,6 @@ quote_from_last:
                     // OnO: RTF log
                     CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
                     break;
-                case IDC_DETAILS:
-                    CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)(dat->bIsMeta ? dat->hSubContact : dat->hContact), 0);
-                    break;
                 case IDC_SMILEYBTN:
                     if(dat->doSmileys && (myGlobals.g_SmileyAddAvail || dat->hwndLog != 0)) {
                         SMADD_SHOWSEL smaddInfo;
@@ -3344,7 +3340,7 @@ quote_from_last:
                     dat->hDbEventFirst = NULL;
                     break;
                 case IDC_PROTOCOL:
-                    CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) dat->hContact, 0);
+                    CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) (dat->bIsMeta ? dat->hSubContact :  dat->hContact), 0);
                     break;
 // error control
                 case IDC_CANCELSEND:
