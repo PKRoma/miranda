@@ -147,6 +147,10 @@ SOURCE=.\jabber_iqid_muc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_libstr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_list.cpp
 # ADD CPP /Yu
 # End Source File
