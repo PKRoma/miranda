@@ -1430,7 +1430,7 @@ LBL_InvalidCommand:
 			ThreadData* newThread = new ThreadData;
 			strcpy( newThread->mServer, data.newServer );
 			newThread->mType = SERVER_SWITCHBOARD;
-			MSN_ContactJoined( newThread, MSN_HContactFromEmail( data.callerEmail, data.callerNick, 1, 1 ));
+			MSN_ContactJoined( newThread, MSN_HContactFromEmail( data.callerEmail, data.callerNick, false, true ));
 			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
 
 			MSN_DebugLog( "Opening caller's switchboard server '%s'...", data.newServer );
