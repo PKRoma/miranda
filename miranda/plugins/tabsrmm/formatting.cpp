@@ -122,6 +122,10 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
                     }
                     ii++;
                 }
+                if(rtf_ctable[ii].szName == NULL) {
+                    message.erase(endmark, 8);
+                    message.erase(beginmark, (closing - beginmark) + 1);
+                }
                 continue;
             }
         }
@@ -257,6 +261,10 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
                         break;
                     }
                     ii++;
+                }
+                if(rtf_ctable[ii].szName == NULL) {
+                    message.erase(endmark, 8);
+                    message.erase(beginmark, (closing - beginmark) + 1);
                 }
                 continue;
             }

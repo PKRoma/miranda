@@ -220,7 +220,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), TRUE);
                             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), TRUE);
                             EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), FALSE);
-                            //_DebugPopup(0, "changed for: %d", teInfo->inEdit);
                         }
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
                     }
@@ -329,7 +328,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
             SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
             StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
-            
             break;
         }
         case WM_DESTROY:

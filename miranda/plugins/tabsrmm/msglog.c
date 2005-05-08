@@ -307,7 +307,6 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
                                 d[3] = (char)line[3];
                                 d[4] = (char)line[4];
                                 d[5] = ' ';
-                                //MessageBoxA(0, d, "ff",MB_OK);
                             }
                             else {
                                 char szTemp[10];

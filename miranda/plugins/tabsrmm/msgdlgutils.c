@@ -703,7 +703,7 @@ DWORD WINAPI LoadPictureThread(LPVOID param)
 
 void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread)
 {
-    DBVARIANT dbv;
+    DBVARIANT dbv = {0};
     RECT rc;
     int picFailed = FALSE;
     int iUnknown = FALSE;
@@ -737,6 +737,9 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
                     iUnknown = TRUE;
             }
         }
+        else
+            DBFreeVariant(&dbv);
+        
         if (!DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv) || iUnknown) {
             BITMAP bminfo;
             BOOL isNoPic = FALSE;
