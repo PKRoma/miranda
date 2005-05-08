@@ -332,17 +332,15 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 void JabberGroupchatJoinRoom( char* server, char* room, char* nick, char* password )
 {
-	JABBER_LIST_ITEM *item;
-	char passwordText[256];
 	char text[128];
-	int status;
-
 	mir_snprintf( text, sizeof( text ), "%s@%s/%s", room, server, nick );
-	item = JabberListAdd( LIST_CHATROOM, text );
-	if ( item->nick ) free( item->nick );
-	item->nick = _strdup( nick );
-	status = ( jabberStatus==ID_STATUS_INVISIBLE )?ID_STATUS_ONLINE:jabberStatus;
+
+	JABBER_LIST_ITEM* item = JabberListAdd( LIST_CHATROOM, text );
+	replaceStr( item->nick, nick );
+
+	int status = ( jabberStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : jabberStatus;
 	if ( password && password[0]!='\0' ) {
+		char passwordText[256];
 		mir_snprintf( passwordText, sizeof( passwordText ), "<x xmlns='http://jabber.org/protocol/muc'><password>%s</password></x>", password );
 		JabberSendPresenceTo( status, text, passwordText );
 	}

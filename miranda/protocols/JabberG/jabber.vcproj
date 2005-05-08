@@ -364,6 +364,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_libstr.cpp">
+			</File>
+			<File
 				RelativePath="jabber_list.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">

@@ -26,19 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE hInitChat;
 
-char* rtrim( char *string )
-{
-   char* p = string + strlen( string ) - 1;
-
-   while ( p >= string )
-   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
-         break;
-
-		*p-- = 0;
-   }
-   return string;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // One string entry dialog
 

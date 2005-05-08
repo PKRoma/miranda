@@ -196,6 +196,9 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 							else JSetString( hContact, "CList", nick );
 							DBDeleteContactSetting( hContact, "CList", "Nick" );
 
+							if ( JGetByte( hContact, "ChatRoom", 0 ))
+								DBDeleteContactSetting( hContact, "CList", "Hidden" );
+
 							if ( item->group ) 
 								free( item->group );
 

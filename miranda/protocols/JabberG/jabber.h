@@ -468,6 +468,11 @@ BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
 
 void JabberEnableMenuItems( BOOL bEnable );
 
+//---- jabber_libstr.c ----------------------------------------------
+
+void  __stdcall replaceStr( char*& dest, const char* src );
+char* __stdcall rtrim( char *string );
+
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper
 

@@ -955,7 +955,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 								JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 							JabberListRemove( LIST_ROSTER, jid );
-			}	}	}	}
+					}	}
+					else if ( JGetByte( hContact, "ChatRoom", 0 ))
+						DBDeleteContactSetting( hContact, "CList", "Hidden" );
+			}	}
 
 			if ( hwndJabberAgents )
 				SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
