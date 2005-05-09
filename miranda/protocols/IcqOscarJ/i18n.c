@@ -52,7 +52,7 @@ void InitI18N(void)
 
 
 // Returns true if the buffer only contains 7-bit characters.
-BOOL IsUSASCII(const char* pBuffer, int nSize)
+BOOL IsUSASCII(const unsigned char* pBuffer, int nSize)
 {
   BOOL bResult = TRUE;
 	int nIndex;
@@ -99,16 +99,16 @@ int UTF8_IsValid(const unsigned char* pszInput)
 	const unsigned char* c = pszInput;
 
 
-	for (c = pszInput; *c; c++)
+	for (c = pszInput; *c; c += (nb + 1))
 	{
 		if (!(*c & 0x80))
 			nb = 0;
-		else if (!(*c & 0xc0) == 0x80) return 0;
-		else if (!(*c & 0xe0) == 0xc0) nb = 1;
-		else if (!(*c & 0xf0) == 0xe0) nb = 2;
-		else if (!(*c & 0xf8) == 0xf0) nb = 3;
-		else if (!(*c & 0xfc) == 0xf8) nb = 4;
-		else if (!(*c & 0xfe) == 0xfc) nb = 5;
+		else if ((*c & 0xc0) == 0x80) return 0;
+		else if ((*c & 0xe0) == 0xc0) nb = 1;
+		else if ((*c & 0xf0) == 0xe0) nb = 2;
+		else if ((*c & 0xf8) == 0xf0) nb = 3;
+		else if ((*c & 0xfc) == 0xf8) nb = 4;
+		else if ((*c & 0xfe) == 0xfc) nb = 5;
 
 		for (i = 1; i<=nb; i++) // we this forward, do not cross end of string
 			if ((*(c + i) & 0xc0) != 0x80)

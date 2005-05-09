@@ -36,7 +36,7 @@
 
 
 
-BOOL IsUSASCII(const char *pBuffer, int nSize);
+BOOL IsUSASCII(const unsigned char *pBuffer, int nSize);
 BOOL IsUnicodeAscii(const wchar_t *pBuffer, int nSize);
 
 char* detect_decode_utf8(const char *from);
