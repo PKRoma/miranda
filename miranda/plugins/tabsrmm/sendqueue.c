@@ -201,7 +201,16 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
         sendJobs[iEntry].iAcksNeeded = 1;
-        SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
+        if(dat->sendMode & SMODE_NOACK) {               // fake the ack
+            ACKDATA ack = {0};
+            ack.hContact = dat->hContact;
+            ack.hProcess = sendJobs[iEntry].hSendId[0];
+            ack.type = ACKTYPE_MESSAGE;
+            ack.result = ACKRESULT_SUCCESS;
+            SendMessage(hwndDlg, HM_EVENTSENT, (WPARAM)MAKELONG(iEntry, 0), (LPARAM)&ack);
+        }
+        else
+            SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
     }
     dat->iOpenJobs++;
     myGlobals.iSendJobCurrent++;

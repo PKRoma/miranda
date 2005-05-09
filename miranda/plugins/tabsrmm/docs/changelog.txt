@@ -15,6 +15,32 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.96 - 2005/05/09
+
+        ! fixed HUGE bug with bbcode color handling.
+        
+        ! fixed memory leak in ShowPicture() (avatar handling). thanks to ghazan.
+        
+        + added various settings to the message log and general options pages (icon/
+          symbol config, default send format).
+
+        + attempt to fix the mouswheel problem.
+        
+        ! fixed month number variable
+        
+        + added %fX variable (switch to font).
+        
+        * autoreplacer should work again.
+        
+        * fixed few visual glitches (multiple send indicator and switch toolbar on/off,
+          overlapping multisend indicator and message input area).
+          
+        * free() sendqueue buffers in Unload() to stop BC complaining.
+        
+        * msg log icons are no longer cached to allow fully "transparent" icons in
+          the message log. slightly slower when loading lots of events, but not 
+          dramatically.
+        
 Version 0.9.9.95 - 2005/04/15
 
         + added message templates for the default message log. As a result, many options

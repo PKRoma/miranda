@@ -228,9 +228,14 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", 0), FALSE);
             SendDlgItemMessage(hwndDlg, IDC_AUTOCLOSETABSPIN, UDM_SETRANGE, 0, MAKELONG(1800, 0));
             SendDlgItemMessage(hwndDlg, IDC_AUTOCLOSETABSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE));
-
             CheckDlgButton(hwndDlg, IDC_AUTOCLOSELAST, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocloselast", 0));
 
+            SendDlgItemMessageA(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)Translate("Off"));
+            SendDlgItemMessageA(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)Translate("Simple Tags (*/_)"));
+            SendDlgItemMessageA(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)Translate("BBCode"));
+
+            SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_SETCURSEL, (WPARAM)myGlobals.m_SendFormat, 0);
+            
             EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCLOSELAST), GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE) > 0);
             return TRUE;
         }
@@ -299,6 +304,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autocloselast", IsDlgButtonChecked(hwndDlg, IDC_AUTOCLOSELAST));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "sendformat", (BYTE)SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_GETCURSEL, 0, 0));
                             
                             msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000 : SRMSGDEFSET_MSGTIMEOUT;
                             DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
@@ -340,6 +346,9 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, "Show file events", IDC_SHOWFILES, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 0,
     0, "Show url events", IDC_SHOWURLS, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWURLS, 0,
     0, "Draw grid lines", IDC_DRAWGRID, LOI_TYPE_FLAG,  MWF_LOG_GRID, 0,
+    0, "Show Icons", 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 0,
+    0, "Show Symbols", 1, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 0,
+    0, "Use Incoming/Outgoing Icons", 1, LOI_TYPE_FLAG, MWF_LOG_INOUTICONS, 0,
     0, "Indent message body", IDC_INDENT, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
     0, "Simple text formatting (*bold* etc.)", IDC_FORMATTING, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
     0, "Support BBCode formatting", IDC_FORMATTING, LOI_TYPE_SETTING, (UINT_PTR)"log_bbcode", 0,
@@ -504,7 +513,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         case PSN_APPLY: {
                             int i = 0;
                             TVITEMA item = {0};
-                            dwFlags &= ~(MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT);
+                            dwFlags &= ~(MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT | MWF_LOG_SHOWICONS | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS);
                             
                             if (IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT))
                                 DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_COUNT);
@@ -1787,7 +1796,7 @@ void ReloadGlobals()
      myGlobals.m_FixFutureTimestamps = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 0);
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
-     //myGlobals.m_SplitterMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splittermode", 0);
+     myGlobals.m_WheelDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_wheelhack", 0);
      myGlobals.m_MathModAvail = 0;
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);

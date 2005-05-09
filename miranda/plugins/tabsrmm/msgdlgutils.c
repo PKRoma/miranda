@@ -212,7 +212,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_LOGMENU_INDENTMESSAGEBODY, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENT ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwEventIsShown & MWF_SHOW_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWNICK ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
@@ -359,8 +359,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 //dat->dwFlags = dat->dwFlags & MWF_LOG_SYMBOLS ? dat->dwFlags & ~MWF_LOG_SHOWICONS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_USEINCOMING:
-                dat->dwEventIsShown ^= MWF_SHOW_INOUTICONS;
-                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", dat->dwEventIsShown & MWF_SHOW_INOUTICONS ? 1 : 0);
+                dat->dwFlags ^= MWF_LOG_INOUTICONS;
                 return 1;
             case ID_LOGMENU_SHOWNICKNAME:
                 dat->dwFlags ^= MWF_LOG_SHOWNICK;
@@ -963,8 +962,8 @@ static void CreateColorMap(TCHAR *Text)
 			for (i = 0;;i ++) {
                 if(rtf_ctable[i].szName == NULL)
                     break;
-                if(rtf_ctable[i].clr == default_color)
-                    continue;
+//                if(rtf_ctable[i].clr == default_color)
+//                    continue;
 				if(rtf_ctable[i].clr == RGB(_ttoi(szRed), _ttoi(szGreen), _ttoi(szBlue)))
 					rtf_ctable[i].index = iIndex;
 			}

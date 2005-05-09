@@ -206,9 +206,15 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
                 struct MessageWindowData *dat = 0;
                 if(dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)myGlobals.g_hMenuFavorites || dis->hwndItem == (HWND)myGlobals.g_hMenuRecent)) {
+                    ICONINFO ii;
+                    BITMAP bm;
+                    int cx = GetSystemMetrics(SM_CXSMICON);
+                    int cy = GetSystemMetrics(SM_CYSMICON);
+                    GetIconInfo((HICON)dis->itemData, &ii);
+                    GetObject(ii.hbmColor, sizeof(bm), &bm);
                     DrawState(dis->hDC, NULL, NULL, (LPARAM) dis->itemData, 0,
                               2 + (dis->itemState & ODS_SELECTED ? 1 : 0),
-                              (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
+                              (dis->itemState & ODS_SELECTED ? 1 : 0), bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
                               DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
                     return TRUE;
                 }
@@ -219,7 +225,10 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     
                     if (dis->itemData >= 0) {
                         HICON hIcon;
-
+                        ICONINFO ii;
+                        BITMAP bm;
+                        int cx = GetSystemMetrics(SM_CXSMICON);
+                        int cy = GetSystemMetrics(SM_CYSMICON);
                         if(dis->itemData > 0)
                             hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
                         else if(dat != NULL)
@@ -227,9 +236,12 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         else
                             hIcon = myGlobals.g_iconContainer;
                         
+                        GetIconInfo((HICON)dis->itemData, &ii);
+                        GetObject(ii.hbmColor, sizeof(bm), &bm);
+
                         DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
                                   2 + (dis->itemState & ODS_SELECTED ? 1 : 0),
-                                  (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
+                                  (dis->itemState & ODS_SELECTED ? 1 : 0), bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
                                   DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
 
                         return TRUE;

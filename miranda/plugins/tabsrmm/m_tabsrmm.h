@@ -96,7 +96,7 @@ typedef struct {
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MWF_LOG_GRID 0x4000000
 #define MWF_LOG_INDIVIDUALBKG 0x8000000
-//#define MWF_LOG_LIMITAVATARHEIGHT 0x10000000
+#define MWF_LOG_INOUTICONS 0x10000000
 #define MWF_SMBUTTONSELECTED 0x20000000
 #define MWF_DIVIDERWANTED 0x40000000
 #define MWF_LOG_GROUPMODE 0x80000000
@@ -105,7 +105,7 @@ typedef struct {
 
 #define MWF_SHOW_URLEVENTS 1
 #define MWF_SHOW_FILEEVENTS 2
-#define MWF_SHOW_INOUTICONS 4
+//#define MWF_SHOW_INOUTICONS 4
 #define MWF_SHOW_EMPTYLINEFIX 8
 #define MWF_SHOW_MICROLF 16
 #define MWF_SHOW_MARKFOLLOWUPTS 32
@@ -119,6 +119,7 @@ typedef struct {
 #define SMODE_CONTAINER 2
 #define SMODE_FORCEANSI 4
 #define SMODE_SENDLATER 8
+#define SMODE_NOACK 16
 
 #define SENDFORMAT_BBCODE 2
 #define SENDFORMAT_SIMPLE 1
@@ -330,6 +331,7 @@ typedef struct _globals {
     HANDLE m_TipOwner;
     HANDLE m_UserMenuItem;
     HBITMAP m_hbmMsgArea;
+    int m_WheelDefault;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

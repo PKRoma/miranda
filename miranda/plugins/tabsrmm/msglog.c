@@ -64,6 +64,8 @@ struct CPTABLE cpTable[] = {
     {   -1,     NULL}
 };
 
+// #define _CACHED_ICONS 1
+
 int _log(const char *fmt, ...);
 
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
@@ -109,7 +111,11 @@ static char szToday[22], szYesterday[22];
 #define LOGICON_STATUS 5
 #define LOGICON_ERROR 6
 
-struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
+#if defined _CACHED_ICONS
+    struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
+#else
+    static HICON Logicons[NR_LOGICONS];
+#endif    
 
 #define STREAMSTAGE_HEADER  0
 #define STREAMSTAGE_EVENTS  1
@@ -177,10 +183,12 @@ void CacheLogFonts()
 
 void UncacheMsgLogIcons()
 {
+#ifdef _CACHED_ICONS
     int i;
 
     for(i = 0; i < 3 * NR_LOGICONS; i++)
         DeleteCachedIcon(&msgLogIcons[i]);
+#endif    
 }
 
 /*
@@ -190,6 +198,7 @@ void UncacheMsgLogIcons()
 
 void CacheMsgLogIcons()
 {
+#ifdef _CACHED_ICONS
     HICON icons[NR_LOGICONS];
     int iCounter = 0;
     int i;
@@ -212,6 +221,15 @@ void CacheMsgLogIcons()
         CacheIconToBMP(&msgLogIcons[iCounter++], icons[i], DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", RGB(255,255,255)), size, size);
         CacheIconToBMP(&msgLogIcons[iCounter++], icons[i], DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(255,255,255)), size, size);
     }
+#else
+    Logicons[0] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+    Logicons[1] = LoadSkinnedIcon(SKINICON_EVENT_URL);
+    Logicons[2] = LoadSkinnedIcon(SKINICON_EVENT_FILE);
+    Logicons[3] = myGlobals.g_iconOut;
+    Logicons[4] = myGlobals.g_iconIn;
+    Logicons[5] = myGlobals.g_iconStatus;
+    Logicons[6] = myGlobals.g_iconErr;
+#endif    
 }
 
 /*
@@ -733,7 +751,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 {
                     if(dat->dwFlags & MWF_LOG_SHOWICONS) {
                         int icon;
-                        if((dat->dwEventIsShown & MWF_SHOW_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
+                        if((dat->dwFlags & MWF_LOG_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
                             icon = isSent ? LOGICON_OUT : LOGICON_IN;
                         else {
                             switch (dbei.eventType) {
@@ -803,7 +821,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     break;
                 case 'o':            // month
                     if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mon);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mon + 1);
                     else
                         skipToNext = TRUE;
                     break;
@@ -843,7 +861,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 case 'S':           // symbol
                 {
                     if(dat->dwFlags & MWF_LOG_SYMBOLS) {
-                        if((dat->dwEventIsShown & MWF_SHOW_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
+                        if((dat->dwFlags & MWF_LOG_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
                             c = isSent ? 0x37 : 0x38;
                         else {
                             switch(dbei.eventType) {
@@ -1005,6 +1023,32 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 case '|':       // tab
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tab");
                     break;
+                case 'f':       // font tag...
+                {
+                    TCHAR code = szTemplate[i + 2];
+                    int fontindex = -1;
+                    switch(code) {
+                        case 'd':
+                            fontindex = isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset;
+                            break;
+                        case 'n':
+                            fontindex = isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset;
+                            break;
+                        case 'm':
+                            fontindex = isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset;
+                            break;
+                        case 'M':
+                            fontindex = isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset;
+                            break;
+                    }
+                    if(fontindex != -1) {
+                        i++;
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", rtfFonts[fontindex]);
+                    }
+                    else
+                        skipToNext = TRUE;
+                    break;
+                }
             }
 skip:            
             if(skipToNext) {
@@ -1218,9 +1262,10 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
     HWND hwndrtf;
     IRichEditOle *ole;
     TEXTRANGEA tr;
+    struct MsgLogIcon theIcon;
     char trbuffer[20];
     tr.lpstrText = trbuffer;
-
+    
     hwndrtf = GetDlgItem(hwndDlg, IDC_LOG);
     fi.chrg.cpMin = startAt;
 
@@ -1246,7 +1291,9 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
                 fi.chrg.cpMin = fi.chrgText.cpMax + 6;
                 continue;
             }
+#if defined _CACHED_ICONS
             bIconIndex = ((BYTE)trbuffer[0] - (BYTE)'0') * 3;
+
             if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG) {
                 if(trbuffer[1] == '<')
                     bIconIndex += 1;
@@ -1254,6 +1301,13 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
                     bIconIndex += 2;
             }
             ImageDataInsertBitmap(ole, msgLogIcons[bIconIndex].hBmp);
+#else            
+            bIconIndex = ((BYTE)trbuffer[0] - (BYTE)'0');
+            SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
+            CacheIconToBMP(&theIcon, Logicons[bIconIndex], cf2.crBackColor, 0, 0);
+            ImageDataInsertBitmap(ole, theIcon.hBmp);
+            DeleteCachedIcon(&theIcon);
+#endif
             fi.chrg.cpMin = cr.cpMax + 6;
         }
         ReleaseRichEditOle(ole);

@@ -168,7 +168,7 @@ void SetDialogToType(HWND hwndDlg)
         ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
     }
 
-    ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), (dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER) ? SW_SHOW : SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLETOOLBAR), SW_HIDE);
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZEN), SW_HIDE);
@@ -321,12 +321,33 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             RECT rc;
             POINT pt;
             
+            if(myGlobals.m_WheelDefault)
+                break;
+            
             GetCursorPos(&pt);
             GetWindowRect(hwnd, &rc);
             if(PtInRect(&rc, pt))
                 break;
-            SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
-            return 0;
+            GetWindowRect(GetDlgItem(GetParent(hwnd), IDC_LOG), &rc);
+            if(PtInRect(&rc, pt)) {
+                if(mwdat->hwndLog != 0) {
+                    /*int i;
+                    WPARAM wParam;
+                    short amount = (short)(HIWORD(wParam));
+                    if(amount > 0)
+                        wParam = (WPARAM)MAKELONG(SB_LINEUP, 0);
+                    else if(amount < 0)
+                        wParam = (WPARAM)MAKELONG(SB_LINEDOWN, 0);
+                    amount = abs(amount) / WHEEL_DELTA;
+                    _DebugPopup(0, "amount: %d", amount);
+                    for(i = 0; i < amount; i++)
+                        SendMessage(mwdat->hwndLog, WM_VSCROLL, wParam, 0);*/
+                }
+                else
+                    SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
+                return 0;
+            }
+            break;
         }
         case WM_KEYUP:
             break;
@@ -862,6 +883,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
                 dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", 0) ? SMODE_FORCEANSI : 0;
                 dat->sendMode |= dat->hContact == 0 ? SMODE_MULTIPLE : 0;
+                dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "no_ack", 0) ? SMODE_NOACK : 0;
                 
                 dat->hwnd = hwndDlg;
                 SetMessageLog(hwndDlg, dat);
@@ -1286,7 +1308,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetDialogToType(hwndDlg);
             }
             dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
-            //dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 180 : 154) : 0);
             dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 204 : 178) : 0);
             
             dat->iButtonBarNeeds += (dat->showUIElements) ? 28 : 0;
@@ -1297,7 +1318,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
             }
 
             /*
@@ -1382,7 +1403,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
-            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0) ? MWF_SHOW_INOUTICONS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1) ? MWF_SHOW_EMPTYLINEFIX : 0;
             dat->dwEventIsShown |= MWF_SHOW_MICROLF;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
@@ -1420,6 +1440,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 COLORREF inputcharcolor;
                 CHARFORMAT2A cf2 = {0};
                 LOGFONTA lf;
+                int i = 0;
                 HDC hdc = GetDC(NULL);
                 int logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
                 ReleaseDC(NULL, hdc);
@@ -1432,6 +1453,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, inputcolour);
                 LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, &inputcharcolor);
+                /*
+                 * correct the input area text color to avoid a color from the table of usable bbcode colors
+                 */
+                while(rtf_ctable[i].szName != NULL) {
+                    if(rtf_ctable[i].clr == inputcharcolor)
+                        inputcharcolor = RGB(GetRValue(inputcharcolor), GetGValue(inputcharcolor), GetBValue(inputcharcolor) == 0 ? GetBValue(inputcharcolor) + 1 : GetBValue(inputcharcolor) - 1);
+                    i++;
+                }
                 cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
                 cf2.cbSize = sizeof(cf2);
                 cf2.crTextColor = inputcharcolor;
@@ -3015,7 +3044,13 @@ quote_from_last:
                             break;
                         }
                         if(iSelection == ID_FONT_DEFAULTCOLOR) {
+                            int i = 0;
                             cf.crTextColor = DBGetContactSettingDword(NULL, SRMSGMOD_T, "Font16Col", 0);
+                            while(rtf_ctable[i].szName != NULL) {
+                                if(rtf_ctable[i].clr == cf.crTextColor)
+                                    cf.crTextColor = RGB(GetRValue(cf.crTextColor), GetGValue(cf.crTextColor), GetBValue(cf.crTextColor) == 0 ? GetBValue(cf.crTextColor) + 1 : GetBValue(cf.crTextColor) - 1);
+                                i++;
+                            }
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
                             break;
                         }
@@ -3217,7 +3252,7 @@ quote_from_last:
                             DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", iNewLocalFormat);
                         
                         if(myGlobals.m_SendFormat != iOldGlobalSendFormat)
-                            DBWriteContactSettingDword(0, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
+                            DBWriteContactSettingByte(0, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
                         if(iNewLocalFormat != iLocalFormat || myGlobals.m_SendFormat != iOldGlobalSendFormat) {
                             dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
                             if(dat->SendFormat == -1)           // per contact override to disable it..
@@ -3231,14 +3266,14 @@ quote_from_last:
                     break;
                 }
                 case IDC_TOGGLETOOLBAR:
-                    if(GetKeyState(VK_SHIFT) & 0x8000)
+                    if(GetKeyState(VK_SHIFT) & 0x8000) {
                         dat->pContainer->dwFlags ^= CNT_NOMENUBAR;
-                    else if(GetKeyState(VK_CONTROL) & 0x8000)
-                        dat->pContainer->dwFlags ^= CNT_NOSTATUSBAR;
-                    else
+                        SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+                    }
+                    else {
                         dat->pContainer->dwFlags ^= CNT_HIDETOOLBAR;
-                    
-                    SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+                        BroadCastContainer(dat->pContainer, DM_CONFIGURETOOLBAR, 0, 1);
+                    }
                     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                     break;
                 case IDC_SENDMENU: {
@@ -3253,6 +3288,7 @@ quote_from_last:
                     CheckMenuItem(submenu, ID_SENDMENU_FORCEANSISEND, MF_BYCOMMAND | (dat->sendMode & SMODE_FORCEANSI ? MF_CHECKED : MF_UNCHECKED));
                     EnableMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (ServiceExists("BuddyPounce/AddToPounce") ? MF_ENABLED : MF_GRAYED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (dat->sendMode & SMODE_SENDLATER ? MF_CHECKED : MF_UNCHECKED));
+                    CheckMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_BYCOMMAND | (dat->sendMode & SMODE_NOACK ? MF_CHECKED : MF_UNCHECKED));
                     
                     if(lParam)
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
@@ -3275,7 +3311,11 @@ quote_from_last:
                         case ID_SENDMENU_SENDLATER:
                             dat->sendMode ^= SMODE_SENDLATER;
                             break;
+                        case ID_SENDMENU_SENDWITHOUTTIMEOUTS:
+                            dat->sendMode ^= SMODE_NOACK;
+                            break;
                     }
+                    DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "no_ack", dat->sendMode & SMODE_NOACK ? 1 : 0);
                     DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", dat->sendMode & SMODE_FORCEANSI ? 1 : 0);
                     if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
                         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
@@ -3286,6 +3326,8 @@ quote_from_last:
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
                     ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
                     ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+                    if(dat->hbmMsgArea)
+                        InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, TRUE);
                     break;
                     }
                 case IDC_ADD:
@@ -3445,7 +3487,7 @@ quote_from_last:
                                 PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                                 break;
                             }
-                            if(msg == WM_MOUSEWHEEL && ((NMHDR *)lParam)->idFrom == IDC_LOG) {
+                            if(msg == WM_MOUSEWHEEL && (((NMHDR *)lParam)->idFrom == IDC_LOG || ((NMHDR *)lParam)->idFrom == IDC_MESSAGE)) {
                                 RECT rc;
                                 POINT pt;
 
@@ -3453,8 +3495,8 @@ quote_from_last:
                                 GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
                                 if(PtInRect(&rc, pt))
                                     return 0;
-                                SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), WM_MOUSEWHEEL, wp, lp);
-                                ((MSGFILTER *)lParam)->msg = WM_NULL;
+                                //SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), WM_MOUSEWHEEL, wp, lp);
+                                //((MSGFILTER *)lParam)->msg = WM_NULL;
                                 return 1;
                             }
                                 

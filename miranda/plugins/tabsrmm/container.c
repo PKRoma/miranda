@@ -407,7 +407,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 case ID_VIEW_SHOWTOOLBAR:
                     pContainer->dwFlags ^= CNT_HIDETOOLBAR;
-                    break;
+                    WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
+                    return 0;
                 case ID_VIEW_SHOWMENUBAR:
                     pContainer->dwFlags ^= CNT_NOMENUBAR;
                     break;
@@ -1396,7 +1397,7 @@ panel_found:
             if(pContainer->dwFlags & CNT_NOMENUBAR) {
                 if(pContainer->hMenu) {
                     SetMenu(hwndDlg, NULL);
-                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    //SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
                 ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             }
@@ -1406,7 +1407,7 @@ panel_found:
                     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
                 }
                 SetMenu(hwndDlg, pContainer->hMenu);
-                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                //SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 DrawMenuBar(hwndDlg);
             }
             

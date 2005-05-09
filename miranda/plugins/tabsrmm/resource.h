@@ -4,7 +4,6 @@
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
-#define IDI_ICON1                       3
 #define IDI_PULLDOWN1ARROW              3
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
@@ -42,12 +41,12 @@
 #define IDC_READNEXT                    1000
 #define IDC_APPLY                       1001
 #define IDC_DROP                        1002
+#define IDC_MESSAGE                     1002
 #define IDC_HYPERLINKHAND               1003
 #define IDC_DROPUSER                    1004
 #define IDC_PREVIEW                     1006
 #define IDC_LOG                         1006
 #define IDC_CHKNOTIFY_MESSAGE           1007
-#define IDC_MESSAGE                     1008
 #define IDC_CHKNOTIFY_URL               1009
 #define IDC_AUTOPOPUP                   1010
 #define IDC_CHKNOTIFY_FILE              1011
@@ -306,7 +305,6 @@
 #define IDC_HOTKEYSAREGLOBAL            1262
 #define IDC_SINGLEROWTAB                1263
 #define IDC_STREAMTHREADING             1264
-#define IDC_COMBO1                      1265
 #define IDC_IEVIEWMODE                  1265
 #define IDC_ANNOUNCEMETHOD              1265
 #define IDC_MODIFIERS                   1266
@@ -316,6 +314,8 @@
 #define IDC_AVATARMODE2                 1268
 #define IDC_CODEPAGES                   1268
 #define IDC_NOTIFYTYPE                  1269
+#define IDC_NOTIFYTYPE2                 1270
+#define IDC_SENDFORMATTING              1270
 #define IDC_TOOLBARHIDEMODE             1271
 #define IDC_EMPTYLINEFIX                1272
 #define IDC_SPLITTERSTATICEDGES         1273
@@ -581,6 +581,7 @@
 #define ID_FONT_WHITE                   40198
 #define ID_FONT_CLEARALLFORMATTING      40199
 #define ID_FONT_DEFAULTCOLOR            40200
+#define ID_SENDMENU_SENDWITHOUTTIMEOUTS 40201
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -588,7 +589,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        4
-#define _APS_NEXT_COMMAND_VALUE         40201
+#define _APS_NEXT_COMMAND_VALUE         40202
 #define _APS_NEXT_CONTROL_VALUE         1380
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

@@ -349,7 +349,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,1,0,302,86
-    GROUPBOX        "Avatar options",IDC_STATIC,1,88,302,43
+    GROUPBOX        "Avatar options",IDC_STATIC,1,88,302,42
     LTEXT           "Display",IDC_STATIC,9,98,56,9
     COMBOBOX        IDC_AVATARDISPLAY,64,96,90,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -360,39 +360,40 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,97,9,
                     11
     LTEXT           "pixels in height",IDC_STATIC,242,98,56,11
-    LTEXT           "Show avatars",IDC_STATIC,10,116,60,10
-    COMBOBOX        IDC_AVATARMODE,114,113,175,46,CBS_DROPDOWNLIST | 
+    LTEXT           "Show avatars",IDC_STATIC,10,115,60,10
+    COMBOBOX        IDC_AVATARMODE,114,112,175,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,1,132,
+    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,1,130,
                     302,35
-    LTEXT           "Automatically close tabs after",IDC_STATIC,10,144,119,
-                    11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,131,142,31,12,ES_AUTOHSCROLL | 
+    LTEXT           "Automatically close tabs after",IDC_STATIC,7,140,119,11
+    EDITTEXT        IDC_AUTOCLOSETABTIME,128,138,31,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,158,143,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,176,144,
+                    UDS_ARROWKEYS,155,139,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,173,140,
                     122,11
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    9,155,280,10
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,1,169,302,56
-    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,180,133,
+                    9,152,280,10
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,1,165,302,60
+    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,174,133,
                     8
-    COMBOBOX        IDC_TOOLBARHIDEMODE,147,178,148,46,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_TOOLBARHIDEMODE,143,172,152,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Display notifications with:",IDC_STATIC,9,197,131,9
-    COMBOBOX        IDC_NOTIFYTYPE,147,194,66,46,CBS_DROPDOWNLIST | 
+    LTEXT           "Display notifications with:",IDC_STATIC,9,191,131,9
+    COMBOBOX        IDC_NOTIFYTYPE,143,188,73,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,210,211,8
-    EDITTEXT        IDC_SECONDS,223,208,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,210,44,8
+    EDITTEXT        IDC_SECONDS,228,208,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,258,210,36,8
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,10,285,72,
                     WS_EX_STATICEDGE
+    CTEXT           "Message send timeout",IDC_STATIC,229,189,67,16
+    LTEXT           "Send text formatting:",IDC_STATIC,9,210,132,11
+    COMBOBOX        IDC_SENDFORMATTING,143,208,74,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
@@ -878,6 +879,8 @@ BEGIN
         MENUITEM "Send &Later",                 ID_SENDMENU_SENDLATER
         MENUITEM SEPARATOR
         MENUITEM "Force &ANSI",                 ID_SENDMENU_FORCEANSISEND
+        MENUITEM "Send without Timeouts",       ID_SENDMENU_SENDWITHOUTTIMEOUTS
+
     END
     POPUP "Protomenu"
     BEGIN

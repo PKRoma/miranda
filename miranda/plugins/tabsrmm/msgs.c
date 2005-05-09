@@ -897,6 +897,8 @@ static void UnloadIcons()
 
 int SplitmsgShutdown(void)
 {
+    int i;
+    
     DestroyCursor(myGlobals.hCurSplitNS);
     DestroyCursor(myGlobals.hCurHyperlinkHand);
     DestroyCursor(myGlobals.hCurSplitWE);
@@ -929,6 +931,10 @@ int SplitmsgShutdown(void)
         free(protoIconData);
     CreateSystrayIcon(FALSE);
     CreateTrayMenus(FALSE);
+    for(i = 0; i < NR_SENDJOBS; i++) {
+        if(sendJobs[i].sendBuffer != NULL)
+            free(sendJobs[i].sendBuffer);
+    }
     return 0;
 }
 
@@ -1146,6 +1152,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
         }
         if(IsIconic(pContainer->hwnd))
             SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+        else if(GetForegroundWindow() != pContainer->hwnd)
+            SetForegroundWindow(pContainer->hwnd);
         SetFocus(hwndChild);
     	SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 		return TRUE;
