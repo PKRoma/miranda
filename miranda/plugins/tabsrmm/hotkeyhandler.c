@@ -43,6 +43,7 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 #include "m_popup.h"
 #include "nen.h"
 #include "functions.h"
+#include "m_Snapping_windows.h"
 
 extern struct ContainerWindowData *pFirstContainer;
 extern HANDLE hMessageWindowList;
@@ -63,6 +64,9 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     static int iMousedown;
     static RECT rcLast;
     
+    if(myGlobals.g_wantSnapping)
+        CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
+
     if(msg == WM_TASKBARCREATED) {
         CreateSystrayIcon(FALSE);
         CreateSystrayIcon(TRUE);

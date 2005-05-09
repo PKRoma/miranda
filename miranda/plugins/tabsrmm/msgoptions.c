@@ -349,6 +349,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, "Show Icons", 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 0,
     0, "Show Symbols", 1, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 0,
     0, "Use Incoming/Outgoing Icons", 1, LOI_TYPE_FLAG, MWF_LOG_INOUTICONS, 0,
+    0, "Use Message Grouping", 1, LOI_TYPE_FLAG, MWF_LOG_GROUPMODE, 0,
     0, "Indent message body", IDC_INDENT, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
     0, "Simple text formatting (*bold* etc.)", IDC_FORMATTING, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
     0, "Support BBCode formatting", IDC_FORMATTING, LOI_TYPE_SETTING, (UINT_PTR)"log_bbcode", 0,
@@ -513,7 +514,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         case PSN_APPLY: {
                             int i = 0;
                             TVITEMA item = {0};
-                            dwFlags &= ~(MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT | MWF_LOG_SHOWICONS | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS);
+                            dwFlags &= ~(MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT | MWF_LOG_SHOWICONS | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | MWF_LOG_GROUPMODE);
                             
                             if (IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT))
                                 DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_COUNT);

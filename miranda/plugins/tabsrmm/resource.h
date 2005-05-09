@@ -410,6 +410,7 @@
 #define IDC_LOGOPTIONS                  1377
 #define IDC_WINDOWOPTIONS               1378
 #define IDC_TRAYCONTAINER               1379
+#define IDC_EVENTOPTIONS                1380
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -590,7 +591,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        4
 #define _APS_NEXT_COMMAND_VALUE         40202
-#define _APS_NEXT_CONTROL_VALUE         1380
+#define _APS_NEXT_CONTROL_VALUE         1381
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

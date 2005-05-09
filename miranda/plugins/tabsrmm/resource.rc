@@ -32,104 +32,55 @@ IDD_POPUP_OPT DIALOGEX 0, 0, 314, 240
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "General Options",IDC_STATIC,6,2,199,76
-    CONTROL         "Show Preview of Event",IDC_CHKPREVIEW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,11,184,10
-    CONTROL         "Enable system tray support",IDC_ENABLETRAYSUPPORT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,22,184,10
-    CONTROL         "Minimize containers to system tray",IDC_MINIMIZETOTRAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,33,128,10
     PUSHBUTTON      "Announce events when status is...",IDC_POPUPSTATUSMODES,
-                    16,64,178,12
-    GROUPBOX        "Popup Options",IDC_STATIC,6,79,199,81
-    LTEXT           "Text",IDC_STATIC,61,88,23,8
-    LTEXT           "Back-\nground",IDC_STATIC,86,88,29,18
-    CTEXT           "Timeout (seconds, 0 = use default)",IDC_STATIC,134,87,
-                    62,16
-    LTEXT           "Message",IDC_STATIC,11,107,44,13
-    CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,107,
+                    11,151,178,13
+    GROUPBOX        "Popup Options",IDC_STATIC,1,168,312,71
+    LTEXT           "Text",IDC_STATIC,60,175,23,8
+    LTEXT           "Background",IDC_STATIC,86,175,47,11
+    CTEXT           "Timeout (seconds, 0 = use default)",IDC_STATIC,146,175,
+                    125,12
+    LTEXT           "Message",IDC_STATIC,11,185,44,13
+    CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,185,
                     24,13
-    CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,86,107,
+    CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,92,185,
                     24,13
-    EDITTEXT        IDC_DELAY_MESSAGE,155,104,26,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_DELAY_MESSAGE,191,184,26,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    LTEXT           "URL",IDC_STATIC,11,120,44,13
-    CONTROL         "",IDC_COLTEXT_URL,"ColourPicker",WS_TABSTOP,56,119,24,
+    LTEXT           "URL",IDC_STATIC,11,198,44,13
+    CONTROL         "",IDC_COLTEXT_URL,"ColourPicker",WS_TABSTOP,56,197,24,
                     13
-    CONTROL         "",IDC_COLBACK_URL,"ColourPicker",WS_TABSTOP,86,119,24,
+    CONTROL         "",IDC_COLBACK_URL,"ColourPicker",WS_TABSTOP,92,197,24,
                     13
-    EDITTEXT        IDC_DELAY_URL,155,117,26,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_COLTEXT_FILE,"ColourPicker",WS_TABSTOP,56,131,24,
+    EDITTEXT        IDC_DELAY_URL,191,196,26,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_COLTEXT_FILE,"ColourPicker",WS_TABSTOP,56,209,24,
                     13
-    CONTROL         "",IDC_COLBACK_FILE,"ColourPicker",WS_TABSTOP,86,131,24,
+    CONTROL         "",IDC_COLBACK_FILE,"ColourPicker",WS_TABSTOP,92,209,24,
                     13
-    EDITTEXT        IDC_DELAY_FILE,155,130,26,13,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Others",IDC_STATIC,12,146,44,13
-    LTEXT           "File",IDC_STATIC,11,133,44,13
-    CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,143,
+    EDITTEXT        IDC_DELAY_FILE,191,209,26,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Others",IDC_STATIC,12,224,44,13
+    LTEXT           "File",IDC_STATIC,11,211,44,13
+    CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,221,
                     24,13
-    CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,86,143,
+    CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,92,221,
                     24,13
-    EDITTEXT        IDC_DELAY_OTHERS,155,143,26,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_DELAY_OTHERS,191,222,26,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    GROUPBOX        "Message-Event only",IDC_STATIC,6,160,199,77
-    CONTROL         "Don't show Popup when Message-Dialog is already open",
-                    IDC_CHKWINDOWCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    10,170,192,10
-    CONTROL         "Merge popups ""per user"" (experimental, unstable)",
-                    IDC_CHKMERGEPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    10,181,186,10
-    CONTROL         "Show Date",IDC_CHKSHOWDATE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,20,193,84,10
-    CONTROL         "Show Time",IDC_CHKSHOWTIME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,114,193,84,10
-    CONTROL         "Show Headers",IDC_CHKSHOWHEADERS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,204,84,10
-    CONTROL         "Limit Message preview",IDC_LIMITPREVIEW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,218,107,12
-    EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,121,217,37,14,ES_AUTOHSCROLL
+    CONTROL         "Limit message preview to",IDC_LIMITPREVIEW,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,137,107,12
+    EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,121,136,37,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_MESSAGEPREVIEWLIMITSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,164,219,9,13
-    GROUPBOX        "Notify me of ...",IDC_STATIC,208,3,100,53
-    CONTROL         "Message",IDC_CHKNOTIFY_MESSAGE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,14,90,10
-    CONTROL         "URL",IDC_CHKNOTIFY_URL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,23,90,10
-    CONTROL         "File",IDC_CHKNOTIFY_FILE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,33,90,10
-    CONTROL         "Others",IDC_CHKNOTIFY_OTHER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,42,90,10
-    GROUPBOX        "Left Click Actions",IDC_STATIC,208,56,100,43
-    CONTROL         "Dismiss Popup",IDC_CHKACTL_DISMISS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,66,90,10
-    CONTROL         "Open Event",IDC_CHKACTL_OPEN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,76,90,10
-    CONTROL         "Dismiss Event",IDC_CHKACTL_REMOVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,86,90,10
-    GROUPBOX        "Right Click Actions",IDC_STATIC,208,99,100,43
-    CONTROL         "Dismiss Popup",IDC_CHKACTR_DISMISS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,109,79,10
-    CONTROL         "Open Event",IDC_CHKACTR_OPEN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,119,78,10
-    CONTROL         "Dismiss Event",IDC_CHKACTR_REMOVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,129,77,10
-    GROUPBOX        "Time Expires Actions",IDC_STATIC,208,143,100,43
-    CONTROL         "Dismiss Popup",IDC_CHKACTTE_DISMISS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,153,79,10
-    CONTROL         "Open Event",IDC_CHKACTTE_OPEN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,212,163,78,10
-    CONTROL         "Dismiss Event",IDC_CHKACTTE_REMOVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,173,77,10
-    CONTROL         "No popups for RSS",IDC_NORSS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,211,203,95,11
-    PUSHBUTTON      "Preview",IDC_PREVIEW,228,218,60,12
-    LTEXT           "chars",IDC_STATIC,163,219,38,10
-    CONTROL         "Animated",IDC_ANIMATED,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,141,32,58,12
-    COMBOBOX        IDC_ANNOUNCEMETHOD,100,47,93,13,CBS_DROPDOWN | CBS_SORT | 
+                    UDS_ARROWKEYS,164,138,9,13
+    PUSHBUTTON      "Preview popup",IDC_PREVIEW,226,223,83,12
+    LTEXT           "characters",IDC_STATIC,166,138,38,10
+    COMBOBOX        IDC_ANNOUNCEMETHOD,121,122,93,13,CBS_DROPDOWN | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Announce with",IDC_STATIC,13,49,82,9
+    LTEXT           "Announce events with",IDC_STATIC,14,124,82,9
+    CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,297,108,
+                    WS_EX_STATICEDGE
+    GROUPBOX        "Event notify options",IDC_STATIC,2,0,311,167
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11

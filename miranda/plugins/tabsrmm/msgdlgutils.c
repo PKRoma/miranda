@@ -1048,12 +1048,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					int iInd = RTFColorToIndex(iCol);
 					bJustRemovedRTF = TRUE;
 
-                    //MessageBoxW(0, p1, L"foo", MB_OK);
                     _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
-                    //MessageBoxW(0, pszText, szTemp, MB_OK);
 					iRemoveChars = 3 + _tcslen(szTemp);
 					if(bTextHasStarted || iCol)
-					//	_sntprintf(InsertThis, sizeof(InsertThis), ( iCol > 1 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd].szName);
                         _sntprintf(InsertThis, sizeof(InsertThis), ( iInd > 0 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd  - 1].szName);
                     inColor = iInd > 0 ? 1 : 0;
 				}

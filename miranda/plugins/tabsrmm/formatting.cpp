@@ -79,10 +79,9 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
         return(message.c_str());
 #endif
 
-    /*
-     * always process bbcode, but strip it when HIWORD(flags) == 0
-     */
-
+    if(HIWORD(flags) == 0)
+        goto nobbcode;
+    
     beginmark = 0;
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
@@ -105,19 +104,13 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
                 wchar_t szTemp[5];
                 while(rtf_ctable[ii].szName != NULL) {
                     if(colorname == rtf_ctable[ii].szName) {
-                        if(HIWORD(flags)) {
-                            message.erase(endmark, 4);
-                            message.replace(endmark, 4, L"%c0 ");
-                            message.erase(beginmark, (closing - beginmark));
-                            message.insert(beginmark, L"%cxxx ");
-                            _snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 10 + ii);
-                            message[beginmark + 3] = szTemp[0];
-                            message[beginmark + 4] = szTemp[1];
-                        }
-                        else {
-                            message.erase(endmark, 8);
-                            message.erase(beginmark, (closing - beginmark) + 1);
-                        }
+                        message.erase(endmark, 4);
+                        message.replace(endmark, 4, L"%c0 ");
+                        message.erase(beginmark, (closing - beginmark));
+                        message.insert(beginmark, L"%cxxx ");
+                        _snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 10 + ii);
+                        message[beginmark + 3] = szTemp[0];
+                        message[beginmark + 4] = szTemp[1];
                         break;
                     }
                     ii++;
@@ -129,17 +122,11 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
                 continue;
             }
         }
-        if(HIWORD(flags)) {
-            message.replace(endmark, 4, formatting_strings_end[i]);
-            message.insert(beginmark, L" ");
-            message.replace(beginmark, 4, formatting_strings_begin[i]);
-        }
-        else {
-            message.erase(endmark, 4);
-            message.erase(beginmark, 3);
-        }
+        message.replace(endmark, 4, formatting_strings_end[i]);
+        message.insert(beginmark, L" ");
+        message.replace(beginmark, 4, formatting_strings_begin[i]);
     }
-
+nobbcode:
     if(!(dwFlags & MWF_LOG_TEXTFORMAT))
         goto nosimpletags;
     
@@ -219,10 +206,9 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
         return(message.c_str());
 #endif    
 
-    /*
-     * always do bbcode
-     */
-
+    if(HIWORD(flags) == 0)
+        goto nobbcode;
+    
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
             if((tempmark = message.find(bbcodes_begin[i], 0)) != message.npos)
@@ -245,19 +231,13 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
                 char szTemp[5];
                 while(rtf_ctable[ii].szName != NULL) {
                     if(colorname == rtf_ctable[ii].szName) {
-                        if(HIWORD(flags)) {
-                            message.erase(endmark, 8);
-                            message.insert(endmark, "%c0xx ");
-                            message.erase(beginmark, (closing - beginmark) + 1);
-                            message.insert(beginmark, "%cxxx ");
-                            _snprintf(szTemp, 4, "%02d", MSGDLGFONTCOUNT + 10 + ii);
-                            message[beginmark + 3] = szTemp[0];
-                            message[beginmark + 4] = szTemp[1];
-                        }
-                        else {
-                            message.erase(endmark, 8);
-                            message.erase(beginmark, (closing - beginmark) + 1);
-                        }
+                        message.erase(endmark, 8);
+                        message.insert(endmark, "%c0xx ");
+                        message.erase(beginmark, (closing - beginmark) + 1);
+                        message.insert(beginmark, "%cxxx ");
+                        _snprintf(szTemp, 4, "%02d", MSGDLGFONTCOUNT + 10 + ii);
+                        message[beginmark + 3] = szTemp[0];
+                        message[beginmark + 4] = szTemp[1];
                         break;
                     }
                     ii++;
@@ -269,17 +249,12 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
                 continue;
             }
         }
-        if(HIWORD(flags)) {
-            message.replace(endmark, 4, formatting_strings_end[i]);
-            message.insert(beginmark, " ");
-            message.replace(beginmark, 4, formatting_strings_begin[i]);
-        }
-        else {
-            message.erase(endmark, 4);
-            message.erase(beginmark, 3);
-        }
+        message.replace(endmark, 4, formatting_strings_end[i]);
+        message.insert(beginmark, " ");
+        message.replace(beginmark, 4, formatting_strings_begin[i]);
     }
-
+    
+nobbcode:
     if(!(dwFlags & MWF_LOG_TEXTFORMAT))            // skip */_ stuff if not enabled
         goto nosimpletags;
     

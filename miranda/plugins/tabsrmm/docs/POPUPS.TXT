@@ -1,32 +1,38 @@
 
-tabSRMM, POPUP and NewEventNotify, how it works all together...
----------------------------------------------------------------
+tabSRMM event notifications (also known as "popups"
+---------------------------------------------------
 
-This document will try to explain how this stuff works and what you can 
-configure in conjunction with it.
+Beginning with 0.9.9.95, tabSRMM has its own event notification system 
+built into the plugin. It can use the following ways to announce incoming
+messages:
 
-First, you need to use a recent NewEventNotify plugin. The old versions
-cannot work with tabbed chat windows at all.
+1) popups (need popup.dll installed - I suggest using a recent version of
+   popup PLUS).
+   
+2) On Screen Display (OSD). You can either use wbOSD or the old OSD plugin 
+   - both available on the miranda file listing.
+   
+3) Balloon (system tray) tooltips. Only available on Windows 2000 or 
+   later.
+   
+Configuration of event notifications is done on the "Message Sessions >
+Event Popups" page. Most options should be familar if you have ever been
+using a NewEventNotify plugin.
 
-I suggest using this version: http://www.miranda-im.org/download/details.php?action=viewfile&id=1719
+The "announce method" specifies in which way you want to see the event
+notifications (popups, osd or balloon tooltips). The combo box will only
+contain entries which are available (the necessary plugin is installed and
+detected).
 
-If you want typing notify popups, you can safely use the 
-TypingNotify plugin by BiO, because it is already written to use the 
-service function provided by tabSRMM for finding an open message session 
-(actually, BiO suggested this function and I built it into tabSRMM).
 
-tabSRMM provides several options to configure popup behaviour. The default 
-setting will work as always - you do not get popups if a message session 
-has been openend for the specific contat. Neiter NEN nor TypingNotify will 
-display a popup, because the service function reports an open window to 
-them.
-
-There are, however, ways to tell the tabSRMM service when it should report 
-open sessions and when it should not. All these options can be configured 
-independently for each container, but you can specify default values if 
-you wish.
+If you have choosen that you want to see notifications, even if a message
+window is already open (UNCHECK "Don't announce event when message dialog 
+is open"), you can further configure that on a "per container" base. You
+can find these options on the containers menu bar (Container->Event 
+popups")
 
 The relevant options are:
+-------------------------
 
 1) Enable popups if minimized
    The container and all its tabs will show popups if the container has
@@ -50,5 +56,4 @@ it has its own copy of these settings, so if you need to change them, you
 will have to use the container settings dialog (right click the title- or 
 button bar of an open container or use the system menu and choose 
 "Container Options".
-
 

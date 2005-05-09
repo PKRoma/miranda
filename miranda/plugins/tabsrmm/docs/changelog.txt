@@ -41,6 +41,10 @@ Version 0.9.9.96 - 2005/05/09
           the message log. slightly slower when loading lots of events, but not 
           dramatically.
         
+        ! fixed bug with WYSIWYG formatting in the input box.
+
+        * bbcodes are no longer stripped when bbcode support is off. They are now ignored.
+
 Version 0.9.9.95 - 2005/04/15
 
         + added message templates for the default message log. As a result, many options
@@ -1959,29 +1963,3 @@ Version 0.0.1 - 2004/07/23
 
 	* initial release
 	
----------------------------------- Future / TODO ---------------------------
-
-The following features are considered for implementation in the near future,
-depending on user feedback and how much sense they would make.
-
-	+ when iconified (and only then), the window title shows the name of the
-	  contact which has the most recent unread message pending.
-	  
-	+ better visual cues for typing notification and other status changes (more
-	  tab icons etc..)
-	  
-	+ multiple containers with the ability to attach/detach message windows.
-	
-	+ additional support for toplevel message windows.
-	
-	+ more hotkeys
-	
-	+ avatar support for protocols that support it (sorry, local avatar support
-	  won't happen).
-	
-	+ context menu for the tab bar (close tab, detach tab, attach tab to container
-	  foo and so on...)
-	  
-	+ bugfixes :)
-        
-

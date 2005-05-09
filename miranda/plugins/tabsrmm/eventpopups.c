@@ -128,7 +128,6 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
     DBWriteContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
     DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
     DBWriteContactSettingByte(NULL, MODULE, OPT_DISABLE, (BYTE)options->iDisable);
     DBWriteContactSettingByte(NULL, MODULE, "traysupport", (BYTE)options->bTraySupport);
     DBWriteContactSettingByte(NULL, MODULE, "mintotray", (BYTE)options->bMinimizeToTray);
@@ -140,14 +139,92 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     return 0;
 }
 
+static struct LISTOPTIONSGROUP lGroups[] = {
+    0, "Announce events of type...",
+    0, "General options",
+    0, "System tray and floater options",
+    0, "Left click actions (popups only)",
+    0, "Right click actions (popups only)",
+    0, "Timeout actions (popups only)",
+    0, "Popup merging (per user) options",
+    0, NULL
+};
+
+static struct LISTOPTIONSITEM defaultItems[] = {
+    0, "Show a preview of event", IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
+    0, "Don't announce event when message dialog is open", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
+    0, "No popups for RSS", IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
+    0, "Enable system tray support", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
+    0, "Minimize containers to system tray", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
+    0, "Minimize and restore animated", IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
+    0, "Merge popups \"per user\" (experimental, unstable)", IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
+    0, "Show date for merged popups", IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
+    0, "Show time for merged popups", IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
+    0, "Show headers", IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
+    0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+    0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+
+    0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+    0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+
+    0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+    0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+
+    0, "Message events", MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    0, "File events", MASK_FILE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    0, "URL events", MASK_URL, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    0, "Other events", MASK_OTHER, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    
+    0, NULL, 0, 0, 0, 0
+};
+
 BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     NEN_OPTIONS *options = &nen_options;
     LRESULT iIndex;
     
     switch (msg) {
-        case WM_INITDIALOG:
+        case WM_INITDIALOG: {
+            TVINSERTSTRUCTA tvi = {0};
+            int i = 0;
+            
+            SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
             TranslateDialogDefault(hWnd);
+
+            /*
+             * fill the tree view
+             */
+
+            while(lGroups[i].szName != NULL) {
+                tvi.hParent = 0;
+                tvi.hInsertAfter = TVI_LAST;
+                tvi.item.mask = TVIF_TEXT | TVIF_STATE;
+                tvi.item.pszText = Translate(lGroups[i].szName);
+                tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
+                tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
+                lGroups[i++].handle = SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
+            }
+            i = 0;
+
+            while(defaultItems[i].szName != 0) {
+                tvi.hParent = (HTREEITEM)lGroups[defaultItems[i].uGroup].handle;
+                tvi.hInsertAfter = TVI_LAST;
+                tvi.item.pszText = Translate(defaultItems[i].szName);
+                tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
+                tvi.item.lParam = i;
+                tvi.item.stateMask = TVIS_STATEIMAGEMASK;
+                if(defaultItems[i].uType == LOI_TYPE_SETTING)
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 2 : 1);
+                else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
+                    UINT uVal = *((UINT *)defaultItems[i].lParam);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 2 : 1);
+                }
+                defaultItems[i].handle = SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
+                i++;
+            }
             SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_SETCOLOUR, 0, options->colBackMsg);
             SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_SETCOLOUR, 0, options->colTextMsg);
             SendDlgItemMessage(hWnd, IDC_COLBACK_URL, CPM_SETCOLOUR, 0, options->colBackUrl);
@@ -160,39 +237,11 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_URL, options->bDefaultColorUrl?BST_CHECKED:BST_UNCHECKED);
             CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_FILE, options->bDefaultColorFile?BST_CHECKED:BST_UNCHECKED);
             CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_OTHERS, options->bDefaultColorOthers?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKMERGEPOPUP, options->bMergePopup?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKNOTIFY_MESSAGE, options->maskNotify & MASK_MESSAGE);
-            CheckDlgButton(hWnd, IDC_CHKNOTIFY_URL, options->maskNotify & MASK_URL);
-            CheckDlgButton(hWnd, IDC_CHKNOTIFY_FILE, options->maskNotify & MASK_FILE);
-            CheckDlgButton(hWnd, IDC_CHKNOTIFY_OTHER, options->maskNotify & MASK_OTHER);
-            CheckDlgButton(hWnd, IDC_CHKACTL_DISMISS, options->maskActL & MASK_DISMISS);
-            CheckDlgButton(hWnd, IDC_CHKACTL_OPEN, options->maskActL & MASK_OPEN);
-            CheckDlgButton(hWnd, IDC_CHKACTL_REMOVE, options->maskActL & MASK_REMOVE);
-            CheckDlgButton(hWnd, IDC_CHKACTR_DISMISS, options->maskActR & MASK_DISMISS);
-            CheckDlgButton(hWnd, IDC_CHKACTR_OPEN, options->maskActR & MASK_OPEN);
-            CheckDlgButton(hWnd, IDC_CHKACTR_REMOVE, options->maskActR & MASK_REMOVE);
-            CheckDlgButton(hWnd, IDC_CHKACTTE_DISMISS, options->maskActTE & MASK_DISMISS);
-            CheckDlgButton(hWnd, IDC_CHKACTTE_OPEN, options->maskActTE & MASK_OPEN);
-            CheckDlgButton(hWnd, IDC_CHKACTTE_REMOVE, options->maskActTE & MASK_REMOVE);
-            CheckDlgButton(hWnd, IDC_CHKSHOWDATE, options->bShowDate?BST_CHECKED:BST_UNCHECKED); 
-            CheckDlgButton(hWnd, IDC_CHKSHOWTIME, options->bShowTime?BST_CHECKED:BST_UNCHECKED); 
-            CheckDlgButton(hWnd, IDC_CHKSHOWHEADERS, options->bShowHeaders?BST_CHECKED:BST_UNCHECKED); 
-            CheckDlgButton(hWnd, IDC_RDNEW, options->bShowON?BST_UNCHECKED:BST_CHECKED);
-            CheckDlgButton(hWnd, IDC_RDOLD, options->bShowON?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKINFINITE_MESSAGE, options->iDelayMsg == -1?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKINFINITE_URL, options->iDelayUrl == -1?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKINFINITE_FILE, options->iDelayFile == -1?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKINFINITE_OTHERS, options->iDelayOthers == -1?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKWINDOWCHECK, options->bWindowCheck);
-            CheckDlgButton(hWnd, IDC_NORSS, options->bNoRSS);
-            CheckDlgButton(hWnd, IDC_ANIMATED, options->bAnimated);
-            EnableWindow(GetDlgItem(hWnd, IDC_ANIMATED), options->bMinimizeToTray);
             SetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1?options->iDelayMsg:0, TRUE);
             SetDlgItemInt(hWnd, IDC_DELAY_URL, options->iDelayUrl != -1?options->iDelayUrl:0, TRUE);
             SetDlgItemInt(hWnd, IDC_DELAY_FILE, options->iDelayFile != -1?options->iDelayFile:0, TRUE);
             SetDlgItemInt(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1?options->iDelayOthers:0, TRUE);
-            SetDlgItemInt(hWnd, IDC_NUMBERMSG, options->iNumberMsg, FALSE);
-            //disable color picker when using default colors
+            
             EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
             EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
             EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
@@ -202,24 +251,12 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
             EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
             //disable merge messages options when is not using
-            EnableWindow(GetDlgItem(hWnd, IDC_CHKSHOWDATE), options->bMergePopup);
-            EnableWindow(GetDlgItem(hWnd, IDC_CHKSHOWTIME), options->bMergePopup);
-            EnableWindow(GetDlgItem(hWnd, IDC_CHKSHOWHEADERS), options->bMergePopup);
-            EnableWindow(GetDlgItem(hWnd, IDC_CMDEDITHEADERS), options->bMergePopup && options->bShowHeaders);
-            EnableWindow(GetDlgItem(hWnd, IDC_NUMBERMSG), options->bMergePopup);
-            EnableWindow(GetDlgItem(hWnd, IDC_LBNUMBERMSG), options->bMergePopup);
-            EnableWindow(GetDlgItem(hWnd, IDC_RDNEW), options->bMergePopup && options->iNumberMsg);
-            EnableWindow(GetDlgItem(hWnd, IDC_RDOLD), options->bMergePopup && options->iNumberMsg);
-            //disable delay textbox when infinite is checked
+
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
             EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
-            EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
-            CheckDlgButton(hWnd, IDC_NORSS, options->bNoRSS);
-            CheckDlgButton(hWnd, IDC_CHKPREVIEW, options->bPreview);
-            CheckDlgButton(hWnd, IDC_ENABLETRAYSUPPORT, options->bTraySupport);
-            CheckDlgButton(hWnd, IDC_MINIMIZETOTRAY, options->bMinimizeToTray);
+
             SetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, options->iLimitPreview, FALSE);
             CheckDlgButton(hWnd, IDC_LIMITPREVIEW, (options->iLimitPreview > 0) ? 1 : 0);
             SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, options->iLimitPreview > 0 ? 50 : 0));
@@ -248,6 +285,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             }
             bWmNotify = FALSE;
             return TRUE;
+        }
         case DM_STATUSMASKSET:
             DBWriteContactSettingDword(0, MODULE, "statusmask", (DWORD)lParam);
             options->dwStatusMask = (int)lParam;
@@ -265,42 +303,15 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                             break;
                         }
                     default:
-                            //update options
-                        options->maskNotify = (IsDlgButtonChecked(hWnd, IDC_CHKNOTIFY_MESSAGE)?MASK_MESSAGE:0) |
-                                              (IsDlgButtonChecked(hWnd, IDC_CHKNOTIFY_URL)?MASK_URL:0) |
-                                              (IsDlgButtonChecked(hWnd, IDC_CHKNOTIFY_FILE)?MASK_FILE:0) |
-                                              (IsDlgButtonChecked(hWnd, IDC_CHKNOTIFY_OTHER)?MASK_OTHER:0);
-                        options->maskActL = (IsDlgButtonChecked(hWnd, IDC_CHKACTL_DISMISS)?MASK_DISMISS:0) |
-                                            (IsDlgButtonChecked(hWnd, IDC_CHKACTL_OPEN)?MASK_OPEN:0) |
-                                            (IsDlgButtonChecked(hWnd, IDC_CHKACTL_REMOVE)?MASK_REMOVE:0);
-                        options->maskActR = (IsDlgButtonChecked(hWnd, IDC_CHKACTR_DISMISS)?MASK_DISMISS:0) |
-                                            (IsDlgButtonChecked(hWnd, IDC_CHKACTR_OPEN)?MASK_OPEN:0) |
-                                            (IsDlgButtonChecked(hWnd, IDC_CHKACTR_REMOVE)?MASK_REMOVE:0);
-                        options->maskActTE = (IsDlgButtonChecked(hWnd, IDC_CHKACTTE_DISMISS)?MASK_DISMISS:0) |
-                                             (IsDlgButtonChecked(hWnd, IDC_CHKACTTE_OPEN)?MASK_OPEN:0) |
-                                             (IsDlgButtonChecked(hWnd, IDC_CHKACTTE_REMOVE)?MASK_REMOVE:0);
+                    {
                         options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
                         options->bDefaultColorUrl = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_URL);
                         options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
                         options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
-                        options->bPreview = IsDlgButtonChecked(hWnd, IDC_CHKPREVIEW);
                         options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
                         options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
                         options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
                         options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
-                        options->bMergePopup = IsDlgButtonChecked(hWnd, IDC_CHKMERGEPOPUP);
-                        options->bShowDate = IsDlgButtonChecked(hWnd, IDC_CHKSHOWDATE);
-                        options->bShowTime = IsDlgButtonChecked(hWnd, IDC_CHKSHOWTIME);
-                        options->bShowHeaders = IsDlgButtonChecked(hWnd, IDC_CHKSHOWHEADERS);
-                        options->bShowON = IsDlgButtonChecked(hWnd, IDC_RDOLD);
-                        options->bShowON = !IsDlgButtonChecked(hWnd, IDC_RDNEW);
-                        options->iNumberMsg = GetDlgItemInt(hWnd, IDC_NUMBERMSG, NULL, FALSE);
-                        options->bNoRSS = IsDlgButtonChecked(hWnd, IDC_NORSS);
-                        options->bTraySupport = IsDlgButtonChecked(hWnd, IDC_ENABLETRAYSUPPORT);
-                        options->bMinimizeToTray = IsDlgButtonChecked(hWnd, IDC_MINIMIZETOTRAY);
-                        options->bWindowCheck = IsDlgButtonChecked(hWnd, IDC_CHKWINDOWCHECK);
-                        options->bNoRSS = IsDlgButtonChecked(hWnd, IDC_NORSS);
-                        options->bAnimated = IsDlgButtonChecked(hWnd, IDC_ANIMATED);
                         options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
                         
                         if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
@@ -315,15 +326,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
                         EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
                         EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
-                            //disable merge messages options when is not using
-                        EnableWindow(GetDlgItem(hWnd, IDC_CHKSHOWDATE), options->bMergePopup);
-                        EnableWindow(GetDlgItem(hWnd, IDC_CHKSHOWTIME), options->bMergePopup);
-                        EnableWindow(GetDlgItem(hWnd, IDC_CHKSHOWHEADERS), options->bMergePopup);
-                        EnableWindow(GetDlgItem(hWnd, IDC_CMDEDITHEADERS), options->bMergePopup && options->bShowHeaders);
-                        EnableWindow(GetDlgItem(hWnd, IDC_NUMBERMSG), options->bMergePopup);
-                        EnableWindow(GetDlgItem(hWnd, IDC_LBNUMBERMSG), options->bMergePopup);
-                        EnableWindow(GetDlgItem(hWnd, IDC_RDNEW), options->bMergePopup && options->iNumberMsg);
-                        EnableWindow(GetDlgItem(hWnd, IDC_RDOLD), options->bMergePopup && options->iNumberMsg);
+                        
                         EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
                         EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
                             //disable delay textbox when infinite is checked
@@ -347,15 +350,60 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
                         SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
                         break;
+                    }
                 }
             }
             break;
         case WM_NOTIFY:
+            switch (((LPNMHDR) lParam)->idFrom) {
+                case IDC_EVENTOPTIONS:
+                    if(((LPNMHDR)lParam)->code==NM_CLICK) {
+                        TVHITTESTINFO hti;
+                        TVITEMA item = {0};
+
+                        item.mask = TVIF_HANDLE | TVIF_STATE;
+                        item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
+                        hti.pt.x=(short)LOWORD(GetMessagePos());
+                        hti.pt.y=(short)HIWORD(GetMessagePos());
+                        ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
+                        if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
+                            item.hItem = (HTREEITEM)hti.hItem;
+                            SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+                            if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
+                                item.state = INDEXTOSTATEIMAGEMASK((item.state >> 12) == 2 ? 1 : 2) | TVIS_BOLD | TVIS_EXPANDED;
+                                SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                            }
+                            else if(hti.flags&TVHT_ONITEMSTATEICON)
+                                SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+                        }
+                    }
+                    break;
+            }
             switch (((LPNMHDR)lParam)->code) {
-                case PSN_APPLY:
+                case PSN_APPLY: {
+                    int i = 0;
+                    TVITEMA item = {0};
+
+                    while(defaultItems[i].szName != NULL) {
+                        item.mask = TVIF_HANDLE | TVIF_STATE;
+                        item.hItem = (HTREEITEM)defaultItems[i].handle;
+                        item.stateMask = TVIS_STATEIMAGEMASK;
+
+                        SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+                        if(defaultItems[i].uType == LOI_TYPE_SETTING) {
+                            BOOL *ptr = (BOOL *)defaultItems[i].lParam;
+                            *ptr = (item.state >> 12) == 2 ? TRUE : FALSE;
+                        }
+                        else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
+                            UINT *uVal = (UINT *)defaultItems[i].lParam;
+                            *uVal = ((item.state >> 12) == 2) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
+                        }
+                        i++;
+                    }
                     NEN_WriteOptions(&nen_options);
                     CreateSystrayIcon(nen_options.bTraySupport);
                     break;
+                }
                 case PSN_RESET:
                     NEN_ReadOptions(&nen_options);
                     break;

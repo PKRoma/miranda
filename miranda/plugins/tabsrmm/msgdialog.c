@@ -3005,23 +3005,30 @@ quote_from_last:
     			case IDC_FONTITALIC:
     			case IDC_FONTUNDERLINE:
     				{
-    					CHARFORMAT2 cf;
+    					CHARFORMAT2 cf = {0};
+                        int cmd = LOWORD(wParam);
     					cf.cbSize = sizeof(CHARFORMAT2);
-    					cf.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE;
+    					cf.dwMask = 0;
     					cf.dwEffects = 0;
-    
-    					if(LOWORD(wParam) == IDC_FONTBOLD && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTBOLD))) 
+                        
+    					if(cmd == IDC_FONTBOLD && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTBOLD))) 
     						break;
-    					if(LOWORD(wParam) == IDC_FONTITALIC && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTITALIC))) 
+    					if(cmd == IDC_FONTITALIC && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTITALIC))) 
     						break;
-    					if(LOWORD(wParam) == IDC_FONTUNDERLINE && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTUNDERLINE))) 
+    					if(cmd == IDC_FONTUNDERLINE && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTUNDERLINE))) 
     						break;
-    					if (IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD))
-    						cf.dwEffects |= CFE_BOLD;
-    					if (IsDlgButtonChecked(hwndDlg, IDC_FONTITALIC))
-    						cf.dwEffects |= CFE_ITALIC;
-    					if (IsDlgButtonChecked(hwndDlg, IDC_FONTUNDERLINE))
-    						cf.dwEffects |= CFE_UNDERLINE;
+                        if(cmd == IDC_FONTBOLD) {
+                            cf.dwEffects = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD) ? CFE_BOLD : 0;
+                            cf.dwMask = CFM_BOLD;
+                        }
+                        else if(cmd == IDC_FONTITALIC) {
+                            cf.dwEffects = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD) ? CFE_ITALIC : 0;
+                            cf.dwMask = CFM_ITALIC;
+                        }
+                        else if(cmd == IDC_FONTUNDERLINE) {
+                            cf.dwEffects = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD) ? CFE_UNDERLINE : 0;
+                            cf.dwMask = CFM_UNDERLINE;
+                        }
     					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
                         break;
     				}

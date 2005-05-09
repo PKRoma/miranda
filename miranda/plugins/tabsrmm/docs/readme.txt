@@ -12,7 +12,7 @@ Created: April 2004
 1. Overview
 -----------
 
-tabSRMM is an advanced messaging module for Miranda IM (version 0.3.3 or later 
+tabSRMM is an advanced messaging module for Miranda IM (version 0.4.x or later
 required). It adds many new options and features to make instant messaging more
 enjoyable and allows you to tweak almost every aspect of the message window to
 fit your needs.
@@ -84,7 +84,9 @@ or buggy clients and their sometimes broken unicode support.
 *  some minor glitches under Windows 9x/ME, mostly graphical.
 
 *  multisend doesn't work well. I suggest using it with "care" :) It will
-   improve in the future.
+   improve in the future. Also, multisend shouldn't be used "excessivly" -
+   tabSRMM limits the number of contacts to 20 per message, but even that
+   *may* be too much for some IM networks.
   
 6. Credits and thanks:
 ----------------------

@@ -203,7 +203,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 teInfo->changed = FALSE;
                                 teInfo->selchanging = FALSE;
                                 SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
-                                //_DebugPopup(0, "editing: %d", teInfo->inEdit);
                             }
                             break;
                         }
