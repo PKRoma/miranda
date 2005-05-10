@@ -618,7 +618,7 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 				for ( i=0; i<item->resourceCount; i++ ) {
 					if ( r[i].statusMessage ) {
 						msgCount++;
-						len += ( strlen( r[i].resourceName ) + strlen( r[i].statusMessage ) + 6 );
+						len += ( strlen( r[i].resourceName ) + strlen( r[i].statusMessage ) + 8 );
 					}
 				}
 				if (( str=( char* )malloc( len + 1 )) != NULL ) {
@@ -850,7 +850,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 
 		HANDLE hContact = ( HANDLE ) wParam;
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto == NULL || strcmp( szProto, jabberProtoName )) 
+		if ( szProto == NULL || strcmp( szProto, jabberProtoName ))
 			return 0;
 
 		// A contact's group is changed
@@ -890,7 +890,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 		else if ( !strcmp( cws->szSetting, "MyHandle" )) {
 			hContact = ( HANDLE ) wParam;
 			szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( szProto==NULL || strcmp( szProto, jabberProtoName )) 
+			if ( szProto==NULL || strcmp( szProto, jabberProtoName ))
 				return 0;
 
 			char jid[ JABBER_MAX_JID_LEN ];
