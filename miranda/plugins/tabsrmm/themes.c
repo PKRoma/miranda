@@ -80,7 +80,7 @@ void WriteThemeToINI(const char *szIniFilename)
     WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), szBuf, 10), szIniFilename);
 
-    for(i = 0; i <= TMPL_STATUSCHG; i++) {
+    for(i = 0; i <= TMPL_ERRMSG; i++) {
 #if defined(_UNICODE)
         char *encoded = Utf8_Encode(LTR_Active.szTemplates[i]);
         WritePrivateProfileStringA("Templates", TemplateNames[i], encoded, szIniFilename);
@@ -145,7 +145,7 @@ void ReadThemeFromINI(const char *szIniFilename)
     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
 
     if(version >= 3) {
-        for(i = 0; i <= TMPL_STATUSCHG; i++) {
+        for(i = 0; i <= TMPL_ERRMSG; i++) {
 #if defined(_UNICODE)
             wchar_t *decoded;
             GetPrivateProfileStringA("Templates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);

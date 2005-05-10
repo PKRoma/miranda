@@ -99,11 +99,14 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
             if(closing == message.npos)
                 continue;                                       // no closing bracket found
             else {
-                std::wstring colorname = message.substr(beginmark + 7, closing - (beginmark + 7));
+                //std::wstring colorname = message.substr(beginmark + 7, closing - (beginmark + 7));
+                std::wstring colorname = message.substr(beginmark + 7, 10);
                 int ii = 0;
                 wchar_t szTemp[5];
                 while(rtf_ctable[ii].szName != NULL) {
-                    if(colorname == rtf_ctable[ii].szName) {
+//                    if(colorname == rtf_ctable[ii].szName) {
+                    if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
+                        closing = beginmark + 7 + wcslen(rtf_ctable[ii].szName);
                         message.erase(endmark, 4);
                         message.replace(endmark, 4, L"%c0 ");
                         message.erase(beginmark, (closing - beginmark));
@@ -226,11 +229,14 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
             if(closing == message.npos)
                 continue;                                       // no closing bracket found
             else {
-                std::string colorname = message.substr(beginmark + 7, closing - (beginmark + 7));
+                std::string colorname = message.substr(beginmark + 7, 10);
+                //std::string colorname = message.substr(beginmark + 7, closing - (beginmark + 7));
                 int ii = 0;
                 char szTemp[5];
                 while(rtf_ctable[ii].szName != NULL) {
-                    if(colorname == rtf_ctable[ii].szName) {
+                    //if(colorname == rtf_ctable[ii].szName) {
+                    if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
+                        closing = beginmark + 7 + strlen(rtf_ctable[ii].szName);
                         message.erase(endmark, 8);
                         message.insert(endmark, "%c0xx ");
                         message.erase(beginmark, (closing - beginmark) + 1);

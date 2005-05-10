@@ -358,7 +358,6 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, "RTL is default text direction", IDC_RTLDEFAULT, LOI_TYPE_SETTING, (UINT_PTR)"rtldefault", 0,
     0, "Use IEView as default message log", IDC_MSGLOGPLUGIN, LOI_TYPE_SETTING, (UINT_PTR)"want_ieview", 1,
     0, "Support Math Module plugin", IDC_MATHMODSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
-    0, "Enable message log scrolling hotkeys", IDC_LOGHOTKEYS, LOI_TYPE_SETTING, (UINT_PTR)"hotkeys", 2,
     0, "Log status changes", IDC_LOGSTATUS, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
     0, "Automatically copy selected text", IDC_AUTOSELECTCOPY, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
     0, NULL, 0, 0, 0, 0
@@ -1770,7 +1769,6 @@ void ReloadGlobals()
      myGlobals.m_SmileyPluginEnabled = (int)DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0);
      myGlobals.m_SendOnShiftEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1);
      myGlobals.m_SendOnEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
-     myGlobals.m_MsgLogHotkeys = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeys", 0);
      myGlobals.m_AutoLocaleSupport = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0);
      myGlobals.m_AutoSwitchTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0);
      myGlobals.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);

@@ -38,8 +38,8 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define DEFAULT_COLBACK RGB(255,255,128)
 #define DEFAULT_COLTEXT RGB(0,0,0)
 #define DEFAULT_MASKNOTIFY (MASK_MESSAGE|MASK_URL|MASK_FILE|MASK_OTHER)
-#define DEFAULT_MASKACTL (MASK_OPEN|MASK_REMOVE|MASK_DISMISS)
-#define DEFAULT_MASKACTR (MASK_REMOVE|MASK_DISMISS)
+#define DEFAULT_MASKACTL (MASK_OPEN|MASK_DISMISS)
+#define DEFAULT_MASKACTR (MASK_DISMISS)
 #define DEFAULT_DELAY -1
 
 #define MASK_MESSAGE    0x0001
@@ -89,6 +89,8 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define OPT_LIMITPREVIEW "LimitPreview"
 #define OPT_MINIMIZEANIMATED "Animated"
 #define OPT_ANNOUNCEMETHOD "method"
+#define OPT_FLOATER "floater"
+#define OPT_FLOATERINWIN "floater_win"
 
 typedef struct {
     BOOL bPreview;
@@ -134,7 +136,8 @@ typedef struct {
     WORD wMaxRecent;
     WORD wMaxFavorites;
     int  iAnnounceMethod;
-    int  floaterMode;
+    BOOL floaterMode;
+    BOOL bFloaterInWin;
 } NEN_OPTIONS;
 
 #define FLOATER_ATTACHED 1

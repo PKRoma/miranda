@@ -220,6 +220,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                               2 + (dis->itemState & ODS_SELECTED ? 1 : 0),
                               (dis->itemState & ODS_SELECTED ? 1 : 0), bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
                               DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+                    DeleteObject(ii.hbmColor);
+                    DeleteObject(ii.hbmMask);
                     return TRUE;
                 }
                 else if(dis->CtlType == ODT_MENU) {
@@ -248,6 +250,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                   (dis->itemState & ODS_SELECTED ? 1 : 0), bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
                                   DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
 
+                        DeleteObject(ii.hbmColor);
+                        DeleteObject(ii.hbmMask);
                         return TRUE;
                     }
                 }
@@ -315,6 +319,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             CheckMenuItem(submenu, ID_TRAYCONTEXT_DISABLEALLPOPUPS, MF_BYCOMMAND | (nen_options.iDisable ? MF_CHECKED : MF_UNCHECKED));
                             CheckMenuItem(submenu, ID_TRAYCONTEXT_DON40223, MF_BYCOMMAND | (nen_options.iNoSounds ? MF_CHECKED : MF_UNCHECKED));
                             CheckMenuItem(submenu, ID_TRAYCONTEXT_DON, MF_BYCOMMAND | (nen_options.iNoAutoPopup ? MF_CHECKED : MF_UNCHECKED));
+                            EnableMenuItem(submenu, ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS, MF_BYCOMMAND | (nen_options.bTraySupport || nen_options.floaterMode) ? MF_ENABLED : MF_GRAYED);
                             
                             iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                             

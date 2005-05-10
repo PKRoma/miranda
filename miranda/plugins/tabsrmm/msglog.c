@@ -715,7 +715,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
             szTemplate = isSent ? (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTOUT] : this_templateset->szTemplates[TMPL_GRPINNEROUT]) : 
                                   (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTIN] : this_templateset->szTemplates[TMPL_GRPINNERIN]);
         else
-            szTemplate = isSent ? this_templateset->szTemplates[TMPL_MSGIN] : this_templateset->szTemplates[TMPL_MSGOUT];
+            szTemplate = isSent ? this_templateset->szTemplates[TMPL_MSGOUT] : this_templateset->szTemplates[TMPL_MSGIN];
     }
     iTemplateLen = _tcslen(szTemplate);
     showTime = dat->dwFlags & MWF_LOG_SHOWTIME;

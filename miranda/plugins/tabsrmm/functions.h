@@ -24,7 +24,6 @@ void FlashTrayIcon(int mode);
 void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
 void LoadFavoritesAndRecent();
 void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu);
-void Tray_Setfocus();
 void CreateTrayMenus(int mode);
 
 /*

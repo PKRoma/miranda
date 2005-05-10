@@ -172,6 +172,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), FALSE);
             for(i = 0; i <= TMPL_ERRMSG; i++) {
                 SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
                 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
@@ -203,6 +204,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 teInfo->changed = FALSE;
                                 teInfo->selchanging = FALSE;
                                 SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), TRUE);
                             }
                             break;
                         }
@@ -235,6 +237,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), FALSE);
 #if defined(_UNICODE)
                     {
                         char *encoded = Utf8_Encode(newTemplate);
@@ -244,6 +247,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 #else
                     DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
 #endif
+                    SetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), _T(""));
                     break;
                 }
                 case IDC_FORGET:
@@ -258,6 +262,8 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), FALSE);
+                    SetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), _T(""));
                     break;
                 }
                 case IDC_REVERT:
@@ -315,7 +321,12 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         {
             DBEVENTINFO dbei = {0};
             int iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
+            TCHAR szTemp[TEMPLATE_LENGTH + 2];
 
+            if(teInfo->changed) {
+                CopyMemory(szTemp, tSet->szTemplates[teInfo->inEdit], TEMPLATE_LENGTH * sizeof(TCHAR));
+                GetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit], TEMPLATE_LENGTH);
+            }
             dbei.szModule = dat->szProto;
             dbei.timestamp = time(NULL);
             dbei.eventType = (iIndex == 6) ? EVENTTYPE_STATUSCHANGE : EVENTTYPE_MESSAGE;
@@ -326,7 +337,11 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dat->lastEventTime = (iIndex == 4 || iIndex == 5) ? time(NULL) - 1 : 0;
             dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
             SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
+            dat->dwFlags = MWF_LOG_ALL;
+            dat->dwFlags = (iIndex == 0 || iIndex == 1) ? dat->dwFlags & ~MWF_LOG_GROUPMODE : dat->dwFlags | MWF_LOG_GROUPMODE;
             StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
+            if(teInfo->changed)
+                CopyMemory(tSet->szTemplates[teInfo->inEdit], szTemp, TEMPLATE_LENGTH * sizeof(TCHAR));
             break;
         }
         case WM_DESTROY:

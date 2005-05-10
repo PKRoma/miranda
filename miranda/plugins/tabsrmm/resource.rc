@@ -36,15 +36,15 @@ BEGIN
                     11,151,178,13
     GROUPBOX        "Popup Options",IDC_STATIC,1,168,312,71
     LTEXT           "Text",IDC_STATIC,60,175,23,8
-    LTEXT           "Background",IDC_STATIC,86,175,47,11
+    LTEXT           "Background",IDC_STATIC,86,175,47,8
     CTEXT           "Timeout (seconds, 0 = use default)",IDC_STATIC,146,175,
-                    125,12
+                    125,8
     LTEXT           "Message",IDC_STATIC,11,185,44,13
     CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,185,
                     24,13
     CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,92,185,
                     24,13
-    EDITTEXT        IDC_DELAY_MESSAGE,191,184,26,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_DELAY_MESSAGE,191,183,26,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     LTEXT           "URL",IDC_STATIC,11,198,44,13
     CONTROL         "",IDC_COLTEXT_URL,"ColourPicker",WS_TABSTOP,56,197,24,
@@ -66,7 +66,7 @@ BEGIN
     EDITTEXT        IDC_DELAY_OTHERS,191,222,26,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "Limit message preview to",IDC_LIMITPREVIEW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,137,107,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,136,107,12
     EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,121,136,37,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_MESSAGEPREVIEWLIMITSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
@@ -75,7 +75,7 @@ BEGIN
     LTEXT           "characters",IDC_STATIC,166,138,38,10
     COMBOBOX        IDC_ANNOUNCEMETHOD,121,122,93,13,CBS_DROPDOWN | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Announce events with",IDC_STATIC,14,124,82,9
+    LTEXT           "Announce events with",IDC_STATIC,13,124,82,9
     CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,297,108,

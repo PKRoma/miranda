@@ -95,7 +95,8 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->wMaxFavorites = 15;
     options->wMaxRecent = 15;
     options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
-    options->floaterMode = options->bTraySupport ? 0 : 1;
+    options->floaterMode = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATER, 0);
+    options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 0);
     return 0;
 }
 
@@ -136,6 +137,8 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
     DBWriteContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, options->bAnimated);
     DBWriteContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, options->iAnnounceMethod);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATER, options->floaterMode);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, options->bFloaterInWin);
     return 0;
 }
 
@@ -151,11 +154,13 @@ static struct LISTOPTIONSGROUP lGroups[] = {
 };
 
 static struct LISTOPTIONSITEM defaultItems[] = {
-    0, "Show a preview of event", IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
+    0, "Show a preview of the event", IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
     0, "Don't announce event when message dialog is open", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
-    0, "No popups for RSS", IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
-    0, "Enable system tray support", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
-    0, "Minimize containers to system tray", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
+    0, "Don't announce events from RSS protocols", IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
+    0, "Enable the system tray icon", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
+    0, "Show the floater", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
+    0, "Show session list menu on the message windows status bar", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
+    0, "Minimize containers to system tray or floater", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
     0, "Minimize and restore animated", IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
     0, "Merge popups \"per user\" (experimental, unstable)", IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
     0, "Show date for merged popups", IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
@@ -346,8 +351,6 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                             options->colTextOthers = SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_GETCOLOUR, 0, 0);
                         }
                         EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
-                        options->floaterMode = options->bTraySupport ? 0 : 1;
-
                         SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
                         break;
                     }

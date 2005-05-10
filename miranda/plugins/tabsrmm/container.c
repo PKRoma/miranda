@@ -606,7 +606,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
-
                     statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
                     statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH - 8) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
                     statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (38 + 24) : 38);
@@ -827,7 +826,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                     break;
                 case SC_MINIMIZE:
-                    if(nen_options.bMinimizeToTray) {
+                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || nen_options.floaterMode)) {
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
                         MinimiseToTray(hwndDlg, nen_options.bAnimated);
@@ -882,7 +881,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 NMHDR* pNMHDR = (NMHDR*) lParam;
                 if(pContainer != NULL && pContainer->hwndStatus != 0 && ((LPNMHDR)lParam)->hwndFrom == pContainer->hwndStatus) {
                     switch (((LPNMHDR)lParam)->code) {
-                    case NM_CLICK:
+                        case NM_CLICK:
                         {
                             unsigned int nParts, nPanel;
                             NMMOUSE *nm=(NMMOUSE*)lParam;
@@ -905,7 +904,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 nPanel = nm->dwItemSpec; 
                             }
 panel_found:                            
-                            if(nPanel == nParts - 1)
+                            if(nPanel == 0) {
+                                SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
+                                if(nm->pt.x > rc.left && nm->pt.x < rc.left + 18) {
+                                    SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_LBUTTONUP);
+                                    break;
+                                }
+                            }
+                            else if(nPanel == nParts - 1)
                                 SendMessage(pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
                             else if(nPanel == nParts - 2) {
                                 if(GetKeyState(VK_SHIFT) & 0x8000) {
@@ -1493,9 +1499,15 @@ panel_found:
 
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     if(hContact) {
+                        RECT rc;
                         GetCursorPos(&pt);
                         pt1 = pt;
                         ScreenToClient(hwndDlg, &pt1);
+                        SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
+                        if(pt1.x > rc.left && pt1.x < rc.left + 18) {
+                            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
+                            break;
+                        }
                         hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
                         TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
                         DestroyMenu(hMenu);
@@ -2303,12 +2315,10 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCoun
     if(pContainer->bInTray && iMode != 0 && nen_options.iAutoRestore > 0) {
         BOOL old = nen_options.bMinimizeToTray;
         nen_options.bMinimizeToTray = FALSE;
-        //SendMessage(pContainer->hwnd, WM_SETREDRAW, FALSE, 0);
         ShowWindow(pContainer->hwnd, SW_HIDE);
         SetParent(pContainer->hwnd, NULL);
         SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
         nen_options.bMinimizeToTray = old;
-        //SendMessage(pContainer->hwnd, WM_SETREDRAW, TRUE, 0);
         SetWindowLong(pContainer->hwnd, GWL_STYLE, GetWindowLong(pContainer->hwnd, GWL_STYLE) | WS_VISIBLE);
         DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
         pContainer->bInTray = 0;

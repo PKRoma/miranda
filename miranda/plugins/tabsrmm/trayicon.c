@@ -163,7 +163,7 @@ void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
 
         GetWindowRect(hWnd, &rectFrom);
         GetTrayWindowRect(&rectTo);
-        if(nen_options.floaterMode > 0)
+        if(nen_options.floaterMode)
             GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectTo);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, &rectTo);
     }
@@ -178,7 +178,7 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
         RECT rectFrom;
 
         GetTrayWindowRect(&rectFrom);
-        if(nen_options.floaterMode > 0)
+        if(nen_options.floaterMode)
             GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectFrom);
         SetParent(hWnd, NULL);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, rectTo);
@@ -217,7 +217,7 @@ void FlashTrayIcon(int mode)
         if(mode)
             myGlobals.m_TrayFlashState = 0;
     }
-    else if(IsWindowVisible(myGlobals.g_hwndHotkeyHandler)) {
+    else if(IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
         HICON hIcon = mode ? myGlobals.g_iconContainer : (myGlobals.m_TrayFlashState ? 0 : myGlobals.g_iconContainer);
         
         SendDlgItemMessage(myGlobals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
@@ -376,12 +376,3 @@ void LoadFavoritesAndRecent()
     }
 }
 
-void Tray_Setfocus()
-{
-    NOTIFYICONDATA nim = {0};
-    
-    nim.cbSize = sizeof(nim);
-    nim.uID = 100;
-    nim.hWnd = myGlobals.g_hwndHotkeyHandler;
-    Shell_NotifyIcon(NIM_SETFOCUS, &nim);
-}

@@ -386,7 +386,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     return 0;
                 }
             }
-            if ((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
+            if ((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                 if (wParam == 'V') {
                     SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
                     return 0;
@@ -453,7 +453,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     return 0;
                 }
             }
-            if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
+            if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_MENU) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                 switch (wParam) {
                     case VK_UP:
                     case VK_DOWN:
@@ -461,36 +461,25 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     case VK_NEXT:
                     case VK_HOME:
                     case VK_END:
-                        {
-                            SCROLLINFO si = {0};
-                            
-                            si.cbSize = sizeof(si);
-                            si.fMask = SIF_PAGE | SIF_RANGE;
-                            GetScrollInfo(GetDlgItem(GetParent(hwnd), IDC_LOG), SB_VERT, &si);
-                            si.fMask = SIF_POS;
-                            si.nPos = si.nMax - si.nPage + 1;
-                            SetScrollInfo(GetDlgItem(GetParent(hwnd), IDC_LOG), SB_VERT, &si, TRUE);
-                            if (myGlobals.m_MsgLogHotkeys) {
-                                WPARAM wp = 0;
-                                if (wParam == VK_UP)
-                                    wp = MAKEWPARAM(SB_LINEUP, 0);
-                                else if (wParam == VK_PRIOR)
-                                    wp = MAKEWPARAM(SB_PAGEUP, 0);
-                                else if (wParam == VK_NEXT)
-                                    wp = MAKEWPARAM(SB_PAGEDOWN, 0);
-                                else if (wParam == VK_HOME)
-                                    wp = MAKEWPARAM(SB_TOP, 0);
-                                else if (wParam == VK_END) {
-                                    SendMessage(GetParent(hwnd), DM_SCROLLLOGTOBOTTOM, 0, 0);
-                                    return 0;
-                                } else if (wParam == VK_DOWN)
-                                    wp = MAKEWPARAM(SB_LINEDOWN, 0);
+                    {
+                        WPARAM wp = 0;
+                        if (wParam == VK_UP)
+                            wp = MAKEWPARAM(SB_LINEUP, 0);
+                        else if (wParam == VK_PRIOR)
+                            wp = MAKEWPARAM(SB_PAGEUP, 0);
+                        else if (wParam == VK_NEXT)
+                            wp = MAKEWPARAM(SB_PAGEDOWN, 0);
+                        else if (wParam == VK_HOME)
+                            wp = MAKEWPARAM(SB_TOP, 0);
+                        else if (wParam == VK_END) {
+                            SendMessage(GetParent(hwnd), DM_SCROLLLOGTOBOTTOM, 0, 0);
+                            return 0;
+                        } else if (wParam == VK_DOWN)
+                            wp = MAKEWPARAM(SB_LINEDOWN, 0);
 
-                                PostMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_VSCROLL, wp, 0);
-                                return 0;
-                            } else
-                                break;
-                        }
+                        SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_VSCROLL, wp, 0);
+                        return 0;
+                    }
                 }
             }
             if (wParam == VK_RETURN)
@@ -1037,8 +1026,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONADDTOOLTIP, (WPARAM) Translate("Bold text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONADDTOOLTIP, (WPARAM) Translate("Italic text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONADDTOOLTIP, (WPARAM) Translate("Underlined text"), 0);
-                SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font"), 0);
-                SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font color"), 0);
+                SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font color"), 0);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
@@ -1287,10 +1275,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     else
                         mir_snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
-                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
+                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_iconPulldown : 0));
                 } else {
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
-                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
+                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_iconPulldown : 0));
                 }
                 break;
             }
@@ -1367,8 +1355,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[17]);
             SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[18]);
             SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[19]);
-            SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[20]);
-            SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
+            SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
+            //SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
             SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
             SendDlgItemMessage(hwndDlg, IDC_LOGFROZEN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[24]);
             break;
@@ -3574,7 +3562,7 @@ quote_from_last:
                                         if(cr.cpMax != cr.cpMin) {
                                             cr.cpMin = cr.cpMax;
                                             if((GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0)){
-                                                SETTEXTEX stx = {ST_SELECTION,CP_UTF8};
+                                                SETTEXTEX stx = {ST_KEEPUNDO | ST_SELECTION,CP_UTF8};
                                                 char *streamOut = NULL;
                                                 if(GetKeyState(VK_MENU) & 0x8000)
                                                     streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SFF_SELECTION|SF_USECODEPAGE));
