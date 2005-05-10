@@ -96,13 +96,6 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		case IDOK2:
 			EndDialog( hwndDlg, 0 );
 			return TRUE;
-/*
-		case IDCANCEL2:
-			//if ( jabberRegConnected )
-			//	JabberSend( jabberRegSocket, "</stream:stream>" );
-			EndDialog( hwndDlg, 0 );
-			return TRUE;
-*/
 		}
 		break;
 	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
@@ -244,9 +237,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SetDlgItemText( hwndDlg, IDC_JUD, dbv.pszVal );
 				JFreeVariant( &dbv );
 			}
-			else {
-				SetDlgItemText( hwndDlg, IDC_JUD, "users.jabber.org" );
-			}
+			else SetDlgItemText( hwndDlg, IDC_JUD, "users.jabber.org" );
 
 			msgLangListBox = GetDlgItem( hwndDlg, IDC_MSGLANG );
 			wsprintf( text, "== %s ==", JTranslate( "System default" ));
@@ -323,9 +314,9 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			regInfo.useSSL = IsDlgButtonChecked( hwndDlg, IDC_USE_SSL );
 
-			if ( regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL ) || regInfo.manualHost[0] )) {
+			if ( regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL ) || regInfo.manualHost[0] ))
 				DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_OPT_REGISTER ), hwndDlg, JabberRegisterDlgProc, ( LPARAM )&regInfo );
-			}
+
 			return TRUE;
 		case IDC_MSGLANG:
 			if ( HIWORD( wParam ) == CBN_SELCHANGE )
@@ -370,8 +361,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
 					JSetString( NULL, "Password", text );
 				}
-				else
-					DBDeleteContactSetting( NULL, jabberProtoName, "Password" );
+				else DBDeleteContactSetting( NULL, jabberProtoName, "Password" );
 
 				GetDlgItemText( hwndDlg, IDC_EDIT_RESOURCE, text, sizeof( text ));
 				if ( DBGetContactSetting( NULL, jabberProtoName, "Resource", &dbv ) || strcmp( text, dbv.pszVal ))
