@@ -294,9 +294,9 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			if((char*)lParam) {
 				FilenameToFileList(hwndDlg,dat,(char*)lParam);
 				free((char*)lParam);
+				dat->closeIfFileChooseCancelled=0;
 			}
 			else if(dat->closeIfFileChooseCancelled) DestroyWindow(hwndDlg);
-			dat->closeIfFileChooseCancelled=0;
 			EnableWindow(hwndDlg,TRUE);
 			break;
 		case WM_COMMAND:
