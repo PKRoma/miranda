@@ -492,13 +492,28 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	}
 
 	EnterCriticalSection(&csDbAccess);
-
-	if ( dbcws->value.type != DBVT_BLOB ) {
-		char* szCachedSettingName = 0;
-		DBVARIANT * pCachedValue = 0;
-		szCachedSettingName = GetCachedSetting(dbcws->szModule, dbcws->szSetting, settingNameLen);
-		pCachedValue = GetCachedValuePtr((HANDLE)wParam, szCachedSettingName, 1);
-		if ( pCachedValue != NULL ) SetCachedVariant(&dbcws->value, pCachedValue);
+	{
+		char* szCachedSettingName = GetCachedSetting(dbcws->szModule, dbcws->szSetting, settingNameLen);
+		if ( dbcws->value.type != DBVT_BLOB ) {
+			DBVARIANT* pCachedValue = GetCachedValuePtr((HANDLE)wParam, szCachedSettingName, 1);
+			if ( pCachedValue != NULL ) {
+				BOOL bIsIdentical = FALSE;
+				if ( pCachedValue->type == dbcws->value.type ) {
+					switch(dbcws->value.type) {
+						case DBVT_BYTE:   bIsIdentical = pCachedValue->bVal == dbcws->value.bVal;  break;
+						case DBVT_WORD:   bIsIdentical = pCachedValue->wVal == dbcws->value.wVal;  break;
+						case DBVT_DWORD:  bIsIdentical = pCachedValue->dVal == dbcws->value.dVal;  break;
+						case DBVT_ASCIIZ: bIsIdentical = strcmp( pCachedValue->pszVal, dbcws->value.pszVal ) == 0; break;
+					}
+					if ( bIsIdentical ) {
+						LeaveCriticalSection(&csDbAccess);
+						return 0;
+					}
+				}
+				SetCachedVariant(&dbcws->value, pCachedValue);
+			}
+		}
+		else GetCachedValuePtr((HANDLE)wParam, szCachedSettingName, -1);
 	}
 
 	ofsModuleName=GetModuleNameOfs(dbcws->szModule);	
