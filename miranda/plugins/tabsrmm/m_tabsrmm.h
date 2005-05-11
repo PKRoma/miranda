@@ -440,3 +440,10 @@ typedef struct {
 
 #define MS_TABMSG_SETUSERPREFS "SRMsg_MOD/SetUserPrefs"
 
+// show one of the tray menus
+// wParam = 0 -> session list
+// wParam = 1 -> tray menu
+// lParam must be 0
+// 
+#define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
+

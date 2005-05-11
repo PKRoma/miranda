@@ -813,15 +813,6 @@ Aktuelle Fensterposition als Standard
 ;
 ; --------- Message Window accerlators
 ;
-[tb_&Emoticon]
-[tb_&History]
-[tb_&Quote]
-[tb_&Picmenu]
-[tb_&Details]
-[tb_&User]
-[tb_&Messagelog]
-[tb_&ToggleTB]
-;
 ; --------- Send menu
 ;
 [Send Menu]
@@ -1017,6 +1008,8 @@ Verborgene Nachrichtenfenster zeigen
 Keine Soundeffekte beim Eingang von Nachrichten
 [Be "Super Quiet"]
 Alles unterdrücken
+[No Message Sessions opened]
+Keine offenen Nachrichtenfenster
 
 ;
 ; template stuff

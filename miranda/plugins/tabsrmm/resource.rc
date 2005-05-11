@@ -621,24 +621,24 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LISTBOX         IDC_TEMPLATELIST,8,15,97,76,LBS_OWNERDRAWVARIABLE | 
+    LISTBOX         IDC_TEMPLATELIST,8,15,97,80,LBS_OWNERDRAWVARIABLE | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Templates",IDC_STATIC,3,4,108,91
-    GROUPBOX        "Preview",IDC_STATIC,117,4,249,91
+    GROUPBOX        "Templates",IDC_STATIC,3,4,108,94
+    GROUPBOX        "Preview",IDC_STATIC,117,4,249,94
     CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
-                    122,14,236,77
-    EDITTEXT        IDC_EDITTEMPLATE,11,107,344,14,ES_AUTOHSCROLL
-    GROUPBOX        "Edit template",IDC_STATIC,3,96,363,142
+                    122,14,236,80
+    EDITTEXT        IDC_EDITTEMPLATE,11,109,344,14,ES_AUTOHSCROLL
+    GROUPBOX        "Edit template",IDC_STATIC,3,99,363,137
     PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,268,161,90,15
     PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,268,180,90,15
     PUSHBUTTON      "Close",IDCANCEL,200,218,66,15
     PUSHBUTTON      "Revert to Default",IDC_REVERT,268,218,90,15
     PUSHBUTTON      "Forget",IDC_FORGET,268,199,90,15
     LTEXT           "Variables (case sensitive!)\n\n%N:\tNickname\n%M:\tMessage\n%S:\tMsg Symbol\n%I:\tMsg Icon\n%D:\tlong Date\n%h:\thour (24)\n%m\tMinute",
-                    IDC_STATIC,11,125,94,73
-    LTEXT           "%s:\tSecond\n%o:\tMonth (number)\n%O:\tMonth (name)\n%d:\tDay of Month\n%w:\tDay of week\n%a:\thour (12)\n%p:\tAM/PM symbol",
-                    IDC_STATIC,102,125,87,73
+                    IDC_STATIC,11,125,89,73
+    LTEXT           "%s:\tSecond\n%o:\tMonth (number)\n%O:\tMonth (name)\n%d:\tDay of Month\n%w:\tDay of week\n%a:\thour (12)\n%p:\tAM/PM symbol\n%U\tUIN",
+                    IDC_STATIC,102,125,87,65
     CONTROL         "",IDC_COLOR1,"ColourPicker",WS_TABSTOP,11,220,24,13
     LTEXT           "Define up to 5 colors which you can use with some variables",
                     IDC_STATIC,12,200,174,17
@@ -646,6 +646,10 @@ BEGIN
     CONTROL         "",IDC_COLOR3,"ColourPicker",WS_TABSTOP,75,220,24,13
     CONTROL         "",IDC_COLOR4,"ColourPicker",WS_TABSTOP,107,220,24,13
     CONTROL         "",IDC_COLOR5,"ColourPicker",WS_TABSTOP,139,220,24,13
+    LTEXT           "Get more help on variables",IDC_VARIABLESHELP,103,191,
+                    148,10
+    LTEXT           "Double click a template to edit it. Select templates in the list box to show a preview",
+                    IDC_STATIC,200,128,155,25
 END
 
 
@@ -917,6 +921,11 @@ BEGIN
         MENUITEM "White",                       ID_FONT_WHITE
         MENUITEM SEPARATOR
         MENUITEM "Clear all Formatting",        ID_FONT_CLEARALLFORMATTING
+    END
+    POPUP "Dummy", INACTIVE
+    BEGIN
+        MENUITEM "No Message Sessions opened",  ID_DUMMY_NOMESSAGESESSIONSOPENED
+
     END
 END
 

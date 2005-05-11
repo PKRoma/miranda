@@ -261,23 +261,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			SendMessage(GetParent(hwnd),WM_DROPFILES,(WPARAM)wParam,(LPARAM)lParam);
 			break;
         case WM_CHAR:
-            if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {             // ctrl-w close tab
-                SendMessage(GetParent(hwnd), WM_CLOSE, 1, 0);
-                return 0;
-            }
-            if (wParam == 18 && GetKeyState(VK_CONTROL) & 0x8000) {             // ctrl-r most recent unread
-                SendMessage(GetParent(hwnd), DM_QUERYPENDING, DM_QUERY_MOSTRECENT, 0);
-                return 0;
-            }
-            if (wParam == 0x0c && GetKeyState(VK_CONTROL) & 0x8000) {
-                SendMessage(GetParent(hwnd), WM_COMMAND, IDM_CLEAR, 0);         // ctrl-l (clear log)
-                return 0;
-            }
-            if (wParam == 0x0f && GetKeyState(VK_CONTROL) & 0x8000) {
-                if(mwdat->pContainer->hWndOptions == 0)
-                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), GetParent(hwnd), DlgProcContainerOptions, (LPARAM) mwdat->pContainer);
-                return 0;
-            }
             if (wParam == 0x0d && (GetKeyState(VK_CONTROL) & 0x8000) && myGlobals.m_MathModAvail) {
                 TCHAR toInsert[100];
                 BYTE keyState[256];
@@ -305,12 +288,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     case 21:
                         CheckDlgButton(GetParent(hwnd), IDC_FONTUNDERLINE, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTUNDERLINE) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
                         SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTUNDERLINE, IDC_MESSAGE), 0);
-                        return 0;
-                    case 19:
-                        PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDMENU, (LPARAM)GetDlgItem(GetParent(hwnd), IDC_SENDMENU));
-                        return 0;
-                    case 16:
-                        PostMessage(GetParent(hwnd), WM_COMMAND, IDC_PROTOMENU, (LPARAM)GetDlgItem(GetParent(hwnd), IDC_PROTOMENU));
                         return 0;
                     case 25:
                         PostMessage(GetParent(hwnd), DM_SPLITTEREMERGENCY, 0, 0);
@@ -379,37 +356,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 else 
                     break;
             }
-            if(wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
-                SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
-                return 0;
-            }
-            if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
-                if (wParam == 0x9) {            // ctrl-shift tab
-                    SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
-                    return 0;
-                }
-            }
             if ((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
-                if (wParam == 'V') {
-                    SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
-                    return 0;
-                }
-                if (wParam == VK_TAB) {
-                    SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
-                    return 0;
-                }
-                if (wParam == VK_F4) {
-                    SendMessage(GetParent(hwnd), WM_CLOSE, 1, 0);
-                    return 0;
-                }
-                if (wParam == VK_PRIOR) {
-                    SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
-                    return 0;
-                }
-                if (wParam == VK_NEXT) {
-                    SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
-                    return 0;
-                }
                 if (!(GetKeyState(VK_SHIFT) & 0x8000) && (wParam == VK_UP || wParam == VK_DOWN)) {          // input history scrolling (ctrl-up / down)
                     SETTEXTEX stx = {ST_DEFAULT,CP_UTF8};
                     if(mwdat) {
@@ -491,25 +438,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
         case WM_KILLFOCUS:
-            break;
-        case WM_SYSCHAR:
-            if(VkKeyScan((TCHAR)wParam) == 'S' && GetKeyState(VK_MENU) & 0x8000) {
-                if (!(GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)) {
-                    PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-                    return 0;
-                }
-            }
-            if((wParam >= '0' && wParam <= '9') && (GetKeyState(VK_MENU) & 0x8000)) {       // ALT-1 -> ALT-0 direct tab selection
-                BYTE bChar = (BYTE)wParam;
-                int iIndex;
-
-                if(bChar == '0')
-                    iIndex = 10;
-                else
-                    iIndex = bChar - (BYTE)'0';
-                SendMessage(mwdat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_BY_INDEX, (LPARAM)iIndex);
-                return 0;
-            }
             break;
         case WM_INPUTLANGCHANGEREQUEST: {
                 if (myGlobals.m_AutoLocaleSupport) {
@@ -973,17 +901,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
-                // translate hotkeys...
-
-                SetDlgItemTextA(hwndDlg, IDC_SMILEYBTN, Translate("tb_&Emoticon"));
-                SetDlgItemTextA(hwndDlg, IDC_HISTORY, Translate("tb_&History"));
-                SetDlgItemTextA(hwndDlg, IDC_QUOTE, Translate("tb_&Quote"));
-                SetDlgItemTextA(hwndDlg, IDC_PIC, Translate("tb_&Picmenu"));
-                SetDlgItemTextA(hwndDlg, IDC_PROTOCOL, Translate("tb_&Details"));
-                SetDlgItemTextA(hwndDlg, IDC_NAME, Translate("tb_&User"));
-                SetDlgItemTextA(hwndDlg, IDC_TIME, Translate("tb_&Messagelog"));
-                SetDlgItemTextA(hwndDlg, IDC_TOGGLETOOLBAR, Translate("tb_&ToggleTB"));
-                
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
@@ -3475,7 +3392,151 @@ quote_from_last:
                             LPARAM lp = ((MSGFILTER *) lParam)->lParam;
                             
                             CHARFORMAT2 cf2;
-                            
+
+                            if(msg == WM_CHAR) {
+                                if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
+                                    switch (wp) {
+                                        case 23:                // ctrl - w
+                                            SendMessage(hwndDlg, WM_CLOSE, 1, 0);
+                                            return 1;
+                                        case 18:                // ctrl - r
+                                            SendMessage(hwndDlg, DM_QUERYPENDING, DM_QUERY_MOSTRECENT, 0);
+                                            return 1;
+                                        case 0x0c:              // ctrl - l
+                                            SendMessage(hwndDlg, WM_COMMAND, IDM_CLEAR, 0);
+                                            return 1;
+                                        case 0x0f:              // ctrl - o
+                                            if(dat->pContainer->hWndOptions == 0)
+                                                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), dat->pContainer->hwnd, DlgProcContainerOptions, (LPARAM) dat->pContainer);
+                                            return 1;
+                                        case 19:
+                                            PostMessage(hwndDlg, WM_COMMAND, IDC_SENDMENU, (LPARAM)GetDlgItem(hwndDlg, IDC_SENDMENU));
+                                            return 1;
+                                        case 16:
+                                            PostMessage(hwndDlg, WM_COMMAND, IDC_PROTOMENU, (LPARAM)GetDlgItem(hwndDlg, IDC_PROTOMENU));
+                                            return 0;
+                                    }
+                                }
+                            }
+                            if(msg == WM_KEYDOWN) {
+                                if(wp == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
+                                    SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+                                    return 1;
+                                }
+                                if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
+                                    if (wp == 0x9) {            // ctrl-shift tab
+                                        SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_PREV, 0);
+                                        ((MSGFILTER *) lParam)->msg = WM_NULL;
+                                        ((MSGFILTER *) lParam)->wParam = 0;
+                                        ((MSGFILTER *) lParam)->lParam = 0;
+                                        return 1;
+                                    }
+                                }
+                                if((GetKeyState(VK_CONTROL)) & 0x8000 && !(GetKeyState(VK_SHIFT) & 0x8000)) {
+                                    if (wp == 'V') {
+                                        SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+                                        return 1;
+                                    }
+                                    if (wp == VK_TAB) {
+                                        SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_NEXT, 0);
+                                        ((MSGFILTER *) lParam)->msg = WM_NULL;
+                                        ((MSGFILTER *) lParam)->wParam = 0;
+                                        ((MSGFILTER *) lParam)->lParam = 0;
+                                        return 1;
+                                    }
+                                    if (wp == VK_F4) {
+                                        SendMessage(hwndDlg, WM_CLOSE, 1, 0);
+                                        return 1;
+                                    }
+                                    if (wp == VK_PRIOR) {
+                                        SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_PREV, 0);
+                                        return 1;
+                                    }
+                                    if (wp == VK_NEXT) {
+                                        SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_NEXT, 0);
+                                        return 1;
+                                    }
+                                }
+                            }
+                            if(msg == WM_SYSKEYDOWN && (GetKeyState(VK_MENU) & 0x8000)) {
+                                if(wp == VK_MULTIPLY) {
+                                    SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                                    return 1;
+                                }
+                                if(wp == VK_DIVIDE) {
+                                    SetFocus(GetDlgItem(hwndDlg, IDC_LOG));
+                                    return 1;
+                                }
+                                if(wp == VK_ADD) {
+                                    SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_NEXT, 0);
+                                    return 1;
+                                }
+                                if(wp == VK_SUBTRACT) {
+                                    SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_PREV, 0);
+                                    return 1;
+                                }
+                            }
+                            if(msg == WM_SYSCHAR) {
+                                if(GetKeyState(VK_MENU) & 0x8000) {
+                                    switch (VkKeyScan((TCHAR)wp)) {
+                                        case 'S':
+                                            if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
+                                                PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
+                                                return 1;
+                                            }
+                                        case'E':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
+                                            return 1;
+                                        case 'H':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_HISTORY, 0);
+                                            return 1;
+                                        case 'Q':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_QUOTE, 0);
+                                            return 1;
+                                        case 'P':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_PIC, 0);
+                                            return 1;
+                                        case 'D':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_PROTOCOL, 0);
+                                            return 1;
+                                        case 'U':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_USERMENU, 0);
+                                            return 1;
+                                        case 'L':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_TIME, 0);
+                                            return 1;
+                                        case 'T':
+                                            SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
+                                            return 1;
+                                        case 'M':
+                                            dat->sendMode ^= SMODE_MULTIPLE;
+                                            if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
+                                                ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
+                                            else
+                                                ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
+                                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                                            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                                            ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+                                            ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+                                            if(dat->sendMode & SMODE_MULTIPLE)
+                                                SetFocus(GetDlgItem(hwndDlg, IDC_CLIST));
+                                            else
+                                                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                                            return 1;
+                                    }
+                                }
+                                if((wp >= '0' && wp <= '9') && (GetKeyState(VK_MENU) & 0x8000)) {       // ALT-1 -> ALT-0 direct tab selection
+                                    BYTE bChar = (BYTE)wp;
+                                    int iIndex;
+                    
+                                    if(bChar == '0')
+                                        iIndex = 10;
+                                    else
+                                        iIndex = bChar - (BYTE)'0';
+                                    SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_BY_INDEX, (LPARAM)iIndex);
+                                    return 1;
+                                }
+                            }
                             if(msg == WM_KEYDOWN && wp == VK_F12) {
                                 if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                                     SendMessage(hwndDlg, DM_REPLAYQUEUE, 0, 0);

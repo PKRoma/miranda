@@ -86,8 +86,6 @@ static char *szDivider = "\\strike----------------------------------------------
 static char *szGroupedSeparator = "> ";
 
 extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
-extern int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
-extern void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 #if defined(_UNICODE)
     extern WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags);
 #else

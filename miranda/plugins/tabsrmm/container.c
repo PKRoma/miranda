@@ -111,6 +111,8 @@ static WNDPROC OldTabControlProc;
 HMENU BuildMCProtocolMenu(HWND hwndDlg);
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 
+struct ContainerWindowData *pLastActiveContainer = NULL;
+
 /*
  * CreateContainer MUST malloc() a struct ContainerWindowData and pass its address
  * to CreateDialogParam() via the LPARAM. It also adds the struct to the linked list
@@ -1126,6 +1128,7 @@ panel_found:
 
                 FlashContainer(pContainer, 0, 0);
                 pContainer->dwFlashingStarted = 0;
+                pLastActiveContainer = pContainer;
                 
                 if(pContainer->dwFlags & CNT_DEFERREDTABSELECT) {
                     NMHDR nmhdr;
@@ -1832,12 +1835,20 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
             pFirstContainer = pContainer->pNextContainer;
         else
             pFirstContainer = NULL;
+
+        if(pLastActiveContainer == pContainer)      // make sure, we don't reference this container anymore
+            pLastActiveContainer = pFirstContainer;
+
         return pFirstContainer;
     }
 
     do {
         if (pCurrent->pNextContainer == pContainer) {
             pCurrent->pNextContainer = pCurrent->pNextContainer->pNextContainer;
+
+            if(pLastActiveContainer == pContainer)      // make sure, we don't reference this container anymore
+                pLastActiveContainer = pFirstContainer;
+            
             return 0;
         }
     } while (pCurrent = pCurrent->pNextContainer);

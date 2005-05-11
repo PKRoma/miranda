@@ -34,6 +34,7 @@ $Id$
 #include "m_metacontacts.h"
 #include "IcoLib.h"
 #include "functions.h"
+#include "m_toptoolbar.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -54,7 +55,7 @@ static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList, hUserPrefsWindowList;
-static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch;
+static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEvent_ttbInit, hTTB_Slist, hTTB_Tray;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
 
@@ -92,6 +93,7 @@ struct ContainerWindowData *FindMatchingContainer(const TCHAR *name, HANDLE hCon
 int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 HMENU BuildContainerMenu();
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static struct MsgLogIcon ttb_Slist = {0}, ttb_Traymenu = {0};
 
 HMODULE g_hIconDLL = 0;
 // nls stuff...
@@ -187,6 +189,41 @@ static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+static int TTB_Loaded(WPARAM wParam, LPARAM lParam)
+{
+    if(ServiceExists(MS_TTB_ADDBUTTON) && myGlobals.m_WinVerMajor >= 5) {
+        TTBButton ttb = {0};
+        CacheIconToBMP(&ttb_Slist, myGlobals.g_iconContainer, GetSysColor(COLOR_3DFACE), 16, 16);
+        CacheIconToBMP(&ttb_Traymenu, myGlobals.g_iconPulldown, GetSysColor(COLOR_3DFACE), 16, 16);
+        ttb.hbBitmapUp = ttb_Slist.hBmp;
+        ttb.hbBitmapDown = ttb_Slist.hBmp;
+        ttb.cbSize = sizeof(ttb);
+        ttb.pszServiceDown = MS_TABMSG_TRAYSUPPORT;
+        ttb.pszServiceUp = MS_TABMSG_TRAYSUPPORT;
+        ttb.wParamDown = 1;
+        ttb.wParamUp = 0;
+        ttb.name = "tabSRMM Session List";
+        ttb.dwFlags = TTBBF_VISIBLE | TTBBF_SHOWTOOLTIP;
+        hTTB_Slist = (HANDLE)CallService(MS_TTB_ADDBUTTON, (WPARAM)&ttb, 0);
+        ttb.hbBitmapUp = ttb_Traymenu.hBmp;
+        ttb.hbBitmapDown = ttb_Traymenu.hBmp;
+        ttb.lParamDown = 1;
+        ttb.lParamUp = 1;
+        ttb.name = "tabSRMM Tray Menu";
+        hTTB_Tray = (HANDLE)CallService(MS_TTB_ADDBUTTON, (WPARAM)&ttb, 0);
+    }
+    UnhookEvent(hEvent_ttbInit);
+    return 0;
+}
+static int Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
+{
+    if(lParam == 1)
+        CallService(MS_TTB_SETBUTTONSTATE, (WPARAM)hTTB_Tray, TTBST_RELEASED);
+    if(lParam == 0)
+        CallService(MS_TTB_SETBUTTONSTATE, (WPARAM)hTTB_Slist, TTBST_RELEASED);
+    SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, lParam == 0 ? WM_LBUTTONUP : WM_RBUTTONUP);
+    return 0;
+}
 /*
  * service function. retrieves the message window flags for a given hcontact or window
  * wParam == hContact of the window to find
@@ -866,6 +903,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     mi.pszService = MS_TABMSG_SETUSERPREFS;
     myGlobals.m_UserMenuItem = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
     PreTranslateDates();
+    hEvent_ttbInit = HookEvent("TopToolBar/ModuleLoaded", TTB_Loaded);
     return 0;
 }
 
@@ -935,13 +973,16 @@ int SplitmsgShutdown(void)
         if(sendJobs[i].sendBuffer != NULL)
             free(sendJobs[i].sendBuffer);
     }
+    if(ttb_Slist.hBmp)
+        DeleteCachedIcon(&ttb_Slist);
+    if(ttb_Traymenu.hBmp)
+        DeleteCachedIcon(&ttb_Traymenu);
     return 0;
 }
 
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-    UncacheMsgLogIcons();
-    UnloadIcons();
+    //UnloadIcons();
     LoadFromIconLib();
     CacheMsgLogIcons();
     return 0;
@@ -1002,7 +1043,6 @@ int LoadSendRecvMessageModule(void)
 
 	HookEvent("SecureIM/Established",ContactSecureChanged);
 	HookEvent("SecureIM/Disabled",ContactSecureChanged);
-    
     InitAPI();
     
     SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
@@ -1464,6 +1504,7 @@ void InitAPI()
     
     CreateServiceFunction(MS_MSG_MOD_MESSAGEDIALOGOPENED,MessageWindowOpened); 
     CreateServiceFunction(MS_TABMSG_SETUSERPREFS, SetUserPrefs);
+    CreateServiceFunction(MS_TABMSG_TRAYSUPPORT, Service_OpenTrayMenu);
     CreateServiceFunction(MS_MSG_MOD_GETWINDOWFLAGS,GetMessageWindowFlags); 
 
     /*

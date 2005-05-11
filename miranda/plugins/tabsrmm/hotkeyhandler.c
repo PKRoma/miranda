@@ -51,6 +51,7 @@ extern struct SendJob sendJobs[NR_SENDJOBS];
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern PSLWA pSetLayeredWindowAttributes;
+extern struct ContainerWindowData *pLastActiveContainer;
 
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
@@ -171,9 +172,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     GetIconInfo((HICON)dis->itemData, &ii);
                     GetObject(ii.hbmColor, sizeof(bm), &bm);
                     DrawState(dis->hDC, NULL, NULL, (LPARAM) dis->itemData, 0,
-                              2 + (dis->itemState & ODS_SELECTED ? 1 : 0),
-                              (dis->itemState & ODS_SELECTED ? 1 : 0), bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
-                              DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+                              2, 0, bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
+                              DST_ICON | DSS_NORMAL);
                     DeleteObject(ii.hbmColor);
                     DeleteObject(ii.hbmMask);
                     return TRUE;
@@ -200,9 +200,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         GetObject(ii.hbmColor, sizeof(bm), &bm);
 
                         DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                                  2 + (dis->itemState & ODS_SELECTED ? 1 : 0),
-                                  (dis->itemState & ODS_SELECTED ? 1 : 0), bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
-                                  DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+                                  2, 0, bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
+                                  DST_ICON | DSS_NORMAL);
 
                         DeleteObject(ii.hbmColor);
                         DeleteObject(ii.hbmMask);
@@ -239,6 +238,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                 else
                                     CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
                             }
+                            else
+                                TrackPopupMenu(GetSubMenu(myGlobals.g_hMenuContext, 8), TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                             if(wParam == 100)
                                 PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
@@ -255,14 +256,16 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                 break;
                             
                             if(iCount > 0) {
+                                UINT uid = 0;
+                                HWND hWnd;
                                 mii.fMask = MIIM_DATA;
                                 mii.cbSize = sizeof(mii);
                                 i = iCount - 1;
                                 do {
                                     GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, i, TRUE, &mii);
                                     if(mii.dwItemData > 0) {
-                                        UINT uid = GetMenuItemID(myGlobals.g_hMenuTrayUnread, i);
-                                        HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)uid);
+                                        uid = GetMenuItemID(myGlobals.g_hMenuTrayUnread, i);
+                                        hWnd = WindowList_Find(hMessageWindowList, (HANDLE)uid);
                                         if(hWnd) {
                                             struct ContainerWindowData *pContainer = 0;
                                             SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
@@ -273,8 +276,11 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                         }
                                         else
                                             CallService(MS_MSG_SENDMESSAGE, (WPARAM)uid, 0);
+                                        break;
                                     }
                                 } while (--i >= 0);
+                                if(uid == 0 && pLastActiveContainer != NULL)                  // no session found, restore last active container
+                                    SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
                             }
                             if(wParam == 100)
                                 PostMessage(hwndDlg, WM_NULL, 0, 0);
@@ -346,6 +352,24 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                             while(pContainer) {
                                                 if(pContainer->bInTray)
                                                     SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                                pContainer = pContainer->pNextContainer;
+                                            }
+                                            nen_options.bAnimated = bAnimatedState;
+                                            break;
+                                        }
+                                        case ID_TRAYCONTEXT_BE:
+                                        {
+                                            struct ContainerWindowData *pContainer = pFirstContainer;
+                                            BOOL bAnimatedState = nen_options.bAnimated;
+
+                                            nen_options.iDisable = 1;
+                                            nen_options.iNoSounds = 1;
+                                            nen_options.iNoAutoPopup = 1;
+                                            
+                                            nen_options.bAnimated = FALSE;
+                                            while(pContainer) {
+                                                if(!pContainer->bInTray)
+                                                    SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
                                                 pContainer = pContainer->pNextContainer;
                                             }
                                             nen_options.bAnimated = bAnimatedState;

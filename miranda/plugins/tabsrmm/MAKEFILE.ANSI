@@ -6,8 +6,8 @@ CC   = gcc.exe
 WINDRES = windres.exe
 LIBDIR=c:/dev-cpp/lib
 RES  = tabsrmm_private.res
-OBJ  = Release_MINGW32_ANSI/userprefs.o Release_MINGW32_ANSI/templates.o Release_MINGW32_ANSI/eventpopups.o Release_MINGW32_ANSI/trayicon.o Release_MINGW32_ANSI/formatting.o Release_MINGW32_ANSI/ImageDataObject.o Release_MINGW32_ANSI/themes.o Release_MINGW32_ANSI/sendqueue.o Release_MINGW32_ANSI/msgdlgutils.o Release_MINGW32_ANSI/container.o Release_MINGW32_ANSI/containeroptions.o Release_MINGW32_ANSI/hotkeyhandler.o Release_MINGW32_ANSI/msgdialog.o Release_MINGW32_ANSI/msglog.o Release_MINGW32_ANSI/msgoptions.o Release_MINGW32_ANSI/msgs.o Release_MINGW32_ANSI/selectcontainer.o Release_MINGW32_ANSI/srmm.o $(RES)
-LINKOBJ  = Release_MINGW32_ANSI/userprefs.o Release_MINGW32_ANSI/templates.o Release_MINGW32_ANSI/eventpopups.o Release_MINGW32_ANSI/trayicon.o Release_MINGW32_ANSI/formatting.o Release_MINGW32_ANSI/ImageDataObject.o Release_MINGW32_ANSI/themes.o Release_MINGW32_ANSI/sendqueue.o Release_MINGW32_ANSI/msgdlgutils.o Release_MINGW32_ANSI/container.o Release_MINGW32_ANSI/containeroptions.o Release_MINGW32_ANSI/hotkeyhandler.o Release_MINGW32_ANSI/msgdialog.o Release_MINGW32_ANSI/msglog.o Release_MINGW32_ANSI/msgoptions.o Release_MINGW32_ANSI/msgs.o Release_MINGW32_ANSI/selectcontainer.o Release_MINGW32_ANSI/srmm.o $(RES)
+OBJ  = Release_MINGW32_ANSI/urlctrl.o Release_MINGW32_ANSI/userprefs.o Release_MINGW32_ANSI/templates.o Release_MINGW32_ANSI/eventpopups.o Release_MINGW32_ANSI/trayicon.o Release_MINGW32_ANSI/formatting.o Release_MINGW32_ANSI/ImageDataObject.o Release_MINGW32_ANSI/themes.o Release_MINGW32_ANSI/sendqueue.o Release_MINGW32_ANSI/msgdlgutils.o Release_MINGW32_ANSI/container.o Release_MINGW32_ANSI/containeroptions.o Release_MINGW32_ANSI/hotkeyhandler.o Release_MINGW32_ANSI/msgdialog.o Release_MINGW32_ANSI/msglog.o Release_MINGW32_ANSI/msgoptions.o Release_MINGW32_ANSI/msgs.o Release_MINGW32_ANSI/selectcontainer.o Release_MINGW32_ANSI/srmm.o $(RES)
+LINKOBJ  = Release_MINGW32_ANSI/urlctrl.o Release_MINGW32_ANSI/userprefs.o Release_MINGW32_ANSI/templates.o Release_MINGW32_ANSI/eventpopups.o Release_MINGW32_ANSI/trayicon.o Release_MINGW32_ANSI/formatting.o Release_MINGW32_ANSI/ImageDataObject.o Release_MINGW32_ANSI/themes.o Release_MINGW32_ANSI/sendqueue.o Release_MINGW32_ANSI/msgdlgutils.o Release_MINGW32_ANSI/container.o Release_MINGW32_ANSI/containeroptions.o Release_MINGW32_ANSI/hotkeyhandler.o Release_MINGW32_ANSI/msgdialog.o Release_MINGW32_ANSI/msglog.o Release_MINGW32_ANSI/msgoptions.o Release_MINGW32_ANSI/msgs.o Release_MINGW32_ANSI/selectcontainer.o Release_MINGW32_ANSI/srmm.o $(RES)
 LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)/libgdi32.a $(LIBDIR)/libole32.a $(LIBDIR)/libuser32.a $(LIBDIR)/libcomctl32.a $(LIBDIR)/libuuid.a $(LIBDIR)/libcomdlg32.a  $(LIBDIR)/libstdc++.a -mwindows -s
 INCS =  -I"C:/Dev-Cpp/include"
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
@@ -29,6 +29,9 @@ STATICLIB=Release_MINGW32_ANSI/libtabsrmm.a
 
 $(BIN): $(LINKOBJ)
 	$(DLLWRAP) --output-def $(DEFFILE) --implib $(STATICLIB) $(LINKOBJ) $(LIBS) -o $(BIN)
+
+Release_MINGW32_ANSI/urlctrl.o: urlctrl.c
+	$(CC) -c urlctrl.c -o Release_MINGW32_ANSI/urlctrl.o $(CFLAGS)
 
 Release_MINGW32_ANSI/userprefs.o: userprefs.c
 	$(CC) -c userprefs.c -o Release_MINGW32_ANSI/userprefs.o $(CFLAGS)

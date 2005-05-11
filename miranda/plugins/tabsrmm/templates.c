@@ -34,6 +34,7 @@ $Id$
 #include "nen.h"
 #include "functions.h"
 #include "msgdlgutils.h"
+#include "urlctrl.h"
 
 /*
  * hardcoded default set of templates for both LTR and RTL.
@@ -134,8 +135,10 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         case WM_INITDIALOG:
         {
             TemplateEditorNew *teNew = (TemplateEditorNew *)lParam;
+            COLORREF url_visited = RGB(128, 0, 128);
+            COLORREF url_unvisited = RGB(0, 0, 255);
             dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
-
+            
             TranslateDialogDefault(hwndDlg);
             
             ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
@@ -184,7 +187,8 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessage(hwndDlg, IDC_COLOR3, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc3", SRMSGDEFSET_BKGCOLOUR));
             SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc4", SRMSGDEFSET_BKGCOLOUR));
             SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", SRMSGDEFSET_BKGCOLOUR));
-            
+            SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
+            urlctrl_set(GetDlgItem(hwndDlg, IDC_VARIABLESHELP), _T("http://www.miranda.or.at/forums/index.php/topic,610.0.html"), &url_unvisited, &url_visited, 0);
             return TRUE;
         }
         case WM_COMMAND:
@@ -203,12 +207,22 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 teInfo->changed = FALSE;
                                 teInfo->selchanging = FALSE;
                                 SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
+                                SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, FALSE, 0);
                             }
                             break;
                         }
                         case LBN_SELCHANGE:
+                        {
+                            LRESULT iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
                             teInfo->selchanging = TRUE;
+                            if(iIndex != LB_ERR) {
+                                SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[iIndex]);
+                                teInfo->inEdit = iIndex;
+                                teInfo->changed = FALSE;
+                            }
+                            SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
                             break;
+                        }
                     }
                     break;
                 case IDC_EDITTEMPLATE:
@@ -231,10 +245,10 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     CopyMemory(tSet->szTemplates[teInfo->inEdit], newTemplate, sizeof(TCHAR) * TEMPLATE_LENGTH);
                     teInfo->changed = FALSE;
                     teInfo->updateInfo[teInfo->inEdit] = FALSE;
-                    InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
 #if defined(_UNICODE)
                     {
                         char *encoded = Utf8_Encode(newTemplate);
@@ -244,7 +258,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 #else
                     DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
 #endif
-                    SetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), _T(""));
+                    SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
                     break;
                 }
                 case IDC_FORGET:
@@ -258,8 +272,8 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-                    SetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), _T(""));
                     teInfo->selchanging = FALSE;
+                    SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
                     break;
                 }
                 case IDC_REVERT:
