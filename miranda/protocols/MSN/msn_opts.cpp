@@ -105,8 +105,10 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 		if ( !MSN_GetStaticString( "Password", NULL, tBuffer, sizeof( tBuffer ))) {
 			MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer )+1, ( LPARAM )tBuffer );
+			tBuffer[ 16 ] = 0;
 			SetDlgItemText( hwndDlg, IDC_PASSWORD, tBuffer );
 		}
+		SendDlgItemMessage( hwndDlg, IDC_PASSWORD, EM_SETLIMITTEXT, 16, 0 );
 
 		HWND wnd = GetDlgItem( hwndDlg, IDC_HANDLE2 );
 		if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))

@@ -320,13 +320,19 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			return 0;
 		}
 
-		if ( !strcmp( cws->szSetting, "MyHandle" ) && cws->value.pszVal[0] != 0 ) {
+		if ( !strcmp( cws->szSetting, "MyHandle" )) {
 			char szContactID[ 100 ], szNewNick[ 387 ];
 			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID )) {
-				char* p = Utf8Encode( cws->value.pszVal );
-				UrlEncode( p, szNewNick, sizeof szNewNick );
-				msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
-				free( p );
+				if ( cws->value.type != DBVT_DELETED ) {
+					char* p = Utf8Encode( cws->value.pszVal );
+					UrlEncode( p, szNewNick, sizeof szNewNick );
+					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
+					free( p );
+				}
+				else {
+					MSN_GetStaticString( "e-mail", hContact, szNewNick, sizeof szNewNick );
+					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
+				}
 				return 0;
 	}	}	}
 
