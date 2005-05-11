@@ -45,6 +45,7 @@ CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lo
 
 extern BYTE gbSsiEnabled;
 extern BYTE gbOverRate;
+extern DWORD gtLastRequest;
 extern char gpszICQProtoName[MAX_PATH];
 extern HANDLE ghServerNetlibUser;
 extern int gnCurrentStatus;
@@ -573,6 +574,7 @@ void ResetSettingsOnConnect()
 	char *szProto;
 
   gbOverRate = 0; // init
+  gtLastRequest = 0;
 
 	// Reset a bunch of session specific settings
   DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);

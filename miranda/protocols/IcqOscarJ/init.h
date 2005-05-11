@@ -42,6 +42,7 @@ BYTE gbAimEnabled;
 BYTE gbSsiEnabled;
 BYTE gbAvatarsEnabled;
 BYTE gbOverRate;
+DWORD gtLastRequest;
 DWORD MIRANDA_VERSION;
 
 // Debug defines

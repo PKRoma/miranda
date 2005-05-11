@@ -368,7 +368,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       { // this is only the simplest solution, needs rate management to every section
         ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
         gbOverRate = 1; // block user requests (user info, status messages, etc.)
-				icq_EnableUserLookup(FALSE);
+				icq_PauseUserLookup(); // pause auto-info update thread
 			}
 			else if (wStatus == 4)
 			{

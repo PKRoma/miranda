@@ -50,6 +50,7 @@ extern HANDLE hsmsgrequest;
 extern CRITICAL_SECTION modeMsgsMutex;
 extern BYTE gbSsiEnabled;
 extern BYTE gbOverRate;
+extern DWORD gtLastRequest;
 extern char gpszICQProtoName[MAX_PATH];
 
 DWORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wSearchType, WORD wInfoLen, BOOL bOnlineUsersOnly);
@@ -580,7 +581,10 @@ DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
 
-  if (gbOverRate) return 0;
+  // we request if we can or 10sec after last request
+  if (gbOverRate && (GetTickCount()-gtLastRequest)<10000) return 0;
+  gbOverRate = 0;
+  gtLastRequest = GetTickCount();
 
 	pCookieData = malloc(sizeof(fam15_cookie_data));
 	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
@@ -610,7 +614,10 @@ DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
 	icq_packet packet;
 	DWORD dwCookie;
 
-  if (gbOverRate) return 0;
+  // we request if we can or 10sec after last request
+  if (gbOverRate && (GetTickCount()-gtLastRequest)<10000) return 0;
+  gbOverRate = 0;
+  gtLastRequest = GetTickCount();
 
 	dwCookie = GenerateCookie(0);
 

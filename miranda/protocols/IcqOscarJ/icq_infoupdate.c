@@ -45,6 +45,8 @@ static HANDLE hDummyEvent = NULL;
 static int nUserCount = 0;
 static int bPendingUsers = 0;
 static BOOL bEnabled = TRUE;
+static BOOL bPaused = FALSE;
+static DWORD tLast;
 typedef struct s_userinfo {
 	DWORD dwUin;
 	HANDLE hContact;
@@ -217,9 +219,21 @@ void icq_EnableUserLookup(BOOL bEnable)
 {
 	bEnabled = bEnable;
 
+  if (bEnabled) bPaused = FALSE;
+
 	// Notify worker thread
 	if (bEnabled && hQueueEvent)
 		SetEvent(hQueueEvent);
+}
+
+
+
+void icq_PauseUserLookup()
+{
+  bPaused = TRUE;
+  tLast = GetTickCount();
+
+  Netlib_Logf(ghServerNetlibUser, "Pausing Auto-info update thread...");
 }
 
 
@@ -255,9 +269,18 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 			break;
 			
 		case WAIT_OBJECT_0:
+			if (Miranda_Terminated())
+				bKeepRunning = FALSE;
 		case WAIT_TIMEOUT:
 			// Time to check for new users
       if (!bEnabled) continue; // we can't send requests now
+
+      if (bPaused)
+      { // pause for 30sec
+        if (GetTickCount()-tLast>30000) bPaused = FALSE;
+        continue;
+      }
+      tLast = GetTickCount();
 
 #ifdef _DEBUG
 			Netlib_Logf(ghServerNetlibUser, "Users %u", nUserCount);
