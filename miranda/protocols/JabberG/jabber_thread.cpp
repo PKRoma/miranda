@@ -975,6 +975,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				memset( ft, 0, sizeof( JABBER_FILE_TRANSFER ));
 				ft->jid = _strdup( JabberStringDecode( jid ));
 				ft->hContact = JabberHContactFromJID( jid );
+				ft->type = FT_OOB;
 				ft->httpHostName = NULL;
 				ft->httpPort = 80;
 				ft->httpPath = NULL;

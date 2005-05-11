@@ -11,6 +11,7 @@ Version 0.4.0.2
 [!] bug #0001105 fixed: Miranda process do not die when shutdown (thanks baronng for a patch)
 [!] bug #0001109 fixed: XML specials in add contact
 [!] bug #0001108 fixed: Status-visibility for a contact not working correctly
+[!] bug #0001135 fixed: Cannot transfer File(s) between miranda/jabber to/from PSI or Exodus (or more)
 [!] fix for writing "MyHandle" setting every time.
 
 Version 0.4.0.1
