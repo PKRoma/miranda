@@ -1053,6 +1053,11 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	yahoo_packet_write(pkt, data + pos);
 
 	//yahoo_packet_dump(data, len);
+	DEBUG_MSG(("Sending Packet:"));
+	DEBUG_MSG(("Yahoo Service: %s (0x%02x) Status: %s (%d)", dbg_service(pkt->service), pkt->service,
+				dbg_status(pkt->status),pkt->status));
+
+	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
 	//yahoo_add_to_send_queue(yid, data, len);
 	do {
@@ -2394,9 +2399,9 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	}
 
 	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, yd->initial_status, yd->session_id);
-	yahoo_packet_hash(pack, 0, sn);
 	yahoo_packet_hash(pack, 6, resp_6);
 	yahoo_packet_hash(pack, 96, resp_96);
+	yahoo_packet_hash(pack, 0, sn);
 	yahoo_packet_hash(pack, 1, sn);
 	yahoo_packet_hash(pack, 135, "6,0,0,1710"); /* Yahoo Client version, thanx GAIM */
 	yahoo_send_packet(yid, pack, 0);
