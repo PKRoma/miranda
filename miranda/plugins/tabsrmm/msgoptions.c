@@ -1797,6 +1797,8 @@ void ReloadGlobals()
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
      myGlobals.m_WheelDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_wheelhack", 0);
      myGlobals.m_MathModAvail = 0;
+     myGlobals.m_WinVerMajor = WinVerMajor();
+     myGlobals.m_WinVerMinor = WinVerMinor();
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
      if(myGlobals.m_MathModAvail) {

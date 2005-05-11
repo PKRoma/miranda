@@ -220,8 +220,10 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         if(iIndex == 0)
                             DBDeleteContactSetting(hContact, SRMSGMOD_T, "sendformat");
                     }
-                    if(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE))
-                        AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
+                    if(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
+                        if(!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
+                            AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
+                    }
                     else
                         DeleteMenu(myGlobals.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
                     DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0);

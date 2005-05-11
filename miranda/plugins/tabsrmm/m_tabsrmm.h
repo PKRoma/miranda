@@ -331,6 +331,8 @@ typedef struct _globals {
     HANDLE m_UserMenuItem;
     HBITMAP m_hbmMsgArea;
     int m_WheelDefault;
+    BYTE m_WinVerMajor;
+    BYTE m_WinVerMinor;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

@@ -134,16 +134,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             }
         case WM_HOTKEY:
             {
-                struct ContainerWindowData *pCurrent = pFirstContainer, *pTargetContainer = 0;
-                RECENTINFO ri = {0};
-                HWND hwndTarget = 0;
                 CLISTEVENT *cli = 0;
-                TCITEM item = {0};
-                DWORD dwTimestamp = 0;
-                int i;
                 
-                ZeroMemory((void *)&ri, sizeof(ri));
-                ri.iFirstIndex = ri.iMostRecent = -1;
                 cli = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, (WPARAM)INVALID_HANDLE_VALUE, (LPARAM)0);
                 if(cli != NULL) {
                     if(strncmp(cli->pszService, "SRMsg/TypingMessage", strlen(cli->pszService))) {
@@ -151,47 +143,9 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         break;
                     }
                 }
-                item.mask = TCIF_PARAM;
-                while(pCurrent) {
-                    for(i = 0; i < TabCtrl_GetItemCount(GetDlgItem(pCurrent->hwnd, IDC_MSGTABS)); i++) {
-                        TabCtrl_GetItem(GetDlgItem(pCurrent->hwnd, IDC_MSGTABS), i, &item);
-                        SendMessage((HWND)item.lParam, DM_QUERYLASTUNREAD, 0, (LPARAM)&dwTimestamp);
-                        if (dwTimestamp > ri.dwMostRecent) {
-                            ri.dwMostRecent = dwTimestamp;
-                            ri.iMostRecent = i;
-                            ri.hwndMostRecent = (HWND) item.lParam;
-                            if(ri.dwFirst == 0 || (ri.dwFirst != 0 && dwTimestamp < ri.dwFirst)) {
-                                ri.iFirstIndex = i;
-                                ri.dwFirst = dwTimestamp;
-                                ri.hwndFirst = (HWND) item.lParam;
-                            }
-                        }
-                    }
-                    pCurrent = pCurrent->pNextContainer;
-                }
-                if(wParam == 0xc002 && ri.iFirstIndex != -1) {
-                    hwndTarget = ri.hwndFirst;
-                }
-                if(wParam == 0xc001 && ri.iMostRecent != -1) {
-                    hwndTarget = ri.hwndMostRecent;
-                }
+                if(wParam == 0xc001)
+                    SendMessage(hwndDlg, DM_TRAYICONNOTIFY, 101, WM_MBUTTONDOWN);
 
-                if(hwndTarget && IsWindow(hwndTarget)) {
-                    SendMessage(hwndTarget, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
-                    if(pTargetContainer) {
-                        if(pTargetContainer->hwndActive != hwndTarget) {            // we need to switch tabs...
-                            SendMessage(pTargetContainer->hwndActive, DM_QUERYLASTUNREAD, 0, (LPARAM)&dwTimestamp);
-                            if(dwTimestamp == 0)                                    // dont switch if the active tab has unread events
-                                ActivateTabFromHWND(GetParent(hwndTarget), hwndTarget);
-                        }
-                        if(IsIconic(pTargetContainer->hwnd) || pTargetContainer->bInTray != 0)
-                            SendMessage(pTargetContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-                        if(GetForegroundWindow() != pTargetContainer->hwnd || GetActiveWindow() != pTargetContainer->hwnd) {
-                            SetActiveWindow(pTargetContainer->hwnd);
-                            SetForegroundWindow(pTargetContainer->hwnd);
-                        }
-                    }
-                }
                 break;
             }
             /*
@@ -267,6 +221,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         {
                             POINT pt;
                             GetCursorPos(&pt);
+                            if(myGlobals.m_WinVerMajor < 5)
+                                break;
                             if(wParam == 100)
                                 SetForegroundWindow(hwndDlg);
                             if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 0) {
@@ -289,23 +245,39 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         }
                         case WM_MBUTTONDOWN:
                         {
-                            int iCount = GetMenuItemCount(myGlobals.g_hMenuTrayUnread);
-                            SetForegroundWindow(hwndDlg);
+                            MENUITEMINFOA mii = {0};
+                            int i, iCount = GetMenuItemCount(myGlobals.g_hMenuTrayUnread);
+                            
+                            if(wParam == 100)
+                                SetForegroundWindow(hwndDlg);
+
+                            if(myGlobals.m_WinVerMajor < 5)
+                                break;
+                            
                             if(iCount > 0) {
-                                UINT uid = GetMenuItemID(myGlobals.g_hMenuTrayUnread, iCount - 1);
-                                HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)uid);
-                                if(hWnd) {
-                                    struct ContainerWindowData *pContainer = 0;
-                                    SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-                                    if(pContainer)
-                                        ActivateExistingTab(pContainer, hWnd);
-                                    SetFocus(hWnd);
-                                    SetForegroundWindow(pContainer->hwnd);
-                                }
-                                else
-                                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)uid, 0);
+                                mii.fMask = MIIM_DATA;
+                                mii.cbSize = sizeof(mii);
+                                i = iCount - 1;
+                                do {
+                                    GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, i, TRUE, &mii);
+                                    if(mii.dwItemData > 0) {
+                                        UINT uid = GetMenuItemID(myGlobals.g_hMenuTrayUnread, i);
+                                        HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)uid);
+                                        if(hWnd) {
+                                            struct ContainerWindowData *pContainer = 0;
+                                            SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                                            if(pContainer)
+                                                ActivateExistingTab(pContainer, hWnd);
+                                            SetFocus(hWnd);
+                                            SetForegroundWindow(pContainer->hwnd);
+                                        }
+                                        else
+                                            CallService(MS_MSG_SENDMESSAGE, (WPARAM)uid, 0);
+                                    }
+                                } while (--i >= 0);
                             }
-                            PostMessage(hwndDlg, WM_NULL, 0, 0);
+                            if(wParam == 100)
+                                PostMessage(hwndDlg, WM_NULL, 0, 0);
                             break;
                         }
                         case WM_RBUTTONUP:

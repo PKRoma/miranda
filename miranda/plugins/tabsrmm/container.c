@@ -907,7 +907,8 @@ panel_found:
                             if(nPanel == 0) {
                                 SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
                                 if(nm->pt.x > rc.left && nm->pt.x < rc.left + 18) {
-                                    SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_LBUTTONUP);
+                                    if(((LPNMHDR)lParam)->code == NM_CLICK)
+                                        SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
                                     break;
                                 }
                             }

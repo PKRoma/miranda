@@ -44,9 +44,17 @@ void CreateTrayMenus(int mode)
         myGlobals.g_hMenuFavorites = CreatePopupMenu();
         myGlobals.g_hMenuRecent = CreatePopupMenu();
         myGlobals.g_hMenuTrayContext = GetSubMenu(myGlobals.g_hMenuContext, 6);
-        ModifyMenuA(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, Translate("Favorites"));
-        ModifyMenuA(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, Translate("Recent Sessions"));
-        LoadFavoritesAndRecent();
+        if(myGlobals.m_WinVerMajor >= 5) {
+            ModifyMenuA(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, Translate("Favorites"));
+            ModifyMenuA(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, Translate("Recent Sessions"));
+            LoadFavoritesAndRecent();
+        }
+        else {
+            DeleteMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION);
+            DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
+            DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
+            DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
+        }
         SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
     }
     else {
@@ -206,6 +214,9 @@ void FlashTrayIcon(int mode)
 {
     NOTIFYICONDATA nim;
 
+    if(myGlobals.m_WinVerMajor < 5)
+        return;
+    
     if(nen_options.bTraySupport) {
         nim.cbSize = sizeof(nim);
         nim.hWnd = myGlobals.g_hwndHotkeyHandler;

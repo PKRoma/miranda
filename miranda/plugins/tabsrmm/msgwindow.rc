@@ -107,7 +107,7 @@ BEGIN
     ICON            "",IDC_MULTIPLEICON,0,64,16,20,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGFROZEN,"MButtonClass",WS_TABSTOP,171,0,16,
                     14,0x18000000L 
-    LTEXT           "",IDC_LOGFROZENTEXT,10,3,170,10
+    LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10
 END
 
 #endif    // Neutral resources

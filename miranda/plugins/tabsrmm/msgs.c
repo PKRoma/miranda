@@ -507,7 +507,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
      */
 nowindowcreate:    
     UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, TRUE);
-    if(!nen_options.bTraySupport) {
+    if(!nen_options.bTraySupport || myGlobals.m_WinVerMajor < 5) {
         ZeroMemory(&cle, sizeof(cle));
         cle.cbSize = sizeof(cle);
         cle.hContact = (HANDLE) wParam;

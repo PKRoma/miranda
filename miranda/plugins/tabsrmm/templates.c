@@ -172,7 +172,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), FALSE);
             for(i = 0; i <= TMPL_ERRMSG; i++) {
                 SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
                 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
@@ -204,7 +203,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 teInfo->changed = FALSE;
                                 teInfo->selchanging = FALSE;
                                 SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
-                                EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), TRUE);
                             }
                             break;
                         }
@@ -237,7 +235,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), FALSE);
 #if defined(_UNICODE)
                     {
                         char *encoded = Utf8_Encode(newTemplate);
@@ -258,12 +255,11 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit]);
                     SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
-                    teInfo->selchanging = FALSE;
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_UPDATEPREVIEW), FALSE);
                     SetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), _T(""));
+                    teInfo->selchanging = FALSE;
                     break;
                 }
                 case IDC_REVERT:
@@ -330,6 +326,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dbei.szModule = dat->szProto;
             dbei.timestamp = time(NULL);
             dbei.eventType = (iIndex == 6) ? EVENTTYPE_STATUSCHANGE : EVENTTYPE_MESSAGE;
+            dbei.eventType = (iIndex == 7) ? EVENTTYPE_ERRMSG : dbei.eventType;
+            if(dbei.eventType == EVENTTYPE_ERRMSG)
+                dbei.szModule = "Sample error message";
             dbei.cbSize = sizeof(dbei);
             dbei.pBlob = (iIndex == 6) ? (BYTE *)"is now offline (was online)" : (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
             dbei.cbBlob = lstrlenA(dbei.pBlob) + 1;

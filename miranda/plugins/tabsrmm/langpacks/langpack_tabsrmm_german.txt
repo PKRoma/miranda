@@ -8,6 +8,8 @@ Plugins-included: tabsrmm
 ;
 ; global strings
 ;
+[Options]
+Einstellungen
 [Sounds are %s (click to toggle, SHIFT-click to apply for all containers)]
 Klänge sind %s (klick schaltet um, SHIFT-klick überträgt Status auf alle offenen container.
 [Secure IM is %s]
@@ -405,10 +407,12 @@ Dateitransfers zeigen
 URL Ereignisse
 [Show Icons]
 Symbole zeigen
-[Use symbols instead of icons]
-Textsymbole anstatt Icons
+[Show Symbols]
+Textsymbole zeigen
 [Use Incoming/Outgoing Icons]
-Ein/Aus Symbole
+Symbole für eingehend/ausgehend
+[Support BBCode formatting]
+BBCode Formatierung verwenden
 [Show nicknames]
 Benutzernamen
 [Show times]
@@ -486,8 +490,8 @@ Verwende Popup - Konfiguration für Trennlinien
 Fenster nach dem Senden minimieren
 [Send message on 'Enter']
 'Eingabe' sendet Nachricht
-[Show warning when message has not been received after]
-Zeitlimit für Warnung bei unzustellbaren Nachrichten
+[Message send timeout]
+Zeitlimit Für Versand
 [seconds.]
 Sekunden
 [Show avatars]
@@ -535,7 +539,7 @@ System tray
 [Popups]
 Popups
 [When auto-hiding toolbar buttons:]
-Beim Verstecken von toolbar Schaltflächen
+Verstecken von Schaltflächen der toolbar:
 [Hide formatting buttons first]
 Verstecke Formatierungselemente zuerst
 [Hide standard buttons first]
@@ -931,6 +935,8 @@ Schriftart
 Schriftfarbe
 [Send Text Formatting]
 Textformatierung senden
+[Send text formatting:]
+Textformatierung senden:
 [Global]
 Global
 [Local]
@@ -1047,3 +1053,118 @@ Zurücksetzen
 Frei verwendbare Farben
 [Close]
 Schließen
+;
+;Event notify stuff
+;
+[Event popups]
+Ereignisbenachrichtigungen
+[Event notify options]
+Einstellungen für Ereignisbenachrichtigungen
+[Announce events of type...]
+Zeige Ereignisse des Typs...
+[Message events]
+Nachrichten
+[File events]
+Dateitransfers
+[URL events]
+URL Ereignisse
+[Other events]
+Sonstige Ereignisse
+[General options]
+Allgemeine Einstellungen
+[Show a preview of the event]
+Vorschau der Nachricht zeigen
+[Don't announce event when message dialog is open]
+Keine Benachrichtigung wenn bereits ein Nachrichtenfenster geöffnet ist
+[Don't announce events from RSS protocols]
+Keine Benachrichtigung für Ereignisse von RSS Protokollen
+[System tray and floater options]
+Einstellungen für den System-Tray und den "Floater"]
+[Enable the system tray icon]
+System-Tray Symbol anzeigen
+[Show the floater]
+Floater ist sichtbar
+[Show session list menu on the message windows status bar]
+Zeige die Liste aktiver Sitzungen in der Statuszeile des Nachrichtenfensters
+[Minimize containers to system tray or floater]
+Nachrichtenfenster in den System-Tray oder Floater minimieren
+[Minimize and restore animated]
+Animiertes minimieren und wiederherstellen
+[Left click actions (popups only)]
+Linksklick - Aktionen (nur für popups)
+[Right click actions (popups only)]
+Rechtsklick - Aktionen (nur für popups)
+[Timeout actions (popups only)]
+Zeitlimit - Aktionen (nur für popups)
+[Dismiss popup]
+Popup schließen
+[Dismiss event]
+Ereignis als gelesen markieren
+[Open event]
+Ereignis öffnen/behandeln
+[Popup merging (per user) options]
+Zusammenführen von Popups des selben Kontakts
+[Merge popups "per user" (experimental, unstable)]
+Popups des selben Kontakts zusammenführen
+[Show date for merged popups]
+Datum in zusammengelegten Popups zeigen
+[Show time for merged popups]
+Uhrzeit in zusammengelegten Popups zeigen
+[Show headers]
+Kopfzeilen in zusammengelegten Popups zeigen
+[Announce events with]
+Ereignisbenachrichtigung via
+[Balloon tooltips]
+System-Tray tooltips
+[On screen display]
+On screen Anzeige
+[Limit message preview to]
+Nachrichtenvorschau auf
+[characters]
+Zeichen begrenzen
+[Announce events when status is...]
+Ereignisse nur bei bestimmtem Status zeigen...
+[Popup Options]
+Einstellungen für Popups
+[Background]
+Hintergrund
+[Timeout (seconds, 0 = use default)]
+Zeitlimit (sekunden, 0 für Standardwert
+[Preview popup]
+Vorschau der Popups
+[Message]
+Nachricht
+[File]
+Datei
+[Others]
+Andere
+;
+; formatting menu
+;
+[Default Color]
+Standardfarbe
+[Red]
+Rot
+[Green]
+Grün
+[Blue]
+Blau
+[Magenta]
+Violett
+[Yellow]
+Gelb
+[Black]
+Schwarz
+[White]
+Weiß
+[Clear all Formatting]
+Formatierung entfernen
+;
+; ...
+;
+[Freeze Log]
+Verlauf einfrieren
+[Message Log is frozen]
+Verlaufsaktualisierung gestoppt
+[Message Log is frozen (%d queued)]
+Verlaufsaktualisierung gestoppt (%d ungelesene)

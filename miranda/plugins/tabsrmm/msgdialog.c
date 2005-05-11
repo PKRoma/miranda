@@ -312,6 +312,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     case 16:
                         PostMessage(GetParent(hwnd), WM_COMMAND, IDC_PROTOMENU, (LPARAM)GetDlgItem(GetParent(hwnd), IDC_PROTOMENU));
                         return 0;
+                    case 25:
+                        PostMessage(GetParent(hwnd), DM_SPLITTEREMERGENCY, 0, 0);
+                        return 0;
                 }
                 break;
             }
@@ -525,8 +528,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             RECT rc;
             BITMAP bminfo;
             
-            //GetUpdateRect(hwnd, &rc, FALSE);
-            //_DebugPopup(0, "%d, %d, %d, %d", rc.left, rc.top, rc.right, rc.bottom);
             GetObject(mwdat->hbmMsgArea, sizeof(bminfo), &bminfo);
             GetClientRect(hwnd, &rc);
             SetStretchBltMode((HDC)wParam, HALFTONE);
@@ -722,12 +723,15 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.bottom += (splitterEdges ? 24 : 26);
             if(!splitterEdges)
                 urc->rcItem.bottom += 2;
+            if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+                urc->rcItem.top += 24;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
         case IDC_TYPINGNOTIFY:
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_LOGFROZEN:
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_LOGFROZENTEXT:
+            urc->rcItem.right = urc->dlgNewSize.cx - 20;
             return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -1011,7 +1015,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(GetDlgItem(hwndDlg, IDC_PIC), BUTTONADDTOOLTIP, (WPARAM) Translate("Avatar Options"), 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_SMILEYBTN), BUTTONADDTOOLTIP, (WPARAM) Translate("Insert Emoticon"), 0);
 
-                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, "Message Log is frozen");
+                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message Log is frozen"));
                 
                 SendDlgItemMessage(hwndDlg, IDC_ADD, BUTTONADDTOOLTIP, (WPARAM) Translate("Add this contact permanently to your contact list"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_CANCELADD, BUTTONADDTOOLTIP, (WPARAM) Translate("Do not add this contact permanently"), 0);
@@ -1122,7 +1126,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW", &dbv)) {
                         SETTEXTEX stx = {ST_DEFAULT, 1200};
                         WCHAR *wszTemp = NULL;
-                        if(dbv.type == DBVT_ASCIIZ && dbv.cchVal > 0) {
+                        if(dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 0) {
                             wszTemp = Utf8_Decode(dbv.pszVal);
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)wszTemp);
                             free(wszTemp);
@@ -4201,7 +4205,10 @@ verify:
     				state |= MSG_WINDOW_STATE_ICONIC;
     			return state;
     		}
-// BEGIN MOD#11: Files beeing dropped ?
+        case DM_SPLITTEREMERGENCY:
+            dat->splitterY = 150;
+            SendMessage(hwndDlg, WM_SIZE, 0, 0);
+            break;
 		case WM_DROPFILES:
 		{	
             BOOL not_sending=GetKeyState(VK_CONTROL)&0x8000;
