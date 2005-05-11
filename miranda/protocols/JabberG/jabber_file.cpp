@@ -319,13 +319,13 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 						else myAddr = _strdup( inet_ntoa( in ));
 					}
 					else myAddr = _strdup( inet_ntoa( in ));
-					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc>%s</desc></query></iq>", ft->jid, resource, id, myAddr, nlb.wPort, pFileName, pDescription );
+					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc>%s</desc></query></iq>", UTF8(ft->jid), resource, id, myAddr, nlb.wPort, pFileName, pDescription );
 					free( myAddr );
 					free( pDescription );
 				}
 				else {
 					id = JabberSerialNext();
-					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc/></query></iq>", ft->jid, resource, id, inet_ntoa( in ), nlb.wPort, pFileName );
+					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc/></query></iq>", UTF8(ft->jid), resource, id, inet_ntoa( in ), nlb.wPort, pFileName );
 				}
 				JabberLog( "Waiting for the file to be sent..." );
 				WaitForSingleObject( hEvent, INFINITE );
