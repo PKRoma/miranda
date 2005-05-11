@@ -34,7 +34,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void __cdecl MSNServerThread( ThreadData* info );
 void __cdecl MSNSendfileThread( ThreadData* info );
-int MSN_Auth8( char* authChallengeInfo, char*& parResult );
+
+int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult );
 
 void mmdecode(char *trg, char *str);
 
@@ -1499,7 +1500,7 @@ LBL_InvalidCommand:
 
 				if ( !strcmp( data.security, "TWN" )) {
 					char* tAuth;
-					if ( MSN_Auth8( data.authChallengeInfo, tAuth )) {
+					if ( MSN_GetPassportAuth( data.authChallengeInfo, tAuth )) {
 						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 							MSN_GoOffline();
 						return 1;
@@ -1507,33 +1508,6 @@ LBL_InvalidCommand:
 
 					info->sendPacket( "USR", "TWN S %s", tAuth );
 					free( tAuth );
-				}
-				else if ( !strcmp( data.security, "MD5" )) {
-					if ( *data.sequence == 'S' ) {
-						//send Md5 pass
-						char *chalinfo;
-
-						DBVARIANT dbv;
-						if ( !DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv )) {
-							MSN_CallService(MS_DB_CRYPT_DECODESTRING,strlen(dbv.pszVal)+1,(LPARAM)dbv.pszVal);
-							//fill chal info
-							chalinfo = ( char* )alloca( strlen( data.authChallengeInfo) + strlen( dbv.pszVal ) + 4 );
-							strcpy( chalinfo, data.authChallengeInfo );
-							strcat( chalinfo, dbv.pszVal );
-							MSN_FreeVariant( &dbv );
-						}
-						else chalinfo = "xxxxxxxxxx";
-
-						//Digest it
-						unsigned char digest[16];
-						MD5_CTX context;
-						MD5Init( &context );
-						MD5Update( &context, ( BYTE* )chalinfo, strlen( chalinfo ));
-						MD5Final( digest, &context );
-
-						info->sendPacket( "USR", "MD5 S %08x%08x%08x%08x", htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)));
-					}
-					else MSN_DebugLog( "Unknown security sequence code '%c', ignoring command", data.sequence );
 				}
 				else if ( !strcmp( data.security, "OK" )) {
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] ); Utf8Decode( tWords[2] );
