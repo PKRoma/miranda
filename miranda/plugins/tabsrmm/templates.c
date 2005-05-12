@@ -233,6 +233,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), TRUE);
                             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), TRUE);
                             EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), FALSE);
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), TRUE);
                         }
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
                     }
@@ -248,6 +249,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
 #if defined(_UNICODE)
                     {
@@ -272,6 +274,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
                     teInfo->selchanging = FALSE;
                     SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
                     break;
@@ -291,6 +294,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+                    SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
                     break;
                 }
                 case IDC_UPDATEPREVIEW:

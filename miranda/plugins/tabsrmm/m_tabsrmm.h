@@ -393,13 +393,6 @@ struct TABSRMM_SessionInfo {
     struct ContainerWindowData *pContainer;
 };
 
-// fired, when a message is about to be sent, but BEFORE the contents of the 
-                                                        // input area is examined. A plugin can therefore use this event to modify
-                                                        // the contents of the input box before it is actually sent.
-                                                        // 
-                                                        // 
-                                                        // 
-
 #define MS_MSG_GETWINDOWAPI "MessageAPI/WindowAPI"
 //wparam=0
 //lparam=0

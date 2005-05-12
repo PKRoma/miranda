@@ -279,8 +279,12 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                         break;
                                     }
                                 } while (--i >= 0);
-                                if(uid == 0 && pLastActiveContainer != NULL)                  // no session found, restore last active container
-                                    SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+                                if(uid == 0 && pLastActiveContainer != NULL) {                 // no session found, restore last active container
+                                    if(IsIconic(pLastActiveContainer->hwnd) || pLastActiveContainer->bInTray != 0)
+                                        SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                    else
+                                        SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+                                }
                             }
                             if(wParam == 100)
                                 PostMessage(hwndDlg, WM_NULL, 0, 0);
@@ -298,7 +302,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             CheckMenuItem(submenu, ID_TRAYCONTEXT_DON40223, MF_BYCOMMAND | (nen_options.iNoSounds ? MF_CHECKED : MF_UNCHECKED));
                             CheckMenuItem(submenu, ID_TRAYCONTEXT_DON, MF_BYCOMMAND | (nen_options.iNoAutoPopup ? MF_CHECKED : MF_UNCHECKED));
                             EnableMenuItem(submenu, ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS, MF_BYCOMMAND | (nen_options.bTraySupport || nen_options.floaterMode) ? MF_ENABLED : MF_GRAYED);
-                            
+                            CheckMenuItem(submenu, ID_TRAYCONTEXT_SHOWTHEFLOATER, MF_BYCOMMAND | (nen_options.floaterMode > 0 ? MF_CHECKED : MF_UNCHECKED));
+                            CheckMenuItem(submenu, ID_TRAYCONTEXT_SHOWTHETRAYICON, MF_BYCOMMAND | (nen_options.bTraySupport ? MF_CHECKED : MF_UNCHECKED));
                             iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                             
                             if(iSelection) {
@@ -320,6 +325,14 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                 }
                                 else {
                                     switch(iSelection) {
+                                        case ID_TRAYCONTEXT_SHOWTHEFLOATER:
+                                            nen_options.floaterMode = !nen_options.floaterMode;
+                                            ShowWindow(hwndDlg, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
+                                            break;
+                                        case ID_TRAYCONTEXT_SHOWTHETRAYICON:
+                                            nen_options.bTraySupport = !nen_options.bTraySupport;
+                                            CreateSystrayIcon(nen_options.bTraySupport ? TRUE : FALSE);
+                                            break;
                                         case ID_TRAYCONTEXT_DISABLEALLPOPUPS:
                                             nen_options.iDisable ^= 1;
                                             break;

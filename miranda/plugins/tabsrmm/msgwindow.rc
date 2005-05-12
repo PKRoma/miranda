@@ -89,11 +89,11 @@ BEGIN
                     WS_EX_LEFTSCROLLBAR
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
                     WS_EX_STATICEDGE
-    CONTROL         "&Retry",IDC_RETRY,"MButtonClass",WS_TABSTOP,26,10,35,12
-    CONTROL         "&Cancel",IDC_CANCELSEND,"MButtonClass",WS_TABSTOP,66,10,
-                    35,12
+    CONTROL         "&Retry",IDC_RETRY,"MButtonClass",WS_TABSTOP,26,10,55,12
+    CONTROL         "&Cancel",IDC_CANCELSEND,"MButtonClass",WS_TABSTOP,86,10,
+                    55,12
     CONTROL         "Send &Later",IDC_MSGSENDLATER,"MButtonClass",WS_TABSTOP,
-                    106,10,45,12
+                    146,10,55,12
     LTEXT           "",IDC_STATICTEXT,27,0,160,7
     ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
                     WS_GROUP

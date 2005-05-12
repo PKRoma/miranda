@@ -3205,6 +3205,7 @@ quote_from_last:
                     EnableMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (ServiceExists("BuddyPounce/AddToPounce") ? MF_ENABLED : MF_GRAYED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (dat->sendMode & SMODE_SENDLATER ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_BYCOMMAND | (dat->sendMode & SMODE_NOACK ? MF_CHECKED : MF_UNCHECKED));
+                    EnableMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_GRAYED);
                     
                     if(lParam)
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
@@ -3421,6 +3422,9 @@ quote_from_last:
                             if(msg == WM_KEYDOWN) {
                                 if(wp == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
                                     SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+                                    ((MSGFILTER *) lParam)->msg = WM_NULL;
+                                    ((MSGFILTER *) lParam)->wParam = 0;
+                                    ((MSGFILTER *) lParam)->lParam = 0;
                                     return 1;
                                 }
                                 if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
@@ -3435,6 +3439,9 @@ quote_from_last:
                                 if((GetKeyState(VK_CONTROL)) & 0x8000 && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                     if (wp == 'V') {
                                         SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+                                        ((MSGFILTER *) lParam)->msg = WM_NULL;
+                                        ((MSGFILTER *) lParam)->wParam = 0;
+                                        ((MSGFILTER *) lParam)->lParam = 0;
                                         return 1;
                                     }
                                     if (wp == VK_TAB) {

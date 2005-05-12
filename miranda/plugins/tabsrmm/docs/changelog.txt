@@ -15,7 +15,7 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.96 - 2005/05/09
+Version 0.9.9.95 - 2005/05/10
 
         ! fixed HUGE bug with bbcode color handling.
         
@@ -69,7 +69,7 @@ Version 0.9.9.96 - 2005/05/09
         
         ! fixed bug with IcoLib support (icons disappearing, crashes)
         
-Version 0.9.9.95 - 2005/04/15
+Version 0.9.9.95pre - 2005/04/15
 
         + added message templates for the default message log. As a result, many options
           are now different or gone, because they can be replaced by using custom

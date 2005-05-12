@@ -1072,10 +1072,14 @@ Keine Benachrichtigung wenn bereits ein Nachrichtenfenster geöffnet ist
 [Don't announce events from RSS protocols]
 Keine Benachrichtigung für Ereignisse von RSS Protokollen
 [System tray and floater options]
-Einstellungen für den System-Tray und den "Floater"]
+Einstellungen für den System-Tray und den "Floater"
 [Enable the system tray icon]
 System-Tray Symbol anzeigen
+[Show the Tray Icon]
+System-Tray Symbol anzeigen
 [Show the floater]
+Floater ist sichtbar
+[Show the Floater]
 Floater ist sichtbar
 [Show session list menu on the message windows status bar]
 Zeige die Liste aktiver Sitzungen in der Statuszeile des Nachrichtenfensters
