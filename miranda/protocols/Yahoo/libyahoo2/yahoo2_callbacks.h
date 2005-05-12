@@ -502,7 +502,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_typing_notify)(int id, char *me, char *who, i
  * 	who  - the handle of the remote user
  * 	stat - 1 if game, 0 if stopped gaming
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_game_notify)(int id, char *me, char *who, int stat);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_game_notify)(int id, char *me, char *who, int stat, char *msg);
 
 
 

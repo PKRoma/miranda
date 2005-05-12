@@ -1280,7 +1280,7 @@ static void yahoo_process_notify(struct yahoo_input_data *yid, struct yahoo_pack
 	if (!strncasecmp(msg, "TYPING", strlen("TYPING"))) 
 		YAHOO_CALLBACK(ext_yahoo_typing_notify)(yd->client_id, to, from, stat);
 	else if (!strncasecmp(msg, "GAME", strlen("GAME"))) 
-		YAHOO_CALLBACK(ext_yahoo_game_notify)(yd->client_id, to, from, stat);
+		YAHOO_CALLBACK(ext_yahoo_game_notify)(yd->client_id, to, from, stat, ind);
 	else if (!strncasecmp(msg, "WEBCAMINVITE", strlen("WEBCAMINVITE"))) 
 	{
 		if (!strcmp(ind, " ")) {
@@ -2653,6 +2653,7 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 
 static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
+	struct yahoo_data *yd = yid->yd;
 	char *who = NULL;
 	int  status = 0;
 	char *me = NULL;
@@ -2680,9 +2681,47 @@ static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_pack
 	 * 	12 - is a buddy, could not add
 	 */
 
-/*	if(status)
-		YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, status, who, 0);
-*/	
+	if(status) {
+		YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, who, 0, status);
+	} else {
+		/* we adding or removing to the ignore list */
+		if (un_ignore == 1) { /* ignore */
+				struct yahoo_buddy *bud = y_new0(struct yahoo_buddy, 1);
+				
+				bud->id = strdup(who);
+				bud->group = NULL;
+				bud->real_name = NULL;
+
+				yd->ignore = y_list_append(yd->ignore, bud);
+				
+		} else { /* unignore */
+			YList *buddy;
+			
+			buddy = yd->ignore;
+			
+			while (buddy) {
+				struct yahoo_buddy *b = (struct yahoo_buddy *) buddy->data;
+				
+				if (lstrcmpi(b->id, who) == 0) 
+					break;
+				
+				buddy = buddy->next;
+			}
+				
+			if(buddy) {
+				struct yahoo_buddy *bud = buddy->data;
+				yd->ignore = y_list_remove_link(yd->ignore, buddy);
+				y_list_free_1(buddy);
+		
+				FREE(bud->id);
+				FREE(bud->group);
+				FREE(bud->real_name);
+				FREE(bud);
+		
+				bud=NULL;
+			}	
+		}
+	}
 }
 
 static void yahoo_process_voicechat(struct yahoo_input_data *yid, struct yahoo_packet *pkt)

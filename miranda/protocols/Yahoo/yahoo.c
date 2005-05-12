@@ -286,6 +286,23 @@ void get_fd(int id, int fd, int error, void *data)
 	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
 
+YList * YAHOO_GetIgnoreList(void)
+{
+	if (!ylad)
+		return NULL;
+	
+	return yahoo_get_ignorelist(ylad->id);
+}
+
+void YAHOO_IgnoreBuddy(const char *buddy, int ignore)
+{
+	if (!ylad)
+		return;
+	
+	yahoo_ignore_buddy(ylad->id, buddy, ignore);
+	//yahoo_get_list(ylad->id);
+}
+
 void YAHOO_SendFile(y_filetransfer *sf)
 {
 	long tFileSize = 0;
@@ -325,8 +342,9 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		wsprintf(buf, "%s\\%s", sf->savepath, sf->filename);
 		
 		pfts.currentFile = _strdup(buf);		
+		LOG(("Saving: %s",  pfts.currentFile));
 		
-		old_dir = _getcwd(NULL, 512);
+		old_dir = _getcwd(NULL, 512); 
 		
 		if (old_dir) {
 			_chdir( sf->savepath ); // save this just in case
@@ -1405,12 +1423,42 @@ void ext_yahoo_typing_notify(int id, char *me, char *who, int stat)
 		YAHOO_ShowPopup( c, Translate( "typing..." ), YAHOO_ALLOW_MSGBOX + YAHOO_NOTIFY_POPUP );
 }
 
-void ext_yahoo_game_notify(int id, char *me, char *who, int stat)
+void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
 {
-    LOG(("[ext_yahoo_game_notify] id: %d, me: %s, who: %s, stat: %d", id, me, who, stat));
+	HANDLE hContact;
+	
+    LOG(("[ext_yahoo_game_notify] id: %d, me: %s, who: %s, stat: %d, msg: %s", id, me, who, stat, msg));
     /* FIXME - Not Implemented - this informs you someone else is playing on Yahoo! Games */
     /* Also Stubbed in Sample Client */
+	hContact = getbuddyH(who);
+	if (!hContact) return;
 	
+	if (msg) {
+		char *c, *l = msg;
+		int i = 0;
+		/* Parse and Set a custom Message 
+		 *
+		 * Format: 1 [09] ygamesp [09] 1 [09] 0 [09] ante?room=yahoo_1078798506&follow=rrainwater	
+		 * [09] Yahoo! Poker\nRoom: Intermediate Lounge 2
+		 */
+		do{
+			c = strchr(l, 0x09);
+			i++;
+			if (c != NULL) {
+				l = c;
+				l++;
+			}
+		} while (c != NULL && i < 5);
+		
+		if (c != NULL) {
+			YAHOO_SetString(hContact, "YMsg", l);
+		} else {
+			YAHOO_SetString(hContact, "YMsg", "");
+		}
+	} else {
+		/* ? no information / reset custom message */
+		YAHOO_SetString(hContact, "YMsg", "");
+	}
 }
 
 void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
@@ -1582,7 +1630,7 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 	if (errormsg) {
 			LOG(("[ext_yahoo_got_ping] Error msg: %s", errormsg));
 
-			if (YAHOO_GetByte( "ShowErrors", 1 )) {
+			if (YAHOO_GetByte( "ShowErrors", 0 )) {
 				if (!YAHOO_ShowPopup(Translate("Yahoo Ping Error"), errormsg, YAHOO_NOTIFY_POPUP)) {
 					if (YAHOO_hasnotification())
 						YAHOO_shownotification(Translate("Yahoo Ping Error"), errormsg, NIIF_ERROR);
@@ -1657,14 +1705,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	//
 	// Show Error Message
 	//
-	if (YAHOO_GetByte( "ShowErrors", 1 )) {
-		if (!YAHOO_ShowPopup(Translate("Yahoo Login Error"), buff, YAHOO_NOTIFY_POPUP)) {
-			if (YAHOO_hasnotification())
-				YAHOO_shownotification(Translate("Yahoo Login Error"), buff, NIIF_ERROR);
-			else
-				MessageBox(NULL, buff, Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
-		}
-	}
+	YAHOO_ShowError(buff);
 }
 
 void ext_yahoo_error(int id, char *err, int fatal, int num)
@@ -1715,14 +1756,7 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 	//
 	if (yahooStatus != ID_STATUS_OFFLINE) {
 		// Show error only if we are not offline. [manual status changed]
-		if (YAHOO_GetByte( "ShowErrors", 1 )) {
-			if (!YAHOO_ShowPopup(Translate("Yahoo Error"), buff, YAHOO_NOTIFY_POPUP)) {
-				if (YAHOO_hasnotification())
-					YAHOO_shownotification(Translate("Yahoo Error"), buff, NIIF_ERROR);
-				else
-					MessageBox(NULL, buff, Translate("Yahoo Error"), MB_OK | MB_ICONINFORMATION);
-			}
-		}
+		YAHOO_ShowError(buff);
 	}
 
 }

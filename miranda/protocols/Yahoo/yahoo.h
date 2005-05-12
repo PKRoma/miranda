@@ -128,6 +128,7 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 int YAHOO_shownotification(const char *title, const char *info, DWORD flags);
 int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam);
 void YAHOO_utils_logversion();
+void YAHOO_ShowError(const char *buff);
 
 //Services.c
 int GetCaps(WPARAM wParam,LPARAM lParam);
@@ -144,6 +145,8 @@ void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
 int miranda_to_yahoo(int myyahooStatus);
 void yahoo_stealth(const char *buddy, int add);
+YList * YAHOO_GetIgnoreList(void);
+void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
 
 BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcYahooPopUpOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
