@@ -31,7 +31,7 @@ Features
 
 Requirements
 ------------
- - Miranda IM 0.3.4
+ - Miranda IM 0.4
 
 
 History
@@ -325,12 +325,6 @@ FAQ
  Answer: 
  Not yet.  Only file receive is possible using TOC.  This is on the todo list.
 
- Question:
- I set the Server-Side Contact list option but Miranda doesn't use it.  Why?
-
- Answer:
- For large lists, server-side contact list support is turned off automatically because of
- a packet-size limitation of TOC.
 
 
 Thanks To
