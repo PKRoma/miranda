@@ -205,9 +205,9 @@ enum yahoo_service { /* these are easier to see in hex */
 	/*
 	[22:40:53 YAHOO] Service: (null) (0xb7)	Status: YAHOO_STATUS_BRB (1)
 [22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	4 => jrb1203
+[22:40:53 YAHOO] 	4 => xxxxx
 [22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	5 => gena01_w
+[22:40:53 YAHOO] 	5 => xxxxx
 [22:40:53 YAHOO]  
 [22:40:53 YAHOO] 	180 => pl 
 [22:40:53 YAHOO]  
@@ -232,9 +232,9 @@ File List Request:
 [22:48:09 YAHOO] libyahoo2/libyahoo2.c:792: debug: 
 [22:48:09 YAHOO] [Reading packet] len: 80
 [22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: To (5)  	Value: gena01_w
+[22:48:09 YAHOO] Key: To (5)  	Value: xxxxx
 [22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: From (4)  	Value: jrb1203
+[22:48:09 YAHOO] Key: From (4)  	Value: xxxxx
 [22:48:09 YAHOO]  
 [22:48:09 YAHOO] Key: service (49)  	Value: FILEXFER
 [22:48:09 YAHOO]  
@@ -255,9 +255,9 @@ File List Cancel:
 [22:48:41 YAHOO] libyahoo2/libyahoo2.c:792: debug: 
 [22:48:41 YAHOO] [Reading packet] len: 74
 [22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: To (5)  	Value: gena01_w
+[22:48:41 YAHOO] Key: To (5)  	Value: xxxxx
 [22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: From (4)  	Value: jrb1203
+[22:48:41 YAHOO] Key: From (4)  	Value: xxxxx
 [22:48:41 YAHOO]  
 [22:48:41 YAHOO] Key: service (49)  	Value: FILEXFER
 [22:48:41 YAHOO]  
@@ -346,6 +346,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_CHATLOGOUT, "YAHOO_SERVICE_CHATLOGOUT"},
 	{YAHOO_SERVICE_CHATPING, "YAHOO_SERVICE_CHATPING"},
 	{YAHOO_SERVICE_COMMENT, "YAHOO_SERVICE_COMMENT"},
+	{YAHOO_SERVICE_GAME_INVITE,"YAHOO_SERVICE_GAME_INVITE "},
 	{YAHOO_SERVICE_STEALTH, "YAHOO_SERVICE_STEALTH"},
 	{YAHOO_SERVICE_AVATAR,"YAHOO_SERVICE_AVATAR"},
 	{YAHOO_SERVICE_PICTURE_CHECKSUM,"YAHOO_SERVICE_PICTURE_CHECKSUM"},

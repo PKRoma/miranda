@@ -1427,37 +1427,96 @@ void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
 {
 	HANDLE hContact;
 	
+	/* There's also game invite packet:
+	[17:36:44 YAHOO] libyahoo2/libyahoo2.c:3093: debug: 
+[17:36:44 YAHOO] Yahoo Service: (null) (0xb7) Status: YAHOO_STATUS_BRB (1)
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] libyahoo2/libyahoo2.c:863: debug: 
+[17:36:44 YAHOO] [Reading packet] len: 88
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: From (4)  	Value: 'xxxxx'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: To (5)  	Value: 'zxzxxx'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: (null) (180)  	Value: 'pl'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: (null) (183)  	Value: ''
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: (null) (181)  	Value: ''
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: session (11)  	Value: 'o8114ik_lixyxtdfrxbogw--'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: stat/location (13)  	Value: '1'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] libyahoo2/libyahoo2.c:908: debug: 
+[17:36:44 YAHOO] [Reading packet done]
+
+	 */
     LOG(("[ext_yahoo_game_notify] id: %d, me: %s, who: %s, stat: %d, msg: %s", id, me, who, stat, msg));
     /* FIXME - Not Implemented - this informs you someone else is playing on Yahoo! Games */
     /* Also Stubbed in Sample Client */
 	hContact = getbuddyH(who);
 	if (!hContact) return;
 	
-	if (msg) {
-		char *c, *l = msg;
+	if (stat == 2) 
+		YAHOO_SetString(hContact, "YGMsg", "");
+	else if (msg) {
+		char z[1024];
+		char *c, *l = msg, *u = NULL;
 		int i = 0;
 		/* Parse and Set a custom Message 
 		 *
-		 * Format: 1 [09] ygamesp [09] 1 [09] 0 [09] ante?room=yahoo_1078798506&follow=rrainwater	
+		 * Format: 1 [09] ygamesp [09] 1 [09] 0 [09] ante?room=yahoo_1078798506&follow=rrrrrrr	
 		 * [09] Yahoo! Poker\nRoom: Intermediate Lounge 2
+		 *
+		 * Sign-in:
+		 * [17:13:42 YAHOO] [ext_yahoo_game_notify] id: 1, me: xxxxx, who: rrrrrrr, 
+		 * stat: 1, msg: 1	ygamesa	1	0	ante?room=yahoo_1043183792&follow=lotesdelere	
+		 * Yahoo! Backgammon Room: Social Lounge 12 
+		 *
+		 * Sign-out:
+		 * [17:18:38 YAHOO] [ext_yahoo_game_notify] id: 1, me: xxxxx, who: rrrrr, 
+		 *	stat: 2, msg: 1	ygamesa	2
 		 */
+		z[0]='\0';
 		do{
 			c = strchr(l, 0x09);
 			i++;
 			if (c != NULL) {
 				l = c;
 				l++;
+				if (i == 4)
+					u = l;
 			}
 		} while (c != NULL && i < 5);
 		
 		if (c != NULL) {
-			YAHOO_SetString(hContact, "YMsg", l);
-		} else {
-			YAHOO_SetString(hContact, "YMsg", "");
+			// insert \r before \n
+			do{
+				c =	strchr(l, '\n');
+				
+				if (c != NULL) {
+					(*c) = '\0';
+					lstrcat(z, l);
+					lstrcat(z, "\r\n");
+					l = c + 1;
+				} else {
+					lstrcat(z, l);
+				}
+			} while (c != NULL);
+			
+			lstrcat(z, "\r\n\r\n");
+			lstrcat(z, "http://games.yahoo.com/games/");
+			c = strchr(u, 0x09);
+			(*c) = '\0';
+			lstrcat(z, u);
 		}
+		
+		YAHOO_SetString(hContact, "YGMsg", z);
+		
 	} else {
 		/* ? no information / reset custom message */
-		YAHOO_SetString(hContact, "YMsg", "");
+		YAHOO_SetString(hContact, "YGMsg", "");
 	}
 }
 

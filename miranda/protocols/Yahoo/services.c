@@ -574,25 +574,58 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 {
 	CCSDATA ccs1;
 	PROTORECVEVENT pre;
-	int status;
+	int status, l;
 	DBVARIANT dbv;
-
+	char *gm = NULL, *sm = NULL, *fm;
 	status = DBGetContactSettingWord(hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
 
 	if (status == ID_STATUS_OFFLINE)
 	   return;
 	
+	if (! DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
+		gm = strdup(dbv.pszVal);
+		
+		DBFreeVariant( &dbv );
+	}
+	
 	if ( DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YMsg", &dbv )) {
-		pre.szMessage = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
+		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
 	} else {
 		if (lstrlen(dbv.pszVal) < 1)
-			pre.szMessage = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
+			sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
 		else
-			pre.szMessage = strdup(dbv.pszVal);
+			sm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	}
 
+	l = 0;
+	if (gm)
+		l += lstrlen(gm) + 3;
+	
+	l += lstrlen(sm) + 1;
+	fm = (char *) malloc(l);
+	
+	fm[0] ='\0';
+	if (gm) {
+		/* BAH YAHOO SUCKS! WHAT A PAIN!
+		   find first carriage return add status message then add the rest */
+		char *c = strchr(gm, '\r');
+		
+		if (c != NULL) {
+			lstrcpyn(fm,gm, c - gm + 1);
+			fm[c - gm + 1] = '\0';
+		} else
+			lstrcpy(fm, gm);
+		
+		lstrcat(fm, ": ");
+		lstrcat(fm, sm);
+		
+		if (c != NULL)
+			lstrcat(fm, c);
+	} else {
+		lstrcat(fm, sm);
+	}
 	ccs1.szProtoService = PSR_AWAYMSG;
 	ccs1.hContact = hContact;
 	ccs1.wParam = status;
@@ -600,7 +633,8 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	pre.flags = 0;
 	pre.timestamp = time(NULL);
 	pre.lParam = 1;
-
+	pre.szMessage = fm;
+	
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs1);
 }
 
