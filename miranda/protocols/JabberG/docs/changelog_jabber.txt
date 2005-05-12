@@ -4,6 +4,10 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.0.3
+===============
+[!] bug #0001114 fixed: typinguser event never times out
+
 Version 0.4.0.2
 ===============
 [+] added CHAT.DLL support

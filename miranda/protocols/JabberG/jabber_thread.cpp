@@ -699,7 +699,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				HANDLE hContact;
 				if ( JabberXmlGetChild( xNode, "composing" ) != NULL )
 					if (( hContact = JabberHContactFromJID( from )) != NULL )
-						JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_INFINITE );
+ 						JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 60 );
 
 				if ( xNode->numChild==0 || ( xNode->numChild==1 && idNode!=NULL ))
 					// Maybe a cancel to the previous composing
@@ -803,7 +803,6 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 						if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
 							JSetWord( hContact, "Status", ( WORD )status );
 					}
-					JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
 					JabberLog( "%s offline, set contact status to %d", from, status );
 				}
 				if ( strchr( from, '@' )==NULL && hwndJabberAgents )
