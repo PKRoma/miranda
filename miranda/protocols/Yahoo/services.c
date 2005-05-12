@@ -607,7 +607,7 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	fm = (char *) malloc(l);
 	
 	fm[0] ='\0';
-	if (gm) {
+	if (gm && lstrlen(gm) > 0) {
 		/* BAH YAHOO SUCKS! WHAT A PAIN!
 		   find first carriage return add status message then add the rest */
 		char *c = strchr(gm, '\r');
