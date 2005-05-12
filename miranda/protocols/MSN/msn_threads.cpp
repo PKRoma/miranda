@@ -91,16 +91,19 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 
 			info->mCaller = 1;
 			info->send( "TFR\r\n", 5 );
-			_chdir( ft->std.workingDir );
 
-			char filefull[ 1024 ];
-			mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
-			replaceStr( ft->std.currentFile, filefull );
-
-			if ( msnRunningUnderNT )
-				ft->fileId = _wopen( ft->wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			else
+			if ( msnRunningUnderNT ) {
+				WCHAR wszFileName[ MAX_PATH ];
+				_snwprintf( wszFileName, sizeof wszFileName, L"%S\\%s", ft->std.workingDir, ft->wszFileName );
+				wszFileName[ MAX_PATH-1 ] = 0;
+				ft->fileId = _wopen( wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			}
+			else {
+				char filefull[ MAX_PATH ];
+				mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
+				replaceStr( ft->std.currentFile, filefull );
 				ft->fileId = _open( ft->std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			}
 			if ( ft->fileId == -1 )
 				break;
 

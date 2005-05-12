@@ -796,8 +796,6 @@ int filetransfer::create()
 	if ( fileId != -1 )
 		return fileId;
 
-	_chdir( std.workingDir );
-
 	char filefull[ MAX_PATH ];
 	mir_snprintf( filefull, sizeof filefull, "%s\\%s", std.workingDir, std.currentFile );
 	replaceStr( std.currentFile, filefull );
@@ -810,7 +808,10 @@ int filetransfer::create()
 		WaitForSingleObject( hWaitEvent, INFINITE );
 
 	if ( msnRunningUnderNT && wszFileName != NULL ) {
-		fileId = _wopen( wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
+		WCHAR wszTemp[ MAX_PATH ];
+		_snwprintf( wszTemp, sizeof wszTemp, L"%S\\%s", std.workingDir, wszFileName );
+		wszTemp[ MAX_PATH-1 ] = 0;
+		fileId = _wopen( wszTemp, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 		if ( fileId != -1 ) {
 			WIN32_FIND_DATAW data;
 			HANDLE hFind = FindFirstFileW( wszFileName, &data );
