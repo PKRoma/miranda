@@ -7,9 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
-#include <winuser.h>
-#include <afxres.h>
+#include <winres.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -144,7 +142,6 @@ END
 
 2 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "#include <windows.h>\r\n"
     "#include <winres.h>\0"
 END
 
