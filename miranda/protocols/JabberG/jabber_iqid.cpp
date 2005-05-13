@@ -386,7 +386,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 
 	JabberStringDecode( jid );
 	len = strlen( jabberJID );
-	if ( !strncmp( jid, jabberJID, len ) && ( jid[len]=='/' || jid[len]=='\0' )) {
+	if ( !strnicmp( jid, jabberJID, len ) && ( jid[len]=='/' || jid[len]=='\0' )) {
 		hContact = NULL;
 		JabberLog( "Vcard for myself" );
 	}

@@ -7,6 +7,7 @@ Legend:
 Version 0.4.0.3
 ===============
 [!] bug #0001114 fixed: typinguser event never times out
+[!] bug #0000731 fixed: Miranda can't retreive vCard info from jabber.org server
 
 Version 0.4.0.2
 ===============
