@@ -3,6 +3,7 @@
 
 typedef struct {
 	int  cbSize;
+	char  *pszGroup;
     char  *pszSection;
 	char  *pszId;
 	char  *pszName;
@@ -22,10 +23,11 @@ typedef struct {
 //  Returns 0 on success
 #define MS_ICONS_ADDICON "SkinIconEx/AddIcon"
 
-static int __inline SkinIcon_AddIcon(char *section, char *id, char *name, char *desc, HICON hicon) {
+static int __inline SkinIcon_AddIcon(char *group, char *section, char *id, char *name, char *desc, HICON hicon) {
 	SkinIcon si;
 	
 	si.cbSize = sizeof(si);
+	si.pszGroup = group;
 	si.pszSection = section;
 	si.pszId = id;
 	si.pszName = name;
