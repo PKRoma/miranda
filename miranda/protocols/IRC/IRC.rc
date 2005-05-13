@@ -83,7 +83,7 @@ BEGIN
     EDITTEXT        IDC_NAME,158,44,67,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_USERID,238,44,67,12,ES_AUTOHSCROLL
     CONTROL         "Enable",IDC_IDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    158,76,43,15
+                    158,76,46,15
     EDITTEXT        IDC_IDENTSYSTEM,210,77,44,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_IDENTPORT,261,77,44,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "only while connecting",IDC_IDENT_TIMED,"Button",
@@ -111,7 +111,7 @@ BEGIN
     CONTROL         "Rejoin channels on reconnect",IDC_REJOINCHANNELS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,179,139,10
     CONTROL         "Enable",IDC_STARTUP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,15,54,10
+                    WS_TABSTOP,10,15,73,10
     CONTROL         "Internet address",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
                     WS_GROUP,10,50,81,8,WS_EX_TRANSPARENT
     LTEXT           "Port range",IDC_STATIC,10,74,69,8,0,WS_EX_TRANSPARENT
@@ -120,8 +120,8 @@ BEGIN
                     WS_EX_TRANSPARENT
     LTEXT           "Full name (e-mail)",IDC_STATIC,158,36,67,8,0,
                     WS_EX_TRANSPARENT
-    LTEXT           "Password",IDC_STATIC,10,98,88,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Server name",IDC_STATIC,10,26,94,8,0,WS_EX_TRANSPARENT
+    LTEXT           "Password",IDC_STATIC,10,98,125,8,0,WS_EX_TRANSPARENT
+    LTEXT           "Server name",IDC_STATIC,10,26,125,8,0,WS_EX_TRANSPARENT
     LTEXT           "->",IDC_STATIC,68,84,8,8
     LTEXT           "Alternative nick",IDC_STATIC,238,12,67,8,0,
                     WS_EX_TRANSPARENT
@@ -181,18 +181,18 @@ BEGIN
                     WS_VSCROLL | NOT WS_TABSTOP
     EDITTEXT        IDC_INFO_OTHER,6,94,125,20,ES_MULTILINE | WS_VSCROLL | 
                     NOT WS_TABSTOP
-    LTEXT           "Nick",IDC_STATIC,6,41,52,8
-    LTEXT           "Name",IDC_STATIC,71,41,49,8
-    LTEXT           "Address",IDC_STATIC,136,41,49,8,SS_NOTIFY
-    LTEXT           "Channels",IDC_STATIC,136,86,94,8
-    LTEXT           "Auth",IDC_STATIC,6,63,67,8
-    LTEXT           "Server",IDC_STATIC,71,63,61,8
-    LTEXT           "User",IDC_STATIC,201,41,50,8
-    LTEXT           "Away Info",IDC_STATIC,136,63,51,8
-    LTEXT           "Other",IDC_STATIC,6,86,114,8
+    LTEXT           "Nick",IDC_STATIC,6,41,60,8
+    LTEXT           "Name",IDC_STATIC,71,41,59,8
+    LTEXT           "Address",IDC_STATIC,136,41,59,8,SS_NOTIFY
+    LTEXT           "Channels",IDC_STATIC,136,86,119,8
+    LTEXT           "Auth",IDC_STATIC,6,63,59,8
+    LTEXT           "Server",IDC_STATIC,71,63,59,8
+    LTEXT           "User",IDC_STATIC,201,41,60,8
+    LTEXT           "Away Info",IDC_STATIC,136,63,125,8
+    LTEXT           "Other",IDC_STATIC,6,86,124,8
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,268,1
     LTEXT           "",IDC_WHITERECT,0,0,267,38
-    ICON            "",IDC_LOGO,228,5,21,20,SS_REALSIZEIMAGE
+    ICON            "",IDC_LOGO,228,5,20,20,SS_REALSIZEIMAGE
     LTEXT           "The server returned the following information. Please note that this information might be misleading and/or falsified",
                     IDC_TEXT,12,16,204,18
     LTEXT           "",IDC_CAPTION,6,5,201,11
@@ -223,7 +223,7 @@ END
 IDD_PREFS_OTHER DIALOGEX 0, 0, 294, 214
 STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Enable",IDC_PERFORM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,15,107,10
@@ -244,7 +244,7 @@ BEGIN
     LTEXT           "Network",IDC_STATIC,10,30,110,8,0,WS_EX_TRANSPARENT
     GROUPBOX        "Alias",IDC_STATIC,138,0,153,170
     GROUPBOX        "Other",IDC_STATIC,2,170,289,42
-    LTEXT           "Quit message",IDC_STATIC,10,181,44,8
+    LTEXT           "Quit message",IDC_STATIC,10,181,135,8
 END
 
 IDD_ADDSERVER DIALOGEX 0, 0, 182, 136
@@ -252,7 +252,7 @@ STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE |
     WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
 CAPTION "Add server"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     COMBOBOX        IDC_ADD_COMBO,7,20,168,90,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
@@ -264,7 +264,7 @@ BEGIN
                     WS_EX_RIGHT
     CONTROL         "On",IDC_ON,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
                     WS_TABSTOP,143,52,25,10
-    CONTROL         "Auto",IDC_AUTO,"Button",BS_AUTORADIOBUTTON,143,69,31,10
+    CONTROL         "Auto",IDC_AUTO,"Button",BS_AUTORADIOBUTTON,143,69,30,10
     CONTROL         "Off",IDC_OFF,"Button",BS_AUTORADIOBUTTON,143,86,25,10
     DEFPUSHBUTTON   "&OK",IDN_ADD_OK,63,115,50,14
     PUSHBUTTON      "&Cancel",IDN_ADD_CANCEL,125,115,50,14
@@ -295,7 +295,7 @@ IDD_QUICKCONN DIALOGEX 0, 0, 201, 148
 STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     COMBOBOX        IDC_SERVERCOMBO,12,54,177,69,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
@@ -309,10 +309,10 @@ BEGIN
     DEFPUSHBUTTON   "C&onnect",IDNOK,83,129,50,14
     PUSHBUTTON      "&Cancel",IDNCANCEL,139,129,50,14
     CONTROL         "Internet address",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    WS_GROUP,12,70,97,8,WS_EX_TRANSPARENT
+                    WS_GROUP,12,70,130,8,WS_EX_TRANSPARENT
     LTEXT           "Port range",IDC_STATIC,12,94,63,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Password",IDC_STATIC,116,94,45,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Server name",IDC_STATIC,12,46,98,8,0,WS_EX_TRANSPARENT
+    LTEXT           "Password",IDC_STATIC,116,94,73,8,0,WS_EX_TRANSPARENT
+    LTEXT           "Server name",IDC_STATIC,12,46,177,8,0,WS_EX_TRANSPARENT
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,123,201,1
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,201,1
     LTEXT           "",IDC_WHITERECT,0,0,201,38
@@ -348,7 +348,7 @@ IDD_CHANMANAGER DIALOGEX 0, 0, 250, 250
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CLIPSIBLINGS | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     COMBOBOX        IDC_TOPIC,13,55,192,103,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
                     WS_VSCROLL | WS_TABSTOP
@@ -370,24 +370,24 @@ BEGIN
     CONTROL         "&Del",IDC_REMOVE,"MButtonClass",WS_DISABLED | 
                     WS_TABSTOP,209,132,28,14,0x18000000L
     CONTROL         "Only Ops set topic",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,168,73,10
+                    WS_TABSTOP,13,168,106,10
     CONTROL         "No external messages",IDC_CHECK2,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,181,85,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,181,106,10
     CONTROL         "Invite only",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,194,48,10
+                    WS_TABSTOP,13,194,106,10
     CONTROL         "Moderated",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,207,50,10
+                    WS_TABSTOP,13,207,106,10
     CONTROL         "Key:",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    119,168,30,10
+                    119,168,45,10
     EDITTEXT        IDC_KEY,168,167,57,12,ES_AUTOHSCROLL | WS_DISABLED
     CONTROL         "User limit:",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,119,181,46,10
     EDITTEXT        IDC_LIMIT,168,181,25,12,ES_AUTOHSCROLL | ES_NUMBER | 
                     WS_DISABLED
     CONTROL         "Private",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,119,194,38,10
+                    WS_TABSTOP,119,194,73,10
     CONTROL         "Secret",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,119,207,37,10
+                    WS_TABSTOP,119,207,80,10
     CONTROL         "&Set",IDC_APPLYMODES,"MButtonClass",WS_DISABLED | 
                     WS_TABSTOP,209,202,28,14,0x18000000L
     DEFPUSHBUTTON   "&Close",IDCLOSE,194,231,50,14
@@ -395,7 +395,7 @@ BEGIN
     GROUPBOX        "User modes",IDC_STATIC,6,73,238,81
     GROUPBOX        "Channel modes",IDC_STATIC,6,155,238,67
     CONTROL         "Hidden",IDC_NOTOP,"Button",BS_AUTOCHECKBOX | NOT 
-                    WS_VISIBLE,191,81,39,10
+                    WS_VISIBLE,191,81,45,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,250,1
     LTEXT           "",IDC_WHITERECT,0,0,249,38
     ICON            "",IDC_LOGO,212,5,20,20,SS_REALSIZEIMAGE
@@ -430,7 +430,7 @@ STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE |
     WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Miranda IRC"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_EDIT,5,52,65,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT2,88,52,118,14,ES_AUTOHSCROLL
@@ -444,7 +444,7 @@ BEGIN
     LTEXT           "Thank You...",IDC_CAPTION,5,5,154,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,76,211,1
     LTEXT           "Nick",IDC_STATIC,5,44,65,8
-    LTEXT           "Full name",IDC_STATIC,88,44,65,8
+    LTEXT           "Full name",IDC_STATIC,88,44,117,8
 END
 
 IDD_PREFS_CTCP DIALOGEX 0, 0, 294, 214
@@ -476,7 +476,7 @@ BEGIN
                     BS_AUTORADIOBUTTON,83,111,158,10
     CONTROL         "Disconnect DCC chats when disconnecting from server",
                     IDC_DISC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,129,
-                    233,10
+                    257,10
     CONTROL         "Manually set external IP:",IDC_ENABLEIP,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,158,130,10
     EDITTEXT        IDC_IP,140,156,144,14,ES_AUTOHSCROLL
@@ -485,7 +485,7 @@ BEGIN
     GROUPBOX        "Automatically accept chat requests from... ",IDC_STATIC,
                     27,73,233,24
     GROUPBOX        "Ignore chat requests from...",IDC_STATIC,27,100,233,24
-    LTEXT           "User information",IDC_STATIC,10,182,52,8
+    LTEXT           "User information",IDC_STATIC,10,182,144,8
     GROUPBOX        "Client-to-Client Protocol",IDC_STATIC,2,145,289,67
     GROUPBOX        "Client-to-Client Chats",IDC_STATIC,2,46,289,99
     LTEXT           "Send mode:",IDC_STATIC,10,29,48,8

@@ -94,6 +94,7 @@ capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize)
   return 0;
 }
 
+const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
 const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
@@ -117,7 +118,7 @@ char* cliLibicq2k  = "libicq2000";
 char* cliLicqVer   = "Licq %u.%u";
 char* cliLicqVerL  = "Licq %u.%u.%u";
 char* cliCentericq = "Centericq";
-char* cliIcyJuice  = "IcyJuice/Jabber Transport";
+char* cliLibicqUTF = "libicq2000 (Unicode)";
 char* cliTrillian  = "Trillian";
 char* cliQip       = "QIP 200%c%c";
 char* cliIM2       = "IM2";
@@ -135,7 +136,6 @@ char* cliIM2       = "IM2";
 // TLV(1D) Avatar Hash (20 bytes)
 static void handleUserOnline(BYTE* buf, WORD wLen)
 {
-
 	HANDLE hContact;
 	DWORD dwPort;
 	DWORD dwRealIP;
@@ -213,7 +213,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 	// Read user info TLVs
 	{
-
 		oscar_tlv_chain* pChain;
 		oscar_tlv* pTLV;
 
@@ -265,7 +264,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         }
         else 
         { // Yes this is most probably Miranda, get the version info
-				  szClient = MirandaVersionToString(dwFT2);
+				  szClient = MirandaVersionToString(dwFT2, 0);
 				  dwClientId = 1; // Miranda does not use Tick as msgId
 			  }
       }
@@ -273,11 +272,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       { // This is probably an Licq client
         DWORD ver = dwFT1 & 0xFFFF;
         if (ver % 10){
-          _snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
+          mir_snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
         }
         else
         {
-          _snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
+          mir_snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
         }
         if (dwFT1 & 0x00800000)
           strcat(szClientBuf, "/SSL");
@@ -299,9 +298,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         unsigned ver3 = (dwFT2>>8)&0xFF;
         
         if (ver3) 
-          _snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
+          mir_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
         else  
-          _snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
+          mir_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
         szClient = szClientBuf;
       }
       else if (dwFT1 == 0xFFFFFF7F)
@@ -386,11 +385,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		Netlib_Logf(ghServerNetlibUser, "Online since %s", asctime(localtime(&dwOnlineSince)));
 #endif
 
-
 		// Check client capabilities
 		if (hContact != NULL)
 		{
-
 			WORD wOldStatus;
 
 			wOldStatus = DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
@@ -402,7 +399,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         DBVARIANT dbv;
         int dummy;
         int dwJob = 0;
-        char szAvatar[256];
+        char szAvatar[MAX_PATH];
         int dwPaFormat;
 
         if (gbAvatarsEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLoad", 1))
@@ -410,32 +407,72 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
           if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
           { // we not found old hash, i.e. get new avatar
-            dwJob = 1;
+            DBVARIANT dbvHashFile;
+
+            if (!DBGetContactSetting(hContact, gpszICQProtoName, "AvatarSaved", &dbvHashFile))
+            { // check saved hash and file, if equal only store hash
+              if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
+              { // the hash is different, unlink contactphoto
+                LinkContactPhotoToFile(hContact, NULL);
+                dwJob = 1;
+              }
+              else
+              {
+                dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+
+                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+                if (access(szAvatar, 0) == 0)
+                { // the file is there, link to contactphoto, save hash
+                  Netlib_Logf(ghServerNetlibUser, "Avatar is known, hash stored, linked to file.");
+
+                  if (dummy = DBWriteContactSettingBlob(hContact, gpszICQProtoName, "AvatarHash", pTLV->pData, 0x14))
+                  {
+                    Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
+                  }
+                  if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
+                    LinkContactPhotoToFile(hContact, szAvatar);
+                  else  // the format is not supported unlink
+                    LinkContactPhotoToFile(hContact, NULL);
+
+                  ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+                }
+                else // the file is lost, request avatar again
+                  dwJob = 1;
+              }
+              DBFreeVariant(&dbvHashFile);
+            }
+            else
+              dwJob = 1;
           }
           else
           { // we found hash check if it changed or not
             Netlib_Logf(ghServerNetlibUser, "Old Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", dbv.pbVal[0], dbv.pbVal[1], dbv.pbVal[2], dbv.pbVal[3], dbv.pbVal[4], dbv.pbVal[5], dbv.pbVal[6], dbv.pbVal[7], dbv.pbVal[8], dbv.pbVal[9], dbv.pbVal[10], dbv.pbVal[11], dbv.pbVal[12], dbv.pbVal[13], dbv.pbVal[14], dbv.pbVal[15], dbv.pbVal[16], dbv.pbVal[17], dbv.pbVal[18], dbv.pbVal[19]);
             if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
             { // the hash is different, request new avatar
+              LinkContactPhotoToFile(hContact, NULL); // unlink photo
               dwJob = 1;
             }
             else
             { // the hash does not changed, so check if the file exists
-              if (pTLV->pData[1] == 8)
-                dwPaFormat = PA_FORMAT_XML;
-              else 
-                dwPaFormat = PA_FORMAT_JPEG;
-              GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
-              if (access(szAvatar, 0) == 0)
-              { // the file exists, so try to update photo setting
-                if (dwPaFormat == PA_FORMAT_JPEG)
-                {
-                  LinkContactPhotoToFile(hContact, szAvatar);
-                }
+              dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+              if (dwPaFormat == PA_FORMAT_UNKNOWN)
+              { // we do not know the format, get avatar again
+                dwJob = 1;
               }
               else
-              { // the file was lost, get it again
-                dwJob = 1;
+              {
+                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+                if (access(szAvatar, 0) == 0)
+                { // the file exists, so try to update photo setting
+                  if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
+                  {
+                    LinkContactPhotoToFile(hContact, szAvatar);
+                  }
+                }
+                else
+                { // the file was lost, get it again
+                  dwJob = 1;
+                }
               }
             }
             DBFreeVariant(&dbv);
@@ -453,18 +490,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
             }
 
-            if (pTLV->pData[1] == 8)
-              dwPaFormat = PA_FORMAT_XML;
-            else 
-              dwPaFormat = PA_FORMAT_JPEG;
-            GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
-            if (GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar)) 
-            { // avatar request sent or added to queue
-              if (dwPaFormat == PA_FORMAT_JPEG)
-              {
-                LinkContactPhotoToFile(hContact, szAvatar);
-              }
-            } 
+            GetAvatarFileName(dwUIN, szAvatar, MAX_PATH);
+            GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar);
+            // avatar request sent or added to queue
           }
           else
           {
@@ -476,6 +504,29 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
           if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
           { // we not found old hash, i.e. store avatar hash
+            DBVARIANT dbvHashFile;
+
+            if (!DBGetContactSetting(hContact, gpszICQProtoName, "AvatarSaved", &dbvHashFile))
+            { // check save hash and file, if equal only store hash
+              if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
+              { // the hash is different, unlink contactphoto
+                LinkContactPhotoToFile(hContact, NULL);
+              }
+              else
+              {
+                dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+
+                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+                if (access(szAvatar, 0) == 0)
+                { // the file is there, link to contactphoto
+                  if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
+                    LinkContactPhotoToFile(hContact, szAvatar);
+                  else  // the format is not supported unlink
+                    LinkContactPhotoToFile(hContact, NULL);
+                }
+              }
+              DBFreeVariant(&dbvHashFile);
+            }
             dwJob = 1;
           }
           else
@@ -513,7 +564,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 			// Update the contact's capabilities
 			if (wOldStatus == ID_STATUS_OFFLINE)
 			{
-
 				// Delete the capabilities we saved the last time this contact came online
 				ClearAllContactCapabilities(hContact);
 
@@ -525,6 +575,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           capstr* capId;
 
 					AddCapabilitiesFromBuffer(hContact, pTLV->pData, pTLV->wLen);
+
           // check capabilities for client identification
           if (MatchCap(pTLV->pData, pTLV->wLen, &capTrillian, 0x10) || MatchCap(pTLV->pData, pTLV->wLen, &capTrilCrypt, 0x10))
           { // this is Trillian, check for new version
@@ -541,7 +592,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               szClient = "Kopete";
             else
             {
-              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
               szClient = szClientBuf;
             }
           }
@@ -551,9 +602,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver2 = (*capId)[0xD];
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
             else  
-              _snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
             if ((*capId)[0xF] & 0x80) 
               strcat(szClientBuf,"/Win32");
             else if ((*capId)[0xF] & 0x40) 
@@ -566,12 +617,20 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver2 = (*capId)[0xD] % 100;
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
             else  
-              _snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
             if ((*capId)[0xF]) 
               strcat(szClientBuf,"/SSL");
             szClient = szClientBuf;
+          }
+          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capMirandaIm, 8))
+          { // new Miranda Signature
+            DWORD iver = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
+            DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
+
+            szClient = MirandaVersionToString(iver, mver);
+            dwClientId = 1; // Miranda does not use Tick as msgId
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capKopete, 0xC))
           {
@@ -580,11 +639,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xE];
             unsigned ver4 = (*capId)[0xF];
             if (ver4) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
             else
-              _snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capmIcq, 0xC))
@@ -594,11 +653,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xE];
             unsigned ver4 = (*capId)[0xF];
             if (ver4) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
             else
-              _snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capIm2, 0x10))
@@ -612,18 +671,18 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xA];
             unsigned ver4 = (*capId)[9];
             if (ver4) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
             else
-              _snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
+              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capQip, 0xE))
           {
             char v1 = (*capId)[0xE];
             char v2 = (*capId)[0xF];
-            _snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
+            mir_snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
             szClient = szClientBuf;
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))
@@ -639,7 +698,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
               szClient = cliCentericq; // centericq added rtf capability to libicq2000
             else if (CheckContactCapabilities(hContact, CAPF_UTF))
-              szClient = cliIcyJuice; // IcyJuice added unicode capability to libicq2000
+              szClient = cliLibicqUTF; // IcyJuice added unicode capability to libicq2000
             // others - like jabber transport uses unmodified library, thus cannot be detected
           }
           else if (szClient == NULL) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
@@ -702,8 +761,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 			}
       else
-        /*if (szClient == 0)*/ szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
-
+      {
+        szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
+      }
 		}
 
 

@@ -317,7 +317,7 @@ static BOOL IsHighlighted(CHATWINDOWDATA * dat, char * pszText)
 
 				p2[1] = 's';
 				lstrcpyn(szTemp, szWord1, 999);
-				_snprintf(szWord1, sizeof(szWord1), szTemp, dat->pMe->pszNick);
+				mir_snprintf(szWord1, sizeof(szWord1), szTemp, dat->pMe->pszNick);
 			}
 
 			// time to get the next/first word in the incoming text string
@@ -1271,8 +1271,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat->pEventListEnd = NULL;
 			dat->pszTopic = NULL;
 			dat->pMe = NULL;
-            dat->windowWasCascaded = 0;
-			dat->nUsersInNicklist = 0;
+ 			dat->nUsersInNicklist = 0;
 			dat->ItemData = 0;
 			dat->LastTime = 0;
 			dat->bBGSet = FALSE;
@@ -1288,9 +1287,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 				char szTemp[256];
 				if(dat->iType == GCW_SERVER)
-					_snprintf(szTemp, sizeof(szTemp), "Server: %s", newData->pszName);
+					mir_snprintf(szTemp, sizeof(szTemp), "Server: %s", newData->pszName);
 				else
-					_snprintf(szTemp, sizeof(szTemp), "%s", newData->pszName);
+					mir_snprintf(szTemp, sizeof(szTemp), "%s", newData->pszName);
 
 				dat->hContact = CList_AddRoom(newData->pszModule, newData->pszID, szTemp, newData->iType); 
 			}
@@ -1334,25 +1333,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if(dat->iType == GCW_SERVER)
 					EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), FALSE);
 			}
-			
-			{
-				int savePerContact = DBGetContactSettingByte(NULL, "Chat", "SavePosition", 0);
-				if (!RestoreWindowPosition(hwndDlg, dat->hContact, "Chat", "room", SW_HIDE)) 
-				{
-					if (savePerContact) 
-					{
-						if (!RestoreWindowPosition(hwndDlg, NULL, "Chat", "room", SW_HIDE))
-							SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
-					}
-					else
-						SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW);
 
-					if (DBGetContactSettingByte(NULL, "Chat", "CascadeWindows", 1))
-						WM_BroadcastMessage(NULL, GC_CASCADENEWWINDOW, (WPARAM) hwndDlg, (LPARAM) & dat->windowWasCascaded, FALSE);
-				}
-				else if (!savePerContact && DBGetContactSettingByte(NULL, "Chat", "CascadeWindows", 1))
-					WM_BroadcastMessage(NULL, GC_CASCADENEWWINDOW, (WPARAM) hwndDlg, (LPARAM) & dat->windowWasCascaded, FALSE);
-			}
+			SendMessage(hwndDlg, GC_SETWINDOWPOS, 0, 0);
 			
 			if(SmileyAddInstalled)
 				EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEY), TRUE);
@@ -1450,22 +1432,24 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			switch(dat->iType)
 			{
 			case GCW_CHATROOM:
-				_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Chat Room (%u user)"):Translate("%s: Chat Room (%u users)"), dat->pszName, dat->nUsersInNicklist);
+				mir_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Chat Room (%u user)"):Translate("%s: Chat Room (%u users)"), dat->pszName, dat->nUsersInNicklist);
 //				removed due to excessive disk writes on busy channels
 //				DBWriteContactSettingDword(dat->hContact, dat->pszModule , "Count", dat->nUsersInNicklist);
 				break;
 			case GCW_PRIVMESS:
-				_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Message Session"):Translate("%s: Message Session (%u users)"), dat->pszName, dat->nUsersInNicklist);
+				mir_snprintf(szTemp, sizeof(szTemp), dat->nUsersInNicklist ==1?Translate("%s: Message Session"):Translate("%s: Message Session (%u users)"), dat->pszName, dat->nUsersInNicklist);
 				break;
 			case GCW_SERVER:
-				_snprintf(szTemp, sizeof(szTemp), "%s: Server", dat->pszName);
+				mir_snprintf(szTemp, sizeof(szTemp), "%s: Server", dat->pszName);
 				break;
 			default:break;
 			}
 			SetWindowText(hwndDlg, szTemp);
 		} break;
-		case GC_UPDATENICKLIST:
+		case GC_REDRAWWINDOW:
 		{	
+			HICON hIcon = DBGetContactSettingWord(dat->hContact, dat->pszModule, "Status", ID_STATUS_OFFLINE)==ID_STATUS_ONLINE?MM_FindModule(dat->pszModule)->hOnlineIcon:MM_FindModule(dat->pszModule)->hOfflineIcon;
+			SendMessage(dat->hwndStatus, SB_SETICON, 0,(LPARAM)hIcon);
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_ALLCHILDREN);
 		} break;
 
@@ -1679,6 +1663,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 							if(g_LogOptions.FlashWindow)
 							{
+								SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+/*
 								FLASHWINFO fi;
 								fi.cbSize = sizeof(FLASHWINFO);
 								fi.hwnd = hwndDlg;
@@ -1686,7 +1672,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 								fi.uCount = 3;  
 								fi.dwTimeout = 0;
 								FlashWindowEx(&fi);
-
+*/
 							}
 							if(DBGetContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(WORD) 0) != 40071)
 								DBWriteContactSettingWord(dat->hContact, dat->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
@@ -1694,7 +1680,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						if(bHighl)
 						{
 							char szTemp[256];
-							_snprintf(szTemp, 256, Translate("%s wants your attention in room %s"), nlu->pszName, dat->pszName);
+							mir_snprintf(szTemp, 256, Translate("%s wants your attention in room %s"), nlu->pszName, dat->pszName);
 							SendMessage(hwndDlg, GC_HIGHLIGHT, 0, (LPARAM)&szTemp);
 						}
 						else
@@ -1755,11 +1741,11 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if(bRedrawFlag)
 					{
 //						SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
-//						InvalidateRect(hwndDlg, NULL, TRUE);
 						SendMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
 					}
 					SetWindowPos(hwndDlg, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE| SWP_NOSIZE | SWP_FRAMECHANGED);
 					SetActiveWindow(hwndDlg);
+					InvalidateRect(hwndDlg, NULL, TRUE);
 
 				}
 				nlu->dwItemData = 1; // stupid fix
@@ -1885,9 +1871,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat->pszName = realloc(dat->pszName, lstrlen(nlu->pszText)+1);
 			lstrcpyn(dat->pszName, nlu->pszText, lstrlen(nlu->pszText)+1);
 			if(dat->iType == GCW_SERVER)
-				_snprintf(szTemp, sizeof(szTemp), "Server: %s", nlu->pszText);
+				mir_snprintf(szTemp, sizeof(szTemp), "Server: %s", nlu->pszText);
 			else
-				_snprintf(szTemp, sizeof(szTemp), "%s", nlu->pszText);
+				mir_snprintf(szTemp, sizeof(szTemp), "%s", nlu->pszText);
 
 			DBWriteContactSettingString(dat->hContact,dat->pszModule , "Nick", szTemp);
 			SendMessage(hwndDlg, GC_UPDATEWINDOW, 0, 0);
@@ -1948,6 +1934,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case GC_HIGHLIGHT:
 			if(DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0)
 			{
+				SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+/*
 				FLASHWINFO fi;
 				fi.cbSize = sizeof(FLASHWINFO);
 				fi.hwnd = hwndDlg;
@@ -1955,7 +1943,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				fi.uCount = 3;  
 				fi.dwTimeout = 0;
 				FlashWindowEx(&fi);
-
+*/
 			}
 			if(DBGetContactSettingByte(dat->hContact, "CList", "Hidden", 0) != 0)
 				DBDeleteContactSetting(dat->hContact, "CList", "Hidden");
@@ -1998,26 +1986,40 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			PostMessage(hwndDlg,WM_SIZE,0,0);
 		}break;
-       case GC_CASCADENEWWINDOW:
-            if ((HWND) wParam == hwndDlg)
-                break;
-            {
-                RECT rcThis, rcNew;
-				DWORD dwFlag;
+		case GC_SETWINDOWPOS:
+			{
+			HWND hWnd = GetActiveChatWindow();
+			int savePerContact = DBGetContactSettingByte(NULL, "Chat", "SavePosition", 0);
 
-				dwFlag = SWP_NOZORDER | SWP_NOSIZE;
+			if(savePerContact)
+			{
+				if (RestoreWindowPosition(hwndDlg, dat->hContact, "Chat", "room", SW_HIDE)) 
+					break;
+				if (!RestoreWindowPosition(hwndDlg, NULL, "Chat", "room", SW_HIDE))
+					SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW|SWP_NOACTIVATE);
+			}
+			else
+				SetWindowPos(hwndDlg, 0, 0, 0, 550, 400, SWP_NOZORDER | SWP_NOMOVE|SWP_HIDEWINDOW|SWP_NOACTIVATE);
+
+			if(hWnd && DBGetContactSettingByte(NULL, "Chat", "CascadeWindows", 1))
+			{
+				RECT rcThis, rcNew;
+				int dwFlag = SWP_NOZORDER | SWP_NOSIZE|SWP_NOACTIVATE;
 				if(!IsWindowVisible ((HWND)wParam))
 					dwFlag |= SWP_HIDEWINDOW;
 
-                GetWindowRect(hwndDlg, &rcThis);
-                GetWindowRect((HWND) wParam, &rcNew);
-                if (abs(rcThis.left - rcNew.left) < 3 && abs(rcThis.top - rcNew.top) < 3) {
-                    int offset = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFRAME);
-                    SetWindowPos((HWND) wParam, 0, rcNew.left + offset, rcNew.top + offset, 0, 0, dwFlag);
-                    *(int *) lParam = 1;
-                }
-            }
-            break;
+				GetWindowRect(hwndDlg, &rcThis);
+				GetWindowRect(hWnd, &rcNew);
+
+				{
+					int offset = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFRAME);
+					SetWindowPos((HWND) hwndDlg, 0, rcNew.left + offset, rcNew.top + offset, 0, 0, dwFlag);
+				}
+
+			}
+ 
+
+            }break;
 		case GC_FIREHOOK:
 		{
 			if (lParam)
@@ -2070,7 +2072,15 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			}break;
 		
- 		case WM_ACTIVATE:
+ 	case WM_TIMER:
+		{
+			if (wParam == TIMERID_FLASHWND) 
+			{
+				FlashWindow(hwndDlg, TRUE);
+			}
+		}break;
+
+		case WM_ACTIVATE:
 		{
 			if (LOWORD(wParam) != WA_ACTIVE)
 				break;
@@ -2080,6 +2090,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 //			InvalidateRect(GetDlgItem(hwndDlg,IDC_LOG), NULL, TRUE);
 			CHARRANGE sel;
+			WINDOWPLACEMENT wp = { 0 };
+
+			wp.length = sizeof(wp);
+			GetWindowPlacement(hwndDlg, &wp);
+			g_LogOptions.iX = wp.rcNormalPosition.left;
+			g_LogOptions.iY = wp.rcNormalPosition.top;
+			g_LogOptions.iWidth = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+			g_LogOptions.iHeight = wp.rcNormalPosition.bottom - wp.rcNormalPosition.top;
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXGETSEL, 0, (LPARAM) & sel);
 			sel.cpMin = sel.cpMax;
@@ -2089,6 +2107,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SetActiveChatWindow(dat->pszID, dat->pszModule);
 			if(DBGetContactSettingWord(dat->hContact, dat->pszModule ,"ApparentMode", 0) != 0)
 				DBWriteContactSettingWord(dat->hContact, dat->pszModule ,"ApparentMode",(LPARAM) 0);
+
+			if (KillTimer(hwndDlg, TIMERID_FLASHWND))
+				FlashWindow(hwndDlg, FALSE);
 
 			if(CallService(MS_CLIST_GETEVENT, (WPARAM)dat->hContact, (LPARAM)0))
 				CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)"chaticon");
@@ -2137,9 +2158,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 									int start = LOWORD(lResult);
 									char * pszName = (char *) malloc(lstrlen(((USERINFO *)tvi.lParam)->pszUID) + 3);
 									if(start == 0)
-										_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+3, "%s: ", ((USERINFO *)tvi.lParam)->pszUID);
+										mir_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+3, "%s: ", ((USERINFO *)tvi.lParam)->pszUID);
 									else
-										_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+2, "%s ", ((USERINFO *)tvi.lParam)->pszUID);
+										mir_snprintf(pszName, lstrlen(((USERINFO *)tvi.lParam)->pszUID)+2, "%s ", ((USERINFO *)tvi.lParam)->pszUID);
 
 									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, FALSE, (LPARAM) pszName);
 									PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0);
@@ -2367,9 +2388,27 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}break;
 			case IDC_SHOWNICKLIST:
 				{
+					BOOL bVisible = TRUE;
 					if(!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_SHOWNICKLIST))) 
 						break;
-					ShowWindow(GetDlgItem(hwndDlg, IDC_NICKLIST), IsWindowVisible(GetDlgItem(hwndDlg, IDC_NICKLIST))?SW_HIDE:SW_SHOW);
+
+					bVisible = IsWindowVisible(GetDlgItem(hwndDlg, IDC_NICKLIST));
+					ShowWindow(GetDlgItem(hwndDlg, IDC_NICKLIST), bVisible?SW_HIDE:SW_SHOW);
+					{ // scroll log to bottom
+
+						SCROLLINFO si = { 0 };
+						if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL) != 0)
+						{
+							si.cbSize = sizeof(si);
+							si.fMask = SIF_PAGE | SIF_RANGE;
+							GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
+							si.fMask = SIF_POS;
+							si.nPos = si.nMax - si.nPage + 1;
+							SetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si, TRUE);
+							PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+						}
+
+					}
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				}break;
 			case IDC_MESSAGE:
@@ -2409,14 +2448,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if (pInfo)
 					{
 
-						_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:dat->pszModule);
+						mir_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:dat->pszModule);
 						ValidateFilename(szName);
-						_snprintf(szFolder, MAX_PATH,"%s\\%s", g_LogOptions.pszLogDir, szName );
+						mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_LogOptions.pszLogDir, szName );
 											
-						_snprintf(szName, MAX_PATH,"%s.log",dat->pszID);
+						mir_snprintf(szName, MAX_PATH,"%s.log",dat->pszID);
 						ValidateFilename(szName);
 
-						_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
+						mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
 						
 						ShellExecute(hwndDlg, "open", szFile, NULL, NULL, SW_SHOW);
 					}

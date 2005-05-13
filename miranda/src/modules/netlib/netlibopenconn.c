@@ -272,7 +272,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 	nlhrSend.requestType=REQUEST_CONNECT;
 	nlhrSend.flags=NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER;
 	if(nlu->settings.dnsThroughProxy) {
-		_snprintf(szUrl,sizeof(szUrl),"%s:%u",nloc->szHost,nloc->wPort);
+		mir_snprintf(szUrl,sizeof(szUrl),"%s:%u",nloc->szHost,nloc->wPort);
 		if(inet_addr(nloc->szHost)==INADDR_NONE) {
 			httpHeaders[0].szName="Host";
 			httpHeaders[0].szValue=szUrl;
@@ -284,7 +284,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 		DWORD ip=DnsLookup(nlu,nloc->szHost);
 		if(ip==0) return 0;
 		addr.S_un.S_addr=ip;
-		_snprintf(szUrl,sizeof(szUrl),"%s:%u",inet_ntoa(addr),nloc->wPort);
+		mir_snprintf(szUrl,sizeof(szUrl),"%s:%u",inet_ntoa(addr),nloc->wPort);
 	}
 	nlhrSend.szUrl=szUrl;
 	nlhrSend.headers=httpHeaders;

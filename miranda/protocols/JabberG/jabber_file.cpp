@@ -101,7 +101,7 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 		int recvResult, bytesParsed;
 
 		JabberLog( "Waiting for data..." );
-		recvResult = Netlib_Recv( s, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, MSG_NODUMP );
+		recvResult = Netlib_Recv( s, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, 0 );
 		if ( recvResult <= 0 )
 			break;
 		datalen += recvResult;
@@ -284,7 +284,7 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 	hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 	ft->hFileEvent = hEvent;
 
-	_snprintf( szPort, sizeof( szPort ), "%d", nlb.wPort );
+	mir_snprintf( szPort, sizeof( szPort ), "%d", nlb.wPort );
 	item = JabberListAdd( LIST_FILE, szPort );
 	item->ft = ft;
 
@@ -319,13 +319,13 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 						else myAddr = _strdup( inet_ntoa( in ));
 					}
 					else myAddr = _strdup( inet_ntoa( in ));
-					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc>%s</desc></query></iq>", ft->jid, resource, id, myAddr, nlb.wPort, pFileName, pDescription );
+					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc>%s</desc></query></iq>", UTF8(ft->jid), resource, id, myAddr, nlb.wPort, pFileName, pDescription );
 					free( myAddr );
 					free( pDescription );
 				}
 				else {
 					id = JabberSerialNext();
-					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc/></query></iq>", ft->jid, resource, id, inet_ntoa( in ), nlb.wPort, pFileName );
+					JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:oob'><url>http://%s:%d/%s</url><desc/></query></iq>", UTF8(ft->jid), resource, id, inet_ntoa( in ), nlb.wPort, pFileName );
 				}
 				JabberLog( "Waiting for the file to be sent..." );
 				WaitForSingleObject( hEvent, INFINITE );
@@ -393,7 +393,7 @@ static void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemot
 		return;
 	}
 
-	_snprintf( szPort, sizeof( szPort ), "%d", localPort );
+	mir_snprintf( szPort, sizeof( szPort ), "%d", localPort );
 	JabberLog( "File server incoming connection accepted: local_port=%s", szPort );
 
 	if (( item=JabberListGetItemPtr( LIST_FILE, szPort )) == NULL ) {
@@ -421,7 +421,7 @@ static void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemot
 		int recvResult, bytesParsed;
 
 		//recvResult = JabberWsRecv( hConnection, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen );
-		recvResult = Netlib_Recv( hConnection, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, MSG_NODUMP );
+		recvResult = Netlib_Recv( hConnection, buffer+datalen, JABBER_NETWORK_BUFFER_SIZE-datalen, 0 );
 		if ( recvResult <= 0 )
 			break;
 		datalen += recvResult;
@@ -527,7 +527,7 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 				fileBuffer = ( char* )malloc( 2048 );
 				JabberLog( "Sending file data..." );
 				while (( numRead=_read( fileId, fileBuffer, 2048 )) > 0 ) {
-					if ( Netlib_Send( s, fileBuffer, numRead, MSG_NODUMP ) != numRead ) {
+					if ( Netlib_Send( s, fileBuffer, numRead, 0 ) != numRead ) {
 						ft->state = FT_ERROR;
 						break;
 					}

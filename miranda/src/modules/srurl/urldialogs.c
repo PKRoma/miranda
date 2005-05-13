@@ -67,7 +67,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				CallService(MS_DB_EVENT_MARKREAD,(WPARAM)dat->hContact,(LPARAM)dat->hDbEvent);
 
 				contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-				_snprintf(str,sizeof(str),Translate("URL from %s"),contactName);
+				mir_snprintf(str,sizeof(str),Translate("URL from %s"),contactName);
 				SetWindowText(hwndDlg,str);
 				SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 				SendDlgItemMessage(hwndDlg,IDOK,BUTTONSETARROW,1,0);
@@ -148,12 +148,12 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
 								break;
 							}
 						}
@@ -163,7 +163,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						SetDlgItemText(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-						_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
+						mir_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else
@@ -584,12 +584,12 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
 								break;
 							}
 						}
@@ -598,7 +598,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						SetDlgItemText(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-						_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
+						mir_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else

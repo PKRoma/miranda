@@ -71,6 +71,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include ".\CLUIFrames\cluiframes.h"
 #include ".\CLUIFrames\m_cluiframes.h"
 #include  "m_metacontacts.h"
+#include "BkgrCfg.h"
+#include <m_file.h>
+#include <m_addcontact.h>
+
 
 #define CLS_CONTACTLIST 1
 
@@ -104,6 +108,23 @@ extern struct MM_INTERFACE memoryManagerInterface;
 
 #ifndef MYCMP
 #define MYCMP 1
+
+static int mir_realloc_proxy(void *ptr,int size)
+{
+	if (IsBadCodePtr(ptr))
+	{
+		char buf[256];
+		wsprintf(buf,"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
+		//ASSERT("Bad code ptr");
+		DebugBreak();
+		OutputDebugStr(buf);
+		return 0;
+	}
+	memoryManagerInterface.mmi_realloc(ptr,size);
+	return 0;
+
+}
+
 
 static int mir_free_proxy(void *ptr)
 {
@@ -176,7 +197,7 @@ static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSett
 	DBVARIANT dbv;
 	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
 	if(dbv.type==DBVT_ASCIIZ)
-		str=strdup(dbv.pszVal);
+		str=mir_strdup(dbv.pszVal);
 	DBFreeVariant(&dbv);
 	return str;
 }
@@ -198,5 +219,23 @@ static DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
     
 	return EXCEPTION_EXECUTE_HANDLER; 
 } 
+//from bkg options
+
+//  Register of plugin's user
+//
+//  wParam = (WPARAM)szSetting - string that describes a user
+//           format: Category/ModuleName,
+//           eg: "Contact list background/CLUI",
+//               "Status bar background/StatusBar"
+//  lParam = (LPARAM)dwFlags
+//
+#define MS_BACKGROUNDCONFIG_REGISTER "BkgrCfg/Register"
+
+//
+//  Notification about changed background
+//  wParam = ModuleName
+//  lParam = 0
+#define ME_BACKGROUNDCONFIG_CHANGED "BkgrCfg/Changed"
+
 
 #endif

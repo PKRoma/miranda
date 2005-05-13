@@ -128,6 +128,26 @@
 #define IDD_DIALOG1                     280
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   282
+#define IDI_CLIENTTRILLIAN              298
+#define IDI_CLIENTMIRANDA               299
+#define IDI_CLIENTRQ                    300
+#define IDI_CLIENTGAIM                  301
+#define IDI_CLIENTIM2                   302
+#define IDI_CLIENTKOPETE                303
+#define IDI_CLIENTLICQ                  304
+#define IDI_CLIENTQIP                   305
+#define IDI_CLIENTSIM                   306
+#define IDI_MIRANDA2                    307
+#define IDD_OPT_CLCBKG2                 308
+#define IDI_CLIENTICQGOF                309
+#define IDI_CLIENTICQGOJ                310
+#define IDI_CLIENTICQ2000               311
+#define IDI_CLIENTICQ2001               312
+#define IDI_CLIENTICQ2003               313
+#define IDI_CLIENTICQLITE4              314
+#define IDI_CLIENTICQL5                 315
+#define IDI_CLIENTICQLITE5              315
+#define IDI_CLIENTICQLITE               316
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -566,6 +586,9 @@
 #define IDC_HKTITLE                     1760
 #define IDC_CHECK1                      1761
 #define IDC_USECONNECTINGICON           1761
+#define IDC_BKGRLIST                    1762
+#define IDC_BC_STATIC                   1763
+#define IDC_SC_STATIC                   1764
 #define IDD_OPT_GENMENU                 11267
 #define IDC_MENUITEMS                   11710
 #define IDC_MENUOBJECTS                 11711
@@ -605,7 +628,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        283
+#define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1762
 #define _APS_NEXT_SYMED_VALUE           101

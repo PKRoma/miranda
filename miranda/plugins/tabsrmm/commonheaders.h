@@ -25,12 +25,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    #define _UNICODE
 #endif
 #ifdef __GNUWIN32__
+
 #define OLERENDER_FORMAT 2
 #define CFM_BACKCOLOR 0x04000000
 #ifndef __TSR_CXX
 typedef unsigned short wchar_t;
 #endif
 #endif
+
+#define _WIN32_IE 0x0501
 
 #include <tchar.h>
 
@@ -42,6 +45,15 @@ typedef unsigned short wchar_t;
 #include <stddef.h>
 #include <process.h>
 #include "resource.h"
+
+#ifdef WM_THEMECHANGED
+#undef WM_THEMECHANGED
+#endif
+
+#ifdef CDRF_NOTIFYSUBITEMDRAW
+#undef CDRF_NOTIFYSUBITEMDRAW
+#endif
+
 #include "../../include/win2k.h"
 #include "../../include/newpluginapi.h"
 #include "../../include/m_system.h"
@@ -54,3 +66,4 @@ typedef unsigned short wchar_t;
 #include "../../include/m_utils.h"
 #include "../../include/m_skin.h"
 #include "../../include/m_contacts.h"
+

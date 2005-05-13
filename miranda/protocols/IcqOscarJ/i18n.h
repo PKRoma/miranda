@@ -4,7 +4,8 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -35,16 +36,16 @@
 
 
 
-BOOL IsUSASCII(char* pBuffer, int nSize);
+BOOL IsUSASCII(const unsigned char *pBuffer, int nSize);
+BOOL IsUnicodeAscii(const wchar_t *pBuffer, int nSize);
 
-BOOL IsUnicodeAscii(wchar_t* pBuffer, int nSize);
+char* detect_decode_utf8(const char *from);
 
 wchar_t *make_unicode_string(const unsigned char *utf8);
 
 unsigned char *make_utf8_string(const wchar_t *unicode);
 
 int utf8_encode(const char *from, char **to);
-
 int utf8_decode(const char *from, char **to);
 
 void InitI18N(void);

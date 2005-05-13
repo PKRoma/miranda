@@ -290,8 +290,20 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 
 		case CLM_SETEXTRAIMAGE:
 		{	struct ClcContact *contact;	
-			if(LOWORD(lParam)>=dat->extraColumnsCount) return 0;
+			if(LOWORD(lParam)>=dat->extraColumnsCount||LOWORD(lParam)<0) return 0;
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL)) return 0;
+			//fixme
+			if (IsBadCodePtr((FARPROC)contact)) 
+			{
+				OutputDebugString("BadCodePtr in CLM_SETEXTRAIMAGE contact\r\n");
+				return 0;
+			}
+			if (IsBadCodePtr((FARPROC)contact->iExtraImage)) 
+			{
+				OutputDebugString("BadCodePtr in CLM_SETEXTRAIMAGE contact->iExtraImage\r\n");
+				return 0;
+			}
+
 			contact->iExtraImage[LOWORD(lParam)]=(BYTE)HIWORD(lParam);
 			InvalidateRect(hwnd,NULL,FALSE);
 			break;

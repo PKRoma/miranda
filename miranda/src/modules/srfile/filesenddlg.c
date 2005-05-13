@@ -107,8 +107,7 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 				// Add path to filename and copy into array
 				CopyMemory(dat->files[nTemp], buf, fileOffset - 1);
 				dat->files[nTemp][fileOffset-1] = '\\';
-				strcpy(dat->files[nTemp] + fileOffset, pBuf);
-
+				strcpy(dat->files[nTemp] + fileOffset - (buf[fileOffset-2]=='\\'?1:0), pBuf);
 				// Move pointers to next file...
 				pBuf += lstrlen(pBuf) + 1;
 				nTemp++;
@@ -253,12 +252,12 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
 								break;
 						}
 					}
@@ -283,7 +282,10 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					HICON hIcon;
 
 					hIcon=(HICON)CallProtoService(szProto,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
-					if (hIcon) DrawIconEx(dis->hDC,dis->rcItem.left,dis->rcItem.top,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+					if (hIcon) {
+						DrawIconEx(dis->hDC,dis->rcItem.left,dis->rcItem.top,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+						DestroyIcon(hIcon);
+					}
 				}
 			}
 			return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
@@ -292,9 +294,9 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			if((char*)lParam) {
 				FilenameToFileList(hwndDlg,dat,(char*)lParam);
 				free((char*)lParam);
+				dat->closeIfFileChooseCancelled=0;
 			}
 			else if(dat->closeIfFileChooseCancelled) DestroyWindow(hwndDlg);
-			dat->closeIfFileChooseCancelled=0;
 			EnableWindow(hwndDlg,TRUE);
 			break;
 		case WM_COMMAND:
@@ -344,6 +346,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);	
 			FreeFilesMatrix(&dat->files);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldSendEditProc);
+			DestroyIcon(dat->hUIIcons[2]);
 			DestroyIcon(dat->hUIIcons[1]);
 			DestroyIcon(dat->hUIIcons[0]);			
 			free(dat);

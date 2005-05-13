@@ -59,10 +59,15 @@ Po³¹cz ponownie automatycznie po niezamierzonym roz³¹czeniu
 Po roz³¹czeniu siê zostaw opis nastêpuj¹cego stanu:
 [Manually specify connection host]
 Podaj adres hosta serwera rêcznie
-[Use secure SSL connection]
-U¿ywaj bezpiecznego po³¹czenia SSL
+[Manually specify connection servers' hosts]
+Podaj adresy hostów serwerów rêcznie
+;[Use secure SSL connection] << Deprecitated 0.0.2.6
+[Use SSL secure connection]
 [Host:]
 Host:
+U¿ywaj bezpiecznego po³¹czenia SSL
+[* new line is separator\n** hostname:port format]
+* nowa linia - separator\n** format nazwahosta:port
 [Use direct connections]
 U¿ywaj po³¹czeñ bezpoœrednich
 [Use forwarding]
@@ -239,6 +244,8 @@ Otwórz now¹ konferencjê
 Wybierz uczestników konferencji.
 [Open &conference...]
 Otwórz &konferencjê...
+[&Clear ignored conferences]
+&Wyczyœæ ignorowane konferencje
 [Me]
 Ja
 [%s initiated the conference.]
@@ -251,3 +258,25 @@ Konferencja
 Uczestnicy
 [You have to be connected to open new conference.]
 Musisz byæ po³¹czony, ¿eby otworzyæ now¹ konferencjê
+[All ignored conferences are now unignored and the conference policy will act again.]
+Wszystkie ignorowane konferencje zosta³y zresetowane.
+[There are no ignored conferences.]
+Nie ma ignorowanych konferencji.
+[%s has initiated conference with %d participants (%d unknowns).\nDo you want do participate ?]
+%s zainicjowa³(a) konferencjê z %d uczestnikami - %d nieznany(ch).\nChcesz do³¹czyæ do tej konferencji ?
+
+; Conference policy
+[Conference policy]
+Regu³y konferencji
+[Ask]
+Pytaj
+[Ignore]
+Ignoruj
+[Allow]
+Zezwól
+[if total participant count greater than:]
+jeœli ca³kowita liczba uczestników przekracza:
+[if unknown participant count greater than:]
+jeœli liczba nieznanych przekracza:
+[in other case]
+w innym wypadku

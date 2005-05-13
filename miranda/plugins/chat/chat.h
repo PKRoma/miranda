@@ -80,15 +80,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_FILTERFIX			(WM_USER+111)
 #define GC_CHANGEFILTERFLAG		(WM_USER+112)
 #define GC_SHOWFILTERMENU		(WM_USER+113)
-#define GC_CASCADENEWWINDOW		(WM_USER+114)
+#define GC_SETWINDOWPOS			(WM_USER+114)
 #define GC_SAVEWNDPOS			(WM_USER+115)
 #define GC_HIGHLIGHT			(WM_USER+116)
 #define	GC_NICKLISTREINIT		(WM_USER+117)
-#define GC_UPDATENICKLIST		(WM_USER+118)
+#define GC_REDRAWWINDOW			(WM_USER+118)
 #define GC_SHOWCOLORCHOOSER		(WM_USER+119)
 #define EM_SUBCLASSED			(WM_USER+200)
 #define EM_UNSUBCLASSED			(WM_USER+201)
 #define EM_ACTIVATE				(WM_USER+202)
+
+#define TIMERID_FLASHWND		205
 
 #define GC_EVENT_HIGHLIGHT		0x1000
 
@@ -195,7 +197,6 @@ struct CREOleCallback {
 
 typedef struct  {
 	BOOL		bFilterEnabled;
-	BOOL		windowWasCascaded;
 	BOOL		bFGSet;
 	BOOL		bBGSet;
 	int			nUsersInNicklist;
@@ -320,7 +321,6 @@ int					Service_NewChat(WPARAM wParam, LPARAM lParam);
 int					Service_ItemData(WPARAM wParam, LPARAM lParam);
 int					Service_SetSBText(WPARAM wParam, LPARAM lParam);
 int					Service_SetVisibility(WPARAM wParam, LPARAM lParam);
-int					Hook_IconsChanged(WPARAM wParam,LPARAM lParam);
 
 //manager.c
 void				SetActiveChatWindow(char * pszID, char * pszModule);
@@ -338,6 +338,7 @@ char *				WM_GetNextCommand(char *pszID, char * pszModule);
 BOOL				MM_AddModule(MODULE* info);
 MODULE	*			MM_FindModule(char * pszModule);
 void				MM_FixColors();
+void				MM_IconsChanged(void);
 BOOL				MM_RemoveAll (void);
 BOOL				SM_AddStatus(STATUSINFO** pStatusList, char * pszStatus, HTREEITEM hItem);
 HTREEITEM			SM_FindTVGroup(STATUSINFO* pStatusList, char* pszStatus);

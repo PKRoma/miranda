@@ -464,7 +464,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_ADDSTRING, (WPARAM)0,(LPARAM) "8192");
 			int j = DBGetContactSettingWord(NULL, IRCPROTONAME, "DCCPacketSize", 1024*4);
 			char szTemp[10];
-			_snprintf(szTemp, sizeof(szTemp), "%u", j);
+			mir_snprintf(szTemp, sizeof(szTemp), "%u", j);
 			int i = SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) szTemp);
 			if(i== CB_ERR)
 				int i = SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) "4096");
@@ -824,24 +824,31 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					case ( IDC_ADD):
 					{
-						int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
-						PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
-						if (pPerf != 0)
-						{
-							delete []pPerf->Perform;
-							delete pPerf;
-						}
+
 						int j = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_PERFORMEDIT));
 						char * temp = new char[j+1];
 						GetWindowText(GetDlgItem(hwndDlg, IDC_PERFORMEDIT), temp, j+1);
-						pPerf = new PERFORM_INFO;
-						pPerf->Perform = new char[j+1];
-						lstrcpy(pPerf->Perform, temp);
-						SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_SETITEMDATA, i, (LPARAM) pPerf);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), false);
 
+						if(my_strstri(temp, "/away"))
+							MessageBox(NULL, Translate("The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically."), Translate("IRC Error"), MB_OK);
+						else
+						{
+							int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
+							PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
+							if (pPerf != 0)
+							{
+								delete []pPerf->Perform;
+								delete pPerf;
+							}
+							pPerf = new PERFORM_INFO;
+							pPerf->Perform = new char[j+1];
+							lstrcpy(pPerf->Perform, temp);
+							SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_SETITEMDATA, i, (LPARAM) pPerf);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), false);
+
+							PerformlistModified = true;
+						}
 						delete []temp;
-						PerformlistModified = true;
 
 						
 					}break;
@@ -912,7 +919,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							if (PerformlistModified) {
 								PerformlistModified = false;
 								char filepath[MAX_PATH];
-								_snprintf(filepath, sizeof(filepath), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
+								mir_snprintf(filepath, sizeof(filepath), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
 								int i = SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCOUNT, 0, 0);
 								FILE *hFile = fopen(filepath,"wb");
 								if (hFile && i != CB_ERR && i !=0)
@@ -1408,7 +1415,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 							if (ServerlistModified) {
 								ServerlistModified = false;
 								char filepath[MAX_PATH];
-								_snprintf(filepath, sizeof(filepath), "%s\\%s_servers.ini", mirandapath, IRCPROTONAME);
+								mir_snprintf(filepath, sizeof(filepath), "%s\\%s_servers.ini", mirandapath, IRCPROTONAME);
 								FILE *hFile2 = fopen(filepath,"w");
 								if (hFile2)
 								{
@@ -1421,9 +1428,9 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 											{
 												char TextLine[512];
 												if(pData->iSSL > 0)
-													_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:SSL%u%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->iSSL, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
+													mir_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:SSL%u%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->iSSL, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
 												else
-													_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
+													mir_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:%s:%s-%sGROUP:%s\n", index2, pData->Name, pData->Address, pData->PortStart, pData->PortEnd, pData->Group);
 												fputs(TextLine, hFile2);
 
 											}

@@ -9,6 +9,7 @@ HWND helperhwnd=0;
 HANDLE hFrameHelperStatusBar;
 extern	 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int GetConnectingIconService (WPARAM wParam,LPARAM lParam);
+extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 int RecreateStatusBar();
 
 int UseOwnerDrawStatusBar;
@@ -44,8 +45,9 @@ int OnStatusBarBackgroundChange()
 		backgroundBmpUse=DBGetContactSettingWord(NULL,"StatusBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 		extraspace=DBGetContactSettingDword(NULL,"StatusBar","BkExtraSpace",0);
 		};
-		if (hwndStatus) InvalidateRect(hwndStatus,NULL,TRUE);
+		
 		RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
+		if (hwndStatus) InvalidateRect(hwndStatus,NULL,TRUE);
 	return 0;
 }
 
@@ -142,7 +144,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 	int yScroll=0;
 	int y;
 	PAINTSTRUCT paintst={0};	
-	HBITMAP hBmpOsb;
+	HBITMAP hBmpOsb,holdbmp;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	int grey=0;
 	HFONT oFont;
@@ -166,10 +168,11 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 
 	GetClientRect(hwnd,&clRect);
 	if(rcPaint==NULL) rcPaint=&clRect;
+	if (rcPaint->right-rcPaint->left==0||rcPaint->top-rcPaint->bottom==0) rcPaint=&clRect;
 	y=-yScroll;
 	hdcMem=CreateCompatibleDC(hdc);
 	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
-	SelectObject(hdcMem,hBmpOsb);
+	holdbmp=SelectObject(hdcMem,hBmpOsb);
 	oFont=SelectObject(hdcMem,hFont);
 	SetBkMode(hdcMem,TRANSPARENT);
 	{	HBRUSH hBrush,hoBrush;
@@ -181,14 +184,14 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 		DeleteObject(hBrush);
 		if(hBmpBackground) {
 			BITMAP bmp;
-			HDC hdcBmp;
+			HDC hdcBmp,holdbackbmp;
 			int x,y;
 			int maxx,maxy;
 			int destw,desth;
 
 			GetObject(hBmpBackground,sizeof(bmp),&bmp);
 			hdcBmp=CreateCompatibleDC(hdcMem);
-			SelectObject(hdcBmp,hBmpBackground);
+			holdbackbmp=SelectObject(hdcBmp,hBmpBackground);
 			y=backgroundBmpUse&CLBF_SCROLL?-yScroll:0;
 			maxx=backgroundBmpUse&CLBF_TILEH?clRect.right:1;
 			maxy=backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
@@ -240,6 +243,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 				for(x=0;x<maxx;x+=destw)
 					StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
 			}
+			SelectObject(hdcBmp,holdbackbmp);
 			DeleteDC(hdcBmp);
 		}
 	}
@@ -276,6 +280,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 				SendMessage(hwnd,SB_GETRECT,(WPARAM)nPanel,(LPARAM)&rc);
 				//rc.left+=startoffset;
 				//if (rc.left>=rc.right) rc.left=rc.right-1;
+				rc.top=0;
 				rc.left=nPanel*sectwidth+startoffset;
 				rc.right=rc.left+sectwidth-1;
 				ds.rcItem=rc;
@@ -294,6 +299,8 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 		
 		BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,SRCCOPY);
 		
+		SelectObject(hdcMem,holdbmp);
+		SelectObject(hdcMem,oFont);
 		DeleteObject(hBmpOsb);
 		DeleteDC(hdcMem);
 		paintst.fErase=FALSE;
@@ -535,7 +542,7 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 				OldRc=rc;
 			if (canloadstatusbar)
 			{	
-				if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
+				if(DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",0)||DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
 					CluiProtocolStatusChanged(0,0);
 					}
 			};
@@ -557,10 +564,14 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 HWND CreateStatusHelper(HWND parent)
 {
-	WNDCLASS wndclass;
+	WNDCLASS wndclass={0};
 	char pluginname[]="Statushelper";
 
-    wndclass.style         = 0;
+    
+	if (GetClassInfo(g_hInst,pluginname,&wndclass) ==0)
+	{
+	
+	wndclass.style         = 0;
     wndclass.lpfnWndProc   = StatusHelperProc;
     wndclass.cbClsExtra    = 0;
     wndclass.cbWndExtra    = 0;
@@ -571,6 +582,8 @@ HWND CreateStatusHelper(HWND parent)
     wndclass.lpszMenuName  = NULL;
     wndclass.lpszClassName = pluginname;
 	RegisterClass(&wndclass);
+	
+	};
 
 	return(CreateWindow(pluginname,pluginname,
 	/*WS_THICKFRAME|*/WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,
@@ -591,7 +604,7 @@ int CreateStatusBarFrame()
 				Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER;
 				GetWindowRect(helperhwnd,&rc);
 				h=rc.bottom-rc.top;
-				Frame.height=(h==0)?18:h;
+				Frame.height=(h==0)?20:h;
 
 
 				Frame.name=(Translate("Status"));
@@ -613,7 +626,7 @@ int RecreateStatusBar(HWND parent)
 			//create the status wnd
 	hwndStatus = CreateStatusWindow(
 				
-				(DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE)?SBARS_SIZEGRIP:0)|
+				(DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE)&&(!UseOwnerDrawStatusBar)?SBARS_SIZEGRIP:0)|
 				WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", helperhwnd, 0);
 
 	
@@ -622,13 +635,15 @@ int RecreateStatusBar(HWND parent)
 	OldWindowProc=(WNDPROC)GetWindowLong(hwndStatus,GWL_WNDPROC);
 	SetWindowLong(hwndStatus,GWL_WNDPROC,(LONG)&StatusBarOwnerDrawProc);
 	CreateStatusBarFrame();
+		
 
 	{
 
 	SetWindowPos(helperhwnd,NULL,1,1,
 					1,1,SWP_NOZORDER);
 
-		CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
+	CluiProtocolStatusChanged(0,0);
+	CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
 	};
 
 return 0;

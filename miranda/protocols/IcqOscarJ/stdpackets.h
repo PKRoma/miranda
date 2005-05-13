@@ -70,13 +70,13 @@ void icq_setstatus(WORD wStatus);
 DWORD icq_sendGetInfoServ(DWORD, int);
 DWORD icq_sendGetAwayMsgServ(DWORD, int);
 void icq_sendFileSendServv7(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize);
-void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize);
+void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, int nAckType);
 
-void icq_sendFileAcceptServ(DWORD dwUin, filetransfer *ft);
-void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted);
-void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted);
+void icq_sendFileAcceptServ(DWORD dwUin, filetransfer *ft, int nAckType);
+void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted, int nAckType);
+void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted, int nAckType);
 
-void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason);
+void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason, int nAckType);
 
 DWORD icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
 DWORD icq_changeUserDetailsServ(WORD, const unsigned char *, WORD);

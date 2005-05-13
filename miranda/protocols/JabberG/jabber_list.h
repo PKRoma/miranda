@@ -72,7 +72,8 @@ typedef enum {			// initial default to RSMODE_LASTSEEN
 
 #define CLIENT_CAP_FILE			( CLIENT_CAP_SI | CLIENT_CAP_SIFILE )
 
-typedef struct {
+struct JABBER_RESOURCE_STATUS 
+{
 	int status;
 	char* resourceName;	// in UTF-8
 	char* statusMessage;
@@ -82,9 +83,10 @@ typedef struct {
 	unsigned int cap;					// 0 = haven't done disco#info yet, see CLIENT_CAP_*
 	JABBER_GC_AFFILIATION affiliation;
 	JABBER_GC_ROLE role;
-} JABBER_RESOURCE_STATUS;
+};
 
-typedef struct {
+struct JABBER_LIST_ITEM 
+{
 	JABBER_LIST list;
 	char* jid;
 
@@ -121,7 +123,7 @@ typedef struct {
 	// jid = room JID
 	// char* nick;	// my nick in this chat room ( SPECIAL: in UTF8 )
 	// JABBER_RESOURCE_STATUS *resource;	// participant nicks in this room
-	HWND hwndGcDlg;	// groupchat messaging window for this room
+	BOOL bChatActive;
 	HWND hwndGcListBan;
 	HWND hwndGcListAdmin;
 	HWND hwndGcListOwner;
@@ -144,7 +146,7 @@ typedef struct {
 	// LIST_FTRECV
 	// jid = string representation of stream id ( sid )
 	// ft = file transfer data
-} JABBER_LIST_ITEM;
+};
 
 void JabberListInit( void );
 void JabberListUninit( void );

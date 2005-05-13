@@ -43,7 +43,7 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 
 	char szName[ 512 ];
 	char tEmail[ MSN_MAX_EMAIL_LEN ], tNick[ 1024 ];
-	_snprintf( szName, sizeof( szName ), "%s%s", Translate("MSN Chat #"), info->mChatID );
+	mir_snprintf( szName, sizeof( szName ), "%s%s", Translate("MSN Chat #"), info->mChatID );
 
 	gcw.cbSize = sizeof(GCWINDOW);
 	gcw.iType = GCW_CHATROOM;
@@ -170,8 +170,7 @@ void InviteUser(ThreadData* info) {
 	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )hInvitedUser, tEmail, sizeof( tEmail ))) {
 		info->sendPacket( "CAL", tEmail );
 		MSN_ChatStart(info);
-	}
-}
+}	}
 
 int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 	GCHOOK *gch = (GCHOOK*) lParam;
@@ -183,24 +182,23 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 			lstrcpy(p, gch->pDest->pszID);
 			switch (gch->pDest->iType) {
 			case GC_USER_TERMINATE: {
-				int chatID = atoi(p);
+				int chatID = atoi( p );
 				ThreadData* thread = MSN_GetThreadByContact((HANDLE)-chatID);
 				if ( thread != NULL ) {
-				// open up srmm dialog when quit while 1 person left
-				if ( thread->mJoinedCount == 1 ) {
-					// switch back to normal session
-					thread->mJoinedContacts[0] = thread->mJoinedContacts[1];
-					thread->mJoinedContacts = ( HANDLE* )realloc( thread->mJoinedContacts, sizeof( HANDLE ) );
-					MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)thread->mJoinedContacts[0], 0);
-					thread->mChatID[0] = 0;
-				}
-					else
-						thread->sendPacket("OUT", NULL);
+					// open up srmm dialog when quit while 1 person left
+					if ( thread->mJoinedCount == 1 ) {
+						// switch back to normal session
+						thread->mJoinedContacts[0] = thread->mJoinedContacts[1];
+						thread->mJoinedContacts = ( HANDLE* )realloc( thread->mJoinedContacts, sizeof( HANDLE ) );
+						MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)thread->mJoinedContacts[0], 0);
+						thread->mChatID[0] = 0;
+					}
+					else thread->sendPacket( "OUT", NULL );
 				}
 				break;
 			}
 			case GC_USER_MESSAGE:
-				if(gch && gch->pszText && lstrlen(gch->pszText) > 0) {
+				if ( gch && gch->pszText && lstrlen( gch->pszText ) > 0 ) {
 					CCSDATA ccs = {0};
 
 					// remove the ending linebreak
@@ -302,39 +300,37 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 int MSN_GCMenuHook(WPARAM wParam,LPARAM lParam) {
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
 
-	if(gcmi) {
+	if ( gcmi ) {
 		if (!lstrcmpi(gcmi->pszModule, msnProtocolName)) {
 			if(gcmi->Type == MENU_ON_LOG) {
-					static struct gc_item Item[] = {
-						{Translate("&Invite user..."), 10, MENU_ITEM, FALSE},
-						{Translate("&Leave chat session"), 20, MENU_ITEM, FALSE}
+				static struct gc_item Item[] = {
+					{Translate("&Invite user..."), 10, MENU_ITEM, FALSE},
+					{Translate("&Leave chat session"), 20, MENU_ITEM, FALSE}
 				};
-					gcmi->nItems = sizeof(Item)/sizeof(Item[0]);
-					gcmi->Item = &Item[0];
-				}
+				gcmi->nItems = sizeof(Item)/sizeof(Item[0]);
+				gcmi->Item = &Item[0];
+			}
 			if(gcmi->Type == MENU_ON_NICKLIST) {
 				char tEmail[ MSN_MAX_EMAIL_LEN ];
 				MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof tEmail );
 				if (!lstrcmp(tEmail, (char *)gcmi->pszUID)) {
-				static struct gc_item Item[] = {
+					static struct gc_item Item[] = {
 						{Translate("User &details"), 10, MENU_ITEM, FALSE},
 						{Translate("User &history"), 20, MENU_ITEM, FALSE},
 						{Translate(""), 100, MENU_SEPARATOR, FALSE},
 						{Translate("&Leave chat session"), 110, MENU_ITEM, FALSE}
-				};
-				gcmi->nItems = sizeof(Item)/sizeof(Item[0]);
-				gcmi->Item = &Item[0];
-			}
+					};
+					gcmi->nItems = sizeof(Item)/sizeof(Item[0]);
+					gcmi->Item = &Item[0];
+				}
 				else {
-				static struct gc_item Item[] = {
+					static struct gc_item Item[] = {
 						{Translate("User &details"), 10, MENU_ITEM, FALSE},
 						{Translate("User &history"), 20, MENU_ITEM, FALSE}
-				};
-				gcmi->nItems = sizeof(Item)/sizeof(Item[0]);
-				gcmi->Item = &Item[0];
-				}
-			}
-		}
-	}
+					};
+					gcmi->nItems = sizeof(Item)/sizeof(Item[0]);
+					gcmi->Item = &Item[0];
+	}	}	}	}
+
 	return 0;
 }

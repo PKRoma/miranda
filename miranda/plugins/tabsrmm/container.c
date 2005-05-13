@@ -52,10 +52,12 @@ $Id$
 #include "../../include/m_history.h"
 #include "../../include/m_addcontact.h"
 #include "msgs.h"
-#include "m_message.h"
+#include "m_popup.h"
+#include "nen.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
 #include "m_snapping_windows.h"
+#include "functions.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -68,6 +70,8 @@ $Id$
 char *szWarnClose = "Do you really want to close this session?";
 
 extern MYGLOBALS myGlobals;
+extern NEN_OPTIONS nen_options;
+extern HWND floaterOwner;
 
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
@@ -96,7 +100,9 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
 
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newName);
-void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
+#if defined(_UNICODE)
+    void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
+#endif    
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -104,6 +110,8 @@ extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 static WNDPROC OldTabControlProc;
 HMENU BuildMCProtocolMenu(HWND hwndDlg);
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
+
+struct ContainerWindowData *pLastActiveContainer = NULL;
 
 /*
  * CreateContainer MUST malloc() a struct ContainerWindowData and pass its address
@@ -160,7 +168,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
                 } else {
     #if defined (_UNICODE)
                     if (dbv.type == DBVT_ASCIIZ) {
-                        WCHAR *wszString = Utf8Decode(dbv.pszVal);
+                        WCHAR *wszString = Utf8_Decode(dbv.pszVal);
                         if(!_tcsncmp(wszString, name, CONTAINER_NAMELEN)) {
                             pContainer->iContainerIndex = i;
                             iFound = TRUE;
@@ -168,6 +176,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
                         else if (!_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
                             iFirstFree =  i;
                         }
+                        free(wszString);
                     }
     #else
                     if (dbv.type == DBVT_ASCIIZ) {
@@ -265,7 +274,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, Translate("Stay on Top"));
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, Translate("Hide titlebar"));
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOREPORTMIN, Translate("Don't report if minimized"));
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, Translate("Container options..."));                 
                 
@@ -341,7 +349,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                 }
                 else {
-                    _snprintf(szCName, 40, "%s%d", szSetting, pContainer->iContainerIndex);
+                    mir_snprintf(szCName, 40, "%s%d", szSetting, pContainer->iContainerIndex);
                     if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, szCName)) {
                         if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, szCName))
                             if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
@@ -363,10 +371,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICMENU) == 1)
                     break;
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
-                    if(dat->dwFlags != dwOldMsgWindowFlags || dat->dwEventIsShown != dwOldEventIsShown) {
-                        WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)pContainer->hwndActive, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                        if(myGlobals.m_IgnoreContactSettings)
+                    if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
+                        if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
+                            WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+                        }
+                        else
+                            SendMessage(hwndDlg, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, 0);
                     }
                     break;
                 }
@@ -398,7 +409,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     break;
                 case ID_VIEW_SHOWTOOLBAR:
                     pContainer->dwFlags ^= CNT_HIDETOOLBAR;
-                    break;
+                    WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
+                    return 0;
                 case ID_VIEW_SHOWMENUBAR:
                     pContainer->dwFlags ^= CNT_NOMENUBAR;
                     break;
@@ -521,23 +533,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 pContainer->dwFlags &= ~CNT_SIZINGLOOP;
-#ifdef __MATHMOD_SUPPORT    			
-                //mathMod begin
-    			if(myGlobals.m_MathModAvail) {  //start scope
-    						TMathWindowInfo mathWndInfo;
-    												
-    						RECT windRect;
-    						// größe ermitteln:
-    						GetWindowRect(hwndDlg,&windRect);
-    						mathWndInfo.top=windRect.top;
-    						mathWndInfo.left=windRect.left;
-    						mathWndInfo.right=windRect.right - 5;
-    						mathWndInfo.bottom=windRect.bottom - 5;
-    						CallService(MTH_Set_Srmm_HWND,0,(LPARAM) hwndDlg); 
-    						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-    			}  // end scope
-    			//mathMod end
-#endif                
+                SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 break;
             }
         case WM_GETMINMAXINFO: {
@@ -563,6 +559,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         mmi->ptMaxPosition.y = rcDesktop.top;
                     else
                         mmi->ptMaxPosition.y = 0;
+#if defined(__MATHMOD_SUPPORT)
+                    if(myGlobals.m_MathModAvail) {
+                        if(CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {
+                            RECT rc;
+                            HWND hwndMath = FindWindowA("TfrmPreview", "Preview");
+                            GetWindowRect(hwndMath, &rc);
+                            mmi->ptMaxSize.y -= (rc.bottom - rc.top);
+                        }
+                    }
+#endif
                 }
                 return 0;
             }
@@ -577,7 +583,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     			mathWndInfo.left=windRect.left;
     			mathWndInfo.right=windRect.right - 5;
     			mathWndInfo.bottom=windRect.bottom - 5;
-                CallService(MTH_Set_Srmm_HWND,0,(LPARAM) pContainer->hwndActive); 
                 CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
     		}
             break;
@@ -599,16 +604,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 if (pContainer->hwndStatus) {
                     RECT rcs;
-                    int statwidths[4];
+                    int statwidths[5];
                     
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
-
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (myGlobals.g_SecureIMAvail ? 26 : 0);
-                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH - 8) - (myGlobals.g_SecureIMAvail ? 26 : 0);
-                    statwidths[2] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
-                    statwidths[3] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM) statwidths);
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
+                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH - 8) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
+                    statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (38 + 24) : 38);
+                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
+                    statwidths[4] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                 }
                 else
@@ -652,7 +657,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 #ifdef __MATHMOD_SUPPORT    			
                 //mathMod begin
-    			if(myGlobals.m_MathModAvail && !(pContainer->dwFlags & CNT_SIZINGLOOP)) {  //start scope
+    			if(myGlobals.m_MathModAvail) {  //start scope
     						TMathWindowInfo mathWndInfo;
     												
     						RECT windRect;
@@ -661,10 +666,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     						mathWndInfo.top=windRect.top;
     						mathWndInfo.left=windRect.left;
     						mathWndInfo.right=windRect.right - 5;
-    						mathWndInfo.bottom=windRect.bottom;
-                            CallService(MTH_Set_Srmm_HWND,0,(LPARAM) pContainer->hwndActive); 
+    						mathWndInfo.bottom=windRect.bottom - 5;
     						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-                            //ResizeMathWindow(&windRect);
     			}  // end scope
     			//mathMod end
 #endif                
@@ -672,7 +675,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             } 
         case DM_UPDATETITLE: {
                 HANDLE hContact = (HANDLE) wParam;
-                char *szProto = 0, *szStatus = 0, *contactName = 0, temp[200];
+                char *szProto = 0, *szStatus = 0, *contactName = NULL, temp[200];
                 TCHAR newtitle[256], oldtitle[256];
                 WORD wStatus = -1;
                 TCHAR tTemp[204];
@@ -693,7 +696,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                    contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0);
+                    contactName = dat->szNickname;
                 
                 temp[0] = '\0';
                 tTemp[0] = '\0';
@@ -703,14 +706,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 else
                     break;
                 if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWUIN)
-                    _snprintf(temp, sizeof(temp), "%s - %s", contactName, uin);
+                    mir_snprintf(temp, sizeof(temp), "%s - %s", contactName, uin);
                 else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                    _snprintf(temp, sizeof(temp), "%s", contactName);
+                    mir_snprintf(temp, sizeof(temp), "%s", contactName);
                 else if(pContainer->dwFlags & CNT_TITLE_SHOWUIN)
-                    _snprintf(temp, sizeof(temp), "%s", uin);
+                    mir_snprintf(temp, sizeof(temp), "%s", uin);
                     
                 if((pContainer->dwFlags & CNT_TITLE_SHOWNAME || pContainer->dwFlags & CNT_TITLE_SHOWUIN) && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
-                    szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : wStatus, 0);
+                    szStatus = dat->szStatus;
                     if(szStatus != NULL) {
                         strncat(temp, " (", sizeof(temp));
                         strncat(temp, szStatus, sizeof(temp));
@@ -801,18 +804,36 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                         break;
                     }
-				case IDM_NOREPORTMIN:
-					CheckMenuItem(GetSystemMenu(hwndDlg, FALSE), IDM_NOREPORTMIN, (pContainer->dwFlags & CNT_DONTREPORT) ? MF_BYCOMMAND | MF_UNCHECKED : MF_BYCOMMAND | MF_CHECKED);
-					pContainer->dwFlags ^= CNT_DONTREPORT;
-					break;
                 case IDM_MOREOPTIONS:
                     if(IsIconic(pContainer->hwnd))
                         SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM)pContainer);
+                    if(pContainer->hWndOptions == 0)
+                        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM)pContainer);
 					break;
                 case SC_MAXIMIZE:
+                    pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
+                    break;
                 case SC_RESTORE:
                     pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
+                    if(nen_options.bMinimizeToTray && pContainer->bInTray) {
+                        if(pContainer->bInTray == 2) {
+                            MaximiseFromTray(hwndDlg, FALSE, &pContainer->restoreRect);
+                            PostMessage(hwndDlg, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+                        }
+                        else
+                            MaximiseFromTray(hwndDlg, nen_options.bAnimated, &pContainer->restoreRect);
+                        DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
+                        pContainer->bInTray = 0;
+                        return 0;
+                    }
+                    break;
+                case SC_MINIMIZE:
+                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || nen_options.floaterMode)) {
+                        pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
+                        GetWindowRect(hwndDlg, &pContainer->restoreRect);
+                        MinimiseToTray(hwndDlg, nen_options.bAnimated);
+                        return 0;
+                    }
                     break;
             }
             break;
@@ -862,7 +883,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 NMHDR* pNMHDR = (NMHDR*) lParam;
                 if(pContainer != NULL && pContainer->hwndStatus != 0 && ((LPNMHDR)lParam)->hwndFrom == pContainer->hwndStatus) {
                     switch (((LPNMHDR)lParam)->code) {
-                    case NM_CLICK:
+                        case NM_CLICK:
                         {
                             unsigned int nParts, nPanel;
                             NMMOUSE *nm=(NMMOUSE*)lParam;
@@ -870,16 +891,44 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                             nParts = SendMessage(pContainer->hwndStatus, SB_GETPARTS, 0, 0);
                             if (nm->dwItemSpec == 0xFFFFFFFE) {
-                                nPanel = nParts -1;
+                                nPanel = nParts -2;
                                 SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
-                                if (nm->pt.x < rc.left) 
-                                    return FALSE;
+                                if (nm->pt.x > rc.left && nm->pt.x < rc.right) 
+                                    goto panel_found;
+                                else {
+                                    nPanel = nParts -1;
+                                    SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
+                                    if (nm->pt.x < rc.left) 
+                                        return FALSE;
+                                }
                             } 
                             else { 
                                 nPanel = nm->dwItemSpec; 
                             }
-                            if(nPanel == nParts - 1)
+panel_found:                            
+                            if(nPanel == 0) {
+                                SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
+                                if(nm->pt.x > rc.left && nm->pt.x < rc.left + 18) {
+                                    if(((LPNMHDR)lParam)->code == NM_CLICK)
+                                        SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+                                    break;
+                                }
+                            }
+                            else if(nPanel == nParts - 1)
                                 SendMessage(pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
+                            else if(nPanel == nParts - 2) {
+                                if(GetKeyState(VK_SHIFT) & 0x8000) {
+                                    struct ContainerWindowData *piContainer = pFirstContainer;
+                                    while(piContainer) {
+                                        piContainer->dwFlags = ((pContainer->dwFlags & CNT_NOSOUND) ? piContainer->dwFlags | CNT_NOSOUND : piContainer->dwFlags & ~CNT_NOSOUND);
+                                        SendMessage(piContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
+                                        piContainer = piContainer->pNextContainer;
+                                    }
+                                    break;
+                                }
+                                pContainer->dwFlags ^= CNT_NOSOUND;
+                                SendMessage(pContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
+                            }
                         }
                     }
                     break;
@@ -895,7 +944,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
-                            SetFocus(pContainer->hwndActive);
+                            if(!IsIconic(hwndDlg))
+                                SetFocus(pContainer->hwndActive);
                         }
                         break;
                         /*
@@ -909,7 +959,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             struct MessageWindowData *cdat = 0;
                             char *contactName = 0, *szStatus = 0;
                             char szTtitle[80];
-                            WORD iStatus;
 #if defined ( _UNICODE )
                             wchar_t w_contactName[80];
 #endif
@@ -923,13 +972,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             if (item.lParam) {
                                 cdat = (struct MessageWindowData *) GetWindowLong((HWND)item.lParam, GWL_USERDATA);
                                 if (cdat) {
-                                    contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) cdat->hContact, 0);
+                                    contactName = cdat->szNickname;
                                     if (contactName) {
                                         if (cdat->szProto) {
-                                            iStatus = cdat->wStatus;
-                                            szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, cdat->szProto == NULL ? ID_STATUS_OFFLINE : iStatus, 0);
+                                            szStatus = cdat->szStatus;
                                             nmtt->hinst = NULL;
-                                            _snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
+                                            mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
 #if defined ( _UNICODE )
                                             MultiByteToWideChar(CP_ACP, 0, szTtitle, -1, w_contactName, sizeof(w_contactName));
                                             lstrcpynW(nmtt->szText, w_contactName, 80);
@@ -992,13 +1040,13 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                     break;
                                 item.mask = TCIF_PARAM;
                                 TabCtrl_GetItem(hwndTab, iItem, &item);
-                                _snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
+                                mir_snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
                                 if(iSelection - IDM_CONTAINERMENU >= 0) {
                                     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined (_UNICODE)
-                                        WCHAR wszTemp[CONTAINER_NAMELEN + 2];
-                                        _tcsncpy(wszTemp, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN);
+                                        WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
                                         SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
+                                        free(wszTemp);
 #else
                                         SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
 #endif
@@ -1026,7 +1074,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SELECTCONTAINER), hwndDlg, SelectContainerDlgProc, (LPARAM) item.lParam);
                                     break;
                                 case ID_TABMENU_CONTAINEROPTIONS: {
-                                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) pContainer);
+                                    if(pContainer->hWndOptions == 0)
+                                        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) pContainer);
                                     break;
                                 case ID_TABMENU_CLOSECONTAINER:
                                     SendMessage(hwndDlg, WM_CLOSE, 0, 0);
@@ -1068,7 +1117,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         * pass the WM_ACTIVATE msg to the active message dialog child
         */
         case WM_ACTIVATE:
-			if (LOWORD(wParam == WA_INACTIVE)) {
+			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler) {
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
 					pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)HIWORD(pContainer->dwTransparency), LWA_ALPHA);
 			}
@@ -1079,6 +1128,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 FlashContainer(pContainer, 0, 0);
                 pContainer->dwFlashingStarted = 0;
+                pLastActiveContainer = pContainer;
                 
                 if(pContainer->dwFlags & CNT_DEFERREDTABSELECT) {
                     NMHDR nmhdr;
@@ -1228,9 +1278,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             dwGlobalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
             
             if(pContainer->isCloned && pContainer->hContactFrom != 0) {
-                _snprintf(szCname, 40, "%s_Flags", szSetting);
+                mir_snprintf(szCname, 40, "%s_Flags", szSetting);
                 dwLocalFlags = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
-                _snprintf(szCname, 40, "%s_Trans", szSetting);
+                mir_snprintf(szCname, 40, "%s_Trans", szSetting);
                 dwLocalTrans = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
                 if(dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
                     overridePerContact = 1;
@@ -1238,9 +1288,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     overridePerContact = 0;
             }
             if(overridePerContact) {
-                _snprintf(szCname, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
+                mir_snprintf(szCname, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
                 dwLocalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
-                _snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
+                mir_snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
                 dwLocalTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
             }
 
@@ -1304,10 +1354,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
 
-			
 			CheckMenuItem(hSysmenu, IDM_NOTITLE, (pContainer->dwFlags & CNT_NOTITLE) ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
-
-			CheckMenuItem(hSysmenu, IDM_NOREPORTMIN, pContainer->dwFlags & CNT_DONTREPORT ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
 			CheckMenuItem(hSysmenu, IDM_STAYONTOP, pContainer->dwFlags & CNT_STICKY ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
             SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             if (ws != wsold) {
@@ -1352,16 +1399,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 
                 if(pContainer->hwndStatus) {
-                    /* RECT rcs;
-                    int statwidths[4];
-
-                    GetWindowRect(pContainer->hwndStatus, &rcs);
-
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[1] = rcs.right - rcs.left - SB_CHAR_WIDTH - (myGlobals.g_SecureIMAvail ? 23 : 0);
-                    statwidths[2] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 23 : -1;
-                    statwidths[3] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM) statwidths); */
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
                     SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);
@@ -1370,7 +1407,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if(pContainer->dwFlags & CNT_NOMENUBAR) {
                 if(pContainer->hMenu) {
                     SetMenu(hwndDlg, NULL);
-                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    //SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
                 ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             }
@@ -1380,7 +1417,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
                 }
                 SetMenu(hwndDlg, pContainer->hMenu);
-                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                //SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 DrawMenuBar(hwndDlg);
             }
             
@@ -1466,9 +1503,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     if(hContact) {
+                        RECT rc;
                         GetCursorPos(&pt);
                         pt1 = pt;
                         ScreenToClient(hwndDlg, &pt1);
+                        SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
+                        if(pt1.x > rc.left && pt1.x < rc.left + 18) {
+                            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
+                            break;
+                        }
                         hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
                         TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
                         DestroyMenu(hMenu);
@@ -1532,6 +1575,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
     			DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);
+#if defined(__MATHMOD_SUPPORT)
+                if(myGlobals.m_MathModAvail)
+                    CallService(MTH_HIDE, 0, 0);
+#endif                
                 if (pContainer)
                     free(pContainer);
     			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
@@ -1734,8 +1781,8 @@ int CutContactName(char *oldname, char *newname, int size)
         strncpy(newname, oldname, size);
     else {
 		char fmt[20];
-		_snprintf(fmt, 18, "%%%d.%ds...", cutMax, cutMax);
-		_snprintf(newname, size - 1, fmt, oldname);
+		mir_snprintf(fmt, 18, "%%%d.%ds...", cutMax, cutMax);
+		mir_snprintf(newname, size - 1, fmt, oldname);
     }
     return 0;
 }
@@ -1788,12 +1835,20 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
             pFirstContainer = pContainer->pNextContainer;
         else
             pFirstContainer = NULL;
+
+        if(pLastActiveContainer == pContainer)      // make sure, we don't reference this container anymore
+            pLastActiveContainer = pFirstContainer;
+
         return pFirstContainer;
     }
 
     do {
         if (pCurrent->pNextContainer == pContainer) {
             pCurrent->pNextContainer = pCurrent->pNextContainer->pNextContainer;
+
+            if(pLastActiveContainer == pContainer)      // make sure, we don't reference this container anymore
+                pLastActiveContainer = pFirstContainer;
+            
             return 0;
         }
     } while (pCurrent = pCurrent->pNextContainer);
@@ -1909,9 +1964,10 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
     }
 #if defined (_UNICODE)
     if (dbv.type == DBVT_ASCIIZ) {
-        WCHAR *wszString = Utf8Decode(dbv.pszVal);
+        WCHAR *wszString = Utf8_Decode(dbv.pszVal);
         _tcsncpy(szName, wszString, iNameLen);
         DBFreeVariant(&dbv);
+        free(wszString);
         return dbv.cpbVal;
     }
 #else
@@ -1953,32 +2009,26 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
             iCounter++;
             if (dbv.type == DBVT_ASCIIZ) {
 #if defined(_UNICODE)
-                WCHAR wszTemp[CONTAINER_NAMELEN + 2];
-                _tcsncpy(wszTemp, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN + 1);
-                if(!_tcsncmp(wszTemp, _T("**free**"), lstrlenW(wszTemp))) {
+                WCHAR wszTemp[CONTAINER_NAMELEN + 10];
+                WCHAR *wszTemp1 = Utf8_Decode(dbv.pszVal);
+                wcsncpy(wszTemp, wszTemp1, CONTAINER_NAMELEN);
+                free(wszTemp1);
 #else                    
-                if(!strncmp(dbv.pszVal, "**free**", strlen(dbv.pszVal))) {
+                char *wszTemp = dbv.pszVal;
 #endif                    
+                if(!_tcsncmp(wszTemp, _T("**free**"), _tcslen(wszTemp))) {
                     DBFreeVariant(&dbv);
                     continue;
                 }
                 if (dwAction & CNT_ENUM_DELETE) {
-#if defined (_UNICODE)
-                    if(!_tcsncmp(wszTemp, szTarget, lstrlenW(wszTemp)) && lstrlenW(wszTemp) == lstrlenW(szTarget)) {
-#else                        
-                    if(!strncmp(dbv.pszVal, szTarget, strlen(dbv.pszVal)) && strlen(dbv.pszVal) == strlen(szTarget)) {
-#endif                        
+                    if(!_tcsncmp(wszTemp, szTarget, _tcslen(wszTemp)) && _tcslen(wszTemp) == _tcslen(szTarget)) {
                         DeleteContainer(iCounter - 1);
                         DBFreeVariant(&dbv);
                         break;
                     }
                 }
                 if (dwAction & CNT_ENUM_RENAME) {
-#if defined (_UNICODE)
-                    if(!_tcsncmp(wszTemp, szTarget, lstrlenW(wszTemp)) && lstrlenW(wszTemp) == lstrlenW(szTarget)) {
-#else                    
-                    if(!strncmp(dbv.pszVal, szTarget, strlen(dbv.pszVal)) && strlen(dbv.pszVal) == strlen(szTarget)) {
-#endif                        
+                    if(!_tcsncmp(wszTemp, szTarget, _tcslen(wszTemp)) && _tcslen(wszTemp) == _tcslen(szTarget)) {
                         RenameContainer(iCounter - 1, szNew);
                         DBFreeVariant(&dbv);
                         break;
@@ -2038,7 +2088,9 @@ void DeleteContainer(int iIndex)
         if(dbv.type == DBVT_ASCIIZ) {
 #if defined (_UNICODE)
             WCHAR wszContainerName[CONTAINER_NAMELEN + 2];
-            _tcsncpy(wszContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN + 1);;
+            WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
+            _tcsncpy(wszContainerName, wszTemp, CONTAINER_NAMELEN + 1);
+            free(wszTemp);
             _DBWriteContactSettingWString(NULL, szKey, szIndex, _T("**free**"));
 #else
             DBWriteContactSettingString(NULL, szKey, szIndex, "**free**");
@@ -2048,7 +2100,7 @@ void DeleteContainer(int iIndex)
                 DBVARIANT dbv_c;
 #if defined (_UNICODE)
                 if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "containerW", &dbv_c)) {
-                    WCHAR *wszString = Utf8Decode(dbv_c.pszVal);
+                    WCHAR *wszString = Utf8_Decode(dbv_c.pszVal);
                     if(_tcscmp(wszString, wszContainerName) && lstrlenW(wszString) == lstrlenW(wszContainerName)) {
                         DBDeleteContactSetting(hhContact, SRMSGMOD_T, "containerW");
 #else                    
@@ -2058,6 +2110,9 @@ void DeleteContainer(int iIndex)
 #endif                    
                     }
                     DBFreeVariant(&dbv_c);
+#if defined(_UNICODE)
+                    free(wszString);
+#endif                    
                 }
                 hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
             }
@@ -2096,7 +2151,9 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
      if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
 #if defined(_UNICODE)
         WCHAR wszContainerName[CONTAINER_NAMELEN + 2];
-        _tcsncpy(wszContainerName, Utf8Decode(dbv.pszVal), CONTAINER_NAMELEN + 1);
+        WCHAR *wszString = Utf8_Decode(dbv.pszVal);
+        _tcsncpy(wszContainerName, wszString, CONTAINER_NAMELEN + 1);
+        free(wszString);
 #endif        
         if (szNew != NULL) {
             if (_tcslen(szNew) != 0)
@@ -2111,7 +2168,7 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
             DBVARIANT dbv_c;
 #if defined(_UNICODE)
             if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "containerW", &dbv_c)) {
-                WCHAR *wszTemp = Utf8Decode(dbv_c.pszVal);
+                WCHAR *wszTemp = Utf8_Decode(dbv_c.pszVal);
                 if(!_tcscmp(wszContainerName, wszTemp) && lstrlenW(wszContainerName) == lstrlenW(wszTemp)) {
                     if(szNew != NULL) {
                         if(lstrlenW(szNew) != 0)
@@ -2126,6 +2183,9 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
                     }
                 }
                 DBFreeVariant(&dbv_c);
+#if defined(_UNICODE)
+                free(wszTemp);
+#endif                
             }
             hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
         }
@@ -2133,11 +2193,14 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
     }
 }
 
+#if defined(_UNICODE)
 void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value)
 {
-    char *utf8string = Utf8Encode(value);
+    char *utf8string = Utf8_Encode(value);
     DBWriteContactSettingString(hContact, szKey, szSetting, utf8string);
+    free(utf8string);
 }
+#endif
 
 HMENU BuildContainerMenu()
 {
@@ -2171,10 +2234,11 @@ HMENU BuildContainerMenu()
 
 #if defined (_UNICODE)
         if (dbv.type == DBVT_ASCIIZ) {
-            WCHAR *wszString = Utf8Decode(dbv.pszVal);
+            WCHAR *wszString = Utf8_Decode(dbv.pszVal);
             if (_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
                 AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, wszString);
             }
+            free(wszString);
         }
 #else
         if (dbv.type == DBVT_ASCIIZ) {
@@ -2224,17 +2288,17 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
     isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
     
     for(i = 0; i < iNumProtos; i++) {
-        _snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
+        mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
         if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
-        _snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
+        mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
         if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0) {
             nick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, 0);
-            _snprintf(szTemp, sizeof(szTemp), "Status%d", i);
+            mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
             wStatus = (WORD)DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0);
             szStatusText = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, 0);
         }
-        _snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s [%s] %s", dbv.pszVal, nick, szStatusText, i == isForced ? Translate("(Forced)") : "");
+        mir_snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s [%s] %s", dbv.pszVal, nick, szStatusText, i == isForced ? Translate("(Forced)") : "");
         iChecked = MF_UNCHECKED;
         if(hContactMostOnline != 0 && hContactMostOnline == handle)
             iChecked = MF_CHECKED;
@@ -2259,6 +2323,18 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount)
 {
     FLASHWINFO fwi;
+    
+    if(pContainer->bInTray && iMode != 0 && nen_options.iAutoRestore > 0) {
+        BOOL old = nen_options.bMinimizeToTray;
+        nen_options.bMinimizeToTray = FALSE;
+        ShowWindow(pContainer->hwnd, SW_HIDE);
+        SetParent(pContainer->hwnd, NULL);
+        SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+        nen_options.bMinimizeToTray = old;
+        SetWindowLong(pContainer->hwnd, GWL_STYLE, GetWindowLong(pContainer->hwnd, GWL_STYLE) | WS_VISIBLE);
+        DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
+        pContainer->bInTray = 0;
+    }
     
     if(pContainer->dwFlags & CNT_NOFLASH)                   // container should never flash
         return;
@@ -2344,3 +2420,19 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_ENABLED);
 }
 
+void SetFloater(struct ContainerWindowData *pContainer)
+{
+    RECT rc;
+    POINT pt, pt1;
+    int x;
+    GetClientRect(pContainer->hwnd, &rc);
+    pt.x = rc.left;
+    pt.y = rc.top;
+    pt1.x = rc.right;
+    pt1.y = rc.bottom;
+    ClientToScreen(pContainer->hwnd, &pt);
+    ClientToScreen(pContainer->hwnd, &pt1);
+    x = pt1.x - (pContainer->dwFlags & CNT_NOMENUBAR ? 110 : 52);
+    floaterOwner = pContainer->hwnd;
+    SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, x, pt.y - (pContainer->dwFlags & CNT_NOMENUBAR ? 20 : 18), 50, 17, SWP_NOACTIVATE);
+}

@@ -67,7 +67,7 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 			if(pszReplace) {
 				if(info->szFile[lstrlen(info->szFile)-1]=='\\') info->szFile[lstrlen(info->szFile)-1]='\0';
 				*pszReplace=0;
-				_snprintf(szCmdLine,sizeof(szCmdLine),"%s\"%s\"%s",dbv.pszVal,info->szFile,pszReplace+2);
+				mir_snprintf(szCmdLine,sizeof(szCmdLine),"%s\"%s\"%s",dbv.pszVal,info->szFile,pszReplace+2);
 			}
 			else lstrcpyn(szCmdLine,dbv.pszVal,sizeof(szCmdLine));
 			if(CreateProcess(NULL,szCmdLine,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)) {
@@ -446,7 +446,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					SetDlgItemText(hwndDlg,IDC_ALLTRANSFERRED,str);
 
 					contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-					_snprintf(str,sizeof(str),"%d%%: %s: %s",fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0,contactName,Translate(dat->send?(fts->totalFiles==1?"Sending file":"Sending files"):(fts->totalFiles==1?"Receiving file":"Receiving files")));
+					mir_snprintf(str,sizeof(str),"%d%%: %s: %s",fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0,contactName,Translate(dat->send?(fts->totalFiles==1?"Sending file":"Sending files"):(fts->totalFiles==1?"Receiving file":"Receiving files")));
 					SetWindowText(GetParent(hwndDlg),str);
 					break;
 				}

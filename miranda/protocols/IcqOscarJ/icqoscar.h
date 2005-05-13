@@ -56,6 +56,7 @@
 #include <newpluginapi.h> // This must be included first
 #include <m_clc.h>
 #include <m_clist.h>
+#include <m_clui.h>
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_message.h>
@@ -84,6 +85,7 @@
 #include "icq_http.h"
 #include "icq_fieldnames.h"
 #include "icq_constants.h"
+#include "guids.h"
 #include "icq_infoupdate.h"
 #include "icq_avatar.h"
 #include "init.h"

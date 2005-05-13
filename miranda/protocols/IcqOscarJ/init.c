@@ -61,7 +61,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,5,0),
+	PLUGIN_MAKE_VERSION(0,3,5,1),
 	"Support for ICQ network, slightly enhanced.",
 	"Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
@@ -86,6 +86,7 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
   }
   else
   {
+    MIRANDA_VERSION = mirandaVersion;
     return &pluginInfo;
   }
 }
@@ -302,7 +303,7 @@ int __declspec(dllexport) Unload(void)
 		write_flap(&packet, ICQ_CLOSE_CHAN);
 		sendServPacket(&packet);
 
-		icq_serverDisconnect(1);
+		icq_serverDisconnect();
 	}
 
 	UninitServerLists();
@@ -365,10 +366,10 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
 
 
-  _snprintf(szBuffer, sizeof szBuffer, "%s server connection", gpszICQProtoName);
+  mir_snprintf(szBuffer, sizeof szBuffer, Translate("%s server connection"), gpszICQProtoName);
   nlu.cbSize = sizeof(nlu);
   nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS; 
-  nlu.szDescriptiveName = Translate(szBuffer);
+  nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = gpszICQProtoName;
 
   if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0))
@@ -383,9 +384,9 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   }
 	ghServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  _snprintf(szBuffer, sizeof szBuffer, "%s client-to-client connections", gpszICQProtoName);
+  mir_snprintf(szBuffer, sizeof szBuffer, Translate("%s client-to-client connections"), gpszICQProtoName);
   nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-  nlu.szDescriptiveName = Translate(szBuffer);
+  nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = pszP2PName;
   nlu.minIncomingPorts = 1;
   hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);

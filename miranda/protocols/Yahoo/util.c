@@ -199,6 +199,20 @@ int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
     return 0;
 }
 
+void YAHOO_ShowError(const char *buff)
+{
+	if (YAHOO_GetByte( "ShowErrors", 0 )) 
+		YAHOO_ShowPopup(Translate("Yahoo Login Error"), buff, YAHOO_NOTIFY_POPUP);
+	
+	/*	if (!YAHOO_ShowPopup(Translate("Yahoo Login Error"), buff, YAHOO_NOTIFY_POPUP)) {
+			if (YAHOO_hasnotification())
+				YAHOO_shownotification(Translate("Yahoo Login Error"), buff, NIIF_ERROR);
+			else
+				MessageBox(NULL, buff, Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
+		}
+	}*/
+}
+
 int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 {
     DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;

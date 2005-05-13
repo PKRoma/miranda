@@ -96,14 +96,10 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 
 int IconsChanged(WPARAM wParam,LPARAM lParam)
 {
-	if(g_LogOptions.GroupOpenIcon)
-		DestroyIcon(g_LogOptions.GroupOpenIcon);
-	g_LogOptions.GroupOpenIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-
-	if(g_LogOptions.GroupClosedIcon)
-		DestroyIcon(g_LogOptions.GroupClosedIcon);
-	g_LogOptions.GroupClosedIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
-	WM_BroadcastMessage(NULL, GC_UPDATENICKLIST, 0, 0, FALSE);
+	g_LogOptions.GroupOpenIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN);
+	g_LogOptions.GroupClosedIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT);
+	MM_IconsChanged();
+	WM_BroadcastMessage(NULL, GC_REDRAWWINDOW, 0, 0, FALSE);
 	return 0;
 }
 
@@ -111,6 +107,9 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 {
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
 	MODULE newModule;
+
+	if(gcr == NULL)
+		return 1;
 
 	if(gcr->cbSize != SIZEOF_STRUCT_GCREGISTER_V1)
 		return 1;
@@ -144,6 +143,9 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 	NEWCHATWINDOWLPARAM newWinData={0};
 	HWND hChatWnd;
 
+	if(gcw == NULL)
+		return 1;
+
 	if(gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1)
 		return 1;
 
@@ -175,6 +177,9 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	GCEVENT *gce = (GCEVENT*)lParam;
 	GCDEST *gcd = (GCDEST*)gce->pDest;
 	NEWEVENTLPARAM nul = {0};
+
+	if(gce == NULL)
+		return 1;
 
 	if(gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1)
 		return 1;

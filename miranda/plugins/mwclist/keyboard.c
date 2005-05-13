@@ -635,7 +635,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                         case TVN_SELCHANGED:
                         {
                             NMTREEVIEW *pnmtv = (NMTREEVIEW*)lParam;
-                            TVITEM tvi = pnmtv->itemNew;
+							TVITEM tvi = pnmtv->itemNew;
 
                             if (tvi.lParam==-1) {
                                 SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
@@ -647,14 +647,22 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                                 _snprintf(buf, sizeof(buf), "%s: %s", HotKeyList[tvi.lParam].section, HotKeyList[tvi.lParam].description);
                                 SetDlgItemText(hwndDlg, IDC_NAMEVAL, buf);
 								SendDlgItemMessage(hwndDlg,IDC_SETHOTKEY,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,HotKeyList[tvi.lParam].DefHotKey ),0);
-
+								
+								/*
 								if (HotKeyList[tvi.lParam].tempFile) 
                                     SetDlgItemText(hwndDlg, IDC_LOCATION, HotKeyList[tvi.lParam].tempFile);
                                 else if(!DBGetContactSetting(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,&dbv)) {
-                                    SetDlgItemText(hwndDlg, IDC_LOCATION, dbv.pszVal);
+                                    if(dbv.type==DBVT_ASCIIZ&&dbv.pszVal!=NULL)
+									{
+									SetDlgItemText(hwndDlg, IDC_LOCATION, dbv.pszVal);
                                     DBFreeVariant(&dbv);
+									}
+								
+
                                 }
-                                else SetDlgItemText(hwndDlg, IDC_LOCATION, Translate("<not specified>"));
+                                else 
+								*/
+								SetDlgItemText(hwndDlg, IDC_LOCATION, Translate("<not specified>"));
                                 SendMessage(hwndDlg, DM_SHOWPANE, 0, 0);
                             }
                             break;

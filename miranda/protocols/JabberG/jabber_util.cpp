@@ -58,7 +58,7 @@ void __stdcall JabberLog( const char* fmt, ... )
 	va_list vararg;
 	va_start( vararg, fmt );
 	char* str = ( char* )alloca( 32000 );
-	_vsnprintf( str, 32000, fmt, vararg );
+	mir_vsnprintf( str, 32000, fmt, vararg );
 	va_end( vararg );
 
 	JCallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
@@ -129,23 +129,21 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
-			DBVARIANT dbv;
-			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
-				if ( !lstrcmpi( dbv.pszVal, jid )) {	// exact match ( node@domain/resource )
-						hContactMatched = hContact;
-						JFreeVariant( &dbv );
-						break;
-					}
+			char szJid[ JABBER_MAX_JID_LEN ];
+			if ( JGetStaticString( "jid", hContact, szJid, sizeof szJid ))
+				if ( JGetStaticString( "ChatRoomID", hContact, szJid, sizeof szJid ))
+					continue;
 
-					// match only node@domain part
-				char szTempJid[ JABBER_MAX_JID_LEN ];
-				if ( !lstrcmpi( JabberStripJid( dbv.pszVal, szTempJid, sizeof szTempJid ), s )) {
-						hContactMatched = hContact;
-						JFreeVariant( &dbv );
-						break;
-				}
+			if ( !lstrcmpi( szJid, jid )) {	// exact match ( node@domain/resource )
+				hContactMatched = hContact;
+				break;
+			}
 
-				JFreeVariant( &dbv );
+			// match only node@domain part
+			char szTempJid[ JABBER_MAX_JID_LEN ];
+			if ( !lstrcmpi( JabberStripJid( szJid, szTempJid, sizeof szTempJid ), s )) {
+				hContactMatched = hContact;
+				break;
 		}	}
 
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
@@ -532,7 +530,7 @@ char* __stdcall JabberErrorMsg( XmlNode *errorNode )
 
 	errorStr = ( char* )malloc( 256 );
 	if ( errorNode == NULL ) {
-		_snprintf( errorStr, 256, "%s -1: %s", JTranslate( "Error" ), JTranslate( "Unknown error message" ));
+		mir_snprintf( errorStr, 256, "%s -1: %s", JTranslate( "Error" ), JTranslate( "Unknown error message" ));
 		return errorStr;
 	}
 
@@ -540,37 +538,31 @@ char* __stdcall JabberErrorMsg( XmlNode *errorNode )
 	if (( str=JabberXmlGetAttrValue( errorNode, "code" )) != NULL )
 		errorCode = atoi( str );
 	if (( str=errorNode->text ) != NULL )
-		_snprintf( errorStr, 256, "%s %d: %s\r\n%s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )), str );
+		mir_snprintf( errorStr, 256, "%s %d: %s\r\n%s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )), str );
 	else
-		_snprintf( errorStr, 256, "%s %d: %s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )) );
+		mir_snprintf( errorStr, 256, "%s %d: %s", JTranslate( "Error" ), errorCode, JTranslate( JabberErrorStr( errorCode )) );
 	return errorStr;
 }
 
 void __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible )
 {
-	JABBER_LIST_ITEM *item;
-	HANDLE hContact;
-	WORD apparentMode;
-	int i;
-
 	if ( !jabberOnline ) return;
 
-	i = 0;
-	while (( i=JabberListFindNext( LIST_ROSTER, i )) >= 0 ) {
-		if (( item=JabberListGetItemPtrFromIndex( i )) != NULL ) {
-			if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
-				apparentMode = JGetWord( hContact, "ApparentMode", 0 );
-				if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
-					JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(item->jid));
-				}
-				else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE ) {
-					JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", UTF8(item->jid));
-				}
-			}
-		}
-		i++;
-	}
-}
+	for ( int i = 0; ( i=JabberListFindNext( LIST_ROSTER, i )) >= 0; i++ ) {
+		JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+		if ( item == NULL )
+			continue;
+
+		HANDLE hContact = JabberHContactFromJID( item->jid );
+		if ( hContact == NULL )
+			continue;
+
+		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
+		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE )
+			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(item->jid));
+		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
+			JabberSendPresenceTo( jabberStatus, item->jid, NULL );
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberTextEncodeW - prepare a string for transmission
@@ -882,58 +874,60 @@ int __stdcall JabberCountryNameToId( char* ctry )
 
 void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 {
-	char priorityStr[32];
-	char toStr[512];
-
 	if ( !jabberOnline ) return;
 
 	// Send <presence/> update for status ( we won't handle ID_STATUS_OFFLINE here )
 	// Note: jabberModeMsg is already encoded using JabberTextEncode()
 	EnterCriticalSection( &modeMsgMutex );
 
-	_snprintf( priorityStr, sizeof( priorityStr ), "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
+	char priorityStr[ 32 ];
+	mir_snprintf( priorityStr, sizeof priorityStr, "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
 
+	char toStr[ 512 ];
 	if ( to != NULL )
-		_snprintf( toStr, sizeof( toStr ), " to='%s'", UTF8(to));
+		mir_snprintf( toStr, sizeof toStr, " to='%s'", UTF8(to));
 	else
 		toStr[0] = '\0';
+
+	if ( extra == NULL )
+		extra = "";
 
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
 		if ( modeMsgs.szOnline )
-			JabberSend( jabberThreadInfo->s, "<presence%s><status>%s</status>%s%s</presence>", toStr, modeMsgs.szOnline, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><status>%s</status>%s%s</presence>", toStr, modeMsgs.szOnline, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_INVISIBLE:
-		JabberSend( jabberThreadInfo->s, "<presence type='invisible'%s>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+		JabberSend( jabberThreadInfo->s, "<presence type='invisible'%s>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_AWAY:
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
 		if ( modeMsgs.szAway )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szAway, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szAway, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>away</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_NA:
 		if ( modeMsgs.szNa )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szNa, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szNa, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>xa</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
 		if ( modeMsgs.szDnd )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szDnd, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szDnd, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>dnd</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	case ID_STATUS_FREECHAT:
 		if ( modeMsgs.szFreechat )
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szFreechat, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show><status>%s</status>%s%s</presence>", toStr, modeMsgs.szFreechat, priorityStr, extra );
 		else
-			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show>%s%s</presence>", toStr, priorityStr, ( extra!=NULL )?extra:"" );
+			JabberSend( jabberThreadInfo->s, "<presence%s><show>chat</show>%s%s</presence>", toStr, priorityStr, extra );
 		break;
 	default:
 		// Should not reach here
@@ -948,19 +942,15 @@ void __stdcall JabberSendPresence( int status )
 	int i;
 
 	JabberSendPresenceTo( status, NULL, NULL );
-
-	if ( status == ID_STATUS_INVISIBLE )
-		JabberSendVisiblePresence();
-	else
-		JabberSendInvisiblePresence();
+	JabberSendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
 
 	if ( status == ID_STATUS_INVISIBLE ) {
 		i = 0;
 		while (( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0 ) {
-			if (( item=JabberListGetItemPtrFromIndex( i )) != NULL ) {
+			if (( item=JabberListGetItemPtrFromIndex( i )) != NULL )
 				// Quit all chatrooms when change to invisible
-				PostMessage( item->hwndGcDlg, WM_JABBER_GC_FORCE_QUIT, 0, 0 );
-			}
+				JabberGcQuit( item, 0, 0 );
+
 			i++;
 		}
 	}
@@ -972,52 +962,7 @@ void __stdcall JabberSendPresence( int status )
 				JabberSendPresenceTo( status, item->jid, NULL );
 			}
 			i++;
-		}
-	}
-}
-
-char* __stdcall JabberRtfEscape( char* str )
-{
-	char* escapedStr;
-	int size;
-	char* p, *q;
-
-	if ( str == NULL )
-		return NULL;
-
-	for ( p=str,size=0; *p!='\0'; p++ ) {
-		if ( *p=='\\' || *p=='{' || *p=='}' )
-			size += 2;
-		else if ( *p=='\n' || *p=='\t' )
-			size += 5;
-		else
-			size++;
-	}
-
-	if (( escapedStr=( char* )malloc( size+1 )) == NULL )
-		return NULL;
-
-	for ( p=str,q=escapedStr; *p!='\0'; p++ ) {
-		if ( strchr( "\\{}", *p ) != NULL ) {
-			*q++ = '\\';
-			*q++ = *p;
-		}
-		else if ( *p == '\n' ) {
-			strcpy( q, "\\par " );
-			q += 5;
-		}
-		else if ( *p == '\t' ) {
-			strcpy( q, "\\tab " );
-			q += 5;
-		}
-		else {
-			*q++ = *p;
-		}
-	}
-	*q = '\0';
-
-	return escapedStr;
-}
+}	}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )
 {
@@ -1067,7 +1012,7 @@ char* __stdcall JabberGetClientJID( const char* jid, char* dest, size_t destLen 
 	if ( p == NULL ) {
 		char* resource = JabberListGetBestResourceNamePtr( jid );
 		if ( resource != NULL )
-			_snprintf( dest+len, destLen-len-1, "/%s", resource );
+			mir_snprintf( dest+len, destLen-len-1, "/%s", resource );
 	}
 
 	return dest;

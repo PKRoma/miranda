@@ -15,11 +15,12 @@
 #include "../../include/m_addcontact.h"
 
 #include "msgs.h"
-#include "m_message.h"
 #include "m_popup.h"
 #include "m_smileyadd.h"
 #include "sendqueue.h"
 #include "msgdlgutils.h"
+#include "nen.h"
+#include "functions.h"
 
 extern MYGLOBALS myGlobals;
 
@@ -200,7 +201,16 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
         sendJobs[iEntry].iAcksNeeded = 1;
-        SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
+        if(dat->sendMode & SMODE_NOACK) {               // fake the ack
+            ACKDATA ack = {0};
+            ack.hContact = dat->hContact;
+            ack.hProcess = sendJobs[iEntry].hSendId[0];
+            ack.type = ACKTYPE_MESSAGE;
+            ack.result = ACKRESULT_SUCCESS;
+            SendMessage(hwndDlg, HM_EVENTSENT, (WPARAM)MAKELONG(iEntry, 0), (LPARAM)&ack);
+        }
+        else
+            SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
     }
     dat->iOpenJobs++;
     myGlobals.iSendJobCurrent++;
@@ -212,7 +222,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
 
     HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
     
-    if (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
+    if (DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
         SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
     return 0;
 }
@@ -371,7 +381,7 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
         ZeroMemory((void *)&ppd, sizeof(ppd));
         ppd.lchContact = dat->hContact;
         ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        strncpy(ppd.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0), MAX_CONTACTNAME);
+        strncpy(ppd.lpzContactName, dat->szNickname, MAX_CONTACTNAME);
         strcpy(ppd.lpzText, Translate("A message delivery has failed.\nClick to open the message window."));
         ppd.colorText = RGB(0,0,0);
         ppd.colorBack = RGB(255,0,0);

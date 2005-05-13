@@ -1,3 +1,69 @@
+/*
+Miranda IM: the free IM client for Microsoft* Windows*
+
+Copyright 2000-2003 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+//brings up the send message dialog for a contact
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=(LPARAM)(char*)szText
+//returns 0 on success or nonzero on failure
+//returns immediately, just after the dialog is shown
+//szText is the text to put in the edit box of the window (but not send)
+//szText=NULL will not use any text
+//szText!=NULL is only supported on v0.1.2.0+
+//NB: Current versions of the convers plugin use the name
+//"SRMsg/LaunchMessageWindow" instead. For compatibility you should call
+//both names and the correct one will work.
+#define MS_MSG_SENDMESSAGE  "SRMsg/SendCommand"
+
+//brings up the send message dialog with the 'multiple' option open and no
+//contact selected.                                                  v0.1.2.1+
+//wParam=0
+//lParam=(LPARAM)(char*)szText
+//returns 0 on success or nonzero on failure
+#define MS_MSG_FORWARDMESSAGE  "SRMsg/ForwardMessage"
+
+#define ME_MSG_WINDOWEVENT "MessageAPI/WindowEvent"
+//wParam=(WPARAM)(MessageWindowEventData*)hWindowEvent;
+//lParam=0
+//Event types
+#define MSG_WINDOW_EVT_OPENING 1 //window is about to be opened (uType is not used)
+#define MSG_WINDOW_EVT_OPEN    2 //window has been opened (uType is not used)
+#define MSG_WINDOW_EVT_CLOSING 3 //window is about to be closed (uType is not used)
+#define MSG_WINDOW_EVT_CLOSE   4 //window has been closed (uType is not used)
+#define MSG_WINDOW_EVT_CUSTOM  5 //custom event for message plugins to use (uType may be used)
+
+#define MSG_WINDOW_UFLAG_MSG_FROM 0x00000001
+#define MSG_WINDOW_UFLAG_MSG_TO   0x00000002
+#define MSG_WINDOW_UFLAG_MSG_BOTH 0x00000004
+    
+typedef struct {
+   int cbSize;
+   HANDLE hContact;
+   HWND hwndWindow; // top level window for the contact
+   const char* szModule; // used to get plugin type (which means you could use local if needed)
+   unsigned int uType; // see event types above
+   unsigned int uFlags; // might be needed for some event types
+   void *local; // used to store pointer to custom data
+} MessageWindowEventData;
+
 #define CONTAINER_NAMELEN 25
 #define NR_SENDJOBS 30
 
@@ -30,7 +96,7 @@
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MWF_LOG_GRID 0x4000000
 #define MWF_LOG_INDIVIDUALBKG 0x8000000
-//#define MWF_LOG_LIMITAVATARHEIGHT 0x10000000
+#define MWF_LOG_INOUTICONS 0x10000000
 #define MWF_SMBUTTONSELECTED 0x20000000
 #define MWF_DIVIDERWANTED 0x40000000
 #define MWF_LOG_GROUPMODE 0x80000000
@@ -39,18 +105,25 @@
 
 #define MWF_SHOW_URLEVENTS 1
 #define MWF_SHOW_FILEEVENTS 2
-#define MWF_SHOW_INOUTICONS 4
+//#define MWF_SHOW_INOUTICONS 4
 #define MWF_SHOW_EMPTYLINEFIX 8
 #define MWF_SHOW_MICROLF 16
 #define MWF_SHOW_MARKFOLLOWUPTS 32
 #define MWF_SHOW_FLASHCLIST 64
 #define MWF_SHOW_SPLITTEROVERRIDE 128
+#define MWF_SHOW_SCROLLINGDISABLED 256
+#define MWF_SHOW_BBCODE 512
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
 #define SMODE_CONTAINER 2
 #define SMODE_FORCEANSI 4
 #define SMODE_SENDLATER 8
+#define SMODE_NOACK 16
+
+#define SENDFORMAT_BBCODE 2
+#define SENDFORMAT_SIMPLE 1
+#define SENDFORMAT_NONE 0
 
 #define AVATARMODE_DYNAMIC 0
 #define AVATARMODE_STATIC 1
@@ -80,12 +153,12 @@ struct ContainerWindowData {
     HMENU hMenu;
     HWND hwndStatus;
     int statusBarHeight;
-#if defined(_STREAMTHREADING)
-    int volatile pendingStream;
-#endif
     DWORD dwLastActivity;
     int hIcon;                // current window icon stick indicator
     DWORD dwFlashingStarted;
+    int bInTray;              // 1 = in tray normal, 2 = in tray (was maximized)
+    RECT restoreRect;
+    HWND hWndOptions;
 };
 
 #define STICK_ICON_MSG 10
@@ -163,12 +236,11 @@ struct MessageWindowData {
     HANDLE hThread;
     int doSmileys;
     UINT codePage;
-#if defined(_STREAMTHREADING)
-    int volatile pendingStream;
-#endif    
     HBITMAP hSmileyIcon;
     char *szProto;
     char *szMetaProto;
+    char szNickname[84];
+    char *szStatus;
     WORD wStatus, wMetaStatus;
     int iLastEventType;
     time_t lastEventTime;
@@ -182,9 +254,18 @@ struct MessageWindowData {
     HANDLE hMultiSendThread;
     BOOL bIsMeta;
     HANDLE hFlashingEvent;
-    char uin[80];
+    char uin[80], myUin[80];
     BOOL bNotOnList;
     int  iAvatarDisplayMode;
+    int  SendFormat;
+    DWORD dwIsFavoritOrRecent;
+    DWORD dwLastUpdate;
+    TemplateSet *ltr_templates, *rtl_templates;
+    HANDLE *hQueuedEvents;
+    int    iNextQueuedEvent;
+#define EVENT_QUEUE_SIZE 10
+    int    iEventQueueSize;
+    HBITMAP hbmMsgArea;
 };
 
 typedef struct _recentinfo {
@@ -196,7 +277,7 @@ typedef struct _recentinfo {
 typedef struct _globals {
     // static options, initialised when plugin is loading
     HWND g_hwndHotkeyHandler;
-    HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
+    HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus, g_iconPulldown;
     HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
     // external plugins
@@ -204,7 +285,8 @@ typedef struct _globals {
     int g_IconMsgEvent, g_IconTypingEvent, g_IconError, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HIMAGELIST g_hImageList;
     int g_nrProtos;
-    HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding;
+    HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
+    HMENU g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;
     int  g_wantSnapping;
     HICON g_buttonBarIcons[NR_BUTTONBARICONS];
     TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
@@ -213,9 +295,7 @@ typedef struct _globals {
     int m_SmileyPluginEnabled;
     int m_SendOnShiftEnter;
     int m_SendOnEnter;
-    int m_MsgLogHotkeys;
     int m_AutoLocaleSupport;
-    int m_IgnoreContactSettings;
     int m_AutoSwitchTabs;
     int m_CutContactNameOnTabs;
     int m_CutContactNameTo;
@@ -240,10 +320,19 @@ typedef struct _globals {
     int m_AvatarDisplayMode;
     int m_RTLDefault;
     int m_SplitterSaveOnClose;
-    int m_SplitterMode;
+    //int m_SplitterMode;
     int m_MathModAvail;
     TCHAR m_MathModStartDelimiter[40];
-    
+    int m_UnreadInTray;
+    int m_TrayFlashes;
+    int m_TrayFlashState;
+    BOOL m_SuperQuiet;
+    HANDLE m_TipOwner;
+    HANDLE m_UserMenuItem;
+    HBITMAP m_hbmMsgArea;
+    int m_WheelDefault;
+    BYTE m_WinVerMajor;
+    BYTE m_WinVerMinor;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -284,12 +373,6 @@ struct StreamJob {
 //from the hContact.
 #define MS_MSG_MOD_MESSAGEDIALOGOPENED "SRMsg_MOD/MessageDialogOpened"
 
-//obtain a pointer to the struct MessageWindowData of the given window.
-//wParam = hContact - ignored if lParam is given.
-//lParam = hwnd
-//returns struct MessageWindowData *dat, 0 if no window is found
-#define MS_MSG_MOD_GETWINDOWDATA "SRMsg_MOD/GetWindowData"
-
 //obtain the message window flags
 //wParam = hContact - ignored if lParam is given.
 //lParam = hwnd
@@ -310,16 +393,50 @@ struct TABSRMM_SessionInfo {
     struct ContainerWindowData *pContainer;
 };
 
-// fired, when a message is about to be sent, but BEFORE the contents of the 
-                                                        // input area is examined. A plugin can therefore use this event to modify
-                                                        // the contents of the input box before it is actually sent.
-                                                        // 
-                                                        // 
-                                                        // 
-
 #define MS_MSG_GETWINDOWAPI "MessageAPI/WindowAPI"
 //wparam=0
 //lparam=0
 //Returns a dword with the current message api version 
-//Current version is 0,0,0,2
+//Current version is 0,0,0,3
+
+#define MS_MSG_GETWINDOWCLASS "MessageAPI/WindowClass"
+//wparam=(char*)szBuf
+//lparam=(int)cbSize size of buffer
+//Sets the window class name in wParam (ex. "SRMM" for srmm.dll)
+
+typedef struct {
+	int cbSize;
+	HANDLE hContact;
+	int uFlags; // see uflags above
+} MessageWindowInputData;
+
+#define MSG_WINDOW_STATE_EXISTS  0x00000001 // Window exists should always be true if hwndWindow exists
+#define MSG_WINDOW_STATE_VISIBLE 0x00000002
+#define MSG_WINDOW_STATE_FOCUS   0x00000004
+#define MSG_WINDOW_STATE_ICONIC  0x00000008
+
+typedef struct {
+	int cbSize;
+	HANDLE hContact;
+	int uFlags;  // should be same as input data unless 0, then it will be the actual type
+	HWND hwndWindow; //top level window for the contact or NULL if no window exists
+	int uState; // see window states
+	void *local; // used to store pointer to custom data
+} MessageWindowOutputData;
+
+#define MS_MSG_GETWINDOWDATA "MessageAPI/GetWindowData"
+//wparam=(MessageWindowInputData*)
+//lparam=(MessageWindowData*)
+//returns 0 on success and returns non-zero (1) on error or if no window data exists for that hcontact
+
+// callback for the user menu entry
+
+#define MS_TABMSG_SETUSERPREFS "SRMsg_MOD/SetUserPrefs"
+
+// show one of the tray menus
+// wParam = 0 -> session list
+// wParam = 1 -> tray menu
+// lParam must be 0
+// 
+#define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
 

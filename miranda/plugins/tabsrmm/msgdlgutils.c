@@ -37,16 +37,18 @@ $Id$
 #include "../../include/m_addcontact.h"
 
 #include "msgs.h"
-#include "m_message.h"
 #include "m_popup.h"
+#include "nen.h"
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
 #include "m_ieview.h"
+#include "functions.h"
 
 #include <math.h>
 
 extern MYGLOBALS myGlobals;
+extern NEN_OPTIONS nen_options;
 
 extern HMODULE g_hInst;
 extern HANDLE hMessageWindowList;
@@ -56,6 +58,18 @@ void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *sz
 char *GetThemeFileName(int iMode);
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
+int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
+
+struct RTFColorTable rtf_ctable[] = {
+    _T("red"), RGB(255, 0, 0), 0, ID_FONT_RED,
+    _T("blue"), RGB(0, 0, 255), 0, ID_FONT_BLUE,
+    _T("green"), RGB(0, 255, 0), 0, ID_FONT_GREEN,
+    _T("magenta"), RGB(255, 0, 255), 0, ID_FONT_MAGENTA,
+    _T("yellow"), RGB(255, 255, 0), 0, ID_FONT_YELLOW,
+    _T("black"), 0, 0, ID_FONT_BLACK,
+    _T("white"), RGB(255, 255, 255), 0, ID_FONT_WHITE,
+    NULL, 0, 0, 0
+};
 
 /*
  * calculates avatar layouting, based on splitter position to find the optimal size
@@ -192,32 +206,23 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
         CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_MESSAGEBODYINANEWLINE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_NEWLINE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_USECONTACTSLOCALTIME, MF_BYCOMMAND | iLocalTime ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWDATE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWSECONDS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_INDENTMESSAGEBODY, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENT ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwEventIsShown & MWF_SHOW_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWNICK ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_UNDERLINETIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_UNDERLINE ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SWAPNICK ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_LONGDATES ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_USERELATIVEDATES ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL, MF_BYCOMMAND | (myGlobals.m_IgnoreContactSettings ? MF_CHECKED : MF_UNCHECKED));
-        CheckMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENTWITHTABS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_TEXTFORMAT ? MF_CHECKED : MF_UNCHECKED);
         
         EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
-        EnableMenuItem(submenu, ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS, myGlobals.m_IgnoreContactSettings ? MF_GRAYED : MF_ENABLED);
-        EnableMenuItem(submenu, ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT, dat->dwFlags & MWF_LOG_INDENT ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
@@ -243,7 +248,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SELECTCONTAINER), hwndDlg, SelectContainerDlgProc, (LPARAM) hwndDlg);
                 return 1;
             case ID_TABMENU_CONTAINEROPTIONS:
-                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) dat->pContainer);
+                if(dat->pContainer->hWndOptions == 0)
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndDlg, DlgProcContainerOptions, (LPARAM) dat->pContainer);
                 return 1;
             case ID_TABMENU_CLOSECONTAINER:
                 SendMessage(dat->pContainer->hwnd, WM_CLOSE, 0, 0);
@@ -287,11 +293,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     OPENFILENAMEA ofn={0};
 
                     CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
-                    ofn.lStructSize=sizeof(ofn);
+                    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
                     ofn.hwndOwner=0;
                     ofn.lpstrFile = FileName;
                     ofn.lpstrFilter = Filters;
                     ofn.nMaxFile = MAX_PATH;
+                    ofn.nMaxFileTitle = MAX_PATH;
                     ofn.Flags=OFN_HIDEREADONLY;
                     ofn.lpstrInitialDir = ".";
                     *FileName = '\0';
@@ -308,7 +315,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
         int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
-        int iIgnorePerContact = myGlobals.m_IgnoreContactSettings;
 
         DWORD dwOldFlags = dat->dwFlags;
 
@@ -316,9 +322,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 
             case ID_LOGMENU_SHOWTIMESTAMP:
                 dat->dwFlags ^= MWF_LOG_SHOWTIME;
-                return 1;
-            case ID_LOGMENU_MESSAGEBODYINANEWLINE:
-                dat->dwFlags  ^= MWF_LOG_NEWLINE;
                 return 1;
             case ID_LOGMENU_USECONTACTSLOCALTIME:
                 iLocalTime ^=1;
@@ -329,9 +332,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_LOGMENU_INDENTMESSAGEBODY:
                 dat->dwFlags ^= MWF_LOG_INDENT;
-                return 1;
-            case ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT:
-                dat->dwFlags ^= MWF_LOG_INDENTWITHTABS;
                 return 1;
             case ID_LOGMENU_ACTIVATERTL:
                 iRtl ^= 1;
@@ -352,24 +352,17 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_MESSAGEICONS_SHOWICONS:
                 dat->dwFlags ^= MWF_LOG_SHOWICONS;
-                dat->dwFlags = dat->dwFlags & MWF_LOG_SHOWICONS ? dat->dwFlags & ~MWF_LOG_SYMBOLS : dat->dwFlags;
+                //dat->dwFlags = dat->dwFlags & MWF_LOG_SHOWICONS ? dat->dwFlags & ~MWF_LOG_SYMBOLS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
                 dat->dwFlags ^= MWF_LOG_SYMBOLS;
-                dat->dwFlags = dat->dwFlags & MWF_LOG_SYMBOLS ? dat->dwFlags & ~MWF_LOG_SHOWICONS : dat->dwFlags;
+                //dat->dwFlags = dat->dwFlags & MWF_LOG_SYMBOLS ? dat->dwFlags & ~MWF_LOG_SHOWICONS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_USEINCOMING:
-                dat->dwEventIsShown ^= MWF_SHOW_INOUTICONS;
-                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", dat->dwEventIsShown & MWF_SHOW_INOUTICONS ? 1 : 0);
+                dat->dwFlags ^= MWF_LOG_INOUTICONS;
                 return 1;
             case ID_LOGMENU_SHOWNICKNAME:
                 dat->dwFlags ^= MWF_LOG_SHOWNICK;
-                return 1;
-            case ID_LOGMENU_UNDERLINETIMESTAMP:
-                dat->dwFlags ^= MWF_LOG_UNDERLINE;
-                return 1;
-            case ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME:
-                dat->dwFlags ^= MWF_LOG_SWAPNICK;
                 return 1;
             case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", iLogStatus ? 0 : -1);
@@ -394,29 +387,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING:
                 dat->dwFlags ^= MWF_LOG_TEXTFORMAT;
                 return 1;
-            case ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT:
-                dat->dwFlags ^= MWF_LOG_LONGDATES;
-                return 1;
-            case ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS:
-                dat->dwFlags ^= MWF_LOG_USERELATIVEDATES;
-                return 1;
-            case ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL:
-                iIgnorePerContact = !iIgnorePerContact;
-                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", iIgnorePerContact);
-                myGlobals.m_IgnoreContactSettings = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ignorecontactsettings", 0);
-                return 1;
-            case ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS:
-                {
-                    HANDLE hContact;
-                    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-                    while(hContact) {
-                        DBWriteContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
-                        DBWriteContactSettingDword(hContact, SRMSGMOD, "splitsplity", dat->splitterY);
-                        hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-                    }
-                    WindowList_Broadcast(hMessageWindowList, DM_FORCEDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                    return 1;
-                }
             case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
                 {
                     char *szFilename = GetThemeFileName(1);
@@ -451,11 +421,13 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iS
         char szTipText[256];
 
         if(myGlobals.g_SecureIMAvail && iSecIMStatus >= 0) {
-            _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? "enabled" : "disabled");
+            _snprintf(szTipText, sizeof(szTipText), Translate("Secure IM is %s"), iSecIMStatus ? Translate("enabled") : Translate("disabled"));
             SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 2, (LPARAM)szTipText);
         }
-        _snprintf(szTipText, sizeof(szTipText), "Session stats: Active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szTipText);
+        //_snprintf(szTipText, sizeof(szTipText), "Session stats: Active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
+        //SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szTipText);
+        _snprintf(szTipText, sizeof(szTipText), Translate("Sounds are %s (click to toggle, SHIFT-click to apply for all containers)"), dat->pContainer->dwFlags & CNT_NOSOUND ? "off" : "on");
+        SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
     }
 }
 
@@ -482,6 +454,7 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
             else
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[15]);
         }
+        SendMessage(dat->pContainer->hwndStatus, SB_SETICON, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)(dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22]));
         UpdateReadChars(hwndDlg, dat);
         UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
     }
@@ -727,10 +700,9 @@ DWORD WINAPI LoadPictureThread(LPVOID param)
     return 0;
 }
 
-// BEGIN MOD#33: Show contact's picture
 void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread)
 {
-    DBVARIANT dbv;
+    DBVARIANT dbv = {0};
     RECT rc;
     int picFailed = FALSE;
     int iUnknown = FALSE;
@@ -764,6 +736,9 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
                     iUnknown = TRUE;
             }
         }
+        else
+            DBFreeVariant(&dbv);
+        
         if (!DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv) || iUnknown) {
             BITMAP bminfo;
             BOOL isNoPic = FALSE;
@@ -861,19 +836,25 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
     SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
     SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 }
-// END MOD#33
 
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
 {
     CLISTEVENT cle;
-    char toolTip[256], *contactName;
+    char toolTip[256];
+
+    dat->dwTickLastEvent = GetTickCount();
+    
+    if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
+        UpdateTrayMenu(dat, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->hContact, FALSE);
+        if(nen_options.bTraySupport == TRUE && myGlobals.m_WinVerMajor >= 5)
+            return;
+    }
+    
+    if(hEvent == 0)
+        return;
 
     if(!myGlobals.m_FlashOnClist)
         return;
-
-    if(hEvent == 0)
-        return;
-    
     if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE && !(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST)) {
         ZeroMemory(&cle, sizeof(cle));
         cle.cbSize = sizeof(cle);
@@ -881,8 +862,7 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
         cle.hDbEvent = hEvent;
         cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
         cle.pszService = "SRMsg/ReadMessage";
-        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
-        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), dat->szNickname);
         cle.pszTooltip = toolTip;
         CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
         dat->dwEventIsShown |= MWF_SHOW_FLASHCLIST;
@@ -946,6 +926,71 @@ char * Message_GetFromStream(HWND hwndRtf, struct MessageWindowData* dat, DWORD 
 	return pszText; // pszText contains the text
 }
 
+static void CreateColorMap(TCHAR *Text)
+{
+	TCHAR * pszText = Text;
+	TCHAR * p1;
+	TCHAR * p2;
+	TCHAR * pEnd;
+	int iIndex = 1, i = 0;
+    COLORREF default_color;
+    
+//	static const char* lpszFmt = "/red%[^ \x5b,]/red%[^ \x5b,]/red%[^ \x5b,]";
+	static const TCHAR *lpszFmt = _T("\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];");
+	TCHAR szRed[10], szGreen[10], szBlue[10];
+
+	//pszText = _tcsdup(Text);
+
+	p1 = _tcsstr(pszText, _T("\\colortbl"));
+	if(!p1)
+		return;
+
+	pEnd = _tcschr(p1, '}');
+
+	p2 = _tcsstr(p1, _T("\\red"));
+
+    while(rtf_ctable[i].szName != NULL)
+        rtf_ctable[i++].index = 0;
+    
+    default_color = (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "Font16Col", 0);
+    
+    while(p2 && p2 < pEnd)
+	{
+		if( _stscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0 )
+		{
+			int i;
+			for (i = 0;;i ++) {
+                if(rtf_ctable[i].szName == NULL)
+                    break;
+//                if(rtf_ctable[i].clr == default_color)
+//                    continue;
+				if(rtf_ctable[i].clr == RGB(_ttoi(szRed), _ttoi(szGreen), _ttoi(szBlue)))
+					rtf_ctable[i].index = iIndex;
+			}
+		}
+		iIndex++;
+		p1 = p2;
+		p1 ++;
+
+		p2 = _tcsstr(p1, _T("\\red"));
+	}
+
+	//free(pszText);
+
+	return ;
+}
+
+int RTFColorToIndex(int iCol)
+{
+    int i = 0;
+    while(rtf_ctable[i].szName != NULL) {
+        if(rtf_ctable[i].index == iCol)
+            return i + 1;
+        i++;
+    }
+    return 0;
+}
+
 BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 {
 	TCHAR * p1;
@@ -954,7 +999,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 	BOOL bTextHasStarted = FALSE;
     LOGFONTA lf;
     COLORREF color;
-
+    static inColor = 0;
+    
 	if(!pszText)
 		return FALSE;
 
@@ -971,10 +1017,11 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
     /*
 	pIndex = malloc(sizeof(int) * MM_FindModule(dat->pszModule)->nColorCount);
 	for(i = 0; i < MM_FindModule(dat->pszModule)->nColorCount ; i++)
-		pIndex[i] = -1;
-	CreateColorMap(pszText, pIndex, dat);
-    */
+		pIndex[i] = -1;*/
+	CreateColorMap(pszText);
+    
 	// scan the file for rtf commands and remove or parse them
+    inColor = 0;
 	p1 = _tcsstr(pszText, _T("\\pard"));
 	if(p1)
 	{
@@ -998,13 +1045,14 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				{
 					TCHAR szTemp[20];
 					int iCol = _ttoi(p1 + 3);
-					//int iInd = RTFColorToIndex(pIndex, iCol, dat);
+					int iInd = RTFColorToIndex(iCol);
 					bJustRemovedRTF = TRUE;
 
                     _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
 					iRemoveChars = 3 + _tcslen(szTemp);
-					//if(bTextHasStarted || iCol)
-					//	_snprintf(InsertThis, sizeof(InsertThis), ( iCol >0 ) ? _T("%%c%02u") : _T("%%C"), iCol);
+					if(bTextHasStarted || iCol)
+                        _sntprintf(InsertThis, sizeof(InsertThis), ( iInd > 0 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd  - 1].szName);
+                    inColor = iInd > 0 ? 1 : 0;
 				}
 				else if(p1 == _tcsstr(p1, _T("\\highlight"))) //background color
 				{
@@ -1037,8 +1085,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
-                    if(!(lf.lfWeight == FW_BOLD))           // only allow bold if the font itself isn't a bold one, otherwise just strip it..
-                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+                    if(!(lf.lfWeight == FW_BOLD)) {          // only allow bold if the font itself isn't a bold one, otherwise just strip it..
+                        if(dat->SendFormat == SENDFORMAT_BBCODE)
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
+                        else
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+                    }
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\i"))) // italics
@@ -1046,8 +1098,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
-                    if(!lf.lfItalic)                        // same as for bold
-                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+                    if(!lf.lfItalic) {                       // same as for bold
+                        if(dat->SendFormat == SENDFORMAT_BBCODE)
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
+                        else
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+                    }
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\ul"))) // underlined
@@ -1060,8 +1116,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 						iRemoveChars = 4;
 					else
 						iRemoveChars = 3;
-                    if(!lf.lfUnderline)                     // same as for bold
-                        _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+                    if(!lf.lfUnderline)  {                   // same as for bold
+                        if(dat->SendFormat == SENDFORMAT_BBCODE)
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
+                        else
+                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+                    }
 
 				}
 				else if(p1 == _tcsstr(p1, _T("\\tab"))) // tab
@@ -1190,7 +1250,6 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 	}
 
 	//free(pIndex);
-
 	return TRUE;
 }
 
@@ -1210,11 +1269,17 @@ void DoTrimMessage(TCHAR *msg)
         msg[i+1] = '\0';
 }
 
+/*
+ * saves message to the input history.
+ * its using streamout in UTF8 format - no unicode "issues" and all RTF formatting is saved aswell,
+ * so restoring a message from the input history will also restore its formatting
+ */
+
 void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
     int iLength = 0, iStreamLength = 0;
     int oldTop = 0;
-    char *szFromStream = 0;
+    char *szFromStream = NULL;
 
     if(wParam) {
         oldTop = dat->iHistoryTop;
@@ -1261,6 +1326,11 @@ void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
         dat->iHistoryTop = oldTop;
 }
 
+/*
+ * retrieve both buddys and my own UIN for a message session and store them in the message window *dat
+ * respects metacontacts and uses the current protocol if the contact is a MC
+ */
+
 void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 {
     CONTACTINFO ci;
@@ -1280,16 +1350,33 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
     if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
         switch (ci.type) {
             case CNFT_ASCIIZ:
-                _snprintf(dat->uin, sizeof(dat->uin), "%s", ci.pszVal);
+                mir_snprintf(dat->uin, sizeof(dat->uin), "%s", ci.pszVal);
                 miranda_sys_free(ci.pszVal);
                 break;
             case CNFT_DWORD:
-                _snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
+                mir_snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
                 break;
         }
     }
     else
         dat->uin[0] = 0;
+
+    // get own uin...
+    ci.hContact = 0;
+    
+    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+        switch (ci.type) {
+            case CNFT_ASCIIZ:
+                mir_snprintf(dat->myUin, sizeof(dat->myUin), "%s", ci.pszVal);
+                miranda_sys_free(ci.pszVal);
+                break;
+            case CNFT_DWORD:
+                mir_snprintf(dat->myUin, sizeof(dat->myUin), "%u", ci.dVal);
+                break;
+        }
+    }
+    else
+        dat->myUin[0] = 0;
 }
 
 unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
@@ -1331,6 +1418,22 @@ void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), TRUE);
         dat->hwndLog = 0;
     }
+}
+
+void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
+{
+    if(iMode) {            // switch from rtf to IEview
+        SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+        EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
+        SetMessageLog(hwndDlg, dat);
+    }
+    else                      // switch from IEView to rtf
+        SetMessageLog(hwndDlg, dat);
+    SetDialogToType(hwndDlg);
+    SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+    UpdateContainerMenu(hwndDlg, dat);
 }
 
 void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
@@ -1399,21 +1502,45 @@ void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
 
 void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    if(myGlobals.m_SplitterMode || dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)
-        DBWriteContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", dat->splitterY);
+    if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
+        return;             // do not save "invalid" splitter values
+        
+    if(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)
+        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
     else
-        DBWriteContactSettingDword(NULL, SRMSGMOD, "splitsplity", dat->splitterY);
+        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", dat->splitterY);
 }
 
 void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    if(!myGlobals.m_SplitterMode && !(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
-        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150);
+    if(!(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
+        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150);
     else
-        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD, "splitsplity", (DWORD) 150));
+        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150));
 
-    if(dat->splitterY < MINSPLITTERY || dat->splitterY == -1) {
-        if(!dat->showPic)
-            dat->splitterY = MINSPLITTERY;
+    if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
+        dat->splitterY = 150;
+}
+
+void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
+{
+    int iPlay = 0;
+    DWORD dwFlags = pContainer->dwFlags;
+
+    if(nen_options.iNoSounds)
+        return;
+    
+    if(dwFlags & CNT_NOSOUND)
+        iPlay = FALSE;
+    else if(dwFlags & CNT_SYNCSOUNDS) {
+        iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
+    }
+    else
+        iPlay = TRUE;
+    if (iPlay) {
+        if(GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
+            SkinPlaySound("RecvMsgActive");
+        else 
+            SkinPlaySound("RecvMsgInactive");
     }
 }

@@ -30,6 +30,8 @@ static char sttGatewayHeader[] =
 	"Connection: keep-alive\r\n"
 	"Content-Length: %d\r\n\r\n%s";
 
+extern int msnPingTimeout, msnPingTimeoutCurrent;
+
 //=======================================================================================
 
 int ThreadData::send( char* data, int datalen )
@@ -38,6 +40,9 @@ int ThreadData::send( char* data, int datalen )
 		return 0;
 
 	NETLIBBUFFER nlb = { data, datalen, 0 };
+
+	if ( mType == SERVER_NOTIFICATION )
+		msnPingTimeout = 50;
 
 	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS && mP2pSession != NULL )) {
 		if ( datalen != 5 && memcmp( data, "PNG\r\n", 5 ) != 0 )
@@ -113,7 +118,7 @@ LBL_RecvAgain:
 					getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), QI->datalen == 0 );
 
 					char* tBuffer = ( char* )alloca( QI->datalen+400 );
-					int cbBytes = _snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
+					int cbBytes = mir_snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
 						szHttpPostUrl, MSN_USER_AGENT, mGatewayIP, QI->datalen, "" );
 					memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
 					cbBytes += QI->datalen;
@@ -149,7 +154,7 @@ LBL_RecvAgain:
 		getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), true );
 
 		char szCommand[ 400 ];
-		int cbBytes = _snprintf( szCommand, sizeof( szCommand ),
+		int cbBytes = mir_snprintf( szCommand, sizeof( szCommand ),
 			sttGatewayHeader, szHttpPostUrl, MSN_USER_AGENT, mGatewayIP, 0, "" );
 
 		NETLIBBUFFER nlb = { szCommand, cbBytes, 0 };

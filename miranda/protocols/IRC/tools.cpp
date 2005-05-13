@@ -449,7 +449,7 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 					*p = '%'; p++;
 					*p = 'c';p++;
 
-					_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iFG]), GetGValue(prefs->colors[iFG]), GetBValue(prefs->colors[iFG]));
+					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iFG]), GetGValue(prefs->colors[iFG]), GetBValue(prefs->colors[iFG]));
 					for (int i = 0; i<9; i++)
 					{
 						*p = szTemp[i]; p++;
@@ -465,7 +465,7 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 					*p = '%'; p++;
 					*p = 'f';p++;
 
-					_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iBG]), GetGValue(prefs->colors[iBG]), GetBValue(prefs->colors[iBG]));
+					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iBG]), GetGValue(prefs->colors[iBG]), GetBValue(prefs->colors[iBG]));
 					for (int i = 0; i<9; i++)
 					{
 						*p = szTemp[i]; p++;
@@ -525,7 +525,7 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 				if(!bStrip && iText >= 0 && iText < 16)
 				{
 					char szTemp[10];
-					_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iText]), GetGValue(prefs->colors[iText]), GetBValue(prefs->colors[iText]));
+					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iText]), GetGValue(prefs->colors[iText]), GetBValue(prefs->colors[iText]));
 					*p = '%'; p++;
 					*p = 'c';p++;
 					for (int i = 0; i<9; i++)
@@ -537,7 +537,7 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 				if(!bStrip && iBG >= 0 && iBG < 16)
 				{
 					char szTemp[10];
-					_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iBG]), GetGValue(prefs->colors[iBG]), GetBValue(prefs->colors[iBG]));
+					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iBG]), GetGValue(prefs->colors[iBG]), GetBValue(prefs->colors[iBG]));
 					*p = '%'; p++;
 					*p = 'f';p++;
 					for (int i = 0; i<9; i++)

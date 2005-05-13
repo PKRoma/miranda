@@ -1,10 +1,10 @@
 ----------------------------oOo----------------------------
 
-                      Chat v 0.2.1.1
+                      Chat v 0.2.1.3
 
-        Released 2004-05-26, last updated 2005-04-04
+        Released 2004-05-26, last updated 2005-04-20
 
------------------------------------------------------------
+------------------------------------------------------------
 
 Important information
 ----------
@@ -30,7 +30,7 @@ http://www.miranda-im.org/download/details.php?action=viewlog&id=1309
 Author
 ---------  
 
-My name is Jörgen Persson, also known as Matrix or m3x, I have been using 
+My name is Jörgen Persson, also known as Matrix, I have been using 
 Miranda IM since 2001 and so far I have been responsible for the IRC part and 
 I am nowadays considered to be a 'core guy'.  If you wish to contact me you can e-mail 
 me at: i_am_matrix at users dot sourceforge dot net. You can also join #miranda 

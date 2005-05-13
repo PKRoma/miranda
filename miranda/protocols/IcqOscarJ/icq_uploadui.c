@@ -132,7 +132,7 @@ static void AppendToUploadLog(HWND hwndDlg, const char *fmt, ...)
   int iItem;
 
   va_start(va, fmt);
-  _vsnprintf(szText, sizeof(szText), fmt, va);
+  mir_vsnprintf(szText, sizeof(szText), fmt, va);
   va_end(va);
 
   iItem = SendDlgItemMessage(hwndDlg, IDC_LOG, LB_ADDSTRING, 0, (LPARAM)szText);
@@ -611,13 +611,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
               if (isChecked)
               {  // Queue for uploading
-                pszGroup = _strdup(DEFAULT_SS_GROUP);
+                pszGroup = NULL;
                 if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
                 {
                   if (dbv.pszVal && strlen(dbv.pszVal) > 0)
                     pszGroup = _strdup(dbv.pszVal);
                   DBFreeVariant(&dbv);
                 }
+                if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
 
                 // Get group ID from cache, if not ready use parent group, if still not ready create one
                 wNewGroupId = getServerGroupID(pszGroup);
@@ -695,13 +696,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               WORD wCurrentGroupId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
               DBVARIANT dbv;
 
-              pszGroup = _strdup(DEFAULT_SS_GROUP);
+              pszGroup = NULL;
               if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
               {
                 if (dbv.pszVal && strlen(dbv.pszVal) > 0)
                   pszGroup = _strdup(dbv.pszVal);
                 DBFreeVariant(&dbv);
               }
+              if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
               wNewGroupId = getServerGroupID(pszGroup);
               if (!wNewGroupId && strstr(pszGroup, "\\") != NULL)
               { // if it is sub-group, take master parent
@@ -799,7 +801,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               break;
             }
           }
-          else if (wApparentMode == ID_STATUS_OFFLINE)
+          if (wApparentMode == ID_STATUS_OFFLINE)
           { // contact is on the invisible list
             if (wDenyId == 0 && wIgnoreId == 0)
             {
@@ -810,8 +812,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               break;
             }
           }
-          else
-          { // contact is not on any list
+          if (wApparentMode != ID_STATUS_ONLINE)
+          { // contact is not on visible list
             if (wPermitId != 0)
             {
               currentAction = ACTION_REMOVEVISIBLE;
@@ -820,7 +822,10 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_PERMIT);
               break;
             }
-            else if (wDenyId != 0)
+          }
+          if (wApparentMode != ID_STATUS_OFFLINE)
+          { // contact is not on invisible list
+            if (wDenyId != 0)
             {
               currentAction = ACTION_REMOVEINVISIBLE;
               wNewContactId = wDenyId;
@@ -961,9 +966,36 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, working?0xFFFFFFFF:0, 0);
               for (i=0; i<=FONTID_MAX; i++)
                 SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
+             	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
+            		SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
             }
             break;
             
+          case CLN_NEWCONTACT:
+          case CLN_CONTACTMOVED:
+            {
+              HANDLE hContact;
+              HANDLE hItem = ((NMCLISTCONTROL*)lParam)->hItem;
+              char* szProto;
+
+              // Delete non-icq contacts
+              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+              while (hContact)
+              {
+                if (hItem == (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0))
+                {
+                  szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+                  if (szProto == NULL || lstrcmp(szProto, gpszICQProtoName))
+                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
+                  break; // exit loop
+                }
+                hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+              }
+              if (hItemAll)
+                UpdateAllContactsCheckmark(GetDlgItem(hwndDlg, IDC_CLIST), hItemAll);
+            }
+            break;
+
           case CLN_LISTREBUILT:
             {
               HANDLE hContact;
@@ -985,7 +1017,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
               }
 
-              bCheck = UpdateCheckmarks(hwndDlg, NULL);
+              if (!bListInit) // do not enter twice
+                bCheck = UpdateCheckmarks(hwndDlg, NULL);
 
               if (!hItemAll) // Add the "All contacts" item
               {

@@ -37,7 +37,7 @@ void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata )
 	if (( iqId=JabberXmlGetAttrValue( iqNode, "id" )) == NULL )
 		idStr[0] = '\0';
 	else
-		_snprintf( idStr, sizeof( idStr ), " id='%s'", iqId );
+		mir_snprintf( idStr, sizeof( idStr ), " id='%s'", iqId );
 
 	if ( !strcmp( iqType, "get" )) {
 		JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s'%s>"
@@ -77,7 +77,7 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 	if (( iqId=JabberXmlGetAttrValue( iqNode, "id" )) == NULL )
 		idStr[0] = '\0';
 	else
-		_snprintf( idStr, sizeof( idStr ), " id='%s'", iqId );
+		mir_snprintf( idStr, sizeof( idStr ), " id='%s'", iqId );
 
 	if ( !strcmp( iqType, "get" )) {
 		if ( !strcmp( discoType, "#info" )) {

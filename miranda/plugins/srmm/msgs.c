@@ -1,7 +1,7 @@
 /*
 SRMM
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2005 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -30,6 +30,33 @@ HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
 int hMsgMenuItemCount = 0;
 
 extern HINSTANCE g_hInst;
+
+static int SRMMStatusToPf2(int status)
+{
+    switch (status) {
+        case ID_STATUS_ONLINE:
+            return PF2_ONLINE;
+        case ID_STATUS_AWAY:
+            return PF2_SHORTAWAY;
+        case ID_STATUS_DND:
+            return PF2_HEAVYDND;
+        case ID_STATUS_NA:
+            return PF2_LONGAWAY;
+        case ID_STATUS_OCCUPIED:
+            return PF2_LIGHTDND;
+        case ID_STATUS_FREECHAT:
+            return PF2_FREECHAT;
+        case ID_STATUS_INVISIBLE:
+            return PF2_INVISIBLE;
+        case ID_STATUS_ONTHEPHONE:
+            return PF2_ONTHEPHONE;
+        case ID_STATUS_OUTTOLUNCH:
+            return PF2_OUTTOLUNCH;
+        case ID_STATUS_OFFLINE:
+            return MODEF_OFFLINE;
+    }
+    return 0;
+}
 
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -69,14 +96,15 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	}
 	/* new message */
 	SkinPlaySound("AlertMsg");
-
-	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP)) {
-		struct NewMessageWindowLParam newData = { 0 };
-		newData.hContact = (HANDLE) wParam;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
-		return 0;
+	{
+		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
+		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
+			struct NewMessageWindowLParam newData = { 0 };
+			newData.hContact = (HANDLE) wParam;
+			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
+			return 0;
+		}
 	}
-
 	ZeroMemory(&cle, sizeof(cle));
 	cle.cbSize = sizeof(cle);
 	cle.hContact = (HANDLE) wParam;
@@ -84,7 +112,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	cle.pszService = "SRMsg/ReadMessage";
 	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-	_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+	mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
 	cle.pszTooltip = toolTip;
 	CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 	return 0;
@@ -151,7 +179,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	if ((int) lParam && !foundWin && (g_dat->flags&SMF_SHOWTYPINGTRAY)) {
 		char szTip[256];
 
-		_snprintf(szTip, sizeof(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
+		mir_snprintf(szTip, sizeof(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
 		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !(g_dat->flags&SMF_SHOWTYPINGCLIST)) {
 			MIRANDASYSTRAYNOTIFY tn;
 			tn.szProto = NULL;
@@ -208,8 +236,8 @@ static void RestoreUnreadMessageAlerts(void)
 	DBEVENTINFO dbei = { 0 };
 	char toolTip[256];
 	int windowAlreadyExists;
-	int autoPopup = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
 	HANDLE hDbEvent, hContact;
+	int autoPopup;
 
 	dbei.cbSize = sizeof(dbei);
 	cle.cbSize = sizeof(cle);
@@ -220,13 +248,19 @@ static void RestoreUnreadMessageAlerts(void)
 	while (hContact) {
 		hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) hContact, 0);
 		while (hDbEvent) {
+			autoPopup = 0;
 			dbei.cbBlob = 0;
 			CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
 			if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && dbei.eventType == EVENTTYPE_MESSAGE) {
 				windowAlreadyExists = WindowList_Find(g_dat->hMessageWindowList, hContact) != NULL;
 				if (windowAlreadyExists)
 					continue;
-
+				{
+					char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+					if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
+						autoPopup = 1;
+					}
+				}
 				if (autoPopup && !windowAlreadyExists) {
 					struct NewMessageWindowLParam newData = { 0 };
 					newData.hContact = hContact;
@@ -235,7 +269,7 @@ static void RestoreUnreadMessageAlerts(void)
 				else {
 					cle.hContact = hContact;
 					cle.hDbEvent = hDbEvent;
-					_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
+					mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
 					cle.pszTooltip = toolTip;
 					CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 				}
@@ -326,7 +360,33 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
-	return PLUGIN_MAKE_VERSION(0,0,0,2);
+	return PLUGIN_MAKE_VERSION(0,0,0,3);
+}
+
+static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+{
+	char *szBuf = (char*)wParam;
+	int size = (int)lParam;
+	mir_snprintf(szBuf, size, SRMMMOD);
+	return 0;
+}
+
+static int GetWindowData(WPARAM wParam, LPARAM lParam)
+{
+	MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
+	MessageWindowData *mwd = (MessageWindowData*)lParam;
+	HWND hwnd;
+
+	if (mwid==NULL||mwd==NULL) return 1;
+	if (mwid->cbSize!=sizeof(MessageWindowInputData)||mwd->cbSize!=sizeof(MessageWindowData)) return 1;
+	if (mwid->hContact==NULL) return 1;
+	if (mwid->uFlags!=MSG_WINDOW_UFLAG_MSG_BOTH) return 1;
+	hwnd = WindowList_Find(g_dat->hMessageWindowList, mwid->hContact);
+	mwd->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
+	mwd->hwndWindow = hwnd;
+	mwd->local = 0;
+	mwd->uState = SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
+	return 0;
 }
 
 int LoadSendRecvMessageModule(void)
@@ -357,6 +417,8 @@ int LoadSendRecvMessageModule(void)
 	CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand);
 #endif
 	CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
+	CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
+	CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
 	CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
 	CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
 	hHookWinEvt=CreateHookableEvent(ME_MSG_WINDOWEVENT);

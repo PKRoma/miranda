@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <time.h>
+#include <io.h>
 #include "pthread.h"
 #include "yahoo.h"
 
@@ -168,13 +169,15 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
 		
 
-		if (errmsg[0] == '\0') 
-		if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
-			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-			lstrcpyn(ylad->password, dbv.pszVal, 255);
-			DBFreeVariant(&dbv);
-		}  else
-			lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
+		if (errmsg[0] == '\0') {
+			if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
+				CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				lstrcpyn(ylad->password, dbv.pszVal, 255);
+				DBFreeVariant(&dbv);
+			}  else {
+				lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
+			}
+		}
 
 		if (errmsg[0] != '\0'){
 			FREE(ylad);
@@ -218,7 +221,7 @@ void yahoo_util_broadcaststatus(int s)
         
     yahooStatus = s;
 
-    ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, yahooStatus);
+    ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, (LPARAM)yahooStatus);
 }
 
 
@@ -237,7 +240,7 @@ static void __cdecl yahoo_im_sendackfail_longmsg(HANDLE hContact)
 {
     SleepEx(1000, TRUE);
     ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 
-						Translate("Message is too long: Yahoo messages are limited by 800 UTF8 chars"));
+						(LPARAM)Translate("Message is too long: Yahoo messages are limited by 800 UTF8 chars"));
 }
 
 //=======================================================
@@ -442,15 +445,20 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 {
     PROTOSEARCHRESULT *psr=(PROTOSEARCHRESULT*)lParam;
 	
-	YAHOO_DebugLog("YahooAddToList -> %s", psr->nick);
-	if (!yahooLoggedIn)
-		return 0;
+	YAHOO_DebugLog("[YahooAddToList]");
 	
-	if ( psr->cbSize != sizeof( PROTOSEARCHRESULT ))
+	if (!yahooLoggedIn){
+		YAHOO_DebugLog("[YahooAddToList] WARNING: WE ARE OFFLINE!");
+		return 0;
+	}
+	
+	if (psr == NULL || psr->cbSize != sizeof( PROTOSEARCHRESULT ))
 		return 0;
 
-    if (find_buddy(psr->nick) != NULL)
+	if (find_buddy(psr->nick) != NULL) {
+		YAHOO_DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", psr->nick);
 		return 0;
+	}
 	
 	YAHOO_DebugLog("Adding buddy:%s", psr->nick);
     return (int)add_buddy(psr->nick, psr->nick, wParam);
@@ -566,25 +574,58 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 {
 	CCSDATA ccs1;
 	PROTORECVEVENT pre;
-	int status;
+	int status, l;
 	DBVARIANT dbv;
-
+	char *gm = NULL, *sm = NULL, *fm;
 	status = DBGetContactSettingWord(hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
 
 	if (status == ID_STATUS_OFFLINE)
 	   return;
 	
+	if (! DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
+		gm = strdup(dbv.pszVal);
+		
+		DBFreeVariant( &dbv );
+	}
+	
 	if ( DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YMsg", &dbv )) {
-		pre.szMessage = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
+		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
 	} else {
 		if (lstrlen(dbv.pszVal) < 1)
-			pre.szMessage = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
+			sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
 		else
-			pre.szMessage = strdup(dbv.pszVal);
+			sm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	}
 
+	l = 0;
+	if (gm)
+		l += lstrlen(gm) + 3;
+	
+	l += lstrlen(sm) + 1;
+	fm = (char *) malloc(l);
+	
+	fm[0] ='\0';
+	if (gm && lstrlen(gm) > 0) {
+		/* BAH YAHOO SUCKS! WHAT A PAIN!
+		   find first carriage return add status message then add the rest */
+		char *c = strchr(gm, '\r');
+		
+		if (c != NULL) {
+			lstrcpyn(fm,gm, c - gm + 1);
+			fm[c - gm + 1] = '\0';
+		} else
+			lstrcpy(fm, gm);
+		
+		lstrcat(fm, ": ");
+		lstrcat(fm, sm);
+		
+		if (c != NULL)
+			lstrcat(fm, c);
+	} else {
+		lstrcat(fm, sm);
+	}
 	ccs1.szProtoService = PSR_AWAYMSG;
 	ccs1.hContact = hContact;
 	ccs1.wParam = status;
@@ -592,7 +633,8 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	pre.flags = 0;
 	pre.timestamp = time(NULL);
 	pre.lParam = 1;
-
+	pre.szMessage = fm;
+	
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs1);
 }
 
@@ -646,7 +688,7 @@ int YahooRecvAwayMessage(WPARAM wParam,LPARAM lParam)
 
 static void __cdecl yahoo_get_infothread(HANDLE hContact) 
 {
-	SleepEx(500, FALSE);
+	SleepEx(500, TRUE);
     ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
@@ -843,8 +885,10 @@ int YAHOOSendTyping(WPARAM wParam, LPARAM lParam)
 //=======================================================
 //Files transfert
 //=======================================================
-static void __cdecl yahoo_recv_filethread(y_filetransfer *sf) 
+static void __cdecl yahoo_recv_filethread(void *psf) 
 {
+	y_filetransfer *sf = psf;
+	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (sf == NULL) {
 		YAHOO_DebugLog("SF IS NULL!!!");
@@ -870,11 +914,17 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 {
     CCSDATA *ccs = (CCSDATA *) lParam;
     y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
-
+	int len;
+	
     //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
     ft->savepath = _strdup((char *) ccs->lParam);
 	
+	len = lstrlen(ft->savepath) - 1;
+	if (ft->savepath[len] == '\\')
+		ft->savepath[len] = '\0';
+	
     pthread_create(yahoo_recv_filethread, (void *) ft);
+	
     return ccs->wParam;
 }
 
@@ -891,13 +941,19 @@ int YahooFileResume( WPARAM wParam, LPARAM lParam )
 	
 	YAHOO_DebugLog("[YahooFileResume]");
 	
-	if ( !yahooLoggedIn || ft == NULL )
+	if ( !yahooLoggedIn || ft == NULL ) {
+		YAHOO_DebugLog("[YahooFileResume] Not loggedin or some other error!");
 		return 1;
+	}
 
 	pfr = (PROTOFILERESUME*)lParam;
 	
 	ft->action = pfr->action;
+	
+	YAHOO_DebugLog("[YahooFileResume] Action: %d", pfr->action);
+	
 	if ( pfr->action == FILERESUME_RENAME ) {
+		YAHOO_DebugLog("[YahooFileResume] Renamed file!");
 		if ( ft->filename != NULL ) {
 			free( ft->filename );
 			ft->filename = NULL;
@@ -912,8 +968,10 @@ int YahooFileResume( WPARAM wParam, LPARAM lParam )
 }
 
 /**************** Send File ********************/
-static void __cdecl yahoo_send_filethread(y_filetransfer *sf) 
+static void __cdecl yahoo_send_filethread(void *psf) 
 {
+	y_filetransfer *sf = psf;
+	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (sf == NULL) {
 		YAHOO_DebugLog("SF IS NULL!!!");
@@ -1106,7 +1164,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		AI->format = PA_FORMAT_BMP;
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
 		
-		if (access( AI->filename, 0 ) == 0 ) {
+		if (_access( AI->filename, 0 ) == 0 ) {
 			return GAIR_SUCCESS;
 		} else {
 			/* need to request it again? */

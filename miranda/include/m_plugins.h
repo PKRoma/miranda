@@ -60,7 +60,7 @@ typedef struct PLUGIN_DB_ENUM {
 #define DEFMOD_RNDIGNORE        18	 //v0.1.0.1+
 #define DEFMOD_UIVISIBILITY     19   //v0.1.1.0+, options page only
 #define DEFMOD_UICLUI           20   //v0.1.1.0+
-#define DEFMOD_UIPLUGINOPTS     21	 //v0.1.2.1+
+//#define DEFMOD_UIPLUGINOPTS     21	 //removed from 0.4.0.1
 #define DEFMOD_PROTOCOLNETLIB   22	 //v0.1.2.2+
 #define DEFMOD_RNDIDLE			23   //v0.3.4a+
 #define DEFMOD_CLISTALL			24	 //v0.3.4a+ (2004/09/28)

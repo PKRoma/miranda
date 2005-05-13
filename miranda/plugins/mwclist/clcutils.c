@@ -261,7 +261,11 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	SCROLLINFO si={0};
 	RECT clRect;
 	NMCLISTCONTROL nm;
+	boolean sbar=FALSE;
+	
 	GetClientRect(hwnd,&clRect);
+	
+
 	si.cbSize=sizeof(si);
 	si.fMask=SIF_ALL;
 	si.nMin=0;
@@ -284,12 +288,24 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
 
+
+	sbar=(dat->noVScrollbar==1||(int)si.nPage>si.nMax);
+	
+	ShowScrollBar(hwnd,SB_VERT,sbar? FALSE : TRUE);
+	if (!sbar)
+	{	
 	if ( GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
 		if ( dat->noVScrollbar==0 ) SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
-		//else SetScrollInfo(hwnd,SB_VERT,&si,FALSE);
+		else SetScrollInfo(hwnd,SB_VERT,&si,FALSE);
 	} else SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
+	
+	}
 	ScrollTo(hwnd,dat,dat->yScroll,1);
-	//ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
+	
+	
+	
+	
+	
 	//nm.hdr.code=CLN_LISTSIZECHANGE;
 	//nm.hdr.hwndFrom=hwnd;
 	//nm.hdr.idFrom=GetDlgCtrlID(hwnd);
@@ -609,6 +625,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 		LOGFONT lf;
 		SIZE fontSize;
 		HDC hdc=GetDC(hwnd);
+		HFONT holdfont;
 		for(i=0;i<=FONTID_MAX;i++) {
 			if(!dat->fontInfo[i].changed) DeleteObject(dat->fontInfo[i].hFont);
 			GetFontSetting(i,&lf,&dat->fontInfo[i].colour);
@@ -622,11 +639,13 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 				lf.lfHeight=height;
 			}
 			dat->fontInfo[i].changed=0;
-			SelectObject(hdc,dat->fontInfo[i].hFont);
+			holdfont=SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc,"x",1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
 			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
+			if(holdfont) SelectObject(hdc,holdfont);
 		}
+		
 		ReleaseDC(hwnd,hdc);
 	}
 	dat->leftMargin=DBGetContactSettingByte(NULL,"CLC","LeftMargin",CLCDEFAULT_LEFTMARGIN);

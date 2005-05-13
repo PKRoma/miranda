@@ -34,7 +34,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void __cdecl MSNServerThread( ThreadData* info );
 void __cdecl MSNSendfileThread( ThreadData* info );
-int MSN_Auth8( char* authChallengeInfo, char*& parResult );
+
+int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult );
 
 void mmdecode(char *trg, char *str);
 
@@ -46,7 +47,7 @@ char* MSPAuth = NULL;
 char* passport = NULL;
 char* rru = NULL;
 
-int msnPingTimeout = 60;
+int msnPingTimeout = 50;
 
 unsigned long sl;
 
@@ -177,7 +178,7 @@ void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 	else bHasError = true;
 
 	char command[ 1024 ];
-	int  nBytes = _snprintf( command, sizeof( command ),
+	int  nBytes = mir_snprintf( command, sizeof( command ),
 		"MIME-Version: 1.0\r\n"
 		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 		"Invitation-Command: %s\r\n"
@@ -238,17 +239,17 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 
 		if ( !strcmpi( From, Fromaddr )) {
 			if ( tIsPopup ) {
-				_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( "Hotmail from %s" ), mimeFrom );
-				_snprintf( tBuffer2, sizeof( tBuffer2 ), MSN_Translate( "Subject: %s" ), mimeSubject );
+				mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( "Hotmail from %s" ), mimeFrom );
+				mir_snprintf( tBuffer2, sizeof( tBuffer2 ), MSN_Translate( "Subject: %s" ), mimeSubject );
 			}
-			else _snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("A new mail has come from %s (title: %s)."), mimeFrom, mimeSubject );
+			else mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("A new mail has come from %s (title: %s)."), mimeFrom, mimeSubject );
 		}
 		else {
 			if ( tIsPopup ) {
-				_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("Hotmail from %s (%s)"),mimeFrom, Fromaddr );
-				_snprintf( tBuffer2, sizeof( tBuffer2 ), MSN_Translate("Subject: %s"), mimeSubject );
+				mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("Hotmail from %s (%s)"),mimeFrom, Fromaddr );
+				mir_snprintf( tBuffer2, sizeof( tBuffer2 ), MSN_Translate("Subject: %s"), mimeSubject );
 			}
-			else _snprintf( tBuffer, sizeof( tBuffer ),  MSN_Translate("A new mail has come from %s (%s) (title: %s)."),mimeFrom, Fromaddr, mimeSubject );
+			else mir_snprintf( tBuffer, sizeof( tBuffer ),  MSN_Translate("A new mail has come from %s (%s) (title: %s)."),mimeFrom, Fromaddr, mimeSubject );
 	}	}
 	else {
 		// nothing to do, a fake notification
@@ -257,11 +258,11 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 
 		char* dest;
 		if ( tIsPopup ) {
-			_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( "Hotmail" ));
+			mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( "Hotmail" ));
 			dest = tBuffer2;
 		}
 		else dest = tBuffer;
-		_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages (%d junk e-mails)." ),
+		mir_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages (%d junk e-mails)." ),
 			UnreadMessages, UnreadJunkEmails );
 	}
 
@@ -336,7 +337,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
-		ft->std.currentFile = strdup( Appfile );
+		replaceStr( ft->std.currentFile, Appfile );
 		Utf8Decode( ft->std.currentFile, &ft->wszFileName );
 		ft->fileId = -1;
 		ft->std.currentFileSize = atol( Appfilesize );
@@ -346,7 +347,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 		int tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
-		int tCommentLen = _snprintf( tComment, sizeof( tComment ), "%ld bytes", ft->std.currentFileSize );
+		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%ld bytes", ft->std.currentFileSize );
 		char* szBlob = ( char* )malloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
 		*( PDWORD )szBlob = ( DWORD )ft;
 		strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
@@ -395,7 +396,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 			Sleep(3000);
 
 			char command[ 1024 ];
-			int  nBytes = _snprintf( command, sizeof( command ),
+			int  nBytes = mir_snprintf( command, sizeof( command ),
 				"MIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 				"Invitation-Command: ACCEPT\r\n"
@@ -413,13 +414,13 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 		char command[ 1024 ];
 		int nBytes;
 
-		_snprintf( command, sizeof( command ), "Accept NetMeeting request from %s?", email );
+		mir_snprintf( command, sizeof( command ), "Accept NetMeeting request from %s?", email );
 
 		if ( MessageBox( NULL, command, "MSN Protocol", MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
 			char ipaddr[256];
 			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
 
-			nBytes = _snprintf( command, sizeof( command ),
+			nBytes = mir_snprintf( command, sizeof( command ),
 				"MIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 				"Invitation-Command: ACCEPT\r\n"
@@ -432,7 +433,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 				Invcookie, ipaddr);
 		}
 		else {
-			nBytes = _snprintf( command, sizeof( command ),
+			nBytes = mir_snprintf( command, sizeof( command ),
 				"MIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 				"Invitation-Command: CANCEL\r\n"
@@ -446,7 +447,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 	if ( IPAddress != NULL && Port == NULL && SessionID != NULL && SessionProtocol == NULL ) { // netmeeting receive 2
 		char	ipaddr[256];
-		_snprintf( ipaddr, sizeof( ipaddr ), "callto://%s", IPAddress);
+		mir_snprintf( ipaddr, sizeof( ipaddr ), "callto://%s", IPAddress);
 		ShellExecute(NULL, "open", ipaddr, NULL, NULL, SW_SHOW);
 }	}
 
@@ -732,7 +733,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 
 		if ( MyOptions.ManageServer ) {
 			char szNewName[ 128 ];
-			_snprintf( szNewName, sizeof szNewName, "%c%s",  1 | GROUPF_EXPANDED, data.grpName );
+			mir_snprintf( szNewName, sizeof szNewName, "%c%s",  1 | GROUPF_EXPANDED, data.grpName );
 			DBWriteContactSettingString( NULL, "CListGroups", str, szNewName );
 			CallService( MS_CLUI_GROUPADDED, i, 0 );
 	}	}
@@ -1103,7 +1104,7 @@ LBL_InvalidCommand:
 				char* tContactName = MSN_GetContactName( info->mJoinedContacts[0] );
 
 				char multichatmsg[256];
-				_snprintf( multichatmsg, sizeof( multichatmsg ),
+				mir_snprintf( multichatmsg, sizeof( multichatmsg ),
 					MSN_Translate( "%s (%s) has joined the chat with %s" ),
 					data.userNick, data.userEmail, tContactName );
 
@@ -1163,7 +1164,7 @@ LBL_InvalidCommand:
 				char* tContactName = MSN_GetContactName( info->mJoinedContacts[0] );
 
 				char multichatmsg[ 256 ];
-				_snprintf(
+				mir_snprintf(
 					multichatmsg, sizeof( multichatmsg ),
 					MSN_Translate( "%s (%s) has joined the chat with %s" ),
 					data.userNick, data.userEmail, tContactName );
@@ -1430,8 +1431,8 @@ LBL_InvalidCommand:
 			ThreadData* newThread = new ThreadData;
 			strcpy( newThread->mServer, data.newServer );
 			newThread->mType = SERVER_SWITCHBOARD;
-			MSN_ContactJoined( newThread, MSN_HContactFromEmail( data.callerEmail, data.callerNick, 1, 1 ));
-			_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
+			MSN_ContactJoined( newThread, MSN_HContactFromEmail( data.callerEmail, data.callerNick, false, true ));
+			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
 
 			MSN_DebugLog( "Opening caller's switchboard server '%s'...", data.newServer );
 			newThread->startThread(( pThreadFunc )MSNServerThread );
@@ -1499,7 +1500,7 @@ LBL_InvalidCommand:
 
 				if ( !strcmp( data.security, "TWN" )) {
 					char* tAuth;
-					if ( MSN_Auth8( data.authChallengeInfo, tAuth )) {
+					if ( MSN_GetPassportAuth( data.authChallengeInfo, tAuth )) {
 						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 							MSN_GoOffline();
 						return 1;
@@ -1507,33 +1508,6 @@ LBL_InvalidCommand:
 
 					info->sendPacket( "USR", "TWN S %s", tAuth );
 					free( tAuth );
-				}
-				else if ( !strcmp( data.security, "MD5" )) {
-					if ( *data.sequence == 'S' ) {
-						//send Md5 pass
-						char *chalinfo;
-
-						DBVARIANT dbv;
-						if ( !DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv )) {
-							MSN_CallService(MS_DB_CRYPT_DECODESTRING,strlen(dbv.pszVal)+1,(LPARAM)dbv.pszVal);
-							//fill chal info
-							chalinfo = ( char* )alloca( strlen( data.authChallengeInfo) + strlen( dbv.pszVal ) + 4 );
-							strcpy( chalinfo, data.authChallengeInfo );
-							strcat( chalinfo, dbv.pszVal );
-							MSN_FreeVariant( &dbv );
-						}
-						else chalinfo = "xxxxxxxxxx";
-
-						//Digest it
-						unsigned char digest[16];
-						MD5_CTX context;
-						MD5Init( &context );
-						MD5Update( &context, ( BYTE* )chalinfo, strlen( chalinfo ));
-						MD5Final( digest, &context );
-
-						info->sendPacket( "USR", "MD5 S %08x%08x%08x%08x", htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)));
-					}
-					else MSN_DebugLog( "Unknown security sequence code '%c', ignoring command", data.sequence );
 				}
 				else if ( !strcmp( data.security, "OK" )) {
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] ); Utf8Decode( tWords[2] );
@@ -1555,7 +1529,7 @@ LBL_InvalidCommand:
 
 					SYSTEMTIME T;
 					GetSystemTime( &T );
-					_snprintf( tNewDate, sizeof tNewDate, "%04d-%02d-%02dT%02d:%02d:%02d.0000000-07:00",
+					mir_snprintf( tNewDate, sizeof tNewDate, "%04d-%02d-%02dT%02d:%02d:%02d.0000000-07:00",
 						T.wYear, T.wMonth, T.wDay, T.wHour, T.wMinute, T.wSecond );
 					MSN_SetString( NULL, "LastSyncTime", tNewDate );
 

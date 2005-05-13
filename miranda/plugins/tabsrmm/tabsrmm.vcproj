@@ -481,6 +481,9 @@
 				RelativePath=".\containeroptions.c">
 			</File>
 			<File
+				RelativePath="eventpopups.c">
+			</File>
+			<File
 				RelativePath=".\formatting.cpp">
 				<FileConfiguration
 					Name="Release Unicode|Win32">
@@ -792,7 +795,19 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="templates.c">
+			</File>
+			<File
 				RelativePath=".\themes.c">
+			</File>
+			<File
+				RelativePath="trayicon.c">
+			</File>
+			<File
+				RelativePath=".\URLCtrl.c">
+			</File>
+			<File
+				RelativePath="userprefs.c">
 			</File>
 		</Filter>
 		<Filter
@@ -802,10 +817,19 @@
 				RelativePath="commonheaders.h">
 			</File>
 			<File
+				RelativePath="functions.h">
+			</File>
+			<File
 				RelativePath="IcoLib.h">
 			</File>
 			<File
 				RelativePath="ImageDataObject.h">
+			</File>
+			<File
+				RelativePath="m_ieview.h">
+			</File>
+			<File
+				RelativePath="m_MathModule.h">
 			</File>
 			<File
 				RelativePath="m_message.h">
@@ -817,6 +841,12 @@
 				RelativePath=".\m_popup.h">
 			</File>
 			<File
+				RelativePath="m_smileyadd.h">
+			</File>
+			<File
+				RelativePath="m_Snapping_windows.h">
+			</File>
+			<File
 				RelativePath="m_tabsrmm.h">
 			</File>
 			<File
@@ -826,6 +856,9 @@
 				RelativePath="msgs.h">
 			</File>
 			<File
+				RelativePath="nen.h">
+			</File>
+			<File
 				RelativePath="resource.h">
 			</File>
 			<File
@@ -833,6 +866,12 @@
 			</File>
 			<File
 				RelativePath="sendqueue.h">
+			</File>
+			<File
+				RelativePath="templates.h">
+			</File>
+			<File
+				RelativePath=".\URLCtrl.h">
 			</File>
 		</Filter>
 		<Filter
@@ -866,25 +905,25 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur">
 			</File>
 			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+			</File>
+			<File
 				RelativePath=".\res\error.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico">
+				RelativePath=".\res\angeli-icons\History.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico">
+				RelativePath="..\..\Miranda-IM\res\history.ico">
 			</File>
 			<File
 				RelativePath="res\History32.ico">
@@ -965,6 +1004,9 @@
 				RelativePath=".\res\pulldown.ico">
 			</File>
 			<File
+				RelativePath=".\res\pulldown1.ico">
+			</File>
+			<File
 				RelativePath=".\res\quote.ico">
 			</File>
 			<File
@@ -977,10 +1019,10 @@
 				RelativePath=".\resource.rc">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">
@@ -1008,31 +1050,28 @@
 			Name="Misc Files"
 			Filter="">
 			<File
-				RelativePath=".\changelog.txt">
+				RelativePath=".\docs\changelog.txt">
 			</File>
 			<File
 				RelativePath="langpacks\langpack_tabsrmm_german.txt">
 			</File>
 			<File
+				RelativePath=".\Makefile.ansi">
+			</File>
+			<File
 				RelativePath="MAKEFILE.W32">
 			</File>
 			<File
-				RelativePath="MAKEFILE.W32.ANSI">
+				RelativePath=".\docs\MetaContacts.TXT">
 			</File>
 			<File
-				RelativePath="MetaContacts.TXT">
+				RelativePath=".\docs\Popups.txt">
 			</File>
 			<File
-				RelativePath="POPUPS.TXT">
+				RelativePath=".\docs\Readme.icons">
 			</File>
 			<File
-				RelativePath="README.ICONS">
-			</File>
-			<File
-				RelativePath=".\readme.txt">
-			</File>
-			<File
-				RelativePath="langpacks\template">
+				RelativePath=".\docs\readme.txt">
 			</File>
 		</Filter>
 	</Files>

@@ -91,7 +91,7 @@ static int AddEvent(WPARAM wParam,LPARAM lParam)
 	struct DBEvent dbe,*dbeTest;
 	DWORD ofsNew,ofsModuleName,ofsContact,ofsThis;
 
-	if(dbei->cbSize!=sizeof(DBEVENTINFO)) return (int)NULL;
+	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return (int)NULL;
 	if(dbei->timestamp==0) return (int)NULL;
 	if (NotifyEventHooks(hEventFilterAddedEvent,wParam,lParam)) {
 		return (int)NULL;
@@ -277,7 +277,7 @@ static int GetEvent(WPARAM wParam,LPARAM lParam)
 	DBEVENTINFO *dbei=(DBEVENTINFO*)lParam;
 	int bytesToCopy,i;
 	
-	if(dbei->cbSize!=sizeof(DBEVENTINFO)) return 1;
+	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return 1;
 	EnterCriticalSection(&csDbAccess);
 	dbe=(struct DBEvent*)DBRead(wParam,sizeof(struct DBEvent),NULL);
 	if(dbe->signature!=DBEVENT_SIGNATURE) {

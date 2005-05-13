@@ -34,18 +34,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_AC_DEF	1       // Only auto-response to clist users by default
 #define AIM_KEY_SS_DEF  1       // Use server-side lists by default
 #define AIM_KEY_SE_DEF  1       // Show error messages
-#define AIM_KEY_GF_DEF  1       // Flash group chat window by default
-#define AIM_KEY_GD_DEF  1       // Show time in groupchat
-#define AIM_KEY_GY_DEF  0       // Show date in groupchat
-#define AIM_KEY_GJ_DEF  1       // Show joins/parts
-#define AIM_KEY_GE_DEF  1       // Send on enter on
-#define AIM_KEY_GB_DEF  GetSysColor(COLOR_WINDOW)
 #define AIM_KEY_GI_DEF  0       // Ignore invites off
 #define AIM_KEY_GM_DEF  1       // Show groupchat menu item by default
 #define AIM_KEY_AL_DEF  0       // aim: links support on
 #define AIM_KEY_PM_DEF  1       // show password menu item
-#define AIM_KEY_GZ_DEF  0       // Log chats off
-#define AIM_KEY_GT_DEF  0       // Min2Tray groupchats
 #define AIM_EVIL_TO		10      // Evil mode timeout in minutes (can't warn if last message greater)
 
 // TOC Server Options
@@ -67,4 +59,4 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_AUTH_PORTLOW  1000
 #define AIM_AUTH_PORTHIGH 10000
 
-#define AIM_SERVERSIDE_GROUP	Translate("Miranda")        // Default group for miranda specific contacts stored on server
+#define AIM_SERVERSIDE_GROUP	Translate("Miranda")    // Default group for miranda specific contacts stored on server

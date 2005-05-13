@@ -286,6 +286,23 @@ void get_fd(int id, int fd, int error, void *data)
 	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
 
+YList * YAHOO_GetIgnoreList(void)
+{
+	if (!ylad)
+		return NULL;
+	
+	return yahoo_get_ignorelist(ylad->id);
+}
+
+void YAHOO_IgnoreBuddy(const char *buddy, int ignore)
+{
+	if (!ylad)
+		return;
+	
+	yahoo_ignore_buddy(ylad->id, buddy, ignore);
+	//yahoo_get_list(ylad->id);
+}
+
 void YAHOO_SendFile(y_filetransfer *sf)
 {
 	long tFileSize = 0;
@@ -313,7 +330,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 		pfts.hContact = sf->hContact;
 		pfts.sending = 0;
-		pfts.files = &filename;
+		pfts.files = (char**)&filename;
 		pfts.totalFiles = 1;//ntohs(1);
 		pfts.currentFileNumber = 0;
 		pfts.totalBytes = size;
@@ -325,8 +342,9 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		wsprintf(buf, "%s\\%s", sf->savepath, sf->filename);
 		
 		pfts.currentFile = _strdup(buf);		
+		LOG(("Saving: %s",  pfts.currentFile));
 		
-		old_dir = _getcwd(NULL, 512);
+		old_dir = _getcwd(NULL, 512); 
 		
 		if (old_dir) {
 			_chdir( sf->savepath ); // save this just in case
@@ -923,8 +941,10 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 }
 
 
-static void __cdecl yahoo_recv_avatarthread(struct avatar_info *avt) 
+static void __cdecl yahoo_recv_avatarthread(void *pavt) 
 {
+	struct avatar_info *avt = pavt;
+	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (avt == NULL) {
 		YAHOO_DebugLog("AVT IS NULL!!!");
@@ -1403,17 +1423,106 @@ void ext_yahoo_typing_notify(int id, char *me, char *who, int stat)
 		YAHOO_ShowPopup( c, Translate( "typing..." ), YAHOO_ALLOW_MSGBOX + YAHOO_NOTIFY_POPUP );
 }
 
-void ext_yahoo_game_notify(int id, char *me, char *who, int stat)
+void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
 {
-    LOG(("[ext_yahoo_game_notify] id: %d, me: %s, who: %s, stat: %d", id, me, who, stat));
+	HANDLE hContact;
+	
+	/* There's also game invite packet:
+	[17:36:44 YAHOO] libyahoo2/libyahoo2.c:3093: debug: 
+[17:36:44 YAHOO] Yahoo Service: (null) (0xb7) Status: YAHOO_STATUS_BRB (1)
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] libyahoo2/libyahoo2.c:863: debug: 
+[17:36:44 YAHOO] [Reading packet] len: 88
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: From (4)  	Value: 'xxxxx'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: To (5)  	Value: 'zxzxxx'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: (null) (180)  	Value: 'pl'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: (null) (183)  	Value: ''
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: (null) (181)  	Value: ''
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: session (11)  	Value: 'o8114ik_lixyxtdfrxbogw--'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] Key: stat/location (13)  	Value: '1'
+[17:36:44 YAHOO]  
+[17:36:44 YAHOO] libyahoo2/libyahoo2.c:908: debug: 
+[17:36:44 YAHOO] [Reading packet done]
+
+	 */
+    LOG(("[ext_yahoo_game_notify] id: %d, me: %s, who: %s, stat: %d, msg: %s", id, me, who, stat, msg));
     /* FIXME - Not Implemented - this informs you someone else is playing on Yahoo! Games */
     /* Also Stubbed in Sample Client */
+	hContact = getbuddyH(who);
+	if (!hContact) return;
 	
+	if (stat == 2) 
+		YAHOO_SetString(hContact, "YGMsg", "");
+	else if (msg) {
+		char z[1024];
+		char *c, *l = msg, *u = NULL;
+		int i = 0;
+		/* Parse and Set a custom Message 
+		 *
+		 * Format: 1 [09] ygamesp [09] 1 [09] 0 [09] ante?room=yahoo_1078798506&follow=rrrrrrr	
+		 * [09] Yahoo! Poker\nRoom: Intermediate Lounge 2
+		 *
+		 * Sign-in:
+		 * [17:13:42 YAHOO] [ext_yahoo_game_notify] id: 1, me: xxxxx, who: rrrrrrr, 
+		 * stat: 1, msg: 1	ygamesa	1	0	ante?room=yahoo_1043183792&follow=lotesdelere	
+		 * Yahoo! Backgammon Room: Social Lounge 12 
+		 *
+		 * Sign-out:
+		 * [17:18:38 YAHOO] [ext_yahoo_game_notify] id: 1, me: xxxxx, who: rrrrr, 
+		 *	stat: 2, msg: 1	ygamesa	2
+		 */
+		z[0]='\0';
+		do{
+			c = strchr(l, 0x09);
+			i++;
+			if (c != NULL) {
+				l = c;
+				l++;
+				if (i == 4)
+					u = l;
+			}
+		} while (c != NULL && i < 5);
+		
+		if (c != NULL) {
+			// insert \r before \n
+			do{
+				c =	strchr(l, '\n');
+				
+				if (c != NULL) {
+					(*c) = '\0';
+					lstrcat(z, l);
+					lstrcat(z, "\r\n");
+					l = c + 1;
+				} else {
+					lstrcat(z, l);
+				}
+			} while (c != NULL);
+			
+			lstrcat(z, "\r\n\r\n");
+			lstrcat(z, "http://games.yahoo.com/games/");
+			c = strchr(u, 0x09);
+			(*c) = '\0';
+			lstrcat(z, u);
+		}
+		
+		YAHOO_SetString(hContact, "YGMsg", z);
+		
+	} else {
+		/* ? no information / reset custom message */
+		YAHOO_SetString(hContact, "YGMsg", "");
+	}
 }
 
 void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
 {
-    SkinPlaySound( mailsoundname );
+    SkinPlaySound( Translate( "mail" ) );
 
     if (!YAHOO_GetByte( "DisableYahoomail", 0)) {    
         LOG(("ext_yahoo_mail_notify"));
@@ -1580,7 +1689,7 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 	if (errormsg) {
 			LOG(("[ext_yahoo_got_ping] Error msg: %s", errormsg));
 
-			if (YAHOO_GetByte( "ShowErrors", 1 )) {
+			if (YAHOO_GetByte( "ShowErrors", 0 )) {
 				if (!YAHOO_ShowPopup(Translate("Yahoo Ping Error"), errormsg, YAHOO_NOTIFY_POPUP)) {
 					if (YAHOO_hasnotification())
 						YAHOO_shownotification(Translate("Yahoo Ping Error"), errormsg, NIIF_ERROR);
@@ -1655,14 +1764,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	//
 	// Show Error Message
 	//
-	if (YAHOO_GetByte( "ShowErrors", 1 )) {
-		if (!YAHOO_ShowPopup(Translate("Yahoo Login Error"), buff, YAHOO_NOTIFY_POPUP)) {
-			if (YAHOO_hasnotification())
-				YAHOO_shownotification(Translate("Yahoo Login Error"), buff, NIIF_ERROR);
-			else
-				MessageBox(NULL, buff, Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
-		}
-	}
+	YAHOO_ShowError(buff);
 }
 
 void ext_yahoo_error(int id, char *err, int fatal, int num)
@@ -1713,14 +1815,7 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 	//
 	if (yahooStatus != ID_STATUS_OFFLINE) {
 		// Show error only if we are not offline. [manual status changed]
-		if (YAHOO_GetByte( "ShowErrors", 1 )) {
-			if (!YAHOO_ShowPopup(Translate("Yahoo Error"), buff, YAHOO_NOTIFY_POPUP)) {
-				if (YAHOO_hasnotification())
-					YAHOO_shownotification(Translate("Yahoo Error"), buff, NIIF_ERROR);
-				else
-					MessageBox(NULL, buff, Translate("Yahoo Error"), MB_OK | MB_ICONINFORMATION);
-			}
-		}
+		YAHOO_ShowError(buff);
 	}
 
 }
@@ -1738,36 +1833,9 @@ int ext_yahoo_connect(char *h, int p)
     ncon.wPort = p;
     ncon.flags = 0;
 
-	poll_loop = 1;
-/*    if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hNetlib, (LPARAM) & nlus) && !(nlus.useProxy && nlus.dnsThroughProxy)) {
-        struct in_addr addr;
-        DWORD ip = aim_toc_dnslookup(host);
-
-        if (ip) {
-            addr.S_un.S_addr = ip;
-            _snprintf(host, sizeof(host), "%s", inet_ntoa(addr));
-            ncon.szHost = host;
-        }
-    }
-    LOG(("connecting to %s:%d", host, ncon.wPort));*/
-	
     con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) & ncon);
-    if (!con) {
-        char z[1024];
-        
-        yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
-
-		if (YAHOO_GetByte( "ShowErrors", 1 )) {
-			wsprintf(z, Translate("Connection to %s:%d failed"), ncon.szHost, ncon.wPort);
-			if (!YAHOO_ShowPopup(Translate("Yahoo Error"), z, YAHOO_NOTIFY_POPUP)) {
-				if (YAHOO_hasnotification())
-					 YAHOO_shownotification(Translate("Yahoo Error"), z, NIIF_ERROR);
-				else
-					 MessageBox(NULL, z, Translate("Yahoo Error"), MB_OK | MB_ICONINFORMATION);
-			}
-		}
+    if (!con) 
         return -1;
-    }
 
     return (int)con;
 }

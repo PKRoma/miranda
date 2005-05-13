@@ -44,12 +44,16 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 {
 	while( TRUE )
 	{
-		for ( int i=0; i < msnPingTimeout; i++ ) {
+		int iSaveTimeout = msnPingTimeout;
+
+		while ( msnPingTimeout-- > 0 ) {
 			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
 				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
 				MSN_DebugLog( "Closing keep-alive thread" );
 				return;
 		}	}
+
+		msnPingTimeout = iSaveTimeout;
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
@@ -87,16 +91,19 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 
 			info->mCaller = 1;
 			info->send( "TFR\r\n", 5 );
-			_chdir( ft->std.workingDir );
 
-			char filefull[ 1024 ];
-			_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
-			ft->std.currentFile = strdup( filefull );
-
-			if ( msnRunningUnderNT )
-				ft->fileId = _wopen( ft->wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			else
+			if ( msnRunningUnderNT ) {
+				WCHAR wszFileName[ MAX_PATH ];
+				_snwprintf( wszFileName, sizeof wszFileName, L"%S\\%s", ft->std.workingDir, ft->wszFileName );
+				wszFileName[ MAX_PATH-1 ] = 0;
+				ft->fileId = _wopen( wszFileName, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			}
+			else {
+				char filefull[ MAX_PATH ];
+				mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
+				replaceStr( ft->std.currentFile, filefull );
 				ft->fileId = _open( ft->std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			}
 			if ( ft->fileId == -1 )
 				break;
 
@@ -153,7 +160,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			}
 
 			char tCommand[ 30 ];
-			_snprintf( tCommand, sizeof( tCommand ), "FIL %i\r\n", info->mMsnFtp->std.totalBytes );
+			mir_snprintf( tCommand, sizeof( tCommand ), "FIL %i\r\n", info->mMsnFtp->std.totalBytes );
 			info->send( tCommand, strlen( tCommand ));
 			break;
 		}
@@ -183,7 +190,7 @@ LBL_InvalidCommand:
 					if ( info->mCaller == 0 )  //receive
 					{
 						char tCommand[ MSN_MAX_EMAIL_LEN + 50 ];
-						_snprintf( tCommand, sizeof( tCommand ), "USR %s %s\r\n", dbv.pszVal, info->mCookie );
+						mir_snprintf( tCommand, sizeof( tCommand ), "USR %s %s\r\n", dbv.pszVal, info->mCookie );
 						info->send( tCommand, strlen( tCommand ));
 					}
 					else if ( info->mCaller == 2 )  //send
@@ -371,7 +378,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 				info->mBytesInData -= peol - info->mData;
 				memmove( info->mData, peol, info->mBytesInData );
-
 				MSN_DebugLog( "RECV:%s", msg );
 
 				if ( !isalnum( msg[0] ) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
@@ -712,12 +718,12 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 {
 	if ( mSessionID[0] == 0 ) {
 		if ( mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH )
-			_snprintf( dest, destlen, sttFormatString, "NS", "messenger.hotmail.com" );
+			mir_snprintf( dest, destlen, sttFormatString, "NS", "messenger.hotmail.com" );
 		else
-			_snprintf( dest, destlen, sttFormatString, "SB", mServer );
+			mir_snprintf( dest, destlen, sttFormatString, "SB", mServer );
 		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
 	}
-	else _snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
+	else mir_snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
 		mGatewayIP, ( isPoll ) ? "Action=poll&" : "", mSessionID );
 }
 

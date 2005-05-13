@@ -21,11 +21,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "m_clc.h"
-#include "clc.h"
-#include "clist.h"
 
 static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+int DefaultImageListColorDepth=ILC_COLOR32;
 
 HIMAGELIST himlCListClc;
 static HANDLE hClcWindowList;
@@ -37,10 +36,63 @@ static HANDLE hSettingChanged1;
 static HANDLE hSettingChanged2;
 extern void InitDisplayNameCache(SortedList *list);
 extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
+
+extern int BgStatusBarChange(WPARAM wParam,LPARAM lParam);
+
+extern int BgClcChange(WPARAM wParam,LPARAM lParam);
+extern int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
+
+
 int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
 extern int sortByStatus;
 struct ClcContact * hitcontact=NULL;
+
+static int stopStatusUpdater = 0;
+void StatusUpdaterThread(HWND hwndDlg)
+{
+	int i,curdelay,lastcheck=0;
+	char szServiceName[256];
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	
+	SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_LOWEST);
+		
+	while (!stopStatusUpdater) {
+	
+	curdelay=DBGetContactSettingByte(hContact,"CList","StatusMsgAutoDelay",15000);
+	if (curdelay<5000) curdelay=5000;
+	
+	if ((int)(GetTickCount()-lastcheck)>curdelay)
+	{
+		lastcheck=GetTickCount();
+		if (DBGetContactSettingByte(hContact,"CList","StatusMsgAuto",0)) {
+				for (i=0; i<5; i++) {
+					if (hContact!=NULL) {
+					pdisplayNameCacheEntry pdnce =(pdisplayNameCacheEntry)GetDisplayNameCacheEntry((HANDLE)hContact);
+						if (pdnce!=NULL&&pdnce->protoNotExists==FALSE&&pdnce->szProto!=NULL)
+						{			
+							char *szProto =pdnce->szProto; //(char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+							_snprintf(szServiceName, sizeof(szServiceName), "%s%s", szProto, PSS_GETAWAYMSG);
+							if (ServiceExists(szServiceName)) {
+								strncpy(szServiceName, PSS_GETAWAYMSG, sizeof(szServiceName));
+								CallContactService(hContact, szServiceName, 0, 0);
+							}
+						};
+						hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+					}
+					if (hContact==NULL) {
+						hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+						if (hContact==NULL) break;
+					}
+				Sleep(500);
+				}
+			}
+	};
+	//Sleep(DBGetContactSettingByte(hContact,"CList","StatusMsgAutoDelay",100));
+	Sleep(200);
+	}
+}
+
 
 
 int GetProtocolVisibility(char * ProtoName)
@@ -104,6 +156,9 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 			WindowList_Broadcast(hClcWindowList,INTM_INVALIDATE,0,0);
 		else if(cws->value.type==DBVT_BLOB&&!strcmp(cws->szSetting,"NameOrder"))
 			WindowList_Broadcast(hClcWindowList,INTM_NAMEORDERCHANGED,0,0);
+		else if(!strcmp(cws->szSetting,"StatusMsg")) 
+			WindowList_Broadcast(hClcWindowList,INTM_STATUSMSGCHANGED,wParam,lParam);
+
 	}
 	else if(!strcmp(cws->szModule,"CListGroups")) {
 		WindowList_Broadcast(hClcWindowList,INTM_GROUPSCHANGED,wParam,lParam);
@@ -143,6 +198,14 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		clcProto[hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
 		hClcProtoCount++;
 	}
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"StatusBar Background/StatusBar",0);
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"List Background/CLC",0);
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"Frames TitleBar BackGround/FrameTitleBar",0);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgClcChange);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,OnFrameTitleBarBackgroundChange);
+	
+	
 	return 0;
 }
 
@@ -244,6 +307,9 @@ int LoadCLCModule(void)
 	HookEvent(ME_OPT_INITIALISE,ClcOptInit);
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,ClcProtoAck);
 	HookEvent(ME_SYSTEM_SHUTDOWN,ClcShutdown);
+
+
+
 	return 0;
 }
 
@@ -258,7 +324,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		case WM_CREATE:
 			WindowList_Add(hClcWindowList,hwnd,NULL);
 			RegisterFileDropping(hwnd);
-			dat=(struct ClcData*)mir_alloc(sizeof(struct ClcData));
+			dat=(struct ClcData*)mir_calloc(1,sizeof(struct ClcData));
+
 			SetWindowLong(hwnd,0,(LONG)dat);
 
 			{	int i;
@@ -311,6 +378,8 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 			}
 			OutputDebugString("Create New ClistControl END\r\n");
+			forkthread(StatusUpdaterThread,0,0);
+
 			break;
 
 		case INTM_RELOADOPTIONS:
@@ -335,7 +404,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			KillTimer(hwnd,TIMERID_RENAME);
 			RecalcScrollBar(hwnd,dat);
 			{	//creating imagelist containing blue line for highlight
-				HBITMAP hBmp,hBmpMask,hoBmp;
+				HBITMAP hBmp,hBmpMask,hoBmp,hoMaskBmp;
 				HDC hdc,hdcMem;
 				RECT rc;
 				int depth;
@@ -355,14 +424,15 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				FillRect(hdcMem,&rc,hBrush);
 				DeleteObject(hBrush);
 
-				SelectObject(hdcMem,hBmpMask);
+				hoMaskBmp=SelectObject(hdcMem,hBmpMask);
 				FillRect(hdcMem,&rc,GetStockObject(BLACK_BRUSH));
+				SelectObject(hdcMem,hoMaskBmp);
 				SelectObject(hdcMem,hoBmp);
 				DeleteDC(hdcMem);
 				ReleaseDC(hwnd,hdc);
 				if(dat->himlHighlight)
 					ImageList_Destroy(dat->himlHighlight);
-				dat->himlHighlight=ImageList_Create(rc.right,rc.bottom,ILC_COLOR32|ILC_MASK,1,1);
+				dat->himlHighlight=ImageList_Create(rc.right,rc.bottom,DefaultImageListColorDepth|ILC_MASK,1,1);
 				ImageList_Add(dat->himlHighlight,hBmp,hBmpMask);
 				DeleteObject(hBmpMask);
 				DeleteObject(hBmp);
@@ -583,6 +653,39 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			break;
 		}
 
+		case INTM_STATUSMSGCHANGED:
+		{	struct ClcContact *contact=NULL;
+			struct ClcGroup *group=NULL;
+			DBVARIANT dbv;
+			DWORD style=GetWindowLong(hwnd,GWL_STYLE);
+
+			if (!(style&CLS_SHOWSTATUSMESSAGES)) break;
+			if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL) && contact!=NULL) {
+				contact->flags &= ~CONTACTF_STATUSMSG;
+				if (!DBGetContactSetting((HANDLE)wParam, "CList", "StatusMsg", &dbv)) {
+					int j;
+					if (dbv.pszVal==NULL||strlen(dbv.pszVal)==0) break;
+					lstrcpyn(contact->szStatusMsg, dbv.pszVal, sizeof(contact->szStatusMsg));
+					for (j=strlen(contact->szStatusMsg)-1;j>=0;j--) {
+						if (contact->szStatusMsg[j]=='\r' || contact->szStatusMsg[j]=='\n' || contact->szStatusMsg[j]=='\t') {
+							contact->szStatusMsg[j] = ' ';
+						}
+					}
+					DBFreeVariant(&dbv);
+					if (strlen(contact->szStatusMsg)>0) {
+						contact->flags |= CONTACTF_STATUSMSG;
+						dat->NeedResort=TRUE;
+					}
+				}
+			}
+
+			InvalidateRect(hwnd,NULL,FALSE);
+			
+			SortClcByTimer(hwnd);
+			RecalcScrollBar(hwnd,dat);
+			break;
+		}
+
 		case INTM_NOTONLISTCHANGED:
 		{	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING*)lParam;
 			struct ClcContact *contact;
@@ -713,12 +816,17 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				pageSize=clRect.bottom/dat->rowHeight;
 			}
 			switch(wParam) {
-				case VK_DOWN: dat->selection++; selMoved=1; break;
-				case VK_UP: dat->selection--; selMoved=1; break;
-				case VK_PRIOR: dat->selection-=pageSize; selMoved=1; break;
-				case VK_NEXT: dat->selection+=pageSize; selMoved=1; break;
+				case VK_DOWN: dat->selection = GetNewSelection(&dat->list, dat->selection+1, 1); selMoved=1; break;
+				case VK_UP: dat->selection = GetNewSelection(&dat->list, dat->selection-1, 0); selMoved=1; break;
+				case VK_PRIOR: dat->selection = GetNewSelection(&dat->list, dat->selection-pageSize, 0); selMoved=1; break;
+				case VK_NEXT: dat->selection = GetNewSelection(&dat->list, dat->selection+pageSize, 1); selMoved=1; break;
+//				case VK_DOWN: dat->selection++; selMoved=1; break;
+//				case VK_UP: dat->selection--; selMoved=1; break;
+//				case VK_PRIOR: dat->selection-=pageSize; selMoved=1; break;
+//				case VK_NEXT: dat->selection+=pageSize; selMoved=1; break;
 				case VK_HOME: dat->selection=0; selMoved=1; break;
-				case VK_END: dat->selection=GetGroupContentsCount(&dat->list,1)-1; selMoved=1; break;
+				case VK_END: dat->selection=GetNewSelection(&dat->list, dat->selection+99999, 1); selMoved=1; break;
+//				case VK_END: dat->selection=GetGroupContentsCount(&dat->list,1)-1; selMoved=1; break;
 				case VK_LEFT: changeGroupExpand=1; break;
 				case VK_RIGHT: changeGroupExpand=2; break;
 				case VK_RETURN: DoSelectionDefaultAction(hwnd,dat); return 0;
@@ -1283,6 +1391,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 		}
 			
 		case WM_DESTROY:
+			stopStatusUpdater = 1;
 			HideInfoTip(hwnd,dat);
 			{	int i;
 				for(i=0;i<=FONTID_MAX;i++)
@@ -1296,6 +1405,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 			mir_free(dat);
 			UnregisterFileDropping(hwnd);
 			WindowList_Remove(hClcWindowList,hwnd);
+
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }

@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_NETLIB_H__
 #define M_NETLIB_H__ 1
 
+#include "m_utils.h"
+
 //this module was created in 0.1.2.2
 //All error codes are returned via GetLastError() (or WSAGetLastError():
 //they're the same).
@@ -654,7 +656,7 @@ static int Netlib_Logf(HANDLE hUser,const char *fmt,...)
 	char szText[1024];
 
 	va_start(va,fmt);
-	_vsnprintf(szText,sizeof(szText),fmt,va);
+	mir_vsnprintf(szText,sizeof(szText),fmt,va);
 	va_end(va);
 	return CallService(MS_NETLIB_LOG,(WPARAM)hUser,(LPARAM)szText);
 }

@@ -2,17 +2,17 @@
 // Gadu-Gadu Plugin for Miranda IM
 //
 // Copyright (c) 2003 Adam Strzelecki <ono+miranda@java.pl>
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -47,7 +47,7 @@ int GroupNameExists(const char *name)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Creates a group with a specified name in the 
+// Creates a group with a specified name in the
 // Miranda contact list.
 // Returns proper group name
 char *CreateGroup(char *groupName)
@@ -57,12 +57,12 @@ char *CreateGroup(char *groupName)
     DBVARIANT dbv;
     char groupName2[127];
     char str[256];
-    
+
     // Cleanup group name from weird characters
-    
+
     // Skip first break
     while(*groupName && *groupName == '\\') groupName++;
-        
+
     char *p = strrchr(groupName, '\\');
     // Cleanup end
     while(p && !(*(p + 1)))
@@ -79,10 +79,10 @@ char *CreateGroup(char *groupName)
     }
 
     // Is this a duplicate?
-    if (!GroupNameExists(groupName)) 
+    if (!GroupNameExists(groupName))
     {
         lstrcpyn(groupName2 + 1, groupName, strlen(groupName) + 1);
-        
+
         // Find an unused id
         for (groupId = 0; ; groupId++) {
                 itoa(groupId, groupIdStr,10);
@@ -100,39 +100,39 @@ char *CreateGroup(char *groupName)
 char *gg_makecontacts(int cr)
 {
     string_t s = string_init(NULL);
-    
+
     // Readup contacts
     HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-    while (hContact) 
+    while (hContact)
     {
         char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-        if (szProto != NULL && !strcmp(szProto, GG_PROTO)) 
+        if (szProto != NULL && !strcmp(szProto, GG_PROTO))
         {
             DBVARIANT dbv;
-            
+
             // Readup FirstName
-            if (!DBGetContactSetting(hContact, GG_PROTO, "FirstName", &dbv)) 
+            if (!DBGetContactSetting(hContact, GG_PROTO, "FirstName", &dbv))
             {
                 string_append(s, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
             string_append_c(s, ';');
             // Readup LastName
-            if (!DBGetContactSetting(hContact, GG_PROTO, "LastName", &dbv)) 
+            if (!DBGetContactSetting(hContact, GG_PROTO, "LastName", &dbv))
             {
                 string_append(s, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
             string_append_c(s, ';');
-            
+
             // Readup Nick
             if (!DBGetContactSetting(hContact, "CList", "MyHandle", &dbv) || !DBGetContactSetting(hContact, GG_PROTO, "Nick", &dbv))
             {
                 DBVARIANT dbv2;
-                if (!DBGetContactSetting(hContact, GG_PROTO, "NickName", &dbv2)) 
+                if (!DBGetContactSetting(hContact, GG_PROTO, "NickName", &dbv2))
                 {
                     string_append(s, dbv2.pszVal);
-                    DBFreeVariant(&dbv2);            
+                    DBFreeVariant(&dbv2);
                 }
                 else
                     string_append(s, dbv.pszVal);
@@ -142,20 +142,20 @@ char *gg_makecontacts(int cr)
             else
                 string_append_c(s, ';');
             string_append_c(s, ';');
-            
+
             // Readup Phone (fixed: uses stored editable phones)
-            if (!DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv)) 
+            if (!DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
             {
 				// Remove SMS postfix
 				char *sms = strstr(dbv.pszVal, " SMS");
 				if(sms) *sms = 0;
-					
+
                 string_append(s, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
             string_append_c(s, ';');
             // Readup Group
-            if (!DBGetContactSetting(hContact, "CList", "Group", &dbv)) 
+            if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
             {
                 string_append(s, dbv.pszVal);
                 DBFreeVariant(&dbv);
@@ -165,7 +165,7 @@ char *gg_makecontacts(int cr)
             string_append(s, ditoa(DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)));
             string_append_c(s, ';');
             // Readup Mail (fixed: uses stored editable mails)
-            if (!DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv)) 
+            if (!DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
             {
                 string_append(s, dbv.pszVal);
                 DBFreeVariant(&dbv);
@@ -177,9 +177,9 @@ char *gg_makecontacts(int cr)
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
-    
-    char *contacts = string_free(s, 0); 
-    
+
+    char *contacts = string_free(s, 0);
+
 #ifdef DEBUGMODE
     gg_netlog("gg_makecontacts(): \n%s", contacts);
 #endif
@@ -200,17 +200,17 @@ void gg_parsecontacts(char *contacts)
     char *p = strchr(contacts, ':'), *n;
     char *strFirstName, *strLastName, *strNickname, *strNick, *strPhone, *strGroup, *strUin, *strMail;
     uin_t uin;
-    
+
     // Skip to proper data
     if(p && p < strchr(contacts, ';')) p++;
     else p = contacts;
-    
+
     while(p)
     {
         // Processing line
         strFirstName = strLastName = strNickname = strNick = strPhone = strGroup = strUin = strMail = NULL;
         uin = 0;
-        
+
         // FirstName
         if(p)
         {
@@ -243,7 +243,7 @@ void gg_parsecontacts(char *contacts)
         if(n && p)
         {
             n = strchr(p, ';');
-            if(n && n != p) 
+            if(n && n != p)
 			{
 				strPhone = malloc((n - p) + 5);
 				strncpy(strPhone, p, (n - p));
@@ -262,7 +262,7 @@ void gg_parsecontacts(char *contacts)
         if(n && p)
         {
             n = strchr(p, ';');
-            if(n && n != p) 
+            if(n && n != p)
             {
                 strUin = strndup(p, (n - p));
                 uin = atoi(strUin);
@@ -278,26 +278,26 @@ void gg_parsecontacts(char *contacts)
             p = (n + 1);
         }
         if(!n) p = NULL;
-            
+
         // Loadup contact
-        if(uin && strNick) 
+        if(uin && strNick)
         {
 #ifdef DEBUGMODE
             gg_netlog("gg_parsecontacts(): Found contact %d with nickname \"%s\".", uin, strNick);
 #endif
             HANDLE hContact = gg_getcontact(uin, 1, 1, strNick);
-            
+
             // Write group
-            if(hContact && strGroup) 
+            if(hContact && strGroup)
                 DBWriteContactSettingString(hContact, "CList", "Group", CreateGroup(strGroup));
-            
+
             // Write misc data
             if(hContact && strFirstName) DBWriteContactSettingString(hContact, GG_PROTO, "FirstName", strFirstName);
             if(hContact && strLastName) DBWriteContactSettingString(hContact, GG_PROTO, "LastName", strLastName);
             if(hContact && strPhone) DBWriteContactSettingString(hContact, "UserInfo", "MyPhone0", strPhone); // Store now in User Info
             if(hContact && strMail) DBWriteContactSettingString(hContact, "UserInfo", "Mye-mail0", strMail); // Store now in User Info
         }
-        
+
         // Release stuff
         if(strFirstName) free(strFirstName);
         if(strLastName) free(strLastName);
@@ -317,9 +317,9 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
     char *password;
     uin_t uin;
     DBVARIANT dbv;
-    
+
 	// Check if connected
-    if (!ggSess) 
+    if (!gg_isonline())
     {
         MessageBox(NULL,
             Translate("You have to be connected before you can import/export contacts from/to server."),
@@ -329,21 +329,21 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
 	}
 
     // Readup password
-    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) 
+    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
     {
         CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
         password = strdup(dbv.pszVal);
         DBFreeVariant(&dbv);
     }
     else return 0;
-    
-    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))) 
+
+    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
         return 0;
-    
+
     // Making contacts list
-    struct gg_http *h; 
-    
-    if (gg_userlist_request(ggSess, GG_USERLIST_GET, NULL) == -1) 
+    struct gg_http *h;
+
+    if (gg_userlist_request(ggThread->sess, GG_USERLIST_GET, NULL) == -1)
     {
         char error[128];
         sprintf(error, Translate("List cannot be imported because of error:\n\t%s"), strerror(errno));
@@ -367,9 +367,9 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
     char *password;
     uin_t uin;
     DBVARIANT dbv;
-    
+
 	// Check if connected
-    if (!ggSess) 
+    if (!ggThread->sess)
     {
         MessageBox(NULL,
             Translate("You have to be connected before you can import/export contacts from/to server."),
@@ -379,21 +379,21 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
 	}
 
     // Readup password
-    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) 
+    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
     {
         CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
         password = strdup(dbv.pszVal);
         DBFreeVariant(&dbv);
     }
     else return 0;
-    
-    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))) 
+
+    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
         return 0;
-    
+
     // Making contacts list
-    struct gg_http *h; 
-    
-    if (gg_userlist_request(ggSess, GG_USERLIST_PUT, NULL) == -1) 
+    struct gg_http *h;
+
+    if (gg_userlist_request(ggThread->sess, GG_USERLIST_PUT, NULL) == -1)
     {
         char error[128];
         sprintf(error, Translate("List cannot be removeed because of error:\n\t%s"), strerror(errno));
@@ -403,12 +403,12 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
             GG_PROTOERROR,
             MB_OK | MB_ICONSTOP
         );
-			
+
 #ifdef DEBUGMODE
         gg_netlog("gg_remove_serverthread(): Cannot remove list because of \"%s\".", strerror(errno));
 #endif
     }
-	
+
 	// Set list removal
 	ggListRemove = TRUE;
     free(password);
@@ -456,7 +456,7 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
     ofn.nMaxFile = sizeof(str);
     ofn.nMaxFileTitle = MAX_PATH;
     ofn.lpstrDefExt = "txt";
-    
+
 #ifdef DEBUGMODE
         gg_netlog("gg_import_text()");
 #endif
@@ -465,7 +465,7 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
     struct stat st;
     FILE *f = fopen(str, "r");
     stat(str, &st);
-        
+
     if(f && st.st_size)
     {
         char *contacts = malloc(st.st_size * sizeof(char));
@@ -523,12 +523,12 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
     ofn.nMaxFile = sizeof(str);
     ofn.nMaxFileTitle = MAX_PATH;
     ofn.lpstrDefExt = "txt";
-    
+
 #ifdef DEBUGMODE
     gg_netlog("gg_export_text(%s).", str);
 #endif
     if(!GetSaveFileName(&ofn)) return 0;
-        
+
     FILE *f = fopen(str, "w");
     if(f)
     {
@@ -564,9 +564,9 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
     char *password;
     uin_t uin;
     DBVARIANT dbv;
-    
+
 	// Check if connected
-    if (!ggSess) 
+    if (!ggThread->sess)
     {
         MessageBox(NULL,
             Translate("You have to be connected before you can import/export contacts from/to server."),
@@ -576,26 +576,26 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
 	}
 
     // Readup password
-    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) 
+    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
     {
         CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
         password = strdup(dbv.pszVal);
         DBFreeVariant(&dbv);
     }
     else return 0;
-    
-    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))) 
+
+    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
         return 0;
-    
+
     // Making contacts list
     char *contacts = gg_makecontacts(1);
-    struct gg_http *h; 
-    
+    struct gg_http *h;
+
 #ifdef DEBUGMODE
         gg_netlog("gg_userlist_request(%s).", contacts);
 #endif
-		
-    if (gg_userlist_request(ggSess, GG_USERLIST_PUT, contacts) == -1) 
+
+    if (gg_userlist_request(ggThread->sess, GG_USERLIST_PUT, contacts) == -1)
     {
         char error[128];
         sprintf(error, Translate("List cannot be exported because of error:\n\t%s"), strerror(errno));

@@ -41,7 +41,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
         {
             char *szData, *s;
             COPYDATASTRUCT *cds = (COPYDATASTRUCT *) lParam;
-            
+
             LOG(LOG_DEBUG, "Links: WM_COPYDATA");
             // Check to see if link support is enabled
             // We shouldn't need this check since the class instance shouldn't be running
@@ -53,9 +53,36 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
             s = szData = _strdup((char *) cds->lpData);
             aim_links_normalize(szData);
             s += 4;
-            if (!_strnicmp(s, "goim?", 5)) {
+			if (!_strnicmp(s, "addbuddy?", 9)) { // group is current ignored
+				char *tok, *sn = NULL, *group = NULL;
+				ADDCONTACTSTRUCT acs;
+				PROTOSEARCHRESULT psr;
+				
+				LOG(LOG_DEBUG, "Links: WM_COPYDATA - addbuddy?");
+				s += 9;
+				tok = strtok(s, "&");
+                while (tok != NULL) {
+                    if (!_strnicmp(tok, "screenname=", 11)) {
+                        sn = tok + 11;
+                    }
+                    if (!_strnicmp(tok, "groupname=", 10)) {
+                        group = tok + 10;
+                    }
+                    tok = strtok(NULL, "&");
+                }
+				if (sn&&strlen(sn)&&!aim_util_isme(sn)&&!aim_buddy_get(sn,0,0,0,NULL)) {
+					acs.handleType=HANDLE_SEARCHRESULT;
+					acs.szProto=AIM_PROTO;
+					acs.psr=&psr;
+					memset(&psr,0,sizeof(PROTOSEARCHRESULT));
+					psr.cbSize=sizeof(PROTOSEARCHRESULT);
+					psr.nick=sn;
+					CallService(MS_ADDCONTACT_SHOW,(WPARAM)NULL,(LPARAM)&acs);
+				}
+			}
+            else if (!_strnicmp(s, "goim?", 5)) {
                 char *tok, *sn = NULL, *msg = NULL;
-					
+
                 LOG(LOG_DEBUG, "Links: WM_COPYDATA - goim");
                 s += 5;
                 if (!(*s))
@@ -72,15 +99,15 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
                 }
                 if (sn && ServiceExists(MS_MSG_SENDMESSAGE)) {
                     HANDLE hContact = aim_buddy_get(sn, 1, 0, 0, NULL);
-					
+
                     if (hContact)
                         CallService(MS_MSG_SENDMESSAGE, (WPARAM) hContact, (LPARAM) msg);
                 }
             }
-            if (!_strnicmp(s, "gochat?", 7)) {
+            else if (!_strnicmp(s, "gochat?", 7)) {
                 char *tok, *rm = NULL, *ex;
                 int exchange = 0;
-                
+
                 LOG(LOG_DEBUG, "Links: WM_COPYDATA - gochat");
                 s += 7;
                 if (!(*s))
@@ -110,7 +137,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
 static void aim_links_regwatcher()
 {
     WNDCLASS wc;
-    
+
     LOG(LOG_DEBUG, "Links: regwatcher");
     if (hWatcher || aWatcherClass) {
         return;
@@ -145,7 +172,7 @@ static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
     if (GetClassName(hwnd, szBuf, sizeof(szBuf))) {
         if (!strcmp(szBuf, AIMWATCHERCLASS)) {
             COPYDATASTRUCT cds;
-            
+
             LOG(LOG_DEBUG, "Links: enumthreadwindowsproc - found AIMWATCHERCLASS");
             cds.dwData = 1;
             cds.cbData = strlen((char *) lParam) + 1;
@@ -159,7 +186,7 @@ static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
 static BOOL CALLBACK aim_linsk_enumwindowsproc(HWND hwnd, LPARAM lParam)
 {
     char szBuf[32];
-    
+
     LOG(LOG_DEBUG, "Links: enumwindowsproc");
     if (GetClassName(hwnd, szBuf, sizeof(szBuf))) {
         if (!strcmp(szBuf, MIRANDACLASS)) {
@@ -179,33 +206,33 @@ static void aim_links_register()
     GetModuleFileName(hInstance, szBuf, sizeof(szBuf));
     GetShortPathName(szBuf, szShort, sizeof(szShort));
     LOG(LOG_DEBUG, "Links: register");
-	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim", &hkey) == ERROR_SUCCESS) {
-		RegSetValue(hkey, NULL, REG_SZ, "URL:AIM Protocol", strlen("URL:AIM Protocol"));
-		RegSetValueEx(hkey, "URL Protocol" , 0, REG_SZ, (PBYTE)"", 1);
-		RegCloseKey(hkey);
-	}
-	else {
-		LOG(LOG_ERROR, "Links: register - unable to create registry key (root)");
-		return;
-	}
-	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\DefaultIcon", &hkey) == ERROR_SUCCESS) {
-		char szIcon[MAX_PATH];
+    if (RegCreateKey(HKEY_CLASSES_ROOT, "aim", &hkey) == ERROR_SUCCESS) {
+        RegSetValue(hkey, NULL, REG_SZ, "URL:AIM Protocol", strlen("URL:AIM Protocol"));
+        RegSetValueEx(hkey, "URL Protocol", 0, REG_SZ, (PBYTE) "", 1);
+        RegCloseKey(hkey);
+    }
+    else {
+        LOG(LOG_ERROR, "Links: register - unable to create registry key (root)");
+        return;
+    }
+    if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\DefaultIcon", &hkey) == ERROR_SUCCESS) {
+        char szIcon[MAX_PATH];
 
-		_snprintf(szIcon, sizeof(szIcon), "%s,0", szShort);
-		RegSetValue(hkey, NULL, REG_SZ, szIcon, strlen(szIcon));
-		RegCloseKey(hkey);
-	}
-	else {
-		LOG(LOG_ERROR, "Links: register - unable to create registry key (DefaultIcon)");
-		return;
-	}
+        mir_snprintf(szIcon, sizeof(szIcon), "%s,0", szShort);
+        RegSetValue(hkey, NULL, REG_SZ, szIcon, strlen(szIcon));
+        RegCloseKey(hkey);
+    }
+    else {
+        LOG(LOG_ERROR, "Links: register - unable to create registry key (DefaultIcon)");
+        return;
+    }
     if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command", &hkey) == ERROR_SUCCESS) {
         // MSVC exports differently than gcc/mingw
 #ifdef _MSC_VER
-        _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,_aim_links_exec@16 %%1", szShort);
+        mir_snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,_aim_links_exec@16 %%1", szShort);
         LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #else
-        _snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
+        mir_snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
         LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #endif
         RegSetValue(hkey, NULL, REG_SZ, szExe, strlen(szExe));
@@ -213,7 +240,7 @@ static void aim_links_register()
     }
     else {
         LOG(LOG_ERROR, "Links: register - unable to create registry key (command)");
-		return;
+        return;
     }
 
 }

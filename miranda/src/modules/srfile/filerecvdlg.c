@@ -113,7 +113,7 @@ static void ReplaceStr(char str[], int len, char *from, char *to) {
     
         MoveMemory(tmp+pos+lstrlen(to), tmp+pos+tlen, lstrlen(tmp)+1-pos-tlen);
         CopyMemory(tmp+pos, to, lstrlen(to));
-        _snprintf(str, len, "%s", tmp);
+        mir_snprintf(str, len, "%s", tmp);
         free(tmp);
     }
 }
@@ -153,21 +153,21 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
         ci.hContact = hContact;
         ci.szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
         ci.dwFlag = CNF_UNIQUEID;
-        _snprintf(szProto, sizeof(szProto), "%s", ci.szProto);
+        mir_snprintf(szProto, sizeof(szProto), "%s", ci.szProto);
         if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
             switch (ci.type) {
                 case CNFT_ASCIIZ:
-                    _snprintf(szUsername, sizeof(szUsername), "%s", ci.pszVal);
+                    mir_snprintf(szUsername, sizeof(szUsername), "%s", ci.pszVal);
                     miranda_sys_free(ci.pszVal);
                     break;
                 case CNFT_DWORD:
-                    _snprintf(szUsername, sizeof(szUsername), "%u", ci.dVal);
+                    mir_snprintf(szUsername, sizeof(szUsername), "%u", ci.dVal);
                     break;
             }
         }
-        _snprintf(szNick, sizeof(szNick), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
+        mir_snprintf(szNick, sizeof(szNick), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
         if (lstrlen(szUsername)==0) {
-            _snprintf(szUsername, sizeof(szUsername), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
+            mir_snprintf(szUsername, sizeof(szUsername), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
         }
         RemoveInvalidFilenameChars(szNick);
         RemoveInvalidFilenameChars(szUsername);
@@ -281,12 +281,12 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
 								break;
 						}
 					}
@@ -323,7 +323,10 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					HICON hIcon;
 
 					hIcon=(HICON)CallProtoService(szProto,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
-					if (hIcon) DrawIconEx(dis->hDC,dis->rcItem.left,dis->rcItem.top,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+					if (hIcon) {
+						DrawIconEx(dis->hDC,dis->rcItem.left,dis->rcItem.top,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+						DestroyIcon(hIcon);
+					}
 				}
 			}
 			return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
@@ -413,6 +416,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case WM_DESTROY:
 			if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
 			if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);
+			DestroyIcon(dat->hUIIcons[3]);
 			DestroyIcon(dat->hUIIcons[2]);
 			DestroyIcon(dat->hUIIcons[1]);
 			DestroyIcon(dat->hUIIcons[0]);

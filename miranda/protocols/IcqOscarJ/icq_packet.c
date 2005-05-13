@@ -159,10 +159,12 @@ void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength)
 
 void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSeq)
 {
-	packWord(pPacket, wFamily);  // Family type
-	packWord(pPacket, wSubtype); // Family subtype
-	packWord(pPacket, wFlags);   // SNAC flags
-  packWord(pPacket, (WORD)dwSeq); // SNAC request id (sequence)
+  WORD wSeq = (WORD)dwSeq & 0x7FFF; // this is necessary, if that bit is there we get disconnected
+
+	packWord(pPacket, wFamily);   // Family type
+	packWord(pPacket, wSubtype);  // Family subtype
+	packWord(pPacket, wFlags);    // SNAC flags
+  packWord(pPacket, wSeq);      // SNAC request id (sequence)
 	packWord(pPacket, (WORD)(dwSeq>>0x10));  // SNAC request id (command)
 }
 

@@ -140,9 +140,16 @@ static TBStateConvert2Flat(int state) {
 
 static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 	if (hdcPaint) {
+		HDC hdcMem;
+		HBITMAP hbmMem;
+		HDC hOld;
 		RECT rcClient;
+
 		GetClientRect(ctl->hwnd, &rcClient);
-		
+		hdcMem = CreateCompatibleDC(hdcPaint);
+		hbmMem = CreateCompatibleBitmap(hdcPaint, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top);
+		hOld = SelectObject(hdcMem, hbmMem);
+
 		// If its a push button, check to see if it should stay pressed
 		if (ctl->pushBtn && ctl->pbState) ctl->stateId = PBS_PRESSED;
 
@@ -151,9 +158,9 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			if (ctl->hThemeToolbar) {
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
                 if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcPaint, &rcClient);
+					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
 				}
-				MyDrawThemeBackground(ctl->hThemeToolbar, hdcPaint, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
+				MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
 			}
 			else {
 				HBRUSH hbr;
@@ -170,16 +177,16 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 					ReleaseDC(hwndParent,dc);
 				}
 				if (hbr) {
-					FillRect(hdcPaint, &rcClient, hbr);
+					FillRect(hdcMem, &rcClient, hbr);
 					DeleteObject(hbr);
 				}
 				if (ctl->stateId==PBS_HOT||ctl->focus) {
 					if (ctl->pbState)
-						DrawEdge(hdcPaint,&rcClient, EDGE_ETCHED,BF_RECT|BF_SOFT);
-					else DrawEdge(hdcPaint,&rcClient, BDR_RAISEDOUTER,BF_RECT|BF_SOFT|BF_FLAT);
+						DrawEdge(hdcMem,&rcClient, EDGE_ETCHED,BF_RECT|BF_SOFT);
+					else DrawEdge(hdcMem,&rcClient, BDR_RAISEDOUTER,BF_RECT|BF_SOFT|BF_FLAT);
 				}
 				else if (ctl->stateId==PBS_PRESSED)
-					DrawEdge(hdcPaint, &rcClient, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
+					DrawEdge(hdcMem, &rcClient, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
 			}
 		}
 		else {
@@ -187,21 +194,21 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			if (ctl->hThemeButton) {
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
 				if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcPaint, &rcClient);
+					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
 				}
-				MyDrawThemeBackground(ctl->hThemeButton, hdcPaint, BP_PUSHBUTTON, state, &rcClient, &rcClient);
+				MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
 			}
 			else {
 				UINT uState = DFCS_BUTTONPUSH|((ctl->stateId==PBS_HOT)?DFCS_HOT:0)|((ctl->stateId == PBS_PRESSED)?DFCS_PUSHED:0);
 				if (ctl->defbutton&&ctl->stateId==PBS_NORMAL) uState |= DLGC_DEFPUSHBUTTON;
-				DrawFrameControl(hdcPaint, &rcClient, DFC_BUTTON, uState);
+				DrawFrameControl(hdcMem, &rcClient, DFC_BUTTON, uState);
 			}
 
 			// Draw focus rectangle if button has focus
 			if (ctl->focus) {
 				RECT focusRect = rcClient;
 				InflateRect(&focusRect, -3, -3);
-				DrawFocusRect(hdcPaint, &focusRect);
+				DrawFocusRect(hdcMem, &focusRect);
 			}
 		}
 
@@ -213,7 +220,18 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 				ix++;
 				iy++;
 			}
-			DrawState(hdcPaint,NULL,NULL,(LPARAM)ctl->hIcon,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
+			{
+				HIMAGELIST hImageList;
+				HICON hIconNew;
+
+				hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON), IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
+				ImageList_AddIcon(hImageList, ctl->hIcon);
+				hIconNew = ImageList_GetIcon(hImageList, 0, ILD_NORMAL);
+				DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON|DSS_NORMAL:DST_ICON|DSS_DISABLED);
+				ImageList_RemoveAll(hImageList);
+				ImageList_Destroy(hImageList);
+				DestroyIcon(hIconNew);
+			}
 		}
 		else if (ctl->hBitmap) {
 			BITMAP bminfo;
@@ -226,33 +244,40 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 				ix++;
 				iy++;
 			}
-			DrawState(hdcPaint,NULL,NULL,(LPARAM)ctl->hBitmap,0,ix,iy,bminfo.bmWidth,bminfo.bmHeight,IsWindowEnabled(ctl->hwnd)?DST_BITMAP:DST_BITMAP|DSS_DISABLED);
+			DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->hBitmap,0,ix,iy,bminfo.bmWidth,bminfo.bmHeight,IsWindowEnabled(ctl->hwnd)?DST_BITMAP:DST_BITMAP|DSS_DISABLED);
 		}
 		else if (GetWindowTextLength(ctl->hwnd)) {
 			// Draw the text and optinally the arrow
 			char szText[MAX_PATH];
 			SIZE sz;
 			RECT rcText;
+			HFONT hOldFont;
 
 			CopyRect(&rcText, &rcClient);
 			GetWindowText(ctl->hwnd, szText, sizeof(szText));
-			SetBkMode(hdcPaint, TRANSPARENT);
-			SelectObject(hdcPaint, ctl->hFont);
+			SetBkMode(hdcMem, TRANSPARENT);
+			hOldFont = SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
-			SetTextColor(hdcPaint, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
-			GetTextExtentPoint32(hdcPaint, szText, lstrlen(szText), &sz);
+			SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
+			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
 				
-				GetTextExtentPoint32(hdcPaint, "&", 1, &szHot);
+				GetTextExtentPoint32(hdcMem, "&", 1, &szHot);
 				sz.cx -= szHot.cx;
 			}
 			if (ctl->arrow) {
-				DrawState(hdcPaint,NULL,NULL,(LPARAM)ctl->arrow,0,rcClient.right-rcClient.left-5-GetSystemMetrics(SM_CXSMICON)+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),(rcClient.bottom-rcClient.top)/2-GetSystemMetrics(SM_CYSMICON)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
+				DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->arrow,0,rcClient.right-rcClient.left-5-GetSystemMetrics(SM_CXSMICON)+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),(rcClient.bottom-rcClient.top)/2-GetSystemMetrics(SM_CYSMICON)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
 			}
-			SelectObject(hdcPaint, ctl->hFont);
-			DrawState(hdcPaint,NULL,NULL,(LPARAM)szText,0,(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
+			SelectObject(hdcMem, ctl->hFont);
+			DrawState(hdcMem,NULL,NULL,(LPARAM)szText,0,(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
+			SelectObject(hdcMem, hOldFont);
 		}
+		BitBlt(hdcPaint, 0, 0, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top, hdcMem, 0, 0, SRCCOPY);
+		SelectObject(hdcMem, hOld);
+		DeleteObject(hbmMem);
+		DeleteDC(hdcMem);
+
 	}
 }
 
@@ -348,6 +373,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			bct->hFont = (HFONT)wParam; // maybe we should redraw?
 			break;
 		}
+		case WM_NCPAINT:
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps;

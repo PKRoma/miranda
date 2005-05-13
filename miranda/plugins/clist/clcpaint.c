@@ -161,7 +161,8 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
     RECT clRect;
     int y, indent, index, fontHeight;
     struct ClcGroup *group;
-    HBITMAP hBmpOsb;
+    HBITMAP hBmpOsb, hOldBitmap;
+	HFONT hOldFont;
     DWORD style = GetWindowLong(hwnd, GWL_STYLE);
     int status = GetGeneralisedStatus();
     int grey = 0, groupCountsFontTopShift;
@@ -181,10 +182,10 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
     y = -dat->yScroll;
     hdcMem = CreateCompatibleDC(hdc);
     hBmpOsb = CreateBitmap(clRect.right, clRect.bottom, 1, GetDeviceCaps(hdc, BITSPIXEL), NULL);
-    SelectObject(hdcMem, hBmpOsb);
+	hOldBitmap = SelectObject(hdcMem, hBmpOsb);
     {
         TEXTMETRIC tm;
-        SelectObject(hdcMem, dat->fontInfo[FONTID_GROUPS].hFont);
+		hOldFont = SelectObject(hdcMem, dat->fontInfo[FONTID_GROUPS].hFont);
         GetTextMetrics(hdcMem, &tm);
         groupCountsFontTopShift = tm.tmAscent;
         SelectObject(hdcMem, dat->fontInfo[FONTID_GROUPCOUNTS].hFont);
@@ -488,7 +489,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
                 rc.top = y + ((dat->rowHeight - fontHeight) >> 1);
                 rc.right = (clRect.right - clRect.left);
                 rc.bottom = rc.top;
-                DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+                DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE);
             }
             if (selected) {
                 if (group->contact[group->scanIndex].type != CLCIT_DIVIDER) {
@@ -501,7 +502,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
                     rc.right = (clRect.right - clRect.left);
                     rc.bottom = rc.top;
                     if (qlen)
-                        DrawText(hdcMem, szText, qlen, &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+                        DrawText(hdcMem, szText, qlen, &rc, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE);
                 }
             }
 
@@ -567,6 +568,8 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
     if (!grey)
         BitBlt(hdc, rcPaint->left, rcPaint->top, rcPaint->right - rcPaint->left, rcPaint->bottom - rcPaint->top, hdcMem, rcPaint->left, rcPaint->top,
                SRCCOPY);
+	SelectObject(hdcMem,hOldBitmap);
+	SelectObject(hdcMem,hOldFont);
     DeleteDC(hdcMem);
     if (hBrushAlternateGrey)
         DeleteObject(hBrushAlternateGrey);

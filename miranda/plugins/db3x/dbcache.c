@@ -226,4 +226,4 @@ void UninitCache(void)
 {
 	mir_free(pDbCache);
 	KillTimer(NULL,flushBuffersTimerId);
-} 
+}

@@ -1,7 +1,7 @@
 /*
 SRMM
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2005 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -35,7 +35,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Send/Receive Messages",
 #endif
-	PLUGIN_MAKE_VERSION(2, 1, 0, 0),
+	PLUGIN_MAKE_VERSION(2, 4, 0, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"info@miranda-im.org",

@@ -41,6 +41,24 @@ IDI_ICQC7               ICON    DISCARDABLE     "res\\7.ico"
 IDI_ICQC8               ICON    DISCARDABLE     "res\\8.ico"
 IDI_EMAIL               ICON    DISCARDABLE     "res\\sendmail.ico"
 IDI_NEWGROUP2           ICON    DISCARDABLE     "res\\addgoupp.ico"
+IDI_CLIENTTRILLIAN      ICON    DISCARDABLE     "res\\Trillian.ico"
+IDI_CLIENTMIRANDA       ICON    DISCARDABLE     "res\\Miranda.ico"
+IDI_CLIENTRQ            ICON    DISCARDABLE     "res\\&RQ.ico"
+IDI_CLIENTGAIM          ICON    DISCARDABLE     "res\\Gaim.ico"
+IDI_CLIENTIM2           ICON    DISCARDABLE     "res\\IM2.ico"
+IDI_CLIENTKOPETE        ICON    DISCARDABLE     "res\\Kopete.ico"
+IDI_CLIENTLICQ          ICON    DISCARDABLE     "res\\Licq.ico"
+IDI_CLIENTQIP           ICON    DISCARDABLE     "res\\QIP.ico"
+IDI_CLIENTSIM           ICON    DISCARDABLE     "res\\Sim.ico"
+IDI_MIRANDA2            ICON    DISCARDABLE     "res\\mirandaclassic.ico"
+IDI_CLIENTICQGOF        ICON    DISCARDABLE     "res\\Icq2gof.ico"
+IDI_CLIENTICQGOJ        ICON    DISCARDABLE     "res\\Icq2goJ.ico"
+IDI_CLIENTICQ2000       ICON    DISCARDABLE     "res\\Icq2000.ico"
+IDI_CLIENTICQ2001       ICON    DISCARDABLE     "res\\Icq2001.ico"
+IDI_CLIENTICQ2003       ICON    DISCARDABLE     "res\\Icq2003.ico"
+IDI_CLIENTICQLITE4      ICON    DISCARDABLE     "res\\IcqL4.ico"
+IDI_CLIENTICQLITE5      ICON    DISCARDABLE     "res\\IcqL5.ico"
+IDI_CLIENTICQLITE       ICON    DISCARDABLE     "res\\IcqLite.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -54,6 +72,39 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+END
+
+IDD_OPT_CLCBKG2 DIALOGEX 0, 0, 234, 164
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Settings",IDC_STATIC,4,19,226,141
+    LTEXT           "Background colour:",IDC_BC_STATIC,12,35,72,8,NOT 
+                    WS_GROUP
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,84,34,32,10
+    LTEXT           "Selection colour:",IDC_SC_STATIC,12,51,72,8
+    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,84,50,32,10
+    CONTROL         "Use background bitmap",IDC_BITMAP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,68,161,10
+    EDITTEXT        IDC_FILENAME,22,82,184,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,208,82,15,11
+    CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,99,98,10
+    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,99,101,10
+    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,112,98,10
+    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,125,98,10
+    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,121,125,100,10
+    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,112,101,10
+    CONTROL         "Tile vertically according to Row Height",IDC_TILEVROWH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,140,205,10
+    COMBOBOX        IDC_BKGRLIST,4,5,226,155,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -71,6 +122,11 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 88
+    END
+
+    IDD_OPT_CLCBKG2, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 149
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -451,8 +507,8 @@ BEGIN
     GROUPBOX        "Additional Colours",IDC_STATIC,4,171,121,79
     LTEXT           "Selected text:",IDC_STATIC,12,186,65,8
     CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,77,184,29,12
-    LTEXT           "Hottrack text:",IDC_STATIC,12,202,65,8
-    CONTROL         "",IDC_HOTCOLOUR,"ColourPicker",WS_TABSTOP,77,200,29,12
+    LTEXT           "Hottrack text:",IDC_STATIC,12,201,65,8
+    CONTROL         "",IDC_HOTCOLOUR,"ColourPicker",WS_TABSTOP,77,199,29,12
     CONTROL         "Gamma correction",IDC_GAMMACORRECT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,235,95,10
     LTEXT           "Quicksearch text:",IDC_STATIC,12,218,65,8
@@ -462,13 +518,13 @@ BEGIN
     LTEXT           "Colour:",IDC_STCOLOURTEXT,228,102,37,8,NOT WS_VISIBLE
     GROUPBOX        "Selection Mode",IDC_STATIC,130,171,144,79
     CONTROL         "Default",IDC_HILIGHTMODE,"Button",BS_AUTORADIOBUTTON,
-                    145,185,39,10
+                    145,185,120,10
     CONTROL         "Less selection",IDC_HILIGHTMODE2,"Button",
-                    BS_AUTORADIOBUTTON,145,215,61,10
+                    BS_AUTORADIOBUTTON,145,215,120,10
     CONTROL         "Full selection",IDC_HILIGHTMODE1,"Button",
-                    BS_AUTORADIOBUTTON,145,200,57,10
+                    BS_AUTORADIOBUTTON,145,200,120,10
     CONTROL         "No selection",IDC_HILIGHTMODE3,"Button",
-                    BS_AUTORADIOBUTTON,145,230,55,10
+                    BS_AUTORADIOBUTTON,145,230,120,10
 END
 
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 151
@@ -684,7 +740,7 @@ BEGIN
         HORZGUIDE, 94
         HORZGUIDE, 152
         HORZGUIDE, 190
-        HORZGUIDE, 206
+        HORZGUIDE, 205
         HORZGUIDE, 222
     END
 

@@ -506,7 +506,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                         unsigned char format[20];
                         char *msg = "\0"; // empty message
 
-                        if (dat->lpImages)
+                        if (dat->lpImages && gg_isonline())
                         {
                             uin_t uin = (uin_t)DBGetContactSettingDword(dat->hContact, GG_PROTO, GG_KEY_UIN, 0);
 
@@ -527,7 +527,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             int len = sizeof(struct gg_msg_richtext_format)+sizeof(struct gg_msg_richtext_image);
                             ((struct gg_msg_richtext*)format)->length = len;
 
-                            gg_send_message_richtext(ggSess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
+                            gg_send_message_richtext(ggThread->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
 
                             // Protect dat from releasing
                             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)NULL);
@@ -922,10 +922,10 @@ BOOL gg_img_sendonrequest(struct gg_event* e)
 {
     GGIMAGEDLGDATA *dat = gg_img_find(e->event.image_request.sender, e->event.image_request.crc32);
 
-    if(!dat) return FALSE;
+    if(!dat || !gg_isonline()) return FALSE;
 
     LPVOID pvData = GlobalLock(dat->lpImages->hPicture);
-    gg_image_reply(ggSess, e->event.image_request.sender, dat->lpImages->lpszFileName, (char*)pvData, dat->lpImages->imageSize);
+    gg_image_reply(ggThread->sess, e->event.image_request.sender, dat->lpImages->lpszFileName, (char*)pvData, dat->lpImages->imageSize);
     GlobalUnlock(dat->lpImages->hPicture);
 
     gg_img_remove(dat);

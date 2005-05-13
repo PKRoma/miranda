@@ -39,8 +39,10 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 
 	if(!NetlibEnterNestedCS(nlc,NLNCS_SEND)) return SOCKET_ERROR;
 	if(nlc->usingHttpGateway && !(nlb->flags&MSG_RAW)) {
-		if(!(nlb->flags&MSG_NOHTTPGATEWAYWRAP) && nlc->nlu->user.pfnHttpGatewayWrapSend)
+		if(!(nlb->flags&MSG_NOHTTPGATEWAYWRAP) && nlc->nlu->user.pfnHttpGatewayWrapSend) {
+			NetlibDumpData(nlc,nlb->buf,nlb->len,1,nlb->flags);
 			result=nlc->nlu->user.pfnHttpGatewayWrapSend((HANDLE)nlc,nlb->buf,nlb->len,nlb->flags|MSG_NOHTTPGATEWAYWRAP,NetlibSend);
+		}
 		else result=NetlibHttpGatewayPost(nlc,nlb->buf,nlb->len,nlb->flags);
 	}
 	else {

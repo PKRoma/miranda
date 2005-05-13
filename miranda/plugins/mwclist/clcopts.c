@@ -103,6 +103,20 @@ void GetFontSetting(int i,LOGFONT *lf,COLORREF *colour)
 	lf->lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
 }
 
+
+int BgClcChange(WPARAM wParam,LPARAM lParam)
+{
+ClcOptionsChanged();
+return 0;
+}
+
+int BgStatusBarChange(WPARAM wParam,LPARAM lParam)
+{
+	ClcOptionsChanged();
+	OnStatusBarBackgroundChange();
+return 0;
+}
+
 int ClcOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
@@ -117,12 +131,16 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc=DlgProcClcMainOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	
+	if (!ServiceExists(MS_BACKGROUNDCONFIG_REGISTER))
+	{
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCBKG);
 	odp.pszTitle=Translate("List Background");
 	odp.pfnDlgProc=DlgProcClcBkgOpts;
 	odp.flags=ODPF_BOLDGROUPS;
-	
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	}
+
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCTEXT);
 	odp.pszTitle=Translate("List Text");
 	odp.pfnDlgProc=DlgProcClcTextOpts;
@@ -133,13 +151,16 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc=DlgProcClcMetaOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-
+	if (!ServiceExists(MS_BACKGROUNDCONFIG_REGISTER))
+	{
 	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLCBKG);
 	odp.pszTitle=Translate("StatusBar Background");
 	odp.pfnDlgProc=DlgProcStatusBarBkgOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	}
 
+	
 
 	return 0;
 }
@@ -656,7 +677,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 static const char *szFontIdDescr[FONTID_MAX+1]=
-	{"Standard contacts","Online contacts to whom you have a different visibility","Offline contacts","Contacts which are 'not on list'","Groups","Group member counts","Dividers","Offline contacts to whom you have a different visibility"};
+	{"Standard contacts","Online contacts to whom you have a different visibility","Offline contacts","Contacts which are 'not on list'","Groups","Group member counts","Dividers","Offline contacts to whom you have a different visibility", "Status messages"};
 
 #define SAMEASF_FACE   1
 #define SAMEASF_SIZE   2
@@ -674,7 +695,7 @@ struct {
 #include <poppack.h>
 static WORD fontSameAsDefault[FONTID_MAX+1]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02};
 static char *fontSizes[]={"7","8","10","14","16","18","20","24","28"};
-static int fontListOrder[FONTID_MAX+1]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_GROUPS,FONTID_GROUPCOUNTS,FONTID_DIVIDERS};
+static int fontListOrder[FONTID_MAX+1]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_GROUPS,FONTID_GROUPCOUNTS,FONTID_DIVIDERS,FONTID_STATUSMSG};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
 #define M_REMAKESAMPLE       (WM_USER+11)

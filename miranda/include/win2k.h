@@ -54,29 +54,6 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 //mii was extended for NT5/Win98, so need the old length for some stuff
 #define MENUITEMINFO_V4_SIZE (offsetof(MENUITEMINFO,cch)+sizeof((*((MENUITEMINFO*)0)).cch))
 
-// uxtheme.h defines
-#ifndef THEMEAPI
-	#define WM_THEMECHANGED		0x031A // when windows changes themes 
-	#define BP_PUSHBUTTON		1  // Push Button Type
-	#define PBS_NORMAL			1
-	#define PBS_HOT				2
-	#define PBS_PRESSED			3
-	#define PBS_DISABLED		4
-	#define PBS_DEFAULTED		5
-	#define BP_CHECKBOX			3  // CheckBox Type
-	#define TP_BUTTON           1
-    #define TS_NORMAL           1
-    #define TS_HOT              2
-    #define TS_PRESSED          3
-    #define TS_DISABLED         4
-    #define TS_CHECKED          5
-    #define TS_HOTCHECKED       6
-	#define CBS_UNCHECKEDNORMAL 1
-	#define CBS_UNCHECKEDHOT    2
-	#define CBS_CHECKEDNORMAL   5
-	#define CBS_CHECKEDHOT      6
-#endif
-
 #if _MSC_VER >= 1300
 #define NOWIN2K
 #endif
@@ -91,6 +68,31 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define BIGI(x) x##LL
 #endif
 
+#if _MSC_VER
+	// uxtheme.h defines
+	#ifndef THEMEAPI
+		#define WM_THEMECHANGED		0x031A // when windows changes themes 
+		#define BP_PUSHBUTTON		1  // Push Button Type
+		#define PBS_NORMAL			1
+		#define PBS_HOT				2
+		#define PBS_PRESSED			3
+		#define PBS_DISABLED		4
+		#define PBS_DEFAULTED		5
+		#define BP_CHECKBOX			3  // CheckBox Type
+		#define TP_BUTTON           1
+		#define TS_NORMAL           1
+		#define TS_HOT              2
+		#define TS_PRESSED          3
+		#define TS_DISABLED         4
+		#define TS_CHECKED          5
+		#define TS_HOTCHECKED       6
+		#define CBS_UNCHECKEDNORMAL 1
+		#define CBS_UNCHECKEDHOT    2
+		#define CBS_CHECKEDNORMAL   5
+		#define CBS_CHECKEDHOT      6
+	#endif
+#endif
+
 #if defined (__GNUC__)
     #define SECURITY_ENTRYPOINTA "InitSecurityInterfaceA"
     #define SECURITY_ENTRYPOINT SECURITY_ENTRYPOINTA
@@ -98,7 +100,36 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
     #ifndef OPENFILENAME_SIZE_VERSION_400
         #define OPENFILENAME_SIZE_VERSION_400 sizeof(OPENFILENAME)
     #endif
-    #define CDRF_NOTIFYSUBITEMDRAW  0x00000020
+	typedef struct tagNMKEY {
+		NMHDR hdr;
+		UINT nVKey;
+		UINT uFlags;
+	} NMKEY, *LPNMKEY;
+	#define ODS_HOTLIGHT        0x0040
+	#define ODS_INACTIVE        0x0080
+	#define SPI_GETFLATMENU		0x1022
+	#define COLOR_HOTLIGHT		26  
+	#define COLOR_MENUBAR		30
+	#define COLOR_MENUHILIGHT   29
+	#define COLOR_HIGHLIGHT		13
+	#define BP_PUSHBUTTON		1  // Push Button Type
+	#define PBS_NORMAL			1
+	#define PBS_HOT				2
+	#define PBS_PRESSED			3
+	#define PBS_DISABLED		4
+	#define PBS_DEFAULTED		5
+	#define BP_CHECKBOX			3  // CheckBox Type
+	#define TP_BUTTON           1
+	#define TS_NORMAL           1
+	#define TS_HOT              2
+	#define TS_PRESSED          3
+	#define TS_DISABLED         4
+	#define TS_CHECKED          5
+	#define TS_HOTCHECKED       6
+	#define CBS_UNCHECKEDNORMAL 1
+	#define CBS_UNCHECKEDHOT    2
+	#define CBS_CHECKEDNORMAL   5
+	#define CBS_CHECKEDHOT      6
 // SDK isn't present or some older VC compiler was used, include missing things.
 #elif !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 

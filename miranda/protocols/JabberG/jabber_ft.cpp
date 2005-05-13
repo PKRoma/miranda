@@ -94,7 +94,7 @@ void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft )
 	}
 	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, JabberFtSiResult );
-	_snprintf( idStr, sizeof( idStr ), JABBER_IQID"%d", iqId );
+	mir_snprintf( idStr, sizeof( idStr ), JABBER_IQID"%d", iqId );
 	if (( item=JabberListAdd( LIST_FTSEND, idStr )) == NULL ) {
 		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 		JabberFileFreeFt( ft );
@@ -226,7 +226,7 @@ static BOOL JabberFtSend( HANDLE hConn, void *userdata )
 	ft->fileReceivedBytes = 0;
 	if (( buffer=( char* )malloc( 2048 )) != NULL ) {
 		while (( numRead=_read( fd, buffer, 2048 )) > 0 ) {
-			if ( Netlib_Send( hConn, buffer, numRead, MSG_NODUMP ) != numRead ) {
+			if ( Netlib_Send( hConn, buffer, numRead, 0 ) != numRead ) {
 				free( buffer );
 				_close( fd );
 				return FALSE;

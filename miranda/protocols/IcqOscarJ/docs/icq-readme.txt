@@ -10,8 +10,59 @@ This Miranda IM plugin makes it possible to connect to the ICQ
 instant messenger network and communicate with other ICQ users.
 
 
+Known Problems
+______________
+
+- In Invisible mode, when other side is not in visible list messages are sometimes 
+  received twice from some clients (it is a problem of that clients, they do send them
+  twice)
+
+- In Invisible mode, when other side is not in visible list messages are not unicode
+  aware. This is because ICQ protocol does not support unicode offline messages.
+
+- When synchronising server-list, users get added with await auth flag or receive added
+  message. The way which ICQ servers handle authorisations, we cannot do it better - when
+  uploading contacts to server account has to be a new one, then contacts can be added
+  and uploaded without auth... If the account is an old one they cannot be added without
+  auth if they require one. So they are added with flag awaiting auth. With the new
+  Manage server list contacts added contacts should never receive auth requests, but 
+  if you have an old account they can receive added notification.
+
+
 Changes
 _______
+
+0.3.5.1
+
+Bugfixes:
+  Renaming of server groups was not working properly - caused errors
+  Avatar could not be deleted (the delete button did not work)
+  File Transfers were not working properly in some cases (wrong cookie handling)
+  Avatar formats were not recognized correctly
+  Method of determining target dir in file receive was not solid enough
+  Manage server-list dialog leaked memory
+  Synchronize visibility items was not working properly
+  Our avatar image was not linked to our ContactPhoto
+  Added workaround for DB Blob caching issues
+  Fixed occasional crash on login (missing TLV validity checks)
+  Fixed slow update of nicks when users imported from server-list
+  Fixed auto info update mechanism, do not progress too fast, do not drop processing
+  Fixed empty groups are always hidden in Manage Server List, cannot be used either
+  Fixed occasional crash on avatar retrieval - limit size of image to the size of packet
+  If our rate is high, ignore user requests for status msgs & user details (prevents disconnection)
+  Added temporary solution for roughly translated ICQ 2003b russian
+  Manage server-list dialog could display other contacts and could crash
+  Basic search could search for bad uin - garbage can be in the string
+  Added workaround for select() malfunction - caused high CPU load
+
+Improvements:
+  If Update details from server is on, user group are also updated
+  Changed System Uptime to Member since in my details
+  Auth system recognizes & sends UTF-8 messages
+  Miranda version signature improved (preparing for old signature removal in the future)
+  Added better error detection for offline msgs receival process
+  Made avatar handling more resilient to server errors
+
 
 0.3.5
 

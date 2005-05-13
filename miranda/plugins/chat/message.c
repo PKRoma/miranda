@@ -116,7 +116,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 		// iterate through all characters, if rtf control character found then take action
 		while(*p1 != '\0')
 		{
-			_snprintf(InsertThis, sizeof(InsertThis), "");
+			mir_snprintf(InsertThis, sizeof(InsertThis), "");
 			iRemoveChars = 0;
 
 			switch (*p1)
@@ -132,7 +132,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 					itoa(iCol, szTemp, 10);
 					iRemoveChars = 3 + lstrlen(szTemp);
 					if(bTextHasStarted || iInd >= 0)
-						_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 )?"%%c%02u":"%%C", iInd);
+						mir_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 )?"%%c%02u":"%%C", iInd);
 				}
 				else if(p1 == strstr(p1, "\\highlight")) //background color
 				{
@@ -144,21 +144,21 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 					itoa(iCol, szTemp, 10);
 					iRemoveChars = 10 + lstrlen(szTemp);
 					if(bTextHasStarted || iInd >= 0)
-						_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 )?"%%f%02u":"%%F", iInd);
+						mir_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 )?"%%f%02u":"%%F", iInd);
 				}
 				else if(p1 == strstr(p1, "\\par")) // newline
 				{
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-					_snprintf(InsertThis, sizeof(InsertThis), "\n");
+					mir_snprintf(InsertThis, sizeof(InsertThis), "\n");
 				}
 				else if(p1 == strstr(p1, "\\b")) //bold
 				{
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != '0')?2:3;
-					_snprintf(InsertThis, sizeof(InsertThis), (p1[2] != '0')?"%%b":"%%B");
+					mir_snprintf(InsertThis, sizeof(InsertThis), (p1[2] != '0')?"%%b":"%%B");
 
 				}
 				else if(p1 == strstr(p1, "\\i")) // italics
@@ -166,7 +166,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != '0')?2:3;
-					_snprintf(InsertThis, sizeof(InsertThis), (p1[2] != '0')?"%%i":"%%I");
+					mir_snprintf(InsertThis, sizeof(InsertThis), (p1[2] != '0')?"%%i":"%%I");
 
 				}
 				else if(p1 == strstr(p1, "\\ul")) // underlined
@@ -179,7 +179,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 						iRemoveChars = 4;
 					else
 						iRemoveChars = 3;
-					_snprintf(InsertThis, sizeof(InsertThis), (p1[3] != '0' && p1[3] != 'n')?"%%u":"%%U");
+					mir_snprintf(InsertThis, sizeof(InsertThis), (p1[3] != '0' && p1[3] != 'n')?"%%u":"%%U");
 
 				}
 				else if(p1 == strstr(p1, "\\tab")) // tab
@@ -187,7 +187,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-					_snprintf(InsertThis, sizeof(InsertThis), " ");
+					mir_snprintf(InsertThis, sizeof(InsertThis), " ");
 
 				}
 				else if(p1[1] == '\\' || p1[1] == '{' || p1[1] == '}' ) // escaped characters
@@ -195,7 +195,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = FALSE;
 					iRemoveChars = 2;
-					_snprintf(InsertThis, sizeof(InsertThis), "%c", p1[1]);
+					mir_snprintf(InsertThis, sizeof(InsertThis), "%c", p1[1]);
 
 				}
 				else if(p1[1] == '\'' ) // special character
@@ -240,7 +240,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 								iLame += (*p3 - 48) * (int)pow(16, lstrlen(p3) -1);
 							p3++;
 						}
-						_snprintf(InsertThis, sizeof(InsertThis), "%c", iLame);
+						mir_snprintf(InsertThis, sizeof(InsertThis), "%c", iLame);
 					}
 					else
 						iRemoveChars = 2; 
@@ -264,7 +264,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 1;
-				_snprintf(InsertThis, sizeof(InsertThis), "%%%%");
+				mir_snprintf(InsertThis, sizeof(InsertThis), "%%%%");
 				break;
 			case ' ': // remove spaces following a RTF command
 				if(bJustRemovedRTF)

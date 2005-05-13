@@ -108,7 +108,7 @@ static String DoAlias(char *text, char *window)
 
 				for (int index = 1; index <8; index++){
 					char str[5];
-					_snprintf(str, sizeof(str), "#$%u", index);
+					mir_snprintf(str, sizeof(str), "#$%u", index);
 					if (!GetWord(line, index).empty() && IsChannel(GetWord(line, index)))
 						S = ReplaceString(S, str, (char *)GetWord(line, index).c_str());
 					else
@@ -116,12 +116,12 @@ static String DoAlias(char *text, char *window)
 				}
 				for (int index2 = 1; index2 <8; index2++){
 					char str[5];
-					_snprintf(str, sizeof(str), "$%u-", index2);
+					mir_snprintf(str, sizeof(str), "$%u-", index2);
 					S = ReplaceString(S, str, GetWordAddress(line, index2));
 				}
 				for (int index3 = 1; index3 <8; index3++){
 					char str[5];
-					_snprintf(str, sizeof(str), "$%u", index3);
+					mir_snprintf(str, sizeof(str), "$%u", index3);
 					S = ReplaceString(S, str, (char *)GetWord(line, index3).c_str());
 				}
 				Messageout += GetWordAddress((char *)S.c_str(), 1);
@@ -160,7 +160,7 @@ static String DoIdentifiers (String text, const char * window)
 	text = ReplaceString(text, "%newl", "\r\n");
 	text = ReplaceString(text, "%network", (char*)g_ircSession.GetInfo().sNetwork.c_str());
 	text = ReplaceString(text, "%me", (char *)g_ircSession.GetInfo().sNick.c_str());
-	_snprintf(str,511,"%d.%d.%d.%d",(pluginInfo.version>>24)&0xFF,(pluginInfo.version>>16)&0xFF,(pluginInfo.version>>8)&0xFF,pluginInfo.version&0xFF);
+	mir_snprintf(str,511,"%d.%d.%d.%d",(pluginInfo.version>>24)&0xFF,(pluginInfo.version>>16)&0xFF,(pluginInfo.version>>8)&0xFF,pluginInfo.version&0xFF);
 	text = ReplaceString(text, "%version", str);
 	str[0] = (char)3; str[1] = '\0'	;
 	text = ReplaceString(text, "%color", str);
@@ -254,9 +254,9 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 			if (!strchr(one.c_str(), '!') && !strchr(one.c_str(), '@'))
 				one += "!*@*";
 			if(AddIgnore(one, "qnid", g_ircSession.GetInfo().sNetwork))
-				_snprintf(temp, 499, Translate(	"%s is now ignored"	), one.c_str());
+				mir_snprintf(temp, 499, Translate(	"%s is now ignored"	), one.c_str());
 			else
-				_snprintf(temp, 499, Translate(	"%s is already being ignored"	), one.c_str());
+				mir_snprintf(temp, 499, Translate(	"%s is already being ignored"	), one.c_str());
 			DoEvent(GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		}
 		return true;
@@ -267,9 +267,9 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 			one += "!*@*";
 		char temp[500];
 		if (RemoveIgnore(one))
-			_snprintf(temp, 499, Translate(	"%s is not ignored now"	), one.c_str());
+			mir_snprintf(temp, 499, Translate(	"%s is not ignored now"	), one.c_str());
 		else
-			_snprintf(temp, 499, Translate(	"%s is already not ignored"	), one.c_str());
+			mir_snprintf(temp, 499, Translate(	"%s is already not ignored"	), one.c_str());
 		DoEvent(GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		return true;
 	}
@@ -350,7 +350,7 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 			else
 			{
 				char temp[200];
-				_snprintf(temp, 199, Translate(	"The time interval for the buddy check function is now %u seconds" ), iTempCheckTime);
+				mir_snprintf(temp, 199, Translate(	"The time interval for the buddy check function is now %u seconds" ), iTempCheckTime);
 				DoEvent(GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 			}
 		}
@@ -446,7 +446,7 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 		int minutes = (int)NoOfChannels/4000;
 		int minutes2 = (int)NoOfChannels/9000;
 		char text[250];
-		_snprintf(text, 249, Translate(	"This command is not recommended on a network of this size!\r\nIt will probably cause high CPU usage and/or high bandwidth\r\nusage for around %u to %u minute(s).\r\n\r\nDo you want to continue?"	), minutes2, minutes);
+		mir_snprintf(text, 249, Translate(	"This command is not recommended on a network of this size!\r\nIt will probably cause high CPU usage and/or high bandwidth\r\nusage for around %u to %u minute(s).\r\n\r\nDo you want to continue?"	), minutes2, minutes);
 		if (NoOfChannels < 4000 || (NoOfChannels >= 4000 && MessageBox(NULL, text, Translate("IRC warning") , MB_YESNO|MB_ICONWARNING|MB_DEFBUTTON2) == IDYES)) {
 			ListView_DeleteAllItems	(GetDlgItem(list_hWnd, IDC_INFO_LISTVIEW));
 			PostIrcMessage( "/lusers");
@@ -461,7 +461,7 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 		if (one.empty())
 			return true;
 		char szTemp[4000];
-		_snprintf(szTemp, sizeof(szTemp), "\1ACTION %s\1", GetWordAddress(text.c_str(), 1));
+		mir_snprintf(szTemp, sizeof(szTemp), "\1ACTION %s\1", GetWordAddress(text.c_str(), 1));
 		PostIrcMessageWnd(window, hContact, szTemp);
 		return true;
 	}
@@ -495,7 +495,7 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 			return true;
 
 		char szTemp[4000];
-		_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s", GetWordAddress(text.c_str(), 1));
+		mir_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s", GetWordAddress(text.c_str(), 1));
 
 		PostIrcMessageWnd(window, hContact, szTemp);
 		return true;
@@ -533,7 +533,7 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 		if (!two.empty()) 
 		{
 			char szTemp[4000];
-			_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s", GetWordAddress(text.c_str(), 1));
+			mir_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s", GetWordAddress(text.c_str(), 1));
 			PostIrcMessageWnd(window, hContact, szTemp);
 		}
 		return true;
@@ -554,15 +554,15 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 		if(lstrcmpi(two.c_str(), "dcc") != 0 || ulAdr) // if it is not dcc or if it is dcc and a local ip exist
 		{
 			if(lstrcmpi(two.c_str(), "ping") == 0)
-				_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s \001%s %u\001", one.c_str(), two.c_str(), time(0));
+				mir_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s \001%s %u\001", one.c_str(), two.c_str(), time(0));
 			else
-				_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s \001%s\001", one.c_str(), GetWordAddress(text.c_str(), 2));
+				mir_snprintf(szTemp, sizeof(szTemp), "/PRIVMSG %s \001%s\001", one.c_str(), GetWordAddress(text.c_str(), 2));
 			PostIrcMessageWnd(window, hContact, szTemp);
 		}
 
 		if(lstrcmpi(two.c_str(), "dcc") != 0)
 		{
-			_snprintf(szTemp, sizeof(szTemp), Translate("CTCP %s request sent to %s"), two.c_str(), one.c_str());
+			mir_snprintf(szTemp, sizeof(szTemp), Translate("CTCP %s request sent to %s"), two.c_str(), one.c_str());
 			DoEvent(GC_EVENT_INFORMATION, "Network Log", g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		}
 
@@ -619,7 +619,7 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 			else
 			{
 
-				_snprintf(szTemp, sizeof(szTemp), Translate("DCC ERROR: Unable to automatically resolve external IP"));
+				mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC ERROR: Unable to automatically resolve external IP"));
 				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 			}
 			return true;
@@ -664,19 +664,19 @@ static BOOL DoHardcodedCommand(String text, char * window, HANDLE hContact)
 				if (iPort != 0)
 				{
 					PostIrcMessage("/CTCP %s DCC CHAT chat %u %u", two.c_str(), ulAdr, iPort);
-					_snprintf(szTemp, sizeof(szTemp), Translate("DCC CHAT request sent to %s"), two.c_str(), one.c_str());
+					mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC CHAT request sent to %s"), two.c_str(), one.c_str());
 					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				}
 				else
 				{
-					_snprintf(szTemp, sizeof(szTemp), Translate("DCC ERROR: Unable to bind port"));
+					mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC ERROR: Unable to bind port"));
 					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				}
 
 			}
 			else
 			{
-				_snprintf(szTemp, sizeof(szTemp), Translate("DCC ERROR: Unable to automatically resolve external IP"));
+				mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC ERROR: Unable to automatically resolve external IP"));
 				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 			}
 

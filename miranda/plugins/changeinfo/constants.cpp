@@ -466,7 +466,7 @@ SettingItem setting[]={
 	{"Nickname",       LI_STRING,     DBVT_ASCIIZ, "Nick"},
 	{"First name",     LI_STRING,     DBVT_ASCIIZ, "FirstName"},
 	{"Last name",      LI_STRING,     DBVT_ASCIIZ, "LastName"},
-	{"Age",            LI_NUMBER,     DBVT_BYTE,   "Age",        (void*)ageRange},
+	{"Age",            LI_NUMBER,     DBVT_WORD,   "Age",        (void*)ageRange},
 	{"Gender",         LI_LIST,       DBVT_BYTE,   "Gender",     genders, sizeof(genders)/sizeof(genders[0])},
 	{"About",          LI_LONGSTRING, DBVT_ASCIIZ, "About"},
 	//password

@@ -38,14 +38,15 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber.pch"
 	-@erase "$(INTDIR)\jabber_agent.obj"
 	-@erase "$(INTDIR)\jabber_byte.obj"
+	-@erase "$(INTDIR)\jabber_chat.obj"
 	-@erase "$(INTDIR)\jabber_file.obj"
 	-@erase "$(INTDIR)\jabber_form.obj"
 	-@erase "$(INTDIR)\jabber_ft.obj"
 	-@erase "$(INTDIR)\jabber_groupchat.obj"
-	-@erase "$(INTDIR)\jabber_groupchatlog.obj"
 	-@erase "$(INTDIR)\jabber_iq.obj"
 	-@erase "$(INTDIR)\jabber_iqid.obj"
 	-@erase "$(INTDIR)\jabber_iqid_muc.obj"
+	-@erase "$(INTDIR)\jabber_libstr.obj"
 	-@erase "$(INTDIR)\jabber_list.obj"
 	-@erase "$(INTDIR)\jabber_menu.obj"
 	-@erase "$(INTDIR)\jabber_misc.obj"
@@ -120,11 +121,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber.obj" \
 	"$(INTDIR)\jabber_agent.obj" \
 	"$(INTDIR)\jabber_byte.obj" \
+	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
 	"$(INTDIR)\jabber_groupchat.obj" \
-	"$(INTDIR)\jabber_groupchatlog.obj" \
 	"$(INTDIR)\jabber_iq.obj" \
 	"$(INTDIR)\jabber_iqid.obj" \
 	"$(INTDIR)\jabber_iqid_muc.obj" \
@@ -145,7 +146,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\msvc6.res"
+	"$(INTDIR)\msvc6.res" \
+	"$(INTDIR)\jabber_libstr.obj"
 
 "..\..\bin\release\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -171,6 +173,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_agent.sbr"
 	-@erase "$(INTDIR)\jabber_byte.obj"
 	-@erase "$(INTDIR)\jabber_byte.sbr"
+	-@erase "$(INTDIR)\jabber_chat.obj"
+	-@erase "$(INTDIR)\jabber_chat.sbr"
 	-@erase "$(INTDIR)\jabber_file.obj"
 	-@erase "$(INTDIR)\jabber_file.sbr"
 	-@erase "$(INTDIR)\jabber_form.obj"
@@ -179,14 +183,14 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_ft.sbr"
 	-@erase "$(INTDIR)\jabber_groupchat.obj"
 	-@erase "$(INTDIR)\jabber_groupchat.sbr"
-	-@erase "$(INTDIR)\jabber_groupchatlog.obj"
-	-@erase "$(INTDIR)\jabber_groupchatlog.sbr"
 	-@erase "$(INTDIR)\jabber_iq.obj"
 	-@erase "$(INTDIR)\jabber_iq.sbr"
 	-@erase "$(INTDIR)\jabber_iqid.obj"
 	-@erase "$(INTDIR)\jabber_iqid.sbr"
 	-@erase "$(INTDIR)\jabber_iqid_muc.obj"
 	-@erase "$(INTDIR)\jabber_iqid_muc.sbr"
+	-@erase "$(INTDIR)\jabber_libstr.obj"
+	-@erase "$(INTDIR)\jabber_libstr.sbr"
 	-@erase "$(INTDIR)\jabber_list.obj"
 	-@erase "$(INTDIR)\jabber_list.sbr"
 	-@erase "$(INTDIR)\jabber_menu.obj"
@@ -278,11 +282,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber.sbr" \
 	"$(INTDIR)\jabber_agent.sbr" \
 	"$(INTDIR)\jabber_byte.sbr" \
+	"$(INTDIR)\jabber_chat.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
 	"$(INTDIR)\jabber_form.sbr" \
 	"$(INTDIR)\jabber_ft.sbr" \
 	"$(INTDIR)\jabber_groupchat.sbr" \
-	"$(INTDIR)\jabber_groupchatlog.sbr" \
 	"$(INTDIR)\jabber_iq.sbr" \
 	"$(INTDIR)\jabber_iqid.sbr" \
 	"$(INTDIR)\jabber_iqid_muc.sbr" \
@@ -302,7 +306,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_ws.sbr" \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xmlns.sbr" \
-	"$(INTDIR)\sha1.sbr"
+	"$(INTDIR)\sha1.sbr" \
+	"$(INTDIR)\jabber_libstr.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -315,11 +320,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber.obj" \
 	"$(INTDIR)\jabber_agent.obj" \
 	"$(INTDIR)\jabber_byte.obj" \
+	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
 	"$(INTDIR)\jabber_groupchat.obj" \
-	"$(INTDIR)\jabber_groupchatlog.obj" \
 	"$(INTDIR)\jabber_iq.obj" \
 	"$(INTDIR)\jabber_iqid.obj" \
 	"$(INTDIR)\jabber_iqid_muc.obj" \
@@ -340,7 +345,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\msvc6.res"
+	"$(INTDIR)\msvc6.res" \
+	"$(INTDIR)\jabber_libstr.obj"
 
 "..\..\bin\debug\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -428,6 +434,22 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF 
+
+SOURCE=.\jabber_chat.cpp
+
+!IF  "$(CFG)" == "jabberg - Win32 Release"
+
+
+"$(INTDIR)\jabber_chat.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
+
+
+"$(INTDIR)\jabber_chat.obj"	"$(INTDIR)\jabber_chat.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 
 
 !ENDIF 
@@ -528,30 +550,6 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 !ENDIF 
 
-SOURCE=.\jabber_groupchatlog.cpp
-
-!IF  "$(CFG)" == "jabberg - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /GX /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fp"$(INTDIR)\jabber.pch" /Yu"jabber.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\jabber_groupchatlog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\jabber.pch" /Yu"jabber.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\jabber_groupchatlog.obj"	"$(INTDIR)\jabber_groupchatlog.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
 SOURCE=.\jabber_iq.cpp
 
 !IF  "$(CFG)" == "jabberg - Win32 Release"
@@ -620,6 +618,22 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF 
+
+SOURCE=.\jabber_libstr.cpp
+
+!IF  "$(CFG)" == "jabberg - Win32 Release"
+
+
+"$(INTDIR)\jabber_libstr.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
+
+
+"$(INTDIR)\jabber_libstr.obj"	"$(INTDIR)\jabber_libstr.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 
 
 !ENDIF 

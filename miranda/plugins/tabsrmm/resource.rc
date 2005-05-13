@@ -28,12 +28,72 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_HOTKEYSLAVE DIALOGEX 0, 0, 140, 52
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-CAPTION "Dialog"
+IDD_POPUP_OPT DIALOGEX 0, 0, 314, 240
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "Announce events when status is...",IDC_POPUPSTATUSMODES,
+                    11,151,178,13
+    GROUPBOX        "Popup Options",IDC_STATIC,1,168,312,71
+    LTEXT           "Text",IDC_STATIC,60,177,23,8
+    LTEXT           "Background",IDC_STATIC,86,177,47,8
+    CTEXT           "Timeout (seconds, 0 = use default)",IDC_STATIC,146,177,
+                    125,8
+    LTEXT           "Message",IDC_STATIC,11,187,44,13
+    CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,187,
+                    24,13
+    CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,92,187,
+                    24,13
+    EDITTEXT        IDC_DELAY_MESSAGE,191,185,26,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    LTEXT           "URL",IDC_STATIC,11,200,44,13
+    CONTROL         "",IDC_COLTEXT_URL,"ColourPicker",WS_TABSTOP,56,199,24,
+                    13
+    CONTROL         "",IDC_COLBACK_URL,"ColourPicker",WS_TABSTOP,92,199,24,
+                    13
+    EDITTEXT        IDC_DELAY_URL,191,198,26,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_COLTEXT_FILE,"ColourPicker",WS_TABSTOP,56,211,24,
+                    13
+    CONTROL         "",IDC_COLBACK_FILE,"ColourPicker",WS_TABSTOP,92,211,24,
+                    13
+    EDITTEXT        IDC_DELAY_FILE,191,211,26,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Others",IDC_STATIC,12,226,44,13
+    LTEXT           "File",IDC_STATIC,11,213,44,13
+    CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,223,
+                    24,13
+    CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,92,223,
+                    24,13
+    EDITTEXT        IDC_DELAY_OTHERS,191,224,26,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "Limit message preview to",IDC_LIMITPREVIEW,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,136,107,12
+    EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,121,136,37,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_MESSAGEPREVIEWLIMITSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,164,138,9,13
+    PUSHBUTTON      "Preview popup",IDC_PREVIEW,226,223,83,12
+    LTEXT           "characters",IDC_STATIC,166,138,103,10
+    COMBOBOX        IDC_ANNOUNCEMETHOD,121,122,93,46,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Announce events with",IDC_STATIC,13,124,82,9
+    CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,297,108,
+                    WS_EX_STATICEDGE
+    GROUPBOX        "Event notify options",IDC_STATIC,2,0,311,167
+END
+
+IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11
+STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_CLIPCHILDREN | 
+    WS_BORDER
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TOOLWINDOW
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    CONTROL         "",IDC_SLIST,"MButtonClass",WS_TABSTOP,20,0,12,9,
+                    0x18000000L
+    LTEXT           "Statisch",IDC_TRAYCONTAINER,19,3,8,8
+    CONTROL         "",IDC_TRAYICON,"MButtonClass",WS_TABSTOP,2,0,12,9,
+                    0x18000000L
 END
 
 IDD_OPTIONSDIALOG DIALOGEX 0, 0, 312, 247
@@ -56,24 +116,24 @@ BEGIN
     CONTROL         "All modes",IDC_ALWAYS,"Button",BS_AUTOCHECKBOX,19,17,70,
                     14
     GROUPBOX        "Choose modes",IDC_STATUSGROUP,7,7,212,119
-    CONTROL         "",IDC_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,
-                    39,82,11
-    CONTROL         "",IDC_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,54,
-                    82,11
-    CONTROL         "",IDC_NA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,69,82,
-                    11
-    CONTROL         "",IDC_DND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,84,
-                    82,11
-    CONTROL         "",IDC_OCCUPIED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,39,82,11
-    CONTROL         "",IDC_INVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,54,82,11
-    CONTROL         "",IDC_ONTHEPHONE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,69,82,11
-    CONTROL         "",IDC_OUTTOLUNCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    114,84,82,11
-    CONTROL         "",IDC_FREEFORCHAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    20,99,82,11
+    CONTROL         "",IDS_STATUS_ONLINE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,39,82,11
+    CONTROL         "",IDS_STATUS_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,54,82,11
+    CONTROL         "",IDS_STATUS_NA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,69,82,11
+    CONTROL         "",IDS_STATUS_DND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    20,84,82,11
+    CONTROL         "",IDS_STATUS_OCCUPIED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,39,82,11
+    CONTROL         "",IDS_STATUS_INVISIBLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,54,82,11
+    CONTROL         "",IDS_STATUS_ONTHEPHONE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,69,82,11
+    CONTROL         "",IDS_STATUS_OUTTOLUNCH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,114,84,82,11
+    CONTROL         "",IDS_STATUS_FREECHAT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,99,82,11
 END
 
 IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
@@ -90,42 +150,67 @@ BEGIN
                     WS_EX_STATICEDGE
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+IDD_USERPREFS DIALOGEX 0, 0, 278, 306
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    IDD_CHOOSESTATUSMODES, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
-    END
+    GROUPBOX        "Message log settings",IDC_STATIC,2,3,274,40
+    CONTROL         "Global",IDC_LOGISGLOBAL,"Button",BS_AUTORADIOBUTTON,9,
+                    14,59,11
+    CONTROL         "Local",IDC_LOGISPRIVATE,"Button",BS_AUTORADIOBUTTON,9,
+                    27,61,11
+    LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",
+                    IDC_STATIC,73,13,196,24
+    GROUPBOX        "Message log view mode",IDC_STATIC,2,44,274,33
+    COMBOBOX        IDC_IEVIEWMODE,6,58,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Global mode can be set on the message log options page. This option is only available when IEView is installed.",
+                    IDC_STATIC,130,50,141,24
+    GROUPBOX        "Send text formatting method",IDC_STATIC,2,78,274,33
+    COMBOBOX        IDC_TEXTFORMATTING,6,90,119,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",
+                    IDC_STATIC,130,85,141,24
+    GROUPBOX        "Text direction (BiDi)",IDC_STATIC,2,112,274,32
+    COMBOBOX        IDC_BIDI,6,123,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "You can force a text direction mode for this contact. Otherwise, it will use the default value set on the message log options page.",
+                    IDC_STATIC,130,117,141,24
+    GROUPBOX        "Other options",IDC_STATIC,2,216,274,36
+    CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,226,134,11
+    CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,237,256,11
+    GROUPBOX        "Override message window templates (not yet implemented)",
+                    IDC_STATIC,2,254,274,31
+    PUSHBUTTON      "Standard templates...",IDC_MODIFY,11,267,84,12,
+                    WS_DISABLED
+    PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,181,267,84,12,
+                    WS_DISABLED
+    PUSHBUTTON      "Cancel",IDCANCEL,225,288,50,14
+    DEFPUSHBUTTON   "OK",IDOK,168,288,50,14
+    GROUPBOX        "ANSI codepage",IDC_STATIC,2,147,274,32
+    COMBOBOX        IDC_CODEPAGES,6,159,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",
+                    IDC_STATIC,130,152,141,24
+    CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,143,225,126,12
+    CTEXT           "Enabled",IDC_STATIC,118,269,40,10
+    CONTROL         "",IDC_TEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
+                    WS_DISABLED | WS_TABSTOP,102,268,11,9
+    CONTROL         "",IDC_RTLTEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
+                    WS_DISABLED | WS_TABSTOP,165,268,11,9
+    GROUPBOX        "Message input area background image",IDC_STATIC,2,181,
+                    274,32
+    CONTROL         "Use private image",IDC_USEPRIVATEIMAGE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,194,124,10
+    EDITTEXT        IDC_BACKGROUNDIMAGE,143,192,92,13,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "...",IDC_GETBGIMAGE,243,192,24,13
 END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
@@ -216,146 +301,75 @@ IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Visual options",IDC_STATIC,0,0,303,62
-    CONTROL         "Place dividers in inactive sessions",IDC_USEDIVIDERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,9,289,11
-    CONTROL         "Use popup configuration for placing dividers",
-                    IDC_DIVIDERSUSEPOPUPCONFIG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,19,20,271,11
-    CONTROL         "Flash contact list and tray icons for new events in unfocused windows",
-                    IDC_FLASHCLIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    33,263,9
-    LTEXT           "Notifications:",IDC_STATIC,9,47,92,9
-    COMBOBOX        IDC_NOTIFYTYPE,111,44,66,46,CBS_DROPDOWNLIST | CBS_SORT | 
+    GROUPBOX        "Message window options",IDC_STATIC,1,0,302,86
+    GROUPBOX        "Avatar options",IDC_STATIC,1,88,302,42
+    LTEXT           "Display",IDC_STATIC,9,98,56,9
+    COMBOBOX        IDC_AVATARDISPLAY,64,96,90,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Avatar options",IDC_STATIC,0,62,303,52
-    LTEXT           "Display",IDC_STATIC,9,73,56,9
-    COMBOBOX        IDC_AVATARDISPLAY,64,70,90,46,CBS_DROPDOWNLIST | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Limit to",IDC_STATIC,159,72,29,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,197,70,35,12,ES_AUTOHSCROLL | 
+    LTEXT           "Limit to",IDC_STATIC,159,97,29,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,197,96,35,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,70,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,97,9,
                     11
-    LTEXT           "pixels in height",IDC_STATIC,242,72,56,11
-    CONTROL         "Always keep the button bar at full width",
-                    IDC_ALWAYSFULLWIDTHTOOLBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,86,276,10
-    LTEXT           "Show avatars",IDC_STATIC,10,101,60,10
-    COMBOBOX        IDC_AVATARMODE,65,98,164,46,CBS_DROPDOWNLIST | CBS_SORT | 
+    LTEXT           "pixels in height",IDC_STATIC,242,98,56,11
+    LTEXT           "Show avatars",IDC_STATIC,10,115,60,10
+    COMBOBOX        IDC_AVATARMODE,114,112,175,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Behaviour",IDC_STATIC,0,115,303,94
-    LTEXT           "Automatically close tabs after",IDC_STATIC,10,124,119,
-                    11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,131,122,31,12,ES_AUTOHSCROLL | 
+    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,1,130,
+                    302,35
+    LTEXT           "Automatically close tabs after",IDC_STATIC,7,141,119,11
+    EDITTEXT        IDC_AUTOCLOSETABTIME,128,139,31,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,158,123,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,176,124,
+                    UDS_ARROWKEYS,155,140,11,11
+    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,173,140,
                     122,11
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    9,135,280,10
-    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,149,133,
+                    9,152,280,10
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,1,165,302,60
+    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,175,133,
                     8
-    COMBOBOX        IDC_TOOLBARHIDEMODE,147,147,148,46,CBS_DROPDOWNLIST | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Also, allow a hidden send button",
-                    IDC_ALLOWSENDBUTTONHIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,160,132,9
-    CONTROL         "Delete temporary contacts on close",IDC_DELETETEMP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,172,132,9
-    CONTROL         "Send formatting info",IDC_SENDFORMAT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,184,132,9
-    LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,196,211,8
-    CONTROL         "Send on SHIFT - Enter",IDC_SENDONSHIFTENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,162,152,10
-    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,173,152,10
-    CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,184,152,10
-    EDITTEXT        IDC_SECONDS,223,194,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,196,44,8
-    CONTROL         "Enable event API (support for third party plugins)",
-                    IDC_EVENTAPI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,212,
-                    288,10
+    COMBOBOX        IDC_TOOLBARHIDEMODE,143,172,152,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Display notifications with:",IDC_STATIC,9,191,131,9
+    COMBOBOX        IDC_NOTIFYTYPE,143,188,73,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_SECONDS,228,208,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,258,210,36,8
+    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,10,285,72,
+                    WS_EX_STATICEDGE
+    CTEXT           "Message send timeout",IDC_STATIC,229,189,67,16
+    LTEXT           "Send text formatting:",IDC_STATIC,9,210,132,11
+    COMBOBOX        IDC_SENDFORMATTING,143,208,74,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Items to show",IDC_STMSGLOGGROUP,0,0,150,94
-    CONTROL         "Show file events",IDC_SHOWFILES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,10,137,10
-    CONTROL         "Show url events",IDC_SHOWURLS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,22,137,10
-    CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,34,65,10
-    CONTROL         "Use in/out icons",IDC_INOUTICONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,77,34,65,10
-    CONTROL         "Use symbols instead of icons",IDC_SYMBOLS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,46,137,10
-    CONTROL         "Show nicknames",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,58,137,10
-    CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,70,137,10
-    CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,20,82,61,10
-    CONTROL         "Show seconds",IDC_SHOWSECONDS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,85,82,61,10
-    GROUPBOX        "Other options",IDC_STATIC,154,0,149,94
-    CONTROL         "Enable message log scrolling hotkeys",IDC_LOGHOTKEYS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,10,142,10
-    CONTROL         "Log status changes",IDC_LOGSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,22,142,10
-    CONTROL         "Ignore per-contact message log settings",
-                    IDC_IGNORECONTACTSETTINGS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,158,34,142,10
-    CONTROL         "Simple text formatting (*bold* etc.)",IDC_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,46,142,10
-    CONTROL         "Only format whole words",IDC_FORMATWHOLEWORDSONLY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,58,128,10
-    CONTROL         "Use IEView as default message log",IDC_MSGLOGPLUGIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,70,142,10
-    CONTROL         "RTL is default text direction",IDC_RTLDEFAULT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,82,142,10
-    GROUPBOX        "Formatting options",IDC_STATIC,0,95,303,79
-    CONTROL         "Message body in a new line",IDC_SHOW_EVENTS_NL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,105,127,9
-    CONTROL         "Underline timestamp/nickname",IDC_UNDERLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,116,127,9
-    CONTROL         "Show timestamp after nickname",IDC_SWAPTIMESTAMP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,126,127,9
-    CONTROL         "Draw grid lines",IDC_DRAWGRID,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,136,127,9
-    CONTROL         "Use relative timestamps",IDC_RELATIVEDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,146,135,9
-    CONTROL         "Use long date format",IDC_LONGDATES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,157,135,9
-    CONTROL         "Indent message body (pixels)",IDC_INDENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,102,141,10
-    LTEXT           "Left",IDC_STATIC,158,114,29,12
-    EDITTEXT        IDC_INDENTAMOUNT,188,112,29,12,ES_AUTOHSCROLL
+    GROUPBOX        "Options",IDC_STATIC,1,0,302,111
+    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,1,114,302,29
+    LTEXT           "Left",IDC_STATIC,10,127,29,11
+    EDITTEXT        IDC_INDENTAMOUNT,59,125,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,215,113,10,11
-    LTEXT           "Right",IDC_STATIC,230,118,26,9
-    EDITTEXT        IDC_RIGHTINDENT,259,112,29,12,ES_AUTOHSCROLL | ES_NUMBER
+                    UDS_HOTTRACK,72,126,10,11
+    LTEXT           "Right",IDC_STATIC,121,127,26,9
+    EDITTEXT        IDC_RIGHTINDENT,166,125,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_RINDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,289,112,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,196,125,
                     10,11
-    CONTROL         "Use extra tabstops to format indent",IDC_INDENTWITHTABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,126,144,10
-    CONTROL         "Use Message Grouping",IDC_GROUPMODE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,137,141,11
-    CONTROL         "Mark followup messages with timestamps",
-                    IDC_MARKFOLLOWUPTIMESTAMP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,158,148,140,11
-    GROUPBOX        "Load History Events",IDC_STATIC,0,174,303,53
+    LTEXT           "(in pixels)",IDC_STATIC,215,127,74,9
+    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,1,144,302,29
+    PUSHBUTTON      "Standard templates...",IDC_MODIFY,27,154,95,14
+    PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,178,154,95,14
+    GROUPBOX        "Load History Events",IDC_STATIC,1,173,302,53
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,135,10
     CONTROL         "Attempt to fix ""future"" timestamps",IDC_TSFIX,"Button",
@@ -377,8 +391,10 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | 
                     WS_DISABLED,200,209,10,14
     LTEXT           "minutes old",IDC_STMINSOLD,207,212,90,8,WS_DISABLED
-    CONTROL         "Support Math Module plugin",IDC_MATHMODSUPPORT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,160,140,11
+    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,285,95,
+                    WS_EX_STATICEDGE
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
@@ -601,6 +617,43 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,192,148,10
 END
 
+IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 239
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LISTBOX         IDC_TEMPLATELIST,8,14,97,81,LBS_OWNERDRAWVARIABLE | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Templates",IDC_STATIC,3,4,108,94
+    GROUPBOX        "Preview",IDC_STATIC,117,4,249,94
+    CONTROL         "",IDC_PREVIEW,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
+                    122,14,236,80
+    EDITTEXT        IDC_EDITTEMPLATE,11,109,344,14,ES_AUTOHSCROLL
+    GROUPBOX        "Edit template",IDC_STATIC,3,99,363,137
+    PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,268,161,90,15
+    PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,268,180,90,15
+    PUSHBUTTON      "Close",IDCANCEL,200,218,66,15
+    PUSHBUTTON      "Revert to Default",IDC_REVERT,268,218,90,15
+    PUSHBUTTON      "Forget",IDC_FORGET,268,199,90,15
+    LTEXT           "Variables (case sensitive!)\n\n%N:\tNickname\n%M:\tMessage\n%S:\tMsg Symbol\n%I:\tMsg Icon\n%D:\tlong Date\n%h:\thour (24)\n%m\tMinute",
+                    IDC_STATIC,11,125,89,73
+    LTEXT           "%s:\tSecond\n%o:\tMonth (number)\n%O:\tMonth (name)\n%d:\tDay of Month\n%w:\tDay of week\n%a:\thour (12)\n%p:\tAM/PM symbol\n%U\tUIN",
+                    IDC_STATIC,102,125,87,65
+    CONTROL         "",IDC_COLOR1,"ColourPicker",WS_TABSTOP,11,220,24,13
+    LTEXT           "Define up to 5 colors which you can use with some variables",
+                    IDC_STATIC,12,200,174,17
+    CONTROL         "",IDC_COLOR2,"ColourPicker",WS_TABSTOP,43,220,24,13
+    CONTROL         "",IDC_COLOR3,"ColourPicker",WS_TABSTOP,75,220,24,13
+    CONTROL         "",IDC_COLOR4,"ColourPicker",WS_TABSTOP,107,220,24,13
+    CONTROL         "",IDC_COLOR5,"ColourPicker",WS_TABSTOP,139,220,24,13
+    LTEXT           "Get more help on variables",IDC_VARIABLESHELP,103,191,
+                    148,10
+    LTEXT           "Double click a template to edit it. Select templates in the list box to show a preview",
+                    IDC_STATIC,200,128,155,25
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -610,6 +663,25 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_HOTKEYSLAVE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 37
+    END
+
+    IDD_CHOOSESTATUSMODES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+
+    IDD_USERPREFS, DIALOG
+    BEGIN
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 302
+    END
+
     IDD_CONTAINEROPTIONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -617,35 +689,12 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 281
     END
+
+    IDD_TEMPLATEEDIT, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 214
+    END
 END
-#endif    // APSTUDIO_INVOKED
-
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include <windows.h>\r\n"
-    "#include ""../../include/statusmodes.h""\r\n"
-    "\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\n"
-    "\0"
-END
-
 #endif    // APSTUDIO_INVOKED
 
 
@@ -672,6 +721,7 @@ BEGIN
         MENUITEM "Select &All",                 IDM_SELECTALL
         MENUITEM SEPARATOR
         MENUITEM "Clear Log",                   IDM_CLEAR
+        MENUITEM "Freeze Log",                  ID_LOG_FREEZELOG
     END
     POPUP "LogLink"
     BEGIN
@@ -688,6 +738,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Copy all",                    IDM_COPYALL
         MENUITEM "Select all",                  IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "Load Background Image",       ID_EDITOR_LOADBACKGROUNDIMAGE
+
+        MENUITEM "Remove Background Image",     ID_EDITOR_REMOVEBACKGROUNDIMAGE
+
     END
 END
 
@@ -729,26 +784,18 @@ BEGIN
         BEGIN
             MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
 
-            MENUITEM "Symbols instead of Icons",    ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
+            MENUITEM "Show Symbols",                ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
 
             MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
 
         END
         MENUITEM "Show Nickname",               ID_LOGMENU_SHOWNICKNAME
-        MENUITEM "Display Timestamp after Nickname", 
-                                                ID_LOGMENU_DISPLAYTIMESTAMPAFTERNICKNAME
-
-        MENUITEM SEPARATOR
         POPUP "Timestamp Settings"
         BEGIN
             MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
             MENUITEM "Show Date",                   ID_LOGMENU_SHOWDATE
             MENUITEM "Show Seconds",                ID_LOGMENU_SHOWSECONDS
             MENUITEM SEPARATOR
-            MENUITEM "Use relative Timestamps",     ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS
-
-            MENUITEM "Use long Date Format",        ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT
-
             MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
 
         END
@@ -757,15 +804,6 @@ BEGIN
         BEGIN
             MENUITEM "Indent Message Body",         ID_LOGMENU_INDENTMESSAGEBODY
 
-            MENUITEM "Use extra Tabstops to format Indent", 
-                                                    ID_LOGMENU_USEEXTRATABSTOPSTOFORMATINDENT
-
-            MENUITEM "Message Body in a new Line",  ID_LOGMENU_MESSAGEBODYINANEWLINE
-
-            MENUITEM "Underline Timestamp and Nickname", 
-                                                    ID_LOGMENU_UNDERLINETIMESTAMP
-
-            MENUITEM SEPARATOR
             MENUITEM "Show grid",                   ID_MESSAGELOGFORMATTING_SHOWGRID
 
             MENUITEM "Use multiple Background Colors", 
@@ -780,13 +818,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Use RTL for this Contact",    ID_LOGMENU_ACTIVATERTL
         MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
-
-        MENUITEM SEPARATOR
-        MENUITEM "Message Log Settings are global", 
-                                                ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL
-
-        MENUITEM "Apply Message Log Settings to all contacts", 
-                                                ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
 
         MENUITEM SEPARATOR
         MENUITEM "Export Message Log Settings...", 
@@ -805,6 +836,8 @@ BEGIN
         MENUITEM "Send &Later",                 ID_SENDMENU_SENDLATER
         MENUITEM SEPARATOR
         MENUITEM "Force &ANSI",                 ID_SENDMENU_FORCEANSISEND
+        MENUITEM "Send without Timeouts",       ID_SENDMENU_SENDWITHOUTTIMEOUTS
+        , INACTIVE
     END
     POPUP "Protomenu"
     BEGIN
@@ -821,207 +854,196 @@ BEGIN
         POPUP "Splitter"
         BEGIN
             MENUITEM "Global",                      ID_MODE_GLOBAL
-            MENUITEM "Per Contact",                 ID_MODE_PERCONTACT
             MENUITEM "Private",                     ID_MODE_PRIVATE
             MENUITEM SEPARATOR
             MENUITEM "Autosave on Close",           ID_SPLITTER_AUTOSAVEONCLOSE
 
             MENUITEM "Save Now",                    ID_SPLITTER_SAVENOW
         END
+        MENUITEM SEPARATOR
+        POPUP "Send Text Formatting"
+        BEGIN
+            POPUP "Global"
+            BEGIN
+                MENUITEM "BBCode",                      ID_GLOBAL_BBCODE
+                MENUITEM "Simple Tags (*/_)",           ID_GLOBAL_SIMPLETAGS
+                MENUITEM "Off",                         ID_GLOBAL_OFF
+            END
+            POPUP "This Contact"
+            BEGIN
+                MENUITEM "Global Setting",              ID_THISCONTACT_GLOBALSETTING
+
+                MENUITEM "BBCode",                      ID_THISCONTACT_BBCODE
+
+                MENUITEM "Simple Tags (*/_)",           ID_THISCONTACT_SIMPLETAGS
+
+                MENUITEM "Force Off",                   ID_THISCONTACT_OFF
+            END
+        END
+        POPUP "Favorites"
+        BEGIN
+            MENUITEM "Add Contact to Favorites",    ID_FAVORITES_ADDCONTACTTOFAVORITES
+
+            MENUITEM "Remove Contact from Favorites", 
+                                                    ID_FAVORITES_REMOVECONTACTFROMFAVORITES
+
+        END
+    END
+    POPUP "Unread Menu"
+    BEGIN
+        MENUITEM SEPARATOR
+    END
+    POPUP "Traycontext"
+    BEGIN
+        MENUITEM "Recent Sessions",             65535
+        MENUITEM SEPARATOR
+        MENUITEM "Favorites",                   65535
+        MENUITEM SEPARATOR
+        MENUITEM "Show the Floater",            ID_TRAYCONTEXT_SHOWTHEFLOATER
+
+        MENUITEM "Show the Tray Icon",          ID_TRAYCONTEXT_SHOWTHETRAYICON
+
+        MENUITEM SEPARATOR
+        MENUITEM "Disable All Event Notifications", 
+                                                ID_TRAYCONTEXT_DISABLEALLPOPUPS
+
+        MENUITEM "Don't create Windows automatically", ID_TRAYCONTEXT_DON
+        MENUITEM "Hide all Message Containers", ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS
+
+        MENUITEM "Restore all Message Containers", 
+                                                ID_TRAYCONTEXT_RESTOREALLMESSAGECONTAINERS
+
+        MENUITEM "Don't play Sounds",           ID_TRAYCONTEXT_DON40223
+        MENUITEM "Be ""Super Quiet""",          ID_TRAYCONTEXT_BE
+    END
+    POPUP "Font"
+    BEGIN
+        MENUITEM "Default Color",               ID_FONT_DEFAULTCOLOR
+        MENUITEM "Red",                         ID_FONT_RED
+        MENUITEM "Green",                       ID_FONT_GREEN
+        MENUITEM "Blue",                        ID_FONT_BLUE
+        MENUITEM "Magenta",                     ID_FONT_MAGENTA
+        MENUITEM "Yellow",                      ID_FONT_YELLOW
+        MENUITEM "Black",                       ID_FONT_BLACK
+        MENUITEM "White",                       ID_FONT_WHITE
+        MENUITEM SEPARATOR
+        MENUITEM "Clear all Formatting",        ID_FONT_CLEARALLFORMATTING
+    END
+    POPUP "Dummy", INACTIVE
+    BEGIN
+        MENUITEM "No Message Sessions opened",  ID_DUMMY_NOMESSAGESESSIONSOPENED
+
     END
 END
-
-#endif    // Englisch (USA) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Deutsch (Österreich) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
-#ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
 
 IDR_MENUBAR MENU 
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "Save Message Log As...",      ID_FILE_SAVEMESSAGELOGAS
+        MENUITEM "Save Message Log As...",      40109
         MENUITEM SEPARATOR
-        MENUITEM "Close Message Session\tCtrl-W", 
-                                                ID_FILE_CLOSEMESSAGESESSION
-        MENUITEM "Close Container\tAlt-F4",     ID_FILE_CLOSE
+        MENUITEM "Close Message Session\tCtrl-W", 40086
+        MENUITEM "Close Container\tAlt-F4",     40085
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Show Menu Bar",               ID_VIEW_SHOWMENUBAR
-        MENUITEM "Show Status Bar",             ID_VIEW_SHOWSTATUSBAR
-        MENUITEM "Show Tool Bar",               ID_VIEW_SHOWTOOLBAR
+        MENUITEM "Show Menu Bar",               40076
+        MENUITEM "Show Status Bar",             40077
+        MENUITEM "Show Tool Bar",               40078
         POPUP "Title Bar"
         BEGIN
-            MENUITEM "Show Title Bar",              ID_VIEW_SHOWTITLEBAR
+            MENUITEM "Show Title Bar",              40083
             MENUITEM SEPARATOR
-            MENUITEM "Show Nickname",               ID_TITLEBAR_SHOWNICNAME
-            MENUITEM "Show Status",                 ID_TITLEBAR_SHOWSTATUS
+            MENUITEM "Show Nickname",               40089
+            MENUITEM "Show Status",                 40090
             MENUITEM SEPARATOR
-            MENUITEM "Do not show Container Name",  ID_TITLEBAR_DONOTSHOWCONTAINERNAME
-
-            MENUITEM "Show Container Name as Prefix", 
-                                                    ID_TITLEBAR_SHOWCONTAINERNAME
-
-            MENUITEM "Show Container Name as Suffix", 
-                                                    ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX
-
+            MENUITEM "Do not show Container Name",  40094
+            MENUITEM "Show Container Name as Prefix", 40091
+            MENUITEM "Show Container Name as Suffix", 40092
             MENUITEM SEPARATOR
-            MENUITEM "Use static container Icon",   ID_TITLEBAR_USESTATICCONTAINERICON
-
+            MENUITEM "Use static container Icon",   40126
         END
-        MENUITEM "Tabs at Bottom",              ID_VIEW_TABSATBOTTOM
-        MENUITEM "Vertical maximize",           ID_VIEW_VERTICALMAXIMIZE
+        MENUITEM "Tabs at Bottom",              40093
+        MENUITEM "Vertical maximize",           40143
         MENUITEM SEPARATOR
         POPUP "Window Flashing"
         BEGIN
-            MENUITEM "Use default Value",           ID_WINDOWFLASHING_USEDEFAULTVALUES
-
-            MENUITEM "Flash until focused",         ID_WINDOWFLASHING_FLASHUNTILFOCUSED
-
-            MENUITEM "Disable Flashing",            ID_WINDOWFLASHING_DISABLEFLASHING
-
+            MENUITEM "Use default Value",           40106
+            MENUITEM "Flash until focused",         40107
+            MENUITEM "Disable Flashing",            40108
         END
         MENUITEM SEPARATOR
         POPUP "Avatar"
         BEGIN
-            MENUITEM "Toggle Avatar Display",       ID_PICMENU_TOGGLEAVATARDISPLAY
-
+            MENUITEM "Toggle Avatar Display",       40041
             MENUITEM SEPARATOR
-            MENUITEM "Reset the Avatar",            ID_PICMENU_RESETTHEAVATAR
-
-            MENUITEM "Load a local Picture as Avatar", 
-                                                    ID_PICMENU_LOADALOCALPICTUREASAVATAR
-
-            MENUITEM "Disable automatic Avatar updates", 
-                                                    ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
-
+            MENUITEM "Reset the Avatar",            40071
+            MENUITEM "Load a local Picture as Avatar", 40072
+            MENUITEM "Disable automatic Avatar updates", 40122
             MENUITEM SEPARATOR
-            MENUITEM "Always keep the button bar at full width", 
-                                                    ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
-
+            MENUITEM "Always keep the button bar at full width", 40134
         END
         MENUITEM SEPARATOR
-        MENUITEM "Show Multisend Contact List", ID_VIEW_SHOWMULTISENDCONTACTLIST
-
+        MENUITEM "Show Multisend Contact List", 40087
         MENUITEM SEPARATOR
-        MENUITEM "Stay on Top",                 ID_VIEW_STAYONTOP
+        MENUITEM "Stay on Top",                 40095
     END
-    MENUITEM "&User",                       ID_USER
+    MENUITEM "&User",                       40125
     POPUP "Message &Log"
     BEGIN
         POPUP "Log Items to show"
         BEGIN
             POPUP "Message Icons"
             BEGIN
-                MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
-
-                MENUITEM "Symbols instead of Icons",    ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
-
-                MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
-
+                MENUITEM "Show Icons",                  40131
+                MENUITEM "Show Symbols",                40132
+                MENUITEM "Use Incoming/Outgoing Icons", 40133
             END
-            MENUITEM "Nickname",                    ID_LOGMENU_SHOWNICKNAME
+            MENUITEM "Nickname",                    40055
             MENUITEM SEPARATOR
-            MENUITEM "Grid Lines",                  ID_MESSAGELOGFORMATTING_SHOWGRID
-
+            MENUITEM "Grid Lines",                  40068
             MENUITEM SEPARATOR
-            MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
-
+            MENUITEM "Log Status Changes",          40120
         END
         MENUITEM SEPARATOR
         POPUP "Timestamp Settings"
         BEGIN
-            MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
-            MENUITEM "Show Date",                   ID_LOGMENU_SHOWDATE
-            MENUITEM "Show Seconds",                ID_LOGMENU_SHOWSECONDS
+            MENUITEM "Show Timestamp",              40047
+            MENUITEM "Show Date",                   40051
+            MENUITEM "Show Seconds",                40052
             MENUITEM SEPARATOR
-            MENUITEM "Use relative Timestamps",     ID_TIMESTAMPSETTINGS_USERELATIVETIMESTAMPS
-
-            MENUITEM "Use long Date Format",        ID_TIMESTAMPSETTINGS_USELONGDATEFORMAT
-
-            MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
-
+            MENUITEM "Use Contacts local Time",     40050
         END
         POPUP "Message Log Formatting"
         BEGIN
-            MENUITEM "Indent Message Body",         ID_LOGMENU_INDENTMESSAGEBODY
-
-            MENUITEM "Use extra Tabstops to format Indent", 40176
-            MENUITEM "Message Body in a new Line",  ID_LOGMENU_MESSAGEBODYINANEWLINE
-
-            MENUITEM "Underline Timestamp and Nickname", 
-                                                    ID_LOGMENU_UNDERLINETIMESTAMP
-
+            MENUITEM "Indent Message Body",         40048
             MENUITEM SEPARATOR
-            MENUITEM "Use multiple Background Colors", 
-                                                    ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS
-
-            MENUITEM "Use Message Grouping",        ID_MESSAGELOGFORMATTING_GROUPMESSAGES
-
-            MENUITEM "Simple Text Formatting",      ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING
-
+            MENUITEM "Use multiple Background Colors", 40069
+            MENUITEM "Use Message Grouping",        40073
+            MENUITEM "Simple Text Formatting",      40130
             MENUITEM SEPARATOR
-            MENUITEM "Use RTL for this Contact",    ID_LOGMENU_ACTIVATERTL
+            MENUITEM "Use RTL for this Contact",    40054
         END
         MENUITEM SEPARATOR
-        MENUITEM "Message Log Settings are global", 
-                                                ID_MESSAGELOG_MESSAGELOGSETTINGSAREGLOBAL
-
-        MENUITEM "Apply Message Log Settings to all contacts", 
-                                                ID_MESSAGELOG_APPLYMESSAGELOGSETTINGSTOALLCONTACTS
-
-        MENUITEM SEPARATOR
-        MENUITEM "Export Message Log Settings...", 
-                                                ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
-
-        MENUITEM "Import Message Log Settings...", 
-                                                ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
-
+        MENUITEM "Export Message Log Settings...", 40128
+        MENUITEM "Import Message Log Settings...", 40129
     END
     POPUP "&Container"
     BEGIN
-        MENUITEM "Container Options...",        ID_CONTAINER_CONTAINEROPTIONS
-
+        MENUITEM "Container Options...",        40114
         MENUITEM SEPARATOR
         POPUP "Event Popups"
         BEGIN
-            MENUITEM "Disable all Event Popups",    ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS
-
+            MENUITEM "Disable all Event Popups",    40098
             MENUITEM SEPARATOR
-            MENUITEM "Show Popups if Window is minimized", 
-                                                    ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED
-
-            MENUITEM "Show Popups if Window is unfocused", 
-                                                    ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED
-
-            MENUITEM "Show Popups for all inactive sessions", 
-                                                    ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS
-
+            MENUITEM "Show Popups if Window is minimized", 40110
+            MENUITEM "Show Popups if Window is unfocused", 40111
+            MENUITEM "Show Popups for all inactive sessions", 40112
         END
         MENUITEM SEPARATOR
-        MENUITEM "Apply Container Options globally", 
-                                                ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY
-
-        MENUITEM "Set current Options as Default Values", 
-                                                ID_OPTIONS_SETCURRENTOPTIONSASDEFAULTVALUES
-
-        MENUITEM "Save current Window Position as Default", 
-                                                ID_OPTIONS_SAVECURRENTWINDOWPOSITIONASDEFAULT
-
+        MENUITEM "Apply Container Options globally", 40099
+        MENUITEM "Set current Options as Default Values", 40100
+        MENUITEM "Save current Window Position as Default", 40113
     END
 END
 
@@ -1032,8 +1054,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,93
- PRODUCTVERSION 0,9,9,93
+ FILEVERSION 0,9,9,95
+ PRODUCTVERSION 0,9,9,95
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -1049,13 +1071,13 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 93"
+            VALUE "FileVersion", "0, 9, 9, 95"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 93"
+            VALUE "ProductVersion", "0, 9, 9, 95"
             VALUE "SpecialBuild", "A"
         END
     END
@@ -1074,6 +1096,67 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_PULLDOWNARROW       ICON                    "res/pulldown.ico"
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Englisch (USA) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#include ""../../include/statusmodes.h""\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Englisch (USA) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Deutsch (Österreich) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_PULLDOWN1ARROW      ICON                    "res\\pulldown1.ico"
 #endif    // Deutsch (Österreich) resources
 /////////////////////////////////////////////////////////////////////////////
 

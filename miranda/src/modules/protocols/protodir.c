@@ -240,7 +240,7 @@ void UninitContactDir(void)
 		for ( j = 0; j< condir.protoCache.realCount; j++) {
 			char buf[128];
 			contactEntry * p = condir.protoCache.items[j];
-			_snprintf(buf,sizeof(buf)," [%s] %s @ %x \n", p->proto, p->id ? p->id : "", p->hContact);
+			mir_snprintf(buf,sizeof(buf)," [%s] %s @ %x \n", p->proto, p->id ? p->id : "", p->hContact);
 			OutputDebugString(buf);
 		}
 	}

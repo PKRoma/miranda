@@ -13,6 +13,24 @@ HWND hwndTopToolBar=0;
 
 #define MTG_MOVE								"MoveToGroup/Move"
 
+static int AddGroupItem(int rootid,char *name,int pos,int poppos,WPARAM wParam)
+{
+	CLISTMENUITEM mi={0};
+
+	
+	mi.cbSize=sizeof(mi);
+	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+	mi.pszPopupName=(char *)rootid;
+	mi.popupPosition=poppos;
+	mi.position=pos;
+	mi.pszName=name;
+	mi.flags=CMIF_CHILDPOPUP;
+	mi.pszContactOwner=(char *)0;
+	mi.pszService=MTG_MOVE;
+	return(CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi));
+
+}
+
 static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 {
 	
@@ -45,6 +63,9 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	i=0;
 	intname=(char *)malloc(20);
 	grpid=1000;
+	AddGroupItem((int)menuid,Translate("Root Group"),grpid++,-1,wParam);
+	grpid+=100000;
+	//AddGroupItem(menuid,"-",grpid++,0);
 while (TRUE) 
 {
 	itoa(i,intname,10);
@@ -59,6 +80,8 @@ while (TRUE)
 	{
 		break;
 	};
+	AddGroupItem((int)menuid,&(grpname[1]),grpid++,i+1,wParam);
+	/*
 	mi.cbSize=sizeof(mi);
 	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCE(IDI_MIRANDA));
 	mi.pszPopupName=(char *)menuid;
@@ -69,8 +92,9 @@ while (TRUE)
 	mi.pszContactOwner=(char *)0;
 	mi.pszService=MTG_MOVE;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
+	*/
 	i++;
-	free(grpname);
+	mir_free(grpname);
 };
 free(intname);
 return 0;
@@ -88,6 +112,11 @@ if (lParam==0)
 	return(0);
 };
 lParam--;
+	if (lParam==-2)//root level
+	{
+		DBWriteContactSettingString((HANDLE)wParam,"CList","Group","");
+		return 0;
+	}
 	intname=(char *)malloc(20);
 	itoa(lParam,intname,10);
 	grpname=DBGetString(0,"CListGroups",intname);
@@ -95,7 +124,7 @@ lParam--;
 	{
 		correctgrpname=&(grpname[1]);
 		DBWriteContactSettingString((HANDLE)wParam,"CList","Group",correctgrpname);
-		free(grpname);
+		mir_free(grpname);
 	};
 	
 	

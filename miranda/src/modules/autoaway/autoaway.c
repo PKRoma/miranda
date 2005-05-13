@@ -24,6 +24,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define AA_MODULE "AutoAway"
 
+static void AutoAwaySetProtocol(const char * proto, unsigned status)
+{
+	char * awayMsg = (char *) CallService(MS_AWAYMSG_GETSTATUSMSG, (WPARAM) status, 0);								
+	CallProtoService(proto, PS_SETSTATUS, status, 0);
+	if ( awayMsg != NULL )  {
+		if (CallProtoService(proto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
+		CallProtoService(proto, PS_SETAWAYMSG, status, (LPARAM) awayMsg);
+		miranda_sys_free(awayMsg);
+	}
+}
+
 static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
 {
 	PROTOCOLDESCRIPTOR **proto=0;
@@ -50,19 +61,13 @@ static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
 			}
 		}
 		if ( currentstatus >= ID_STATUS_ONLINE && currentstatus != ID_STATUS_INVISIBLE ) {			
-			if ( (lParam&IDF_ISIDLE) && ( currentstatus == ID_STATUS_ONLINE || currentstatus == ID_STATUS_FREECHAT ))  {								
-				char * awayMsg = (char *) CallService(MS_AWAYMSG_GETSTATUSMSG, (WPARAM) status, 0);				
+			if ( (lParam&IDF_ISIDLE) && ( currentstatus == ID_STATUS_ONLINE || currentstatus == ID_STATUS_FREECHAT ))  {
 				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,1);
-				CallProtoService(proto[j]->szName, PS_SETSTATUS, status, 0);
-				if ( awayMsg != NULL )  {
-					if (CallProtoService(proto[j]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
-						CallProtoService(proto[j]->szName, PS_SETAWAYMSG, status, (LPARAM) awayMsg);
-					miranda_sys_free(awayMsg);
-				}				
+				AutoAwaySetProtocol(proto[j]->szName, status);
 			} else if ( !(lParam&IDF_ISIDLE) && DBGetContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0) ) {
 				// returning from idle and this proto was set away, set it back
 				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0);
-				if ( !mii.aaLock ) CallProtoService(proto[j]->szName, PS_SETSTATUS, ID_STATUS_ONLINE, 0);
+				if ( !mii.aaLock ) AutoAwaySetProtocol(proto[j]->szName, ID_STATUS_ONLINE);
 			}			
 		}
 	}

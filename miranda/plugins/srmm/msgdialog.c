@@ -1,7 +1,7 @@
 /*
 SRMM
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2005 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -69,11 +69,35 @@ static char *MsgServiceName(HANDLE hContact)
     if (szProto == NULL)
         return PSS_MESSAGE;
 
-    _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
+    mir_snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
     if (ServiceExists(szServiceName))
         return PSS_MESSAGE "W";
 #endif
     return PSS_MESSAGE;
+}
+
+// mod from tabsrmm
+static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilename) {
+	*pppFiles=(char**)realloc(*pppFiles,(++*totalCount+1)*sizeof(char*));
+	(*pppFiles)[*totalCount]=NULL;
+	(*pppFiles)[*totalCount-1]=_strdup(szFilename);
+	if(GetFileAttributesA(szFilename)&FILE_ATTRIBUTE_DIRECTORY) {
+		WIN32_FIND_DATAA fd;
+		HANDLE hFind;
+		char szPath[MAX_PATH];
+		lstrcpyA(szPath,szFilename);
+		lstrcatA(szPath,"\\*");
+		if(hFind=FindFirstFileA(szPath,&fd)) {
+			do {
+				if(!lstrcmpA(fd.cFileName,".") || !lstrcmpA(fd.cFileName,"..")) continue;
+				lstrcpyA(szPath,szFilename);
+				lstrcatA(szPath,"\\");
+				lstrcatA(szPath,fd.cFileName);
+				AddToFileList(pppFiles,totalCount,szPath);
+			} while(FindNextFileA(hFind,&fd));
+			FindClose(hFind);
+		}
+	}
 }
 
 static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
@@ -126,6 +150,8 @@ static void SetDialogToType(HWND hwndDlg)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDOK), (g_dat->flags&SMF_SENDBTN) ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))?TRUE:FALSE);
+	if (dat->avatarPic==0||!(g_dat->flags&SMF_AVATAR))
+		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
 	SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	pl.length = sizeof(pl);
@@ -174,6 +200,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
 	switch (msg) {
+	case WM_DROPFILES:
+		SendMessage(GetParent(hwnd), WM_DROPFILES, (WPARAM)wParam, (LPARAM)lParam);
+		break;
 	case EM_SUBCLASSED:
 		dat = (struct MsgEditSubclassData *) malloc(sizeof(struct MsgEditSubclassData));
 		SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
@@ -588,7 +617,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->hBkgBrush = NULL;
 			dat->hDbEventFirst = NULL;
 			dat->sendBuffer = NULL;
-			dat->splitterPos = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
+			dat->splitterPos = (int) DBGetContactSettingDword(DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT)?dat->hContact:NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
 			dat->windowWasCascaded = 0;
 			dat->nFlash = 0;
 			dat->nTypeSecs = 0;
@@ -755,17 +784,42 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return TRUE;
 		}
 	case WM_CONTEXTMENU:
-		{
-			if (dat->hwndStatus && dat->hwndStatus == (HWND) wParam) {
-				POINT pt;
-				HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+	{
+		if (dat->hwndStatus && dat->hwndStatus == (HWND) wParam) {
+			POINT pt;
+			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
 
-				GetCursorPos(&pt);
-				TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
-				DestroyMenu(hMenu);
-			}
-			break;
+			GetCursorPos(&pt);
+			TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
+			DestroyMenu(hMenu);
 		}
+		break;
+	}
+	// Mod from tabsrmm
+	case WM_DROPFILES:
+	{
+		if (dat->szProto==NULL) break;
+		if (!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1,0)&PF1_FILESEND)) break;
+		if (dat->wStatus==ID_STATUS_OFFLINE) break;
+		if (dat->hContact!=NULL) {
+			HDROP hDrop;
+			char **ppFiles=NULL;
+			char szFilename[MAX_PATH];
+			int fileCount,totalCount=0,i;
+
+			hDrop=(HDROP)wParam;
+			fileCount=DragQueryFile(hDrop,-1,NULL,0);
+			ppFiles=NULL;
+			for(i=0;i<fileCount;i++) {
+				DragQueryFileA(hDrop, i, szFilename, sizeof(szFilename));
+				AddToFileList(&ppFiles, &totalCount, szFilename);
+			}
+			CallServiceSync(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
+			for(i=0;ppFiles[i];i++) free(ppFiles[i]);
+			free(ppFiles);
+		}
+		break;
+	}
 	case HM_AVATARACK:
 	{
 		ACKDATA *pAck = (ACKDATA *)lParam;
@@ -905,11 +959,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 					switch (ci.type) {
 						case CNFT_ASCIIZ:
-							_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+							mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 							miranda_sys_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
-							_snprintf(buf, sizeof(buf), "%u", ci.dVal);
+							mir_snprintf(buf, sizeof(buf), "%u", ci.dVal);
 							break;
 					}
 				}
@@ -939,7 +993,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbtts.cbDest = sizeof(time);
 				dbtts.szDest = time;
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-				_snprintf(fmt, sizeof(fmt), Translate("Last message received on %s at %s."), date, time);
+				mir_snprintf(fmt, sizeof(fmt), Translate("Last message received on %s at %s."), date, time);
 				SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
 				SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
 			}
@@ -1004,20 +1058,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 						switch (ci.type) {
 						case CNFT_ASCIIZ:
-							_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+							mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
 							miranda_sys_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
-							_snprintf(buf, sizeof(buf), "%u", ci.dVal);
+							mir_snprintf(buf, sizeof(buf), "%u", ci.dVal);
 							break;
 						}
 					}
 					SetDlgItemTextA(hwndDlg, IDC_NAME, buf[0] ? buf : contactName);
 					szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE), 0);
 					if (statusIcon)
-						_snprintf(newtitle, sizeof(newtitle), "%s - %s", contactName, Translate(pszNewTitleEnd));
+						mir_snprintf(newtitle, sizeof(newtitle), "%s - %s", contactName, Translate(pszNewTitleEnd));
 					else
-						_snprintf(newtitle, sizeof(newtitle), "%s (%s): %s", contactName, szStatus, Translate(pszNewTitleEnd));
+						mir_snprintf(newtitle, sizeof(newtitle), "%s (%s): %s", contactName, szStatus, Translate(pszNewTitleEnd));
 					if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
 						if (statusIcon) {
@@ -1037,13 +1091,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							char *szNewStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wStatus, 0);
 
 							if (dat->wStatus == ID_STATUS_OFFLINE) {
-								_snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+								mir_snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+								SendMessage(hwndDlg, DM_TYPING, 0, 0);
 							}
 							else if (dat->wOldStatus == ID_STATUS_OFFLINE) {
-								_snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
+								mir_snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
 							}
 							else {
-								_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
+								mir_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
 							}
 							iLen = strlen(buffer) + 1;
 							MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR) & buffer[iLen], iLen);
@@ -1071,6 +1126,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 			break;
+		}
+	case DM_GETWINDOWSTATE:
+		{
+			UINT state = 0;
+			
+			state |= MSG_WINDOW_STATE_EXISTS;
+			if (IsWindowVisible(hwndDlg)) 
+				state |= MSG_WINDOW_STATE_VISIBLE;
+			if (GetFocus()==hwndDlg) 
+				state |= MSG_WINDOW_STATE_FOCUS;
+			if (IsIconic(hwndDlg))
+				state |= MSG_WINDOW_STATE_ICONIC;
+			return state;
+
 		}
 	case DM_CASCADENEWWINDOW:
 		if ((HWND) wParam == hwndDlg)
@@ -1223,7 +1292,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_TIMER:
 		if (wParam == TIMERID_MSGSEND) {
 			KillTimer(hwndDlg, wParam);
-			ShowWindow(hwndDlg, SW_SHOWNORMAL);
+			ShowWindow(hwndDlg, SW_SHOW);
 			EnableWindow(hwndDlg, FALSE);
 			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) Translate("The message send timed out."));
 		}
@@ -1258,7 +1327,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					char szBuf[256];
 					char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
 
-					_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
+					mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
 					dat->nTypeSecs--;
 					SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
 					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) g_dat->hIcons[SMF_ICON_TYPING]);
@@ -1598,7 +1667,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			switch (ack->result) {
 				case ACKRESULT_FAILED:
 					KillTimer(hwndDlg, TIMERID_MSGSEND);
-					ShowWindow(hwndDlg, SW_SHOWNORMAL);
+					ShowWindow(hwndDlg, SW_SHOW);
 					EnableWindow(hwndDlg, FALSE);
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup((char *) ack->lParam));
 					return 0;
@@ -1654,8 +1723,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(dat->hwndStatus);
 		tcmdlist_free(dat->cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
-		if (!(g_dat->flags&SMF_AVATAR)||!dat->avatarPic)
-			DBWriteContactSettingDword(NULL, SRMMMOD, "splitterPos", dat->splitterPos);
+		DBWriteContactSettingDword(DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT)?dat->hContact:NULL, SRMMMOD, "splitterPos", dat->splitterPos);
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);

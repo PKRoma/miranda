@@ -47,11 +47,11 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,2,1,2),
+	PLUGIN_MAKE_VERSION(0,2,1,3),
 	"Provides chat rooms for protocols supporting it",
-	"MatriX ' m3x",
+	"MatriX",
 	"i_am_matrix@users.sourceforge.net",
-	"© 2004 Jörgen Persson",
+	"© 2003 - 2005 Jörgen Persson",
 	"http://miranda-im.org/",
 	0,
 	0		
@@ -129,15 +129,15 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		char szTemp[10];
 
 		iSize = sizeof(GCREGISTER);
-		_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
+		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
 		MessageBox(NULL, szTemp, "GCREGISTER", MB_OK);
 
 		iSize = sizeof(GCWINDOW);
-		_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
+		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
 		MessageBox(NULL, szTemp, "GCWINDOW", MB_OK);
 
 		iSize = sizeof(GCEVENT);
-		_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
+		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
 		MessageBox(NULL, szTemp, "GCEVENT", MB_OK);
 
 	}
@@ -169,27 +169,6 @@ int __declspec(dllexport) Unload(void)
     OleUninitialize();
 	UnhookEvents();
 	return 0;
-}
-int __declspec(dllexport) UninstallEx(PLUGINUNINSTALLPARAMS* ppup)
-{
-	if (ppup && ppup->bDoDeleteSettings) 
-	{
-		PUIRemoveDbModule("Chat");
-		PUIRemoveDbModule("ChatFonts");
-
-		PUIRemoveSkinSound("ChatMessage");
-		PUIRemoveSkinSound("ChatHighlight"); 
-		PUIRemoveSkinSound("ChatAction"); 
-		PUIRemoveSkinSound((WPARAM) "ChatJoin"); 
-		PUIRemoveSkinSound((WPARAM) "ChatKick"); 
-		PUIRemoveSkinSound((WPARAM) "ChatMode"); 
-		PUIRemoveSkinSound((WPARAM) "ChatNick"); 
-		PUIRemoveSkinSound((WPARAM) "ChatNotice"); 
-		PUIRemoveSkinSound((WPARAM) "ChatPart"); 
-		PUIRemoveSkinSound((WPARAM) "ChatQuit"); 
-		PUIRemoveSkinSound((WPARAM) "ChatTopic"); 
-	}
-	return 0; 
 }
 
 void LoadIcons(void)

@@ -1136,7 +1136,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
                             DBWriteContactSettingString(contact->hContact, "CList", "Group", szGroup);
                         else if (contact->type == CLCIT_GROUP) {        //dropee is a group
                             char szNewName[120];
-                            _snprintf(szNewName, sizeof(szNewName), "%s\\%s", szGroup, contact->szText);
+                            mir_snprintf(szNewName, sizeof(szNewName), "%s\\%s", szGroup, contact->szText);
                             CallService(MS_CLIST_GROUPRENAME, contact->groupId, (LPARAM) szNewName);
                         }
                         break;

@@ -45,7 +45,6 @@ extern char gpszICQProtoName[MAX_PATH];
 
 static void file_buildProtoFileTransferStatus(filetransfer* ft, PROTOFILETRANSFERSTATUS* pfts)
 {
-
 	memset(pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
 	pfts->cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	pfts->hContact = ft->hContact;
@@ -63,14 +62,12 @@ static void file_buildProtoFileTransferStatus(filetransfer* ft, PROTOFILETRANSFE
 	pfts->currentFileSize = ft->dwThisFileSize;
 	pfts->currentFileTime = ft->dwThisFileDate;
 	pfts->currentFileProgress = ft->dwFileBytesDone;
-
 }
 
 
 
 static void file_sendTransferSpeed(directconnect* dc)
 {
-
 	icq_packet packet;
 
 
@@ -78,14 +75,12 @@ static void file_sendTransferSpeed(directconnect* dc)
 	packByte(&packet, 5);			/* Ident */
 	packLEDWord(&packet, dc->ft->dwTransferSpeed);
 	sendDirectPacket(dc->hConnection, &packet);
-
 }
 
 
 
 static void file_sendNick(directconnect* dc)
 {
-
 	icq_packet packet;
 	char* szNick;
 	DBVARIANT dbv;
@@ -104,14 +99,12 @@ static void file_sendNick(directconnect* dc)
 	packBuffer(&packet, szNick, (WORD)(strlen(szNick) + 1));
 	sendDirectPacket(dc->hConnection, &packet);
 	DBFreeVariant(&dbv);
-
 }
 
 
 
 static void file_sendNextFile(directconnect* dc)
 {
-
 	icq_packet packet;
 	struct _stat statbuf;
 	char *pszThisFileName;
@@ -136,15 +129,14 @@ static void file_sendNextFile(directconnect* dc)
 	}
 
 	szThisSubDir[0] = '\0';
-	pszThisFileName = strrchr(dc->ft->szThisFile, '\\');
-	if (((pszThisFileName = strrchr(dc->ft->szThisFile, '\\')) == NULL) &&
+
+  if (((pszThisFileName = strrchr(dc->ft->szThisFile, '\\')) == NULL) &&
 		((pszThisFileName = strrchr(dc->ft->szThisFile, '/')) == NULL))
 	{
 		pszThisFileName = dc->ft->szThisFile;
 	}
 	else
 	{
-
 		int i;
 		int len;
 
@@ -156,9 +148,7 @@ static void file_sendNextFile(directconnect* dc)
 			if (!_strnicmp(dc->ft->files[i], dc->ft->szThisFile, len) &&
 				(dc->ft->szThisFile[len] == '\\' || dc->ft->szThisFile[len] == '/'))
 			{
-
 				char* pszLastBackslash;
-
 
 				if (((pszLastBackslash = strrchr(dc->ft->files[i], '\\')) == NULL) &&
 					((pszLastBackslash = strrchr(dc->ft->files[i], '/')) == NULL))
@@ -174,7 +164,7 @@ static void file_sendNextFile(directconnect* dc)
 				}
 			}
 		}
-		pszThisFileName++;
+		pszThisFileName++; // skip backslash
 	}
 
 
@@ -190,8 +180,7 @@ static void file_sendNextFile(directconnect* dc)
 		{
 			icq_LogMessage(LOG_ERROR, Translate("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
 			Netlib_CloseHandle(dc->hConnection);
-			dc->hConnection = NULL;
-			dc->ft->hConnection = NULL;
+			dc->hConnection = dc->ft->hConnection = NULL;
 			return;
 		}
 
@@ -215,14 +204,12 @@ static void file_sendNextFile(directconnect* dc)
 	sendDirectPacket(dc->hConnection, &packet);
 
 	ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
-
 }
 
 
 
 static void file_sendResume(filetransfer* ft)
 {
-
 	icq_packet packet;
 
 
@@ -233,14 +220,12 @@ static void file_sendResume(filetransfer* ft)
 	packLEDWord(&packet, ft->dwTransferSpeed);
 	packLEDWord(&packet, ft->iCurrentFile + 1);   /* file number */
 	sendDirectPacket(ft->hConnection, &packet);
-
 }
 
 
 
 static void file_sendData(directconnect* dc)
 {
-
 	icq_packet packet;
 	BYTE buf[2048];
 	int bytesRead = 0;
@@ -279,23 +264,19 @@ static void file_sendData(directconnect* dc)
 		dc->ft->iCurrentFile++;
 		file_sendNextFile(dc);	 /* this will close the socket if no more files */
 	}
-
 }
 
 
 
 void handleFileTransferIdle(directconnect* dc)
 {
-
 	file_sendData(dc);
-
 }
 
 
 
 void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 {
-
 	int openFlags;
 
 
@@ -325,7 +306,6 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 			ft->szThisFile = _strdup(szFilename);
 			ft->dwFileBytesDone = 0;
 			break;
-
 	}
 
 	ft->fileId = _open(ft->szThisFile, openFlags, _S_IREAD | _S_IWRITE);
@@ -347,7 +327,6 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 	file_sendResume(ft);
 
 	ProtoBroadcastAck(gpszICQProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
-
 }
 
 
@@ -363,7 +342,6 @@ S: 6 * many
 */
 void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 {
-
 	if (wLen < 1)
 		return;
 
@@ -371,7 +349,6 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
 	switch (buf[0])
 	{
-
 		case 0:   /* first packet of a file transfer */
 			if (dc->initialised)
 				return;
@@ -460,12 +437,31 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				if (strstr(dc->ft->szThisFile, "..\\") || strstr(dc->ft->szThisFile, "../") ||
 					strstr(dc->ft->szThisFile, ":\\") || strstr(dc->ft->szThisFile, ":/") ||
 					dc->ft->szThisFile[0] == '\\' || dc->ft->szThisFile[0] == '/')
+        {
+          Netlib_Logf(hDirectNetlibUser, "Invalid path information");
 					break;
+        }
 				if (strstr(dc->ft->szThisSubdir, "..\\") || strstr(dc->ft->szThisSubdir, "../") ||
 					strstr(dc->ft->szThisSubdir, ":\\") || strstr(dc->ft->szThisSubdir, ":/") ||
 					dc->ft->szThisSubdir[0] == '\\' || dc->ft->szThisSubdir[0] == '/')
+        {
+          Netlib_Logf(hDirectNetlibUser, "Invalid path information");
 					break;
-				_chdir(dc->ft->szSavePath);
+        }
+
+        szFullPath = (char*)malloc(strlen(dc->ft->szSavePath)+strlen(dc->ft->szThisSubdir)+strlen(dc->ft->szThisFile)+3);
+        szFullPath[0] = '\0';
+        strcpy(szFullPath, dc->ft->szSavePath);
+        if (strlen(szFullPath) && szFullPath[strlen(szFullPath)-1] != '\\') strcat(szFullPath, "\\");
+        strcat(szFullPath, dc->ft->szThisSubdir);
+        if (strlen(szFullPath) && szFullPath[strlen(szFullPath)-1] != '\\') strcat(szFullPath, "\\");
+        _chdir(szFullPath); // set current dir - not very useful
+        strcat(szFullPath, dc->ft->szThisFile);
+        // we joined the full path to dest file
+				SAFE_FREE(&dc->ft->szThisFile);
+				dc->ft->szThisFile = szFullPath;
+
+/*				_chdir(dc->ft->szSavePath); // TODO: change not to use chdir - really baaad
 				_chdir(dc->ft->szThisSubdir);
 
 				szFullPath = (char*)malloc(MAX_PATH);
@@ -474,7 +470,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				{
 					SAFE_FREE(&dc->ft->szThisFile);
 					dc->ft->szThisFile = szFullPath;
-				}
+				}*/
 
 				dc->ft->dwFileBytesDone = 0;
 				dc->ft->iCurrentFile++;
@@ -490,8 +486,8 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 					PROTOFILETRANSFERSTATUS pfts = {0};
 
 					file_buildProtoFileTransferStatus(dc->ft, &pfts);
-    				if (ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts))
-						break;   /* UI supports resume: it will call PS_FILERESUME */
+    			if (ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts))
+					break;   /* UI supports resume: it will call PS_FILERESUME */
 
 					dc->ft->fileId = _open(dc->ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 					if (dc->ft->fileId == -1)
@@ -550,7 +546,8 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				wLen = 0;
 			dc->ft->dwBytesDone += wLen;
 			dc->ft->dwFileBytesDone += wLen;
-			if(GetTickCount() > dc->ft->dwLastNotify + 500 || wLen < 2048) {
+			if(GetTickCount() > dc->ft->dwLastNotify + 500 || wLen < 2048) 
+      {
 				PROTOFILETRANSFERSTATUS pfts;
 
 				file_buildProtoFileTransferStatus(dc->ft, &pfts);
@@ -574,7 +571,5 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 		default:
 			Netlib_Logf(hDirectNetlibUser, "Unknown file transfer packet ignored.");
 			break;
-
 	}
-
 }

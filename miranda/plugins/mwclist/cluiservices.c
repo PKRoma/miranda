@@ -65,6 +65,8 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	if (storedcount==-1){return(0);};
 	
+	OutputDebugStr("CluiProtocolStatusChanged");
+	OutputDebugStr("\r\n");
 	{
 		//free protocol data
 	int nPanel;
@@ -88,7 +90,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	SendMessage(hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT)); 
 	partWidths=(int*)malloc((storedcount+1)*sizeof(int));
 	//partWidths[0]=FirstIconOffset;
-	if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
+	if(DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",0)||DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
 		RECT rc;
 		int part;
 		SendMessage(hwndStatus,WM_SIZE,0,0);
@@ -111,7 +113,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 				itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 				if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;};
 
-				partWidths[part]=(part+1)*rc.right/toshow-(borders[2]>>1);
+				partWidths[part]=((part+1)*(rc.right/toshow))-(borders[2]>>1);
 				//partWidths[part]=40*part+40; 
 				part++;
 			};
@@ -206,6 +208,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	}
 
 		CreateTimerForConnectingIcon(wParam,lParam);
+		InvalidateRect(hwndStatus,NULL,FALSE);
 	
 	return 0;
 }

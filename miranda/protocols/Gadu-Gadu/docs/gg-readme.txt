@@ -60,106 +60,49 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
-0.0.0.1: (UNRELEASED)
- - Initial Release
- - Basic messaging
-0.0.0.2: 2003-03-11
- - Improved stability
- - Status descriptions
- - Show invisible users
- - Friends only
-0.0.0.3: 2003-03-12
- - Import/export from server/text file
- - Fix: Improved stability
-0.0.0.4: 2003-03-12
- - Fix: Import from files
- - Fix: Search and away msg retreival
-0.0.0.5: 2003-03-13
- - Contacts info tab
-0.0.0.6: 2003-03-13
- - Fix: Import/export fixes
- - Name unknown contact with nickname from public catalog
-   if available
- - Remove from server
- - Visible/Ignore (blocked) list
-0.0.0.7: 2003-03-14
- - Fix: Blocked icon fixed
- - Fix: Safe status changing
- - Fix: Contacts status set offline when disconnected
-0.0.0.8: 2003-03-14
- - Password & e-mail changing
- - Password remind to e-mail
- - Owner info changing [NOT WORKING DUE PROTOCOL CHANGES]
- - Autoreconnect when disconnected unintentionally
- - Turn on/off connection errors
- - Leave last status after disconnected
- - Fix: Double status change on login
-0.0.0.8: 2003-03-15
- - Fix: Multiple main connection thread runned
- - Fix: Status hangup on Connecting...
-0.0.0.9: 2003-03-16
- - Fix: Import bugs
- - Fix: Status changing bugs (still fighting with)
-0.0.1.0: 2003-03-16
- - Fix: Public info changing now works
- - Fix: Status changing bugs
-0.0.1.1: 2003-03-16
- - Fix: Male/female fix in public catalog
-0.0.1.2: 2003-03-19
- - Select status for description after disconnected
- - Fix: Finally working away msgs based on KeH's Jabber plugin code
- - Fix: Info page fix for empty "Gender" field
- - Fix: Import code for groups and subgroups
- - Removed: "Change status safely" no longer needed
- - "StartInvisible" db only option to start fully invisible
-0.0.1.3: 2003-03-31
- - Fix: Send chat type message instead of normal message
- - Fix: Next 20 results displayed after searching again
- - Fix: Public catalog change always writes Male as gender
- - Extended public catalog search
- - HTTP proxy support (uses only Netlib settings)
- - Create/Remove Gadu-Gadu account
- - Change Gadu-Gadu registration e-mail (requires valid e-mail in configuration)
-0.0.1.4: 2003-04-04
- - Fix: User IP numbers in user info shown better (port < 10 means behind firewall)
- - Fix: %ip% compatible now with tooltip plugin
- - Fix: Import/Export now uses first user (editable) e-mail and phone number
- - Fix: Remove all old db uneditable e-mail & phone settings from previous plugins
- - Debug: Advanced libgadu debug log information displayed in NetLib dump
- - Filetransfer support with firewall forwarding support (except multiple files)
- - Multiple instances of plugin supported (see feature list)
-0.0.1.5: 2003-04-09
- - Fix: Multiple instances menu items worked just for first instance
- - Fix: Auto-reconnect fix, again working
- - Time deviation support for timestamps (default 5 min)
-   "TimeDeviation" db setting if your clock differs more than 5min from actual time
- - Better error descriptions on logon failure
-0.0.1.6: 2003-06-04
- - Fix: Auto-reconnect do not get 100% cpu anymore when no network (1 sec per trial)
- - Fix: Blocked icon works again (upx shouldn't compress icons)
- - Fix: Contact description is now cleared when contact makes it empty
- - Debug: logged connection errors are more specific now
-0.0.1.7: 2003-07-06
- - SSL/TLS secure connection to server support (trough OpenSSL)
- - Option to turn on/off message acknowledgement
- - Fix: Reconnects when connection is broken on startup only if
-   auto-reconnect option is turned on
- - Fix: Owner's nickname properly displayed in chat/msg dialogs
-   Note: Use View/Change my details... to load-up nickname.
- - Fix: Plugin doesn't link to any ssl library but loads it dynamically
-   when OpenSSL dll files exist in system or Miranda folder.
-0.0.1.7: 2003-09-xx (Unreleased, tests and fixes)
-0.0.1.9: 2003-10-16
- - Gadu-Gadu 6.0 (libgadu-CVS) support
- - Warning: Register, unregister, password change/remind, userlist server manipulation
-   not available for the moment. Need to implement new TOKEN routines introduced in GG6
- - Warning: SSL still having problems with connection (to be fixed)
- - Client version info in contact details
-0.0.2.0: 2003-10-27
- - Gadu-Gadu 6.0 support extended
- - Token support: Working pass changing, user registration, deletion
- - Warning: Registration e-mail changing not working (no libgadu implementation)
- - Server userlist manipulation working again
+0.0.2.9: 2005-04-29
+ - Fix: Status descriptions were not set properly when Miranda wasn't asking
+   for new status. This change may cause incompatibility with status routines
+   different than built-in. Note for misc plugins (mBot, etc.):
+     For avoiding sending gg_setstatus(status, description) twice on
+     miranda_setstatus and miranda_setawaymsg, GG sets status only on
+     miranda_setawaymsg, also this order must be fulfilled to make GG working
+     right with Miranda. (this is how internal module sraway works actually)
+ - When reconnect flag is set and manual server host cycling is on the end of
+   the list, reconnect will go back to the begin
+   (no longer taking address from web at the end)
+ - Fix: Stupid GetModuleFileName returning all lowercase characters from
+   DLL filename > WinNT, now we call GetLongPathName to retrieve valid case
+0.0.2.8: 2005-04-14
+ - Server connection (multi)thread controller (Experimental!)
+   Miranda won't hang anymore when GG is trying to connect & status change is
+   requested (However sometimes on exit it required killing threads (dirty))
+ - Multiple server hostnames (cycling while connecting)
+ - Conference policy setting
+0.0.2.7: 2004-12-26
+ - Gadu-Gadu conferencing support trough chat.dll groupchat plugin
+   (requires > Miranda 0.4)
+0.0.2.6: 2004-12-13
+ - Fix: Notification list should be sent in one piece gg_notify_ex(*uinlist),
+   not one by one gg_add_notify_ex(uin)
+ - Fix: GG.dll uses now internal Miranda safe thread registering
+0.0.2.5: 2004-12-01
+ - Fix: Plugin crashed when reporting token download connection related errors
+ - Fix: Max image size limit changed to 512KB
+ - Option to turn on/off showing contacts that are not on my list but having me
+   on their contact list.
+0.0.2.4: 2004-08-03
+ - Fix: Code of image routines was simplyfied, however needs more care (unstable)
+ - Server host and external forwarding host could be specified as a hostname or
+   IP number (before only IP number was valid). This could be useful for dynamic
+   IPs and DNS mapping services such as dyndns.org.
+0.0.2.3: 2004-07-15
+ - Fix: Proxy authentication fixed (by The Leech)
+ - Images receiving / sending (by Liquid)
+0.0.2.2: 2003-12-20
+ - Fix: Autoreconnect failure, no "Connecting..." message
+ - Fix: Latest M-IM build sends twice SET_OFFLINE when disconnect
+   which caused GG plugin to hang
 0.0.2.1: 2003-11-28
  - Source: GCC >= 3.2 compiler support
  - Fix: File transfer crashes, 100% CPU utilization
@@ -169,30 +112,105 @@ Note: For secure connections this plugin requires OpenSSL DLL
  - Fix: Filesize 135KB - deleted unused icons (thanks to Jacek_FH)
  - Filetransfer resume support
  - Ignore incoming conference messages option
-0.0.2.2: 2003-12-20
- - Fix: Autoreconnect failure, no "Connecting..." message
- - Fix: Latest M-IM build sends twice SET_OFFLINE when disconnect
-   which caused GG plugin to hang
-0.0.2.3: 2004-07-15
- - Fix: Proxy authentication fixed (by The Leech)
- - Images receiving / sending (by Liquid)
-0.0.2.4: 2004-08-03
- - Fix: Code of image routines was simplyfied, however needs more care (unstable)
- - Server host and external forwarding host could be specified as a hostname or
-   IP number (before only IP number was valid). This could be useful for dynamic
-   IPs and DNS mapping services such as dyndns.org.
-0.0.2.5: 2004-12-01
- - Fix: Plugin crashed when reporting token download connection related errors
- - Fix: Max image size limit changed to 512KB
- - Option to turn on/off showing contacts that are not on my list but having me
-   on their contact list.
-0.0.2.6: 2004-12-13
- - Fix: Notification list should be sent in one piece gg_notify_ex(*uinlist),
-   not one by one gg_add_notify_ex(uin)
- - Fix: GG.dll uses now internal Miranda safe thread registering
-0.0.2.7: 2004-12-26
- - Gadu-Gadu conferencing support trough chat.dll groupchat plugin
-   (requires > Miranda 0.4)
+0.0.2.0: 2003-10-27
+ - Gadu-Gadu 6.0 support extended
+ - Token support: Working pass changing, user registration, deletion
+ - Warning: Registration e-mail changing not working (no libgadu implementation)
+ - Server userlist manipulation working again
+0.0.1.9: 2003-10-16
+ - Gadu-Gadu 6.0 (libgadu-CVS) support
+ - Warning: Register, unregister, password change/remind, userlist server manipulation
+   not available for the moment. Need to implement new TOKEN routines introduced in GG6
+ - Warning: SSL still having problems with connection (to be fixed)
+ - Client version info in contact details
+0.0.1.7: 2003-09-xx (Unreleased, tests and fixes)
+0.0.1.7: 2003-07-06
+ - SSL/TLS secure connection to server support (trough OpenSSL)
+ - Option to turn on/off message acknowledgement
+ - Fix: Reconnects when connection is broken on startup only if
+   auto-reconnect option is turned on
+ - Fix: Owner's nickname properly displayed in chat/msg dialogs
+   Note: Use View/Change my details... to load-up nickname.
+ - Fix: Plugin doesn't link to any ssl library but loads it dynamically
+   when OpenSSL dll files exist in system or Miranda folder.
+0.0.1.6: 2003-06-04
+ - Fix: Auto-reconnect do not get 100% cpu anymore when no network (1 sec per trial)
+ - Fix: Blocked icon works again (upx shouldn't compress icons)
+ - Fix: Contact description is now cleared when contact makes it empty
+ - Debug: logged connection errors are more specific now
+0.0.1.5: 2003-04-09
+ - Fix: Multiple instances menu items worked just for first instance
+ - Fix: Auto-reconnect fix, again working
+ - Time deviation support for timestamps (default 5 min)
+   "TimeDeviation" db setting if your clock differs more than 5min from actual time
+ - Better error descriptions on logon failure
+0.0.1.4: 2003-04-04
+ - Fix: User IP numbers in user info shown better (port < 10 means behind firewall)
+ - Fix: %ip% compatible now with tooltip plugin
+ - Fix: Import/Export now uses first user (editable) e-mail and phone number
+ - Fix: Remove all old db uneditable e-mail & phone settings from previous plugins
+ - Debug: Advanced libgadu debug log information displayed in NetLib dump
+ - Filetransfer support with firewall forwarding support (except multiple files)
+ - Multiple instances of plugin supported (see feature list)
+0.0.1.3: 2003-03-31
+ - Fix: Send chat type message instead of normal message
+ - Fix: Next 20 results displayed after searching again
+ - Fix: Public catalog change always writes Male as gender
+ - Extended public catalog search
+ - HTTP proxy support (uses only Netlib settings)
+ - Create/Remove Gadu-Gadu account
+ - Change Gadu-Gadu registration e-mail (requires valid e-mail in configuration)
+0.0.1.2: 2003-03-19
+ - Select status for description after disconnected
+ - Fix: Finally working away msgs based on KeH's Jabber plugin code
+ - Fix: Info page fix for empty "Gender" field
+ - Fix: Import code for groups and subgroups
+ - Removed: "Change status safely" no longer needed
+ - "StartInvisible" db only option to start fully invisible
+0.0.1.1: 2003-03-16
+ - Fix: Male/female fix in public catalog
+0.0.1.0: 2003-03-16
+ - Fix: Public info changing now works
+ - Fix: Status changing bugs
+0.0.0.9: 2003-03-16
+ - Fix: Import bugs
+ - Fix: Status changing bugs (still fighting with)
+0.0.0.8: 2003-03-15
+ - Fix: Multiple main connection thread runned
+ - Fix: Status hangup on Connecting...
+ - Password & e-mail changing
+ - Password remind to e-mail
+ - Owner info changing [NOT WORKING DUE PROTOCOL CHANGES]
+ - Autoreconnect when disconnected unintentionally
+ - Turn on/off connection errors
+ - Leave last status after disconnected
+ - Fix: Double status change on login
+0.0.0.7: 2003-03-14
+ - Fix: Blocked icon fixed
+ - Fix: Safe status changing
+ - Fix: Contacts status set offline when disconnected
+0.0.0.6: 2003-03-13
+ - Fix: Import/export fixes
+ - Name unknown contact with nickname from public catalog
+   if available
+ - Remove from server
+ - Visible/Ignore (blocked) list
+0.0.0.5: 2003-03-13
+ - Contacts info tab
+0.0.0.4: 2003-03-12
+ - Fix: Import from files
+ - Fix: Search and away msg retreival
+0.0.0.3: 2003-03-12
+ - Import/export from server/text file
+ - Fix: Improved stability
+0.0.0.2: 2003-03-11
+ - Improved stability
+ - Status descriptions
+ - Show invisible users
+ - Friends only
+0.0.0.1: (UNRELEASED)
+ - Initial Release
+ - Basic messaging
 
 6. Latest development version:
 ------------------------------

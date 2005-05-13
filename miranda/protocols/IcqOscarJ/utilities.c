@@ -44,6 +44,8 @@ static int cookieCount = 0;
 CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lock
 
 extern BYTE gbSsiEnabled;
+extern BYTE gbOverRate;
+extern DWORD gtLastRequest;
 extern char gpszICQProtoName[MAX_PATH];
 extern HANDLE ghServerNetlibUser;
 extern int gnCurrentStatus;
@@ -51,26 +53,20 @@ extern int gnCurrentStatus;
 
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-
 	int i;
-
 
 	for (i = 0; i < cControls; i++)
 		EnableWindow(GetDlgItem(hwndDlg, controls[i]), state);
-
 }
 
 
 
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-
 	int i;
-
 
 	for(i = 0; i < cControls; i++)
 		ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
-
 }
 
 
@@ -79,9 +75,7 @@ void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls,
 // a Miranda style status.
 int IcqStatusToMiranda(WORD nIcqStatus)
 {
-
 	int nMirandaStatus;
-
 
 	// :NOTE: The order in which the flags are compared are important!
 	// I dont like this method but it works.
@@ -108,7 +102,6 @@ int IcqStatusToMiranda(WORD nIcqStatus)
 		nMirandaStatus = ID_STATUS_ONLINE;
 
 	return nMirandaStatus;
-
 }
 
 
@@ -162,7 +155,6 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 		// Since it cant be offline, it must be a new type of online status.
 		nIcqStatus = ICQ_STATUS_ONLINE;
 		break;
-
 	}
 
 	return nIcqStatus;
@@ -205,7 +197,6 @@ int MirandaStatusToSupported(int nMirandaStatus)
 		// Online seems to be a good default.
 		nSupportedStatus = ID_STATUS_ONLINE;
 		break;
-
 	}
 
 	return nSupportedStatus;
@@ -219,10 +210,20 @@ char* MirandaStatusToString(int mirandaStatus)
 }
 
 
+static void verToStr(char* szStr, int v)
+{
+  if (v&0xFF)
+    mir_snprintf(szStr, 64, "%s%u.%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+  else if ((v>>8)&0xFF)
+    mir_snprintf(szStr, 64, "%s%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0x80000000?" alpha":"");
+  else
+    mir_snprintf(szStr, 64, "%s%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, v&0x80000000?" alpha":"");
+}
+
 
 // Dont free the returned string.
 // Function is not multithread safe.
-char* MirandaVersionToString(int v)
+char* MirandaVersionToString(int v, int m)
 {
 	static char szVersion[64];
 
@@ -230,12 +231,23 @@ char* MirandaVersionToString(int v)
 		strcpy(szVersion, "");
 	else
 	{
+    strcpy(szVersion, "Miranda IM ");
+
 		if (v == 1)
-			strcpy(szVersion, "Miranda IM 0.1.2.0 alpha");
+			strcat(szVersion, "0.1.2.0 alpha");
 		else if ((v&0x7FFFFFFF) <= 0x030301)
-			_snprintf(szVersion, 63, "Miranda IM %u.%u.%u.%u%s", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
-    else
-			_snprintf(szVersion, 63, "Miranda IM (ICQ v%u.%u.%u.%u%s)", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+      verToStr(szVersion, v);
+    else 
+    {
+      if (m)
+      {
+        verToStr(szVersion, m);
+        strcat(szVersion, " ");
+      }
+      strcat(szVersion, "(ICQ v");
+      verToStr(szVersion, v);
+      strcat(szVersion, ")");
+    }
 	}
 
 	return szVersion;
@@ -558,18 +570,20 @@ void ResetSettingsOnListReload()
 
 void ResetSettingsOnConnect()
 {
-
 	HANDLE hContact;
 	char *szProto;
 
+  gbOverRate = 0; // init
+  gtLastRequest = 0;
+
 	// Reset a bunch of session specific settings
   DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
 	while (hContact)
 	{
-
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
@@ -584,19 +598,18 @@ void ResetSettingsOnConnect()
 		}
 
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-
 	}
-
 }
 
 
 
 void ResetSettingsOnLoad()
 {
-
 	HANDLE hContact;
 	char *szProto;
 
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", 0);
+  DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -613,23 +626,19 @@ void ResetSettingsOnLoad()
 		}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
-
 }
 
 
 
 int RandRange(int nLow, int nHigh)
 {
-
 	return nLow + (int)((nHigh-nLow+1)*rand()/(RAND_MAX+1.0));
-
 }
 
 
 
 BOOL IsStringUIN(char* pszString)
 {
-
 	int i;
 	int nLen = strlen(pszString);
 
@@ -646,14 +655,12 @@ BOOL IsStringUIN(char* pszString)
 	}
 
 	return FALSE;
-
 }
 
 
 
 void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 {
-
 	DWORD dwUin;
 	void* pvExtra;
 
@@ -673,7 +680,6 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 	SAFE_FREE(&pArguments);
 
 	return;
-
 }
 
 
@@ -972,22 +978,48 @@ void ContactPhotoSettingChanged(HANDLE hContact)
 { // the setting was changed - if it is done externaly unlink...
   if (bNoChanging) return;
   bNoChanging = 1;
-  __try
-  {
-    if (!bPhotoLock && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
-      DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
-  }
-  __finally
-  {
-    bNoChanging = 0;
-  }
+
+  if (!bPhotoLock && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
+    DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
+
+  bNoChanging = 0;
 }
 
+static int bdCacheTested = 0;
+static int bdWorkaroundRequired = 0;
+
+void TestDBBlobIssue()
+{
+  DBVARIANT dbv = {0};
+
+  bdCacheTested = 1;
+  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem"); // delete setting
+  DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv); // create crap cache item
+  DBWriteContactSettingBlob(NULL, gpszICQProtoName, "BlobTestItem", "Test", 4); // write blob
+  if (!DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv)) // try to read it back
+  { // we were able to read it, the DB finally work correctly, hurrah
+    DBFreeVariant(&dbv); 
+  }
+  else // the crap is still in the cache, we need to use workaround for avatars to work properly
+  {
+    Netlib_Logf(ghServerNetlibUser, "DB Module contains bug #0001177, using workaround");
+    bdWorkaroundRequired = 1;
+  }
+  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem");
+}
 
 
 int DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *szSetting,const char *val, const int cbVal)
 {
   DBCONTACTWRITESETTING cws;
+
+  if (!bdCacheTested) TestDBBlobIssue();
+
+  if (bdWorkaroundRequired)
+  { // this is workaround for DB blob caching problems - nasty isn't it
+    DBWriteContactSettingByte(hContact, szModule, szSetting, 1);
+    DBDeleteContactSetting(hContact, szModule, szSetting); 
+  }
 
   cws.szModule=szModule;
   cws.szSetting=szSetting;

@@ -2,11 +2,10 @@
 //../../bin/debug/plugins/clist_mw.dll
 //H:\lang\miranda-15-10\miranda\bin\debug\miranda32.exe
 #include "commonheaders.h"
-#include "clist.h"
-#include "m_genmenu.h"
-#include "genmenu.h"
 
 #pragma hdrstop
+
+extern int DefaultImageListColorDepth;
 
 //menu object array
 PIntMenuObject MenuObjects=NULL;
@@ -530,7 +529,7 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 	MenuObjects[MenuObjectsCount].ExecService=mir_strdup(pmp->ExecService);
 
 //	if(IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
-		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,100);
+		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),DefaultImageListColorDepth|ILC_MASK,15,100);
 	//else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
 //		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
 	
@@ -539,6 +538,10 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 	result=MenuObjects[MenuObjectsCount].id;
 	MenuObjectsCount++;
 	unlockmo();
+	OutputDebugString("!!! Created New MenuObject \t");
+	if (pmp->name) OutputDebugString(pmp->name);
+	OutputDebugString("\r\n");
+
 	return(result);
 };
 //wparam=MenuItemHandle
@@ -563,29 +566,35 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
 {		
 	SKINICONDESC2 sid={0};
+	int retval;
 				
-		if (hIcon==NULL) return hIcon;
+		//if (hIcon==NULL) return hIcon;
+	if(RegistredOk) *RegistredOk=FALSE;
 
-		if(ServiceExists(MS_SKIN2_ADDICON))
-		{
 				if (Name!=NULL&&strlen(Name)!=0)
 				{				
+					char iconame[256];
 
-				if (RegisterIt)
-				{
-			
-					sid.cbSize = sizeof(sid);
-					sid.pszSection = Translate(SectName);				
-					sid.pszName=Name;
-					sid.pszDefaultFile="ss";
-					sid.pszDescription=Description;
-					sid.hDefaultIcon=hIcon;
+					_snprintf(iconame,sizeof(iconame),"genmenu_%s",Name);
+						if(ServiceExists(MS_SKIN2_ADDICON))
+								{
 
-					CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-					if(RegistredOk) *RegistredOk=TRUE;
-				};
-				return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)Name));
-				}
+							if (RegisterIt)
+							{
+						
+								sid.cbSize = sizeof(sid);
+								sid.pszSection = Translate(SectName);				
+								sid.pszName=iconame;
+								sid.pszDefaultFile=NULL;
+								sid.pszDescription=Description;
+								sid.hDefaultIcon=hIcon;
+
+								retval=CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+								
+								if(RegistredOk) *RegistredOk=TRUE;
+							};
+							return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconame));
+							}
 		};
 	
 	return hIcon;
@@ -643,9 +652,9 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 #endif
 
 	MenuObjects[objidx].MenuItems[miidx].IconRegistred=FALSE;
-	if(pmi->hIcon!=NULL) 
+	if(TRUE/*pmi->hIcon!=NULL*/) 
 	{
-		MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
+		if(pmi->hIcon!=NULL) MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
 		RegisterOneIcon(objidx,miidx);
 			
 	}
@@ -923,7 +932,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 		if(mi->cbSize!=sizeof(TMO_MenuItem)) continue;
 	
 //
-		RegisterOneIcon(pimoidx,j);
+//		RegisterOneIcon(pimoidx,j);
 		
 		if(checkproc!=NULL)	{
 			CheckParam.lParam=param->lParam;
@@ -1181,7 +1190,8 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 		
 		uname=MenuObjects[mo].MenuItems[mi].UniqName;
 		if (uname==NULL) uname=MenuObjects[mo].MenuItems[mi].CustomName;
-			if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL&&MenuObjects[mo].MenuItems[mi].iconId!=-1)
+		//&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
+		if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
 			{	
 				newIcon=LoadIconFromLibrary(
 					MenuObjects[mo].Name,
@@ -1223,7 +1233,8 @@ int RegisterOneIcon(int mo,int mi)
 			*/
 	//	OutputDebugString(buf);
 	}
-		if (!MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL&&MenuObjects[mo].MenuItems[mi].iconId!=-1)
+		//&&MenuObjects[mo].MenuItems[mi].iconId!=-1
+		if (!MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
 			{	
 
 				char mn[255];
@@ -1234,7 +1245,15 @@ int RegisterOneIcon(int mo,int mi)
 					MenuObjects[mo].MenuItems[mi].mi.pszName,
 					ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0),
 					TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
-				if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
+				
+				if (newIcon) 
+				{
+					if (MenuObjects[mo].MenuItems[mi].iconId==-1)
+					MenuObjects[mo].MenuItems[mi].iconId=ImageList_AddIcon(MenuObjects[mo].hMenuIcons,newIcon);
+					else  MenuObjects[mo].MenuItems[mi].iconId=ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
+
+				}	
+					
 			};
 
 		return 0;
@@ -1248,6 +1267,11 @@ int RegisterAllIconsinIconLib()
 		{
 			for (mo=0;mo<MenuObjectsCount;mo++)
 			{
+				OutputDebugString("Trying Register for \t");
+				OutputDebugString(MenuObjects[mo].Name);
+				OutputDebugString("\r\n");
+
+
 				for (mi=0;mi<MenuObjects[mo].MenuItemsCount;mi++)
 				{
 					RegisterOneIcon(mo,mi);
@@ -1256,12 +1280,28 @@ int RegisterAllIconsinIconLib()
 			OnIconLibChanges(0,0);
 		};
 return 0;
+};
+
+//#define PostRegisterTimerID 12001
+int posttimerid;
+VOID CALLBACK PostRegisterIcons(          HWND hwnd,
+    UINT uMsg,
+    UINT_PTR idEvent,
+    DWORD dwTime
+)
+{
+	KillTimer(0,posttimerid);
+	RegisterAllIconsinIconLib();
 }
+
 
 int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	RegisterAllIconsinIconLib();
+	//RegisterAllIconsinIconLib();
 	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibChanges);
+	//CallService(MS_CLUI_GETHWND,0,0)
+	posttimerid=SetTimer((HWND)NULL,0,5,(TIMERPROC)PostRegisterIcons);
+	
 
 return 0;
 };

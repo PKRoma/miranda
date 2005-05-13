@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../../core/commonheaders.h"
 
+// block these plugins
+#define DEFMOD_REMOVED_UIPLUGINOPTS     21
+
 // basic export prototypes
 typedef int (__cdecl * Miranda_Plugin_Load) ( PLUGINLINK * );
 typedef int (__cdecl * Miranda_Plugin_Unload) ( void );
@@ -124,7 +127,8 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 		PLUGININFO * pi = bpi->Info(mirandaVersion);
 		if ( pi && pi->cbSize==sizeof(PLUGININFO) && pi->shortName && pi->description 
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
-				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST )
+				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST 
+				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)
 		{
 			bpi->pluginInfo = pi;
 			// basic API is present
@@ -227,7 +231,7 @@ static void enumPlugins(SCAN_PLUGINS_CALLBACK cb, WPARAM wParam, LPARAM lParam)
 	p = strrchr(exe, '\\');
 	if ( p ) *p=0;
 	// create the search filter
-	_snprintf(search,sizeof(search),"%s\\Plugins\\*.dll", exe);
+	mir_snprintf(search,sizeof(search),"%s\\Plugins\\*.dll", exe);
 	{
 		// FFFN will return filenames for things like dot dll+ or dot dllx 
 		HANDLE hFind=INVALID_HANDLE_VALUE;
@@ -331,7 +335,7 @@ static BOOL scanPluginsDir (WIN32_FIND_DATA * fd, char * path, WPARAM wParam, LP
 	// plugin name suggests its a db module, load it right now
 	if ( isdb ) {
 		char buf[MAX_PATH];
-		_snprintf(buf,sizeof(buf),"%s\\Plugins\\%s", path, fd->cFileName);
+		mir_snprintf(buf,sizeof(buf),"%s\\Plugins\\%s", path, fd->cFileName);
 		if ( checkAPI(buf, &bpi, mirandaVersion, CHECKAPI_DB, NULL) ) {	
 			// db plugin is valid
 			p->pclass |= (PCLASS_DB|PCLASS_BASICAPI);
@@ -385,7 +389,7 @@ int LoadNewPluginsModuleInfos(void)
 		GetModuleFileName(NULL, exe, sizeof(exe));
 		slice=strrchr(exe, '\\');
 		if ( slice != NULL ) *slice=0;
-		_snprintf(mirandabootini, sizeof(mirandabootini), "%s\\mirandaboot.ini", exe);
+		mir_snprintf(mirandabootini, sizeof(mirandabootini), "%s\\mirandaboot.ini", exe);
 	}
 	// look for all *.dll's
 	enumPlugins(scanPluginsDir, 0, 0);
@@ -406,7 +410,7 @@ static int isPluginOnWhiteList(char * pluginname)
 	int rc = DBGetContactSettingByte(NULL, PLUGINDISABLELIST, pluginname, 0);
 	if ( rc != 0 && askAboutIgnoredPlugins ) {
 		char buf[256];
-		_snprintf(buf,sizeof(buf),Translate("'%s' is disabled, re-enable?"),pluginname);
+		mir_snprintf(buf,sizeof(buf),Translate("'%s' is disabled, re-enable?"),pluginname);
 		if ( MessageBox(NULL,buf,Translate("Re-enable Miranda plugin?"),MB_YESNO|MB_ICONQUESTION) == IDYES ) {
 			SetPluginOnWhiteList(pluginname, 1);
 			return 1;
@@ -434,7 +438,7 @@ static pluginEntry * getCListModule(char * exe, char * slice, int useWhiteList)
 	BASIC_PLUGIN_INFO bpi;
 	while ( p != NULL )
 	{
-		_snprintf(slice, &exe[MAX_PATH] - slice, "\\Plugins\\%s", p->pluginname);
+		mir_snprintf(slice, &exe[MAX_PATH] - slice, "\\Plugins\\%s", p->pluginname);
 		CharLower(p->pluginname);
 		if ( useWhiteList ? isPluginOnWhiteList(p->pluginname) : 1 ) {
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
@@ -490,7 +494,7 @@ int LoadNewPluginsModule(void)
 		if ( !(p->pclass&PCLASS_LOADED) && !(p->pclass&PCLASS_DB) 
 			&& !(p->pclass&PCLASS_CLIST) && isPluginOnWhiteList(p->pluginname) ) {
 			BASIC_PLUGIN_INFO bpi;
-			_snprintf(slice,&exe[sizeof(exe)] - slice, "\\Plugins\\%s", p->pluginname);			
+			mir_snprintf(slice,&exe[sizeof(exe)] - slice, "\\Plugins\\%s", p->pluginname);			
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_NONE, NULL) ) {
 				int rm = bpi.pluginInfo->replacesDefaultModule;					
 				p->bpi = bpi;
@@ -528,7 +532,7 @@ static BOOL dialogListPlugins(WIN32_FIND_DATA * fd, char * path, WPARAM wParam, 
 	char buf[MAX_PATH];
 	int isdb = 0;
 	HINSTANCE gModule=NULL;
-	_snprintf(buf,sizeof(buf),"%s\\Plugins\\%s",path,fd->cFileName);
+	mir_snprintf(buf,sizeof(buf),"%s\\Plugins\\%s",path,fd->cFileName);
 	CharLower(fd->cFileName);
 	gModule=GetModuleHandle(buf);
 	if ( checkAPI(buf, &pi, mirandaVersion, CHECKAPI_NONE, &exports) == 0 ) {
@@ -544,7 +548,7 @@ static BOOL dialogListPlugins(WIN32_FIND_DATA * fd, char * path, WPARAM wParam, 
 	if ( isPluginOnWhiteList(fd->cFileName) ) ListView_SetItemState(hwndList, iRow, !isdb ? 0x2000 : 0x3000, 0xF000);
 	if ( iRow != (-1) ) {
 		ListView_SetItemText(hwndList, iRow, 1, pi.pluginInfo->shortName);
-		_snprintf(buf,sizeof(buf),"%d.%d.%d.%d", HIBYTE(HIWORD(pi.pluginInfo->version)), LOBYTE(HIWORD(pi.pluginInfo->version)), HIBYTE(LOWORD(pi.pluginInfo->version)), LOBYTE(LOWORD(pi.pluginInfo->version)));
+		mir_snprintf(buf,sizeof(buf),"%d.%d.%d.%d", HIBYTE(HIWORD(pi.pluginInfo->version)), LOBYTE(HIWORD(pi.pluginInfo->version)), HIBYTE(LOWORD(pi.pluginInfo->version)), LOBYTE(LOWORD(pi.pluginInfo->version)));
 		ListView_SetItemText(hwndList, iRow, 2, buf);
 		ListView_SetItemText(hwndList, iRow, 3, Translate( gModule != NULL ? "Yes":"No" ));
 		ListView_SetItemText(hwndList, iRow, 4, pi.pluginInfo->author);

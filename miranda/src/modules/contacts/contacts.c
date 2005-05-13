@@ -129,7 +129,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 				if(!DBGetContactSetting(ci->hContact,ci->szProto,"LastName",&dbv)) {
 					char *buffer = (char*)malloc(strlen(firstName)+strlen(dbv.pszVal)+2);
 					ci->type = CNFT_ASCIIZ;
-					_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
+					mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
 					free(dbv.pszVal);
 					free(firstName);
 					ci->pszVal = _strdup(buffer);
@@ -235,7 +235,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 								if (dbv.type==DBVT_BYTE||dbv.type==DBVT_WORD||dbv.type==DBVT_DWORD) {
 									char buf[256];
 									ci->type = CNFT_ASCIIZ;
-									_snprintf(buf,sizeof(buf),"%u",dbv.type==DBVT_BYTE?dbv.bVal:(dbv.type==DBVT_WORD?dbv.wVal:dbv.dVal));
+									mir_snprintf(buf,sizeof(buf),"%u",dbv.type==DBVT_BYTE?dbv.bVal:(dbv.type==DBVT_WORD?dbv.wVal:dbv.dVal));
 									ci->pszVal=_strdup(buf);
 									return 0;
 								}
@@ -255,7 +255,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 							if(!DBGetContactSetting(ci->hContact,ci->szProto,"LastName",&dbv)) {
 								char *buffer = (char*)malloc(strlen(firstName)+strlen(dbv.pszVal)+2);
 								ci->type = CNFT_ASCIIZ;
-								_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
+								mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
 								free(dbv.pszVal);
 								free(firstName);
 								ci->pszVal = _strdup(buffer);

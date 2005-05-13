@@ -267,22 +267,22 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					if (( hFile=CreateFile( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 						if ( ReadFile( hFile, buffer, 3, &n, NULL ) && n==3 ) {
 							if ( !strncmp(( char* )buffer, "BM", 2 )) {
-								_snprintf( szFilter, sizeof( szFilter ), "BMP %s ( *.bmp )", JTranslate( "format" ));
+								mir_snprintf( szFilter, sizeof( szFilter ), "BMP %s ( *.bmp )", JTranslate( "format" ));
 								n = strlen( szFilter );
 								strncpy( szFilter+n+1, "*.BMP", sizeof( szFilter )-n-2 );
 							}
 							else if ( !strncmp(( char* )buffer, "GIF", 3 )) {
-								_snprintf( szFilter, sizeof( szFilter ), "GIF %s ( *.gif )", JTranslate( "format" ));
+								mir_snprintf( szFilter, sizeof( szFilter ), "GIF %s ( *.gif )", JTranslate( "format" ));
 								n = strlen( szFilter );
 								strncpy( szFilter+n+1, "*.GIF", sizeof( szFilter )-n-2 );
 							}
 							else if ( buffer[0]==0xff && buffer[1]==0xd8 && buffer[2]==0xff ) {
-								_snprintf( szFilter, sizeof( szFilter ), "JPEG %s ( *.jpg;*.jpeg )", JTranslate( "format" ));
+								mir_snprintf( szFilter, sizeof( szFilter ), "JPEG %s ( *.jpg;*.jpeg )", JTranslate( "format" ));
 								n = strlen( szFilter );
 								strncpy( szFilter+n+1, "*.JPG;*.JPEG", sizeof( szFilter )-n-2 );
 							}
 							else {
-								_snprintf( szFilter, sizeof( szFilter ), "%s ( *.* )", JTranslate( "Unknown format" ));
+								mir_snprintf( szFilter, sizeof( szFilter ), "%s ( *.* )", JTranslate( "Unknown format" ));
 								n = strlen( szFilter );
 								strncpy( szFilter+n+1, "*.*", sizeof( szFilter )-n-2 );
 							}

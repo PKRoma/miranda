@@ -570,10 +570,10 @@ int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			break;
 		}
 		case WM_DRAWITEM:
-			return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
+			return CallService(MS_CLIST_MENUDRAWITEM,msg->wParam,msg->lParam);
 			break;
 		case WM_MEASUREITEM:
-			return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
+			return CallService(MS_CLIST_MENUMEASUREITEM,msg->wParam,msg->lParam);
 			break;
 		case TIM_CREATE:
 			TrayIconInit(msg->hwnd);
@@ -860,7 +860,7 @@ void InitTrayMenus(void)
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService=NULL;
 	tmp.ExecService="CLISTMENUSTRAY/ExecService";
-	tmp.name="TrayMenu";
+	tmp.name="Tray Menu";
 	hTrayMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	

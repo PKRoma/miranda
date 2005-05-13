@@ -28,6 +28,7 @@ $Id$
 #pragma hdrstop
 
 #include "msgs.h"
+#include "msgdlgutils.h"
 
 /*
  * writes the current "theme" to .ini file
@@ -35,7 +36,10 @@ $Id$
  * options.
  */
  
-#define CURRENT_THEME_VERSION 2
+#define CURRENT_THEME_VERSION 3
+
+extern char *TemplateNames[];
+extern TemplateSet LTR_Active, RTL_Active;
 
 void WriteThemeToINI(const char *szIniFilename)
 {
@@ -73,9 +77,27 @@ void WriteThemeToINI(const char *szIniFilename)
     WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), szBuf, 10), szIniFilename);
 
     WritePrivateProfileStringA("Message Log", "ArrowIcons", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", 0), szBuf, 10), szIniFilename);
-    WritePrivateProfileStringA("Message Log", "FollowUpTS", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 0), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), szBuf, 10), szIniFilename);
+
+    for(i = 0; i <= TMPL_ERRMSG; i++) {
+#if defined(_UNICODE)
+        char *encoded = Utf8_Encode(LTR_Active.szTemplates[i]);
+        WritePrivateProfileStringA("Templates", TemplateNames[i], encoded, szIniFilename);
+        free(encoded);
+        encoded = Utf8_Encode(RTL_Active.szTemplates[i]);
+        WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], encoded, szIniFilename);
+        free(encoded);
+#else
+        WritePrivateProfileStringA("Templates", TemplateNames[i], LTR_Active.szTemplates[i], szIniFilename);
+        WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], RTL_Active.szTemplates[i], szIniFilename);
+#endif        
+    }
+
+    for(i = 0; i < CUSTOM_COLORS; i++) {
+        sprintf(szTemp, "cc%d", i + 1);
+        WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, 0), szBuf, 10), szIniFilename);
+    }
 }
 
 void ReadThemeFromINI(const char *szIniFilename)
@@ -83,8 +105,9 @@ void ReadThemeFromINI(const char *szIniFilename)
     char szBuf[512], szTemp[100], szAppname[100];
     int i;
     int version;
-
-    if(GetPrivateProfileIntA("TabSRMM Theme", "Version", 0, szIniFilename) == 0)         // no version number.. assume 1
+    char szTemplateBuffer[TEMPLATE_LENGTH * 3 + 2];
+    
+    if((version = GetPrivateProfileIntA("TabSRMM Theme", "Version", 0, szIniFilename)) == 0)         // no version number.. assume 1
         version = 1;
     
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
@@ -118,9 +141,33 @@ void ReadThemeFromINI(const char *szIniFilename)
     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename));
 
     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "in_out_icons", GetPrivateProfileIntA("Message Log", "ArrowIcons", 0, szIniFilename));
-    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "followupts", GetPrivateProfileIntA("Message Log", "FollowUpTS", 0, szIniFilename));
     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename));
     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
+
+    if(version >= 3) {
+        for(i = 0; i <= TMPL_ERRMSG; i++) {
+#if defined(_UNICODE)
+            wchar_t *decoded;
+            GetPrivateProfileStringA("Templates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
+            DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+            decoded = Utf8_Decode(szTemplateBuffer);
+            mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+            free(decoded);
+            GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
+            DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+            decoded = Utf8_Decode(szTemplateBuffer);
+            mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+            free(decoded);
+#else
+            GetPrivateProfileStringA("Templates", TemplateNames[i], "", LTR_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+            GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", RTL_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+#endif        
+        }
+        for(i = 0; i < CUSTOM_COLORS; i++) {
+            sprintf(szTemp, "cc%d", i + 1);
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
+        }
+    }
 }
 
 /*
@@ -135,12 +182,13 @@ char *GetThemeFileName(int iMode)
 
     strncpy(szFilter, "tabSRMM themes_*.tabsrmm", MAX_PATH);
     szFilter[14] = '\0';
-    ofn.lStructSize=sizeof(ofn);
+    ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
     ofn.hwndOwner=0;
     ofn.lpstrFile = szFilename;
     ofn.lpstrFilter = szFilter;
     ofn.lpstrInitialDir = ".";
     ofn.nMaxFile = MAX_PATH;
+    ofn.nMaxFileTitle = MAX_PATH;
     ofn.Flags = OFN_HIDEREADONLY;
     ofn.lpstrDefExt = "tabsrmm";
     if(!iMode) {

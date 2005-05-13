@@ -489,9 +489,15 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				}
 				else TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),Drawing->szText,lstrlen(Drawing->szText));
 				if(dat->exStyle&CLS_EX_LINEWITHGROUPS) {
+				//calc if extra icons present
+				int enabledextraicons=0;
+				for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
+					if(Drawing->iExtraImage[iImage]==0xFF) continue;
+					enabledextraicons++;
+				};
 					rc.top=y+(dat->rowHeight>>1); rc.bottom=rc.top+2;
 					rc.left=dat->leftMargin+subident+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace+width+3;
-					rc.right=clRect.right-1-dat->extraColumnSpacing*dat->extraColumnsCount;
+					rc.right=clRect.right-1-dat->extraColumnSpacing*enabledextraicons;
 					if(rc.right-rc.left>1) DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
 				}
 			}
@@ -504,6 +510,23 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				rc.right=clRect.right;
 				DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,DT_END_ELLIPSIS);
 			}
+
+			if (style&CLS_SHOWSTATUSMESSAGES)
+			{		
+					// status message
+					if (group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG) {
+						char * szText = group->contact[group->scanIndex].szStatusMsg;
+						RECT rc;
+						rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
+						rc.top=y+dat->rowHeight+((dat->rowHeight-fontHeight)>>1);
+						rc.right=(clRect.right - clRect.left);
+						rc.bottom=rc.top+dat->rowHeight;
+						ChangeToFont(hdcMem,dat,FONTID_STATUSMSG,&fontHeight);
+						//ExtTextOut(hdcMem,rc.left,rc.top,ETO_CLIPPED,&rc,szText,lstrlen(szText),NULL);
+						DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_SINGLELINE | DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+					}
+			}
+
 			if(selected) {
 				if(Drawing->type!=CLCIT_DIVIDER) {
 					SetTextColor(hdcMem,dat->quickSearchColour);
@@ -595,6 +618,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		index++;
 		y+=dat->rowHeight;
 
+		if (group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG) {
+			y+=dat->rowHeight;
+			index++;
+		}
+
 		//increment by subcontacts
 		if (group->contact[group->scanIndex].subcontacts!=NULL && group->contact[group->scanIndex].type!=CLCIT_GROUP)
 			if (group->contact[group->scanIndex].SubExpanded)
@@ -670,6 +698,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		mir_free(bits);
 	}
 	SelectObject(hdcMem,oldfont);
+	SelectObject(hdcMem,oldbmp);
 	DeleteObject(hBmpOsb);
 	DeleteDC(hdcMem);
 

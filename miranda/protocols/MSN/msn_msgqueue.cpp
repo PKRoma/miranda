@@ -60,7 +60,7 @@ int __stdcall MsgQueue_Add( HANDLE hContact, const char* msg, int msgSize, filet
 	if ( msgSize <= 0 )
 		E.message = strdup( msg );
 	else
-		memcpy( E.message = new char[ msgSize ], msg, msgSize );
+		memcpy( E.message = ( char* )malloc( msgSize ), msg, msgSize );
 	E.ft = ft;
 	E.seq = seq;
 	E.allocatedToThread = 0;

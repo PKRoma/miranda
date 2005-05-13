@@ -3,6 +3,7 @@
 // written by daniel vijge
 // gpl license ect...
 #include "..\commonheaders.h"
+extern int DefaultImageListColorDepth;
 
 extern HINSTANCE g_hInst;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
@@ -102,7 +103,7 @@ int CheckProtocolOrder()
 				if (curproto==NULL){protochanged=TRUE;break;};
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)curproto)==0){protochanged=TRUE;break;};		
 				
-				if (curproto!=NULL){ free(curproto);};
+				if (curproto!=NULL){ mir_free(curproto);};
 			};
 	};		
 	if (protochanged)
@@ -210,7 +211,7 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE)|TVS_NOHSCROLL);
 
 			{	HIMAGELIST himlCheckBoxes;
-				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
+				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),DefaultImageListColorDepth|ILC_MASK,2,2);
 				ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_NOTICK)));
 				ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TICK)));
 				//TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),himlCheckBoxes,TVSIL_NORMAL);

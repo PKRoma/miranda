@@ -96,7 +96,6 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 	int socket;
 	int oldStatus;
 	char* str;
-	CLISTMENUITEM clmi;
 	PVOID ssl;
 	BOOL sslMode;
 	char* szLogBuffer;
@@ -156,13 +155,13 @@ LBL_Exit:
 		}
 		else strcpy( info->resource, "Miranda" );
 
-		_snprintf( jidStr, sizeof( jidStr ), "%s@%s/%s", info->username, info->server, info->resource );
+		mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s/%s", info->username, info->server, info->resource );
 		str = JabberTextEncode( jidStr );
 		strncpy( info->fullJID, str, sizeof( info->fullJID )-1 );
 		free( str );
 
 		if ( JGetByte( "SavePassword", TRUE ) == FALSE ) {
-			_snprintf( jidStr, sizeof( jidStr ), "%s@%s", info->username, info->server );
+			mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s", info->username, info->server );
 			// Ugly hack: continue logging on only the return value is &( onlinePassword[0] )
 			// because if WM_QUIT while dialog box is still visible, p is returned with some
 			// exit code which may not be NULL.
@@ -390,18 +389,12 @@ LBL_Exit:
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			jabberOnline = FALSE;
 			jabberConnected = FALSE;
-			memset( &clmi, 0, sizeof( CLISTMENUITEM ));
-			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+			JabberEnableMenuItems( FALSE );
 			if ( hwndJabberChangePassword ) {
 				//DestroyWindow( hwndJabberChangePassword );
 				// Since this is a different thread, simulate the click on the cancel button instead
 				SendMessage( hwndJabberChangePassword, WM_COMMAND, MAKEWORD( IDCANCEL, 0 ), 0 );
 			}
-			WindowList_Broadcast( hWndListGcLog, WM_JABBER_CHECK_ONLINE, 0, 0 );
 			JabberListRemoveList( LIST_CHATROOM );
 			if ( hwndJabberAgents )
 				SendMessage( hwndJabberAgents, WM_JABBER_CHECK_ONLINE, 0, 0 );
@@ -706,7 +699,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				HANDLE hContact;
 				if ( JabberXmlGetChild( xNode, "composing" ) != NULL )
 					if (( hContact = JabberHContactFromJID( from )) != NULL )
-						JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_INFINITE );
+ 						JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 60 );
 
 				if ( xNode->numChild==0 || ( xNode->numChild==1 && idNode!=NULL ))
 					// Maybe a cancel to the previous composing
@@ -794,9 +787,8 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 					JabberLog( "Receive presence offline from %s ( who is not in my roster )", from );
 					JabberListAdd( LIST_ROSTER, from );
 				}
-				else {
-					JabberListRemoveResource( LIST_ROSTER, from );
-				}
+				else JabberListRemoveResource( LIST_ROSTER, from );
+
 				status = ID_STATUS_OFFLINE;
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 					// Determine status to show for the contact based on the remaining resources
@@ -811,7 +803,6 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 						if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
 							JSetWord( hContact, "Status", ( WORD )status );
 					}
-					JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
 					JabberLog( "%s offline, set contact status to %d", from, status );
 				}
 				if ( strchr( from, '@' )==NULL && hwndJabberAgents )
@@ -921,7 +912,16 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							}
 							else JSetString( hContact, "jid", jid );
 
-							DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+                     char szNick[ 256 ];
+							if ( !JGetStaticString( "Nick", hContact, szNick, sizeof szNick )) {
+								if ( strcmp( nick, szNick ) != 0 )
+									DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+								else
+									DBDeleteContactSetting( hContact, "CList", "MyHandle" );
+							}
+							else JSetString( hContact, "CList", nick );
+							DBDeleteContactSetting( hContact, "CList", "Nick" );
+
 							if ( item->group ) free( item->group );
 							if (( groupNode=JabberXmlGetChild( itemNode, "group" ))!=NULL && groupNode->text!=NULL ) {
 								item->group = JabberTextDecode( groupNode->text );
@@ -954,7 +954,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 								JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 							JabberListRemove( LIST_ROSTER, jid );
-			}	}	}	}
+					}	}
+					else if ( JGetByte( hContact, "ChatRoom", 0 ))
+						DBDeleteContactSetting( hContact, "CList", "Hidden" );
+			}	}
 
 			if ( hwndJabberAgents )
 				SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
@@ -971,6 +974,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				memset( ft, 0, sizeof( JABBER_FILE_TRANSFER ));
 				ft->jid = _strdup( JabberStringDecode( jid ));
 				ft->hContact = JabberHContactFromJID( jid );
+				ft->type = FT_OOB;
 				ft->httpHostName = NULL;
 				ft->httpPort = 80;
 				ft->httpPath = NULL;

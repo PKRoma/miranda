@@ -73,13 +73,14 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 // Restore protocols to the last global status.
 // Used to reconnect on restore after standby.
-static void RestoreMode()
+static void RestoreMode(HWND hwnd)
 {
     int nStatus;
 
     nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-    if (nStatus != ID_STATUS_OFFLINE)
-        PostMessage(hwndContactList, WM_COMMAND, nStatus, 0);
+    if (nStatus != ID_STATUS_OFFLINE) {
+        PostMessage(hwnd&&IsWindow(hwnd)?hwnd:hwndContactList, WM_COMMAND, nStatus, 0);
+	}
 }
 
 
@@ -123,7 +124,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             char p[MAX_PATH];
             CallService(MS_DB_GETPROFILEPATH, sizeof(path), (LPARAM) & path);
             CallService(MS_DB_GETPROFILENAME, sizeof(file), (LPARAM) & file);
-            _snprintf(p, sizeof(p), "%s\\%s", path, file);
+            mir_snprintf(p, sizeof(p), "%s\\%s", path, file);
             rc = lstrcmp(profile, p) == 0;
             ReplyMessage(rc);
             if (rc)
@@ -174,7 +175,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             // Miranda is starting up! Restore last status mode.
             // This is not done in debug builds because frequent
             // reconnections will get you banned from the servers.
-            RestoreMode();
+            RestoreMode(hwnd);
 #endif
 
             return FALSE;
@@ -203,7 +204,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
                 case PBT_APMRESUMESUSPEND:
                     // Computer is resuming, restore all protocols
-                    RestoreMode();
+                    RestoreMode(NULL);
                     break;
 
             }

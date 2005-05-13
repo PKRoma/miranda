@@ -1471,38 +1471,40 @@ BEGIN
                     IDC_STATIC,93,27,167,11,WS_DISABLED
 END
 
-IDD_OPT_IDLE DIALOG DISCARDABLE  0, 0, 312, 178
+IDD_OPT_IDLE DIALOG DISCARDABLE  0, 0, 312, 172
 STYLE WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL         "If the following is left unattended:",IDC_IDLESHORT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,16,219,9
+    CONTROL         "Become idle if the following is left unattended:",
+                    IDC_IDLESHORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
+                    18,259,9
     CONTROL         "Windows",IDC_IDLEONWINDOWS,"Button",BS_AUTORADIOBUTTON,
-                    45,29,104,9
+                    45,31,104,9
     CONTROL         "Miranda",IDC_IDLEONMIRANDA,"Button",BS_AUTORADIOBUTTON,
-                    45,41,103,9
-    EDITTEXT        IDC_IDLE1STTIME,59,57,27,14,ES_AUTOHSCROLL | ES_NUMBER
+                    45,43,103,9
+    EDITTEXT        IDC_IDLE1STTIME,59,59,27,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_IDLESPIN,"msctls_updown32",UDS_WRAP | 
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,71,53,12,23
-    CONTROL         "If the screen saver is active",IDC_SCREENSAVER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,80,112,9
-    CONTROL         "If the computer is locked (2000/XP+ only)",IDC_LOCKED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,94,153,9
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,71,55,12,23
+    CONTROL         "Become idle if the screen saver is active",
+                    IDC_SCREENSAVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
+                    83,268,9
+    CONTROL         "Become idle if the computer is locked (2000/XP+ only)",
+                    IDC_LOCKED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,99,
+                    249,9
     CONTROL         "Do not let protocols report any idle information",
                     IDC_IDLEPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
-                    108,251,9
-    LTEXT           "minute(s)",IDC_STATIC,91,59,76,9
+                    115,251,9
+    LTEXT           "minute(s)",IDC_STATIC,91,61,76,9
     RTEXT           "for",IDC_STATIC,12,59,41,9
-    COMBOBOX        IDC_AASTATUS,128,141,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_AASTATUS,128,130,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,142,101,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,131,101,11
     CONTROL         "Do not set status back to online when returning from idle",
                     IDC_IDLESTATUSLOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    35,159,246,10
-    GROUPBOX        "Idle Options",IDC_STATIC,3,3,304,120
-    GROUPBOX        "Status Change on Idle",IDC_STATIC,4,129,303,45
+                    35,148,246,10
+    GROUPBOX        "Idle Options",IDC_STATIC,3,3,304,165
 END
 
 IDD_PROFILE_SELECTION DIALOG DISCARDABLE  0, 0, 226, 142
@@ -1515,10 +1517,10 @@ BEGIN
                     WS_TABSTOP,3,2,222,137
 END
 
-IDD_PROFILE_NEW DIALOG DISCARDABLE  0, 0, 226, 142
+IDD_PROFILE_NEW DIALOGEX 0, 0, 226, 142
 STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Please complete the following form to create a new user profile",
                     IDC_STATIC,7,7,212,10
@@ -1526,10 +1528,10 @@ BEGIN
     COMBOBOX        IDC_PROFILEDRIVERS,49,72,75,56,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "Profile",IDC_STATIC,20,28,26,9
-    LTEXT           "e.g. Workplace",IDC_STATIC,131,28,77,11,WS_DISABLED
+    LTEXT           "e.g. Workplace",IDC_STATIC,131,28,77,11
     LTEXT           "You can select a different profile driver from the default, it may offer more features or abilities, if in doubt use the default.",
                     IDC_STATIC,7,49,212,17
-    LTEXT           "e.g. 3.xx profile",IDC_STATIC,131,73,77,11,WS_DISABLED
+    LTEXT           "e.g. Miranda Database",IDC_STATIC,131,73,84,11
     LTEXT           "Driver",IDC_STATIC,20,74,23,9
     LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",
                     IDC_NODBDRIVERS,7,113,212,22,NOT WS_VISIBLE

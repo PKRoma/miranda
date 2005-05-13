@@ -65,7 +65,36 @@ typedef struct {
 //wparam=0
 //lparam=0
 //Returns a dword with the current message api version 
-//Current version is 0,0,0,2
+//Current version is 0,0,0,3
 
+#define MS_MSG_GETWINDOWCLASS "MessageAPI/WindowClass"
+//wparam=(char*)szBuf
+//lparam=(int)cbSize size of buffer
+//Sets the window class name in wParam (ex. "SRMM" for srmm.dll)
+
+typedef struct {
+	int cbSize;
+	HANDLE hContact;
+	int uFlags; // see uflags above
+} MessageWindowInputData;
+
+#define MSG_WINDOW_STATE_EXISTS  0x00000001 // Window exists should always be true if hwndWindow exists
+#define MSG_WINDOW_STATE_VISIBLE 0x00000002
+#define MSG_WINDOW_STATE_FOCUS   0x00000004
+#define MSG_WINDOW_STATE_ICONIC  0x00000008
+
+typedef struct {
+	int cbSize;
+	HANDLE hContact;
+	int uFlags;  // should be same as input data unless 0, then it will be the actual type
+	HWND hwndWindow; //top level window for the contact or NULL if no window exists
+	int uState; // see window states
+	void *local; // used to store pointer to custom data
+} MessageWindowData;
+
+#define MS_MSG_GETWINDOWDATA "MessageAPI/GetWindowData"
+//wparam=(MessageWindowInputData*)
+//lparam=(MessageWindowData*)
+//returns 0 on success and returns non-zero (1) on error or if no window data exists for that hcontact
 #endif // M_MESSAGE_H__
 

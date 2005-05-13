@@ -29,7 +29,6 @@ SRC = aim.c \
       filerecv.c \
       firstrun.c \
       groupchat.c \
-      groupchatlog.c \
       groups.c \
       idle.c \
       im.c \
@@ -82,7 +81,7 @@ ID = indent
 ifdef DEBUG
 BIN = ..\..\bin\debug\plugins\AIM.dll
 else
-BIN = ..\..\rin\release\plugins\AIM.dll
+BIN = ..\..\bin\release\plugins\AIM.dll
 endif
 
 # Defines
@@ -92,7 +91,7 @@ DEFINES := $(DEFINES) -D_DEBUG
 endif
 
 # Flags
-LFLAGS  = -shared 
+LFLAGS  = -shared -s
 RCFLAGS = --input-format rc --output-format coff
 ifdef DEBUG
 CFLAGS  = -g $(DEFINES) -I../../include

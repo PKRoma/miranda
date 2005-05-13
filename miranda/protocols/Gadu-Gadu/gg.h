@@ -88,9 +88,18 @@ typedef struct
 	char *email;
 	HFONT hBoldFont;
 } GGUSERUTILDLGDATA;
+typedef struct
+{
+    list_t watches, transfers, requests;
+    pthread_t dccId;
+    pthread_t id;
+    struct gg_session *sess;
+    struct gg_dcc *dcc;
+    HANDLE event;
+} GGTHREAD;
 
 // Main strings
-extern char *ggProto;
+extern char ggProto[];
 extern char *ggProtoName;
 extern char *ggProtoError;
 #define GG_PROTO 		 ggProto     	// Protocol ID
@@ -105,9 +114,6 @@ extern char *ggProtoError;
 #define GG_SEQ_AWAYMSG          300
 #define GG_SEQ_GETNICK	        400
 #define GG_SEQ_CHINFO	        500
-
-// URLs
-#define GG_LOSTPW	        	"http://ono.no/"
 
 // Services
 #define GGS_IMPORT_SERVER       "%s/ImportFromServer"
@@ -169,10 +175,12 @@ extern char *ggProtoError;
 
 #define GG_KEY_MANUALHOST		"ManualHost"    // Specify by hand server host/port
 #define GG_KEYDEF_MANUALHOST	0
-#define GG_KEY_SERVERHOST		"ServerHost"    // Host
-#define GG_KEY_SERVERPORT		"ServerPort"    // Port
+// #define GG_KEY_SERVERHOST		"ServerHost"    // Host (depreciated)
+// #define GG_KEY_SERVERPORT		"ServerPort"    // Port (depreciated)
 #define GG_KEY_SSLCONN			"SSLConnection" // Use SSL/TLS for connections
 #define GG_KEYDEF_SSLCONN		1
+#define GG_KEY_SERVERHOSTS		"ServerHosts"   // NL separated list of hosts for server connection
+#define GG_KEYDEF_SERVERHOSTS   "217.17.41.83\r\n217.17.41.85\r\n217.17.41.88\r\n217.17.41.89\r\n217.17.41.92\r\n217.17.41.93"
 
 
 #define GG_KEY_CLIENTIP 		"IP"      		// Contact IP (by notify)
@@ -189,6 +197,21 @@ extern char *ggProtoError;
 #define GG_KEY_FORWARDHOST		"ForwardHost"   // Forwarding host (firewall)
 #define GG_KEY_FORWARDPORT		"ForwardPort"   // Forwarding port (firewall port)
 #define GG_KEYDEF_FORWARDPORT	1550    		// Forwarding port (firewall port)
+
+#define GG_KEY_GC_POLICY_UNKNOWN        "GCPolicyUnknown"
+#define GG_KEYDEF_GC_POLICY_UNKNOWN     1
+
+#define GG_KEY_GC_COUNT_UNKNOWN         "GCCountUnknown"
+#define GG_KEYDEF_GC_COUNT_UNKNOWN      5
+
+#define GG_KEY_GC_POLICY_TOTAL          "GCPolicyTotal"
+#define GG_KEYDEF_GC_POLICY_TOTAL       1
+
+#define GG_KEY_GC_COUNT_TOTAL           "GCCountTotal"
+#define GG_KEYDEF_GC_COUNT_TOTAL        10
+
+#define GG_KEY_GC_POLICY_DEFAULT        "GCPolicyDefault"
+#define GG_KEYDEF_GC_POLICY_DEFAULT     0
 
 #define GG_KEY_DELETEUSER		"DeleteUser"    // When user is deleted
 
@@ -231,17 +254,13 @@ extern HINSTANCE hInstance;
 extern DWORD gMirandaVersion;
 extern int ggStatus;
 extern int ggDesiredStatus;
-extern int ggRunning;
+extern GGTHREAD *ggThread;
+extern list_t ggThreadList;
 extern HANDLE hNetlib;
 extern HANDLE hLibSSL;
 extern HANDLE hLibEAY;
-extern pthread_t serverThreadId;
-extern pthread_t dccServerThreadId;
-extern pthread_mutex_t connectionHandleMutex;
-extern pthread_mutex_t modeMsgsMutex;
-extern pthread_mutex_t dccWatchesMutex;
-extern struct gg_session *ggSess;
-extern struct gg_dcc *ggDcc;
+extern pthread_mutex_t threadMutex;     // Used when modifying thread structure
+extern pthread_mutex_t modeMsgsMutex;   // Used when modifying away msgs structure
 extern char *ggTokenid;
 extern char *ggTokenval;
 struct gg_status_msgs
@@ -270,6 +289,7 @@ void gg_refreshblockedicon();
 void gg_notifyuser(HANDLE hContact, int refresh);
 void gg_setalloffline();
 void gg_disconnect();
+void gg_cleanupthreads();
 int gg_refreshstatus(int status);
 int status_m2gg(int status, int descr);
 int status_gg2s(int status);
@@ -294,8 +314,8 @@ void gg_notifyall();
 void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version);
 char *StatusModeToDbSetting(int status, const char *suffix);
 char *gg_getstatusmsg(int status);
-void gg_dccstart(HANDLE event);
-void gg_dccstop();
+void gg_dccstart(GGTHREAD *thread);
+void gg_waitdcc(GGTHREAD *thread);
 void gg_dccconnect(uin_t uin);
 int gg_recvfile(WPARAM wParam, LPARAM lParam);
 int gg_sendfile(WPARAM wParam, LPARAM lParam);

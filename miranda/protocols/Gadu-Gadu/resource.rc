@@ -42,28 +42,37 @@ STYLE DS_FIXEDSYS|WS_CHILD|WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Gadu-Gadu User Details",IDC_STATIC,4,7,273,71
-        RTEXT           "Gadu-Gadu Number:",IDC_STATIC,9,23,64,8
-        RTEXT           "Password:",IDC_STATIC,9,42,64,8
-        RTEXT           "E-mail:",IDC_STATIC,9,61,64,8
-        EDITTEXT        IDC_UIN,84,21,85,12,ES_AUTOHSCROLL|ES_NUMBER
-        EDITTEXT        IDC_PASSWORD,84,40,85,12,ES_PASSWORD|ES_AUTOHSCROLL
-        EDITTEXT        IDC_EMAIL,84,59,85,12,ES_AUTOHSCROLL
-        CONTROL         "Create new account",IDC_CREATEACCOUNT,"Hyperlink",WS_TABSTOP,175,23,90,8
-        CONTROL         "Remove account",IDC_REMOVEACCOUNT,"Hyperlink",WS_TABSTOP,175,23,90,8
-        CONTROL         "Change password",IDC_CHPASS,"Hyperlink",WS_TABSTOP,175,36,90,8
-        CONTROL         "Retrieve password",IDC_LOSTPASS,"Hyperlink",WS_TABSTOP,175,49,90,8
+    GROUPBOX        "Gadu-Gadu User Details",IDC_STATIC,4,2,273,71
+        RTEXT           "Gadu-Gadu Number:",IDC_STATIC,9,18,64,8
+        RTEXT           "Password:",IDC_STATIC,9,37,64,8
+        RTEXT           "E-mail:",IDC_STATIC,9,56,64,8
+        EDITTEXT        IDC_UIN,84,16,85,12,ES_AUTOHSCROLL|ES_NUMBER
+        EDITTEXT        IDC_PASSWORD,84,35,85,12,ES_PASSWORD|ES_AUTOHSCROLL
+        EDITTEXT        IDC_EMAIL,84,54,85,12,ES_AUTOHSCROLL
+        CONTROL         "Create new account",IDC_CREATEACCOUNT,"Hyperlink",WS_TABSTOP,175,18,90,8
+        CONTROL         "Remove account",IDC_REMOVEACCOUNT,"Hyperlink",WS_TABSTOP,175,18,90,8
+        CONTROL         "Change password",IDC_CHPASS,"Hyperlink",WS_TABSTOP,175,31,90,8
+        CONTROL         "Retrieve password",IDC_LOSTPASS,"Hyperlink",WS_TABSTOP,175,44,90,8
 //      CONTROL         "Change e-mail",IDC_CHEMAIL,"Hyperlink",WS_TABSTOP,175,62,90,8
-    GROUPBOX            "Options",IDC_STATIC,4,85,273,109
-        CONTROL         "Friends only",IDC_FRIENDSONLY,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,100,255,10
-        CONTROL         "Show offline users with status message as invisible in contact list",IDC_SHOWINVISIBLE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,115,255,10
-        CONTROL         "After disconnection leave away message of status:",IDC_LEAVESTATUSMSG,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,130,185,10
-		COMBOBOX        IDC_LEAVESTATUS,200,128,70,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-        CONTROL         "Ignore incoming conference messages",IDC_IGNORECONF,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,145,255,10
-        CONTROL         "Automatically pop up the window when a image is received",IDC_POPUPIMG,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,160,255,10
-        CONTROL         "Show contacts not on my list having me on their list",IDC_SHOWNOTONMYLIST,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,175,255,10
+    GROUPBOX            "Options",IDC_STATIC,4,75,273,91
+        CONTROL         "Friends only",IDC_FRIENDSONLY,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,90,255,10
+        CONTROL         "Show offline users with status message as invisible in contact list",IDC_SHOWINVISIBLE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,105,255,10
+        CONTROL         "After disconnection leave away message of status:",IDC_LEAVESTATUSMSG,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,120,185,10
+		COMBOBOX        IDC_LEAVESTATUS,200,118,70,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+//      CONTROL         "Ignore incoming conference messages",IDC_IGNORECONF,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,145,255,10
+        CONTROL         "Automatically pop up the window when a image is received",IDC_POPUPIMG,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,135,255,10
+        CONTROL         "Show contacts not on my list having me on their list",IDC_SHOWNOTONMYLIST,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,150,255,10
+    GROUPBOX        "Conference policy",IDC_STATIC,4,169,273,66
+        LTEXT           "if total participant count greater than:",IDC_STATIC,85,185,143,8
+        COMBOBOX        IDC_GC_POLICY_TOTAL,11,182,70,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+        LTEXT           "if unknown participant count greater than:",IDC_STATIC,85,201,143,8
+        EDITTEXT        IDC_GC_COUNT_TOTAL,234,183,35,13,ES_AUTOHSCROLL|ES_NUMBER
+        COMBOBOX        IDC_GC_POLICY_UNKNOWN,11,198,70,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+        LTEXT           "in other case",IDC_STATIC,85,217,143,8
+        EDITTEXT        IDC_GC_COUNT_UNKNOWN,234,199,35,13,ES_AUTOHSCROLL|ES_NUMBER
+        COMBOBOX        IDC_GC_POLICY_DEFAULT,11,214,70,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
-        CTEXT           "You will need to reconnect for the changes you have made on this page to take effect.",IDC_RELOADREQD,4,200,273,8,NOT WS_VISIBLE
+    CTEXT           "You will need to reconnect for the changes you have made on this page to take effect.",IDC_RELOADREQD,2,237,273,8,NOT WS_VISIBLE
 END
 
 IDD_OPT_GG_ADVANCED DIALOGEX 0,0,280,240
@@ -71,28 +80,30 @@ STYLE DS_FIXEDSYS|WS_CHILD|WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Advanced Configuration",IDC_STATIC,4,7,273,125
-        CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,22,255,10
-        CONTROL         "Show connection errors",IDC_SHOWCERRORS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,37,255,10
-        CONTROL         "Automatically reconnect after unintentional disconnection",IDC_ARECONNECT,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,52,255,10
-        CONTROL         "Send messages slower, but with full acknowledgement",IDC_MSGACK,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,67,255,10
-        CONTROL         "Manually specify connection host",IDC_MANUALHOST,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,82,255,10
-        LTEXT                   "Host:",IDC_STATIC,31,97,26,8
-        EDITTEXT                IDC_HOST,62,96,90,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP
-        LTEXT                   "Port:",IDC_STATIC,161,97,21,8
-        EDITTEXT                IDC_PORT,186,96,31,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP|ES_NUMBER
-        CONTROL         "Use SSL secure connection",IDC_SSLCONN,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,112,255,10
+    GROUPBOX        "Advanced Configuration",IDC_STATIC,4,2,273,146
+        CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,17,255,10
+        CONTROL         "Show connection errors",IDC_SHOWCERRORS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,32,255,10
+        CONTROL         "Automatically reconnect after unintentional disconnection",IDC_ARECONNECT,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,47,255,10
+        CONTROL         "Send messages slower, but with full acknowledgement",IDC_MSGACK,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,62,255,10
+        CONTROL         "Manually specify connection servers' hosts",IDC_MANUALHOST,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,77,255,10
+//      LTEXT                   "Host:",IDC_STATIC,31,97,26,8
+        EDITTEXT                IDC_HOST,22,91,130,36,ES_MULTILINE|ES_AUTOHSCROLL|ES_WANTRETURN|WS_DISABLED|WS_VSCROLL
+//      LTEXT                   "Port:",IDC_STATIC,161,97,21,8
+//      EDITTEXT                IDC_PORT,186,96,31,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP|ES_NUMBER
+        LTEXT                   "* new line is separator\n** hostname:port format",IDC_STATIC,161,92,93,32
+        CONTROL         "Use SSL secure connection",IDC_SSLCONN,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,132,255,10
 
-    GROUPBOX        "File Transfer",IDC_STATIC,4,139,273,80
-		CONTROL         "Use direct connections",IDC_DIRECTCONNS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,154,255,10
-        LTEXT                   "Port:",IDC_STATIC,31,169,21,8
-        EDITTEXT                IDC_DIRECTPORT,56,168,31,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP|ES_NUMBER
-        CONTROL         "Use forwarding",IDC_FORWARDING,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,184,255,10
-        LTEXT                   "Host:",IDC_STATIC,31,199,26,8
-        EDITTEXT                IDC_FORWARDHOST,62,198,90,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP
-        LTEXT                   "Port:",IDC_STATIC,161,199,21,8
-        EDITTEXT                IDC_FORWARDPORT,186,198,31,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP|ES_NUMBER
-		CTEXT                   "You will need to reconnect for the changes you have made on this page to take effect.",IDC_RELOADREQD,4,230,273,8,NOT WS_VISIBLE
+    GROUPBOX        "File Transfer",IDC_STATIC,4,150,273,76
+		CONTROL         "Use direct connections",IDC_DIRECTCONNS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,165,255,10
+        LTEXT                   "Port:",IDC_STATIC,31,179,21,8
+        EDITTEXT                IDC_DIRECTPORT,62,178,31,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP|ES_NUMBER
+        CONTROL         "Use forwarding",IDC_FORWARDING,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,193,255,10
+        LTEXT                   "Host:",IDC_STATIC,31,207,26,8
+        EDITTEXT                IDC_FORWARDHOST,62,206,90,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP
+        LTEXT                   "Port:",IDC_STATIC,161,207,21,8
+        EDITTEXT                IDC_FORWARDPORT,186,206,31,12,ES_AUTOHSCROLL|WS_DISABLED|WS_TABSTOP|ES_NUMBER
+
+    CTEXT                   "You will need to reconnect for the changes you have made on this page to take effect.",IDC_RELOADREQD,4,229,273,8,NOT WS_VISIBLE
 END
 
 IDD_INFO_GG DIALOGEX 0, 0, 222, 132

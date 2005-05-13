@@ -21,8 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-
-// #define _STREAMTHREADING 1
 // #define WANT_UGLY_HOOK 1
 
 #define __MATHMOD_SUPPORT 1
@@ -30,12 +28,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
+#if !defined(SB_SETICON)
+
 #define SB_SETICON (WM_USER+15)
 #define SB_SETTIPTEXTA (WM_USER+16)
+#define TCS_BOTTOM 0x0002
+
+#define TVS_NOHSCROLL 0x8000
+#define TVS_CHECKBOXES          0x0100
+
+#endif
+
+#define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
+#define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
+
 #define GT_SELECTION 2
 #define ST_SELECTION 2
-#define TCS_BOTTOM 0x0002
 #define ST_DEFAULT 0
+#define ST_KEEPUNDO 1
 #define CFM_WEIGHT 0x0040000
 #define SBT_TOOLTIPS 0x0800
 
@@ -45,6 +55,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FLASHW_ALL (FLASHW_TRAY | FLASHW_CAPTION)
 #define FLASHW_TIMERNOFG 0x0000000C
 #define FLASHW_TIMER 0x00000004
+#define IMF_AUTOKEYBOARD 0x0001
+#define ODS_INACTIVE        0x0080
+#define NIN_BALLOONUSERCLICK (WM_USER + 5)
 
 typedef struct __gettextex
 {
@@ -56,6 +69,7 @@ typedef struct __gettextex
 	LPBOOL	lpUsedDefChar;	// Pointer to flag set when def char used	
 } _GETTEXTEX;
 
+#ifndef _WIN32_IE
 typedef struct tagNMMOUSE {
     NMHDR   hdr;
     DWORD_PTR dwItemSpec;
@@ -63,6 +77,7 @@ typedef struct tagNMMOUSE {
     POINT   pt;
     LPARAM  dwHitInfo; // any specifics about where on the item or control the mouse is
 } NMMOUSE, *LPNMMOUSE;
+#endif
 
 typedef struct _settextex {
     DWORD	flags;
@@ -72,18 +87,16 @@ typedef struct _settextex {
 #endif
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 22
+#define NR_BUTTONBARICONS 25
 
 #include <richedit.h>
 #include <richole.h>
+#include "templates.h"
 #include "m_tabsrmm.h"
 
 #define MSGERROR_CANCEL	0
 #define MSGERROR_RETRY	    1
 #define MSGERROR_SENDLATER  2
-
-int _DebugPopup(HANDLE hContact, const char *fmt, ...);
-int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
 
 #define HISTORY_INITIAL_ALLOCSIZE 300
 
@@ -96,6 +109,8 @@ struct NewMessageWindowLParam {
     int iActivate;
     TCITEM item;
 	struct ContainerWindowData *pContainer;		// parent container description
+    BOOL bWantPopup;
+    HANDLE hdbEvent;
 };
 
 #define MAX_QUEUED_EVENTS 100
@@ -141,23 +156,15 @@ struct NewMessageWindowLParam {
 #define CNT_CREATEFLAG_MINIMIZED 2
 
 #define MWF_LOG_ALL (MWF_LOG_SHOWNICK | MWF_LOG_SHOWTIME | MWF_LOG_SHOWSECONDS | \
-        MWF_LOG_SHOWDATES | MWF_LOG_NEWLINE | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | \
+        MWF_LOG_SHOWDATES | MWF_LOG_NEWLINE | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | \
         MWF_LOG_UNDERLINE | MWF_LOG_SWAPNICK | MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE | MWF_LOG_USERELATIVEDATES | MWF_LOG_LONGDATES | MWF_LOG_INDENTWITHTABS)
         
-#define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_SHOWNICK | MWF_LOG_SHOWDATES)
-
-struct ErrorDialogData {
-	char title[128];
-	char *pszError;
-	HWND hwnd;
-    BOOL bMustFreeString;
-};
+#define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_SHOWNICK | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS)
 
 struct ProtocolData {
     char szName[30];
     int  iFirstIconID;
 };
-// XXX end mod
 
 #define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)
@@ -173,7 +180,6 @@ struct ProtocolData {
 #define DM_UPDATEWINICON     (WM_USER+21)
 #define DM_UPDATELASTMESSAGE (WM_USER+22)
 
-// special for tabs...
 #define DM_SELECTTAB		 (WM_USER+23)
 #define DM_CLOSETABATMOUSE   (WM_USER+24)
 #define DM_SAVELOCALE        (WM_USER+25)
@@ -198,11 +204,11 @@ struct ProtocolData {
 #define DM_FORCESCROLL       (WM_USER+44)
 #define DM_QUERYCLIENTAREA   (WM_USER+45)
 #define DM_QUERYRECENT       (WM_USER+47)
-#define DM_FREEEEEEEEEEEEEE  (WM_USER+46)                   // ** free **
+#define DM_ACTIVATEME        (WM_USER+46)
 #define DM_REGISTERHOTKEYS   (WM_USER+48)
 #define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)
-#define DM_FREEEEEEEEEEEE    (WM_USER+51)                   // ** free **
+#define DM_STATUSMASKSET     (WM_USER+51)       
 #define DM_CONTACTSETTINGCHANGED (WM_USER+52)
 #define DM_PICTURECHANGED    (WM_USER+53)
 #define DM_PROTOACK          (WM_USER+54)
@@ -211,7 +217,7 @@ struct ProtocolData {
 #define DM_LOADBUTTONBARICONS (WM_USER+57)
 #define DM_PICTHREADCOMPLETE (WM_USER+58)
 #define DM_UINTOCLIPBOARD   (WM_USER+59)
-#define DM_INSERTICON        (WM_USER+60)
+#define DM_SPLITTEREMERGENCY (WM_USER+60)
 #define DM_RECALCPICTURESIZE (WM_USER+61)
 #define DM_FORCEDREMAKELOG   (WM_USER+62)
 #define DM_QUERYFLAGS        (WM_USER+63)
@@ -223,9 +229,18 @@ struct ProtocolData {
 #define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
 #define DM_SECURE_CHANGED    (WM_USER+70)
 #define DM_QUERYSTATUS       (WM_USER+71)
+#define DM_SETPARENTDIALOG   (WM_USER+72)
+#define DM_HANDLECLISTEVENT  (WM_USER+73)
+#define DM_TRAYICONNOTIFY    (WM_USER+74)
+#define DM_REMOVECLISTEVENT  (WM_USER+75)
+#define DM_GETWINDOWSTATE    (WM_USER+76)
+#define DM_DOCREATETAB       (WM_USER+77)
+#define DM_LOADLOCALE        (WM_USER+78)
+#define DM_REPLAYQUEUE       (WM_USER+79)
+#define DM_HKDETACH          (WM_USER+80)
+#define DM_HKSAVESIZE        (WM_USER+81)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
-
 #define MINSPLITTERY         52
 #define MINLOGHEIGHT         30
 
@@ -246,18 +261,6 @@ struct CREOleCallback {
 	IStorage *pictStg;
 	int nextStgId;
 };
-
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int InitOptions(void);
-// XXX container dlg proc
-BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int InitOptions(void);
-// end mod
-BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO *dbei);
-void StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
-void LoadMsgLogIcons(void);
-void FreeMsgLogIcons(void);
 
 #define MSGFONTID_MYMSG		  0
 #define MSGFONTID_MYMISC	  1
@@ -282,7 +285,6 @@ void FreeMsgLogIcons(void);
 #define MSGFONTID_SYMBOLS_IN 20
 #define MSGFONTID_SYMBOLS_OUT 21
 
-void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
 extern const int msgDlgFontCount;
 
 #define LOADHISTORY_UNREAD    0
@@ -293,16 +295,8 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_AUTOPOPUP      0
 #define SRMSGSET_AUTOMIN           "AutoMin"
 #define SRMSGDEFSET_AUTOMIN        0
-#define SRMSGSET_AUTOCLOSE         "AutoClose"
-#define SRMSGDEFSET_AUTOCLOSE      0
-#define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
-#define SRMSGDEFSET_SAVEPERCONTACT 0
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    1
-#define SRMSGSET_CLOSEONREPLY      "CloseOnReply"
-#define SRMSGDEFSET_CLOSEONREPLY   1
-#define SRMSGSET_STATUSICON        "UseStatusWinIcon"
-#define SRMSGDEFSET_STATUSICON     0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
 #define SRMSGDEFSET_MSGTIMEOUT     10000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
@@ -314,14 +308,6 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_LOADTIME          "LoadTime"
 #define SRMSGDEFSET_LOADTIME       10
 
-#define SRMSGSET_SHOWLOGICONS      "ShowLogIcons"
-#define SRMSGDEFSET_SHOWLOGICONS   0
-#define SRMSGSET_HIDENAMES         "HideNames"
-#define SRMSGDEFSET_HIDENAMES      0
-#define SRMSGSET_SHOWTIME          "ShowTime"
-#define SRMSGDEFSET_SHOWTIME       0
-#define SRMSGSET_SHOWDATE          "ShowDate"
-#define SRMSGDEFSET_SHOWDATE       0
 #define SRMSGSET_SHOWURLS          "ShowURLs"
 #define SRMSGDEFSET_SHOWURLS       0
 #define SRMSGSET_SHOWFILES         "ShowFiles"
@@ -356,7 +342,6 @@ extern const int msgDlgFontCount;
 
 #define IDM_STAYONTOP (WM_USER + 1)
 #define IDM_NOTITLE (WM_USER + 2)
-#define IDM_NOREPORTMIN (WM_USER +3)
 #define IDM_MOREOPTIONS (WM_USER +4)
 
 typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
@@ -423,16 +408,48 @@ struct MsgLogIcon {
 #define IDI_FONTUNDERLINE 24    /* underline */
 #define IDI_FONTFACE 25         /* font face (currently not in use) */
 #define IDI_FONTCOLOR 26        /* font color (not in use yet) */
-#define IDI_RESERVED7 27
-#define IDI_RESERVED8 28
+#define IDI_SOUNDSON  27        /* msg window sounds are enabled */
+#define IDI_SOUNDSOFF 28        /* msg window sounds are disabled */
 #define IDI_RESERVED9 29
 #define IDI_RESERVED10 30
 
 #define IDB_UNKNOWNAVATAR 100   /* fallback image for non-existing avatars (BITMAP) */
 #define IDS_IDENTIFY 101        /* string resource to identify icon pack */
 
-#define MSGDLGFONTCOUNT 22
+WCHAR *Utf8_Decode(const char *str);
+char *Utf8_Encode(const WCHAR *str);
 
-TCHAR *Utf8Decode(const char *str);
-char *Utf8Encode(const WCHAR *str);
+struct CPTABLE {
+    UINT cpId;
+    char *cpName;
+};
 
+#define LOI_TYPE_FLAG 1
+#define LOI_TYPE_SETTING 2
+
+struct LISTOPTIONSGROUP {
+    LRESULT handle;
+    char *szName;
+};
+
+struct LISTOPTIONSITEM {
+    LRESULT handle;
+    char *szName;
+    UINT id;
+    UINT uType;
+    UINT_PTR lParam;
+    UINT uGroup;
+};
+
+#if defined(_UNICODE)
+static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* fmt, ...) {
+	va_list va;
+	int len;
+
+	va_start(va, fmt);
+	len = _vsnwprintf(buffer, count-1, fmt, va);
+	va_end(va);
+	buffer[count-1] = 0;
+	return len;
+}
+#endif

@@ -31,13 +31,20 @@ Features
 
 Requirements
 ------------
- - Miranda IM 0.3.4
+ - Miranda IM 0.4
 
 
 History
 -------
+1.3.0.0
+ - Add support for aim:addbuddy? links
+
+1.2.0.0
+ - Chat support uses Chat plugin
+
 1.1.0.0
  - AIM links option didn't register correctly
+ - Security fixes
 
 1.0.9.6
  - Show mobile users as 'on the phone'
@@ -304,28 +311,13 @@ time goes on.  To add an ICQ user, just enter their ICQ UIN in the Screename
 field of the Find/Add User dialog.
 
 
-AIM Chat Commands
------------------
-The following commands can be used in the message window of a multi-user chat:
-
-/clear
- Clears the log window
-
-/quit
- Closes the chat session
-
-/exit
- Same as /quit
-
-
 FAQ
 ---
  Question: 
  How come contacts are being adding to my contact list everytime I login?
  
  Answer: 
- This is due to the option "Add extra contacts from the server's list to my list".  Uncheck
- this option if you do not wish to add contacts from your server-side list.
+ This is due to the option "Add extra contacts from the server's list to my list".  Uncheck this option if you do not wish to add contacts from your server-side list.
  
  Question: 
  Does the AIM Protocol plugin support file transfer?
@@ -333,19 +325,13 @@ FAQ
  Answer: 
  Not yet.  Only file receive is possible using TOC.  This is on the todo list.
 
- Question:
- I set the Server-Side Contact list option but Miranda doesn't use it.  Why?
-
- Answer:
- For large lists, server-side contact list support is turned off automatically because of
- a packet-size limitation of TOC.
 
 
 Thanks To
 ---------
 - AOL's TOC1.0 protocol document
 - GAIM's implementation of TOC for which some of the code is based off of
-- Matrix for providing the AIM icons
+- Matrix and Valkyre for providing the AIM icons
 
 
 Copyright

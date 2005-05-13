@@ -38,9 +38,9 @@ static int aim_getcaps(WPARAM wParam, LPARAM lParam)
         case PFLAGNUM_4:
             ret = PF4_NOCUSTOMAUTH;
             break;
-		case 5: /* this is PFLAGNUM_5 change when alpha SDK is released */
-			ret = PF2_ONTHEPHONE;
-			break;
+        case 5:                /* this is PFLAGNUM_5 change when alpha SDK is released */
+            ret = PF2_ONTHEPHONE;
+            break;
         case PFLAG_UNIQUEIDTEXT:
             ret = (int) Translate("Screenname");
             break;
@@ -59,10 +59,10 @@ static int aim_getname(WPARAM wParam, LPARAM lParam)
     char pszName[128];
 
     if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        _snprintf(pszName, sizeof(pszName), Translate("%s (%s)"), AIM_PROTONAME, AIM_PROTO);
+        mir_snprintf(pszName, sizeof(pszName), Translate("%s (%s)"), AIM_PROTONAME, AIM_PROTO);
     }
     else
-        _snprintf(pszName, sizeof(pszName), "%s", AIM_PROTONAME);
+        mir_snprintf(pszName, sizeof(pszName), "%s", AIM_PROTONAME);
 
     lstrcpyn((char *) lParam, pszName, wParam);
     return 0;
@@ -94,7 +94,7 @@ static int aim_getstatus(WPARAM wParam, LPARAM lParam)
 static int aim_setstatus(WPARAM wParam, LPARAM lParam)
 {
     int status = (int) wParam;
-	LOG(LOG_DEBUG, "PS_SETSTATUS: %d", wParam);
+    LOG(LOG_DEBUG, "PS_SETSTATUS: %d", wParam);
     if (aimStatus == status)
         return 0;
     LOG(LOG_DEBUG, "Set Status to %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0));
@@ -104,9 +104,9 @@ static int aim_setstatus(WPARAM wParam, LPARAM lParam)
         aim_buddy_offlineall();
     }
     else if (!aim_util_isonline()) {
-		if (aimStatus==ID_STATUS_CONNECTING) {
-			return 0;
-		}
+        if (aimStatus == ID_STATUS_CONNECTING) {
+            return 0;
+        }
         aim_utils_logversion();
         status = status == ID_STATUS_ONLINE || status == ID_STATUS_FREECHAT ? ID_STATUS_ONLINE : ID_STATUS_AWAY;
         DBWriteContactSettingWord(NULL, AIM_PROTO, AIM_KEY_IS, status);
@@ -306,40 +306,40 @@ void aim_services_register()
 {
     char szService[256];
 
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETCAPS);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETCAPS);
     CreateServiceFunction(szService, aim_getcaps);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETNAME);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETNAME);
     CreateServiceFunction(szService, aim_getname);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_LOADICON);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_LOADICON);
     CreateServiceFunction(szService, aim_loadicon);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETSTATUS);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETSTATUS);
     CreateServiceFunction(szService, aim_getstatus);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SETSTATUS);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SETSTATUS);
     CreateServiceFunction(szService, aim_setstatus);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSR_MESSAGE);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSR_MESSAGE);
     CreateServiceFunction(szService, aim_recvmessage);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_MESSAGE);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_MESSAGE);
     CreateServiceFunction(szService, aim_sendmessage);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_BASICSEARCH);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_BASICSEARCH);
     CreateServiceFunction(szService, aim_basicsearch);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SEARCHBYNAME);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SEARCHBYNAME);
     CreateServiceFunction(szService, aim_searchbyname);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SEARCHBYEMAIL);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SEARCHBYEMAIL);
     CreateServiceFunction(szService, aim_searchbyemail);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_ADDTOLIST);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_ADDTOLIST);
     CreateServiceFunction(szService, aim_addtolist);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_GETINFO);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_GETINFO);
     CreateServiceFunction(szService, aim_getinfo);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SETAWAYMSG);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SETAWAYMSG);
     CreateServiceFunction(szService, aim_setawaymsg);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_SETAPPARENTMODE);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_SETAPPARENTMODE);
     CreateServiceFunction(szService, aim_setapparentmode);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSR_FILE);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSR_FILE);
     CreateServiceFunction(szService, aim_recvfile);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_FILEDENY);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_FILEDENY);
     CreateServiceFunction(szService, aim_recvfiledeny);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_FILEALLOW);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_FILEALLOW);
     CreateServiceFunction(szService, aim_recvfileallow);
-    _snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_FILECANCEL);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_FILECANCEL);
     CreateServiceFunction(szService, aim_recvfilecancel);
 }

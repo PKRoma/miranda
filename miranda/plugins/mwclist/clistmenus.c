@@ -695,7 +695,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	hStatusMainMenuHandlesCnt=sizeof(statusModeList)/sizeof(HANDLE);
 	for(i=0;i<protoCount;i++)
 	{
-		if(proto[i]->type==PROTOTYPE_PROTOCOL && GetProtocolVisibility(proto[i]->szName)!=0) networkProtoCount++;
+		if(proto[i]->type==PROTOTYPE_PROTOCOL && (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)||GetProtocolVisibility(proto[i]->szName)!=0)) networkProtoCount++;
 	}
 
 	memset(hStatusMainMenuHandles,0,sizeof(statusModeList));
@@ -706,10 +706,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	storedProtoCount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	
 	for(s=0;s<storedProtoCount;s++) {
-		
+		pos=0;
 		i=GetProtoIndexByPos(proto,protoCount,s);
 		if (i==-1) continue;
-		if((proto[i]->type!=PROTOTYPE_PROTOCOL) || (GetProtocolVisibility(proto[i]->szName)==0)) continue;
+		if((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)) continue;
 		
 		flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 		if(networkProtoCount>1) {
@@ -727,6 +727,18 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
 			tmi.pszName=protoName;
 			rootmenu=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+
+
+					memset(&tmi,0,sizeof(tmi));
+					tmi.cbSize=sizeof(tmi);
+					tmi.flags=CMIF_CHILDPOPUP;
+					//if(statusModeList[j]==ID_STATUS_OFFLINE){tmi.flags|=CMIF_CHECKED;};
+					tmi.root=rootmenu;
+					tmi.position=pos++;
+					tmi.pszName=protoName;
+					tmi.hIcon=(HICON)CallProtoService(proto[i]->szName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
+					CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+		pos+=100000;
 
 			for(j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
 				if(!(flags&statusModePf2List[j])) 
@@ -772,7 +784,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					//add to root menu
 					for(j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
 						for(i=0;i<protoCount;i++) {
-							if(proto[i]->type!=PROTOTYPE_PROTOCOL || GetProtocolVisibility(proto[i]->szName)==0) continue;
+							if(proto[i]->type!=PROTOTYPE_PROTOCOL || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)) continue;
 							flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 								if(flags&statusModePf2List[j]){
 									//DeleteMenu(hMenu,statusModeList[j],MF_BYCOMMAND)
@@ -995,7 +1007,7 @@ hStatusMenuHandlesCnt=0;
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService=NULL;
 	tmp.ExecService="MainMenuExecService";
-	tmp.name="MainMenu";
+	tmp.name="Main Menu";
 	hMainMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	
@@ -1015,7 +1027,7 @@ hStatusMenuHandlesCnt=0;
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService="ContactMenuCheckService";
 	tmp.ExecService="ContactMenuExecService";
-	tmp.name="ContactMenu";
+	tmp.name="Contact Menu";
 	hContactMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	op.Handle=hContactMenuObject;

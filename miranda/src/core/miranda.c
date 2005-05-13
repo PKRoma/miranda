@@ -179,7 +179,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 #ifdef _DEBUG
 		{
 			char szBuf[64];
-			_snprintf(szBuf,sizeof(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
+			mir_snprintf(szBuf,sizeof(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
 			OutputDebugString(szBuf);
 		}
 #endif
@@ -295,10 +295,12 @@ static int SystemGetIdle(WPARAM wParam, LPARAM lParam)
 static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *pHandles, 
 	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags)
 {
+	DWORD rc;
 	if ( MyMsgWaitForMultipleObjectsEx != NULL )
 		return MyMsgWaitForMultipleObjectsEx(nCount, pHandles, dwMsecs, dwWakeMask, dwFlags);
-	// can wait for msgs and objects but not APC, or objects and APC but not msgs!
-	return 0;
+	rc=MsgWaitForMultipleObjects(nCount, pHandles, FALSE, 50, QS_ALLINPUT);
+	if ( rc == WAIT_TIMEOUT ) rc=WaitForMultipleObjectsEx(nCount, pHandles, FALSE, 20, TRUE);
+	return rc;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)

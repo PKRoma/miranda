@@ -538,6 +538,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	{
 	case WM_INITDIALOG:
 		{
+		char szTemp[MAX_PATH];
 
 		TranslateDialogDefault(hwndDlg);
 		SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_SETRANGE,0,MAKELONG(5000,0));
@@ -545,7 +546,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 //		SendDlgItemMessage(hwndDlg,IDC_CHOOSEFONT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[1]);
 		SendDlgItemMessage(hwndDlg,IDC_SPIN3,UDM_SETRANGE,0,MAKELONG(10000,0));
 		SendDlgItemMessage(hwndDlg,IDC_SPIN3,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LoggingLimit",100),0));
-		SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, g_LogOptions.pszLogDir);
+		CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_LogOptions.pszLogDir, (LPARAM)szTemp );
+		SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, szTemp);
 		SetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, g_LogOptions.pszHighlightWords);
 		SetDlgItemText(hwndDlg, IDC_LOGTIMESTAMP, g_LogOptions.pszTimeStampLog);
 		SetDlgItemText(hwndDlg, IDC_TIMESTAMP, g_LogOptions.pszTimeStamp);
@@ -726,6 +728,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 
 			if(SUCCEEDED(CoGetMalloc(1,&psMalloc))) 
 			{
+				char szTemp[MAX_PATH];
 				bi.hwndOwner=hwndDlg;
 				bi.pszDisplayName=szDirectory;
 				bi.lpszTitle=Translate("Select Folder");
@@ -737,7 +740,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 				if(idList) {
 					SHGetPathFromIDList(idList,szDirectory);
 					lstrcat(szDirectory,"\\");
-				SetWindowText(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), szDirectory);
+				CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp );
+				SetWindowText(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlen(szTemp) > 1?szTemp:"Logs\\");
 				}
 				psMalloc->lpVtbl->Free(psMalloc,idList);
 				psMalloc->lpVtbl->Release(psMalloc);
@@ -803,6 +807,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 						else
 							DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
 
+						CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_LogOptions.pszLogDir);
+
 						iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGTIMESTAMP));
 						if(iLen > 0)
 						{
@@ -848,7 +854,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 
 						g_LogOptions.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE;
 						DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_LogOptions.LoggingEnabled);
-						if(g_LogOptions.LoggingEnabled && g_LogOptions.pszLogDir)
+						if(g_LogOptions.LoggingEnabled )
 						{
 							if(!PathIsDirectory(g_LogOptions.pszLogDir))
 								CreateDirectory(g_LogOptions.pszLogDir, NULL);
@@ -1032,15 +1038,7 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 
 void LoadGlobalSettings(void)
 {
-	char szTemp[MAX_PATH];
-	char* p1;
 	LOGFONT lf;
-
-	GetModuleFileName(NULL,szTemp, MAX_PATH);
-	p1 = strrchr(szTemp,'\\');
-	if (p1)
-		*p1 = '\0';
-	lstrcat(szTemp, "\\Logs");
 
 	g_LogOptions.ShowTime = DBGetContactSettingByte(NULL, "Chat", "ShowTimeStamp", 1);
 	g_LogOptions.SoundsFocus = DBGetContactSettingByte(NULL, "Chat", "SoundsFocus", 0);
@@ -1071,8 +1069,23 @@ void LoadGlobalSettings(void)
 	InitSetting(&g_LogOptions.pszTimeStampLog, "LogTimestamp", "[%d %b %y %H:%M]"); 
 	InitSetting(&g_LogOptions.pszIncomingNick, "HeaderIncoming", "%n:"); 
 	InitSetting(&g_LogOptions.pszOutgoingNick, "HeaderOutgoing", "%n:"); 
-	InitSetting(&g_LogOptions.pszHighlightWords, "HighlightWords", "%m"); 
-	InitSetting(&g_LogOptions.pszLogDir, "LogDirectory", szTemp);
+	InitSetting(&g_LogOptions.pszHighlightWords, "HighlightWords", "%m");
+
+	{
+		char pszTemp[MAX_PATH];
+		DBVARIANT dbv;
+		g_LogOptions.pszLogDir = (char *)malloc(MAX_PATH);
+		if (!DBGetContactSetting(NULL, "Chat", "LogDirectory", &dbv) && dbv.type == DBVT_ASCIIZ)
+		{
+			lstrcpyn(pszTemp, dbv.pszVal, MAX_PATH);
+			DBFreeVariant(&dbv);
+		}
+		else
+		{
+			lstrcpyn(pszTemp, "Logs\\", MAX_PATH);
+		}
+		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszTemp, (LPARAM)g_LogOptions.pszLogDir);
+	}
 	
 	{
 		HFONT hFont;
@@ -1102,8 +1115,8 @@ void LoadGlobalSettings(void)
 	LoadMsgDlgFont(19, &lf, NULL);
 	g_LogOptions.UserListHeadingsFont = CreateFontIndirectA(&lf);
 
-	g_LogOptions.GroupOpenIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	g_LogOptions.GroupClosedIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
+	g_LogOptions.GroupOpenIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN);
+	g_LogOptions.GroupClosedIcon = LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT);
 
 
 }
@@ -1121,10 +1134,10 @@ static void FreeGlobalSettings(void)
 		DeleteObject(g_LogOptions.UserListFont);
 	if(g_LogOptions.UserListHeadingsFont)
 		DeleteObject(g_LogOptions.UserListHeadingsFont);
-	if(g_LogOptions.GroupClosedIcon)
-		DestroyIcon(g_LogOptions.GroupClosedIcon);
-	if(g_LogOptions.GroupOpenIcon)
-		DestroyIcon(g_LogOptions.GroupOpenIcon);
+//	if(g_LogOptions.GroupClosedIcon)
+//		DestroyIcon(g_LogOptions.GroupClosedIcon);
+//	if(g_LogOptions.GroupOpenIcon)
+//		DestroyIcon(g_LogOptions.GroupOpenIcon);
 }
 
 int OptionsInit(void)
@@ -1164,7 +1177,7 @@ int OptionsInit(void)
 	SkinAddNewSoundEx("ChatQuit", "Chat", Translate("User has disconnected"));
 	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
 
-	if(g_LogOptions.LoggingEnabled && g_LogOptions.pszLogDir)
+	if(g_LogOptions.LoggingEnabled)
 	{
 		if(!PathIsDirectory(g_LogOptions.pszLogDir))
 			CreateDirectory(g_LogOptions.pszLogDir, NULL);

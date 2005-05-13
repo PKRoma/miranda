@@ -191,6 +191,7 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_IGNORECONTACT,	/* > 1, 7, 13 < 1, 66, 13, 0*/
 	YAHOO_SERVICE_REJECTCONTACT,
 	YAHOO_SERVICE_GROUPRENAME = 0x89, /* > 1, 65(new), 66(0), 67(old) */
+	/* YAHOO_SERVICE_??? = 0x8A, ?? 0 - id and that's it?? */
 	YAHOO_SERVICE_CHATONLINE = 0x96, /* > 109(id), 1, 6(abcde) < 0,1*/
 	YAHOO_SERVICE_CHATGOTO,
 	YAHOO_SERVICE_CHATJOIN,	/* > 1 104-room 129-1600326591 62-2 */
@@ -204,9 +205,9 @@ enum yahoo_service { /* these are easier to see in hex */
 	/*
 	[22:40:53 YAHOO] Service: (null) (0xb7)	Status: YAHOO_STATUS_BRB (1)
 [22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	4 => jrb1203
+[22:40:53 YAHOO] 	4 => xxxxx
 [22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	5 => gena01_w
+[22:40:53 YAHOO] 	5 => xxxxx
 [22:40:53 YAHOO]  
 [22:40:53 YAHOO] 	180 => pl 
 [22:40:53 YAHOO]  
@@ -231,9 +232,9 @@ File List Request:
 [22:48:09 YAHOO] libyahoo2/libyahoo2.c:792: debug: 
 [22:48:09 YAHOO] [Reading packet] len: 80
 [22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: To (5)  	Value: gena01_w
+[22:48:09 YAHOO] Key: To (5)  	Value: xxxxx
 [22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: From (4)  	Value: jrb1203
+[22:48:09 YAHOO] Key: From (4)  	Value: xxxxx
 [22:48:09 YAHOO]  
 [22:48:09 YAHOO] Key: service (49)  	Value: FILEXFER
 [22:48:09 YAHOO]  
@@ -254,9 +255,9 @@ File List Cancel:
 [22:48:41 YAHOO] libyahoo2/libyahoo2.c:792: debug: 
 [22:48:41 YAHOO] [Reading packet] len: 74
 [22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: To (5)  	Value: gena01_w
+[22:48:41 YAHOO] Key: To (5)  	Value: xxxxx
 [22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: From (4)  	Value: jrb1203
+[22:48:41 YAHOO] Key: From (4)  	Value: xxxxx
 [22:48:41 YAHOO]  
 [22:48:41 YAHOO] Key: service (49)  	Value: FILEXFER
 [22:48:41 YAHOO]  
@@ -345,6 +346,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_CHATLOGOUT, "YAHOO_SERVICE_CHATLOGOUT"},
 	{YAHOO_SERVICE_CHATPING, "YAHOO_SERVICE_CHATPING"},
 	{YAHOO_SERVICE_COMMENT, "YAHOO_SERVICE_COMMENT"},
+	{YAHOO_SERVICE_GAME_INVITE,"YAHOO_SERVICE_GAME_INVITE "},
 	{YAHOO_SERVICE_STEALTH, "YAHOO_SERVICE_STEALTH"},
 	{YAHOO_SERVICE_AVATAR,"YAHOO_SERVICE_AVATAR"},
 	{YAHOO_SERVICE_PICTURE_CHECKSUM,"YAHOO_SERVICE_PICTURE_CHECKSUM"},
@@ -898,7 +900,7 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 			FREE(value);
 			pkt->hash = y_list_append(pkt->hash, pair);
 			
-			DEBUG_MSG1(("Key: %s (%d)  \tValue: %s", dbg_key(pair->key), pair->key, pair->value));
+			DEBUG_MSG1(("Key: %s (%d)  \tValue: '%s'", dbg_key(pair->key), pair->key, pair->value));
 		} else {
 			FREE(pair);
 		}
@@ -944,26 +946,43 @@ static void yahoo_dump_unhandled(struct yahoo_packet *pkt)
 static void yahoo_packet_dump(unsigned char *data, int len)
 {
 	if(yahoo_get_log_level() >= YAHOO_LOG_DEBUG) {
+		char z[4096], t[10];
 		int i;
+		
+		z[0]='\0';
+		
 		for (i = 0; i < len; i++) {
 			if ((i % 8 == 0) && i)
-				YAHOO_CALLBACK(ext_yahoo_log)(" ");
+				//YAHOO_CALLBACK(ext_yahoo_log)(" ");
+				lstrcat(z, " ");
 			if ((i % 16 == 0) && i)
-				YAHOO_CALLBACK(ext_yahoo_log)("\n");
-			YAHOO_CALLBACK(ext_yahoo_log)("%02x ", data[i]);
+				lstrcat(z, "\n");
+			
+			wsprintf(t, "%02x ", data[i]);
+			lstrcat(z, t);
 		}
-		YAHOO_CALLBACK(ext_yahoo_log)("\n");
+		lstrcat(z, "\n");
+		YAHOO_CALLBACK(ext_yahoo_log)(z);
+		
+		z[0]='\0';
 		for (i = 0; i < len; i++) {
 			if ((i % 8 == 0) && i)
-				YAHOO_CALLBACK(ext_yahoo_log)(" ");
+				//YAHOO_CALLBACK(ext_yahoo_log)(" ");
+				lstrcat(z, " ");
 			if ((i % 16 == 0) && i)
-				YAHOO_CALLBACK(ext_yahoo_log)("\n");
-			if (isprint(data[i]))
-				YAHOO_CALLBACK(ext_yahoo_log)(" %c ", data[i]);
-			else
-				YAHOO_CALLBACK(ext_yahoo_log)(" . ");
+				//YAHOO_CALLBACK(ext_yahoo_log)("\n");
+				lstrcat(z, "\n");
+			if (isprint(data[i])) {
+				//YAHOO_CALLBACK(ext_yahoo_log)(" %c ", data[i]);
+				wsprintf(t, " %c ", data[i]);
+				lstrcat(z, t);
+			} else
+				//YAHOO_CALLBACK(ext_yahoo_log)(" . ");
+				lstrcat(z, " . ");
 		}
-		YAHOO_CALLBACK(ext_yahoo_log)("\n");
+		//YAHOO_CALLBACK(ext_yahoo_log)("\n");
+		lstrcat(z, "\n");
+		YAHOO_CALLBACK(ext_yahoo_log)(z);
 	}
 }
 
@@ -1035,6 +1054,11 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	yahoo_packet_write(pkt, data + pos);
 
 	//yahoo_packet_dump(data, len);
+	DEBUG_MSG(("Sending Packet:"));
+	DEBUG_MSG(("Yahoo Service: %s (0x%02x) Status: %s (%d)", dbg_service(pkt->service), pkt->service,
+				dbg_status(pkt->status),pkt->status));
+
+	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
 	//yahoo_add_to_send_queue(yid, data, len);
 	do {
@@ -1257,7 +1281,7 @@ static void yahoo_process_notify(struct yahoo_input_data *yid, struct yahoo_pack
 	if (!strncasecmp(msg, "TYPING", strlen("TYPING"))) 
 		YAHOO_CALLBACK(ext_yahoo_typing_notify)(yd->client_id, to, from, stat);
 	else if (!strncasecmp(msg, "GAME", strlen("GAME"))) 
-		YAHOO_CALLBACK(ext_yahoo_game_notify)(yd->client_id, to, from, stat);
+		YAHOO_CALLBACK(ext_yahoo_game_notify)(yd->client_id, to, from, stat, ind);
 	else if (!strncasecmp(msg, "WEBCAMINVITE", strlen("WEBCAMINVITE"))) 
 	{
 		if (!strcmp(ind, " ")) {
@@ -1810,27 +1834,27 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 		case 217: /*??? Seems like last key */
 			if (!yd->rawstealthlist)
 				YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
+			
+			if(yd->ignorelist) {
+				yd->ignore = bud_str2list(yd->ignorelist);
+				FREE(yd->ignorelist);
+				YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
+			}
+			
+			if(yd->rawbuddylist) {
+				yd->buddies = bud_str2list(yd->rawbuddylist);
+				FREE(yd->rawbuddylist);
+				
+				YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
+			}
+		
+		
+			if(yd->cookie_y && yd->cookie_t && yd->cookie_c)
+						YAHOO_CALLBACK(ext_yahoo_got_cookies)(yd->client_id);
+					
+			break;
 		}
 	}
-	
-	if(yd->ignorelist) {
-		yd->ignore = bud_str2list(yd->ignorelist);
-		FREE(yd->ignorelist);
-		YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
-	}
-	
-	if(yd->rawbuddylist) {
-		yd->buddies = bud_str2list(yd->rawbuddylist);
-		FREE(yd->rawbuddylist);
-		
-		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
-	}
-
-
-	if(yd->cookie_y && yd->cookie_t && yd->cookie_c)
-				YAHOO_CALLBACK(ext_yahoo_got_cookies)(yd->client_id);
-
-
 }
 
 static void yahoo_process_verify(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -2376,10 +2400,11 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	}
 
 	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, yd->initial_status, yd->session_id);
-	yahoo_packet_hash(pack, 0, sn);
 	yahoo_packet_hash(pack, 6, resp_6);
 	yahoo_packet_hash(pack, 96, resp_96);
+	yahoo_packet_hash(pack, 0, sn);
 	yahoo_packet_hash(pack, 1, sn);
+	yahoo_packet_hash(pack, 135, "6,0,0,1710"); /* Yahoo Client version, thanx GAIM */
 	yahoo_send_packet(yid, pack, 0);
 	yahoo_packet_free(pack);
 
@@ -2471,7 +2496,7 @@ static void yahoo_process_mail(struct yahoo_input_data *yid, struct yahoo_packet
 		else if (pair->key == 18)
 			subj = pair->value;
 		else
-			LOG(("key: %d => value: %s", pair->key, pair->value));
+			LOG(("key: %d => value: '%s'", pair->key, pair->value));
 	}
 
 	if (who && email && subj) {
@@ -2629,6 +2654,7 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 
 static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
+	struct yahoo_data *yd = yid->yd;
 	char *who = NULL;
 	int  status = 0;
 	char *me = NULL;
@@ -2656,9 +2682,47 @@ static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_pack
 	 * 	12 - is a buddy, could not add
 	 */
 
-/*	if(status)
-		YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, status, who, 0);
-*/	
+	if(status) {
+		YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, who, 0, status);
+	} else {
+		/* we adding or removing to the ignore list */
+		if (un_ignore == 1) { /* ignore */
+				struct yahoo_buddy *bud = y_new0(struct yahoo_buddy, 1);
+				
+				bud->id = strdup(who);
+				bud->group = NULL;
+				bud->real_name = NULL;
+
+				yd->ignore = y_list_append(yd->ignore, bud);
+				
+		} else { /* unignore */
+			YList *buddy;
+			
+			buddy = yd->ignore;
+			
+			while (buddy) {
+				struct yahoo_buddy *b = (struct yahoo_buddy *) buddy->data;
+				
+				if (lstrcmpi(b->id, who) == 0) 
+					break;
+				
+				buddy = buddy->next;
+			}
+				
+			if(buddy) {
+				struct yahoo_buddy *bud = buddy->data;
+				yd->ignore = y_list_remove_link(yd->ignore, buddy);
+				y_list_free_1(buddy);
+		
+				FREE(bud->id);
+				FREE(bud->group);
+				FREE(bud->real_name);
+				FREE(bud);
+		
+				bud=NULL;
+			}	
+		}
+	}
 }
 
 static void yahoo_process_voicechat(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -3002,6 +3066,10 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 		return NULL;
 	}
 
+	/*DEBUG_MSG(("Dumping Packet Header:"));
+	yahoo_packet_dump(yid->rxqueue + pos, YAHOO_PACKET_HDRLEN);
+	DEBUG_MSG(("--- Done Dumping Packet Header ---"));*/
+		
 	pos += 4; /* YMSG */
 	pos += 2;
 	pos += 2;
@@ -3803,9 +3871,10 @@ int yahoo_read_ready(int id, int fd, void *data)
 		return -1;
 	}
 
-	yid->rxqueue = y_renew(unsigned char, yid->rxqueue, len + yid->rxlen);
+	yid->rxqueue = y_renew(unsigned char, yid->rxqueue, len + yid->rxlen + 1);
 	memcpy(yid->rxqueue + yid->rxlen, buf, len);
 	yid->rxlen += len;
+	yid->rxqueue[yid->rxlen] = 0; // zero terminate
 
 	yahoo_process_connection[yid->type](yid, 0);
 

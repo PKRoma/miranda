@@ -40,7 +40,7 @@ static struct CListMenuItem *mainMenuItem, *contextMenuItem;
 static int mainItemCount, contextItemCount;
 static HIMAGELIST hImlMenuIcons;
 static HANDLE hPreBuildContactMenuEvent, hAckHook;
-static HMENU hMainMenu, hStatusMenu;
+static HMENU hMainMenu, hStatusMenu, hRootMenu;
 int currentStatusMenuItem, currentDesiredStatusMode;
 static int statusModeList[] =
     { ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE,
@@ -138,7 +138,7 @@ static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
     int i;
     HMENU hMenu;
 
-    if (mi->cbSize != sizeof(CLISTMENUITEM))
+    if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
         return 0;
     mainMenuItem = (struct CListMenuItem *) mir_realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
     mainMenuItem[mainItemCount].id = nextMenuId++;
@@ -256,7 +256,7 @@ static int AddContactMenuItem(WPARAM wParam, LPARAM lParam)
 {
     CLISTMENUITEM *mi = (CLISTMENUITEM *) lParam;
 
-    if (mi->cbSize != sizeof(CLISTMENUITEM))
+    if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
         return 0;
     contextMenuItem = (struct CListMenuItem *) mir_realloc(contextMenuItem, sizeof(struct CListMenuItem) * (contextItemCount + 1));
     contextMenuItem[contextItemCount].id = nextMenuId++;
@@ -279,7 +279,7 @@ static int ModifyCustomMenuItem(WPARAM wParam, LPARAM lParam)
     CLISTMENUITEM *mi = (CLISTMENUITEM *) lParam;
     MENUITEMINFO mii;
 
-    if (mi->cbSize != sizeof(CLISTMENUITEM))
+    if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
         return 1;
     if (wParam & MENU_CUSTOMITEMMAIN) {
         if ((int) (wParam & ~MENU_CUSTOMITEMMAIN) >= mainItemCount)
@@ -429,6 +429,7 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
     int isOnline, isOnList;
     HANDLE hContact = (HANDLE) wParam;
     int prevPosition;
+	int chatRoom;
     DWORD miim_bitmap_verSpecific;
     char *szProto;
 
@@ -437,15 +438,27 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
     isOnList = 0 == DBGetContactSettingByte(hContact, "CList", "NotOnList", 0);
     isOnline = szProto != NULL && ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-
+	chatRoom = szProto?DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0):0;
     itemOrder = (int *) mir_alloc(sizeof(int) * contextItemCount);
     itemCount = 0;
     for (i = 0; i < contextItemCount; i++) {
         if (contextMenuItem[i].id == 0)
             continue;
+        if (szProto == NULL)
+            continue;
+		// Begin Ugly hack to hide chat room menus
+		if (chatRoom) {
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("&Message")))
+				continue;
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("&File")))
+				continue;
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("User &Details")))
+				continue;
+			if (!strcmp(contextMenuItem[i].mi.pszName,Translate("View &History")))
+				continue;
+		}
+		// End ugly hack
         if (contextMenuItem[i].mi.pszContactOwner != NULL) {
-            if (szProto == NULL)
-                continue;
             if (strcmp(contextMenuItem[i].mi.pszContactOwner, szProto))
                 continue;
         }
@@ -848,8 +861,9 @@ int InitCustomMenus(void)
     CreateServiceFunction(MS_CLIST_MENUPROCESSHOTKEY, MenuProcessHotkey);
     hPreBuildContactMenuEvent = CreateHookableEvent(ME_CLIST_PREBUILDCONTACTMENU);
     hAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, MenuProtoAck);
-    hMainMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CLISTMENU)), 0);
-    hStatusMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CLISTMENU)), 1);
+    hRootMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CLISTMENU));
+    hMainMenu = GetSubMenu(hRootMenu, 0);
+    hStatusMenu = GetSubMenu(hRootMenu, 1);
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMainMenu, 0);
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hStatusMenu, 0);
     nextMenuId = FIRSTCUSTOMMENUITEMID;
@@ -896,4 +910,7 @@ void UninitCustomMenus(void)
     }
     mir_free(mainMenuItem);
     mir_free(contextMenuItem);
+	DestroyMenu(hStatusMenu);
+	DestroyMenu(hMainMenu);
+	DestroyMenu(hRootMenu);
 }

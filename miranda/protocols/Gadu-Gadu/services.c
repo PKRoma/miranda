@@ -21,14 +21,16 @@
 
 #include "gg.h"
 
-pthread_t serverThreadId;
-pthread_mutex_t connectionHandleMutex;
 pthread_mutex_t modeMsgsMutex;
+pthread_mutex_t threadMutex;
 
 BOOL flagSetOnlyStatus = FALSE;
 
 uin_t nextUIN = 0;
 unsigned long lastCRC = 0;
+
+GGTHREAD *ggThread = NULL;
+list_t ggThreadList = NULL;
 
 //////////////////////////////////////////////////////////
 // Status mode -> DB
@@ -135,39 +137,42 @@ inline char *gg_getstatusmsg(int status)
 int gg_refreshstatus(int status)
 {
     // Create main loop thread and connect when not connecting
+    pthread_mutex_lock(&threadMutex);
     if(status == ID_STATUS_OFFLINE)
-        gg_disconnect();
-    else if (!gg_isonline())
+        gg_disconnect(FALSE);
+    else if (!ggThread)
     {
-        pthread_mutex_lock(&connectionHandleMutex);
-        DWORD exitCode = 0;
-
-        GetExitCodeThread(serverThreadId.hThread, &exitCode);
-        // Check if main thread isn't running already
-        if(exitCode != STILL_ACTIVE)
-            pthread_create(&serverThreadId, NULL, gg_mainthread, NULL);
-        pthread_mutex_unlock(&connectionHandleMutex);
+        if(ggThread = (GGTHREAD *) malloc(sizeof(GGTHREAD)))
+        {
+            list_add(&ggThreadList, ggThread, 0);
+            ZeroMemory(ggThread, sizeof(GGTHREAD));
+            // We control this thread ourselves (bypassing Miranda safe threads)
+            ggThread->id.hThread = (HANDLE) _beginthreadex(NULL, 0, (unsigned (__stdcall *) (void *)) gg_mainthread,
+                                                (void *)ggThread, 0, (unsigned *) &ggThread->id.dwThreadId);
+            // pthread_create(&ggThread->id, NULL, gg_mainthread, ggThread);
+        }
     }
-    else
+    else if(gg_isonline())
     {
         // Select proper msg
         char *szMsg = gg_getstatusmsg(status);
         if(szMsg)
         {
 #ifdef DEBUGMODE
-            gg_netlog("gg_setawaymsg(): Setting status and away message \"%s\".", szMsg);
+            gg_netlog("gg_refreshstatus(): Setting status and away message \"%s\".", szMsg);
 #endif
-            gg_change_status_descr(ggSess, status_m2gg(status, szMsg != NULL), szMsg);
+            gg_change_status_descr(ggThread->sess, status_m2gg(status, szMsg != NULL), szMsg);
         }
         else
         {
 #ifdef DEBUGMODE
-            gg_netlog("gg_setawaymsg(): Setting just status.");
+            gg_netlog("gg_refreshstatus(): Setting just status.");
 #endif
-            gg_change_status(ggSess, status_m2gg(status, 0));
+            gg_change_status(ggThread->sess, status_m2gg(status, 0));
         }
         gg_broadcastnewstatus(status);
     }
+    pthread_mutex_unlock(&threadMutex);
 }
 
 //////////////////////////////////////////////////////////
@@ -213,24 +218,13 @@ int gg_setstatus(WPARAM wParam, LPARAM lParam)
         flagSetOnlyStatus = FALSE;
         gg_refreshstatus(ggDesiredStatus);
     }
-    // Miranda won't ask for new status just change it now
-    else if(bScreenSaverRunning ||
-        DBGetContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(wParam, "NoDlg"), 0) ||
-        DBGetContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(wParam, "Ignore"), 0))
-    {
-        flagSetOnlyStatus = FALSE;
-        gg_refreshstatus(ggDesiredStatus);
-    }
-    // Miranda will ask for a status
+    // Miranda will always ask for a new status message
     else
     {
 #ifdef DEBUGMODE
-    gg_netlog("gg_setstatus(): Postponed to gg_setawaymsg().");
+        gg_netlog("gg_setstatus(): Postponed to gg_setawaymsg().");
 #endif
         flagSetOnlyStatus = (ggDesiredStatus == ggStatus);
-        // Refresh status even it will be refreshed again when Miranda will ask
-        // if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SAFESTATUS, GG_KEYDEF_SAFESTATUS))
-        //    gg_refreshstatus(ggDesiredStatus);
     }
     return 0;
 }
@@ -278,24 +272,31 @@ int gg_sendmessage(WPARAM wParam, LPARAM lParam)
     pthread_t tid;
     uin_t uin;
 
-    if(uin = (uin_t)DBGetContactSettingDword(ccs->hContact, GG_PROTO, GG_KEY_UIN, 0))
+    pthread_mutex_lock(&threadMutex);
+    if(gg_isonline() && (uin = (uin_t)DBGetContactSettingDword(ccs->hContact, GG_PROTO, GG_KEY_UIN, 0)))
     {
 		if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MSGACK, GG_KEYDEF_MSGACK))
+        {
 			// Return normally
-			return (int) (HANDLE) gg_send_message(ggSess, GG_CLASS_CHAT, uin, (char *) ccs->lParam);
+            HANDLE hRetVal = (HANDLE) gg_send_message(ggThread->sess, GG_CLASS_CHAT, uin, (char *) ccs->lParam);
+            pthread_mutex_unlock(&threadMutex);
+			return (int) hRetVal;
+        }
 		else
 		{
 			// Auto-ack message without waiting for server ack
-			int seq = gg_send_message(ggSess, GG_CLASS_CHAT, uin, (char *) ccs->lParam);
+			int seq = gg_send_message(ggThread->sess, GG_CLASS_CHAT, uin, (char *) ccs->lParam);
 			GG_SEQ_ACK *ack = malloc(sizeof(GG_SEQ_ACK));
 			if(ack)
 			{
 				pthread_create(&tid, NULL, gg_sendackthread, (void *) ack);
 				pthread_detach(&tid);
 			}
+            pthread_mutex_unlock(&threadMutex);
 			return seq;
 		}
     }
+    pthread_mutex_unlock(&threadMutex);
     return 0;
 }
 
@@ -312,7 +313,12 @@ static void *__stdcall gg_searchthread(HANDLE hContact)
 }
 int gg_basicsearch(WPARAM wParam, LPARAM lParam)
 {
-    if(!gg_isonline()) return 0;
+    pthread_mutex_lock(&threadMutex);
+    if(!gg_isonline())
+    {
+        pthread_mutex_unlock(&threadMutex);
+        return 0;
+    }
 
     pthread_t tid;
     gg_pubdir50_t req;
@@ -324,13 +330,14 @@ int gg_basicsearch(WPARAM wParam, LPARAM lParam)
     gg_pubdir50_add(req, GG_PUBDIR50_UIN, (char *) lParam);
     gg_pubdir50_seq_set(req, GG_SEQ_SEARCH);
 
-    if(!gg_pubdir50(ggSess, req))
+    if(!gg_pubdir50(ggThread->sess, req))
     { pthread_create(&tid, NULL, gg_searchthread, NULL); pthread_detach(&tid); return 1; }
 #ifdef DEBUGMODE
     gg_netlog("gg_basicsearch(): Seq %d.", req->seq);
 #endif
     gg_pubdir50_free(req);
 
+    pthread_mutex_unlock(&threadMutex);
     return 1;
 }
 static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
@@ -338,7 +345,12 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
     PROTOSEARCHBYNAME *psbn = (PROTOSEARCHBYNAME *) lParam;
 
     // Check if connected and if there's a search data
-    if(!gg_isonline()) return 0;
+    pthread_mutex_lock(&threadMutex);
+    if(!gg_isonline())
+    {
+        pthread_mutex_unlock(&threadMutex);
+        return 0;
+    }
     if(!psbn->pszNick && !psbn->pszFirstName && !psbn->pszLastName)
         return 0;
 
@@ -381,13 +393,14 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
 
     gg_pubdir50_seq_set(req, GG_SEQ_SEARCH);
 
-    if(!gg_pubdir50(ggSess, req))
+    if(!gg_pubdir50(ggThread->sess, req))
     { pthread_create(&tid, NULL, gg_searchthread, NULL); pthread_detach(&tid); return 1; }
 #ifdef DEBUGMODE
     gg_netlog("gg_searchbyname(): Seq %d.", req->seq);
 #endif
     gg_pubdir50_free(req);
 
+    pthread_mutex_unlock(&threadMutex);
     return 1;
 }
 
@@ -434,12 +447,15 @@ int gg_getinfo(WPARAM wParam, LPARAM lParam)
 #ifdef DEBUGMODE
         gg_netlog("gg_getinfo(): Requesting user info.", req->seq);
 #endif
-        if(!gg_pubdir50(ggSess, req))
+        pthread_mutex_lock(&threadMutex);
+        if(gg_isonline() && !gg_pubdir50(ggThread->sess, req))
         {
             pthread_create(&tid, NULL, gg_cmdgetinfothread, ccs->hContact);
             pthread_detach(&tid);
+            pthread_mutex_unlock(&threadMutex);
             return 1;
         }
+        pthread_mutex_unlock(&threadMutex);
     }
     // Own contact info
     else
@@ -457,12 +473,15 @@ int gg_getinfo(WPARAM wParam, LPARAM lParam)
 #ifdef DEBUGMODE
         gg_netlog("gg_getinfo(): Requesting owner info.", req->seq);
 #endif
-        if(!gg_pubdir50(ggSess, req))
+        pthread_mutex_lock(&threadMutex);
+        if(gg_isonline() && !gg_pubdir50(ggThread->sess, req))
         {
             pthread_create(&tid, NULL, gg_cmdgetinfothread, ccs->hContact);
             pthread_detach(&tid);
+            pthread_mutex_unlock(&threadMutex);
             return 1;
         }
+        pthread_mutex_unlock(&threadMutex);
     }
 #ifdef DEBUGMODE
     gg_netlog("gg_getinfo(): Seq %d.", req->seq);
@@ -509,7 +528,7 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
     int status = gg_normalizestatus((int) wParam);
 
 #ifdef DEBUGMODE
-    gg_netlog("gg_setawaymsg(): Requesting away message set.");
+    gg_netlog("gg_setawaymsg(): Requesting away message set to \"%s\".", (char *) lParam);
 #endif
     pthread_mutex_lock(&modeMsgsMutex);
 
@@ -537,7 +556,7 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
         if(status == ggDesiredStatus && (ggDesiredStatus == ggStatus && flagSetOnlyStatus))
         {
 #ifdef DEBUGMODE
-        gg_netlog("gg_setawaymsg(): Message hasn't been changed, return.");
+            gg_netlog("gg_setawaymsg(): Message hasn't been changed, return.");
 #endif
             pthread_mutex_unlock(&modeMsgsMutex);
             return 0;
@@ -725,8 +744,15 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
 
     gg_pubdir50_seq_set(req, GG_SEQ_SEARCH);
 
-    if(!gg_pubdir50(ggSess, req))
-    { pthread_create(&tid, NULL, gg_searchthread, NULL); pthread_detach(&tid); return 1; }
+    pthread_mutex_lock(&threadMutex);
+    if(gg_isonline() && !gg_pubdir50(ggThread->sess, req))
+    {
+        pthread_create(&tid, NULL, gg_searchthread, NULL);
+        pthread_detach(&tid);
+        pthread_mutex_unlock(&threadMutex);
+        return 1;
+    }
+    pthread_mutex_unlock(&threadMutex);
 #ifdef DEBUGMODE
     gg_netlog("gg_searchbyadvanced(): Seq %d.", req->seq);
 #endif

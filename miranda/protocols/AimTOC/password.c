@@ -86,7 +86,7 @@ static BOOL CALLBACK aim_password_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
                     GetDlgItemText(hwndDlg, IDC_OLDPASS, szOldPass, sizeof(szOldPass));
                     GetDlgItemText(hwndDlg, IDC_NEWPASS, szNewPass, sizeof(szNewPass));
 
-                    _snprintf(buf, sizeof(buf), "toc_change_passwd %s %s", szOldPass, szNewPass);
+                    mir_snprintf(buf, sizeof(buf), "toc_change_passwd %s %s", szOldPass, szNewPass);
                     aim_toc_sflapsend(buf, -1, TYPE_DATA);
                     if (szNewPassword) {
                         free(szNewPassword);
@@ -149,11 +149,11 @@ void aim_password_init()
     char pszTitle[256];
 
     if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        _snprintf(pszTitle, sizeof(pszTitle), "%s (%s)", AIM_PROTONAME, AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), "%s (%s)", AIM_PROTONAME, AIM_PROTO);
     }
     else
-        _snprintf(pszTitle, sizeof(pszTitle), "%s", AIM_PROTO);
-    _snprintf(szService, sizeof(szService), "%s/AIM/ChangePassword", AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), "%s", AIM_PROTO);
+    mir_snprintf(szService, sizeof(szService), "%s/AIM/ChangePassword", AIM_PROTO);
     CreateServiceFunction(szService, aim_password_change);
     if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_PM, AIM_KEY_PM_DEF)) {
         ZeroMemory(&mi, sizeof(mi));

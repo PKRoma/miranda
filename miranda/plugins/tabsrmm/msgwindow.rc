@@ -36,16 +36,16 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 #if defined(UNICODE)
-    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES |
+    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
 #else
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES |
+    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
-#endif
+#endif                    
     CONTROL         "",IDOK,"MButtonClass",WS_TABSTOP,146,32,24,14,
                     0x18000000L
     CONTROL         "",IDC_SENDMENU,"MButtonClass",WS_TABSTOP,170,32,9,14,
@@ -83,28 +83,31 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_FONTUNDERLINE,"MButtonClass",WS_TABSTOP,91,32,16,
                     14,0x18000000L
+    CONTROL         "",IDC_FONTFACE,"MButtonClass",WS_TABSTOP,107,32,16,
+                    14,0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25,
-       							BS_NOTIFY
+                    WS_EX_LEFTSCROLLBAR
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
                     WS_EX_STATICEDGE
-    CONTROL         "&Retry",IDC_RETRY,"MButtonClass",WS_TABSTOP,26,10,35,12
-    CONTROL         "&Cancel",IDC_CANCELSEND,"MButtonClass",WS_TABSTOP,66,10,
-                    35,12
+    CONTROL         "&Retry",IDC_RETRY,"MButtonClass",WS_TABSTOP,26,10,55,12
+    CONTROL         "&Cancel",IDC_CANCELSEND,"MButtonClass",WS_TABSTOP,86,10,
+                    55,12
     CONTROL         "Send &Later",IDC_MSGSENDLATER,"MButtonClass",WS_TABSTOP,
-                    106,10,45,12
+                    146,10,55,12
     LTEXT           "",IDC_STATICTEXT,27,0,160,7
     ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
                     WS_GROUP
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | WS_VSCROLL |
+                    ES_READONLY | ES_AUTOVSCROLL | WS_TABSTOP,0,0,188,30,
                     WS_EX_STATICEDGE
-    LTEXT           "",IDC_ADDTEXT,20,20,124,7
-    ICON            "",IDC_ADDICON,2,18,16,14,SS_CENTERIMAGE
-    CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,135,16,50,14,
+    CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,155,64,16,14,
                     0x18000000L
-    CONTROL         "Dont",IDC_CANCELADD,"MButtonClass",WS_TABSTOP,190,16,50,14,
-                    0x18000000L
-    ICON            "",IDC_MULTIPLEICON,0,64,16,14,SS_CENTERIMAGE
+    CONTROL         "Dont",IDC_CANCELADD,"MButtonClass",WS_TABSTOP,171,64,16,
+                    14,0x18000000L
+    ICON            "",IDC_MULTIPLEICON,0,64,16,20,SS_CENTERIMAGE
+    CONTROL         "",IDC_LOGFROZEN,"MButtonClass",WS_TABSTOP,171,0,16,
+                    14,0x18000000L 
+    LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10
 END
 
 #endif    // Neutral resources

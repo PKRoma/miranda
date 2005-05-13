@@ -80,7 +80,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"H:\proga\miranda\Plugins\clist_mw.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_mw.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -115,6 +115,10 @@ SOURCE=.\CLUIFrames\m_cluiframes.h
 SOURCE=.\CLUIFrames\protocolorder.c
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\BkgrCfg.c
+# End Source File
 # Begin Source File
 
 SOURCE=.\clc.c
@@ -465,6 +469,10 @@ SOURCE=.\CLUIFrames\statusbar.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\BkgrCfg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\clc.h
 # End Source File
 # Begin Source File
@@ -519,6 +527,10 @@ SOURCE=.\statusmodes.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=".\res\&RQ.ico"
+# End Source File
 # Begin Source File
 
 SOURCE=.\res\1.ico
@@ -621,6 +633,10 @@ SOURCE=.\res\freechat.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\Gaim.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\globus.ico
 # End Source File
 # Begin Source File
@@ -645,7 +661,51 @@ SOURCE=.\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\Icq2000.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2001.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2003.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2gof.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Icq2goJ.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\IcqL4.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\IcqL5.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\IcqLite.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\IM2.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\invisible.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Kopete.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Licq.ico
 # End Source File
 # Begin Source File
 
@@ -654,6 +714,10 @@ SOURCE=.\res\message.ico
 # Begin Source File
 
 SOURCE=.\res\miranda.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\mirandaclassic.ico
 # End Source File
 # Begin Source File
 
@@ -701,6 +765,10 @@ SOURCE=.\res\outtolun.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\QIP.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\rename.ico
 # End Source File
 # Begin Source File
@@ -721,6 +789,10 @@ SOURCE=.\res\sendmail.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\Sim.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\smalldot.ico
 # End Source File
 # Begin Source File
@@ -738,6 +810,10 @@ SOURCE=.\res\sortcolu.bmp
 # Begin Source File
 
 SOURCE=.\res\timestamp.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\Trillian.ico
 # End Source File
 # Begin Source File
 

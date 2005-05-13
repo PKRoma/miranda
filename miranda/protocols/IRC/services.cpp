@@ -311,10 +311,10 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 				char szTemp[256];
 				PostIrcMessage("/CTCP %s DCC SEND %s 200 0 %u %u", dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
 			
-				_snprintf(szTemp, sizeof(szTemp), Translate("DCC reversed file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
+				mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC reversed file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
 				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				
-				_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
+				mir_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
 				PostIrcMessage(szTemp);
 
 			}
@@ -328,10 +328,10 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 					char szTemp[256];
 					PostIrcMessage("/CTCP %s DCC SEND %s %u %u %u", dci->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, iPort, dci->dwSize);
 					
-					_snprintf(szTemp, sizeof(szTemp), Translate("DCC file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
+					mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
 					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 					
-					_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, ConvertIntegerToIP(ulAdr));
+					mir_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, ConvertIntegerToIP(ulAdr));
 					PostIrcMessage(szTemp);
 				}
 				else
@@ -453,7 +453,7 @@ static int Service_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 		char szTemp[500];
 		DCCINFO * pdci = (DCCINFO *) pcle->lParam;
 		HWND hWnd = CreateDialogParam(g_hInstance,MAKEINTRESOURCE(IDD_MESSAGEBOX),NULL,MessageboxWndProc, (LPARAM)pdci);
-		_snprintf(szTemp, sizeof(szTemp), Translate("%s (%s) is requesting a client-to-client chat connection."), pdci->sContactName.c_str(), pdci->sHostmask.c_str() );
+		mir_snprintf(szTemp, sizeof(szTemp), Translate("%s (%s) is requesting a client-to-client chat connection."), pdci->sContactName.c_str(), pdci->sHostmask.c_str() );
 		SetDlgItemText(hWnd,IDC_TEXT, szTemp);
 		ShowWindow(hWnd, SW_SHOW);	
 		return 1;
@@ -687,7 +687,7 @@ static void DoChatFormatting(char * pszText)
 	while(*p1 != '\0')
 	{
 		iRemoveChars = 0;
-		_snprintf(InsertThis, sizeof(InsertThis), "");
+		mir_snprintf(InsertThis, sizeof(InsertThis), "");
 
 		if (*p1 == '%')
 		{
@@ -695,23 +695,23 @@ static void DoChatFormatting(char * pszText)
 			{
 			case 'B':
 			case 'b':
-				_snprintf(InsertThis, sizeof(InsertThis), "\002");
+				mir_snprintf(InsertThis, sizeof(InsertThis), "\002");
 				iRemoveChars = 2;
 				break;
 			case 'I':
 			case 'i':
-				_snprintf(InsertThis, sizeof(InsertThis), "\026");
+				mir_snprintf(InsertThis, sizeof(InsertThis), "\026");
 				iRemoveChars = 2;
 				break;
 			case 'U':
 			case 'u':
-				_snprintf(InsertThis, sizeof(InsertThis), "\037");
+				mir_snprintf(InsertThis, sizeof(InsertThis), "\037");
 				iRemoveChars = 2;
 				break;
 			case 'c':
 				{
 					char szTemp[3];
-					_snprintf(InsertThis, sizeof(InsertThis), "\003");
+					mir_snprintf(InsertThis, sizeof(InsertThis), "\003");
 						
 					iRemoveChars = 2;
 
@@ -721,12 +721,12 @@ static void DoChatFormatting(char * pszText)
 			case 'C':
 				if(p1[2] =='%' && p1[3] == 'F')
 				{
-					_snprintf(InsertThis, sizeof(InsertThis), "\00399,99");
+					mir_snprintf(InsertThis, sizeof(InsertThis), "\00399,99");
 					iRemoveChars = 4;
 				}
 				else
 				{
-					_snprintf(InsertThis, sizeof(InsertThis), "\00399");
+					mir_snprintf(InsertThis, sizeof(InsertThis), "\00399");
 					iRemoveChars = 2;
 				}
 				iFG = -1;
@@ -735,11 +735,11 @@ static void DoChatFormatting(char * pszText)
 				{
 					char szTemp[3];
 					if(p1 - 3 >= pszText && p1[-3] == '\003')
-						_snprintf(InsertThis, sizeof(InsertThis), ",");
+						mir_snprintf(InsertThis, sizeof(InsertThis), ",");
 					else if( iFG >= 0 )
-						_snprintf(InsertThis, sizeof(InsertThis), "\003%u,", iFG);
+						mir_snprintf(InsertThis, sizeof(InsertThis), "\003%u,", iFG);
 					else
-						_snprintf(InsertThis, sizeof(InsertThis), "\00399,");
+						mir_snprintf(InsertThis, sizeof(InsertThis), "\00399,");
 
 					iRemoveChars = 2;
 
@@ -748,14 +748,14 @@ static void DoChatFormatting(char * pszText)
 
 			case 'F':
 				if(iFG >= 0)
-					_snprintf(InsertThis, sizeof(InsertThis), "\003%u,99", iFG);
+					mir_snprintf(InsertThis, sizeof(InsertThis), "\003%u,99", iFG);
 				else
-					_snprintf(InsertThis, sizeof(InsertThis), "\00399,99");
+					mir_snprintf(InsertThis, sizeof(InsertThis), "\00399,99");
 				iRemoveChars = 2;
 				break;
 
 			case '%':
-				_snprintf(InsertThis, sizeof(InsertThis), "%%");
+				mir_snprintf(InsertThis, sizeof(InsertThis), "%%");
 				iRemoveChars = 2;
 				break;
 			default:
@@ -814,7 +814,7 @@ static int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 				break;
 			case GC_USER_PRIVMESS:
 				char szTemp[4000];
-				_snprintf(szTemp, sizeof(szTemp), "/QUERY %s", gch->pszUID);
+				mir_snprintf(szTemp, sizeof(szTemp), "/QUERY %s", gch->pszUID);
 				PostIrcMessageWnd(p1, NULL, szTemp);
 				break;
 			case GC_USER_LOGMENU:
@@ -863,19 +863,19 @@ static int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 					break;
 				case 7:
 					AddToUHTemp("B" + (String)p1);
-					_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
+					mir_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
 					if (g_ircSession)
 						g_ircSession << CIrcMessage(szTemp, false, false);
 					break;
 				case 8:
 					AddToUHTemp("K" + (String)p1);
-					_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
+					mir_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
 					if (g_ircSession)
 						g_ircSession << CIrcMessage(szTemp, false, false);
 					break;
 				case 9:
 					AddToUHTemp("L" + (String)p1);
-					_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
+					mir_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
 					if (g_ircSession)
 						g_ircSession << CIrcMessage(szTemp, false, false);
 					break;
@@ -884,13 +884,13 @@ static int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 					break;
 				case 11:
 					AddToUHTemp("I");
-					_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
+					mir_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
 					if (g_ircSession)
 						g_ircSession << CIrcMessage(szTemp, false, false);
 					break;
 				case 12:
 					AddToUHTemp("J");
-					_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
+					mir_snprintf(szTemp, sizeof(szTemp), "USERHOST %s", gch->pszUID);
 					if (g_ircSession)
 						g_ircSession << CIrcMessage(szTemp, false, false);
 					break;
@@ -1072,11 +1072,10 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 		{
 			BYTE bDcc = DBGetContactSettingByte((HANDLE) wParam, IRCPROTONAME, "DCC", 0) ;
 
-			clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS;
+			clmi.flags = CMIF_HIDDEN | CMIM_FLAGS;
 
-			clmi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-			clmi.pszName = Translate("&Message");
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
+			clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS;
 
 			if(bDcc)
 			{
@@ -1091,7 +1090,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 				if(!g_ircSession)
 					clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
 				clmi.hIcon = (HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_WHOIS),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED);  
-				clmi.pszName = Translate("User &details");
+				clmi.pszName = Translate("&WhoIs info");
 				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
 
 			}
@@ -1149,8 +1148,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 static int Service_GetCaps(WPARAM wParam,LPARAM lParam)
 {
 	if(wParam==PFLAGNUM_1)
-		return PF1_BASICSEARCH | PF1_MODEMSG | PF1_FILE |PF1_CANRENAMEFILE | PF1_PEER2PEER
-; 
+		return PF1_BASICSEARCH | PF1_MODEMSG | PF1_FILE |PF1_CANRENAMEFILE | PF1_PEER2PEER | PF1_IM;
 	if(wParam==PFLAGNUM_2)
 		return PF2_ONLINE|PF2_SHORTAWAY;
 	if(wParam==PFLAGNUM_3)
@@ -1228,7 +1226,7 @@ static void __cdecl ConnectServerThread(LPVOID di)
 	EnterCriticalSection(&cs);
 	InterlockedIncrement((volatile long *) &bConnectThreadRunning);
 	InterlockedIncrement((volatile long *) &bConnectRequested);
-	while ( bConnectRequested > 0 ) 
+	while ( !Miranda_Terminated() && bConnectRequested > 0 ) 
 	{
 		InterlockedDecrement((volatile long *) &bConnectRequested);
 		if (g_ircSession)
@@ -1315,7 +1313,7 @@ void ConnectToServer(void)
 		InterlockedIncrement((volatile long *) &bConnectRequested);
 
 	char szTemp[300];
-	_snprintf(szTemp, sizeof(szTemp), "\0033%s \002%s\002 (%s: %u)", Translate("Connecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort);
+	mir_snprintf(szTemp, sizeof(szTemp), "\0033%s \002%s\002 (%s: %u)", Translate("Connecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort);
 	DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, szTemp, NULL, NULL, NULL, true, false); 
 
 	return;	
@@ -1575,7 +1573,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	char szTemp2[256];
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS;
-	_snprintf(szTemp2, sizeof(szTemp2), "%s DCC", IRCPROTONAME);
+	mir_snprintf(szTemp2, sizeof(szTemp2), "%s DCC", IRCPROTONAME);
 	nlu.szSettingsModule = szTemp2;
 	wsprintf(szTemp, Translate("%s client-to-client connections"), ALTIRCPROTONAME);
 	nlu.szDescriptiveName = szTemp;
@@ -1635,13 +1633,13 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/details.php?action=viewfile&id=1309");
 	}
 	
-	_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, IRCPROTONAME);
+	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, IRCPROTONAME);
 	pszServerFile = IrcLoadFile(szTemp);
 
-	_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
+	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
 	pszPerformFile = IrcLoadFile(szTemp);	
 
-	_snprintf(szTemp, sizeof(szTemp), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
+	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
 	pszIgnoreFile = IrcLoadFile(szTemp);
 
 	InitMenus();
@@ -1656,13 +1654,13 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	{
 		if (lstrlen(prefs->AlternativeNick) == 0)
 		{
-			_snprintf(szTemp, 30, "%s%u", prefs->Nick, rand()%9999);
+			mir_snprintf(szTemp, 30, "%s%u", prefs->Nick, rand()%9999);
 			DBWriteContactSettingString(NULL, IRCPROTONAME, "AlernativeNick", szTemp);
 			lstrcpyn(prefs->AlternativeNick, szTemp, 30);					
 		}
 		if (lstrlen(prefs->Name) == 0)
 		{
-			_snprintf(szTemp, 30, "Miranda%u", rand()%9999);
+			mir_snprintf(szTemp, 30, "Miranda%u", rand()%9999);
 			DBWriteContactSettingString(NULL, IRCPROTONAME, "Name", szTemp);
 			lstrcpyn(prefs->Name, szTemp, 200);					
 		}
@@ -1789,7 +1787,7 @@ VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 			PortCount = StrToInt(prefs->PortStart);
 		si.iPort = PortCount;
 
-		_snprintf(szTemp, sizeof(szTemp), "\0033%s \002%s\002 (%s: %u, try %u)", Translate("Reconnecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort, RetryCount);
+		mir_snprintf(szTemp, sizeof(szTemp), "\0033%s \002%s\002 (%s: %u, try %u)", Translate("Reconnecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort, RetryCount);
 
 		DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, szTemp, NULL, NULL, NULL, true, false); 
 

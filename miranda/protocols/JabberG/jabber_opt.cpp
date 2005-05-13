@@ -50,7 +50,7 @@ int JabberOptInit( WPARAM wParam, LPARAM lParam )
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pszTemplate = MAKEINTRESOURCE( IDD_OPT_JABBER2 );
-	_snprintf( str, sizeof( str ), "%s %s", jabberModuleName, JTranslate( "Advanced" ));
+	mir_snprintf( str, sizeof( str ), "%s %s", jabberModuleName, JTranslate( "Advanced" ));
 	str[sizeof( str )-1] = '\0';
 	odp.pszTitle = str;
 	odp.pfnDlgProc = JabberAdvOptDlgProc;
@@ -96,13 +96,6 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		case IDOK2:
 			EndDialog( hwndDlg, 0 );
 			return TRUE;
-/*
-		case IDCANCEL2:
-			//if ( jabberRegConnected )
-			//	JabberSend( jabberRegSocket, "</stream:stream>" );
-			EndDialog( hwndDlg, 0 );
-			return TRUE;
-*/
 		}
 		break;
 	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
@@ -244,9 +237,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SetDlgItemText( hwndDlg, IDC_JUD, dbv.pszVal );
 				JFreeVariant( &dbv );
 			}
-			else {
-				SetDlgItemText( hwndDlg, IDC_JUD, "users.jabber.org" );
-			}
+			else SetDlgItemText( hwndDlg, IDC_JUD, "users.jabber.org" );
 
 			msgLangListBox = GetDlgItem( hwndDlg, IDC_MSGLANG );
 			wsprintf( text, "== %s ==", JTranslate( "System default" ));
@@ -323,9 +314,9 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			regInfo.useSSL = IsDlgButtonChecked( hwndDlg, IDC_USE_SSL );
 
-			if ( regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL ) || regInfo.manualHost[0] )) {
+			if ( regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL ) || regInfo.manualHost[0] ))
 				DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_OPT_REGISTER ), hwndDlg, JabberRegisterDlgProc, ( LPARAM )&regInfo );
-			}
+
 			return TRUE;
 		case IDC_MSGLANG:
 			if ( HIWORD( wParam ) == CBN_SELCHANGE )
@@ -370,8 +361,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
 					JSetString( NULL, "Password", text );
 				}
-				else
-					DBDeleteContactSetting( NULL, jabberProtoName, "Password" );
+				else DBDeleteContactSetting( NULL, jabberProtoName, "Password" );
 
 				GetDlgItemText( hwndDlg, IDC_EDIT_RESOURCE, text, sizeof( text ));
 				if ( DBGetContactSetting( NULL, jabberProtoName, "Resource", &dbv ) || strcmp( text, dbv.pszVal ))
@@ -445,51 +435,19 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 {
 	char text[256];
 	BOOL bChecked;
-	BYTE fontStyle;
-	static BOOL fontChanged;
-	static JABBER_GCLOG_FONT gcLogFont[JABBER_GCLOG_NUM_FONT];
-	static LOGFONT lf;
-	static HFONT hFont;
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
-		DBVARIANT dbv;
-		BOOL bDirect, bManualDirect;
-		BOOL bProxy, bManualProxy;
-
 		TranslateDialogDefault( hwndDlg );
 
-		// Multi-user conference options
-		fontChanged = FALSE;
-		hFont = NULL;
-		JabberGcLogLoadFont( gcLogFont );
-		if ( gcLogFont[0].face[0] != '\0' ) {
-			strncpy( lf.lfFaceName, gcLogFont[0].face, sizeof( lf.lfFaceName ));
-			lf.lfHeight = -MulDiv( gcLogFont[0].size, GetDeviceCaps( GetDC( NULL ), LOGPIXELSY ), 72 );
-			lf.lfCharSet = gcLogFont[0].charset;
-			lf.lfWeight = ( gcLogFont[0].style & JABBER_FONT_BOLD ) ? FW_BOLD : FW_NORMAL;
-			lf.lfItalic = ( gcLogFont[0].style & JABBER_FONT_ITALIC ) ? TRUE : FALSE;
-			hFont = CreateFontIndirect( &lf );
-			SendDlgItemMessage( hwndDlg, IDC_FONTSHOW, WM_SETFONT, ( WPARAM ) hFont, FALSE );
-			SetDlgItemText( hwndDlg, IDC_FONTSHOW, lf.lfFaceName );
-		}
-		if ( JGetByte( "GcLogSendOnEnter", TRUE ) == TRUE )
-			CheckRadioButton( hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_ENTER );
-		else
-			CheckRadioButton( hwndDlg, IDC_ENTER, IDC_CTRLENTER, IDC_CTRLENTER );
-		CheckDlgButton( hwndDlg, IDC_FLASH, JGetByte( "GcLogFlash", TRUE ));
-		if ( JGetByte( "GcLogTime", TRUE ) == TRUE )
-			CheckDlgButton( hwndDlg, IDC_TIME, TRUE );
-		else
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DATE ), FALSE );
-		CheckDlgButton( hwndDlg, IDC_DATE, JGetByte( "GcLogDate", FALSE ));
-
 		// File transfer options
-		bDirect = JGetByte( "BsDirect", TRUE );
-		bManualDirect = JGetByte( "BsDirectManual", FALSE );
+		BOOL bDirect = JGetByte( "BsDirect", TRUE );
+		BOOL bManualDirect = JGetByte( "BsDirectManual", FALSE );
 		CheckDlgButton( hwndDlg, IDC_DIRECT, bDirect );
 		CheckDlgButton( hwndDlg, IDC_DIRECT_MANUAL, bManualDirect );
+
+		DBVARIANT dbv;
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsDirectAddr", &dbv )) {
 			SetDlgItemText( hwndDlg, IDC_DIRECT_ADDR, dbv.pszVal );
 			JFreeVariant( &dbv );
@@ -499,8 +457,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		if ( !bDirect || !bManualDirect )
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), FALSE );
 
-		bProxy = JGetByte( "BsProxy", FALSE );
-		bManualProxy = JGetByte( "BsProxyManual", FALSE );
+		BOOL bProxy = JGetByte( "BsProxy", FALSE );
+		BOOL bManualProxy = JGetByte( "BsProxyManual", FALSE );
 		CheckDlgButton( hwndDlg, IDC_PROXY, bProxy );
 		CheckDlgButton( hwndDlg, IDC_PROXY_MANUAL, bManualProxy );
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
@@ -549,28 +507,6 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), bChecked );
 			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
-		case IDC_FONT:
-			{
-				CHOOSEFONT cf = {0};
-
-				cf.lStructSize = sizeof( CHOOSEFONT );
-				cf.hwndOwner = hwndDlg;
-				cf.lpLogFont = &lf;
-				cf.Flags = CF_FORCEFONTEXIST|CF_INITTOLOGFONTSTRUCT|CF_SCREENFONTS;
-				if ( ChooseFont( &cf )) {
-					fontChanged = TRUE;
-					if ( hFont ) DeleteObject( hFont );
-					hFont = CreateFontIndirect( &lf );
-					SendDlgItemMessage( hwndDlg, IDC_FONTSHOW, WM_SETFONT, ( WPARAM ) hFont, FALSE );
-					SetDlgItemText( hwndDlg, IDC_FONTSHOW, lf.lfFaceName );
-					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				}
-			}
-			break;
-		case IDC_TIME:
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DATE ), IsDlgButtonChecked( hwndDlg, IDC_TIME ));
-			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			break;
 		default:
 			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
@@ -578,40 +514,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		break;
 	}
 	case WM_NOTIFY:
-	{
-		JABBER_LIST_ITEM *item;
-		HANDLE hContact;
-		int index, i;
-		char key[64];
-
-		switch (( ( LPNMHDR ) lParam )->code ) {
-		case PSN_APPLY:
-			// Multi-user conference options
-			if ( fontChanged ) {
-				for ( i=0; i<JABBER_GCLOG_NUM_FONT; i++ ) {
-					sprintf( key, "GcLogFont%dFace", i );
-					JSetString( NULL, key, lf.lfFaceName );
-					sprintf( key, "GcLogFont%dSize", i );
-					JSetByte( key, ( BYTE ) MulDiv( abs( lf.lfHeight ), 72, GetDeviceCaps( GetDC( NULL ), LOGPIXELSY )) );
-					sprintf( key, "GcLogFont%dCharset", i );
-					JSetByte( key, lf.lfCharSet );
-					fontStyle = ( lf.lfWeight>=FW_BOLD ) ? JABBER_FONT_BOLD : 0;
-					if ( lf.lfItalic == TRUE )
-						fontStyle |= JABBER_FONT_ITALIC;
-					sprintf( key, "GcLogFont%dStyle", i );
-					JSetByte( key, fontStyle );
-					// color is missing here!!!
-					// this is intentional so that we will use default color
-				}
-				if ( jabberOnline )
-					WindowList_Broadcast( hWndListGcLog, WM_JABBER_SET_FONT, 0, 0 );
-			}
-
-			JSetByte( "GcLogSendOnEnter", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_ENTER ));
-			JSetByte( "GcLogFlash", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_FLASH ));
-			JSetByte( "GcLogTime", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_TIME ));
-			JSetByte( "GcLogDate", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DATE ));
-
+		if (( ( LPNMHDR ) lParam )->code == PSN_APPLY ) {
 			// File transfer options
 			JSetByte( "BsDirect", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT ));
 			JSetByte( "BsDirectManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL ));
@@ -625,11 +528,13 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			// Miscellaneous options
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_SHOW_TRANSPORT );
 			JSetByte( "ShowTransport", ( BYTE ) bChecked );
-			index = 0;
+			int index = 0;
 			while (( index=JabberListFindNext( LIST_ROSTER, index )) >= 0 ) {
-				if (( item=JabberListGetItemPtrFromIndex( index )) != NULL ) {
+				JABBER_LIST_ITEM* item = JabberListGetItemPtrFromIndex( index );
+				if ( item != NULL ) {
 					if ( strchr( item->jid, '@' ) == NULL ) {
-						if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
+						HANDLE hContact = JabberHContactFromJID( item->jid );
+						if ( hContact != NULL ) {
 							if ( bChecked ) {
 								if ( item->status != JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
 									JSetWord( hContact, "Status", ( WORD )item->status );
@@ -645,10 +550,6 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "DisableMainMenu", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAINMENU ));
 			return TRUE;
 		}
-		break;
-	}
-	case WM_DESTROY:
-		if ( hFont ) DeleteObject( hFont );
 		break;
 	}
 

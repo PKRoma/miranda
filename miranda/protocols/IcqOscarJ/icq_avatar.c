@@ -96,14 +96,20 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
 
 
-void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
+void GetFullAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
+{
+  GetAvatarFileName(dwUin, pszDest, cbLen);
+  AddAvatarExt(dwFormat, pszDest);
+}
+
+void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
 {
   int tPathLen;
 
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
   tPathLen = strlen(pszDest);
-  tPathLen += _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
+  tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
   CreateDirectory(pszDest, NULL);
 
   if (dwUin != 0) 
@@ -125,21 +131,65 @@ void GetAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
       strcat(pszDest + tPathLen, "_avt");
     }
   }
-  if (dwFormat == PA_FORMAT_JPEG)
-    strcat(pszDest + tPathLen, ".jpg");
-  else if (dwFormat == PA_FORMAT_GIF)
-    strcat(pszDest + tPathLen, ".gif");
-  else if (dwFormat == PA_FORMAT_XML)
-    strcat(pszDest + tPathLen, ".xml");
-  else
-    strcat(pszDest + tPathLen, ".dat");
 }
 
+void AddAvatarExt(int dwFormat, char* pszDest)
+{
+  if (dwFormat == PA_FORMAT_JPEG)
+    strcat(pszDest, ".jpg");
+  else if (dwFormat == PA_FORMAT_GIF)
+    strcat(pszDest, ".gif");
+  else if (dwFormat == PA_FORMAT_PNG)
+    strcat(pszDest, ".png");
+  else if (dwFormat == PA_FORMAT_BMP)
+    strcat(pszDest, ".bmp");
+  else if (dwFormat == PA_FORMAT_XML)
+    strcat(pszDest, ".xml");
+  else
+    strcat(pszDest, ".dat");
+}
+
+int DetectAvatarFormatBuffer(char* pBuffer)
+{
+  if (!strncmp(pBuffer, "%PNG", 4))
+  {
+    return PA_FORMAT_PNG;
+  }
+  if (!strncmp(pBuffer, "GIF8", 4))
+  {
+    return PA_FORMAT_GIF;
+  }
+  if (!strnicmp(pBuffer, "<?xml", 5))
+  {
+    return PA_FORMAT_XML;
+  }
+  if (((DWORD*)pBuffer)[0] == 0xE0FFD8FFul)
+  {
+    return PA_FORMAT_JPEG;
+  }
+  if (!strncmp(pBuffer, "BM", 2))
+  {
+    return PA_FORMAT_BMP;
+  }
+  return PA_FORMAT_UNKNOWN;
+}
+
+
+int DetectAvatarFormat(char* szFile)
+{
+  char pBuf[32];
+
+  int src = _open(szFile, _O_BINARY | _O_RDONLY);
+  _read(src, pBuf, 32);
+  _close(src);
+
+  return DetectAvatarFormatBuffer(pBuf);
+}
 
 
 void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called from event
 {
-  avatarthreadstartinfo* atsi = {0};
+  avatarthreadstartinfo* atsi = NULL;
   pthread_t tid;
 
   if (!hConn)
@@ -378,6 +428,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
   {
     int recvResult;
     NETLIBPACKETRECVER packetRecv = {0};
+    DWORD wLastKeepAlive = 0; // we send keep-alive at most one per 30secs
 
     InitializeCriticalSection(&atsi->localSeqMutex);
 
@@ -404,13 +455,24 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           else
             Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Idle.");
 #endif
-          if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
-          { // send keep-alive packet
-            icq_packet packet;
-
-            packet.wLen = 0;
-            write_flap(&packet, ICQ_PING_CHAN);
-            sendAvatarPacket(&packet, atsi);
+          if (GetTickCount() > wLastKeepAlive)
+          { // limit frequency (HACK: on some systems select() does not work well)
+            if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
+            { // send keep-alive packet
+              icq_packet packet;
+ 
+              packet.wLen = 0;
+              write_flap(&packet, ICQ_PING_CHAN);
+              sendAvatarPacket(&packet, atsi);
+            }
+            wLastKeepAlive = GetTickCount() + 57000;
+          }
+          else
+          { // this is bad, the system does not handle select() properly
+#ifdef _DEBUG
+            Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Forcing Idle.");
+#endif
+            Sleep(500); // wait some time, can we do anything else ??
           }
           continue; 
         }
@@ -743,13 +805,17 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       {
         BYTE len;
         WORD datalen;
-        FILE* out;
+        int out;
+        char* szMyFile = (char*)malloc(strlen(ac->szFile)+10);
         PROTO_AVATAR_INFORMATION ai;
 
+        strcpy(szMyFile, ac->szFile);
+
         ai.cbSize = sizeof ai;
-        ai.format = PA_FORMAT_JPEG;
+        ai.format = PA_FORMAT_JPEG; // this is for error only
         ai.hContact = ac->hContact;
         strcpy(ai.filename, ac->szFile);
+        AddAvatarExt(PA_FORMAT_JPEG, ai.filename); 
 
         FreeCookie(pSnacHeader->dwRef);
         unpackByte(&pBuffer, &len);
@@ -760,6 +826,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
 
           SAFE_FREE(&ac->szFile);
+          SAFE_FREE(&szMyFile);
           SAFE_FREE(&ac->hash);
           SAFE_FREE(&ac);
 
@@ -770,17 +837,35 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         pBuffer += (ac->hashlen<<1) + 1;
         unpackWord(&pBuffer, &datalen);
 
-        if (datalen)
+        wBufferLength -= 4 + len + (ac->hashlen<<1);
+        if (datalen > wBufferLength)
+        {
+          datalen = wBufferLength;
+          Netlib_Logf(ghServerNetlibUser, "Avatar reply broken, trying to do my best.");
+        }
+
+        if (datalen > 4)
         { // store to file...
+          int dwPaFormat;
+
           Netlib_Logf(ghServerNetlibUser, "Received user avatar, storing (%d bytes).", datalen);
 
-          out = fopen(ac->szFile, "wb");
+          dwPaFormat = DetectAvatarFormatBuffer(pBuffer);
+          DBWriteContactSettingByte(ac->hContact, gpszICQProtoName, "AvatarType", (BYTE)dwPaFormat);
+          ai.format = dwPaFormat; // set the format
+          AddAvatarExt(dwPaFormat, szMyFile);
+          strcpy(ai.filename, szMyFile);
+
+          out = _open(szMyFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			    if (out) 
           {
             DBVARIANT dbv;
 
-            fwrite(pBuffer, datalen, 1, out);
-            fclose(out);
+            _write(out, pBuffer, datalen);
+            _close(out);
+            
+            if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
+              LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
 
             if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
             {
@@ -804,16 +889,13 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           }
         }
         else
-        { // the avatar is empty, delete the file
-          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, file deleted.", datalen);
+        { // the avatar is empty
+          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, nothing written.", datalen);
 
-          DeleteFile(ac->szFile);
-          // there was probably some error, delete the hash too
-          DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarSaved");
-          DBDeleteContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash");
           ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
         }
         SAFE_FREE(&ac->szFile);
+        SAFE_FREE(&szMyFile);
         SAFE_FREE(&ac->hash);
         SAFE_FREE(&ac);
       }

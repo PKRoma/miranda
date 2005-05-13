@@ -103,7 +103,8 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam;
 	struct DetailsPageInit *opi=(struct DetailsPageInit*)wParam;
-
+	
+	if(odp==NULL||opi==NULL) return 1;
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize!=OPTIONSDIALOGPAGE_V0120_SIZE) return 1;
 	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	opi->odp[opi->pageCount].cbSize=sizeof(OPTIONSDIALOGPAGE);
@@ -170,7 +171,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					name = (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 
 				GetWindowText(hwndDlg,oldTitle,sizeof(oldTitle));
-				_snprintf(newTitle,sizeof(newTitle),oldTitle,name);
+				mir_snprintf(newTitle,sizeof(newTitle),oldTitle,name);
 				SetWindowText(hwndDlg,newTitle);
 				SetDlgItemText(hwndDlg,IDC_NAME,name);
 

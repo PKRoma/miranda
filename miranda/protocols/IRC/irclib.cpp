@@ -332,6 +332,11 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 			}
 		}
 #endif
+		if(Miranda_Terminated())
+		{
+			Disconnect();
+			return false;
+		}
 
 		m_info = info;
 

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "AIM Protocol",
-    PLUGIN_MAKE_VERSION(1, 1, 0, 0),
+    PLUGIN_MAKE_VERSION(1, 4, 0, 0),
 #ifdef AIM_CVSBUILD
     "This is a development build of the AIM protocol.  Please check the website for updates. (" __DATE__ ")",
 #else

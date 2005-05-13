@@ -111,7 +111,7 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
         if (ci.type == CNFT_ASCIIZ) {
             if (cacheEntry == -1) {
                 buffer = (char *) mir_alloc(strlen(ci.pszVal) + 1);
-                _snprintf(buffer, strlen(ci.pszVal) + 1, "%s", ci.pszVal);
+                mir_snprintf(buffer, strlen(ci.pszVal) + 1, "%s", ci.pszVal);
                 mir_free(ci.pszVal);
                 return (int) buffer;
             }
@@ -123,12 +123,12 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
         if (ci.type == CNFT_DWORD) {
             if (cacheEntry == -1) {
                 buffer = (char *) mir_alloc(15);
-                _snprintf(buffer, 15, "%u", ci.dVal);
+                mir_snprintf(buffer, 15, "%u", ci.dVal);
                 return (int) buffer;
             }
             else {
                 buffer = (char *) mir_alloc(15);
-                _snprintf(buffer, 15, "%u", ci.dVal);
+                mir_snprintf(buffer, 15, "%u", ci.dVal);
                 displayNameCache[cacheEntry].name = buffer;
                 return (int) buffer;
             }
@@ -137,7 +137,7 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
     CallContactService((HANDLE) wParam, PSS_GETINFO, SGIF_MINIMAL, 0);
     buffer = Translate("(Unknown Contact)");
     //buffer = (char*)mir_alloc(strlen(Translate("'(Unknown Contact)'"))+1);
-    //_snprintf(buffer,strlen(Translate("'(Unknown Contact)'"))+1,"%s",Translate("'(Unknown Contact)'"));
+    //mir_snprintf(buffer,strlen(Translate("'(Unknown Contact)'"))+1,"%s",Translate("'(Unknown Contact)'"));
     return (int) buffer;
 }
 

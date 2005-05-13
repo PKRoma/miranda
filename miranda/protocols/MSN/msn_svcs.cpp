@@ -320,13 +320,19 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			return 0;
 		}
 
-		if ( !strcmp( cws->szSetting, "MyHandle" ) && cws->value.pszVal[0] != 0 ) {
+		if ( !strcmp( cws->szSetting, "MyHandle" )) {
 			char szContactID[ 100 ], szNewNick[ 387 ];
 			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID )) {
-				char* p = Utf8Encode( cws->value.pszVal );
-				UrlEncode( p, szNewNick, sizeof szNewNick );
-				msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
-				free( p );
+				if ( cws->value.type != DBVT_DELETED ) {
+					char* p = Utf8Encode( cws->value.pszVal );
+					UrlEncode( p, szNewNick, sizeof szNewNick );
+					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
+					free( p );
+				}
+				else {
+					MSN_GetStaticString( "e-mail", hContact, szNewNick, sizeof szNewNick );
+					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
+				}
 				return 0;
 	}	}	}
 
@@ -339,7 +345,7 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 static int MsnEditProfile( WPARAM, LPARAM )
 {
 	char tUrl[ 4096 ];
-	_snprintf( tUrl, sizeof( tUrl ), "http://members.msn.com/Edit.asp?did=1&t=%s&js=yes", MSPAuth );
+	mir_snprintf( tUrl, sizeof( tUrl ), "http://members.msn.com/Edit.asp?did=1&t=%s&js=yes", MSPAuth );
 	MSN_CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );
 	return 0;
 }
@@ -453,9 +459,7 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 				ft->wszFileName = NULL;
 			}
 
-			if ( ft->std.currentFile != NULL )
-				free( ft->std.currentFile );
-			ft->std.currentFile = strdup( pfr->szFilename );
+			replaceStr( ft->std.currentFile, pfr->szFilename );
 	}	}
 
 	SetEvent( ft->hWaitEvent );
@@ -594,7 +598,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 		for ( int i=0; i < tThreads; i++ ) {
 			if (( long )tActiveThreads[i]->mJoinedContacts[0] < 0 ) {
 				char sessionName[ 255 ];
-				_snprintf( sessionName, sizeof( sessionName ), "%s%s",
+				mir_snprintf( sessionName, sizeof( sessionName ), "%s%s",
 					Translate( "MSN Chat #" ), tActiveThreads[i]->mChatID );
 				::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
 			}
@@ -748,6 +752,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 
 	filetransfer* sft = new filetransfer();
 	sft->std.totalFiles = 1;
+	sft->std.files = files;
 	sft->std.currentFile = strdup( files[0] );
 	sft->std.totalBytes = sft->std.currentFileSize = tFileSize;
 	sft->std.hContact = ccs->hContact;
@@ -772,7 +777,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 			pszFiles = *files;
 
 		char* pszFilesUTF = Utf8Encode( pszFiles );
-		_snprintf( msg, sizeof( msg ),
+		mir_snprintf( msg, sizeof( msg ),
 			"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 			"Application-Name: File Transfer\r\n"
 			"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
@@ -869,7 +874,7 @@ LBL_Error:
 	{	if ( thread->mJoinedCount == 0 )
 			seq = MsgQueue_Add( ccs->hContact, msg, 0, 0 );
 		else {
-			seq = thread->sendMessage( msg, MSG_REQUIRE_ACK );
+			seq = thread->sendMessage( msg, ( MyOptions.SlowSend ) ? MSG_REQUIRE_ACK : 0 );
 
 			if ( !MyOptions.SlowSend ) {
 				HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -898,7 +903,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 
 	char msg[ 1024 ];
 
-	_snprintf( msg, sizeof( msg ),
+	mir_snprintf( msg, sizeof( msg ),
 		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 		"Application-Name: NetMeeting\r\n"
 		"Application-GUID: {44BBA842-CC51-11CF-AAFA-00AA00B6015C}\r\n"
@@ -1049,7 +1054,7 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 		if ( MSN_GetStaticString( "LoginServer", NULL, tServer, sizeof( tServer )))
 			strcpy( tServer, MSN_DEFAULT_LOGIN_SERVER );
 
-		_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%i", tServer, tServerPort );
+		mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%i", tServer, tServerPort );
 		newThread->mServer[ sizeof(newThread->mServer)-1 ] = 0;
 
 		newThread->mType = SERVER_DISPATCH;
@@ -1082,7 +1087,7 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	char tCommand[ 1024 ];
-	_snprintf( tCommand, sizeof( tCommand ),
+	mir_snprintf( tCommand, sizeof( tCommand ),
 		"Content-Type: text/x-msmsgscontrol\r\n"
 		"TypingUser: %s\r\n\r\n\r\n", tEmail );
 

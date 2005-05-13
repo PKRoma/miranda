@@ -4,8 +4,30 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.0.3
+===============
+[!] bug #0001114 fixed: typinguser event never times out
+
+Version 0.4.0.2
+===============
+[+] added CHAT.DLL support
+[+] wish #0000862: Jabber conferences in contact list
+[!] bug #0001105 fixed: Miranda process do not die when shutdown (thanks baronng for a patch)
+[!] bug #0001109 fixed: XML specials in add contact
+[!] bug #0001108 fixed: Status-visibility for a contact not working correctly
+[!] bug #0001135 fixed: Cannot transfer File(s) between miranda/jabber to/from PSI or Exodus (or more)
+[!] fix for writing "MyHandle" setting every time.
+
 Version 0.4.0.1
 ===============
+[*] prepared to be released with M 0.4.
+[*] search by JID implemented without the v-card checking;
+[+] some minor improvements
+
+Version 0.2.0.2
+===============
+[+] search by JID now verifies the user's presense, instead of confirming any
+user input
 [+] wish #0000299: DisableMainMenuItem option wanted
 [-] reconnection ability removed, use KeepStatus plugin instead
 [!] bug #0000298 fixed: search by nickname instead of a full JID resulted

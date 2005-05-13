@@ -73,11 +73,18 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
 		{
 			now->tlv->pData = NULL;
 		}
-		else
-		{
+		else if (now->tlv->wLen <= len)
+    { // TODO: here should be error given out
 			now->tlv->pData = (BYTE *)malloc(now->tlv->wLen);
-			memcpy(now->tlv->pData, *buf, now->tlv->wLen);
+      if (now->tlv->pData)
+			  memcpy(now->tlv->pData, *buf, now->tlv->wLen);
 		}
+    else
+    { // the packet is shorter than it should be
+      SAFE_FREE(&now->tlv);
+      SAFE_FREE(&now);
+      return chain; // give at least the rest of chain
+    }
 
 		now->next = chain;
 		chain = now;
@@ -100,8 +107,10 @@ oscar_tlv* getTLV(oscar_tlv_chain *list, WORD wType, WORD wIndex)
 {
 	int i = 0;
 
-	while (list) {
-		if (list->tlv) {
+	while (list)
+  {
+		if (list->tlv) 
+    {
 			if (list->tlv->wType == wType)
 				i++;
 			if (i >= wIndex)

@@ -116,6 +116,17 @@
 
 
 
+// Plugin Type GUIDs
+#define PSIG_MESSAGE_s        0x00000000, 0x00000000, 0x00000000, 0x00000000
+#define PSIG_INFO_PLUGIN_s    0xa0e93f37, 0x4fe9d311, 0xbcd20004, 0xac96dd96
+#define PSIG_STATUS_PLUGIN_s  0x10cf40d1, 0x4fe9d311, 0xbcd20004, 0xac96dd96
+
+// Plugin Message GUIDs
+#define PMSG_QUERY_INFO_s     0xF002BF71, 0x4371D311, 0x8DD20010, 0x4B06462E
+#define PMSG_QUERY_STATUS_s   0x10180670, 0x5471D311, 0x8DD20010, 0x4B06462E
+
+
+
 // Message types
 #define MTYPE_PLAIN    0x01 // Plain text (simple) message
 #define MTYPE_CHAT     0x02 // Chat request message
@@ -136,7 +147,25 @@
 #define MTYPE_AUTODND  0xEB // Auto do not disturb message
 #define MTYPE_AUTOFFC  0xEC // Auto free for chat message
 
+#define MTYPE_GREETINGCARD    0x101 // Request for Contacts (internal use only)
+#define MTYPE_REQUESTCONTACTS 0x102 // Greeting Card
+
 #define MTYPE_UNKNOWN  0x00 // Unknown message, only used internally by this plugin
+
+// Message Plugin Type GUIDs
+#define MGTYPE_FILE_s           0xF02D12D9, 0x3091D311, 0x8DD70010, 0x4B06462E
+#define MGTYPE_WEBURL_s         0x371C5872, 0xE987D411, 0xA4C100D0, 0xB759B1D9
+#define MGTYPE_CONTACTS_s       0x2A0E7D46, 0x7676D411, 0xBCE60004, 0xAC961EA6 
+#define MGTYPE_GREETING_CARD_s  0x01E53B48, 0x2AE4D111, 0xB6790060, 0x97E1E294
+#define MGTYPE_CHAT_s           0xBFF720B2, 0x378ED411, 0xBD280004, 0xAC96D905
+#define MGTYPE_XTRAZ_SCRIPT_s   0x3b60b3ef, 0xd82a6c45, 0xa4e09c5a, 0x5e67e865
+
+// Message Plugin Sub-Type IDs
+#define MGTYPE_STANDARD_SEND      0x00
+#define MGTYPE_CONTACTS_REQUEST   0x02
+#define MGTYPE_SCRIPT_INVITATION  0x01
+#define MGTYPE_SCRIPT_NOTIFY      0x08
+
 
 
 /* Channels */
@@ -280,6 +309,12 @@
 #define SRV_LAST_USER_FOUND         0x01AE // Search: last user found reply
 #define META_REGISTRATION_STATS_ACK 0x0302 // Registration stats ack
 #define SRV_RANDOM_FOUND            0x0366 // Random search server reply
+#define META_REQUEST_FULL_INFO      0x04B2 // Request full user info
+#define META_REQUEST_SHORT_INFO     0x04BA // Request short user info
+#define META_REQUEST_SELF_INFO      0x04D0 // Request full self user info
+#define META_SEARCH_GENERIC         0x055F // Search user by details (TLV)
+#define META_SEARCH_UIN             0x0569 // Search user by UIN (TLV)
+#define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
 #define META_SET_FULLINFO_ACK       0x0C3F // Server ack for set fullinfo command
 #define META_SPAM_REPORT_ACK        0x2012 // Server ack for user spam report
@@ -306,22 +341,23 @@
 #define MFLAG_MULTI                 0x80 // This is multiple recipients message
 
 // Some SSI constants
-#define SSI_ITEM_BUDDY      0x0000  // Buddy record (name: uin for ICQ and screenname for AIM)
-#define SSI_ITEM_GROUP      0x0001  // Group record
-#define SSI_ITEM_PERMIT     0x0002  // Permit record ("Allow" list in AIM, and "Visible" list in ICQ)
-#define SSI_ITEM_DENY       0x0003  // Deny record ("Block" list in AIM, and "Invisible" list in ICQ)
-#define SSI_ITEM_VISIBILITY 0x0004  // Permit/deny settings or/and bitmask of the AIM classes
-#define SSI_ITEM_PRESENCE   0x0005  // Presence info (if others can see your idle status, etc)
-#define SSI_ITEM_UNKNOWN1   0x0009  // Unknown. ICQ2k shortcut bar items ?
-#define SSI_ITEM_IGNORE     0x000e  // Ignore list record.
-#define SSI_ITEM_NONICQ     0x0010  // Non-ICQ contact (to send SMS). Name: 1#EXT, 2#EXT, etc
-#define SSI_ITEM_UNKNOWN2   0x0011  // Unknown.
-#define SSI_ITEM_IMPORT     0x0013  // Item that contain roster import time (name: "Import time")
-#define SSI_ITEM_BUDDYICON  0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
+#define SSI_ITEM_BUDDY              0x0000  // Buddy record (name: uin for ICQ and screenname for AIM)
+#define SSI_ITEM_GROUP              0x0001  // Group record
+#define SSI_ITEM_PERMIT             0x0002  // Permit record ("Allow" list in AIM, and "Visible" list in ICQ)
+#define SSI_ITEM_DENY               0x0003  // Deny record ("Block" list in AIM, and "Invisible" list in ICQ)
+#define SSI_ITEM_VISIBILITY         0x0004  // Permit/deny settings or/and bitmask of the AIM classes
+#define SSI_ITEM_PRESENCE           0x0005  // Presence info (if others can see your idle status, etc)
+#define SSI_ITEM_UNKNOWN1           0x0009  // Unknown. ICQ2k shortcut bar items ?
+#define SSI_ITEM_IGNORE             0x000e  // Ignore list record.
+#define SSI_ITEM_NONICQ             0x0010  // Non-ICQ contact (to send SMS). Name: 1#EXT, 2#EXT, etc
+#define SSI_ITEM_UNKNOWN2           0x0011  // Unknown.
+#define SSI_ITEM_IMPORT             0x0013  // Item that contain roster import time (name: "Import time")
+#define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
 
 
 
 // Internal Constants
+#define ICQ_PLUG_VERSION            0x80030501
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

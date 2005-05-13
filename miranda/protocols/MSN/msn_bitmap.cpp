@@ -136,7 +136,7 @@ int __stdcall MSN_DibBitsToAvatar( BITMAPINFOHEADER* pDib, BYTE* pDibBits )
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	}
 	{	char* szBuffer = ( char* )alloca( 1000 );
-		_snprintf( szBuffer, 1000,
+		mir_snprintf( szBuffer, 1000,
 			"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"TFR43.dat\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
 			szEmail, dwPngSize, szSha1d, szSha1c );
 
@@ -162,7 +162,7 @@ int __stdcall MSN_DibBitsToAvatar( BITMAPINFOHEADER* pDib, BYTE* pDibBits )
 int __stdcall MSN_EnterBitmapFileName( char* szDest )
 {
 	char szFilter[ 512 ];
-	_snprintf( szFilter, sizeof( szFilter ),
+	mir_snprintf( szFilter, sizeof( szFilter ),
 		"%s%c*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF;*.PNG%c%s%c*.BMP;*.RLE%c%s%c*.JPG;*.JPEG%c%s%c*.GIF%c%s%c*.PNG%c%s%c*%c%c0",
 			MSN_Translate( "All Bitmaps" ), 0, 0,
 			MSN_Translate( "Windows Bitmaps" ), 0, 0,

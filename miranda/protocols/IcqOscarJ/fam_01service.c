@@ -41,6 +41,7 @@ extern int gnCurrentStatus;
 extern int icqGoingOnlineStatus;
 extern BYTE gbSsiEnabled;
 extern BYTE gbAvatarsEnabled;
+extern BYTE gbOverRate;
 extern int pendingAvatarsStart;
 extern DWORD dwLocalUIN;
 extern DWORD dwLocalInternalIP;
@@ -280,7 +281,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 	case ICQ_SERVER_NAME_INFO: // This is the reply to CLI_REQINFO
 		{
-
 			BYTE bUinLen;
 			oscar_tlv_chain *chain;
 
@@ -289,8 +289,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 			pBuffer += 4;      /* warning level & user class */
 			wBufferLength -= 5 + bUinLen;
 
-			if (pSnacHeader->dwRef == 0x0e0000) // This is during the login sequence
+			if (pSnacHeader->dwRef == ICQ_CLIENT_REQINFO<<0x10) // This is during the login sequence
 			{
+        DWORD dwValue;
 
 				// TLV(x01) User type?
 				// TLV(x0C) Empty CLI2CLI Direct connection info
@@ -298,13 +299,19 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 				// TLV(x0F) Number of seconds that user has been online
 				// TLV(x02) TIME MEMBERTIME The member since time (not sent)
 				// TLV(x03) The online since time.
-				// TLV(x05) Some unknown time. (not sent)
+				// TLV(x05) Member of ICQ since. (not sent)
 				// TLV(x0A) External IP again
 				// TLV(x06) The current online status.
 				// TLV(x1E) Unknown: empty.
 				chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
-				dwLocalExternalIP = getDWordFromChain(chain, 10, 1);
+				dwLocalExternalIP = getDWordFromChain(chain, 10, 1); 
+
+        dwValue = getDWordFromChain(chain, 5, 1); 
+        if (dwValue) DBWriteContactSettingDword(NULL, gpszICQProtoName, "MemberTS", dwValue);
+
+        DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", time(NULL));
+
 				disposeChain(&chain);
 
 				// If we are in SSI mode, this is sent after the list is acked instead
@@ -341,9 +348,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 				// Start sending Keep-Alive packets
 				if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
 					forkthread(icq_keepAliveThread, 0, NULL);
-
 			}
-
 		}
 		break;
 
@@ -360,13 +365,15 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       unpackWord(&pBuffer, &wClass);
 
 			if (wStatus == 2 || wStatus == 3)
-			{
+      { // this is only the simplest solution, needs rate management to every section
         ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
-				icq_EnableUserLookup(FALSE);
+        gbOverRate = 1; // block user requests (user info, status messages, etc.)
+				icq_PauseUserLookup(); // pause auto-info update thread
 			}
 			else if (wStatus == 4)
 			{
         ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
+        gbOverRate = 0; // enable user requests
 				icq_EnableUserLookup(TRUE);
 			}
 		}
@@ -474,15 +481,16 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           if (DBGetContactSetting(NULL, gpszICQProtoName, "AvatarFile", &dbv))
           { // we have no file to upload, remove hash from server
             Netlib_Logf(ghServerNetlibUser, "We do not have avatar, removing hash.");
-            updateServAvatarHash(NULL);
-
+            updateServAvatarHash(NULL, 0);
+            LinkContactPhotoToFile(NULL, NULL);
             break;
           }
           hash = calcMD5Hash(dbv.pszVal);
           if (!hash)
           { // the hash could not be calculated, remove from server
             Netlib_Logf(ghServerNetlibUser, "We could not obtain hash, removing hash.");
-            updateServAvatarHash(NULL);
+            updateServAvatarHash(NULL, 0);
+            LinkContactPhotoToFile(NULL, NULL);
           }
           else if (!memcmp(hash, pBuffer+4, 0x10))
           { // we have the right file
@@ -500,6 +508,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             if (cbFileSize != 0)
             {
               SetAvatarData(NULL, ppMap, cbFileSize);
+              LinkContactPhotoToFile(NULL, dbv.pszVal);
             }
 
             if (ppMap != NULL) UnmapViewOfFile(ppMap);
@@ -517,19 +526,21 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
               pHash[0] = 1; // state of the hash
               pHash[1] = 0x10; // len of the hash
               memcpy(pHash+2, hash, 0x10);
-              updateServAvatarHash(pHash);
+              updateServAvatarHash(pHash, 0x12);
               SAFE_FREE(&pHash);
             }
             else
             {
               Netlib_Logf(ghServerNetlibUser, "We could not set hash, removing hash.");
-              updateServAvatarHash(NULL);
+              updateServAvatarHash(NULL, 0);
             }
             SAFE_FREE(&hash);
           }
 
           DBFreeVariant(&dbv);
           break;
+        default:
+          Netlib_Logf(ghServerNetlibUser, "Reiceived UNKNOWN Avatar Status.");
         }
       }
     }
@@ -557,7 +568,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 		break;
 
 	}
-
 }
 
 
@@ -722,7 +732,6 @@ void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 
 void setUserInfo()
 { // CLI_SETUSERINFO
-
   icq_packet packet;
   WORD wAdditionalData = 0;
 
@@ -747,13 +756,13 @@ void setUserInfo()
   wAdditionalData += 16;
 #endif
 
-  packet.wLen = 30 + wAdditionalData;
+  packet.wLen = 46 + wAdditionalData;
   write_flap(&packet, 2);
   packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, ICQ_LOCATION_SET_USER_INFO<<0x10);
 
   /* TLV(5): capability data */
   packWord(&packet, 0x0005);
-  packWord(&packet, (WORD)(16 + wAdditionalData));
+  packWord(&packet, (WORD)(32 + wAdditionalData));
 
 
 #ifdef DBG_CAPMTN
@@ -815,6 +824,11 @@ void setUserInfo()
   packDWord(&packet, 0x4c7f11d1);
   packDWord(&packet, 0x82224445);
   packDWord(&packet, 0x53540000);
+
+  packDWord(&packet, 0x4D697261); // Miranda Signature
+  packDWord(&packet, 0x6E64614D);
+  packDWord(&packet, MIRANDA_VERSION);
+  packDWord(&packet, ICQ_PLUG_VERSION);
 
   sendServPacket(&packet);
 }
@@ -927,23 +941,23 @@ void handleServUINSettings(int nPort, int nIP)
 		packet.wLen = 65;
 		write_flap(&packet, 2);
 		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
-		packDWord(&packet, 0x00060004);	// TLV 6: Status mode and security flags
-		packWord(&packet, wFlags);      // Status flags
-		packWord(&packet, wStatus);     // Status
-		packDWord(&packet, 0x00080002);	// TLV 8: Error code
+		packDWord(&packet, 0x00060004);	            // TLV 6: Status mode and security flags
+		packWord(&packet, wFlags);                  // Status flags
+		packWord(&packet, wStatus);                 // Status
+		packDWord(&packet, 0x00080002);	            // TLV 8: Error code
 		packWord(&packet, 0x0000);
-		packDWord(&packet, 0x000c0025); // TLV C: Direct connection info
+		packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
 		packDWord(&packet, nIP);
 		packDWord(&packet, nPort);
-		packByte(&packet, DC_TYPE);         // TCP/FLAG firewall settings
+		packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
 		packWord(&packet, ICQ_VERSION);
-		packDWord(&packet, 0x00000000);     // DC Cookie (TODO)
-		packDWord(&packet, WEBFRONTPORT);   // Web front port
-		packDWord(&packet, CLIENTFEATURES); // Client features
-		packDWord(&packet, 0xffffffff);     // Abused timestamp
-		packDWord(&packet, 0x00030500);     // Abused timestamp
-		packDWord(&packet, 0x00000000);     // Timestamp
-		packWord(&packet, 0x0000);          // Unknown
+		packDWord(&packet, dwLocalDirectConnCookie);// DC Cookie
+		packDWord(&packet, WEBFRONTPORT);           // Web front port
+		packDWord(&packet, CLIENTFEATURES);         // Client features
+		packDWord(&packet, 0xffffffff);             // Abused timestamp
+		packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
+		packDWord(&packet, 0x00000000);             // Timestamp
+		packWord(&packet, 0x0000);                  // Unknown
 
 		sendServPacket(&packet);
 	}
@@ -987,7 +1001,6 @@ void handleServUINSettings(int nPort, int nIP)
 
   if (gbAvatarsEnabled)
   { // Send SNAC 1,4 - request avatar family 0x10 connection
-
     icq_requestnewfamily(0x10, StartAvatarThread);
 
     pendingAvatarsStart = 1;

@@ -76,7 +76,7 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 	unpackDWord(&buf, &dwSid2);
 	unpackDWord(&buf, &dwSid3);
 	unpackDWord(&buf, &dwSid4);
-	_snprintf(szSid, 33, "%08x%08x%08x%08x", dwSid1, dwSid2, dwSid3, dwSid4);
+	mir_snprintf(szSid, 33, "%08x%08x%08x%08x", dwSid1, dwSid2, dwSid3, dwSid4);
 	unpackWord(&buf, &wIpLen);
 
 	if(responseBytes < 30 + wIpLen || wIpLen == 0 || wIpLen > sizeof(szHttpServer) - 1)
@@ -93,8 +93,8 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 	nlhpi.szHttpGetUrl = szHttpGetUrl;
 	nlhpi.szHttpPostUrl = szHttpPostUrl;
 	nlhpi.firstPostSequence = 1;
-	_snprintf(szHttpGetUrl, 300, "http://%s/monitor?sid=%s", szHttpServer, szSid);
-	_snprintf(szHttpPostUrl, 300, "http://%s/data?sid=%s&seq=", szHttpServer, szSid);
+	mir_snprintf(szHttpGetUrl, 300, "http://%s/monitor?sid=%s", szHttpServer, szSid);
+	mir_snprintf(szHttpPostUrl, 300, "http://%s/data?sid=%s&seq=", szHttpServer, szSid);
 
   return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }

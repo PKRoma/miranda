@@ -27,7 +27,9 @@
  */
 int YahooOptInit(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp = { 0 };
+	OPTIONSDIALOGPAGE odp;
+	
+	ZeroMemory(&odp, sizeof( odp ));
 	odp.cbSize						= sizeof(odp);
 	odp.position					= -790000000;
 	odp.hInstance					= hinstance;
@@ -74,7 +76,8 @@ void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck)
 BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
-
+	YList *l;
+	
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
@@ -102,9 +105,17 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		SetButtonCheck( hwndDlg, IDC_DISMAINMENU, YAHOO_GetByte( "DisableMainMenu", 0 ) );
 		SetButtonCheck( hwndDlg, IDC_DISABLE_UTF8, YAHOO_GetByte( "DisableUTF8", 0 )); 
 		SetButtonCheck( hwndDlg, IDC_USE_YAB, YAHOO_GetByte( "UseYAB", 1 )); 
-		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, YAHOO_GetByte( "ShowErrors", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, YAHOO_GetByte( "ShowAvatars", 0 )); 
 		
+		/* show our current ignore list */
+		l = YAHOO_GetIgnoreList();
+		while (l != NULL) {
+			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
+			
+			//MessageBox(NULL, b->id, "ID", MB_OK);
+			SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, 0, b->id);
+			l = l->next;
+		}
 		return TRUE;
 
 	case WM_COMMAND:
@@ -119,10 +130,61 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
     			break;
     		
+			case IDC_IGN_ADD: 
+							{
+							  char id[128];
+							  int l;
+							  
+							  if (!yahooLoggedIn) {
+								MessageBox(hwndDlg, "You need to be connected to Yahoo to add to Ignore List.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+								break;
+							  }
+
+							  
+							  l = GetDlgItemText( hwndDlg, IDC_YIGN_EDIT, id, sizeof( id ));
+							  
+							  if (l < 3) {
+								MessageBox(hwndDlg, "Please enter a valid buddy name to ignore.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+								break;
+							  }
+							  
+							  l = SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_FINDSTRINGEXACT, -1, id);
+							  if (l != LB_ERR ) {
+								MessageBox(hwndDlg, "The buddy is already on your ignore list. ", "Yahoo Ignore", MB_OK | MB_ICONINFORMATION);
+								break;
+							  }
+							   YAHOO_IgnoreBuddy(id, 0);
+							   SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, -1, id);
+							   SetDlgItemText( hwndDlg, IDC_YIGN_EDIT, "" );
+							}  
+							break;
+			
+			case IDC_IGN_REMOVE:
+							{
+								char id[128];
+								
+								if (!yahooLoggedIn) {
+									MessageBox(hwndDlg, "You need to be connected to Yahoo to add to Ignore List.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+									break;
+								}
+							  
+								l = SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_GETCURSEL, 0, 0);
+								if (l == LB_ERR) {
+									MessageBox(hwndDlg, "Please select a buddy on the ignore list to remove.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+									break;
+								}
+								
+								SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_GETTEXT, l, id);
+								
+								YAHOO_IgnoreBuddy(id, 1);
+							    SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_DELETESTRING, l, 0);
+							}	
+								
+							break;
+			
     		case IDC_DISMAINMENU:
 			case IDC_DISABLE_UTF8: 
 			case IDC_USE_YAB:	
-			case IDC_SHOW_ERRORS:
 			case IDC_SHOW_AVATARS:
     		    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
     		    break;
@@ -179,7 +241,6 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	        YAHOO_SetByte("DisableMainMenu", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISMAINMENU ));
 			YAHOO_SetByte("DisableUTF8", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_UTF8 )); 
 			YAHOO_SetByte("UseYAB", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_YAB )); 
-			YAHOO_SetByte("ShowErrors", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_ERRORS )); 
 			YAHOO_SetByte("ShowAvatars", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_AVATARS )); 
 			
 			if ( restartRequired )
@@ -238,12 +299,13 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetButtonCheck( hwndDlg, IDC_DISABLEYAHOOMAIL,  !toSet);
 		
 		SetButtonCheck( hwndDlg, IDC_NOTIFY_USERTYPE, YAHOO_GetByte( "DisplayTyping", 1 ));
+		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, YAHOO_GetByte( "ShowErrors", 0 )); 
 		
 		tTimeout = YAHOO_GetDword( "PopupTimeout", 3 );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, YAHOO_GetDword( "PopupTimeoutOther", tTimeout ), FALSE );
 
-		toSet = YAHOO_GetByte( "DisplayTyping", 0 );
+		toSet = YAHOO_GetByte( "DisplayTyping", 0 ) || YAHOO_GetByte( "ShowErrors", 0 );
     	
     	EnableWindow( GetDlgItem( hwndDlg, IDC_PREVIEW2 ), toSet );
 		if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )) 
@@ -273,10 +335,11 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
     		    break;
 			
     		case IDC_NOTIFY_USERTYPE:
+			case IDC_SHOW_ERRORS:
     		    {
     			BOOL toSet;
     			    			
-    			if (!IsDlgButtonChecked(hwndDlg,IDC_NOTIFY_USERTYPE)==BST_CHECKED)
+    			if (!IsDlgButtonChecked(hwndDlg,IDC_NOTIFY_USERTYPE)==BST_CHECKED && !IsDlgButtonChecked(hwndDlg,IDC_SHOW_ERRORS)==BST_CHECKED)
     			       {toSet=FALSE;}
                 else
                        {toSet=TRUE;}
@@ -311,6 +374,7 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			switch (((LPNMHDR)lParam)->code) {
 			   case PSN_APPLY:
 			        YAHOO_SetByte("DisableYahoomail", ( BYTE )!IsDlgButtonChecked( hwndDlg, IDC_DISABLEYAHOOMAIL ));
+					YAHOO_SetByte("ShowErrors", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_ERRORS )); 
 					YAHOO_SetByte("DisplayTyping", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_USERTYPE ));
                     YAHOO_SetDword("PopupTimeout", GetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE ) );
 				    YAHOO_SetDword("PopupTimeoutOther", GetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, NULL, FALSE ) );

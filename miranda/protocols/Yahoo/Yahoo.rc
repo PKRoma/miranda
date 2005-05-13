@@ -35,6 +35,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+	// Yahoo Login Information [Top Box]
     GROUPBOX        "Yahoo",IDC_STYAHOOGROUP,8,10,280,76,WS_GROUP
     RTEXT           "ID:",IDC_STATIC,16,20,52,8
     EDITTEXT        IDC_HANDLE,72,18,100,12,ES_AUTOHSCROLL
@@ -43,28 +44,35 @@ BEGIN
     CONTROL         "Create a new Yahoo account using the Yahoo website",
                     IDC_NEWYAHOOACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,72,208,8
 
-    GROUPBOX        "Expert",IDC_STATIC,8,88,280,118
+	// Expert Section [Server/Port/etc]
+    GROUPBOX        "Expert",IDC_STATIC,8,88,150,118
 	
-    RTEXT           "Login server:",IDC_STATIC,12,104,52,10
-    EDITTEXT        IDC_LOGINSERVER,68,102,97,12,ES_AUTOHSCROLL
-    RTEXT           "Port:",IDC_STATIC,170,104,25,10
-    EDITTEXT        IDC_YAHOOPORT,199,102,29,12,ES_AUTOHSCROLL | ES_NUMBER
-	PUSHBUTTON      "Reset",IDC_RESETSERVER,235,102,34,12
+    LTEXT           "Login server:",IDC_STATIC,16,102,52,10
+    EDITTEXT        IDC_LOGINSERVER,68,100,80,12,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,16,116,25,10
+    EDITTEXT        IDC_YAHOOPORT,68,114,29,12,ES_AUTOHSCROLL | ES_NUMBER
+	PUSHBUTTON      "Reset",IDC_RESETSERVER,100,114,34,12
 	
 	CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,116,220,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,132,140,10 					
 
     CONTROL         "Disable main menu (needs restart)",IDC_DISMAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,130,220,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,142,140,10
 	
 	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,144,220,10 					
-
-	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,160,220,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,152,140,10 					
 
 	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,174,220,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,162,120,10 					
+
+    GROUPBOX        "Yahoo Ignore List",IDC_STYAHOOGROUP,158,88,130,118,WS_GROUP
+	
+	EDITTEXT 		IDC_YIGN_EDIT,164,102,84,13, ES_AUTOHSCROLL
+	PUSHBUTTON 		"Add",IDC_IGN_ADD,250,102,34,15
+	
+	CONTROL 		"",IDC_YIGN_LIST,"ListBox",0x50010141,164,118,84,85,0x00000200
+		
+	PUSHBUTTON 		"Remove", IDC_IGN_REMOVE, 250,188,34,15
 
 END
 
@@ -92,7 +100,12 @@ BEGIN
     DEFPUSHBUTTON   "Preview",IDC_PREVIEW,176,104,52,12
     GROUPBOX        "Other",IDC_STATIC,4,128,232,58
     CONTROL         "Display popups when user is typing",IDC_NOTIFY_USERTYPE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,140,216,10
+	                "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,140,216,10
+
+	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,154,220,10 					
+
+					
     LTEXT           "Timeout (*)",IDC_STATIC,12,166,60,8
     EDITTEXT        IDC_POPUP_TIMEOUT2,72,164,24,12,ES_AUTOHSCROLL | 
                     ES_NUMBER

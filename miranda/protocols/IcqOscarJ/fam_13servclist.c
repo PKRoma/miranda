@@ -45,6 +45,7 @@ extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 
 extern void setUserInfo();
+extern int GroupNameExists(const char *name,int skipGroup);
 
 BOOL bIsSyncingCL = FALSE;
 
@@ -219,7 +220,6 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 		break;
 
 	}
-
 }
 
 
@@ -760,6 +760,9 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           char* pszProto;
           DWORD dwUin;
           int bAdded = 0;
+          int bRegroup = 0;
+          int bNicked = 0;
+          WORD wOldGroupId;
 
           // This looks like a real contact
           // Check if this user already exists in local list
@@ -822,13 +825,43 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
           }
 
+          wOldGroupId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
 					// Save group and item ID
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", wItemId);
 					DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", wGroupId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
-          // TODO: this will be enabled when Manage Serv-list dialog is finished
-          if (/*DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) ||*/ bAdded)
+          if (!bAdded && (wOldGroupId != wGroupId) && DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD))
+          { // contact has been moved on the server
+            char* szOldGroup = getServerGroupName(wOldGroupId);
+            char* szGroup = getServerGroupName(wGroupId);
+
+            if (!szOldGroup)
+            { // old group is not known, most probably not created subgroup
+              DBVARIANT dbv;
+
+              if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
+              { // get group from CList
+                if (dbv.pszVal && strlen(dbv.pszVal) > 0)
+                  szOldGroup = _strdup(dbv.pszVal);
+                DBFreeVariant(&dbv);
+              }
+              if (!szOldGroup) szOldGroup = _strdup(DEFAULT_SS_GROUP);
+            }
+
+            if (!szGroup || strlennull(szGroup)>=strlennull(szOldGroup) || strnicmp(szGroup, szOldGroup, strlennull(szGroup)))
+            { // contact moved to new group or sub-group or not to master group
+              bRegroup = 1;
+            }
+            if (bRegroup && !stricmp(DEFAULT_SS_GROUP, szGroup) && !GroupNameExists(szGroup, -1))
+            { // is it the default "General" group ? yes, does it exists in CL ?
+              bRegroup = 0; // if no, do not move to it - cause it would hide the contact
+            }
+            SAFE_FREE(&szGroup);
+            SAFE_FREE(&szOldGroup);
+          }
+
+          if (bRegroup || bAdded)
           { // if we should load server details or contact was just added, update its group
             char* szGroup;
 
@@ -872,6 +905,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 										Netlib_Logf(ghServerNetlibUser, "Failed to convert Nickname '%s' from UTF-8", pszNick);
 									}
 
+                  bNicked = 1;
+
 									// Write nickname to database
 									if (DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
@@ -903,6 +938,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 								Netlib_Logf(ghServerNetlibUser, "Invalid nickname");
 							}
 						}
+            if (bAdded && !bNicked)
+              icq_QueueUser(hContact); // queue user without nick for fast auto info update
 
 						// Look for comment TLV and copy it to the db if necessary
 						if (pTLV = getTLV(pChain, 0x013C, 1))
@@ -1318,6 +1355,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 		// No contacts left to sync
 		bIsSyncingCL = FALSE;
 
+    icq_RescanInfoUpdate();
+
 		if (wLen >= 4)
 		{
 			DWORD dwLastUpdateTime;
@@ -1363,7 +1402,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 {
-
 	BYTE nUinLen;
 	BYTE szUin[10];
 	WORD wReasonLen;
@@ -1371,9 +1409,13 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	HANDLE hcontact;
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
+  char* szReason;
+  int nReasonLen;
+  char* szNick;
+  int nNickLen;
 	char* szBlob;
 	char* pCurBlob;
-
+  DBVARIANT dbv;
 
 	unpackByte(&buf, &nUinLen);
 	wLen -= 1;
@@ -1402,6 +1444,23 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	pre.flags=0;
 	pre.timestamp=time(NULL);
 	pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+wReasonLen+5;
+  szReason = (char*)malloc(wReasonLen+1);
+  if (szReason)
+  {
+    memcpy(szReason, buf, wReasonLen);
+    szReason[wReasonLen] = '\0';
+    szReason = detect_decode_utf8(szReason); // detect & decode UTF-8
+  }
+  nReasonLen = strlennull(szReason);
+  // Read nick name from DB
+  if (DBGetContactSetting(ccs.hContact, gpszICQProtoName, "Nick", &dbv))
+    nNickLen = 0;
+  else
+  {
+    szNick = dbv.pszVal;
+    nNickLen = strlennull(szNick);
+  }
+  pre.lParam += nNickLen + nReasonLen;
 
   DBWriteContactSettingByte(ccs.hContact, gpszICQProtoName, "Grant", 1);
 
@@ -1409,16 +1468,33 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	pCurBlob=szBlob=(char *)malloc(pre.lParam);
 	memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
 	memcpy(pCurBlob,&hcontact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
+  if (nNickLen) 
+  { // if we have nick we add it, otherwise keep trailing zero
+    memcpy(pCurBlob, szNick, nNickLen);
+    pCurBlob+=nNickLen;
+  }
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0; pCurBlob++;
 	*(char *)pCurBlob = 0; pCurBlob++;
-	memcpy(pCurBlob, buf, wReasonLen); pCurBlob += wReasonLen;
+  if (nReasonLen)
+  {
+    memcpy(pCurBlob, szReason, nReasonLen);
+    pCurBlob += nReasonLen;
+  }
+  else
+  {
+	  memcpy(pCurBlob, buf, wReasonLen); 
+    pCurBlob += wReasonLen;
+  }
 	*(char *)pCurBlob = 0;
 	pre.szMessage=(char *)szBlob;
-// TODO: Change for new auth system, include all known informations
 
+// TODO: Change for new auth system, include all known informations
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
+
+  SAFE_FREE(&szReason);
+  DBFreeVariant(&dbv);
 }
 
 
@@ -1620,7 +1696,7 @@ void updateServVisibilityCode(BYTE bCode)
 
 // Updates the avatar hash used while in SSI mode. If a server ID is
 // not stored in the local DB, a new ID will be added to the server list.
-void updateServAvatarHash(char* pHash)
+void updateServAvatarHash(char* pHash, int size)
 {
   icq_packet packet;
   WORD wAvatarID;
@@ -1657,7 +1733,7 @@ void updateServAvatarHash(char* pHash)
     dwCookie = AllocateCookie(wCommand, 0, ack); // take cookie
 
     // Build and send packet
-    packet.wLen = 47;
+    packet.wLen = 29 + size;
     write_flap(&packet, ICQ_DATA_CHAN);
     packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
     packWord(&packet, 1);                   // Name length
@@ -1665,12 +1741,12 @@ void updateServAvatarHash(char* pHash)
     packWord(&packet, 0);                   // GroupID (0 if not relevant)
     packWord(&packet, wAvatarID);           // EntryID
     packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
-    packWord(&packet, 0x1A);                // Length in bytes of following TLV
+    packWord(&packet, (WORD)(0x8 + size));          // Length in bytes of following TLV
     packWord(&packet, 0x131);               // TLV Type (Name)
     packWord(&packet, 0);                   // TLV Length (empty)
     packWord(&packet, 0xD5);                // TLV Type
-    packWord(&packet, 0x12);                // TLV Length
-    packBuffer(&packet, pHash, 0x12);       // TLV Value (avatar hash)
+    packWord(&packet, (WORD)size);                // TLV Length
+    packBuffer(&packet, pHash, (WORD)size);       // TLV Value (avatar hash)
     sendServPacket(&packet);
     // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
     // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash

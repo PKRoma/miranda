@@ -1,5 +1,5 @@
 =================================================================================
-Yahoo 0.3.0.5 plugin for Miranda IM
+Yahoo 0.3.0.6 plugin for Miranda IM
 
 Copyright (C) 2003-5 Gennady Feldman (aka Gena01)
 Copyright (C) 2003-4 Laurent Marechal (aka Peorth)
@@ -23,6 +23,8 @@ Table of Contents:
 
 1. What's New:
 --------------
+x Fixed a crash bug.
+x Enable translations for some strings. [Missed them before]
 x Various bug fixes and improvements.
 
 2. Installation:

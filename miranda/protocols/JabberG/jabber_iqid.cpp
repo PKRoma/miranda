@@ -36,7 +36,6 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 	char* type;
 	char* str;
 	char text[256];
-	int iqId;
 
 	// RECVED: result of the request for authentication method
 	// ACTION: send account authentication information to log in
@@ -50,12 +49,12 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 				wsprintf( text, "%s%s", streamId, str );
 				free( str );
 				if (( str=JabberSha1( text )) != NULL ) {
-					_snprintf( text, sizeof( text ), "<digest>%s</digest>", str );
+					mir_snprintf( text, sizeof( text ), "<digest>%s</digest>", str );
 					free( str );
 			}	}
 		}
 		else if ( JabberXmlGetChild( queryNode, "password" ) != NULL ) {
-			_snprintf( text, sizeof( text ), "<password>%s</password>", UTF8( info->password ));
+			mir_snprintf( text, sizeof( text ), "<password>%s</password>", UTF8( info->password ));
 		}
 		else {
 			JabberLog( "No known authentication mechanism accepted by the server." );
@@ -64,12 +63,12 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 		}
 		if ( JabberXmlGetChild( queryNode, "resource" ) != NULL ) {
 			if (( str=JabberTextEncode( info->resource )) != NULL ) {
-				_snprintf( text+strlen( text ), sizeof( text )-strlen( text ), "<resource>%s</resource>", str );
+				mir_snprintf( text+strlen( text ), sizeof( text )-strlen( text ), "<resource>%s</resource>", str );
 				free( str );
 		}	}
 
 		if (( str=JabberTextEncode( info->username )) != NULL ) {
-			iqId = JabberSerialNext();
+			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultSetAuth );
 			JabberSend( info->s, "<iq type='set' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:auth'><username>%s</username>%s</query></iq>", iqId, str, text );
 			free( str );
@@ -112,11 +111,26 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		char text[128];
 
 		JabberSend( info->s, "</stream:stream>" );
-		_snprintf( text, sizeof( text ), "%s %s@%s.", JTranslate( "Authentication failed for" ), info->username, info->server );
+		mir_snprintf( text, sizeof( text ), "%s %s@%s.", JTranslate( "Authentication failed for" ), info->username, info->server );
 		MessageBox( NULL, text, JTranslate( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		jabberThreadInfo = NULL;	// To disallow auto reconnect
 }	}
+
+void CALLBACK sttCreateRoom( ULONG dwParam )
+{
+	char* jid = ( char* )dwParam, *p;
+
+	GCWINDOW gcw = {0};
+	gcw.cbSize = sizeof(GCWINDOW);
+	gcw.iType = GCW_CHATROOM;
+	gcw.pszID = jid;
+	gcw.pszModule = jabberProtoName;
+	gcw.pszName = strcpy(( char* )alloca( strlen(jid)+1 ), jid );
+	if (( p = strchr( gcw.pszName, '@' )) != NULL )
+		*p = 0;
+	CallService( MS_GC_NEWCHAT, 0, ( LPARAM )&gcw );
+}
 
 void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 {
@@ -167,7 +181,24 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 								// Add the jid ( with empty resource ) to Miranda contact list.
 								hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
 							}
-							DBWriteContactSettingString( hContact, "CList", "Nick", nick );
+                     
+							if ( JGetByte( hContact, "ChatRoom", 0 ))
+								QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
+
+                     char szNick[ 256 ];
+							if ( !JGetStaticString( "Nick", hContact, szNick, sizeof szNick )) {
+								if ( strcmp( nick, szNick ) != 0 )
+									DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+								else
+									DBDeleteContactSetting( hContact, "CList", "MyHandle" );
+								JFreeVariant( &dbv );
+							}
+							else JSetString( hContact, "CList", nick );
+							DBDeleteContactSetting( hContact, "CList", "Nick" );
+
+							if ( JGetByte( hContact, "ChatRoom", 0 ))
+								DBDeleteContactSetting( hContact, "CList", "Hidden" );
+
 							if ( item->group ) 
 								free( item->group );
 
@@ -226,14 +257,7 @@ void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata )
 			}
 
 			jabberOnline = TRUE;
-
-			CLISTMENUITEM clmi;
-			memset( &clmi, 0, sizeof( CLISTMENUITEM ));
-			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_FLAGS;
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
-			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+			JabberEnableMenuItems( TRUE );
 
 			if ( hwndJabberGroupchat )
 				SendMessage( hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
@@ -486,9 +510,9 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 							JabberTextDecode( m->text );
 							if ( hContact != NULL ) {
 								if (( o=JabberXmlGetChild( n, "EXTADR" )) != NULL && o->text != NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else if (( o=JabberXmlGetChild( n, "EXTADD" ))!=NULL && o->text!=NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else
 									strncpy( text, m->text, sizeof( text ));
 								text[sizeof( text )-1] = '\0';
@@ -534,9 +558,9 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 							JabberStringDecode( m->text );
 							if ( hContact != NULL ) {
 								if (( o=JabberXmlGetChild( n, "EXTADR" ))!=NULL && o->text!=NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else if (( o=JabberXmlGetChild( n, "EXTADD" ))!=NULL && o->text!=NULL )
-									_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
+									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
 								else
 									strncpy( text, m->text, sizeof( text ));
 								text[sizeof( text )-1] = '\0';

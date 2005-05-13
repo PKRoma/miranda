@@ -2,7 +2,7 @@
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
-# TARGTYPE "Win32 ( x86) Dynamic-Link Library" 0x0102
+# TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=jabberg - Win32 Release
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
@@ -17,8 +17,8 @@ CFG=jabberg - Win32 Release
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "jabberg - Win32 Release" ( based on "Win32 ( x86) Dynamic-Link Library")
-!MESSAGE "jabberg - Win32 Debug" ( based on "Win32 ( x86) Dynamic-Link Library")
+!MESSAGE "jabberg - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "jabberg - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -108,6 +108,10 @@ SOURCE=.\jabber_byte.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_chat.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_file.cpp
 # ADD CPP /Yu
 # End Source File
@@ -128,11 +132,6 @@ SOURCE=.\jabber_groupchat.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_groupchatlog.cpp
-# ADD CPP /Yu
-# End Source File
-# Begin Source File
-
 SOURCE=.\jabber_iq.cpp
 # ADD CPP /Yu
 # End Source File
@@ -145,6 +144,10 @@ SOURCE=.\jabber_iqid.cpp
 
 SOURCE=.\jabber_iqid_muc.cpp
 # ADD CPP /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_libstr.cpp
 # End Source File
 # Begin Source File
 

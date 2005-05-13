@@ -87,11 +87,12 @@ CPPFLAGS  = -g $(DEFINES) $(INC)
 else
 CFLAGS  = -O2 $(DEFINES) $(INC)
 CPPFLAGS  = -O2 $(DEFINES) $(INC)
+LFLAGS := $(LFLAGS) -Wl,-s
 endif
 
 # Targets
 all : libgadu/libgadu.a $(OBJ) $(RES)
-	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
+	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB)
 ifdef UPX
 ifndef DEBUG
 	$(UPX) $(BIN)

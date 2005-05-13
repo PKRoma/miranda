@@ -34,7 +34,7 @@ void aim_filerecv_deny(char *user, char *cookie)
 {
     char buf[MSG_LEN];
 
-    _snprintf(buf, sizeof(buf), "toc_rvous_cancel %s %s %s", user, cookie, UID_AIM_FILE_RECV);
+    mir_snprintf(buf, sizeof(buf), "toc_rvous_cancel %s %s %s", user, cookie, UID_AIM_FILE_RECV);
     aim_toc_sflapsend(buf, -1, TYPE_DATA);
 }
 
@@ -42,7 +42,7 @@ void aim_filerecv_accept(char *user, char *cookie)
 {
     char buf[MSG_LEN];
 
-    _snprintf(buf, sizeof(buf), "toc_rvous_accept %s %s %s", user, cookie, UID_AIM_FILE_RECV);
+    mir_snprintf(buf, sizeof(buf), "toc_rvous_accept %s %s %s", user, cookie, UID_AIM_FILE_RECV);
     aim_toc_sflapsend(buf, -1, TYPE_DATA);
 }
 
@@ -52,19 +52,12 @@ void aim_filerecv_debug_header(struct aim_filerecv_request *ft)
 
     PLOG(LOG_INFO, "[%s] FRH: hl=%d tp=0x%04x fc=%d l=%d p=%d pl=%d ts=%d s=%d r=%d t=%d f=0x%02x id=%s name=%s",
          ft->cookie,
-		 ntohs(f->hdrlen),
-	     f->hdrtype,
+         ntohs(f->hdrlen),
+         f->hdrtype,
          ntohs(f->totfiles),
-		 ntohs(f->filesleft),
-		 ntohs(f->totparts),
-		 ntohs(f->partsleft),
-		 ntohl(f->totsize),
-	     ntohl(f->size),
-	     ntohl(f->nrecvd),
-         ntohl(f->modtime),
-		 f->flags,
-         f->idstring,
-		 f->name);
+         ntohs(f->filesleft),
+         ntohs(f->totparts),
+         ntohs(f->partsleft), ntohl(f->totsize), ntohl(f->size), ntohl(f->nrecvd), ntohl(f->modtime), f->flags, f->idstring, f->name);
 }
 
 static void aim_filerecv_mkdirtree(char *szDir)
@@ -110,7 +103,7 @@ static char *aim_filerecv_fixpath(const char *file)
         return NULL;
     f = (char *) malloc(strlen(file) + 1);
     strcpy(f, file);
-    for (i = 0; i < (int)strlen(f); i++) {
+    for (i = 0; i < (int) strlen(f); i++) {
         if (f[i] == 1)
             f[i] = '\\';
         if (f[i] == ':')
@@ -119,31 +112,36 @@ static char *aim_filerecv_fixpath(const char *file)
     return f;
 }
 
-static int aim_filerecv_openfile(struct aim_filerecv_request *ft) {
-	char file[MAX_PATH], *szfilename, *szname;
+static int aim_filerecv_openfile(struct aim_filerecv_request *ft)
+{
+    char file[MAX_PATH], *szfilename, *szname;
 
     szfilename = szname = 0;
-    if (ft->filename) szfilename = aim_filerecv_fixpath(ft->filename);
-    if (ft->hdr.name) szname = aim_filerecv_fixpath(ft->hdr.name);
-	_snprintf(file, sizeof(file), "%s\\%s%s%s", ft->savepath, szfilename, ntohs(ft->hdr.totfiles)==1?"":"\\", ntohs(ft->hdr.totfiles)==1?"":szname);
-	XFREE(szfilename);
+    if (ft->filename)
+        szfilename = aim_filerecv_fixpath(ft->filename);
+    if (ft->hdr.name)
+        szname = aim_filerecv_fixpath(ft->hdr.name);
+    mir_snprintf(file, sizeof(file), "%s\\%s%s%s", ft->savepath, szfilename, ntohs(ft->hdr.totfiles) == 1 ? "" : "\\",
+                 ntohs(ft->hdr.totfiles) == 1 ? "" : szname);
+    XFREE(szfilename);
     XFREE(szname);
     aim_filerecv_mkdir(file);
-	ft->fileid = _open(file, _O_BINARY | _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-	if (ft->fileid < 0) {
-		PLOG(LOG_ERROR, "[%s] Could not open %s", ft->cookie, file);
-		return 0;
-	}
-	PLOG(LOG_DEBUG, "[%s] Receiving %s", ft->cookie, file);
-	ft->cfullname = _strdup(file); // free'd later
-	return 1;
+    ft->fileid = _open(file, _O_BINARY | _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+    if (ft->fileid < 0) {
+        PLOG(LOG_ERROR, "[%s] Could not open %s", ft->cookie, file);
+        return 0;
+    }
+    PLOG(LOG_DEBUG, "[%s] Receiving %s", ft->cookie, file);
+    ft->cfullname = _strdup(file);      // free'd later
+    return 1;
 }
 
-static void aim_filerecv_closefile(struct aim_filerecv_request *ft) {
-	if (ft->fileid>=0) {
-		_close(ft->fileid);
-		ft->fileid = -1;
-	}
+static void aim_filerecv_closefile(struct aim_filerecv_request *ft)
+{
+    if (ft->fileid >= 0) {
+        _close(ft->fileid);
+        ft->fileid = -1;
+    }
 }
 
 void __cdecl aim_filerecv_thread(void *vft)
@@ -198,7 +196,8 @@ void __cdecl aim_filerecv_thread(void *vft)
             ft->hdr.encrypt = 0;
             ft->hdr.compress = 0;
             Netlib_Send(ft->s, (char *) ft, 256, MSG_NODUMP);
-			if (!aim_filerecv_openfile(ft)) break;
+            if (!aim_filerecv_openfile(ft))
+                break;
         }
         else {
             recvResult = Netlib_Recv(ft->s, data, MIN(ntohl(ft->hdr.size) - ft->recvsize, sizeof(data) - 1), MSG_NODUMP);
@@ -252,6 +251,6 @@ void __cdecl aim_filerecv_thread(void *vft)
         Netlib_CloseHandle(ft->s);
         ft->s = NULL;
     }
-    ProtoBroadcastAck(AIM_PROTO, ft->hContact, ACKTYPE_FILE, ft->state==FR_STATE_DONE?ACKRESULT_SUCCESS:ACKRESULT_FAILED, ft, 0);
+    ProtoBroadcastAck(AIM_PROTO, ft->hContact, ACKTYPE_FILE, ft->state == FR_STATE_DONE ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, ft, 0);
     aim_filerecv_free_fr(ft);
 }

@@ -16,6 +16,18 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
+2.3.0.0
+ - Drag/drop didn't always work from message control
+
+2.2.0.0
+ - Log window didn't scroll correctly when avatar was loaded
+ - Added show seconds option to log window timestamp
+ - Drag and drop file transfer support
+ - Updated internal API to 0.0.0.3
+ - Fix some possible buffer overflow issues
+ - Hide typing notification when user goes offline
+ - Auto popup option is now set per status
+
 2.1.0.0
  - Show avatars for protocols that support them
  - Show user menu by clicking user name
@@ -61,8 +73,12 @@ Todo:
  - Font size fixes (muldiv, http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_1wmq.asp)
  - Cache fonts
  - Add "old" event fonts
- - Change default fonts
- - Avatar support
+
+
+Thanks
+------
+Thanks to Matrix and Valkyre who designed and created the icons.
+
 
 Support and bug reporting
 -------------------------
@@ -80,7 +96,7 @@ http://bugs.miranda-im.org/
 Contact
 -------
 Current maintainer is Robert Rainwater.
-E-mail: rianwater at miranda-im.org
+E-mail: rainwater at miranda-im.org
 
 
 

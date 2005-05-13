@@ -26,7 +26,7 @@ static char *aim_getdatefmt(time_t sec)
     char *ret = malloc(256);
     time_t now = time(NULL) - sec;
     struct tm *timeinfo = localtime(&now);
-    _snprintf(ret, 256, "%s", asctime(timeinfo));
+    mir_snprintf(ret, 256, "%s", asctime(timeinfo));
     *(ret + strlen(ret) - 1) = '\0';
     return ret;
 }
@@ -42,15 +42,15 @@ static char *aim_gettimefmt(time_t sec)
     hrs = (sec % (60 * 60 * 24)) / (60 * 60);
     min = (sec % (60 * 60)) / 60;
     if (days)
-        _snprintf(ret, 256, "%d %s, %d %s, %d %s", days, days == 1 ? Translate("day") : Translate("days"), hrs,
-                  hrs == 1 ? Translate("hour") : Translate("hours"), min, min == 1 ? Translate("minute") : Translate("minutes"));
+        mir_snprintf(ret, 256, "%d %s, %d %s, %d %s", days, days == 1 ? Translate("day") : Translate("days"), hrs,
+                     hrs == 1 ? Translate("hour") : Translate("hours"), min, min == 1 ? Translate("minute") : Translate("minutes"));
     else if (hrs)
-        _snprintf(ret, 256, "%d %s, %d %s", hrs, hrs == 1 ? Translate("hour") : Translate("hours"), min,
-                  min == 1 ? Translate("minute") : Translate("minutes"));
+        mir_snprintf(ret, 256, "%d %s, %d %s", hrs, hrs == 1 ? Translate("hour") : Translate("hours"), min,
+                     min == 1 ? Translate("minute") : Translate("minutes"));
     else if (min || sec == 0)
-        _snprintf(ret, 256, "%d %s", min, min == 1 ? Translate("minute") : Translate("minutes"));
+        mir_snprintf(ret, 256, "%d %s", min, min == 1 ? Translate("minute") : Translate("minutes"));
     else
-        _snprintf(ret, 256, "%d %s", sec, sec == 1 ? Translate("second") : Translate("seconds"));
+        mir_snprintf(ret, 256, "%d %s", sec, sec == 1 ? Translate("second") : Translate("seconds"));
     return ret;
 }
 
@@ -65,13 +65,14 @@ static char *aim_gettimefmtshort(time_t sec)
     hrs = (sec % (60 * 60 * 24)) / (60 * 60);
     min = (sec % (60 * 60)) / 60;
     if (days)
-        _snprintf(ret, 256, "%d %s", days, days == 1 ? Translate("day") : Translate("days"));
+        mir_snprintf(ret, 256, "%d %s", days, days == 1 ? Translate("day") : Translate("days"));
     else if (hrs)
-        _snprintf(ret, 256, "%d %s, %d %s", hrs, hrs == 1 ? Translate("hr") : Translate("hrs"), min, min == 1 ? Translate("min") : Translate("mins"));
+        mir_snprintf(ret, 256, "%d %s, %d %s", hrs, hrs == 1 ? Translate("hr") : Translate("hrs"), min,
+                     min == 1 ? Translate("min") : Translate("mins"));
     else if (min || sec == 0)
-        _snprintf(ret, 256, "%d %s", min, min == 1 ? Translate("min") : Translate("mins"));
+        mir_snprintf(ret, 256, "%d %s", min, min == 1 ? Translate("min") : Translate("mins"));
     else
-        _snprintf(ret, 256, "%d %s", sec, sec == 1 ? Translate("sec") : Translate("secs"));
+        mir_snprintf(ret, 256, "%d %s", sec, sec == 1 ? Translate("sec") : Translate("secs"));
     return ret;
 }
 
@@ -85,11 +86,11 @@ static void aim_userinfo_inforeq(HANDLE hContact)
         char buf[MSG_LEN * 2];
 
         // force a UPDATE_BUDDY to get users latest info
-        _snprintf(buf, sizeof(buf), "toc_get_status %s", dbv.pszVal);
+        mir_snprintf(buf, sizeof(buf), "toc_get_status %s", dbv.pszVal);
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
 
         SleepEx(250, FALSE);
-        _snprintf(buf, sizeof(buf), "toc_get_info %s", dbv.pszVal);
+        mir_snprintf(buf, sizeof(buf), "toc_get_info %s", dbv.pszVal);
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
         DBFreeVariant(&dbv);
     }
@@ -121,13 +122,13 @@ void aim_userinfo_send()
     if (!aim_util_isonline())
         return;
     if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_PR, &dbv)) {
-        _snprintf(buf, sizeof(buf), "%s", dbv.pszVal);
+        mir_snprintf(buf, sizeof(buf), "%s", dbv.pszVal);
         DBFreeVariant(&dbv);
     }
     else
-        _snprintf(buf, sizeof(buf), "%s", Translate(AIM_STR_PR));
+        mir_snprintf(buf, sizeof(buf), "%s", Translate(AIM_STR_PR));
     aim_util_escape(buf);
-    _snprintf(buf2, sizeof(buf2), "toc_set_info \"%s\"", buf);
+    mir_snprintf(buf2, sizeof(buf2), "toc_set_info \"%s\"", buf);
     aim_toc_sflapsend(buf2, -1, TYPE_DATA);
 }
 
@@ -159,8 +160,8 @@ static BOOL CALLBACK aim_infodlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_NK, &dbv)) {
                 int warnlevel = DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_EV, 0);
 
-                _snprintf(buf2, sizeof(buf2), " (%d%%)", warnlevel);
-                _snprintf(buf, sizeof(buf), "%s%s", dbv.pszVal, warnlevel > 0 ? buf2 : "");
+                mir_snprintf(buf2, sizeof(buf2), " (%d%%)", warnlevel);
+                mir_snprintf(buf, sizeof(buf), "%s%s", dbv.pszVal, warnlevel > 0 ? buf2 : "");
                 SetWindowText(GetDlgItem(hwndDlg, IDC_SN), buf);
                 DBFreeVariant(&dbv);
             }
@@ -169,17 +170,17 @@ static BOOL CALLBACK aim_infodlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             type = DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_TP, 0);
 
             if (aim_util_isicquserbyhandle(hContact))
-                _snprintf(buf, sizeof(buf), Translate("ICQ User"));
+                mir_snprintf(buf, sizeof(buf), Translate("ICQ User"));
             else if (type & USER_ADMIN)
-                _snprintf(buf, sizeof(buf), Translate("Administrator"));
+                mir_snprintf(buf, sizeof(buf), Translate("Administrator"));
             else if (type & USER_UNCONFIRMED)
-                _snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("Unconfirmed AOL User") : Translate("Unconfirmed User"));
+                mir_snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("Unconfirmed AOL User") : Translate("Unconfirmed User"));
             else if (type & USER_NORMAL)
-                _snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("AOL User") : Translate("Normal User"));
+                mir_snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("AOL User") : Translate("Normal User"));
             else if (type & USER_WIRELESS)
-                _snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("Wireless AOL User") : Translate("Wireless User"));
+                mir_snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("Wireless AOL User") : Translate("Wireless User"));
             else
-                _snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("Unknown AOL User") : Translate("Unknown User"));
+                mir_snprintf(buf, sizeof(buf), (type & USER_AOL) ? Translate("Unknown AOL User") : Translate("Unknown User"));
             SetWindowText(GetDlgItem(hwndDlg, IDC_TYPE), buf);
 
             status = DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE);
@@ -194,7 +195,7 @@ static BOOL CALLBACK aim_infodlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     char buf[256];
                     char *d = aim_gettimefmtshort(now - t);
                     char *s = aim_getdatefmt(now - t);
-                    _snprintf(buf, sizeof(buf), "%s (%s)", s, d);
+                    mir_snprintf(buf, sizeof(buf), "%s (%s)", s, d);
                     SetWindowText(GetDlgItem(hwndDlg, IDC_OL), buf);
                     free(d);
                     free(s);
@@ -216,8 +217,8 @@ static BOOL CALLBACK aim_infodlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                 free(s);
             }
             // Status
-            _snprintf(buf, sizeof(buf), "%s %s%s%s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), t > 0 ? "(" : "",
-                      t > 0 ? Translate("Idle") : "", t > 0 ? ")" : "");
+            mir_snprintf(buf, sizeof(buf), "%s %s%s%s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), t > 0 ? "(" : "",
+                         t > 0 ? Translate("Idle") : "", t > 0 ? ")" : "");
             SetWindowText(GetDlgItem(hwndDlg, IDC_STATUS), buf);
             if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_PR, &dbv)) {
                 SetWindowText(GetDlgItem(hwndDlg, IDC_INFO), dbv.pszVal);
@@ -361,11 +362,11 @@ static BOOL CALLBACK aim_infoownerdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
                         char buf[256];
 
                         if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_UN, &dbv)) {
-                            _snprintf(buf, sizeof(buf), "%s%s", AIM_CHANGEPW, dbv.pszVal);
+                            mir_snprintf(buf, sizeof(buf), "%s%s", AIM_CHANGEPW, dbv.pszVal);
                             DBFreeVariant(&dbv);
                         }
                         else
-                            _snprintf(buf, sizeof(buf), "%s", AIM_CHANGEPW);
+                            mir_snprintf(buf, sizeof(buf), "%s", AIM_CHANGEPW);
                         CallService(MS_UTILS_OPENURL, (WPARAM) 1, (LPARAM) buf);
                     }
                     break;
@@ -442,10 +443,10 @@ static int aim_initdetails(WPARAM wParam, LPARAM lParam)
     char pszTitle[256];
 
     if (strcmp(AIM_PROTO, AIM_PROTONAME)) {
-        _snprintf(pszTitle, sizeof(pszTitle), "%s (%s)", AIM_PROTONAME, AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), "%s (%s)", AIM_PROTONAME, AIM_PROTO);
     }
     else
-        _snprintf(pszTitle, sizeof(pszTitle), "%s", AIM_PROTO);
+        mir_snprintf(pszTitle, sizeof(pszTitle), "%s", AIM_PROTO);
     odp.cbSize = sizeof(odp);
     odp.hIcon = NULL;
     odp.hInstance = hInstance;

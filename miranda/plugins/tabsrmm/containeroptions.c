@@ -48,7 +48,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) lParam);
                 pContainer = (struct ContainerWindowData *) lParam;
-
+                pContainer->hWndOptions = hwndDlg;
                 TranslateDialogDefault(hwndDlg);
 #if defined(_UNICODE)
                 MultiByteToWideChar(CP_ACP, 0, Translate("Set Options for: %s"), -1, szTemplate, 50);
@@ -212,6 +212,10 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             *dwOut = dwNewFlags;
             break;
         }
+        case WM_DESTROY:
+            pContainer->hWndOptions = 0;
+            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+            break;
     }
     return FALSE;
 }

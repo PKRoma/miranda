@@ -541,7 +541,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage)
 static int OpenOptions(WPARAM wParam,LPARAM lParam)
 {
 	OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)lParam;
-	if(ood->cbSize!=sizeof(OPENOPTIONSDIALOG)) return 1;
+	if(ood==NULL||ood->cbSize!=sizeof(OPENOPTIONSDIALOG)) return 1;
 	OpenOptionsNow(ood->pszGroup,ood->pszPage);
 	return 0;
 }
@@ -556,7 +556,8 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam;
 	struct OptionsPageInit *opi=(struct OptionsPageInit*)wParam;
-
+	
+	if(odp==NULL||opi==NULL) return 1;
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize!=OPTIONSDIALOGPAGE_V0120_SIZE && odp->cbSize!=OPTIONSDIALOGPAGE_V0100_SIZE) return 1;
 	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	opi->odp[opi->pageCount].cbSize=sizeof(OPTIONSDIALOGPAGE);

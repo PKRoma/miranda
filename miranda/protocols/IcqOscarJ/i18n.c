@@ -38,30 +38,24 @@
 #include "icqoscar.h"
 
 
-
 static BOOL bHasCP_UTF8 = FALSE;
-
 
 
 void InitI18N(void)
 {
-
 	CPINFO CPInfo;
 
 
 	bHasCP_UTF8 = GetCPInfo(CP_UTF8, &CPInfo);
-
 }
 
 
 
 // Returns true if the buffer only contains 7-bit characters.
-BOOL IsUSASCII(char* pBuffer, int nSize)
+BOOL IsUSASCII(const unsigned char* pBuffer, int nSize)
 {
-
-	BOOL bResult = TRUE;
+  BOOL bResult = TRUE;
 	int nIndex;
-
 
 	for (nIndex = 0; nIndex < nSize; nIndex++)
 	{
@@ -73,13 +67,11 @@ BOOL IsUSASCII(char* pBuffer, int nSize)
 	}
 
 	return bResult;
-
 }
 
 // Returns true if the unicode buffer only contains 7-bit characters.
-BOOL IsUnicodeAscii(wchar_t* pBuffer, int nSize)
+BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 {
-
 	BOOL bResult = TRUE;
 	int nIndex;
 
@@ -94,7 +86,6 @@ BOOL IsUnicodeAscii(wchar_t* pBuffer, int nSize)
 	}
 
 	return bResult;
-
 }
 
 
@@ -104,33 +95,40 @@ BOOL IsUnicodeAscii(wchar_t* pBuffer, int nSize)
 // From 'Secure Programming Cookbook', John Viega & Matt Messier, 2003
 int UTF8_IsValid(const unsigned char* pszInput)
 {
-
-	int nb;
+	int nb, i;
 	const unsigned char* c = pszInput;
 
 
 	for (c = pszInput; *c; c += (nb + 1))
 	{
-
 		if (!(*c & 0x80))
 			nb = 0;
-		else if (!(*c & 0xc0) == 0x80) return 0;
-		else if (!(*c & 0xe0) == 0xc0) nb = 1;
-		else if (!(*c & 0xf0) == 0xe0) nb = 2;
-		else if (!(*c & 0xf8) == 0xf0) nb = 3;
-		else if (!(*c & 0xfc) == 0xf8) nb = 4;
-		else if (!(*c & 0xfe) == 0xfc) nb = 5;
+		else if ((*c & 0xc0) == 0x80) return 0;
+		else if ((*c & 0xe0) == 0xc0) nb = 1;
+		else if ((*c & 0xf0) == 0xe0) nb = 2;
+		else if ((*c & 0xf8) == 0xf0) nb = 3;
+		else if ((*c & 0xfc) == 0xf8) nb = 4;
+		else if ((*c & 0xfe) == 0xfc) nb = 5;
 
-		while (nb-- > 0)
-			if ((*(c + nb) & 0xc0) != 0x80)
+		for (i = 1; i<=nb; i++) // we this forward, do not cross end of string
+			if ((*(c + i) & 0xc0) != 0x80)
 				return 0;
-
 	}
 
 	return 1;
-
 }
 
+
+// returns ansi string in all cases
+char* detect_decode_utf8(const char *from)
+{
+  char* temp = NULL;
+
+  if (IsUSASCII(from, strlennull(from)) || !UTF8_IsValid(from) || !utf8_decode(from, &temp)) return (char*)from;
+  SAFE_FREE(&(char*)from);
+
+  return temp;
+}
 
 
 /*

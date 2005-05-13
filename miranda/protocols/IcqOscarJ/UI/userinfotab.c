@@ -39,12 +39,12 @@
 
 extern char gpszICQProtoName[MAX_PATH];
 extern HANDLE ghServerNetlibUser;
+extern int gnCurrentStatus;
 extern HANDLE hInst;
 
 extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
-extern int gtOnlineSince;
 
 extern char* calcMD5Hash(char* szFile);
 
@@ -143,6 +143,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 break;
 
               SetValue(hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, 0);
+              SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
+              SetValue(hwndDlg, IDC_IDLETIME, hContact, szProto, "IdleTS", SVS_TIMESTAMP);
 
               if (hContact)
               {
@@ -151,11 +153,9 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
-                SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
                 if (DBGetContactSettingDword(hContact, szProto, "ClientID", 0) == 1)
                   DBWriteContactSettingDword(hContact, szProto, "TickTS", 0);
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
-                SetValue(hwndDlg, IDC_IDLETIME, hContact, szProto, "IdleTS", SVS_TIMESTAMP);
               }
               else
               {
@@ -164,9 +164,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)8, SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
-                SetValue(hwndDlg, IDC_ONLINESINCE, hContact, (char*)DBVT_DWORD, (char*)gtOnlineSince, SVS_TIMESTAMP);
-                SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, (char*)DBVT_DELETED, "TickTS", SVS_TIMESTAMP);
-                SetValue(hwndDlg, IDC_IDLETIME, hContact, (char*)DBVT_DELETED, "IdleTS", SVS_TIMESTAMP);
+                SetDlgItemText(hwndDlg, IDC_SUPTIME, Translate("Member since:"));
+                SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
               }
             }
             break;
@@ -253,42 +252,46 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       { 
         ShowWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), SW_SHOW);
         ShowWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), SW_SHOW);
+        if (!icqOnline)
+        {
+          EnableWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), FALSE);
+          EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), FALSE);
+        }
       }
       SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)pData);
 
+      dwUIN = DBGetContactSettingDword((HANDLE)lParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+
       if (!DBGetContactSetting((HANDLE)lParam, gpszICQProtoName, "AvatarHash", &dbvHash))
       {
-        if (dbvHash.pbVal[1] == 8)
-          dwPaFormat = PA_FORMAT_XML;
-        else 
-          dwPaFormat = PA_FORMAT_JPEG;
-
-        dwUIN = DBGetContactSettingDword((HANDLE)lParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
-        
-        if (pData->hContact)
-          GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
-        else
-        {
-          DBVARIANT dbvFile;
-          if (!DBGetContactSetting(NULL, gpszICQProtoName, "AvatarFile", &dbvFile))
-          {
-            strcpy(szAvatar, dbvFile.pszVal);
-            DBFreeVariant(&dbvFile);
-          }
+        dwPaFormat = DBGetContactSettingByte((HANDLE)lParam, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+        if (!pData->hContact || (dwPaFormat != PA_FORMAT_UNKNOWN))
+        { // we do not know avatar format, so neither filename is known, not valid
+          if (pData->hContact)
+            GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
           else
-            szAvatar[0] = '\0';
-        }
-
-        if (pData->hContact && !DBGetContactSetting((HANDLE)lParam, gpszICQProtoName, "AvatarSaved", &dbvSaved))
-        { // not for us
-          if (!memcmp(dbvHash.pbVal, dbvSaved.pbVal, 0x14))
-          { // if the file exists, we know we have the current avatar
-            if (!access(szAvatar, 0)) bValid = 1;
+          {
+            DBVARIANT dbvFile;
+            if (!DBGetContactSetting(NULL, gpszICQProtoName, "AvatarFile", &dbvFile))
+            {
+              strcpy(szAvatar, dbvFile.pszVal);
+              DBFreeVariant(&dbvFile);
+            }
+            else
+              szAvatar[0] = '\0';
           }
-          DBFreeVariant(&dbvSaved);
+
+          if (pData->hContact && !DBGetContactSetting((HANDLE)lParam, gpszICQProtoName, "AvatarSaved", &dbvSaved))
+          { // not for us
+            if (!memcmp(dbvHash.pbVal, dbvSaved.pbVal, 0x14))
+            { // if the file exists, we know we have the current avatar
+              if (!access(szAvatar, 0)) bValid = 1;
+            }
+            DBFreeVariant(&dbvSaved);
+          }
+          else // we do not have saved picture hash, do not rely on it
+            if (!access(szAvatar, 0)) bValid = 1;
         }
-        else // we do not have saved picture hash, do not rely on it
-          if (!access(szAvatar, 0)) bValid = 1;
       }
       else 
         return TRUE;
@@ -301,7 +304,10 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
           SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)avt);
       }
       else if (pData->hContact) // only retrieve users avatars
+      {
+        GetAvatarFileName(dwUIN, szAvatar, 255);
         GetAvatarData((HANDLE)lParam, dwUIN, dbvHash.pbVal, 0x14, szAvatar);
+      }
 
       DBFreeVariant(&dbvHash);
     }
@@ -333,14 +339,8 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
           if (!DBGetContactSetting(pData->hContact, gpszICQProtoName, "AvatarHash", &dbvHash))
           {
             char szAvatar[MAX_PATH];
-            DWORD dwPaFormat;
 
-            if (dbvHash.pbVal[1] == 8)
-              dwPaFormat = PA_FORMAT_XML;
-            else 
-              dwPaFormat = PA_FORMAT_JPEG;
-
-            GetAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
+            GetAvatarFileName(dwUIN, szAvatar, 255);
             GetAvatarData(pData->hContact, dwUIN, dbvHash.pbVal, 0x14, szAvatar);
           }
           DBFreeVariant(&dbvHash);
@@ -359,9 +359,11 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         if (szFile = ChooseAvatarFileName())
         { // user selected file for his avatar
           char szMyFile[MAX_PATH+1];
+          int dwPaFormat = DetectAvatarFormat(szFile);
+
           HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
 
-          GetAvatarFileName(0, PA_FORMAT_JPEG, szMyFile, MAX_PATH);
+          GetFullAvatarFileName(0, dwPaFormat, szMyFile, MAX_PATH);
           if (!CopyFile(szFile, szMyFile, FALSE))
           {
             Netlib_Logf(ghServerNetlibUser, "Failed to copy our avatar to local storage.");
@@ -382,7 +384,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 ihash[2] = 1;    //hash status
                 ihash[3] = 0x10; //hash len
                 memcpy(ihash+4, hash, 0x10);
-                updateServAvatarHash(ihash+2);
+                updateServAvatarHash(ihash+2, 0x12);
 
                 if (DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", ihash, 0x14))
                 {
@@ -406,13 +408,14 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     case IDC_DELETEAVATAR:
       {
         HBITMAP avt;
+        BYTE bEmptyAvatar[7] = {0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
 
         avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
         RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
         if (avt) DeleteObject(avt); // we release old avatar if any
         DBDeleteContactSetting(NULL, gpszICQProtoName, "AvatarFile");
         DBDeleteContactSetting(NULL, gpszICQProtoName, "AvatarHash");
-        updateServAvatarHash(NULL); // clear hash on server
+        updateServAvatarHash(bEmptyAvatar, 7); // clear hash on server
       }
       break;
     }

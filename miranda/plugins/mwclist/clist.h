@@ -32,6 +32,11 @@ void SortContacts(void);
 void ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 int GetContactInfosForSort(HANDLE hContact,char **Proto,char **Name,int *Status);
 
+typedef struct  {
+int idxClientIcon;
+int ClientID;
+} ClientIcon;
+
 
 typedef struct  {
 	HANDLE hContact;
@@ -52,7 +57,8 @@ typedef struct  {
 	void *ClcContact;
 	BYTE IsExpanded;
 	boolean isUnknown;
-
+	ClientIcon ci;
+	char *MirVer;
 } displayNameCacheEntry,*pdisplayNameCacheEntry;
 
 pdisplayNameCacheEntry GetContactFullCacheEntry(HANDLE hContact);

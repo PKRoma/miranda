@@ -8,6 +8,7 @@
 
 /* Add some WIN32 size savers */
 #include <windows.h>
+#include <stdio.h>
 
 #define strlen lstrlen
 #define strcat lstrcat
@@ -31,4 +32,4 @@
 
 #include <newpluginapi.h>
 #include <m_netlib.h>
-#define close(a)	 Netlib_CloseHandle(a)
+#define close(a)	 Netlib_CloseHandle((HANDLE)a)
