@@ -41,6 +41,23 @@ Bugfixes:
  - Contact list focus on mouse-over didn't work
  - Issues writing blobs to the database
  - AIM: aim: links didn't register correctly
+ - ICQ: Renaming of server groups was not working properly - caused errors
+ - ICQ: Avatar could not be deleted (the delete button did not work)
+ - ICQ: File Transfers were not working properly in some cases (wrong cookie handling)
+ - ICQ: Avatar formats were not recognized correctly
+ - ICQ: Method of determining target dir in file receive was not solid enough
+ - ICQ: Manage server-list dialog leaked memory
+ - ICQ: Synchronize visibility items was not working properly
+ - ICQ: Our avatar image was not linked to our ContactPhoto
+ - ICQ: Fixed occasional crash on login (missing TLV validity checks)
+ - ICQ: Fixed slow update of nicks when users imported from server-list
+ - ICQ: Fixed auto info update mechanism, do not progress too fast, do not drop processing
+ - ICQ: Fixed empty groups are always hidden in Manage Server List, cannot be used either
+ - ICQ: Fixed occasional crash on avatar retrieval - limit size of image to the size of packet
+ - ICQ: If our rate is high, ignore user requests for status msgs & user details (prevents disconnection)
+ - ICQ: Added temporary solution for roughly translated ICQ 2003b russian
+ - ICQ: Manage server-list dialog could display other contacts and could crash
+ - ICQ: Basic search could search for bad uin - garbage can be in the string
  - Jabber: Miranda process do not die when shutdown
  - Jabber: XML specials in add contact
  - Jabber: Status-visibility for a contact not working correctly
@@ -53,6 +70,12 @@ Enhancements:
  - Prevent plugins from overriding the plugin options dialog
  - Prevent useless database writes
  - AIM: addbuddy link support
+ - ICQ: If Update details from server is on, user group are also updated
+ - ICQ: Changed System Uptime to Member since in my details
+ - ICQ: Auth system recognizes & sends UTF-8 messages
+ - ICQ: Miranda version signature improved (preparing for old signature removal in the future)
+ - ICQ: Added better error detection for offline msgs receival process
+ - ICQ: Made avatar handling more resilient to server errors
  - Jabber: Support for the chat plugin
  - Yahoo: Adding gaming status
 
