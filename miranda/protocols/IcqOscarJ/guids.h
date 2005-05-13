@@ -66,7 +66,7 @@ static BOOL CompareGUIDs(DWORD q1,DWORD q2,DWORD q3,DWORD q4, plugin_guid guid)
 
 
 // pack entire GUID into icq packet
-__inline static packGUID(icq_packet* packet, plugin_guid guid)
+__inline static void packGUID(icq_packet* packet, plugin_guid guid)
 {
   packDWord(packet, guid[0]);
   packDWord(packet, guid[1]);
