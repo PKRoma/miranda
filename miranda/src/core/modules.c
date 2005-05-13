@@ -83,6 +83,7 @@ int LoadSendRecvFileModule(void);	//send/recv
 int LoadContactListModule(void);// ui: clist
 int LoadOptionsModule(void);	// ui: options dialog
 int LoadFindAddModule(void);	// ui: search/add users
+int LoadIconsModule(void);      // ui: icons
 int LoadSkinModule(void);		// ui: skin
 int LoadHelpModule(void);		// ui: help stuff
 int LoadUserInfoModule(void);	// ui: user info
@@ -110,6 +111,7 @@ static int LoadDefaultModules(void)
 	if(LoadUtilsModule()) return 1;		//order not important for this, but no dependencies and no point in pluginising	
 	if(LoadNewPluginsModuleInfos()) return 1; 
 	if(LoadProtocolsModule()) return 1;
+	if(LoadIconsModule()) return 1;
 	if(LoadSkinModule()) return 1;
 	if(LoadButtonModule()) return 1;
 	if(LoadOptionsModule()) return 1;	
