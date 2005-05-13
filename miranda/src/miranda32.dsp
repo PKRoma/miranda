@@ -396,6 +396,10 @@ SOURCE=.\modules\history\history.c
 # Begin Group "icons"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\icons\icons.c
+# End Source File
 # End Group
 # Begin Group "idle"
 
