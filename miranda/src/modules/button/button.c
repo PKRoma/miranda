@@ -220,7 +220,18 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 				ix++;
 				iy++;
 			}
-			DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->hIcon,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
+			{
+				HIMAGELIST hImageList;
+				HICON hIconNew;
+
+				hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON), IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
+				ImageList_AddIcon(hImageList, ctl->hIcon);
+				hIconNew = ImageList_GetIcon(hImageList, 0, ILD_NORMAL);
+				DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON|DSS_NORMAL:DST_ICON|DSS_DISABLED);
+				ImageList_RemoveAll(hImageList);
+				ImageList_Destroy(hImageList);
+				DestroyIcon(hIconNew);
+			}
 		}
 		else if (ctl->hBitmap) {
 			BITMAP bminfo;
