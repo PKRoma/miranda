@@ -80,15 +80,15 @@ typedef struct {
 #define MWF_LOG_SHOWTIME 1024
 #define MWF_LOG_SHOWSECONDS 2048
 #define MWF_LOG_SHOWDATES 4096
-#define MWF_LOG_NEWLINE 8192
+//#define MWF_LOG_NEWLINE 8192
 #define MWF_LOG_INDENT 16384
 #define MWF_LOG_RTL 32768
-#define MWF_LOG_UNDERLINE 65536
-#define MWF_LOG_SWAPNICK 131072
+//#define MWF_LOG_UNDERLINE 65536
+//#define MWF_LOG_SWAPNICK 131072
 #define MWF_LOG_SHOWICONS 262144
 //#define MWF_LOG_DYNAMICAVATAR 524288
 
-#define MWF_LOG_INDENTWITHTABS 1048576
+//#define MWF_LOG_INDENTWITHTABS 1048576
 #define MWF_LOG_SYMBOLS 0x200000
 #define MWF_INITMODE  0x400000
 #define MWF_NEEDCHECKSIZE 0x800000
@@ -100,8 +100,6 @@ typedef struct {
 #define MWF_SMBUTTONSELECTED 0x20000000
 #define MWF_DIVIDERWANTED 0x40000000
 #define MWF_LOG_GROUPMODE 0x80000000
-#define MWF_LOG_LONGDATES 64
-#define MWF_LOG_USERELATIVEDATES 1
 
 #define MWF_SHOW_URLEVENTS 1
 #define MWF_SHOW_FILEEVENTS 2
@@ -159,6 +157,8 @@ struct ContainerWindowData {
     int bInTray;              // 1 = in tray normal, 2 = in tray (was maximized)
     RECT restoreRect;
     HWND hWndOptions;
+    BOOL bSizingLoop;
+    int sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
 };
 
 #define STICK_ICON_MSG 10
@@ -277,7 +277,7 @@ typedef struct _recentinfo {
 typedef struct _globals {
     // static options, initialised when plugin is loading
     HWND g_hwndHotkeyHandler;
-    HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus, g_iconPulldown;
+    HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
     HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
     // external plugins
@@ -289,6 +289,7 @@ typedef struct _globals {
     HMENU g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;
     int  g_wantSnapping;
     HICON g_buttonBarIcons[NR_BUTTONBARICONS];
+    HICON g_sideBarIcons[NR_SIDEBARICONS];
     TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
     int iSendJobCurrent;
     // dynamic options, need reload when options change
@@ -333,6 +334,7 @@ typedef struct _globals {
     int m_WheelDefault;
     BYTE m_WinVerMajor;
     BYTE m_WinVerMinor;
+    BYTE m_SideBarEnabled;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

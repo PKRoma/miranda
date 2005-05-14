@@ -25,6 +25,7 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
 void LoadFavoritesAndRecent();
 void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu);
 void CreateTrayMenus(int mode);
+void HandleMenuEntryFromhContact(int iSelection);
 
 /*
  * msgs.c

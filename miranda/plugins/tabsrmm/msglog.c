@@ -604,7 +604,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     int iFontIDOffset = 0, i = 0;
     TCHAR *szTemplate;
     DWORD final_time;
-    BOOL skipToNext = FALSE, showTime = TRUE, showDate = TRUE;
+    BOOL skipToNext = FALSE, showTime = TRUE, showDate = TRUE, skipFont = FALSE;
     struct tm event_time;
     TemplateSet *this_templateset;
     BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
@@ -724,24 +724,36 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         if(ci == '%') {
             cc = szTemplate[i + 1];
             skipToNext = FALSE;
-            if(cc == '#') {
-                if(!dat->isHistory) {
-                    skipToNext = TRUE;
-                    goto skip;
-                }
-                else {
-                    i++;
-                    cc = szTemplate[i + 1];
-                }
-            }
-            if(cc == '$') {
-                if(dat->isHistory) {
-                    skipToNext = TRUE;
-                    goto skip;
-                }
-                else {
-                    i++;
-                    cc = szTemplate[i + 1];
+            skipFont = FALSE;
+            /*
+             * handle modifiers
+             */
+            while(cc == '#' || cc == '$' || cc == '&') {
+                switch (cc) {
+                    case '#':
+                        if(!dat->isHistory) {
+                            skipToNext = TRUE;
+                            goto skip;
+                        }
+                        else {
+                            i++;
+                            cc = szTemplate[i + 1];
+                            continue;
+                        }
+                    case '$':
+                        if(dat->isHistory) {
+                            skipToNext = TRUE;
+                            goto skip;
+                        }
+                        else {
+                            i++;
+                            cc = szTemplate[i + 1];
+                            continue;
+                        }
+                    case '&':
+                        i++;
+                        cc = szTemplate[i + 1];
+                        skipFont = TRUE;
                 }
             }
             switch(cc) {
@@ -779,7 +791,10 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 case 'D':           // long date
                     if(showTime && showDate) {
                         szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, 'D');
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
                     }
                     else
                         skipToNext = TRUE;
@@ -787,63 +802,102 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 case 'E':           // short date...
                     if(showTime && showDate) {
                         szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, 'E');
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
                     }
                     else
                         skipToNext = TRUE;
                     break;
                 case 'a':           // 12 hour
                 case 'h':           // 24 hour
-                    if(showTime)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, cc == 'h' ? "%s %02d" : "%s %2d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], cc == 'h' ? event_time.tm_hour : (event_time.tm_hour > 12 ? event_time.tm_hour - 12 : event_time.tm_hour));
+                    if(showTime) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, cc == 'h' ? "%02d" : "%2d", cc == 'h' ? event_time.tm_hour : (event_time.tm_hour > 12 ? event_time.tm_hour - 12 : event_time.tm_hour));
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, cc == 'h' ? "%s %02d" : "%s %2d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], cc == 'h' ? event_time.tm_hour : (event_time.tm_hour > 12 ? event_time.tm_hour - 12 : event_time.tm_hour));
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case 'm':           // minute
-                    if(showTime)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_min);
+                    if(showTime) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "02d", event_time.tm_min);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_min);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case 's':           //second
-                    if(showTime && dat->dwFlags & MWF_LOG_SHOWSECONDS)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_sec);
+                    if(showTime && dat->dwFlags & MWF_LOG_SHOWSECONDS) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%02d", event_time.tm_sec);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_sec);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case 'p':            // am/pm symbol
-                    if(showTime)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_hour > 11 ? "PM" : "AM");
+                    if(showTime) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", event_time.tm_hour > 11 ? "PM" : "AM");
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_hour > 11 ? "PM" : "AM");
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case 'o':            // month
-                    if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mon + 1);
+                    if(showTime && showDate) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%02d", event_time.tm_mon + 1);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mon + 1);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case'O':            // month (name)
-                    if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], months_translated[event_time.tm_mon]);
+                    if(showTime && showDate) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", months_translated[event_time.tm_mon]);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], months_translated[event_time.tm_mon]);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case 'd':           // day of month
-                    if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mday);
+                    if(showTime && showDate) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%02d", event_time.tm_mday);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_mday);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case 'w':           // day of week
-                    if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], weekDays_translated[event_time.tm_wday]);
+                    if(showTime && showDate) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", weekDays_translated[event_time.tm_wday]);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], weekDays_translated[event_time.tm_wday]);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 case 'y':           // year
-                    if(showTime && showDate)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_year + 1900);
+                    if(showTime && showDate) {
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%02d", event_time.tm_year + 1900);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_year + 1900);
+                    }
                     else
                         skipToNext = TRUE;
                     break;
@@ -851,7 +905,10 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 case 'r':           // long date
                     if(showTime && showDate) {
                         szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, cc);
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
                     }
                     else
                         skipToNext = TRUE;
@@ -879,7 +936,10 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                                     c = 0x72;;
                              }
                         }
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %c%s", isSent ? rtfFonts[MSGFONTID_SYMBOLS_OUT] : rtfFonts[MSGFONTID_SYMBOLS_IN], c, rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%c%s ", c, rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %c%s ", isSent ? rtfFonts[MSGFONTID_SYMBOLS_OUT] : rtfFonts[MSGFONTID_SYMBOLS_IN], c, rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
                     }
                     else
                         skipToNext = TRUE;
@@ -895,7 +955,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                 {
                     if(dat->dwFlags & MWF_LOG_SHOWNICK || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
                         szName = isSent ? szMyName : szYourName;
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+                        if(!skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
                         AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
                     }
                     else
@@ -903,7 +964,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                     break;
                 }
                 case 'U':            // UIN
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+                    if(!skipFont)
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
                     AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->uin);
                     break;
                 case 'e':
@@ -1038,10 +1100,24 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                         case 'M':
                             fontindex = isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset;
                             break;
+                        case 's':
+                            fontindex = isSent ? MSGFONTID_SYMBOLS_OUT : MSGFONTID_SYMBOLS_IN;
+                            break;
                     }
                     if(fontindex != -1) {
                         i++;
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", rtfFonts[fontindex]);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[fontindex]);
+                    }
+                    else
+                        skipToNext = TRUE;
+                    break;
+                }
+                case 'c':       // font color (using one of the predefined 5 colors)
+                {
+                    TCHAR color = szTemplate[i + 2];
+                    if(color >= '0' && color <= '4') {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", MSGDLGFONTCOUNT + 5 + (color - '0'));
+                        i++;
                     }
                     else
                         skipToNext = TRUE;
@@ -1260,6 +1336,8 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
     HWND hwndrtf;
     IRichEditOle *ole;
     TEXTRANGEA tr;
+    COLORREF crDefault = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+
     struct MsgLogIcon theIcon;
     char trbuffer[20];
     tr.lpstrText = trbuffer;
@@ -1302,7 +1380,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 #else            
             bIconIndex = ((BYTE)trbuffer[0] - (BYTE)'0');
             SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-            CacheIconToBMP(&theIcon, Logicons[bIconIndex], cf2.crBackColor, 0, 0);
+            CacheIconToBMP(&theIcon, Logicons[bIconIndex], cf2.crBackColor == 0 ? crDefault : cf2.crBackColor, 0, 0);
             ImageDataInsertBitmap(ole, theIcon.hBmp);
             DeleteCachedIcon(&theIcon);
 #endif

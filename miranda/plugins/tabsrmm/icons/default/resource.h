@@ -30,10 +30,18 @@
 #define IDI_FONTCOLOR                   26
 #define IDI_SOUNDSON                    27
 #define IDI_SOUNDSOFF                   28
-#define IDI_RESERVED9                   29
+#define IDI_EMPTY                       29
 #define IDI_RESERVED10                  30
 #define IDB_UNKNOWNAVATAR               100
 #define IDS_IDENTIFY                    101
+
+// v2 stuff
+
+#define IDI_SESSIONLIST                 31
+#define IDI_FAVLIST                     32
+#define IDI_RECENTLIST                  33
+#define IDI_CONFIGSIDEBAR               34
+#define IDI_USERPREFS                   35
 
 // Next default values for new objects
 // 

@@ -37,7 +37,7 @@ IDI_QUOTE               ICON                    "..\\..\\res\\proxal\\quote.ico"
 IDI_SAVE                ICON                    "..\\..\\res\\proxal\\file.ico"
 IDI_CHECK               ICON                    "..\\..\\res\\proxal\\check.ico"
 IDI_CONTACTPIC          ICON                    "..\\..\\res\\proxal\\avatar.ico"
-IDI_USERMENU            ICON                    "..\\..\\res\\proxal\\home.ico"
+IDI_USERMENU            ICON                    "..\\..\\res\\proxal\\info.ico"
 IDI_MSGERROR            ICON                    "..\\..\\res\\proxal\\block.ico"
 IDI_CLOSEMSGDLG         ICON                    "..\\..\\res\\proxal\\delete.ico"
 IDI_ICONIN              ICON                    "..\\..\\res\\proxal\\Incom.ico"
@@ -56,9 +56,14 @@ IDI_FONTFACE            ICON                    "..\\..\\res\\proxal\\font.ico"
 IDI_FONTCOLOR           ICON                    "..\\..\\res\\proxal\\color.ico"
 IDI_SOUNDSON            ICON                    "..\\..\\res\\proxal\\sounds_on.ico"
 IDI_SOUNDSOFF           ICON                    "..\\..\\res\\proxal\\sounds_off.ico"
-IDI_RESERVED9           ICON                    "..\\..\\res\\empty.ico"
+IDI_EMPTY               ICON                    "..\\..\\res\\empty.ico"
 IDI_RESERVED10          ICON                    "..\\..\\res\\empty.ico"
 
+IDI_SESSIONLIST         ICON                    "..\\..\\res\\proxal\\slist.ico"
+IDI_CONFIGSIDEBAR       ICON                    "..\\..\\res\\proxal\\sbaroptions.ico"
+IDI_FAVLIST             ICON                    "..\\..\\res\\proxal\\favlist.ico"
+IDI_RECENTLIST          ICON                    "..\\..\\res\\proxal\\recentlist.ico"
+IDI_USERPREFS           ICON                    "..\\..\\res\\proxal\\userprefs.ico"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
@@ -111,7 +116,7 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 
 STRINGTABLE 
 BEGIN
-    IDS_IDENTIFY            "__tabSRMM_ICONPACK 1.0__"
+    IDS_IDENTIFY            "__tabSRMM_ICONPACK 2.0__"
 END
 
 #endif    // Deutsch (Österreich) resources

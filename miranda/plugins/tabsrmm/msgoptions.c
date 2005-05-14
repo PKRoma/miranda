@@ -1566,7 +1566,7 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_POPUP_OPT);
-    odp.pszTitle = Translate("Event popups");
+    odp.pszTitle = Translate("Event notifications");
     odp.pfnDlgProc = DlgProcPopupOpts;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
@@ -1799,6 +1799,7 @@ void ReloadGlobals()
      myGlobals.m_MathModAvail = 0;
      myGlobals.m_WinVerMajor = WinVerMajor();
      myGlobals.m_WinVerMinor = WinVerMinor();
+     myGlobals.m_SideBarEnabled = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sidebar", 0);
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
      if(myGlobals.m_MathModAvail) {

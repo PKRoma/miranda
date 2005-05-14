@@ -38,6 +38,8 @@
 #define IDD_CHOOSESTATUSMODES           310
 #define IDD_OPTIONSDIALOG               311
 #define IDI_PULLDOWNARROW               313
+#define IDI_LEFTARROW                   314
+#define IDI_PULLUPARROW                 315
 #define IDC_READNEXT                    1000
 #define IDC_APPLY                       1001
 #define IDC_DROP                        1002
@@ -148,9 +150,15 @@
 #define IDC_LOGFROZEN                   1109
 #define IDC_FONTFACE                    1110
 #define IDC_HISTORY                     1111
+#define IDC_SBAR_SLIST                  1111
 #define IDC_CANCELADD                   1112
+#define IDC_SBAR_FAVORITES              1112
 #define IDC_FONTID                      1113
+#define IDC_SBAR_RECENT                 1113
 #define IDC_SAMETYPE                    1114
+#define IDC_HISTORY2                    1114
+#define IDC_SBAR_SETUP                  1114
+#define IDC_SBAR_USERPREFS              1115
 #define IDC_SAMESTYLE                   1115
 #define IDC_SAMECOLOUR                  1116
 #define IDC_SAMEAS                      1117
@@ -263,8 +271,11 @@
 #define IDC_BUTTON1                     1223
 #define IDC_UPDATEPREVIEW               1223
 #define IDC_MODIFY                      1223
+#define IDC_SIDEBARUP                   1223
 #define IDC_CREATENEW                   1224
 #define IDC_RTLMODIFY                   1224
+#define IDC_SIDEBARUP2                  1224
+#define IDC_SIDEBARDOWN                 1224
 #define IDC_LOADDEFAULTS                1225
 #define IDC_SENDLATER                   1226
 #define IDC_RETRY                       1227
@@ -412,6 +423,8 @@
 #define IDC_TRAYCONTAINER               1379
 #define IDC_EVENTOPTIONS                1380
 #define IDC_VARIABLESHELP               1381
+#define IDC_SIDEBAR                     1382
+#define IDC_TOGGLESIDEBAR               1383
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -595,7 +608,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        4
 #define _APS_NEXT_COMMAND_VALUE         40205
-#define _APS_NEXT_CONTROL_VALUE         1382
+#define _APS_NEXT_CONTROL_VALUE         1383
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

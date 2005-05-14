@@ -87,7 +87,8 @@ typedef struct _settextex {
 #endif
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 25
+#define NR_BUTTONBARICONS 28
+#define NR_SIDEBARICONS 10
 
 #include <richedit.h>
 #include <richole.h>
@@ -113,13 +114,11 @@ struct NewMessageWindowLParam {
     HANDLE hdbEvent;
 };
 
-#define MAX_QUEUED_EVENTS 100
-
 // flags for the container dwFlags 
 #define CNT_MOUSEDOWN 1
 #define CNT_NOTITLE 2
 #define CNT_HIDETABS 4
-#define CNT_SIZINGLOOP 8
+#define CNT_SIDEBAR 8
 #define CNT_NOFLASH 16
 #define CNT_STICKY 32
 #define CNT_DONTREPORT 64
@@ -156,8 +155,8 @@ struct NewMessageWindowLParam {
 #define CNT_CREATEFLAG_MINIMIZED 2
 
 #define MWF_LOG_ALL (MWF_LOG_SHOWNICK | MWF_LOG_SHOWTIME | MWF_LOG_SHOWSECONDS | \
-        MWF_LOG_SHOWDATES | MWF_LOG_NEWLINE | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | \
-        MWF_LOG_UNDERLINE | MWF_LOG_SWAPNICK | MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE | MWF_LOG_USERELATIVEDATES | MWF_LOG_LONGDATES | MWF_LOG_INDENTWITHTABS)
+        MWF_LOG_SHOWDATES | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | \
+        MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE)
         
 #define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_SHOWNICK | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS)
 
@@ -239,6 +238,7 @@ struct ProtocolData {
 #define DM_REPLAYQUEUE       (WM_USER+79)
 #define DM_HKDETACH          (WM_USER+80)
 #define DM_HKSAVESIZE        (WM_USER+81)
+#define DM_SETSIDEBARBUTTONS (WM_USER+82)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define MINSPLITTERY         52
@@ -410,8 +410,16 @@ struct MsgLogIcon {
 #define IDI_FONTCOLOR 26        /* font color (not in use yet) */
 #define IDI_SOUNDSON  27        /* msg window sounds are enabled */
 #define IDI_SOUNDSOFF 28        /* msg window sounds are disabled */
-#define IDI_RESERVED9 29
+#define IDI_EMPTY 29
 #define IDI_RESERVED10 30
+
+// v2 stuff
+
+#define IDI_SESSIONLIST                 31
+#define IDI_FAVLIST                     32
+#define IDI_RECENTLIST                  33
+#define IDI_CONFIGSIDEBAR               34
+#define IDI_USERPREFS                   35
 
 #define IDB_UNKNOWNAVATAR 100   /* fallback image for non-existing avatars (BITMAP) */
 #define IDS_IDENTIFY 101        /* string resource to identify icon pack */
@@ -439,6 +447,16 @@ struct LISTOPTIONSITEM {
     UINT uType;
     UINT_PTR lParam;
     UINT uGroup;
+};
+
+#define SBI_TOP 1
+#define SBI_BOTTOM 2
+
+struct SIDEBARITEM {
+    UINT uId;
+    DWORD dwFlags;
+    HICON *hIcon;
+    char szTip[128];
 };
 
 #if defined(_UNICODE)

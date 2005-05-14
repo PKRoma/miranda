@@ -194,7 +194,7 @@ static int TTB_Loaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_TTB_ADDBUTTON) && myGlobals.m_WinVerMajor >= 5) {
         TTBButton ttb = {0};
         CacheIconToBMP(&ttb_Slist, myGlobals.g_iconContainer, GetSysColor(COLOR_3DFACE), 16, 16);
-        CacheIconToBMP(&ttb_Traymenu, myGlobals.g_iconPulldown, GetSysColor(COLOR_3DFACE), 16, 16);
+        CacheIconToBMP(&ttb_Traymenu, myGlobals.g_buttonBarIcons[16], GetSysColor(COLOR_3DFACE), 16, 16);
         ttb.hbBitmapUp = ttb_Slist.hBmp;
         ttb.hbBitmapDown = ttb_Slist.hBmp;
         ttb.cbSize = sizeof(ttb);
@@ -797,7 +797,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     ReloadGlobals();
     NEN_ReadOptions(&nen_options);
 
-    //LoadMsgLogIcons();
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -2000090000;
@@ -925,10 +924,22 @@ static void UnloadIcons()
     DestroyIcon(myGlobals.g_iconErr);
     DestroyIcon(myGlobals.g_iconContainer);
     DestroyIcon(myGlobals.g_iconStatus);
-    DestroyIcon(myGlobals.g_iconPulldown);
 
+    /*
+     * free the button bar icons
+     */
+    
     for (i = 0; i < NR_BUTTONBARICONS; i++)
         DestroyIcon(myGlobals.g_buttonBarIcons[i]);
+    
+    /*
+     * free the sidebar icons
+     */
+    
+    for (i = 0; i < NR_SIDEBARICONS; i++) {
+        if(myGlobals.g_sideBarIcons[i] != 0)
+            DestroyIcon(myGlobals.g_sideBarIcons[i]);
+    }
     if(myGlobals.g_hbmUnknown)
         DeleteObject(myGlobals.g_hbmUnknown);
 }
@@ -1599,9 +1610,34 @@ static ICONDESC myIcons[] = {
     "tabSRMM_sounds_on", "Sounds are On", &myGlobals.g_buttonBarIcons[22], -IDI_SOUNDSON, 1,
     "tabSRMM_sounds_off", "Sounds are off", &myGlobals.g_buttonBarIcons[23], -IDI_SOUNDSOFF, 1,
     "tabSRMM_log_frozen", "Message Log frozen", &myGlobals.g_buttonBarIcons[24], -IDI_MSGERROR, 1,
+    "tabSRMM_undefined", "Default", &myGlobals.g_buttonBarIcons[27], -IDI_EMPTY, 1,
     NULL, NULL, NULL, 0
 };
 
+static ICONDESC myIconsV2[] = {
+    "tabSRMM_sb_slist", "Session List", &myGlobals.g_sideBarIcons[0], -IDI_SESSIONLIST, 1,
+    "tabSRMM_sb_Favorites", "Favorite Contacts", &myGlobals.g_sideBarIcons[1], -IDI_FAVLIST, 1,
+    "tabSRMM_sb_Recent", "Recent Sessions", &myGlobals.g_sideBarIcons[2], -IDI_RECENTLIST, 1,
+    "tabSRMM_sb_Setup", "Setup Sidebar", &myGlobals.g_sideBarIcons[3], -IDI_CONFIGSIDEBAR, 1,
+    "tabSRMM_sb_Userprefs", "Contact Preferences", &myGlobals.g_sideBarIcons[4], -IDI_USERPREFS, 1,
+    NULL, NULL, NULL, 0
+};
+
+int GetIconPackVersion(HMODULE hDLL)
+{
+    char szIDString[256];
+    int version = 0;
+    
+    if(LoadStringA(hDLL, IDS_IDENTIFY, szIDString, sizeof(szIDString)) == 0)
+        return 0;
+    else {
+        if(!strcmp(szIDString, "__tabSRMM_ICONPACK 1.0__"))
+            version = 1;
+        else if(!strcmp(szIDString, "__tabSRMM_ICONPACK 2.0__"))
+            version = 2;
+    }
+    return version;
+}
 /*
  * setup default icons for the IcoLib service. This needs to be done every time the plugin is loaded
  * default icons are taken from the icon pack in either \icons or \plugins
@@ -1611,7 +1647,7 @@ int SetupIconLibConfig()
 {
     SKINICONDESC sid;
     char szFilename[MAX_PATH];
-    int i = 0;
+    int i = 0, version = 0;
     strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
     g_hIconDLL = LoadLibraryA(szFilename);
     if(g_hIconDLL == 0) {
@@ -1623,6 +1659,7 @@ int SetupIconLibConfig()
         }
     }
     GetModuleFileNameA(g_hIconDLL, szFilename, MAX_PATH);
+    version = GetIconPackVersion(g_hIconDLL);
     myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
     LoadMsgAreaBackground();
     FreeLibrary(g_hIconDLL);
@@ -1642,14 +1679,28 @@ int SetupIconLibConfig()
         CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
     } while(++i);
 
+    i = 0;
+    do {
+        if(myIconsV2[i].szName == NULL)
+            break;
+        sid.pszName = myIconsV2[i].szName;
+        sid.pszDescription = Translate(myIconsV2[i].szDesc);
+        sid.iDefaultIndex = version == 2 ? myIconsV2[i].uId : IDI_EMPTY;
+        CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    } while(++i);
+    
     GetModuleFileNameA(g_hInst, szFilename, MAX_PATH);
     sid.pszName = (char *) "tabSRMM_pulldown";
     sid.iDefaultIndex = -IDI_PULLDOWNARROW;
     sid.pszDescription = Translate("Pulldown Button");
     CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-    sid.pszName = (char *) "tabSRMM_Sessionlist";
-    sid.iDefaultIndex = -IDI_PULLDOWN1ARROW;
-    sid.pszDescription = Translate("Session List");
+    sid.pszName = (char *) "tabSRMM_Leftarrow";
+    sid.iDefaultIndex = -IDI_LEFTARROW;
+    sid.pszDescription = Translate("Left Arrow");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    sid.pszName = (char *) "tabSRMM_Pulluparrow";
+    sid.iDefaultIndex = -IDI_PULLUPARROW;
+    sid.pszDescription = Translate("Up Arrow");
     CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
     return 1;
 }
@@ -1667,8 +1718,16 @@ int LoadFromIconLib()
         *(myIcons[i].phIcon) = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) myIcons[i].szName);
     } while(++i);
 
+    i = 0;
+    do {
+        if(myIconsV2[i].szName == NULL)
+            break;
+        *(myIconsV2[i].phIcon) = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) myIconsV2[i].szName);
+    } while(++i);
+
     myGlobals.g_buttonBarIcons[16] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_pulldown");
-    myGlobals.g_iconPulldown = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "tabSRMM_Sessionlist");
+    myGlobals.g_buttonBarIcons[25] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Leftarrow");
+    myGlobals.g_buttonBarIcons[26] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Pulluparrow");
     ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconError, myGlobals.g_iconErr);
     ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconSend, myGlobals.g_buttonBarIcons[9]);
     ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconTypingEvent, myGlobals.g_buttonBarIcons[5]);
@@ -1684,10 +1743,9 @@ int LoadFromIconLib()
 void LoadIconTheme()
 {
     char szFilename[MAX_PATH];
-    char szIDString[256];
     int cxIcon = GetSystemMetrics(SM_CXSMICON);
     int cyIcon = GetSystemMetrics(SM_CYSMICON);
-    int i = 0;
+    int i = 0, version = 0;
     //char szDebug[80];
     
     if(ServiceExists(MS_SKIN2_ADDICON)) {               // ico lib present...
@@ -1713,15 +1771,10 @@ void LoadIconTheme()
         MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
     else {
         if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "v_check", 1)) {
-            if(LoadStringA(g_hIconDLL, IDS_IDENTIFY, szIDString, sizeof(szIDString)) == 0) {
+            version = GetIconPackVersion(g_hIconDLL);
+            if(version == 0) {
                 if(MessageBoxA(0, "ICONPACK: unknown version, load anyway?", "tabSRMM", MB_YESNO) == IDNO)
                     goto failure;
-            }
-            else {
-                if(strcmp(szIDString, "__tabSRMM_ICONPACK 1.0__")) {
-                    if(MessageBoxA(0, "ICONPACK: unknown version, load anyway?", "tabSRMM", MB_YESNO) == IDNO)
-                        goto failure;
-                }
             }
         }
         UncacheMsgLogIcons();
@@ -1734,8 +1787,15 @@ void LoadIconTheme()
                 break;
             *(myIcons[i].phIcon) = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(abs(myIcons[i].uId)), IMAGE_ICON, myIcons[i].bForceSmall ? cxIcon : 0, myIcons[i].bForceSmall ? cyIcon : 0, 0);
         } while(++i);
+        i = 0;
+        do {
+            if(myIconsV2[i].szName == NULL)
+                break;
+            *(myIconsV2[i].phIcon) = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(version == 2 ? abs(myIconsV2[i].uId) : IDI_EMPTY), IMAGE_ICON, myIconsV2[i].bForceSmall ? cxIcon : 0, myIconsV2[i].bForceSmall ? cyIcon : 0, 0);
+        } while(++i);
         myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
-        myGlobals.g_iconPulldown = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWN1ARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[25] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LEFTARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[26] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLUPARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
         CacheMsgLogIcons();
 
         WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);

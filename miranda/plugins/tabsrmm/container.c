@@ -66,6 +66,7 @@ $Id$
 #endif
 
 #define SB_CHAR_WIDTH        45
+#define SIDEBARWIDTH         30
 
 char *szWarnClose = "Do you really want to close this session?";
 
@@ -104,6 +105,18 @@ void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newNa
     void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
 #endif    
 
+static struct SIDEBARITEM sbarItems[] = {
+    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "Session List",
+    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], "Favorite Contacts",
+    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2], "Recent Sessions",
+    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], "Contact Preferences",
+    1117, SBI_TOP, &myGlobals.g_buttonBarIcons[27], "Test",
+    1118, SBI_TOP, &myGlobals.g_buttonBarIcons[27], "Test",
+    1119, SBI_TOP, &myGlobals.g_buttonBarIcons[27], "Test",
+    1120, SBI_TOP, &myGlobals.g_buttonBarIcons[27], "Test",
+    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], "Setup Sidebar",
+    0, 0, 0, ""
+};
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -211,6 +224,53 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
 }
 
 /*
+ * draws the sidebar, arranges the buttons, cares about hiding buttons if space
+ * is not sufficient.
+ * also, updates the scroll buttons on top and bottom of the sidebar
+ */
+
+void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc, int menuSep)
+{
+    int i, topCount = 0, bottomCount = 0;
+    int iSpaceAvail = (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight - 22;
+    int iTopSpaceAvail = iSpaceAvail - (pContainer->sb_NrBottomButtons * 22);
+    BOOL topEnabled = FALSE, bottomEnabled = FALSE;
+    if(pContainer->sb_NrTopButtons * 22 <= iTopSpaceAvail)
+        i = pContainer->sb_FirstButton = 0;
+    else {
+        if(pContainer->sb_FirstButton == 0)
+            i = 0;
+        else {
+            i = pContainer->sb_NrTopButtons - (iTopSpaceAvail / 22);
+            i = (i > pContainer->sb_FirstButton) ? pContainer->sb_FirstButton : i;
+        }
+    }
+    SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, 0);
+    while(sbarItems[i].uId != 0) {
+        if(sbarItems[i].dwFlags == SBI_TOP) {
+            if(iTopSpaceAvail > 22) {
+                SetWindowPos(GetDlgItem(hwndDlg, sbarItems[i].uId), HWND_TOP, 3, (topCount++ * 22) + 10, 22, 20, SWP_SHOWWINDOW);
+                iTopSpaceAvail -= 22;
+            }
+            else {
+                ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), SW_HIDE);
+                bottomEnabled = TRUE;
+            }
+        }
+        else
+            SetWindowPos(GetDlgItem(hwndDlg, sbarItems[i].uId), HWND_TOP, 3, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight - ((bottomCount++ * 22) + 34), 22, 20, 0);
+        i++;
+    }
+    topEnabled = pContainer->sb_FirstButton ? TRUE : FALSE;
+    MoveWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), 1, 0, SIDEBARWIDTH - 4, 10, TRUE);
+    MoveWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), 1, (rc->bottom - rc->top) - 10 - menuSep - pContainer->statusBarHeight, SIDEBARWIDTH - 4, 10, TRUE);
+    EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), topEnabled);
+    EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), bottomEnabled);
+    InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), NULL, TRUE);
+    InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARUP), NULL, TRUE);
+}
+
+/*
  * need to subclass the tabcontrol to catch the middle button click
  */
 
@@ -251,7 +311,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 HMENU hSysmenu;
                 DWORD dwCreateFlags;
                 int iMenuItems;
-
+                int i = 0;
+                
                 pContainer = (struct ContainerWindowData *) lParam;
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pContainer);
                 pContainer->iLastClick = 0xffffffff;
@@ -263,7 +324,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 pContainer->dwFlags |= dwCreateFlags;
 
              
-                //pContainer->hToolbar = CreateToolbarEx(hwndDlg, WS_CHILD | TBSTYLE_LIST | 
+                /*
+                 * create the sidebar buttons
+                 */
+
+                for(i = 0; sbarItems[i].uId != 0; i++) {
+                    CreateWindowExA(0, MIRANDABUTTONCLASS, "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 20, 20, hwndDlg, (HMENU)sbarItems[i].uId, g_hInst, NULL);
+                    pContainer->sb_NrTopButtons += sbarItems[i].dwFlags == SBI_TOP ? 1 : 0;
+                    pContainer->sb_NrBottomButtons += sbarItems[i].dwFlags == SBI_BOTTOM ? 1 : 0;
+                }
+                pContainer->sb_FirstButton = 0;
 				/*
 				 * additional system menu items...
 				 */
@@ -325,6 +395,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_TOPMOST : HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
                 }
                 SetTimer(hwndDlg, TIMERID_HEARTBEAT, TIMEOUT_HEARTBEAT, NULL);
+                SendMessage(hwndDlg, DM_SETSIDEBARBUTTONS, 0, 0);
                 return TRUE;
             }
 
@@ -363,6 +434,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             HANDLE hContact;
             struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
             DWORD dwOldFlags = pContainer->dwFlags;
+            int i = 0;
             
             if(dat) {
                 DWORD dwOldMsgWindowFlags = dat->dwFlags;
@@ -387,8 +459,58 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
                     break;
             }
-            
+
+            for(i = 0; sbarItems[i].uId != 0; i++) {
+                if(LOWORD(wParam) == sbarItems[i].uId) {
+                    switch(LOWORD(wParam)) {
+                        case IDC_SBAR_SLIST:
+                            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+                            break;
+                        case IDC_SBAR_FAVORITES:
+                        {
+                            POINT pt;
+                            int iSelection;
+                            GetCursorPos(&pt);
+                            iSelection = TrackPopupMenu(myGlobals.g_hMenuFavorites, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
+                            HandleMenuEntryFromhContact(iSelection);
+                            break;
+                        }
+                        case IDC_SBAR_RECENT:
+                        {
+                            POINT pt;
+                            int iSelection;
+                            GetCursorPos(&pt);
+                            iSelection = TrackPopupMenu(myGlobals.g_hMenuRecent, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
+                            HandleMenuEntryFromhContact(iSelection);
+                            break;
+                        }
+                        case IDC_SBAR_USERPREFS:
+                        {
+                            HANDLE hContact = 0;
+                            SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                            if(hContact != 0)
+                                CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)hContact, 0);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
             switch(LOWORD(wParam)) {
+                case IDC_SIDEBARDOWN:
+                case IDC_SIDEBARUP:
+                {
+                    RECT rc;
+
+                    GetClientRect(hwndDlg, &rc);
+                    if(LOWORD(wParam) == IDC_SIDEBARUP)
+                        pContainer->sb_FirstButton = pContainer->sb_FirstButton > 0 ? --pContainer->sb_FirstButton : 0;
+                    else
+                        pContainer->sb_FirstButton++;
+                    DrawSideBar(hwndDlg, pContainer, &rc, 0);
+                    SetFocus(GetDlgItem(pContainer->hwndActive, IDC_MESSAGE));
+                    break;
+                }
                 case IDOK:
                     SendMessage(pContainer->hwndActive, WM_COMMAND, wParam, lParam);      // pass the IDOK command to the active child - fixes the "enter not working
                     break;
@@ -522,7 +644,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 sz.cx = rc.right - rc.left;
                 sz.cy = rc.bottom - rc.top;
                 pContainer->oldSize = sz;
-                pContainer->dwFlags |= CNT_SIZINGLOOP;
+                pContainer->bSizingLoop = TRUE;
                 break;
             }
         case WM_EXITSIZEMOVE:
@@ -532,7 +654,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                pContainer->dwFlags &= ~CNT_SIZINGLOOP;
+                pContainer->bSizingLoop = FALSE;
                 SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 break;
             }
@@ -589,11 +711,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     		//mathMod end
 #endif            
         case WM_SIZE: { 
-                RECT rcClient;
+                RECT rcClient, rcUnadjusted;
                 int i = 0;
                 TCITEM item = {0};
                 POINT pt = {0};
-                DWORD menuSep;
+                DWORD menuSep, sidebarwidth;;
                 
                 if(IsIconic(hwndDlg)) {
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
@@ -619,13 +741,16 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 else
                     pContainer->statusBarHeight = 0;
                 
+                sidebarwidth = pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH : 0;
+                
                 GetClientRect(hwndDlg, &rcClient);
+                rcUnadjusted = rcClient;
                 menuSep = 0;
                 if (lParam) {
                     if(pContainer->dwFlags & CNT_TABSBOTTOM)
-                        MoveWindow(hwndTab, pContainer->tBorder_outer, pContainer->tBorder_outer + menuSep, (rcClient.right - rcClient.left) - (2 * pContainer->tBorder_outer), (rcClient.bottom - rcClient.top) - menuSep - pContainer->statusBarHeight - ( 2 * pContainer->tBorder_outer), FALSE);
+                        MoveWindow(hwndTab, pContainer->tBorder_outer + sidebarwidth, pContainer->tBorder_outer + menuSep, (rcClient.right - rcClient.left) - (2 * pContainer->tBorder_outer) - sidebarwidth, (rcClient.bottom - rcClient.top) - menuSep - pContainer->statusBarHeight - ( 2 * pContainer->tBorder_outer), FALSE);
                     else
-                        MoveWindow(hwndTab, pContainer->tBorder_outer, pContainer->tBorder_outer + menuSep, (rcClient.right - rcClient.left) - (2 * pContainer->tBorder_outer), (rcClient.bottom - rcClient.top) - menuSep - pContainer->statusBarHeight - (pContainer->tBorder_outer * 2), FALSE);
+                        MoveWindow(hwndTab, pContainer->tBorder_outer + sidebarwidth, pContainer->tBorder_outer + menuSep, (rcClient.right - rcClient.left) - (2 * pContainer->tBorder_outer) - sidebarwidth, (rcClient.bottom - rcClient.top) - menuSep - pContainer->statusBarHeight - (pContainer->tBorder_outer * 2), FALSE);
                 }
                 AdjustTabClientRect(pContainer, &rcClient);
 
@@ -640,7 +765,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     if((HWND)item.lParam == pContainer->hwndActive) {
                         MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
                         RedrawWindow(GetDlgItem((HWND)item.lParam, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
-                        if(!(pContainer->dwFlags & CNT_SIZINGLOOP)) {
+                        if(!pContainer->bSizingLoop) {
                             SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                         }
                     }
@@ -655,6 +780,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
                 if (pContainer->hwndStatus)
                     RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+                if(pContainer->dwFlags & CNT_SIDEBAR) {
+                    DrawSideBar(hwndDlg, pContainer, &rcUnadjusted, menuSep);
+                }
 #ifdef __MATHMOD_SUPPORT    			
                 //mathMod begin
     			if(myGlobals.m_MathModAvail) {  //start scope
@@ -828,7 +956,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                     break;
                 case SC_MINIMIZE:
-                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || nen_options.floaterMode)) {
+                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || nen_options.floaterMode) && myGlobals.m_WinVerMajor >= 5) {
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
                         MinimiseToTray(hwndDlg, nen_options.bAnimated);
@@ -1331,13 +1459,26 @@ panel_found:
 			DWORD ws, wsold, ex = 0, exold = 0;
 			HMENU hSysmenu = GetSystemMenu(hwndDlg, FALSE);
 			HANDLE hContact;
+            int i = 0;
+            BYTE bFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 
             ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             
             if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
                 pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);      // hide container name in single window mode (not needed)
 
-			ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
+            if(!myGlobals.m_SideBarEnabled)
+                pContainer->dwFlags &= ~CNT_SIDEBAR;
+            
+            ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBAR), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+            for(i = 0; sbarItems[i].uId != 0; i++) {
+                if(bFlat)
+                    SendMessage(GetDlgItem(hwndDlg, sbarItems[i].uId), BUTTONSETASFLATBTN, 0, 0);
+                ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+            }
+            ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
 			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ws & ~WS_CAPTION : ws | WS_CAPTION;
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
@@ -1345,13 +1486,15 @@ panel_found:
             pContainer->tBorder_outer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2);
             
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
-				ex = GetWindowLong(hwndDlg, GWL_EXSTYLE);
+                DWORD exold;
+				ex = exold = GetWindowLong(hwndDlg, GWL_EXSTYLE);
 				ex = (pContainer->dwFlags & CNT_TRANSPARENCY) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
 				SetWindowLong(hwndDlg , GWL_EXSTYLE , ex);
 				if (pContainer->dwFlags & CNT_TRANSPARENCY)
     				pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)LOWORD(pContainer->dwTransparency), LWA_ALPHA);
 				
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+                if((exold & WS_EX_LAYERED) != (ex & WS_EX_LAYERED))
+                    RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
 
 			CheckMenuItem(hSysmenu, IDM_NOTITLE, (pContainer->dwFlags & CNT_NOTITLE) ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
@@ -1360,11 +1503,13 @@ panel_found:
             if (ws != wsold) {
 				RECT rc;
 				GetWindowRect(hwndDlg, &rc);
-				SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, 0);
-				SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME);
-				UpdateWindow(hwndDlg);
-				SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                if((ws & WS_CAPTION) != (wsold & WS_CAPTION)) {
+                    SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, 0);
+                    SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
+                    RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME);
+                    UpdateWindow(hwndDlg);
+                    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                }
             }
             ws = wsold = GetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE);
             if(pContainer->dwFlags & CNT_SINGLEROWTABCONTROL) {
@@ -1381,7 +1526,7 @@ panel_found:
             else {
                 ws &= ~(TCS_BOTTOM);
             }
-            if(ws != wsold) {
+            if((ws & (TCS_BOTTOM | TCS_MULTILINE)) != (wsold & (TCS_BOTTOM | TCS_MULTILINE))) {
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE, ws);
                 RedrawWindow(GetDlgItem(hwndDlg, IDC_MSGTABS), NULL, NULL, RDW_INVALIDATE);
             }
@@ -1394,7 +1539,7 @@ panel_found:
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);
                 }
             }
-            else {
+            else if(pContainer->hwndStatus == 0) {
                 if(!pContainer->hwndStatus)
                     pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 
@@ -1420,14 +1565,22 @@ panel_found:
                 //SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 DrawMenuBar(hwndDlg);
             }
-            
+
             SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
             SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
             BroadCastContainer(pContainer, DM_CONFIGURETOOLBAR, 0, 1);
 			break;
 		}
-
+        case DM_SETSIDEBARBUTTONS:
+        {
+            int i = 0;
+            for(i = 0; sbarItems[i].uId != 0; i++) {
+                SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BM_SETIMAGE, IMAGE_ICON, (LPARAM)*(sbarItems[i].hIcon));
+                SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BUTTONADDTOOLTIP, (WPARAM)sbarItems[i].szTip, 0);
+            }
+            break;
+        }
         /*
          * search the first and most recent unread events in all client tabs...
          * return all information via a RECENTINFO structure (tab indices, 
@@ -1538,7 +1691,28 @@ panel_found:
                 break;
             }
         case WM_DRAWITEM:
+        {
+            LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+            if(dis->CtlType == ODT_BUTTON && (dis->CtlID == IDC_SIDEBARUP || dis->CtlID == IDC_SIDEBARDOWN)) {
+                HICON hIcon;
+                DWORD bStyle = 0;
+                int cx = GetSystemMetrics(SM_CXSMICON);
+                int cy = GetSystemMetrics(SM_CYSMICON);
+                if(dis->itemState & ODS_DISABLED)
+                    bStyle = DFCS_FLAT;
+                else
+                    bStyle = DFCS_MONO;
+                DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | (dis->itemState & ODS_SELECTED ? DFCS_PUSHED : 0) | bStyle);
+                hIcon = dis->CtlID == IDC_SIDEBARUP ? myGlobals.g_buttonBarIcons[26] : myGlobals.g_buttonBarIcons[16];
+                DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
+                          (dis->rcItem.right + dis->rcItem.left - cx) / 2,
+                          (dis->rcItem.bottom + dis->rcItem.top - cy) / 2,
+                          cx, cy,
+                          DST_ICON | (dis->itemState & ODS_DISABLED ? DSS_DISABLED : DSS_NORMAL));
+                return TRUE;
+            }
             return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+        }
         case WM_MEASUREITEM:
             return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
         case DM_QUERYCLIENTAREA:
@@ -1919,6 +2093,8 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
         rc->bottom -= (2 * pContainer->tBorder_outer);
     }
     rc->right -= (2 * pContainer->tBorder_outer);
+    if(pContainer->dwFlags & CNT_SIDEBAR)
+      rc->right -= SIDEBARWIDTH;
 }
 
 /*

@@ -98,21 +98,9 @@ void CreateSystrayIcon(int create)
         nen_options.bTrayExist = TRUE;
     }
     else if(create == FALSE && nen_options.bTrayExist) {
-        struct ContainerWindowData *pContainer = pFirstContainer;
         
         Shell_NotifyIcon(NIM_DELETE, &nim);
         nen_options.bTrayExist = FALSE;
-        /*
-         * check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
-         * need to temporarily re-enable tray support, because the container checks for it.
-         */
-        nen_options.bTraySupport = TRUE;
-        while(pContainer) {
-            if(pContainer->bInTray)
-                SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-            pContainer = pContainer->pNextContainer;
-        }
-        nen_options.bTraySupport = FALSE;
     }
     ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 }

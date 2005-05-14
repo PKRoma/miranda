@@ -45,6 +45,7 @@ extern NEN_OPTIONS nen_options;
 BOOL bWmNotify = TRUE;
 extern HANDLE hMessageWindowList;
 extern MYGLOBALS myGlobals;
+extern struct ContainerWindowData *pFirstContainer;
 
 PLUGIN_DATA *PopUpList[20];
 static int PopupCount = 0;
@@ -85,7 +86,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, FALSE);
     options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
     options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD)-1);
-    options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 0);
+    options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 1);
     options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
     options->iAutoRestore = 0;
     options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
@@ -96,7 +97,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->wMaxRecent = 15;
     options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
     options->floaterMode = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATER, 0);
-    options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 0);
+    options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
     return 0;
 }
 
@@ -178,6 +179,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
     0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 
+    0, "Disable ALL event notifications (check, if you're using a plugin", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
     0, "Message events", MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
     0, "File events", MASK_FILE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
     0, "URL events", MASK_URL, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
@@ -386,7 +388,8 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                 case PSN_APPLY: {
                     int i = 0;
                     TVITEMA item = {0};
-
+                    struct ContainerWindowData *pContainer = pFirstContainer;
+                    
                     while(defaultItems[i].szName != NULL) {
                         item.mask = TVIF_HANDLE | TVIF_STATE;
                         item.hItem = (HTREEITEM)defaultItems[i].handle;
@@ -405,6 +408,24 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                     }
                     NEN_WriteOptions(&nen_options);
                     CreateSystrayIcon(nen_options.bTraySupport);
+                    /*
+                     * check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
+                     * need to temporarily re-enable tray support, because the container checks for it.
+                     */
+                    if(!nen_options.bTraySupport || !nen_options.bMinimizeToTray) {
+                        BOOL oldTray = nen_options.bTraySupport;
+                        BOOL oldMin = nen_options.bMinimizeToTray;
+                        
+                        nen_options.bTraySupport = TRUE;
+                        nen_options.bMinimizeToTray = TRUE;
+                        while(pContainer) {
+                            if(pContainer->bInTray)
+                                SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                            pContainer = pContainer->pNextContainer;
+                        }
+                        nen_options.bTraySupport = oldTray;
+                        nen_options.bMinimizeToTray = oldMin;
+                    }
                     break;
                 }
                 case PSN_RESET:

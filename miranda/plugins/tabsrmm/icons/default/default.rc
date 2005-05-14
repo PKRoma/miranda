@@ -56,8 +56,14 @@ IDI_FONTFACE            ICON                    "..\\..\\res\\button.fontface.ic
 IDI_FONTCOLOR           ICON                    "..\\..\\res\\button.textcolor.ico"
 IDI_SOUNDSON            ICON                    "..\\..\\res\\proxal\\sounds_on.ico"
 IDI_SOUNDSOFF           ICON                    "..\\..\\res\\proxal\\sounds_off.ico"
-IDI_RESERVED9           ICON                    "..\\..\\res\\empty.ico"
+IDI_EMPTY               ICON                    "..\\..\\res\\empty.ico"
 IDI_RESERVED10          ICON                    "..\\..\\res\\empty.ico"
+
+IDI_SESSIONLIST         ICON                    "..\\..\\res\\proxal\\slist.ico"
+IDI_CONFIGSIDEBAR       ICON                    "..\\..\\res\\proxal\\sbaroptions.ico"
+IDI_FAVLIST             ICON                    "..\\..\\res\\proxal\\favlist.ico"
+IDI_RECENTLIST          ICON                    "..\\..\\res\\proxal\\recentlist.ico"
+IDI_USERPREFS           ICON                    "..\\..\\res\\proxal\\userprefs.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -111,7 +117,7 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 
 STRINGTABLE 
 BEGIN
-    IDS_IDENTIFY            "__tabSRMM_ICONPACK 1.0__"
+    IDS_IDENTIFY            "__tabSRMM_ICONPACK 2.0__"
 END
 
 #endif    // Deutsch (Österreich) resources

@@ -248,6 +248,7 @@ void SetDialogToType(HWND hwndDlg)
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
     EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
+    ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 }
 
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -574,6 +575,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTIPLEICON:
+            if(IsWindowVisible(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR)))
+               OffsetRect(&urc->rcItem, 12, 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_ADD:
         case IDC_CANCELADD:
@@ -625,6 +628,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 else
                     urc->rcItem.right -= 52;
             }
+            if(IsWindowVisible(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR)))
+               urc->rcItem.left += 12;
+            return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
+        case IDC_TOGGLESIDEBAR:
+            urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDOK:
         case IDC_SENDMENU:
@@ -921,6 +929,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(GetDlgItem(hwndDlg, IDC_CANCELADD), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_LOGFROZEN), BUTTONSETASFLATBTN, 0, 0);
                 }
+                SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
+                SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASPUSHBTN, 0, 0);
 
                 dat->dwFlags |= MWF_INITMODE;
                 TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
@@ -1196,10 +1206,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     else
                         mir_snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
-                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_iconPulldown : 0));
+                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
                 } else {
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
-                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_iconPulldown : 0));
+                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
                 }
                 break;
             }
@@ -1280,6 +1290,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             //SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
             SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
             SendDlgItemMessage(hwndDlg, IDC_LOGFROZEN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[24]);
+            SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[25]);
             break;
         case DM_OPTIONSAPPLIED:
 #ifdef __MATHMOD_SUPPORT            
@@ -1587,6 +1598,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 return 1;
             }
             if (dat->iTabID >= 0) {
+                CheckDlgButton(hwndDlg, IDC_TOGGLESIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? BST_CHECKED : BST_UNCHECKED);
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 dat->dwTickLastEvent = 0;
                 dat->dwFlags &= ~MWF_DIVIDERSET;
@@ -1647,6 +1659,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 _DebugPopup(dat->hContact, "ACTIVATE Critical: iTabID == -1");
                 break;
             } else {
+                CheckDlgButton(hwndDlg, IDC_TOGGLESIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? BST_CHECKED : BST_UNCHECKED);
                 dat->dwFlags &= ~MWF_DIVIDERSET;
                 dat->dwTickLastEvent = 0;
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
@@ -3267,6 +3280,13 @@ quote_from_last:
                     ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     break;
+                case IDC_TOGGLESIDEBAR:
+                    dat->pContainer->dwFlags = IsDlgButtonChecked(hwndDlg, IDC_TOGGLESIDEBAR) == BST_CHECKED ? dat->pContainer->dwFlags | CNT_SIDEBAR : dat->pContainer->dwFlags & ~CNT_SIDEBAR;
+                    SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+                    SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
+                    RedrawWindow(GetDlgItem(dat->pContainer->hwnd, IDC_SIDEBAR), NULL, NULL, RDW_INVALIDATE);
+                    RedrawWindow(dat->pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+                    break;
 // BEGIN MOD#33: Show contact's picture
                 case IDC_PIC:
                     {
@@ -3317,14 +3337,10 @@ quote_from_last:
                         
                         DBWriteContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, !iCurrentTypingMode);
                         if(dat->pContainer->hwndStatus) {
-                            if(iCurrentTypingMode) {
-                                SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) Translate("Sending typing notifications disabled."));
+                            if(iCurrentTypingMode)
                                 SetSelftypingIcon(hwndDlg, dat, FALSE);
-                            }
-                            else {
-                                SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) Translate("Sending typing notifications enabled."));
+                            else
                                 SetSelftypingIcon(hwndDlg, dat, TRUE);
-                            }
                         }
                     }
                     break;
@@ -4418,7 +4434,6 @@ verify:
                     gtx.lpDefaultChar = 0;
                     gtx.lpUsedDefChar = 0;
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)AutosaveMessage);
-    				// old RichEdit20W version GetDlgItemTextW(hwndDlg,IDC_MESSAGE,AutosaveMessage,bufSize);
                     _DBWriteContactSettingWString(dat->hContact, SRMSGMOD, "SavedMsgW", AutosaveMessage);
 #else
                     GetDlgItemTextA(hwndDlg,IDC_MESSAGE,AutosaveMessage,bufSize);

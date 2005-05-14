@@ -145,9 +145,15 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_MSGTABS,"SysTabControl32",TCS_HOTTRACK | 
                     TCS_MULTILINE | TCS_TOOLTIPS | TCS_FOCUSNEVER | 
-                    WS_CLIPCHILDREN,7,7,422,219
+                    WS_CLIPCHILDREN,31,7,398,219
     CONTROL         "",IDC_STATICCONTROL,"Static",SS_ENHMETAFILE,0,0,435,1,
                     WS_EX_STATICEDGE
+    LTEXT           "",IDC_SIDEBAR,3,3,26,227,WS_CLIPSIBLINGS | 
+                    WS_CLIPCHILDREN,WS_EX_STATICEDGE
+    CONTROL         "",IDC_SIDEBARUP,"Button",BS_OWNERDRAW | WS_TABSTOP,45,
+                    62,28,9
+    CONTROL         "",IDC_SIDEBARDOWN,"Button",BS_OWNERDRAW | WS_TABSTOP,55,
+                    71,28,9
 END
 
 IDD_USERPREFS DIALOGEX 0, 0, 278, 306
@@ -1096,6 +1102,8 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_PULLDOWNARROW       ICON                    "res/pulldown.ico"
+IDI_LEFTARROW           ICON                    "res/leftarrow.ico"
+IDI_PULLUPARROW         ICON                    "res/pullup.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

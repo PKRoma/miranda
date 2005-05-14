@@ -41,10 +41,8 @@ Zustellungsfehler: %s
 [The message send timed out]
 Zeitüberschreitung beim Versenden einer Nachricht
 [A message failed to send successfully.]
-[Sending typing notifications disabled.]
-Tippbenachrichtigungen werden NICHT gesendet.
-[Sending typing notifications enabled.]
-Tippbenachrichtigungen werden gesendet.
+[Sending typing notifications is: %s]
+Senden von Tippbenachrichtigungen ist: %s
 [Retrieving Avatar...]
 Avatar wird geladen...
 [MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection.]
@@ -989,6 +987,8 @@ Kontakt in der Liste der Favoriten
 Nur ANSI senden und empfangen
 [Enabled]
 Aktiv
+[Disabled]
+Inaktiv
 [Override message window templates]
 Private Vorlagen für diesen Kontakt verwenden
 ;
@@ -1049,7 +1049,7 @@ Schließen
 ;
 ;Event notify stuff
 ;
-[Event popups]
+[Event notifications]
 Ereignisbenachrichtigungen
 [Event notify options]
 Einstellungen für Ereignisbenachrichtigungen

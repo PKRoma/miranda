@@ -4,7 +4,7 @@
 Name: tabsrmm
 Homepage: http://tabsrmm.sourceforge.net
 SF.NET Project Page: http://www.sourceforge.net/projects/tabsrmm/
-Support: http://hell.at.eu.org/forums/
+Support: http://www.miranda.or.at/forums/
 
                                --------------------
 						
@@ -15,7 +15,25 @@ Support: http://hell.at.eu.org/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.95 - 2005/05/10
+Version 0.9.9.95pre4 - 2005/05/12
+
+        * docs updated (Popups.txt, readme.txt, README.ICONS)
+        
+        + added an option to disable tabSRMMs internal event notifications system
+          (options -> Message Sessions -> Event notifications). Use this, if you
+          want to continue using an external NewEventNotify plugin. This will only
+          prevent tabSRMM from showing popups or other notifications. Things like
+          the session list will continue to work.
+          The same switch is available on the tray context menu (Disable all event
+          notifications)
+
+        ! don't re-create the tray icon after explorer crash, if tray icon support
+          is disabled.
+          
+        + variables added: %cX for setting a font color, & as variable modifier to
+          "skip" the contextual font setting.
+          
+Version 0.9.9.95pre3 - 2005/05/10
 
         ! fixed HUGE bug with bbcode color handling.
         
@@ -69,7 +87,7 @@ Version 0.9.9.95 - 2005/05/10
         
         ! fixed bug with IcoLib support (icons disappearing, crashes)
         
-Version 0.9.9.95pre - 2005/04/15
+Version 0.9.9.95pre1/2 - 2005/04/15
 
         + added message templates for the default message log. As a result, many options
           are now different or gone, because they can be replaced by using custom
@@ -1288,7 +1306,7 @@ Version 0.0.8.5 - 2004/09/16
           
 Version 0.0.8.4 - 2004/09/14
         
-        * changed avatar code. See the article at http://hell.at.eu.org/blog/?itemid=11
+        * changed avatar code.
         
         + new mouse "gesture". Double click the button bar while holding the left ALT key
           to show/hide the button bar and its controls. This is only temporary and will

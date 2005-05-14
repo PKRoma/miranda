@@ -46,7 +46,8 @@ INSTALLING THE ICON PACK - IMPORTANT !!
 
 You need to copy ONE of the included tabsrmm_icons.dll into the plugins folder
 aswell. If you don't, you'll receive an error message about a missing resource
-dll, and you won't see any icons on the toolbar and elsewhere.
+dll, and you won't see any icons on the toolbar and elsewhere. More 
+information about setting up icons can be found in README.ICONS.
 
 In general, there is no need to use the non-unicode version - the unicode release
 is far more tested and works with all known protocols. It also has an option to
@@ -59,9 +60,12 @@ or buggy clients and their sometimes broken unicode support.
 * "tabbed messaging". All message dialog windows are now opened within a "container"
    window. A simple tab bar can be used to switch between the message windows.
    Currently, there is only one container and no way to make one or more message
-   windows "top level". Future versions of this plugin may behave different. I plan
-   to implement multiple container windows and the ability to attach or detach
-   message windows to these containers.
+   windows "top level". You can define as many container windows as you want and
+   assign your contacts to different containers. This allows you to organize your
+   chat sessions in many different ways.
+   
+   If you dislike a tabbed interface for chatting, you can also configure a "single
+   window mode" in which each session is opened in a separate window.
    
 *  Lots of options to tweak the look of your message log.
 
@@ -70,11 +74,44 @@ or buggy clients and their sometimes broken unicode support.
    
 *  Avatar support (for protocols which can do it). You can also set a local "user picture"
    for each contact.
+   
+*  message templates for the message history in the chat window. You can freely define
+   how messages will look like by using a powerful system of variables and templates.
+   
+*  built-in event notification system can announce messages and other events by using
+   popups, system tray tooltips or On Screen Displa (announcing via poups or on screen
+   display requires additional plugins).
+   
+*  WYSIWYG text editing in the message input box. Formatted text can be parsed to 
+   either BBCodes or simple */_ style formatting tags.
+   
+*  many features which make chatting more user friendly and easier. Some examples.
+   
+   * auto-select-and-copy: Selecting text in the message log history will automatically
+     copy it to the clipboard. Holding down the ctrl key while selecting text will
+     insert the selection in the edit box immediatly.
+     
+   * simplified mousewheel handling. No need to change the focus if you want to scroll
+     the history log. Just move the mouse pointer over it and use the wheel.
+     
+   * Many hotkeys. Almost everything can be done without using the mouse. 
       
+   * option to minimize chat windows to the tray so they won't clutter your taskbar. 
+     A session list is available which can be used to access chat windows which have
+     been minimized to the system tray.
+     
+*  A "favorite contact" list which can be used to access favorite contacts quickly.
+   (Win 2000 or later).
+
+*  Remembers the last 15 active sessions in a menu (Win 2000 or later).
+     
+*  System tray support.
+
+
 3. FAQ and general help
 -----------------------
 
-   For a lot of knowledge, please visit my forum at http://hell.at.eu.org/forums/
+   For a lot of knowledge, please visit my forum at http://www.miranda.or.at/forums/
    There you can find a lot of useful information, articles, a small FAQ, and some
    links telling you more about tabSRMM in general.
 
@@ -82,6 +119,9 @@ or buggy clients and their sometimes broken unicode support.
 ------------------------
 
 *  some minor glitches under Windows 9x/ME, mostly graphical.
+
+*  some features don't work under Windows 9x. Affected are most things related
+   to the session list, the favorite contact and recent list.
 
 *  multisend doesn't work well. I suggest using it with "care" :) It will
    improve in the future. Also, multisend shouldn't be used "excessivly" -
@@ -102,8 +142,8 @@ the development phase. I cannot name you all here, because it's just too many.
 * Faith Healer for making icon packs, lots of suggestions, testing and
   feedback.
   
-* the members on my own forum (http://hell.at.eu.org/forums/) for a lot of bug
-  reports, feature suggestions and testing every new snapshot.
+* the members on my own forum (http://www.miranda.or.at/forums/) for a lot 
+  of bug reports, feature suggestions and testing every new snapshot.
 
 * Angeli-Ka for many bug reports and general feedback,  especially in the 
   early phase of development when using tabSRMM could be really frustrating :)

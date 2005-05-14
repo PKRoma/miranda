@@ -3,8 +3,33 @@ tabSRMM event notifications (also known as "popups"
 ---------------------------------------------------
 
 Beginning with 0.9.9.95, tabSRMM has its own event notification system 
-built into the plugin. It can use the following ways to announce incoming
-messages:
+built into the plugin. That means, you should deactivate or uninstall
+existing event notifications plugins like NewEventNotify. If you want
+to continue using an external event notification plugin, you can disable
+tabSRMMs own system by doing the following:
+
+* Open Mirandas options dialog, go to Message Sessions -> Event notifications
+* Check "Disable ALL event notifications..."
+
+This will disable tabSRMMs own event notifications, and you'll never see popups
+or other types of notifications. You can then use an external plugin for
+this purpose (like any version of NewEventNotify.dll)
+
+In any way, you should always only have one system running at any given time.
+If you decide to use an external event notification plugin, then you should
+disable tabSRMMs internal system and vice versa. Having both active, may cause
+troubles like double popups and more. If you get double popups, then this is
+a strong indication for more than one event notification system being active.
+
+Why use tabSRMMs own event notification system?
+
+Simply, because it works better :) Since it is tightly integrates into the
+message dialog, it can do some things which an external plugin cannot. Also,
+most external plugins are written with top-level message windows in mind and
+therefore don't work very well with tabbed chat windows.
+
+Also, tabSRMMs event notify system is not limited to popups only. It can use 
+the following ways to announce incoming messages:
 
 1) popups (need popup.dll installed - I suggest using a recent version of
    popup PLUS).
@@ -16,7 +41,7 @@ messages:
    later.
    
 Configuration of event notifications is done on the "Message Sessions >
-Event Popups" page. Most options should be familar if you have ever been
+Event Notifications" page. Most options should be familar if you have ever been
 using a NewEventNotify plugin.
 
 The "announce method" specifies in which way you want to see the event

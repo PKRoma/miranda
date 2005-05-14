@@ -59,6 +59,85 @@ HWND g_hotkeyHwnd = 0;
 static UINT WM_TASKBARCREATED;
 HWND floaterOwner;
 
+void HandleMenuEntryFromhContact(int iSelection)
+{
+    HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
+    if(hWnd) {
+        struct ContainerWindowData *pContainer = 0;
+        SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+        if(pContainer) {
+            ActivateExistingTab(pContainer, hWnd);
+            SetForegroundWindow(pContainer->hwnd);
+        }
+    }
+    else
+        CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
+}
+
+void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon)
+{
+    int cx = GetSystemMetrics(SM_CXSMICON);
+    int cy = GetSystemMetrics(SM_CYSMICON);
+    
+    if (!IsWinVerXPPlus()) {
+        FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
+        if (dis->itemState & ODS_HOTLIGHT)
+            DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
+        else if (dis->itemState & ODS_SELECTED)
+            DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
+        DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
+                  2,
+                  (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2,
+                  cx, cy,
+                  DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+    }
+    else {
+        HBRUSH hBr;
+        BOOL bfm = FALSE;
+        SystemParametersInfo(SPI_GETFLATMENU, 0, &bfm, 0);
+        if (bfm) {
+            /* flat menus: fill with COLOR_MENUHILIGHT and outline with COLOR_HIGHLIGHT, otherwise use COLOR_MENUBAR */
+            if (dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT) {
+                /* selected or hot lighted, no difference */
+                hBr = GetSysColorBrush(COLOR_MENUHILIGHT);
+                FillRect(dis->hDC, &dis->rcItem, hBr);
+                DeleteObject(hBr);
+                /* draw the frame */
+                hBr = GetSysColorBrush(COLOR_HIGHLIGHT);
+                FrameRect(dis->hDC, &dis->rcItem, hBr);
+                DeleteObject(hBr);
+            }
+            else {
+                /* flush the DC with the menu bar colour (only supported on XP) and then draw the icon */
+                hBr = GetSysColorBrush(COLOR_MENUBAR);
+                FillRect(dis->hDC, &dis->rcItem, hBr);
+                DeleteObject(hBr);
+            }   //if
+            /* draw the icon */
+            DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
+                      2,
+                      (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2,
+                      cx, cy,
+                      DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+        }
+        else {
+            /* non-flat menus, flush the DC with a normal menu colour */
+            FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
+            if (dis->itemState & ODS_HOTLIGHT) {
+                DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
+            }
+            else if (dis->itemState & ODS_SELECTED) {
+                DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
+            }   //if
+            DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
+                      2,
+                      (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2,
+                      cx, cy,
+                      DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+        }       //if
+    }           //if
+}
+
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static POINT ptLast;
@@ -70,7 +149,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
     if(msg == WM_TASKBARCREATED) {
         CreateSystrayIcon(FALSE);
-        CreateSystrayIcon(TRUE);
+        if(nen_options.bTraySupport)
+            CreateSystrayIcon(TRUE);
         return 0;
     }
     switch(msg) {
@@ -82,7 +162,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             SendMessage(GetDlgItem(hwndDlg, IDC_TRAYICON), BUTTONSETASFLATBTN, 0, 0);
             SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) Translate("tabSRMM Quick Menu"), 0);
             SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) Translate("Session List"), 0);
-            SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_iconPulldown);
+            SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
             SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_iconContainer);
             ShowWindow(GetDlgItem(hwndDlg, IDC_TRAYCONTAINER), SW_HIDE);
             if (pSetLayeredWindowAttributes != NULL) 
@@ -165,17 +245,9 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
                 struct MessageWindowData *dat = 0;
                 if(dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)myGlobals.g_hMenuFavorites || dis->hwndItem == (HWND)myGlobals.g_hMenuRecent)) {
-                    ICONINFO ii;
-                    BITMAP bm;
-                    int cx = GetSystemMetrics(SM_CXSMICON);
-                    int cy = GetSystemMetrics(SM_CYSMICON);
-                    GetIconInfo((HICON)dis->itemData, &ii);
-                    GetObject(ii.hbmColor, sizeof(bm), &bm);
-                    DrawState(dis->hDC, NULL, NULL, (LPARAM) dis->itemData, 0,
-                              2, 0, bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
-                              DST_ICON | DSS_NORMAL);
-                    DeleteObject(ii.hbmColor);
-                    DeleteObject(ii.hbmMask);
+                    HICON hIcon = (HICON)dis->itemData;
+                    
+                    DrawMenuItem(dis, hIcon);
                     return TRUE;
                 }
                 else if(dis->CtlType == ODT_MENU) {
@@ -185,10 +257,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     
                     if (dis->itemData >= 0) {
                         HICON hIcon;
-                        ICONINFO ii;
-                        BITMAP bm;
-                        int cx = GetSystemMetrics(SM_CXSMICON);
-                        int cy = GetSystemMetrics(SM_CYSMICON);
                         if(dis->itemData > 0)
                             hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
                         else if(dat != NULL)
@@ -196,15 +264,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         else
                             hIcon = myGlobals.g_iconContainer;
                         
-                        GetIconInfo((HICON)dis->itemData, &ii);
-                        GetObject(ii.hbmColor, sizeof(bm), &bm);
-
-                        DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                                  2, 0, bm.bmWidth != cx ? cx : 0, bm.bmHeight != cy ? cy : 0,
-                                  DST_ICON | DSS_NORMAL);
-
-                        DeleteObject(ii.hbmColor);
-                        DeleteObject(ii.hbmMask);
+                        DrawMenuItem(dis, hIcon);
                         return TRUE;
                     }
                 }
@@ -225,18 +285,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             if(wParam == 100)
                                 SetForegroundWindow(hwndDlg);
                             if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 0) {
-                                HWND hWnd;
                                 iSelection = TrackPopupMenu(myGlobals.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
-                                hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
-                                if(hWnd) {
-                                    struct ContainerWindowData *pContainer = 0;
-                                    SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-                                    if(pContainer)
-                                        ActivateExistingTab(pContainer, hWnd);
-                                    SetForegroundWindow(pContainer->hwnd);
-                                }
-                                else
-                                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
+                                HandleMenuEntryFromhContact(iSelection);
                             }
                             else
                                 TrackPopupMenu(GetSubMenu(myGlobals.g_hMenuContext, 8), TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
@@ -257,7 +307,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             
                             if(iCount > 0) {
                                 UINT uid = 0;
-                                HWND hWnd;
                                 mii.fMask = MIIM_DATA;
                                 mii.cbSize = sizeof(mii);
                                 i = iCount - 1;
@@ -265,17 +314,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                     GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, i, TRUE, &mii);
                                     if(mii.dwItemData > 0) {
                                         uid = GetMenuItemID(myGlobals.g_hMenuTrayUnread, i);
-                                        hWnd = WindowList_Find(hMessageWindowList, (HANDLE)uid);
-                                        if(hWnd) {
-                                            struct ContainerWindowData *pContainer = 0;
-                                            SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-                                            if(pContainer)
-                                                ActivateExistingTab(pContainer, hWnd);
-                                            SetFocus(hWnd);
-                                            SetForegroundWindow(pContainer->hwnd);
-                                        }
-                                        else
-                                            CallService(MS_MSG_SENDMESSAGE, (WPARAM)uid, 0);
+                                        HandleMenuEntryFromhContact(uid);
                                         break;
                                     }
                                 } while (--i >= 0);
@@ -313,15 +352,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                 mii.fMask = MIIM_DATA | MIIM_ID;
                                 GetMenuItemInfo(submenu, (UINT_PTR)iSelection, FALSE, &mii);
                                 if(mii.dwItemData != 0) {                       // this must be an itm of the fav or recent menu
-                                    HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
-                                    if(hWnd) {
-                                        struct ContainerWindowData *pContainer = 0;
-                                        SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-                                        if(pContainer)
-                                            ActivateExistingTab(pContainer, hWnd);
-                                    }
-                                    else
-                                        CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
+                                    HandleMenuEntryFromhContact(iSelection);
                                 }
                                 else {
                                     switch(iSelection) {

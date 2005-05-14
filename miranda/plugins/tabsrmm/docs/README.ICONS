@@ -7,19 +7,24 @@ The archive provides two versions of this dll, one default (256 color icons)
 and one with highcolor icons to be used with Windows XP only.
 
 You NEED TO COPY ONE OF THOSE tabsrmm_icons.dll to your Miranda Plugins folder
-(just the same location where tabsrmm*.DLL resides. You must NOT change the
-filename of this dll.
+(just the same location where tabsrmm*.DLL resides OR to the \icons 
+subfolder just below your main miranda installation directory.
 
-You can however replace the icons using a tool like reshacker or microangelo,
-but you need to take care about the ordinal numbers (dont mix them up, or icons
-will show up at wrong locations).
+tabSRMM will search for a valid tabsrmm_icons.dll in the following order:
 
-Currently, there are 15 icons in use. Ordinals 1-17 are used for toolbar and
-message log icons, Ordinals 16-20 are reserved for future use (the current
-icon is only a placeholder).
+1. plugins folder
+2. icons folder
 
-There is also a bitmap resource with an ordinal name of 100. This image will
-be used as some kind of "default" avatar, if the avatar section is visible
-and no other avatar is available.
+If none can be found, you'll get a warning message. You can still continue 
+to run tabSRMM, but you'll get no icons on the toolbar and most likely 
+icons will be missing in other places too (status bar, for example).
 
+You can also use the IcoLib plugin.
+-----------------------------------
 
+http://www.miranda-im.org/download/details.php?action=viewfile&id=1895
+
+If installed, tabSRMM will support the configuration of icons at runtime, 
+using the services provided by IcoLib. You still need to install a tabSRMM
+icon pack, because the icons from the icon pack will be used to setup the 
+default icons for IcoLib.
