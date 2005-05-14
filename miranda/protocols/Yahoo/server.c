@@ -59,7 +59,7 @@ int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 void __cdecl yahoo_server_main(void *empty)
 {
 	int status = (int) empty;
-	
+	long lLastPing;
     YList *l;
     NETLIBSELECTEX nls;
 	
@@ -82,7 +82,8 @@ void __cdecl yahoo_server_main(void *empty)
 	
 	ext_yahoo_login(status);
 
-    {
+	lLastPing = time(NULL);
+	{
 		int recvResult, ridx = 0, widx = 0, i;
 		
         while (poll_loop) {
@@ -130,6 +131,13 @@ void __cdecl yahoo_server_main(void *empty)
 				ext_yahoo_log("Miranda Exiting... stopping the loop.");
 				break;
 			}
+			
+			/* do the timer check */
+			if (time(NULL) - lLastPing > 60) {
+				YAHOO_ping();
+				lLastPing = time(NULL);
+			}
+			/* do the timer check ends */
 			
 			for(l = connections; l; l = y_list_next(l)) {
 			   struct _conn *c = l->data;

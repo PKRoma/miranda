@@ -114,7 +114,7 @@ __declspec(dllexport)int Unload(void)
 {
 	YAHOO_DebugLog("Unload");
 	
-	stop_timer();
+	//stop_timer();
 	
 	if (yahooLoggedIn)
 		yahoo_logout();
@@ -187,7 +187,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	//add as a known module in DB Editor ++
 	CallService("DBEditorpp/RegisterSingleModule",(WPARAM)yahooProtocolName, 0);
 	
-	start_timer();
+	//start_timer();
 	return 0;
 }
 

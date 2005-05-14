@@ -1827,12 +1827,10 @@ int ext_yahoo_connect(char *h, int p)
     
 	LOG(("ext_yahoo_connect %s:%d", h, p));
 	
-    //ncon.cbSize = sizeof(ncon); !!!! THIS BROKE IN 0.4!!! NEED TO USE OLDER CRAP!
-	ncon.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-    ncon.szHost = h;
+    ncon.cbSize = sizeof(ncon); 
+	ncon.szHost = h;
     ncon.wPort = p;
-    ncon.flags = 0;
-
+    
     con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) & ncon);
     if (!con) 
         return -1;
@@ -2073,7 +2071,7 @@ void register_callbacks()
 	
 }
 
-static VOID CALLBACK yahoo_ping_timeout(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) 
+void YAHOO_ping(void) 
 {
 	LOG(("[TIMER] yahoo_ping_timeout"));
 	
@@ -2081,30 +2079,6 @@ static VOID CALLBACK yahoo_ping_timeout(HWND hwnd, UINT uMsg, UINT_PTR idEvent, 
 		LOG(("[TIMER] Sending a keep alive message"));
 		yahoo_keepalive(ylad->id);
 	} 
-}
-
-void stop_timer()
-{
-	if (ping_timer != 0) {
-	 LOG(("[TIMER] Killing Timer!"));
-	 KillTimer(NULL, ping_timer);
-	 ping_timer = 0;
-	}
-}
-
-void start_timer()
-{
-    stop_timer();
-    
-	LOG(("[TIMER] Starting Timer!"));
-	// set Timer for 10 minutes 
-	ping_timer = SetTimer(NULL, 0, 1 * 60 * 1000, yahoo_ping_timeout);
-	if (ping_timer == 0) {
-	 	LOG(("[TIMER] Can not create Timer!"));
-	}else{
-        LOG(("[TIMER] Timer Set: %d!", ping_timer));
-	}
-
 }
 
 void ext_yahoo_login(int login_mode)
