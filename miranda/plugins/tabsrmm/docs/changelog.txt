@@ -33,6 +33,15 @@ Version 0.9.9.95pre4 - 2005/05/12
         + variables added: %cX for setting a font color, & as variable modifier to
           "skip" the contextual font setting.
           
+        * improvements to the tray and floater. There is a new option to show the 
+          floater only when the contact list is minimized (not visible). Also, a bug
+          with windows minimized to the tray has been solved.
+          
+        * optimized the template parser for more speed (as a penalty, the code size
+          increased a few k).
+
+        * several UI improvements to increase usabilty.
+        
 Version 0.9.9.95pre3 - 2005/05/10
 
         ! fixed HUGE bug with bbcode color handling.

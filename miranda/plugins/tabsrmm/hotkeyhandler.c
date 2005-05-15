@@ -67,7 +67,8 @@ void HandleMenuEntryFromhContact(int iSelection)
         SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
         if(pContainer) {
             ActivateExistingTab(pContainer, hWnd);
-            SetForegroundWindow(pContainer->hwnd);
+            if(GetForegroundWindow() != pContainer->hwnd)
+                SetForegroundWindow(pContainer->hwnd);
         }
     }
     else
@@ -428,16 +429,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         }
                         case NIN_BALLOONUSERCLICK:
                         {
-                            HWND hWnd = WindowList_Find(hMessageWindowList, myGlobals.m_TipOwner);
-
-                            if(hWnd) {
-                                struct ContainerWindowData *pContainer = 0;
-                                SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-                                if(pContainer)
-                                    ActivateExistingTab(pContainer, hWnd);
-                            }
-                            else
-                                CallService(MS_MSG_SENDMESSAGE, (WPARAM)hWnd, 0);
+                            HandleMenuEntryFromhContact((int)myGlobals.m_TipOwner);
+                            break;
                         }
                         default:
                             break;
@@ -449,23 +442,24 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
              * handle an event from the popup module (mostly window activation). Since popups may run in different threads, the message
              * is posted to our invisible hotkey handler which does always run within the main thread.
              * wParam is the hContact
+             * lParam the event handle
              */
         case DM_HANDLECLISTEVENT:
             {
+                DBEVENTINFO dbei = {0};
+                CLISTEVENT *cle = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, wParam, 0);
+
                 /*
-                 * if tray support is on, no clist events will be created when a message arrives for a contact
-                 * w/o an open window. So we just open it manually...
+                 * first try, if the clist returned an event...
                  */
-                if(nen_options.bTraySupport)
-                    CallService(MS_MSG_SENDMESSAGE, (WPARAM)wParam, 0);
-                else {
-                    CLISTEVENT *cle = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, wParam, 0);
-                    if (cle) {
-                        if (ServiceExists(cle->pszService)) {
-                            CallService(cle->pszService, (WPARAM)NULL, (LPARAM)cle);
-                            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)cle->hContact, (LPARAM)cle->hDbEvent);
-                        }
+                if (cle) {
+                    if (ServiceExists(cle->pszService)) {
+                        CallService(cle->pszService, (WPARAM)NULL, (LPARAM)cle);
+                        CallService(MS_CLIST_REMOVEEVENT, (WPARAM)cle->hContact, (LPARAM)cle->hDbEvent);
                     }
+                }
+                else {              // still, we got that message posted.. the event may be waiting in tabSRMMs tray...
+                    HandleMenuEntryFromhContact((int)wParam);
                 }
                 break;
             }
@@ -530,6 +524,12 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     FlashTrayIcon(0);
                 else
                     FlashTrayIcon(1);
+            }
+            if(nen_options.bFloaterOnlyMin) {
+                if(IsWindowVisible(myGlobals.m_hwndClist))
+                    ShowWindow(hwndDlg, SW_HIDE);
+                else
+                    ShowWindow(hwndDlg, SW_SHOW);
             }
             break;
         case DM_FORCEUNREGISTERHOTKEYS:

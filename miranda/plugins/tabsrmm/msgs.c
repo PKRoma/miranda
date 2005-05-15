@@ -1206,7 +1206,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
             SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
         else if(GetForegroundWindow() != pContainer->hwnd)
             SetForegroundWindow(pContainer->hwnd);
-        SetFocus(hwndChild);
+        //SetFocus(hwndChild);
+        SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
     	SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 		return TRUE;
 	} else

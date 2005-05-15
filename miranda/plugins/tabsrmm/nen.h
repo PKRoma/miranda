@@ -91,6 +91,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define OPT_ANNOUNCEMETHOD "method"
 #define OPT_FLOATER "floater"
 #define OPT_FLOATERINWIN "floater_win"
+#define OPT_FLOATERONLYMIN "floater_onlymin"
 
 typedef struct {
     BOOL bPreview;
@@ -138,6 +139,7 @@ typedef struct {
     int  iAnnounceMethod;
     BOOL floaterMode;
     BOOL bFloaterInWin;
+    BOOL bFloaterOnlyMin;
 } NEN_OPTIONS;
 
 #define FLOATER_ATTACHED 1

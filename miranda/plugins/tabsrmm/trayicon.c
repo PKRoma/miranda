@@ -160,7 +160,7 @@ void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
 
         GetWindowRect(hWnd, &rectFrom);
         GetTrayWindowRect(&rectTo);
-        if(nen_options.floaterMode)
+        if(nen_options.floaterMode && IsWindowVisible(myGlobals.g_hwndHotkeyHandler))
             GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectTo);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, &rectTo);
     }
@@ -175,7 +175,7 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
         RECT rectFrom;
 
         GetTrayWindowRect(&rectFrom);
-        if(nen_options.floaterMode)
+        if(nen_options.floaterMode && IsWindowVisible(myGlobals.g_hwndHotkeyHandler))
             GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectFrom);
         SetParent(hWnd, NULL);
         DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, rectTo);

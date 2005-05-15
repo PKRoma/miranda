@@ -140,7 +140,7 @@ struct ContainerWindowData {
     POINT pLastPos;
     DWORD dwFlags;
     UINT  uChildMinHeight;
-    SIZE  oldSize;
+    SIZE  oldSize, sb_Sizecheck;
     POINT ptLast;
 	DWORD dwTransparency;
     int   iContainerIndex;
@@ -335,6 +335,7 @@ typedef struct _globals {
     BYTE m_WinVerMajor;
     BYTE m_WinVerMinor;
     BYTE m_SideBarEnabled;
+    HWND m_hwndClist;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

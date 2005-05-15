@@ -449,8 +449,22 @@ struct LISTOPTIONSITEM {
     UINT uGroup;
 };
 
+// sidebar button flags
+
 #define SBI_TOP 1
 #define SBI_BOTTOM 2
+#define SBI_HIDDEN 4
+#define SBI_DISABLED 8
+#define SBI_TOGGLE   16
+
+// fixed sidebaritem identifiers
+
+#define IDC_SBAR_SLIST                  1111
+#define IDC_SBAR_FAVORITES              1112
+#define IDC_SBAR_RECENT                 1113
+#define IDC_SBAR_SETUP                  1114
+#define IDC_SBAR_USERPREFS              1115
+#define IDC_SBAR_TOGGLEFORMAT           1117
 
 struct SIDEBARITEM {
     UINT uId;

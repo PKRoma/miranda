@@ -1800,6 +1800,7 @@ void ReloadGlobals()
      myGlobals.m_WinVerMajor = WinVerMajor();
      myGlobals.m_WinVerMinor = WinVerMinor();
      myGlobals.m_SideBarEnabled = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sidebar", 0);
+     myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
      if(myGlobals.m_MathModAvail) {

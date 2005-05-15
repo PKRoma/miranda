@@ -715,6 +715,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         else
             szTemplate = isSent ? this_templateset->szTemplates[TMPL_MSGOUT] : this_templateset->szTemplates[TMPL_MSGIN];
     }
+
     iTemplateLen = _tcslen(szTemplate);
     showTime = dat->dwFlags & MWF_LOG_SHOWTIME;
     showDate = dat->dwFlags & MWF_LOG_SHOWDATES;
@@ -968,7 +969,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
                     AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->uin);
                     break;
-                case 'e':
+                case 'e':           // error message
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[MSGFONTID_ERROR], dbei.szModule);
                     break;
                 case 'M':           // message
@@ -983,10 +984,13 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                             if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
                                 if(dbei.eventType == EVENTTYPE_ERRMSG && dbei.cbBlob == 0)
                                     break;
-                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[dbei.eventType == EVENTTYPE_STATUSCHANGE ? H_MSGFONTID_STATUSCHANGES : MSGFONTID_MYMSG]);
+                                if(!skipFont)
+                                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[dbei.eventType == EVENTTYPE_STATUSCHANGE ? H_MSGFONTID_STATUSCHANGES : MSGFONTID_MYMSG]);
                             }
-                            else
-                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
+                            else {
+                                if(!skipFont)
+                                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset]);
+                            }
                 #if defined( _UNICODE )
                             {
                                 int msglen = lstrlenA((char *) dbei.pBlob) + 1;
@@ -1000,7 +1004,6 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                                         TrimMessage(msg);
                                         formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
                                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
-                                        //MessageBoxA(0, buffer, "bar", MB_OK);
                                     }
                                     else
                                         goto nounicode;
@@ -1025,13 +1028,15 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
                             break;
                         }
                         case EVENTTYPE_URL:
-                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset]);
+                            if(!skipFont)
+                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset]);
                             AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob);
                             if ((dbei.pBlob + lstrlenA(dbei.pBlob) + 1) != NULL && lstrlenA(dbei.pBlob + lstrlenA(dbei.pBlob) + 1))
                                 AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, " (%s)", dbei.pBlob + lstrlenA(dbei.pBlob) + 1);
                             break;
                         case EVENTTYPE_FILE:
-                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset]);
+                            if(!skipFont)
+                                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset]);
                             if ((dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1) != NULL && lstrlenA(dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1))
                                 AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s (%s)", dbei.pBlob + sizeof(DWORD), dbei.pBlob + sizeof(DWORD) + lstrlenA(dbei.pBlob + sizeof(DWORD)) + 1);
                             else

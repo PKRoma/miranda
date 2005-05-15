@@ -84,7 +84,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						DWORD dwNewFlags = 0, dwNewTrans = 0;
                         SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)&dwNewFlags);
 
-						pContainer->dwFlags = dwNewFlags;
+						pContainer->dwFlags = (pContainer->dwFlags & CNT_SIDEBAR) | dwNewFlags;
 						pContainer->dwTransparency = MAKELONG((WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_GETPOS, 0, 0), (WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_GETPOS, 0, 0));
 						dwNewTrans = pContainer->dwTransparency;
                         

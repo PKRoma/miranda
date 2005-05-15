@@ -1554,3 +1554,36 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
             SkinPlaySound("RecvMsgInactive");
     }
 }
+
+/*
+ * configures the sidebar (if enabled) when tab changes
+ */
+
+void ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(!dat->pContainer->dwFlags & CNT_SIDEBAR)
+        return;
+    CheckDlgButton(dat->pContainer->hwnd, IDC_SBAR_TOGGLEFORMAT, dat->SendFormat != 0 ? BST_CHECKED : BST_UNCHECKED);
+}
+
+/*
+ * reads send format and configures the toolbar buttons
+ * if mode == 0, int only configures the buttons and does not change send format
+ */
+
+void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
+{
+    UINT controls[4] = {IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE, IDC_FONTFACE};
+    int i;
+    
+    if(mode) {
+        dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
+        if(dat->SendFormat == -1)           // per contact override to disable it..
+            dat->SendFormat = 0;
+    }
+    for(i = 0; i < 4; i++) {
+        EnableWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
+        ShowWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? SW_SHOW : SW_HIDE);
+    }
+    return;
+}

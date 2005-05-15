@@ -279,16 +279,22 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
                 switch(wParam) {
                     case 0x02:               // bold
-                        CheckDlgButton(GetParent(hwnd), IDC_FONTBOLD, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTBOLD) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
-                        SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTBOLD, IDC_MESSAGE), 0);
+                        if(mwdat->SendFormat) {
+                            CheckDlgButton(GetParent(hwnd), IDC_FONTBOLD, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTBOLD) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
+                            SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTBOLD, IDC_MESSAGE), 0);
+                        }
                         return 0;
                     case 0x09:
-                        CheckDlgButton(GetParent(hwnd), IDC_FONTITALIC, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTITALIC) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
-                        SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTITALIC, IDC_MESSAGE), 0);
+                        if(mwdat->SendFormat) {
+                            CheckDlgButton(GetParent(hwnd), IDC_FONTITALIC, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTITALIC) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
+                            SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTITALIC, IDC_MESSAGE), 0);
+                        }
                         return 0;
                     case 21:
-                        CheckDlgButton(GetParent(hwnd), IDC_FONTUNDERLINE, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTUNDERLINE) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
-                        SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTUNDERLINE, IDC_MESSAGE), 0);
+                        if(mwdat->SendFormat) {
+                            CheckDlgButton(GetParent(hwnd), IDC_FONTUNDERLINE, IsDlgButtonChecked(GetParent(hwnd), IDC_FONTUNDERLINE) == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED);
+                            SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDC_FONTUNDERLINE, IDC_MESSAGE), 0);
+                        }
                         return 0;
                     case 25:
                         PostMessage(GetParent(hwnd), DM_SPLITTEREMERGENCY, 0, 0);
@@ -309,6 +315,14 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             GetWindowRect(hwnd, &rc);
             if(PtInRect(&rc, pt))
                 break;
+            if(mwdat->pContainer->dwFlags & CNT_SIDEBAR) {
+                GetWindowRect(GetDlgItem(mwdat->pContainer->hwnd, IDC_SIDEBAR), &rc);
+                if(PtInRect(&rc, pt)) {
+                    short amount = (short)(HIWORD(wParam));
+                    SendMessage(mwdat->pContainer->hwnd, WM_COMMAND, MAKELONG(amount > 0 ? IDC_SIDEBARUP : IDC_SIDEBARDOWN, 0), 0);
+                    return 0;
+                }
+            }
             GetWindowRect(GetDlgItem(GetParent(hwnd), IDC_LOG), &rc);
             if(PtInRect(&rc, pt)) {
                 if(mwdat->hwndLog != 0) {
@@ -576,7 +590,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTIPLEICON:
             if(IsWindowVisible(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR)))
-               OffsetRect(&urc->rcItem, 12, 0);
+               OffsetRect(&urc->rcItem, 10, 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_ADD:
         case IDC_CANCELADD:
@@ -629,7 +643,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                     urc->rcItem.right -= 52;
             }
             if(IsWindowVisible(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR)))
-               urc->rcItem.left += 12;
+               urc->rcItem.left += 10;
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_TOGGLESIDEBAR:
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
@@ -817,6 +831,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->hwnd = hwndDlg;
                 SetMessageLog(hwndDlg, dat);
 
+                dat->ltr_templates = &LTR_Active;
+                dat->rtl_templates = &RTL_Active;
+
                 // input history stuff (initialise it..)
 
                 dat->iHistorySize = DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 10);
@@ -929,9 +946,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(GetDlgItem(hwndDlg, IDC_CANCELADD), BUTTONSETASFLATBTN, 0, 0);
                     SendMessage(GetDlgItem(hwndDlg, IDC_LOGFROZEN), BUTTONSETASFLATBTN, 0, 0);
                 }
-                SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
-                SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASPUSHBTN, 0, 0);
-
                 dat->dwFlags |= MWF_INITMODE;
                 TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
                 
@@ -1221,9 +1235,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_CONFIGURETOOLBAR:
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
             if(lParam == 1) {
-                dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
-                if(dat->SendFormat == -1)           // per contact override to disable it..
-                    dat->SendFormat = 0;
+                GetSendFormat(hwndDlg, dat, 1);
                 SetDialogToType(hwndDlg);
             }
             dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
@@ -1290,7 +1302,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             //SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
             SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
             SendDlgItemMessage(hwndDlg, IDC_LOGFROZEN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[24]);
-            SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[25]);
             break;
         case DM_OPTIONSAPPLIED:
 #ifdef __MATHMOD_SUPPORT            
@@ -1310,9 +1321,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
             }
 
-            dat->ltr_templates = &LTR_Active;
-            dat->rtl_templates = &RTL_Active;
-            
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
                 DWORD dwForcedContactNum = 0;
                 CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
@@ -1340,10 +1348,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             
             dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
 
-            dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
-            if(dat->SendFormat == -1)           // per contact override to disable it..
-                dat->SendFormat = 0;
-                
+            GetSendFormat(hwndDlg, dat, 1);
             SetDialogToType(hwndDlg);
             SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
 
@@ -1598,7 +1603,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 return 1;
             }
             if (dat->iTabID >= 0) {
-                CheckDlgButton(hwndDlg, IDC_TOGGLESIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? BST_CHECKED : BST_UNCHECKED);
+                ConfigureSideBar(hwndDlg, dat);
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 dat->dwTickLastEvent = 0;
                 dat->dwFlags &= ~MWF_DIVIDERSET;
@@ -1659,7 +1664,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 _DebugPopup(dat->hContact, "ACTIVATE Critical: iTabID == -1");
                 break;
             } else {
-                CheckDlgButton(hwndDlg, IDC_TOGGLESIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? BST_CHECKED : BST_UNCHECKED);
+                ConfigureSideBar(hwndDlg, dat);
                 dat->dwFlags &= ~MWF_DIVIDERSET;
                 dat->dwTickLastEvent = 0;
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
@@ -2586,6 +2591,24 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_DRAWITEM:
             {
                 LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+                if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
+                    HICON hIcon;
+                    DWORD bStyle = 0;
+                    int cx = GetSystemMetrics(SM_CXSMICON);
+                    int cy = GetSystemMetrics(SM_CYSMICON);
+                    if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+                        bStyle = DFCS_PUSHED;
+                    else
+                        bStyle = DFCS_FLAT;
+                    DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | bStyle);
+                    hIcon = myGlobals.g_buttonBarIcons[25];
+                    DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
+                              (dis->rcItem.right + dis->rcItem.left - cx) / 2,
+                              (dis->rcItem.bottom + dis->rcItem.top - cy) / 2,
+                              cx, cy,
+                              DST_ICON | DSS_NORMAL);
+                    return TRUE;
+                }
                 if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
                     DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, myGlobals.g_buttonBarIcons[5], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
                     return TRUE;
@@ -2933,7 +2956,10 @@ quote_from_last:
     					cf.dwMask = 0;
     					cf.dwEffects = 0;
                         
-    					if(cmd == IDC_FONTBOLD && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTBOLD))) 
+                        if(dat->SendFormat == 0)            // dont use formatting if disabled
+                            break;
+                        
+                        if(cmd == IDC_FONTBOLD && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTBOLD))) 
     						break;
     					if(cmd == IDC_FONTITALIC && !IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FONTITALIC))) 
     						break;
@@ -3191,6 +3217,7 @@ quote_from_last:
                         iNewIEView = GetIEViewMode(hwndDlg, dat);
                         if(iNewIEView != iOldIEView)
                             SwitchMessageLog(hwndDlg, dat, iNewIEView);
+                        ConfigureSideBar(hwndDlg, dat);
                     }
                     break;
                 }
@@ -3281,11 +3308,18 @@ quote_from_last:
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     break;
                 case IDC_TOGGLESIDEBAR:
-                    dat->pContainer->dwFlags = IsDlgButtonChecked(hwndDlg, IDC_TOGGLESIDEBAR) == BST_CHECKED ? dat->pContainer->dwFlags | CNT_SIDEBAR : dat->pContainer->dwFlags & ~CNT_SIDEBAR;
+                    dat->pContainer->dwFlags ^= CNT_SIDEBAR;
+                    dat->pContainer->sb_Sizecheck.cx = dat->pContainer->sb_Sizecheck.cy = 0;
+                    SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
                     SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
                     SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
                     RedrawWindow(GetDlgItem(dat->pContainer->hwnd, IDC_SIDEBAR), NULL, NULL, RDW_INVALIDATE);
-                    RedrawWindow(dat->pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+                    RedrawWindow(dat->pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
+                    //RedrawWindow(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
+                    SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                    SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
+                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_ERASE);
                     break;
 // BEGIN MOD#33: Show contact's picture
                 case IDC_PIC:
@@ -3697,6 +3731,7 @@ quote_from_last:
                                             hSubMenu = GetSubMenu(hMenu, 2);
                                             EnableMenuItem(hSubMenu, ID_EDITOR_LOADBACKGROUNDIMAGE, MF_BYCOMMAND | (iPrivateBG ? MF_GRAYED : MF_ENABLED));
                                             EnableMenuItem(hSubMenu, ID_EDITOR_REMOVEBACKGROUNDIMAGE, MF_BYCOMMAND | (iPrivateBG ? MF_GRAYED : MF_ENABLED));
+                                            EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (dat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
                                         }
                                         CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
                                         SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
@@ -4142,7 +4177,7 @@ verify:
                 strcpy(pai_s.filename, "X");
                 result = CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
                 if(result == GAIR_WAITFOR)
-                    _DebugPopup(dat->hContact, "Retrieving Avatar...");
+                    _DebugMessage(hwndDlg, dat, "%s", "Refreshing avatar...");
                 else if(result == GAIR_SUCCESS) {
                     if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
                         DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai_s.filename);

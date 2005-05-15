@@ -98,6 +98,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
     options->floaterMode = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATER, 0);
     options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
+    options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
     return 0;
 }
 
@@ -140,6 +141,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, options->iAnnounceMethod);
     DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATER, options->floaterMode);
     DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, options->bFloaterInWin);
+    DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, options->bFloaterOnlyMin);
     return 0;
 }
 
@@ -160,6 +162,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Don't announce events from RSS protocols", IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
     0, "Enable the system tray icon", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
     0, "Show the floater", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
+    0, "When floater is enabled, only show it while the contact list is minimized", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterOnlyMin, 2,
     0, "Show session list menu on the message windows status bar", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
     0, "Minimize containers to system tray or floater", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
     0, "Minimize and restore animated", IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
@@ -426,6 +429,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         nen_options.bTraySupport = oldTray;
                         nen_options.bMinimizeToTray = oldMin;
                     }
+                    ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
                     break;
                 }
                 case PSN_RESET:
@@ -598,15 +602,14 @@ int PopupUpdate(HANDLE hContact, HANDLE hEvent)
 int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
 {
     if (mask & MASK_OPEN) {
-        HWND hwndExisting = 0;
+        int i;
 
-        if((hwndExisting = WindowList_Find(hMessageWindowList, pdata->hContact)) != 0)
-            PostMessage(hwndExisting, DM_ACTIVATEME, 0, 0);          // ask the message tab to activate itself (post it, may run in a different thread)
-        else
-            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, 0);
+        for(i = 0; i < pdata->nrMerged; i++)
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
     }
     if (mask & MASK_REMOVE) {
         int i;
+        
         for(i = 0; i < pdata->nrMerged; i++)
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
         PopUpList[NumberPopupData(pdata->hContact)] = NULL;

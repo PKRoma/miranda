@@ -150,15 +150,9 @@
 #define IDC_LOGFROZEN                   1109
 #define IDC_FONTFACE                    1110
 #define IDC_HISTORY                     1111
-#define IDC_SBAR_SLIST                  1111
 #define IDC_CANCELADD                   1112
-#define IDC_SBAR_FAVORITES              1112
 #define IDC_FONTID                      1113
-#define IDC_SBAR_RECENT                 1113
 #define IDC_SAMETYPE                    1114
-#define IDC_HISTORY2                    1114
-#define IDC_SBAR_SETUP                  1114
-#define IDC_SBAR_USERPREFS              1115
 #define IDC_SAMESTYLE                   1115
 #define IDC_SAMECOLOUR                  1116
 #define IDC_SAMEAS                      1117
@@ -274,7 +268,6 @@
 #define IDC_SIDEBARUP                   1223
 #define IDC_CREATENEW                   1224
 #define IDC_RTLMODIFY                   1224
-#define IDC_SIDEBARUP2                  1224
 #define IDC_SIDEBARDOWN                 1224
 #define IDC_LOADDEFAULTS                1225
 #define IDC_SENDLATER                   1226
