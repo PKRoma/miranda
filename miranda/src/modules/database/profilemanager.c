@@ -56,6 +56,9 @@ struct DetailsData {
 	struct DlgProfData * prof;
 };
 
+extern char mirandabootini[MAX_PATH]; // bad bad bad bad!
+static char szDefaultMirandaProfile[MAX_PATH];
+
 static void ThemeDialogBackground(HWND hwnd) {
 	if (IsWinVerXPPlus()) {
 		static HMODULE hThemeAPI = NULL;
@@ -113,6 +116,19 @@ static int FindDbProviders(char * pluginname, DATABASELINK * dblink, LPARAM lPar
 	return DBPE_CONT;
 }
 
+// returns 1 if autocreation of the profile is setup, profile has to be at least MAX_PATH!
+static int checkAutoCreateProfile(char * profile)
+{
+	char ac[MAX_PATH];
+	char env_profile[MAX_PATH];
+	GetPrivateProfileString("Database", "AutoCreate", "no", ac, sizeof(ac), mirandabootini);
+	if ( lstrcmpi(ac,"yes") != 0 ) return 0;
+	GetPrivateProfileString("Database", "DefaultProfile", "", ac, sizeof(ac), mirandabootini);
+	ExpandEnvironmentStrings(ac, env_profile, sizeof(env_profile));	
+	if ( profile != NULL ) strcpy(profile, env_profile);
+	return lstrlen(env_profile) > 0;
+}
+
 static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct DlgProfData * dat = (struct DlgProfData *)GetWindowLong(hwndDlg,GWL_USERDATA);
@@ -144,6 +160,11 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				WNDPROC proc = (WNDPROC)GetWindowLong(hwndProfile, GWL_WNDPROC);
 				SetWindowLong(hwndProfile,GWL_USERDATA,(LONG)proc);
 				SetWindowLong(hwndProfile,GWL_WNDPROC,(LONG)ProfileNameValidate);
+			}
+			// decide if there is a default profile name given in the INI and if it should be used
+			{
+				char profile[MAX_PATH];
+				if ( checkAutoCreateProfile((char*)&profile) ) SetDlgItemText(hwndDlg, IDC_PROFILENAME, profile);
 			}
 			// focus on the textbox
 			PostMessage(hwndDlg,WM_USER+10,0,0);
@@ -217,6 +238,8 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		if ( fp ) fclose(fp);
 	}
 	iItem=ListView_InsertItem(hwndList, &item);	
+	if ( lstrcmpi(szDefaultMirandaProfile, profile) == 0 ) 
+		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED, LVIS_SELECTED);
 	ListView_SetItemText(hwndList, iItem, 1, sizeBuf);
 	return TRUE;
 }
@@ -251,8 +274,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			ImageList_AddIcon(hImgList, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)) );
 			ImageList_AddIcon(hImgList, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE)) );	
 			// LV will destroy the image list
-			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
-
+			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);			
 			// find all the profiles
 			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)hwndDlg);
 			PostMessage(hwndDlg,WM_USER+10,0,0);
@@ -261,8 +283,9 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_USER+10:
 		{
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
-			SetFocus(hwndList);
-			ListView_SetItemState(hwndList, 0, LVIS_SELECTED, LVIS_SELECTED);
+			SetFocus(hwndList);		
+			if ( lstrlen(szDefaultMirandaProfile) == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 ) 
+				ListView_SetItemState(hwndList, 0, LVIS_SELECTED, LVIS_SELECTED);
 			break;
 		}
 		case WM_SHOWWINDOW:
@@ -354,7 +377,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					dat->opd[i].hwnd=NULL;
 					dat->opd[i].changed=0;
 					tci.pszText=(char*)odp[i].pszTitle;
-					if ( dat->prof->pd->noProfiles ) dat->currentPage=1;
+					if ( dat->prof->pd->noProfiles || checkAutoCreateProfile(NULL) ) dat->currentPage=1;
 					TabCtrl_InsertItem(GetDlgItem(hwndDlg,IDC_TABS),i,&tci);
 				}
 			}
@@ -537,6 +560,12 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 
 	opi.pageCount=0;
 	opi.odp=NULL;
+	
+	{ // remember what the default profile is, if any.
+		char defaultProfile[MAX_PATH];
+		GetPrivateProfileString("Database", "DefaultProfile", "", defaultProfile, sizeof(defaultProfile), mirandabootini);
+		ExpandEnvironmentStrings(defaultProfile, szDefaultMirandaProfile, sizeof(szDefaultMirandaProfile));
+	}
 
 	{
 		OPTIONSDIALOGPAGE odp;

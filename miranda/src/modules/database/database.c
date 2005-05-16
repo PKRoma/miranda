@@ -175,6 +175,23 @@ static int showProfileManager(void)
 	return 0;
 }
 
+// returns 1 if a default profile should be selected instead of showing the manager.
+static int getProfileAutoRun(char * szProfile, size_t cch, char * profiledir)
+{
+	char Mgr[32];
+	char env_profile[MAX_PATH];
+	char exp_profile[MAX_PATH];
+	GetPrivateProfileString("Database", "ShowProfileMgr", "", Mgr, sizeof(Mgr), mirandabootini);
+	if ( lstrcmpi(Mgr,"never") ) return 0;		
+	GetPrivateProfileString("Database", "DefaultProfile", "", env_profile, sizeof(env_profile), mirandabootini);
+	if ( lstrlen(env_profile) == 0 ) return 0;
+	ExpandEnvironmentStrings(env_profile, exp_profile, sizeof(exp_profile));
+	mir_snprintf(szProfile, cch, "%s\\%s.dat", profiledir, exp_profile);
+	return 1;
+}
+
+
+
 // returns 1 if a profile was selected
 static int getProfile(char * szProfile, size_t cch)
 {
@@ -183,8 +200,9 @@ static int getProfile(char * szProfile, size_t cch)
 	ZeroMemory(&pd,sizeof(pd));
 	getProfilePath(profiledir,sizeof(profiledir));
 	if ( getProfileCmdLine(szProfile, cch, profiledir) ) return 1;
+	if ( getProfileAutoRun(szProfile, cch, profiledir) ) return 1;
 	if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
-	else {
+	else {		
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;
 		return getProfileManager(&pd);
