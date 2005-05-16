@@ -350,7 +350,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   char pszGroupsName[MAX_PATH+10];
   char pszSrvGroupsName[MAX_PATH+10];
   char szBuffer[MAX_PATH+64];
-  char* modules[5] = {0};
+  char* modules[5] = {0,0,0,0,0};
 
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
