@@ -158,3 +158,9 @@ plugins folder]
 [User &history]
 [&Leave chat session]
 [&Invite user...]
+
+; options dialog
+[Avatar]
+[Running on a mobile device]
+[Running on a MSN mobile device]
+[Using MSN Webmessenger]

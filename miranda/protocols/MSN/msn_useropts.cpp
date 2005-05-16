@@ -145,6 +145,9 @@ BOOL CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				strcpy( tBuffer, "N" );
 			SetDlgItemText( hwndDlg, IDC_MSN_MOBILE, tBuffer );
 
+			DWORD dwFlagBits = MSN_GetDword( pData->hContact, "FlagBits", 0 );
+			SetDlgItemText( hwndDlg, IDC_WEBMESSENGER, ( dwFlagBits & 0x200 ) ? "Y" : "N" );
+
 			if ( MyOptions.EnableAvatars ) {
 				MSN_GetAvatarFileName(( HANDLE )lParam, tBuffer, sizeof tBuffer );
 
@@ -161,7 +164,7 @@ LBL_Reread:		DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File
 
 				if ( stricmp( tNewContext, tSavedContext ))
 					goto LBL_Reread;
-	
+
 				SendDlgItemMessage( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
 					( LPARAM )LoadImage( ::GetModuleHandle(NULL), tBuffer, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
 		}	}

@@ -72,6 +72,7 @@
 #define IDC_ENTER_MAILER_APP            1059
 #define IDC_MOBILE                      1060
 #define IDC_MSN_MOBILE                  1061
+#define IDC_WEBMESSENGER                1062
 #define IDC_LOGINSERVER                 1171
 #define IDC_YOURHOST                    1172
 #define IDC_MSNPORT                     1174

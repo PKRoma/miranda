@@ -326,9 +326,9 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	const char* SessionID = tFileInfo[ "Session-ID" ];
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
 
-	if ( AppGUID != NULL ) { 
+	if ( AppGUID != NULL ) {
 		if ( !strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
-			MSN_ShowPopup( MSN_GetContactName( info->mJoinedContacts[0] ), 
+			MSN_ShowPopup( MSN_GetContactName( info->mJoinedContacts[0] ),
 				MSN_Translate( "Contact tried to open an audio conference (currently not supported)" ), MSN_ALLOW_MSGBOX );
 			return;
 	}	}
@@ -1061,9 +1061,14 @@ LBL_InvalidCommand:
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
 			}
 
+			MSN_SetString( hContact, "MirVer", "" );
+
 			if ( tArgs > 3 && tArgs <= 5 ) {
 				UrlDecode( data.cmdstring );
-				MSN_SetDword( hContact, "FlagBits", atol( data.objid ));
+				DWORD dwValue = ( DWORD )atol( data.objid );
+				MSN_SetDword( hContact, "FlagBits", dwValue );
+				if ( dwValue & 0x200 )
+					MSN_SetString( hContact, "MirVer", "Webmessenger" );
 
 				if ( data.cmdstring[0] ) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
