@@ -200,7 +200,7 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					GetSystemTimeAsFileTime(&ft);
                     switch (GetTimeZoneInformation(&tzi)) {
                         case TIME_ZONE_ID_DAYLIGHT:
-                            timezone+=tzi.DaylightBias;
+                            timezone+=tzi.DaylightBias/30;
                             break;
                     }
 					lift.QuadPart=*(__int64*)&ft;
