@@ -233,7 +233,9 @@ void icq_PauseUserLookup()
   bPaused = TRUE;
   tLast = GetTickCount();
 
+#ifdef _DEBUG
   Netlib_Logf(ghServerNetlibUser, "Pausing Auto-info update thread...");
+#endif
 }
 
 
@@ -277,7 +279,13 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 
       if (bPaused)
       { // pause for 30sec
-        if (GetTickCount()-tLast>30000) bPaused = FALSE;
+        if (GetTickCount()-tLast>30000) 
+        {
+          bPaused = FALSE;
+#ifdef _DEBUG
+          Netlib_Logf(ghServerNetlibUser, "Resuming auto-info update thread...");
+#endif
+        }
         continue;
       }
       tLast = GetTickCount();
