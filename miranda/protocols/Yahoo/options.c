@@ -108,7 +108,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, YAHOO_GetByte( "ShowAvatars", 0 )); 
 		
 		/* show our current ignore list */
-		l = YAHOO_GetIgnoreList();
+		l = (YList *)YAHOO_GetIgnoreList();
 		while (l != NULL) {
 			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
 			

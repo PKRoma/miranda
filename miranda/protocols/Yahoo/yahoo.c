@@ -10,13 +10,8 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-
-
 #include <time.h>
-#include <stdio.h>
 #include <sys/stat.h>
-
-#include <direct.h> 
 #include <malloc.h>
 
 /*
@@ -64,9 +59,6 @@ yahoo_idlabel yahoo_status_codes[] = {
 yahoo_local_account * ylad = NULL;
 
 int do_yahoo_debug = 0;
-int conn_type = 1;
-static int ping_timer = 0;
-
 extern int poll_loop;
 
 void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
@@ -188,18 +180,10 @@ int yahoo_to_miranda_status(int yahooStatus, int away)
 
 int ext_yahoo_log(char *fmt,...)
 {
-	char		str[ 4096 ];
 	va_list ap;
-	int tBytes;
 
 	va_start(ap, fmt);
-	
-	tBytes = _vsnprintf( str, sizeof( str ), fmt, ap );
-	if ( tBytes > 0 )
-		str[ tBytes ] = 0;
-
-	YAHOO_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
-
+	Netlib_Logf(hNetlibUser, fmt, ap);
 	va_end(ap);
 	return 0;
 }
@@ -286,7 +270,7 @@ void get_fd(int id, int fd, int error, void *data)
 	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
 
-YList * YAHOO_GetIgnoreList(void)
+const YList* YAHOO_GetIgnoreList(void)
 {
 	if (!ylad)
 		return NULL;
@@ -324,7 +308,6 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
     if(!error) {
 		HANDLE myhFile;
 		PROTOFILETRANSFERSTATUS pfts;
-		char *old_dir;
 
 		ZeroMemory(&pfts, sizeof(PROTOFILETRANSFERSTATUS));
 		pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
@@ -343,14 +326,6 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		
 		pfts.currentFile = _strdup(buf);		
 		LOG(("Saving: %s",  pfts.currentFile));
-		
-		old_dir = _getcwd(NULL, 512); 
-		
-		if (old_dir) {
-			_chdir( sf->savepath ); // save this just in case
-		} else {
-			LOG(("WARNING: Can't get the current working directory!" ));
-		}
 		
 		if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
 			CloseHandle( sf->hWaitEvent );
@@ -447,10 +422,6 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 			free(pfts.currentFile);
 		}
 		
-		if (old_dir) {
-			_chdir(old_dir); 
-			free(old_dir); 
-		}
     }
 	
     LOG(("File download complete!"));

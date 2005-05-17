@@ -11,7 +11,7 @@
  * and for answering some of my questions during development of this plugin.
  */
 #include <windows.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 /* 
  * Yahoo Services
@@ -145,7 +145,7 @@ void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
 int miranda_to_yahoo(int myyahooStatus);
 void yahoo_stealth(const char *buddy, int add);
-YList * YAHOO_GetIgnoreList(void);
+const YList* YAHOO_GetIgnoreList(void);
 void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
 
 BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
