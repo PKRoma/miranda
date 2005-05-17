@@ -309,7 +309,7 @@ void __stdcall p2p_sendSlp(
 	*( long* )p = 0; p += sizeof( long );
 
 	if ( info == NULL ) {
-		MsgQueue_Add( ft->std.hContact, buf, int( p - buf ), NULL );
+		MsgQueue_Add( ft->std.hContact, 'D', buf, int( p - buf ), NULL );
 		msnNsThread->sendPacket( "XFR", "SB" );
 	}
 	else if ( info->mType == SERVER_P2P_DIRECT ) {

@@ -51,9 +51,6 @@ int msnPingTimeout = 50;
 
 unsigned long sl;
 
-extern int uniqueEventId;
-extern char sttHeaderStart[];
-
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN_ReceiveMessage - receives message or a file from the server
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1148,10 +1145,10 @@ LBL_InvalidCommand:
 				if ( tFound != 0 ) {
 					do {
 						if ( E.msgSize == 0 ) {
-							info->sendMessage( E.message, 0 );
+							info->sendMessage( E.msgType, E.message, 0 );
 							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						}
-						else info->sendRawMessage(( E.msgSize == -1 ) ? 'N' : 'D', E.message, E.msgSize );
+						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
 						free( E.message );
 

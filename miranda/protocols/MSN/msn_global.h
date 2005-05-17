@@ -391,7 +391,7 @@ struct ThreadData
 	int				recv( char* data, long datalen );
 	int				recv_dg( char* data, long datalen );
 
-	LONG				sendMessage( const char* msg, int parFlags );
+	LONG				sendMessage( int msgType, const char* msg, int parFlags );
 	LONG				sendRawMessage( int msgType, const char* data, int datLen );
 	LONG				sendPacket( const char* cmd, const char* fmt, ... );
 };
@@ -442,13 +442,14 @@ struct MsgQueueEntry
 {
 	HANDLE			hContact;
 	char*				message;
+	int            msgType;
 	int				msgSize;
 	filetransfer*	ft;
 	int				seq;
 	int				allocatedToThread;
 };
 
-int		__stdcall MsgQueue_Add( HANDLE hContact, const char* msg, int msglen, filetransfer* ft = NULL );
+int		__stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL );
 HANDLE	__stdcall MsgQueue_CheckContact( HANDLE hContact );
 HANDLE	__stdcall MsgQueue_GetNextRecipient( void );
 int		__stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );

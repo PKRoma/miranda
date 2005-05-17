@@ -294,7 +294,7 @@ void __stdcall	MSN_GoOffline()
 
 char sttHeaderStart[] = "MIME-Version: 1.0\r\n";
 
-LONG ThreadData::sendMessage( const char* parMsg, int parFlags )
+LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 {
 	char tHeader[ 1024 ];
 	strcpy( tHeader, sttHeaderStart );
@@ -339,9 +339,7 @@ LONG ThreadData::sendMessage( const char* parMsg, int parFlags )
 			tFontName, tFontStyle, tFontColor );
 	}
 
-	return sendPacket( "MSG", "%c %d\r\n%s%s",
-		( parFlags & MSG_REQUIRE_ACK ) ? 'A' : 'N',
-		strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
+	return sendPacket( "MSG", "%c %d\r\n%s%s", msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

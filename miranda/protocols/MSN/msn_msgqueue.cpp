@@ -47,7 +47,7 @@ void MsgQueue_Uninit( void )
 	DeleteCriticalSection( &csMsgQueue );
 }
 
-int __stdcall MsgQueue_Add( HANDLE hContact, const char* msg, int msgSize, filetransfer* ft )
+int __stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft )
 {
 	EnterCriticalSection( &csMsgQueue );
 	msgQueue = ( MsgQueueEntry* )realloc( msgQueue, sizeof( MsgQueueEntry )*( msgQueueCount+1 ));
@@ -57,6 +57,7 @@ int __stdcall MsgQueue_Add( HANDLE hContact, const char* msg, int msgSize, filet
 	MsgQueueEntry& E = msgQueue[ msgQueueCount++ ];
 	E.hContact = hContact;
 	E.msgSize = msgSize;
+	E.msgType = msgType;
 	if ( msgSize <= 0 )
 		E.message = strdup( msg );
 	else

@@ -789,9 +789,9 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		free( pszFilesUTF );
 
 		if ( thread == NULL )
-			MsgQueue_Add( ccs->hContact, msg, -1, sft );
+			MsgQueue_Add( ccs->hContact, 'D', msg, -1, sft );
 		else
-			thread->sendMessage( msg, MSG_DISABLE_HDR );
+			thread->sendMessage( 'D', msg, MSG_DISABLE_HDR );
 	}
 
 	MSN_SendBroadcast( ccs->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sft, 0 );
@@ -855,7 +855,7 @@ LBL_Error:
 		return 999999;
 	}
 
-	int seq;
+	int seq, msgType = ( MyOptions.SlowSend ) ? 'A' : 'N';
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread == NULL )
 	{
@@ -868,13 +868,13 @@ LBL_Error:
 		if ( MsgQueue_CheckContact( ccs->hContact ) == NULL )
 			msnNsThread->sendPacket( "XFR", "SB" );
 
-		seq = MsgQueue_Add( ccs->hContact, msg, 0, 0 );
+		seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 );
 	}
 	else
 	{	if ( thread->mJoinedCount == 0 )
-			seq = MsgQueue_Add( ccs->hContact, msg, 0, 0 );
+			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 );
 		else {
-			seq = thread->sendMessage( msg, ( MyOptions.SlowSend ) ? MSG_REQUIRE_ACK : 0 );
+			seq = thread->sendMessage( msgType, msg, 0 );
 
 			if ( !MyOptions.SlowSend ) {
 				HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -913,7 +913,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 		"Session-ID: {1A879604-D1B8-11D7-9066-0003FF431510}\r\n\r\n",
 		( WORD )(((double)rand()/(double)RAND_MAX)*4294967295));
 
-	thread->sendMessage( msg, MSG_DISABLE_HDR );
+	thread->sendMessage( 'N', msg, MSG_DISABLE_HDR );
 	return 0;
 }
 
@@ -1072,6 +1072,8 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnUserIsTyping - notify another contact that we're typing a message
 
+extern char sttHeaderStart[];
+
 static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 {
 	if ( !msnLoggedIn || lParam == PROTOTYPE_SELFTYPING_OFF )
@@ -1094,11 +1096,11 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 	ThreadData* T = MSN_GetThreadByContact( hContact );
 	if ( T == NULL ) {
 		if ( MsgQueue_CheckContact( hContact ) == NULL ) {
-			MsgQueue_Add( hContact, tCommand, -1 );
+			MsgQueue_Add( hContact, 'U', tCommand, -1 );
 			msnNsThread->sendPacket( "XFR", "SB" );
 		}
 	}
-	else T->sendMessage( tCommand, MSG_DISABLE_HDR );
+	else T->sendMessage( 'U', tCommand, MSG_DISABLE_HDR );
 	return 0;
 }
 
