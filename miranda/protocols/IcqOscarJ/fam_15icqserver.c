@@ -110,11 +110,11 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
         unsigned char* pBuffer = pTLV->pData;
         WORD wData;
         pBuffer += 6;
-        unpackWord(&pBuffer, &wData); // get request type
+        unpackLEWord(&pBuffer, &wData); // get request type
         switch (wData)
         {
         case CLI_OFFLINE_MESSAGE_REQ: 
-          Netlib_Logf(ghServerNetlibUser, "Offline messages reuqest failed with error 0x%02x", wData, wErrorCode);
+          Netlib_Logf(ghServerNetlibUser, "Offline messages request failed with error 0x%02x", wData, wErrorCode);
           break;
 
         case CLI_DELETE_OFFLINE_MSGS_REQ:
@@ -123,11 +123,41 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
           break;
 
         case CLI_META_INFO_REQ:
-          Netlib_Logf(ghServerNetlibUser, "Meta reuqest error 0x%02x received", wErrorCode);
+          if (pTLV->wLen >= 12)
+          {
+            WORD wSubType;
+            WORD wCookie;
+
+            unpackWord(&pBuffer, &wCookie);
+            unpackLEWord(&pBuffer, &wSubType);
+            // more sofisticated detection, send ack
+            if (wSubType == META_REQUEST_FULL_INFO)
+            {
+              DWORD dwCookieUin;
+              fam15_cookie_data* pCookieData = NULL;
+              int foundCookie;
+
+              foundCookie = FindCookie(wCookie, &dwCookieUin, (void**)&pCookieData);
+              if (foundCookie && pCookieData)
+              {
+                HANDLE hContact = HContactFromUIN(dwCookieUin, 0);
+                ProtoBroadcastAck(gpszICQProtoName, hContact,	ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+
+                SAFE_FREE(&pCookieData); // we do not leak cookie and memory
+                FreeCookie(wCookie); 
+              }
+
+              Netlib_Logf(ghServerNetlibUser, "Full info request error 0x%02x received", wErrorCode);
+            }
+          }
+          else 
+            Netlib_Logf(ghServerNetlibUser, "Meta request error 0x%02x received", wErrorCode);
+
+
           break;
 
         default:
-          Netlib_Logf(ghServerNetlibUser, "Unknown reuqest 0x%02x error 0x%02x received", wData, wErrorCode);
+          Netlib_Logf(ghServerNetlibUser, "Unknown request 0x%02x error 0x%02x received", wData, wErrorCode);
         }
       }
       else
