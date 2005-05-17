@@ -740,6 +740,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
             CheckDlgButton(hwndDlg, IDC_FLATMSGLOG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0));
             CheckDlgButton(hwndDlg, IDC_CHECKICONDLL, DBGetContactSettingByte(NULL, SRMSGMOD_T, "v_check", 1));
+            CheckDlgButton(hwndDlg, IDC_FLATTABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flattabs", 0));
             
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 1));
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, (LPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
@@ -832,6 +833,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSWITCHTABS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flatlog", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATMSGLOG));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "v_check", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CHECKICONDLL));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flattabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATTABS));
                             
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                             ReloadGlobals();
@@ -1801,6 +1803,7 @@ void ReloadGlobals()
      myGlobals.m_WinVerMinor = WinVerMinor();
      myGlobals.m_SideBarEnabled = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sidebar", 0);
      myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
+     myGlobals.m_FlatTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "flattabs", 0);
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
      if(myGlobals.m_MathModAvail) {

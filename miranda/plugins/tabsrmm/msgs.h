@@ -87,7 +87,7 @@ typedef struct _settextex {
 #endif
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 28
+#define NR_BUTTONBARICONS 29
 #define NR_SIDEBARICONS 10
 
 #include <richedit.h>
@@ -164,6 +164,10 @@ struct ProtocolData {
     char szName[30];
     int  iFirstIconID;
 };
+
+#define EM_SUBCLASSED             (WM_USER+0x101)
+#define EM_UNSUBCLASSED           (WM_USER+0x102)
+#define EM_SEARCHSCROLLER         (WM_USER+0x103)
 
 #define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)

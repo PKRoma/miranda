@@ -98,7 +98,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     LogErrorMessage(hwndDlg, dat, iEntry, (char *)szErrorMsg);
     RecallFailedMessage(hwndDlg, dat, iEntry);
     ShowErrorControls(hwndDlg, dat, TRUE);
-    HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconError);
+    HandleIconFeedback(hwndDlg, dat, myGlobals.g_iconErr);
 }
 /*
  * add a message to the sending queue.
@@ -255,7 +255,7 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
             UnhookEvent(dat->hAckEvent);
             dat->hAckEvent = NULL;
         } */
-        HandleIconFeedback(hwndDlg, dat, -1);
+        HandleIconFeedback(hwndDlg, dat, (HICON)-1);
     }
     else
         HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
@@ -313,19 +313,17 @@ void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 {
     if(showCmd) {
+        TCITEM item = {0};
+        dat->hTabIcon = myGlobals.g_iconErr;
+        item.mask = TCIF_IMAGE;
+        item.iImage = 0;
+        TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
         dat->dwFlags |= MWF_ERRORSTATE;
-        dat->iTabImage = myGlobals.g_IconError;
     }
     else {
         dat->dwFlags &= ~MWF_ERRORSTATE;
-        dat->iTabImage = GetProtoIconFromList(dat->szProto, dat->wStatus);
+        dat->hTabIcon = dat->hTabStatusIcon;
     }
-
-#if defined(_STREAMTHREADING)
-    SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_SETREDRAW, TRUE, 0);
-    InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
-    SendMessage(hwndDlg, WM_SIZE, 0, 0);
-#endif    
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), showCmd ? SW_SHOW : SW_HIDE);
 
     SendMessage(hwndDlg, WM_SIZE, 0, 0);

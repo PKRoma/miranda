@@ -58,7 +58,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat);
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
-void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon);
+void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, HICON iIcon);
 int GetProtoIconFromList(const char *szProto, int iStatus);
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 

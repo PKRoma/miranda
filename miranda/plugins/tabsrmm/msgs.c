@@ -1192,8 +1192,6 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 	struct MessageWindowData *dat;
 	NMHDR nmhdr;
 
-	// if the container is minimized, then pop it up...
-	// hide the active message dialog
 	dat = (struct MessageWindowData *) GetWindowLong(hwndChild, GWL_USERDATA);	// needed to obtain the hContact for the message window
 	if(dat) {
         ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
@@ -1206,7 +1204,6 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
             SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
         else if(GetForegroundWindow() != pContainer->hwnd)
             SetForegroundWindow(pContainer->hwnd);
-        //SetFocus(hwndChild);
         SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
     	SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 		return TRUE;
@@ -1282,9 +1279,10 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 #else
 	newData.item.pszText = tabtitle;
 #endif
-    newData.item.iImage = GetProtoIconFromList(szProto, wStatus);
+    //newData.item.iImage = GetProtoIconFromList(szProto, wStatus);
 
 	newData.item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
+    newData.item.iImage = 0;
 
 	// hide the active tab
 	if(pContainer->hwndActive && bActivateTab) {
@@ -1360,6 +1358,26 @@ struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hC
 
 void CreateImageList(BOOL bInitial)
 {
+    HICON hIcon;
+    
+    if(bInitial)
+        myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
+    else
+        ImageList_RemoveAll(myGlobals.g_hImageList);
+    
+    hIcon = CreateIcon(g_hInst, 16, 16, 1, 4, NULL, NULL);
+    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
+    myGlobals.g_IconEmpty = ImageList_GetIcon(myGlobals.g_hImageList, 0, 0);
+
+    myGlobals.g_IconFileEvent = LoadSkinnedIcon(SKINICON_EVENT_FILE);
+    myGlobals.g_IconUrlEvent = LoadSkinnedIcon(SKINICON_EVENT_URL);
+    myGlobals.g_IconMsgEvent = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+    myGlobals.g_IconSend = myGlobals.g_buttonBarIcons[9];
+    myGlobals.g_IconTypingEvent = myGlobals.g_buttonBarIcons[5];
+}
+/*
+void CreateImageList(BOOL bInitial)
+{
     PROTOCOLDESCRIPTOR **pProtos;
     int i, j;
     HICON hIcon;
@@ -1388,12 +1406,6 @@ void CreateImageList(BOOL bInitial)
         ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
     }
     iCurIcon = i - ID_STATUS_OFFLINE;
-
-    /*
-     * build a list of protocols and their associated icon ids
-     * load icons into the image list and remember the base indices for
-     * each protocol.
-     */
 
     for(i = 0; i < myGlobals.g_nrProtos; i++) {
         if (pProtos[i]->type != PROTOTYPE_PROTOCOL)
@@ -1436,6 +1448,7 @@ void CreateImageList(BOOL bInitial)
     myGlobals.g_IconEmpty = iCurIcon;
 
 }
+*/
 
 #if defined(_UNICODE)
 
@@ -1703,6 +1716,10 @@ int SetupIconLibConfig()
     sid.iDefaultIndex = -IDI_PULLUPARROW;
     sid.pszDescription = Translate("Up Arrow");
     CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    sid.pszName = (char *) "tabSRMM_Rightarrow";
+    sid.iDefaultIndex = -IDI_RIGHTARROW;
+    sid.pszDescription = Translate("Right Arrow");
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
     return 1;
 }
 
@@ -1729,9 +1746,7 @@ int LoadFromIconLib()
     myGlobals.g_buttonBarIcons[16] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_pulldown");
     myGlobals.g_buttonBarIcons[25] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Leftarrow");
     myGlobals.g_buttonBarIcons[26] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Pulluparrow");
-    ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconError, myGlobals.g_iconErr);
-    ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconSend, myGlobals.g_buttonBarIcons[9]);
-    ImageList_ReplaceIcon(myGlobals.g_hImageList, myGlobals.g_IconTypingEvent, myGlobals.g_buttonBarIcons[5]);
+    myGlobals.g_buttonBarIcons[28] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Rightarrow");
     CacheMsgLogIcons();
     WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
     return 0;
@@ -1797,6 +1812,7 @@ void LoadIconTheme()
         myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
         myGlobals.g_buttonBarIcons[25] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LEFTARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
         myGlobals.g_buttonBarIcons[26] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLUPARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
+        myGlobals.g_buttonBarIcons[28] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RIGHTARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
         CacheMsgLogIcons();
 
         WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);

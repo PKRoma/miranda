@@ -119,8 +119,10 @@ static struct SIDEBARITEM sbarItems[] = {
 };
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static WNDPROC OldTabControlProc;
+WNDPROC OldTabControlProc;
+
 HMENU BuildMCProtocolMenu(HWND hwndDlg);
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 
@@ -246,8 +248,6 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
             i = (i > pContainer->sb_FirstButton) ? pContainer->sb_FirstButton : i;
         }
     }
-    MoveWindow(GetDlgItem(hwndDlg, IDC_SIDEBAR), 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, TRUE);
-    //SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, 0);
     while(sbarItems[j].uId != 0) {
         if(j < i) {
             ShowWindow(GetDlgItem(hwndDlg, sbarItems[j].uId), SW_HIDE);
@@ -256,7 +256,7 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
         }
         if(sbarItems[j].dwFlags & SBI_TOP) {
             if(iTopSpaceAvail >= 23) {
-                SetWindowPos(GetDlgItem(hwndDlg, sbarItems[j].uId), HWND_TOP, 3, (topCount++ * 23) + 12, 22, 22, SWP_SHOWWINDOW);
+                SetWindowPos(GetDlgItem(hwndDlg, sbarItems[j].uId), 0, 3, (topCount++ * 23) + 12, 22, 22, SWP_SHOWWINDOW | SWP_NOZORDER);
                 iTopSpaceAvail -= 23;
             }
             else {
@@ -265,7 +265,7 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
             }
         }
         else
-            SetWindowPos(GetDlgItem(hwndDlg, sbarItems[j].uId), HWND_TOP, 3, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight - ((bottomCount++ * 23) + 34), 22, 22, 0);
+            SetWindowPos(GetDlgItem(hwndDlg, sbarItems[j].uId), 0, 3, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight - ((bottomCount++ * 23) + 34), 22, 22, SWP_NOZORDER);
         j++;
     }
     topEnabled = pContainer->sb_FirstButton ? TRUE : FALSE;
@@ -273,25 +273,9 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
     MoveWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), 2, (rc->bottom - rc->top) - 12 - menuSep - pContainer->statusBarHeight, SIDEBARWIDTH - 6, 10, TRUE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), topEnabled);
     EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), bottomEnabled);
-    InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), NULL, TRUE);
-    InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARUP), NULL, TRUE);
-}
-
-/*
- * need to subclass the tabcontrol to catch the middle button click
- */
-
-BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch(msg) {
-        case WM_MBUTTONDOWN: {
-            POINT pt;
-            GetCursorPos(&pt);
-            SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
-            return 1;
-        }
-    }
-    return CallWindowProc(OldTabControlProc, hwnd, msg, wParam, lParam); 
+    InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), NULL, FALSE);
+    InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARUP), NULL, FALSE);
+    SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, SWP_DRAWFRAME);
 }
 
 /*
@@ -310,7 +294,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     
     pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
     hwndTab = GetDlgItem(hwndDlg, IDC_MSGTABS);
-
     switch (msg) {
         case WM_INITDIALOG:
             {
@@ -320,6 +303,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 int iMenuItems;
                 int i = 0;
                 
+                //SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_HREDRAW | CS_VREDRAW));
+                if(myGlobals.m_FlatTabs) {
+                    SetWindowLong(hwndTab, GWL_STYLE, GetWindowLong(hwndTab, GWL_STYLE) | (TCS_BUTTONS | TCS_FLATBUTTONS));
+                    SendMessage(hwndTab, TCM_SETEXTENDEDSTYLE, TCS_EX_FLATSEPARATORS, 0);
+                }
                 pContainer = (struct ContainerWindowData *) lParam;
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pContainer);
                 pContainer->iLastClick = 0xffffffff;
@@ -368,15 +356,24 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                  * subclass the tab control
                  */
 
+                ws = GetWindowLong(hwndTab, GWL_STYLE);
+                if(pContainer->dwFlags & CNT_SINGLEROWTABCONTROL) {
+                    ws &= ~TCS_MULTILINE;
+                    ws |= TCS_SINGLELINE;
+                }
+                else {
+                    ws &= ~TCS_SINGLELINE;
+                    ws |= TCS_MULTILINE;
+                }
+                SetWindowLong(hwndTab, GWL_STYLE, ws);
                 OldTabControlProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)TabControlSubclassProc);
-                
+                SendMessage(hwndTab, EM_SUBCLASSED, 0, 0);
                 /*
                  * assign the global image list...
                  */
-                if(myGlobals.g_hImageList) 
-                    TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
+                TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
 
-                TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), 5, DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
+                TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), 3, DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
                 /*
                  * context menu
                  */
@@ -679,7 +676,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 pContainer->bSizingLoop = FALSE;
-                SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 break;
             }
         case WM_GETMINMAXINFO: {
@@ -751,9 +747,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(LOWORD(lParam) == pContainer->sb_Sizecheck.cx && HIWORD(lParam) == pContainer->sb_Sizecheck.cy && lParam != 0)
                     break;
 
-                pContainer->sb_Sizecheck.cx = LOWORD(lParam);
-                pContainer->sb_Sizecheck.cy = HIWORD(lParam);
+                if(lParam != 0) {
+                    pContainer->sb_Sizecheck.cx = LOWORD(lParam);
+                    pContainer->sb_Sizecheck.cy = HIWORD(lParam);
+                }
                 //_DebugPopup(0, "size: %d, %d", LOWORD(lParam), HIWORD(lParam));
+                SendMessage(hwndTab, EM_SEARCHSCROLLER, 0, 0);
                 if (pContainer->hwndStatus) {
                     RECT rcs;
                     int statwidths[5];
@@ -805,12 +804,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 
-                RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-//                RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
-                RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
+                if(lParam != 0) {
+                    RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | (pContainer->bSizingLoop ? RDW_ERASE : 0));
+                    RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
+                }
                 
-                if (pContainer->hwndStatus)
-                    RedrawWindow(pContainer->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+                if (pContainer->hwndStatus && pContainer->bSizingLoop) {
+                    InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
+                }
+                
                 if(pContainer->dwFlags & CNT_SIDEBAR)
                     DrawSideBar(hwndDlg, pContainer, &rcUnadjusted, menuSep);
 #ifdef __MATHMOD_SUPPORT    			
@@ -986,7 +988,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                     break;
                 case SC_MINIMIZE:
-                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || nen_options.floaterMode) && myGlobals.m_WinVerMajor >= 5) {
+                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || nen_options.floaterMode) && !(nen_options.bFloaterOnlyMin) && myGlobals.m_WinVerMajor >= 5) {
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
                         MinimiseToTray(hwndDlg, nen_options.bAnimated);
@@ -1541,14 +1543,6 @@ panel_found:
                 }
             }
             ws = wsold = GetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE);
-            if(pContainer->dwFlags & CNT_SINGLEROWTABCONTROL) {
-                ws &= ~TCS_MULTILINE;
-                ws |= TCS_SINGLELINE;
-            }
-            else {
-                ws &= ~TCS_SINGLELINE;
-                ws |= TCS_MULTILINE;
-            }
             if(pContainer->dwFlags & CNT_TABSBOTTOM) {
                 ws |= (TCS_BOTTOM);
             }
@@ -1727,6 +1721,8 @@ panel_found:
                 return (BOOL)GetSysColorBrush(COLOR_3DFACE);
         case WM_DRAWITEM:
         {
+            int cx = GetSystemMetrics(SM_CXSMICON);
+            int cy = GetSystemMetrics(SM_CYSMICON);
             LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
             if(dis->CtlType == ODT_BUTTON && (dis->CtlID == IDC_SIDEBARUP || dis->CtlID == IDC_SIDEBARDOWN)) {
                 HICON hIcon;
@@ -1749,7 +1745,9 @@ panel_found:
             return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
         }
         case WM_MEASUREITEM:
+        {
             return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+        }
         case DM_QUERYCLIENTAREA:
             {
                 RECT *rc = (RECT *)lParam;
@@ -1781,6 +1779,7 @@ panel_found:
                     DestroyWindow(pContainer->hwndStatus);
                 if(pContainer->hMenu)
                     DestroyMenu(pContainer->hMenu);
+                SendMessage(hwndTab, EM_UNSUBCLASSED, 0, 0);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
     			DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);
@@ -2072,6 +2071,7 @@ struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *
  * 0 is actually the global "offline" icon.
  */
 
+/*
 int GetProtoIconFromList(const char *szProto, int iStatus)
 {
     int i;
@@ -2086,7 +2086,7 @@ int GetProtoIconFromList(const char *szProto, int iStatus)
     }
     return 0;
 }
-
+*/
 /*
  * calls the TabCtrl_AdjustRect to calculate the "real" client area of the tab.
  * also checks for the option "hide tabs when only one tab open" and adjusts
@@ -2100,6 +2100,7 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
     RECT rcTab, rcTabOrig;
     DWORD dwBottom, dwTop;
     DWORD tBorder = pContainer->tBorder;
+    DWORD dwStyle = GetWindowLong(hwndTab, GWL_STYLE);
     
     GetClientRect(hwndTab, &rcTab);
     dwBottom = rcTab.bottom;
@@ -2113,11 +2114,26 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
         rc->left += tBorder;
         rc->right -= tBorder;
 
-        if(pContainer->dwFlags & CNT_TABSBOTTOM)
-            rc->bottom = rcTab.bottom + 2;
+        if(dwStyle & TCS_BUTTONS) {
+            if(pContainer->dwFlags & CNT_TABSBOTTOM) {
+                int rows = TabCtrl_GetRowCount(hwndTab);
+                RECT rcItem;
+                TabCtrl_GetItemRect(hwndTab, 0, &rcItem);
+                rc->top = 0;
+                rc->bottom -= (rows * (rcItem.bottom - rcItem.top) + pContainer->statusBarHeight);
+            }
+            else {
+                rc->top += (dwTopPad - 2);;
+                rc->bottom = rcTabOrig.bottom;
+            }
+        }
         else {
-            rc->top += (dwTopPad - 2);;
-            rc->bottom = rcTabOrig.bottom;
+            if(pContainer->dwFlags & CNT_TABSBOTTOM)
+                rc->bottom = rcTab.bottom + 2;
+            else {
+                rc->top += (dwTopPad - 2);;
+                rc->bottom = rcTabOrig.bottom;
+            }
         }
         
         rc->top += tBorder;

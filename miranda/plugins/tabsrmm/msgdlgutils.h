@@ -30,7 +30,6 @@ void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID);
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId);
 int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat);
-void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon);
 void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat);
 void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iSecIMStatus);
 void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode);

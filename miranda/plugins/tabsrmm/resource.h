@@ -40,6 +40,7 @@
 #define IDI_PULLDOWNARROW               313
 #define IDI_LEFTARROW                   314
 #define IDI_PULLUPARROW                 315
+#define IDI_RIGHTARROW                  316
 #define IDC_READNEXT                    1000
 #define IDC_APPLY                       1001
 #define IDC_DROP                        1002
@@ -339,6 +340,7 @@
 #define IDC_CHECK1                      1289
 #define IDC_ANIMATED                    1289
 #define IDC_ISFAVORITE                  1289
+#define IDC_FLATTABS                    1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_AVADYNAMIC                  1292
 #define IDC_USESNAPPING                 1293

@@ -467,27 +467,23 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
     }
 }
 
-void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, int iIcon)
+void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, HICON iIcon)
 {
     TCITEM item = {0};
-    int iOldIcon;
+    HICON iOldIcon = dat->hTabIcon;
     
-    item.mask = TCIF_IMAGE;
-    TabCtrl_GetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
-    iOldIcon = item.iImage;
-
-    if(iIcon == -1) {    // restore status image
+    if(iIcon == (HICON)-1) {    // restore status image
         if(dat->dwFlags & MWF_ERRORSTATE) {
-            iIcon = myGlobals.g_IconError;
+            dat->hTabIcon = myGlobals.g_iconErr;
         }
         else {
-            iIcon = dat->iTabImage;
+            dat->hTabIcon = dat->hTabStatusIcon;
         }
     }
-        
-    item.iImage = iIcon;
-    if (dat->pContainer->iChilds > 1 || !(dat->pContainer->dwFlags & CNT_HIDETABS)) {       // we have tabs
-    }
+    else
+        dat->hTabIcon = iIcon;
+    item.iImage = 0;
+    item.mask = TCIF_IMAGE;
     TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
 }
 

@@ -159,6 +159,7 @@ struct ContainerWindowData {
     HWND hWndOptions;
     BOOL bSizingLoop;
     int sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
+    DWORD tabHeight;          // height of the tabs, used with flat tabs and bottom tabs...
 };
 
 #define STICK_ICON_MSG 10
@@ -216,7 +217,7 @@ struct MessageWindowData {
 	struct ContainerWindowData *pContainer;		// parent container description structure
 	int iTabID;			// XXX mod (tab support)
 	BOOL bTabFlash;		// XXX tab flashing state...
-	int iTabImage;		// XXX tabs...
+    HICON hTabIcon, hTabStatusIcon;
 	BOOL mayFlashTab;	// XXX tabs...
     HKL  hkl;           // keyboard layout identifier
     DWORD dwTickLastEvent;
@@ -227,7 +228,7 @@ struct MessageWindowData {
     UINT uMinHeight;
 	BOOL isHistory;
     DWORD dwFlags;
-    int   iFlashIcon;
+    HICON  iFlashIcon;
     POINT ptLast;
     WORD  wOldStatus;
     int   iOldHash;
@@ -266,6 +267,7 @@ struct MessageWindowData {
 #define EVENT_QUEUE_SIZE 10
     int    iEventQueueSize;
     HBITMAP hbmMsgArea;
+    TCHAR newtitle[128];        // tab title...
 };
 
 typedef struct _recentinfo {
@@ -282,7 +284,7 @@ typedef struct _globals {
     HBITMAP g_hbmUnknown;
     // external plugins
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView;
-    int g_IconMsgEvent, g_IconTypingEvent, g_IconError, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
+    HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HIMAGELIST g_hImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
@@ -336,6 +338,7 @@ typedef struct _globals {
     BYTE m_WinVerMinor;
     BYTE m_SideBarEnabled;
     HWND m_hwndClist;
+    int  m_FlatTabs;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

@@ -525,7 +525,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 else
                     FlashTrayIcon(1);
             }
-            if(nen_options.bFloaterOnlyMin) {
+            if(nen_options.bFloaterOnlyMin && nen_options.floaterMode) {
                 if(IsWindowVisible(myGlobals.m_hwndClist))
                     ShowWindow(hwndDlg, SW_HIDE);
                 else
