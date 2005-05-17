@@ -16,6 +16,9 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
+2.4.0.0
+ - Message API fix (MS_MSG_GETWINDOWDATA)
+
 2.3.0.0
  - Drag/drop didn't always work from message control
 
