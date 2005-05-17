@@ -145,7 +145,6 @@ struct ContainerWindowData {
 	DWORD dwTransparency;
     int   iContainerIndex;
     int   tBorder, tBorder_outer;
-    RECT  rcClient;                 // where the client window shold be placed...
     HANDLE hContactFrom;
     BOOL  isCloned;
     HMENU hMenu;
@@ -159,7 +158,6 @@ struct ContainerWindowData {
     HWND hWndOptions;
     BOOL bSizingLoop;
     int sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
-    DWORD tabHeight;          // height of the tabs, used with flat tabs and bottom tabs...
 };
 
 #define STICK_ICON_MSG 10
@@ -339,6 +337,7 @@ typedef struct _globals {
     BYTE m_SideBarEnabled;
     HWND m_hwndClist;
     int  m_FlatTabs;
+    int  m_VSApiEnabled;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

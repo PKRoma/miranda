@@ -806,7 +806,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 
                 if(lParam != 0) {
                     RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-                    RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
+                    RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
                 }
                 
                 if (pContainer->hwndStatus && pContainer->bSizingLoop) {

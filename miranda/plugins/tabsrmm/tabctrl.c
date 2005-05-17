@@ -34,6 +34,39 @@ no visual style support yet - will be added later.
 extern MYGLOBALS myGlobals;
 extern WNDPROC OldTabControlProc;
 
+/*
+ * visual styles support (XP+)
+ * returns 0 on failure
+ */
+
+HMODULE hUxTheme = 0;
+
+// function pointers
+
+BOOL (PASCAL* pfnIsThemeActive)() = 0;
+UINT (PASCAL* pfnOpenThemeData)(HWND hwnd, LPCWSTR pszClassList) = 0;
+UINT (PASCAL* pfnDrawThemeBackground)(UINT htheme, HDC hdc, int iPartID, int iStateID, RECT* prcBx, RECT* prcClip);
+
+int InitVSApi()
+{
+    if((hUxTheme = LoadLibraryA("uxtheme.dll")) == 0)
+        return FALSE;
+
+    pfnIsThemeActive = GetProcAddress(hUxTheme, "IsThemeActive");
+    pfnOpenThemeData = GetProcAddress(hUxTheme, "OpenThemeData");
+    pfnDrawThemeBackground = GetProcAddress(hUxTheme, "DrawThemeBackground");
+
+    if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+int FreeVSApi()
+{
+    if(hUxTheme != 0)
+        FreeLibrary(hUxTheme);
+}
 void RectScreenToClient(HWND hwnd, RECT *rc)
 {
     POINT p1, p2;
@@ -88,6 +121,8 @@ struct myTabCtrl {
 #define FLOAT_ITEM_HEIGHT_SHIFT 2
 #define ACTIVE_ITEM_HEIGHT_SHIFT 2
 #define SHIFT_FROM_CUT_TO_SPIN 4
+#define HINT_CUT 8
+#define HINT_TRANSPARENT 16
 
 static WNDPROC OldSpinCtrlProc;
 
@@ -95,7 +130,21 @@ BOOL CALLBACK SpinCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 {
     switch(msg) {
         case WM_PAINT:
-            break;
+        {
+            PAINTSTRUCT ps;
+            HDC dc = BeginPaint(hwnd, &ps);
+            RECT rcItem = ps.rcPaint;
+            rcItem.top++;
+            rcItem.left++;
+            rcItem.bottom--;
+            rcItem.right--;
+            FillRect(dc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+            DrawFrameControl(dc, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO);
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+        case WM_ERASEBKGND:
+            return 0;
     }
     return CallWindowProc(OldSpinCtrlProc, hwnd, msg, wParam, lParam); 
 }
@@ -118,7 +167,8 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         HICON hIcon;
         HBRUSH bg;
         DWORD dwStyle = tabdat->dwStyle;
-        BOOL bFill = (dwStyle & TCS_BOTTOM) || (dwStyle & TCS_BUTTONS);
+        BOOL bFill = ((dwStyle & TCS_BOTTOM) || (dwStyle & TCS_BUTTONS)) && !(nHint & HINT_TRANSPARENT);
+        int oldMode = 0;
         rcItem->left++;
         rcItem->right--;
         rcItem->top++;
@@ -126,15 +176,23 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         
         if(nHint & HINT_ACTIVE_ITEM) {
             SetTextColor(dc, GetSysColor(COLOR_HIGHLIGHTTEXT));
-            bg = GetSysColorBrush(COLOR_3DSHADOW);
-            if(bFill)
-                SetBkColor(dc, GetSysColor(COLOR_3DSHADOW));
+            if(nHint & HINT_TRANSPARENT)
+                oldMode = SetBkMode(dc, TRANSPARENT);
+            else {
+                bg = GetSysColorBrush(COLOR_3DSHADOW);
+                if(bFill)
+                    SetBkColor(dc, GetSysColor(COLOR_3DSHADOW));
+            }
         }
         else {
             SetTextColor(dc, GetSysColor(COLOR_BTNTEXT));
-            bg = GetSysColorBrush(COLOR_3DFACE);
-            if(bFill)
-                SetBkColor(dc, GetSysColor(COLOR_3DFACE));
+            if(nHint & HINT_TRANSPARENT)
+                oldMode = SetBkMode(dc, TRANSPARENT);
+            else {
+                bg = GetSysColorBrush(COLOR_3DFACE);
+                if(bFill)
+                    SetBkColor(dc, GetSysColor(COLOR_3DFACE));
+            }
         }
 
         if(bFill)
@@ -162,6 +220,8 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         rcItem->left += (tabdat->cx + 2);
         SelectObject(dc, tabdat->m_hMenuFont);
         DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, DT_SINGLELINE | DT_VCENTER);
+        if(oldMode)
+            SetBkMode(dc, oldMode);
     }
 }
 
@@ -177,9 +237,6 @@ void DrawItemRect(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint)
             // draw frame controls for button or bottom tabs
             if(tabdat->dwStyle & TCS_BOTTOM)
                 OffsetRect(rcItem, 0, 1);
-            if(!IsRectEmpty(&tabdat->m_rectUpDn) && rcItem->right >= tabdat->m_rectUpDn.left - 2) {
-                rcItem->right = tabdat->m_rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN;
-            }
             DrawFrameControl(dc, rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | (nHint & HINT_ACTIVE_ITEM ? DFCS_MONO : DFCS_FLAT));
             return;
         }
@@ -192,8 +249,8 @@ void DrawItemRect(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint)
 		
 		LineTo(dc, rcItem->left, rcItem->top + 2);
 		LineTo(dc, rcItem->left + 2, rcItem->top);
-		if(!IsRectEmpty(&tabdat->m_rectUpDn) && rcItem->right >= tabdat->m_rectUpDn.left) {
-			rcItem->right = tabdat->m_rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN;
+
+        if(nHint & HINT_CUT) {
 			LineTo(dc, rcItem->right, rcItem->top);
 			bDoNotCut = FALSE;
 		}
@@ -249,6 +306,108 @@ void DrawItemRect(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint)
 
 		}
 	}
+}
+
+int DWordAlign(int n)
+{ 
+    int rem = n % 4; 
+    if(rem) 
+        n += (4 - rem); 
+    return n; 
+}
+
+HRESULT DrawThemesPart(HDC hDC, int iPartId, int iStateId, wchar_t *uiPartNameID, LPRECT prcBox)
+{
+    HRESULT hResult;
+    
+    UINT hTheme = pfnOpenThemeData(NULL, uiPartNameID);
+    if(hTheme != 0)
+        hResult = pfnDrawThemeBackground(hTheme, hDC, iPartId, iStateId, prcBox, NULL);
+	return hResult;
+}
+
+void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct myTabCtrl *tabdat) 
+{
+	BOOL bBody  = (uiFlag & 1) ? TRUE : FALSE;
+	BOOL bSel   = (uiFlag & 2) ? TRUE : FALSE;
+	BOOL bHot   = (uiFlag & 4) ? TRUE : FALSE;
+	BOOL bBottom = (uiFlag & 8) ? TRUE : FALSE;	// mirror
+    SIZE szBmp;
+    HDC     dcMem;	
+    HBITMAP bmpMem, pBmpOld;
+    RECT rcMem;
+    BITMAPINFO biOut; 
+    BITMAPINFOHEADER *bihOut;
+    int nBmpWdtPS;
+    int nSzBuffPS;
+    LPBYTE pcImg = NULL;
+    int nStart = 0, nLenSub = 0;
+    szBmp.cx = rcItem->right - rcItem->left;
+    szBmp.cy = rcItem->bottom - rcItem->top;
+    
+	// 1st draw background
+    dcMem = CreateCompatibleDC(pDC);
+	bmpMem = CreateCompatibleBitmap(pDC, szBmp.cx, szBmp.cy);
+
+    pBmpOld = SelectObject(dcMem, bmpMem);
+
+    rcMem.left = rcMem.top = 0;
+    rcMem.right = szBmp.cx;
+    rcMem.bottom = szBmp.cy;
+    
+    if(bSel) 
+        rcMem.bottom++;
+
+    if(bBody)
+        DrawThemesPart(dcMem, 9, 0, L"TAB", &rcMem);	// TABP_PANE=9,  0, 'TAB'
+	else 
+        DrawThemesPart(dcMem, 1, bSel ? 3 : (bHot ? 2 : 1), L"TAB", &rcMem);
+																// TABP_TABITEM=1, TIS_SELECTED=3:TIS_HOT=2:TIS_NORMAL=1, 'TAB'
+	// 2nd init some extra parameters
+    ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
+    bihOut = &biOut.bmiHeader;
+    
+	bihOut->biSize = sizeof (BITMAPINFOHEADER);
+	bihOut->biCompression = BI_RGB;
+	bihOut->biPlanes = 1;		  
+    bihOut->biBitCount = 24;	// force as RGB: 3 bytes,24 bits -> good for rotating bitmap in any resolution
+	bihOut->biWidth =szBmp.cx; 
+    bihOut->biHeight=szBmp.cy;
+
+	nBmpWdtPS = DWordAlign(szBmp.cx*3);
+	nSzBuffPS = ((nBmpWdtPS * szBmp.cy) / 8 + 2) * 8;
+    
+	if(bBottom)
+        pcImg = malloc(nSzBuffPS);
+        
+	if(bBody && bBottom) {
+        nStart = 3;
+        nLenSub = 4;	// if bottom oriented flip the body contest only (no shadows were flipped)
+    }
+	// 3rd if it is left oriented tab, draw tab context before mirroring or rotating (before GetDIBits)
+
+    // 4th get bits (for rotate) and mirror: body=(all except top) tab=(all except top)
+	if(!bBody && bBottom)	{									// get bits: 
+		GetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
+        bihOut->biHeight = -szBmp.cy; 				// to mirror bitmap is eough to use negative height between Get/SetDIBits
+        SetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
+    }
+
+    // 5th if it is bottom or right oriented tab, draw after mirroring background (do GetDIBits again)
+	if(!bBody && ixItem >= 0) {
+		if(bSel) 
+            rcMem.bottom--;
+        //DrawItem(tabdat, dcMem, rcItem, HINT_TRANSPARENT, ixItem);
+		//DrawTabItem(&dcMem, ixItem, rcMem, uiFlag);
+    }
+	if(pcImg)
+        free(pcImg);
+    
+	// 6th blit mirrored/rotated image to the screen
+	BitBlt(pDC, rcItem->left, rcItem->top, szBmp.cx, szBmp.cy, dcMem, 0, 0, SRCCOPY);
+	SelectObject(dcMem, pBmpOld);
+    DeleteObject(bmpMem);
+    DeleteDC(dcMem);
 }
 
 BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -345,6 +504,8 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             }
             break;
         }
+        case WM_ERASEBKGND:
+            break;
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -353,80 +514,135 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             RECT rectUpDn = {0,0,0,0};
             int nCount = TabCtrl_GetItemCount(hwnd), i;
             TCITEM item = {0};
-            int iActive;
+            int iActive, hotItem;
             POINT pt;
             HPEN hPenOld;
-            
+            UINT uiFlags = 1;
+            UINT uiBottom = 0;
+            TCHITTESTINFO hti;
+            BOOL bClassicDraw = (tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM && myGlobals.m_FlatTabs);
             hdc = BeginPaint(hwnd, &ps);
-            FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
             GetClientRect(hwnd, &rctPage);
             iActive = TabCtrl_GetCurSel(hwnd);
             TabCtrl_GetItemRect(hwnd, iActive, &rctActive);
 
+            FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+            //_DebugPopup(0, "draw %d, %d, %d, %d", ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom);
             if(tabdat->dwStyle & TCS_BOTTOM)
                 rctPage.bottom = rctActive.top;
             else
                 rctPage.top = rctActive.bottom;
             
-            // paint the tabctrl frame
-
-            if(!(tabdat->dwStyle & TCS_BUTTONS) && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
-                rectTemp = rctPage;
-                hPenOld = SelectObject(hdc, tabdat->m_hPenLight);
-
-                MoveToEx(hdc, rectTemp.left, rectTemp.bottom +1, &pt);
-                LineTo(hdc, rectTemp.left, rectTemp.top + 1);
-
+            /*
+             * visual style support
+             */
+            
+            if(!bClassicDraw && pfnIsThemeActive != 0 && pfnIsThemeActive() && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
+                RECT rcClip, rcClient;
+                UINT uiVertBottm;
+                
+                GetClipBox(hdc, &rcClip);
+                rcClient = rctPage;
                 if(tabdat->dwStyle & TCS_BOTTOM) {
-                    LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
-                    SelectObject(hdc, tabdat->m_hPenShadow);
-                    LineTo(hdc, rectTemp.right - 1, rectTemp.bottom + 1);
-                    LineTo(hdc, rctActive.right, rectTemp.bottom + 1);
-                    MoveToEx(hdc, rctActive.left, rectTemp.bottom + 1, &pt);
-                    LineTo(hdc, rectTemp.left, rectTemp.bottom + 1);
+                    rcClient.bottom = rctPage.bottom + 1;
+                    uiBottom = 8;
+                    uiFlags |= uiBottom;
                 }
-                else {
-                    if(rctActive.left >= 0) {
-                        LineTo(hdc, rctActive.left, rctActive.bottom + 1);
-                        if(IsRectEmpty(&rectUpDn))
-                            MoveToEx(hdc, rctActive.right, rctActive.bottom + 1, &pt);
-                        else {
-                            if(rctActive.right >= rectUpDn.left)
-                                MoveToEx(hdc, rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN + 2, rctActive.bottom + 1, &pt);
-                            else
-                                MoveToEx(hdc, rctActive.right, rctActive.bottom + 1, &pt);
-                        }
-                        LineTo(hdc, rectTemp.right - 2, rctActive.bottom + 1);
+                else
+                    rcClient.top = rctPage.top;
+                DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat);	// TABP_PANE=9,0,'TAB'
+            }
+            else {
+                if(!(tabdat->dwStyle & TCS_BUTTONS) && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
+                    rectTemp = rctPage;
+                    hPenOld = SelectObject(hdc, tabdat->m_hPenLight);
+
+                    MoveToEx(hdc, rectTemp.left, rectTemp.bottom +1, &pt);
+                    LineTo(hdc, rectTemp.left, rectTemp.top + 1);
+
+                    if(tabdat->dwStyle & TCS_BOTTOM) {
+                        LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
+                        SelectObject(hdc, tabdat->m_hPenShadow);
+                        LineTo(hdc, rectTemp.right - 1, rectTemp.bottom + 1);
+                        LineTo(hdc, rctActive.right, rectTemp.bottom + 1);
+                        MoveToEx(hdc, rctActive.left, rectTemp.bottom + 1, &pt);
+                        LineTo(hdc, rectTemp.left, rectTemp.bottom + 1);
                     }
                     else {
-                        RECT rectItemLeftmost;
-                        UINT nItemLeftmost = FindLeftDownItem(hwnd);
-                        TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
-                        LineTo(hdc, rectTemp.right - 2, rctActive.bottom + 1);
-                    }
-                    SelectObject(hdc, tabdat->m_hPenItemShadow);
-                    LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
-                    LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
+                        if(rctActive.left >= 0) {
+                            LineTo(hdc, rctActive.left, rctActive.bottom + 1);
+                            if(IsRectEmpty(&rectUpDn))
+                                MoveToEx(hdc, rctActive.right, rctActive.bottom + 1, &pt);
+                            else {
+                                if(rctActive.right >= rectUpDn.left)
+                                    MoveToEx(hdc, rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN + 2, rctActive.bottom + 1, &pt);
+                                else
+                                    MoveToEx(hdc, rctActive.right, rctActive.bottom + 1, &pt);
+                            }
+                            LineTo(hdc, rectTemp.right - 2, rctActive.bottom + 1);
+                        }
+                        else {
+                            RECT rectItemLeftmost;
+                            UINT nItemLeftmost = FindLeftDownItem(hwnd);
+                            TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
+                            LineTo(hdc, rectTemp.right - 2, rctActive.bottom + 1);
+                        }
+                        SelectObject(hdc, tabdat->m_hPenItemShadow);
+                        LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
+                        LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
 
-                    SelectObject(hdc, tabdat->m_hPenShadow);
-                    MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom + 1, &pt);
-                    LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
-                    LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);
+                        SelectObject(hdc, tabdat->m_hPenShadow);
+                        MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom + 1, &pt);
+                        LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
+                        LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);
+                    }
                 }
             }
+            uiFlags = 0;
+            GetCursorPos(&hti.pt);
+            ScreenToClient(hwnd, &hti.pt);
+            hti.flags = 0;
+            hotItem = TabCtrl_HitTest(hwnd, &hti);
             for(i = 0; i < nCount; i++) {
                 if(i != iActive) {
                     TabCtrl_GetItemRect(hwnd, i, &rcItem);
                     if (IntersectRect(&rectTemp, &rcItem, &ps.rcPaint)) {
-                        DrawItemRect(tabdat, hdc, &rcItem, 0);
-                        DrawItem(tabdat, hdc, &rcItem, 0, i);
+                        int nHint = 0;
+                        if(!IsRectEmpty(&tabdat->m_rectUpDn) && rcItem.right >= tabdat->m_rectUpDn.left) {
+                            nHint |= HINT_CUT;
+                            rcItem.right = tabdat->m_rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN;
+                        }
+                        if(!bClassicDraw && pfnIsThemeActive != 0 && pfnIsThemeActive()) {
+                            InflateRect(&rcItem, -1, 0);
+                            DrawThemesXpTabItem(hdc, i, &rcItem, uiFlags | uiBottom | (i == hotItem ? 4 : 0), tabdat);
+                            nHint |= HINT_TRANSPARENT;
+                            DrawItem(tabdat, hdc, &rcItem, nHint, i);
+                        }
+                        else {
+                            DrawItemRect(tabdat, hdc, &rcItem, nHint);
+                            DrawItem(tabdat, hdc, &rcItem, nHint, i);
+                        }
                     }
                 }
             }
-            if (IntersectRect(&ps.rcPaint, &rctActive, &ps.rcPaint) && rctActive.left > 0) {
+            if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left > 0) {
+                int nHint = 0;
                 rcItem = rctActive;
-                DrawItemRect(tabdat, hdc, &rcItem, HINT_ACTIVATE_RIGHT_SIDE|HINT_ACTIVE_ITEM);
-                DrawItem(tabdat, hdc, &rcItem, HINT_ACTIVE_ITEM, iActive);
+                //_DebugPopup(0, "active %d, %d, %d, %d", rcItem.left, rcItem.top, rcItem.right, rcItem.bottom);
+                if(!IsRectEmpty(&tabdat->m_rectUpDn) && rcItem.right >= tabdat->m_rectUpDn.left) {
+                    nHint |= HINT_CUT;
+                    rcItem.right = tabdat->m_rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN;
+                }
+                if(!bClassicDraw && pfnIsThemeActive != 0 && pfnIsThemeActive()) {
+                    InflateRect(&rcItem, 1, 2);
+                    DrawThemesXpTabItem(hdc, iActive, &rcItem, 2 | uiBottom, tabdat);
+                    nHint |= HINT_TRANSPARENT;
+                    DrawItem(tabdat, hdc, &rcItem, nHint, iActive);
+                }
+                else {
+                    DrawItemRect(tabdat, hdc, &rcItem, HINT_ACTIVATE_RIGHT_SIDE|HINT_ACTIVE_ITEM | nHint);
+                    DrawItem(tabdat, hdc, &rcItem, HINT_ACTIVE_ITEM | nHint, iActive);
+                }
             }
             SelectObject(hdc, hPenOld);
             EndPaint(hwnd, &ps);

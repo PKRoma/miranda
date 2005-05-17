@@ -827,6 +827,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #endif    
 	hDLL = LoadLibraryA("user32");
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
+    myGlobals.m_VSApiEnabled = InitVSApi();
 #if defined(_UNICODE)
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
         if(dbv.type == DBVT_ASCIIZ) {
@@ -957,6 +958,7 @@ int SplitmsgShutdown(void)
     UnhookEvent(hEventContactDeleted);
     FreeLibrary(GetModuleHandleA("riched20"));
 	FreeLibrary(GetModuleHandleA("user32"));
+    FreeVSApi();
     if(g_hIconDLL)
         FreeLibrary(g_hIconDLL);
     
@@ -1200,12 +1202,12 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
             TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetTabIndexFromHWND(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), hwndChild));
             SendMessage(pContainer->hwnd, WM_NOTIFY, 0, (LPARAM) &nmhdr);	// just select the tab and let WM_NOTIFY do the rest
         }
+        SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
         if(IsIconic(pContainer->hwnd))
             SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
         else if(GetForegroundWindow() != pContainer->hwnd)
             SetForegroundWindow(pContainer->hwnd);
-        SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
-    	SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+        //SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
 		return TRUE;
 	} else
 		return FALSE;
