@@ -124,6 +124,9 @@ static int DeleteGroup(WPARAM wParam, LPARAM lParam)
     itoa(wParam - 1, str, 10);
     if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
         return 1;
+	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT))
+		if (MessageBox((HWND)CallService(MS_CLUI_GETHWND, 0, 0), Translate("Are you sure you want to delete this group?  This operation can not be undone."), Translate("Delete Group"), MB_YESNO|MB_ICONQUESTION)==IDNO)
+			return 1;
     lstrcpyn(name, dbv.pszVal + 1, sizeof(name));
     DBFreeVariant(&dbv);
     SetCursor(LoadCursor(NULL, IDC_WAIT));
