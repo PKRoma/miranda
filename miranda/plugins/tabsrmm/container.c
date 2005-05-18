@@ -92,7 +92,6 @@ HMENU BuildContainerMenu();
 void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
 void ReflashContainer(struct ContainerWindowData *pContainer);
-void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
@@ -274,7 +273,7 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
     EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), bottomEnabled);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), NULL, FALSE);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARUP), NULL, FALSE);
-    //SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, SWP_DRAWFRAME);
+    SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, SWP_DRAWFRAME);
 }
 
 /*
@@ -323,7 +322,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                  */
 
                 for(i = 0; sbarItems[i].uId != 0; i++) {
-                    CreateWindowExA(0, MIRANDABUTTONCLASS, "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 20, 20, hwndDlg, (HMENU)sbarItems[i].uId, g_hInst, NULL);
+                    CreateWindowExA(0, "TSButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 20, 20, hwndDlg, (HMENU)sbarItems[i].uId, g_hInst, NULL);
                     pContainer->sb_NrTopButtons += (sbarItems[i].dwFlags & SBI_TOP) ? 1 : 0;
                     pContainer->sb_NrBottomButtons += (sbarItems[i].dwFlags & SBI_BOTTOM) ? 1 : 0;
                 }
@@ -1243,7 +1242,7 @@ panel_found:
                                     SendMessage(hwndDlg, WM_CLOSE, 0, 0);
                                     break;
                                 case ID_TABMENU_CONFIGURETABAPPEARANCE:
-                                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, NULL);
+                                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, 0);
                                     break;
                                 }
                             }
@@ -1506,7 +1505,7 @@ panel_found:
             if(!myGlobals.m_SideBarEnabled)
                 pContainer->dwFlags &= ~CNT_SIDEBAR;
             
-            //ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBAR), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBAR), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             for(i = 0; sbarItems[i].uId != 0; i++) {
@@ -1721,10 +1720,9 @@ panel_found:
                 pContainer->hIcon = (lParam == (LPARAM)hIconMsg) ? STICK_ICON_MSG : 0;
                 break;
             }
-        /*
         case WM_CTLCOLORSTATIC:
             if((HWND)lParam == GetDlgItem(hwndDlg, IDC_SIDEBAR))
-                return (BOOL)GetSysColorBrush(COLOR_3DFACE); */
+                return (BOOL)GetSysColorBrush(COLOR_3DFACE);
         case WM_DRAWITEM:
         {
             int cx = GetSystemMetrics(SM_CXSMICON);

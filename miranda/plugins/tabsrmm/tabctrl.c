@@ -148,6 +148,8 @@ BOOL CALLBACK SpinCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
             return 0;*/
             break;
         }
+        case WM_WINDOWPOSCHANGED:
+            break;
     }
     return CallWindowProc(OldSpinCtrlProc, hwnd, msg, wParam, lParam); 
 }
@@ -174,6 +176,7 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
     if(dat) {
         HICON hIcon;
         HBRUSH bg;
+        HFONT oldFont;
         DWORD dwStyle = tabdat->dwStyle;
         BOOL bFill = ((dwStyle & TCS_BOTTOM) || (dwStyle & TCS_BUTTONS)) && (!(tabdat->m_skinning) || myGlobals.m_TabAppearance & TCF_NOSKINNING);
         int oldMode = 0;
@@ -210,16 +213,12 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
             hIcon = dat->hTabIcon;
 
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0)) {
-            DrawState(dc, NULL, NULL, (LPARAM) hIcon, 0,
-                      //(dis->rcItem.right + dis->rcItem.left - cx) / 2,
-                      rcItem->left,
-                      (rcItem->bottom + rcItem->top - tabdat->cy) / 2,
-                      tabdat->cx, tabdat->cy,
-                      DST_ICON | DSS_NORMAL);
+            DrawIconEx (dc, rcItem->left, (rcItem->bottom + rcItem->top - tabdat->cy) / 2, hIcon, tabdat->cx, tabdat->cy, 0, NULL, DI_NORMAL | DI_COMPAT); 
         }
         rcItem->left += (tabdat->cx + 2);
-        SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
+        oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
         DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, DT_SINGLELINE | DT_VCENTER);
+        SelectObject(dc, oldFont);
         if(oldMode)
             SetBkMode(dc, oldMode);
     }
@@ -349,9 +348,10 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     if(bSel) 
         rcMem.bottom++;
 
-    if(bBody)
+    FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));
+    if(bBody) 
         DrawThemesPart(tabdat, dcMem, 9, 0, &rcMem);	// TABP_PANE=9,  0, 'TAB'
-	else 
+	else
         DrawThemesPart(tabdat, dcMem, 1, bSel ? 3 : (bHot ? 2 : 1), &rcMem);
 																// TABP_TABITEM=1, TIS_SELECTED=3:TIS_HOT=2:TIS_NORMAL=1, 'TAB'
 	// 2nd init some extra parameters
@@ -440,7 +440,6 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case EM_SEARCHSCROLLER:
         {
             HWND hwndChild;
-            char szClassName[128];
             /*
              * search the updown control (scroll arrows) to subclass it...
              * the control is dynamically created and may not exist as long as it is
@@ -450,23 +449,14 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
              */
 
             if(tabdat->m_hwndSpin == 0) {
-                hwndChild = GetWindow(hwnd, GW_CHILD);
-                while(hwndChild) {
-                    int nRet = GetClassNameA(hwndChild, szClassName, sizeof(szClassName));
-                    if(nRet && strncmp(szClassName, "msctls_updown32", sizeof(szClassName)))
-                        hwndChild = GetWindow(hwndChild, GW_HWNDNEXT);
-                    else {
-                        _DebugPopup(0, "scroller found");
-                        GetWindowRect(hwndChild, &tabdat->m_rectUpDn);
+                if((hwndChild = FindWindowEx(hwnd, 0, _T("msctls_updown32"), NULL)) != 0) {
+                    GetWindowRect(hwndChild, &tabdat->m_rectUpDn);
 
-                        //subclass the updown spinner control
-                        
-                        if(tabdat->m_hwndSpin == 0) {
-                            tabdat->m_hwndSpin = hwndChild;
-                            OldSpinCtrlProc = (WNDPROC)SetWindowLong(hwndChild, GWL_WNDPROC, (LONG)SpinCtrlSubclassProc);
-                            InvalidateRect(hwndChild, NULL, TRUE);
-                        }
-                        hwndChild = 0;
+                    //subclass the updown spinner control
+                    if(tabdat->m_hwndSpin == 0) {
+                        tabdat->m_hwndSpin = hwndChild;
+                        OldSpinCtrlProc = (WNDPROC)SetWindowLong(hwndChild, GWL_WNDPROC, (LONG)SpinCtrlSubclassProc);
+                        InvalidateRect(hwndChild, NULL, TRUE);
                     }
                 }
             }
@@ -514,7 +504,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             TCITEM item = {0};
             int iActive, hotItem;
             POINT pt;
-            HPEN hPenOld;
+            HPEN hPenOld = 0;
             UINT uiFlags = 1;
             UINT uiBottom = 0;
             TCHITTESTINFO hti;
@@ -539,10 +529,14 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             bmpOld = SelectObject(hdc, bmpMem);
 
             FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
-            if(tabdat->dwStyle & TCS_BOTTOM)
+            if(tabdat->dwStyle & TCS_BOTTOM) {
                 rctPage.bottom = rctActive.top;
-            else
+                uiBottom = 8;
+            }
+            else {
                 rctPage.top = rctActive.bottom;
+                uiBottom = 0;
+            }
             
             /*
              * visual style support
@@ -555,7 +549,6 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 rcClient = rctPage;
                 if(tabdat->dwStyle & TCS_BOTTOM) {
                     rcClient.bottom = rctPage.bottom;
-                    uiBottom = 8;
                     uiFlags |= uiBottom;
                 }
                 else
@@ -626,7 +619,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                             rcItem.right = tabdat->m_rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN;
                         }
                         if(!bClassicDraw) {
-                            InflateRect(&rcItem,  0, 0);
+                            InflateRect(&rcItem, 0, 0);
                             DrawThemesXpTabItem(hdc, i, &rcItem, uiFlags | uiBottom | (i == hotItem ? 4 : 0), tabdat);
                             DrawItem(tabdat, hdc, &rcItem, nHint, i);
                         }
@@ -652,14 +645,15 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     InflateRect(&rcItem, 2, 2);
                         rcItem.bottom--;
                     DrawThemesXpTabItem(hdc, iActive, &rcItem, 2 | uiBottom, tabdat);
-                    DrawItem(tabdat, hdc, &rcItem, nHint, iActive);
+                    DrawItem(tabdat, hdc, &rcItem, nHint | HINT_ACTIVE_ITEM, iActive);
                 }
                 else {
                     DrawItemRect(tabdat, hdc, &rcItem, HINT_ACTIVATE_RIGHT_SIDE|HINT_ACTIVE_ITEM | nHint);
                     DrawItem(tabdat, hdc, &rcItem, HINT_ACTIVE_ITEM | nHint, iActive);
                 }
             }
-            SelectObject(hdc, hPenOld);
+            if(hPenOld)
+                SelectObject(hdc, hPenOld);
             /*
              * finally, bitblt the contents of the memory dc to the real dc
              */
@@ -677,6 +671,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
             else if(amount < 0)
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
+            InvalidateRect(hwnd, NULL, FALSE);
             break;
         }
     }

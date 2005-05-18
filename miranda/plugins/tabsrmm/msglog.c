@@ -76,6 +76,8 @@ static char *months[] = {"January", "February", "March", "April", "May", "June",
 static char weekDays_translated[7][30];
 static char months_translated[12][30];
 
+static time_t today;
+
 char szSep0[40], szSep1[152], szSep2[40], szMicroLf[128], szExtraLf[50];
 char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
 DWORD dwExtraLf = 0;
@@ -649,12 +651,18 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
     }
-    if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && ((dbei.timestamp - dat->lastEventTime) < 86400)) {
+//    if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && ((dbei.timestamp - dat->lastEventTime) < 86400)) {
+    if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && (dbei.timestamp - dat->lastEventTime) < 86400) {
         g_groupBreak = FALSE;
+        if(dbei.timestamp > today && dat->lastEventTime < today) {
+            g_groupBreak = TRUE;
+            goto nogroup;
+        }
         if(prefixParaBreak)
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
     }
     else {
+nogroup:        
         if (prefixParaBreak) {
             if(dwExtraLf)
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szExtraLf, MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
@@ -1217,7 +1225,19 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     HWND hwndrtf;
     LONG startAt = 0;
     FINDTEXTEXA fi;
-    
+    struct tm tm_now, tm_today;
+    time_t now;
+    /*
+     * calc time limit for grouping
+     */
+
+    now = time(NULL);
+
+    tm_now = *localtime(&now);
+    tm_today = tm_now;
+    tm_today.tm_hour = tm_today.tm_min = tm_today.tm_sec = 0;
+    today = mktime(&tm_today);
+
     // IEVIew MOD Begin
     if (dat->hwndLog != 0) {
         IEVIEWEVENT event;
@@ -1471,20 +1491,9 @@ static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t che
 {
     static char szResult[100];
     DBTIMETOSTRING dbtts;
-    struct tm tm_now, tm_today;
-    
-    time_t now = time(NULL);
-    time_t today;
-    
+    szResult[0] = 0;
     dbtts.cbDest = 70;;
     dbtts.szDest = szResult;
-
-    szResult[0] = 0;
-    
-    tm_now = *localtime(&now);
-    tm_today = tm_now;
-    tm_today.tm_hour = tm_today.tm_min = tm_today.tm_sec = 0;
-    today = mktime(&tm_today);
 
     if((code == 'R' || code == 'r') && check >= today) {
         strcpy(szResult, szToday);

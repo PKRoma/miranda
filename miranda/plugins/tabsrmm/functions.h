@@ -74,3 +74,7 @@ void SetFloater(struct ContainerWindowData *pContainer);
 
 int InitVSApi(), FreeVSApi();
 void ReloadTabConfig(), FreeTabConfig();
+
+void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
+void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
+

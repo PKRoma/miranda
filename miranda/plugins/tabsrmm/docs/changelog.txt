@@ -44,12 +44,19 @@ Version 0.9.9.95pre4 - 2005/05/18
         
         + added custom tab control with the ability to show skinned tabs at the bottom
           properly. Also, it can be configured to act as a "button bar".
+          Right click a tab and choose "Configure Tab Appearance" to set some
+          options.
           
         + added mousewheel-controlled tab switching. If you move the mousewheel while
           the pointer is over the tab bar area, it will switch tabs. Moving the wheel
           upwards will switch to the previous tab, while moving the wheel downwards
           will switch to the next tab.
         
+        + added flicker-free avatar drawing
+        
+        + changed grouping mode slightly. Last midnight will now break a group in any 
+          case, so messages from yesterday cannot be grouped with messages from today.
+          
 Version 0.9.9.95pre3 - 2005/05/10
 
         ! fixed HUGE bug with bbcode color handling.

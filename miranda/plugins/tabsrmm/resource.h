@@ -185,7 +185,6 @@
 #define IDC_PROTOCOL                    1140
 #define IDC_STMSGLOGGROUP2              1140
 #define IDC_TYPING                      1141
-#define IDC_TYPINGNOTIFY                1142
 #define IDC_PROTOMENU                   1143
 #define IDC_TOGGLETOOLBAR               1144
 #define IDC_ERRORTEXT                   1145

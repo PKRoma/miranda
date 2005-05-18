@@ -89,7 +89,7 @@ struct ContainerWindowData *FindContainerByName(const TCHAR *name);
 int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iMode, HANDLE hContactFrom);
 
-static WNDPROC OldMessageEditProc, OldSplitterProc;
+static WNDPROC OldMessageEditProc, OldSplitterProc, OldAvatarWndProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME};
 static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE, IDC_SENDMENU};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
@@ -236,7 +236,6 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg,IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER5), (showToolbar && splitterEdges) ? SW_SHOW : SW_HIDE);
 
-    ShowWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
     ShowWindow(GetDlgItem(hwndDlg, IDOK), showToolbar ? SW_SHOW : SW_HIDE);
 
@@ -493,6 +492,15 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
     return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
 
+static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_ERASEBKGND:
+            return TRUE;
+    }
+    return CallWindowProc(OldAvatarWndProc, hwnd, msg, wParam, lParam);
+}
+
 static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
@@ -686,8 +694,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                 urc->rcItem.top += 24;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
-        case IDC_TYPINGNOTIFY:
-            return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_LOGFROZEN:
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_LOGFROZENTEXT:
@@ -989,7 +995,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONADDTOOLTIP, (WPARAM) Translate("Italic text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONADDTOOLTIP, (WPARAM) Translate("Underlined text"), 0);
                 SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BUTTONADDTOOLTIP, (WPARAM) Translate("Select font color"), 0);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY), FALSE);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
@@ -1035,7 +1040,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
-                
+                OldAvatarWndProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
                 if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
                 else
@@ -2306,25 +2311,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
             }
             break;
-// XXX tab mod
         case DM_SELECTTAB:
             SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, wParam, lParam);       // pass the msg to our container
             break;
-// XXX tab mod
         case DM_SAVELOCALE: {
                 if (myGlobals.m_AutoLocaleSupport && dat->hContact) {
                     char szKLName[KL_NAMELENGTH + 1];
-#if defined ( _UNICODE )
                     GetKeyboardLayoutNameA(szKLName);
-#else
-                    GetKeyboardLayoutName(szKLName);
-#endif
                     DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
-#if defined ( _UNICODE )
                     dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
-#else                
-                    dat->hkl = LoadKeyboardLayout(szKLName, 0);
-#endif
                     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg)
                         SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) Translate("Input locale saved."));
                 }
@@ -2344,21 +2339,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 res = DBGetContactSetting(dat->hContact, SRMSGMOD_T, "locale", &dbv);
                 if (res == 0 && dbv.type == DBVT_ASCIIZ) {
-#if defined ( _UNICODE ) 
                     dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
-#else
-                    dat->hkl = LoadKeyboardLayout(dbv.pszVal, KLF_ACTIVATE);
-#endif
                     PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                     DBFreeVariant(&dbv);
                 } else {
-#if defined ( _UNICODE )
                     GetKeyboardLayoutNameA(szKLName);
                     dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
-#else
-                    GetKeyboardLayoutName(szKLName);
-                    dat->hkl = LoadKeyboardLayout(szKLName, 0);
-#endif
                     DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
                 }
             }
@@ -2624,10 +2610,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                               cx, cy,
                               DST_ICON | DSS_NORMAL);
                     return TRUE;
-                }
-                if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_TYPINGNOTIFY)) {
-                    DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, myGlobals.g_buttonBarIcons[5], GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
-                    return TRUE;
                 } else if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
                     RECT rc = { 0 };
                     HBRUSH old, col;
@@ -2671,48 +2653,62 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     HBRUSH hOldBrush;
                     BITMAP bminfo;
                     double dAspect = 0, dNewWidth = 0;
-                    DWORD iMaxHeight = 0, top;
-                    RECT rc;
-
+                    DWORD iMaxHeight = 0, top, cx, cy;
+                    RECT rc, rcClient;
+                    HDC hdcDraw;
+                    HBITMAP hbmDraw, hbmOld;
+                    
                     GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
 
                     GetClientRect(hwndDlg, &rc);
+                    GetClientRect(dis->hwndItem, &rcClient);
+                    cx = rcClient.right - rcClient.left;
+                    cy = rcClient.bottom - rcClient.top;
+                    hdcDraw = CreateCompatibleDC(dis->hDC);
+                    hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
+                    hbmOld = SelectObject(hdcDraw, hbmDraw);
+                    
                     dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
                     dNewWidth = (double)bminfo.bmWidth * dAspect;
                     if(dNewWidth > (double)(rc.right - rc.left) * 0.8)
                         dNewWidth = (double)(rc.right - rc.left) * 0.8;
                     iMaxHeight = dat->iRealAvatarHeight;
                     hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
-                    hOldPen = SelectObject(dis->hDC, hPen);
-                    hOldBrush = SelectObject(dis->hDC, GetStockObject(HOLLOW_BRUSH));
+                    hOldPen = SelectObject(hdcDraw, hPen);
+                    hOldBrush = SelectObject(hdcDraw, GetSysColorBrush(COLOR_3DFACE));
+                    FillRect(hdcDraw, &rcClient, GetSysColorBrush(COLOR_3DFACE));
                     if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                        Rectangle(dis->hDC, 0, 0, dat->pic.cx, dat->pic.cy);
+                        Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
                     else {
                         top = (dat->pic.cy - dat->iRealAvatarHeight) / 2;
-                        Rectangle(dis->hDC, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
+                        Rectangle(hdcDraw, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
                     }
-                    SelectObject(dis->hDC, hOldPen);
-                    SelectObject(dis->hDC, hOldBrush);
+                    SelectObject(hdcDraw, hOldPen);
+                    SelectObject(hdcDraw, hOldBrush);
                     DeleteObject(hPen);
                     if(dat->hContactPic && dat->showPic) {
                         HDC hdcMem = CreateCompatibleDC(dis->hDC);
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->hContactPic);
                         if(dat->iRealAvatarHeight != bminfo.bmHeight) {
-                            SetStretchBltMode(dis->hDC, HALFTONE);
+                            SetStretchBltMode(hdcDraw, HALFTONE);
                             if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                                StretchBlt(dis->hDC, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                                StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                             else
-                                StretchBlt(dis->hDC, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                                StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                         }
                         else {
                             if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                                BitBlt(dis->hDC, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
+                                BitBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
                             else
-                                BitBlt(dis->hDC, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
+                                BitBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
                         }
                         DeleteObject(hbmMem);
                         DeleteDC(hdcMem);
                     }
+                    BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
+                    SelectObject(hdcDraw, hbmOld);
+                    DeleteObject(hbmDraw);
+                    DeleteDC(hdcDraw);
                     return TRUE;
                 }
                 return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
@@ -4583,7 +4579,7 @@ verify:
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
-
+            SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
             // remove temporary contacts...
             
             if (dat->hContact && DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0)) {

@@ -795,7 +795,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     ReloadGlobals();
     NEN_ReadOptions(&nen_options);
     ReloadTabConfig();
-    
+    LoadTSButtonModule();
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -2000090000;
@@ -979,7 +979,7 @@ int SplitmsgShutdown(void)
     UncacheMsgLogIcons();
     UnloadIcons();
     FreeTabConfig();
-
+    UnloadTSButtonModule();
     if(myGlobals.m_hbmMsgArea)
         DeleteObject(myGlobals.m_hbmMsgArea);
     CreateSystrayIcon(FALSE);

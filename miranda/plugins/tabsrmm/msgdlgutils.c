@@ -259,7 +259,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 SendMessage(hwndDlg, WM_CLOSE, 1, 0);
                 return 1;
             case ID_TABMENU_CONFIGURETABAPPEARANCE:
-                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, NULL);
+                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, 0);
                 return 1;
             case ID_PICMENU_TOGGLEAVATARDISPLAY:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", dat->showPic ? 0 : 1);
