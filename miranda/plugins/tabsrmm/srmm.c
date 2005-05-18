@@ -79,9 +79,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
-    //MessageBoxA(0,"before shutdown", "f", MB_OK);
     return SplitmsgShutdown();
-    //MessageBoxA(0,"shutdown", "f", MB_OK);
 }
 
 /*

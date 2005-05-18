@@ -134,10 +134,10 @@ BOOL CALLBACK SpinCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     switch(msg) {
         case WM_PAINT:
         {
+            /*
             PAINTSTRUCT ps;
             HDC dc = BeginPaint(hwnd, &ps);
             RECT rcItem = ps.rcPaint;
-            break;
             rcItem.top++;
             rcItem.left++;
             rcItem.bottom--;
@@ -145,7 +145,8 @@ BOOL CALLBACK SpinCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
             FillRect(dc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
             DrawFrameControl(dc, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO);
             EndPaint(hwnd, &ps);
-            return 0;
+            return 0;*/
+            break;
         }
     }
     return CallWindowProc(OldSpinCtrlProc, hwnd, msg, wParam, lParam); 
@@ -282,36 +283,10 @@ void DrawItemRect(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint)
 			}
 		}
 		else {
-			//	CLBTabCtrl is not in stacked mode and current item overlaps
-			//	msctls_updown32 control. So let's draw current item's rect 
-			//	as cut.
-			int nYPos = rcItem->top + 2;
-
-			nYPos += ((rcItem->bottom - rcItem->top) / 5);
-			rcItem->right += 1;
-			if(nYPos < rcItem->bottom)
-				LineTo(dc, rcItem->right, nYPos);
-
-            nYPos += ((rcItem->bottom - rcItem->top) / 3);
-			rcItem->right -= 2;
-			if(nYPos < rcItem->bottom)
-				LineTo(dc, rcItem->right, nYPos);
-
-            nYPos += ((rcItem->bottom - rcItem->top) / 5);
-			rcItem->right += 1;
-			if(nYPos < rcItem->bottom)
-				LineTo(dc, rcItem->right, nYPos);
-
-            nYPos += ((rcItem->bottom - rcItem->top) / 5);
-			rcItem->right += 1;
-			if(nYPos < rcItem->bottom)
-				LineTo(dc, rcItem->right, nYPos);
-			if(nHint & HINT_ACTIVE_ITEM) {
-				LineTo(dc, rcItem->right, rcItem->bottom + 2);
-			}
+			if(nHint & HINT_ACTIVE_ITEM) 
+				LineTo(dc, rcItem->right + 2, rcItem->bottom + 2);
 			else
-				LineTo(dc, rcItem->right, rcItem->bottom + 1);
-
+				LineTo(dc, rcItem->right + 2, rcItem->bottom + 1);
 		}
 	}
 }
@@ -434,7 +409,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             tabdat->cx = GetSystemMetrics(SM_CXSMICON);
             tabdat->cy = GetSystemMetrics(SM_CYSMICON);
 
-            tabdat->m_skinning = 0;
+            tabdat->m_skinning = FALSE;
             if(IsWinVerXPPlus()) {
                 if(pfnIsThemeActive != 0)
                     if(pfnIsThemeActive()) {
@@ -448,6 +423,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             return 0;
         }
         case WM_THEMECHANGED:
+            tabdat->m_skinning = FALSE;
             if(IsWinVerXPPlus()) {
                 if(pfnIsThemeActive != 0)
                     if(pfnIsThemeActive()) {
@@ -480,6 +456,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     if(nRet && strncmp(szClassName, "msctls_updown32", sizeof(szClassName)))
                         hwndChild = GetWindow(hwndChild, GW_HWNDNEXT);
                     else {
+                        _DebugPopup(0, "scroller found");
                         GetWindowRect(hwndChild, &tabdat->m_rectUpDn);
 
                         //subclass the updown spinner control
@@ -530,7 +507,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
-            HDC hdc;
+            HDC hdcreal, hdc;
             RECT rectTemp, rctPage, rctActive, rcItem;
             RECT rectUpDn = {0,0,0,0};
             int nCount = TabCtrl_GetItemCount(hwnd), i;
@@ -542,13 +519,26 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             UINT uiBottom = 0;
             TCHITTESTINFO hti;
             BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
-            hdc = BeginPaint(hwnd, &ps);
+            HBITMAP bmpMem, bmpOld;
+            DWORD cx, cy;
+            
+            hdcreal = BeginPaint(hwnd, &ps);
             GetClientRect(hwnd, &rctPage);
             iActive = TabCtrl_GetCurSel(hwnd);
             TabCtrl_GetItemRect(hwnd, iActive, &rctActive);
+            cx = rctPage.right - rctPage.left;
+            cy = rctPage.bottom - rctPage.top;
+            
+            /*
+             * draw everything to a memory dc to avoid flickering
+             */
+            
+            hdc = CreateCompatibleDC(hdcreal);
+            bmpMem = CreateCompatibleBitmap(hdcreal, cx, cy);
+
+            bmpOld = SelectObject(hdc, bmpMem);
 
             FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
-            //_DebugPopup(0, "draw %d, %d, %d, %d", ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom);
             if(tabdat->dwStyle & TCS_BOTTOM)
                 rctPage.bottom = rctActive.top;
             else
@@ -619,6 +609,9 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 }
             }
             uiFlags = 0;
+            /*
+             * figure out hottracked item (if any)
+             */
             GetCursorPos(&hti.pt);
             ScreenToClient(hwnd, &hti.pt);
             hti.flags = 0;
@@ -644,6 +637,9 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     }
                 }
             }
+            /*
+             * draw the active item
+             */
             if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left > 0) {
                 int nHint = 0;
                 rcItem = rctActive;
@@ -664,8 +660,24 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 }
             }
             SelectObject(hdc, hPenOld);
+            /*
+             * finally, bitblt the contents of the memory dc to the real dc
+             */
+            BitBlt(hdcreal, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
+            SelectObject(hdc, bmpOld);
+            DeleteObject(bmpMem);
+            DeleteDC(hdc);
             EndPaint(hwnd, &ps);
             return 0;
+        }
+        case WM_MOUSEWHEEL:
+        {
+            short amount = (short)(HIWORD(wParam));
+            if(amount > 0)
+                SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_PREV, 0);
+            else if(amount < 0)
+                SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
+            break;
         }
     }
     return CallWindowProc(OldTabControlProc, hwnd, msg, wParam, lParam); 

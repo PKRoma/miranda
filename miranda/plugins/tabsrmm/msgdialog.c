@@ -307,6 +307,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         {
             RECT rc;
             POINT pt;
+            TCHITTESTINFO hti;
+            HWND hwndTab;
             
             if(myGlobals.m_WheelDefault)
                 break;
@@ -340,6 +342,14 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 }
                 else
                     SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
+                return 0;
+            }
+            hwndTab = GetDlgItem(mwdat->pContainer->hwnd, IDC_MSGTABS);
+            hti.pt = pt;
+            ScreenToClient(hwndTab, &hti.pt);
+            hti.flags = 0;
+            if(TabCtrl_HitTest(hwndTab, &hti) != -1) {
+                SendMessage(hwndTab, WM_MOUSEWHEEL, wParam, lParam);
                 return 0;
             }
             break;
@@ -779,13 +789,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     
     hwndTab = GetParent(hwndDlg);
     
+    /*
     if (dat != 0)
         dat->iTabID = GetTabIndexFromHWND(hwndTab, hwndDlg);
     else {
         if(dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
             return 0;
-        
+    }*/
+    if(dat == 0) {
+        if(dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
+            return 0;
     }
+    
     switch (msg) {
         case WM_INITDIALOG:
             {
@@ -805,12 +820,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 newData->item.lParam = (LPARAM) hwndDlg;
                 TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
-
-
+                dat->iTabID = newData->iTabID;
+                
                 pszIDCSAVE_close = Translate("Close session");
                 pszIDCSAVE_save = Translate("Save and close session");
 
                 dat->hContact = newData->hContact;
+                BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
+                
                 WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
                 dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
                 dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
@@ -4333,6 +4350,11 @@ verify:
             dat->splitterY = 150;
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
             break;
+        case DM_REFRESHTABINDEX:
+            dat->iTabID = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
+            if(dat->iTabID == -1)
+                _DebugPopup(dat->hContact, "WARNING: new tabindex: %d", dat->iTabID);
+            return 0;
 		case WM_DROPFILES:
 		{	
             BOOL not_sending=GetKeyState(VK_CONTROL)&0x8000;
@@ -4594,6 +4616,7 @@ verify:
                 i = GetTabIndexFromHWND(hwndTab, hwndDlg);
                 if (i >= 0) {
                     TabCtrl_DeleteItem(hwndTab, i);
+                    BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
                     dat->iTabID = -1;
                 }
                 

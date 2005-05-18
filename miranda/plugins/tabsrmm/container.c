@@ -274,7 +274,7 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
     EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), bottomEnabled);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), NULL, FALSE);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARUP), NULL, FALSE);
-    SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, SWP_DRAWFRAME);
+    //SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, SWP_DRAWFRAME);
 }
 
 /*
@@ -317,7 +317,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);          // set options...
                 pContainer->dwFlags |= dwCreateFlags;
 
-             
+               
                 /*
                  * create the sidebar buttons
                  */
@@ -367,6 +367,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SetWindowLong(hwndTab, GWL_STYLE, ws);
                 OldTabControlProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)TabControlSubclassProc);
                 SendMessage(hwndTab, EM_SUBCLASSED, 0, 0);
+                
                 /*
                  * assign the global image list...
                  */
@@ -1093,7 +1094,8 @@ panel_found:
                     break;
                 }
                 switch (pNMHDR->code) {
-                    case TCN_SELCHANGE:
+                    case TCN_SELCHANGE: 
+                    {
                         ZeroMemory((void *)&item, sizeof(item));
                         iItem = TabCtrl_GetCurSel(hwndTab);
                         item.lParam = 0;
@@ -1107,6 +1109,7 @@ panel_found:
                                 SetFocus(pContainer->hwndActive);
                         }
                         break;
+                    }
                         /*
                          * tooltips
                          */
@@ -1503,7 +1506,7 @@ panel_found:
             if(!myGlobals.m_SideBarEnabled)
                 pContainer->dwFlags &= ~CNT_SIDEBAR;
             
-            ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBAR), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+            //ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBAR), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             for(i = 0; sbarItems[i].uId != 0; i++) {
@@ -1718,9 +1721,10 @@ panel_found:
                 pContainer->hIcon = (lParam == (LPARAM)hIconMsg) ? STICK_ICON_MSG : 0;
                 break;
             }
+        /*
         case WM_CTLCOLORSTATIC:
             if((HWND)lParam == GetDlgItem(hwndDlg, IDC_SIDEBAR))
-                return (BOOL)GetSysColorBrush(COLOR_3DFACE);
+                return (BOOL)GetSysColorBrush(COLOR_3DFACE); */
         case WM_DRAWITEM:
         {
             int cx = GetSystemMetrics(SM_CXSMICON);

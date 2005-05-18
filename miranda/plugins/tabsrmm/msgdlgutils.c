@@ -59,6 +59,7 @@ char *GetThemeFileName(int iMode);
 void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
+extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct RTFColorTable rtf_ctable[] = {
     _T("red"), RGB(255, 0, 0), 0, ID_FONT_RED,
@@ -256,6 +257,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_TABMENU_CLOSETAB:
                 SendMessage(hwndDlg, WM_CLOSE, 1, 0);
+                return 1;
+            case ID_TABMENU_CONFIGURETABAPPEARANCE:
+                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, NULL);
                 return 1;
             case ID_PICMENU_TOGGLEAVATARDISPLAY:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", dat->showPic ? 0 : 1);

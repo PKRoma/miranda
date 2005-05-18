@@ -36,7 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define TVS_NOHSCROLL 0x8000
 #define TVS_CHECKBOXES          0x0100
-
 #endif
 
 #define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
@@ -58,6 +57,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IMF_AUTOKEYBOARD 0x0001
 #define ODS_INACTIVE        0x0080
 #define NIN_BALLOONUSERCLICK (WM_USER + 5)
+
+#define WM_THEMECHANGED 0x031A
 
 typedef struct __gettextex
 {
@@ -243,6 +244,7 @@ struct ProtocolData {
 #define DM_HKDETACH          (WM_USER+80)
 #define DM_HKSAVESIZE        (WM_USER+81)
 #define DM_SETSIDEBARBUTTONS (WM_USER+82)
+#define DM_REFRESHTABINDEX   (WM_USER+83)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define MINSPLITTERY         52

@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.95pre4 - 2005/05/12
+Version 0.9.9.95pre4 - 2005/05/18
 
         * docs updated (Popups.txt, readme.txt, README.ICONS)
         
@@ -41,6 +41,14 @@ Version 0.9.9.95pre4 - 2005/05/12
           increased a few k).
 
         * several UI improvements to increase usabilty.
+        
+        + added custom tab control with the ability to show skinned tabs at the bottom
+          properly. Also, it can be configured to act as a "button bar".
+          
+        + added mousewheel-controlled tab switching. If you move the mousewheel while
+          the pointer is over the tab bar area, it will switch tabs. Moving the wheel
+          upwards will switch to the previous tab, while moving the wheel downwards
+          will switch to the next tab.
         
 Version 0.9.9.95pre3 - 2005/05/10
 
