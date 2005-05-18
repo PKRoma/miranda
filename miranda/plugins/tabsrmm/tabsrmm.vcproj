@@ -950,16 +950,16 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur">
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+			</File>
+			<File
+				RelativePath="..\..\src\res\dropuser.cur">
 			</File>
 			<File
 				RelativePath=".\res\error.ico">
@@ -980,10 +980,10 @@
 				RelativePath=".\res\angeli-icons\HistoryXP.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur">
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\icon1.ico">
@@ -1068,6 +1068,9 @@
 			</File>
 			<File
 				RelativePath=".\resource.rc">
+			</File>
+			<File
+				RelativePath=".\res\rightarrow.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\Save.ico">

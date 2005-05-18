@@ -73,3 +73,4 @@ int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, 
 void SetFloater(struct ContainerWindowData *pContainer);
 
 int InitVSApi(), FreeVSApi();
+void ReloadTabConfig(), FreeTabConfig();

@@ -71,8 +71,6 @@ extern BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
 
-struct ProtocolData *protoIconData = NULL;
-
 HANDLE g_hEvent_MsgWin;
 #if defined(_UNICODE)
 HHOOK g_hMsgHook = 0;
@@ -796,7 +794,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     
     ReloadGlobals();
     NEN_ReadOptions(&nen_options);
-
+    ReloadTabConfig();
+    
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -2000090000;
@@ -970,17 +969,19 @@ int SplitmsgShutdown(void)
     }
     ImageList_RemoveAll(myGlobals.g_hImageList);
     ImageList_Destroy(myGlobals.g_hImageList);
+
     DestroyMenu(myGlobals.g_hMenuContext);
     if(myGlobals.g_hMenuContainer)
         DestroyMenu(myGlobals.g_hMenuContainer);
     if(myGlobals.g_hMenuEncoding)
         DestroyMenu(myGlobals.g_hMenuEncoding);
+
     UncacheMsgLogIcons();
     UnloadIcons();
+    FreeTabConfig();
+
     if(myGlobals.m_hbmMsgArea)
         DeleteObject(myGlobals.m_hbmMsgArea);
-    if(protoIconData != 0)
-        free(protoIconData);
     CreateSystrayIcon(FALSE);
     CreateTrayMenus(FALSE);
     for(i = 0; i < NR_SENDJOBS; i++) {

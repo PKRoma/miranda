@@ -740,12 +740,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
             CheckDlgButton(hwndDlg, IDC_FLATMSGLOG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0));
             CheckDlgButton(hwndDlg, IDC_CHECKICONDLL, DBGetContactSettingByte(NULL, SRMSGMOD_T, "v_check", 1));
-            CheckDlgButton(hwndDlg, IDC_FLATTABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flattabs", 0));
             
-            SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 1));
-            SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, (LPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
-            SetDlgItemInt(hwndDlg, IDC_TABPADDING, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3), FALSE);;
-
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0));
             SetDlgItemInt(hwndDlg, IDC_TABBORDER, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0), FALSE);;
@@ -817,7 +812,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 							DBWriteContactSettingWord(NULL, SRMSGMOD_T, "cut_at", (WORD) GetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, &translated, FALSE));
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSONTAB));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "y-pad", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABPADDING, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autotabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCREATETABS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "cpopup", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_POPUPCONTAINER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "al", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOLOCALE));
@@ -833,7 +827,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSWITCHTABS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flatlog", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATMSGLOG));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "v_check", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CHECKICONDLL));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flattabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATTABS));
                             
                             DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                             ReloadGlobals();
@@ -1803,7 +1796,7 @@ void ReloadGlobals()
      myGlobals.m_WinVerMinor = WinVerMinor();
      myGlobals.m_SideBarEnabled = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sidebar", 0);
      myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
-     myGlobals.m_FlatTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "flattabs", 0);
+     myGlobals.m_TabAppearance = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", 0);
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
      if(myGlobals.m_MathModAvail) {

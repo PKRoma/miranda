@@ -78,8 +78,6 @@ extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
 
-extern struct ProtocolData *protoIconData;
-
 #define DEFAULT_CONTAINER_POS 0x00400040
 #define DEFAULT_CONTAINER_SIZE 0x019001f4
 
@@ -120,6 +118,7 @@ static struct SIDEBARITEM sbarItems[] = {
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 WNDPROC OldTabControlProc;
 
@@ -304,7 +303,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 int i = 0;
                 
                 //SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_HREDRAW | CS_VREDRAW));
-                if(myGlobals.m_FlatTabs) {
+                if(myGlobals.m_TabAppearance & TCF_FLAT) {
                     SetWindowLong(hwndTab, GWL_STYLE, GetWindowLong(hwndTab, GWL_STYLE) | (TCS_BUTTONS | TCS_FLATBUTTONS));
                     SendMessage(hwndTab, TCM_SETEXTENDEDSTYLE, TCS_EX_FLATSEPARATORS, 0);
                 }
@@ -373,7 +372,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                  */
                 TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
 
-                TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), 3, DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
+                TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3), DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
                 /*
                  * context menu
                  */
@@ -1239,6 +1238,9 @@ panel_found:
                                     break;
                                 case ID_TABMENU_CLOSECONTAINER:
                                     SendMessage(hwndDlg, WM_CLOSE, 0, 0);
+                                    break;
+                                case ID_TABMENU_CONFIGURETABAPPEARANCE:
+                                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, NULL);
                                     break;
                                 }
                             }

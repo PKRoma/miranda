@@ -274,6 +274,23 @@ typedef struct _recentinfo {
     HWND  hwndFirst, hwndMostRecent;    // client window handles
 } RECENTINFO;
 
+/*
+ * window data for subclassed tab control
+ */
+
+struct myTabCtrl {
+    HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight;
+    RECT m_rectUpDn;
+    BOOL m_skinning;
+    HWND hwnd, m_hwndSpin;
+    DWORD dwStyle;
+    DWORD cx, cy;
+    HFONT m_hMenuFont;
+    COLORREF colors[8];
+    HANDLE hTheme;
+    HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread;
+};
+
 typedef struct _globals {
     // static options, initialised when plugin is loading
     HWND g_hwndHotkeyHandler;
@@ -336,8 +353,9 @@ typedef struct _globals {
     BYTE m_WinVerMinor;
     BYTE m_SideBarEnabled;
     HWND m_hwndClist;
-    int  m_FlatTabs;
+    int  m_TabAppearance;
     int  m_VSApiEnabled;
+    struct myTabCtrl tabConfig;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -370,6 +388,18 @@ struct StreamJob {
 #define TABSRMM_SMILEYADD_BKGCOLORMODE 0x10000000
 
 #define ADDEDEVENTSQUEUESIZE 100
+
+/*
+ * tab config flags
+ */
+
+#define TCF_FLAT 1
+#define TCF_BOTTOMALWAYSFLAT 2
+#define TCF_NOSKINNING 4
+#define TCF_FLASHICON 8
+#define TCF_FLASHLABEL 16
+
+#define TCF_DEFAULT (TCF_BOTTOMALWAYSFLAT | TCF_FLASHICON)
 
 //Checks if there is a message window opened
 //wParam=(LPARAM)(HANDLE)hContact  - handle of the contact for which the window is searched. ignored if lParam

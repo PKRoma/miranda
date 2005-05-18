@@ -1102,7 +1102,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), 0);
-                    SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    PostMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     if(IsIconic(dat->pContainer->hwnd) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
                         DBEVENTINFO dbei = {0};
 
@@ -1112,9 +1112,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
                         dat->mayFlashTab = TRUE;
                         dat->dwTickLastEvent = GetTickCount();
-                        if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
-                            FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
-                        SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+                        //if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
+                        FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
+                        PostMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;

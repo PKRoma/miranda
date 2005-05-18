@@ -98,7 +98,6 @@ void CreateSystrayIcon(int create)
         nen_options.bTrayExist = TRUE;
     }
     else if(create == FALSE && nen_options.bTrayExist) {
-        
         Shell_NotifyIcon(NIM_DELETE, &nim);
         nen_options.bTrayExist = FALSE;
     }

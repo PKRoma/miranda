@@ -5,6 +5,7 @@
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
 #define IDI_PULLDOWN1ARROW              3
+#define IDD_TABCONFIG                   4
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -220,6 +221,7 @@
 #define IDC_NOTITLE                     1177
 #define IDC_TABPADDING                  1178
 #define IDC_PADSPIN                     1179
+#define IDC_HTABPADDING                 1179
 #define IDC_SHORTCAPTION                1180
 #define IDC_POPUPCONTAINER              1181
 #define IDC_CHECK2                      1182
@@ -262,6 +264,7 @@
 #define IDC_DONTREPORT                  1219
 #define IDC_SPIN1                       1220
 #define IDC_CNTLIST                     1221
+#define IDC_SPIN3                       1221
 #define IDC_NEWCONTAINER                1222
 #define IDC_BUTTON1                     1223
 #define IDC_UPDATEPREVIEW               1223
@@ -341,8 +344,12 @@
 #define IDC_ANIMATED                    1289
 #define IDC_ISFAVORITE                  1289
 #define IDC_FLATTABS                    1289
+#define IDC_FLASHICON                   1289
 #define IDC_SYNCSOUNDS                  1290
+#define IDC_FLASHLABEL                  1290
+#define IDC_NOSKINNING                  1291
 #define IDC_AVADYNAMIC                  1292
+#define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
 #define IDC_EXTRAMICROLF                1294
 #define IDC_SENDFORMAT                  1295
@@ -420,6 +427,12 @@
 #define IDC_VARIABLESHELP               1381
 #define IDC_SIDEBAR                     1382
 #define IDC_TOGGLESIDEBAR               1383
+#define IDC_TXTCLRNORMAL                1383
+#define IDC_TXTCLRACTIVE                1384
+#define IDC_TXTCLRUNREAD                1385
+#define IDC_BKGCLRNORMAL                1386
+#define IDC_BKGCLRACTIVE                1387
+#define IDC_BKGCLRUNREAD                1388
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -595,15 +608,16 @@
 #define ID_DUMMY_NOMESSAGESESSIONSOPENED 40202
 #define ID_TRAYCONTEXT_SHOWTHEFLOATER   40203
 #define ID_TRAYCONTEXT_SHOWTHETRAYICON  40204
+#define ID_TABMENU_CONFIGURETABAPPEARANCE 40205
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        4
-#define _APS_NEXT_COMMAND_VALUE         40205
-#define _APS_NEXT_CONTROL_VALUE         1383
+#define _APS_NEXT_RESOURCE_VALUE        5
+#define _APS_NEXT_COMMAND_VALUE         40206
+#define _APS_NEXT_CONTROL_VALUE         1384
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif
