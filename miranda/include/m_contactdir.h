@@ -106,7 +106,7 @@ typedef struct {
 	Version: 0.4.0.1 (2005/05/17+)
 	Note: see ContactDir_RemoveContact()
 */
-#define MS_CONTACTDIR_REMOVECONTACT "ContactDir/AddContact"
+#define MS_CONTACTDIR_REMOVECONTACT "ContactDir/RemoveContact"
 
 
 /* -- Helper functions -- */
