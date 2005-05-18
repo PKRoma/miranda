@@ -163,9 +163,9 @@ static char* GetCachedSetting(const char *szModuleName,const char *szSettingName
 	return(newValue);
 }
 
-static void SetCachedVariant( DBVARIANT* s, DBVARIANT* d )
+static void SetCachedVariant( DBVARIANT* s /* new */, DBVARIANT* d /* cached */ )
 {
-	char* szSave = d->pszVal;
+	char* szSave = d->type == DBVT_ASCIIZ ? d->pszVal : NULL;
 
 	memcpy( d, s, sizeof( DBVARIANT ));
 	if ( s->type == DBVT_ASCIIZ && s->pszVal != NULL ) {
