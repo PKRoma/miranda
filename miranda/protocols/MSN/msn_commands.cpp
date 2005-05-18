@@ -1451,7 +1451,8 @@ LBL_InvalidCommand:
 
 			Lists_Wipe();
 			sttIsSync = true;
-			sttListNumber = atol( tWords[ 2 ] );
+			if (( sttListNumber = atol( tWords[ 2 ] )) == 0 )
+				MSN_SetServerStatus( msnDesiredStatus );
 			sttListedContact = NULL;
 			break;
 		}
