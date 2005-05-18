@@ -249,8 +249,11 @@ static int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 			MSN_AddUser( hContact, tEmail, LIST_BL | LIST_REMOVE );
 			Lists_Remove( 0xFF, tEmail );
 		}
-		else MSN_AddUser( hContact, tEmail, LIST_BL );
-	}
+		else {
+			MSN_AddUser( hContact, tEmail, LIST_BL );
+			Lists_Remove( LIST_FL, tEmail );
+	}	}
+
 	return 0;
 }
 
