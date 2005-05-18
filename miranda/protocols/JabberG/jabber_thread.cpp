@@ -763,7 +763,12 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 					else
 						p = NULL;
 					JabberListAddResource( LIST_ROSTER, from, status, p );
-					if ( p ) free( p );
+					if ( p ) {
+						DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
+						free( p );
+					}
+					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+
 					// Determine status to show for the contact
 					if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 						count = item->resourceCount;
@@ -790,6 +795,20 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 				else JabberListRemoveResource( LIST_ROSTER, from );
 
 				status = ID_STATUS_OFFLINE;
+				if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) {
+					if ( JGetByte( "OfflineAsInvisible", FALSE ) == TRUE ) 
+						status = ID_STATUS_INVISIBLE;
+
+					p = JabberTextDecode( statusNode->text );
+					JabberListAddResource( LIST_ROSTER, from, status, p );
+					if (( hContact = JabberHContactFromJID( from )) != NULL) {
+						if ( p )
+							DBWriteContactSettingString(hContact, "CList", "StatusMsg", p);
+						else
+							DBDeleteContactSetting(hContact, "CList", "StatusMsg");
+					}
+					if (p) free(p);
+				} 
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 					// Determine status to show for the contact based on the remaining resources
 					status = ID_STATUS_OFFLINE;
