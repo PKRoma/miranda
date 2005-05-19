@@ -168,6 +168,44 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x0A) - User removed from our contact list");
     break;
 
+  case ICQ_LISTS_ADDTOLIST:
+    if (wBufferLength >= 10)
+    {
+      WORD wNameLen;
+      WORD wGroupId, wItemId, wItemType, wTlvLen;
+
+      unpackWord(&pBuffer, &wNameLen);
+      if (wBufferLength >= 10 + wNameLen)
+      {
+        pBuffer += wNameLen;
+        wBufferLength -= 10 + wNameLen;
+        unpackWord(&pBuffer, &wGroupId);
+        unpackWord(&pBuffer, &wItemId);
+        unpackWord(&pBuffer, &wItemType);
+        unpackWord(&pBuffer, &wTlvLen);
+        if (wBufferLength >= wTlvLen && wItemType == SSI_ITEM_IMPORTTIME)
+        {
+          if (wTlvLen > 0)
+          { // parse timestamp
+            oscar_tlv_chain *pChain = readIntoTLVChain(&pBuffer, (WORD)(wTlvLen), 0);
+
+            if (pChain) 
+            {
+              DBWriteContactSettingDword(NULL, gpszICQProtoName, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
+              DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", wItemId);
+              disposeChain(&pChain);
+
+              Netlib_Logf(ghServerNetlibUser, "Server added Import timestamp to list");
+
+              break;
+            }
+          }
+        }
+      }
+    }
+    Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x13,x08) - Server added something to our list");
+    break;
+
 	case ICQ_LISTS_AUTHREQUEST:
 		handleRecvAuthRequest(pBuffer, wBufferLength);
 		break;
@@ -624,6 +662,17 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
   case SSA_SERVLIST_ACK:
     {
       ProtoBroadcastAck(gpszICQProtoName, sc->hContact, ICQACKTYPE_SERVERCLIST, wError?ACKRESULT_FAILED:ACKRESULT_SUCCESS, (HANDLE)sc->lParam, wError);
+      break;
+    }
+  case SSA_IMPORT:
+    {
+      if (wError)
+        Netlib_Logf(ghServerNetlibUser, "Re-starting import sequence failed, error %d", wError);
+      else
+      {
+        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", 0);
+        DBDeleteContactSetting(NULL, gpszICQProtoName, "ImportTS");
+      }
       break;
     }
   default:
@@ -1302,14 +1351,15 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 			Netlib_Logf(ghServerNetlibUser, "SSI unknown type 0x11");
 			break;
 
-		case SSI_ITEM_IMPORT:
-			if ((wGroupId == 0) && (wItemId == 1))
+		case SSI_ITEM_IMPORTTIME:
+			if (wGroupId == 0)
 			{
 				/* time our list was first imported */
 				/* pszRecordName is "Import Time" */
 				/* data is TLV(13) {TLV(D4) {time_t importTime}} */
-				/* not processed yet (if ever) */
-				Netlib_Logf(ghServerNetlibUser, "SSI first import seen");
+        DBWriteContactSettingDword(NULL, gpszICQProtoName, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
+        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", wItemId);
+				Netlib_Logf(ghServerNetlibUser, "SSI first import recognized");
 			}
 			break;
 
@@ -1794,6 +1844,24 @@ void updateServAvatarHash(char* pHash, int size)
 void sendAddStart(int bImport)
 {
   icq_packet packet;
+  WORD wImportID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", 0);
+
+  if (bImport && wImportID)
+  { // we should be importing, check if already have import item
+    if (DBGetContactSettingDword(NULL, gpszICQProtoName, "ImportTS", 0) + 604800 < DBGetContactSettingDword(NULL, gpszICQProtoName, "LogonTS", 0))
+    { // is the timestamp week older, clear it and begin new import
+      DWORD dwCookie;
+      servlistcookie* ack;
+
+      if (ack = (servlistcookie*)malloc(sizeof(servlistcookie)))
+      { // we have cookie good, go on
+        ack->dwAction = SSA_IMPORT;
+        dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, ack);
+
+        icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, 0, 0, wImportID, NULL, NULL, 0, SSI_ITEM_IMPORTTIME);
+      }
+    }
+  }
 
   packet.wLen = bImport?14:10;
   write_flap(&packet, ICQ_DATA_CHAN);

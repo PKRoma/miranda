@@ -56,6 +56,7 @@
 #define SSA_SERVLIST_ACK      0x20  // send proto ack only (UploadUI)
 #define SSA_SETAVATAR         0x30
 #define SSA_REMOVEAVATAR      0x31
+#define SSA_IMPORT            7
 
 typedef void (*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
 
