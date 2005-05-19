@@ -23,7 +23,7 @@ PLUGINLINK pluginLinkFake;
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
 	"Dynamic Plugin Loader",
-	PLUGIN_MAKE_VERSION(0,1,0,0),
+	PLUGIN_MAKE_VERSION(0,1,0,2),
 	"A cheeky hack to load certain plugins without having to restart Miranda",
 	"Sam Kothari",
 	"egodust@users.sf.net",
@@ -47,15 +47,31 @@ static HANDLE MyHookEvent(const char * hook, MIRANDAHOOK hookProc)
 	return HookEvent(hook, hookProc);
 }
 
+static int ModuleAlreadyLoaded(char * plugin)
+{
+	char * p = strrchr(plugin, '\\');
+	if ( p != NULL ) {
+		char * d = strchr(p, '.');
+		if ( d != NULL ) {
+			char buf[MAX_PATH];
+			mir_snprintf(buf,sizeof(buf),"%s", p+1, d-1);
+			if ( GetModuleHandle(buf) == NULL ) return 0;
+		}
+	}
+	return 1;
+}
+
 static void LoadPlugin(char * plugin) 
 {
 	PLUGININFO * (*MirandaPluginInfo) (DWORD);
 	int (*Load) (PLUGINLINK *);
 	int (*Unload) (void);
-	HINSTANCE hInst=LoadLibrary(plugin);
+	HINSTANCE hInst=NULL;
+	// already loaded?
+	if ( ModuleAlreadyLoaded(plugin) ) return;
+	// load it
+	hInst=LoadLibrary(plugin);
 	if ( hInst == NULL ) return;
-	// already loaded this?
-	if ( GetModuleHandle(strrchr(plugin,'\\')+1) != NULL ) return;
 	// has it got our export settings?
 	MirandaPluginInfo=(PLUGININFO *(*)(DWORD))GetProcAddress(hInst, "MirandaPluginInfo");
 	Load=(int (*)(PLUGINLINK*))GetProcAddress(hInst, "Load");
