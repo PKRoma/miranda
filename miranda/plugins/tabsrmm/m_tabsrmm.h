@@ -290,6 +290,7 @@ struct myTabCtrl {
     HANDLE hTheme;
     HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
     int m_bottomAdjust;
+    BYTE m_xpad;
 };
 
 typedef struct _globals {

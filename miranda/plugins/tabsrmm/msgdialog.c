@@ -472,6 +472,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 break;
             }
         case WM_INPUTLANGCHANGE:
+            /*
+            if (myGlobals.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == GetParent(hwnd) && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
+                SendMessage(GetParent(hwnd), DM_SETLOCALE, wParam, lParam);
+                PostMessage(GetParent(hwnd), DM_SAVELOCALE, 0, 0);
+                _DebugPopup(mwdat->hContact, "change");
+            }
+            */
             return DefWindowProc(hwnd, WM_INPUTLANGCHANGE, wParam, lParam);
         case WM_ERASEBKGND:
         {

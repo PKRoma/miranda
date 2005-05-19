@@ -1218,7 +1218,7 @@ BEGIN
     LTEXT           "Hot Track (mouse over)",IDC_STATIC,176,58,77,13
     CONTROL         "",IDC_BKGCOLORHOTTRACK,"ColourPicker",WS_TABSTOP,282,56,
                     24,13
-    LTEXT           "Bottom tabs vertical adjust. Set this to adjust the vertical position of the active botto tab when using visual styles. Positive values shift the upwards, negative values downwards.",
+    LTEXT           "Bottom tabs vertical adjustment. Set this to adjust the vertical position of bottom tabs when using visual styles. Positive values shift the tab upwards, negative values downwards.",
                     IDC_STATIC,16,190,217,33
     EDITTEXT        IDC_BOTTOMTABADJUST,268,191,28,13,ES_AUTOHSCROLL | 
                     ES_NUMBER

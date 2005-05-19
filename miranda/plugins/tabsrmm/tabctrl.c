@@ -47,6 +47,7 @@ BOOL (PASCAL* pfnIsThemeActive)() = 0;
 HANDLE (PASCAL* pfnOpenThemeData)(HWND hwnd, LPCWSTR pszClassList) = 0;
 UINT (PASCAL* pfnDrawThemeBackground)(HANDLE htheme, HDC hdc, int iPartID, int iStateID, RECT* prcBx, RECT* prcClip) = 0;
 UINT (PASCAL* pfnCloseThemeData)(HANDLE hTheme) = 0;
+HRESULT (PASCAL* pfnGetThemeBackgroundRegion)(HANDLE hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, HRGN *pRegion) = 0;
 
 int InitVSApi()
 {
@@ -57,6 +58,7 @@ int InitVSApi()
     pfnOpenThemeData = GetProcAddress(hUxTheme, "OpenThemeData");
     pfnDrawThemeBackground = GetProcAddress(hUxTheme, "DrawThemeBackground");
     pfnCloseThemeData = GetProcAddress(hUxTheme, "CloseThemeData");
+    pfnGetThemeBackgroundRegion = GetProcAddress(hUxTheme, "GetThemeBackgroundRegion");
     if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0) {
         return 1;
     }
@@ -166,9 +168,12 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
 {
     TCITEM item = {0};
     struct MessageWindowData *dat = 0;
-
+    DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER | DT_NOCLIP;
     item.mask = TCIF_PARAM;
     TabCtrl_GetItem(tabdat->hwnd, nItem, &item);
+
+    if (nHint & HINT_CUT)
+        dwTextFlags &= ~DT_NOCLIP;
     
     /*
      * get the message window data for the session to which this tab item belongs
@@ -181,7 +186,7 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         HBRUSH bg;
         HFONT oldFont;
         DWORD dwStyle = tabdat->dwStyle;
-        BOOL bFill = ((dwStyle & TCS_BOTTOM) || (dwStyle & TCS_BUTTONS)) && (!(tabdat->m_skinning) || myGlobals.m_TabAppearance & TCF_NOSKINNING);
+        BOOL bFill = (dwStyle & TCS_BUTTONS) || ((dwStyle & TCS_BOTTOM) && (!(tabdat->m_skinning) || myGlobals.m_TabAppearance & TCF_NOSKINNING));
         int oldMode = 0;
         InflateRect(rcItem, -1, -1);
         
@@ -219,13 +224,18 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         else
             hIcon = dat->hTabIcon;
 
-        if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0)) {
-            DrawIconEx (dc, rcItem->left, (rcItem->bottom + rcItem->top - tabdat->cy) / 2, hIcon, tabdat->cx, tabdat->cy, 0, NULL, DI_NORMAL | DI_COMPAT); 
+        if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHICON)) {
+            DrawIconEx (dc, rcItem->left + tabdat->m_xpad - 1, (rcItem->bottom + rcItem->top - tabdat->cy) / 2, hIcon, tabdat->cx, tabdat->cy, 0, NULL, DI_NORMAL | DI_COMPAT); 
         }
-        rcItem->left += (tabdat->cx + 2);
-        oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
-        DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, DT_SINGLELINE | DT_VCENTER);
-        SelectObject(dc, oldFont);
+        rcItem->left += (tabdat->cx + 2 + tabdat->m_xpad);
+        
+        if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHLABEL)) {
+            oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
+            if(nHint & HINT_CUT)
+                rcItem->right -= 1;
+            DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, dwTextFlags);
+            SelectObject(dc, oldFont);
+        }
         if(oldMode)
             SetBkMode(dc, oldMode);
     }
@@ -312,11 +322,15 @@ int DWordAlign(int n)
 HRESULT DrawThemesPart(struct myTabCtrl *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
 {
     HRESULT hResult;
+    HRGN rgn;
+    
     if(pfnDrawThemeBackground == NULL)
         return 0;
     
-    if(tabdat->hTheme != 0)
+    if(tabdat->hTheme != 0) {
         hResult = pfnDrawThemeBackground(tabdat->hTheme, hDC, iPartId, iStateId, prcBox, NULL);
+        //DeleteObject(rgn);
+    }
 	return hResult;
 }
 
@@ -336,6 +350,7 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     RECT rcMem;
     BITMAPINFO biOut; 
     BITMAPINFOHEADER *bihOut;
+    HRGN rgn = 0;
     int nBmpWdtPS;
     int nSzBuffPS;
     LPBYTE pcImg = NULL;
@@ -344,6 +359,7 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     szBmp.cy = rcItem->bottom - rcItem->top;
     
     dcMem = CreateCompatibleDC(pDC);
+    
 	bmpMem = CreateCompatibleBitmap(pDC, szBmp.cx, szBmp.cy);
 
     pBmpOld = SelectObject(dcMem, bmpMem);
@@ -358,8 +374,10 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));
     if(bBody) 
         DrawThemesPart(tabdat, dcMem, 9, 0, &rcMem);	// TABP_PANE=9,  0, 'TAB'
-	else
+    else {
+        pfnGetThemeBackgroundRegion(tabdat->hTheme, pDC, 1, bSel ? 3 : (bHot ? 2 : 1), rcItem, &rgn);
         DrawThemesPart(tabdat, dcMem, 1, bSel ? 3 : (bHot ? 2 : 1), &rcMem);
+    }
 																// TABP_TABITEM=1, TIS_SELECTED=3:TIS_HOT=2:TIS_NORMAL=1, 'TAB'
 	// 2nd init some extra parameters
     ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
@@ -368,7 +386,7 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
 	bihOut->biSize = sizeof (BITMAPINFOHEADER);
 	bihOut->biCompression = BI_RGB;
 	bihOut->biPlanes = 1;		  
-    bihOut->biBitCount = 24;	// force as RGB: 3 bytes,24 bits -> good for rotating bitmap in any resolution
+    bihOut->biBitCount = 24;	// force as RGB: 3 bytes, 24 bits
 	bihOut->biWidth =szBmp.cx; 
     bihOut->biHeight=szBmp.cy;
 
@@ -392,7 +410,11 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
 	if(pcImg)
         free(pcImg);
     
-	BitBlt(pDC, rcItem->left, rcItem->top, szBmp.cx, szBmp.cy, dcMem, 0, 0, SRCCOPY);
+    if(rgn)
+        SelectClipRgn(pDC, rgn);
+    BitBlt(pDC, rcItem->left, rcItem->top, szBmp.cx, szBmp.cy, dcMem, 0, 0, SRCCOPY);
+    if(rgn)
+        DeleteObject(rgn);
 	SelectObject(dcMem, pBmpOld);
     DeleteObject(bmpMem);
     DeleteDC(dcMem);
@@ -427,6 +449,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                         }
                     }
             }
+            tabdat->m_xpad = DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 4);
             return 0;
         }
         case WM_THEMECHANGED:
@@ -477,6 +500,14 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 }
                 break;
             }
+        case WM_HSCROLL:
+        {
+            BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
+            if((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && myGlobals.tabConfig.m_bottomAdjust != 0) {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            break;
+        }
         case WM_DESTROY:
         case EM_UNSUBCLASSED:
             if(tabdat) {
@@ -553,6 +584,16 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 uiBottom = 0;
             }
             
+            /*
+             * care about that little bugger (tab scroller)
+             */
+            if(!IsRectEmpty(&tabdat->m_rectUpDn) && tabdat->m_hwndSpin != 0) {
+                RECT rc = tabdat->m_rectUpDn;;
+                rc.left--;
+                rc.right++;
+                FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+            }
+
             /*
              * visual style support
              */
@@ -674,6 +715,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             }
             if(hPenOld)
                 SelectObject(hdc, hPenOld);
+
             /*
              * finally, bitblt the contents of the memory dc to the real dc
              */
@@ -776,9 +818,9 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 1));
             SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETRANGE, 0, MAKELONG(10, 1));
             SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, (LPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
-            SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETPOS, 0, (LPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3));
+            SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETPOS, 0, (LPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 4));
             SetDlgItemInt(hwndDlg, IDC_TABPADDING, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3), FALSE);;
-            SetDlgItemInt(hwndDlg, IDC_HTABPADDING, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3), FALSE);;
+            SetDlgItemInt(hwndDlg, IDC_HTABPADDING, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 4), FALSE);;
             ShowWindow(hwndDlg, SW_SHOWNORMAL);
             return TRUE;
         }
