@@ -351,13 +351,13 @@
 #define SSI_ITEM_IGNORE             0x000e  // Ignore list record.
 #define SSI_ITEM_NONICQ             0x0010  // Non-ICQ contact (to send SMS). Name: 1#EXT, 2#EXT, etc
 #define SSI_ITEM_UNKNOWN2           0x0011  // Unknown.
-#define SSI_ITEM_IMPORT             0x0013  // Item that contain roster import time (name: "Import time")
+#define SSI_ITEM_IMPORTTIME         0x0013  // Item that contain roster import time (name: "Import time")
 #define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
 
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x00030501
+#define ICQ_PLUG_VERSION            0x00030502
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
