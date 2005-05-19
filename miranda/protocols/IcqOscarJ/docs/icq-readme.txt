@@ -32,6 +32,13 @@ ______________
 Changes
 _______
 
+0.3.5.2
+
+Bugfixes:
+  Error checking on offline messages was not working
+  Now correctly handles "import time" item (should solve some auth issues)
+
+
 0.3.5.1
 
 Bugfixes:
