@@ -222,6 +222,7 @@
 #define IDC_PADSPIN                     1179
 #define IDC_HTABPADDING                 1179
 #define IDC_SHORTCAPTION                1180
+#define IDC_BOTTOMTABADJUST             1180
 #define IDC_POPUPCONTAINER              1181
 #define IDC_CHECK2                      1182
 #define IDC_PRIVATESPLITTER             1182
@@ -307,6 +308,8 @@
 #define IDC_CLISTMODE                   1257
 #define IDC_TABBORDERSPINOUTER          1258
 #define IDC_ALWAYSPOPUPSINACTIVE        1259
+#define IDC_TABBORDERSPINOUTER2         1259
+#define IDC_BOTTOMTABADJUSTSPIN         1259
 #define IDC_HISTORYSIZE                 1260
 #define IDC_HISTORYSIZESPIN             1261
 #define IDC_HOTKEYSAREGLOBAL            1262
@@ -432,6 +435,8 @@
 #define IDC_BKGCLRNORMAL                1386
 #define IDC_BKGCLRACTIVE                1387
 #define IDC_BKGCLRUNREAD                1388
+#define IDC_TXTCLRHOTTRACK              1389
+#define IDC_BKGCOLORHOTTRACK            1390
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027

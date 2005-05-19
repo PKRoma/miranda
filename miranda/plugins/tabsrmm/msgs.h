@@ -170,6 +170,7 @@ struct ProtocolData {
 #define EM_SUBCLASSED             (WM_USER+0x101)
 #define EM_UNSUBCLASSED           (WM_USER+0x102)
 #define EM_SEARCHSCROLLER         (WM_USER+0x103)
+#define EM_VALIDATEBOTTOM         (WM_USER+0x104)
 
 #define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)

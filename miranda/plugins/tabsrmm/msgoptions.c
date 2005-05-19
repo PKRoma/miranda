@@ -741,14 +741,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             CheckDlgButton(hwndDlg, IDC_FLATMSGLOG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0));
             CheckDlgButton(hwndDlg, IDC_CHECKICONDLL, DBGetContactSettingByte(NULL, SRMSGMOD_T, "v_check", 1));
             
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0));
-            SetDlgItemInt(hwndDlg, IDC_TABBORDER, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0), FALSE);;
-
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(10, 0));
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2));
-            SetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2), FALSE);;
-            
             SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETRANGE, 0, MAKELONG(255, 5));
             SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 0));
             SetDlgItemInt(hwndDlg, IDC_HISTORYSIZE, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 10), FALSE);
@@ -817,8 +809,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "al", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOLOCALE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nlflat", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATBUTTONS));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCREATECONTAINER));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDER, &translated, FALSE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE) GetDlgItemInt(hwndDlg, IDC_HISTORYSIZE, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "escmode", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ESC_MINIMIZE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeymodifier", (BYTE) SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_GETCURSEL, 0, 0));

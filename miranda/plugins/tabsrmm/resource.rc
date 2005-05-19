@@ -439,17 +439,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,20,136,12
     CONTROL         "Warn on close message tab",IDC_WARNONCLOSE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,33,139,10
-    LTEXT           "Tab control margins:",IDC_STATIC,7,45,133,11
-    RTEXT           "inner",IDC_STATIC,148,45,28,11
-    EDITTEXT        IDC_TABBORDER,183,42,28,13,ES_AUTOHSCROLL
-    CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,210,41,11,
-                    13
-    RTEXT           "outer",IDC_STATIC,220,45,30,11
-    EDITTEXT        IDC_TABBORDEROUTER,260,42,28,13,ES_AUTOHSCROLL
-    CONTROL         "",IDC_TABBORDERSPINOUTER,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,287,42,11,13
     GROUPBOX        "Create tabs and containers",IDC_STATIC,0,59,303,62
     CONTROL         "Automatically pop up the window/tab when a message is received",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,70,
@@ -1159,55 +1148,83 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 // Dialog
 //
 
-IDD_TABCONFIG DIALOGEX 0, 0, 262, 217
+IDD_TABCONFIG DIALOGEX 0, 0, 327, 254
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,158,203,50,14
-    PUSHBUTTON      "Abbrechen",IDCANCEL,212,203,50,14
-    GROUPBOX        "Tab label colors",IDC_STATIC,5,7,252,57
-    LTEXT           "Normal tabs",IDC_STATIC,14,21,108,13
-    LTEXT           "Selected (active) tab",IDC_STATIC,14,33,108,13
-    LTEXT           "Unread tabs",IDC_STATIC,14,46,108,13
-    CONTROL         "",IDC_TXTCLRNORMAL,"ColourPicker",WS_TABSTOP,220,17,24,
+    DEFPUSHBUTTON   "OK",IDOK,211,238,50,14
+    PUSHBUTTON      "Abbrechen",IDCANCEL,272,238,50,14
+    GROUPBOX        "Tab label colors",IDC_STATIC,6,7,157,68
+    LTEXT           "Normal",IDC_STATIC,14,17,77,13
+    LTEXT           "Selected",IDC_STATIC,14,31,77,13
+    LTEXT           "Unread",IDC_STATIC,14,44,77,13
+    CONTROL         "",IDC_TXTCLRNORMAL,"ColourPicker",WS_TABSTOP,121,15,24,
                     13
-    CONTROL         "",IDC_TXTCLRACTIVE,"ColourPicker",WS_TABSTOP,220,31,24,
+    CONTROL         "",IDC_TXTCLRACTIVE,"ColourPicker",WS_TABSTOP,121,28,24,
                     13
-    CONTROL         "",IDC_TXTCLRUNREAD,"ColourPicker",WS_TABSTOP,220,44,24,
+    CONTROL         "",IDC_TXTCLRUNREAD,"ColourPicker",WS_TABSTOP,121,42,24,
                     13
-    GROUPBOX        "Tab background colors",IDC_STATIC,5,65,252,70
-    LTEXT           "Normal tabs",IDC_STATIC,14,94,108,13
-    LTEXT           "Selected (active) tab",IDC_STATIC,13,107,108,13
-    LTEXT           "Unread tabs",IDC_STATIC,14,121,108,13
-    CONTROL         "",IDC_BKGCLRNORMAL,"ColourPicker",WS_TABSTOP,220,90,24,
+    GROUPBOX        "Tab background colors",IDC_STATIC,165,7,157,68
+    LTEXT           "Normal",IDC_STATIC,175,17,84,13
+    LTEXT           "Selected",IDC_STATIC,174,30,84,13
+    LTEXT           "Unread",IDC_STATIC,175,44,84,13
+    CONTROL         "",IDC_BKGCLRNORMAL,"ColourPicker",WS_TABSTOP,282,14,24,
                     13
-    CONTROL         "",IDC_BKGCLRACTIVE,"ColourPicker",WS_TABSTOP,220,104,24,
+    CONTROL         "",IDC_BKGCLRACTIVE,"ColourPicker",WS_TABSTOP,282,28,24,
                     13
-    CONTROL         "",IDC_BKGCLRUNREAD,"ColourPicker",WS_TABSTOP,220,118,24,
+    CONTROL         "",IDC_BKGCLRUNREAD,"ColourPicker",WS_TABSTOP,282,42,24,
                     13
     LTEXT           "NOTE: Background colors will only work with FLAT (button-style) tabs.",
-                    IDC_STATIC,13,75,229,15
-    GROUPBOX        "Other options",IDC_STATIC,5,139,252,59
+                    IDC_STATIC,13,77,298,14
+    GROUPBOX        "Other options",IDC_STATIC,5,90,317,146
     CONTROL         "Flash icon",IDC_FLASHICON,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,152,108,9
+                    WS_TABSTOP,13,99,108,9
     CONTROL         "Flash tab label",IDC_FLASHLABEL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,164,108,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,111,108,9
     CONTROL         "Disable visual styles",IDC_NOSKINNING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,139,152,108,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,139,98,108,9
     CONTROL         "Flat tabs",IDC_FLATTABS2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,139,163,110,12
-    LTEXT           "Tab padding vertical",IDC_STATIC,14,182,71,10
-    EDITTEXT        IDC_TABPADDING,93,180,28,13,ES_AUTOHSCROLL
+                    WS_TABSTOP,139,109,110,12
+    LTEXT           "Tab padding vertical",IDC_STATIC,14,131,71,10
+    EDITTEXT        IDC_TABPADDING,164,127,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,117,180,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,189,127,
                     11,13
-    EDITTEXT        IDC_HTABPADDING,205,180,28,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_HTABPADDING,267,127,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,231,180,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,293,127,
                     11,13
-    LTEXT           "horizontal",IDC_STATIC,151,182,47,10
+    LTEXT           "horizontal",IDC_STATIC,214,130,44,10
+    LTEXT           "Tab control margins:",IDC_STATIC,14,149,98,11
+    RTEXT           "inner",IDC_STATIC,120,149,28,11
+    EDITTEXT        IDC_TABBORDER,164,147,28,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,191,146,
+                    11,13
+    LTEXT           "outer",IDC_STATIC,214,150,43,11
+    EDITTEXT        IDC_TABBORDEROUTER,267,147,28,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_TABBORDERSPINOUTER,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,294,147,11,13
+    LTEXT           "Padding is the additional space between the tab label or icon and the tab border.\nThe inner margin defines the spacing between the tab page and its contente while the outer margin defines the spacing between the tab page and the container window border.",
+                    IDC_STATIC,15,163,298,27
+    LTEXT           "NOTE: some settings will not affect open containers.",
+                    IDC_STATIC,16,224,224,10
+    CONTROL         "",IDC_TXTCLRHOTTRACK,"ColourPicker",WS_TABSTOP,121,56,
+                    24,13
+    LTEXT           "Hot Track (mouse over)",IDC_STATIC,15,58,77,13
+    LTEXT           "Hot Track (mouse over)",IDC_STATIC,176,58,77,13
+    CONTROL         "",IDC_BKGCOLORHOTTRACK,"ColourPicker",WS_TABSTOP,282,56,
+                    24,13
+    LTEXT           "Bottom tabs vertical adjust. Set this to adjust the vertical position of the active botto tab when using visual styles. Positive values shift the upwards, negative values downwards.",
+                    IDC_STATIC,16,190,217,33
+    EDITTEXT        IDC_BOTTOMTABADJUST,268,191,28,13,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "",IDC_BOTTOMTABADJUSTSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,295,191,11,13
 END
 
 
@@ -1221,8 +1238,9 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_TABCONFIG, DIALOG
     BEGIN
+        RIGHTMARGIN, 322
         TOPMARGIN, 7
-        BOTTOMMARGIN, 199
+        BOTTOMMARGIN, 253
     END
 END
 #endif    // APSTUDIO_INVOKED

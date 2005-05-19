@@ -286,9 +286,10 @@ struct myTabCtrl {
     DWORD dwStyle;
     DWORD cx, cy;
     HFONT m_hMenuFont;
-    COLORREF colors[8];
+    COLORREF colors[10];
     HANDLE hTheme;
-    HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread;
+    HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
+    int m_bottomAdjust;
 };
 
 typedef struct _globals {

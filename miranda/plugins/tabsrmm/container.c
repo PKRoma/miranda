@@ -1107,6 +1107,7 @@ panel_found:
                             if(!IsIconic(hwndDlg))
                                 SetFocus(pContainer->hwndActive);
                         }
+                        SendMessage(hwndTab, EM_VALIDATEBOTTOM, 0, 0);
                         break;
                     }
                         /*
