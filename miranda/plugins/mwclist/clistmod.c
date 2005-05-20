@@ -164,8 +164,11 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 		DWORD caps;
 		caps=(DWORD)CallProtoService(ack->szModule,PS_GETCAPS,PFLAGNUM_1,0);
 		if(caps&PF1_SERVERCLIST) {
-			HANDLE hContact;
+			HANDLE hContact;			
 			char *szProto;
+			int i=GetTickCount();
+			
+			OutputDebugString("Deleting toDelete Contacts\r\n");
 
 			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 			while(hContact) {
@@ -177,6 +180,11 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 					if(DBGetContactSettingByte(hContact,"CList","Delete",0))
 						CallService(MS_DB_CONTACT_DELETE,(WPARAM)hContact,0);
 				hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+			}
+			{
+			char buf[256];
+				sprintf(buf,"Deleting toDelete Contacts Done \t %d\r\n",GetTickCount()-i);
+				OutputDebugString(buf);
 			}
 		}
 	}

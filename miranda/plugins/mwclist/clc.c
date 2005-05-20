@@ -681,7 +681,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				}
 			}
 
-			InvalidateRect(hwnd,NULL,FALSE);
+			InvalidateRect(hwnd,NULL,TRUE);
 			
 			SortClcByTimer(hwnd);
 			RecalcScrollBar(hwnd,dat);

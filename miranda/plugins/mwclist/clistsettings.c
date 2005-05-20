@@ -659,8 +659,17 @@ __try
 				};
 				*/
 
-				if (!strcmp(cws->szSetting, "Status")) {				
+				if (cws->value.type==DBVT_WORD&&!strcmp(cws->szSetting, "Status")) {				
 				if (!(pdnce->Hidden==1)) {
+						
+						if (((int)cws->value.wVal ==ID_STATUS_OFFLINE))
+						{
+							if(DBGetContactSettingByte((HANDLE)NULL,"CList","ShowStatusMsg",0)||DBGetContactSettingByte((HANDLE)wParam,"CList","StatusMsgAuto",0))
+									DBWriteContactSettingString((HANDLE)wParam, "CList", "StatusMsg", (char *)"");	
+						}
+					
+					
+					
 					if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT))	{
 						// User's state is changing, and we are hideOffline-ing
 						
