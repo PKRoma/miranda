@@ -1081,6 +1081,8 @@ System-Tray Symbol anzeigen
 Floater ist sichtbar
 [Show the Floater]
 Floater ist sichtbar
+[When floater is enabled, only show it while the contact list is minimized]
+Floater nur sichtbar, w‰hrend die Kontaktliste minimiert ist.
 [Show session list menu on the message windows status bar]
 Zeige die Liste aktiver Sitzungen in der Statuszeile des Nachrichtenfensters
 [Minimize containers to system tray or floater]
@@ -1165,3 +1167,43 @@ Verlauf einfrieren
 Verlaufsaktualisierung gestoppt
 [Message Log is frozen (%d queued)]
 Verlaufsaktualisierung gestoppt (%d ungelesene)
+;
+; tab appearance
+;
+[Configure Tab Appearance...]
+Aussehen der Tabs...
+[Tab label colors]
+Textfarben
+[Tab background colors]
+Hintergrundfarben
+[Selected]
+Aktiv
+[Unread]
+Ungelesen
+[Hot Track (mouse over)]
+Unter dem Mauszeiger
+[NOTE: Background colors will only work with FLAT (button-style) tabs.]
+HINWEIS: Hintergrundfarben funktionieren nur mit "flachen" tabs.
+[Other options]
+Diverse Einstellungen
+[Flash icon]
+Symbol blinkt
+[Flash label]
+Textlabel blinkt
+[Disable visual styles]
+Keine visual styles verwenden
+[Flat tabs]
+Flache tabs (Schaltfl‰chen)
+[Tab padding vertical]
+Vertikaler Randabstand
+[Tab control margins]
+R‰nder
+[inner]
+innen
+[outer]
+auﬂen
+[NOTE: some settings will not affect open containers.]
+HINWEIS: Einige Einstellungen haben keine Wirkung auf bereits offene Fenster
+[Configure tab appearance]
+Aussehen der tabs festlegen
+

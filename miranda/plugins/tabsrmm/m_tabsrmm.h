@@ -291,6 +291,7 @@ struct myTabCtrl {
     HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
     int m_bottomAdjust;
     BYTE m_xpad;
+    DWORD m_fixedwidth;
 };
 
 typedef struct _globals {
@@ -396,12 +397,12 @@ struct StreamJob {
  */
 
 #define TCF_FLAT 1
-#define TCF_BOTTOMALWAYSFLAT 2
+#define TCF_SINGLEAUTOADJUST 2
 #define TCF_NOSKINNING 4
 #define TCF_FLASHICON 8
 #define TCF_FLASHLABEL 16
 
-#define TCF_DEFAULT (TCF_BOTTOMALWAYSFLAT | TCF_FLASHICON)
+#define TCF_DEFAULT (TCF_SINGLEAUTOADJUST | TCF_FLASHICON)
 
 //Checks if there is a message window opened
 //wParam=(LPARAM)(HANDLE)hContact  - handle of the contact for which the window is searched. ignored if lParam

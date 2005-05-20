@@ -1579,7 +1579,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
 #else
                         item.pszText = newtitle;
-                        strncpy(dat->newtitle, newtitle, sizeof(dat->newtitle);
+                        strncpy(dat->newtitle, newtitle, sizeof(dat->newtitle));
                         dat->newtitle[127] = 0;
                         item.cchTextMax = 127;;
 #endif

@@ -48,6 +48,7 @@ HANDLE (PASCAL* pfnOpenThemeData)(HWND hwnd, LPCWSTR pszClassList) = 0;
 UINT (PASCAL* pfnDrawThemeBackground)(HANDLE htheme, HDC hdc, int iPartID, int iStateID, RECT* prcBx, RECT* prcClip) = 0;
 UINT (PASCAL* pfnCloseThemeData)(HANDLE hTheme) = 0;
 HRESULT (PASCAL* pfnGetThemeBackgroundRegion)(HANDLE hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, HRGN *pRegion) = 0;
+BOOL (PASCAL* pfnIsThemeBackgroundPartiallyTransparent)(HANDLE hTheme, int iPartId, int iStateId) = 0;
 
 int InitVSApi()
 {
@@ -59,6 +60,7 @@ int InitVSApi()
     pfnDrawThemeBackground = GetProcAddress(hUxTheme, "DrawThemeBackground");
     pfnCloseThemeData = GetProcAddress(hUxTheme, "CloseThemeData");
     pfnGetThemeBackgroundRegion = GetProcAddress(hUxTheme, "GetThemeBackgroundRegion");
+    pfnIsThemeBackgroundPartiallyTransparent = GetProcAddress(hUxTheme, "IsThemeBackgroundPartiallyTransparent");
     if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0) {
         return 1;
     }
@@ -168,13 +170,11 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
 {
     TCITEM item = {0};
     struct MessageWindowData *dat = 0;
-    DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER | DT_NOCLIP;
+    DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER;
     item.mask = TCIF_PARAM;
     TabCtrl_GetItem(tabdat->hwnd, nItem, &item);
-
-    if (nHint & HINT_CUT)
-        dwTextFlags &= ~DT_NOCLIP;
-    
+    if(!(tabdat->dwStyle & TCS_MULTILINE) && myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST)
+        dwTextFlags |= DT_CENTER;
     /*
      * get the message window data for the session to which this tab item belongs
      */
@@ -186,7 +186,7 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         HBRUSH bg;
         HFONT oldFont;
         DWORD dwStyle = tabdat->dwStyle;
-        BOOL bFill = (dwStyle & TCS_BUTTONS) || ((dwStyle & TCS_BOTTOM) && (!(tabdat->m_skinning) || myGlobals.m_TabAppearance & TCF_NOSKINNING));
+        BOOL bFill = (dwStyle & TCS_BUTTONS);
         int oldMode = 0;
         InflateRect(rcItem, -1, -1);
         
@@ -233,6 +233,10 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
             oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
             if(nHint & HINT_CUT)
                 rcItem->right -= 1;
+            if(!(tabdat->dwStyle & TCS_MULTILINE) && myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST) {
+                rcItem->right -= tabdat->m_xpad;
+                dwTextFlags |= DT_WORD_ELLIPSIS;
+            }
             DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, dwTextFlags);
             SelectObject(dc, oldFont);
         }
@@ -248,62 +252,106 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
 void DrawItemRect(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint)
 {
     POINT pt;
+    DWORD dwStyle = tabdat->dwStyle;
+    int rows = TabCtrl_GetRowCount(tabdat->hwnd);
     
     rcItem->bottom -= 1;
-	if(rcItem->left > 0) {
+	if(rcItem->left >= 0) {
 		BOOL bDoNotCut = TRUE;
 
-        if((tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM)) {
+        /*
+         * draw "button style" tabs... raised edge for hottracked, sunken edge for active (pushed)
+         * otherwise, they get a normal border
+         */
+        
+        if(dwStyle & TCS_BUTTONS) {
             // draw frame controls for button or bottom tabs
-            if(tabdat->dwStyle & TCS_BOTTOM) {
-                OffsetRect(rcItem, 0, 1);
-                if(!(tabdat->dwStyle & TCS_BUTTONS))
-                    InflateRect(rcItem, -1, 0);
+            if(dwStyle & TCS_BOTTOM) {
+                rcItem->top++;
             }
-            DrawFrameControl(dc, rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | (nHint & HINT_ACTIVE_ITEM ? DFCS_MONO : DFCS_FLAT));
+            else
+                rcItem->bottom--;
+            
+            rcItem->right += (rows == 1 ? 3 : 0);
+            if(nHint & HINT_ACTIVE_ITEM)
+                DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
+            else if(nHint & HINT_HOTTRACK)
+                DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
+            else
+                DrawEdge(dc, rcItem, EDGE_BUMP, BF_RECT | BF_MONO | BF_SOFT);
             return;
         }
         SelectObject(dc, myGlobals.tabConfig.m_hPenLight);
 		
 		if(nHint & HINT_ACTIVE_ITEM) {
-            MoveToEx(dc, rcItem->left, rcItem->bottom + 1, &pt);
-            rcItem->top--;
+            if(dwStyle & TCS_BOTTOM) {
+                FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+                rcItem->bottom +=2;
+            }
+            else {
+                rcItem->bottom += 2;
+                FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+                rcItem->bottom--;
+                rcItem->top -=2;
+            }
         }
-		else
-			MoveToEx(dc, rcItem->left, rcItem->bottom, &pt);
-		
-		LineTo(dc, rcItem->left, rcItem->top + 2);
-		LineTo(dc, rcItem->left + 2, rcItem->top);
+        if(dwStyle & TCS_BOTTOM) {
+            rcItem->top++;
+            MoveToEx(dc, rcItem->left, rcItem->top, &pt);
+            LineTo(dc, rcItem->left, rcItem->bottom - 2);
+            LineTo(dc, rcItem->left + 2, rcItem->bottom);
 
-        if(nHint & HINT_CUT) {
-			LineTo(dc, rcItem->right, rcItem->top);
-			bDoNotCut = FALSE;
-		}
-		else
-			LineTo(dc, rcItem->right - 2, rcItem->top);
-		
-		if(!nHint)
-			SelectObject(dc, myGlobals.tabConfig.m_hPenItemShadow);
-		else {
-			if(nHint & HINT_ACTIVATE_RIGHT_SIDE)
-				SelectObject(dc, myGlobals.tabConfig.m_hPenShadow);
-		}
-		if(bDoNotCut) {
-			if(nHint & HINT_ACTIVE_ITEM) {
-				LineTo(dc, rcItem->right, rcItem->top + 2);
-				LineTo(dc, rcItem->right, rcItem->bottom + 2);
-			}
-			else {
-				LineTo(dc, rcItem->right, rcItem->top + 2);
-				LineTo(dc, rcItem->right, rcItem->bottom + 1);
-			}
-		}
-		else {
-			if(nHint & HINT_ACTIVE_ITEM) 
-				LineTo(dc, rcItem->right + 2, rcItem->bottom + 2);
-			else
-				LineTo(dc, rcItem->right + 2, rcItem->bottom + 1);
-		}
+            if(nHint & HINT_CUT) {
+                LineTo(dc, rcItem->right, rcItem->bottom);
+                bDoNotCut = FALSE;
+            }
+            else
+                LineTo(dc, rcItem->right - 2, rcItem->bottom);
+
+            SelectObject(dc, myGlobals.tabConfig.m_hPenItemShadow);
+            
+            if(bDoNotCut) {
+                MoveToEx(dc, rcItem->right - 2, rcItem->bottom - 1, &pt);
+                LineTo(dc, rcItem->right - 2, rcItem->top - 1);
+                SelectObject(dc, myGlobals.tabConfig.m_hPenShadow);
+                MoveToEx(dc, rcItem->right - 1, rcItem->bottom - 2, &pt);
+                LineTo(dc, rcItem->right - 1, rcItem->top - 1);
+            }
+            else {
+                if(nHint & HINT_ACTIVE_ITEM) 
+                    LineTo(dc, rcItem->right + 2, rcItem->top - 2);
+                else
+                    LineTo(dc, rcItem->right + 2, rcItem->top - 1);
+            }
+        }
+        else {
+            MoveToEx(dc, rcItem->left, rcItem->bottom, &pt);
+            LineTo(dc, rcItem->left, rcItem->top + 2);
+            LineTo(dc, rcItem->left + 2, rcItem->top);
+
+            if(nHint & HINT_CUT) {
+                LineTo(dc, rcItem->right, rcItem->top);
+                bDoNotCut = FALSE;
+            }
+            else
+                LineTo(dc, rcItem->right - 2, rcItem->top);
+
+            SelectObject(dc, myGlobals.tabConfig.m_hPenItemShadow);
+
+            if(bDoNotCut) {
+                MoveToEx(dc, rcItem->right - 2, rcItem->top + 1, &pt);
+                LineTo(dc, rcItem->right - 2, rcItem->bottom + 1);
+                SelectObject(dc, myGlobals.tabConfig.m_hPenShadow);
+                MoveToEx(dc, rcItem->right - 1, rcItem->top + 2, &pt);
+                LineTo(dc, rcItem->right - 1, rcItem->bottom + 1);
+            }
+            else {
+                if(nHint & HINT_ACTIVE_ITEM) 
+                    LineTo(dc, rcItem->right + 2, rcItem->bottom + 2);
+                else
+                    LineTo(dc, rcItem->right + 2, rcItem->bottom + 1);
+            }
+        }
 	}
 }
 
@@ -322,15 +370,12 @@ int DWordAlign(int n)
 HRESULT DrawThemesPart(struct myTabCtrl *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
 {
     HRESULT hResult;
-    HRGN rgn;
     
     if(pfnDrawThemeBackground == NULL)
         return 0;
     
-    if(tabdat->hTheme != 0) {
+    if(tabdat->hTheme != 0)
         hResult = pfnDrawThemeBackground(tabdat->hTheme, hDC, iPartId, iStateId, prcBox, NULL);
-        //DeleteObject(rgn);
-    }
 	return hResult;
 }
 
@@ -374,9 +419,12 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));
     if(bBody) 
         DrawThemesPart(tabdat, dcMem, 9, 0, &rcMem);	// TABP_PANE=9,  0, 'TAB'
-    else {
-        pfnGetThemeBackgroundRegion(tabdat->hTheme, pDC, 1, bSel ? 3 : (bHot ? 2 : 1), rcItem, &rgn);
-        DrawThemesPart(tabdat, dcMem, 1, bSel ? 3 : (bHot ? 2 : 1), &rcMem);
+    else {                  /* for tabs with transparent parts, we need to get the clipping region for the non-transparent part to "mask out" the
+                               *maybe* transparent borders to avoid overdrawing neighbour elements */
+        int iStateId = bSel ? 3 : (bHot ? 2 : 1);
+        if(pfnIsThemeBackgroundPartiallyTransparent(tabdat->hTheme, 1, iStateId))
+            pfnGetThemeBackgroundRegion(tabdat->hTheme, pDC, 1, iStateId, rcItem, &rgn);
+        DrawThemesPart(tabdat, dcMem, 1, iStateId, &rcMem);
     }
 																// TABP_TABITEM=1, TIS_SELECTED=3:TIS_HOT=2:TIS_NORMAL=1, 'TAB'
 	// 2nd init some extra parameters
@@ -410,6 +458,10 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
 	if(pcImg)
         free(pcImg);
     
+    /*
+     * set the clipping region, if we previously created it
+     * BitBlt() performs clipping on the destination dc only.
+     */
     if(rgn)
         SelectClipRgn(pDC, rgn);
     BitBlt(pDC, rcItem->left, rcItem->top, szBmp.cx, szBmp.cy, dcMem, 0, 0, SRCCOPY);
@@ -419,6 +471,8 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     DeleteObject(bmpMem);
     DeleteDC(dcMem);
 }
+
+#define FIXED_TAB_SIZE 100
 
 BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -439,7 +493,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             tabdat->cy = GetSystemMetrics(SM_CYSMICON);
 
             tabdat->m_skinning = FALSE;
-            if(IsWinVerXPPlus()) {
+            if(IsWinVerXPPlus() && myGlobals.m_VSApiEnabled != 0) {
                 if(pfnIsThemeActive != 0)
                     if(pfnIsThemeActive()) {
                         tabdat->m_skinning = TRUE;
@@ -450,11 +504,12 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     }
             }
             tabdat->m_xpad = DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 4);
+            tabdat->m_fixedwidth = DBGetContactSettingDword(NULL, SRMSGMOD_T, "fixedtabs", FIXED_TAB_SIZE);
             return 0;
         }
         case WM_THEMECHANGED:
             tabdat->m_skinning = FALSE;
-            if(IsWinVerXPPlus()) {
+            if(IsWinVerXPPlus() && myGlobals.m_VSApiEnabled != 0) {
                 if(pfnIsThemeActive != 0)
                     if(pfnIsThemeActive()) {
                         tabdat->m_skinning = TRUE;
@@ -480,6 +535,10 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
             if(tabdat->m_hwndSpin == 0) {
                 if((hwndChild = FindWindowEx(hwnd, 0, _T("msctls_updown32"), NULL)) != 0) {
+                    if(myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST && !(tabdat->dwStyle & TCS_MULTILINE)) {
+                        DestroyWindow(hwndChild);
+                        return 0;
+                    }
                     GetWindowRect(hwndChild, &tabdat->m_rectUpDn);
 
                     //subclass the updown spinner control
@@ -503,11 +562,31 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case WM_HSCROLL:
         {
             BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
+            if(!(tabdat->dwStyle & TCS_MULTILINE) && myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST) {
+                ShowWindow(tabdat->m_hwndSpin, SW_HIDE);
+                return 0;
+            }
             if((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && myGlobals.tabConfig.m_bottomAdjust != 0) {
                 InvalidateRect(hwnd, NULL, FALSE);
             }
             break;
         }
+        case TCM_INSERTITEM:
+        case TCM_DELETEITEM:
+            if(!(tabdat->dwStyle & TCS_MULTILINE) && myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST) {
+                LRESULT result;
+                RECT rc;
+                if(TabCtrl_GetItemCount(hwnd) >= 1 && msg == TCM_INSERTITEM) {
+                    TabCtrl_GetItemRect(hwnd, 0, &rc);
+                    TabCtrl_SetItemSize(hwnd, 10, rc.bottom - rc.top);
+                }
+                result = CallWindowProc(OldTabControlProc, hwnd, msg, wParam, lParam);
+                TabCtrl_GetItemRect(hwnd, 0, &rc);
+                SendMessage(hwnd, EM_SEARCHSCROLLER, 0, 0);
+                SendMessage(hwnd, WM_SIZE, 0, 0);
+                return result;
+            }
+            break;
         case WM_DESTROY:
         case EM_UNSUBCLASSED:
             if(tabdat) {
@@ -528,7 +607,26 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         }
         case WM_SIZE:
         {
+            if(!(tabdat->dwStyle & TCS_MULTILINE) && myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST) {
+                RECT rcClient, rc;
+                int newItemSize;
+                int iTabs = TabCtrl_GetItemCount(hwnd);
+                if(iTabs > 1) {
+                    GetClientRect(hwnd, &rcClient);
+                    TabCtrl_GetItemRect(hwnd, iTabs - 1, &rc);
+                    newItemSize = (rcClient.right - rcClient.left) - 6 - (tabdat->dwStyle & TCS_BUTTONS ? (iTabs - 1) * 12 : 0);
+                    //_DebugPopup(0, "width: %d, is: %d", rcClient.right - rcClient.left, newItemSize);
+                    newItemSize = newItemSize / iTabs;
+                    if(newItemSize < tabdat->m_fixedwidth) {
+                        TabCtrl_SetItemSize(hwnd, newItemSize, rc.bottom - rc.top);
+                    }
+                    else {
+                        TabCtrl_SetItemSize(hwnd, tabdat->m_fixedwidth, rc.bottom - rc.top);
+                    }
+                }
+            }
             if(tabdat->m_hwndSpin != 0) {
+                tabdat->m_rectUpDn.left = tabdat->m_rectUpDn.top = tabdat->m_rectUpDn.right = tabdat->m_rectUpDn.bottom = 0;
                 if(IsWindowVisible(tabdat->m_hwndSpin)) {
                     GetWindowRect(tabdat->m_hwndSpin, &tabdat->m_rectUpDn);
                     RectScreenToClient(hwnd, &tabdat->m_rectUpDn);
@@ -550,11 +648,12 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             TCITEM item = {0};
             int iActive, hotItem;
             POINT pt;
+            DWORD dwStyle = tabdat->dwStyle;
             HPEN hPenOld = 0;
             UINT uiFlags = 1;
             UINT uiBottom = 0;
             TCHITTESTINFO hti;
-            BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
+            BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (dwStyle & TCS_BUTTONS) || (dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
             HBITMAP bmpMem, bmpOld;
             DWORD cx, cy;
             
@@ -575,13 +674,27 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             bmpOld = SelectObject(hdc, bmpMem);
 
             FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
-            if(tabdat->dwStyle & TCS_BOTTOM) {
-                rctPage.bottom = rctActive.top;
-                uiBottom = 8;
+            if(dwStyle & TCS_BUTTONS) {
+                RECT rc1;
+                TabCtrl_GetItemRect(hwnd, nCount - 1, &rc1);
+                if(dwStyle & TCS_BOTTOM) {
+                    rctPage.bottom = rc1.top;
+                    uiBottom = 8;
+                }
+                else {
+                    rctPage.top = rc1.bottom;
+                    uiBottom = 0;
+                }
             }
             else {
-                rctPage.top = rctActive.bottom;
-                uiBottom = 0;
+                if(dwStyle & TCS_BOTTOM) {
+                    rctPage.bottom = rctActive.top;
+                    uiBottom = 8;
+                }
+                else {
+                    rctPage.top = rctActive.bottom;
+                    uiBottom = 0;
+                }
             }
             
             /*
@@ -594,6 +707,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
             }
 
+            hPenOld = SelectObject(hdc, myGlobals.tabConfig.m_hPenLight);
             /*
              * visual style support
              */
@@ -603,7 +717,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 
                 GetClipBox(hdc, &rcClip);
                 rcClient = rctPage;
-                if(tabdat->dwStyle & TCS_BOTTOM) {
+                if(dwStyle & TCS_BOTTOM) {
                     rcClient.bottom = rctPage.bottom;
                     uiFlags |= uiBottom;
                 }
@@ -612,48 +726,66 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat);	// TABP_PANE=9,0,'TAB'
             }
             else {
-                if(!(tabdat->dwStyle & TCS_BUTTONS) && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
-                    rectTemp = rctPage;
-                    hPenOld = SelectObject(hdc, myGlobals.tabConfig.m_hPenLight);
-
-                    MoveToEx(hdc, rectTemp.left, rectTemp.bottom +1, &pt);
-                    LineTo(hdc, rectTemp.left, rectTemp.top);
-
-                    if(tabdat->dwStyle & TCS_BOTTOM) {
-                        LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
-                        SelectObject(hdc, myGlobals.tabConfig.m_hPenShadow);
-                        LineTo(hdc, rectTemp.right - 1, rectTemp.bottom + 1);
-                        LineTo(hdc, rctActive.right - 2, rectTemp.bottom + 1);
-                        MoveToEx(hdc, rctActive.left + 2, rectTemp.bottom + 1, &pt);
-                        LineTo(hdc, rectTemp.left, rectTemp.bottom + 1);
-                    }
-                    else {
-                        if(rctActive.left >= 0) {
-                            LineTo(hdc, rctActive.left, rctActive.bottom);
-                            if(IsRectEmpty(&rectUpDn))
-                                MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
-                            else {
-                                if(rctActive.right >= rectUpDn.left)
-                                    MoveToEx(hdc, rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN + 2, rctActive.bottom + 1, &pt);
-                                else
-                                    MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
-                            }
-                            LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+                if(IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
+                    if(dwStyle & TCS_BUTTONS) {
+                        rectTemp = rctPage;
+                        if(dwStyle & TCS_BOTTOM) {
+                            rectTemp.top--;
+                            rectTemp.bottom--;
                         }
                         else {
-                            RECT rectItemLeftmost;
-                            UINT nItemLeftmost = FindLeftDownItem(hwnd);
-                            TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
-                            LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+                            rectTemp.bottom--;
+                            rectTemp.top++;
                         }
-                        SelectObject(hdc, myGlobals.tabConfig.m_hPenItemShadow);
-                        LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
-                        LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
-
+                        MoveToEx(hdc, rectTemp.left, rectTemp.bottom, &pt);
+                        LineTo(hdc, rectTemp.left, rectTemp.top + 1);
+                        LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
                         SelectObject(hdc, myGlobals.tabConfig.m_hPenShadow);
-                        MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom, &pt);
-                        LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
-                        LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);
+                        LineTo(hdc, rectTemp.right - 1, rectTemp.bottom);
+                        LineTo(hdc, rectTemp.left, rectTemp.bottom);
+                    }
+                    else {
+                        rectTemp = rctPage;
+
+                        MoveToEx(hdc, rectTemp.left, rectTemp.bottom +1, &pt);
+                        LineTo(hdc, rectTemp.left, rectTemp.top);
+
+                        if(dwStyle & TCS_BOTTOM) {
+                            LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
+                            SelectObject(hdc, myGlobals.tabConfig.m_hPenShadow);
+                            LineTo(hdc, rectTemp.right - 1, rectTemp.bottom + 1);
+                            LineTo(hdc, rctActive.right - 2, rectTemp.bottom + 1);
+                            MoveToEx(hdc, rctActive.left + 2, rectTemp.bottom + 1, &pt);
+                            LineTo(hdc, rectTemp.left, rectTemp.bottom + 1);
+                        }
+                        else {
+                            if(rctActive.left >= 0) {
+                                LineTo(hdc, rctActive.left, rctActive.bottom);
+                                if(IsRectEmpty(&rectUpDn))
+                                    MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
+                                else {
+                                    if(rctActive.right >= rectUpDn.left)
+                                        MoveToEx(hdc, rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN + 2, rctActive.bottom + 1, &pt);
+                                    else
+                                        MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
+                                }
+                                LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+                            }
+                            else {
+                                RECT rectItemLeftmost;
+                                UINT nItemLeftmost = FindLeftDownItem(hwnd);
+                                TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
+                                LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+                            }
+                            SelectObject(hdc, myGlobals.tabConfig.m_hPenItemShadow);
+                            LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
+                            LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
+
+                            SelectObject(hdc, myGlobals.tabConfig.m_hPenShadow);
+                            MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom, &pt);
+                            LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
+                            LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);
+                        }
                     }
                 }
             }
@@ -693,13 +825,13 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
              */
             if(!bClassicDraw && uiBottom)
                 rctActive.top -= myGlobals.tabConfig.m_bottomAdjust;
-            if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left > 0) {
+            if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left >= 0) {
                 int nHint = 0;
                 rcItem = rctActive;
                 //_DebugPopup(0, "active %d, %d, %d, %d", rcItem.left, rcItem.top, rcItem.right, rcItem.bottom);
                 if(!IsRectEmpty(&tabdat->m_rectUpDn) && rcItem.right >= tabdat->m_rectUpDn.left) {
                     nHint |= HINT_CUT;
-                    rcItem.right = tabdat->m_rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN;
+                    rcItem.right = tabdat->m_rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN - (dwStyle & TCS_BUTTONS ? 3 : 0);
                 }
                 if(!bClassicDraw) {
                     if(!uiBottom)
@@ -709,6 +841,14 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     DrawItem(tabdat, hdc, &rcItem, nHint | HINT_ACTIVE_ITEM, iActive);
                 }
                 else {
+                    if(!(dwStyle & TCS_BUTTONS)) {
+                        if(iActive == 0) {
+                            rcItem.right+=2;
+                            rcItem.left--;
+                        }
+                        else
+                            InflateRect(&rcItem, 2, 0);
+                    }
                     DrawItemRect(tabdat, hdc, &rcItem, HINT_ACTIVATE_RIGHT_SIDE|HINT_ACTIVE_ITEM | nHint);
                     DrawItem(tabdat, hdc, &rcItem, HINT_ACTIVE_ITEM | nHint, iActive);
                 }
@@ -790,13 +930,20 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", TCF_DEFAULT);
             int i = 0;
             COLORREF clr;
+
+            TranslateDialogDefault(hwndDlg);
             
             SetWindowTextA(hwndDlg, Translate("Configure tab appearance"));
             CheckDlgButton(hwndDlg, IDC_FLATTABS2, dwFlags & TCF_FLAT);
             CheckDlgButton(hwndDlg, IDC_FLASHICON, dwFlags & TCF_FLASHICON);
             CheckDlgButton(hwndDlg, IDC_FLASHLABEL, dwFlags & TCF_FLASHLABEL);
             CheckDlgButton(hwndDlg, IDC_NOSKINNING, dwFlags & TCF_NOSKINNING);
-
+            CheckDlgButton(hwndDlg, IDC_SINGLEROWAUTO, dwFlags & TCF_SINGLEAUTOADJUST);
+            
+            if(myGlobals.m_VSApiEnabled == 0) {
+                CheckDlgButton(hwndDlg, IDC_NOSKINNING, TRUE);
+                EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), FALSE);
+            }
             while(tabcolors[i].szKey != NULL) {
                 clr = (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
                 SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_SETCOLOUR, 0, (LPARAM)clr);
@@ -837,6 +984,7 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     DWORD dwFlags = (IsDlgButtonChecked(hwndDlg, IDC_FLATTABS2) ? TCF_FLAT : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_FLASHICON) ? TCF_FLASHICON : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_FLASHLABEL) ? TCF_FLASHLABEL : 0) |
+                                    (IsDlgButtonChecked(hwndDlg, IDC_SINGLEROWAUTO) ? TCF_SINGLEAUTOADJUST : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_NOSKINNING) ? TCF_NOSKINNING : 0);
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", dwFlags);
                     myGlobals.m_TabAppearance = dwFlags;

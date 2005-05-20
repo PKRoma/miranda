@@ -298,7 +298,7 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
     for (; *line; line++, textCharsCount++) {
         
         if(1) {
-            if(*line == '%' && line[1] != 0) {
+            if(*line == 127 && line[1] != 0) {
                 TCHAR code = line[2];
                 if(((code == '0' || code == '1') && line[3] == ' ') || (line[1] == 'c' && code == 'x')){
                     int begin = (code == '1');
@@ -392,7 +392,7 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
     for (i = *cbBufferEnd - charsDone; (*buffer)[i]; i++) {
 
         if(1) {
-            if((*buffer)[i] == '%' && (*buffer)[i + 1] != 0) {
+            if((*buffer)[i] == '' && (*buffer)[i + 1] != 0) {
                 char code = (*buffer)[i + 2];
                 char tag = (*buffer)[i + 1];
                 

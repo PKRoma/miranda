@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.95pre4 - 2005/05/18
+Version 0.9.9.95pre4 - 2005/05/20
 
         * docs updated (Popups.txt, readme.txt, README.ICONS)
         
@@ -46,6 +46,9 @@ Version 0.9.9.95pre4 - 2005/05/18
           properly. Also, it can be configured to act as a "button bar".
           Right click a tab and choose "Configure Tab Appearance" to set some
           options.
+          
+          In "classic mode" (visual styles not available or disabled), bottom tabs
+          will always look "flat" (like a switch bar).
           
         + added mousewheel-controlled tab switching. If you move the mousewheel while
           the pointer is over the tab bar area, it will switch tabs. Moving the wheel

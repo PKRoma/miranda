@@ -59,7 +59,8 @@ int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-int LoadTSButtonModule(void) {
+int LoadTSButtonModule(void) 
+{
 	WNDCLASSEXA wc;
 	
 	ZeroMemory(&wc, sizeof(wc));
@@ -317,9 +318,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 						DestroyWindow(hwndToolTips);
 						hwndToolTips = NULL;
 					}
-                    if(bct->hIconPrivate)
-                        DestroyIcon(bct->hIconPrivate);
 				}
+                if(bct->hIconPrivate)
+                    DestroyIcon(bct->hIconPrivate);
 				LeaveCriticalSection(&csTips);
                 DestroyTheme(bct);
 				free(bct);
@@ -396,7 +397,6 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
                     ImageList_RemoveAll(hImageList);
                     ImageList_Destroy(hImageList);
                     bct->hIcon = 0;
-                    _DebugPopup(0, "set private icon");
                 }
                 else {
                     bct->hIcon = (HICON)lParam;

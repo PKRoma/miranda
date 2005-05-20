@@ -302,10 +302,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 int i = 0;
                 
                 //SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_HREDRAW | CS_VREDRAW));
-                if(myGlobals.m_TabAppearance & TCF_FLAT) {
-                    SetWindowLong(hwndTab, GWL_STYLE, GetWindowLong(hwndTab, GWL_STYLE) | (TCS_BUTTONS | TCS_FLATBUTTONS));
-                    SendMessage(hwndTab, TCM_SETEXTENDEDSTYLE, TCS_EX_FLATSEPARATORS, 0);
-                }
+                if(myGlobals.m_TabAppearance & TCF_FLAT)
+                    SetWindowLong(hwndTab, GWL_STYLE, GetWindowLong(hwndTab, GWL_STYLE) | TCS_BUTTONS);
                 pContainer = (struct ContainerWindowData *) lParam;
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pContainer);
                 pContainer->iLastClick = 0xffffffff;
@@ -358,6 +356,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(pContainer->dwFlags & CNT_SINGLEROWTABCONTROL) {
                     ws &= ~TCS_MULTILINE;
                     ws |= TCS_SINGLELINE;
+                    if(myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST)
+                        ws |= TCS_FIXEDWIDTH;
                 }
                 else {
                     ws &= ~TCS_SINGLELINE;
@@ -2121,11 +2121,11 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 
         if(dwStyle & TCS_BUTTONS) {
             if(pContainer->dwFlags & CNT_TABSBOTTOM) {
-                int rows = TabCtrl_GetRowCount(hwndTab);
+                int nCount = TabCtrl_GetItemCount(hwndTab);
                 RECT rcItem;
-                TabCtrl_GetItemRect(hwndTab, 0, &rcItem);
-                rc->top = 0;
-                rc->bottom -= (rows * (rcItem.bottom - rcItem.top) + pContainer->statusBarHeight);
+                TabCtrl_GetItemRect(hwndTab, nCount - 1, &rcItem);
+                rc->top = pContainer->tBorder_outer;
+                rc->bottom = rcItem.top;
             }
             else {
                 rc->top += (dwTopPad - 2);;

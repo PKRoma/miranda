@@ -78,3 +78,8 @@ void ReloadTabConfig(), FreeTabConfig();
 void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
 
+// buttons
+
+int LoadTSButtonModule(void);
+int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
+

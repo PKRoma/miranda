@@ -54,8 +54,8 @@ extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 static WCHAR *w_bbcodes_begin[] = { L"[b]", L"[i]", L"[u]", L"[color=" };
 static WCHAR *w_bbcodes_end[] = { L"[/b]", L"[/i]", L"[/u]", L"[/color]" };
 
-static WCHAR *formatting_strings_begin[] = { L"%b1 ", L"%i1 ", L"%u1 ", L"%c1 " };
-static WCHAR *formatting_strings_end[] = { L"%b0 ", L"%i0 ", L"%u0 ", L"%c0 " };
+static WCHAR *formatting_strings_begin[] = { L"b1 ", L"i1 ", L"u1 ", L"c1 " };
+static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"c0 " };
 
 #define NR_CODES 4
 /*
@@ -108,9 +108,9 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
                     if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
                         closing = beginmark + 7 + wcslen(rtf_ctable[ii].szName);
                         message.erase(endmark, 4);
-                        message.replace(endmark, 4, L"%c0 ");
+                        message.replace(endmark, 4, L"c0 ");
                         message.erase(beginmark, (closing - beginmark));
-                        message.insert(beginmark, L"%cxxx ");
+                        message.insert(beginmark, L"cxxx ");
                         _snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 10 + ii);
                         message[beginmark + 3] = szTemp[0];
                         message[beginmark + 4] = szTemp[1];
@@ -187,8 +187,8 @@ static char *bbcodes_end[] = { "[/b]", "[/i]", "[/u]", "[/color]" };
 
 #define NR_CODES 4
 
-static char *formatting_strings_begin[] = { "%b1 ", "%i1 ", "%u1 " };
-static char *formatting_strings_end[] = { "%b0 ", "%i0 ", "%u0 " };
+static char *formatting_strings_begin[] = { "b1 ", "i1 ", "u1 ", "c1 " };
+static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "c0 " };
 
 /*
  * this translates formatting tags into rtf sequences...
@@ -238,9 +238,9 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
                     if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
                         closing = beginmark + 7 + strlen(rtf_ctable[ii].szName);
                         message.erase(endmark, 8);
-                        message.insert(endmark, "%c0xx ");
+                        message.insert(endmark, "c0xx ");
                         message.erase(beginmark, (closing - beginmark) + 1);
-                        message.insert(beginmark, "%cxxx ");
+                        message.insert(beginmark, "cxxx ");
                         _snprintf(szTemp, 4, "%02d", MSGDLGFONTCOUNT + 10 + ii);
                         message[beginmark + 3] = szTemp[0];
                         message[beginmark + 4] = szTemp[1];
