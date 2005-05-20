@@ -138,6 +138,7 @@ void __stdcall MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 LONG		__stdcall	MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
 char*		__stdcall	MirandaStatusToMSN( int status );
 int		__stdcall	MSNStatusToMiranda( const char* status );
+void     __stdcall   HtmlDecode( char* str );
 void		__stdcall	UrlDecode( char*str );
 void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );
 void		__stdcall	Utf8Decode( char* str, wchar_t** = NULL );

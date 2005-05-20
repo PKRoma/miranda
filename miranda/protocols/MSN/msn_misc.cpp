@@ -552,6 +552,29 @@ void __stdcall UrlDecode( char* str )
 	*d = 0;
 }
 
+void __stdcall HtmlDecode( char* str )
+{
+	char* p, *q;
+
+	if ( str == NULL )
+		return;
+
+	for ( p=q=str; *p!='\0'; p++,q++ ) {
+		if ( *p == '&' ) {
+			if ( !strncmp( p, "&amp;", 5 )) {	*q = '&'; p += 4; }
+			else if ( !strncmp( p, "&apos;", 6 )) { *q = '\''; p += 5; }
+			else if ( !strncmp( p, "&gt;", 4 )) { *q = '>'; p += 3; }
+			else if ( !strncmp( p, "&lt;", 4 )) { *q = '<'; p += 3; }
+			else if ( !strncmp( p, "&quot;", 6 )) { *q = '"'; p += 5; }
+			else { *q = *p;	}
+		}
+		else {
+			*q = *p;
+		}
+	}
+	*q = '\0';
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlEncode - converts printable characters into URL chars like %20
 

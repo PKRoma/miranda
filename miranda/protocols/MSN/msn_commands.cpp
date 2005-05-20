@@ -1519,12 +1519,8 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			char* dataBuf = ( char* )alloca( len+1 ), *p = dataBuf;
+			memcpy( dataBuf, HReadBuffer( info, 0 ).surelyRead( len ), len );
 			dataBuf[ len ] = 0;
-			while ( len > 0 ) {
-				int len2 = info->recv( p, len );
-				p += len2;
-				len -= len2;
-			}
          
          p = strstr( dataBuf, "<PSM>" );
 			if ( p ) {
@@ -1533,7 +1529,7 @@ LBL_InvalidCommand:
 				if ( p1 ) {
 					*p1 = 0;
 					if ( *p != 0 ) {
-						Utf8Decode( p );
+						HtmlDecode( p ); Utf8Decode( p ); 
 						DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
 					}
 					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );

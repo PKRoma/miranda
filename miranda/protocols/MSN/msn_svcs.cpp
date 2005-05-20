@@ -502,16 +502,27 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnGetAwayMsg - reads the current status message for a user
+
+static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
+{
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetCaps - obtain the protocol capabilities
 
 static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 {
 	switch( wParam ) {
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH |
+	{	int result = PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH |
 				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL |
 				 PF1_FILESEND | PF1_FILERECV | PF1_URLRECV | PF1_VISLIST;
-
+		if ( MyOptions.UseMSNP11 )
+			result |= PF1_MODEMSGSEND;
+		return result;
+	}
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND |
 				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH | PF2_INVISIBLE;
@@ -969,6 +980,14 @@ static int MsnSetAvatarUI( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnSetAwayMsg - sets the current status message for a user
+
+static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
+{
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 //	SetNickname - sets a nick name without UI
 
 static int MsnSetNickName( WPARAM wParam, LPARAM lParam )
@@ -1279,6 +1298,11 @@ int LoadMsnServices( void )
 	MSN_CreateProtoServiceFunction( PSS_MESSAGE,				MsnSendMessage );
 	MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,  MsnSetApparentMode );
 	MSN_CreateProtoServiceFunction( PSS_USERISTYPING,     MsnUserIsTyping );
+
+	if ( MyOptions.UseMSNP11 ) {
+		MSN_CreateProtoServiceFunction( PSS_GETAWAYMSG,		MsnGetAwayMsg );
+		MSN_CreateProtoServiceFunction( PS_SETAWAYMSG,		MsnSetAwayMsg );
+	}
 
 	MSN_CreateProtoServiceFunction( MSN_SET_AVATAR,			MsnSetAvatar );
 	MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,		MsnSetNickName );
