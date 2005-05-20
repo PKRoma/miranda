@@ -511,8 +511,8 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,DT_END_ELLIPSIS);
 			}
 
-			if (style&CLS_SHOWSTATUSMESSAGES)
-			{		
+			if (dat->style&CLS_SHOWSTATUSMESSAGES)
+			{							
 					// status message
 					if (group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG) {
 						char * szText = group->contact[group->scanIndex].szStatusMsg;
@@ -524,7 +524,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						ChangeToFont(hdcMem,dat,FONTID_STATUSMSG,&fontHeight);
 						//ExtTextOut(hdcMem,rc.left,rc.top,ETO_CLIPPED,&rc,szText,lstrlen(szText),NULL);
 						DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_SINGLELINE | DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
-					}
+					}		
 			}
 
 			if(selected) {

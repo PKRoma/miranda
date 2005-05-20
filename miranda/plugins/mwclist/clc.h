@@ -143,6 +143,7 @@ struct ClcData {
 	DWORD greyoutFlags;			  //see m_clc.h
 	DWORD offlineModes;
 	DWORD exStyle;
+	DWORD style;
 	POINT ptInfoTip;
 	int infoTipTimeout;
 	HANDLE hInfoTipItem;

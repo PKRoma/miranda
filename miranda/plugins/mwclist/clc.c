@@ -331,6 +331,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			{	int i;
 				for(i=0;i<=FONTID_MAX;i++) dat->fontInfo[i].changed=1;
 			}
+			dat->style=GetWindowLong(hwnd,GWL_STYLE);
 			dat->yScroll=0;
 			dat->selection=-1;
 			dat->iconXSpace=20;
@@ -657,9 +658,10 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		{	struct ClcContact *contact=NULL;
 			struct ClcGroup *group=NULL;
 			DBVARIANT dbv;
-			DWORD style=GetWindowLong(hwnd,GWL_STYLE);
+//			DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 
-			if (!(style&CLS_SHOWSTATUSMESSAGES)) break;
+			if (!(dat->style&CLS_SHOWSTATUSMESSAGES)) break;
+//			if (!(style&CLS_SHOWSTATUSMESSAGES)) break;
 			if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL) && contact!=NULL) {
 				contact->flags &= ~CONTACTF_STATUSMSG;
 				if (!DBGetContactSetting((HANDLE)wParam, "CList", "StatusMsg", &dbv)) {

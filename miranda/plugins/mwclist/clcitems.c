@@ -291,6 +291,23 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	lstrcpyn(group->contact[i].szText,cacheEntry->name,sizeof(group->contact[i].szText));
 	group->contact[i].proto = szProto;
 
+	if (dat->style&CLS_SHOWSTATUSMESSAGES)
+	{
+		if (!DBGetContactSetting(hContact, "CList", "StatusMsg", &dbv)) {
+			int j;
+			lstrcpyn(group->contact[i].szStatusMsg, dbv.pszVal, sizeof(group->contact[i].szStatusMsg));
+			for (j=strlen(group->contact[i].szStatusMsg)-1;j>=0;j--) {
+				if (group->contact[i].szStatusMsg[j]=='\r' || group->contact[i].szStatusMsg[j]=='\n' || group->contact[i].szStatusMsg[j]=='\t') {
+					group->contact[i].szStatusMsg[j] = ' ';
+				}
+			}
+			DBFreeVariant(&dbv);
+			if (strlen(group->contact[i].szStatusMsg)>0) {
+				group->contact[i].flags |= CONTACTF_STATUSMSG;
+			}
+		}	
+	}
+	/*
 	if (!DBGetContactSetting(hContact, "CList", "StatusMsg", &dbv)) {
 		int j;
 		lstrcpyn(group->contact[i].szStatusMsg, dbv.pszVal, sizeof(group->contact[i].szStatusMsg));
@@ -305,7 +322,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 		}
 	}
 
-	
+*/	
 	ClearRowByIndexCache();
 	return &(group->contact[i]);
 }
