@@ -737,6 +737,15 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 	return true;
 }
 
+static void sttSwapInt64( LONGLONG* parValue )
+{
+	BYTE* p = ( BYTE* )parValue;
+	for ( int i=0; i < 4; i++ ) {
+		BYTE temp = p[i];
+		p[i] = p[7-i];
+		p[7-i] = temp;
+}	}
+
 int MSN_HandleCommands( ThreadData* info, char* cmdString )
 {
 	char* params = "";
@@ -977,17 +986,52 @@ LBL_InvalidCommand:
 			strcpy( chalinfo, authChallengeInfo );
 			strcat( chalinfo, msnProtChallenge );
 
-			long challen = strlen( chalinfo );
-
 			//Digest it
-			DWORD dig[ 4 ];
+			DWORD md5hash[ 4 ];
 			MD5_CTX context;
 			MD5Init(&context);
-			MD5Update(&context, ( BYTE* )chalinfo, challen );
-			MD5Final(( BYTE* )dig, &context);
+			MD5Update(&context, ( BYTE* )chalinfo, strlen( chalinfo ));
+			MD5Final(( BYTE* )md5hash, &context);
 
-			info->sendPacket( "QRY", "%s 32\r\n%08x%08x%08x%08x", msnProductID,
-				htonl( dig[0] ), htonl( dig[1] ), htonl( dig[2] ), htonl( dig[3] ));   // response for the server
+			if ( MyOptions.UseMSNP11 ) {
+		      LONGLONG hash1 = *( LONGLONG* )&md5hash[0], hash2 = *( LONGLONG* )&md5hash[2];
+				size_t i;
+				for ( i=0; i < 4; i++ )
+					md5hash[i] &= 0x7FFFFFFF;
+
+				char chlString[128];
+				_snprintf( chlString, sizeof chlString, "%s%s00000000", authChallengeInfo, msnProductID );
+				chlString[ (strlen(authChallengeInfo)+strlen(msnProductID)+7) & 0xF8 ] = 0;
+
+				LONGLONG high=0, low=0, bskey=0;
+				int* chlStringArray = ( int* )chlString;
+				for ( i=0; i < strlen( chlString )/4; i += 2) {
+					LONGLONG temp = chlStringArray[i];
+
+					temp = (0x0E79A9C1 * temp) % 0x7FFFFFFF;
+					temp += high;
+					temp = md5hash[0] * temp + md5hash[1];
+					temp = temp % 0x7FFFFFFF;
+
+					high = chlStringArray[i + 1];
+					high = (high + temp) % 0x7FFFFFFF;
+					high = md5hash[2] * high + md5hash[3];
+					high = high % 0x7FFFFFFF;
+
+					low = low + high + temp;
+				}
+				high = (high + md5hash[1]) % 0x7FFFFFFF;
+				low = (low + md5hash[3]) % 0x7FFFFFFF;
+
+				LONGLONG key = (low << 32) + high;
+				sttSwapInt64( &key );
+				sttSwapInt64( &hash1 );
+				sttSwapInt64( &hash2 );
+			
+				info->sendPacket( "QRY", "%s 32\r\n%11I64x%11I64x", msnProductID, hash1 ^ key, hash2 ^ key );
+			}
+			else info->sendPacket( "QRY", "%s 32\r\n%08x%08x%08x%08x", msnProductID,
+				htonl( md5hash[0] ), htonl( md5hash[1] ), htonl( md5hash[2] ), htonl( md5hash[3] ));
 			break;
 		}
 		case ' RVC':    //********* CVR: MSNP8
@@ -1456,6 +1500,46 @@ LBL_InvalidCommand:
 			sttListedContact = NULL;
 			break;
 		}
+		case ' XBU':   // UBX : MSNP11+ User Status Message
+		{
+			union {
+				char* tWords[ 2 ];
+				struct { char *email, *datalen; } data;
+			};
+
+			if ( sttDivideWords( params, 2, tWords ) != 2 )
+				goto LBL_InvalidCommand;
+
+			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
+			if ( hContact == NULL )
+				break;
+
+			int len = atol( data.datalen );
+			if ( len < 0 || len > 4000 )
+				goto LBL_InvalidCommand;
+
+			char* dataBuf = ( char* )alloca( len+1 ), *p = dataBuf;
+			dataBuf[ len ] = 0;
+			while ( len > 0 ) {
+				int len2 = info->recv( p, len );
+				p += len2;
+				len -= len2;
+			}
+         
+         p = strstr( dataBuf, "<PSM>" );
+			if ( p ) {
+				p += 5;
+				char* p1 = strstr( p, "</PSM>" );
+				if ( p1 ) {
+					*p1 = 0;
+					if ( *p != 0 ) {
+						Utf8Decode( p );
+						DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
+					}
+					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+			}	}
+			break;
+		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
 			if ( info->mType == SERVER_SWITCHBOARD ) { //(section 8.2)
 				union {
@@ -1556,7 +1640,23 @@ LBL_InvalidCommand:
 			if ( sscanf( params, "%6s", protocol1 ) < 1 )
 				goto LBL_InvalidCommand;
 
-			if ( strcmp( protocol1, "MSNP10" )) {
+			char tEmail[ MSN_MAX_EMAIL_LEN ];
+			if ( MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ))) {
+				MSN_ShowError( "You must specify your e-mail in Options/Network/MSN" );
+				return 1;
+			}
+
+			if ( !strcmp( protocol1, "MSNP10" )) {
+				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0205 MSMSGS %s", tEmail );
+				msnProtChallenge = "Q1P7W2E4J9R8U3S5";
+				msnProductID = "msmsgs@msnmsgr.com";
+			}
+         else if ( !strcmp( protocol1, "MSNP11" )) {
+				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.0.0777 MSMSGS %s", tEmail );
+				msnProtChallenge = "CFHUR$52U_{VIX5T";
+				msnProductID = "PROD0101{0RM?UBW";
+			}
+			else {
 				MSN_ShowError( "Server has requested an unknown protocol set (%s)", params );
 
 				if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
@@ -1566,17 +1666,6 @@ LBL_InvalidCommand:
 
 				return 1;
 			}
-
-			char tEmail[ MSN_MAX_EMAIL_LEN ];
-			if ( MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ))) {
-				MSN_ShowError( "You must specify your e-mail in Options/Network/MSN" );
-				return 1;
-			}
-
-			info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0205 MSMSGS %s", tEmail );
-
-			msnProtChallenge = "Q1P7W2E4J9R8U3S5";
-			msnProductID = "msmsgs@msnmsgr.com";
 			break;
 		}
 		case ' RFX':    //******** XFR: sections 7.4 Referral, 8.1 Referral to Switchboard

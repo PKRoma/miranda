@@ -511,6 +511,8 @@ typedef struct
 	BOOL		SlowSend;
 	BOOL		ManageServer;
 	BOOL     EnableAvatars;
+
+	BOOL		UseMSNP11;
 }
 	MYOPTIONS;
 

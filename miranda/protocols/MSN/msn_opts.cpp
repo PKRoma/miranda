@@ -727,6 +727,7 @@ void __stdcall LoadOptions()
 	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
 	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
 	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
+	MyOptions.UseMSNP11 = MSN_GetByte( "UseMSNP11", FALSE );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
