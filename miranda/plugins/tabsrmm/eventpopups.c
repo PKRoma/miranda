@@ -172,15 +172,15 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Show headers", IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
     0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
 
     0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
 
     0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 
     0, "Disable ALL event notifications (check, if you're using an external plugin for event notifications)", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
     0, "Message events", MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
@@ -607,13 +607,14 @@ int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
         for(i = 0; i < pdata->nrMerged; i++)
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
     }
+    /*
     if (mask & MASK_REMOVE) {
         int i;
         
         for(i = 0; i < pdata->nrMerged; i++)
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
         PopUpList[NumberPopupData(pdata->hContact)] = NULL;
-    }
+    }*/
     if (mask & MASK_DISMISS) {
         PopUpList[NumberPopupData(pdata->hContact)] = NULL;
         PUDeletePopUp(hWnd);

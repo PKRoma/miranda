@@ -338,17 +338,18 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     _DebugPopup(0, "amount: %d", amount);
                     for(i = 0; i < amount; i++)
                         SendMessage(mwdat->hwndLog, WM_VSCROLL, wParam, 0);*/
+                    return 0;
                 }
                 else
                     SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
                 return 0;
             }
             hwndTab = GetDlgItem(mwdat->pContainer->hwnd, IDC_MSGTABS);
-            hti.pt = pt;
+            GetCursorPos(&hti.pt);
             ScreenToClient(hwndTab, &hti.pt);
             hti.flags = 0;
             if(TabCtrl_HitTest(hwndTab, &hti) != -1) {
-                SendMessage(hwndTab, WM_MOUSEWHEEL, wParam, lParam);
+                SendMessage(hwndTab, WM_MOUSEWHEEL, wParam, -1);
                 return 0;
             }
             break;
@@ -1985,8 +1986,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
                     else
                         PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                    if(lParam);
-                        //InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
+                    if(lParam && myGlobals.m_ExtraRedraws)
+                        InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
                 }
                 else
                     dat->dwFlags |= MWF_DEFERREDSCROLL;

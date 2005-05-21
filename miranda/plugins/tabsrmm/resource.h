@@ -432,12 +432,16 @@
 #define IDC_TOGGLESIDEBAR               1383
 #define IDC_TXTCLRNORMAL                1383
 #define IDC_TXTCLRACTIVE                1384
+#define IDC_TABMSGOPTIONS               1384
 #define IDC_TXTCLRUNREAD                1385
 #define IDC_BKGCLRNORMAL                1386
 #define IDC_BKGCLRACTIVE                1387
 #define IDC_BKGCLRUNREAD                1388
 #define IDC_TXTCLRHOTTRACK              1389
 #define IDC_BKGCOLORHOTTRACK            1390
+#define IDC_LABELUSEWINCOLORS           1391
+#define IDC_LABELUSEWINCOLORS2          1392
+#define IDC_BKGUSEWINCOLORS2            1392
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -622,7 +626,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        5
 #define _APS_NEXT_COMMAND_VALUE         40206
-#define _APS_NEXT_CONTROL_VALUE         1384
+#define _APS_NEXT_CONTROL_VALUE         1392
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

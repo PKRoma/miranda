@@ -715,6 +715,33 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
  * options for tabbed messaging got their own page.. finally :)
  */
 
+static struct LISTOPTIONSGROUP tabGroups[] = {
+    0, "Tab options",
+    0, "Message tab and window creation options",
+    0, "Message dialog visual settings",
+    0, "Miscellanous options",
+    0, NULL
+};
+
+static struct LISTOPTIONSITEM tabItems[] = {
+    0, "Show status text on tabs", 0, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
+    0, "Warn on close message tab", 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
+    0, "Automatically pop up the window/tab when a message is receive (has PRIORITY!)", SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
+    0, "Create tabs in the background", 0, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
+    0, "Create containers minimized on the taskbar", 0, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
+    0, "Popup container if minimized", 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
+    0, "Automatically switch tabs in minimized containers", 0, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
+    0, "Use flat buttons", 1, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
+    0, "Splitters have static edges", 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
+    0, "Flat message log (no static edge)", 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
+    0, "Activate autlocale support", 0, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
+    0, "ESC closes sessions (minimizes window, if disabled)", 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
+    0, "Use global hotkeys (configure modifiers below)", 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
+    0, "Perform version check on Icon DLL", 1, LOI_TYPE_SETTING, (UINT_PTR)"v-check", 3,
+    0, "Force more aggressive window updates", 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
+    0, NULL, 0, 0, 0, 0
+};
+
 static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL translated;
@@ -722,24 +749,44 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 	switch (msg) {
         case WM_INITDIALOG:
         {
+            TVINSERTSTRUCTA tvi = {0};
+            int i = 0;
+
             TranslateDialogDefault(hwndDlg);
- 
+            SetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+
+            /*
+             * fill the list box, create groups first, then add items
+             */
+
+            while(tabGroups[i].szName != NULL) {
+                tvi.hParent = 0;
+                tvi.hInsertAfter = TVI_LAST;
+                tvi.item.mask = TVIF_TEXT | TVIF_STATE;
+                tvi.item.pszText = Translate(tabGroups[i].szName);
+                tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
+                tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
+                tabGroups[i++].handle = SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
+            }
+
+            i = 0;
+
+            while(tabItems[i].szName != 0) {
+                tvi.hParent = (HTREEITEM)tabGroups[tabItems[i].uGroup].handle;
+                tvi.hInsertAfter = TVI_LAST;
+                tvi.item.pszText = Translate(tabItems[i].szName);
+                tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
+                tvi.item.lParam = i;
+                tvi.item.stateMask = TVIS_STATEIMAGEMASK;
+                if(tabItems[i].uType == LOI_TYPE_SETTING)
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (BYTE)tabItems[i].id) ? 2 : 1);
+                tabItems[i].handle = SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
+                i++;
+            }
 			// XXX tab support options...
-			CheckDlgButton(hwndDlg, IDC_WARNONCLOSE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0));
 			CheckDlgButton(hwndDlg, IDC_CUT_TABTITLE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0));
 			SetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
-			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSONTAB, DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0));
-            CheckDlgButton(hwndDlg, IDC_AUTOCREATETABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 0));
-            CheckDlgButton(hwndDlg, IDC_POPUPCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "cpopup", 0));
-            CheckDlgButton(hwndDlg, IDC_AUTOCREATECONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", 0));
-            CheckDlgButton(hwndDlg, IDC_AUTOLOCALE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0));
-            CheckDlgButton(hwndDlg, IDC_FLATBUTTONS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0));
-            CheckDlgButton(hwndDlg, IDC_ESC_MINIMIZE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0));
-            CheckDlgButton(hwndDlg, IDC_SPLITTERSTATICEDGES, DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1));
-            CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
-            CheckDlgButton(hwndDlg, IDC_FLATMSGLOG, DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0));
-            CheckDlgButton(hwndDlg, IDC_CHECKICONDLL, DBGetContactSettingByte(NULL, SRMSGMOD_T, "v_check", 1));
             
             SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETRANGE, 0, MAKELONG(255, 5));
             SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 0));
@@ -749,34 +796,15 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_INSERTSTRING, -1, (LPARAM)_T("CTRL-ALT"));
             SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_INSERTSTRING, -1, (LPARAM)_T("ALT-SHIFT"));
             SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeymodifier", 0), 0);
-            CheckDlgButton(hwndDlg, IDC_AUTOSWITCHTABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0));
-
-            CheckDlgButton(hwndDlg, IDC_HOTKEYSAREGLOBAL, DBGetContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", 0));
          break;
             
         }
-        case WM_SHOWWINDOW:
-            {
-                int iAutoPopup = !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
-                
-                EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATETABS), iAutoPopup);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATECONTAINER), iAutoPopup);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_POPUPCONTAINER), iAutoPopup);
-                break;
-            }
         case WM_COMMAND:
             switch(LOWORD(wParam)) {
-                case IDC_TABPADDING:
-                case IDC_TABBORDER:
                 case IDC_HISTORYSIZE:
                 case IDC_CUT_TITLEMAX:
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
-                    break;
-                case IDC_AUTOPOPUP:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATECONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCREATETABS), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_POPUPCONTAINER), !IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                     break;
                 case IDC_SETUPAUTOCREATEMODES:
                     {
@@ -788,7 +816,6 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                     EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
                     break;
             }
-           
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
         case DM_STATUSMASKSET:
@@ -796,29 +823,53 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             break;
         case WM_NOTIFY:
             switch (((LPNMHDR) lParam)->idFrom) {
+                case IDC_TABMSGOPTIONS:
+                    if(((LPNMHDR)lParam)->code==NM_CLICK) {
+                        TVHITTESTINFO hti;
+                        TVITEMA item = {0};
+
+                        item.mask = TVIF_HANDLE | TVIF_STATE;
+                        item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
+                        hti.pt.x=(short)LOWORD(GetMessagePos());
+                        hti.pt.y=(short)HIWORD(GetMessagePos());
+                        ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
+                        if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
+                            item.hItem = (HTREEITEM)hti.hItem;
+                            SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+                            if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
+                                item.state = INDEXTOSTATEIMAGEMASK((item.state >> 12) == 2 ? 1 : 2) | TVIS_BOLD | TVIS_EXPANDED;
+                                SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                            }
+                            else if(hti.flags&TVHT_ONITEMSTATEICON)
+                                SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                        }
+                    }
+                    break;
                 case 0:
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY:
                             {
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_WARNONCLOSE));
+                            TVITEMA item = {0};
+                            int i = 0;
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 							DBWriteContactSettingWord(NULL, SRMSGMOD_T, "cut_at", (WORD) GetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, &translated, FALSE));
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSONTAB));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autotabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCREATETABS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "cpopup", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_POPUPCONTAINER));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "al", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOLOCALE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nlflat", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATBUTTONS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOCREATECONTAINER));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE) GetDlgItemInt(hwndDlg, IDC_HISTORYSIZE, &translated, FALSE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "escmode", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ESC_MINIMIZE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeymodifier", (BYTE) SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_GETCURSEL, 0, 0));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "globalhotkeys", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HOTKEYSAREGLOBAL));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SPLITTERSTATICEDGES));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSWITCHTABS));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "flatlog", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FLATMSGLOG));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "v_check", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CHECKICONDLL));
+
+                            /*
+                             * scan the tree view and obtain the options...
+                             */
+                            while(tabItems[i].szName != NULL) {
+                                item.mask = TVIF_HANDLE | TVIF_STATE;
+                                item.hItem = (HTREEITEM)tabItems[i].handle;
+                                item.stateMask = TVIS_STATEIMAGEMASK;
+
+                                SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+                                if(tabItems[i].uType == LOI_TYPE_SETTING)
+                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (item.state >> 12) == 2 ? 1 : 0);
+                                i++;
+                            }
                             
-                            DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                             ReloadGlobals();
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
                             SendMessage(myGlobals.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
@@ -1787,6 +1838,7 @@ void ReloadGlobals()
      myGlobals.m_SideBarEnabled = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sidebar", 0);
      myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
      myGlobals.m_TabAppearance = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", 0);
+     myGlobals.m_ExtraRedraws = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggromode", 0);
 #ifdef __MATHMOD_SUPPORT    		
      myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
      if(myGlobals.m_MathModAvail) {

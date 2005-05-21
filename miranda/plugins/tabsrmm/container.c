@@ -353,11 +353,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                  */
 
                 ws = GetWindowLong(hwndTab, GWL_STYLE);
-                if(pContainer->dwFlags & CNT_SINGLEROWTABCONTROL) {
+                if(myGlobals.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
                     ws &= ~TCS_MULTILINE;
                     ws |= TCS_SINGLELINE;
-                    if(myGlobals.m_TabAppearance & TCF_SINGLEAUTOADJUST)
-                        ws |= TCS_FIXEDWIDTH;
+                    ws |= TCS_FIXEDWIDTH;
                 }
                 else {
                     ws &= ~TCS_SINGLELINE;
@@ -743,15 +742,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(wParam == SIZE_MINIMIZED)
                     break;
 
-                if(LOWORD(lParam) == pContainer->sb_Sizecheck.cx && HIWORD(lParam) == pContainer->sb_Sizecheck.cy && lParam != 0)
-                    break;
+                if(LOWORD(lParam) == pContainer->sb_Sizecheck.cx && HIWORD(lParam) == pContainer->sb_Sizecheck.cy && lParam != 0) {
+                    if(!myGlobals.m_ExtraRedraws)
+                        break;
+                }
 
                 if(lParam != 0) {
                     pContainer->sb_Sizecheck.cx = LOWORD(lParam);
                     pContainer->sb_Sizecheck.cy = HIWORD(lParam);
                 }
-                //_DebugPopup(0, "size: %d, %d", LOWORD(lParam), HIWORD(lParam));
-                SendMessage(hwndTab, EM_SEARCHSCROLLER, 0, 0);
                 if (pContainer->hwndStatus) {
                     RECT rcs;
                     int statwidths[5];
@@ -794,7 +793,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
                         //XXX RedrawWindow(GetDlgItem((HWND)item.lParam, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
                         if(!pContainer->bSizingLoop) {
-                            SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                            SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
                         }
                     }
                     else

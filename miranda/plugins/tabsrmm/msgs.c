@@ -1208,7 +1208,7 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
             SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
         else if(GetForegroundWindow() != pContainer->hwnd)
             SetForegroundWindow(pContainer->hwnd);
-        if(!IsWinVerXPPlus()) {
+        if(!IsWinVerXPPlus() || myGlobals.m_ExtraRedraws) {
             SendMessage(hwndChild, WM_SIZE, 0, 0);
             RedrawWindow(hwndChild, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
         }

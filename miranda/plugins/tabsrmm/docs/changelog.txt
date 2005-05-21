@@ -15,6 +15,29 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.95pre5 - 2005/05/20
+
+        ! fixed bugs with the new custom tab control. No more label clipping errors
+          (hopefully). Also, when using classic windows theme, bottom tabs are
+          are restored to their default look and no longer show as buttons.
+          
+        + added option to use standard windows colors for button style tabs to mark the
+          active and hot-tracked tab.
+          
+        + added "autolayout" option for single row tab controls. If enabled, all tabs
+          will have the same width, depending on the number of tabs and available
+          space. Works only, if the tab control is in "single row mode". Tab text will
+          be clipped accordingly and filled with ellipsis (...), if needed.
+          
+          The option to set the tab control to "single row" has been removed from the
+          container options and moved to the "Tab Appearance" dialog. It is now a
+          global setting. Multi-row tab controls are still supported however.
+          
+        ! fixed weird bug with mousewheel behaviour when IEView is active.
+        
+        * changed the "tabs and layout" option page to use a tree view with check-
+          boxes to make it consistent with other option pages.
+          
 Version 0.9.9.95pre4 - 2005/05/20
 
         * docs updated (Popups.txt, readme.txt, README.ICONS)

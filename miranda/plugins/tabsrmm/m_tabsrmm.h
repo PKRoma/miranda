@@ -280,9 +280,8 @@ typedef struct _recentinfo {
 
 struct myTabCtrl {
     HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight;
-    RECT m_rectUpDn;
     BOOL m_skinning;
-    HWND hwnd, m_hwndSpin;
+    HWND hwnd;
     DWORD dwStyle;
     DWORD cx, cy;
     HFONT m_hMenuFont;
@@ -341,7 +340,6 @@ typedef struct _globals {
     int m_AvatarDisplayMode;
     int m_RTLDefault;
     int m_SplitterSaveOnClose;
-    //int m_SplitterMode;
     int m_MathModAvail;
     TCHAR m_MathModStartDelimiter[40];
     int m_UnreadInTray;
@@ -359,6 +357,7 @@ typedef struct _globals {
     int  m_TabAppearance;
     int  m_VSApiEnabled;
     struct myTabCtrl tabConfig;
+    BYTE m_ExtraRedraws;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -397,12 +396,14 @@ struct StreamJob {
  */
 
 #define TCF_FLAT 1
-#define TCF_SINGLEAUTOADJUST 2
 #define TCF_NOSKINNING 4
 #define TCF_FLASHICON 8
 #define TCF_FLASHLABEL 16
+#define TCF_SINGLEROWTABCONTROL 32
+#define TCF_LABELUSEWINCOLORS 64
+#define TCF_BKGUSEWINCOLORS 128
 
-#define TCF_DEFAULT (TCF_SINGLEAUTOADJUST | TCF_FLASHICON)
+#define TCF_DEFAULT (TCF_FLASHICON | TCF_LABELUSEWINCOLORS | TCF_BKGUSEWINCOLORS)
 
 //Checks if there is a message window opened
 //wParam=(LPARAM)(HANDLE)hContact  - handle of the contact for which the window is searched. ignored if lParam
