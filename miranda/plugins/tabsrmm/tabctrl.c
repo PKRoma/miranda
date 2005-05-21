@@ -30,6 +30,7 @@ no visual style support yet - will be added later.
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"
+#include <uxtheme.h>
 
 extern MYGLOBALS myGlobals;
 extern WNDPROC OldTabControlProc;
@@ -49,6 +50,7 @@ UINT (PASCAL* pfnDrawThemeBackground)(HANDLE htheme, HDC hdc, int iPartID, int i
 UINT (PASCAL* pfnCloseThemeData)(HANDLE hTheme) = 0;
 HRESULT (PASCAL* pfnGetThemeBackgroundRegion)(HANDLE hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, HRGN *pRegion) = 0;
 BOOL (PASCAL* pfnIsThemeBackgroundPartiallyTransparent)(HANDLE hTheme, int iPartId, int iStateId) = 0;
+HRESULT (PASCAL* pfnDrawThemeBackgroundEx)(HANDLE hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, const DTBGOPTS *pOptions) = 0;
 
 int InitVSApi()
 {
@@ -61,6 +63,7 @@ int InitVSApi()
     pfnCloseThemeData = GetProcAddress(hUxTheme, "CloseThemeData");
     pfnGetThemeBackgroundRegion = GetProcAddress(hUxTheme, "GetThemeBackgroundRegion");
     pfnIsThemeBackgroundPartiallyTransparent = GetProcAddress(hUxTheme, "IsThemeBackgroundPartiallyTransparent");
+    pfnDrawThemeBackgroundEx = GetProcAddress(hUxTheme, "DrawThemeBackgroundEx");
     if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0) {
         return 1;
     }
@@ -202,7 +205,7 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHLABEL)) {
             //oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
-            oldFont = SelectObject(dc, SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
+            oldFont = SelectObject(dc, (HFONT)SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
             if(!(tabdat->dwStyle & TCS_MULTILINE)) {
                 rcItem->right -= tabdat->m_xpad;
                 dwTextFlags |= DT_WORD_ELLIPSIS;
@@ -330,21 +333,19 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
 	BOOL bHot   = (uiFlag & 4) ? TRUE : FALSE;
 	BOOL bBottom = (uiFlag & 8) ? TRUE : FALSE;	// mirror
     SIZE szBmp;
-    HDC     dcMem;	
-    HBITMAP bmpMem, pBmpOld;
+    HDC     dcMem, dcOldBg;	
+    HBITMAP bmpMem, pBmpOld, bmpOldBg, pbmpOldBg;
     RECT rcMem;
     BITMAPINFO biOut; 
     BITMAPINFOHEADER *bihOut;
-    HRGN rgn = 0;
     int nBmpWdtPS;
     int nSzBuffPS;
-    LPBYTE pcImg = NULL;
+    LPBYTE pcImg = NULL, pcImg1 = NULL;
     int nStart = 0, nLenSub = 0;
     szBmp.cx = rcItem->right - rcItem->left;
     szBmp.cy = rcItem->bottom - rcItem->top;
     
     dcMem = CreateCompatibleDC(pDC);
-    
 	bmpMem = CreateCompatibleBitmap(pDC, szBmp.cx, szBmp.cy);
 
     pBmpOld = SelectObject(dcMem, bmpMem);
@@ -353,21 +354,54 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     rcMem.right = szBmp.cx;
     rcMem.bottom = szBmp.cy;
     
-    if(bSel) 
-        rcMem.bottom++;
+    //if(bSel)
+//        rcMem.bottom++;
 
-    FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));
+    /*
+     * blit the background to the memory dc, so that transparent tabs will draw properly
+     * for bottom tabs, it's more complex, because the background part must not be mirrored
+     * the body part does not need that (filling with the background color is much faster
+     * and sufficient for the tab "page" part.
+     */
+    
+    if(bBody)
+        FillRect(dcMem, rcItem, GetSysColorBrush(COLOR_3DFACE));
+    else {
+        if(!bBottom)
+            BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
+        else {
+            BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
+
+            ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
+            bihOut = &biOut.bmiHeader;
+
+            bihOut->biSize = sizeof (BITMAPINFOHEADER);
+            bihOut->biCompression = BI_RGB;
+            bihOut->biPlanes = 1;		  
+            bihOut->biBitCount = 24;	// force as RGB: 3 bytes, 24 bits
+            bihOut->biWidth =szBmp.cx; 
+            bihOut->biHeight=szBmp.cy;
+
+            nBmpWdtPS = DWordAlign(szBmp.cx*3);
+            nSzBuffPS = ((nBmpWdtPS * szBmp.cy) / 8 + 2) * 8;
+
+            pcImg1 = malloc(nSzBuffPS);
+
+            GetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg1, &biOut, DIB_RGB_COLORS);
+            bihOut->biHeight = -szBmp.cy; 				// to mirror bitmap is eough to use negative height between Get/SetDIBits
+            SetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg1, &biOut, DIB_RGB_COLORS);
+
+            free(pcImg1);
+        }
+    }
+    
     if(bBody) 
         DrawThemesPart(tabdat, dcMem, 9, 0, &rcMem);	// TABP_PANE=9,  0, 'TAB'
-    else {                  /* for tabs with transparent parts, we need to get the clipping region for the non-transparent part to "mask out" the
-                               *maybe* transparent borders to avoid overdrawing neighbour elements */
+    else { 
         int iStateId = bSel ? 3 : (bHot ? 2 : 1);
-        if(pfnIsThemeBackgroundPartiallyTransparent(tabdat->hTheme, rcItem->left < 20 ? 2 : 1, iStateId))
-            pfnGetThemeBackgroundRegion(tabdat->hTheme, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem, &rgn);
         DrawThemesPart(tabdat, dcMem, rcItem->left < 20 ? 2 : 1, iStateId, &rcMem);
     }
 																// TABP_TABITEM=1, TIS_SELECTED=3:TIS_HOT=2:TIS_NORMAL=1, 'TAB'
-	// 2nd init some extra parameters
     ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
     bihOut = &biOut.bmiHeader;
     
@@ -390,23 +424,20 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     }
     // flip (mirror) the bitmap horizontally
     
-	if(!bBody && bBottom)	{									// get bits: 
+    if(!bBody && bBottom)	{									// get bits: 
 		GetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
         bihOut->biHeight = -szBmp.cy; 				// to mirror bitmap is eough to use negative height between Get/SetDIBits
         SetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
     }
+    
 	if(pcImg)
         free(pcImg);
-    
+
     /*
-     * set the clipping region, if we previously created it
-     * BitBlt() performs clipping on the destination dc only.
+     * finally, blit the result to the destination dc
      */
-    if(rgn)
-        SelectClipRgn(pDC, rgn);
+    
     BitBlt(pDC, rcItem->left, rcItem->top, szBmp.cx, szBmp.cy, dcMem, 0, 0, SRCCOPY);
-    if(rgn)
-        DeleteObject(rgn);
 	SelectObject(dcMem, pBmpOld);
     DeleteObject(bmpMem);
     DeleteDC(dcMem);
@@ -732,8 +763,8 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 int nHint = 0;
                 rcItem = rctActive;
                 if(!bClassicDraw) {
-                    if(!uiBottom)
-                        rcItem.bottom--;
+                    //if(!uiBottom)
+                        //rcItem.bottom--;
                     InflateRect(&rcItem, 2, 2);
                     DrawThemesXpTabItem(hdc, iActive, &rcItem, 2 | uiBottom, tabdat);
                     DrawItem(tabdat, hdc, &rcItem, nHint | HINT_ACTIVE_ITEM, iActive);
