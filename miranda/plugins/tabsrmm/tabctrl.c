@@ -145,8 +145,7 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
     DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER;
     item.mask = TCIF_PARAM;
     TabCtrl_GetItem(tabdat->hwnd, nItem, &item);
-    if(!(tabdat->dwStyle & TCS_MULTILINE))
-        dwTextFlags |= DT_CENTER;
+
     /*
      * get the message window data for the session to which this tab item belongs
      */
@@ -202,7 +201,8 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         rcItem->left += (tabdat->cx + 2 + tabdat->m_xpad);
         
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHLABEL)) {
-            oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
+            //oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
+            oldFont = SelectObject(dc, SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
             if(!(tabdat->dwStyle & TCS_MULTILINE)) {
                 rcItem->right -= tabdat->m_xpad;
                 dwTextFlags |= DT_WORD_ELLIPSIS;
@@ -362,9 +362,9 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     else {                  /* for tabs with transparent parts, we need to get the clipping region for the non-transparent part to "mask out" the
                                *maybe* transparent borders to avoid overdrawing neighbour elements */
         int iStateId = bSel ? 3 : (bHot ? 2 : 1);
-        if(pfnIsThemeBackgroundPartiallyTransparent(tabdat->hTheme, 1, iStateId))
-            pfnGetThemeBackgroundRegion(tabdat->hTheme, pDC, 1, iStateId, rcItem, &rgn);
-        DrawThemesPart(tabdat, dcMem, 1, iStateId, &rcMem);
+        if(pfnIsThemeBackgroundPartiallyTransparent(tabdat->hTheme, rcItem->left < 20 ? 2 : 1, iStateId))
+            pfnGetThemeBackgroundRegion(tabdat->hTheme, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem, &rgn);
+        DrawThemesPart(tabdat, dcMem, rcItem->left < 20 ? 2 : 1, iStateId, &rcMem);
     }
 																// TABP_TABITEM=1, TIS_SELECTED=3:TIS_HOT=2:TIS_NORMAL=1, 'TAB'
 	// 2nd init some extra parameters
@@ -793,7 +793,7 @@ void ReloadTabConfig()
 
     nclim.cbSize = sizeof(nclim);
     SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &nclim, 0);
-    myGlobals.tabConfig.m_hMenuFont = CreateFontIndirect(&nclim.lfMenuFont);
+    myGlobals.tabConfig.m_hMenuFont = CreateFontIndirect(&nclim.lfMessageFont);
 
     while(tabcolors[i].szKey != NULL) {
         if(i < 4)

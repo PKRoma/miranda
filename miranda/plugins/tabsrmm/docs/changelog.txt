@@ -15,6 +15,14 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.95pre6 - 2005/05/20
+
+        ! bugfix - tab control did not use the proper visual style part for leftmost
+          tabs.
+          
+        ! bugfix - in some cases, the wrong font was used for drawing the tab labels
+          so that they appeared oversized and clipped.
+          
 Version 0.9.9.95pre5 - 2005/05/20
 
         ! fixed bugs with the new custom tab control. No more label clipping errors
