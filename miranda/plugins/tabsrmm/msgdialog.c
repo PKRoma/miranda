@@ -464,23 +464,22 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_MBUTTONDOWN:
         case WM_KILLFOCUS:
             break;
-        case WM_INPUTLANGCHANGEREQUEST: {
-                if (myGlobals.m_AutoLocaleSupport) {
-                    SendMessage(GetParent(hwnd), DM_SETLOCALE, wParam, lParam);
-                    PostMessage(GetParent(hwnd), DM_SAVELOCALE, 0, 0);
-                    return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
-                }
-                break;
-            }
-        case WM_INPUTLANGCHANGE:
+        case WM_INPUTLANGCHANGEREQUEST: 
+        {
             /*
-            if (myGlobals.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == GetParent(hwnd) && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
+            if (myGlobals.m_AutoLocaleSupport) {
                 SendMessage(GetParent(hwnd), DM_SETLOCALE, wParam, lParam);
                 PostMessage(GetParent(hwnd), DM_SAVELOCALE, 0, 0);
-                _DebugPopup(mwdat->hContact, "change");
             }
+            break;
             */
-            return DefWindowProc(hwnd, WM_INPUTLANGCHANGE, wParam, lParam);
+            return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
+        }
+        case WM_INPUTLANGCHANGE:
+            if (myGlobals.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == GetParent(hwnd) && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
+                SendMessage(GetParent(hwnd), DM_SAVELOCALE, wParam, lParam);
+            }
+            return 1;
         case WM_ERASEBKGND:
         {
             HDC hdcMem = CreateCompatibleDC((HDC)wParam);
@@ -1148,8 +1147,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;
-                    SetActiveWindow(hwndDlg);
-                    SetForegroundWindow(hwndDlg);
+                    //SetActiveWindow(hwndDlg);
+                    //SetForegroundWindow(hwndDlg);
                     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 }
                 else {
@@ -1188,7 +1187,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->pContainer->dwFlags |= CNT_DEFERREDCONFIGURE;
                     dat->pContainer->hwndActive = hwndDlg;
                     SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    SendMessage(dat->pContainer->hwnd, DM_RESTOREWINDOWPOS, 0, 0);
                     return FALSE;
                 }
                 return TRUE;
@@ -1660,7 +1658,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
                     if(dat->hkl == 0)
                         SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
-                    SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+                    PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 }
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
@@ -1719,7 +1717,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
                     if(dat->hkl == 0)
                         SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
-                    SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+                    PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 }
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
@@ -1986,7 +1984,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
                     else
                         PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                    if(lParam && myGlobals.m_ExtraRedraws)
+                    if(lParam)
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
                 }
                 else
@@ -2322,17 +2320,24 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_SELECTTAB:
             SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, wParam, lParam);       // pass the msg to our container
             break;
-        case DM_SAVELOCALE: {
-                if (myGlobals.m_AutoLocaleSupport && dat->hContact) {
-                    char szKLName[KL_NAMELENGTH + 1];
-                    GetKeyboardLayoutNameA(szKLName);
-                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
-                    dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
+        case DM_SAVELOCALE: 
+        {
+            if (myGlobals.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == hwndDlg) {
+                char szKLName[KL_NAMELENGTH + 1];
+                
+                if((HKL)lParam != dat->hkl) {
+                    dat->hkl = (HKL)lParam;
                     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg)
                         SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) Translate("Input locale saved."));
+                    ActivateKeyboardLayout(dat->hkl, 0);
+                    GetKeyboardLayoutNameA(szKLName);
+                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+                    GetLocaleID(dat, szKLName);
+                    UpdateReadChars(hwndDlg, dat);
                 }
-                break;
             }
+            break;
+        }
         case DM_LOADLOCALE:
             /*
              * set locale if saved to contact
@@ -2349,18 +2354,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (res == 0 && dbv.type == DBVT_ASCIIZ) {
                     dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
                     PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+                    GetLocaleID(dat, dbv.pszVal);
                     DBFreeVariant(&dbv);
                 } else {
                     GetKeyboardLayoutNameA(szKLName);
                     dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
                     DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+                    GetLocaleID(dat, szKLName);
                 }
+                UpdateReadChars(hwndDlg, dat);
             }
             break;
         case DM_SETLOCALE:
             if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
                 break;
-            if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
+            if (dat->pContainer->hwndActive == hwndDlg && myGlobals.m_AutoLocaleSupport && dat->hContact != 0 && dat->pContainer->hwnd == GetForegroundWindow() && dat->pContainer->hwnd == GetActiveWindow()) {
                 if (lParam == 0) {
                     if (GetKeyboardLayout(0) != dat->hkl) {
                         ActivateKeyboardLayout(dat->hkl, 0);
@@ -3331,7 +3339,6 @@ quote_from_last:
                     break;
                 case IDC_TOGGLESIDEBAR:
                     dat->pContainer->dwFlags ^= CNT_SIDEBAR;
-                    dat->pContainer->sb_Sizecheck.cx = dat->pContainer->sb_Sizecheck.cy = 0;
                     SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
                     SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
                     SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
@@ -3489,7 +3496,7 @@ quote_from_last:
                                             PostMessage(hwndDlg, WM_COMMAND, IDC_PROTOMENU, (LPARAM)GetDlgItem(hwndDlg, IDC_PROTOMENU));
                                             break;
                                     }
-                                    return 0;
+                                    return 1;
                                 }
                             }
                             if(msg == WM_KEYDOWN) {
@@ -3526,15 +3533,15 @@ quote_from_last:
                                     }
                                     if (wp == VK_F4) {
                                         SendMessage(hwndDlg, WM_CLOSE, 1, 0);
-                                        return 0;
+                                        return 1;
                                     }
                                     if (wp == VK_PRIOR) {
                                         SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_PREV, 0);
-                                        return 0;
+                                        return 1;
                                     }
                                     if (wp == VK_NEXT) {
                                         SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_NEXT, 0);
-                                        return 0;
+                                        return 1;
                                     }
                                 }
                             }

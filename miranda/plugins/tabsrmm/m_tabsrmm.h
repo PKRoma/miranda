@@ -140,7 +140,7 @@ struct ContainerWindowData {
     POINT pLastPos;
     DWORD dwFlags;
     UINT  uChildMinHeight;
-    SIZE  oldSize, sb_Sizecheck;
+    SIZE  oldSize;
     POINT ptLast;
 	DWORD dwTransparency;
     int   iContainerIndex;
@@ -266,6 +266,7 @@ struct MessageWindowData {
     int    iEventQueueSize;
     HBITMAP hbmMsgArea;
     TCHAR newtitle[128];        // tab title...
+    char  lcID[4];
 };
 
 typedef struct _recentinfo {
@@ -396,6 +397,7 @@ struct StreamJob {
  */
 
 #define TCF_FLAT 1
+#define TCF_ALWAYSFIXEDWIDTH 2
 #define TCF_NOSKINNING 4
 #define TCF_FLASHICON 8
 #define TCF_FLASHLABEL 16

@@ -226,7 +226,7 @@
 #define IDC_POPUPCONTAINER              1181
 #define IDC_CHECK2                      1182
 #define IDC_PRIVATESPLITTER             1182
-#define IDC_SINGLEROWAUTO               1182
+#define IDC_ALWAYSFIXED                 1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -440,7 +440,6 @@
 #define IDC_TXTCLRHOTTRACK              1389
 #define IDC_BKGCOLORHOTTRACK            1390
 #define IDC_LABELUSEWINCOLORS           1391
-#define IDC_LABELUSEWINCOLORS2          1392
 #define IDC_BKGUSEWINCOLORS2            1392
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026

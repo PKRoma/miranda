@@ -21,7 +21,24 @@ Version 0.9.9.95pre6 - 2005/05/20
           tabs.
           
         ! bugfix - in some cases, the wrong font was used for drawing the tab labels
-          so that they appeared oversized and clipped.
+          so that they appeared oversized and clipped (or the opposite which resulted
+          in too much padding).
+
+        ! fixed Ctrl-W and Ctrl-F4 causing crashes.
+        
+        * rewrote automatic container creation. Should be faster now, and hopefully
+          with less problems.
+          
+        * changed visual style drawing method on tabs. Now, it uses real transparency
+          so it should work with all visual styles w/o drawing problems or inaccuracies.
+          
+        ! when changing the style or theme, tab colors are re-read when using standard
+          windows colors to draw tab labels and backgrounds.
+                    
+        + added current 2-digit input locale identifier to the status bar.
+        
+        + autlocale does no longer use WM_INPUTLANGCHANGEREQUEST, because that's causing
+          troubles with some systems (reasons unknown). Instead, it now uses WM_INPUTLANGCHAGE
           
 Version 0.9.9.95pre5 - 2005/05/20
 

@@ -556,6 +556,18 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             rcLast = wp.rcNormalPosition;
             break;
         }
+        case WM_THEMECHANGED:
+        {
+            struct ContainerWindowData *pContainer = pFirstContainer;
+            
+            FreeTabConfig();
+            ReloadTabConfig();
+            while(pContainer) {
+                SendMessage(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), EM_THEMECHANGED, 0, 0);
+                pContainer = pContainer->pNextContainer;
+            }
+            break;
+        }
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_ACTIVE)
                 SetWindowPos(hwndDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);

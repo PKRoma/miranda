@@ -52,6 +52,8 @@ HRESULT (PASCAL* pfnGetThemeBackgroundRegion)(HANDLE hTheme, HDC hdc, int iPartI
 BOOL (PASCAL* pfnIsThemeBackgroundPartiallyTransparent)(HANDLE hTheme, int iPartId, int iStateId) = 0;
 HRESULT (PASCAL* pfnDrawThemeBackgroundEx)(HANDLE hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, const DTBGOPTS *pOptions) = 0;
 
+void FreeTabConfig(), ReloadTabConfig();
+
 int InitVSApi()
 {
     if((hUxTheme = LoadLibraryA("uxtheme.dll")) == 0)
@@ -333,8 +335,8 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
 	BOOL bHot   = (uiFlag & 4) ? TRUE : FALSE;
 	BOOL bBottom = (uiFlag & 8) ? TRUE : FALSE;	// mirror
     SIZE szBmp;
-    HDC     dcMem, dcOldBg;	
-    HBITMAP bmpMem, pBmpOld, bmpOldBg, pbmpOldBg;
+    HDC  dcMem;
+    HBITMAP bmpMem, pBmpOld;
     RECT rcMem;
     BITMAPINFO biOut; 
     BITMAPINFOHEADER *bihOut;
@@ -370,6 +372,9 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
         if(!bBottom)
             BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
         else {
+            /*
+             * mirror the background horizontally for bottom tabs.
+             */
             BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
 
             ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
@@ -478,7 +483,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             tabdat->m_fixedwidth = DBGetContactSettingDword(NULL, SRMSGMOD_T, "fixedtabs", FIXED_TAB_SIZE);
             return 0;
         }
-        case WM_THEMECHANGED:
+        case EM_THEMECHANGED:
             tabdat->m_skinning = FALSE;
             if(IsWinVerXPPlus() && myGlobals.m_VSApiEnabled != 0) {
                 if(pfnIsThemeActive != 0)
@@ -738,8 +743,10 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             for(i = 0; i < nCount; i++) {
                 if(i != iActive) {
                     TabCtrl_GetItemRect(hwnd, i, &rcItem);
-                    if(!bClassicDraw && uiBottom)
+                    if(!bClassicDraw && uiBottom) {
                         rcItem.top -= myGlobals.tabConfig.m_bottomAdjust;
+                        rcItem.bottom -= myGlobals.tabConfig.m_bottomAdjust;
+                    }
                     if (IntersectRect(&rectTemp, &rcItem, &ps.rcPaint)) {
                         int nHint = 0;
                         if(!bClassicDraw) {
@@ -757,8 +764,10 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             /*
              * draw the active item
              */
-            if(!bClassicDraw && uiBottom)
+            if(!bClassicDraw && uiBottom) {
                 rctActive.top -= myGlobals.tabConfig.m_bottomAdjust;
+                rctActive.bottom -= myGlobals.tabConfig.m_bottomAdjust;
+            }
             if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left >= 0) {
                 int nHint = 0;
                 rcItem = rctActive;
@@ -877,6 +886,8 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckDlgButton(hwndDlg, IDC_SINGLEROWTAB, dwFlags & TCF_SINGLEROWTABCONTROL);
             CheckDlgButton(hwndDlg, IDC_LABELUSEWINCOLORS, dwFlags & TCF_LABELUSEWINCOLORS);
             CheckDlgButton(hwndDlg, IDC_BKGUSEWINCOLORS2, dwFlags & TCF_BKGUSEWINCOLORS);
+            CheckDlgButton(hwndDlg, IDC_ALWAYSFIXED, dwFlags & TCF_ALWAYSFIXEDWIDTH);
+            
             SendMessage(hwndDlg, WM_COMMAND, IDC_LABELUSEWINCOLORS, 0);
             
             if(myGlobals.m_VSApiEnabled == 0) {
@@ -941,6 +952,7 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                     (IsDlgButtonChecked(hwndDlg, IDC_SINGLEROWTAB) ? TCF_SINGLEROWTABCONTROL : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_LABELUSEWINCOLORS) ? TCF_LABELUSEWINCOLORS : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_BKGUSEWINCOLORS2) ? TCF_BKGUSEWINCOLORS : 0) |
+                                    (IsDlgButtonChecked(hwndDlg, IDC_ALWAYSFIXED) ? TCF_ALWAYSFIXEDWIDTH : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_NOSKINNING) ? TCF_NOSKINNING : 0);
                     
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", dwFlags);

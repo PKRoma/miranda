@@ -445,11 +445,11 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iS
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 3) {
-        TCHAR buf[128];
+        char buf[128];
         int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
-        _sntprintf(buf, sizeof(buf), _T("%d/%d"), dat->iOpenJobs, len);
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
+        _snprintf(buf, sizeof(buf), "%s %d/%d", dat->lcID, dat->iOpenJobs, len);
+        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
     }
 }
 
@@ -1585,4 +1585,18 @@ void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
         ShowWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? SW_SHOW : SW_HIDE);
     }
     return;
+}
+
+GetLocaleID(struct MessageWindowData *dat, char *szKLName)
+{
+    char szLI[20], *stopped = NULL;
+    USHORT langID;
+    DWORD lcid;
+
+    langID = (USHORT)strtol(szKLName, &stopped, 16);
+    lcid = MAKELCID(langID, 0);
+    GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME , szLI, 10);
+    dat->lcID[0] = toupper(szLI[0]);
+    dat->lcID[1] = toupper(szLI[1]);
+    dat->lcID[2] = 0;
 }
