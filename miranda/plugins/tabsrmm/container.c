@@ -739,6 +739,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
                     break;
                 }
+                /*
+                if(wParam == SIZE_RESTORED)
+                    _DebugPopup(0, "restored");
+                if(wParam == SIZE_MINIMIZED)
+                    _DebugPopup(0, "mini");
+                if(wParam == SIZE_MAXIMIZED)
+                    _DebugPopup(0, "maxi");
+                */
                 if(wParam == SIZE_MINIMIZED)
                     break;
 
@@ -793,8 +801,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 
-                RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-                RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
+                RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
+                RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
                 
                 if(pContainer->hwndStatus)
                     InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
@@ -1145,7 +1153,7 @@ panel_found:
                         }
                     /*
                      * double click
-                     */
+                     *
                     case NM_CLICK: {
                             FILETIME ft;
                             POINT pt, pt1;
@@ -1162,7 +1170,7 @@ panel_found:
                             pContainer->pLastPos = pt1;
                             break;
                         }
-                        /* 
+                        * 
                          * context menu...
                          */
                     case NM_RCLICK: {

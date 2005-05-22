@@ -79,6 +79,9 @@ TemplateSet RTL_Default = { TRUE,
 TemplateSet LTR_Active, RTL_Active;
 
 extern struct CREOleCallback reOleCallback;
+extern HINSTANCE g_hInst;
+
+static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /*
  * loads template set overrides from hContact into the given set of already existing
@@ -195,6 +198,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             switch (LOWORD(wParam)) {
                 case IDCANCEL:
                     DestroyWindow(hwndDlg);
+                    break;
+                case IDC_VARHELP:
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), hwndDlg, DlgProcTemplateHelp, 0);
                     break;
                 case IDC_TEMPLATELIST:
                     switch(HIWORD(wParam)) {
@@ -377,6 +383,77 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), TRUE);
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), TRUE);
             break;
+    }
+    return FALSE;
+}
+
+static char *var_helptxt[] = {
+    "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
+    "%N:\tNickname",
+    "%S:\tMessage symbol (from the webdings font)",
+    "%I:\tIcon",
+    "%M:\tthe message string itself",
+    "%n:\ta \"hard\" line break (cr/lf - will break indent)",
+    "%l:\ta soft linefeed",
+    "%h:\thour (24 hour format, 0-23)",
+    "%a:\thour (12 hour format)",
+    "%m:\tminute",
+    "%s:\tsecond",
+    "%o:\tmonth",
+    "%d:\tday of month",
+    "%y:\tyear",
+    "%w:\tday of week (Sunday, Monday.. translateable)",
+    "%p:\tAM/PM symbol",
+    "%U:\tUIN (contextual, own uin for sent, buddys UIN for received messages)",
+    "%E:\tDate, localized, depending on your regional settings. Short format (05/03/2005..)",
+    "%D:\tDate, localized, depending on your regional settings. Long format (May, 05, 2005...)",
+    "%R:\tDate, localized, using Today and Yesterday, older dates in long format.",
+    "%r:\tDate, localized, using Today and yesterday, older dates in short format.",
+    "%O:\tName of month, translateable",
+    "%t:\tlocalized timestamp (depending on your regional settings).",
+    "%e:\tError message (only use it in the error message template)",
+    "\\line \\ul\\b Formatting (simple):\\ul0\\b0\\par",
+    "%*:\tbold (works as toggle, first occurance turns bold on, next turns it off)",
+    "%/:\titalic, same",
+    "%_:\tunderline, again, same way.",
+    "%~:\tfont break - switches to the \"default\" font for the event (depending on incoming/outgoing and history status)",
+    "%-x:\tinsert a horizontal grid line with the color X (x is one of the predefined colors). If x is omitted, use the grid line color.",
+    "%Hx:\tHighlight with color x (set the background color).",
+    "%|:\tA \"TAB\" character. Advances to the next tab position, usually the position set by the left or right indent value.",
+    "%fX:\tswitch to one of the predefined fonts, where X is a one character code and can have the following values (case sensitive as always):\\line d: -> font for date/timestamp\\line n: -> font for nickname\\line m: -> font for message text\\line M: -> font for \\b misc \\b0 events (file, URL, etc.)",
+    "%cX:\tuse one of the predefined colors for the following text output (X is a number from 0 to 4, referring to the color index). Only useful together with the & modifier (see below) and maybe the %fX variable.",
+    "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediatly, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense. \
+    The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events). Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifieres to get different message formatting for old and new events.\
+    The & modifier means \\b skip font\\b0  . If being used, the variable will be printed without setting the font for the variables context. Effectively, the font which is currently selected remains valid.",
+    "\\line \\ul\\b Some examples:\\ul0\\b0\\line\\par \\b %&N\\b0 -\tprints the nickname, but does not use the font which is configured for nicknames.\\par\
+\\b %fd%&N\\b0 -\tprints the nickname, using the font for timestamps (selected by %fd)\\par\
+\\b %fd%c3%&N\\b0 -\tprints the nickname, using the font for timestamp, but with the text color set to color #4",
+    NULL
+};
+
+static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_INITDIALOG:
+        {
+            int i = 1;
+            char szHeader[2048];
+            SETTEXTEX stx = {ST_SELECTION, CP_ACP};
+            /*
+             * send the help text
+             */
+            mir_snprintf(szHeader, 256, var_helptxt[0], 40*15, 40*15, 40*15);
+            while(var_helptxt[i] != NULL) {
+                mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
+                SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
+            }
+            SetWindowTextA(hwndDlg, Translate("Template editor help"));
+            ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
+            return TRUE;
+        }
+        case WM_COMMAND:
+            if(LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+                DestroyWindow(hwndDlg);
     }
     return FALSE;
 }

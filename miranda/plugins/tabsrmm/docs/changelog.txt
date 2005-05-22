@@ -15,6 +15,15 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.95pre7 - 2005/05/23
+
+        * double click works again for closing tabs (even with button tabs)
+        
+        ! bugfix: redraw errors when restoring a maximized container
+        
+        + added a help window to the template editor describing all the variables and
+          modifiers.
+
 Version 0.9.9.95pre6 - 2005/05/20
 
         ! bugfix - tab control did not use the proper visual style part for leftmost

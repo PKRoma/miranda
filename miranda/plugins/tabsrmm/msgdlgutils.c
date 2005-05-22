@@ -1587,6 +1587,10 @@ void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
     return;
 }
 
+/*
+ * get 2-digit locale id from current keyboard layout
+ */
+
 GetLocaleID(struct MessageWindowData *dat, char *szKLName)
 {
     char szLI[20], *stopped = NULL;

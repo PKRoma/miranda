@@ -3477,7 +3477,7 @@ quote_from_last:
                                 if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                     switch (wp) {
                                         case 23:                // ctrl - w
-                                            SendMessage(hwndDlg, WM_CLOSE, 1, 0);
+                                            PostMessage(hwndDlg, WM_CLOSE, 1, 0);
                                             break;
                                         case 18:                // ctrl - r
                                             SendMessage(hwndDlg, DM_QUERYPENDING, DM_QUERY_MOSTRECENT, 0);
@@ -3532,7 +3532,7 @@ quote_from_last:
                                         return 0;
                                     }
                                     if (wp == VK_F4) {
-                                        SendMessage(hwndDlg, WM_CLOSE, 1, 0);
+                                        PostMessage(hwndDlg, WM_CLOSE, 1, 0);
                                         return 1;
                                     }
                                     if (wp == VK_PRIOR) {

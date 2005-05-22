@@ -574,7 +574,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,192,148,10
 END
 
-IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 239
+IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 231
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Dialog"
@@ -588,27 +588,24 @@ BEGIN
                     ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
                     122,14,236,80
     EDITTEXT        IDC_EDITTEMPLATE,11,109,344,14,ES_AUTOHSCROLL
-    GROUPBOX        "Edit template",IDC_STATIC,3,99,363,137
-    PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,268,161,90,15
-    PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,268,180,90,15
-    PUSHBUTTON      "Close",IDCANCEL,200,218,66,15
-    PUSHBUTTON      "Revert to Default",IDC_REVERT,268,218,90,15
-    PUSHBUTTON      "Forget",IDC_FORGET,268,199,90,15
-    LTEXT           "Variables (case sensitive!)\n\n%N:\tNickname\n%M:\tMessage\n%S:\tMsg Symbol\n%I:\tMsg Icon\n%D:\tlong Date\n%h:\thour (24)\n%m\tMinute",
-                    IDC_STATIC,11,125,89,73
-    LTEXT           "%s:\tSecond\n%o:\tMonth (number)\n%O:\tMonth (name)\n%d:\tDay of Month\n%w:\tDay of week\n%a:\thour (12)\n%p:\tAM/PM symbol\n%U\tUIN",
-                    IDC_STATIC,102,125,87,65
-    CONTROL         "",IDC_COLOR1,"ColourPicker",WS_TABSTOP,11,220,24,13
+    GROUPBOX        "Edit template",IDC_STATIC,3,99,363,129
+    PUSHBUTTON      "Update Preview",IDC_UPDATEPREVIEW,268,154,90,15
+    PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,268,173,90,15
+    PUSHBUTTON      "Close",IDCANCEL,200,211,66,15
+    PUSHBUTTON      "Revert to Default",IDC_REVERT,268,211,90,15
+    PUSHBUTTON      "Forget",IDC_FORGET,268,192,90,15
+    CONTROL         "",IDC_COLOR1,"ColourPicker",WS_TABSTOP,11,213,24,13
     LTEXT           "Define up to 5 colors which you can use with some variables",
-                    IDC_STATIC,12,200,174,17
-    CONTROL         "",IDC_COLOR2,"ColourPicker",WS_TABSTOP,43,220,24,13
-    CONTROL         "",IDC_COLOR3,"ColourPicker",WS_TABSTOP,75,220,24,13
-    CONTROL         "",IDC_COLOR4,"ColourPicker",WS_TABSTOP,107,220,24,13
-    CONTROL         "",IDC_COLOR5,"ColourPicker",WS_TABSTOP,139,220,24,13
-    LTEXT           "Get more help on variables",IDC_VARIABLESHELP,103,191,
+                    IDC_STATIC,12,193,174,17
+    CONTROL         "",IDC_COLOR2,"ColourPicker",WS_TABSTOP,43,213,24,13
+    CONTROL         "",IDC_COLOR3,"ColourPicker",WS_TABSTOP,75,213,24,13
+    CONTROL         "",IDC_COLOR4,"ColourPicker",WS_TABSTOP,107,213,24,13
+    CONTROL         "",IDC_COLOR5,"ColourPicker",WS_TABSTOP,139,213,24,13
+    LTEXT           "Get more help on variables",IDC_VARIABLESHELP,12,147,
                     148,10
     LTEXT           "Double click a template to edit it. Select templates in the list box to show a preview",
                     IDC_STATIC,200,128,155,25
+    PUSHBUTTON      "Quick help on Variables",IDC_VARHELP,11,128,125,15
 END
 
 IDD_TABCONFIG DIALOGEX 0, 0, 327, 291
@@ -698,6 +695,18 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,146,136,14
 END
 
+IDD_VARIABLEHELP DIALOGEX 0, 0, 336, 238
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,120,217,88,14
+    CONTROL         "",IDC_HELPTEXT,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,6,
+                    7,322,206
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -736,7 +745,7 @@ BEGIN
 
     IDD_TEMPLATEEDIT, DIALOG
     BEGIN
-        BOTTOMMARGIN, 214
+        BOTTOMMARGIN, 228
     END
 
     IDD_TABCONFIG, DIALOG
@@ -744,6 +753,12 @@ BEGIN
         RIGHTMARGIN, 322
         TOPMARGIN, 7
         BOTTOMMARGIN, 290
+    END
+
+    IDD_VARIABLEHELP, DIALOG
+    BEGIN
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 231
     END
 END
 #endif    // APSTUDIO_INVOKED

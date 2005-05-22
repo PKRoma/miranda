@@ -374,6 +374,8 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
         else {
             /*
              * mirror the background horizontally for bottom tabs.
+             * needed, because after drawing the theme part the images will again be mirrored
+             * to "flip" the tab item.
              */
             BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
 
@@ -401,13 +403,12 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     }
     
     if(bBody) 
-        DrawThemesPart(tabdat, dcMem, 9, 0, &rcMem);	// TABP_PANE=9,  0, 'TAB'
+        DrawThemesPart(tabdat, dcMem, 9, 0, &rcMem);	// TABP_PANE id = 9 
     else { 
         int iStateId = bSel ? 3 : (bHot ? 2 : 1);
         DrawThemesPart(tabdat, dcMem, rcItem->left < 20 ? 2 : 1, iStateId, &rcMem);
     }
-																// TABP_TABITEM=1, TIS_SELECTED=3:TIS_HOT=2:TIS_NORMAL=1, 'TAB'
-    ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
+    ZeroMemory(&biOut,sizeof(BITMAPINFO));
     bihOut = &biOut.bmiHeader;
     
 	bihOut->biSize = sizeof (BITMAPINFOHEADER);
@@ -571,7 +572,6 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     GetClientRect(hwnd, &rcClient);
                     TabCtrl_GetItemRect(hwnd, iTabs - 1, &rc);
                     newItemSize = (rcClient.right - rcClient.left) - 6 - (tabdat->dwStyle & TCS_BUTTONS ? (iTabs - 1) * 12 : 0);
-                    //_DebugPopup(0, "width: %d, is: %d", rcClient.right - rcClient.left, newItemSize);
                     newItemSize = newItemSize / iTabs;
                     if(newItemSize < tabdat->m_fixedwidth) {
                         TabCtrl_SetItemSize(hwnd, newItemSize, rc.bottom - rc.top);
@@ -583,8 +583,15 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             }
             break;
         }
-        case WM_ERASEBKGND:
+        case WM_LBUTTONDBLCLK:
+        {
+            POINT pt;
+            GetCursorPos(&pt);
+            SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
             break;
+        }
+        case WM_ERASEBKGND:
+            return 0;
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -620,7 +627,9 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
             bmpOld = SelectObject(hdc, bmpMem);
 
-            FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+            if(ps.fErase)
+                FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+            
             if(dwStyle & TCS_BUTTONS) {
                 RECT rc1;
                 TabCtrl_GetItemRect(hwnd, nCount - 1, &rc1);
@@ -747,7 +756,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                         rcItem.top -= myGlobals.tabConfig.m_bottomAdjust;
                         rcItem.bottom -= myGlobals.tabConfig.m_bottomAdjust;
                     }
-                    if (IntersectRect(&rectTemp, &rcItem, &ps.rcPaint)) {
+                    if (IntersectRect(&rectTemp, &rcItem, &ps.rcPaint) || bClassicDraw) {
                         int nHint = 0;
                         if(!bClassicDraw) {
                             InflateRect(&rcItem, 0, 0);
@@ -768,7 +777,8 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 rctActive.top -= myGlobals.tabConfig.m_bottomAdjust;
                 rctActive.bottom -= myGlobals.tabConfig.m_bottomAdjust;
             }
-            if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left >= 0) {
+            if (rctActive.left >= 0) {
+//            if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left >= 0) {
                 int nHint = 0;
                 rcItem = rctActive;
                 if(!bClassicDraw) {

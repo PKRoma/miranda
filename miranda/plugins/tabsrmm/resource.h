@@ -6,6 +6,7 @@
 #define IDD_USERPREFS                   2
 #define IDI_PULLDOWN1ARROW              3
 #define IDD_TABCONFIG                   4
+#define IDD_VARIABLEHELP                5
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -410,6 +411,8 @@
 #define IDC_REVERT                      1363
 #define IDC_FORGET                      1364
 #define IDC_LOGISPRIVATE                1365
+#define IDC_FORGET2                     1365
+#define IDC_VARHELP                     1365
 #define IDC_COLOR1                      1366
 #define IDC_COLOR2                      1367
 #define IDC_COLOR3                      1368
@@ -441,6 +444,7 @@
 #define IDC_BKGCOLORHOTTRACK            1390
 #define IDC_LABELUSEWINCOLORS           1391
 #define IDC_BKGUSEWINCOLORS2            1392
+#define IDC_HELPTEXT                    1392
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -623,9 +627,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        5
+#define _APS_NEXT_RESOURCE_VALUE        6
 #define _APS_NEXT_COMMAND_VALUE         40206
-#define _APS_NEXT_CONTROL_VALUE         1392
+#define _APS_NEXT_CONTROL_VALUE         1393
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif
