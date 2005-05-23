@@ -406,9 +406,9 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	if (( strncmp( str, "MSG", 3 ) !=0 ) && ( strncmp( str, "QRY", 3 ) != 0 ))
 		strcat( str,"\r\n" );
 
-	send( str, strlen( str ));
+	int result = send( str, strlen( str ));
 	free( str );
-	return thisTrid;
+	return ( result > 0 ) ? thisTrid : -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

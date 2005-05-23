@@ -890,12 +890,20 @@ LBL_Error:
 		else {
 			seq = thread->sendMessage( msgType, msg, 0 );
 
-			if ( !MyOptions.SlowSend ) {
-				HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-				DWORD dwThreadId;
-				CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
-				SetEvent( hEvent );
-	}	}	}
+			if ( seq == -1 ) // Sergi
+			{
+				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 ); // Sergi
+				msnNsThread->sendPacket( "XFR", "SB" ); // Sergi
+			}
+			else // Sergi
+			{
+
+				if ( !MyOptions.SlowSend ) {
+					HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+					DWORD dwThreadId;
+					CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
+					SetEvent( hEvent );
+	}	}	}	}
 
 	free( msg );
 	return seq;

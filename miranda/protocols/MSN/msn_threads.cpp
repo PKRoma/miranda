@@ -44,8 +44,6 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 {
 	while( TRUE )
 	{
-		int iSaveTimeout = msnPingTimeout;
-
 		while ( msnPingTimeout-- > 0 ) {
 			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
 				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
@@ -53,7 +51,7 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 				return;
 		}	}
 
-		msnPingTimeout = iSaveTimeout;
+		msnPingTimeout = 50;
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
