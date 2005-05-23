@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 custom tab control for tabSRMM. Allows for configuartion of colors and backgrounds
 for different tab states (active,  unread etc..)
 
-no visual style support yet - will be added later.
-
 */
 
 #include "commonheaders.h"
@@ -35,6 +33,7 @@ no visual style support yet - will be added later.
 extern MYGLOBALS myGlobals;
 extern WNDPROC OldTabControlProc;
 extern struct ContainerWindowData *pFirstContainer;
+
 /*
  * visual styles support (XP+)
  * returns 0 on failure
@@ -48,24 +47,18 @@ BOOL (PASCAL* pfnIsThemeActive)() = 0;
 HANDLE (PASCAL* pfnOpenThemeData)(HWND hwnd, LPCWSTR pszClassList) = 0;
 UINT (PASCAL* pfnDrawThemeBackground)(HANDLE htheme, HDC hdc, int iPartID, int iStateID, RECT* prcBx, RECT* prcClip) = 0;
 UINT (PASCAL* pfnCloseThemeData)(HANDLE hTheme) = 0;
-HRESULT (PASCAL* pfnGetThemeBackgroundRegion)(HANDLE hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, HRGN *pRegion) = 0;
-BOOL (PASCAL* pfnIsThemeBackgroundPartiallyTransparent)(HANDLE hTheme, int iPartId, int iStateId) = 0;
-HRESULT (PASCAL* pfnDrawThemeBackgroundEx)(HANDLE hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, const DTBGOPTS *pOptions) = 0;
 
 void FreeTabConfig(), ReloadTabConfig();
 
 int InitVSApi()
 {
     if((hUxTheme = LoadLibraryA("uxtheme.dll")) == 0)
-        return FALSE;
+        return 0;
 
     pfnIsThemeActive = GetProcAddress(hUxTheme, "IsThemeActive");
     pfnOpenThemeData = GetProcAddress(hUxTheme, "OpenThemeData");
     pfnDrawThemeBackground = GetProcAddress(hUxTheme, "DrawThemeBackground");
     pfnCloseThemeData = GetProcAddress(hUxTheme, "CloseThemeData");
-    pfnGetThemeBackgroundRegion = GetProcAddress(hUxTheme, "GetThemeBackgroundRegion");
-    pfnIsThemeBackgroundPartiallyTransparent = GetProcAddress(hUxTheme, "IsThemeBackgroundPartiallyTransparent");
-    pfnDrawThemeBackgroundEx = GetProcAddress(hUxTheme, "DrawThemeBackgroundEx");
     if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0) {
         return 1;
     }
@@ -314,7 +307,7 @@ int DWordAlign(int n)
 
 HRESULT DrawThemesPart(struct myTabCtrl *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
 {
-    HRESULT hResult;
+    HRESULT hResult = 0;
     
     if(pfnDrawThemeBackground == NULL)
         return 0;
@@ -347,6 +340,24 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     szBmp.cx = rcItem->right - rcItem->left;
     szBmp.cy = rcItem->bottom - rcItem->top;
     
+    /*
+     * for top row tabs, it's easy. Just draw to the provided dc (it's a mem dc already)
+     */
+    
+    if(!bBottom) {
+        if(bBody) 
+            DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9 
+        else { 
+            int iStateId = bSel ? 3 : (bHot ? 2 : 1);                       // leftmost item has different part id
+            DrawThemesPart(tabdat, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem);
+        }
+        return;
+    }
+    
+    /*
+     * remaining code is for bottom tabs only.
+     */
+    
     dcMem = CreateCompatibleDC(pDC);
 	bmpMem = CreateCompatibleBitmap(pDC, szBmp.cx, szBmp.cy);
 
@@ -356,45 +367,42 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     rcMem.right = szBmp.cx;
     rcMem.bottom = szBmp.cy;
     
+    ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
+    bihOut = &biOut.bmiHeader;
+
+    bihOut->biSize = sizeof (BITMAPINFOHEADER);
+    bihOut->biCompression = BI_RGB;
+    bihOut->biPlanes = 1;		  
+    bihOut->biBitCount = 24;	// force as RGB: 3 bytes, 24 bits
+    bihOut->biWidth = szBmp.cx; 
+    bihOut->biHeight = szBmp.cy;
+
+    nBmpWdtPS = DWordAlign(szBmp.cx*3);
+    nSzBuffPS = ((nBmpWdtPS * szBmp.cy) / 8 + 2) * 8;
+
     /*
      * blit the background to the memory dc, so that transparent tabs will draw properly
      * for bottom tabs, it's more complex, because the background part must not be mirrored
      * the body part does not need that (filling with the background color is much faster
      * and sufficient for the tab "page" part.
      */
-    
+
     if(!bSel)
-        FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));
+        FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));        // only active (bSel == TRUE) tabs can overwrite others. for inactive, it's enough to fill with bg color
     else {
-        if(!bBottom)
-            BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
-        else {
-            /*
-             * mirror the background horizontally for bottom tabs.
-             * needed, because after drawing the theme part the images will again be mirrored
-             * to "flip" the tab item.
-             */
-            BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
+        /*
+         * mirror the background horizontally for bottom selected tabs (they can overwrite others)
+         * needed, because after drawing the theme part the images will again be mirrored
+         * to "flip" the tab item.
+         */
+        BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);
 
-            ZeroMemory(&biOut,sizeof(BITMAPINFO));	// Fill local pixel arrays
-            bihOut = &biOut.bmiHeader;
+        pcImg1 = malloc(nSzBuffPS);
 
-            bihOut->biSize = sizeof (BITMAPINFOHEADER);
-            bihOut->biCompression = BI_RGB;
-            bihOut->biPlanes = 1;		  
-            bihOut->biBitCount = 24;	// force as RGB: 3 bytes, 24 bits
-            bihOut->biWidth =szBmp.cx; 
-            bihOut->biHeight=szBmp.cy;
-
-            nBmpWdtPS = DWordAlign(szBmp.cx*3);
-            nSzBuffPS = ((nBmpWdtPS * szBmp.cy) / 8 + 2) * 8;
-
-            pcImg1 = malloc(nSzBuffPS);
-
+        if(pcImg1) {
             GetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg1, &biOut, DIB_RGB_COLORS);
             bihOut->biHeight = -szBmp.cy; 				// to mirror bitmap is eough to use negative height between Get/SetDIBits
             SetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg1, &biOut, DIB_RGB_COLORS);
-
             free(pcImg1);
         }
     }
@@ -405,37 +413,25 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
         int iStateId = bSel ? 3 : (bHot ? 2 : 1);
         DrawThemesPart(tabdat, dcMem, rcItem->left < 20 ? 2 : 1, iStateId, &rcMem);
     }
-    ZeroMemory(&biOut,sizeof(BITMAPINFO));
-    bihOut = &biOut.bmiHeader;
-    
-	bihOut->biSize = sizeof (BITMAPINFOHEADER);
-	bihOut->biCompression = BI_RGB;
-	bihOut->biPlanes = 1;		  
-    bihOut->biBitCount = 24;	// force as RGB: 3 bytes, 24 bits
-	bihOut->biWidth =szBmp.cx; 
-    bihOut->biHeight=szBmp.cy;
 
-	nBmpWdtPS = DWordAlign(szBmp.cx*3);
-	nSzBuffPS = ((nBmpWdtPS * szBmp.cy) / 8 + 2) * 8;
-    
-	if(bBottom)
-        pcImg = malloc(nSzBuffPS);
+    bihOut->biHeight = szBmp.cy;
+    pcImg = malloc(nSzBuffPS);
         
-	if(bBody && bBottom) {
+    /*
+    if(bBody) {
         nStart = 3;
         nLenSub = 4;	// if bottom oriented flip the body contest only (no shadows were flipped)
-    }
+    } */
     // flip (mirror) the bitmap horizontally
     
-    if(!bBody && bBottom)	{									// get bits: 
+//    if(!bBody)	{									// get bits: 
+    if(pcImg)	{									// get bits: 
 		GetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
-        bihOut->biHeight = -szBmp.cy; 				// to mirror bitmap is eough to use negative height between Get/SetDIBits
+        bihOut->biHeight = -szBmp.cy;
         SetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
+        free(pcImg);
     }
     
-	if(pcImg)
-        free(pcImg);
-
     /*
      * finally, blit the result to the destination dc
      */

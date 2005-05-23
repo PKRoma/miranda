@@ -604,7 +604,7 @@ BEGIN
     LTEXT           "Get more help on variables",IDC_VARIABLESHELP,12,147,
                     148,10
     LTEXT           "Double click a template to edit it. Select templates in the list box to show a preview",
-                    IDC_STATIC,200,128,155,25
+                    IDC_STATIC,200,128,155,23
     PUSHBUTTON      "Quick help on Variables",IDC_VARHELP,11,128,125,15
 END
 
@@ -704,7 +704,7 @@ BEGIN
     DEFPUSHBUTTON   "Close",IDOK,120,217,88,14
     CONTROL         "",IDC_HELPTEXT,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,6,
-                    7,322,206
+                    7,322,206,WS_EX_CLIENTEDGE
 END
 
 
