@@ -31,6 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern char* jabberVcardPhotoFileName;
 extern char* jabberVcardPhotoType;
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
 static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
 int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
@@ -43,6 +45,20 @@ int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
 
 	return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+int JabberSendGetVcard( const char* jid )
+{
+	int iqId = JabberSerialNext();
+	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, JabberIqResultGetVcard );
+	JabberSend( jabberThreadInfo->s, 
+		"<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp' prodid='-//HandGen//NONSGML vGen v1.0//EN' version='2.0' /></iq>", 
+		iqId, UTF8(jid));
+	return 0;	
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct {
 	HWND hwnd;
@@ -1030,15 +1046,11 @@ static void ThemeDialogBackground( HWND hwnd ) {
 
 static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	VcardTab *dat;
-	HWND hwndTabs;
-	TCITEM tci;
-	int i, iqId;
+	VcardTab* dat = ( VcardTab* ) GetWindowLong( hwndDlg, GWL_USERDATA );
 
-	dat = ( VcardTab * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-	hwndTabs = GetDlgItem( hwndDlg, IDC_TABS );
 	switch ( msg ) {
 	case WM_INITDIALOG:
+	{
 		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_VCARD )) );
 		TranslateDialogDefault( hwndDlg );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), jabberOnline );
@@ -1053,6 +1065,9 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		dat->page = ( VcardPage * ) malloc( dat->pageCount * sizeof( VcardPage ));
 		memset( dat->page, 0, dat->pageCount * sizeof( VcardPage ));
 
+		HWND hwndTabs = GetDlgItem( hwndDlg, IDC_TABS );
+
+		TCITEM tci = { 0 };
 		tci.mask = TCIF_TEXT;
 		// Page 0: Personal
 		dat->page[0].dlgId = IDD_VCARD_PERSONAL;
@@ -1105,6 +1120,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 		if ( jabberOnline ) SendMessage( hwndDlg, WM_COMMAND, IDC_UPDATE, 0 );
 		return TRUE;
+	}
 	case WM_CTLCOLORSTATIC:
 		if (( HWND ) lParam == GetDlgItem( hwndDlg, IDC_WHITERECT )) {
 			SetBkColor(( HDC ) wParam, RGB( 255, 255, 255 ));
@@ -1150,9 +1166,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			dat->szUpdating[sizeof( dat->szUpdating )-1] = '\0';
 			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_GETVCARD, JabberIqResultGetVcard );
-			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp'/></iq>", iqId, UTF8(jabberJID));
+			JabberSendGetVcard( jabberJID );
 			dat->animating = TRUE;
 			SetTimer( hwndDlg, 1, 200, NULL );
 			break;
@@ -1191,9 +1205,10 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			dat->animating = FALSE;
 			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), FALSE );
 		}
-		for ( i=0; i<dat->pageCount; i++ )
-			if ( dat->page[i].hwnd != NULL )
-				SendMessage( dat->page[i].hwnd, WM_JABBER_REFRESH, 0, 0 );
+		{	for ( int i=0; i<dat->pageCount; i++ )
+				if ( dat->page[i].hwnd != NULL )
+					SendMessage( dat->page[i].hwnd, WM_JABBER_REFRESH, 0, 0 );
+		}
 		dat->changed = FALSE;
 		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), TRUE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), FALSE );
@@ -1203,10 +1218,9 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		break;
 	case WM_DESTROY:
 		hwndJabberVcard = NULL;
-		for ( i=0; i<dat->pageCount; i++ ) {
-			if ( dat->page[i].hwnd != NULL ) {
+		for ( int i=0; i<dat->pageCount; i++ )
+			if ( dat->page[i].hwnd != NULL )
 				DestroyWindow( dat->page[i].hwnd );
-		}	}
 
 		if ( dat->page ) free( dat->page );
 		if ( dat ) free( dat );

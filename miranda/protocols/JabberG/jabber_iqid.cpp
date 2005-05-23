@@ -507,7 +507,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 						hasHome = TRUE;
 						if (( m=JabberXmlGetChild( n, "STREET" )) != NULL && m->text != NULL ) {
 							hasHomeStreet = TRUE;
-							JabberTextDecode( m->text );
+							JabberStringDecode( m->text );
 							if ( hContact != NULL ) {
 								if (( o=JabberXmlGetChild( n, "EXTADR" )) != NULL && o->text != NULL )
 									mir_snprintf( text, sizeof( text ), "%s\r\n%s", m->text, JabberStringDecode( o->text ));
@@ -601,7 +601,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 				else if ( !strcmp( n->name, "TEL" )) {
 					// Telephone/Fax/Cellular
 					if (( m=JabberXmlGetChild( n, "NUMBER" ))!=NULL && m->text!=NULL ) {
-						JabberTextDecode( m->text );
+						JabberStringDecode( m->text );
 						if ( hContact != NULL ) {
 							if ( !hasFax && JabberXmlGetChild( n, "FAX" )!=NULL ) {
 								hasFax = TRUE;

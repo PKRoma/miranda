@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_list.h"
 #include "jabber_iq.h"
 
+int JabberSendGetVcard( const char* );
+
 int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 {
 	if ( wParam == PFLAGNUM_1 )
@@ -486,19 +488,16 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 
 int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 {
+	if ( !jabberOnline ) 
+		return 1;
+
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	DBVARIANT dbv;
-	int iqId;
 
-	if ( !jabberOnline ) return 1;
-	if ( DBGetContactSetting( ccs->hContact, jabberProtoName, "jid", &dbv )) return 1;
+	char jid[ JABBER_MAX_JID_LEN ];
+	if ( !JGetStaticString( "jid", ccs->hContact, jid, sizeof jid )) 
+		return JabberSendGetVcard( jid );
 
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetVcard );
-	JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='vcard-temp'/></iq>", iqId, UTF8( dbv.pszVal ));
-	JFreeVariant( &dbv );
-	JabberLog( "hContact = %d", ccs->hContact );
-	return 0;
+	return 1;
 }
 
 int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
