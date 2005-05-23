@@ -23,7 +23,15 @@ Version 0.9.9.95pre7 - 2005/05/23
         
         + added a help window to the template editor describing all the variables and
           modifiers.
+          
+        * 2nd try to fix Ctrl-W and Ctrl-F4 (Win 9x only)
+        
+        + added option to force some extra redraws (options -> tabs and layout -> Force
+          more aggressive window updates). If enabled, it will force additional re-
+          draws.
 
+        * optimized visual styles rendering on the tab control. Don't draw unneeded stuff.
+        
 Version 0.9.9.95pre6 - 2005/05/20
 
         ! bugfix - tab control did not use the proper visual style part for leftmost

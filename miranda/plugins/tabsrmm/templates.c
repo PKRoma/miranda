@@ -80,6 +80,7 @@ TemplateSet LTR_Active, RTL_Active;
 
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
+static int helpActive = 0;
 
 static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -200,7 +201,8 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     DestroyWindow(hwndDlg);
                     break;
                 case IDC_VARHELP:
-                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), hwndDlg, DlgProcTemplateHelp, 0);
+                    if(!helpActive)
+                        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), hwndDlg, DlgProcTemplateHelp, 0);
                     break;
                 case IDC_TEMPLATELIST:
                     switch(HIWORD(wParam)) {
@@ -422,9 +424,9 @@ static char *var_helptxt[] = {
     "%|:\tA \"TAB\" character. Advances to the next tab position, usually the position set by the left or right indent value.",
     "%fX:\tswitch to one of the predefined fonts, where X is a one character code and can have the following values (case sensitive as always):\\line d: -> font for date/timestamp\\line n: -> font for nickname\\line m: -> font for message text\\line M: -> font for \\b misc \\b0 events (file, URL, etc.)",
     "%cX:\tuse one of the predefined colors for the following text output (X is a number from 0 to 4, referring to the color index). Only useful together with the & modifier (see below) and maybe the %fX variable.",
-    "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediatly, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense. \
-    The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events). Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifieres to get different message formatting for old and new events.\
-    The & modifier means \\b skip font\\b0  . If being used, the variable will be printed without setting the font for the variables context. Effectively, the font which is currently selected remains valid.",
+    "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediatly, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense.\
+\\line\\line The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events).\\line Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifieres to get different message formatting for old and new events.\
+\\line\\line The & modifier means \\b skip font\\b0  . If being used, the variable will be printed without setting the font for the variables context. Effectively, the font which is currently selected remains valid.",
     "\\line \\ul\\b Some examples:\\ul0\\b0\\line\\par \\b %&N\\b0 -\tprints the nickname, but does not use the font which is configured for nicknames.\\par\
 \\b %fd%&N\\b0 -\tprints the nickname, using the font for timestamps (selected by %fd)\\par\
 \\b %fd%c3%&N\\b0 -\tprints the nickname, using the font for timestamp, but with the text color set to color #4",
@@ -439,21 +441,31 @@ static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, 
             int i = 1;
             char szHeader[2048];
             SETTEXTEX stx = {ST_SELECTION, CP_ACP};
+            RECT rc;
+            
             /*
              * send the help text
              */
+
             mir_snprintf(szHeader, 256, var_helptxt[0], 40*15, 40*15, 40*15);
             while(var_helptxt[i] != NULL) {
                 mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
                 SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
             }
+            GetWindowRect(hwndDlg, &rc);
+            MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
             SetWindowTextA(hwndDlg, Translate("Template editor help"));
             ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
+            helpActive = 1;
             return TRUE;
         }
         case WM_COMMAND:
             if(LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
                 DestroyWindow(hwndDlg);
+            break;
+        case WM_DESTROY:
+            helpActive = 0;
+            break;
     }
     return FALSE;
 }

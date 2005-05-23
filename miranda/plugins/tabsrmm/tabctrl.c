@@ -356,9 +356,6 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     rcMem.right = szBmp.cx;
     rcMem.bottom = szBmp.cy;
     
-    //if(bSel)
-//        rcMem.bottom++;
-
     /*
      * blit the background to the memory dc, so that transparent tabs will draw properly
      * for bottom tabs, it's more complex, because the background part must not be mirrored
@@ -366,8 +363,8 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
      * and sufficient for the tab "page" part.
      */
     
-    if(bBody)
-        FillRect(dcMem, rcItem, GetSysColorBrush(COLOR_3DFACE));
+    if(!bSel)
+        FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));
     else {
         if(!bBottom)
             BitBlt(dcMem, 0, 0, szBmp.cx, szBmp.cy, pDC, rcItem->left, rcItem->top, SRCCOPY);

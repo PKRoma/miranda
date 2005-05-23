@@ -982,7 +982,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                     break;
                 case SC_MINIMIZE:
-                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || nen_options.floaterMode) && !(nen_options.bFloaterOnlyMin) && myGlobals.m_WinVerMajor >= 5) {
+                    if(nen_options.bMinimizeToTray && (nen_options.bTraySupport || (nen_options.floaterMode && !nen_options.bFloaterOnlyMin)) && myGlobals.m_WinVerMajor >= 5) {
                         pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
                         GetWindowRect(hwndDlg, &pContainer->restoreRect);
                         MinimiseToTray(hwndDlg, nen_options.bAnimated);
@@ -1336,6 +1336,8 @@ panel_found:
                         RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
                 }
                 SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
+                if(myGlobals.m_ExtraRedraws)
+                    InvalidateRect((HWND)item.lParam, NULL, TRUE);
                 if(GetMenu(hwndDlg) != 0)
                     DrawMenuBar(hwndDlg);
                 break;
