@@ -309,7 +309,7 @@ typedef struct _globals {
     HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
     // external plugins
-    int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView;
+    int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HIMAGELIST g_hImageList;
     int g_nrProtos;

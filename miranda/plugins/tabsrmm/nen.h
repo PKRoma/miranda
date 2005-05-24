@@ -51,6 +51,10 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define MASK_OPEN       0x0002
 #define MASK_REMOVE     0x0004
 
+#define PU_REMOVE_ON_FOCUS 1
+#define PU_REMOVE_ON_TYPE 2
+#define PU_REMOVE_ON_SEND 4
+
 #define SETTING_LIFETIME_MIN		1
 #define SETTING_LIFETIME_MAX		60
 #define SETTING_LIFETIME_DEFAULT	4
@@ -92,6 +96,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define OPT_FLOATER "floater"
 #define OPT_FLOATERINWIN "floater_win"
 #define OPT_FLOATERONLYMIN "floater_onlymin"
+#define OPT_REMOVEMASK "removemask"
 
 typedef struct {
     BOOL bPreview;
@@ -140,6 +145,7 @@ typedef struct {
     BOOL floaterMode;
     BOOL bFloaterInWin;
     BOOL bFloaterOnlyMin;
+    DWORD dwRemoveMask;
 } NEN_OPTIONS;
 
 #define FLOATER_ATTACHED 1

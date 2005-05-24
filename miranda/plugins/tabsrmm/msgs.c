@@ -35,6 +35,8 @@ $Id$
 #include "IcoLib.h"
 #include "functions.h"
 #include "m_toptoolbar.h"
+#include "../../include/m_clc.h"
+#include "../../include/m_clui.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -45,6 +47,7 @@ $Id$
 #include <windows.h>
 #include "../../include/m_protomod.h"
 #include "../../include/m_protosvc.h"
+#include "m_MathModule.h"
 //mathMod end
 #endif
 
@@ -792,10 +795,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     MENUITEMINFOA mii = {0};
     HMENU submenu;
     
-    ReloadGlobals();
-    NEN_ReadOptions(&nen_options);
-    ReloadTabConfig();
-    LoadTSButtonModule();
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -2000090000;
@@ -820,13 +819,13 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     for(i = 0; i < NR_BUTTONBARICONS; i++)
         myGlobals.g_buttonBarIcons[i] = 0;
     LoadIconTheme();
-    CreateImageList(TRUE);              // XXX tab support, create shared image list for tab icons.
+    CreateImageList(TRUE);
+    
 #if defined(_UNICODE)
     ConvertAllToUTF8();
 #endif    
 	hDLL = LoadLibraryA("user32");
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
-    myGlobals.m_VSApiEnabled = InitVSApi();
 #if defined(_UNICODE)
     if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
         if(dbv.type == DBVT_ASCIIZ) {
@@ -844,14 +843,13 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     else
         _tcsncpy(myGlobals.g_szDefaultContainerName, _T("Default"), CONTAINER_NAMELEN);
 
-    myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
-    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_BITMAP;
     mii.hbmpItem = HBMMENU_CALLBACK;
     submenu = GetSubMenu(myGlobals.g_hMenuContext, 7);
     for(i = 0; i <= 7; i++)
         SetMenuItemInfoA(submenu, (UINT_PTR)i, TRUE, &mii);
+
     BuildContainerMenu();
     
 #if defined(_UNICODE)
@@ -865,10 +863,24 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
         DBFreeVariant(&dbv);
 
     myGlobals.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
-
     if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
         myGlobals.g_SmileyAddAvail = 1;
-
+    myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
+    myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
+#ifdef __MATHMOD_SUPPORT    		
+     myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
+     if(myGlobals.m_MathModAvail) {
+         char *szDelim = (char *)CallService(MATH_GET_STARTDELIMITER, 0, 0);
+         if(szDelim) {
+#if defined(_UNICODE)
+             MultiByteToWideChar(CP_ACP, 0, szDelim, -1, myGlobals.m_MathModStartDelimiter, sizeof(myGlobals.m_MathModStartDelimiter));
+#else
+             strncpy(myGlobals.m_MathModStartDelimiter, szDelim, sizeof(myGlobals.m_MathModStartDelimiter));
+#endif
+             CallService(MTH_FREE_MATH_BUFFER, 0, (LPARAM)szDelim);
+         }
+     }
+#endif     
     myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0);
     
     if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
@@ -877,22 +889,16 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists("SecureIM/IsContactSecured"))
         myGlobals.g_SecureIMAvail = 1;
 
-#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "kbdhook", 0))
-        g_hMsgHook = SetWindowsHookEx(WH_GETMESSAGE, GetMsgHookProc, 0, GetCurrentThreadId());
-#endif    
+    if(ServiceExists(MS_POPUP_ADDPOPUPEX))
+        myGlobals.g_PopupAvail = 1;
+    
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
 
-    // nls stuff
-    CacheLogFonts();
-    BuildCodePageList();
     ZeroMemory((void *)sendJobs, sizeof(struct SendJob) * NR_SENDJOBS);
     if(nen_options.bTraySupport)
         CreateSystrayIcon(TRUE);
-    CreateTrayMenus(TRUE);
-    LoadDefaultTemplates();
-    
+
     ZeroMemory((void *)&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -500050005;
@@ -997,7 +1003,6 @@ int SplitmsgShutdown(void)
 
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-    //UnloadIcons();
     LoadFromIconLib();
     CacheMsgLogIcons();
     return 0;
@@ -1070,6 +1075,20 @@ int LoadSendRecvMessageModule(void)
     if (myGlobals.hCurHyperlinkHand == NULL)
         myGlobals.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 
+    ReloadTabConfig();
+    LoadTSButtonModule();
+    ReloadGlobals();
+    NEN_ReadOptions(&nen_options);
+
+    myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
+    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
+    
+    CreateTrayMenus(TRUE);
+    LoadDefaultTemplates();
+
+    CacheLogFonts();
+    BuildCodePageList();
+    myGlobals.m_VSApiEnabled = InitVSApi();
     return 0;
 }
 

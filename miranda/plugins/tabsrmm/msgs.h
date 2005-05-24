@@ -494,3 +494,5 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 	return len;
 }
 #endif
+
+

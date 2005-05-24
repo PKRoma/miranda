@@ -26,10 +26,10 @@ $Id$
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"
-#include "../../include/m_clc.h"
-#include "../../include/m_clui.h"
 #include "m_ieview.h"
 #include "msgdlgutils.h"
+#include "../../include/m_clc.h"
+#include "../../include/m_clui.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -726,7 +726,7 @@ static struct LISTOPTIONSGROUP tabGroups[] = {
 static struct LISTOPTIONSITEM tabItems[] = {
     0, "Show status text on tabs", 0, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
     0, "Warn on close message tab", 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
-    0, "Automatically pop up the window/tab when a message is receive (has PRIORITY!)", SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
+    0, "Automatically pop up the window/tab when a message is received (has PRIORITY!)", SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
     0, "Create tabs in the background", 0, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
     0, "Create containers minimized on the taskbar", 0, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
     0, "Popup container if minimized", 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
@@ -734,7 +734,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, "Use flat buttons", 1, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
     0, "Splitters have static edges", 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
     0, "Flat message log (no static edge)", 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
-    0, "Activate autlocale support", 0, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
+    0, "Activate autolocale support", 0, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
     0, "ESC closes sessions (minimizes window, if disabled)", 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
     0, "Use global hotkeys (configure modifiers below)", 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
     0, "Perform version check on Icon DLL", 1, LOI_TYPE_SETTING, (UINT_PTR)"v-check", 3,
@@ -1827,7 +1827,6 @@ void ReloadGlobals()
      myGlobals.m_FormatWholeWordsOnly = 1;
      myGlobals.m_AllowSendButtonHidden = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0);
      myGlobals.m_ToolbarHideMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", 0);
-     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
      myGlobals.m_FixFutureTimestamps = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 0);
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
@@ -1836,21 +1835,6 @@ void ReloadGlobals()
      myGlobals.m_WinVerMajor = WinVerMajor();
      myGlobals.m_WinVerMinor = WinVerMinor();
      myGlobals.m_SideBarEnabled = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sidebar", 0);
-     myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
      myGlobals.m_TabAppearance = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", 0);
      myGlobals.m_ExtraRedraws = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggromode", 0);
-#ifdef __MATHMOD_SUPPORT    		
-     myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
-     if(myGlobals.m_MathModAvail) {
-         char *szDelim = (char *)CallService(MATH_GET_STARTDELIMITER, 0, 0);
-         if(szDelim) {
-#if defined(_UNICODE)
-             MultiByteToWideChar(CP_ACP, 0, szDelim, -1, myGlobals.m_MathModStartDelimiter, sizeof(myGlobals.m_MathModStartDelimiter));
-#else
-             strncpy(myGlobals.m_MathModStartDelimiter, szDelim, sizeof(myGlobals.m_MathModStartDelimiter));
-#endif
-             CallService(MTH_FREE_MATH_BUFFER, 0, (LPARAM)szDelim);
-         }
-     }
-#endif     
 }

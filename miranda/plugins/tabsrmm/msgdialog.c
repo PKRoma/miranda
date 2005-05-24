@@ -174,7 +174,6 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZEN), SW_HIDE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
     
-// IEVIew MOD Begin
     EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), TRUE);
     
 	if (dat->hwndLog) {
@@ -186,7 +185,6 @@ void SetDialogToType(HWND hwndDlg)
             
 	} else
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
-// IEVIew MOD End
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), dat->dwFlags & MWF_ERRORSTATE ? SW_SHOW : SW_HIDE);
 
     if(!dat->SendFormat)
@@ -831,6 +829,9 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
 
     if (!dat->hContact)
         return;
+
+    DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_TYPE);
+    
     // Don't send to protocols who don't support typing
     // Don't send to users who are unchecked in the typing notification options
     // Don't send to protocols that are offline
@@ -1742,6 +1743,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 #endif                
                 dat->dwLastUpdate = GetTickCount();
+                if(dat->hContact)
+                    DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_FOCUS);
             }
             return 1;
         case WM_ACTIVATE:
@@ -1804,6 +1807,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 #endif                
                 dat->dwLastUpdate = GetTickCount();
+                if(dat->hContact)
+                    DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_FOCUS);
             }
             return 1;
         case WM_GETMINMAXINFO:
@@ -2919,6 +2924,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
                         NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
                     }
+                    DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_SEND);
                     AddToSendQueue(hwndDlg, dat, memRequired);
                     return TRUE;
                     }

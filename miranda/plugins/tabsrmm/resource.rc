@@ -434,7 +434,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,168,135,10
     EDITTEXT        IDC_CUT_TITLEMAX,166,166,30,12,ES_AUTOHSCROLL
     LTEXT           "characters",IDC_STATIC,208,168,88,9
-    PUSHBUTTON      "Setup status modes for automatic tab creation",
+    PUSHBUTTON      "Setup status modes for automatic tab creation...",
                     IDC_SETUPAUTOCREATEMODES,56,138,190,14
     GROUPBOX        "Miscellaneous options",IDC_STATIC,0,121,303,104
     LTEXT           "Global hotkey modifiers",IDC_STATIC,12,204,113,11
@@ -605,7 +605,7 @@ BEGIN
                     148,10
     LTEXT           "Double click a template to edit it. Select templates in the list box to show a preview",
                     IDC_STATIC,200,128,155,23
-    PUSHBUTTON      "Quick help on Variables",IDC_VARHELP,11,128,125,15
+    PUSHBUTTON      "Quick help on Variables...",IDC_VARHELP,11,128,125,15
 END
 
 IDD_TABCONFIG DIALOGEX 0, 0, 327, 291
@@ -645,7 +645,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,13,123,140,9
     CONTROL         "Disable visual styles",IDC_NOSKINNING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,164,111,151,9
-    CONTROL         "Flat tabs",IDC_FLATTABS2,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Use button tabs",IDC_FLATTABS2,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,164,121,149,12
     LTEXT           "Tab padding vertical",IDC_STATIC,14,168,133,10
     EDITTEXT        IDC_TABPADDING,164,164,28,13,ES_AUTOHSCROLL

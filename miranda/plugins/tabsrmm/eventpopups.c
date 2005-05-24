@@ -99,6 +99,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->floaterMode = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATER, 0);
     options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
     options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
+    options->dwRemoveMask = DBGetContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, 0);
     return 0;
 }
 
@@ -142,6 +143,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATER, options->floaterMode);
     DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, options->bFloaterInWin);
     DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, options->bFloaterOnlyMin);
+    DBWriteContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
     return 0;
 }
 
@@ -153,6 +155,7 @@ static struct LISTOPTIONSGROUP lGroups[] = {
     0, "Right click actions (popups only)",
     0, "Timeout actions (popups only)",
     0, "Popup merging (per user) options",
+    0, "Remove popups under following conditions",
     0, NULL
 };
 
@@ -187,6 +190,10 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "File events", MASK_FILE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
     0, "URL events", MASK_URL, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
     0, "Other events", MASK_OTHER, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+
+    0, "Remove event popups for a contact when its message window becomes focused", PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+    0, "Remove event popups for a contact when you start typing a reply", PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+    0, "Remove event popups for a contact when you send a reply", PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
     
     0, NULL, 0, 0, 0, 0
 };
@@ -1056,3 +1063,20 @@ passed:
     return 0;
 }
 
+/*
+ * remove all popups for hContact, but only if the mask matches the current "mode"
+ */
+
+void DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
+{
+    int i = 0;
+
+    if(!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !myGlobals.g_PopupAvail)
+        return;
+        
+    while((i = NumberPopupData(hContact)) != -1) {
+        if(PopUpList[i]->hWnd != 0 && IsWindow(PopUpList[i]->hWnd))
+            PUDeletePopUp(PopUpList[i]->hWnd);
+        PopUpList[i] = NULL;
+    }
+}

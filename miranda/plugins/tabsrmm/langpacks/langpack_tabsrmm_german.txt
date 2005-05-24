@@ -320,21 +320,21 @@ innen
 außen
 [pixels]
 pixel
-[Create tabs and containers]
-Erzeugen von tabs und Containern
+[Message tab and window creation options]
+Erzeugen von tabs und Fenstern
 [Create tabs in the background]
 Tabs im Hintergrund erzeugen
-[Automatically pop up the window/tab when a message is received]
+[Automatically pop up the window/tab when a message is received (has PRIORITY!)]
 Fenster automatisch öffnen und auf den Desktop bringen
 [Automatically switch tabs in minimized containers]
 In minimierten Fenstern, tabs automatisch umschalten
 [Popup container if minimized]
 Minimierte container auf den Desktop
-[Create containers, but leave them minimized]
+[Create containers minimized on the taskbar]
 Container mimimiert in der taskbar erzeugen
-[Setup status modes...]
-Statusmodi...
-[Message dialog layout]
+[Setup status modes for automatic tab creation...]
+Statusmodi für automatische Tab/Fenstererzeugung...
+[Message dialog visual settings]
 Layout des Nachrichtenfensters
 [Use flat buttons]
 Flache Schaltflächen
@@ -350,14 +350,17 @@ Autolocale aktivieren
 Eingabeverlauf
 [entries]
 Einträge
-[Use ESC key for closing sessions]
-ESC schließt Sitzung
-[Use global hotkeys for finding message sessions]
+[ESC closes sessions (minimizes window, if disabled)]
+ESC schließt Sitzung (minimiert Fenster, wenn deaktiviert)
+[Use global hotkeys (configure modifiers below)]
 Globale Hotkeys verwenden
 [Modifiers]
 Modifikatoren
 [Perform version check on Icon DLL]
 Versionskontrolle für Symbol DLL
+[Force more aggressive window updates]
+Aggressiveres Neuzeichnen von Fenstern
+
 ; ------------------------
 ; ----------------- typing notify options
 ; ------------------------
@@ -564,7 +567,7 @@ Keine Titelleiste
 [Only show tab bar when it's needed]
 Keine Tabs bei nur einer Sitzung
 [Enable popups if minimized]
-[Popups, wenn Fenster minimiert
+Popups, wenn Fenster minimiert
 [Container stays on top]
 Immer im Vordergrund
 [Flashing options]
@@ -1025,7 +1028,7 @@ Gruppenstart (ausgehend)
 [Group In (Inner)]
 Eingehend, gruppiert
 [Group Out (Inner)]
-Ausgehend, gruppier
+Ausgehend, gruppiert
 [Status change]
 Statuswechsel
 [Templates]
@@ -1046,6 +1049,14 @@ Zurücksetzen
 Frei verwendbare Farben
 [Close]
 Schließen
+[Quick help on variables...]
+Hilfe zu den Variablen
+[Double click a template to edit it. Select templates in the list box to show a preview]
+Doppelklick auf eine der Vorlagen um sie zu bearbeiten. Vorlage auswählen um eine Vorschau zu zeigen.
+[Get more help on variables]
+Mehr Hilfe zu Variablen
+[Template editor help]
+Hilfe zur Vorlagenbearbeitung
 ;
 ;Event notify stuff
 ;
@@ -1053,6 +1064,16 @@ Schließen
 Ereignisbenachrichtigungen
 [Event notify options]
 Einstellungen für Ereignisbenachrichtigungen
+[Disable ALL event notifications (check, if you're using an external plugin for event notifications)]
+Alle Ereignisbenachrichtigungen deaktiveren (z.b. wenn externes plugin für diesen Zweck aktiv ist)
+[Remove popups under following conditions]
+Popups vom Bildschirm löschen, wenn...
+[Remove event popups for a contact when its message window becomes focused]
+Alle Popups eines Kontakts entfernen, wenn das Fenster in den Vordergrund tritt]
+[Remove event popups for a contact when you start typing a reply]
+Alle Popups eines Kontakts entfernen, wenn eine Nachricht getippt wird
+[Remove event popups for a contact when you send a reply]
+Alle Popups eines Kontakts entfernen, wenn eine Nachricht gesendet wird
 [Announce events of type...]
 Zeige Ereignisse des Typs...
 [Message events]
@@ -1188,11 +1209,11 @@ HINWEIS: Hintergrundfarben funktionieren nur mit "flachen" tabs.
 Diverse Einstellungen
 [Flash icon]
 Symbol blinkt
-[Flash label]
+[Flash tab label]
 Textlabel blinkt
 [Disable visual styles]
 Keine visual styles verwenden
-[Flat tabs]
+[Use button tabs]
 Flache tabs (Schaltflächen)
 [Tab padding vertical]
 Vertikaler Randabstand
@@ -1206,4 +1227,8 @@ außen
 HINWEIS: Einige Einstellungen haben keine Wirkung auf bereits offene Fenster
 [Configure tab appearance]
 Aussehen der tabs festlegen
+[Use windows colors]
+Windows - Standardfarben verwenden
+[Default width for button-style tabs]
+Standardbreite bei Schaltflächen Stil
 
