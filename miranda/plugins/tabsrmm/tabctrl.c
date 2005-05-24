@@ -136,7 +136,7 @@ static struct colOptions {UINT id; UINT defclr; char *szKey; } tabcolors[] = {
  * it obtains the label and icon handle directly from the message window data
  */
  
-void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
+void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
 {
     TCITEM item = {0};
     struct MessageWindowData *dat = 0;
@@ -148,7 +148,8 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
      * get the message window data for the session to which this tab item belongs
      */
     
-    dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
+    if(IsWindow((HWND)item.lParam) && item.lParam != 0)
+        dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
     
     if(dat) {
         HICON hIcon;
@@ -199,9 +200,8 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
         rcItem->left += (tabdat->cx + 2 + tabdat->m_xpad);
         
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHLABEL)) {
-            //oldFont = SelectObject(dc, myGlobals.tabConfig.m_hMenuFont);
             oldFont = SelectObject(dc, (HFONT)SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
-            if(!(tabdat->dwStyle & TCS_MULTILINE)) {
+            if(tabdat->dwStyle & TCS_BUTTONS) {
                 rcItem->right -= tabdat->m_xpad;
                 dwTextFlags |= DT_WORD_ELLIPSIS;
             }
@@ -217,11 +217,10 @@ void DrawItem(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint, int nIt
  * draws the item rect in *classic* style (no visual themes
  */
 
-void DrawItemRect(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint)
+void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint)
 {
     POINT pt;
     DWORD dwStyle = tabdat->dwStyle;
-    int rows = TabCtrl_GetRowCount(tabdat->hwnd);
     
     rcItem->bottom -= 1;
 	if(rcItem->left >= 0) {
@@ -239,13 +238,13 @@ void DrawItemRect(struct myTabCtrl *tabdat, HDC dc, RECT *rcItem, int nHint)
             else
                 rcItem->bottom--;
             
-            rcItem->right += (rows == 1 ? 3 : 0);
+            rcItem->right += (dwStyle & TCS_FIXEDWIDTH ? 6 : 0);
             if(nHint & HINT_ACTIVE_ITEM)
                 DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
             else if(nHint & HINT_HOTTRACK)
-                DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
-            else
                 DrawEdge(dc, rcItem, EDGE_BUMP, BF_RECT | BF_MONO | BF_SOFT);
+            else
+                DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
             return;
         }
         SelectObject(dc, myGlobals.tabConfig.m_hPenLight);
@@ -305,7 +304,7 @@ int DWordAlign(int n)
  * draws a theme part (identifier in uiPartNameID) using the given clipping rectangle
  */
 
-HRESULT DrawThemesPart(struct myTabCtrl *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
+HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
 {
     HRESULT hResult = 0;
     
@@ -321,7 +320,7 @@ HRESULT DrawThemesPart(struct myTabCtrl *tabdat, HDC hDC, int iPartId, int iStat
  * draw a themed tab item. mirrors the bitmap for bottom-aligned tabs
  */
 
-void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct myTabCtrl *tabdat) 
+void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct TabControlData *tabdat) 
 {
 	BOOL bBody  = (uiFlag & 1) ? TRUE : FALSE;
 	BOOL bSel   = (uiFlag & 2) ? TRUE : FALSE;
@@ -446,8 +445,8 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
 
 BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    struct myTabCtrl *tabdat = 0;
-    tabdat = (struct myTabCtrl *)GetWindowLong(hwnd, GWL_USERDATA);
+    struct TabControlData *tabdat = 0;
+    tabdat = (struct TabControlData *)GetWindowLong(hwnd, GWL_USERDATA);
     
     if(tabdat)
         tabdat->dwStyle = GetWindowLong(hwnd, GWL_STYLE);
@@ -455,13 +454,13 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
     switch(msg) {
         case EM_SUBCLASSED:
         {
-            tabdat = (struct myTabCtrl *)malloc(sizeof(struct myTabCtrl));
+            tabdat = (struct TabControlData *)malloc(sizeof(struct TabControlData));
             SetWindowLong(hwnd, GWL_USERDATA, (LONG)tabdat);
-            ZeroMemory((void *)tabdat, sizeof(struct myTabCtrl));
+            ZeroMemory((void *)tabdat, sizeof(struct TabControlData));
             tabdat->hwnd = hwnd;
             tabdat->cx = GetSystemMetrics(SM_CXSMICON);
             tabdat->cy = GetSystemMetrics(SM_CYSMICON);
-
+            tabdat->pContainer = (struct ContainerWindowData *)lParam;
             tabdat->m_skinning = FALSE;
             if(IsWinVerXPPlus() && myGlobals.m_VSApiEnabled != 0) {
                 if(pfnIsThemeActive != 0)
@@ -474,7 +473,6 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     }
             }
             tabdat->m_xpad = DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 4);
-            tabdat->m_fixedwidth = DBGetContactSettingDword(NULL, SRMSGMOD_T, "fixedtabs", FIXED_TAB_SIZE);
             return 0;
         }
         case EM_THEMECHANGED:
@@ -525,7 +523,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         }
         case TCM_INSERTITEM:
         case TCM_DELETEITEM:
-            if(!(tabdat->dwStyle & TCS_MULTILINE)) {
+            if(!(tabdat->dwStyle & TCS_MULTILINE) || tabdat->dwStyle & TCS_BUTTONS) {
                 LRESULT result;
                 RECT rc;
                 if(TabCtrl_GetItemCount(hwnd) >= 1 && msg == TCM_INSERTITEM) {
@@ -534,7 +532,6 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 }
                 result = CallWindowProc(OldTabControlProc, hwnd, msg, wParam, lParam);
                 TabCtrl_GetItemRect(hwnd, 0, &rc);
-                SendMessage(hwnd, EM_SEARCHSCROLLER, 0, 0);
                 SendMessage(hwnd, WM_SIZE, 0, 0);
                 return result;
             }
@@ -542,9 +539,9 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case WM_DESTROY:
         case EM_UNSUBCLASSED:
             if(tabdat) {
+                //_DebugPopup(0, "free tabctrl memory");
                 if(tabdat->hTheme != 0 && pfnCloseThemeData != 0)
                     pfnCloseThemeData(tabdat->hTheme);
-                // clean up pre-created gdi objects
                 free(tabdat);
                 SetWindowLong(hwnd, GWL_USERDATA, 0L);
             }
@@ -561,18 +558,27 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 RECT rcClient, rc;
                 DWORD newItemSize;
                 int iTabs = TabCtrl_GetItemCount(hwnd);
-                if(iTabs > 1) {
+                if(iTabs > (tabdat->pContainer->dwFlags & CNT_HIDETABS ? 1 : 0)) {
                     GetClientRect(hwnd, &rcClient);
                     TabCtrl_GetItemRect(hwnd, iTabs - 1, &rc);
-                    newItemSize = (rcClient.right - rcClient.left) - 6 - (tabdat->dwStyle & TCS_BUTTONS ? (iTabs - 1) * 12 : 0);
+                    newItemSize = (rcClient.right - 6) - (tabdat->dwStyle & TCS_BUTTONS ? (iTabs) * 10 : 0);
                     newItemSize = newItemSize / iTabs;
-                    if(newItemSize < tabdat->m_fixedwidth) {
+                    if(newItemSize < myGlobals.tabConfig.m_fixedwidth) {
                         TabCtrl_SetItemSize(hwnd, newItemSize, rc.bottom - rc.top);
                     }
                     else {
-                        TabCtrl_SetItemSize(hwnd, tabdat->m_fixedwidth, rc.bottom - rc.top);
+                        TabCtrl_SetItemSize(hwnd, myGlobals.tabConfig.m_fixedwidth, rc.bottom - rc.top);
                     }
+                    SendMessage(hwnd, EM_SEARCHSCROLLER, 0, 0);
                 }
+            }
+            else if(tabdat->dwStyle & TCS_BUTTONS && TabCtrl_GetItemCount(hwnd) > 0) {
+                RECT rcClient, rcItem;
+                int nrTabsPerLine;
+                GetClientRect(hwnd, &rcClient);
+                TabCtrl_GetItemRect(hwnd, 0, &rcItem);
+                nrTabsPerLine = (rcClient.right) / myGlobals.tabConfig.m_fixedwidth;
+                TabCtrl_SetItemSize(hwnd, ((rcClient.right - 4) / nrTabsPerLine) - (tabdat->dwStyle & TCS_BUTTONS ? 8 : 0), rcItem.bottom - rcItem.top);
             }
             break;
         }
@@ -852,6 +858,7 @@ void ReloadTabConfig()
     myGlobals.tabConfig.m_hBrushHottrack = CreateSolidBrush(myGlobals.tabConfig.colors[7]);
     
     myGlobals.tabConfig.m_bottomAdjust = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "bottomadjust", 0);
+    myGlobals.tabConfig.m_fixedwidth = DBGetContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", FIXED_TAB_SIZE);
 }
 
 void FreeTabConfig()
@@ -889,7 +896,6 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckDlgButton(hwndDlg, IDC_SINGLEROWTAB, dwFlags & TCF_SINGLEROWTABCONTROL);
             CheckDlgButton(hwndDlg, IDC_LABELUSEWINCOLORS, dwFlags & TCF_LABELUSEWINCOLORS);
             CheckDlgButton(hwndDlg, IDC_BKGUSEWINCOLORS2, dwFlags & TCF_BKGUSEWINCOLORS);
-            CheckDlgButton(hwndDlg, IDC_ALWAYSFIXED, dwFlags & TCF_ALWAYSFIXEDWIDTH);
             
             SendMessage(hwndDlg, WM_COMMAND, IDC_LABELUSEWINCOLORS, 0);
             
@@ -911,6 +917,10 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendDlgItemMessage(hwndDlg, IDC_BOTTOMTABADJUSTSPIN, UDM_SETPOS, 0, myGlobals.tabConfig.m_bottomAdjust);
             SetDlgItemInt(hwndDlg, IDC_BOTTOMTABADJUST, myGlobals.tabConfig.m_bottomAdjust, TRUE);
 
+            SendDlgItemMessage(hwndDlg, IDC_TABWIDTHSPIN, UDM_SETRANGE, 0, MAKELONG(400, 50));
+            SendDlgItemMessage(hwndDlg, IDC_TABWIDTHSPIN, UDM_SETPOS, 0, myGlobals.tabConfig.m_fixedwidth);
+            SetDlgItemInt(hwndDlg, IDC_TABWIDTH, myGlobals.tabConfig.m_fixedwidth, TRUE);
+            
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(10, 0));
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2));
             SetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2), FALSE);;
@@ -955,7 +965,6 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                     (IsDlgButtonChecked(hwndDlg, IDC_SINGLEROWTAB) ? TCF_SINGLEROWTABCONTROL : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_LABELUSEWINCOLORS) ? TCF_LABELUSEWINCOLORS : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_BKGUSEWINCOLORS2) ? TCF_BKGUSEWINCOLORS : 0) |
-                                    (IsDlgButtonChecked(hwndDlg, IDC_ALWAYSFIXED) ? TCF_ALWAYSFIXEDWIDTH : 0) |
                                     (IsDlgButtonChecked(hwndDlg, IDC_NOSKINNING) ? TCF_NOSKINNING : 0);
                     
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", dwFlags);
@@ -971,6 +980,7 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDER, &translated, FALSE));
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, &translated, FALSE));
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "bottomadjust", GetDlgItemInt(hwndDlg, IDC_BOTTOMTABADJUST, &translated, TRUE));
+                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", GetDlgItemInt(hwndDlg, IDC_TABWIDTH, &translated, FALSE));
                     
                     FreeTabConfig();
                     ReloadTabConfig();

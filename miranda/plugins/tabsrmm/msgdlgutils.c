@@ -1040,7 +1040,6 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 
 		MoveMemory(pszText, p1, (_tcslen(p1) +1) * sizeof(TCHAR));
 		p1 = pszText;
-
 		// iterate through all characters, if rtf control character found then take action
 		while(*p1 != (TCHAR)'\0')
 		{
@@ -1206,8 +1205,10 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				{
 					int j = 1;
 					bJustRemovedRTF = TRUE;
-					while(p1[j] != (TCHAR)' ' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
-						j++;
+                    while(!_tcschr(_T(" !§$%&()#*"), p1[j]) && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
+                          j++;
+//					while(p1[j] != (TCHAR)' ' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
+//						j++;
 					iRemoveChars = j;
 				}
 				break;
@@ -1252,13 +1253,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 
 
 	}
-	else // error
-	{
-		//free(pIndex);
+	else {
 		return FALSE;
 	}
-
-	//free(pIndex);
 	return TRUE;
 }
 
@@ -1591,7 +1588,7 @@ void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
  * get 2-digit locale id from current keyboard layout
  */
 
-GetLocaleID(struct MessageWindowData *dat, char *szKLName)
+void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
 {
     char szLI[20], *stopped = NULL;
     USHORT langID;

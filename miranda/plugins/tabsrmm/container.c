@@ -336,8 +336,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, Translate("Hide titlebar"));
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, Translate("Container options..."));                 
+                SetWindowTextA(hwndDlg, "Message Session...");
+                SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
                 
-                SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
 
                 /*
                  * make the tab control the controlling parent window for all message dialogs
@@ -359,19 +360,21 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 else {
                     ws &= ~TCS_SINGLELINE;
                     ws |= TCS_MULTILINE;
-                    if(myGlobals.m_TabAppearance & TCF_ALWAYSFIXEDWIDTH)
+                    if(ws & TCS_BUTTONS)
                         ws |= TCS_FIXEDWIDTH;
                 }
                 SetWindowLong(hwndTab, GWL_STYLE, ws);
-                OldTabControlProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)TabControlSubclassProc);
-                SendMessage(hwndTab, EM_SUBCLASSED, 0, 0);
+                TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
+                TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3), DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
                 
+                OldTabControlProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)TabControlSubclassProc);
+                SendMessage(hwndTab, EM_SUBCLASSED, 0, (LPARAM)pContainer);
+                
+                SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
+
                 /*
                  * assign the global image list...
                  */
-                TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
-
-                TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3), DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
                 /*
                  * context menu
                  */
@@ -1242,6 +1245,7 @@ panel_found:
                                     break;
                                 }
                             }
+                            InvalidateRect(hwndTab, NULL, FALSE);
                             return 1;
                         }
                 }
@@ -1493,7 +1497,7 @@ panel_found:
 		case DM_CONFIGURECONTAINER: {
 			DWORD ws, wsold, ex = 0, exold = 0;
 			HMENU hSysmenu = GetSystemMenu(hwndDlg, FALSE);
-			HANDLE hContact;
+			HANDLE hContact = 0;
             int i = 0;
             BYTE bFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 
@@ -1781,7 +1785,7 @@ panel_found:
                     DestroyWindow(pContainer->hwndStatus);
                 if(pContainer->hMenu)
                     DestroyMenu(pContainer->hMenu);
-                SendMessage(hwndTab, EM_UNSUBCLASSED, 0, 0);
+                //SendMessage(hwndTab, EM_UNSUBCLASSED, 0, 0);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
     			DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);

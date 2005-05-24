@@ -87,40 +87,25 @@ void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon)
             DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
         else if (dis->itemState & ODS_SELECTED)
             DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-        DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                  2,
-                  (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2,
-                  cx, cy,
-                  DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+        DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
     }
     else {
-        HBRUSH hBr;
         BOOL bfm = FALSE;
         SystemParametersInfo(SPI_GETFLATMENU, 0, &bfm, 0);
         if (bfm) {
             /* flat menus: fill with COLOR_MENUHILIGHT and outline with COLOR_HIGHLIGHT, otherwise use COLOR_MENUBAR */
             if (dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT) {
                 /* selected or hot lighted, no difference */
-                hBr = GetSysColorBrush(COLOR_MENUHILIGHT);
-                FillRect(dis->hDC, &dis->rcItem, hBr);
-                DeleteObject(hBr);
+                FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
                 /* draw the frame */
-                hBr = GetSysColorBrush(COLOR_HIGHLIGHT);
-                FrameRect(dis->hDC, &dis->rcItem, hBr);
-                DeleteObject(hBr);
+                FrameRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
             }
             else {
                 /* flush the DC with the menu bar colour (only supported on XP) and then draw the icon */
-                hBr = GetSysColorBrush(COLOR_MENUBAR);
-                FillRect(dis->hDC, &dis->rcItem, hBr);
-                DeleteObject(hBr);
+                FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUBAR));
             }   //if
             /* draw the icon */
-            DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                      2,
-                      (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2,
-                      cx, cy,
-                      DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+            DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
         }
         else {
             /* non-flat menus, flush the DC with a normal menu colour */
@@ -131,11 +116,7 @@ void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon)
             else if (dis->itemState & ODS_SELECTED) {
                 DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
             }   //if
-            DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                      2,
-                      (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2,
-                      cx, cy,
-                      DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+            DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
         }       //if
     }           //if
 }
@@ -146,9 +127,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     static int iMousedown;
     static RECT rcLast;
     
-    if(myGlobals.g_wantSnapping)
-        CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
-
     if(msg == WM_TASKBARCREATED) {
         CreateSystrayIcon(FALSE);
         if(nen_options.bTraySupport)

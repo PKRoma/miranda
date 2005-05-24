@@ -15,6 +15,13 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.95pre8 - 2005/05/23
+
+        * container icon and title is now set earlier so that the container does not
+          show "Dialog" while tabs are created.
+          
+        * fixed rtf parser to deal with some (rare) rich edit bugs.
+
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)

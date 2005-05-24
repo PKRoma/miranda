@@ -459,6 +459,73 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             }
             if (wParam == VK_RETURN)
                 break;
+        case WM_SYSCHAR:
+        {
+            HWND hwndDlg = GetParent(hwnd);
+            
+            if(GetKeyState(VK_MENU) & 0x8000) {
+                switch (VkKeyScan((TCHAR)wParam)) {
+                    case 'S':
+                        if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
+                            PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
+                            return 0;
+                        }
+                    case'E':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
+                        return 0;
+                    case 'H':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_HISTORY, 0);
+                        return 0;
+                    case 'Q':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_QUOTE, 0);
+                        return 0;
+                    case 'P':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_PIC, 0);
+                        return 0;
+                    case 'D':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_PROTOCOL, 0);
+                        return 0;
+                    case 'U':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_USERMENU, 0);
+                        return 0;
+                    case 'L':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_TIME, 0);
+                        return 0;
+                    case 'T':
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
+                        return 0;
+                    case 'M':
+                        mwdat->sendMode ^= SMODE_MULTIPLE;
+                        if(mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER)
+                            ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
+                        else
+                            ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
+                        SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                        SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                        ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (mwdat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+                        ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (mwdat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+                        if(mwdat->sendMode & SMODE_MULTIPLE)
+                            SetFocus(GetDlgItem(hwndDlg, IDC_CLIST));
+                        else
+                            SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                        return 0;
+                    default:
+                        break;
+                }
+                if((wParam >= '0' && wParam <= '9') && (GetKeyState(VK_MENU) & 0x8000)) {       // ALT-1 -> ALT-0 direct tab selection
+                    BYTE bChar = (BYTE)wParam;
+                    int iIndex;
+
+                    if(bChar == '0')
+                        iIndex = 10;
+                    else
+                        iIndex = bChar - (BYTE)'0';
+                    SendMessage(mwdat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_BY_INDEX, (LPARAM)iIndex);
+                    return 0;
+                }
+            }
+            break;
+        }
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -1147,8 +1214,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;
-                    //SetActiveWindow(hwndDlg);
-                    //SetForegroundWindow(hwndDlg);
+                    SetActiveWindow(hwndDlg);
+                    SetForegroundWindow(hwndDlg);
                     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 }
                 else {
@@ -3561,70 +3628,6 @@ quote_from_last:
                                 if(wp == VK_SUBTRACT) {
                                     SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_PREV, 0);
                                     return 1;
-                                }
-                            }
-                            if(msg == WM_SYSCHAR) {
-                                if(GetKeyState(VK_MENU) & 0x8000) {
-                                    switch (VkKeyScan((TCHAR)wp)) {
-                                        case 'S':
-                                            if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
-                                                PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
-                                                return 1;
-                                            }
-                                        case'E':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
-                                            break;
-                                        case 'H':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_HISTORY, 0);
-                                            break;
-                                        case 'Q':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_QUOTE, 0);
-                                            break;
-                                        case 'P':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_PIC, 0);
-                                            break;
-                                        case 'D':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_PROTOCOL, 0);
-                                            break;
-                                        case 'U':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_USERMENU, 0);
-                                            break;
-                                        case 'L':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_TIME, 0);
-                                            break;
-                                        case 'T':
-                                            SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
-                                            break;
-                                        case 'M':
-                                            dat->sendMode ^= SMODE_MULTIPLE;
-                                            if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
-                                                ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
-                                            else
-                                                ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
-                                            SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                                            SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                                            ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-                                            ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-                                            if(dat->sendMode & SMODE_MULTIPLE)
-                                                SetFocus(GetDlgItem(hwndDlg, IDC_CLIST));
-                                            else
-                                                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-                                            break;
-                                        default:
-                                            return 1;
-                                    }
-                                    return 0;
-                                }
-                                if((wp >= '0' && wp <= '9') && (GetKeyState(VK_MENU) & 0x8000)) {       // ALT-1 -> ALT-0 direct tab selection
-                                    BYTE bChar = (BYTE)wp;
-                                    int iIndex;
-                    
-                                    if(bChar == '0')
-                                        iIndex = 10;
-                                    else
-                                        iIndex = bChar - (BYTE)'0';
-                                    SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_BY_INDEX, (LPARAM)iIndex);
-                                    return 0;
                                 }
                             }
                             if(msg == WM_KEYDOWN && wp == VK_F12) {

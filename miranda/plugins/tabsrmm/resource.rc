@@ -691,8 +691,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,13,17,136,10
     CONTROL         "Use windows colors",IDC_BKGUSEWINCOLORS2,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,175,17,136,10
-    CONTROL         "Always use fixed width tabs",IDC_ALWAYSFIXED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,146,136,14
+    EDITTEXT        IDC_TABWIDTH,164,145,28,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_TABWIDTHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,192,146,
+                    11,13
+    LTEXT           "Default width for button-style tabs",IDC_STATIC,26,149,
+                    134,11
 END
 
 IDD_VARIABLEHELP DIALOGEX 0, 0, 336, 238

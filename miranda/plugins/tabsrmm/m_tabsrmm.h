@@ -279,19 +279,27 @@ typedef struct _recentinfo {
  * window data for subclassed tab control
  */
 
-struct myTabCtrl {
-    HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight;
+struct TabControlData {
     BOOL m_skinning;
     HWND hwnd;
     DWORD dwStyle;
     DWORD cx, cy;
+    HANDLE hTheme;
+    BYTE m_xpad;
+    struct ContainerWindowData *pContainer;
+};
+
+/*
+ * configuration data for custom tab ctrl
+ */
+
+struct myTabCtrl {
+    HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight;
     HFONT m_hMenuFont;
     COLORREF colors[10];
-    HANDLE hTheme;
     HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
-    int m_bottomAdjust;
-    BYTE m_xpad;
     DWORD m_fixedwidth;
+    int m_bottomAdjust;
 };
 
 typedef struct _globals {
@@ -397,7 +405,6 @@ struct StreamJob {
  */
 
 #define TCF_FLAT 1
-#define TCF_ALWAYSFIXEDWIDTH 2
 #define TCF_NOSKINNING 4
 #define TCF_FLASHICON 8
 #define TCF_FLASHLABEL 16

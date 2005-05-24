@@ -56,7 +56,7 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd);
 void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 void ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat);
 void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode);
-GetLocaleID(struct MessageWindowData *dat, char *szKLName);
+void GetLocaleID(struct MessageWindowData *dat, char *szKLName);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
