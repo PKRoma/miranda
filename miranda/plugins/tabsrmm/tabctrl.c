@@ -580,7 +580,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 TabCtrl_GetItemRect(hwnd, 0, &rcItem);
                 nrTabsPerLine = (rcClient.right) / myGlobals.tabConfig.m_fixedwidth;
                 if(iTabs >= nrTabsPerLine)
-                    TabCtrl_SetItemSize(hwnd, ((rcClient.right - 4) / nrTabsPerLine) - (tabdat->dwStyle & TCS_BUTTONS ? 8 : 0), rcItem.bottom - rcItem.top);
+                    TabCtrl_SetItemSize(hwnd, ((rcClient.right - 6) / nrTabsPerLine) - (tabdat->dwStyle & TCS_BUTTONS ? 8 : 0), rcItem.bottom - rcItem.top);
                 else
                     TabCtrl_SetItemSize(hwnd, myGlobals.tabConfig.m_fixedwidth, rcItem.bottom - rcItem.top);
             }

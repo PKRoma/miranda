@@ -1392,17 +1392,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[18]);
             SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[19]);
             SendDlgItemMessage(hwndDlg, IDC_FONTFACE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
-            //SendDlgItemMessage(hwndDlg, IDC_FONTCOLOR, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[21]);
             SendDlgItemMessage(hwndDlg, IDC_NAME, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[4]);
             SendDlgItemMessage(hwndDlg, IDC_LOGFROZEN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[24]);
             break;
         case DM_OPTIONSAPPLIED:
-#ifdef __MATHMOD_SUPPORT            
-            //mathMod begin
-			CallService(MATH_SETBKGCOLOR, 0, (LPARAM)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MATH_BKGCOLOUR, SRMSGDEFSET_MATH_BKGCOLOUR));
-			//mathMod end
-#endif             
-
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
                 if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
@@ -2818,8 +2811,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(streamOut != NULL) {
                         decoded = Utf8_Decode(streamOut);
                         if(decoded != NULL) {
-                            BOOL pbDefUsed = FALSE;
-                            char *def = "?";
                             if(dat->SendFormat) {
                                 DoRtfToTags(decoded, dat);
                                 DoTrimMessage(decoded);

@@ -65,7 +65,10 @@ Version 0.9.9.95pre8 - 2005/05/24
         * removed "ding" sounds when using some hotkeys (Alt-S for example)
         
         * various langpack updates
-        
+
+        * ICON PACK: updated "unknown.bmp" (default avatar image). Thanks to Faith for the
+          .bmp.
+                  
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)
