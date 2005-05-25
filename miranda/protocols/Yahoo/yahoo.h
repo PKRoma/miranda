@@ -13,12 +13,15 @@
 #include <windows.h>
 //#include <stdio.h>
 
+
 /* 
  * Yahoo Services
  */
 #include "pthread.h"
 
-#include "libyahoo2/config.h"
+//#include "libyahoo2/config.h"
+#define USE_STRUCT_CALLBACKS
+
 #include "libyahoo2/yahoo2.h"
 #include "libyahoo2/yahoo2_callbacks.h"
 #include "libyahoo2/yahoo_util.h"
@@ -53,7 +56,7 @@
 #define YAHOO_DEFAULT_LOGIN_SERVER      "scs.msg.yahoo.com"	
 #define YAHOO_CUSTOM_STATUS                99
 
-#define YAHOO_DEBUGLOG ext_yahoo_log
+#define YAHOO_DEBUGLOG YAHOO_DebugLog
 
 #define LOG(x) if(do_yahoo_debug) { YAHOO_DEBUGLOG("%s:%d: ", __FILE__, __LINE__); \
 	YAHOO_DEBUGLOG x; \
@@ -94,7 +97,7 @@ extern BOOL             yahooLoggedIn;
 extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];
 extern pthread_mutex_t connectionHandleMutex;
 
-int ext_yahoo_log(char *fmt,...);
+//int ext_yahoo_log(char *fmt,...);
 
 HANDLE __stdcall YAHOO_CreateProtoServiceFunction( 
 	const char* szService,
@@ -103,9 +106,9 @@ HANDLE __stdcall YAHOO_CreateProtoServiceFunction(
 int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 
 #ifdef __MINGW32__
-void __stdcall	YAHOO_DebugLog( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
+int YAHOO_DebugLog( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 #else
-void __stdcall	YAHOO_DebugLog( const char *fmt, ... );
+int YAHOO_DebugLog( const char *fmt, ... );
 #endif
 
 DWORD __stdcall YAHOO_GetByte( const char* valueName, int parDefltValue );
@@ -128,7 +131,7 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 int YAHOO_shownotification(const char *title, const char *info, DWORD flags);
 int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam);
 void YAHOO_utils_logversion();
-void YAHOO_ShowError(const char *buff);
+void YAHOO_ShowError(const char *title, const char *buff);
 
 //Services.c
 int GetCaps(WPARAM wParam,LPARAM lParam);

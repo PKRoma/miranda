@@ -4072,7 +4072,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 
 	yd = yid->yd;
 
-	if (yd->current_status == state)
+	if (yd->current_status == state && state != YAHOO_STATUS_CUSTOM)
 		return;
 	
 	cs = yd->current_status;

@@ -45,7 +45,7 @@ int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lP
 }
 
 
-void __stdcall	YAHOO_DebugLog( const char *fmt, ... )
+int YAHOO_DebugLog( const char *fmt, ... )
 {
 	char		str[ 4096 ];
 	va_list	vararg;
@@ -57,8 +57,9 @@ void __stdcall	YAHOO_DebugLog( const char *fmt, ... )
 	if ( tBytes > 0 )
 		str[ tBytes ] = 0;
 
-	YAHOO_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
 	va_end( vararg );
+	
+	return CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
 }
 
 DWORD __stdcall YAHOO_GetByte( const char* valueName, int parDefltValue )
@@ -145,7 +146,7 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 
 	if ( !ServiceExists( MS_POPUP_ADDPOPUP )){	
 		if ( flags & YAHOO_ALLOW_MSGBOX )
-			MessageBox( NULL, msg, "Yahoo Protocol", MB_OK | MB_ICONINFORMATION );
+			MessageBox( NULL, msg, Translate("Yahoo Protocol"), MB_OK | MB_ICONINFORMATION );
 
 		return 0;
 	}
@@ -199,18 +200,10 @@ int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
     return 0;
 }
 
-void YAHOO_ShowError(const char *buff)
+void YAHOO_ShowError(const char *title, const char *buff)
 {
 	if (YAHOO_GetByte( "ShowErrors", 0 )) 
-		YAHOO_ShowPopup(Translate("Yahoo Login Error"), buff, YAHOO_NOTIFY_POPUP);
-	
-	/*	if (!YAHOO_ShowPopup(Translate("Yahoo Login Error"), buff, YAHOO_NOTIFY_POPUP)) {
-			if (YAHOO_hasnotification())
-				YAHOO_shownotification(Translate("Yahoo Login Error"), buff, NIIF_ERROR);
-			else
-				MessageBox(NULL, buff, Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
-		}
-	}*/
+		YAHOO_ShowPopup(title, buff, YAHOO_NOTIFY_POPUP);
 }
 
 int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)

@@ -55,7 +55,7 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
     int ret = 0;
     switch (wParam) {        
         case PFLAGNUM_1:
-            ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSGRECV |  PF1_BASICSEARCH
+            ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSGRECV | PF1_MODEMSGSEND |  PF1_BASICSEARCH
 			                        | PF1_FILESEND  | PF1_FILERECV| PF1_VISLIST;
 //                          | PF1_SERVERCLIST ;
             break;
@@ -67,7 +67,7 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
 
         case PFLAGNUM_3:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_ONTHEPHONE | 
-                  PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_LIGHTDND | PF2_HEAVYDND; 
+                  PF2_OUTTOLUNCH | /*PF2_INVISIBLE |*/ PF2_LIGHTDND | PF2_HEAVYDND; 
             break;
             
         case PFLAGNUM_4:
@@ -184,11 +184,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			ylad = NULL;
 			yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
         
-			if (YAHOO_hasnotification())
-				YAHOO_shownotification(Translate("Yahoo Login Error"), errmsg, NIIF_ERROR);
-			else
-				MessageBox(NULL, errmsg, Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
-    
+			YAHOO_ShowError(Translate("Yahoo Login Error"), errmsg);
 			return 0;
 		}
 
@@ -203,7 +199,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
         pthread_create(yahoo_server_main,  (void *) status );
 
 		//start_timer();
-    } else {
+    } else if (status == ID_STATUS_INVISIBLE){ /* other normal away statuses are set via setaway */
         yahoo_util_broadcaststatus(status);
 		yahoo_set_status(yahooStatus,NULL,(yahooStatus != ID_STATUS_ONLINE) ? 1 : 0);
     }
@@ -685,6 +681,35 @@ int YahooRecvAwayMessage(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+//=======================================================
+//SetStatusMessage
+//=======================================================
+int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
+{
+	YAHOO_DebugLog("[YahooSetAwayMessage] Status: %d, Msg: %s",wParam, (char*) lParam);
+	
+    if(!yahooLoggedIn){
+		YAHOO_DebugLog("[YahooSetAwayMessage] WARNING: WE ARE OFFLINE!"); 
+        return 1;
+	}              
+	
+	/* need to tell ALL plugins that we are changing status */
+	yahoo_util_broadcaststatus(wParam);
+	
+	/* now decide what we tell the server */
+	if (lParam != 0) {
+		if(wParam == ID_STATUS_ONLINE) {
+			yahoo_set_status(YAHOO_CUSTOM_STATUS, (char*)lParam, 0);
+		} else if(wParam != ID_STATUS_INVISIBLE){ 
+			yahoo_set_status(YAHOO_CUSTOM_STATUS, (char*)lParam, 1);
+		}
+    } else {
+		yahoo_set_status(wParam, NULL, 0);
+	}
+	
+	
+	return 0;
+}
 
 static void __cdecl yahoo_get_infothread(HANDLE hContact) 
 {
@@ -1295,6 +1320,7 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSS_GETAWAYMSG,	YahooGetAwayMessage );
 	YAHOO_CreateProtoServiceFunction( PSR_AWAYMSG,	YahooRecvAwayMessage );
 
+	YAHOO_CreateProtoServiceFunction( PS_SETAWAYMSG, YahooSetAwayMessage );
 
 	YAHOO_CreateProtoServiceFunction( PSS_GETINFO,	YahooGetInfo );
 

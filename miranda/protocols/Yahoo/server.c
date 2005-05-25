@@ -72,12 +72,12 @@ void __cdecl yahoo_server_main(void *empty)
 		
 	}
 
-    ext_yahoo_log("Server Thread Starting status: %d", status);
+    YAHOO_DebugLog("Server Thread Starting status: %d", status);
 	
 	do_yahoo_debug=YAHOO_LOG_DEBUG;
 	yahoo_set_log_level(do_yahoo_debug);
 
-	//ext_yahoo_log("Before Yahoo Login Need Status: %d", status);
+	//YAHOO_DebugLog("Before Yahoo Login Need Status: %d", status);
 	poll_loop = 1; /* set this so we start looping */
 	
 	ext_yahoo_login(status);
@@ -121,14 +121,14 @@ void __cdecl yahoo_server_main(void *empty)
 			nls.hWriteConns[widx] = NULL;
 				
 			if (connections == NULL){
-				ext_yahoo_log("Last connection closed.");
+				YAHOO_DebugLog("Last connection closed.");
 				break;
 			}
 			recvResult = CallService(MS_NETLIB_SELECTEX, (WPARAM) 0, (LPARAM)&nls);
 
 			/* Check for Miranda Exit Status */
 			if (Miranda_Terminated()) {
-				ext_yahoo_log("Miranda Exiting... stopping the loop.");
+				YAHOO_DebugLog("Miranda Exiting... stopping the loop.");
 				break;
 			}
 			
@@ -161,7 +161,7 @@ void __cdecl yahoo_server_main(void *empty)
 			}// for l=connections
 
         }
-		ext_yahoo_log("Exited loop");
+		YAHOO_DebugLog("Exited loop");
     
 		yahooLoggedIn = FALSE; // Don't send any more packets, we don't got connection
     }
@@ -180,7 +180,7 @@ void __cdecl yahoo_server_main(void *empty)
 	yahoo_logoff_buddies();	
 	
 //#ifdef DEBUGMODE
-    ext_yahoo_log("Server thread ending");
+    YAHOO_DebugLog("Server thread ending");
 //#endif
 }
 

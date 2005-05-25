@@ -178,21 +178,11 @@ int yahoo_to_miranda_status(int yahooStatus, int away)
     return ret;
 }
 
-int ext_yahoo_log(char *fmt,...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	Netlib_Logf(hNetlibUser, fmt, ap);
-	va_end(ap);
-	return 0;
-}
-
 void get_fd(int id, int fd, int error, void *data) 
 {
     y_filetransfer *sf = (y_filetransfer*) data;
     char buf[1024];
-    int size = 0;
+    long size = 0;
 	DWORD dw;
 	struct _stat statbuf;
 	
@@ -213,7 +203,7 @@ void get_fd(int id, int fd, int error, void *data)
 			PROTOFILETRANSFERSTATUS pfts;
 			
 			DWORD lNotify = GetTickCount();
-			LOG(("proto: %s, hContact: %d", yahooProtocolName, sf->hContact));
+			LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
 			
 			LOG(("Sending file: %s", sf->filename));
 			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
@@ -245,7 +235,7 @@ void get_fd(int id, int fd, int error, void *data)
 					
 					if(GetTickCount() >= lNotify + 500 || dw < 1024 || size == statbuf.st_size) {
 						
-					LOG(("DOING UI Notify. Got %d/%d", size, statbuf.st_size));
+					LOG(("DOING UI Notify. Got %lu/%lu", size, statbuf.st_size));
 					pfts.totalProgress = size;
 					pfts.currentFileProgress = size;
 					
@@ -302,7 +292,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 {
     y_filetransfer *sf = (y_filetransfer*) data;
     char buf[1024];
-    int rsize = 0;
+    long rsize = 0;
 	DWORD dw, c;
 
     if(!error) {
@@ -382,7 +372,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 				
 						
 				DWORD lNotify = GetTickCount();
-				LOG(("proto: %s, hContact: %d", yahooProtocolName, sf->hContact));
+				LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
 				
 				ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
 				
@@ -396,7 +386,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 						/*LOG(("Got %d/%d", rsize, size));*/
 						if(GetTickCount() >= lNotify + 500 || dw <= 0 || rsize == size) {
 							
-						LOG(("DOING UI Notify. Got %d/%d", rsize, size));
+						LOG(("DOING UI Notify. Got %lu/%lu", rsize, size));
 						
 						pfts.totalProgress = rsize;
 						pfts.currentFileTime = time(NULL);//ntohl(ft->hdr.modtime);
@@ -705,15 +695,14 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	LOG(("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d)", who, msg, stat, away, idle, cksum));
+	YAHOO_DebugLog("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d)", who, msg, stat, away, idle, cksum);
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
-		LOG(("Buddy Not Found. Adding..."));
+		YAHOO_DebugLog("Buddy Not Found. Adding...");
 		hContact = add_buddy(who, who, 0);
 	} else {
-		LOG(("Buddy Found On My List!"));
-		LOG(("Buddy %d", hContact));
+		YAHOO_DebugLog("Buddy Found On My List! Buddy %p", hContact);
 	}
 	
 	
@@ -825,7 +814,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	char *pBuff = NULL;
 	struct avatar_info *avt = (struct avatar_info *) data;
 		
-	LOG(("Getting file: %s size: %d", filename, size));
+	LOG(("Getting file: %s size: %lu", filename, size));
 	pBuff = malloc(size);
 	if (!pBuff) 
 		error = 1;
@@ -877,7 +866,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 			}
 
 			GetAvatarFileName(hContact, buf, 1024);
-			LOG(("Saving file: %s size: %d", buf, size));
+			LOG(("Saving file: %s size: %lu", buf, size));
 			myhFile    = CreateFile(buf,
 									GENERIC_WRITE,
 									FILE_SHARE_WRITE,
@@ -955,7 +944,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
 			struct avatar_info *avt;
 			
-			LOG(("[ext_yahoo_got_picture] Checksums don't match. Current: %d, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum));
+			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match. Current: %lu, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
 			avt = malloc(sizeof(struct avatar_info));
 			avt->who = _strdup(who);
 			avt->pic_url = _strdup(pic_url);
@@ -1163,7 +1152,7 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 	HANDLE 			hContact;
 
 	
-    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%d stat:%d utf8:%d buddy_icon: %d", me, who, msg, tm, stat, utf8, buddy_icon));
+    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, tm, stat, utf8, buddy_icon));
    	
 	if(stat == 2) {
 		LOG(("Error sending message to %s", who));
@@ -1562,7 +1551,7 @@ void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, ch
 	char *szBlob;
 	y_filetransfer *ft;
 	
-    LOG(("[ext_yahoo_got_file] id: %d, ident:%s, who: %s, url: %s, expires: %d, msg: %s, fname: %s, fsize: %d", id, me, who, url, expires, msg, fname, fesize));
+    LOG(("[ext_yahoo_got_file] id: %i, ident:%s, who: %s, url: %s, expires: %lu, msg: %s, fname: %s, fsize: %lu", id, me, who, url, expires, msg, fname, fesize));
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) 
@@ -1659,19 +1648,7 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 	
 	if (errormsg) {
 			LOG(("[ext_yahoo_got_ping] Error msg: %s", errormsg));
-
-			if (YAHOO_GetByte( "ShowErrors", 0 )) {
-				if (!YAHOO_ShowPopup(Translate("Yahoo Ping Error"), errormsg, YAHOO_NOTIFY_POPUP)) {
-					if (YAHOO_hasnotification())
-						YAHOO_shownotification(Translate("Yahoo Ping Error"), errormsg, NIIF_ERROR);
-					//else
-					//	MessageBox(NULL, errormsg, "Yahoo Ping Error", MB_OK | MB_ICONINFORMATION);
-				}
-				//if (ServiceExists( MS_POPUP_SHOWMESSAGE && !PUShowMessage(strdup(errormsg), SM_WARNING)) ){
-				//} else if (YAHOO_hasnotification())
-				//		YAHOO_shownotification("Yahoo Ping Error", errormsg, NIIF_ERROR);
-			}
-			
+			YAHOO_ShowError(Translate("Yahoo Ping Error"), errormsg);
 			return;
 	}
     
@@ -1726,7 +1703,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 		snprintf(buff, sizeof(buff),Translate("Could not log in, unknown reason: %d."), succ);
 	}
 
-	ext_yahoo_log(buff);
+	YAHOO_DebugLog(buff);
 	
 	//poll_loop = 0; -- do we need this??
 	/*
@@ -1735,7 +1712,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	//
 	// Show Error Message
 	//
-	YAHOO_ShowError(buff);
+	YAHOO_ShowError(Translate("Yahoo Login Error"), buff);
 }
 
 void ext_yahoo_error(int id, char *err, int fatal, int num)
@@ -1775,7 +1752,7 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 	if(fatal)
 		yahoo_logout();
 	
-	ext_yahoo_log(buff);
+	YAHOO_DebugLog(buff);
 	
 	//poll_loop = 0; -- do we need this??
 	/*
@@ -1786,7 +1763,7 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 	//
 	if (yahooStatus != ID_STATUS_OFFLINE) {
 		// Show error only if we are not offline. [manual status changed]
-		YAHOO_ShowError(buff);
+		YAHOO_ShowError(Translate("Yahoo Error"), buff);
 	}
 
 }
@@ -2023,7 +2000,7 @@ void register_callbacks()
 	yc.ext_yahoo_got_search_result = ext_yahoo_got_search_result;
 	yc.ext_yahoo_system_message = ext_yahoo_system_message;
 	yc.ext_yahoo_error = ext_yahoo_error;
-	yc.ext_yahoo_log = ext_yahoo_log;
+	yc.ext_yahoo_log = YAHOO_DebugLog;
 	yc.ext_yahoo_add_handler = ext_yahoo_add_handler;
 	yc.ext_yahoo_remove_handler = ext_yahoo_remove_handler;
 	yc.ext_yahoo_connect = ext_yahoo_connect;
