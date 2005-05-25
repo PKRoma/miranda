@@ -554,10 +554,11 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         }
         case WM_SIZE:
         {
+            int iTabs = TabCtrl_GetItemCount(hwnd);
+            
             if(!(tabdat->dwStyle & TCS_MULTILINE)) {
                 RECT rcClient, rc;
                 DWORD newItemSize;
-                int iTabs = TabCtrl_GetItemCount(hwnd);
                 if(iTabs > (tabdat->pContainer->dwFlags & CNT_HIDETABS ? 1 : 0)) {
                     GetClientRect(hwnd, &rcClient);
                     TabCtrl_GetItemRect(hwnd, iTabs - 1, &rc);
@@ -572,13 +573,16 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     SendMessage(hwnd, EM_SEARCHSCROLLER, 0, 0);
                 }
             }
-            else if(tabdat->dwStyle & TCS_BUTTONS && TabCtrl_GetItemCount(hwnd) > 0) {
+            else if(tabdat->dwStyle & TCS_BUTTONS && iTabs > 0) {
                 RECT rcClient, rcItem;
                 int nrTabsPerLine;
                 GetClientRect(hwnd, &rcClient);
                 TabCtrl_GetItemRect(hwnd, 0, &rcItem);
                 nrTabsPerLine = (rcClient.right) / myGlobals.tabConfig.m_fixedwidth;
-                TabCtrl_SetItemSize(hwnd, ((rcClient.right - 4) / nrTabsPerLine) - (tabdat->dwStyle & TCS_BUTTONS ? 8 : 0), rcItem.bottom - rcItem.top);
+                if(iTabs >= nrTabsPerLine)
+                    TabCtrl_SetItemSize(hwnd, ((rcClient.right - 4) / nrTabsPerLine) - (tabdat->dwStyle & TCS_BUTTONS ? 8 : 0), rcItem.bottom - rcItem.top);
+                else
+                    TabCtrl_SetItemSize(hwnd, myGlobals.tabConfig.m_fixedwidth, rcItem.bottom - rcItem.top);
             }
             break;
         }

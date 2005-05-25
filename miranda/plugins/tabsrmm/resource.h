@@ -4,7 +4,6 @@
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
-#define IDI_PULLDOWN1ARROW              3
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
 #define IDR_CONTEXT                     180
@@ -269,7 +268,6 @@
 #define IDC_CNTLIST                     1221
 #define IDC_SPIN3                       1221
 #define IDC_NEWCONTAINER                1222
-#define IDC_SPIN4                       1222
 #define IDC_TABWIDTHSPIN                1222
 #define IDC_BUTTON1                     1223
 #define IDC_UPDATEPREVIEW               1223

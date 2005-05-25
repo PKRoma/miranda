@@ -180,6 +180,7 @@ struct SendJob {
     HWND hwndOwner;
     unsigned int iStatus;
     char szErrorMsg[128];
+    DWORD dwFlags;
     int iAcksNeeded;
 };
 
@@ -309,7 +310,7 @@ typedef struct _globals {
     HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
     // external plugins
-    int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail;
+    int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HIMAGELIST g_hImageList;
     int g_nrProtos;

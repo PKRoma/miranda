@@ -29,7 +29,7 @@ extern const UINT errorControls[5];
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
 
-char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat)
+char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnicode)
 {
 #ifdef _UNICODE
     char szServiceName[100];
@@ -37,7 +37,7 @@ char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat)
     if (szProto == NULL)
         return PSS_MESSAGE;
 
-    if(dat->sendMode & SMODE_FORCEANSI)
+    if(dat->sendMode & SMODE_FORCEANSI || isUnicode == 0)
         return PSS_MESSAGE;
     
     _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
@@ -59,7 +59,7 @@ DWORD WINAPI DoMultiSend(LPVOID param)
     int i;
     
     for(i = 0; i < sendJobs[iIndex].sendCount; i++) {
-        sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat), dat->sendMode & SMODE_FORCEANSI ? 0 : SEND_FLAGS, (LPARAM) sendJobs[iIndex].sendBuffer);
+        sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat, sendJobs[iIndex].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[iIndex].dwFlags, (LPARAM) sendJobs[iIndex].sendBuffer);
         SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, myGlobals.m_MsgTimeout, NULL);
         Sleep((50 * i) + dwDelay + dwDelayAdd);
         if(i > 2)
@@ -104,7 +104,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
  * add a message to the sending queue.
  * iLen = required size of the memory block to hold the message
  */
-int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
+int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int isUnicode)
 {
     int iLength = 0, i;
     int iFound = NR_SENDJOBS;
@@ -133,18 +133,16 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen)
                 iLength = HISTORY_INITIAL_ALLOCSIZE;
             sendJobs[iFound].sendBuffer = (char *)malloc(iLength);
             sendJobs[iFound].dwLen = iLength;
-            //_DebugPopup(dat->hContact, "Alloced %d bytes for %d (memRequired = %d", iLength, iFound, iLen);
         }
         else {
             if(iLength > sendJobs[iFound].dwLen) {
-                //_DebugPopup(dat->hContact, "REalloced %d bytes for %d (memRequired = %d", iLength, iFound, iLen);
                 sendJobs[iFound].sendBuffer = (char *)realloc(sendJobs[iFound].sendBuffer, iLength);
                 sendJobs[iFound].dwLen = iLength;
             }
         }
-        //_DebugPopup(dat->hContact, "Copied %d bytes to %d (blocksize = %d) - tID = %d", iLen, iFound, sendJobs[iFound].dwLen, GetCurrentThreadId());
         CopyMemory(sendJobs[iFound].sendBuffer, dat->sendBuffer, iLen);
     }
+    sendJobs[iFound].dwFlags = isUnicode ? PREF_UNICODE : 0;
     SaveInputHistory(hwndDlg, dat, 0, 0);
     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
     EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
@@ -196,7 +194,7 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         
         sendJobs[iEntry].sendCount = 1;
         sendJobs[iEntry].hContact[0] = dat->hContact;
-        sendJobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat), dat->sendMode & SMODE_FORCEANSI ? 0 : SEND_FLAGS, (LPARAM) sendJobs[iEntry].sendBuffer);
+        sendJobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, sendJobs[iEntry].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[iEntry].dwFlags, (LPARAM) sendJobs[iEntry].sendBuffer);
         sendJobs[iEntry].hOwner = dat->hContact;
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
@@ -234,6 +232,7 @@ void ClearSendJob(int iIndex)
     sendJobs[iIndex].sendCount = 0;
     sendJobs[iIndex].iStatus = 0;
     sendJobs[iIndex].iAcksNeeded = 0;
+    sendJobs[iIndex].dwFlags = 0;
     ZeroMemory(sendJobs[iIndex].hContact, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
     ZeroMemory(sendJobs[iIndex].hSendId, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
     //_DebugPopup(0, "cleared %d - tID = %d", iIndex, GetCurrentThreadId());
@@ -340,7 +339,12 @@ void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry
     if(iLen == 0) {                     // message area is empty, so we can recall the failed message...
 #if defined(_UNICODE)
         SETTEXTEX stx = {ST_DEFAULT,1200};
-        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&sendJobs[iEntry].sendBuffer[lstrlenA(sendJobs[iEntry].sendBuffer) + 1]);
+        if(sendJobs[iEntry].dwFlags & PREF_UNICODE)
+            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&sendJobs[iEntry].sendBuffer[lstrlenA(sendJobs[iEntry].sendBuffer) + 1]);
+        else {
+            stx.codepage = CP_ACP;
+            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)sendJobs[iEntry].sendBuffer);
+        }
 #else
         SetDlgItemTextA(hwndDlg, IDC_MESSAGE, (char *)sendJobs[iEntry].sendBuffer);
 #endif

@@ -157,11 +157,13 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		// Draw the flat button
 		if (ctl->flatBtn) {
 			if (ctl->hThemeToolbar) {
+                RECT rc = rcClient;
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
+                InflateRect(&rc, 2, 2);
                 if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
 				}
-				MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
+				MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
 			}
 			else {
 				HBRUSH hbr;
@@ -193,16 +195,23 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		else {
 			// Draw background/border
 			if (ctl->hThemeButton) {
+                RECT rc = rcClient;
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-				if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+                InflateRect(&rc, 2, 2);
+				if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
+					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
 				}
-				MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
+				MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
 			}
 			else {
-				UINT uState = DFCS_BUTTONPUSH|((ctl->stateId==PBS_HOT)?DFCS_HOT:0)|((ctl->stateId == PBS_PRESSED)?DFCS_PUSHED:0);
-				if (ctl->defbutton&&ctl->stateId==PBS_NORMAL) uState |= DLGC_DEFPUSHBUTTON;
-				DrawFrameControl(hdcMem, &rcClient, DFC_BUTTON, uState);
+                RECT rcFill = rcClient;
+                UINT uType = ctl->stateId == PBS_PRESSED ? EDGE_ETCHED : EDGE_BUMP;
+				//UINT uState = DFCS_BUTTONPUSH|((ctl->stateId==PBS_HOT)?DFCS_HOT:0)|((ctl->stateId == PBS_PRESSED)?DFCS_PUSHED:0);
+				//if (ctl->defbutton&&ctl->stateId==PBS_NORMAL) uState |= DLGC_DEFPUSHBUTTON;
+				//DrawFrameControl(hdcMem, &rcClient, DFC_BUTTON, uState);
+                DrawEdge(hdcMem, &rcClient, uType, BF_RECT | BF_SOFT | (ctl->stateId == PBS_HOT ? BF_MONO : 0));
+                InflateRect(&rcFill, -1, -1);
+                FillRect(hdcMem, &rcFill, GetSysColorBrush(COLOR_3DFACE));
 			}
 
 			// Draw focus rectangle if button has focus

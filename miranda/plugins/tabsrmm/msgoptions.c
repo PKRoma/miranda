@@ -177,7 +177,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 tvi.item.mask = TVIF_TEXT | TVIF_STATE;
                 tvi.item.pszText = Translate(defaultGroups[i].szName);
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
-                tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
+//                tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
+                tvi.item.state = TVIS_EXPANDED | TVIS_BOLD | TVIS_USERMASK;
                 defaultGroups[i++].handle = SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
             }
 
@@ -1835,6 +1836,6 @@ void ReloadGlobals()
      myGlobals.m_WinVerMajor = WinVerMajor();
      myGlobals.m_WinVerMinor = WinVerMinor();
      myGlobals.m_SideBarEnabled = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sidebar", 0);
-     myGlobals.m_TabAppearance = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", 0);
+     myGlobals.m_TabAppearance = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", TCF_FLASHICON);
      myGlobals.m_ExtraRedraws = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggromode", 0);
 }

@@ -111,16 +111,16 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
             SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
         }
         if(cx - dat->pic.cx > dat->iButtonBarNeeds && !myGlobals.m_AlwaysFullToolbarWidth) {
-            if(dat->splitterY <= dat->bottomOffset + (showToolbar ? 0 : 27))
-                dat->splitterY = dat->bottomOffset + (showToolbar ? 1 : 27);;
-            if(dat->splitterY - 27 > dat->bottomOffset)
-                dat->pic.cy = dat->splitterY - 28;
+            if(dat->splitterY <= dat->bottomOffset + (showToolbar ? 0 : 26))
+                dat->splitterY = dat->bottomOffset + (showToolbar ? 1 : 26);;
+            if(dat->splitterY - 26 > dat->bottomOffset)
+                dat->pic.cy = dat->splitterY - 27;
             else
                 dat->pic.cy = dat->bottomOffset;
         }
         else {
-            if(dat->splitterY <= dat->bottomOffset + 27 + (showToolbar ? 0 : 27))
-                dat->splitterY = dat->bottomOffset + 27 + (showToolbar ? 0 : 27);;
+            if(dat->splitterY <= dat->bottomOffset + 26 + (showToolbar ? 0 : 26))
+                dat->splitterY = dat->bottomOffset + 26 + (showToolbar ? 0 : 26);;
                 if(dat->splitterY - 27 > dat->bottomOffset)
                     dat->pic.cy = dat->splitterY - 28;
                 else
@@ -128,15 +128,18 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         }
     }
     else if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
+        if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
+            return;                 // at this stage, the layout is not yet ready...
+            
         picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
         picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
 
         if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
-            dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 30 : 4);
+            dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 32 : 6);
             dat->bottomOffset = dat->dynaSplitter + 100;
         }
         else {
-            dat->iRealAvatarHeight = dat->dynaSplitter + 4;
+            dat->iRealAvatarHeight = dat->dynaSplitter + 6;
             dat->bottomOffset = -33;
         }
         aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
@@ -1205,7 +1208,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				{
 					int j = 1;
 					bJustRemovedRTF = TRUE;
-                    while(!_tcschr(_T(" !§$%&()#*"), p1[j]) && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
+                    while(!_tcschr(_T(" !$%()#*"), p1[j]) && p1[j] != (TCHAR)'§' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
+//                    while(!_tcschr(_T(" !§$%&()#*"), p1[j]) && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
                           j++;
 //					while(p1[j] != (TCHAR)' ' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
 //						j++;
@@ -1601,3 +1605,23 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
     dat->lcID[1] = toupper(szLI[1]);
     dat->lcID[2] = 0;
 }
+
+// Returns true if the unicode buffer only contains 7-bit characters.
+BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
+{
+	BOOL bResult = TRUE;
+	int nIndex;
+
+
+	for (nIndex = 0; nIndex < nSize; nIndex++)
+	{
+		if (pBuffer[nIndex] > 0x7F)
+		{
+			bResult = FALSE;
+			break;
+		}
+	}
+
+	return bResult;
+}
+

@@ -1058,8 +1058,13 @@ passed:
     }
     if (NumberPopupData((HANDLE)wParam) != -1 && nen_options.bMergePopup && eventType == EVENTTYPE_MESSAGE) {
         PopupUpdate((HANDLE)wParam, (HANDLE)lParam);
-    } else
+    } else {
+#if defined(_UNICODE)
         PopupShow(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
+#else
+        PopupShow(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
+#endif    
+    }
     return 0;
 }
 

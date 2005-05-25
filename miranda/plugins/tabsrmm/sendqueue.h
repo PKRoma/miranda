@@ -47,7 +47,7 @@ $Id$
 void ClearSendJob(int iIndex);
 int FindNextFailedMsg(HWND hwndDlg, struct MessageWindowData *dat);
 void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
-int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen);
+int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int isUnicode);
 int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat);
 void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg);
@@ -64,5 +64,5 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 
 static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat);
+char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnicode);
 

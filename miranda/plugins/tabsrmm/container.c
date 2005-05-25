@@ -742,14 +742,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
                     break;
                 }
-                /*
-                if(wParam == SIZE_RESTORED)
-                    _DebugPopup(0, "restored");
-                if(wParam == SIZE_MINIMIZED)
-                    _DebugPopup(0, "mini");
-                if(wParam == SIZE_MAXIMIZED)
-                    _DebugPopup(0, "maxi");
-                */
                 if(wParam == SIZE_MINIMIZED)
                     break;
 
@@ -1289,7 +1281,8 @@ panel_found:
                 break;
         case WM_MOUSEACTIVATE: {
                 TCITEM item;
-
+                int curItem = 0;
+                
                 FlashContainer(pContainer, 0, 0);
                 pContainer->dwFlashingStarted = 0;
                 pLastActiveContainer = pContainer;
@@ -1318,14 +1311,13 @@ panel_found:
                 }
                 ZeroMemory((void *)&item, sizeof(item));
                 item.mask = TCIF_PARAM;
-                TabCtrl_GetItem(hwndTab, TabCtrl_GetCurSel(hwndTab), &item);
-                if (pContainer->dwFlags & CNT_DEFERREDCONFIGURE) {
+                if((curItem = TabCtrl_GetCurSel(hwndTab)) >= 0)
+                    TabCtrl_GetItem(hwndTab, curItem, &item);
+                if (pContainer->dwFlags & CNT_DEFERREDCONFIGURE && curItem >= 0) {
                     RECT rc;
                     HANDLE hContact;
                     
                     pContainer->dwFlags &= ~CNT_DEFERREDCONFIGURE;
-                    item.mask = TCIF_PARAM;
-                    TabCtrl_GetItem(hwndTab, TabCtrl_GetCurSel(hwndTab), &item);
                     GetClientRect(hwndDlg, &rc);
                     AdjustTabClientRect(pContainer, &rc);
                     pContainer->hwndActive = (HWND) item.lParam;
@@ -1340,7 +1332,7 @@ panel_found:
                         RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
                 }
                 SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
-                if(myGlobals.m_ExtraRedraws)
+                if(myGlobals.m_ExtraRedraws && item.lParam != 0 && IsWindow((HWND)item.lParam))
                     InvalidateRect((HWND)item.lParam, NULL, TRUE);
                 if(GetMenu(hwndDlg) != 0)
                     DrawMenuBar(hwndDlg);

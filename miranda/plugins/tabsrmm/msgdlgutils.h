@@ -57,6 +57,7 @@ void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 void ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat);
 void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode);
 void GetLocaleID(struct MessageWindowData *dat, char *szKLName);
+BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

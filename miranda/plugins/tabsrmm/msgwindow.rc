@@ -46,42 +46,42 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
 #endif                    
-    CONTROL         "",IDOK,"TSButtonClass",WS_TABSTOP,146,32,24,14,
+    CONTROL         "",IDOK,"TSButtonClass",WS_TABSTOP,146,33,24,12,
                     0x18000000L
-    CONTROL         "",IDC_SENDMENU,"TSButtonClass",WS_TABSTOP,170,32,9,14,
+    CONTROL         "",IDC_SENDMENU,"TSButtonClass",WS_TABSTOP,170,33,8,12,
                     0x18000000L
-    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,47,187,1,
+    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,46,187,2,
                     WS_EX_STATICEDGE
-    CONTROL         "",IDC_PIC,"TSButtonClass",WS_TABSTOP,90,32,16,14,
+    CONTROL         "",IDC_PIC,"TSButtonClass",WS_TABSTOP,98,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_HISTORY,"TSButtonClass",WS_TABSTOP,106,32,16,14,
+    CONTROL         "",IDC_HISTORY,"TSButtonClass",WS_TABSTOP,112,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_TIME,"TSButtonClass",WS_TABSTOP,122,32,16,14,
+    CONTROL         "",IDC_TIME,"TSButtonClass",WS_TABSTOP,126,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_QUOTE,"TSButtonClass",WS_TABSTOP,138,32,16,14,
+    CONTROL         "",IDC_QUOTE,"TSButtonClass",WS_TABSTOP,140,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_SAVE,"TSButtonClass",WS_TABSTOP,154,32,16,14,
+    CONTROL         "",IDC_SAVE,"TSButtonClass",WS_TABSTOP,154,33,14,12,
                     0x18000000L
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
                     30,WS_EX_CLIENTEDGE
-    CONTROL         "",IDC_PROTOCOL,"TSButtonClass",WS_TABSTOP,0,32,16,14,
+    CONTROL         "",IDC_PROTOCOL,"TSButtonClass",WS_TABSTOP,0,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_NAME,"TSButtonClass",WS_TABSTOP,16,32,16,14,
+    CONTROL         "",IDC_NAME,"TSButtonClass",WS_TABSTOP,14,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_PROTOMENU,"TSButtonClass",WS_TABSTOP,32,32,9,14,
+    CONTROL         "",IDC_PROTOMENU,"TSButtonClass",WS_TABSTOP,28,33,8,12,
                     0x18000000L
     CONTROL         "",IDC_TOGGLETOOLBAR,"TSButtonClass",WS_TABSTOP,32,32,2,2,
                     0x18000000L
-    CONTROL         "",IDC_SMILEYBTN,"TSButtonClass",WS_TABSTOP,43,32,16,14, 0x18000000L
-    CONTROL         "",IDC_FONTBOLD,"TSButtonClass",WS_TABSTOP,59,32,16,14,
+    CONTROL         "",IDC_SMILEYBTN,"TSButtonClass",WS_TABSTOP,38,33,14,12, 0x18000000L
+    CONTROL         "",IDC_FONTBOLD,"TSButtonClass",WS_TABSTOP,52,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_FONTITALIC,"TSButtonClass",WS_TABSTOP,75,32,16,14,
+    CONTROL         "",IDC_FONTITALIC,"TSButtonClass",WS_TABSTOP,66,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_FONTUNDERLINE,"TSButtonClass",WS_TABSTOP,91,32,16,
-                    14,0x18000000L
-    CONTROL         "",IDC_FONTFACE,"TSButtonClass",WS_TABSTOP,107,32,16,
-                    14,0x18000000L
+    CONTROL         "",IDC_FONTUNDERLINE,"TSButtonClass",WS_TABSTOP,80,33,14,
+                    12,0x18000000L
+    CONTROL         "",IDC_FONTFACE,"TSButtonClass",WS_TABSTOP,94,33,14,
+                    12,0x18000000L
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25,
                     0
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,

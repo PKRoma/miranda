@@ -862,7 +862,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     else
         DBFreeVariant(&dbv);
 
-    myGlobals.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
     if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
         myGlobals.g_SmileyAddAvail = 1;
     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
@@ -891,9 +890,14 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
     if(ServiceExists(MS_POPUP_ADDPOPUPEX))
         myGlobals.g_PopupAvail = 1;
+
+    if(ServiceExists(MS_POPUP_ADDPOPUPW))
+        myGlobals.g_PopupWAvail = 1;
     
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
+
+    myGlobals.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
 
     ZeroMemory((void *)sendJobs, sizeof(struct SendJob) * NR_SENDJOBS);
     if(nen_options.bTraySupport)
