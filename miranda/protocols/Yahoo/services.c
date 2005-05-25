@@ -121,6 +121,9 @@ int GetStatus(WPARAM wParam,LPARAM lParam)
 
 extern yahoo_local_account *ylad;
 
+int    gStartStatus = ID_STATUS_ONLINE;
+char  *szStartMsg = NULL;
+
 //=======================================================
 //SetStatus
 //=======================================================
@@ -188,11 +191,12 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			return 0;
 		}
 
-		if (miranda_to_yahoo(status) == YAHOO_STATUS_OFFLINE)
+		if (status == ID_STATUS_OFFLINE)
 			status = ID_STATUS_ONLINE;
 		
-		DBWriteContactSettingWord(NULL, yahooProtocolName, "StartupStatus", status);
-
+		//DBWriteContactSettingWord(NULL, yahooProtocolName, "StartupStatus", status);
+		gStartStatus = status;
+		
 		yahoo_util_broadcaststatus(ID_STATUS_CONNECTING);
 		
 		status = (status == ID_STATUS_INVISIBLE) ? YAHOO_STATUS_INVISIBLE: YAHOO_STATUS_AVAILABLE;
@@ -689,8 +693,19 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 	YAHOO_DebugLog("[YahooSetAwayMessage] Status: %d, Msg: %s",wParam, (char*) lParam);
 	
     if(!yahooLoggedIn){
-		YAHOO_DebugLog("[YahooSetAwayMessage] WARNING: WE ARE OFFLINE!"); 
-        return 1;
+		if (yahooStatus == ID_STATUS_OFFLINE) {
+			YAHOO_DebugLog("[YahooSetAwayMessage] WARNING: WE ARE OFFLINE!"); 
+			return 1;
+		} else {
+			if (szStartMsg) free(szStartMsg);
+			
+			if ((char*) lParam != NULL) 
+				szStartMsg = _strdup((char*) lParam);
+			else
+				szStartMsg = NULL;
+			
+			return 0;
+		}
 	}              
 	
 	/* need to tell ALL plugins that we are changing status */

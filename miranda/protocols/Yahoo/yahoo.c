@@ -1642,6 +1642,9 @@ void ext_yahoo_got_cookies(int id)
 	}
 }
 
+extern int gStartStatus;
+extern char *szStartMsg;
+
 void ext_yahoo_got_ping(int id, const char *errormsg)
 {
     LOG(("[ext_yahoo_got_ping]"));
@@ -1655,15 +1658,22 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 	LOG(("[ext_yahoo_got_ping] Status Check current: %d, CONNECTING: %d ", yahooStatus, ID_STATUS_CONNECTING));
 	
 	if (yahooStatus == ID_STATUS_CONNECTING) {
-		int status;
-		
-		status = DBGetContactSettingWord(NULL, yahooProtocolName, "StartupStatus", ID_STATUS_ONLINE);
-		if (status != yahooStatus) {
-			LOG(("[COOKIES] Updating Status to %d ", status));    
-			yahoo_util_broadcaststatus(status);
+		//int status;
+	
+		LOG(("[ext_yahoo_got_ping] We are connecting. Checking for different status. Start: %d, Current: %d", gStartStatus, yahooStatus));
+		//status = DBGetContactSettingWord(NULL, yahooProtocolName, "StartupStatus", ID_STATUS_ONLINE);
+		if (gStartStatus != yahooStatus) {
+			LOG(("[COOKIES] Updating Status to %d ", gStartStatus));    
+			yahoo_util_broadcaststatus(gStartStatus);
 			
-			if (status != ID_STATUS_INVISIBLE) // don't generate a bogus packet for Invisible state
-				yahoo_set_status(status, NULL, (status != ID_STATUS_ONLINE) ? 1 : 0);
+			if (gStartStatus != ID_STATUS_INVISIBLE) {// don't generate a bogus packet for Invisible state
+				if (szStartMsg != NULL) {
+					yahoo_set_status(YAHOO_STATUS_CUSTOM, szStartMsg, (gStartStatus != ID_STATUS_ONLINE) ? 1 : 0);
+					free(szStartMsg);
+					szStartMsg = NULL;
+				} else
+				    yahoo_set_status(gStartStatus, NULL, (gStartStatus != ID_STATUS_ONLINE) ? 1 : 0);
+			}
 		}
 	}
 }
