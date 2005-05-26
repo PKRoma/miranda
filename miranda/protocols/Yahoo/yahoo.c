@@ -1669,8 +1669,6 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 			if (gStartStatus != ID_STATUS_INVISIBLE) {// don't generate a bogus packet for Invisible state
 				if (szStartMsg != NULL) {
 					yahoo_set_status(YAHOO_STATUS_CUSTOM, szStartMsg, (gStartStatus != ID_STATUS_ONLINE) ? 1 : 0);
-					free(szStartMsg);
-					szStartMsg = NULL;
 				} else
 				    yahoo_set_status(gStartStatus, NULL, (gStartStatus != ID_STATUS_ONLINE) ? 1 : 0);
 			}

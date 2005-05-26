@@ -23,6 +23,7 @@
 #include <m_idle.h>
 
 //#define HTTP_GATEWAY
+extern char *szStartMsg;
 
 /*
  * Global Variables
@@ -129,6 +130,8 @@ __declspec(dllexport)int Unload(void)
 	LocalEventUnhook(hHookSettingChanged);
 	LocalEventUnhook(hHookUserTyping);
 	
+	if (szStartMsg)
+		free(szStartMsg);
 	
 	//YAHOO_DebugLog("Waiting for server thread to finish...");
 	//SleepEx(100, TRUE);

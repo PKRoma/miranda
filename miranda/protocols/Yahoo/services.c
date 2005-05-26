@@ -711,8 +711,11 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 	/* need to tell ALL plugins that we are changing status */
 	yahoo_util_broadcaststatus(wParam);
 	
+	if (szStartMsg) free(szStartMsg);
+	
 	/* now decide what we tell the server */
 	if (lParam != 0) {
+		szStartMsg = _strdup((char*) lParam);
 		if(wParam == ID_STATUS_ONLINE) {
 			yahoo_set_status(YAHOO_CUSTOM_STATUS, (char*)lParam, 0);
 		} else if(wParam != ID_STATUS_INVISIBLE){ 
@@ -720,6 +723,7 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 		}
     } else {
 		yahoo_set_status(wParam, NULL, 0);
+		szStartMsg = NULL;
 	}
 	
 	
@@ -1128,7 +1132,7 @@ int YahooIdleEvent(WPARAM wParam, LPARAM lParam)
 
 	if (yahooLoggedIn) {
 		/* set me to idle or back */
-		yahoo_set_status(yahooStatus,NULL,(bIdle) ? 2 : 0);
+		yahoo_set_status(yahooStatus,szStartMsg,(bIdle) ? 2 : (yahooStatus == ID_STATUS_ONLINE) ? 0 : 1);
 	} else {
 		YAHOO_DebugLog("[YAHOO_IDLE_EVENT] WARNING: NOT LOGGED IN???");
 	}
