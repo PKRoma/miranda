@@ -57,6 +57,8 @@
 #define IDC_SLOWSEND                    1033
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035
+#define IDC_CHECK1                      1036
+#define IDC_USEMSNP11                   1037
 #define IDC_SENDFONTINFO                1046
 #define IDC_NOTIFY_USERTYPE             1047
 #define IDC_NICKNAME                    1048
@@ -90,7 +92,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        131
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1036
+#define _APS_NEXT_CONTROL_VALUE         1037
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

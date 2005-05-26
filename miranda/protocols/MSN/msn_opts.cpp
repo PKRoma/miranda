@@ -390,6 +390,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton( hwndDlg, IDC_AUTOGETHOST,	MSN_GetByte( "AutoGetHost", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
+		CheckDlgButton( hwndDlg, IDC_USEMSNP11,   MSN_GetByte( "UseMSNP11",   0 ));
 
 		if ( MSN_CallService( MS_SYSTEM_GETVERSION, 0, 0 ) < 0x00030300 )
 			EnableWindow( GetDlgItem( hwndDlg, IDC_USEGATEWAY ), FALSE );
@@ -445,6 +446,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 
 			case IDC_KEEPALIVE:			case IDC_USEIEPROXY:		case IDC_SLOWSEND:
+			case IDC_USEMSNP11:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
@@ -488,6 +490,13 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				MSN_SetString( NULL, "LoginServer", str );
 
 				MSN_SetWord( NULL, "MSNMPort", GetDlgItemInt( hwndDlg, IDC_MSNPORT, NULL, FALSE ));
+			}
+
+			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEMSNP11 );
+			if ( MyOptions.UseMSNP11 != tValue ) {
+				MSN_SetByte( "UseMSNP11", tValue );
+				if ( msnLoggedIn )
+					restartRequired =	true;
 			}
 
 			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));

@@ -6,7 +6,9 @@ Legend:
 
 Version 0.4.0.3
 ===============
+[+] MSNP11 support added
 [+] WebMessenger detection added
+[!] fix for the GPF on exit
 
 Version 0.4.0.2
 ===============
