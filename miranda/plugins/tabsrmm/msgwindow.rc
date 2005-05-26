@@ -40,7 +40,7 @@ BEGIN
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
-#else
+#else                    
     CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
@@ -71,42 +71,52 @@ BEGIN
                     0x18000000L
     CONTROL         "",IDC_PROTOMENU,"TSButtonClass",WS_TABSTOP,28,33,8,12,
                     0x18000000L
-    CONTROL         "",IDC_TOGGLETOOLBAR,"TSButtonClass",WS_TABSTOP,32,32,2,2,
+    CONTROL         "",IDC_TOGGLETOOLBAR,"TSButtonClass",WS_TABSTOP,32,32,2,
+                    2,0x18000000L
+    CONTROL         "",IDC_SMILEYBTN,"TSButtonClass",WS_TABSTOP,38,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_SMILEYBTN,"TSButtonClass",WS_TABSTOP,38,33,14,12, 0x18000000L
     CONTROL         "",IDC_FONTBOLD,"TSButtonClass",WS_TABSTOP,52,33,14,12,
                     0x18000000L
     CONTROL         "",IDC_FONTITALIC,"TSButtonClass",WS_TABSTOP,66,33,14,12,
                     0x18000000L
     CONTROL         "",IDC_FONTUNDERLINE,"TSButtonClass",WS_TABSTOP,80,33,14,
                     12,0x18000000L
-    CONTROL         "",IDC_FONTFACE,"TSButtonClass",WS_TABSTOP,94,33,14,
-                    12,0x18000000L
-    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25,
-                    0
+    CONTROL         "",IDC_FONTFACE,"TSButtonClass",WS_TABSTOP,94,33,14,12,
+                    0x18000000L
+    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
                     WS_EX_STATICEDGE
-    CONTROL         "&Retry",IDC_RETRY,"TSButtonClass",WS_TABSTOP,26,10,55,12
-    CONTROL         "&Cancel",IDC_CANCELSEND,"TSButtonClass",WS_TABSTOP,86,10,
-                    55,12
-    CONTROL         "Send &Later",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,
-                    146,10,55,12
+    CONTROL         "&Retry",IDC_RETRY,"TSButtonClass",WS_TABSTOP,26,10,55,
+                    12
+    CONTROL         "&Cancel",IDC_CANCELSEND,"TSButtonClass",WS_TABSTOP,86,
+                    10,55,12
+    CONTROL         "Send &Later",IDC_MSGSENDLATER,"TSButtonClass",
+                    WS_TABSTOP,146,10,55,12
     LTEXT           "",IDC_STATICTEXT,27,0,160,7
     ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
                     WS_GROUP
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | WS_VSCROLL |
-                    ES_READONLY | ES_AUTOVSCROLL | WS_TABSTOP,0,0,188,30,
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
                     WS_EX_STATICEDGE
     CONTROL         "Add",IDC_ADD,"TSButtonClass",WS_TABSTOP,155,64,16,14,
                     0x18000000L
-    CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,16,
-                    14,0x18000000L
-    ICON            "",IDC_MULTIPLEICON,0,64,16,20,SS_CENTERIMAGE
-    CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,
-                    14,0x18000000L 
+    CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,
+                    16,14,0x18000000L
+    ICON            "",IDC_MULTIPLEICON,0,64,21,20,SS_CENTERIMAGE
+    CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,14,
+                    0x18000000L
     CONTROL         "",IDC_TOGGLESIDEBAR,"Button",BS_OWNERDRAW | WS_TABSTOP,
                     0,48,6,31
-LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10
+    LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10
+    CONTROL         "",IDC_PANELPIC,"Button",BS_OWNERDRAW,153,1,34,25
+    LTEXT           "Name",IDC_PANELNICKLABEL,5,2,30,12
+    LTEXT           "UIN",IDC_PANELUINLABEL,5,15,30,12
+    LTEXT           "Name",IDC_PANELNICK,35,2,100,12,SS_CENTERIMAGE | 
+                    SS_SUNKEN
+    LTEXT           "UIN",IDC_PANELUIN,35,15,100,12,SS_SUNKEN | SS_CENTERIMAGE
+    LTEXT           "UIN",IDC_PANELSTATUS,10,2,100,12,SS_SUNKEN | SS_CENTERIMAGE | SS_OWNERDRAW
+    CONTROL         "",IDC_PANEL,"Static",SS_ENHMETAFILE | WS_CLIPSIBLINGS,0,
+                    0,188,31,WS_EX_STATICEDGE
 END
 
 #endif    // Neutral resources

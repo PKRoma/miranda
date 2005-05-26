@@ -52,6 +52,14 @@ static int PopupCount = 0;
 
 extern BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
+void CheckForRemoveMask()
+{
+    if(!DBGetContactSettingByte(NULL, MODULE, "firsttime", 0) && (nen_options.maskActL & MASK_REMOVE || nen_options.maskActR & MASK_REMOVE || nen_options.maskActTE & MASK_REMOVE)) {
+        MessageBoxA(0, Translate("One of your popup actions is set to DISMISS EVENT.\nNote that this options may have unwanted side effects as it REMOVES the event from the unread queue.\nThis may lead to events not showing up as \"new\". If you don't want this behaviour, please review the Event Notifications settings page."), "tabSRMM Warning Message", MB_OK | MB_ICONSTOP);
+        DBWriteContactSettingByte(NULL, MODULE, "firsttime", 1);
+    }
+}
+
 int NEN_ReadOptions(NEN_OPTIONS *options)
 {
     options->bPreview = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_PREVIEW, TRUE);
@@ -100,6 +108,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
     options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
     options->dwRemoveMask = DBGetContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, 0);
+    CheckForRemoveMask();
     return 0;
 }
 
@@ -175,15 +184,15 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Show headers", IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
     0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
 
     0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
 
     0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 
     0, "Disable ALL event notifications (check, if you're using an external plugin for event notifications)", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
     0, "Message events", MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
@@ -417,6 +426,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         i++;
                     }
                     NEN_WriteOptions(&nen_options);
+                    CheckForRemoveMask();
                     CreateSystrayIcon(nen_options.bTraySupport);
                     /*
                      * check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
@@ -614,14 +624,13 @@ int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
         for(i = 0; i < pdata->nrMerged; i++)
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
     }
-    /*
     if (mask & MASK_REMOVE) {
         int i;
         
         for(i = 0; i < pdata->nrMerged; i++)
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
         PopUpList[NumberPopupData(pdata->hContact)] = NULL;
-    }*/
+    }
     if (mask & MASK_DISMISS) {
         PopUpList[NumberPopupData(pdata->hContact)] = NULL;
         PUDeletePopUp(hWnd);

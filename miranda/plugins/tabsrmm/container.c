@@ -119,7 +119,7 @@ extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-WNDPROC OldTabControlProc;
+//WNDPROC OldTabControlProc;
 
 HMENU BuildMCProtocolMenu(HWND hwndDlg);
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
@@ -367,8 +367,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
                 TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3), DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
                 
-                OldTabControlProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)TabControlSubclassProc);
-                SendMessage(hwndTab, EM_SUBCLASSED, 0, (LPARAM)pContainer);
+                //OldTabControlProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)TabControlSubclassProc);
+                //SendMessage(hwndTab, EM_SUBCLASSED, 0, (LPARAM)pContainer);
                 
                 SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
 
@@ -1087,13 +1087,12 @@ panel_found:
                     {
                         ZeroMemory((void *)&item, sizeof(item));
                         iItem = TabCtrl_GetCurSel(hwndTab);
-                        item.lParam = 0;
                         item.mask = TCIF_PARAM;
                         if (TabCtrl_GetItem(hwndTab, iItem, &item)) {
-                            ShowWindow((HWND)item.lParam, SW_SHOW);
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
+                            ShowWindow(pContainer->hwndActive, SW_SHOW);
                             if(!IsIconic(hwndDlg))
                                 SetFocus(pContainer->hwndActive);
                         }
@@ -1321,19 +1320,25 @@ panel_found:
                     GetClientRect(hwndDlg, &rc);
                     AdjustTabClientRect(pContainer, &rc);
                     pContainer->hwndActive = (HWND) item.lParam;
-                    MoveWindow(pContainer->hwndActive, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), FALSE);
-                    ShowWindow(pContainer->hwndActive, SW_SHOW);
-                    SetFocus(pContainer->hwndActive);
-                    SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
-                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                    SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
-                    if(myGlobals.m_ExtraRedraws)
-                        RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+                    if(pContainer->hwndActive != 0 && IsWindow(pContainer->hwndActive)) {
+                        MoveWindow(pContainer->hwndActive, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), FALSE);
+                        ShowWindow(pContainer->hwndActive, SW_SHOW);
+                        SetFocus(pContainer->hwndActive);
+                        SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                        SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
+                        SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                        SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+                        if(myGlobals.m_ExtraRedraws)
+                            RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+                    }
+                    else
+                        _DebugPopup(0, "invalid window handle in deferred configuration handler");
                 }
-                SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
-                if(myGlobals.m_ExtraRedraws && item.lParam != 0 && IsWindow((HWND)item.lParam))
-                    InvalidateRect((HWND)item.lParam, NULL, TRUE);
+                if(curItem >= 0) {
+                    SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
+                    if(myGlobals.m_ExtraRedraws)
+                        InvalidateRect((HWND)item.lParam, NULL, TRUE);
+                }
                 if(GetMenu(hwndDlg) != 0)
                     DrawMenuBar(hwndDlg);
                 break;
@@ -1777,8 +1782,7 @@ panel_found:
                     DestroyWindow(pContainer->hwndStatus);
                 if(pContainer->hMenu)
                     DestroyMenu(pContainer->hMenu);
-                //SendMessage(hwndTab, EM_UNSUBCLASSED, 0, 0);
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
+                //SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
     			DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);
 #if defined(__MATHMOD_SUPPORT)
@@ -2661,3 +2665,4 @@ void SetFloater(struct ContainerWindowData *pContainer)
     floaterOwner = pContainer->hwnd;
     SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, x, pt.y - (pContainer->dwFlags & CNT_NOMENUBAR ? 20 : 18), 50, 17, SWP_NOACTIVATE);
 }
+

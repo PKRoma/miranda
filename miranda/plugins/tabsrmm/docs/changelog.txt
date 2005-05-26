@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.95pre8 - 2005/05/24
+Version 0.9.9.95pre8 - 2005/05/25
 
         * container icon and title is now set earlier so that the container does not
           show "Dialog" while tabs are created.
@@ -68,7 +68,21 @@ Version 0.9.9.95pre8 - 2005/05/24
 
         * ICON PACK: updated "unknown.bmp" (default avatar image). Thanks to Faith for the
           .bmp.
-                  
+          
+        * several (internal) changes to focus handling and tab activation. Some things have been
+          simplified in the code, and in some areas additional safety checks were added.
+          May result in new focus/redraw bugs, but overall, the new system is an
+          improvement. It just needs to stabilize.
+          
+        * toolbar buttons are now always "flat" when using visual styles under XP. They no
+          longer use push button skinning. Beveled (3d) buttons are still available for 
+          classic windows theme.
+          
+        * DISMISS EVENT is back, but with a big warning when you first activate it / and or
+          run miranda with that option active.
+
+        * the tab control is now a full window class, and no longer only subclassed.
+                          
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)

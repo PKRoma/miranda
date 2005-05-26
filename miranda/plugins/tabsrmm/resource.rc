@@ -143,7 +143,7 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_MSGTABS,"SysTabControl32",TCS_HOTTRACK | 
+    CONTROL         "",IDC_MSGTABS,"TSTabCtrlClass",TCS_HOTTRACK | 
                     TCS_TOOLTIPS | TCS_FOCUSNEVER | WS_CLIPCHILDREN | 0x8,31,
                     7,5,5
     CONTROL         "",IDC_STATICCONTROL,"Static",SS_ENHMETAFILE,0,0,435,1,

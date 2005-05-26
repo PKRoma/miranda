@@ -336,8 +336,8 @@ Container mimimiert in der taskbar erzeugen
 Statusmodi für automatische Tab/Fenstererzeugung...
 [Message dialog visual settings]
 Layout des Nachrichtenfensters
-[Use flat buttons]
-Flache Schaltflächen
+[Use flat toolbar buttons (classic windows theme only)]
+Flache Toolbar Schaltflächen (nur wenn klassisches Windows-Theme aktiv ist)
 [Flat message log (no static edge)]
 Flache Textbereiche
 [Splitters have static edges]

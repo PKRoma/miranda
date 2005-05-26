@@ -38,7 +38,6 @@ int GetProtoIconFromList(const char *szProto, int iStatus);
 void CreateImageList(BOOL bInitial);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iNum);
-void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread);
 void LoadMsgAreaBackground();
 int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 void DeleteCachedIcon(struct MsgLogIcon *theIcon);
@@ -75,6 +74,7 @@ void SetFloater(struct ContainerWindowData *pContainer);
 
 int InitVSApi(), FreeVSApi();
 void ReloadTabConfig(), FreeTabConfig();
+int RegisterTabCtrlClass(void);
 
 void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);

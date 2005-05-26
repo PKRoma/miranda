@@ -195,13 +195,11 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		else {
 			// Draw background/border
 			if (ctl->hThemeButton) {
-                RECT rc = rcClient;
-				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-                InflateRect(&rc, 2, 2);
-				if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
-				}
-				MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
+                int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
+                if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
+                    MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+                }
+                MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
 			}
 			else {
                 RECT rcFill = rcClient;

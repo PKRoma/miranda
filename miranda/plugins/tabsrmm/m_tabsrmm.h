@@ -111,6 +111,7 @@ typedef struct {
 #define MWF_SHOW_SPLITTEROVERRIDE 128
 #define MWF_SHOW_SCROLLINGDISABLED 256
 #define MWF_SHOW_BBCODE 512
+#define MWF_SHOW_INFOPANEL 1024
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -220,7 +221,7 @@ struct MessageWindowData {
 	BOOL mayFlashTab;	// XXX tabs...
     HKL  hkl;           // keyboard layout identifier
     DWORD dwTickLastEvent;
-	HBITMAP hContactPic;
+	HBITMAP hContactPic, hPanelPic;
 	SIZE pic;
 	int showPic;
     int bottomOffset;
@@ -233,7 +234,6 @@ struct MessageWindowData {
     int   iOldHash;
     struct InputHistory *history;
     int   iHistoryCurrent, iHistoryTop, iHistorySize;
-    HANDLE hThread;
     int doSmileys;
     UINT codePage;
     HBITMAP hSmileyIcon;

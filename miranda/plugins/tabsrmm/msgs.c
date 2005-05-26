@@ -372,14 +372,14 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
             if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
                 DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
-                ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                ShowPicture(hwndDlg, dat, FALSE, TRUE);
             }
         }
         if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_FAILED) {
             if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
                 DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", "");
                 DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", "");
-                ShowPicture(hwndDlg, dat, FALSE, TRUE, TRUE);
+                ShowPicture(hwndDlg, dat, FALSE, TRUE);
             }
         }
         return 0;
@@ -1079,9 +1079,10 @@ int LoadSendRecvMessageModule(void)
     if (myGlobals.hCurHyperlinkHand == NULL)
         myGlobals.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 
-    ReloadTabConfig();
     LoadTSButtonModule();
+    RegisterTabCtrlClass();
     ReloadGlobals();
+    ReloadTabConfig();
     NEN_ReadOptions(&nen_options);
 
     myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
@@ -1222,7 +1223,7 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 	if(dat) {
         ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
 		nmhdr.code = TCN_SELCHANGE;
-        if(TabCtrl_GetItemCount(GetDlgItem(pContainer->hwnd, IDC_MSGTABS)) > 1) {
+        if(TabCtrl_GetItemCount(GetDlgItem(pContainer->hwnd, IDC_MSGTABS)) > 1 && !(pContainer->dwFlags & CNT_DEFERREDTABSELECT)) {
             TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetTabIndexFromHWND(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), hwndChild));
             SendMessage(pContainer->hwnd, WM_NOTIFY, 0, (LPARAM) &nmhdr);	// just select the tab and let WM_NOTIFY do the rest
         }

@@ -266,7 +266,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_PICMENU_TOGGLEAVATARDISPLAY:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", dat->showPic ? 0 : 1);
-                ShowPicture(hwndDlg,dat,FALSE,FALSE, FALSE);
+                ShowPicture(hwndDlg,dat,FALSE,FALSE);
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
@@ -684,36 +684,7 @@ TCHAR *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes)
     return strout;
 }
 
-DWORD WINAPI LoadPictureThread(LPVOID param)
-{
-    HBITMAP hBm;
-    HWND hwndDlg = (HWND)param;
-    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-    DBVARIANT dbv;
-
-    if(dat) {
-        if (!DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv)) {
-            hBm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-            DBFreeVariant(&dbv);
-            if(hBm == 0)
-                return 0;
-            if(IsWindow(hwndDlg)) {
-                dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-                if(dat) {
-                    dat->hContactPic = hBm;
-                    SendMessage((HWND)param, DM_PICTHREADCOMPLETE, 0, (LPARAM)hBm);
-                }
-                else
-                    DeleteObject(hBm);
-            }
-            else
-                DeleteObject(hBm);
-        }
-    }
-    return 0;
-}
-
-void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic, BOOL startThread)
+void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic)
 {
     DBVARIANT dbv = {0};
     RECT rc;
@@ -721,7 +692,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
     int iUnknown = FALSE;
     
     dat->pic.cy = dat->pic.cx = 60;                        
-    if(changePic && startThread) {
+    if(changePic) {
         if (dat->hContactPic) {
             if(dat->hContactPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hContactPic);
@@ -731,7 +702,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
     }
     
     if (showNewPic) {
-        if (startThread && dat->hContactPic) {
+        if (dat->hContactPic) {
             if(dat->hContactPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hContactPic);
             dat->hContactPic=NULL;
@@ -757,38 +728,18 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
             BOOL isNoPic = FALSE;
             int maxImageSizeX=500;
             int maxImageSizeY=300;
-            DWORD dwThreadId;
             HANDLE hFile;
             
-            /*
-             * use non-blocking (in its own thread) avatar loading only if its not a local file (i.e. ICQ web photo).
-             * note that remote avatars via MSN are considered to be local files, because downloading these is a
-             * 2-stage process (notificaton about the change and a further notification when the file is ready
-             */
-            
-            if(iUnknown) {
+            if(iUnknown)
                 dat->hContactPic = myGlobals.g_hbmUnknown;
-            }
             else {
-                if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
-                    if(startThread && dat->hThread == 0) {
-                        dat->showPic = 0;
-                        ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), SW_HIDE);
-                        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                        SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                        SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                        InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-                        dat->hThread = CreateThread(NULL, 0, LoadPictureThread, (LPVOID)hwndDlg, 0, &dwThreadId);
-                        DBFreeVariant(&dbv);
-                        return;
-                    }
-                }
+                if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+                    dat->hContact = 0;
                 else {
                     CloseHandle(hFile);
                     dat->hContactPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
                 }
             }
-
             if(dat->hContactPic == 0)
                 dat->hContactPic = myGlobals.g_hbmUnknown;
             else {
@@ -1387,6 +1338,8 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
     }
     else
         dat->myUin[0] = 0;
+    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
+        SetDlgItemTextA(hwndDlg, IDC_PANELUIN, dat->uin);
 }
 
 unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)

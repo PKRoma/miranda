@@ -31,8 +31,11 @@ for different tab states (active,  unread etc..)
 #include <uxtheme.h>
 
 extern MYGLOBALS myGlobals;
-extern WNDPROC OldTabControlProc;
+static WNDPROC OldTabControlClassProc;
 extern struct ContainerWindowData *pFirstContainer;
+extern HINSTANCE g_hInst;
+
+static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /*
  * visual styles support (XP+)
@@ -71,6 +74,23 @@ int FreeVSApi()
         FreeLibrary(hUxTheme);
     return 0;
 }
+
+int RegisterTabCtrlClass(void) 
+{
+	WNDCLASSEXA wc;
+	
+	ZeroMemory(&wc, sizeof(wc));
+	wc.cbSize         = sizeof(wc);
+	wc.lpszClassName  = "TSTabCtrlClass";
+	wc.lpfnWndProc    = TabControlSubclassProc;
+	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
+	wc.cbWndExtra     = sizeof(struct TabControlData *);
+	wc.hbrBackground  = 0;
+	wc.style          = CS_GLOBALCLASS | CS_DBLCLKS;
+	RegisterClassExA(&wc);
+	return 0;
+}
+
 void RectScreenToClient(HWND hwnd, RECT *rc)
 {
     POINT p1, p2;
@@ -238,7 +258,7 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
             else
                 rcItem->bottom--;
             
-            rcItem->right += (dwStyle & TCS_FIXEDWIDTH ? 6 : 0);
+            rcItem->right += (dwStyle & TCS_BUTTONS ? 6 : 0);
             if(nHint & HINT_ACTIVE_ITEM)
                 DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
             else if(nHint & HINT_HOTTRACK)
@@ -443,39 +463,37 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
 
 #define FIXED_TAB_SIZE 100
 
-BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct TabControlData *tabdat = 0;
     tabdat = (struct TabControlData *)GetWindowLong(hwnd, GWL_USERDATA);
     
-    if(tabdat)
+    if(tabdat) {
+        if(tabdat->pContainer == NULL)
+            tabdat->pContainer = (struct ContainerWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
         tabdat->dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+    }
     
     switch(msg) {
-        case EM_SUBCLASSED:
+        case WM_NCCREATE:
         {
+            WNDCLASSEXA wcl = {0};
+
+            wcl.cbSize = sizeof(wcl);
+            GetClassInfoExA(g_hInst, "SysTabControl32", &wcl);
+            
             tabdat = (struct TabControlData *)malloc(sizeof(struct TabControlData));
             SetWindowLong(hwnd, GWL_USERDATA, (LONG)tabdat);
             ZeroMemory((void *)tabdat, sizeof(struct TabControlData));
             tabdat->hwnd = hwnd;
             tabdat->cx = GetSystemMetrics(SM_CXSMICON);
             tabdat->cy = GetSystemMetrics(SM_CYSMICON);
-            tabdat->pContainer = (struct ContainerWindowData *)lParam;
-            tabdat->m_skinning = FALSE;
-            if(IsWinVerXPPlus() && myGlobals.m_VSApiEnabled != 0) {
-                if(pfnIsThemeActive != 0)
-                    if(pfnIsThemeActive()) {
-                        tabdat->m_skinning = TRUE;
-                        if(pfnOpenThemeData != 0) {
-                            if((tabdat->hTheme = pfnOpenThemeData(NULL, L"TAB")) == 0)
-                                tabdat->m_skinning = FALSE;
-                        }
-                    }
-            }
-            tabdat->m_xpad = DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 4);
-            return 0;
+            SendMessage(hwnd, EM_THEMECHANGED, 0, 0);
+            OldTabControlClassProc = wcl.lpfnWndProc;
+            return TRUE;
         }
         case EM_THEMECHANGED:
+            tabdat->m_xpad = DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3);
             tabdat->m_skinning = FALSE;
             if(IsWinVerXPPlus() && myGlobals.m_VSApiEnabled != 0) {
                 if(pfnIsThemeActive != 0)
@@ -489,7 +507,7 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                         }
                     }
             }
-            break;
+            return 0;
         case EM_SEARCHSCROLLER:
         {
             HWND hwndChild;
@@ -530,16 +548,14 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     TabCtrl_GetItemRect(hwnd, 0, &rc);
                     TabCtrl_SetItemSize(hwnd, 10, rc.bottom - rc.top);
                 }
-                result = CallWindowProc(OldTabControlProc, hwnd, msg, wParam, lParam);
+                result = CallWindowProc(OldTabControlClassProc, hwnd, msg, wParam, lParam);
                 TabCtrl_GetItemRect(hwnd, 0, &rc);
                 SendMessage(hwnd, WM_SIZE, 0, 0);
                 return result;
             }
             break;
         case WM_DESTROY:
-        case EM_UNSUBCLASSED:
             if(tabdat) {
-                //_DebugPopup(0, "free tabctrl memory");
                 if(tabdat->hTheme != 0 && pfnCloseThemeData != 0)
                     pfnCloseThemeData(tabdat->hTheme);
                 free(tabdat);
@@ -555,6 +571,9 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case WM_SIZE:
         {
             int iTabs = TabCtrl_GetItemCount(hwnd);
+            
+            if(!tabdat->pContainer)
+                break;
             
             if(!(tabdat->dwStyle & TCS_MULTILINE)) {
                 RECT rcClient, rc;
@@ -830,7 +849,8 @@ BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             break;
         }
     }
-    return CallWindowProc(OldTabControlProc, hwnd, msg, wParam, lParam); 
+    //return DefWindowProc(hwnd, msg, wParam, lParam);
+    return CallWindowProc(OldTabControlClassProc, hwnd, msg, wParam, lParam); 
 }
 
 void ReloadTabConfig()

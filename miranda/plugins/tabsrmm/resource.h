@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by resource.rc
+// Used by msgwindow.rc
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
@@ -73,6 +73,13 @@
 #define IDC_CHKACTR_OPEN                1028
 #define IDC_CONTACTPIC                  1029
 #define IDC_CHKACTR_REMOVE              1030
+#define IDC_PANELPIC                    1030
+#define IDC_PANEL                       1031
+#define IDC_PANELNICK                   1032
+#define IDC_PANELUIN                    1033
+#define IDC_PANELNICKLABEL              1034
+#define IDC_PANELUINLABEL               1035
+#define IDC_PANELSTATUS                 1036
 #define IDC_ST_ENTERMSG                 1031
 #define IDC_CHKWINDOWCHECK              1032
 #define IDC_CHKREPLYWINDOW              1033
