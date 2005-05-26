@@ -45,10 +45,15 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 	while( TRUE )
 	{
 		while ( msnPingTimeout-- > 0 ) {
-			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
-				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
-				MSN_DebugLog( "Closing keep-alive thread" );
-				return;
+			switch( ::WaitForSingleObjectEx( hKeepAliveThreadEvt, 1000, TRUE )) {
+				case WAIT_IO_COMPLETION:
+					if ( !Miranda_Terminated())
+						break;
+
+				case WAIT_OBJECT_0:
+					::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
+					MSN_DebugLog( "Closing keep-alive thread" );
+					return;
 		}	}
 
 		msnPingTimeout = 50;
