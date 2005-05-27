@@ -64,6 +64,7 @@ MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_AWAY,       NULL },
 	{ ID_STATUS_NA,         NULL },
 	{ ID_STATUS_DND,        NULL },
+	{ ID_STATUS_OCCUPIED,   NULL },
 	{ ID_STATUS_ONTHEPHONE, NULL },
 	{ ID_STATUS_OUTTOLUNCH, NULL } };
 

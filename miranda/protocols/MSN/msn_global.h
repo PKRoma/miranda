@@ -539,7 +539,7 @@ struct TWinErrorCode
 /////////////////////////////////////////////////////////////////////////////////////////
 //	External variables
 
-#define MSN_NUM_MODES 6
+#define MSN_NUM_MODES 7
 
 struct MSN_StatusMessage
 {

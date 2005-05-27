@@ -1011,7 +1011,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 	replaceStr( msnModeMsgs[i].m_msg, ( char* )lParam );
 
-	if ( wParam == msnStatusMode )
+	if ( wParam == msnDesiredStatus )
 		MSN_SendStatusMessage(( char* )lParam );
 
 	return 0;
