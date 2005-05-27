@@ -1630,6 +1630,9 @@ LBL_InvalidCommand:
 			}	}
 			break;
 
+		case ' XUU':   // UUX: MSNP11 addition
+			break;
+
 		case ' REV':	//******** VER: section 7.1 Protocol Versioning
 		{
 			char protocol1[ 7 ];
