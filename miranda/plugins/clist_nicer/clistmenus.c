@@ -39,7 +39,7 @@ static struct CListMenuItem *mainMenuItem,*contextMenuItem;
 static int mainItemCount,contextItemCount;
 static HIMAGELIST hImlMenuIcons;
 static HANDLE hPreBuildContactMenuEvent,hAckHook;
-static HMENU hMainMenu,hStatusMenu;
+static HMENU hMainMenu, hStatusMenu, hRootMenu;
 int currentStatusMenuItem,currentDesiredStatusMode;
 static int statusModeList[]={ID_STATUS_OFFLINE,ID_STATUS_ONLINE,ID_STATUS_AWAY,ID_STATUS_NA,ID_STATUS_OCCUPIED,ID_STATUS_DND,ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_ONTHEPHONE,ID_STATUS_OUTTOLUNCH};
 static int skinIconStatusList[]={SKINICON_STATUS_OFFLINE,SKINICON_STATUS_ONLINE,SKINICON_STATUS_AWAY,SKINICON_STATUS_NA,SKINICON_STATUS_OCCUPIED,SKINICON_STATUS_DND,SKINICON_STATUS_FREE4CHAT,SKINICON_STATUS_INVISIBLE,SKINICON_STATUS_ONTHEPHONE,SKINICON_STATUS_OUTTOLUNCH};
@@ -730,8 +730,9 @@ int InitCustomMenus(void)
 	CreateServiceFunction(MS_CLIST_MENUPROCESSHOTKEY,MenuProcessHotkey);
 	hPreBuildContactMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDCONTACTMENU);
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,MenuProtoAck);
-	hMainMenu=GetSubMenu(LoadMenu(g_hInst,MAKEINTRESOURCE(IDR_CLISTMENU)),0);
-	hStatusMenu=GetSubMenu(LoadMenu(g_hInst,MAKEINTRESOURCE(IDR_CLISTMENU)),1);
+    hRootMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CLISTMENU));
+    hMainMenu = GetSubMenu(hRootMenu, 0);
+    hStatusMenu = GetSubMenu(hRootMenu, 1);
 	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hMainMenu,0);
 	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hStatusMenu,0);
 	nextMenuId=FIRSTCUSTOMMENUITEMID;
@@ -772,4 +773,7 @@ void UninitCustomMenus(void)
 	}
 	mir_free(mainMenuItem);
 	mir_free(contextMenuItem);
+    DestroyMenu(hStatusMenu);
+    DestroyMenu(hMainMenu);
+    DestroyMenu(hRootMenu);    
 }
