@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by msgwindow.rc
+// Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
@@ -75,16 +75,16 @@
 #define IDC_CHKACTR_REMOVE              1030
 #define IDC_PANELPIC                    1030
 #define IDC_PANEL                       1031
-#define IDC_PANELNICK                   1032
-#define IDC_PANELUIN                    1033
-#define IDC_PANELNICKLABEL              1034
-#define IDC_PANELUINLABEL               1035
-#define IDC_PANELSTATUS                 1036
 #define IDC_ST_ENTERMSG                 1031
+#define IDC_PANELNICK                   1032
 #define IDC_CHKWINDOWCHECK              1032
+#define IDC_PANELUIN                    1033
 #define IDC_CHKREPLYWINDOW              1033
+#define IDC_PANELNICKLABEL              1034
 #define IDC_CHKPREVIEW                  1034
+#define IDC_PANELUINLABEL               1035
 #define IDC_CHKINFINITE                 1035
+#define IDC_PANELSTATUS                 1036
 #define IDC_CHKHIDESEND                 1036
 #define IDC_SPLITTER                    1037
 #define IDC_CHKDEFAULTCOL_MESSAGE       1038
@@ -94,6 +94,7 @@
 #define IDC_COLTEXT_MESSAGE             1042
 #define IDC_CHKDEFAULTCOL_URL           1043
 #define IDC_COLBACK_URL                 1044
+#define IDC_INFOPANELMENU               1045
 #define IDC_COLTEXT_URL                 1045
 #define IDC_CHKDEFAULTCOL_FILE          1046
 #define IDC_SHOWNAMES                   1047
@@ -629,6 +630,14 @@
 #define ID_TRAYCONTEXT_SHOWTHEFLOATER   40203
 #define ID_TRAYCONTEXT_SHOWTHETRAYICON  40204
 #define ID_TABMENU_CONFIGURETABAPPEARANCE 40205
+#define ID_INFOPANEL_QUICKTOGGLE        40206
+#define ID_INFOPANEL_GLOBAL             40207
+#define ID_GLOBAL_ENABLED               40208
+#define ID_GLOBAL_DISABLED              40209
+#define ID_INFOPANEL_THISCONTACT        40210
+#define ID_THISCONTACT_USEGLOBALSETTING 40211
+#define ID_THISCONTACT_ALWAYSON         40212
+#define ID_THISCONTACT_ALWAYSOFF        40213
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -636,7 +645,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        6
-#define _APS_NEXT_COMMAND_VALUE         40206
+#define _APS_NEXT_COMMAND_VALUE         40214
 #define _APS_NEXT_CONTROL_VALUE         1393
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

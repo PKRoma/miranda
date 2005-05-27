@@ -1082,6 +1082,7 @@ int LoadSendRecvMessageModule(void)
     LoadTSButtonModule();
     RegisterTabCtrlClass();
     ReloadGlobals();
+    GetDataDir();
     ReloadTabConfig();
     NEN_ReadOptions(&nen_options);
 

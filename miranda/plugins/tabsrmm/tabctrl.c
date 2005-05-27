@@ -221,7 +221,7 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
         
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHLABEL)) {
             oldFont = SelectObject(dc, (HFONT)SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
-            if(tabdat->dwStyle & TCS_BUTTONS) {
+            if(tabdat->dwStyle & TCS_BUTTONS || !(tabdat->dwStyle & TCS_MULTILINE)) {
                 rcItem->right -= tabdat->m_xpad;
                 dwTextFlags |= DT_WORD_ELLIPSIS;
             }
@@ -258,7 +258,7 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
             else
                 rcItem->bottom--;
             
-            rcItem->right += (dwStyle & TCS_BUTTONS ? 6 : 0);
+            rcItem->right += 6;
             if(nHint & HINT_ACTIVE_ITEM)
                 DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
             else if(nHint & HINT_HOTTRACK)

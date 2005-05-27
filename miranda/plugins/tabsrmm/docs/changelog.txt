@@ -83,6 +83,10 @@ Version 0.9.9.95pre8 - 2005/05/25
 
         * the tab control is now a full window class, and no longer only subclassed.
                           
+        + new hotkeys:
+          ALT-I: quick show / hide the info panel
+          ALT-B: toggle BiDi option (switch between RTL and LTR)
+          
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)

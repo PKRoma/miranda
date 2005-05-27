@@ -46,6 +46,7 @@ $Id$
 #include "functions.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
@@ -310,8 +311,30 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     ofn.lpstrInitialDir = ".";
                     *FileName = '\0';
                     ofn.lpstrDefExt="";
-                    if (GetOpenFileNameA(&ofn))
-                        DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",FileName);
+                    if (GetOpenFileNameA(&ofn)) {
+                        if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                            char szNewPath[MAX_PATH + 1], szOldPath[MAX_PATH + 1];
+                            char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
+                            _splitpath(FileName, NULL, NULL, szBasename, szExt);
+                            mir_snprintf(szNewPath, MAX_PATH, "%s%s_avatar%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto, szExt);
+                            /*
+                             * delete all old avatars
+                             */
+                            strncpy(szOldPath, szNewPath, MAX_PATH);
+                            DeleteFileA(szOldPath);
+                            strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "bmp", 3);
+                            DeleteFileA(szOldPath);
+                            strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "jpg", 3);
+                            DeleteFileA(szOldPath);
+                            strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "gif", 3);
+                            DeleteFileA(szOldPath);
+                            
+                            CopyFileA(FileName, szNewPath, FALSE);
+                            LoadOwnAvatar(hwndDlg, dat);
+                        }
+                        else
+                            DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",FileName);
+                    }
                     else
                         return 1;
                 }
@@ -341,6 +364,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 dat->dwFlags ^= MWF_LOG_INDENT;
                 return 1;
             case ID_LOGMENU_ACTIVATERTL:
+                _DebugPopup(dat->hContact, "toggle rtl");
                 iRtl ^= 1;
                 dat->dwFlags = iRtl ? dat->dwFlags | MWF_LOG_RTL : dat->dwFlags & ~MWF_LOG_RTL;
                 if(dat->hContact) {
@@ -512,11 +536,14 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
             dat->showPic = 0;
             break;
         case 3:             // on, if present
-            if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
+        {
+            HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+            if((hbm && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) || (hbm && hbm != myGlobals.g_hbmUnknown))
                 dat->showPic = 1;
             else
                 dat->showPic = 0;
             break;
+        }
         case 1:             // on for protocols with avatar support
             {
                 int pCaps;
@@ -570,58 +597,6 @@ int CheckValidSmileyPack(char *szProto, HICON *hButtonIcon)
     }
     else
         return 0;
-}
-
-/*
- * resize the default :) smiley to fit on the button (smileys may be bigger than 16x16.. so it needs to be done)
- */
-
-void CreateSmileyIcon(struct MessageWindowData *dat, HICON hIcon)
-{
-    HBITMAP hBmp, hoBmp;
-    HDC hdc, hdcMem;
-    BITMAPINFOHEADER bih = {0};
-    int widthBytes;
-    RECT rc;
-    HBRUSH hBkgBrush;
-    ICONINFO ii;
-    BITMAP bm;
-
-    int sizex = 0;
-    int sizey = 0;
-    
-    GetIconInfo(hIcon, &ii);
-    GetObject(ii.hbmColor, sizeof(bm), &bm);
-    sizex = GetSystemMetrics(SM_CXSMICON);
-    sizey = GetSystemMetrics(SM_CYSMICON);
-    DeleteObject(ii.hbmMask);
-    DeleteObject(ii.hbmColor);
-
-    hBkgBrush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
-    bih.biSize = sizeof(bih);
-    bih.biBitCount = 24;
-    bih.biCompression = BI_RGB;
-    
-    bih.biHeight = sizex;
-    bih.biPlanes = 1;
-    bih.biWidth = sizey;
-    widthBytes = ((bih.biWidth*bih.biBitCount + 31) >> 5) * 4;
-    rc.top = rc.left = 0;
-    rc.right = bih.biWidth;
-    rc.bottom = bih.biHeight;
-    hdc = GetDC(NULL);
-    hBmp = CreateCompatibleBitmap(hdc, bih.biWidth, bih.biHeight);
-    hdcMem = CreateCompatibleDC(hdc);
-    hoBmp = (HBITMAP)SelectObject(hdcMem, hBmp);
-    FillRect(hdcMem, &rc, hBkgBrush);
-    DrawIconEx(hdcMem, 0, 0, hIcon, bih.biWidth, bih.biHeight, 0, NULL, DI_NORMAL);
-    SelectObject(hdcMem, hoBmp);
-
-    DeleteDC(hdcMem);
-    DeleteObject(hoBmp);
-    ReleaseDC(NULL, hdc);
-    DeleteObject(hBkgBrush);
-    dat->hSmileyIcon = hBmp;
 }
 
 /*
@@ -684,6 +659,37 @@ TCHAR *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes)
     return strout;
 }
 
+
+void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+    
+    if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC)
+        dat->iRealAvatarHeight = 0;
+    if(hbm) {
+        dat->showPic = GetAvatarVisibility(hwndDlg, dat);
+        if(dat->dynaSplitter == 0 || dat->splitterY == 0)
+            LoadSplitter(hwndDlg, dat);
+        dat->dynaSplitter = dat->splitterY - 34;
+        if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
+            BITMAP bm;
+            GetObject(hbm, sizeof(bm), &bm);
+            CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+        }
+        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+        SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
+        InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+    }
+    else {
+        dat->showPic = GetAvatarVisibility(hwndDlg, dat);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
+        dat->pic.cy = dat->pic.cx = 60;
+        InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+    }
+}
+
 void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic)
 {
     DBVARIANT dbv = {0};
@@ -691,7 +697,9 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
     int picFailed = FALSE;
     int iUnknown = FALSE;
     
-    dat->pic.cy = dat->pic.cx = 60;                        
+    if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL))
+        dat->pic.cy = dat->pic.cx = 60;
+    
     if(changePic) {
         if (dat->hContactPic) {
             if(dat->hContactPic != myGlobals.g_hbmUnknown)
@@ -734,7 +742,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
                 dat->hContactPic = myGlobals.g_hbmUnknown;
             else {
                 if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
-                    dat->hContact = 0;
+                    dat->hContactPic = 0;
                 else {
                     CloseHandle(hFile);
                     dat->hContactPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
@@ -759,30 +767,11 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
                 DeleteObject(dat->hContactPic);
             dat->hContactPic = myGlobals.g_hbmUnknown;
         }
-        if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC)
-            dat->iRealAvatarHeight = 0;
-        if(dat->hContactPic) {
-            dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-            if(dat->dynaSplitter == 0 || dat->splitterY == 0)
-                LoadSplitter(hwndDlg, dat);
-            dat->dynaSplitter = dat->splitterY - 34;
-            if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
-                BITMAP bm;
-                GetObject(dat->hContactPic, sizeof(bm), &bm);
-                CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-            }
-            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-            ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-            InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+        if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+            InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELPIC), NULL, FALSE);
+            return;
         }
-        else {
-            dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-            ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-            dat->pic.cy = dat->pic.cx = 60;
-            InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-        }
+        AdjustBottomAvatarDisplay(hwndDlg, dat);
     } else {
         dat->showPic = dat->showPic ? 0 : 1;
         DBWriteContactSettingByte(dat->hContact,SRMSGMOD_T,"MOD_ShowPic",(BYTE)dat->showPic);
@@ -1578,3 +1567,52 @@ BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 	return bResult;
 }
 
+BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    BYTE bDefault = DBGetContactSettingByte(NULL, SRMSGMOD_T, "infopanel", 0);
+    BYTE bContact = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", 0);
+
+    return bContact == 0 ? bDefault : (bContact == (BYTE)-1 ? 0 : 1);
+}
+
+void GetDataDir()
+{
+    char pszDBPath[MAX_PATH + 1], pszDataPath[MAX_PATH + 1];
+    
+    CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)pszDBPath);
+    mir_snprintf(pszDataPath, MAX_PATH, "%s\\tabSRMM\\", pszDBPath);
+    CreateDirectoryA(pszDataPath, NULL);
+    strncpy(myGlobals.szDataPath, pszDataPath, MAX_PATH);
+    myGlobals.szDataPath[MAX_PATH] = 0;
+}
+
+void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    char szBasename[MAX_PATH + 1];
+    HBITMAP hbm = 0;
+    
+    if(dat->hOwnPic != 0 && dat->hOwnPic != myGlobals.g_hbmUnknown)
+        DeleteObject(dat->hOwnPic);
+
+    // try .gif first
+    
+    mir_snprintf(szBasename, MAX_PATH, "%s%s_avatar.gif", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+    if((hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szBasename)) == 0) {
+        strncpy(&szBasename[lstrlenA(szBasename) - 3], "jpg", 3);
+        if((hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szBasename)) == 0) {
+            strncpy(&szBasename[lstrlenA(szBasename) - 3], "bmp", 3);
+            if((hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szBasename)) == 0)
+                hbm = myGlobals.g_hbmUnknown;
+        }
+    }
+    dat->hOwnPic = hbm;
+    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+        BITMAP bm;
+        
+        dat->iRealAvatarHeight = 0;
+        AdjustBottomAvatarDisplay(hwndDlg, dat);
+        GetObject(dat->hOwnPic, sizeof(bm), &bm);
+        CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+        SendMessage(hwndDlg, WM_SIZE, 0, 0);
+    }
+}

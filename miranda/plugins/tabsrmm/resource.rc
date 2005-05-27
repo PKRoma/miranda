@@ -143,9 +143,8 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_MSGTABS,"TSTabCtrlClass",TCS_HOTTRACK | 
-                    TCS_TOOLTIPS | TCS_FOCUSNEVER | WS_CLIPCHILDREN | 0x8,31,
-                    7,5,5
+    CONTROL         "",IDC_MSGTABS,"TSTabCtrlClass",WS_CLIPCHILDREN | 0xc048,
+                    31,7,5,5
     CONTROL         "",IDC_STATICCONTROL,"Static",SS_ENHMETAFILE,0,0,435,1,
                     WS_EX_STATICEDGE
     CONTROL         "",IDC_SIDEBAR,"Static",SS_ENHMETAFILE | WS_CLIPSIBLINGS | 
@@ -1006,6 +1005,23 @@ BEGIN
     BEGIN
         MENUITEM "No Message Sessions opened",  ID_DUMMY_NOMESSAGESESSIONSOPENED
 
+    END
+    POPUP "Info panel"
+    BEGIN
+        MENUITEM "Quick Toggle\tALT-I",         ID_INFOPANEL_QUICKTOGGLE
+        MENUITEM SEPARATOR
+        POPUP "Global"
+        BEGIN
+            MENUITEM "Enabled",                     ID_GLOBAL_ENABLED
+            MENUITEM "Disabled",                    ID_GLOBAL_DISABLED
+        END
+        POPUP "This Contact"
+        BEGIN
+            MENUITEM "Use Global Setting",          ID_THISCONTACT_USEGLOBALSETTING
+
+            MENUITEM "Always On",                   ID_THISCONTACT_ALWAYSON
+            MENUITEM "Always Off",                  ID_THISCONTACT_ALWAYSOFF
+        END
     END
 END
 

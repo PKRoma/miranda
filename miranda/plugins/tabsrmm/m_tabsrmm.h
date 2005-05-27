@@ -221,7 +221,7 @@ struct MessageWindowData {
 	BOOL mayFlashTab;	// XXX tabs...
     HKL  hkl;           // keyboard layout identifier
     DWORD dwTickLastEvent;
-	HBITMAP hContactPic, hPanelPic;
+	HBITMAP hContactPic, hOwnPic;
 	SIZE pic;
 	int showPic;
     int bottomOffset;
@@ -368,6 +368,7 @@ typedef struct _globals {
     int  m_VSApiEnabled;
     struct myTabCtrl tabConfig;
     BYTE m_ExtraRedraws;
+    char szDataPath[MAX_PATH + 1];
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
