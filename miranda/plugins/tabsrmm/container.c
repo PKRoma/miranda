@@ -1337,7 +1337,7 @@ panel_found:
                 if(curItem >= 0) {
                     SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
                     if(myGlobals.m_ExtraRedraws)
-                        InvalidateRect((HWND)item.lParam, NULL, TRUE);
+                        RedrawWindow((HWND)item.lParam, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
                 }
                 if(GetMenu(hwndDlg) != 0)
                     DrawMenuBar(hwndDlg);

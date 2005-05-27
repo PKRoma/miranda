@@ -104,7 +104,7 @@ BEGIN
                     0x18000000L
     CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,
                     16,14,0x18000000L
-    ICON            "",IDC_MULTIPLEICON,0,64,21,20,SS_CENTERIMAGE
+    ICON            "",IDC_MULTIPLEICON,0,64,16,14,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,14,
                     0x18000000L
     CONTROL         "",IDC_TOGGLESIDEBAR,"Button",BS_OWNERDRAW | WS_TABSTOP,

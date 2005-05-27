@@ -845,6 +845,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTISPLITTER:
+            if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
+                urc->rcItem.top += dat->panelHeight;
             urc->rcItem.left -= dat->multiSplitterX;
             urc->rcItem.right -= dat->multiSplitterX;
             urc->rcItem.bottom = iClistOffset;
@@ -852,6 +854,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.bottom += 2;
             return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
         case IDC_CLIST:
+            if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
+                urc->rcItem.top += dat->panelHeight;
             urc->rcItem.left = urc->dlgNewSize.cx - dat->multiSplitterX;
             urc->rcItem.right = urc->dlgNewSize.cx - 3;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
@@ -1259,27 +1263,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
              */
                 if(dat->hContact) {
     				DBVARIANT dbv;
-#if defined ( _UNICODE )
-                    if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW", &dbv)) {
-                        SETTEXTEX stx = {ST_DEFAULT, 1200};
-                        WCHAR *wszTemp = NULL;
-                        if(dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 0) {
-                            wszTemp = Utf8_Decode(dbv.pszVal);
-                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)wszTemp);
-                            free(wszTemp);
-                        }
-#else
-    				if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
-                        if(dbv.cchVal > 0)
-                            SetDlgItemTextA(hwndDlg, IDC_MESSAGE, dbv.pszVal);
-#endif
+                    if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
+                        SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
+                        int len;
+                        if(dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 0)
+                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)dbv.pszVal);
                         DBFreeVariant(&dbv);
-    					{
-    						int len = GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE));
-                            if(dat->pContainer->hwndActive == hwndDlg)
-                                UpdateReadChars(hwndDlg, dat);
-                            UpdateSaveAndSendButton(hwndDlg, dat);
-    					}
+                        len = GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE));
+                        if(dat->pContainer->hwndActive == hwndDlg)
+                            UpdateReadChars(hwndDlg, dat);
+                        UpdateSaveAndSendButton(hwndDlg, dat);
     				}
     			}
                 if (newData->szInitialText) {
@@ -4609,54 +4602,53 @@ verify:
             if(dat->iTabID == -1)
                 _DebugPopup(dat->hContact, "WARNING: new tabindex: %d", dat->iTabID);
             return 0;
-      case WM_DROPFILES:
-      {   
-            BOOL not_sending=GetKeyState(VK_CONTROL)&0x8000;
-         if (!not_sending) {
-            if(dat->szProto==NULL) break;
-            if(!(CallProtoService(dat->szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_FILESEND)) break;
-            if(dat->wStatus == ID_STATUS_OFFLINE) break;
-         }
-         if(dat->hContact!=NULL) {
-            HDROP hDrop;
-            char **ppFiles=NULL;
-            char szFilename[MAX_PATH];
-            int fileCount,totalCount=0,i;
-
-            hDrop=(HDROP)wParam;
-            fileCount=DragQueryFile(hDrop,-1,NULL,0);
-            ppFiles=NULL;
-            for(i=0;i<fileCount;i++) {
-               DragQueryFileA(hDrop,i,szFilename,sizeof(szFilename));
-               AddToFileList(&ppFiles,&totalCount,szFilename);
-            }
-
-            if (!not_sending) {
-               CallService(MS_FILE_SENDSPECIFICFILES,(WPARAM)dat->hContact,(LPARAM)ppFiles);
-            }
-            else {
-               #define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
-
-               if(ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
-                  char *szHTTPText;
-                  int i;
-
-                  for(i=0;i<totalCount;i++) {
-                     char *szTemp;
-                     szTemp=(char*)CallService(MS_HTTPSERVER_ADDFILENAME,(WPARAM)ppFiles[i],0);
-                     //lstrcat(szHTTPText,szTemp);
-                  }
-                  szHTTPText="DEBUG";
-                  SendDlgItemMessageA(hwndDlg,IDC_MESSAGE,EM_REPLACESEL,TRUE,(LPARAM)szHTTPText);
-                  SetFocus(GetDlgItem(hwndDlg,IDC_MESSAGE));
-               }
-            }
-            for(i=0;ppFiles[i];i++) free(ppFiles[i]);
-            free(ppFiles);
-         }
-      }
-      return 0;
-// END MOD#11
+          case WM_DROPFILES:
+          {   
+                BOOL not_sending=GetKeyState(VK_CONTROL)&0x8000;
+             if (!not_sending) {
+                if(dat->szProto==NULL) break;
+                if(!(CallProtoService(dat->szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_FILESEND)) break;
+                if(dat->wStatus == ID_STATUS_OFFLINE) break;
+             }
+             if(dat->hContact!=NULL) {
+                HDROP hDrop;
+                char **ppFiles=NULL;
+                char szFilename[MAX_PATH];
+                int fileCount,totalCount=0,i;
+    
+                hDrop=(HDROP)wParam;
+                fileCount=DragQueryFile(hDrop,-1,NULL,0);
+                ppFiles=NULL;
+                for(i=0;i<fileCount;i++) {
+                   DragQueryFileA(hDrop,i,szFilename,sizeof(szFilename));
+                   AddToFileList(&ppFiles,&totalCount,szFilename);
+                }
+    
+                if (!not_sending) {
+                   CallService(MS_FILE_SENDSPECIFICFILES,(WPARAM)dat->hContact,(LPARAM)ppFiles);
+                }
+                else {
+                   #define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
+    
+                   if(ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
+                      char *szHTTPText;
+                      int i;
+    
+                      for(i=0;i<totalCount;i++) {
+                         char *szTemp;
+                         szTemp=(char*)CallService(MS_HTTPSERVER_ADDFILENAME,(WPARAM)ppFiles[i],0);
+                         //lstrcat(szHTTPText,szTemp);
+                      }
+                      szHTTPText="DEBUG";
+                      SendDlgItemMessageA(hwndDlg,IDC_MESSAGE,EM_REPLACESEL,TRUE,(LPARAM)szHTTPText);
+                      SetFocus(GetDlgItem(hwndDlg,IDC_MESSAGE));
+                   }
+                }
+                for(i=0;ppFiles[i];i++) free(ppFiles[i]);
+                free(ppFiles);
+             }
+          }
+          return 0;
             case WM_CLOSE: 
             {
                 int iTabs, i;
@@ -4721,61 +4713,25 @@ verify:
                 DestroyWindow(hwndDlg);
                 if(iTabs == 1)
                     PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
-                else {
+                else
                     SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
-                    //SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
-                }
-                //SetWindowLong(hwndDlg, GWL_USERDATA, 0);
-                
                 break;
             }
         case WM_DESTROY:
             TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
             AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuRecent);
-// BEGIN MOD#26: Autosave notsent message (by Corsario & bi0)
-         if(dat->hContact) {
-            TCHAR *AutosaveMessage;
-#ifdef _UNICODE
-                GETTEXTEX gtx;
-#endif                
-                
-            int bufSize = GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE));
-                if (bufSize) {
-                    bufSize++;
-                AutosaveMessage=(TCHAR*)malloc(bufSize * sizeof(TCHAR));
-#ifdef _UNICODE
-                    gtx.cb = bufSize * sizeof(TCHAR);
-                    gtx.codepage = 1200;
-                    gtx.flags = GT_USECRLF;
-                    gtx.lpDefaultChar = 0;
-                    gtx.lpUsedDefChar = 0;
-                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gtx, (LPARAM)AutosaveMessage);
-                    _DBWriteContactSettingWString(dat->hContact, SRMSGMOD, "SavedMsgW", AutosaveMessage);
-#else
-                    GetDlgItemTextA(hwndDlg,IDC_MESSAGE,AutosaveMessage,bufSize);
-                    DBWriteContactSettingString(dat->hContact,SRMSGMOD,"SavedMsg",(char *)AutosaveMessage);
-#endif
-                free(AutosaveMessage);
+            if(dat->hContact) {
+                char *msg = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
+                if(msg) {
+                    DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", msg);
+                    free(msg);
                 }
-                else {
-#ifdef _UNICODE
-                    DBDeleteContactSetting(dat->hContact, SRMSGMOD, "SavedMsgW");
-#else
-                    DBDeleteContactSetting(dat->hContact,SRMSGMOD,"SavedMsg");
-#endif
-                }
-         }
-// END MOD#26
-
-            /*
-             * make sure to delete OUR last event...
-             */
-            /* if(dat->pContainer->dwTickLastEvent == dat->dwTickLastEvent)
-                dat->pContainer->dwTickLastEvent = 0; */
-            
-            if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
-                NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
+                else
+                    DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", "");
             }
+            if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
+                NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
+            
             if (dat->hBkgBrush)
                 DeleteObject(dat->hBkgBrush);
             if (dat->hInputBkgBrush)
@@ -4846,16 +4802,6 @@ verify:
                     CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
                 }
             }
-
-            // metacontacts support
-
-            /*
-            if(dat->bIsMeta) {
-                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
-                CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
-            } */
-            
-// XXX tab support
             {
                 HFONT hFont;
                 TCITEM item;
@@ -4874,9 +4820,7 @@ verify:
                     BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
                     dat->iTabID = -1;
                 }
-                
             }
-// XXX end mod
             TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
             
             // IEVIew MOD Begin
@@ -4891,8 +4835,6 @@ verify:
 
             if (dat)
                 free(dat);
-            else
-                MessageBoxA(0,"dat == 0 in WM_DESTROY", "Warning", MB_OK);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
             break;
     }

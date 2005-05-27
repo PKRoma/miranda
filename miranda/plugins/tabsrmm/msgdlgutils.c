@@ -291,7 +291,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
                 myGlobals.m_AlwaysFullToolbarWidth = !myGlobals.m_AlwaysFullToolbarWidth;
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", myGlobals.m_AlwaysFullToolbarWidth);
-                WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+                WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
                 break;
             case ID_PICMENU_LOADALOCALPICTUREASAVATAR:
                 {
@@ -1525,7 +1525,7 @@ void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
     }
     for(i = 0; i < 4; i++) {
         EnableWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
-        ShowWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? SW_SHOW : SW_HIDE);
+        ShowWindow(GetDlgItem(hwndDlg, controls[i]), (dat->SendFormat != 0 && !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)) ? SW_SHOW : SW_HIDE);
     }
     return;
 }
@@ -1616,3 +1616,4 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
         SendMessage(hwndDlg, WM_SIZE, 0, 0);
     }
 }
+
