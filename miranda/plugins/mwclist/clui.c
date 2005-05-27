@@ -86,6 +86,13 @@ extern pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact);
 extern void InitGroupMenus();
 extern int UseOwnerDrawStatusBar;
 
+HICON GetConnectingIconForProto(char *szProto,int b);
+HICON GetConnectingIconForProto_DLL(char *szProto,int b);
+
+
+void RegisterProtoIconsForAllProtoIconLib();
+
+
 void InvalidateDisplayNameCacheEntry(HANDLE hContact);
 
 #define M_CREATECLC  (WM_USER+1)
@@ -112,6 +119,7 @@ static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 	OnModulesLoadedCalled=TRUE;	
 	InvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);
 	InitGroupMenus();
+	RegisterProtoIconsForAllProtoIconLib();
 	return 0;
 }
 
@@ -188,18 +196,24 @@ static HICON ExtractIconFromPath(const char *path)
 	return hIcon;
 }
 
-HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx)
+HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx,HICON DefIcon)
 {
 		char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 		HICON hIcon=NULL;
-		SKINICONDESC sid;
+		SKINICONDESC2 sid={0};
 
+		memset(szMyPath,0,sizeof(szMyPath));
+		memset(szFullPath,0,sizeof(szFullPath));
+		
+		if (filename!=NULL)
+		{
 		GetModuleFileName(GetModuleHandle(NULL), szPath, MAX_PATH);
 		GetModuleFileName(g_hInst, szMyPath, MAX_PATH);
 		str=strrchr(szPath,'\\');
 		if(str!=NULL) *str=0;
 		_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
-		
+		};
+
 		if (!UseLibrary||!ServiceExists(MS_SKIN2_ADDICON))
 		{		
 		hIcon=ExtractIconFromPath(szFullPath);
@@ -213,9 +227,20 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 				sid.pszSection = Translate(SectName);				
 				sid.pszName=IconName;
 				sid.pszDescription=Translate(Description);
+				if (strlen(szMyPath)!=0)
+				{
 				sid.pszDefaultFile=szMyPath;
+				}
+				
 				sid.iDefaultIndex=internalidx;
+				sid.hDefaultIcon=DefIcon;
+
 				CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+				{
+					char buf[256];
+					sprintf(buf,"Registring Icon %s/%s hDefaultIcon: %x\r\n",SectName,IconName,DefIcon);
+				OutputDebugString(buf);
+				}
 			}
 			return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
 		}
@@ -226,7 +251,44 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 		return (HICON)0;
 }
 
-HICON GetConnectingIconForProto(char *szProto,int b)
+
+
+
+void RegisterProtoIcons (char *protoname)
+{
+	if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"CList","UseProtoIconFromIcoLib",0))
+	{
+		int i;
+		char buf[256];
+		for (i=0;i<=8;i++)
+		{
+			sprintf(buf,"%s #%d",protoname,i);
+			
+			LoadIconFromExternalFile(NULL,i,TRUE,TRUE,buf,"Contact List/Connection Icons",buf,0,GetConnectingIconForProto_DLL(protoname,i));
+		}
+		
+	}
+
+};
+
+void RegisterProtoIconsForAllProtoIconLib()
+{
+	int protoCount,i;
+
+	PROTOCOLDESCRIPTOR **proto;
+	
+	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
+	if(protoCount==0) return ;
+	for (i=0;i<protoCount;i++)
+	{
+		if(proto[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
+		RegisterProtoIcons(proto[i]->szName); 
+	}
+
+};
+
+
+HICON GetConnectingIconForProto_DLL(char *szProto,int b)
 {
 		char szFullPath[MAX_PATH];
 		HICON hIcon=NULL;
@@ -236,7 +298,7 @@ HICON GetConnectingIconForProto(char *szProto,int b)
 //		hIcon=ExtractIconFromPath(szFullPath);
 //		if (hIcon) return hIcon;
 
-		hIcon=LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0);
+		hIcon=LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,0);
 		if (hIcon) return hIcon;
 
 #ifdef _DEBUG
@@ -261,6 +323,26 @@ HICON GetConnectingIconForProto(char *szProto,int b)
 	
 		return(hIcon);
 }
+
+HICON GetConnectingIconForProto(char *szProto,int b)
+{
+		if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"CList","UseProtoIconFromIcoLib",0))
+		{
+			HICON hIcon=0;
+			char buf[256];
+			sprintf(buf,"%s #%d",szProto,b);
+			
+			 hIcon=LoadIconFromExternalFile(NULL,b,TRUE,FALSE,buf,"Contact List/Connection Icons",buf,0,NULL);
+			 if (hIcon==NULL) return (GetConnectingIconForProto_DLL(szProto,b));
+			 return (CopyIcon(hIcon));
+		
+		}else
+		{
+			return(GetConnectingIconForProto_DLL(szProto,b));
+		}
+		return (NULL);
+}
+
 
 
 
@@ -317,6 +399,11 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 
 							KillTimer(hwndContactList,TM_STATUSBARUPDATE+pt->n);
 							cnt=GetConnectingIconForProtoCount(szProto);
+							if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"Clist","UseProtoIconFromIcoLib",0))
+							{
+								cnt=8;
+							}
+
 							if (cnt!=0)
 							{
 							DefaultStep=DBGetContactSettingWord(NULL,"CLUI","DefaultStepConnectingIcon",100);

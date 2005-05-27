@@ -201,6 +201,7 @@ int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 
 int SetHideOffline(WPARAM wParam,LPARAM lParam)
 {
+	OutputDebugString("=>SetHideOffline Before\r\n");
 	switch((int)wParam) {
 		case 0: DBWriteContactSettingByte(NULL,"CList","HideOffline",0); break;
 		case 1: DBWriteContactSettingByte(NULL,"CList","HideOffline",1); break;
@@ -208,6 +209,6 @@ int SetHideOffline(WPARAM wParam,LPARAM lParam)
 	}
 	
 	LoadContactTree();
-	OutputDebugString("SetHideOffline Done\r\n");
+	OutputDebugString("=>SetHideOffline Done\r\n");
 	return 0;
 }
