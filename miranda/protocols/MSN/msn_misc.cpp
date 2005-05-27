@@ -387,7 +387,7 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
 		return;
 
-	char* msgEnc = HtmlEncode( msg );
+	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
 	char* msgUtf = Utf8Encode( msgEnc ), szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
 	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", msgUtf );
 	free( msgUtf );
@@ -733,14 +733,15 @@ void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
 
 char* __stdcall Utf8Encode( const char* src )
 {
-	wchar_t* tempBuf;
+	if ( src == NULL )
+		return NULL;
 
 	int len = strlen( src );
 	char* result = ( char* )malloc( len*3 + 1 );
 	if ( result == NULL )
 		return NULL;
 
-	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
 	MultiByteToWideChar( CP_ACP, 0, src, -1, tempBuf, len );
 	tempBuf[ len ] = 0;
 	{
