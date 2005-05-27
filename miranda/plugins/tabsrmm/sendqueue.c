@@ -25,7 +25,7 @@
 extern MYGLOBALS myGlobals;
 
 extern char *pszIDCSAVE_save, *pszIDCSAVE_close;
-extern const UINT errorControls[5];
+extern const UINT errorControls[5], infoPanelControls[7];
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
 
@@ -323,11 +323,16 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
         dat->dwFlags &= ~MWF_ERRORSTATE;
         dat->hTabIcon = dat->hTabStatusIcon;
     }
+    if(showCmd && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
+        ShowMultipleControls(hwndDlg, infoPanelControls, sizeof(infoPanelControls) / sizeof(infoPanelControls[0]), SW_HIDE);
+    else if(showCmd == 0 && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
+        ShowMultipleControls(hwndDlg, infoPanelControls, sizeof(infoPanelControls) / sizeof(infoPanelControls[0]), SW_SHOW);
+        
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), showCmd ? SW_SHOW : SW_HIDE);
 
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-    
+    EnableWindow(GetDlgItem(hwndDlg, IDC_INFOPANELMENU), showCmd ? FALSE : TRUE);
     if(sendJobs[0].sendCount > 1)
         EnableSending(hwndDlg, dat, TRUE);
 }

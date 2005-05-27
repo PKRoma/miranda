@@ -97,8 +97,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 
         GetClientRect(dat->pContainer->hwnd, &rcContainer);
         AdjustTabClientRect(dat->pContainer, &rcContainer);
-        //cx = rcContainer.right - rcContainer.left - 8;
-        cx = rc.right - rc.left;
+        cx = rc.right;
 
         if(dat->iRealAvatarHeight == 0) {               // calc first layout paramaters
             picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
@@ -135,7 +134,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
         picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
 
-        if(((rc.right - rc.left) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
+        if(((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
             dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 32 : 6);
             dat->bottomOffset = dat->dynaSplitter + 100;
         }
@@ -145,8 +144,8 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         }
         aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
         newWidth = (double)bminfo->bmWidth * aspect;
-        if(newWidth > (double)(rc.right - rc.left) * 0.8)
-            newWidth = (double)(rc.right - rc.left) * 0.8;
+        if(newWidth > (double)(rc.right) * 0.8)
+            newWidth = (double)(rc.right) * 0.8;
         dat->pic.cy = dat->iRealAvatarHeight + 2*1;
         dat->pic.cx = (int)newWidth + 2*1;
     }
@@ -331,6 +330,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                             
                             CopyFileA(FileName, szNewPath, FALSE);
                             LoadOwnAvatar(hwndDlg, dat);
+                            WindowList_Broadcast(hMessageWindowList, DM_CHANGELOCALAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
                         }
                         else
                             DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",FileName);

@@ -268,6 +268,7 @@ struct MessageWindowData {
     HBITMAP hbmMsgArea;
     TCHAR newtitle[128];        // tab title...
     char  lcID[4];
+    int   panelHeight;
 };
 
 typedef struct _recentinfo {
@@ -369,6 +370,7 @@ typedef struct _globals {
     struct myTabCtrl tabConfig;
     BYTE m_ExtraRedraws;
     char szDataPath[MAX_PATH + 1];
+    int  m_panelHeight;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

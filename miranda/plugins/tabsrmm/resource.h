@@ -85,6 +85,8 @@
 #define IDC_PANELUINLABEL               1035
 #define IDC_CHKINFINITE                 1035
 #define IDC_PANELSTATUS                 1036
+#define IDC_PANELUP                     1210
+#define IDC_PANELDOWN                   1211
 #define IDC_CHKHIDESEND                 1036
 #define IDC_SPLITTER                    1037
 #define IDC_CHKDEFAULTCOL_MESSAGE       1038
