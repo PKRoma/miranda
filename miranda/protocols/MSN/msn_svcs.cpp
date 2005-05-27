@@ -504,9 +504,21 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAwayMsg - reads the current status message for a user
 
+static void __cdecl MsnGetAwayMsgThread( HANDLE hContact )
+{
+	DBVARIANT dbv;
+	if ( !DBGetContactSetting( hContact, "CList", "StatusMsg", &dbv )) {
+		MSN_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )dbv.pszVal );
+		MSN_FreeVariant( &dbv );
+	}
+	else MSN_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )"" );
+}
+
 static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-	return 0;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
+	MSN_StartThread( MsnGetAwayMsgThread, ccs->hContact );
+	return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -520,7 +532,7 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL |
 				 PF1_FILESEND | PF1_FILERECV | PF1_URLRECV | PF1_VISLIST;
 		if ( MyOptions.UseMSNP11 )
-			result |= PF1_MODEMSGSEND;
+			result |= PF1_MODEMSG;
 		return result;
 	}
 	case PFLAGNUM_2:
@@ -528,8 +540,8 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH | PF2_INVISIBLE;
 
 	case PFLAGNUM_3:
-		return PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | PF2_HEAVYDND |
-				 PF2_FREECHAT | PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
+		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND |
+				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
 
 	case PFLAGNUM_4:
 		return PF4_SUPPORTTYPING | PF4_AVATARS;
@@ -890,20 +902,16 @@ LBL_Error:
 		else {
 			seq = thread->sendMessage( msgType, msg, 0 );
 
-			if ( seq == -1 ) // Sergi
-			{
-				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 ); // Sergi
-				msnNsThread->sendPacket( "XFR", "SB" ); // Sergi
+			if ( seq == -1 ) {
+				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 );
+				msnNsThread->sendPacket( "XFR", "SB" );
 			}
-			else // Sergi
-			{
-
-				if ( !MyOptions.SlowSend ) {
-					HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-					DWORD dwThreadId;
-					CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
-					SetEvent( hEvent );
-	}	}	}	}
+			else if ( !MyOptions.SlowSend ) {
+				HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+				DWORD dwThreadId;
+				CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
+				SetEvent( hEvent );
+	}	}	}
 
 	free( msg );
 	return seq;
@@ -992,6 +1000,20 @@ static int MsnSetAvatarUI( WPARAM wParam, LPARAM lParam )
 
 static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 {
+	int i;
+
+	for ( i=0; i < MSN_NUM_MODES; i++ )
+		if ( msnModeMsgs[i].m_mode == wParam )
+			break;
+
+	if ( i == MSN_NUM_MODES )
+		return 1;
+
+	replaceStr( msnModeMsgs[i].m_msg, ( char* )lParam );
+
+	if ( wParam == msnStatusMode )
+		MSN_SendStatusMessage(( char* )lParam );
+
 	return 0;
 }
 

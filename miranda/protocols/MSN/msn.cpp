@@ -59,6 +59,14 @@ bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
 
+MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = { 
+	{ ID_STATUS_ONLINE,     NULL },
+	{ ID_STATUS_AWAY,       NULL },
+	{ ID_STATUS_NA,         NULL },
+	{ ID_STATUS_DND,        NULL },
+	{ ID_STATUS_ONTHEPHONE, NULL },
+	{ ID_STATUS_OUTTOLUNCH, NULL } };
+
 char* msnProtocolName = NULL;
 char* msnLoginHost = NULL;
 
@@ -355,6 +363,10 @@ int __declspec( dllexport ) Unload( void )
 	free( ModuleName );
 
 	CloseHandle( msnMainThread );
+
+	for ( int i=0; i < MSN_NUM_MODES; i++ )
+		if ( msnModeMsgs[ i ].m_msg )
+			free( msnModeMsgs[ i ].m_msg );
 
 	if ( kv ) free( kv );
 	if ( sid ) free( sid );

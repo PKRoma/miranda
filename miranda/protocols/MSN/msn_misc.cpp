@@ -365,7 +365,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnSendNickname - update our own nickname on the server
+// Msn_SendNickname - update our own nickname on the server
 
 int __stdcall MSN_SendNickname(char *email, char *nickname)
 {
@@ -377,6 +377,24 @@ int __stdcall MSN_SendNickname(char *email, char *nickname)
 
 	free( nickutf );
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_SendStatusMessage - notify a server about the status message change
+
+void __stdcall MSN_SendStatusMessage( const char* msg )
+{
+	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
+		return;
+
+	char* msgEnc = HtmlEncode( msg );
+	char* msgUtf = Utf8Encode( msgEnc ), szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
+	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", msgUtf );
+	free( msgUtf );
+	free( msgEnc );
+
+	if ( !MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail ))
+		msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -403,7 +421,7 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 			str = (char*)realloc( str, strsize += 512 );
 	}
 
-	if (( strncmp( str, "MSG", 3 ) !=0 ) && ( strncmp( str, "QRY", 3 ) != 0 ))
+	if ( strcmp( cmd, "MSG" ) && strcmp( cmd, "QRY" ) && strcmp( cmd, "UUX" ))
 		strcat( str,"\r\n" );
 
 	int result = send( str, strlen( str ));
@@ -427,6 +445,14 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 			szMsnObject[ 0 ] = 0;
 
 		msnNsThread->sendPacket( "CHG", "%s 805306404 %s", szStatusName, szMsnObject );
+
+		if ( MyOptions.UseMSNP11 ) {
+			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
+				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
+					if ( msnModeMsgs[ i ].m_msg != NULL )
+                  MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
+					break;
+		}	}	}
 	}
 	else msnNsThread->sendPacket( "CHG", szStatusName );
 }
@@ -573,6 +599,44 @@ void __stdcall HtmlDecode( char* str )
 		}
 	}
 	*q = '\0';
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// HtmlEncode - replaces special HTML chars
+
+char* __stdcall HtmlEncode( const char* str )
+{
+	char* s, *p, *q;
+	int c;
+
+	if ( str == NULL )
+		return NULL;
+
+	for ( c=0,p=( char* )str; *p!='\0'; p++ ) {
+		switch ( *p ) {
+		case '&': c += 5; break;
+		case '\'': c += 6; break;
+		case '>': c += 4; break;
+		case '<': c += 4; break;
+		case '"': c += 6; break;
+		default: c++; break;
+		}
+	}
+	if (( s=( char* )malloc( c+1 )) != NULL ) {
+		for ( p=( char* )str,q=s; *p!='\0'; p++ ) {
+			switch ( *p ) {
+			case '&': strcpy( q, "&amp;" ); q += 5; break;
+			case '\'': strcpy( q, "&apos;" ); q += 6; break;
+			case '>': strcpy( q, "&gt;" ); q += 4; break;
+			case '<': strcpy( q, "&lt;" ); q += 4; break;
+			case '"': strcpy( q, "&quot;" ); q += 6; break;
+			default: *q = *p; q++; break;
+			}
+		}
+		*q = '\0';
+	}
+
+	return s;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

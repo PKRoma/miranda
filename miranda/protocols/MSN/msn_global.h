@@ -139,6 +139,7 @@ LONG		__stdcall	MSN_SendPacket( HANDLE, const char* cmd, const char* params, ...
 char*		__stdcall	MirandaStatusToMSN( int status );
 int		__stdcall	MSNStatusToMiranda( const char* status );
 void     __stdcall   HtmlDecode( char* str );
+char*    __stdcall   HtmlEncode( const char* str );
 void		__stdcall	UrlDecode( char*str );
 void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );
 void		__stdcall	Utf8Decode( char* str, wchar_t** = NULL );
@@ -162,6 +163,7 @@ void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen, bool bOldFormat = false );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
 int		__stdcall	MSN_SendNickname(char *email, char *nickname);
+void     __stdcall   MSN_SendStatusMessage( const char* msg );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
 void		__stdcall	LoadOptions( void );
@@ -409,6 +411,7 @@ ThreadData*	__stdcall MSN_GetThreadByContact( HANDLE hContact );
 ThreadData*	__stdcall MSN_GetThreadByPort( WORD wPort );
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
 void			__stdcall MSN_PingParentThread( ThreadData*, filetransfer* ft );
+void        __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
@@ -535,6 +538,16 @@ struct TWinErrorCode
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	External variables
+
+#define MSN_NUM_MODES 6
+
+struct MSN_StatusMessage
+{
+	int   m_mode;
+	char* m_msg;
+};
+
+extern   MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
 
 extern	ThreadData*	volatile msnNsThread;
 extern	bool			volatile msnLoggedIn;

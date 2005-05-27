@@ -7,6 +7,7 @@ Legend:
 Version 0.4.0.3
 ===============
 [+] MSNP11 support added
+[+] wish #0001239 fixed: MSN Personal Status Messages
 [+] WebMessenger detection added
 [!] fix for the GPF on exit
 

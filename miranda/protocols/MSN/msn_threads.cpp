@@ -761,12 +761,6 @@ void ThreadData::processSessionData( const char* str )
 /////////////////////////////////////////////////////////////////////////////////////////
 // thread start code
 
-struct FORK_ARG {
-	HANDLE hEvent;
-	pThreadFunc threadcode;
-	ThreadData* arg;
-};
-
 static void sttRegisterThread( ThreadData* s )
 {
 	EnterCriticalSection( &sttLock );
@@ -793,6 +787,14 @@ static void sttUnregisterThread( ThreadData* s )
 	LeaveCriticalSection( &sttLock );
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct FORK_ARG {
+	HANDLE hEvent;
+	pThreadFunc threadcode;
+	ThreadData* arg;
+};
+
 static void __cdecl forkthread_r(struct FORK_ARG *fa)
 {
 	pThreadFunc callercode = fa->threadcode;
@@ -817,6 +819,40 @@ void ThreadData::startThread( pThreadFunc parFunc )
 {
 	FORK_ARG fa = { CreateEvent(NULL, FALSE, FALSE, NULL), parFunc, this };
 	unsigned long rc = _beginthread(( pThreadFunc )forkthread_r, 0, &fa );
+	if ((unsigned long) -1L != rc)
+		WaitForSingleObject(fa.hEvent, INFINITE);
+	CloseHandle(fa.hEvent);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct FORK_ARG2 {
+	HANDLE hEvent;
+	pThreadFunc threadcode;
+	void* arg;
+};
+
+static void __cdecl forkthread_r2(struct FORK_ARG2 *fa)
+{
+	pThreadFunc callercode = fa->threadcode;
+	void* arg = fa->arg;
+	MSN_CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
+	MSN_DebugLog( "Starting thread %08X (%08X)", GetCurrentThreadId(), callercode );
+	SetEvent(fa->hEvent);
+
+	__try {
+		callercode(arg);
+	} __finally {
+		MSN_DebugLog( "Leaving thread %08X (%08X)", GetCurrentThreadId(), callercode );
+		MSN_CallService(MS_SYSTEM_THREAD_POP, 0, 0);
+	}
+	return;
+}
+
+void __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg )
+{
+	FORK_ARG2 fa = { CreateEvent(NULL, FALSE, FALSE, NULL), parFunc, arg };
+	unsigned long rc = _beginthread(( pThreadFunc )forkthread_r2, 0, &fa );
 	if ((unsigned long) -1L != rc)
 		WaitForSingleObject(fa.hEvent, INFINITE);
 	CloseHandle(fa.hEvent);
