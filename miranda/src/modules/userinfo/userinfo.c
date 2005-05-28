@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -103,7 +103,7 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam;
 	struct DetailsPageInit *opi=(struct DetailsPageInit*)wParam;
-	
+
 	if(odp==NULL||opi==NULL) return 1;
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize!=OPTIONSDIALOGPAGE_V0120_SIZE) return 1;
 	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
@@ -163,7 +163,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			WindowList_Add(hWindowList,hwndDlg,dat->hContact);
 			{
 				char *name,oldTitle[256],newTitle[256];
-				CallContactService(dat->hContact,PSS_GETINFO,0,0);
+				CallContactService(dat->hContact,PSS_GETINFO,SGIF_ONOPEN,0);
 
 				if (dat->hContact == NULL)
 					name = Translate("Owner");
@@ -209,8 +209,8 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				}
 				DBFreeVariant(&dbv);
 			}
-			
-			
+
+
 			GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplay);
 			TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplay);
 
@@ -218,30 +218,30 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				ClientToScreen(hwndDlg,&pt);
 				OffsetRect(&dat->rcDisplay,-pt.x,-pt.y);
 			}
-			
+
 			{ // Resize dialog to make room for all plugin tabs
 				int displayheight=dat->rcDisplay.bottom - dat->rcDisplay.top;
 				int needh;
-				
+
 				POINT mpt={0,0};
 				RECT ws={0,0,0,0};
 				ClientToScreen(hwndDlg,&mpt);
-				
+
 				// Map dlu to pixels
 				ws.bottom=132;
 				MapDialogRect(hwndDlg,&ws);
 				needh=ws.bottom;
-				
+
 				if (displayheight<needh) {
 					int addheight=needh-displayheight;
-						
+
 					// Resize whole dialog
 					GetWindowRect(hwndDlg,&ws);
 					MoveWindow(hwndDlg,
 						ws.left,ws.top,
 						ws.right-ws.left,ws.bottom-ws.top+addheight,
 						FALSE);
-					
+
 					// Resize tabcontrol
 					GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&ws);
 					OffsetRect(&ws,-mpt.x,-mpt.y);
@@ -249,7 +249,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						ws.left,ws.top,
 						ws.right-ws.left,ws.bottom-ws.top+addheight,
 						FALSE);
-						
+
 					// Move button IDOK
 					GetWindowRect(GetDlgItem(hwndDlg,IDOK),&ws);
 					OffsetRect(&ws,-mpt.x,-mpt.y);
@@ -257,7 +257,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						ws.left,ws.top+addheight,
 						ws.right-ws.left,ws.bottom-ws.top,
 						FALSE);
-					
+
 					// Move button IDC_UPDATE
 					GetWindowRect(GetDlgItem(hwndDlg,IDC_UPDATE),&ws);
 					OffsetRect(&ws,-mpt.x,-mpt.y);
@@ -265,7 +265,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						ws.left,ws.top+addheight,
 						ws.right-ws.left,ws.bottom-ws.top,
 						FALSE);
-					
+
 					// Move button IDC_UPDATING
 					GetWindowRect(GetDlgItem(hwndDlg,IDC_UPDATING),&ws);
 					OffsetRect(&ws,-mpt.x,-mpt.y);
@@ -371,7 +371,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_HIDE);
 				KillTimer(hwndDlg,1);
 				SendMessage(hwndDlg,M_CHECKONLINE,0,0);
-				break;							
+				break;
 			} //if
 			if(dat->infosUpdated==NULL) dat->infosUpdated=(int*)calloc(sizeof(int),(int)ack->hProcess);
 			if(ack->result==ACKRESULT_SUCCESS || ack->result==ACKRESULT_FAILED) dat->infosUpdated[ack->lParam]=1;
