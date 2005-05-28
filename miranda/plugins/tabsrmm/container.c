@@ -724,8 +724,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     			GetWindowRect(hwndDlg, &windRect);
     			mathWndInfo.top=windRect.top;
     			mathWndInfo.left=windRect.left;
-    			mathWndInfo.right=windRect.right - 5;
-    			mathWndInfo.bottom=windRect.bottom - 5;
+    			mathWndInfo.right=windRect.right;
+    			mathWndInfo.bottom=windRect.bottom;
                 CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
     		}
             break;
@@ -814,8 +814,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     						GetWindowRect(hwndDlg,&windRect);
     						mathWndInfo.top=windRect.top;
     						mathWndInfo.left=windRect.left;
-    						mathWndInfo.right=windRect.right - 5;
-    						mathWndInfo.bottom=windRect.bottom - 5;
+    						mathWndInfo.right=windRect.right;
+    						mathWndInfo.bottom=windRect.bottom;
     						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
     			}  // end scope
     			//mathMod end

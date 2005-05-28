@@ -112,6 +112,7 @@ typedef struct {
 #define MWF_SHOW_SCROLLINGDISABLED 256
 #define MWF_SHOW_BBCODE 512
 #define MWF_SHOW_INFOPANEL 1024
+#define MWF_SHOW_INFONOTES 2048
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -269,6 +270,7 @@ struct MessageWindowData {
     TCHAR newtitle[128];        // tab title...
     char  lcID[4];
     int   panelHeight;
+    WORD wApparentMode;
 };
 
 typedef struct _recentinfo {

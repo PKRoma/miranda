@@ -38,6 +38,7 @@ typedef struct {
 	int     pbState;
 	HANDLE  hThemeButton;
 	HANDLE  hThemeToolbar;
+    BOOL    bThemed;
 	char	cHot;
 	int     flatBtn;
 } MButtonCtrl;
@@ -125,6 +126,7 @@ static void LoadTheme(MButtonCtrl *ctl) {
 		DestroyTheme(ctl);
 		ctl->hThemeButton = MyOpenThemeData(ctl->hwnd,L"BUTTON");
 		ctl->hThemeToolbar = MyOpenThemeData(ctl->hwnd,L"TOOLBAR");
+        ctl->bThemed = TRUE;
 	}
 }
 
@@ -156,10 +158,11 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 
 		// Draw the flat button
 		if (ctl->flatBtn) {
-			if (ctl->hThemeToolbar) {
+			if (ctl->hThemeToolbar && ctl->bThemed) {
                 RECT rc = rcClient;
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-                InflateRect(&rc, 2, 2);
+                if(rc.right < 20 || rc.bottom < 20)
+                    InflateRect(&rc, 2, 2);
                 if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
 					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
 				}
@@ -194,7 +197,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		}
 		else {
 			// Draw background/border
-			if (ctl->hThemeButton) {
+			if (ctl->hThemeButton && ctl->bThemed) {
                 int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
                 if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
                     MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
@@ -225,10 +228,6 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			int ix = (rcClient.right-rcClient.left)/2 - (GetSystemMetrics(SM_CXSMICON)/2);
 			int iy = (rcClient.bottom-rcClient.top)/2 - (GetSystemMetrics(SM_CYSMICON)/2);
             HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
-			if (ctl->stateId == PBS_PRESSED) {
-				ix++;
-				iy++;
-			}
             DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON|DSS_NORMAL:DST_ICON|DSS_DISABLED);
 		}
 		else if (ctl->hBitmap) {
@@ -301,6 +300,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->hThemeToolbar = NULL;
 			bct->cHot = 0;
 			bct->flatBtn = 0;
+            bct->bThemed = FALSE;
             LoadTheme(bct);
 			SetWindowLong(hwndDlg, 0, (LONG)bct);
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
@@ -364,7 +364,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		case WM_THEMECHANGED: {
 			// themed changed, reload theme object
-            LoadTheme(bct);
+            if(bct->bThemed)
+                LoadTheme(bct);
 			InvalidateRect(bct->hwnd, NULL, TRUE); // repaint it
 			break;
 		}
@@ -462,9 +463,12 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
 		case BUTTONSETASFLATBTN:
-			bct->flatBtn = 1;
+			bct->flatBtn = lParam == 0 ? 1 : 0;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
+        case BUTTONSETASFLATBTN + 10:
+            bct->bThemed = lParam ? TRUE : FALSE;
+            break;
 		case BUTTONADDTOOLTIP:
 		{
 			TOOLINFOA ti;

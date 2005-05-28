@@ -723,8 +723,10 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     if(!lstrcmpA(cws->szModule, "MetaContacts") && !lstrcmpA(cws->szSetting, "Nick"))       // filter out this setting to avoid infinite loops while trying to obtain the most online contact
         return 0;
     
-    if(hwnd)
-        SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
+    if(hwnd) {
+        if(!lstrcmpA(cws->szSetting, "Status") || !lstrcmpA(cws->szSetting, "Nick") || !lstrcmpA(cws->szSetting, "ApparentMode") || !lstrcmpA(cws->szSetting, "Default") || !lstrcmpA(cws->szSetting, "ForceSend"))
+            SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
+    }
     
     return 0;
 }
