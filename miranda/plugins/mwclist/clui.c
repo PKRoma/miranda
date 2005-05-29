@@ -256,7 +256,7 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 
 void RegisterProtoIcons (char *protoname)
 {
-	if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"CList","UseProtoIconFromIcoLib",0))
+	if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"CList","UseProtoIconFromIcoLib",1))
 	{
 		int i;
 		char buf[256];
@@ -326,7 +326,7 @@ HICON GetConnectingIconForProto_DLL(char *szProto,int b)
 
 HICON GetConnectingIconForProto(char *szProto,int b)
 {
-		if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"CList","UseProtoIconFromIcoLib",0))
+		if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"CList","UseProtoIconFromIcoLib",1))
 		{
 			HICON hIcon=0;
 			char buf[256];
@@ -399,7 +399,7 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 
 							KillTimer(hwndContactList,TM_STATUSBARUPDATE+pt->n);
 							cnt=GetConnectingIconForProtoCount(szProto);
-							if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"Clist","UseProtoIconFromIcoLib",0))
+							if (ServiceExists(MS_SKIN2_GETICON)&&DBGetContactSettingByte(NULL,"Clist","UseProtoIconFromIcoLib",1))
 							{
 								cnt=8;
 							}
