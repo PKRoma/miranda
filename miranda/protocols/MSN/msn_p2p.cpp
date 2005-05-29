@@ -390,14 +390,29 @@ bool p2p_connectTo( ThreadData* info )
 
 	filetransfer* ft = info->mP2pSession;
 
-	if (( info->s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn )) == NULL ) {
+	while( true ) {
+		char* pSpace = strchr( info->mServer, ' ' );
+		if ( pSpace != NULL )
+			*pSpace = 0;
+
+		MSN_DebugLog( "Connecting to %s:%d", info->mServer, tConn.wPort );
+
+		HANDLE h = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
+		if ( h != NULL ) {
+			info->s = h;
+			break;
+		}
 		{	TWinErrorCode err;
 			MSN_DebugLog( "Connection Failed (%d): %s", err.mErrorCode, err.getText() );
 		}
 
-		if ( ft->std.sending )
-			MSN_PingParentThread( info->mParentThread, ft );
-		return false;
+		if ( pSpace == NULL ) {
+			if ( ft->std.sending )
+				MSN_PingParentThread( info->mParentThread, ft );
+			return false;
+		}
+			
+		strdel( info->mServer, int( pSpace - info->mServer )+1 );
 	}
 
 	info->send( p2p_greeting, sizeof p2p_greeting );
