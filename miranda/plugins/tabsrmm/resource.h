@@ -85,11 +85,6 @@
 #define IDC_PANELUINLABEL               1035
 #define IDC_CHKINFINITE                 1035
 #define IDC_PANELSTATUS                 1036
-#define IDC_APPARENTMODE                1212
-#define IDC_READSTATUS                  1213
-#define IDC_TOGGLENOTES                 1214
-#define IDC_NOTES                       1215
-#define IDC_PANELSPLITTER               1216
 #define IDC_CHKHIDESEND                 1036
 #define IDC_SPLITTER                    1037
 #define IDC_CHKDEFAULTCOL_MESSAGE       1038
@@ -270,9 +265,14 @@
 #define IDC_FLASHDEFAULT                1209
 #define IDC_DEFAULTCONTAINERMODE        1210
 #define IDC_ALWAYS                      1211
+#define IDC_APPARENTMODE                1212
 #define IDC_FULLUSERNAME                1212
+#define IDC_READSTATUS                  1213
 #define IDC_CHECK5                      1213
+#define IDC_TOGGLENOTES                 1214
+#define IDC_NOTES                       1215
 #define IDC_TRANSPARENCY                1215
+#define IDC_PANELSPLITTER               1216
 #define IDC_AUTOCREATECONTAINER         1216
 #define IDC_LIMITAVATARS                1217
 #define IDC_USESHELLNOTIFY              1218
@@ -643,6 +643,9 @@
 #define ID_THISCONTACT_USEGLOBALSETTING 40211
 #define ID_THISCONTACT_ALWAYSON         40212
 #define ID_THISCONTACT_ALWAYSOFF        40213
+#define ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED 40214
+#define ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT 40215
+#define ID_APPARENTMENU_YOURSTATUSDETERMINESVISIBLITYTOTHISCONTACT 40216
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -650,7 +653,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        6
-#define _APS_NEXT_COMMAND_VALUE         40214
+#define _APS_NEXT_COMMAND_VALUE         40217
 #define _APS_NEXT_CONTROL_VALUE         1393
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

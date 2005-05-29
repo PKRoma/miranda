@@ -1748,9 +1748,9 @@ panel_found:
             return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
         }
         case WM_MEASUREITEM:
-        {
-            return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
-        }
+            {
+                return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+            }
         case DM_QUERYCLIENTAREA:
             {
                 RECT *rc = (RECT *)lParam;

@@ -1786,15 +1786,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-                        if(dat->wApparentMode == ID_STATUS_OFFLINE) {
-                            CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_CHECKED);
-                            SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadSkinnedIcon(SKINICON_STATUS_OFFLINE));
-                        }
-                        else if(dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
-                            CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_UNCHECKED);
-                            SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? LoadSkinnedIcon(SKINICON_STATUS_INVISIBLE) : LoadSkinnedIcon(SKINICON_STATUS_ONLINE)));
-                            SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? 1 : 0));
-                        }
+                        UpdateApparentModeDisplay(hwndDlg, dat);
                     }
                 }
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
@@ -3557,7 +3549,33 @@ quote_from_last:
                     }
                     break;
                 case IDC_APPARENTMODE:
+                {
+                    HMENU subMenu = GetSubMenu(dat->pContainer->hMenuContext, 10);
+                    int iSelection;
+                    RECT rc;
+                    WORD wOldApparentMode = dat->wApparentMode;
+                    
+                    CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_OFFLINE ? MF_CHECKED : MF_UNCHECKED));
+                    CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_ONLINE ? MF_CHECKED : MF_UNCHECKED));
+                    CheckMenuItem(subMenu, ID_APPARENTMENU_YOURSTATUSDETERMINESVISIBLITYTOTHISCONTACT, MF_BYCOMMAND | (dat->wApparentMode == 0 ? MF_CHECKED : MF_UNCHECKED));
+                    GetWindowRect(GetDlgItem(hwndDlg, IDC_APPARENTMODE), &rc);
+                    iSelection = TrackPopupMenu(subMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                    switch(iSelection) {
+                        case ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED:
+                            dat->wApparentMode = ID_STATUS_OFFLINE;
+                            break;
+                        case ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT:
+                            dat->wApparentMode = ID_STATUS_ONLINE;
+                            break;
+                        case ID_APPARENTMENU_YOURSTATUSDETERMINESVISIBLITYTOTHISCONTACT:
+                            dat->wApparentMode = 0;
+                            break;
+                    }
+                    if(dat->wApparentMode != wOldApparentMode)
+                        DBWriteContactSettingWord(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "ApparentMode", dat->wApparentMode);
+                    UpdateApparentModeDisplay(hwndDlg, dat);
                     break;
+                }
                 case IDC_INFOPANELMENU: {
                     RECT rc;
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 9);

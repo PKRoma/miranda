@@ -60,6 +60,7 @@ BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize);
 void GetDataDir();
 void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat);
+void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

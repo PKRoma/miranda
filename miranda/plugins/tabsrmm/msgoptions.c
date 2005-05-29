@@ -546,6 +546,9 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             }
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
                             ReloadGlobals();
+#ifdef __MATHMOD_SUPPORT    		
+                            myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
+#endif                            
                             WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
                             return TRUE;
                         }
