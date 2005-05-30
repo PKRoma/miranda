@@ -1035,6 +1035,17 @@ BEGIN
                                                 ID_APPARENTMENU_YOURSTATUSDETERMINESVISIBLITYTOTHISCONTACT
 
     END
+    POPUP "Panelpicmenu"
+    BEGIN
+        MENUITEM "Reset the Avatar",            ID_PANELPICMENU_RESETTHEAVATAR
+
+        MENUITEM "Load a local Picture as Avatar...", 
+                                                ID_PICMENU_LOADALOCALPICTUREASAVATAR
+
+        MENUITEM "Disable automatic Avatar updates", 
+                                                ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES
+
+    END
 END
 
 IDR_MENUBAR MENU 

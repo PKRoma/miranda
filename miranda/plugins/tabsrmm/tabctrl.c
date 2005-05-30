@@ -781,7 +781,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                     if (IntersectRect(&rectTemp, &rcItem, &ps.rcPaint) || bClassicDraw) {
                         int nHint = 0;
                         if(!bClassicDraw) {
-                            InflateRect(&rcItem, 0, 0);
                             DrawThemesXpTabItem(hdc, i, &rcItem, uiFlags | uiBottom | (i == hotItem ? 4 : 0), tabdat);
                             DrawItem(tabdat, hdc, &rcItem, nHint | (i == hotItem ? HINT_HOTTRACK : 0), i);
                         }

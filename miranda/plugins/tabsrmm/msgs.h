@@ -175,7 +175,7 @@ struct ProtocolData {
 #define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)
 #define HM_DBEVENTADDED      (WM_USER+12)
-//#define DM_CASCADENEWWINDOW  (WM_USER+13)  *free*
+#define DM_SETINFOPANEL      (WM_USER+13)
 #define DM_OPTIONSAPPLIED    (WM_USER+14)
 #define DM_SPLITTERMOVED     (WM_USER+15)
 #define DM_UPDATETITLE       (WM_USER+16)

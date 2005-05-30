@@ -953,6 +953,9 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                         return TRUE;
                     break;
                 case IDC_LIMITTABS:
+                case IDC_SINGLEWINDOWMODE:
+                case IDC_CONTAINERGROUPMODE:
+                case IDC_DEFAULTCONTAINERMODE:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TABLIMIT), IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
                     break;
             }

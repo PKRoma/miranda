@@ -905,6 +905,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(nen_options.bTraySupport)
         CreateSystrayIcon(TRUE);
 
+    CreateTrayMenus(TRUE);
+
     ZeroMemory((void *)&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -500050005;
@@ -1091,7 +1093,6 @@ int LoadSendRecvMessageModule(void)
     myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
     
-    CreateTrayMenus(TRUE);
     LoadDefaultTemplates();
 
     CacheLogFonts();

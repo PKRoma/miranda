@@ -78,7 +78,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->maskNotify = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKNOTIFY, DEFAULT_MASKNOTIFY);
     options->maskActL = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTL, DEFAULT_MASKACTL);
     options->maskActR = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
-    options->maskActTE = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR);
+    options->maskActTE = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR) & (MASK_OPEN | MASK_DISMISS);
     options->bMergePopup = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, FALSE);
     options->iDelayMsg = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
     options->iDelayUrl = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)DEFAULT_DELAY);
@@ -192,7 +192,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 
     0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
     0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 
     0, "Disable ALL event notifications (check, if you're using an external plugin for event notifications)", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
     0, "Message events", MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,

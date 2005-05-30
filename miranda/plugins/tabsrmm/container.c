@@ -1092,7 +1092,7 @@ panel_found:
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
-                            ShowWindow(pContainer->hwndActive, SW_SHOW);
+                            ShowWindow((HWND)item.lParam, SW_SHOW);
                             if(!IsIconic(hwndDlg))
                                 SetFocus(pContainer->hwndActive);
                         }

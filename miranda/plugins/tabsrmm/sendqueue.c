@@ -326,7 +326,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
     if(showCmd && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
         ShowMultipleControls(hwndDlg, infoPanelControls, sizeof(infoPanelControls) / sizeof(infoPanelControls[0]), SW_HIDE);
     else if(showCmd == 0 && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-        ShowMultipleControls(hwndDlg, infoPanelControls, sizeof(infoPanelControls) / sizeof(infoPanelControls[0]), SW_SHOW);
+        SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
         
     ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), showCmd ? SW_SHOW : SW_HIDE);
 

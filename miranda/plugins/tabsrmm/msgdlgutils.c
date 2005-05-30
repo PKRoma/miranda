@@ -230,17 +230,20 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     }
     else if(menuID == MENU_PICMENU) {
         EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
-        EnableMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | ((dat->showPic && !(dat->dwFlags & MWF_SHOW_INFOPANEL)) ? MF_ENABLED : MF_GRAYED));
         CheckMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
         EnableMenuItem(submenu, ID_PICMENU_TOGGLEAVATARDISPLAY, MF_BYCOMMAND | (myGlobals.m_AvatarMode == 2 ? MF_ENABLED : MF_GRAYED));
         CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (myGlobals.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
+    }
+    else if(menuID == MENU_PANELPICMENU) {
+        CheckMenuItem(submenu, ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
     }
     return 0;
 }
 
 int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int selection, int menuId)
 {
-    if(menuId == MENU_PICMENU || menuId == MENU_TABCONTEXT) {
+    if(menuId == MENU_PICMENU || menuId == MENU_PANELPICMENU || menuId == MENU_TABCONTEXT) {
         switch(selection) {
             case ID_TABMENU_SWITCHTONEXTTAB:
                 SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, (WPARAM) DM_SELECT_NEXT, 0);
@@ -272,6 +275,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 return 1;
             case ID_PICMENU_RESETTHEAVATAR:
+            case ID_PANELPICMENU_RESETTHEAVATAR:
                 DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic");
                 if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
                     DeleteObject(dat->hContactPic);
@@ -283,6 +287,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                 return 1;
             case ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES:
+            case ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES:
                 {
                     int iState = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0);
                     DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", !iState);
@@ -311,7 +316,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     *FileName = '\0';
                     ofn.lpstrDefExt="";
                     if (GetOpenFileNameA(&ofn)) {
-                        if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                        if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && menuId == MENU_PICMENU) {
                             char szNewPath[MAX_PATH + 1], szOldPath[MAX_PATH + 1];
                             char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
                             _splitpath(FileName, NULL, NULL, szBasename, szExt);
@@ -1353,10 +1358,12 @@ void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
         ieWindow.parent = hwndDlg;
         ieWindow.x = 0;
         ieWindow.y = 0;
-        ieWindow.cx = 200;
-        ieWindow.cy = 300;
+        ieWindow.cx = 10;
+        ieWindow.cy = 10;
         CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
         dat->hwndLog = ieWindow.hwnd;
+        ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
     }
     else if(!iWantIEView) {
         if(dat->hwndLog) {

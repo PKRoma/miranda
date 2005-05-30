@@ -150,6 +150,38 @@ struct SendJob sendJobs[NR_SENDJOBS];
 
 static int splitterEdges = TRUE;
 
+static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
+{
+    RECT rcRichEdit, rcIeView;
+    POINT pt;
+    IEVIEWWINDOW ieWindow;
+
+    GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
+    pt.x = rcRichEdit.left;
+    pt.y = rcRichEdit.top;
+    ScreenToClient(hwndDlg, &pt);
+    ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+    ieWindow.iType = IEW_SETPOS;
+    ieWindow.parent = hwndDlg;
+    ieWindow.hwnd = dat->hwndLog;
+    if(cx != 0 || cy != 0) {
+        ieWindow.x = px;
+        ieWindow.y = py;
+        ieWindow.cx = cx;
+        ieWindow.cy = cy;
+    }
+    else {
+        ieWindow.x = pt.x;
+        ieWindow.y = pt.y;
+        ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
+        ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
+    }
+    GetWindowRect(dat->hwndLog, &rcIeView);
+    if(ieWindow.cx != 0 && ieWindow.cy != 0) {
+        CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+    }
+}
+
 static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
     const UINT cntrls[] = {IDC_PANELNICKLABEL, IDC_PANELUINLABEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_READSTATUS};
@@ -161,6 +193,9 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
     HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
     BITMAP bm;
+    
+    if(dat->dwFlags & MWF_ERRORSTATE)
+        return;
     
     dat->iRealAvatarHeight = 0;
     AdjustBottomAvatarDisplay(hwndDlg, dat);
@@ -312,6 +347,7 @@ void SetDialogToType(HWND hwndDlg)
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
     EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
+    EnableWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), FALSE);
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
     // info panel stuff
@@ -1050,7 +1086,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "no_ack", 0) ? SMODE_NOACK : 0;
                 
                 dat->hwnd = hwndDlg;
-                SetMessageLog(hwndDlg, dat);
 
                 dat->ltr_templates = &LTR_Active;
                 dat->rtl_templates = &RTL_Active;
@@ -1094,7 +1129,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->mayFlashTab = FALSE;
                 //dat->iTabImage = newData->iTabImage;
 
-                LoadOwnAvatar(hwndDlg, dat);
                 
                 dat->multiSplitterX = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "multisplit", 150);
                 dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
@@ -1125,6 +1159,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->panelHeight = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "panelheight", myGlobals.m_panelHeight);
                 }
                 dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
+                SetMessageLog(hwndDlg, dat);
 
                 dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
                 dat->showPic = GetAvatarVisibility(hwndDlg, dat);
@@ -1259,9 +1294,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     FindFirstEvent(hwndDlg, dat);
                 dat->stats.started = time(NULL);
                 SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
+                LoadOwnAvatar(hwndDlg, dat);
                 dat->dwFlags &= ~MWF_INITMODE;
-                
-                
                 {
                     DBEVENTINFO dbei = { 0};
                     HANDLE hdbEvent;
@@ -1314,9 +1348,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
                 if (newData->iActivate) {
-                    ShowPicture(hwndDlg,dat,FALSE,TRUE);
-                    LoadSplitter(hwndDlg, dat);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), 0);
+                    LoadSplitter(hwndDlg, dat);
+                    ShowPicture(hwndDlg,dat,FALSE,TRUE);
+                    //if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && myGlobals.m_AvatarDisplayMode == AVATARMODE_DYNAMIC)
+                        //AdjustBottomAvatarDisplay(hwndDlg, dat);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     PostMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     if(IsIconic(dat->pContainer->hwnd) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
@@ -1541,9 +1577,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
             dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
 
-            if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                AdjustBottomAvatarDisplay(hwndDlg, dat);
-            
             if(dat->dwFlags & MWF_LOG_GRID && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0))
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1,1));     // XXX margins in the log (looks slightly better)
             else
@@ -2031,26 +2064,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
-                // IEVIew MOD Begin
-                if (dat->hwndLog != 0) {
-                    RECT rcRichEdit;
-                    POINT pt;
-                    IEVIEWWINDOW ieWindow;
-                    GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
-                    pt.x = rcRichEdit.left;
-                    pt.y = rcRichEdit.top;
-                    ScreenToClient(hwndDlg, &pt);
-                    ieWindow.cbSize = sizeof(IEVIEWWINDOW);
-                    ieWindow.iType = IEW_SETPOS;
-                    ieWindow.parent = hwndDlg;
-                    ieWindow.hwnd = dat->hwndLog;
-                    ieWindow.x = pt.x;
-                    ieWindow.y = pt.y;
-                    ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
-                    ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
-                    CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
-                }
-                // IEVIew MOD End
+                if (dat->hwndLog != 0)
+                    ResizeIeView(hwndDlg, dat, 0, 0, 0, 0);
                 if(dat->hbmMsgArea)
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, TRUE);
                 break;
@@ -2173,23 +2188,24 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                     break;
                 if(!IsIconic(dat->pContainer->hwnd)) {
+                    HWND hwnd = dat->hwndLog ? dat->hwndLog : GetDlgItem(hwndDlg, IDC_LOG);
                     dat->dwFlags &= ~MWF_DEFERREDSCROLL;
-                    if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL) == 0)
+                    if ((GetWindowLong(hwnd, GWL_STYLE) & WS_VSCROLL) == 0)
                         break;
                     if(lParam)
-                        SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_SIZE, 0, 0);
+                        SendMessage(hwnd, WM_SIZE, 0, 0);
                     si.cbSize = sizeof(si);
                     si.fMask = SIF_PAGE | SIF_RANGE;
-                    GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
+                    GetScrollInfo(hwnd, SB_VERT, &si);
                     si.fMask = SIF_POS;
                     si.nPos = si.nMax - si.nPage + 1;
-                    SetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si, TRUE);
+                    SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
                     if(wParam)
-                        SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+                        SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
                     else
-                        PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+                        PostMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
                     if(lParam)
-                        InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
+                        InvalidateRect(hwnd, NULL, FALSE);
                 }
                 else
                     dat->dwFlags |= MWF_DEFERREDSCROLL;
@@ -2736,24 +2752,29 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             int iSelection;
             HMENU subMenu;
             int isHandled;
-            RECT rcPicture;
+            RECT rcPicture, rcPanelPicture;
+            int menuID = 0;
             
             GetWindowRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), &rcPicture);
+            GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELPIC), &rcPanelPicture);
             GetCursorPos(&pt);
-            if(dat->hContactPic && dat->showPic != 0 &&  pt.x >= rcPicture.left && pt.x <= rcPicture.right && pt.y >= rcPicture.top && pt.y <= rcPicture.bottom) {
+            
+            if(PtInRect(&rcPicture, pt))
+                menuID = MENU_PICMENU;
+            else if(PtInRect(&rcPanelPicture, pt))
+                menuID = MENU_PANELPICMENU;
+            
+            if((menuID == MENU_PICMENU && (dat->hContactPic || dat->hOwnPic) && dat->showPic !=0) || (menuID == MENU_PANELPICMENU && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
                 int iSelection, isHandled;
-                POINT pt;
-                HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 1);
+                HMENU submenu = 0;
 
+                submenu = GetSubMenu(dat->pContainer->hMenuContext, menuID == MENU_PICMENU ? 1 : 11);
                 GetCursorPos(&pt);
-                MsgWindowUpdateMenu(hwndDlg, dat, submenu, MENU_PICMENU);
+                MsgWindowUpdateMenu(hwndDlg, dat, submenu, menuID);
                 iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
-                isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_PICMENU);
-                if(isHandled)
-                    RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
+                isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, menuID);
                 break;
             }
-            
             subMenu = GetSubMenu(dat->pContainer->hMenuContext, 0);
             EnableMenuItem(subMenu, ID_TABMENU_SWITCHTONEXTTAB, dat->pContainer->iChilds > 1 ? MF_ENABLED : MF_GRAYED);
             EnableMenuItem(subMenu, ID_TABMENU_SWITCHTOPREVIOUSTAB, dat->pContainer->iChilds > 1 ? MF_ENABLED : MF_GRAYED);
@@ -3618,9 +3639,13 @@ quote_from_last:
                     if(bNewLocal != bLocal)
                         DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", bNewLocal);
 
-                    dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
-                    if(dat->dwEventIsShown != dwOld) {
-                        ShowHideInfoPanel(hwndDlg, dat);
+                    if(bNewGlobal != bGlobal)
+                        WindowList_Broadcast(hMessageWindowList, DM_SETINFOPANEL, 0, 0);
+                    else {
+                        dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
+                        if(dat->dwEventIsShown != dwOld) {
+                            ShowHideInfoPanel(hwndDlg, dat);
+                        }
                     }
                     break;
                 }
@@ -4527,6 +4552,13 @@ verify:
             LoadOwnAvatar(hwndDlg, dat);
             break;
         }
+        /*
+         * broadcasted when GLOBAL info panel setting changes
+         */
+        case DM_SETINFOPANEL:
+            dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
+            ShowHideInfoPanel(hwndDlg, dat);
+            break;
         case WM_NEXTDLGCTL:
             if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
                 return 1;
