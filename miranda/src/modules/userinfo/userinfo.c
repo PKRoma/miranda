@@ -163,8 +163,6 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			WindowList_Add(hWindowList,hwndDlg,dat->hContact);
 			{
 				char *name,oldTitle[256],newTitle[256];
-				CallContactService(dat->hContact,PSS_GETINFO,SGIF_ONOPEN,0);
-
 				if (dat->hContact == NULL)
 					name = Translate("Owner");
 				else
@@ -298,6 +296,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				EnableWindow(GetDlgItem(hwndDlg,IDC_UPDATE),FALSE);
 				SetTimer(hwndDlg,1,100,NULL);
 			}
+			CallContactService(dat->hContact,PSS_GETINFO,SGIF_ONOPEN,0);
 			return TRUE;
 		}
 		case WM_TIMER:
