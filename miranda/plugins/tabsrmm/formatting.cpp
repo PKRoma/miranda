@@ -41,7 +41,6 @@ License: GPL
 #define MWF_LOG_TEXTFORMAT 0x2000000
 
 extern "C" RTFColorTable rtf_ctable[];
-
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 
 #if defined(UNICODE)
@@ -310,5 +309,151 @@ nosimpletags:
     return(message.c_str());
 }
 
+#endif
+
+// formatting the titlebar
+// free() the return value
+// 
+
+#if defined(_UNICODE)
+
+static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c")};
+#define NR_VARS 5
+
+extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto)
+{
+    TCHAR *szResult = 0;
+    int length = 0;
+    int i, tempmark = 0;
+    TCHAR szTemp[512];
+    
+    std::wstring title(szFormat);
+
+    while(TRUE) {
+        for(i = 0; i < NR_VARS; i++) {
+            if((tempmark = title.find(title_variables[i], 0)) != title.npos)
+                break;
+        }
+        if(i >= NR_VARS)
+            break;
+
+        switch(title[tempmark + 1]) {
+            case 'n': {
+                if(szNickname) {
+                    MultiByteToWideChar(CP_ACP, 0, szNickname, -1, szTemp, 500);
+                    title.insert(tempmark + 2, szTemp);
+                }
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 's': {
+                if(szStatus) {
+                    MultiByteToWideChar(CP_ACP, 0, szStatus, -1, szTemp, 500);
+                    title.insert(tempmark + 2, szTemp);
+                }
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 'u': {
+                if(szUin) {
+                    MultiByteToWideChar(CP_ACP, 0, szUin, -1, szTemp, 500);
+                    title.insert(tempmark + 2, szTemp);
+                }
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 'c': {
+                title.insert(tempmark + 2, szContainer);
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 'p': {
+                if(szProto) {
+                    MultiByteToWideChar(CP_ACP, 0, szProto, -1, szTemp, 500);
+                    title.insert(tempmark + 2, szTemp);
+                }
+                title.erase(tempmark, 2);
+                break;
+            }
+            default:
+                title.erase(tempmark, 1);
+                break;
+        }
+    }
+    length = title.length();
+    
+    szResult = (TCHAR *)malloc((title.length() + 2) * sizeof(TCHAR));
+    if(szResult) {
+        _tcsncpy(szResult, title.c_str(), length);
+        szResult[length] = 0;
+    }
+    return szResult;
+}
+
+#else
+
+static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c")};
+#define NR_VARS 5
+
+extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto)
+{
+    TCHAR *szResult = 0;
+    int length = 0;
+    int i, tempmark = 0;
+    
+    std::string title(szFormat);
+
+    while(TRUE) {
+        for(i = 0; i < NR_VARS; i++) {
+            if((tempmark = title.find(title_variables[i], 0)) != title.npos)
+                break;
+        }
+        if(i >= NR_VARS)
+            break;
+
+        switch(title[tempmark + 1]) {
+            case 'n': {
+                if(szNickname)
+                    title.insert(tempmark + 2, szNickname);
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 's': {
+                if(szStatus)
+                    title.insert(tempmark + 2, szStatus);
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 'u': {
+                if(szUin)
+                    title.insert(tempmark + 2, szUin);
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 'c': {
+                title.insert(tempmark + 2, szContainer);
+                title.erase(tempmark, 2);
+                break;
+            }
+            case 'p': {
+                if(szProto)
+                    title.insert(tempmark + 2, szProto);
+                title.erase(tempmark, 2);
+                break;
+            }
+            default:
+                title.erase(tempmark, 1);
+                break;
+        }
+    }
+    length = title.length();
+    
+    szResult = (TCHAR *)malloc((title.length() + 2) * sizeof(TCHAR));
+    if(szResult) {
+        _tcsncpy(szResult, title.c_str(), length);
+        szResult[length] = 0;
+    }
+    return szResult;
+}
 #endif
 

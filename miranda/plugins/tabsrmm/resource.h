@@ -236,6 +236,7 @@
 #define IDC_CHECK2                      1182
 #define IDC_PRIVATESPLITTER             1182
 #define IDC_ALWAYSFIXED                 1182
+#define IDC_CNTPRIVATE                  1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -289,7 +290,6 @@
 #define IDC_CREATENEW                   1224
 #define IDC_RTLMODIFY                   1224
 #define IDC_SIDEBARDOWN                 1224
-#define IDC_LOADDEFAULTS                1225
 #define IDC_SENDLATER                   1226
 #define IDC_RETRY                       1227
 #define IDC_SETUPAUTOCREATEMODES        1228
@@ -309,11 +309,6 @@
 #define IDC_TRANSPARENCY_INACTIVE       1242
 #define IDC_TLABEL_ACTIVE               1243
 #define IDC_TLABEL_INACTIVE             1244
-#define IDC_APPLYASDEFAULT              1245
-#define IDC_SHOWCONTACTNAME             1246
-#define IDC_SHOWSTATUS                  1247
-#define IDC_APPLYEXISTING               1248
-#define IDC_DEFAULTDISPLAYNAME          1249
 #define IDC_INDENTSPIN                  1250
 #define IDC_TABBORDER                   1251
 #define IDC_SPIN2                       1252
@@ -363,6 +358,7 @@
 #define IDC_ISFAVORITE                  1289
 #define IDC_FLATTABS                    1289
 #define IDC_FLASHICON                   1289
+#define IDC_USEPRIVATETITLE             1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
 #define IDC_NOSKINNING                  1291
@@ -406,7 +402,6 @@
 #define IDC_OPTIONSTAB                  1331
 #define IDC_EXTRALFSPIN                 1332
 #define IDC_ALWAYSFULLWIDTHTOOLBAR      1335
-#define IDC_SHOWUIN                     1336
 #define IDC_FORMATWHOLEWORDSONLY        1337
 #define IDC_STATUSGROUP                 1338
 #define IDC_ALLOWSENDBUTTONHIDE         1340
@@ -459,6 +454,11 @@
 #define IDC_LABELUSEWINCOLORS           1391
 #define IDC_BKGUSEWINCOLORS2            1392
 #define IDC_HELPTEXT                    1392
+#define IDC_TITLEFORMAT                 1393
+#define IDC_EDIT1                       1394
+#define IDC_DEFAULTTITLEFORMAT          1394
+#define IDC_CHECK3                      1395
+#define IDC_INFOPANEL                   1395
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -525,18 +525,11 @@
 #define ID_FILE_CLOSEMESSAGESESSION     40086
 #define ID_VIEW_SHOWMULTISENDCONTACTLIST 40087
 #define ID_VIEW_TITLEBAR                40088
-#define ID_TITLEBAR_SHOWNICNAME         40089
-#define ID_TITLEBAR_SHOWSTATUS          40090
-#define ID_TITLEBAR_SHOWCONTAINERNAME   40091
-#define ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX 40092
 #define ID_VIEW_TABSATBOTTOM            40093
-#define ID_TITLEBAR_DONOTSHOWCONTAINERNAME 40094
 #define ID_VIEW_STAYONTOP               40095
 #define ID_HELP                         40096
 #define ID_OPTIONS_EVENTPOPUPS          40097
 #define ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS 40098
-#define ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY 40099
-#define ID_OPTIONS_SETCURRENTOPTIONSASDEFAULTVALUES 40100
 #define ID_OPTIONS_SOUNDS               40101
 #define ID_SOUNDS_DISABLEALLMESSAGESOUNDS 40102
 #define ID_SOUNDS_SYNCSOUNDSWITHEVENTPOPUPS 40103
@@ -657,7 +650,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        6
 #define _APS_NEXT_COMMAND_VALUE         40221
-#define _APS_NEXT_CONTROL_VALUE         1393
+#define _APS_NEXT_CONTROL_VALUE         1396
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

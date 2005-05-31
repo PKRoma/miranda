@@ -84,3 +84,6 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
 int LoadTSButtonModule(void);
 int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
 
+void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode);
+void ReloadGlobalContainerSettings();
+

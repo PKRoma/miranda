@@ -1576,7 +1576,8 @@ BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 
 BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    BYTE bDefault = DBGetContactSettingByte(NULL, SRMSGMOD_T, "infopanel", 0);
+    //BYTE bDefault = DBGetContactSettingByte(NULL, SRMSGMOD_T, "infopanel", 0);
+    BYTE bDefault = dat->pContainer->dwFlags & CNT_INFOPANEL ? 1 : 0;
     BYTE bContact = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", 0);
 
     return bContact == 0 ? bDefault : (bContact == (BYTE)-1 ? 0 : 1);
@@ -1635,4 +1636,25 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
         SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? LoadSkinnedIcon(SKINICON_STATUS_INVISIBLE) : LoadSkinnedIcon(SKINICON_STATUS_ONLINE)));
         SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? 1 : 0));
     }
+}
+
+// free() the return value
+
+TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting)
+{
+    DBVARIANT dbv;
+    TCHAR *szResult = 0;
+    if(!DBGetContactSetting(hContact, szModule, szSetting, &dbv)) {
+        if(dbv.type == DBVT_ASCIIZ) {
+#if defined(_UNICODE)
+            szResult = Utf8_Decode(dbv.pszVal);
+#else
+            szResult = malloc(lstrlenA(dbv.pszVal) + 1);
+            strcpy(szResult, dbv.pszVal);
+#endif
+        }
+        DBFreeVariant(&dbv);
+        return szResult;
+    }
+    return NULL;
 }

@@ -61,6 +61,7 @@ void GetDataDir();
 void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat);
 void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat);
+TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

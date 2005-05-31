@@ -65,6 +65,8 @@ typedef struct {
 } MessageWindowEventData;
 
 #define CONTAINER_NAMELEN 25
+#define TITLE_FORMATLEN 50
+
 #define NR_SENDJOBS 30
 
 #define MWF_SAVEBTN_SAV 2
@@ -140,7 +142,7 @@ struct ContainerWindowData {
     BOOL  bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
     UINT  iLastClick;
     POINT pLastPos;
-    DWORD dwFlags;
+    DWORD dwFlags, dwPrivateFlags;
     UINT  uChildMinHeight;
     SIZE  oldSize;
     POINT ptLast;
@@ -160,6 +162,7 @@ struct ContainerWindowData {
     HWND hWndOptions;
     BOOL bSizingLoop;
     int sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
+    TCHAR szTitleFormat[TITLE_FORMATLEN + 2];
 };
 
 #define STICK_ICON_MSG 10
@@ -322,7 +325,6 @@ typedef struct _globals {
     int  g_wantSnapping;
     HICON g_buttonBarIcons[NR_BUTTONBARICONS];
     HICON g_sideBarIcons[NR_SIDEBARICONS];
-    TCHAR g_szDefaultContainerName[CONTAINER_NAMELEN + 1];
     int iSendJobCurrent;
     // dynamic options, need reload when options change
     int m_SmileyPluginEnabled;
@@ -373,6 +375,10 @@ typedef struct _globals {
     BYTE m_ExtraRedraws;
     char szDataPath[MAX_PATH + 1];
     int  m_panelHeight;
+    TCHAR *szDefaultTitleFormat;
+    DWORD m_GlobalContainerFlags;
+    DWORD m_GlobalContainerTrans;
+    WINDOWPLACEMENT m_GlobalContainerWpos;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

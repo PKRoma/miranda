@@ -828,23 +828,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #endif    
 	hDLL = LoadLibraryA("user32");
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
-#if defined(_UNICODE)
-    if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv)) {
-        if(dbv.type == DBVT_ASCIIZ) {
-            WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
-            _tcsncpy(myGlobals.g_szDefaultContainerName, wszTemp, CONTAINER_NAMELEN);
-            free(wszTemp);
-        }
-#else
-    if(!DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainername", &dbv)) {
-        if(dbv.type == DBVT_ASCIIZ)
-            strncpy(myGlobals.g_szDefaultContainerName, dbv.pszVal, CONTAINER_NAMELEN);
-#endif        
-        DBFreeVariant(&dbv);
-    }
-    else
-        _tcsncpy(myGlobals.g_szDefaultContainerName, _T("Default"), CONTAINER_NAMELEN);
-
+    
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_BITMAP;
     mii.hbmpItem = HBMMENU_CALLBACK;
@@ -1006,6 +990,9 @@ int SplitmsgShutdown(void)
         DeleteCachedIcon(&ttb_Slist);
     if(ttb_Traymenu.hBmp)
         DeleteCachedIcon(&ttb_Traymenu);
+    
+    if(myGlobals.szDefaultTitleFormat)
+        free(myGlobals.szDefaultTitleFormat);
     return 0;
 }
 
@@ -1098,6 +1085,18 @@ int LoadSendRecvMessageModule(void)
     CacheLogFonts();
     BuildCodePageList();
     myGlobals.m_VSApiEnabled = InitVSApi();
+#if defined(_UNICODE)
+    if(DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW") == NULL)
+        DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformatW", "%n - %s");
+    myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW");
+#else
+    if(DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat") == NULL)
+        DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", "%n - %s");
+    myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
+#endif
+    myGlobals.m_GlobalContainerFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
+    myGlobals.m_GlobalContainerTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containertrans", CNT_TRANS_DEFAULT);
+
     return 0;
 }
 

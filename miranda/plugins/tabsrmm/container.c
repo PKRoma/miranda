@@ -118,6 +118,7 @@ extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto);
 
 //WNDPROC OldTabControlProc;
 
@@ -546,50 +547,27 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     PostMessage(hwndDlg, WM_CLOSE, 0, 1);
                     break;
                 case ID_VIEW_SHOWSTATUSBAR:
-                    pContainer->dwFlags ^= CNT_NOSTATUSBAR;
+                    ApplyContainerSetting(pContainer, CNT_NOSTATUSBAR, pContainer->dwFlags & CNT_NOSTATUSBAR ? 0 : 1);
                     break;
                 case ID_VIEW_VERTICALMAXIMIZE:
-                    pContainer->dwFlags ^= CNT_VERTICALMAX;
+                    ApplyContainerSetting(pContainer, CNT_VERTICALMAX, pContainer->dwFlags & CNT_VERTICALMAX ? 0 : 1);
                     break;
                 case ID_VIEW_SHOWTOOLBAR:
-                    pContainer->dwFlags ^= CNT_HIDETOOLBAR;
+                    ApplyContainerSetting(pContainer, CNT_HIDETOOLBAR, pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1);
                     WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
                     return 0;
                 case ID_VIEW_SHOWMENUBAR:
-                    pContainer->dwFlags ^= CNT_NOMENUBAR;
+                    ApplyContainerSetting(pContainer, CNT_NOMENUBAR, pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1);
                     break;
                 case ID_VIEW_SHOWTITLEBAR:
-                    pContainer->dwFlags ^= CNT_NOTITLE;
+                    ApplyContainerSetting(pContainer, CNT_NOTITLE, pContainer->dwFlags & CNT_NOTITLE ? 0 : 1);
                     break;
                 case ID_VIEW_TABSATBOTTOM:
-                    pContainer->dwFlags ^= CNT_TABSBOTTOM;
+                    ApplyContainerSetting(pContainer, CNT_TABSBOTTOM, pContainer->dwFlags & CNT_TABSBOTTOM ? 0 : 1);
                     break;
                 case ID_TITLEBAR_USESTATICCONTAINERICON:
-                    pContainer->dwFlags ^= CNT_STATICICON;
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                    ApplyContainerSetting(pContainer, CNT_STATICICON, pContainer->dwFlags & CNT_STATICICON ? 0 : 1);
                     break;
-                case ID_TITLEBAR_SHOWNICNAME:
-                    pContainer->dwFlags ^= CNT_TITLE_SHOWNAME;
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    return 0;
-                case ID_TITLEBAR_SHOWSTATUS:
-                    pContainer->dwFlags ^= CNT_TITLE_SHOWSTATUS;
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    return 0;
-                case ID_TITLEBAR_SHOWCONTAINERNAME:
-                    pContainer->dwFlags |= CNT_TITLE_PREFIX;
-                    pContainer->dwFlags &= ~CNT_TITLE_SUFFIX;
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    return 0;
-                case ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX:
-                    pContainer->dwFlags &= ~CNT_TITLE_PREFIX;
-                    pContainer->dwFlags |= CNT_TITLE_SUFFIX;
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    return 0;
-                case ID_TITLEBAR_DONOTSHOWCONTAINERNAME:
-                    pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    return 0;
                 case ID_VIEW_SHOWMULTISENDCONTACTLIST:
                     SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_SENDMENU, ID_SENDMENU_SENDTOMULTIPLEUSERS), 0);
                     break;
@@ -600,45 +578,27 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_MOREOPTIONS, 0);
                     break;
                 case ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS:
-                    pContainer->dwFlags &= ~(CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE);
+                    ApplyContainerSetting(pContainer, (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE), 0);
                     return 0;
                 case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED:
-                    pContainer->dwFlags ^= CNT_DONTREPORT;
+                    ApplyContainerSetting(pContainer, CNT_DONTREPORT, pContainer->dwFlags & CNT_DONTREPORT ? 0 : 1);
                     return 0;
                 case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED:
-                    pContainer->dwFlags ^= CNT_DONTREPORTUNFOCUSED;
+                    ApplyContainerSetting(pContainer, CNT_DONTREPORTUNFOCUSED, pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? 0 : 1);
                     return 0;
                 case ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS:
-                    pContainer->dwFlags ^= CNT_ALWAYSREPORTINACTIVE;
+                    ApplyContainerSetting(pContainer, CNT_ALWAYSREPORTINACTIVE, pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? 0 : 1);
                     return 0;
                 case ID_WINDOWFLASHING_DISABLEFLASHING:
-                    pContainer->dwFlags |= CNT_NOFLASH;
-                    pContainer->dwFlags &= ~CNT_FLASHALWAYS;
+                    ApplyContainerSetting(pContainer, CNT_MOUSEDOWN, 1);
+                    ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 0);
                     return 0;
                 case ID_WINDOWFLASHING_FLASHUNTILFOCUSED:
-                    pContainer->dwFlags |= CNT_FLASHALWAYS;
-                    pContainer->dwFlags &= ~CNT_NOFLASH;
+                    ApplyContainerSetting(pContainer, CNT_MOUSEDOWN, 0);
+                    ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 1);
                     return 0;
                 case ID_WINDOWFLASHING_USEDEFAULTVALUES:
-                    pContainer->dwFlags &= ~(CNT_NOFLASH | CNT_FLASHALWAYS);
-                    return 0;
-                case ID_OPTIONS_APPLYCONTAINEROPTIONSGLOBALLY:
-                {
-                    struct ContainerWindowData *pCurrent = pFirstContainer;
-                    while(pCurrent) {
-                        if(pCurrent != pContainer) {
-                            pCurrent->dwFlags = pContainer->dwFlags;
-                            pCurrent->dwTransparency = pContainer->dwTransparency;
-                            SendMessage(pCurrent->hwnd, DM_CONFIGURECONTAINER, 0, 0);
-                        }
-                        pCurrent = pCurrent->pNextContainer;
-                    }
-                    EnumContainers(NULL, CNT_ENUM_WRITEFLAGS, NULL, NULL, pContainer->dwFlags, pContainer->dwTransparency);
-                    return 0;
-                }
-                case ID_OPTIONS_SETCURRENTOPTIONSASDEFAULTVALUES:
-                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", pContainer->dwFlags);
-                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containertrans", pContainer->dwTransparency);
+                    ApplyContainerSetting(pContainer, (CNT_NOFLASH | CNT_FLASHALWAYS), 0);
                     return 0;
                 case ID_OPTIONS_SAVECURRENTWINDOWPOSITIONASDEFAULT:
                 {
@@ -822,85 +782,26 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 #endif                
             break;
             } 
-        case DM_UPDATETITLE: {
+            case DM_UPDATETITLE:
+            {
                 HANDLE hContact = (HANDLE) wParam;
-                char *szProto = 0, *szStatus = 0, *contactName = NULL, temp[200];
-                TCHAR newtitle[256], oldtitle[256];
-                WORD wStatus = -1;
-                TCHAR tTemp[204];
-                char *dummy = "", *uin;
-                struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
-
-                if(dat) {
-                    if(dat->uin && lstrlenA(dat->uin) > 0)
-                        uin = dat->uin;
-                    else
-                        uin = dummy;
-                    szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-                }
-                else
-                    uin = dummy;
+                TCHAR *szNewTitle;
+                struct MessageWindowData *dat = 0;
                 
                 if(wParam == 0)             // no hContact given - obtain the hContact for the active tab
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 
-                if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                    contactName = dat->szNickname;
-                
-                temp[0] = '\0';
-                tTemp[0] = '\0';
-                
-                if (szProto)
-                    SendMessage(pContainer->hwndActive, DM_QUERYSTATUS, 0, (LPARAM)&wStatus);
-                else
-                    break;
-                if(pContainer->dwFlags & CNT_TITLE_SHOWNAME && pContainer->dwFlags & CNT_TITLE_SHOWUIN)
-                    mir_snprintf(temp, sizeof(temp), "%s - %s", contactName, uin);
-                else if(pContainer->dwFlags & CNT_TITLE_SHOWNAME)
-                    mir_snprintf(temp, sizeof(temp), "%s", contactName);
-                else if(pContainer->dwFlags & CNT_TITLE_SHOWUIN)
-                    mir_snprintf(temp, sizeof(temp), "%s", uin);
-                    
-                if((pContainer->dwFlags & CNT_TITLE_SHOWNAME || pContainer->dwFlags & CNT_TITLE_SHOWUIN) && pContainer->dwFlags & CNT_TITLE_SHOWSTATUS) {
-                    szStatus = dat->szStatus;
-                    if(szStatus != NULL) {
-                        strncat(temp, " (", sizeof(temp));
-                        strncat(temp, szStatus, sizeof(temp));
-                        strncat(temp, ")", sizeof(temp));
+                dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                if(dat) {
+                    szNewTitle = NewTitle(pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+                    if(szNewTitle) {
+                        SetWindowText(hwndDlg, szNewTitle);
+                        free(szNewTitle);
                     }
                 }
-#if defined (_UNICODE)
-                MultiByteToWideChar(CP_ACP, 0, temp, -1, tTemp, 200);
-#else
-                strncpy(tTemp, temp, 200);
-#endif                
-                if(pContainer->dwFlags & CNT_TITLE_PREFIX) {
-                    if(!_tcsncmp(pContainer->szName, _T("default"), CONTAINER_NAMELEN) && _tcslen(pContainer->szName) == 7)
-                        _sntprintf(newtitle, 255, _T("[%s] %s"), myGlobals.g_szDefaultContainerName, tTemp);
-                    else
-                        _sntprintf(newtitle, 255, _T("[%s] %s"), pContainer->szName, tTemp);
-                }
-                else if(pContainer->dwFlags & CNT_TITLE_SUFFIX) {
-                    if(!_tcsncmp(pContainer->szName, _T("default"), CONTAINER_NAMELEN) && _tcslen(pContainer->szName) == 7)
-                        _sntprintf(newtitle, 255, _T("%s [%s]"), tTemp, myGlobals.g_szDefaultContainerName);
-                    else
-                        _sntprintf(newtitle, 255, _T("%s [%s]"), tTemp, pContainer->szName);
-                }
-                else
-                    _tcsncpy(newtitle, tTemp, 255);
-                
-                GetWindowText(hwndDlg, oldtitle, 255);
-#if defined _UNICODE
-                if(lstrcmpW(newtitle, oldtitle))
-                    SetWindowTextW(hwndDlg, (LPCWSTR) newtitle);
-#else
-                if(lstrcmpA(newtitle, oldtitle))
-                   SetWindowTextA(hwndDlg, (LPCSTR) newtitle);
-#endif                
-                if (wStatus != (WORD)-1)
-                    SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(szProto, wStatus));
+                SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));
                 break;
-            }               
+            }
         case WM_TIMER:
             if(wParam == TIMERID_HEARTBEAT) {
                 int i;
@@ -1145,28 +1046,6 @@ panel_found:
                             }
                             break;
                         }
-                    /*
-                     * double click
-                     *
-                    case NM_CLICK: {
-                            FILETIME ft;
-                            POINT pt, pt1;
-
-                            GetCursorPos(&pt);
-                            pt1 = pt;
-                            GetSystemTimeAsFileTime(&ft);
-                            if (abs(pt.x - pContainer->pLastPos.x) < 5 && abs(pt.y - pContainer->pLastPos.y) < 5) {
-                                if ((ft.dwLowDateTime - pContainer->iLastClick) < (GetDoubleClickTime() * 10000)) {
-                                    SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
-                                }
-                            }
-                            pContainer->iLastClick = ft.dwLowDateTime;
-                            pContainer->pLastPos = pt1;
-                            break;
-                        }
-                        * 
-                         * context menu...
-                         */
                     case NM_RCLICK: {
                             HMENU subMenu;
                             POINT pt;
@@ -1371,15 +1250,9 @@ panel_found:
             CheckMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOTITLE ? MF_UNCHECKED : MF_CHECKED);
             CheckMenuItem(hMenu, ID_VIEW_TABSATBOTTOM, MF_BYCOMMAND | pContainer->dwFlags & CNT_TABSBOTTOM ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_VERTICALMAXIMIZE, MF_BYCOMMAND | pContainer->dwFlags & CNT_VERTICALMAX ? MF_CHECKED : MF_UNCHECKED);
-            CheckMenuItem(hMenu, ID_TITLEBAR_SHOWNICNAME, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_SHOWNAME ? MF_CHECKED : MF_UNCHECKED);
-            CheckMenuItem(hMenu, ID_TITLEBAR_SHOWSTATUS, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_SHOWSTATUS ? MF_CHECKED : MF_UNCHECKED);
-            CheckMenuItem(hMenu, ID_TITLEBAR_DONOTSHOWCONTAINERNAME, MF_BYCOMMAND | (pContainer->dwFlags & (CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX)) ? MF_UNCHECKED : MF_CHECKED);
-            CheckMenuItem(hMenu, ID_TITLEBAR_SHOWCONTAINERNAME, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_PREFIX ? MF_CHECKED : MF_UNCHECKED);
-            CheckMenuItem(hMenu, ID_TITLEBAR_SHOWCONTAINERNAMEASSUFFIX, MF_BYCOMMAND | pContainer->dwFlags & CNT_TITLE_SUFFIX ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_TITLEBAR_USESTATICCONTAINERICON, MF_BYCOMMAND | pContainer->dwFlags & CNT_STATICICON ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_SHOWTOOLBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_HIDETOOLBAR ? MF_UNCHECKED : MF_CHECKED);
             
-            EnableMenuItem(hMenu, ID_TITLEBAR_SHOWSTATUS, pContainer->dwFlags & CNT_TITLE_SHOWNAME);
             CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE) ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
 
@@ -1429,23 +1302,23 @@ panel_found:
                 break;
             }
 		case DM_OPTIONSAPPLIED: {
-			DWORD dwGlobalFlags = 0, dwLocalFlags = 0;
-			DWORD dwGlobalTrans = 0, dwLocalTrans = 0;
+			DWORD dwLocalFlags = 0;
+			DWORD dwLocalTrans = 0;
 			char szCname[40];
             int overridePerContact = 1;
+            TCHAR *szTitleFormat = NULL;
 #if defined (_UNICODE)
             char *szSetting = "CNTW_";
 #else
             char *szSetting = "CNT_";
 #endif                
-			
-            dwGlobalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
-            
             if(pContainer->isCloned && pContainer->hContactFrom != 0) {
                 mir_snprintf(szCname, 40, "%s_Flags", szSetting);
                 dwLocalFlags = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
                 mir_snprintf(szCname, 40, "%s_Trans", szSetting);
                 dwLocalTrans = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
+                mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
+                szTitleFormat = DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
                 if(dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
                     overridePerContact = 1;
                 else
@@ -1456,27 +1329,43 @@ panel_found:
                 dwLocalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
                 mir_snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
                 dwLocalTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
+                if(szTitleFormat == NULL) {
+                    mir_snprintf(szCname, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
+                    szTitleFormat = DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
+                }
             }
-
-			dwGlobalTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containertrans", CNT_TRANS_DEFAULT);
 			
 			if (dwLocalFlags == 0xffffffff) {
-				pContainer->dwFlags = dwGlobalFlags;
+				pContainer->dwFlags = pContainer->dwPrivateFlags = myGlobals.m_GlobalContainerFlags;
+                pContainer->dwPrivateFlags |= (CNT_GLOBALSETTINGS);
 			}
 			else {
-				pContainer->dwFlags = dwLocalFlags;
+				pContainer->dwPrivateFlags = dwLocalFlags;
+                pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? myGlobals.m_GlobalContainerFlags : dwLocalFlags;
 			}
 
 			if (dwLocalTrans == 0xffffffff)
-				pContainer->dwTransparency = dwGlobalTrans;
-			else
-				pContainer->dwTransparency = dwLocalTrans;
+				pContainer->dwTransparency = myGlobals.m_GlobalContainerTrans;
+            else
+                pContainer->dwTransparency = pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? myGlobals.m_GlobalContainerTrans : dwLocalTrans;
 
 			if (LOWORD(pContainer->dwTransparency) < 50)
 				pContainer->dwTransparency = MAKELONG(50, (WORD)HIWORD(pContainer->dwTransparency));
 			if (HIWORD(pContainer->dwTransparency) < 50)
 				pContainer->dwTransparency = MAKELONG((WORD)LOWORD(pContainer->dwTransparency), 50);
 			
+            if(pContainer->dwFlags & CNT_TITLE_PRIVATE) {
+                if(szTitleFormat != NULL)
+                    _tcsncpy(pContainer->szTitleFormat, szTitleFormat, TITLE_FORMATLEN);
+                else
+                    _tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
+            }
+            else
+                _tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
+
+            if(szTitleFormat != NULL)
+                free(szTitleFormat);
+            
             break;
 		}
         case DM_STATUSBARCHANGED:
@@ -1500,9 +1389,6 @@ panel_found:
 
             ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             
-            if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
-                pContainer->dwFlags &= ~(CNT_TITLE_PREFIX | CNT_TITLE_SUFFIX);      // hide container name in single window mode (not needed)
-
             if(!myGlobals.m_SideBarEnabled)
                 pContainer->dwFlags &= ~CNT_SIDEBAR;
             
@@ -1782,7 +1668,6 @@ panel_found:
                     DestroyWindow(pContainer->hwndStatus);
                 if(pContainer->hMenu)
                     DestroyMenu(pContainer->hMenu);
-                //SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)OldTabControlProc);        // un-subclass
     			DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);
 #if defined(__MATHMOD_SUPPORT)
@@ -1861,18 +1746,42 @@ panel_found:
                         if(TabCtrl_GetItem(hwndTab, i, &item)) {
                             SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                             _snprintf(szCName, 40, "%s_Flags", szSetting);
-                            DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwFlags);
+                            DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
                             _snprintf(szCName, 40, "%s_Trans", szSetting);
                             DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
+                            if(pContainer->dwFlags & CNT_TITLE_PRIVATE) {
+                                char *szTitleFormat = NULL;
+                                mir_snprintf(szCName, 40, "%s_titleformat", szSetting);
+#if defined(_UNICODE)
+                                szTitleFormat = Utf8_Encode(pContainer->szTitleFormat);
+                                DBWriteContactSettingString(hContact, SRMSGMOD_T, szCName, szTitleFormat);
+                                free(szTitleFormat);
+#else
+                                szTitleFormat = pContainer->szTitleFormat;
+                                DBWriteContactSettingString(hContact, SRMSGMOD_T, szCName, szTitleFormat);
+#endif
+                            }
                         }
                     }
                 }
                 else {
                     pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
                     _snprintf(szCName, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
-                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, pContainer->dwFlags);
+                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
                     _snprintf(szCName, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, pContainer->dwTransparency);
+                    if(pContainer->dwFlags & CNT_TITLE_PRIVATE) {
+                        char *szTitleFormat = NULL;
+                        mir_snprintf(szCName, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
+#if defined(_UNICODE)
+                        szTitleFormat = Utf8_Encode(pContainer->szTitleFormat);
+                        DBWriteContactSettingString(NULL, SRMSGMOD_T, szCName, szTitleFormat);
+                        free(szTitleFormat);
+#else
+                        szTitleFormat = pContainer->szTitleFormat;
+                        DBWriteContactSettingString(NULL, SRMSGMOD_T, szCName, szTitleFormat);
+#endif
+                    }
                 }
                 DestroyWindow(hwndDlg);
                 break;
@@ -2665,4 +2574,5 @@ void SetFloater(struct ContainerWindowData *pContainer)
     floaterOwner = pContainer->hwnd;
     SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, x, pt.y - (pContainer->dwFlags & CNT_NOMENUBAR ? 20 : 18), 50, 17, SWP_NOACTIVATE);
 }
+
 

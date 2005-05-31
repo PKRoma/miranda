@@ -895,11 +895,9 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
         case WM_INITDIALOG:
         {
             DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
-            DBVARIANT dbv;
             
             TranslateDialogDefault(hwndDlg);
 
-            SendDlgItemMessage(hwndDlg, IDC_DEFAULTDISPLAYNAME, EM_SETLIMITTEXT, (WPARAM)CONTAINER_NAMELEN, 0);
             CheckDlgButton(hwndDlg, IDC_CONTAINERGROUPMODE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0));
             CheckDlgButton(hwndDlg, IDC_LIMITTABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0));
 
@@ -918,36 +916,17 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
             SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETRANGE, 0, MAKELONG(10000, 500));
             SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETPOS, 0, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000));
             SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETACCEL, 0, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000));
-            
+            SetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, myGlobals.szDefaultTitleFormat);
+            SendDlgItemMessage(hwndDlg, IDC_DEFAULTTITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
             if(!ServiceExists("Utils/SnapWindowProc"))
                 EnableWindow(GetDlgItem(hwndDlg, IDC_USESNAPPING), FALSE);
             else
                 CheckDlgButton(hwndDlg, IDC_USESNAPPING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0));
             
-#if defined(_UNICODE)
-            if(DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainernameW", &dbv))
-#else                
-            if(DBGetContactSetting(NULL, SRMSGMOD_T, "defaultcontainername", &dbv))
-#endif                
-                SetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), _T("default"));
-            else {
-#if defined(_UNICODE)
-                if(dbv.type == DBVT_ASCIIZ) {
-                    WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
-                    SetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), wszTemp);
-                    free(wszTemp);
-#else
-                if(dbv.type == DBVT_ASCIIZ) {
-                    SetWindowTextA(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), dbv.pszVal);
-#endif                    
-                }
-                DBFreeVariant(&dbv);
-            }
 		 return TRUE;
 		}
         case WM_COMMAND:
             switch(LOWORD(wParam)) {
-                case IDC_DEFAULTDISPLAYNAME:
                 case IDC_TABLIMIT:
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
@@ -967,15 +946,8 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                     switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY: {
                             BOOL translated;
-                            TCHAR szContainerName[CONTAINER_NAMELEN + 1];
-                            
-                            GetWindowText(GetDlgItem(hwndDlg, IDC_DEFAULTDISPLAYNAME), szContainerName, CONTAINER_NAMELEN * sizeof(TCHAR));
-#if defined(_UNICODE)
-                            _DBWriteContactSettingWString(NULL, SRMSGMOD_T, "defaultcontainernameW", szContainerName);
-#else                            
-                            DBWriteContactSettingString(NULL, SRMSGMOD_T, "defaultcontainername", szContainerName);
-#endif                            
-                            _tcsncpy(myGlobals.g_szDefaultContainerName, szContainerName, CONTAINER_NAMELEN);
+                            char *szDefault = 0;
+                            TCHAR szDefaultName[TITLE_FORMATLEN + 2];
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limittabs", IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "maxtabs", GetDlgItemInt(hwndDlg, IDC_TABLIMIT, &translated, FALSE));
@@ -983,6 +955,22 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", GetDlgItemInt(hwndDlg, IDC_FLASHINTERVAL, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nrflash", GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING));
+                            GetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, szDefaultName, TITLE_FORMATLEN);
+#if defined(_UNICODE)
+                            szDefault = Utf8_Encode(szDefaultName);
+                            DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformatW", szDefault);
+                            free(szDefault);
+#else                            
+                            DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", szDefaultName);
+#endif
+                            if(myGlobals.szDefaultTitleFormat)
+                                free(myGlobals.szDefaultTitleFormat);
+#if defined(_UNICODE)
+                            myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW");
+#else
+                            myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
+#endif                            
+                            
                             myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);
                             BuildContainerMenu();
                             return TRUE;

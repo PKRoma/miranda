@@ -1706,7 +1706,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             GetContactUIN(hwndDlg, dat);
                         }
                         
-                        mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
+                        mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)(dat->bIsMeta ? dat->hSubContact : dat->hContact), 0));
                         iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
                     /*
                      * cut nickname on tabs...
@@ -1719,7 +1719,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                         wOldApparentMode = dat->wApparentMode;
                         dat->wApparentMode = DBGetContactSettingWord(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "ApparentMode", 0);
-                        //_DebugPopup(dat->hContact, "apparent mode: %d", dat->wApparentMode);
                         
                         if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
                             if (myGlobals.m_CutContactNameOnTabs)
@@ -3575,10 +3574,15 @@ quote_from_last:
                     int iSelection;
                     RECT rc;
                     WORD wOldApparentMode = dat->wApparentMode;
-                    
+                    int pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
+
                     CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_OFFLINE ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_ONLINE ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(subMenu, ID_APPARENTMENU_YOURSTATUSDETERMINESVISIBLITYTOTHISCONTACT, MF_BYCOMMAND | (dat->wApparentMode == 0 ? MF_CHECKED : MF_UNCHECKED));
+
+                    EnableMenuItem(subMenu, ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED, MF_BYCOMMAND | (pCaps & PF1_VISLIST ? MF_ENABLED : MF_GRAYED));
+                    EnableMenuItem(subMenu, ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT, MF_BYCOMMAND | (pCaps & PF1_INVISLIST ? MF_ENABLED : MF_GRAYED));
+                    
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_APPARENTMODE), &rc);
                     iSelection = TrackPopupMenu(subMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                     switch(iSelection) {
@@ -3592,8 +3596,10 @@ quote_from_last:
                             dat->wApparentMode = 0;
                             break;
                     }
-                    if(dat->wApparentMode != wOldApparentMode)
-                        DBWriteContactSettingWord(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "ApparentMode", dat->wApparentMode);
+                    if(dat->wApparentMode != wOldApparentMode) {
+                        //DBWriteContactSettingWord(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "ApparentMode", dat->wApparentMode);
+                        CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_SETAPPARENTMODE, (WPARAM)dat->wApparentMode, 0);
+                    }
                     UpdateApparentModeDisplay(hwndDlg, dat);
                     break;
                 }
@@ -3601,7 +3607,7 @@ quote_from_last:
                     RECT rc;
                     HMENU submenu = GetSubMenu(dat->pContainer->hMenuContext, 9);
                     int iSelection;
-                    BYTE bNewGlobal = DBGetContactSettingByte(NULL, SRMSGMOD_T, "infopanel", 0);
+                    BYTE bNewGlobal = dat->pContainer->dwFlags & CNT_INFOPANEL ? 1 : 0;
                     BYTE bNewLocal = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", 0);
                     BYTE bLocal = bNewLocal, bGlobal = bNewGlobal;
                     DWORD dwOld = dat->dwEventIsShown;
@@ -3635,12 +3641,12 @@ quote_from_last:
                             return 0;
                     }
                     if(bNewGlobal != bGlobal)
-                        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "infopanel", bNewGlobal);
+                        ApplyContainerSetting(dat->pContainer, CNT_INFOPANEL, bNewGlobal ? 1 : 0);
                     if(bNewLocal != bLocal)
                         DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", bNewLocal);
 
-                    if(bNewGlobal != bGlobal)
-                        WindowList_Broadcast(hMessageWindowList, DM_SETINFOPANEL, 0, 0);
+                    if(bNewGlobal != bGlobal);
+                        //WindowList_Broadcast(hMessageWindowList, DM_SETINFOPANEL, 0, 0);
                     else {
                         dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
                         if(dat->dwEventIsShown != dwOld) {

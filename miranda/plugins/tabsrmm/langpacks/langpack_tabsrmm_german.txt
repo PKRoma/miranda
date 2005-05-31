@@ -264,8 +264,8 @@ Kontaktlistgruppen verwenden (ein Container pro Gruppe)
 Maximale Anzahl von Sitzungen per container
 [Use single window mode (one container per session)]
 Jede Sitzung in einem eigenen Container öffnen
-[Set display name for the default container (instead of just "default")]
-Name für den Standardcontainer:
+[Default window title format]
+Standardformat für den Fenstertitel
 [Use default container mode (manual contact assignments)]
 Standardmodus verwenden (manuelle Zuordnung von Kontakten)
 [Container flashing]

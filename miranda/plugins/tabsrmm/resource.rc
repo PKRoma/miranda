@@ -223,81 +223,67 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "   "
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "General settings",IDC_STATIC,7,7,138,48
+    GROUPBOX        "General settings",IDC_STATIC,7,32,138,48
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,16,129,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,41,129,10
     CONTROL         "Container stays on top",IDC_O_STICKY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,28,129,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,53,129,10
     CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,40,129,10
-    GROUPBOX        "Flashing options",IDC_STATIC,152,7,122,46
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,65,129,10
+    GROUPBOX        "Flashing options",IDC_STATIC,152,32,122,46
     CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,166,16,101,11
+                    BS_AUTORADIOBUTTON | WS_GROUP,166,41,101,11
     CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",
-                    BS_AUTORADIOBUTTON,166,27,98,12
+                    BS_AUTORADIOBUTTON,166,52,98,12
     CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",
-                    BS_AUTORADIOBUTTON,166,40,100,11
-    GROUPBOX        "Popup configuration",IDC_STATIC,7,58,138,63
+                    BS_AUTORADIOBUTTON,166,65,100,11
+    GROUPBOX        "Popup configuration",IDC_STATIC,7,83,138,63
     CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,67,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,92,124,10
     CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,78,124,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,103,124,10
     CONTROL         "Always enable popups for",IDC_ALWAYSPOPUPSINACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,89,124,10
-    LTEXT           "inactive tabs",IDC_STATIC,26,100,74,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,114,124,10
+    LTEXT           "inactive tabs",IDC_STATIC,26,125,74,8
     CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,109,124,10
-    GROUPBOX        "Titlebar options",IDC_STATIC,7,125,138,58
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,134,124,10
+    GROUPBOX        "Titlebar options",IDC_STATIC,7,150,138,58
     CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,136,121,10
-    CONTROL         "Show contacts name",IDC_SHOWCONTACTNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,147,121,10
-    CONTROL         "Show UIN",IDC_SHOWUIN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,158,121,10
-    CONTROL         "Show contacts status",IDC_SHOWSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,24,169,117,10
-    GROUPBOX        "Layout options",IDC_STATIC,151,55,123,90
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,161,121,10
+    GROUPBOX        "Layout options",IDC_STATIC,151,80,123,90
     CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,79,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,92,111,10
     CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,91,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,104,111,10
     CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,103,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,116,111,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,115,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,128,111,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,127,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,140,111,10
     CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,187,126,11
-    GROUPBOX        "Show container name in titlebar",IDC_STATIC,152,150,122,
-                    50
-    CONTROL         "Never",IDC_O_TITLENEVER,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,165,162,100,10
-    CONTROL         "As prefix",IDC_O_TITLEFRONT,"Button",BS_AUTORADIOBUTTON,
-                    165,173,100,10
-    CONTROL         "As suffix",IDC_O_TITLESUFFIX,"Button",
-                    BS_AUTORADIOBUTTON,165,184,100,10
-    GROUPBOX        "Container transparency",IDC_STATIC,7,200,267,36
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,212,126,11
+    GROUPBOX        "Container transparency",IDC_STATIC,7,225,267,36
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,211,101,11
-    LTEXT           "active",IDC_STATIC,125,212,26,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,236,101,11
+    LTEXT           "active",IDC_STATIC,125,237,26,11
     CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | 
-                    WS_TABSTOP,153,208,95,11
-    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,212,19,9
-    LTEXT           "inactive",IDC_STATIC,125,225,28,9
+                    WS_TABSTOP,153,233,95,11
+    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,237,19,9
+    LTEXT           "inactive",IDC_STATIC,125,250,28,9
     CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",
-                    TBS_BOTH | WS_TABSTOP,153,221,95,11
-    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,225,19,9
-    CONTROL         "Set these values as defaults for new containers",
-                    IDC_APPLYASDEFAULT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    13,238,253,12
-    CONTROL         "Also apply them to all existing containers",
-                    IDC_APPLYEXISTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    13,249,253,12
-    PUSHBUTTON      "Load defaults",IDC_LOADDEFAULTS,7,266,69,15
+                    TBS_BOTH | WS_TABSTOP,153,246,95,11
+    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,250,19,9
     DEFPUSHBUTTON   "OK",IDOK,114,267,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,169,267,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,225,267,50,14,WS_DISABLED
+    CONTROL         "Use private title format",IDC_USEPRIVATETITLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,173,115,9
+    EDITTEXT        IDC_TITLEFORMAT,14,186,123,13,ES_AUTOHSCROLL
+    CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,14,251,10
+    CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,152,105,11
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -492,9 +478,6 @@ BEGIN
     CONTROL         "Use default container mode (manual contact assignments)",
                     IDC_DEFAULTCONTAINERMODE,"Button",BS_AUTORADIOBUTTON,6,
                     75,293,12
-    GROUPBOX        "Set display name for the default container (instead of just ""default"")",
-                    IDC_STATIC,0,186,303,30
-    EDITTEXT        IDC_DEFAULTDISPLAYNAME,7,198,142,12,ES_AUTOHSCROLL
     GROUPBOX        "Container flashing",IDC_STATIC,0,94,303,43
     LTEXT           "Flash containers",IDC_STATIC,6,106,102,11
     EDITTEXT        IDC_NRFLASH,111,104,34,12,ES_AUTOHSCROLL
@@ -511,6 +494,8 @@ BEGIN
     GROUPBOX        "Global container options",IDC_STATIC,0,140,303,42
     CONTROL         "Use the snapping windows plugin",IDC_USESNAPPING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,153,157,11
+    GROUPBOX        "Default window title format",IDC_STATIC,0,183,303,42
+    EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,198,274,14,ES_AUTOHSCROLL
 END
 
 IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 303, 226
@@ -1010,7 +995,7 @@ BEGIN
     BEGIN
         MENUITEM "Quick Toggle\tALT-I",         ID_INFOPANEL_QUICKTOGGLE
         MENUITEM SEPARATOR
-        POPUP "Global"
+        POPUP "Container Setting"
         BEGIN
             MENUITEM "Enabled",                     ID_GLOBAL_ENABLED
             MENUITEM "Disabled",                    ID_GLOBAL_DISABLED
@@ -1065,13 +1050,6 @@ BEGIN
         POPUP "Title Bar"
         BEGIN
             MENUITEM "Show Title Bar",              40083
-            MENUITEM SEPARATOR
-            MENUITEM "Show Nickname",               40089
-            MENUITEM "Show Status",                 40090
-            MENUITEM SEPARATOR
-            MENUITEM "Do not show Container Name",  40094
-            MENUITEM "Show Container Name as Prefix", 40091
-            MENUITEM "Show Container Name as Suffix", 40092
             MENUITEM SEPARATOR
             MENUITEM "Use static container Icon",   40126
         END
@@ -1153,8 +1131,6 @@ BEGIN
             MENUITEM "Show Popups for all inactive sessions", 40112
         END
         MENUITEM SEPARATOR
-        MENUITEM "Apply Container Options globally", 40099
-        MENUITEM "Set current Options as Default Values", 40100
         MENUITEM "Save current Window Position as Default", 40113
     END
 END
