@@ -322,7 +322,7 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
-	msnLoggedIn = 0;
+	msnLoggedIn = false;
 	LoadMsnServices();
 	Lists_Init();
 	MsgQueue_Init();
