@@ -1604,6 +1604,7 @@ LBL_InvalidCommand:
 					}
 					else MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tWords[2] );
 
+					msnLoggedIn = true;
 					sttListNumber = 0;
 
 					char tOldDate[ 100 ], tNewDate[ 100 ];

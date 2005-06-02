@@ -332,7 +332,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 		MSN_EnableMenuItems( TRUE );
 
 		msnNsThread = info;
-		msnLoggedIn = true;
 
 		hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );
 
