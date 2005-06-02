@@ -444,6 +444,7 @@ int YahooSendAuthRequest(WPARAM wParam,LPARAM lParam)
 int YahooAddToList(WPARAM wParam,LPARAM lParam)
 {
     PROTOSEARCHRESULT *psr=(PROTOSEARCHRESULT*)lParam;
+	HANDLE hContact;
 	
 	YAHOO_DebugLog("[YahooAddToList]");
 	
@@ -452,12 +453,24 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 		return 0;
 	}
 	
-	if (psr == NULL || psr->cbSize != sizeof( PROTOSEARCHRESULT ))
+	if (psr == NULL || psr->cbSize != sizeof( PROTOSEARCHRESULT )) {
+		YAHOO_DebugLog("[YahooAddToList] Empty data passed?");
 		return 0;
+	}
 
-	if (find_buddy(psr->nick) != NULL) {
-		YAHOO_DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", psr->nick);
-		return 0;
+	
+	
+	hContact = getbuddyH(psr->nick);
+	if (hContact != NULL) {
+		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)) {
+			YAHOO_DebugLog("[YahooAddToList] Temporary Buddy:%s already on our buddy list", psr->nick);
+			//return 0;
+		} else {
+			YAHOO_DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", psr->nick);
+			return 0;
+		}
+	} else if (wParam & PALF_TEMPORARY ) { /* not on our list */
+		YAHOO_DebugLog("[YahooAddToList] Adding Temporary Buddy:%s ", psr->nick);
 	}
 	
 	YAHOO_DebugLog("Adding buddy:%s", psr->nick);
