@@ -165,9 +165,6 @@ void __cdecl yahoo_server_main(void *empty)
     
 		yahooLoggedIn = FALSE; // Don't send any more packets, we don't got connection
     }
-
-	// LOGOUT FIRST!!!! Then Cleanup the connections!!!
-    yahoo_logout();
 	
 	for(; connections; connections = y_list_remove_link(connections, connections)) {
 		struct _conn * c = connections->data;
@@ -176,6 +173,10 @@ void __cdecl yahoo_server_main(void *empty)
 		FREE(c);
 	}
 
+	// LOGOUT FIRST!!!! Then Cleanup the connections!!!
+	yahooLoggedIn = FALSE; /* we are NOT logged in anymore, don't try to send anything */
+    yahoo_logout();
+	
 	yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
 	yahoo_logoff_buddies();	
 	
