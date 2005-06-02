@@ -466,7 +466,7 @@ void YAHOO_reject(const char *who, const char *msg)
 
 void yahoo_logout()
 {
-	poll_loop = 0;
+	//poll_loop = 0; <- don't kill us before we do full cleanup!!!
 	
 	if (ylad == NULL)
         return;
@@ -475,8 +475,6 @@ void yahoo_logout()
 		return;
 	}
 
-	//stop_timer();
-	
 	if (yahooLoggedIn) {
 		yahooLoggedIn = FALSE;
 		yahoo_logoff(ylad->id);
@@ -484,13 +482,9 @@ void yahoo_logout()
 	
 	//pthread_mutex_lock(&connectionHandleMutex);
     
-    //yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
-	//yahoo_logoff_buddies();	
-	if (ylad)
+    if (ylad)
 		yahoo_close(ylad->id);
-	
-	
-	
+		
 	//pthread_mutex_unlock(&connectionHandleMutex);
 }
 
@@ -582,6 +576,7 @@ HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags )
 	if (hContact != NULL) {
 		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
 		{
+			LOG(("[add_buddy] Making Perm id: %s, flags: %d", yahoo_id, flags));
 			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
 
