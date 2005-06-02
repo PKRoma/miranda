@@ -215,7 +215,7 @@ int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
     if (!yahooLoggedIn)
         return 0;
         
-    if (!strcmp(cws->szModule, "CList")) {
+    if (!strcmp(cws->szModule, "CList") && !strcmp(cws->szModule, yahooProtocolName)) {
         // A temporary contact has been added permanently
         if (!strcmp(cws->szSetting, "NotOnList")) {
             if (DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
