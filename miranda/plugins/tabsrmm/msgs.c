@@ -567,8 +567,6 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	char *szProto;
     struct NewMessageWindowLParam newData = { 0 };
     struct ContainerWindowData *pContainer = 0;
-    static HANDLE lastNew = 0;
-    static DWORD dwLastCreated = 0;
     
     int isSplit = 1;
     
@@ -595,12 +593,15 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
     }
     else {
         TCHAR szName[CONTAINER_NAMELEN + 1];
+        /*
+         * attempt to fix "double tabs" opened by MS_MSG_SENDMESSAGE
+         * strange problem, maybe related to the window list service in miranda?
+         */
         if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "trayfix", 0)) {
-            if(lastNew == (HANDLE)wParam && GetTickCount() - dwLastCreated < 1000)
+            if(myGlobals.hLastOpenedContact == (HANDLE)wParam)
                 return 0;
         }
-        lastNew = (HANDLE)wParam;
-        dwLastCreated = GetTickCount();
+        myGlobals.hLastOpenedContact = (HANDLE)wParam;
         GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
         pContainer = FindContainerByName(szName);
         if (pContainer == NULL)

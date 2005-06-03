@@ -4937,7 +4937,10 @@ verify:
                 }
             }
             TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
-            
+
+            if(dat->hContact == myGlobals.hLastOpenedContact)
+                myGlobals.hLastOpenedContact = 0;
+
             // IEVIew MOD Begin
             if (dat->hwndLog != 0) {
                 IEVIEWWINDOW ieWindow;

@@ -379,6 +379,7 @@ typedef struct _globals {
     DWORD m_GlobalContainerFlags;
     DWORD m_GlobalContainerTrans;
     WINDOWPLACEMENT m_GlobalContainerWpos;
+    HANDLE hLastOpenedContact;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

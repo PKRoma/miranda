@@ -531,14 +531,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 }
                 break;
             }
-        case WM_HSCROLL:
-        {
-            BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
-            if((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && myGlobals.tabConfig.m_bottomAdjust != 0) {
-                InvalidateRect(hwnd, NULL, FALSE);
-            }
-            break;
-        }
         case TCM_INSERTITEM:
         case TCM_DELETEITEM:
             if(!(tabdat->dwStyle & TCS_MULTILINE) || tabdat->dwStyle & TCS_BUTTONS) {

@@ -237,7 +237,7 @@ BEGIN
                     BS_AUTORADIOBUTTON,166,52,98,12
     CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",
                     BS_AUTORADIOBUTTON,166,65,100,11
-    GROUPBOX        "Popup configuration",IDC_STATIC,7,83,138,63
+    GROUPBOX        "Popup configuration",IDC_STATIC,7,83,138,65
     CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,92,124,10
     CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
@@ -247,9 +247,9 @@ BEGIN
     LTEXT           "inactive tabs",IDC_STATIC,26,125,74,8
     CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,134,124,10
-    GROUPBOX        "Titlebar options",IDC_STATIC,7,150,138,58
+    GROUPBOX        "Titlebar options",IDC_STATIC,7,149,138,65
     CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,161,121,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,173,121,10
     GROUPBOX        "Layout options",IDC_STATIC,151,80,123,90
     CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,92,111,10
@@ -258,11 +258,11 @@ BEGIN
     CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,116,111,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,128,111,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,161,111,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,140,111,10
     CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,212,126,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,128,113,10
     GROUPBOX        "Container transparency",IDC_STATIC,7,225,267,36
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,236,101,11
@@ -278,12 +278,14 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,169,267,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,225,267,50,14,WS_DISABLED
     CONTROL         "Use private title format",IDC_USEPRIVATETITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,173,115,9
-    EDITTEXT        IDC_TITLEFORMAT,14,186,123,13,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,185,115,9
+    EDITTEXT        IDC_TITLEFORMAT,14,198,123,13,ES_AUTOHSCROLL
     CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,14,251,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,4,251,10
     CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,152,105,11
+    LTEXT           "Check if you don't want this container to use the global container options. Titlebar format and window position can always be private.",
+                    IDC_STATIC,26,14,238,18
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -727,7 +729,6 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 274
-        TOPMARGIN, 7
         BOTTOMMARGIN, 281
     END
 
