@@ -576,7 +576,7 @@ HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags )
 	if (hContact != NULL) {
 		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
 		{
-			LOG(("[add_buddy] Making Perm id: %s, flags: %d", yahoo_id, flags));
+			LOG(("[add_buddy] Making Perm id: %s, flags: %lu", yahoo_id, flags));
 			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
 
