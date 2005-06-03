@@ -477,7 +477,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	while ( bytesFromData < msgBytes ) {
 		int recvResult;
 		recvResult = info->recv( msg + bytesFromData, msgBytes - bytesFromData );
-		if ( !recvResult )
+		if ( recvResult <= 0 )
 			return;
 
 		bytesFromData += recvResult;
