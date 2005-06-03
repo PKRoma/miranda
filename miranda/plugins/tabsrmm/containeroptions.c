@@ -138,7 +138,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                             pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags & ~CNT_GLOBALSETTINGS);
                         }
                         else {
-                            myGlobals.m_GlobalContainerFlags = pContainer->dwFlags = dwNewFlags;
+                            myGlobals.m_GlobalContainerFlags = dwNewFlags;
                             pContainer->dwPrivateFlags |= CNT_GLOBALSETTINGS;
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", dwNewFlags);
                         }
@@ -153,8 +153,10 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
                         if(!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE))
                             ReloadGlobalContainerSettings();
-                        else
+                        else {
                             SendMessage(pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+                            BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
+                        }
                             
 						if (LOWORD(wParam) == IDOK)
 							DestroyWindow(hwndDlg);

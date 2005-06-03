@@ -567,6 +567,8 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	char *szProto;
     struct NewMessageWindowLParam newData = { 0 };
     struct ContainerWindowData *pContainer = 0;
+    static HANDLE lastNew = 0;
+    static DWORD dwLastCreated = 0;
     
     int isSplit = 1;
     
@@ -593,6 +595,12 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
     }
     else {
         TCHAR szName[CONTAINER_NAMELEN + 1];
+        if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "trayfix", 0)) {
+            if(lastNew == (HANDLE)wParam && GetTickCount() - dwLastCreated < 1000)
+                return 0;
+        }
+        lastNew = (HANDLE)wParam;
+        dwLastCreated = GetTickCount();
         GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
         pContainer = FindContainerByName(szName);
         if (pContainer == NULL)
@@ -736,7 +744,7 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
     HWND hwnd;
 
     if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
-        SendMessage(hwnd, WM_CLOSE, 0, 0);
+        SendMessage(hwnd, WM_CLOSE, 0, 1);
     }
     return 0;
 }
@@ -1096,7 +1104,6 @@ int LoadSendRecvMessageModule(void)
 #endif
     myGlobals.m_GlobalContainerFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
     myGlobals.m_GlobalContainerTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containertrans", CNT_TRANS_DEFAULT);
-
     return 0;
 }
 
@@ -1253,7 +1260,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	char *contactName, *szProto, *szStatus, tabtitle[128], newcontactname[128];
 	WORD wStatus;
     int	newItem;
-    HWND hwndNew;
+    HWND hwndNew = 0;
     struct NewMessageWindowLParam newData = {0};
 
     if(WindowList_Find(hMessageWindowList, hContact) != 0) {

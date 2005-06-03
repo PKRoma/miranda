@@ -57,13 +57,12 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
 static UINT WM_TASKBARCREATED;
-static DWORD dwLastMButtonEvent = 0;
 HWND floaterOwner;
 
 void HandleMenuEntryFromhContact(int iSelection)
 {
     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
-    if(hWnd) {
+    if(hWnd && IsWindow(hWnd)) {
         struct ContainerWindowData *pContainer = 0;
         SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
         if(pContainer) {
@@ -278,10 +277,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         {
                             MENUITEMINFOA mii = {0};
                             int i, iCount = GetMenuItemCount(myGlobals.g_hMenuTrayUnread);
-                            
-                            if(GetTickCount() - dwLastMButtonEvent < 1000)
-                                break;
-                            dwLastMButtonEvent = GetTickCount();
                             
                             if(wParam == 100)
                                 SetForegroundWindow(hwndDlg);

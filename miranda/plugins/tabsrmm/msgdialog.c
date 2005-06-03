@@ -1066,9 +1066,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 pszIDCSAVE_save = Translate("Save and close session");
 
                 dat->hContact = newData->hContact;
+                WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
                 BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
                 
-                WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
                 dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
                 dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
                 if(dat->hContact && dat->szProto != NULL) {
@@ -3731,13 +3731,11 @@ quote_from_last:
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     break;
                 case IDC_TOGGLESIDEBAR:
-                    dat->pContainer->dwFlags ^= CNT_SIDEBAR;
+                    ApplyContainerSetting(dat->pContainer, CNT_SIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1);
                     SendMessage(hwndDlg, WM_SETREDRAW, FALSE, 0);
                     SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
                     SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
-                    //RedrawWindow(GetDlgItem(dat->pContainer->hwnd, IDC_SIDEBAR), NULL, NULL, RDW_INVALIDATE);
                     RedrawWindow(dat->pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
-                    //RedrawWindow(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
                     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                     SendMessage(hwndDlg, WM_SETREDRAW, TRUE, 0);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
