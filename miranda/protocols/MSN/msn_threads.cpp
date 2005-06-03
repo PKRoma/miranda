@@ -44,11 +44,15 @@ void __cdecl msn_keepAliveThread(ThreadData *info)
 {
 	while( TRUE )
 	{
-		while ( msnPingTimeout-- > 0 ) {
+		DWORD dwStartTicks = GetTickCount();
+
+		while ( GetTickCount() - dwStartTicks < DWORD( msnPingTimeout )*1000 ) {
 			switch( ::WaitForSingleObjectEx( hKeepAliveThreadEvt, 1000, TRUE )) {
 				case WAIT_IO_COMPLETION:
-					if ( !Miranda_Terminated())
+					if ( !Miranda_Terminated()) {
+						Sleep( 100 );
 						break;
+					}
 
 				case WAIT_OBJECT_0:
 					::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
