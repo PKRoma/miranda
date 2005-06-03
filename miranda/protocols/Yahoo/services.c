@@ -782,10 +782,14 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		    if ( !DBGetContactSetting( NULL, yahooProtocolName, YAHOO_CUSTSTATDB, &dbv ))
 				    {
 				    SetDlgItemText( hwndDlg, IDC_CUSTSTAT, dbv. pszVal );
+					
+					EnableWindow( GetDlgItem( hwndDlg, IDOK ), lstrlen(dbv.pszVal) > 0 );
 				    DBFreeVariant( &dbv );
 				    }
-		    else 
+		    else {
                     SetDlgItemText( hwndDlg, IDC_CUSTSTAT, "" );
+					EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
+			}
 
 
             CheckDlgButton( hwndDlg, IDC_CUSTSTATBUSY,  YAHOO_GetByte( "BusyCustStat", 0 ));
@@ -795,7 +799,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			switch(wParam) 
 			{
 				case IDOK:
-						{
+					{
                         char str[ 255 + 1 ];
 						
 						GetDlgItemText( hwndDlg, IDC_CUSTSTAT, str, sizeof( str ));
@@ -810,18 +814,28 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         else
                               SetStatus(ID_STATUS_ONLINE,0);
 
-						if (yahooLoggedIn)
- 				              {
+						if (yahooLoggedIn) {
                               yahoo_set_status(YAHOO_CUSTOM_STATUS, str, ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
- 				              }
-						else
+						} else
 			             	  YAHOO_shownotification("ERROR", Translate("You need to be connected to set the custom message"), NIIF_ERROR);
-						}
+					}
 				case IDCANCEL:
  					DestroyWindow( hwndDlg );
 					break;
 			}
-			break;
+			
+			if ( HIWORD( wParam ) == EN_CHANGE && ( HWND )lParam == GetFocus()) {
+				if (LOWORD( wParam ) == IDC_CUSTSTAT) {
+					char str[ 255 + 1 ];
+					
+					BOOL toSet;
+					
+					toSet = GetDlgItemText( hwndDlg, IDC_CUSTSTAT, str, sizeof( str )) != 0;
+					
+					EnableWindow( GetDlgItem( hwndDlg, IDOK ), toSet );
+				}			
+			}
+			break; /* case WM_COMMAND */
 
 		case WM_CLOSE:
 			DestroyWindow( hwndDlg );
