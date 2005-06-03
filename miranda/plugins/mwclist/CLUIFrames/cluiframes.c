@@ -51,6 +51,8 @@ extern int InitFramesMenus(void);
 extern int UnitFramesMenu();
 int GapBetweenTitlebar;
 
+LOGFONT TitleBarLogFont={0};
+
 boolean FramesSysNotStarted=TRUE;
 
 typedef struct 
@@ -2375,6 +2377,12 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 						//set font charset
 						HFONT oFont;
 						HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
+						
+						if (TitleBarLogFont.lfHeight!=0)
+							{
+								hf=CreateFontIndirect(&TitleBarLogFont);
+							}
+
 						oFont=SelectObject(hdcMem,hf);
 
 						DrawBackGroundTTB(Frames[pos].TitleBar.hwnd,hdcMem);
@@ -3233,11 +3241,46 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static int CLUIFrameOnFontChange(WPARAM wParam,LPARAM lParam)
+{
+	FontID fid={0};
+	fid.cbSize=sizeof(fid);
+	memset(&TitleBarLogFont,0,sizeof(TitleBarLogFont));
+	
+	strcpy(fid.group,"Frames");
+	strcpy(fid.name,"TitleBarFont");
+	strcpy(fid.dbSettingsGroup,"CLUIFrames");
+	strcpy(fid.prefix,"FramesTitleBarFont");
 
+	CallService(MS_FONT_GET,(WPARAM)&fid,(LPARAM)&TitleBarLogFont);
+	return 0;
+};
+
+static void CLUIRegisterFonts()
+{
+
+if (ServiceExists(MS_FONT_REGISTER))
+{
+	FontID fid={0};
+	
+	fid.cbSize=sizeof(fid);
+	strcpy(fid.group,"Frames");
+	strcpy(fid.name,"TitleBarFont");
+	strcpy(fid.dbSettingsGroup,"CLUIFrames");
+	strcpy(fid.prefix,"FramesTitleBarFont");
+
+	CallService(MS_FONT_REGISTER,(WPARAM)&fid,0);
+	CLUIFrameOnFontChange(0,0);
+	HookEvent(ME_FONT_RELOAD,CLUIFrameOnFontChange);
+}
+
+
+}
 static CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 {
 	CLUIFramesLoadMainMenu(0,0);
 	CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
+	CLUIRegisterFonts();
 }
 
 int LoadCLUIFramesModule(void)

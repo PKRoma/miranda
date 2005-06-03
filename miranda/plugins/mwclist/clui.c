@@ -260,11 +260,13 @@ void RegisterProtoIcons (char *protoname)
 	{
 		int i;
 		char buf[256];
-		for (i=0;i<=8;i++)
+		char buf2[256];
+		for (i=0;i<8;i++)
 		{
 			sprintf(buf,"%s #%d",protoname,i);
+			sprintf(buf2,"Contact List/Connection Icons %s",protoname);
 			
-			LoadIconFromExternalFile(NULL,i,TRUE,TRUE,buf,"Contact List/Connection Icons",buf,0,GetConnectingIconForProto_DLL(protoname,i));
+			LoadIconFromExternalFile(NULL,i,TRUE,TRUE,buf,buf2,buf,0,GetConnectingIconForProto_DLL(protoname,i));
 		}
 		
 	}

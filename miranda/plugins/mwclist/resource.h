@@ -148,6 +148,10 @@
 #define IDI_CLIENTICQL5                 315
 #define IDI_CLIENTICQLITE5              315
 #define IDI_CLIENTICQLITE               316
+#define IDI_CLIENTAGILE                 318
+#define IDI_CLIENTGNOMEICU              319
+#define IDI_ICON1                       320
+#define IDI_CLIENTMOBICQ                320
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -628,7 +632,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        317
+#define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1762
 #define _APS_NEXT_SYMED_VALUE           101

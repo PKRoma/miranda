@@ -654,6 +654,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	TMO_MenuItem tmi;
 	TMenuParam tmp;
 	int pos=0;
+	OptParam op;
 	
 	//
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
@@ -682,13 +683,20 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	{
-	OptParam op;
+	
 	op.Handle=hStatusMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
 	op.Value=(int)"CLISTMENUS/FreeOwnerDataStatusMenu";
 	
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
+
+	op.Handle=hStatusMenuObject;
+	op.Setting=OPT_USERDEFINEDITEMS;
+	op.Value=(int)TRUE;
+	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
+
 	}
+
 
 
 	hStatusMainMenuHandles=(HANDLE*)mir_alloc(sizeof(statusModeList));
@@ -737,7 +745,17 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					tmi.position=pos++;
 					tmi.pszName=protoName;
 					tmi.hIcon=(HICON)CallProtoService(proto[i]->szName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
-					CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+				op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+				
+				{
+				char buf[256];
+				sprintf(buf,"RootProtocolIcon_%s",proto[i]->szName);
+				op.Value=(int)buf;
+				op.Setting=OPT_MENUITEMSETUNIQNAME;
+				CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
+				}
+
+
 		pos+=100000;
 
 			for(j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
@@ -771,6 +789,16 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					hStatusMenuHandles[i].protoindex=i;
 					hStatusMenuHandles[i].protostatus[j]=statusModeList[j];					
 					hStatusMenuHandles[i].menuhandle[j]=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+				
+				{
+				char buf[256];
+				op.Handle=hStatusMenuHandles[i].menuhandle[j];
+				sprintf(buf,"ProtocolIcon_%s_%s",proto[i]->szName,tmi.pszName);
+				op.Value=(int)buf;
+				op.Setting=OPT_MENUITEMSETUNIQNAME;
+				CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
+				}
+				
 				}
 			}
 		}
@@ -811,6 +839,15 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 									};								
 									hStatusMainMenuHandles[j]=(void **)(CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi));
+									{
+									char buf[256];
+									op.Handle=(int)hStatusMainMenuHandles[j];
+									sprintf(buf,"Root2ProtocolIcon_%s_%s",proto[i]->szName,tmi.pszName);
+									op.Value=(int)buf;
+									op.Setting=OPT_MENUITEMSETUNIQNAME;
+									CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
+									}									
+									
 									break;
 								};
 							};	
