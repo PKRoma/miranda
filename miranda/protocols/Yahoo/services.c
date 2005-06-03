@@ -802,22 +802,23 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					{
                         char str[ 255 + 1 ];
 						
+						/* Get String from dialog */
 						GetDlgItemText( hwndDlg, IDC_CUSTSTAT, str, sizeof( str ));
+						
+						/* Save it for later use */
 						YAHOO_SetString( NULL, YAHOO_CUSTSTATDB, str );
                         YAHOO_SetByte("BusyCustStat", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
-
-                        // Quick hack to reflect the status in miranda while using custome status
-                        // Is there a way to force the miranda status without broadcasting....
-                        // If only we had two new status for custom ones.....
-                        if (( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ))
-                              SetStatus(ID_STATUS_AWAY,0);
-                        else
-                              SetStatus(ID_STATUS_ONLINE,0);
-
-						if (yahooLoggedIn) {
-                              yahoo_set_status(YAHOO_CUSTOM_STATUS, str, ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
-						} else
-			             	  YAHOO_shownotification("ERROR", Translate("You need to be connected to set the custom message"), NIIF_ERROR);
+						
+						/* set for Idle/AA */
+						if (szStartMsg) free(szStartMsg);
+						szStartMsg = _strdup(str);
+						
+						/* notify Server about status change */
+						yahoo_set_status(YAHOO_CUSTOM_STATUS, str, ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
+						
+						/* change local/miranda status */
+                        yahoo_util_broadcaststatus(( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ) ? 
+													ID_STATUS_AWAY : ID_STATUS_ONLINE);
 					}
 				case IDCANCEL:
  					DestroyWindow( hwndDlg );
