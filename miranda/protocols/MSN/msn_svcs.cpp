@@ -511,7 +511,7 @@ static void __cdecl MsnGetAwayMsgThread( HANDLE hContact )
 		MSN_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )dbv.pszVal );
 		MSN_FreeVariant( &dbv );
 	}
-	else MSN_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )"" );
+	else MSN_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )0 );
 }
 
 static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)

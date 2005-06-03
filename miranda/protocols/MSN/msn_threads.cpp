@@ -32,7 +32,7 @@ int MSN_HandleCommands(ThreadData *info,char *cmdString);
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
 extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
 
-static HANDLE hKeepAliveThreadEvt = NULL;
+HANDLE hKeepAliveThreadEvt = NULL;
 
 //=======================================================================================
 //	Keep-alive thread for the main connection
@@ -40,24 +40,15 @@ static HANDLE hKeepAliveThreadEvt = NULL;
 
 extern int msnPingTimeout;
 
-void __cdecl msn_keepAliveThread(ThreadData *info)
+void __cdecl msn_keepAliveThread( void* )
 {
 	while( TRUE )
 	{
-		DWORD dwStartTicks = GetTickCount();
-
-		while ( GetTickCount() - dwStartTicks < DWORD( msnPingTimeout )*1000 ) {
-			switch( ::WaitForSingleObjectEx( hKeepAliveThreadEvt, 1000, TRUE )) {
-				case WAIT_IO_COMPLETION:
-					if ( !Miranda_Terminated()) {
-						Sleep( 100 );
-						break;
-					}
-
-				case WAIT_OBJECT_0:
-					::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
-					MSN_DebugLog( "Closing keep-alive thread" );
-					return;
+		while ( msnPingTimeout-- > 0 ) {
+			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
+				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
+				MSN_DebugLog( "Closing keep-alive thread" );
+				return;
 		}	}
 
 		msnPingTimeout = 50;
@@ -336,13 +327,8 @@ void __cdecl MSNServerThread( ThreadData* info )
 		MSN_EnableMenuItems( TRUE );
 
 		msnNsThread = info;
-
 		hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );
-
-		ThreadData* newThread = new ThreadData;
-		memcpy( newThread, info, sizeof( ThreadData ));
-		newThread->s = NULL;
-		newThread->startThread(( pThreadFunc )msn_keepAliveThread );
+		MSN_StartThread(( pThreadFunc )msn_keepAliveThread, NULL );
 	}
 
 	MSN_DebugLog( "Entering main recv loop" );
@@ -414,7 +400,8 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( tIsMainThread ) {
 		MSN_GoOffline();
 		msnNsThread = NULL;
-		SetEvent( hKeepAliveThreadEvt );
+		if ( hKeepAliveThreadEvt )
+			SetEvent( hKeepAliveThreadEvt );
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		if ( info->mJoinedContacts != NULL )
