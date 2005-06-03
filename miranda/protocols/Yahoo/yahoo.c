@@ -172,7 +172,7 @@ int yahoo_to_miranda_status(int yahooStatus, int away)
                         ret = ID_STATUS_AWAY;
                         break;
     case YAHOO_STATUS_CUSTOM:
-                        ret = (away ? ID_STATUS_OCCUPIED:ID_STATUS_ONLINE);
+                        ret = (away ? ID_STATUS_AWAY:ID_STATUS_ONLINE);
                         break;
     }
     return ret;
