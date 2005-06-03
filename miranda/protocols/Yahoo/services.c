@@ -134,7 +134,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
     //if (yahooStatus == status)
     //    return 0;
         
-    YAHOO_DebugLog("Set Status to %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0));
+    YAHOO_DebugLog("[SetStatus] New status %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0));
     if (status == ID_STATUS_OFFLINE) {
 		//stop_timer();
         
@@ -206,7 +206,15 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
     } else if (status == ID_STATUS_INVISIBLE){ /* other normal away statuses are set via setaway */
         yahoo_util_broadcaststatus(status);
 		yahoo_set_status(yahooStatus,NULL,(yahooStatus != ID_STATUS_ONLINE) ? 1 : 0);
-    }
+    } else {
+		/* clear out our message just in case, STUPID AA! */
+		if (szStartMsg) free(szStartMsg);
+			
+		szStartMsg = NULL;
+
+		/* now tell miranda that we are Online, don't tell Yahoo server yet though! */
+		yahoo_util_broadcaststatus(status);
+	}
     return 0;
 }
 
@@ -798,7 +806,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         // Is there a way to force the miranda status without broadcasting....
                         // If only we had two new status for custom ones.....
                         if (( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ))
-                              SetStatus(ID_STATUS_OCCUPIED,0);
+                              SetStatus(ID_STATUS_AWAY,0);
                         else
                               SetStatus(ID_STATUS_ONLINE,0);
 
