@@ -364,6 +364,7 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
      */
     
     if(!bBottom) {
+        FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
         if(bBody) 
             DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9 
         else { 

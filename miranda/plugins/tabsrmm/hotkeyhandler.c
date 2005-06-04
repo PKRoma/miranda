@@ -261,6 +261,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             GetCursorPos(&pt);
                             if(myGlobals.m_WinVerMajor < 5)
                                 break;
+                            if(myGlobals.m_TipOwner != 0)
+                                break;
                             if(wParam == 100)
                                 SetForegroundWindow(hwndDlg);
                             if(GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 0) {

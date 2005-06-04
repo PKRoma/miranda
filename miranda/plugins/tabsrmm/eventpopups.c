@@ -704,6 +704,9 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     if (PopupCount >= MAX_POPUPS)
         return 2;
 
+    if (!myGlobals.g_PopupAvail)
+        return 0;
+    
     //check if we should report this kind of event
     //get the prefered icon as well
     //CHANGE: iSeconds is -1 because I use my timer to hide popup
@@ -928,9 +931,10 @@ nounicode:
         CallService("OSD/Announce", (WPARAM)finalOSDString, 0);
         free(finalOSDString);
     }
-    else
+    else {
+        myGlobals.m_TipOwner = (HANDLE)wParam;
         Shell_NotifyIcon(NIM_MODIFY, (NOTIFYICONDATA *)&nim);
-    myGlobals.m_TipOwner = (HANDLE)wParam;
+    }
     if(dbei.pBlob)
         free(dbei.pBlob);
     return 0;

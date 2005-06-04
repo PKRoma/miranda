@@ -4391,7 +4391,8 @@ quote_from_last:
 
                 if(sendJobs[iFound].hContact[i] != sendJobs[iFound].hOwner) {
                     char szErrMsg[256];
-                    mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", dat->szNickname);
+                    char *szReceiver = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
+                    mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", szReceiver);
                     LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
                 }
 
