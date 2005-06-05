@@ -8,6 +8,7 @@ Version 0.4.0.4
 ===============
 [!] important bugfix: MSNP11 status messages may block the login
 process.
+[!] fix for the problems with the keep-alive thread
 [*] numerous minor changes and bugfixes.
 
 Version 0.4.0.3
