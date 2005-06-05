@@ -130,7 +130,7 @@ void JabberGcLogCreate( JABBER_LIST_ITEM* item )
 		NotifyEventHooks( hInitChat, (WPARAM)item, 0 );
 }
 
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick )
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick, int action )
 {
 	GCDEST gcd = { jabberProtoName, item->jid, GC_EVENT_PART };
 	GCEVENT gce = {0};
@@ -140,14 +140,15 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, cha
 	gce.bAddToLog = TRUE;
 	gce.time = time(0);
 
-	for ( int i=0; i < item->resourceCount; i++ ) {
-		JABBER_RESOURCE_STATUS& JS = item->resource[i];
-		if ( !strcmp( nick, JS.resourceName )) {
-			gcd.iType = GC_EVENT_JOIN;
-			gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
-			gce.bIsMe = JabberCompareJids( jid, jabberJID ) == 0;
-			break;
-	}	}
+	if ( action != -1 ) {
+		for ( int i=0; i < item->resourceCount; i++ ) {
+			JABBER_RESOURCE_STATUS& JS = item->resource[i];
+			if ( !strcmp( nick, JS.resourceName )) {
+				gcd.iType = ( action == 1 ) ? GC_EVENT_JOIN : GC_EVENT_ADDSTATUS;
+				gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
+				gce.bIsMe = JabberCompareJids( jid, jabberJID ) == 0;
+				break;
+	}	}	}
 
 	JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 }

@@ -448,7 +448,7 @@ void JabberGroupchatProcessInvite( char* roomJid, char* from, char* reason, char
 //---- jabber_chat.cpp ----------------------------------------------
 
 void JabberGcLogCreate( JABBER_LIST_ITEM* item );
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick );
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick, int action );
 void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 
 //---- jabber_form.c ------------------------------------------------

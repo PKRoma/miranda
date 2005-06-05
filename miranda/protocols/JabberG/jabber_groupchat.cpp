@@ -488,7 +488,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 			str = JabberTextDecode( statusNode->text );
 		else
 			str = NULL;
-		JabberListAddResource( LIST_CHATROOM, from, status, str );
+		int newRes = JabberListAddResource( LIST_CHATROOM, from, status, str );
 		if ( str ) free( str );
 
 		// Check for the case when changing nick
@@ -532,7 +532,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		}
 
 		// Update groupchat log window
-		JabberGcLogUpdateMemberStatus( item, userjid, nick );
+		JabberGcLogUpdateMemberStatus( item, userjid, nick, newRes );
 
 		// Update room status
 		//if ( item->status != ID_STATUS_ONLINE ) {
@@ -585,7 +585,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		}	}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
-		JabberGcLogUpdateMemberStatus( item, userjid, nick );
+		JabberGcLogUpdateMemberStatus( item, userjid, nick, -1 );
 	}
 	else if ( !strcmp( type, "error" )) {
 		errorNode = JabberXmlGetChild( node, "error" );

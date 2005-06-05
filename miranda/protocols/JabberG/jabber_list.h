@@ -160,8 +160,8 @@ int JabberListFindNext( JABBER_LIST list, int fromOffset );
 JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const char* jid );
 JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
 
-void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const char* statusMessage );
-void JabberListRemoveResource( JABBER_LIST list, const char* jid );
+int   JabberListAddResource( JABBER_LIST list, const char* jid, int status, const char* statusMessage );
+void  JabberListRemoveResource( JABBER_LIST list, const char* jid );
 char* JabberListGetBestResourceNamePtr( const char* jid );
 char* JabberListGetBestClientResourceNamePtr( const char* jid );
 

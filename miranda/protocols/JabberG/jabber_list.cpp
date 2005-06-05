@@ -215,7 +215,7 @@ void JabberListRemoveByIndex( int index )
 	LeaveCriticalSection( &csLists );
 }
 
-void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const char* statusMessage )
+int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const char* statusMessage )
 {
 	int i, j, resourceCount;
 	char* p, *q;
@@ -226,9 +226,11 @@ void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const
 	i = JabberListExist( list, jid );
 	if ( !i ) {
 		LeaveCriticalSection( &csLists );
-		return;
+		return 0;
 	}
 	i--;
+
+	int bIsNewResource = false;
 
 	if (( p=strchr( jid, '@' )) != NULL ) {
 		if (( q=strchr( p, '/' )) != NULL ) {
@@ -237,6 +239,7 @@ void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const
 				r = lists[i].resource;
 				if ( r == NULL ) {
 					r = ( JABBER_RESOURCE_STATUS * ) malloc( sizeof( JABBER_RESOURCE_STATUS ));
+					bIsNewResource = true;
 					lists[i].resourceCount = 1;
 					r->status = status;
 					r->resourceName = _strdup( resource );
@@ -254,17 +257,14 @@ void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const
 						if ( !strcmp( r[j].resourceName, resource )) {
 							// Already exist, update status and statusMessage
 							r[j].status = status;
-							if ( r[j].statusMessage ) free( r[j].statusMessage );
-							if ( statusMessage )
-								r[j].statusMessage = _strdup( statusMessage );
-							else
-								r[j].statusMessage = NULL;
+							replaceStr( r[j].statusMessage, statusMessage );
 							break;
-						}
-					}
+					}	}
+
 					if ( j >= resourceCount ) {
 						// Not already exist, add new resource
 						r = ( JABBER_RESOURCE_STATUS * ) realloc( r, ( resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
+						bIsNewResource = true;
 						r[resourceCount].status = status;
 						r[resourceCount].resourceName = _strdup( resource );
 						if ( statusMessage )
@@ -273,8 +273,8 @@ void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const
 							r[resourceCount].statusMessage = NULL;
 						r[resourceCount].software = r[resourceCount].version = r[resourceCount].system = NULL;
 						lists[i].resourceCount++;
-					}
-				}
+				}	}
+
 				lists[i].resource = r;
 #ifdef _DEBUG
 				PrintResource( i );
@@ -289,9 +289,10 @@ void JabberListAddResource( JABBER_LIST list, const char* jid, int status, const
 				lists[i].statusMessage = _strdup( statusMessage );
 			else
 				lists[i].statusMessage = NULL;
-		}
-	}
+	}	}
+
 	LeaveCriticalSection( &csLists );
+	return bIsNewResource;
 }
 
 void JabberListRemoveResource( JABBER_LIST list, const char* jid )
