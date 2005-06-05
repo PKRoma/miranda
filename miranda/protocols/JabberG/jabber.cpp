@@ -124,14 +124,6 @@ extern "C" __declspec( dllexport ) PLUGININFO *MirandaPluginInfo( DWORD mirandaV
 
 static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	if ( jabberChatDllPresent ) {
-		GCDEST gcd = { jabberProtoName, NULL, GC_EVENT_CONTROL };
-		GCEVENT gce = { 0 };
-		gce.cbSize = sizeof(GCEVENT);
-		gce.pDest = &gcd;
-		CallService( MS_GC_EVENT, WINDOW_TERMINATE, (LPARAM)&gce );
-	}
-
 	if ( hwndJabberAgents ) SendMessage( hwndJabberAgents, WM_CLOSE, 0, 0 );
 	if ( hwndJabberGroupchat ) SendMessage( hwndJabberGroupchat, WM_CLOSE, 0, 0 );
 	if ( hwndJabberJoinGroupchat ) SendMessage( hwndJabberJoinGroupchat, WM_CLOSE, 0, 0 );

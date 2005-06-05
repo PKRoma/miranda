@@ -83,6 +83,15 @@ static VOID CALLBACK JabberPasswordCreateDialogApcProc( DWORD param )
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_PASSWORD ), NULL, JabberPasswordDlgProc, ( LPARAM )param );
 }
 
+static VOID CALLBACK JabberOfflineChatWindows( DWORD )
+{
+	GCDEST gcd = { jabberProtoName, NULL, GC_EVENT_CONTROL };
+	GCEVENT gce = { 0 };
+	gce.cbSize = sizeof(GCEVENT);
+	gce.pDest = &gcd;
+	CallService( MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce );
+}
+
 void __cdecl JabberServerThread( struct ThreadData *info )
 {
 	DBVARIANT dbv;
@@ -396,13 +405,8 @@ LBL_Exit:
 				SendMessage( hwndJabberChangePassword, WM_COMMAND, MAKEWORD( IDCANCEL, 0 ), 0 );
 			}
 
-			if ( jabberChatDllPresent ) {
-				GCDEST gcd = { jabberProtoName, NULL, GC_EVENT_CONTROL };
-				GCEVENT gce = { 0 };
-				gce.cbSize = sizeof(GCEVENT);
-				gce.pDest = &gcd;
-				CallService( MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce );
-			}
+			if ( jabberChatDllPresent )
+				QueueUserAPC( JabberOfflineChatWindows, hMainThread, 0 );
 
 			JabberListRemoveList( LIST_CHATROOM );
 			if ( hwndJabberAgents )
