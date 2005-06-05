@@ -45,6 +45,8 @@ use groupchats, this plugin is essential.
 
 SRMM (Unicode) 1.0.4.3
 (http://miranda-im.org/download/details.php?action=viewfile&id=1136)
+tabSRMM (Unicode) 0.9.9.95
+(http://hell.at.eu.org/forums)
 ----------------------
 They both are true Unicode-aware message editors. Using them you can
 send/receive Unicode messages, so you won't be dependent on the

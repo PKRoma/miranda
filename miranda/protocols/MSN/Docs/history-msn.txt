@@ -4,6 +4,12 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.0.4
+===============
+[!] important bugfix: MSNP11 status messages may block the login
+process.
+[*] numerous minor changes and bugfixes.
+
 Version 0.4.0.3
 ===============
 [+] MSNP11 support added
