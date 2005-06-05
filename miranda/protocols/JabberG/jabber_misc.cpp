@@ -49,6 +49,21 @@ void JabberChatDllError()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// JabberCompareJids
+
+int JabberCompareJids( const char* jid1, const char* jid2 )
+{
+	if ( !lstrcmpi( jid1, jid2 ))
+		return 0;
+
+	// match only node@domain part
+	char szTempJid1[ JABBER_MAX_JID_LEN ], szTempJid2[ JABBER_MAX_JID_LEN ];
+	return lstrcmpi( 
+		JabberStripJid( jid1, szTempJid1, sizeof szTempJid1 ),
+		JabberStripJid( jid2, szTempJid2, sizeof szTempJid2 ));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // JabberContactListCreateGroup()
 
 static void JabberContactListCreateClistGroup( char* groupName )

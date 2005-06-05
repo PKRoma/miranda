@@ -499,6 +499,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		}
 
 		roomCreated = FALSE;
+		char* userjid = NULL;
 
 		// Check additional MUC info for this user
 		if (( xNode=JabberXmlGetChildWithGivenAttrValue( node, "x", "xmlns", "http://jabber.org/protocol/muc#user" )) != NULL ) {
@@ -517,7 +518,12 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 						if ( !strcmp( str, "moderator" )) item->resource[i].role = ROLE_MODERATOR;
 						else if ( !strcmp( str, "participant" )) item->resource[i].role = ROLE_PARTICIPANT;
 						else if ( !strcmp( str, "visitor" )) item->resource[i].role = ROLE_VISITOR;
-			}	}	}
+					}
+
+					userjid = JabberXmlGetAttrValue( itemNode, "jid" );
+					if ( userjid != NULL )
+						JabberStringDecode( userjid );
+			}	}
 
 			if (( statusNode=JabberXmlGetChild( xNode, "status" )) != NULL )
 				if (( statusCode=JabberXmlGetAttrValue( statusNode, "code" )) != NULL )
@@ -526,7 +532,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		}
 
 		// Update groupchat log window
-		JabberGcLogUpdateMemberStatus( item, nick );
+		JabberGcLogUpdateMemberStatus( item, userjid, nick );
 
 		// Update room status
 		//if ( item->status != ID_STATUS_ONLINE ) {
@@ -575,11 +581,11 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 					userjid = JabberXmlGetAttrValue( itemNode, "jid" );
 					if ( userjid != NULL )
-						JabberTextDecode( userjid );
+						JabberStringDecode( userjid );
 		}	}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
-		JabberGcLogUpdateMemberStatus( item, nick );
+		JabberGcLogUpdateMemberStatus( item, userjid, nick );
 	}
 	else if ( !strcmp( type, "error" )) {
 		errorNode = JabberXmlGetChild( node, "error" );

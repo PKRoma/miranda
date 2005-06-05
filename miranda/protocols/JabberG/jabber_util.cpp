@@ -114,16 +114,6 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
 
-   char* s = ( char* )alloca( strlen( jid )+1 ), *p, *q;
-	strcpy( s, jid );
-
-	// Strip resource name if any
-	if (( p=strchr( s, '@' )) != NULL )
-		if (( q=strchr( p, '/' )) != NULL )
-			*q = '\0';
-
-	int len = strlen( s );
-
 	HANDLE hContactMatched = NULL;
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
@@ -134,14 +124,7 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 				if ( JGetStaticString( "ChatRoomID", hContact, szJid, sizeof szJid ))
 					continue;
 
-			if ( !lstrcmpi( szJid, jid )) {	// exact match ( node@domain/resource )
-				hContactMatched = hContact;
-				break;
-			}
-
-			// match only node@domain part
-			char szTempJid[ JABBER_MAX_JID_LEN ];
-			if ( !lstrcmpi( JabberStripJid( szJid, szTempJid, sizeof szTempJid ), s )) {
+			if ( JabberCompareJids( jid, szJid ) == 0 ) {
 				hContactMatched = hContact;
 				break;
 		}	}

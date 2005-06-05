@@ -130,7 +130,7 @@ void JabberGcLogCreate( JABBER_LIST_ITEM* item )
 		NotifyEventHooks( hInitChat, (WPARAM)item, 0 );
 }
 
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick )
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick )
 {
 	GCDEST gcd = { jabberProtoName, item->jid, GC_EVENT_PART };
 	GCEVENT gce = {0};
@@ -145,6 +145,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick )
 		if ( !strcmp( nick, JS.resourceName )) {
 			gcd.iType = GC_EVENT_JOIN;
 			gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
+			gce.bIsMe = JabberCompareJids( jid, jabberJID ) == 0;
 			break;
 	}	}
 
@@ -451,11 +452,11 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 
 	case IDM_NICK:
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Change nickname in" ), gch->pDest->pszID );
-		if ( !JabberEnterString( szBuffer, sizeof szBuffer )) {
+		if ( JabberEnterString( szBuffer, sizeof szBuffer )) {
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gch->pDest->pszID );
 			if ( item != NULL ) {
 				char text[ 1024 ];
-				mir_snprintf( text, sizeof( text ), "%s/%s", UTF8(gch->pDest->pszID), UTF8( szBuffer ));
+				mir_snprintf( text, sizeof( text ), "%s/%s", gch->pDest->pszID, szBuffer );
 				JabberSendPresenceTo( jabberStatus, text, NULL );
 				if ( item->newNick != NULL )
 					free( item->newNick );

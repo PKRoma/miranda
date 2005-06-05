@@ -425,6 +425,7 @@ char*         __stdcall JabberStripJid( const char* jid, char* dest, size_t dest
 
 void   JabberAddContactToRoster( const char* jid, const char* nick, const char* grpName );
 void   JabberChatDllError( void );
+int    JabberCompareJids( const char* jid1, const char* jid2 );
 void   JabberContactListCreateGroup( char* groupName );
 void   JabberDBAddAuthRequest( char* jid, char* nick );
 HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripResource );
@@ -447,7 +448,7 @@ void JabberGroupchatProcessInvite( char* roomJid, char* from, char* reason, char
 //---- jabber_chat.cpp ----------------------------------------------
 
 void JabberGcLogCreate( JABBER_LIST_ITEM* item );
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick );
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick );
 void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 
 //---- jabber_form.c ------------------------------------------------

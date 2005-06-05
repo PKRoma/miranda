@@ -233,7 +233,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
 				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
 					JabberRegisterAgent( hwndDlg, item->jid );
-				}
+			}
 			return TRUE;
 		case IDC_JOIN:
 			lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
@@ -246,7 +246,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
 				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
 					JabberMenuHandleGroupchat( 0, ( LPARAM )item->jid );
-				}
+			}
 			return TRUE;
 		case IDC_AGENT_SERVER:
 			GetDlgItemText( hwndDlg, IDC_AGENT_SERVER, text, sizeof( text ));
