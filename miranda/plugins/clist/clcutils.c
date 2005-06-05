@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -637,7 +637,7 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
         LOGFONT lf;
         SIZE fontSize;
         HDC hdc = GetDC(hwnd);
-		HFONT hFont = NULL, hFont1;
+        HFONT hFont = GetCurrentObject(hdc, OBJ_FONT);
 
         for (i = 0; i <= FONTID_MAX; i++) {
             if (!dat->fontInfo[i].changed)
@@ -654,14 +654,11 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
             }
             dat->fontInfo[i].changed = 0;
             SelectObject(hdc, dat->fontInfo[i].hFont);
-			hFont1 = SelectObject(hdc, dat->fontInfo[i].hFont);
-			if (hFont==NULL)
-				hFont = hFont1;
             GetTextExtentPoint32(hdc, "x", 1, &fontSize);
             dat->fontInfo[i].fontHeight = fontSize.cy;
             //if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
         }
-		SelectObject(hdc,hFont);
+        SelectObject(hdc,hFont);
         ReleaseDC(hwnd, hdc);
     }
     dat->leftMargin = DBGetContactSettingByte(NULL, "CLC", "LeftMargin", CLCDEFAULT_LEFTMARGIN);
