@@ -412,6 +412,10 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             HandleMenuEntryFromhContact((int)myGlobals.m_TipOwner);
                             break;
                         }
+                        case NIN_BALLOONHIDE:
+                        case NIN_BALLOONTIMEOUT:
+                            myGlobals.m_TipOwner = 0;
+                            break;
                         default:
                             break;
                     }

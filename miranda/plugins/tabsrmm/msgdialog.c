@@ -2915,14 +2915,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     
                     if(bPanelPic) {
                         if(bminfo.bmHeight > bminfo.bmWidth) {
-                            dAspect = (double)(cy - 2) / (double)bminfo.bmHeight;
+                            dAspect = (double)(cy - 4) / (double)bminfo.bmHeight;
                             dNewWidth = (double)bminfo.bmWidth * dAspect;
-                            dNewHeight = cy - 2;
+                            dNewHeight = cy - 4;
                         }
                         else {
-                            dAspect = (double)(cx - 2) / (double)bminfo.bmWidth;
+                            dAspect = (double)(cx - 4) / (double)bminfo.bmWidth;
                             dNewHeight = (double)bminfo.bmHeight * dAspect;
-                            dNewWidth = cx - 2;
+                            dNewWidth = cx - 4;
                         }
                     }
                     else {
@@ -2953,10 +2953,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, bPanelPic ? dat->hContactPic : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic));
                         if(bPanelPic) {
                             RECT rcFrame = rcClient;
-                            rcFrame.left = rcFrame.right - (LONG)dNewWidth;
-                            rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
+                            rcFrame.left = rcFrame.right - (LONG)dNewWidth - 4;
+                            rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 4;
                             SetStretchBltMode(hdcDraw, HALFTONE);
-                            StretchBlt(hdcDraw, rcClient.right - (LONG)dNewWidth, 0, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                            StretchBlt(hdcDraw, rcClient.right - (LONG)dNewWidth - 2, 2, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                             DrawEdge(hdcDraw, &rcFrame, EDGE_ETCHED, BF_RECT | BF_SOFT);
                         }
                         else {
