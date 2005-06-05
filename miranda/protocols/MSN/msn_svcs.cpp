@@ -551,6 +551,9 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 
 	case PFLAG_UNIQUEIDSETTING:
 		return ( int )"e-mail";
+
+	case PFLAG_MAXLENOFMESSAGE:
+		return 1202;
 	}
 
 	return 0;
