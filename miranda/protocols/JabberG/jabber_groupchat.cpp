@@ -600,7 +600,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 {
 	struct ThreadData *info;
 	XmlNode *n, *xNode;
-	char* from, *type, *p;
+	char* from, *type, *p, *nick;
 	JABBER_LIST_ITEM *item;
 
 	if ( !node->name || strcmp( node->name, "message" )) return;
@@ -608,11 +608,6 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
 	if (( item = JabberListGetItemPtr( LIST_CHATROOM, from )) == NULL ) return;
 	
-	char* nick = strchr( from, '/' );
-	if ( nick == NULL || nick[1] == '\0' )
-		return;
-	nick++;
-
 	if (( type = JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 	if ( !strcmp( type, "error" ))
 		return;
@@ -623,12 +618,18 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 		if ( n->text == NULL || n->text[0] == '\0' )
 			return;
 
+		nick = item->nick;
 		gcd.iType = GC_EVENT_TOPIC;
 	}
 	else {
 		if (( n = JabberXmlGetChild( node, "body" )) == NULL ) return;
 		if ( n->text == NULL )
 			return;
+
+		nick = strchr( from, '/' );
+		if ( nick == NULL || nick[1] == '\0' )
+			return;
+		nick++;
 
 		gcd.iType = GC_EVENT_MESSAGE;
 	}

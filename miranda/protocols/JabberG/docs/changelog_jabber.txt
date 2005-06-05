@@ -11,6 +11,7 @@ Version 0.4.0.3
 [!] bug #0001268 fixed: 'change nickname' chat popup menu item doesn't work
 [!] bug #0001114 fixed: typinguser event never times out
 [!] bug #0000731 fixed: Miranda can't retreive vCard info from jabber.org server
+[!] bugfix: a chat topic isn't displayed when a user enters chat.
 
 Version 0.4.0.2
 ===============
