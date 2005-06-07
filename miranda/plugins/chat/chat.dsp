@@ -220,10 +220,6 @@ SOURCE=.\resource.h
 
 SOURCE=.\chat.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\m_chat.h
-# End Source File
 # End Group
 # Begin Group "Resource Files"
 
