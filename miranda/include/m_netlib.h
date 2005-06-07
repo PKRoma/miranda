@@ -649,8 +649,8 @@ typedef struct {
 //here's a handy piece of code to let you log using printf-style specifiers:
 //#include <stdarg.h> and <stdio.h> before including this header in order to
 //use it.
-#if defined va_start && (defined _STDIO_DEFINED || defined _STDIO_H_)
-static int Netlib_Logf(HANDLE hUser,const char *fmt,...)
+#if defined va_start && (defined _STDIO_DEFINED || defined _STDIO_H_) && (!defined NETLIB_NOLOGGING)
+static __inline int Netlib_Logf(HANDLE hUser,const char *fmt,...)
 {
 	va_list va;
 	char szText[1024];
