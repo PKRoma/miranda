@@ -107,7 +107,7 @@ LPCSTR MSN_GetGroupById( const char* pId )
 LPCSTR MSN_GetGroupByName( const char* pName )
 {
 	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
-		if ( stricmp( p->name, pName ) == 0 )
+		if ( strcmp( p->name, pName ) == 0 )
 			return p->id;
 
 	return NULL;
@@ -163,7 +163,7 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 void MSN_SetGroupName( const char* pId, const char* pNewName )
 {
 	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next ) {
-		if ( stricmp( p->id, pId ) == 0 ) {
+		if ( strcmp( p->id, pId ) == 0 ) {
 			free( p->name );
 			p->name = strdup( pNewName );
 			return;
@@ -175,7 +175,7 @@ void MSN_SetGroupName( const char* pId, const char* pNewName )
 void MSN_SetGroupNumber( const char* pId, int pNumber )
 {
 	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next ) {
-		if ( stricmp( p->id, pId ) == 0 ) {
+		if ( strcmp( p->id, pId ) == 0 ) {
 			p->number = pNumber;
 			return;
 }	}	}
