@@ -39,7 +39,8 @@ void yahoo_logoff_buddies()
 			if ( !lstrcmp( yahooProtocolName, ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
 				YAHOO_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
 				DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", 0);
-				
+				DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
+				DBDeleteContactSetting(hContact, yahooProtocolName, "YMsg" );
 			}
 
 			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
@@ -601,13 +602,15 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	if (status == ID_STATUS_OFFLINE)
 	   return;
 	
+	/* Check Yahoo Games Message */
 	if (! DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
 		gm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	}
 	
-	if ( DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YMsg", &dbv )) {
+	//if ( DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YMsg", &dbv )) {
+	if ( DBGetContactSetting(( HANDLE )hContact, "CList", "StatusMsg", &dbv )) {
 		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
 	} else {
 		if (lstrlen(dbv.pszVal) < 1)

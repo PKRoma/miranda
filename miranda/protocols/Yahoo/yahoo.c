@@ -715,9 +715,11 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 
 	if(msg) {
 		LOG(("%s custom message '%s'", who, msg));
-		YAHOO_SetString(hContact, "YMsg", msg);
+		//YAHOO_SetString(hContact, "YMsg", msg);
+		DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
 	} else {
-		YAHOO_SetString(hContact, "YMsg", "");
+		//YAHOO_SetString(hContact, "YMsg", "");
+		DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 	}
 
 	
@@ -878,6 +880,8 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				WriteFile(myhFile, pDib, sizeof( BITMAPINFOHEADER ), &c, NULL );
 				WriteFile(myhFile, pDib+1, pDib->biSizeImage, &c, NULL );
 				CloseHandle(myhFile);
+				
+				DBWriteContactSettingString(hContact, "ContactPhoto", "File", buf);
 			} else {
 				LOG(("Can not open file for writing: %s", buf));
 			}
@@ -966,6 +970,8 @@ void yahoo_reset_avatar(HANDLE 	hContact)
 	AI.hContact = hContact;
 	GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename);
 	DeleteFile(AI.filename);
+
+	DBDeleteContactSetting(AI.hContact, "ContactPhoto", "File");	
 	
 	AI.filename[0]='\0';
 	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
