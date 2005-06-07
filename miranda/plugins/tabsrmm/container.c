@@ -418,7 +418,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                  * retrieve the container window geometry information from the database.
                  */
 
-                if(pContainer->isCloned && pContainer->hContactFrom != 0) {
+                if(pContainer->isCloned && pContainer->hContactFrom != 0 && !(pContainer->dwFlags & CNT_GLOBALSIZE)) {
                     if (Utils_RestoreWindowPosition(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split")) {
                         if (Utils_RestoreWindowPositionNoMove(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split"))
                             if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
@@ -427,12 +427,19 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                 }
                 else {
-                    mir_snprintf(szCName, 40, "%s%d", szSetting, pContainer->iContainerIndex);
-                    if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, szCName)) {
-                        if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, szCName))
-                            if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
-                                if(Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split"))
-                                    SetWindowPos(hwndDlg, 0, 50, 50, 450, 300, SWP_NOZORDER | SWP_NOACTIVATE);
+                    if(pContainer->dwFlags & CNT_GLOBALSIZE) {
+                        if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
+                            if(Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split"))
+                                SetWindowPos(hwndDlg, 0, 50, 50, 450, 300, SWP_NOZORDER | SWP_NOACTIVATE);
+                    }
+                    else {
+                        mir_snprintf(szCName, 40, "%s%d", szSetting, pContainer->iContainerIndex);
+                        if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, szCName)) {
+                            if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, szCName))
+                                if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
+                                    if(Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split"))
+                                        SetWindowPos(hwndDlg, 0, 50, 50, 450, 300, SWP_NOZORDER | SWP_NOACTIVATE);
+                        }
                     }
                 }
                 break;
@@ -1334,7 +1341,6 @@ panel_found:
                     szTitleFormat = DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
                 }
             }
-			
 			if (dwLocalFlags == 0xffffffff) {
 				pContainer->dwFlags = pContainer->dwPrivateFlags = myGlobals.m_GlobalContainerFlags;
                 pContainer->dwPrivateFlags |= (CNT_GLOBALSETTINGS);
@@ -1502,7 +1508,6 @@ panel_found:
          * return all information via a RECENTINFO structure (tab indices, 
          * window handles and timestamps).
          */
-        
         case DM_QUERYRECENT:
         {
             int i;
@@ -1608,6 +1613,7 @@ panel_found:
         case WM_CTLCOLORSTATIC:
             if((HWND)lParam == GetDlgItem(hwndDlg, IDC_SIDEBAR))
                 return (BOOL)GetSysColorBrush(COLOR_3DFACE);
+            break;
         case WM_DRAWITEM:
         {
             int cx = GetSystemMetrics(SM_CXSMICON);
@@ -1703,7 +1709,7 @@ panel_found:
             /*
             * save geometry information to the database...
             */
-                if (GetWindowPlacement(hwndDlg, &wp)) {
+                if (!(pContainer->dwFlags & CNT_GLOBALSIZE) && GetWindowPlacement(hwndDlg, &wp) != 0) {
                     if(pContainer->isCloned && pContainer->hContactFrom != 0) {
                         HANDLE hContact;
                         int i;

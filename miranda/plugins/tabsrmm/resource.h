@@ -287,6 +287,7 @@
 #define IDC_UPDATEPREVIEW               1223
 #define IDC_MODIFY                      1223
 #define IDC_SIDEBARUP                   1223
+#define IDC_SAVESIZEASGLOBAL            1223
 #define IDC_CREATENEW                   1224
 #define IDC_RTLMODIFY                   1224
 #define IDC_SIDEBARDOWN                 1224
@@ -380,6 +381,7 @@
 #define IDC_AUTOCLOSETABSPIN            1309
 #define IDC_SENDONSHIFTENTER            1310
 #define IDC_CHECK4                      1311
+#define IDC_USEGLOBALSIZE               1311
 #define IDC_MICROLF                     1312
 #define IDC_EVENTAPI                    1313
 #define IDC_STATICICON                  1314

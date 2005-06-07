@@ -87,6 +87,24 @@ Version 0.9.9.95pre8 - 2005/05/25
           ALT-I: quick show / hide the info panel
           ALT-B: toggle BiDi option (switch between RTL and LTR)
           
+        * new option to format the title bar using variables. The format string for the title
+          bar is simple and may be up to 50 characters long. It can contain any text you want
+          and the following variables as placeholders:
+          
+          %n - Nickname
+          %p - protocol
+          %u - UIN
+          %s - Status mode
+          
+          You can set the default format string for all containers under Message Sessions->
+          Message Window->Containers.
+          
+          You can also set a private title bar format string in the container options dialog.
+          Just tick "use private title format" and set the format template string.
+          
+        * possible fix for a rare redrawing bug, resulting in black background on tabs (visual
+          styles, tabs at the top only).
+
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)

@@ -123,16 +123,31 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                     else
                         SendMessage(hwndDlg, DM_SC_INITDIALOG, myGlobals.m_GlobalContainerFlags, pContainer->dwTransparency);
                     break;
+                case IDC_SAVESIZEASGLOBAL:
+                {
+                    WINDOWPLACEMENT wp = {0};
+
+                    wp.length = sizeof(wp);
+                    if(GetWindowPlacement(pContainer->hwnd, &wp)) {
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+                    }
+                    break;
+                }
                 case IDC_USEPRIVATETITLE:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
                     break;
 				case IDOK:
 				case IDC_APPLY:
                     {
-						DWORD dwNewFlags = 0;
+						DWORD dwNewFlags = 0, dwNewTrans = 0;
                         
                         SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)&dwNewFlags);
                         dwNewFlags = (pContainer->dwFlags & CNT_SIDEBAR) | dwNewFlags;
+                        
+                        dwNewTrans = MAKELONG((WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_GETPOS, 0, 0), (WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_GETPOS, 0, 0));
                         
                         if(IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
                             pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags & ~CNT_GLOBALSETTINGS);
@@ -141,8 +156,13 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                             myGlobals.m_GlobalContainerFlags = dwNewFlags;
                             pContainer->dwPrivateFlags |= CNT_GLOBALSETTINGS;
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", dwNewFlags);
+                            if(IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY)) {
+                                myGlobals.m_GlobalContainerTrans = dwNewTrans;
+                                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containertrans", dwNewTrans);
+                            }
                         }
-						pContainer->dwTransparency = MAKELONG((WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_GETPOS, 0, 0), (WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_GETPOS, 0, 0));
+                        if(IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY))
+                            pContainer->dwTransparency = dwNewTrans;
                         
                         if(dwNewFlags & CNT_TITLE_PRIVATE) {
                             GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat, TITLE_FORMATLEN);
@@ -197,6 +217,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             CheckDlgButton(hwndDlg, IDC_VERTICALMAX, dwFlags & CNT_VERTICALMAX);
             CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, dwFlags & CNT_TITLE_PRIVATE);
             CheckDlgButton(hwndDlg, IDC_INFOPANEL, dwFlags & CNT_INFOPANEL);
+            CheckDlgButton(hwndDlg, IDC_USEGLOBALSIZE, dwFlags & CNT_GLOBALSIZE);
             
             if (LOBYTE(LOWORD(GetVersion())) >= 5 ) {
                 CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
@@ -237,6 +258,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                          (IsDlgButtonChecked(hwndDlg, IDC_HIDETOOLBAR) ? CNT_HIDETOOLBAR : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_UINSTATUSBAR) ? CNT_UINSTATUSBAR : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE) ? CNT_TITLE_PRIVATE : 0) |
+                         (IsDlgButtonChecked(hwndDlg, IDC_USEGLOBALSIZE) ? CNT_GLOBALSIZE : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_INFOPANEL) ? CNT_INFOPANEL : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_VERTICALMAX) ? CNT_VERTICALMAX : 0);
 

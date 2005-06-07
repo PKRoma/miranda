@@ -286,6 +286,11 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,152,105,11
     LTEXT           "Check if you don't want this container to use the global container options. Titlebar format and window position can always be private.",
                     IDC_STATIC,26,14,238,18
+    GROUPBOX        "Container size and position",IDC_STATIC,151,171,123,55
+    CONTROL         "Use global",IDC_USEGLOBALSIZE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,158,184,109,9
+    PUSHBUTTON      "Save current as global",IDC_SAVESIZEASGLOBAL,158,199,
+                    109,14
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
