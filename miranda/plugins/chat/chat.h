@@ -55,7 +55,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../include/m_clui.h"
 #include "../../include/m_popup.h"
 #include "resource.h"
-#include "m_chat.h"
+#include "../../include/m_chat.h"
 #include "m_smileyadd.h"
 #include "m_uninstaller.h"
 
