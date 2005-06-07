@@ -317,6 +317,12 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		return TRUE;
 	}
 	case WM_COMMAND:
+		if ( (LOWORD(wParam) == IDC_BGCOLOUR || LOWORD(wParam) == IDC_TEXTCOLOUR) && 
+			( HIWORD( wParam ) == CPN_COLOURCHANGED ) ) {
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		}
+
 		if ((HWND) lParam != GetFocus())
                 return 0;
 		switch( LOWORD( wParam )) {
