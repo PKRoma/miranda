@@ -709,7 +709,14 @@ int YahooRecvAwayMessage(WPARAM wParam,LPARAM lParam)
 //=======================================================
 int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 {
-	YAHOO_DebugLog("[YahooSetAwayMessage] Status: %d, Msg: %s",wParam, (char*) lParam);
+	char *c;
+	
+	c = (char *) lParam;
+	if (c != NULL) 
+		if (*c == '\0')
+			c = NULL;
+		
+	YAHOO_DebugLog("[YahooSetAwayMessage] Status: %d, Msg: %s",wParam, (char*) c);
 	
     if(!yahooLoggedIn){
 		if (yahooStatus == ID_STATUS_OFFLINE) {
@@ -718,8 +725,8 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 		} else {
 			if (szStartMsg) free(szStartMsg);
 			
-			if ((char*) lParam != NULL) 
-				szStartMsg = _strdup((char*) lParam);
+			if (c != NULL) 
+				szStartMsg = _strdup(c);
 			else
 				szStartMsg = NULL;
 			
@@ -733,12 +740,12 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 	if (szStartMsg) free(szStartMsg);
 	
 	/* now decide what we tell the server */
-	if (lParam != 0) {
-		szStartMsg = _strdup((char*) lParam);
+	if (c != 0) {
+		szStartMsg = _strdup(c);
 		if(wParam == ID_STATUS_ONLINE) {
-			yahoo_set_status(YAHOO_CUSTOM_STATUS, (char*)lParam, 0);
+			yahoo_set_status(YAHOO_CUSTOM_STATUS, c, 0);
 		} else if(wParam != ID_STATUS_INVISIBLE){ 
-			yahoo_set_status(YAHOO_CUSTOM_STATUS, (char*)lParam, 1);
+			yahoo_set_status(YAHOO_CUSTOM_STATUS, c, 1);
 		}
     } else {
 		yahoo_set_status(wParam, NULL, 0);
