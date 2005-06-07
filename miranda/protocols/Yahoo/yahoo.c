@@ -60,6 +60,8 @@ yahoo_local_account * ylad = NULL;
 
 int do_yahoo_debug = 0;
 extern int poll_loop;
+extern int gStartStatus;
+extern char *szStartMsg;
 
 void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
 void yahoo_reset_avatar(HANDLE 	hContact);
@@ -476,15 +478,15 @@ void yahoo_logout()
 	}
 
 	if (yahooLoggedIn) {
-		yahooLoggedIn = FALSE;
+		//yahooLoggedIn = FALSE; 
 		yahoo_logoff(ylad->id);
+	} else {
+		poll_loop = 0; /* we need to trigger server stop */
 	}
 	
 	//pthread_mutex_lock(&connectionHandleMutex);
     
-    if (ylad)
-		yahoo_close(ylad->id);
-		
+    
 	//pthread_mutex_unlock(&connectionHandleMutex);
 }
 
@@ -492,7 +494,7 @@ void ext_yahoo_cleanup(int id)
 {
 	LOG(("[ext_yahoo_cleanup] id: %d", id));
 	
-	if (!ylad)
+/*	if (!ylad)
 		return;
 	
 	if (ylad->id != id) {
@@ -501,7 +503,7 @@ void ext_yahoo_cleanup(int id)
 	
 	LOG(("[ext_yahoo_cleanup] id matched!!! Doing Cleanup!"));
 	FREE(ylad);
-	ylad = NULL;
+	ylad = NULL;*/
 }
 
 void yahoo_send_msg(const char *id, const char *msg, int utf8)
@@ -1633,12 +1635,10 @@ void ext_yahoo_got_cookies(int id)
 	
 	if (YAHOO_GetByte( "UseYAB", 1 )) {
 		LOG(("GET YAB [Before final check] "));
-		yahoo_get_yab(id);
+		if (yahooStatus != ID_STATUS_OFFLINE)
+			yahoo_get_yab(id);
 	}
 }
-
-extern int gStartStatus;
-extern char *szStartMsg;
 
 void ext_yahoo_got_ping(int id, const char *errormsg)
 {
@@ -1667,6 +1667,8 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 				} else
 				    yahoo_set_status(gStartStatus, NULL, (gStartStatus != ID_STATUS_ONLINE) ? 1 : 0);
 			}
+			
+			yahooLoggedIn=TRUE;
 		}
 	}
 }
@@ -1680,8 +1682,6 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	if(succ == YAHOO_LOGIN_OK) {
 		ylad->status = yahoo_current_status(id);
 		LOG(("logged in status-> %d", ylad->status));
-        yahooLoggedIn=TRUE;
-			
 		return;
 	} else if(succ == YAHOO_LOGIN_UNAME) {
 

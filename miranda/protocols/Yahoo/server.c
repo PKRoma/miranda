@@ -56,6 +56,8 @@ int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 
 }
 
+extern yahoo_local_account * ylad;
+
 void __cdecl yahoo_server_main(void *empty)
 {
 	int status = (int) empty;
@@ -162,8 +164,6 @@ void __cdecl yahoo_server_main(void *empty)
 
         }
 		YAHOO_DebugLog("Exited loop");
-    
-		yahooLoggedIn = FALSE; // Don't send any more packets, we don't got connection
     }
 	
 	for(; connections; connections = y_list_remove_link(connections, connections)) {
@@ -180,6 +180,14 @@ void __cdecl yahoo_server_main(void *empty)
 	yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
 	yahoo_logoff_buddies();	
 	
+	LOG(("[SERVER] Doing Cleanup!"));
+
+	if (ylad)
+		yahoo_close(ylad->id);
+
+	FREE(ylad);
+	ylad = NULL;
+
 //#ifdef DEBUGMODE
     YAHOO_DebugLog("Server thread ending");
 //#endif
