@@ -136,8 +136,6 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
         
     YAHOO_DebugLog("[SetStatus] New status %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0));
     if (status == ID_STATUS_OFFLINE) {
-		//stop_timer();
-        
 		yahoo_logout();
 		
         yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
