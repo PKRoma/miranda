@@ -227,7 +227,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			UnreadJunkEmails = atoi( p );
 	}
 	replaceStr( rru,      tFileInfo[ "Inbox-URL" ] );
-	replaceStr( passport, tFileInfo[ "Post-URL" ]  );
+//	replaceStr( passport, tFileInfo[ "Post-URL" ]  );
 
 	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) {
 		char mimeFrom[ 1024 ], mimeSubject[ 1024 ];
