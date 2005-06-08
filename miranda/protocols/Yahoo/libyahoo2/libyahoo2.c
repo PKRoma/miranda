@@ -353,6 +353,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_PICTURE,"YAHOO_SERVICE_PICTURE"},
 	{YAHOO_SERVICE_PICTURE_UPDATE,"YAHOO_SERVICE_PICTURE_UPDATE"},
 	{YAHOO_SERVICE_PICTURE_UPLOAD,"YAHOO_SERVICE_PICTURE_UPLOAD"},
+	{YAHOO_SERVICE_YAHOO6_STATUS_INVIS, "YAHOO_SERVICE_YAHOO6_STATUS_INVIS"},
 	{YAHOO_SERVICE_YAHOO6_STATUS_UPDATE,"YAHOO_SERVICE_YAHOO6_STATUS_UPDATE"},
 	{YAHOO_SERVICE_AVATAR_UPDATE,"YAHOO_SERVICE_AVATAR_UPDATE"},
 	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
@@ -4120,7 +4121,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 	
-	if (cs == YAHOO_STATUS_INVISIBLE){
+	if (cs == YAHOO_STATUS_INVISIBLE && state != YAHOO_STATUS_INVISIBLE){
 		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_INVIS, YAHOO_STATUS_AVAILABLE, yd->session_id);
 		yahoo_packet_hash(pkt, 13, "1");
 		yd->current_status = state;
