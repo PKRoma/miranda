@@ -1709,36 +1709,37 @@ panel_found:
             /*
             * save geometry information to the database...
             */
-                if (!(pContainer->dwFlags & CNT_GLOBALSIZE) && GetWindowPlacement(hwndDlg, &wp) != 0) {
-                    if(pContainer->isCloned && pContainer->hContactFrom != 0) {
-                        HANDLE hContact;
-                        int i;
-                        TCITEM item = {0};
-                        
-                        item.mask = TCIF_PARAM;
-                        for(i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
-                            if(TabCtrl_GetItem(hwndTab, i, &item)) {
-                                SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                                DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
-                                DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
-                                DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-                                DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+                if(!(pContainer->dwFlags & CNT_GLOBALSIZE)) {
+                    if (GetWindowPlacement(hwndDlg, &wp) != 0) {
+                        if(pContainer->isCloned && pContainer->hContactFrom != 0) {
+                            HANDLE hContact;
+                            int i;
+                            TCITEM item = {0};
+
+                            item.mask = TCIF_PARAM;
+                            for(i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
+                                if(TabCtrl_GetItem(hwndTab, i, &item)) {
+                                    SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                                    DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
+                                    DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
+                                    DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+                                    DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+                                }
                             }
                         }
-                    }
-                    else {
-                        _snprintf(szCName, 40, "%s%dx", szSetting, pContainer->iContainerIndex);
-                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.left);
-                        _snprintf(szCName, 40, "%s%dy", szSetting, pContainer->iContainerIndex);
-                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.top);
-                        _snprintf(szCName, 40, "%s%dwidth", szSetting, pContainer->iContainerIndex);
-                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-                        _snprintf(szCName, 40, "%s%dheight", szSetting, pContainer->iContainerIndex);
-                        DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
-                    }
-                } else
-                    MessageBoxA(0, "GetWindowPlacement() failed", "Error", MB_OK);
-
+                        else {
+                            _snprintf(szCName, 40, "%s%dx", szSetting, pContainer->iContainerIndex);
+                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.left);
+                            _snprintf(szCName, 40, "%s%dy", szSetting, pContainer->iContainerIndex);
+                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.top);
+                            _snprintf(szCName, 40, "%s%dwidth", szSetting, pContainer->iContainerIndex);
+                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+                            _snprintf(szCName, 40, "%s%dheight", szSetting, pContainer->iContainerIndex);
+                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+                        }
+                    } else
+                        MessageBoxA(0, "GetWindowPlacement() failed", "Error", MB_OK);
+                }
                 // clear temp flags which should NEVER be saved...
 
                 if(pContainer->isCloned && pContainer->hContactFrom != 0) {
