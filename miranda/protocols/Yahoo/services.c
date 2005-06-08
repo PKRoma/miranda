@@ -228,6 +228,9 @@ void yahoo_util_broadcaststatus(int s)
         
     yahooStatus = s;
 
+	YAHOO_DebugLog("[yahoo_util_broadcaststatus] Old Status: %s (%d), New Status: %s (%d)",
+			(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0), oldStatus,
+			(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, yahooStatus, 0), yahooStatus);	
     ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, (LPARAM)yahooStatus);
 }
 
@@ -719,7 +722,7 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 		if (*c == '\0')
 			c = NULL;
 		
-	YAHOO_DebugLog("[YahooSetAwayMessage] Status: %d, Msg: %s",wParam, (char*) c);
+	YAHOO_DebugLog("[YahooSetAwayMessage] Status: %s, Msg: %s",(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wParam, 0), (char*) c);
 	
     if(!yahooLoggedIn){
 		if (yahooStatus == ID_STATUS_OFFLINE) {
@@ -1176,7 +1179,10 @@ int YahooIdleEvent(WPARAM wParam, LPARAM lParam)
 
 	if (yahooLoggedIn) {
 		/* set me to idle or back */
-		yahoo_set_status(yahooStatus,szStartMsg,(bIdle) ? 2 : (yahooStatus == ID_STATUS_ONLINE) ? 0 : 1);
+		if (yahooStatus == ID_STATUS_INVISIBLE)
+			YAHOO_DebugLog("[YAHOO_IDLE_EVENT] WARNING: INVISIBLE! Don't change my status!");
+		else
+			yahoo_set_status(yahooStatus,szStartMsg,(bIdle) ? 2 : (yahooStatus == ID_STATUS_ONLINE) ? 0 : 1);
 	} else {
 		YAHOO_DebugLog("[YAHOO_IDLE_EVENT] WARNING: NOT LOGGED IN???");
 	}
