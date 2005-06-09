@@ -418,7 +418,7 @@ static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 
 int YahooSendAuthRequest(WPARAM wParam,LPARAM lParam)
 {
-	YAHOO_DebugLog("YahooSendAuthRequest");
+	YAHOO_DebugLog("[YahooSendAuthRequest]");
 	
 	if (lParam && yahooLoggedIn){
 		
@@ -541,6 +541,7 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 		blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), 
 		last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)
 	*/
+	//hContact = (HANDLE) ( dbei.pBlob + sizeof( DWORD ));
 	
 	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
 	char* firstName = nick + lstrlen(nick) + 1;
@@ -553,7 +554,7 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 	YAHOO_DebugLog("reason:%s ", reason);
 	
 	/* we need to send out a packet to request an add */
-	YAHOO_add_buddy(nick, "miranda", reason);
+	//YAHOO_add_buddy(nick, "miranda", reason);
 	//return 0;
 	hContact = getbuddyH(nick);
 	if (hContact != NULL) {
@@ -606,7 +607,7 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 	char* reason;
 	HANDLE hContact;
 	
-    YAHOO_DebugLog("YahooAuthDeny");
+    YAHOO_DebugLog("[YahooAuthDeny]");
 	if ( !yahooLoggedIn )
 		return 1;
 
@@ -614,7 +615,7 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 	dbei.cbSize = sizeof( dbei );
 
 	if (( dbei.cbBlob = YAHOO_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 ){
-	    YAHOO_DebugLog("YahooAuthDeny - Can't get blob size");
+	    YAHOO_DebugLog("[YahooAuthDeny] ERROR: Can't get blob size");
 		return 1;
 	}
 
@@ -625,7 +626,7 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 	}
 
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST ){
-	    YAHOO_DebugLog("YahooAuthDeny - not Authorizarion event");
+	    YAHOO_DebugLog("YahooAuthDeny - not Authorization event");
 		return 1;
 	}
 
@@ -654,7 +655,7 @@ int YahooRecvAuth(WPARAM wParam,LPARAM lParam)
 	CCSDATA *ccs=(CCSDATA*)lParam;
 	PROTORECVEVENT *pre=(PROTORECVEVENT*)ccs->lParam;
 
-    YAHOO_DebugLog("YahooRecvAuth");
+    YAHOO_DebugLog("[YahooRecvAuth] ");
 	DBDeleteContactSetting(ccs->hContact,"CList","Hidden");
 
 	ZeroMemory(&dbei,sizeof(dbei));
