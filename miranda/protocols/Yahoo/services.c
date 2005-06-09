@@ -487,18 +487,94 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
     return (int)add_buddy(psr->nick, psr->nick, wParam);
 }
 
-
-int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
+int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 {
     DBEVENTINFO dbei;
     char* nick;
+	HANDLE hContact;
     
-    YAHOO_DebugLog("YahooAuthAllow");
+    YAHOO_DebugLog("[YahooAddToListByEvent]");
 	if ( !yahooLoggedIn )
-		return 1;
+		return 0;
 
 	
 	memset( &dbei, 0, sizeof( dbei ));
+	dbei.cbSize = sizeof( dbei );
+
+	if (( dbei.cbBlob = YAHOO_CallService( MS_DB_EVENT_GETBLOBSIZE, lParam, 0 )) == -1 ) {
+		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Can't get blob size.");
+		return 0;
+	}
+
+	YAHOO_DebugLog("[YahooAddToListByEvent] Got blob size: %lu", dbei.cbBlob);
+	dbei.pBlob = ( PBYTE )_alloca( dbei.cbBlob );
+	if ( YAHOO_CallService( MS_DB_EVENT_GET, lParam, ( LPARAM )&dbei )) {
+		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Can't get event.");
+		return 0;
+	}
+
+	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST ) {
+		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Not authorization.");
+		return 0;
+	}
+
+	if ( strcmp( dbei.szModule, yahooProtocolName )) {
+		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Not Yahoo protocol.");
+		return 0;
+	}
+
+	//Adds a contact to the contact list given an auth, added or contacts event
+//wParam=MAKEWPARAM(flags,iContact)
+//lParam=(LPARAM)(HANDLE)hDbEvent
+//Returns a HANDLE to the new contact, or NULL on failure
+//hDbEvent must be either EVENTTYPE_AUTHREQ or EVENTTYPE_ADDED
+//flags are the same as for PS_ADDTOLIST.
+//iContact is only used for contacts events. It is the 0-based index of the
+//contact in the event to add. There is no way to add two or more contacts at
+//once, you should just do lots of calls.
+
+	/* TYPE ADDED
+		blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), 
+		last(ASCIIZ), email(ASCIIZ) 
+	
+	   TYPE AUTH REQ
+		blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), 
+		last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)
+	*/
+	
+	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
+	char* firstName = nick + lstrlen(nick) + 1;
+	char* lastName = firstName + lstrlen(firstName) + 1;
+	char* email = lastName + lstrlen(lastName) + 1;
+	char* reason = email + lstrlen(email) + 1;
+		
+    YAHOO_DebugLog("buddy:%s first:%s last:%s e-mail:%s", nick,
+					firstName, lastName, email);
+	YAHOO_DebugLog("reason:%s ", reason);
+	
+	/* we need to send out a packet to request an add */
+	YAHOO_add_buddy(nick, "miranda", reason);
+	//return 0;
+	hContact = getbuddyH(nick);
+	if (hContact != NULL) {
+		YAHOO_DebugLog("Temp Buddy found at: %p ", hContact);
+	}
+	return (int)hContact;
+}
+
+int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
+{
+    //DBEVENTINFO dbei;
+    //char* nick;
+    
+    YAHOO_DebugLog("[YahooAuthAllow]");
+	if ( !yahooLoggedIn ) {
+		YAHOO_DebugLog("[YahooAuthAllow] Not Logged In!");
+		return 1;
+	}
+
+	
+	/*memset( &dbei, 0, sizeof( dbei ));
 	dbei.cbSize = sizeof( dbei );
 
 	if (( dbei.cbBlob = YAHOO_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
@@ -514,10 +590,11 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 	if ( strcmp( dbei.szModule, yahooProtocolName ))
 		return 1;
 
-	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
+	//nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
 
-    YAHOO_DebugLog("Adding buddy:%s ", nick);
-	YAHOO_add_buddy(nick, "miranda", NULL);
+    //YAHOO_DebugLog("Adding buddy:%s ", nick);
+	//YAHOO_add_buddy(nick, "miranda", NULL);
+	*/
 	return 0;
 }
 
@@ -1374,6 +1451,7 @@ int LoadYahooServices( void )
 	
 	YAHOO_CreateProtoServiceFunction( PS_AUTHALLOW,	YahooAuthAllow );
 	YAHOO_CreateProtoServiceFunction( PS_AUTHDENY,	YahooAuthDeny );
+	YAHOO_CreateProtoServiceFunction( PS_ADDTOLISTBYEVENT,	YahooAddToListByEvent );
 	
 	YAHOO_CreateProtoServiceFunction( PS_FILERESUME, YahooFileResume );
 	
