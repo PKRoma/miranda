@@ -477,7 +477,7 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
 //free() the return value
 static char *CreateRTFHeader(struct MessageWindowData *dat)
 {
-    char *buffer;
+    char *buffer, szTemp[30];
     int bufferAlloced, bufferEnd;
     int i;
     LOGFONTA lf;
@@ -523,16 +523,13 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 
     // custom template colors...
 
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc1", RGB(224,224,224));
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc2", RGB(224,224,224));
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc3", RGB(224,224,224));
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc4", RGB(224,224,224));
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", RGB(224,224,224));
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    for(i = 1; i <= 5; i++) {
+        _snprintf(szTemp, 10, "cc%d", i);
+        colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, RGB(224,224,224));
+        if(colour == 0)
+            colour = RGB(1,1,1);
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+    }
 
     // bbcode colors...
 
