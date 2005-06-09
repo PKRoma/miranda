@@ -108,6 +108,11 @@ Version 0.9.9.95pre8 - 2005/05/25
         * prevent custom template background colors from taking the rgb value 0,0,0 to avoid
           a problem with icon transparency and "pure" black bg color. A pure black bg color
           is converted to rgb(1,1,1).
+          
+        + added support for the FontService plugin to customize message window fonts and back-
+          grounds. If font service plugin is enabled, tabSRMMs own font+color configuration page
+          is disabled. However, tabSRMM still maintains its own copy of font + color settings in
+          the DB so that you can switch between using font service and the old dialog easily.
 
 Version 0.9.9.95pre7 - 2005/05/23
 

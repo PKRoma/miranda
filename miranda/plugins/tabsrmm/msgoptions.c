@@ -27,6 +27,7 @@ $Id$
 #pragma hdrstop
 #include "msgs.h"
 #include "m_ieview.h"
+#include "m_fontservice.h"
 #include "msgdlgutils.h"
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
@@ -132,6 +133,129 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
         }
     }
 }
+
+
+static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
+        ">> Outgoing messages", 
+        ">> Outgoing misc events",
+        "<< Incoming messages",
+        "<< Incoming misc events",
+        ">> Outgoing name",
+        ">> Outgoing timestamp",
+        "<< Incoming name",
+        "<< Incoming timestamp",
+        ">> Outgoing messages (old)",
+        ">> Outgoing misc events (old)",
+        "<< Incoming messages (old)",
+        "<< Incoming misc events (old)",
+        ">> Outgoing name (old)",
+        ">> Outgoing time (old)",
+        "<< Incoming name (old)",
+        "<< Incoming time (old)",
+        "* Message Input Area",
+        "* Status changes",
+        "* Dividers",
+        "* Error and warning Messages",
+        "* Symbols (incoming)",
+        "* Symbols (outgoing)"};
+
+/*
+ * Font Service support
+ */
+
+void FS_RegisterFonts()
+{
+    FontID fid = {0};
+    int i;
+    char szTemp[50];
+    HDC hdc;
+    DBVARIANT dbv;
+    ColourID cid = {0};
+
+    cid.cbSize = sizeof(cid);
+    strncpy(cid.group, "TabSRMM", sizeof(cid.group));
+    strncpy(cid.name, "Background", sizeof(cid.name));
+    cid.defcolour = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+    cid.order = 0;
+    CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+
+    cid.order++;
+    strncpy(cid.name, "Incoming events", sizeof(cid.name));
+    cid.defcolour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", RGB(224, 224, 224));
+    CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+    
+    cid.order++;
+    strncpy(cid.name, "Outgoing events", sizeof(cid.name));
+    cid.defcolour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(224, 224, 224));
+    CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+
+    cid.order++;
+    strncpy(cid.name, "Input area background", sizeof(cid.name));
+    cid.defcolour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", RGB(224, 224, 224));
+    CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+
+    cid.order++;
+    strncpy(cid.name, "Horizontal grid lines", sizeof(cid.name));
+    cid.defcolour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", RGB(224, 224, 224));
+    CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+    
+    fid.cbSize = sizeof(fid);
+    strncpy(fid.prefix, "tabsrmm", sizeof(fid.prefix));
+    strncpy(fid.group, "TabSRMM", sizeof(fid.group));
+    fid.flags = FIDF_DEFAULTVALID;
+    for(i = 0; i < MSGDLGFONTCOUNT; i++) {
+        fid.order = i;
+        _snprintf(szTemp, sizeof(szTemp), "Font%dCol", i);
+        fid.deffontsettings.colour = (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetSysColor(COLOR_WINDOWTEXT));
+        strncpy(fid.name, szFontIdDescr[i], sizeof(fid.name));
+        
+        hdc = GetDC(NULL);
+        _snprintf(szTemp, sizeof(szTemp), "Font%dSize", i);
+        if(i == H_MSGFONTID_DIVIDERS)
+            fid.deffontsettings.size = 5;
+        else {
+            fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, fontOptionsList[0].defSize);
+            fid.deffontsettings.size = -MulDiv(fid.deffontsettings.size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+        }
+        ReleaseDC(NULL,hdc);				
+
+        _snprintf(szTemp, sizeof(szTemp), "Font%dSty", i);
+        fid.deffontsettings.style = DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, fontOptionsList[0].defStyle);
+        _snprintf(szTemp, sizeof(szTemp), "Font%dSet", i);
+        fid.deffontsettings.charset = DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, fontOptionsList[0].defCharset);
+        _snprintf(szTemp, sizeof(szTemp), "Font%d", i);
+        if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) {
+            lstrcpynA(fid.deffontsettings.szFace, "Arial", LF_FACESIZE);
+            fid.deffontsettings.charset = 0;
+        }
+        else {
+            if (DBGetContactSetting(NULL, SRMSGMOD_T, szTemp, &dbv))
+                lstrcpynA(fid.deffontsettings.szFace, fontOptionsList[0].szDefFace, LF_FACESIZE);
+            else {
+                lstrcpynA(fid.deffontsettings.szFace, dbv.pszVal, LF_FACESIZE);
+                DBFreeVariant(&dbv);
+            }
+        }
+        CallService(MS_FONT_REGISTER, (WPARAM)&fid, 0);
+    }
+}
+
+void FS_LoadFromFontService()
+{
+    
+}
+
+/*
+ * hook handler, called when user changes font and/or color settings using the FS option page
+ * action: reload fonts from FS, save them to our own settings, re-cache rtf font formatting string
+ *         force message window(s) to rebuild the log(s)
+ */
+
+int FS_ReloadFonts(WPARAM wParam, LPARAM lParam)
+{
+    return 0;
+}
+
 
 static struct LISTOPTIONSGROUP defaultGroups[] = {
     0, "Message window behaviour",
@@ -361,6 +485,8 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, "Support Math Module plugin", IDC_MATHMODSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
     0, "Log status changes", IDC_LOGSTATUS, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
     0, "Automatically copy selected text", IDC_AUTOSELECTCOPY, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
+    0, "Use multiple background colors", IDC_AUTOSELECTCOPY, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
+    0, "Also draw vertical grid lines", IDC_AUTOSELECTCOPY, LOI_TYPE_SETTING, (UINT_PTR)"wantvgrid", 0,
     0, NULL, 0, 0, 0, 0
 };
 
@@ -446,6 +572,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
             SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
             SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_INDENT, 0), 0);
+
+            SetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), FALSE);
+            SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETRANGE, 0, MAKELONG(5, 0));
+            SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
             return TRUE;
         }
         case WM_COMMAND:
@@ -514,7 +644,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         case PSN_APPLY: {
                             int i = 0;
                             TVITEMA item = {0};
-                            dwFlags &= ~(MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT | MWF_LOG_SHOWICONS | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | MWF_LOG_GROUPMODE);
+                            dwFlags &= ~(MWF_LOG_INDIVIDUALBKG | MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT | MWF_LOG_SHOWICONS | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | MWF_LOG_GROUPMODE);
                             
                             if (IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT))
                                 DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_COUNT);
@@ -545,6 +675,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                 i++;
                             }
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
                             ReloadGlobals();
 #ifdef __MATHMOD_SUPPORT    		
                             myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
@@ -988,30 +1119,6 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 #define DBFONTF_ITALIC     2
 #define DBFONTF_UNDERLINE  4
 
-static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
-        ">> Outgoing messages", 
-        ">> Outgoing misc events",
-        "<< Incoming messages",
-        "<< Incoming misc events",
-        ">> Outgoing name",
-        ">> Outgoing timestamp",
-        "<< Incoming name",
-        "<< Incoming timestamp",
-        ">> Outgoing messages (old)",
-        ">> Outgoing misc events (old)",
-        "<< Incoming messages (old)",
-        "<< Incoming misc events (old)",
-        ">> Outgoing name (old)",
-        ">> Outgoing time (old)",
-        "<< Incoming name (old)",
-        "<< Incoming time (old)",
-        "* Message Input Area",
-        "* Status changes",
-        "* Dividers",
-        "* Error and warning Messages",
-        "* Symbols (incoming)",
-        "* Symbols (outgoing)"};
-
 #define FONTS_TO_CONFIG MSGDLGFONTCOUNT
 
 #define SAMEASF_FACE   1
@@ -1184,7 +1291,6 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HFONT hFontSample;
-    BOOL translated;
     
 	switch (msg)
 	{
@@ -1200,7 +1306,6 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 				COLORREF colour;
 				WORD sameAs;
 				char str[32];
-                DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
 				for(i=0;i<FONTS_TO_CONFIG;i++) {
 					fontId=fontListOrder[i];
@@ -1239,16 +1344,6 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                 SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
-                CheckDlgButton(hwndDlg, IDC_USEINDIVIDUALBKG, dwFlags & MWF_LOG_INDIVIDUALBKG);
-                CheckDlgButton(hwndDlg, IDC_WANTVERTICALGRID, DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0));
-                
-                EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), dwFlags & MWF_LOG_INDIVIDUALBKG);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), dwFlags & MWF_LOG_INDIVIDUALBKG);
-
-                SetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), FALSE);
-                SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETRANGE, 0, MAKELONG(5, 0));
-                SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
-                
                 
 				SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_SETCURSEL,0,0);
 				for(i=0;i<sizeof(fontSizes)/sizeof(fontSizes[0]);i++)
@@ -1506,7 +1601,6 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 						case PSN_APPLY:
 							{	int i;
 								char str[20];
-                                DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
 								for(i=0;i<FONTS_TO_CONFIG;i++) {
 									sprintf(str,"Font%d",i);
@@ -1536,15 +1630,11 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                         DBWriteContactSettingWord(NULL,"SRMsg",str,(WORD)((fontSettings[i].sameAsFlags<<8)|fontSettings[i].sameAs));
                                     }
 								}
-                                dwFlags = IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG) ? dwFlags | MWF_LOG_INDIVIDUALBKG : dwFlags & ~MWF_LOG_INDIVIDUALBKG;
-                                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
                                 DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inbg", SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "outbg", SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_GETCOLOUR, 0, 0));
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", IsDlgButtonChecked(hwndDlg, IDC_WANTVERTICALGRID));
-                                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
                                 
                                 ReloadGlobals();
                                 UncacheMsgLogIcons();
@@ -1590,11 +1680,15 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
     
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGWINDOWFONTS);
-    odp.pszTitle = Translate("Fonts and colors");
-    odp.pfnDlgProc = DlgProcMsgWindowFonts;
-    odp.nIDBottomSimpleControl = 0;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+    if(!ServiceExists(MS_FONT_REGISTER)) {
+        odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGWINDOWFONTS);
+        odp.pszTitle = Translate("Fonts and colors");
+        odp.pfnDlgProc = DlgProcMsgWindowFonts;
+        odp.nIDBottomSimpleControl = 0;
+        CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+    }
+    else
+        FS_RegisterFonts();
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_POPUP_OPT);
     odp.pszTitle = Translate("Event notifications");
@@ -1707,14 +1801,6 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)0, (LPARAM)&tci);
          MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
 
-         /*
-         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGWINDOWFONTS),hwnd, DlgProcMsgWindowFonts);
-         tci.pszText = Translate("Fonts and Colors");
-         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)1, (LPARAM)&tci);
-         MoveWindow((HWND)tci.lParam,6,27,rcClient.right-8,rcClient.bottom-29,1);
-         ShowWindow((HWND)tci.lParam, SW_HIDE);
-         */
-         
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_TABBEDMSG),hwnd,DlgProcTabbedOptions);
          tci.pszText = Translate("Tabs and layout");
          SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)2, (LPARAM)&tci);
@@ -1834,3 +1920,4 @@ void ReloadGlobals()
      myGlobals.m_ExtraRedraws = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggromode", 0);
      myGlobals.m_panelHeight = (DWORD)DBGetContactSettingDword(NULL, SRMSGMOD_T, "panelheight", 51);
 }
+

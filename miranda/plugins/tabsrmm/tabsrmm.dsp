@@ -56,8 +56,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo 
 # ADD BSC32 /nologo 
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\srmm.dll" /incremental:no /debug /pdb:".\Debug\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug/srmm.lib" /machine:ix86 
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\srmm.dll" /incremental:no /debug /pdb:".\Debug\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug/srmm.lib" /machine:ix86 
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\tabsrmm.dll" /incremental:no /debug /pdb:".\Debug\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug/srmm.lib" /machine:ix86 
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\tabsrmm.dll" /incremental:no /debug /pdb:".\Debug\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug/srmm.lib" /machine:ix86 
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
@@ -131,8 +131,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo 
 # ADD BSC32 /nologo 
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\srmm.dll" /incremental:no /debug /pdb:".\Debug_Unicode\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug_Unicode/srmm.lib" /machine:ix86 
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\srmm.dll" /incremental:no /debug /pdb:".\Debug_Unicode\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug_Unicode/srmm.lib" /machine:ix86 
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\tabsrmm_unicode.dll" /incremental:no /debug /pdb:".\Debug_Unicode\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug_Unicode/srmm.lib" /machine:ix86 
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /out:"..\..\Bin\Debug\Plugins\tabsrmm_unicode.dll" /incremental:no /debug /pdb:".\Debug_Unicode\srmm.pdb" /pdbtype:sept /subsystem:windows /implib:".\Debug_Unicode/srmm.lib" /machine:ix86 
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release - MATHMOD"
 
@@ -413,6 +413,41 @@ SOURCE=srmm.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\tabctrl.c
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+# PROP Intermediate_Dir "$(IntDir)/$(InputName)1.obj"
+# ADD CPP /nologo /Fo"$(IntDir)/$(InputName)1.obj" /GZ /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# PROP Intermediate_Dir "$(IntDir)/$(InputName)1.obj"
+# ADD CPP /nologo /Fo"$(IntDir)/$(InputName)1.obj" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# PROP Intermediate_Dir "$(IntDir)/$(InputName)1.obj"
+# ADD CPP /nologo /Fo"$(IntDir)/$(InputName)1.obj" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# PROP Intermediate_Dir "$(IntDir)/$(InputName)1.obj"
+# ADD CPP /nologo /Fo"$(IntDir)/$(InputName)1.obj" /GZ /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release - MATHMOD"
+
+# PROP Intermediate_Dir "$(IntDir)/$(InputName)1.obj"
+# ADD CPP /nologo /Fo"$(IntDir)/$(InputName)1.obj" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release-Unicode-MATHMOD"
+
+# PROP Intermediate_Dir "$(IntDir)/$(InputName)1.obj"
+# ADD CPP /nologo /Fo"$(IntDir)/$(InputName)1.obj" /GX 
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode 98"
+
+# PROP Intermediate_Dir "$(IntDir)/$(InputName)1.obj"
+# ADD CPP /nologo /Fo"$(IntDir)/$(InputName)1.obj" /GX 
+!ENDIF
+
+# End Source File
+# Begin Source File
+
 SOURCE=templates.c
 # End Source File
 # Begin Source File
@@ -422,6 +457,14 @@ SOURCE=.\themes.c
 # Begin Source File
 
 SOURCE=trayicon.c
+# End Source File
+# Begin Source File
+
+SOURCE=TSButton.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\URLCtrl.c
 # End Source File
 # Begin Source File
 
@@ -446,6 +489,10 @@ SOURCE=IcoLib.h
 # Begin Source File
 
 SOURCE=ImageDataObject.h
+# End Source File
+# Begin Source File
+
+SOURCE=m_fontservice.h
 # End Source File
 # Begin Source File
 
@@ -506,6 +553,10 @@ SOURCE=sendqueue.h
 # Begin Source File
 
 SOURCE=templates.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\URLCtrl.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -613,6 +664,10 @@ SOURCE=.\res\angeli-icons\Info.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\leftarrow.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\msgwindow.rc
 # End Source File
 # Begin Source File
@@ -681,6 +736,14 @@ SOURCE=.\res\pulldown.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\pulldown1.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pullup.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\quote.ico
 # End Source File
 # Begin Source File
@@ -694,6 +757,10 @@ SOURCE=..\..\Miranda-IM\res\rename.ico
 # Begin Source File
 
 SOURCE=.\resource.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\rightarrow.ico
 # End Source File
 # Begin Source File
 
@@ -737,7 +804,7 @@ SOURCE=..\..\Miranda-IM\res\viewdetails.ico
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\changelog.txt
+SOURCE=.\docs\changelog.txt
 # End Source File
 # Begin Source File
 
@@ -753,23 +820,19 @@ SOURCE=MAKEFILE.W32
 # End Source File
 # Begin Source File
 
-SOURCE=MetaContacts.TXT
+SOURCE=.\docs\MetaContacts.TXT
 # End Source File
 # Begin Source File
 
-SOURCE=POPUPS.TXT
+SOURCE=.\docs\Popups.txt
 # End Source File
 # Begin Source File
 
-SOURCE=README.ICONS
+SOURCE=.\docs\Readme.icons
 # End Source File
 # Begin Source File
 
-SOURCE=.\readme.txt
-# End Source File
-# Begin Source File
-
-SOURCE=langpacks\template
+SOURCE=.\docs\readme.txt
 # End Source File
 # End Group
 # End Target

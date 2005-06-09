@@ -35,6 +35,7 @@ $Id$
 #include "IcoLib.h"
 #include "functions.h"
 #include "m_toptoolbar.h"
+#include "m_fontservice.h"
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
 
@@ -886,6 +887,9 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_POPUP_ADDPOPUPEX))
         myGlobals.g_PopupAvail = 1;
 
+    if(ServiceExists(MS_FONT_REGISTER))
+        myGlobals.g_FontServiceAvail = 1;
+    
     if(ServiceExists(MS_POPUP_ADDPOPUPW))
         myGlobals.g_PopupWAvail = 1;
     

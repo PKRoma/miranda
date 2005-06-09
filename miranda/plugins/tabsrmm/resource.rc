@@ -73,8 +73,7 @@ BEGIN
                     UDS_ARROWKEYS,164,138,9,13
     PUSHBUTTON      "Preview popup",IDC_PREVIEW,226,223,83,12
     LTEXT           "characters",IDC_STATIC,166,138,103,10
-    COMBOBOX        IDC_ANNOUNCEMETHOD,121,122,93,46,CBS_DROPDOWN | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ANNOUNCEMETHOD,121,122,93,46,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Announce events with",IDC_STATIC,13,124,82,9
     CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
@@ -350,33 +349,33 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Options",IDC_STATIC,1,0,302,111
-    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,1,114,302,29
-    LTEXT           "Left",IDC_STATIC,10,127,29,11
-    EDITTEXT        IDC_INDENTAMOUNT,59,125,29,12,ES_AUTOHSCROLL
+    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,1,111,302,40
+    LTEXT           "Left",IDC_STATIC,10,120,29,11
+    EDITTEXT        IDC_INDENTAMOUNT,59,118,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,72,126,10,11
-    LTEXT           "Right",IDC_STATIC,121,127,26,9
-    EDITTEXT        IDC_RIGHTINDENT,166,125,29,12,ES_AUTOHSCROLL | ES_NUMBER
+                    UDS_HOTTRACK,72,120,10,11
+    LTEXT           "Right",IDC_STATIC,121,120,26,9
+    EDITTEXT        IDC_RIGHTINDENT,166,118,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_RINDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,196,125,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,196,118,
                     10,11
-    LTEXT           "(in pixels)",IDC_STATIC,215,127,74,9
-    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,1,144,302,29
-    PUSHBUTTON      "Standard templates...",IDC_MODIFY,27,154,95,14
-    PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,178,154,95,14
-    GROUPBOX        "Load History Events",IDC_STATIC,1,173,302,53
+    LTEXT           "(in pixels)",IDC_STATIC,215,120,74,9
+    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,1,151,302,26
+    PUSHBUTTON      "Standard templates...",IDC_MODIFY,27,160,95,14
+    PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,178,160,95,14
+    GROUPBOX        "Load History Events",IDC_STATIC,1,178,302,47
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,10,186,135,10
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,10,187,135,10
     CONTROL         "Attempt to fix ""future"" timestamps",IDC_TSFIX,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,150,184,148,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,185,148,11
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
-                    BS_AUTORADIOBUTTON,10,199,138,10
-    EDITTEXT        IDC_LOADCOUNTN,170,197,33,12,ES_RIGHT | ES_NUMBER | 
+                    BS_AUTORADIOBUTTON,10,200,138,10
+    EDITTEXT        IDC_LOADCOUNTN,170,198,33,12,ES_RIGHT | ES_NUMBER | 
                     WS_DISABLED
     CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,203,196,
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,203,197,
                     10,14
     CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",
                     BS_AUTORADIOBUTTON,10,212,138,10
@@ -391,6 +390,13 @@ BEGIN
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,285,95,
                     WS_EX_STATICEDGE
+    LTEXT           "Extra microspacing at the end of a paragraph",
+                    IDC_STATIC,10,137,157,10
+    EDITTEXT        IDC_EXTRAMICROLF,165,135,36,13,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "",IDC_EXTRALFSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,201,136,
+                    12,11
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
@@ -557,12 +563,8 @@ BEGIN
     LTEXT           "Incoming background:",IDC_STATIC,172,179,81,8
     CONTROL         "",IDC_BKGINCOMING,"ColourPicker",WS_TABSTOP,258,178,39,
                     10
-    CONTROL         "Use multiple background colors",IDC_USEINDIVIDUALBKG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,206,128,12
     CONTROL         "",IDC_GRIDLINES,"ColourPicker",WS_TABSTOP,258,192,39,10
     LTEXT           "Horizontal grid lines:",IDC_STATIC,171,192,78,10
-    CONTROL         "Also draw vertical grid lines",IDC_WANTVERTICALGRID,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,192,148,10
 END
 
 IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 231
