@@ -59,7 +59,7 @@ static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList, hUserPrefsWindowList;
-static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEvent_ttbInit, hTTB_Slist, hTTB_Tray;
+static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEvent_ttbInit, hTTB_Slist, hTTB_Tray, hEvent_FontService;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
 
@@ -102,6 +102,8 @@ HMODULE g_hIconDLL = 0;
 
 void BuildCodePageList();
 int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct MessageWindowData *dat);
+int FS_ReloadFonts(WPARAM wParam, LPARAM lParam);
+void FS_RegisterFonts();
 
 /*
  * installed as a WH_GETMESSAGE hook in order to process unicode messages.
@@ -887,8 +889,13 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_POPUP_ADDPOPUPEX))
         myGlobals.g_PopupAvail = 1;
 
-    if(ServiceExists(MS_FONT_REGISTER))
+    MoveFonts();
+    if(ServiceExists(MS_FONT_REGISTER)) {
         myGlobals.g_FontServiceAvail = 1;
+        FS_RegisterFonts();
+        hEvent_FontService = HookEvent(ME_FONT_RELOAD, FS_ReloadFonts);
+        //HookEvent(ME_COLOUR_RELOAD, FS_ReloadFonts
+    }
     
     if(ServiceExists(MS_POPUP_ADDPOPUPW))
         myGlobals.g_PopupWAvail = 1;
@@ -966,6 +973,7 @@ int SplitmsgShutdown(void)
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
+    UnhookEvent(hEvent_FontService);
     FreeLibrary(GetModuleHandleA("riched20"));
 	FreeLibrary(GetModuleHandleA("user32"));
     FreeVSApi();
@@ -987,7 +995,6 @@ int SplitmsgShutdown(void)
     if(myGlobals.g_hMenuEncoding)
         DestroyMenu(myGlobals.g_hMenuEncoding);
 
-    UncacheMsgLogIcons();
     UnloadIcons();
     FreeTabConfig();
     UnloadTSButtonModule(0, 0);
@@ -1030,7 +1037,6 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
             CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
         }
     }
-    UncacheMsgLogIcons();
     CreateImageList(FALSE);
     CacheMsgLogIcons();
     WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
@@ -1773,7 +1779,6 @@ int LoadFromIconLib()
 {
     int i = 0;
 
-    UncacheMsgLogIcons();
     do {
         if(myIcons[i].szName == NULL)
             break;
@@ -1837,7 +1842,6 @@ void LoadIconTheme()
                     goto failure;
             }
         }
-        UncacheMsgLogIcons();
 
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
         LoadMsgAreaBackground();

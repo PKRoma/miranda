@@ -52,26 +52,26 @@ void WriteThemeToINI(const char *szIniFilename)
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         sprintf(szTemp, "Font%d", i);
         strcpy(szAppname, szTemp);
-        if(!DBGetContactSetting(NULL, SRMSGMOD_T, szTemp, &dbv)) {
+        if(!DBGetContactSetting(NULL, FONTMODULE, szTemp, &dbv)) {
             WritePrivateProfileStringA(szAppname, "Face", dbv.pszVal, szIniFilename);
             DBFreeVariant(&dbv);
         }
         sprintf(szTemp, "Font%dCol", i);
-        WritePrivateProfileStringA(szAppname, "Color", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, 0), szBuf, 10), szIniFilename);
+        WritePrivateProfileStringA(szAppname, "Color", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
         sprintf(szTemp, "Font%dSty", i);
-        WritePrivateProfileStringA(szAppname, "Style", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, 0), szBuf, 10), szIniFilename);
+        WritePrivateProfileStringA(szAppname, "Style", _itoa(DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
         sprintf(szTemp, "Font%dSize", i);
-        WritePrivateProfileStringA(szAppname, "Size", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, 0), szBuf, 10), szIniFilename);
+        WritePrivateProfileStringA(szAppname, "Size", _itoa(DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
         sprintf(szTemp, "Font%dSet", i);
-        WritePrivateProfileStringA(szAppname, "Set", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, 0), szBuf, 10), szIniFilename);
+        WritePrivateProfileStringA(szAppname, "Set", _itoa(DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
         sprintf(szTemp, "Font%dAs", i);
-        WritePrivateProfileStringA(szAppname, "Inherit", _itoa(DBGetContactSettingWord(NULL, SRMSGMOD_T, szTemp, 0), szBuf, 10), szIniFilename);
+        WritePrivateProfileStringA(szAppname, "Inherit", _itoa(DBGetContactSettingWord(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
     }
-    WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR), szBuf, 10), szIniFilename);
-    WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
-    WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
-    WritePrivateProfileStringA("Message Log", "InputBG", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
-    WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "outbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "InputBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "VGrid", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), szBuf, 10), szIniFilename);
@@ -106,36 +106,51 @@ void ReadThemeFromINI(const char *szIniFilename)
     int i;
     int version;
     char szTemplateBuffer[TEMPLATE_LENGTH * 3 + 2];
+    char bSize = 0;
+    HDC hdc;
+    int charset;
     
     if((version = GetPrivateProfileIntA("TabSRMM Theme", "Version", 0, szIniFilename)) == 0)         // no version number.. assume 1
         version = 1;
     
+    hdc = GetDC(NULL);
+    
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         sprintf(szTemp, "Font%d", i);
         strcpy(szAppname, szTemp);
-        if(GetPrivateProfileStringA(szAppname, "Face", "Arial", szBuf, sizeof(szBuf), szIniFilename) != 0)
-            DBWriteContactSettingString(NULL, SRMSGMOD_T, szTemp, szBuf);
+        if(GetPrivateProfileStringA(szAppname, "Face", "Arial", szBuf, sizeof(szBuf), szIniFilename) != 0) {
+            if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
+                lstrcpynA(szBuf, "Arial", sizeof(szBuf));
+            DBWriteContactSettingString(NULL, FONTMODULE, szTemp, szBuf);
+        }
         
         sprintf(szTemp, "Font%dCol", i);
-        DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA(szAppname, "Color", RGB(224, 224, 224), szIniFilename));
+        DBWriteContactSettingDword(NULL, FONTMODULE, szTemp, GetPrivateProfileIntA(szAppname, "Color", RGB(224, 224, 224), szIniFilename));
         
         sprintf(szTemp, "Font%dSty", i);
-        DBWriteContactSettingByte(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA(szAppname, "Style", 0, szIniFilename));
+        DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, GetPrivateProfileIntA(szAppname, "Style", 0, szIniFilename));
 
         sprintf(szTemp, "Font%dSize", i);
-        DBWriteContactSettingByte(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA(szAppname, "Size", 0, szIniFilename));
+        bSize = (char)GetPrivateProfileIntA(szAppname, "Size", 0, szIniFilename);
+        if(bSize > 0)
+            bSize = -MulDiv(bSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+        DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, bSize);
 
         sprintf(szTemp, "Font%dSet", i);
-        DBWriteContactSettingByte(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA(szAppname, "Set", 0, szIniFilename));
+        charset = GetPrivateProfileIntA(szAppname, "Set", 0, szIniFilename);
+        if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
+            charset = 0;
+        DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, (BYTE)charset);
         
         sprintf(szTemp, "Font%dAs", i);
-        DBWriteContactSettingWord(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA(szAppname, "Inherit", 0, szIniFilename));
+        DBWriteContactSettingWord(NULL, FONTMODULE, szTemp, GetPrivateProfileIntA(szAppname, "Inherit", 0, szIniFilename));
     }
-    DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", RGB(224, 224, 224), szIniFilename));
-    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", RGB(224, 224, 224), szIniFilename));
-    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", RGB(224, 224, 224), szIniFilename));
-    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", RGB(224, 224, 224), szIniFilename));
-    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", RGB(224, 224, 224), szIniFilename));
+    ReleaseDC(NULL, hdc);
+    DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", RGB(224, 224, 224), szIniFilename));
+    DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", RGB(224, 224, 224), szIniFilename));
+    DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", RGB(224, 224, 224), szIniFilename));
+    DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", RGB(224, 224, 224), szIniFilename));
+    DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", RGB(224, 224, 224), szIniFilename));
     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename));
     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename));
     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename));

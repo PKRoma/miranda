@@ -64,8 +64,6 @@ struct CPTABLE cpTable[] = {
     {   -1,     NULL}
 };
 
-// #define _CACHED_ICONS 1
-
 int _log(const char *fmt, ...);
 
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
@@ -111,11 +109,7 @@ static char szToday[22], szYesterday[22];
 #define LOGICON_STATUS 5
 #define LOGICON_ERROR 6
 
-#if defined _CACHED_ICONS
-    struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
-#else
-    static HICON Logicons[NR_LOGICONS];
-#endif    
+static HICON Logicons[NR_LOGICONS];
 
 #define STREAMSTAGE_HEADER  0
 #define STREAMSTAGE_EVENTS  1
@@ -181,16 +175,6 @@ void CacheLogFonts()
     strncpy(szYesterday, Translate("Yesterday"), 20);
 }
 
-void UncacheMsgLogIcons()
-{
-#ifdef _CACHED_ICONS
-    int i;
-
-    for(i = 0; i < 3 * NR_LOGICONS; i++)
-        DeleteCachedIcon(&msgLogIcons[i]);
-#endif    
-}
-
 /*
  * cache copies of all our msg log icons with 3 background colors to speed up the
  * process of inserting icons into the RichEdit control.
@@ -198,30 +182,6 @@ void UncacheMsgLogIcons()
 
 void CacheMsgLogIcons()
 {
-#ifdef _CACHED_ICONS
-    HICON icons[NR_LOGICONS];
-    int iCounter = 0;
-    int i;
-    int size;
-    
-    icons[0] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-    icons[1] = LoadSkinnedIcon(SKINICON_EVENT_URL);
-    icons[2] = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-    icons[3] = myGlobals.g_iconOut;
-    icons[4] = myGlobals.g_iconIn;
-    icons[5] = myGlobals.g_iconStatus;
-    icons[6] = myGlobals.g_iconErr;
-    
-    for(i = 0; i < NR_LOGICONS; i++) {
-        if(icons[i] == myGlobals.g_iconOut || icons[i] == myGlobals.g_iconIn)
-            size = 0;
-        else
-            size = 16;          // force mirandas icons into small mode (16x16 pixels - on some systems, they load with incorrect size..?)
-        CacheIconToBMP(&msgLogIcons[iCounter++], icons[i], DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR), size, size);
-        CacheIconToBMP(&msgLogIcons[iCounter++], icons[i], DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", RGB(255,255,255)), size, size);
-        CacheIconToBMP(&msgLogIcons[iCounter++], icons[i], DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(255,255,255)), size, size);
-    }
-#else
     Logicons[0] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
     Logicons[1] = LoadSkinnedIcon(SKINICON_EVENT_URL);
     Logicons[2] = LoadSkinnedIcon(SKINICON_EVENT_FILE);
@@ -229,7 +189,6 @@ void CacheMsgLogIcons()
     Logicons[4] = myGlobals.g_iconIn;
     Logicons[5] = myGlobals.g_iconStatus;
     Logicons[6] = myGlobals.g_iconErr;
-#endif    
 }
 
 /*
@@ -512,13 +471,13 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
     /* OnO: Create incoming and outcoming colours */
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", RGB(224,224,224));
+    colour = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", RGB(224,224,224));
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", RGB(224,224,224));
+    colour = DBGetContactSettingDword(NULL, FONTMODULE, "outbg", RGB(224,224,224));
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+    colour = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", RGB(224,224,224));
+    colour = DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", RGB(224,224,224));
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
     // custom template colors...
@@ -1389,23 +1348,11 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
                 fi.chrg.cpMin = fi.chrgText.cpMax + 6;
                 continue;
             }
-#if defined _CACHED_ICONS
-            bIconIndex = ((BYTE)trbuffer[0] - (BYTE)'0') * 3;
-
-            if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG) {
-                if(trbuffer[1] == '<')
-                    bIconIndex += 1;
-                else
-                    bIconIndex += 2;
-            }
-            ImageDataInsertBitmap(ole, msgLogIcons[bIconIndex].hBmp);
-#else            
             bIconIndex = ((BYTE)trbuffer[0] - (BYTE)'0');
             SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
             CacheIconToBMP(&theIcon, Logicons[bIconIndex], cf2.crBackColor == 0 ? crDefault : cf2.crBackColor, 0, 0);
             ImageDataInsertBitmap(ole, theIcon.hBmp);
             DeleteCachedIcon(&theIcon);
-#endif
             fi.chrg.cpMin = cr.cpMax + 6;
         }
         ReleaseRichEditOle(ole);

@@ -1599,8 +1599,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 char *szStreamOut = NULL;
                 SETTEXTEX stx = {ST_DEFAULT,CP_UTF8};
                 
-                COLORREF colour = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
-                COLORREF inputcolour = DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SRMSGDEFSET_BKGCOLOUR);
+                COLORREF colour = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+                COLORREF inputcolour = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
                 COLORREF inputcharcolor;
                 CHARFORMAT2A cf2 = {0};
                 LOGFONTA lf;

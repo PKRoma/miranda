@@ -57,7 +57,7 @@ void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, in
 
 void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *szIniFilename);
 char *GetThemeFileName(int iMode);
-void UncacheMsgLogIcons(), CacheMsgLogIcons(), CacheLogFonts();
+void CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -435,7 +435,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     char *szFilename = GetThemeFileName(0);
                     if(szFilename != NULL) {
                         ReadThemeFromINI(szFilename);
-                        UncacheMsgLogIcons();
                         CacheMsgLogIcons();
                         CacheLogFonts();
                         WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);

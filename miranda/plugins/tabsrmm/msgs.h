@@ -349,6 +349,7 @@ extern const int msgDlgFontCount;
 
 #define SRMSGMOD "SRMsg"
 #define SRMSGMOD_T "Tab_SRMsg"
+#define FONTMODULE "TabSRMM_Fonts"
 
 #define IDM_STAYONTOP (WM_USER + 1)
 #define IDM_NOTITLE (WM_USER + 2)

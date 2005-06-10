@@ -86,3 +86,10 @@ int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
 void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode);
 void ReloadGlobalContainerSettings();
 
+/*
+ * font service support
+ */
+
+void FS_RegisterFonts();
+void MoveFonts();
+

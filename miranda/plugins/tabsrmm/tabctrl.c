@@ -176,7 +176,7 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
         HBRUSH bg;
         HFONT oldFont;
         DWORD dwStyle = tabdat->dwStyle;
-        BOOL bFill = (dwStyle & TCS_BUTTONS);
+        BOOL bFill = (dwStyle & TCS_BUTTONS && (tabdat->m_skinning == FALSE || myGlobals.m_TabAppearance & TCF_NOSKINNING));
         int oldMode = 0;
         InflateRect(rcItem, -1, -1);
         
@@ -251,6 +251,8 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
          */
         
         if(dwStyle & TCS_BUTTONS) {
+            BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING);
+
             // draw frame controls for button or bottom tabs
             if(dwStyle & TCS_BOTTOM) {
                 rcItem->top++;
@@ -259,12 +261,19 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
                 rcItem->bottom--;
             
             rcItem->right += 6;
-            if(nHint & HINT_ACTIVE_ITEM)
-                DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
-            else if(nHint & HINT_HOTTRACK)
-                DrawEdge(dc, rcItem, EDGE_BUMP, BF_RECT | BF_MONO | BF_SOFT);
-            else
-                DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
+            if(bClassicDraw) {
+                if(nHint & HINT_ACTIVE_ITEM)
+                    DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
+                else if(nHint & HINT_HOTTRACK)
+                    DrawEdge(dc, rcItem, EDGE_BUMP, BF_RECT | BF_MONO | BF_SOFT);
+                else
+                    DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
+            }
+            else {
+                //_DebugPopup(0, "draw button with vs");
+                FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+                pfnDrawThemeBackground(tabdat->hThemeButton, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), rcItem, rcItem);
+            }
             return;
         }
         SelectObject(dc, myGlobals.tabConfig.m_hPenLight);
@@ -500,10 +509,12 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 if(pfnIsThemeActive != 0)
                     if(pfnIsThemeActive()) {
                         tabdat->m_skinning = TRUE;
-                        if(tabdat->hTheme != 0 && pfnCloseThemeData != 0)
+                        if(tabdat->hTheme != 0 && pfnCloseThemeData != 0) {
                             pfnCloseThemeData(tabdat->hTheme);
+                            pfnCloseThemeData(tabdat->hThemeButton);
+                        }
                         if(pfnOpenThemeData != 0) {
-                            if((tabdat->hTheme = pfnOpenThemeData(NULL, L"TAB")) == 0)
+                            if((tabdat->hTheme = pfnOpenThemeData(hwnd, L"TAB")) == 0 || (tabdat->hThemeButton = pfnOpenThemeData(hwnd, L"BUTTON")) == 0)
                                 tabdat->m_skinning = FALSE;
                         }
                     }
@@ -526,7 +537,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
         }
         case EM_VALIDATEBOTTOM:
             {
-                BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (tabdat->dwStyle & TCS_BUTTONS) || (tabdat->dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
+                BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING);
                 if((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && myGlobals.tabConfig.m_bottomAdjust != 0) {
                     InvalidateRect(hwnd, NULL, FALSE);
                 }
@@ -549,8 +560,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             break;
         case WM_DESTROY:
             if(tabdat) {
-                if(tabdat->hTheme != 0 && pfnCloseThemeData != 0)
+                if(tabdat->hTheme != 0 && pfnCloseThemeData != 0) {
                     pfnCloseThemeData(tabdat->hTheme);
+                    pfnCloseThemeData(tabdat->hThemeButton);
+                }
                 free(tabdat);
                 SetWindowLong(hwnd, GWL_USERDATA, 0L);
             }
@@ -622,7 +635,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             UINT uiFlags = 1;
             UINT uiBottom = 0;
             TCHITTESTINFO hti;
-            BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING) || (dwStyle & TCS_BUTTONS) || (dwStyle & TCS_BOTTOM && (myGlobals.m_TabAppearance & TCF_FLAT));
+            BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (myGlobals.m_TabAppearance & TCF_NOSKINNING);
             HBITMAP bmpMem, bmpOld;
             DWORD cx, cy;
             
@@ -773,7 +786,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                     }
                     if (IntersectRect(&rectTemp, &rcItem, &ps.rcPaint) || bClassicDraw) {
                         int nHint = 0;
-                        if(!bClassicDraw) {
+                        if(!bClassicDraw && !(dwStyle & TCS_BUTTONS)) {
                             DrawThemesXpTabItem(hdc, i, &rcItem, uiFlags | uiBottom | (i == hotItem ? 4 : 0), tabdat);
                             DrawItem(tabdat, hdc, &rcItem, nHint | (i == hotItem ? HINT_HOTTRACK : 0), i);
                         }
@@ -795,7 +808,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 //            if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left >= 0) {
                 int nHint = 0;
                 rcItem = rctActive;
-                if(!bClassicDraw) {
+                if(!bClassicDraw && !(dwStyle & TCS_BUTTONS)) {
                     //if(!uiBottom)
                         //rcItem.bottom--;
                     InflateRect(&rcItem, 2, 2);

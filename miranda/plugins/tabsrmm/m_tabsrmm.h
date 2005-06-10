@@ -291,7 +291,7 @@ struct TabControlData {
     HWND hwnd;
     DWORD dwStyle;
     DWORD cx, cy;
-    HANDLE hTheme;
+    HANDLE hTheme, hThemeButton;
     BYTE m_xpad;
     struct ContainerWindowData *pContainer;
 };
