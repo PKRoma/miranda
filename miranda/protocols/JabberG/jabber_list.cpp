@@ -241,14 +241,12 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 					r = ( JABBER_RESOURCE_STATUS * ) malloc( sizeof( JABBER_RESOURCE_STATUS ));
 					bIsNewResource = true;
 					lists[i].resourceCount = 1;
+
+					memset( r, 0, sizeof JABBER_RESOURCE_STATUS );
 					r->status = status;
 					r->resourceName = _strdup( resource );
 					if ( statusMessage )
 						r->statusMessage = _strdup( statusMessage );
-					else
-						r->statusMessage = NULL;
-					r->software = r->version = r->system = NULL;
-					r->cap = 0;
 				}
 				else {
 					resourceCount = lists[i].resourceCount;
@@ -265,13 +263,12 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 						// Not already exist, add new resource
 						r = ( JABBER_RESOURCE_STATUS * ) realloc( r, ( resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
 						bIsNewResource = true;
-						r[resourceCount].status = status;
-						r[resourceCount].resourceName = _strdup( resource );
+						JABBER_RESOURCE_STATUS* r2 = r + resourceCount;
+						memset( r2, 0, sizeof JABBER_RESOURCE_STATUS );
+						r2->status = status;
+						r2->resourceName = _strdup( resource );
 						if ( statusMessage )
-							r[resourceCount].statusMessage = _strdup( statusMessage );
-						else
-							r[resourceCount].statusMessage = NULL;
-						r[resourceCount].software = r[resourceCount].version = r[resourceCount].system = NULL;
+							r2->statusMessage = _strdup( statusMessage );
 						lists[i].resourceCount++;
 				}	}
 
