@@ -106,8 +106,8 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 {
 	char szNick[ 256 ], szJid[ JABBER_MAX_JID_LEN ];
-	if ( JGetStaticString( "jid",  ( HANDLE )wParam, szJid, sizeof szJid )) return 0;
-	if ( JGetStaticString( "Nick", NULL, szNick, sizeof szNick ))           return 0;
+	if ( JGetStaticString( "ChatRoomID", ( HANDLE )wParam, szJid,  sizeof szJid  )) return 0;
+	if ( JGetStaticString( "Nick",       NULL,             szNick, sizeof szNick )) return 0;
 
 	if ( JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
 		if ( !jabberChatDllPresent ) {
