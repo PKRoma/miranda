@@ -677,7 +677,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 static const char *szFontIdDescr[FONTID_MAX+1]=
-	{"Standard contacts","Online contacts to whom you have a different visibility","Offline contacts","Contacts which are 'not on list'","Groups","Group member counts","Dividers","Offline contacts to whom you have a different visibility", "Status messages"};
+	{"Standard contacts","Online contacts to whom you have a different visibility","Offline contacts","Contacts which are 'not on list'","Groups","Group member counts","Dividers","Offline contacts to whom you have a different visibility", "Status messages","Group Closed"};
 
 #define SAMEASF_FACE   1
 #define SAMEASF_SIZE   2
@@ -693,9 +693,9 @@ struct {
 	char szFace[LF_FACESIZE];
 } static fontSettings[FONTID_MAX+1];
 #include <poppack.h>
-static WORD fontSameAsDefault[FONTID_MAX+1]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02};
-static char *fontSizes[]={"7","8","10","14","16","18","20","24","28"};
-static int fontListOrder[FONTID_MAX+1]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_GROUPS,FONTID_GROUPCOUNTS,FONTID_DIVIDERS,FONTID_STATUSMSG};
+static WORD fontSameAsDefault[FONTID_MAX+1]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x0B00};
+static char *fontSizes[]={"7","8","10","14","16","18","20","24","28","16"};
+static int fontListOrder[FONTID_MAX+1]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_GROUPS,FONTID_GROUPCOUNTS,FONTID_DIVIDERS,FONTID_STATUSMSG,FONTID_GROUPSCLOSED};
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
 #define M_REMAKESAMPLE       (WM_USER+11)

@@ -171,7 +171,10 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
 	oldbmp=(HBITMAP)SelectObject(hdcMem,hBmpOsb);
 	{	TEXTMETRIC tm;
+		
+		
 		oldfont=SelectObject(hdcMem,dat->fontInfo[FONTID_GROUPS].hFont);
+		
 		GetTextMetrics(hdcMem,&tm);
 		groupCountsFontTopShift=tm.tmAscent;
 		SelectObject(hdcMem,dat->fontInfo[FONTID_GROUPCOUNTS].hFont);
@@ -293,7 +296,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			SIZE textSize,countsSize,spaceSize;
 			int width,checkboxWidth;
 			char *szCounts;
-
+			
 			if (subindex==-1)
 			{
 				Drawing=&(group->contact[group->scanIndex]);
@@ -318,7 +321,19 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
 			//setup
 			if(Drawing->type==CLCIT_GROUP)
-				ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
+			{
+				if (Drawing->group!=NULL)
+				{			
+					if (Drawing->group->expanded) 
+					{
+						ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
+					}
+					else 
+					{
+						ChangeToFont(hdcMem,dat,FONTID_GROUPSCLOSED,&fontHeight);
+					}
+				}
+			}
 			else if(Drawing->type==CLCIT_INFO) {
 				if(Drawing->flags&CLCIIF_GROUPFONT) ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
 				else ChangeToFont(hdcMem,dat,FONTID_CONTACTS,&fontHeight);
@@ -472,7 +487,12 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			else if(Drawing->type==CLCIT_GROUP) {
 				RECT rc;
 				if(szCounts[0]) {
+					struct ClcGroup *clcg;
+					
+					clcg=(struct ClcGroup *)Drawing;
+
 					fontHeight=dat->fontInfo[FONTID_GROUPS].fontHeight;
+
 					rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
 					rc.right=min(clRect.right-countsSize.cx,rc.left+textSize.cx+spaceSize.cx);
 					rc.top=y+((dat->rowHeight-fontHeight)>>1);

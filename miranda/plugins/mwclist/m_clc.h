@@ -127,7 +127,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_DIVIDERS    6
 #define FONTID_OFFINVIS    7
 #define FONTID_STATUSMSG   8
-#define FONTID_MAX         8
+#define FONTID_GROUPSCLOSED   9
+#define FONTID_MAX         9
 
 #define CLM_SETFONT           (CLM_FIRST+33)   //wParam=hFont, lParam=MAKELPARAM(fRedraw,fontId)
 #define CLM_SETINDENT         (CLM_FIRST+34)   //wParam=new indent, default is 3 pixels

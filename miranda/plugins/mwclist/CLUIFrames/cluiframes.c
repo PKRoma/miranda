@@ -2190,7 +2190,8 @@ int OnFrameTitleBarBackgroundChange()
 		AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
 
 		bkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
-		SelBkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","SelBkColour",0);
+		//SelBkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","SelBkColour",0);
+
 		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
 		if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
@@ -2388,6 +2389,7 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 						DrawBackGroundTTB(Frames[pos].TitleBar.hwnd,hdcMem);
 						//hFront=CreateSolidPe (SelBkColour);
 						//SelectObject(hdcMem,hFront);
+						SelBkColour=DBGetContactSettingDword(NULL,"CLUIFrames","FramesTitleBarFontCol",0);
 						if (SelBkColour) SetTextColor(hdcMem,SelBkColour);
 
 						
@@ -3253,6 +3255,9 @@ static int CLUIFrameOnFontChange(WPARAM wParam,LPARAM lParam)
 	strcpy(fid.prefix,"FramesTitleBarFont");
 
 	CallService(MS_FONT_GET,(WPARAM)&fid,(LPARAM)&TitleBarLogFont);
+	CLUIFramesOnClistResize(0,0);
+
+	
 	return 0;
 };
 
