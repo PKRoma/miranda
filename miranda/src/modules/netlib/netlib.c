@@ -27,6 +27,7 @@ struct NetlibUser **netlibUser=NULL;
 int netlibUserCount=0;
 CRITICAL_SECTION csNetlibUser;
 HANDLE hConnectionHeaderMutex;
+DWORD g_LastConnectionTick; // protected by csNetlibUser
 
 void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings)
 {
@@ -458,6 +459,7 @@ int LoadNetlibModule(void)
 	WSAStartup(MAKEWORD(1,1), &wsadata);
 	InitializeCriticalSection(&csNetlibUser);
 	hConnectionHeaderMutex=CreateMutex(NULL,FALSE,NULL);
+	g_LastConnectionTick=GetTickCount();
 	NetlibLogInit();
 	CreateServiceFunction(MS_NETLIB_REGISTERUSER,NetlibRegisterUser);
 	CreateServiceFunction(MS_NETLIB_GETUSERSETTINGS,NetlibGetUserSettings);

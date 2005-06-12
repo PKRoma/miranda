@@ -23,6 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../core/commonheaders.h"
 #include "netlib.h"
 
+extern CRITICAL_SECTION csNetlibUser;
+extern DWORD g_LastConnectionTick; // protected by csNetlibUser
+
 //returns in network byte order
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
 {
@@ -329,12 +332,28 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 	u_long notblocking=1;	
 	TIMEVAL tv;
 	DWORD lasterr = 0;	
+	int waitdiff;
 	// if dwTimeout is zero then its an old style connection or new with a 0 timeout, select() will error quicker anyway
 	if ( dwTimeout == 0 )
 		dwTimeout += 60;
 	// return the socket to non blocking
 	if ( ioctlsocket(s, FIONBIO, &notblocking) != 0 ) {
 		return SOCKET_ERROR;
+	}
+	// this is for XP SP2 where there is a default connection attempt limit of 10/second
+	EnterCriticalSection(&csNetlibUser);
+	waitdiff=GetTickCount() - g_LastConnectionTick;
+	g_LastConnectionTick=GetTickCount();
+	LeaveCriticalSection(&csNetlibUser);
+	if ( waitdiff < 1000 ) {
+		// last connection was less than 1 second ago, wait 1.2 seconds
+		SleepEx(1200,TRUE);
+	}
+	// might of died in between the wait
+	if ( Miranda_Terminated() )  {
+		rc=SOCKET_ERROR;
+		lasterr=ERROR_TIMEOUT;
+		goto unblock;
 	}
 	// try a connect
 	if ( connect(s, name, namelen) == 0 ) {
