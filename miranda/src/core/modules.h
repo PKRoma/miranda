@@ -181,4 +181,9 @@ added during 0.3.4+ (2004/08/14)
 */
 int CallFunctionAsync( void (__stdcall *func)(void *), void *arg);
 
+/* NameHashFunction
+Given a string will return a hashed representation, useful for sorted lists and hash tables
+*/
+int NameHashFunctionInternal(const char * szStr);
+
 #endif  // MODULES_H_

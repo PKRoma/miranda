@@ -68,6 +68,7 @@ static HANDLE hMainThread;
 extern HANDLE hShutdownEvent;
 
 int LoadSystemModule(void);		// core: m_system.h services
+int LoadIOModule(void);			// core: messaging event I/O
 int LoadNewPluginsModuleInfos(void); // core: preloading plugins
 int LoadNewPluginsModule(void);	// core: N.O. plugins
 int LoadNetlibModule(void);		// core: network
@@ -107,6 +108,7 @@ static int LoadDefaultModules(void)
     //load order is very important for these
 	if(LoadSystemModule()) return 1;	
 	if(LoadLangPackModule()) return 1; // langpack will be a system module in the new order so this is moved 'ere
+	if(LoadIOModule()) return 1;
 	if(LoadUtilsModule()) return 1;		//order not important for this, but no dependencies and no point in pluginising	
 	if(LoadNewPluginsModuleInfos()) return 1; 
 	if(LoadProtocolsModule()) return 1;
@@ -176,7 +178,7 @@ void DestroyModularEngine(void)
 #define NOINLINEASM
 #endif
 
-DWORD NameHashFunction(const char *szStr)
+DWORD NameHashFunctionInternal(const char *szStr)
 {
 #if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined NOINLINEASM
 	__asm {		   //this breaks if szStr is empty
@@ -236,7 +238,7 @@ static int FindHookByHashAndName(DWORD Hash, const char *name)
 
 HANDLE CreateHookableEvent(const char *name)
 {
-	DWORD Hash = NameHashFunction(name);
+	DWORD Hash = NameHashFunctionInternal(name);
 	HANDLE ret;
 
 	EnterCriticalSection(&csHooks);
@@ -440,7 +442,7 @@ static __inline TServiceList *FindServiceByHash(DWORD hash)
 
 static __inline TServiceList *FindServiceByName(const char *name)
 {
-	return FindServiceByHash(NameHashFunction(name));
+	return FindServiceByHash(NameHashFunctionInternal(name));
 }
 
 /* assume critical section csServices is owned */
@@ -490,7 +492,7 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 #else
 	if (name==NULL) return NULL;
 #endif
-	hash=NameHashFunction(name);	
+	hash=NameHashFunctionInternal(name);	
 	EnterCriticalSection(&csServices);
 	i=FindHashForService(hash,&shift);
 	if (i==-1) {
