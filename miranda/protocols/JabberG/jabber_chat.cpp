@@ -144,7 +144,11 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, cha
 		for ( int i=0; i < item->resourceCount; i++ ) {
 			JABBER_RESOURCE_STATUS& JS = item->resource[i];
 			if ( !strcmp( nick, JS.resourceName )) {
-				gcd.iType = ( action == 1 ) ? GC_EVENT_JOIN : GC_EVENT_ADDSTATUS;
+				if ( action != 1 ) {
+					gce.bAddToLog = false;
+					gcd.iType = GC_EVENT_ADDSTATUS;
+				}
+				else gcd.iType = GC_EVENT_JOIN;
 				gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
 				gce.bIsMe = JabberCompareJids( jid, jabberJID ) == 0;
 				break;
