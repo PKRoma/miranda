@@ -66,6 +66,7 @@ typedef struct {
 	int (*CallServiceSync)(const char *,WPARAM,LPARAM);		//v0.3.3+
 	int (*CallFunctionAsync) (void (__stdcall *)(void *), void *);	//v0.3.4+
 	int (*SetHookDefaultForHookableEvent) (HANDLE, MIRANDAHOOK); // v0.3.4 (2004/09/15)
+	DWORD (*NameHashFunction) (const char * szStr); // v0.5 (2005/06)
 } PLUGINLINK;
 
 #ifndef MODULES_H_
@@ -86,12 +87,18 @@ extern PLUGINLINK *pluginLink;
 #define CallServiceSync(a,b,c)               pluginLink->CallServiceSync(a,b,c)
 #define CallFunctionAsync(a,b)				 pluginLink->CallFunctionAsync(a,b)
 #define SetHookDefaultForHookableEvent(a,b)  pluginLink->SetHookDefaultForHookableEvent(a,b)
+#define NameHashFunction(a)					 pluginLink->NameHashFunction(a)
 #endif
 #endif
 
 /*
  Database plugin stuff
 */
+
+// getCapability() flags
+
+#define DB_CAP_FLAGNUM1 1				// Feature set offered by a db
+#define DB_CAP_VOLATILE_CONTACTS 0x1 	// db allows in memory contacts via MS_DB_CONTACTADDEX and the handle works for other DB Contact services too
 
 // grokHeader() error codes
 #define EGROKPRF_NOERROR	0
@@ -107,7 +114,7 @@ typedef struct {
 	int cbSize;
 	
 	/*
-	returns what the driver can do given the flag
+	returns what the driver can do given the flag, flag = DB_CAP_FLAGNUM*
 	*/
 	int (*getCapability) ( int flag );
 
