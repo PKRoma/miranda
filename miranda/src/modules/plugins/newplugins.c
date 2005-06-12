@@ -382,6 +382,7 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.SetHookDefaultForHookableEvent=SetHookDefaultForHookableEvent;
 	pluginCoreLink.CallServiceSync=CallServiceSync;
 	pluginCoreLink.CallFunctionAsync=CallFunctionAsync;	
+	pluginCoreLink.NameHashFunction=NameHashFunctionInternal;
 	// remember where the mirandaboot.ini goes
 	{
 		char exe[MAX_PATH];
