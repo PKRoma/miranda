@@ -107,6 +107,10 @@ SOURCE=..\include\m_button.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\m_chat.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\m_clc.h
 # End Source File
 # Begin Source File
@@ -124,6 +128,10 @@ SOURCE=..\include\m_contacts.h
 # Begin Source File
 
 SOURCE=..\include\m_database.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\m_database2.h
 # End Source File
 # Begin Source File
 
@@ -156,6 +164,10 @@ SOURCE=..\include\m_idle.h
 # Begin Source File
 
 SOURCE=..\include\m_ignore.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\m_io.h
 # End Source File
 # Begin Source File
 
@@ -659,6 +671,18 @@ SOURCE=.\modules\utils\windowlist.c
 # Begin Source File
 
 SOURCE=.\modules\visibility\visibility.c
+# End Source File
+# End Group
+# Begin Group "io"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\io\io.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\io\iomsgs.h
 # End Source File
 # End Group
 # End Group
