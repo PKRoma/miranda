@@ -56,6 +56,8 @@ $Id$
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern TemplateSet RTL_Active, LTR_Active;
+extern LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
+extern COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -924,12 +926,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
         case IDC_LOGFROZEN:
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                OffsetRect(&urc->rcItem, 0, 50);
+                OffsetRect(&urc->rcItem, 0, dat->panelHeight);
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_LOGFROZENTEXT:
             urc->rcItem.right = urc->dlgNewSize.cx - 20;
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                OffsetRect(&urc->rcItem, 0, 50);
+                OffsetRect(&urc->rcItem, 0, dat->panelHeight);
             return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -1616,7 +1618,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->hInputBkgBrush = CreateSolidBrush(inputcolour);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, inputcolour);
-                LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, &inputcharcolor);
+                lf = logfonts[MSGFONTID_MESSAGEAREA];
+                inputcharcolor = fontcolors[MSGFONTID_MESSAGEAREA];
                 /*
                  * correct the input area text color to avoid a color from the table of usable bbcode colors
                  */

@@ -81,7 +81,7 @@ struct FontOptionsList
 static fontOptionsList[] = {
     {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -10}};
     
-void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
+void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
 {
     char str[20];
     int style;
@@ -1319,14 +1319,14 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
 					SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_SETITEMDATA,itemId,fontId);
 				}
                 ReleaseDC(NULL, hdc);
-                SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SRMSGDEFSET_BKGCOLOUR));
+                SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
+                SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 
-                SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "outbg", SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "inbg", SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SRMSGDEFSET_BKGCOLOUR));
+                SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "outbg", SRMSGDEFSET_BKGCOLOUR));
+                SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "inbg", SRMSGDEFSET_BKGCOLOUR));
+                SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", SRMSGDEFSET_BKGCOLOUR));
                 SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
                 
@@ -1617,11 +1617,11 @@ static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam
                                     }
 								}
                                 ReleaseDC(NULL, hdc);
-                                DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inputbg", SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "inbg", SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "outbg", SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_GETCOLOUR, 0, 0));
+                                DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
                                 
                                 ReloadGlobals();
                                 CacheMsgLogIcons();
@@ -1969,7 +1969,7 @@ void MoveFonts()
     i = 0;
 
     while(colornames[i].szName!= NULL) {
-        DBWriteContactSettingDword(NULL, FONTMODULE, colornames[i].szSetting, DBGetContactSettingByte(NULL, SRMSGMOD_T, colornames[i].szSetting, RGB(224, 224, 224)));
+        DBWriteContactSettingDword(NULL, FONTMODULE, colornames[i].szSetting, DBGetContactSettingDword(NULL, SRMSGMOD_T, colornames[i].szSetting, RGB(224, 224, 224)));
         DBDeleteContactSetting(NULL, SRMSGMOD_T, colornames[i].szSetting);
         i++;
     }

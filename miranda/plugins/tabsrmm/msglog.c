@@ -129,6 +129,8 @@ struct LogStreamData
 };
 
 char rtfFonts[MSGDLGFONTCOUNT + 2][128];
+LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
+COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 
 int safe_wcslen(wchar_t *msg, int chars) {
     int i;
@@ -159,15 +161,15 @@ void TrimMessage(TCHAR *msg)
 
 void CacheLogFonts()
 {
-    LOGFONTA lf;
     int i;
     HDC hdc = GetDC(NULL);
     logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
     ReleaseDC(NULL, hdc);
 
+    ZeroMemory((void *)logfonts, sizeof(LOGFONTA) * MSGDLGFONTCOUNT + 2);
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
-        LoadMsgDlgFont(i, &lf, NULL);
-        wsprintfA(rtfFonts[i], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", i, i, lf.lfWeight >= FW_BOLD ? 1 : 0, lf.lfItalic, 2 * abs(lf.lfHeight) * 74 / logPixelSY);
+        LoadLogfont(i, &logfonts[i], &fontcolors[i]);
+        wsprintfA(rtfFonts[i], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
     }
     wsprintfA(rtfFonts[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
     
@@ -439,9 +441,8 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     char *buffer, szTemp[30];
     int bufferAlloced, bufferEnd;
     int i;
-    LOGFONTA lf;
     COLORREF colour;
-
+    
     bufferEnd = 0;
     bufferAlloced = 1024;
     buffer = (char *) malloc(bufferAlloced);
@@ -453,17 +454,13 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	else 
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 
-    for (i = 0; i < MSGDLGFONTCOUNT; i++) {
-        LoadMsgDlgFont(i, &lf, NULL);
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", i, lf.lfCharSet, lf.lfFaceName);
-    }
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", MSGDLGFONTCOUNT, lf.lfCharSet, "Arial");
+    for (i = 0; i < MSGDLGFONTCOUNT; i++)
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", i, logfonts[i].lfCharSet, logfonts[i].lfFaceName);
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", MSGDLGFONTCOUNT, logfonts[i].lfCharSet, "Arial");
     
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ");
-    for (i = 0; i < MSGDLGFONTCOUNT; i++) {
-        LoadMsgDlgFont(i, NULL, &colour);
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    }
+    for (i = 0; i < MSGDLGFONTCOUNT; i++)
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(fontcolors[i]), GetGValue(fontcolors[i]), GetBValue(fontcolors[i]));
     if (GetSysColorBrush(COLOR_HOTLIGHT) == NULL)
         colour = RGB(0, 0, 255);
     else

@@ -50,6 +50,8 @@ $Id$
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
+extern LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
+extern COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 
 extern HMODULE g_hInst;
 extern HANDLE hMessageWindowList;
@@ -965,8 +967,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
      * font
      */
 
-    LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, &color);
-
+    lf = logfonts[MSGFONTID_MESSAGEAREA];
+    color = fontcolors[MSGFONTID_MESSAGEAREA];
+    
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
 

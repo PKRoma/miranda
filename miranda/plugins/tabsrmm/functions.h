@@ -64,7 +64,7 @@ void StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBE
 void LoadMsgLogIcons(void);
 void FreeMsgLogIcons(void);
 
-void LoadMsgDlgFont(int i,LOGFONTA *lf,COLORREF *colour);
+void LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour);
 
 int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);

@@ -889,7 +889,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_POPUP_ADDPOPUPEX))
         myGlobals.g_PopupAvail = 1;
 
-    MoveFonts();
     if(ServiceExists(MS_FONT_REGISTER)) {
         myGlobals.g_FontServiceAvail = 1;
         FS_RegisterFonts();
@@ -1101,6 +1100,7 @@ int LoadSendRecvMessageModule(void)
     
     LoadDefaultTemplates();
 
+    MoveFonts();
     CacheLogFonts();
     BuildCodePageList();
     myGlobals.m_VSApiEnabled = InitVSApi();
