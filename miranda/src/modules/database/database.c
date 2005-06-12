@@ -259,12 +259,20 @@ void UnloadDatabaseModule(void)
 static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPARAM lParam)
 {
 	char * szProfile = (char *) lParam;
-	if ( dblink && dblink->cbSize==sizeof(DATABASELINK) ) {
+	if ( dblink && dblink->cbSize==sizeof(DATABASELINK) && dblink->getCapability && dblink->grokHeader && dblink->Load ) {
 		int err=0;
-		int rc=0;
+		int rc=0;		
 		// liked the profile?
 		rc=dblink->grokHeader(szProfile,&err);
 		if ( rc == 0 ) { 			
+			// supports v0.5 extensions?
+			rc=dblink->getCapability(DB_CAP_FLAGNUM1);
+			if ( !( rc & DB_CAP_VOLATILE_CONTACTS ) ) {
+				char sz[MAX_PATH];
+				mir_snprintf(sz,sizeof(sz),Translate("The database plugin '%s' is too old. It lacks 0.5.xx extensions support which Miranda now expects."),pluginname);
+				MessageBox(0,sz,Translate("Missing 0.5.xx support in database plugin"),MB_ICONERROR | MB_OK);
+				return DBPE_HALT;
+			}
 			// added APIs?
 			if ( dblink->Load(szProfile, &pluginCoreLink) == 0 ) return DBPE_DONE;
 			return DBPE_HALT;
