@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2005 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -57,14 +57,24 @@ void* List_Find( SortedList* p_list, void* p_value )
 	return(p_list->items[ index ]);
 }
 
-int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
+int List_GetIndexEx( SortedList* p_list, void* p_value, int* p_index, FSortFunc2 sortFunc, unsigned flags)
 {
    int low = 0, high = p_list->realCount-1, found = 0;
+
+	FSortFunc2 thisSortFunc = sortFunc ? sortFunc : (FSortFunc2) p_list->sortFunc;
+
+   // if the query item is smaller than the first index, bail!!
+  if ( p_list->realCount ) {
+	if ( thisSortFunc( p_value, p_list->items[0], flags) < 0 ) {
+		*p_index = 0;
+		return 0;
+	}
+  }
 
    while( low <= high )
    {  
 		int i = ( low+high )/2;
-      int result = p_list->sortFunc( p_list->items[ i ], p_value );
+      int result = thisSortFunc( p_list->items[ i ], p_value, flags );
       if ( result == 0 )
 		{	*p_index = i;
 			return(1);
@@ -78,6 +88,12 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 
 	*p_index = low;
    return 0;
+}
+
+
+int List_GetIndex(SortedList * p_list, void * p_value, int * p_index)
+{
+	return List_GetIndexEx(p_list, p_value, p_index, NULL, 0);
 }
 
 int List_Insert( SortedList* p_list, void* p_value, int p_index) 

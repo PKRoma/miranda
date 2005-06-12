@@ -33,6 +33,11 @@ PLUGINLINK *pluginLink;
 
 static int getCapability( int flag )
 {
+	switch ( flag ) {
+		case DB_CAP_FLAGNUM1:
+			return DB_CAP_VOLATILE_CONTACTS;
+
+	}
 	return 0;
 }
 
@@ -146,7 +151,7 @@ static DATABASELINK dblink = {
 static PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"Miranda database driver",
-	PLUGIN_MAKE_VERSION(0,5,0,1),
+	PLUGIN_MAKE_VERSION(0,6,0,0),
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
 	"egodust@users.sourceforge.net",

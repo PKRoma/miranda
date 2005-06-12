@@ -34,6 +34,10 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam);
 static int DeleteContactSetting(WPARAM wParam,LPARAM lParam);
 static int EnumContactSettings(WPARAM wParam,LPARAM lParam);
 
+// dbcontacts.c
+int GetVolatileSetting(HANDLE hContact, const char * szModule, const char * szSetting, DBVARIANT * dbv, int is_static);
+int SetVolatileSetting(HANDLE hContact, const char * szModule, const char * szSetting, DBVARIANT * dbv);
+
 extern CRITICAL_SECTION csDbAccess;
 extern struct DBHeader dbHeader;
 
@@ -42,7 +46,7 @@ SortedList lContacts;
 
 static SortedList lSettings, lGlobalSettings;
 
-static HANDLE hSettingChangeEvent;
+HANDLE hSettingChangeEvent;
 
 #define SETTINGSGROUPOFSCOUNT    32
 struct SettingsGroupOfsCacheEntry {
@@ -278,6 +282,9 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 		return 1;
 	settingNameLen=strlen(dbcgs->szSetting);
 	
+	if ( GetVolatileSetting(hContact, dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue, isStatic) == 0 ) 
+		return 0;
+	
 	EnterCriticalSection(&csDbAccess);
 
 	log3("get [%08p] %s/%s",hContact,dbcgs->szModule,dbcgs->szSetting);
@@ -490,6 +497,9 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 			return 1;
 		}
 	}
+
+	if ( SetVolatileSetting((HANDLE)wParam, dbcws->szModule, dbcws->szSetting, &dbcws->value) == 0 )
+		return 0;
 
 	EnterCriticalSection(&csDbAccess);
 	{

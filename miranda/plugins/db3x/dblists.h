@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /* a simple sorted list implementation */
 
 typedef int ( *FSortFunc )( void*, void* );
+typedef int ( *FSortFunc2 )( void*, void*, unsigned flags );
 
 typedef struct
 {
@@ -41,5 +42,6 @@ void List_Destroy( SortedList* );
 
 void*	List_Find( SortedList*, void* );
 int	List_GetIndex( SortedList*, void*, int* );
+int List_GetIndexEx( SortedList* p_list, void* p_value, int* p_index, FSortFunc2 sortFunc, unsigned flags);
 int   List_Insert( SortedList*, void*, int );
 int   List_Remove( SortedList*, int );
