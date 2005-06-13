@@ -439,7 +439,13 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
     isOnList = 0 == DBGetContactSettingByte(hContact, "CList", "NotOnList", 0);
     isOnline = szProto != NULL && ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 	chatRoom = szProto?DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0):0;
-    itemOrder = (int *) mir_alloc(sizeof(int) * contextItemCount);
+	if ( contextItemCount ) {
+		itemOrder = (int *) mir_alloc(sizeof(int) * contextItemCount);
+		ZeroMemory(itemOrder, sizeof(int) * contextItemCount);
+	} else {
+		itemOrder = (int *) mir_alloc(sizeof(int) * 1);
+		ZeroMemory(itemOrder, sizeof(int) * 1);
+	}
     itemCount = 0;
     for (i = 0; i < contextItemCount; i++) {
         if (contextMenuItem[i].id == 0)
