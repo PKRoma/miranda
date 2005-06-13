@@ -618,7 +618,6 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 		if ( n->text == NULL || n->text[0] == '\0' )
 			return;
 
-		nick = item->nick;
 		gcd.iType = GC_EVENT_TOPIC;
 	}
 	else {
@@ -626,13 +625,13 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 		if ( n->text == NULL )
 			return;
 
-		nick = strchr( from, '/' );
-		if ( nick == NULL || nick[1] == '\0' )
-			return;
-		nick++;
-
 		gcd.iType = GC_EVENT_MESSAGE;
 	}
+
+	nick = strchr( from, '/' );
+	if ( nick == NULL || nick[1] == '\0' )
+		return;
+	nick++;
 
 	JabberGcLogCreate( item );
 
