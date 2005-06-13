@@ -1905,7 +1905,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             //fall through
         case WM_MOUSEACTIVATE:
             if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200) {
-                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                //SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
                 break;
             }
@@ -1941,7 +1941,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
                     PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 }
-                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                //SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
                 dat->dwLastActivity = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
@@ -3865,7 +3865,6 @@ quote_from_last:
                             DWORD msg = ((MSGFILTER *) lParam)->msg;
                             WPARAM wp = ((MSGFILTER *) lParam)->wParam;
                             LPARAM lp = ((MSGFILTER *) lParam)->lParam;
-                            
                             CHARFORMAT2 cf2;
 
                             if(msg == WM_CHAR) {
