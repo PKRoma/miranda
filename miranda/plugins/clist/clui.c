@@ -125,10 +125,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             CallService(MS_DB_GETPROFILEPATH, sizeof(path), (LPARAM) & path);
             CallService(MS_DB_GETPROFILENAME, sizeof(file), (LPARAM) & file);
             mir_snprintf(p, sizeof(p), "%s\\%s", path, file);
-            rc = lstrcmp(profile, p) == 0;
+            rc = lstrcmpi(profile, p) == 0;
             ReplyMessage(rc);
-            if (rc)
-                ShowWindowAsync(hwnd, SW_SHOW);
+            if (rc) { 
+				ShowWindow(hwnd, SW_SHOW);	
+				SetForegroundWindow(hwnd);
+				SetFocus(hwnd);
+			}
         }
         return 0;
     }
