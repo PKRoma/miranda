@@ -301,7 +301,7 @@ static BOOL CALLBACK EnumMirandaWindows(HWND hwnd, LPARAM lParam)
 	ENUMMIRANDAWINDOW * x = (ENUMMIRANDAWINDOW *)lParam;
 	DWORD res=0;
 	if ( GetClassName(hwnd,classname,sizeof(classname)) && lstrcmp("Miranda",classname)==0 ) {		
-		if ( SendMessageTimeout(hwnd, x->msg, (WPARAM)x->aPath, 0, SMTO_ABORTIFHUNG, 75, &res) && res ) {
+		if ( SendMessageTimeout(hwnd, x->msg, (WPARAM)x->aPath, 0, SMTO_ABORTIFHUNG, 100, &res) && res ) {
 			x->found++;
 			return FALSE;
 		}
