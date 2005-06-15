@@ -1,5 +1,5 @@
 =================================================================================
-Yahoo 0.3.0.7 plugin for Miranda IM
+Yahoo 0.3.0.8 plugin for Miranda IM
 
 Copyright (C) 2003-5 Gennady Feldman (aka Gena01)
 Copyright (C) 2003-4 Laurent Marechal (aka Peorth)
@@ -23,10 +23,11 @@ Table of Contents:
 
 1. What's New:
 --------------
-+ Added server-side Ignore list support.
-+ Integrated Miranda Away system. It now uses the custom away messages from miranda, 
-unless the option has been ticked to not use a custom message for that status.
-+ Rewrote ping/timer handling.
++ Moved the status string into the location where clist_mw can read it. [Note: Gaming
+status will not be shown on clist_mw]
+x Fixed a very old bug with adding contacts. 
+x Fixed various status changes.
+x Hopefully fixed the yahoo crash that was reported for some time now.
 x Various bug fixes and improvements.
 
 2. Installation:
