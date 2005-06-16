@@ -114,6 +114,13 @@ Version 0.9.9.95pre8 - 2005/05/25
           is disabled. However, tabSRMM still maintains its own copy of font + color settings in
           the DB so that you can switch between using font service and the old dialog easily.
 
+        + restored "mark on double click" for the message history log.
+        
+        * the info panel splitter now follows the settings for the normal splitter (global, private
+          saving policy etc.).
+          
+        + added visual styles support for button tabs (using pushbutton skins).
+
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)

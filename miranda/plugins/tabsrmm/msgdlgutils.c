@@ -1463,6 +1463,13 @@ void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
 
 void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
+    if(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)
+        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "panelheight", dat->panelHeight);
+    else {
+        myGlobals.m_panelHeight = dat->panelHeight;
+        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "panelheight", dat->panelHeight);
+    }
+
     if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
         return;             // do not save "invalid" splitter values
         
@@ -1481,6 +1488,14 @@ void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 
     if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
         dat->splitterY = 150;
+}
+
+void LoadPanelHeight(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(!(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
+        dat->panelHeight = myGlobals.m_panelHeight;
+    else
+        dat->panelHeight = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "panelheight", myGlobals.m_panelHeight);
 }
 
 void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)

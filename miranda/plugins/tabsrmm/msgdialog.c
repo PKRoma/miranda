@@ -1156,13 +1156,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 
+                dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
+                dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
+                SetMessageLog(hwndDlg, dat);
+
                 if(dat->hContact) {
                     dat->codePage = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
                     dat->dwFlags |= (myGlobals.m_RTLDefault == 0 ? (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) ? MWF_LOG_RTL : 0) : (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1) ? MWF_LOG_RTL : 0));
-                    dat->panelHeight = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "panelheight", myGlobals.m_panelHeight);
+                    LoadPanelHeight(hwndDlg, dat);
                 }
-                dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
-                SetMessageLog(hwndDlg, dat);
 
                 dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
                 dat->showPic = GetAvatarVisibility(hwndDlg, dat);
@@ -1253,8 +1255,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
                     UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
                     
-                dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
-
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
                 if (dat->hContact) {
                     int  pCaps;
@@ -3745,7 +3745,6 @@ quote_from_last:
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_ERASE);
                     break;
-// BEGIN MOD#33: Show contact's picture
                 case IDC_PIC:
                     {
                         RECT rc;
@@ -3760,9 +3759,7 @@ quote_from_last:
                             RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
                     }
                     break;
-// END MOD#33
                 case IDM_CLEAR:
-                    // IEVIew MOD Begin
                     if (dat->hwndLog != 0) {
                         IEVIEWEVENT event;
                         event.cbSize = sizeof(IEVIEWEVENT);
@@ -3771,8 +3768,6 @@ quote_from_last:
                         event.hContact = dat->hContact;
                         CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
                     }
-                    // IEVIew MOD End
-
                     SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
                     dat->hDbEventFirst = NULL;
                     break;
@@ -4442,7 +4437,6 @@ verify:
                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
             }
             DBWriteContactSettingDword(NULL, SRMSGMOD, "multisplit", dat->multiSplitterX);
-            DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "panelheight", dat->panelHeight);
             break;
         case DM_ACTIVATEME:
             ActivateExistingTab(dat->pContainer, hwndDlg);
