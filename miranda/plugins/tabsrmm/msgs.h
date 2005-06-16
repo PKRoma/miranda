@@ -58,6 +58,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IMF_AUTOKEYBOARD 0x0001
 #define ODS_INACTIVE        0x0080
 #define NIN_BALLOONUSERCLICK (WM_USER + 5)
+#define NIN_BALLOONHIDE (WM_USER + 3)
+#define NIN_BALLOONTIMEOUT (WM_USER + 4)
 
 #define WM_THEMECHANGED 0x031A
 

@@ -12,8 +12,9 @@ LIBS =  -L"C:/Dev-Cpp/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)
 INCS =  -I"C:/Dev-Cpp/include"
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"
 BIN  = ../../bin/release/plugins/tabsrmm_unicode.dll
-CXXFLAGS = $(CXXINCS) -DBUILDING_DLL=1   -fexpensive-optimizations -O2 -mwindows -fno-exceptions -fno-rtti
+CXXFLAGS = -DBUILDING_DLL=1  -D__GNUWIN32__ -DUNICODE -fexpensive-optimizations -O2 -mwindows -fno-exceptions -fno-rtti
 CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -DUNICODE -fno-exceptions -O2 -mwindows
+LDFLAGS = -DUNICODE
 
 .PHONY: all all-before all-after clean clean-custom
 
@@ -52,10 +53,10 @@ Release_MINGW32_UNICODE/eventpopups.o: eventpopups.c
 	$(CC) -c eventpopups.c -o Release_MINGW32_UNICODE/eventpopups.o $(CFLAGS)
 
 Release_MINGW32_UNICODE/ImageDataObject.o: ImageDataObject.cpp
-	$(CPP) -c ImageDataObject.cpp -o Release_MINGW32_UNICODE/ImageDataObject.o $(CFLAGS)
+	$(CPP) -c ImageDataObject.cpp -o Release_MINGW32_UNICODE/ImageDataObject.o $(CXXFLAGS)
 
 Release_MINGW32_UNICODE/formatting.o: formatting.cpp
-	$(CPP) -c formatting.cpp -o Release_MINGW32_UNICODE/formatting.o $(CFLAGS)
+	$(CPP) -c formatting.cpp -o Release_MINGW32_UNICODE/formatting.o $(CXXFLAGS)
 
 Release_MINGW32_UNICODE/themes.o: themes.c
 	$(CC) -c themes.c -o Release_MINGW32_UNICODE/themes.o $(CFLAGS)

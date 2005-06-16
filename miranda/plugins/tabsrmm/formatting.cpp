@@ -33,9 +33,6 @@ License: GPL
 #include <richedit.h>
 
 #include <string>
-#include <vector>
-#include <set>
-#include <fstream>
 #include "msgdlgutils.h"
 
 #define MWF_LOG_TEXTFORMAT 0x2000000
@@ -91,23 +88,24 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
             break;
         beginmark = tempmark;
         endindex = i;
-        if((endmark = message.find(w_bbcodes_end[i], beginmark)) == message.npos)
-            break;
+        endmark = message.find(w_bbcodes_end[i], beginmark);
         if(endindex == 3) {                                  // color
             int closing = message.find_first_of(L"]", beginmark);
-            if(closing == message.npos)
+            if(closing == message.npos) {
+                message[beginmark] = ' ';
                 continue;                                       // no closing bracket found
+            }
             else {
-                //std::wstring colorname = message.substr(beginmark + 7, closing - (beginmark + 7));
                 std::wstring colorname = message.substr(beginmark + 7, 10);
                 int ii = 0;
                 wchar_t szTemp[5];
                 while(rtf_ctable[ii].szName != NULL) {
-//                    if(colorname == rtf_ctable[ii].szName) {
                     if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
                         closing = beginmark + 7 + wcslen(rtf_ctable[ii].szName);
-                        message.erase(endmark, 4);
-                        message.replace(endmark, 4, L"c0 ");
+                        if(endmark != message.npos) {
+                            message.erase(endmark, 4);
+                            message.replace(endmark, 4, L"c0 ");
+                        }
                         message.erase(beginmark, (closing - beginmark));
                         message.insert(beginmark, L"cxxx ");
                         _snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 10 + ii);
@@ -117,14 +115,15 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
                     }
                     ii++;
                 }
-                if(rtf_ctable[ii].szName == NULL) {
+                if(rtf_ctable[ii].szName == NULL && endmark != message.npos) {
                     message.erase(endmark, 8);
                     message.erase(beginmark, (closing - beginmark) + 1);
                 }
                 continue;
             }
         }
-        message.replace(endmark, 4, formatting_strings_end[i]);
+        if(endmark != message.npos)
+            message.replace(endmark, 4, formatting_strings_end[i]);
         message.insert(beginmark, L" ");
         message.replace(beginmark, 4, formatting_strings_begin[i]);
     }
@@ -221,23 +220,24 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
 
         beginmark = tempmark;
         endindex = i;
-        if((endmark = message.find(bbcodes_end[i], beginmark)) == message.npos)
-            break;
+        endmark = message.find(bbcodes_end[i], beginmark);
         if(endindex == 3) {                                  // color
             int closing = message.find_first_of("]", beginmark);
-            if(closing == message.npos)
-                continue;                                       // no closing bracket found
+            if(closing == message.npos) {
+                message[beginmark] = ' ';
+                continue;
+            }
             else {
                 std::string colorname = message.substr(beginmark + 7, 10);
-                //std::string colorname = message.substr(beginmark + 7, closing - (beginmark + 7));
                 int ii = 0;
                 char szTemp[5];
                 while(rtf_ctable[ii].szName != NULL) {
-                    //if(colorname == rtf_ctable[ii].szName) {
                     if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
                         closing = beginmark + 7 + strlen(rtf_ctable[ii].szName);
-                        message.erase(endmark, 8);
-                        message.insert(endmark, "c0xx ");
+                        if(endmark != message.npos) {
+                            message.erase(endmark, 8);
+                            message.insert(endmark, "c0xx ");
+                        }
                         message.erase(beginmark, (closing - beginmark) + 1);
                         message.insert(beginmark, "cxxx ");
                         _snprintf(szTemp, 4, "%02d", MSGDLGFONTCOUNT + 10 + ii);
@@ -247,14 +247,15 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
                     }
                     ii++;
                 }
-                if(rtf_ctable[ii].szName == NULL) {
+                if(rtf_ctable[ii].szName == NULL && endmark != message.npos) {
                     message.erase(endmark, 8);
                     message.erase(beginmark, (closing - beginmark) + 1);
                 }
                 continue;
             }
         }
-        message.replace(endmark, 4, formatting_strings_end[i]);
+        if(endmark != message.npos)
+            message.replace(endmark, 4, formatting_strings_end[i]);
         message.insert(beginmark, " ");
         message.replace(beginmark, 4, formatting_strings_begin[i]);
     }

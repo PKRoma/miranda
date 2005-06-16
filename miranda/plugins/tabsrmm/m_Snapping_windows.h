@@ -23,3 +23,4 @@ struct SnapWindowProc_t
 								if (nMessage == WM_SIZING) return 1;}}
 
 #endif //SNAPPING_WINDOWS_H
+

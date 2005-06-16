@@ -4989,7 +4989,7 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
     if(( hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE )      
     {                                                                                                    
         SetFilePointer(hFile, 0, NULL, FILE_END);                                                        
-        WriteFile(hFile, pbBuff, cb, pcb, NULL);                                                         
+        WriteFile(hFile, pbBuff, cb, (DWORD *)pcb, NULL);                                                         
         *pcb = cb;                                                                                       
         CloseHandle(hFile);                                                                              
         return 0;                                                                                        

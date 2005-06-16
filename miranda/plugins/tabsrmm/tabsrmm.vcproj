@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252" ?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
@@ -900,6 +900,8 @@
 			<File
 				RelativePath="m_tabsrmm.h">
 			</File>
+			<File
+				RelativePath="m_toptoolbar.h"/>
 			<File
 				RelativePath="msgdlgutils.h">
 			</File>
