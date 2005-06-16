@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -119,17 +119,18 @@ static int AwayMsgPreBuildMenu(WPARAM wParam,LPARAM lParam)
 	clmi.cbSize=sizeof(clmi);
 	clmi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;
 
-	
 	if(szProto!=NULL) {
-		status=DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE);
-		wsprintf(str,Translate("Re&ad %s Message"),(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0));
-		clmi.pszName=str;
-		if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGRECV) {
-			if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_3,0)&Proto_Status2Flag(status)){
-				clmi.flags=CMIM_FLAGS|CMIM_NAME|CMIF_NOTOFFLINE|CMIM_ICON;
-				clmi.hIcon = LoadSkinnedProtoIcon(szProto, status);
+	   int chatRoom = szProto?DBGetContactSettingByte((HANDLE)wParam, szProto, "ChatRoom", 0):0;
+	   if ( !chatRoom ) {
+			status=DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE);
+			wsprintf(str,Translate("Re&ad %s Message"),(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0));
+			clmi.pszName=str;
+			if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGRECV) {
+				if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_3,0)&Proto_Status2Flag(status)){
+					clmi.flags=CMIM_FLAGS|CMIM_NAME|CMIF_NOTOFFLINE|CMIM_ICON;
+					clmi.hIcon = LoadSkinnedProtoIcon(szProto, status);
+				}
 			}
-
 		}
 	}
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAwayMsgMenuItem,(LPARAM)&clmi);
@@ -161,4 +162,3 @@ int LoadAwayMsgModule(void)
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,AwayMsgPreShutdown);
 	return LoadAwayMessageSending();
 }
-
