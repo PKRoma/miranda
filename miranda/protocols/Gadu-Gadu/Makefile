@@ -85,8 +85,8 @@ ifdef DEBUG
 CFLAGS  = -g $(DEFINES) $(INC)
 CPPFLAGS  = -g $(DEFINES) $(INC)
 else
-CFLAGS  = -O2 $(DEFINES) $(INC)
-CPPFLAGS  = -O2 $(DEFINES) $(INC)
+CFLAGS  = -Os $(DEFINES) $(INC)
+CPPFLAGS  = -Os $(DEFINES) $(INC)
 LFLAGS := $(LFLAGS) -Wl,-s
 endif
 
