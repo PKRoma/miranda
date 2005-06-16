@@ -60,28 +60,31 @@ $Id$
 #include "functions.h"
 
 #ifdef __MATHMOD_SUPPORT
-//mathMod begin
-#include "m_MathModule.h"
-//mathMod end
+    #include "m_MathModule.h"
 #endif
 
 #define SB_CHAR_WIDTH        45
 #define SIDEBARWIDTH         30
-
-char *szWarnClose = "Do you really want to close this session?";
+#define DEFAULT_CONTAINER_POS 0x00400040
+#define DEFAULT_CONTAINER_SIZE 0x019001f4
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern HWND floaterOwner;
-
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
 
-#define DEFAULT_CONTAINER_POS 0x00400040
-#define DEFAULT_CONTAINER_SIZE 0x019001f4
+extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto);
+
+char *szWarnClose = "Do you really want to close this session?";
 
 struct ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
+struct ContainerWindowData *pLastActiveContainer = NULL;
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
 int GetTabItemFromMouse(HWND hwndTab, POINT *pt);
@@ -92,15 +95,16 @@ HMENU BuildContainerMenu();
 void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat);
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
 void ReflashContainer(struct ContainerWindowData *pContainer);
-
-struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
-struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
-
+HMENU BuildMCProtocolMenu(HWND hwndDlg);
+int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newName);
 #if defined(_UNICODE)
     void _DBWriteContactSettingWString(HANDLE hContact, char *szKey, char *szSetting, const wchar_t *value);
 #endif    
+
+struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
+struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
 
 static struct SIDEBARITEM sbarItems[] = {
     IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "Session List",
@@ -114,18 +118,6 @@ static struct SIDEBARITEM sbarItems[] = {
     IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], "Setup Sidebar",
     0, 0, 0, ""
 };
-extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto);
-
-//WNDPROC OldTabControlProc;
-
-HMENU BuildMCProtocolMenu(HWND hwndDlg);
-int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
-
-struct ContainerWindowData *pLastActiveContainer = NULL;
 
 /*
  * CreateContainer MUST malloc() a struct ContainerWindowData and pass its address
@@ -339,7 +331,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, Translate("Container options..."));                 
                 SetWindowTextA(hwndDlg, "Message Session...");
                 SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
-                
 
                 /*
                  * make the tab control the controlling parent window for all message dialogs
@@ -347,10 +338,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 ws = GetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
-
-                /*
-                 * subclass the tab control
-                 */
 
                 ws = GetWindowLong(hwndTab, GWL_STYLE);
                 if(myGlobals.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
@@ -368,14 +355,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
                 TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3), DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
                 
-                //OldTabControlProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_WNDPROC, (LONG)TabControlSubclassProc);
-                //SendMessage(hwndTab, EM_SUBCLASSED, 0, (LPARAM)pContainer);
-                
                 SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
 
-                /*
-                 * assign the global image list...
-                 */
                 /*
                  * context menu
                  */
@@ -399,8 +380,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
                     ShowWindow(hwndDlg, SW_SHOWNORMAL);
                 }
-                //SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_TOPMOST : HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-
                 SetTimer(hwndDlg, TIMERID_HEARTBEAT, TIMEOUT_HEARTBEAT, NULL);
                 SendMessage(hwndDlg, DM_SETSIDEBARBUTTONS, 0, 0);
                 return TRUE;
@@ -417,7 +396,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 /*
                  * retrieve the container window geometry information from the database.
                  */
-
                 if(pContainer->isCloned && pContainer->hContactFrom != 0 && !(pContainer->dwFlags & CNT_GLOBALSIZE)) {
                     if (Utils_RestoreWindowPosition(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split")) {
                         if (Utils_RestoreWindowPositionNoMove(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split"))
@@ -2564,22 +2542,3 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     else
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_ENABLED);
 }
-
-void SetFloater(struct ContainerWindowData *pContainer)
-{
-    RECT rc;
-    POINT pt, pt1;
-    int x;
-    GetClientRect(pContainer->hwnd, &rc);
-    pt.x = rc.left;
-    pt.y = rc.top;
-    pt1.x = rc.right;
-    pt1.y = rc.bottom;
-    ClientToScreen(pContainer->hwnd, &pt);
-    ClientToScreen(pContainer->hwnd, &pt1);
-    x = pt1.x - (pContainer->dwFlags & CNT_NOMENUBAR ? 110 : 52);
-    floaterOwner = pContainer->hwnd;
-    SetWindowPos(myGlobals.g_hwndHotkeyHandler, HWND_TOP, x, pt.y - (pContainer->dwFlags & CNT_NOMENUBAR ? 20 : 18), 50, 17, SWP_NOACTIVATE);
-}
-
-

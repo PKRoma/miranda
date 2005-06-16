@@ -32,18 +32,20 @@ $Id$
 #include <locale.h>
 #include "msgs.h"
 #include "m_smileyadd.h"
-// IEVIew MOD Begin
 #include "m_ieview.h"
 #include "m_popup.h"
 #include "nen.h"
 #include "functions.h"
-// IEVIew MOD End
+
 #ifdef __MATHMOD_SUPPORT
-//mathMod begin
 #include "m_MathModule.h"
-//mathMod end
 #endif
+
 #include "msgdlgutils.h"
+
+extern void ReleaseRichEditOle(IRichEditOle *ole);
+extern MYGLOBALS myGlobals;
+extern struct RTFColorTable rtf_ctable[];
 
 struct CPTABLE cpTable[] = {
     {	874,	"Thai" },
@@ -63,8 +65,6 @@ struct CPTABLE cpTable[] = {
     {	1361,	"Korean (Johab)" },
     {   -1,     NULL}
 };
-
-int _log(const char *fmt, ...);
 
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
 static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
@@ -86,20 +86,18 @@ static char *szDivider = "\\strike----------------------------------------------
 static char *szGroupedSeparator = "> ";
 
 extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
+
 #if defined(_UNICODE)
     extern WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags);
 #else
     extern char *FormatRaw(DWORD dwFlags, const char *msg, int flags);
 #endif
 
-extern void ReleaseRichEditOle(IRichEditOle *ole);
-
-extern MYGLOBALS myGlobals;
-extern struct RTFColorTable rtf_ctable[];
-
 static int logPixelSY;
-
 static char szToday[22], szYesterday[22];
+char rtfFonts[MSGDLGFONTCOUNT + 2][128];
+LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
+COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 
 #define LOGICON_MSG  0
 #define LOGICON_URL  1
@@ -127,10 +125,6 @@ struct LogStreamData
     struct MessageWindowData *dlgDat;
     DBEVENTINFO *dbei;
 };
-
-char rtfFonts[MSGDLGFONTCOUNT + 2][128];
-LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
-COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 
 int safe_wcslen(wchar_t *msg, int chars) {
     int i;

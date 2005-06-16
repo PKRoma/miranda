@@ -91,9 +91,9 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
         endmark = message.find(w_bbcodes_end[i], beginmark);
         if(endindex == 3) {                                  // color
             int closing = message.find_first_of(L"]", beginmark);
-            if(closing == message.npos) {
+            if(closing == message.npos) {                       // must be an invalid [color=] tag w/o closing bracket
                 message[beginmark] = ' ';
-                continue;                                       // no closing bracket found
+                continue;                                       
             }
             else {
                 std::wstring colorname = message.substr(beginmark + 7, 10);

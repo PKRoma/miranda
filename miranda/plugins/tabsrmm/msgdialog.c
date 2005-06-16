@@ -48,9 +48,7 @@ $Id$
 #define TOOLBAR_SEND_HIDDEN 2
 
 #ifdef __MATHMOD_SUPPORT
-//mathMod begin
-#include "m_MathModule.h"
-//mathMod end
+	#include "m_MathModule.h"
 #endif
 
 extern MYGLOBALS myGlobals;
@@ -58,12 +56,18 @@ extern NEN_OPTIONS nen_options;
 extern TemplateSet RTL_Active, LTR_Active;
 extern LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
 extern COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
+extern HANDLE hMessageWindowList;
+extern struct CREOleCallback reOleCallback;
+extern HINSTANCE g_hInst;
+extern char *szWarnClose;
+extern struct RTFColorTable rtf_ctable[];
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
+
 int CutContactName(char *old, char *new, int size);
+
 TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes);
-DWORD _DBGetContactSettingDword(HANDLE hContact, char *pszSetting, char *pszValue, DWORD dwDefault, int iIgnoreMode);
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, const wchar_t *value);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
@@ -77,14 +81,7 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCoun
 void ReflashContainer(struct ContainerWindowData *pContainer);
 void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
 
-extern HANDLE hMessageWindowList;
-extern struct CREOleCallback reOleCallback;
-extern HINSTANCE g_hInst;
-
 void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hbm);
-
-extern char *szWarnClose;
-extern struct RTFColorTable rtf_ctable[];
 
 void TABSRMM_FireEvent(HANDLE hContact, HWND hwndDlg, unsigned int type, unsigned int subType);
 struct ContainerWindowData *FindContainerByName(const TCHAR *name);
@@ -92,6 +89,7 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iMode, HANDLE hContactFrom);
 
 static WNDPROC OldMessageEditProc, OldSplitterProc, OldAvatarWndProc;
+
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_PROTOMENU, IDC_NAME, IDC_INFOPANELMENU};
 static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE, IDC_SENDMENU};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };

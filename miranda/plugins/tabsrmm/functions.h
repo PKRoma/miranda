@@ -69,8 +69,6 @@ void LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour);
 int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
 
-void SetFloater(struct ContainerWindowData *pContainer);
-
 int InitVSApi(), FreeVSApi();
 void ReloadTabConfig(), FreeTabConfig();
 int RegisterTabCtrlClass(void);

@@ -1256,7 +1256,6 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 	DBVARIANT dbv;
 	char idstr[12];
 	BYTE style;
-    char bSize;
     
 	GetDefaultFontSetting(i,lf,colour);
 	_snprintf(idstr, sizeof(idstr), "Font%d",i);
