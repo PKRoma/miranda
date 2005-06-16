@@ -530,6 +530,12 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				rc.right=clRect.right;
 				DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,DT_END_ELLIPSIS);
 			}
+			if(selected) {
+				if(Drawing->type!=CLCIT_DIVIDER) {
+					SetTextColor(hdcMem,dat->quickSearchColour);
+					TextOut(hdcMem,dat->leftMargin+subident+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),Drawing->szText,lstrlen(dat->szQuickSearch));
+				}
+			}
 
 			if (dat->style&CLS_SHOWSTATUSMESSAGES)
 			{							
@@ -547,12 +553,6 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					}		
 			}
 
-			if(selected) {
-				if(Drawing->type!=CLCIT_DIVIDER) {
-					SetTextColor(hdcMem,dat->quickSearchColour);
-					TextOut(hdcMem,dat->leftMargin+subident+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),Drawing->szText,lstrlen(dat->szQuickSearch));
-				}
-			}
 /*
 			//extra icons
 			if (!(DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0) && Drawing->isSubcontact))
