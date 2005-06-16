@@ -112,6 +112,8 @@ int gg_gc_load()
     else
         gg_netlog("gg_gc_getchat(): Cannot register with groupchat plugin !!!");
 #endif
+
+	return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,6 +130,8 @@ int gg_gc_unload()
     LocalEventUnhook(hHookGCUserEvent);
     LocalEventUnhook(hHookGCMenuBuild);
     if(hEventGGGetChat) DestroyHookableEvent(hEventGGGetChat);
+
+	return 1;
 }
 
 int gg_gc_menu(WPARAM wParam, LPARAM lParam)
@@ -150,7 +154,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
     // Lookup for chat structure if not found
     if(!chat && gch->pDest->pszID)
     {
-        list_t l; int i;
+        list_t l;
         for(l = chats; l; l = l->next)
         {
             gg_gc_chat *tchat = (gg_gc_chat *)l->data;
@@ -685,6 +689,8 @@ int gg_gc_clearignored(WPARAM wParam, LPARAM lParam)
         GG_PROTONAME,
         MB_OK | MB_ICONINFORMATION
     );
+
+	return 0;
 }
 
 int gg_gc_openconf(WPARAM wParam, LPARAM lParam)

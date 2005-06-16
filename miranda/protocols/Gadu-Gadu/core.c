@@ -23,6 +23,9 @@
 
 extern int gg_failno;
 
+// Declare prototypes
+int status_gg2m(int status);
+
 ////////////////////////////////////////////////////////////
 // Swap bits in DWORD
 uint32_t swap32(uint32_t x)
@@ -1177,7 +1180,6 @@ void gg_notifyall()
 HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
 {
     HANDLE hContact;
-    DBVARIANT dbv;
     char *szProto;
 
     // It's my UIN exit !!!

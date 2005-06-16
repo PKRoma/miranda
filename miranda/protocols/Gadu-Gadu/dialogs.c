@@ -463,7 +463,6 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 case PSN_APPLY:
                 {
                     char str[128];
-                    int val;
 
                     // Write Gadu-Gadu number
                     GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));

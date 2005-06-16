@@ -18,16 +18,19 @@
 #define strcasecmp  stricmp
 #else
 
+/* MingW has them but not Visual C++ */
 /* Defined if this machine has va_copy(). */
 #define __GG_LIBGADU_HAVE_VA_COPY
-
 /* Defined if this machine has __va_copy(). */
 #define __GG_LIBGADU_HAVE___VA_COPY
 
 #endif
 
 /* Defined if this machine supports long long. */
+/* Visual C++ 6.0 has no long long */
+#if !defined(_MSC_VER) || (_MSC_VER >= 1300)
 #define __GG_LIBGADU_HAVE_LONG_LONG
+#endif
 
 /* Defined if libgadu was compiled and linked with TLS support. */
 #define __GG_LIBGADU_HAVE_OPENSSL

@@ -68,7 +68,9 @@ static void *__stdcall gg_remindpasswordthread(HANDLE uin)
 #ifdef DEBUGMODE
     gg_netlog("gg_remindpasswordthread(): End.");
 #endif
+	return NULL;
 }
+
 void gg_remindpassword(uin_t uin)
 {
     pthread_t tid;

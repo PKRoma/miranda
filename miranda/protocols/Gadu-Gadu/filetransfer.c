@@ -393,7 +393,6 @@ void *__stdcall gg_dccmainthread(void *empty)
 					{
 						CCSDATA ccs;
 						PROTORECVEVENT pre;
-						HANDLE hContact;
 						char *szBlob;
 						char *szFilename = dcc->file_info.filename;
 						char *szMsg = dcc->file_info.filename;

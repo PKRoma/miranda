@@ -74,6 +74,8 @@ void *gg_doregister(char *newPass, char *newEmail)
 #ifdef DEBUGMODE
     gg_netlog("gg_doregister(): End.");
 #endif
+
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,6 +130,8 @@ void *gg_dounregister(uin_t uin, char *password)
 #ifdef DEBUGMODE
     gg_netlog("gg_dounregister(): End.");
 #endif
+
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +192,8 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 #ifdef DEBUGMODE
     gg_netlog("gg_dochpass(): End.");
 #endif
+
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +247,8 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 #ifdef DEBUGMODE
     gg_netlog("gg_doemail(): End.");
 #endif
+
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -291,7 +299,7 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				case IDC_CPASSWORD:
 				case IDC_CONFIRM:
 					{
-						char pass[128], cpass[128], email[128];
+						char pass[128], cpass[128];
 						BOOL enable;
 						GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
 						GetDlgItemText(hwndDlg, IDC_CPASSWORD, cpass, sizeof(cpass));

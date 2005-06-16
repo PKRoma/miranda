@@ -55,7 +55,6 @@ char *CreateGroup(char *groupName)
     int groupId;
     char groupIdStr[11];
     char groupName2[127];
-    char str[256];
 	char *p;
     DBVARIANT dbv;
 
@@ -319,7 +318,6 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
     char *password;
     uin_t uin;
     DBVARIANT dbv;
-    struct gg_http *h;
 
 	// Check if connected
     if (!gg_isonline())
@@ -359,6 +357,8 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
 #endif
     }
     free(password);
+
+	return 0;
 }
 
 //////////////////////////////////////////////////////////
@@ -368,7 +368,6 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
     char *password;
     uin_t uin;
     DBVARIANT dbv;
-    struct gg_http *h;
 
 	// Check if connected
     if (!ggThread->sess)
@@ -412,6 +411,8 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
 	// Set list removal
 	ggListRemove = TRUE;
     free(password);
+
+	return 0;
 }
 
 
@@ -492,6 +493,8 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
             MB_OK | MB_ICONSTOP
         );
     }
+
+	return 0;
 }
 
 static int gg_export_text(WPARAM wParam, LPARAM lParam)
@@ -556,6 +559,8 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
             MB_OK | MB_ICONSTOP
         );
     }
+
+	return 0;
 }
 
 //////////////////////////////////////////////////////////
@@ -565,7 +570,6 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
     char *password, *contacts;
     uin_t uin;
     DBVARIANT dbv;
-    struct gg_http *h;
 
 	// Check if connected
     if (!ggThread->sess)
@@ -615,6 +619,8 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
 	ggListRemove = FALSE;
     free(contacts);
     free(password);
+
+	return 0;
 }
 
 //////////////////////////////////////////////////////////

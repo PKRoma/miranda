@@ -34,7 +34,13 @@ extern "C" {
 #endif
 
 // Windows headers
+// Visual C++ .NET tries to include winsock.h
+// which is very ver bad
+#if (_MSC_VER >= 1300)
 #include <winsock2.h>
+#else
+#include <windows.h>
+#endif
 #include <commctrl.h>
 #include <commdlg.h>
 #include <process.h>
@@ -344,6 +350,11 @@ int gg_gc_load();
 int gg_gc_unload();
 char * gg_gc_getchat(uin_t sender, uin_t *recipients, int recipients_count);
 int gg_gc_changenick(HANDLE hContact, char *pszNick);
+int gg_getinfo(WPARAM wParam, LPARAM lParam);
+void gg_remindpassword(uin_t uin);
+char *ws_strerror(int code);
+void gg_dccwait(GGTHREAD *thread);
+uint32_t swap32(uint32_t x);
 #define UIN2ID(uin,id) itoa(uin,id,10)
 
 // Debug functions

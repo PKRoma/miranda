@@ -48,9 +48,12 @@
 // win32 WinSocket wrapper
 // #undef errno
 // #define errno (errno = WSAGetLastError())
+
+// Defined in gg.c custom error reporting function
+char *ws_strerror(int code);
 #define strerror(x) ws_strerror(x)
 
-//#define socket(x,y,z)
+// #define socket(x,y,z)
 
 static int fork()
 {

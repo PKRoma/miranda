@@ -226,6 +226,8 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
             MessageBox(hwnd, Translate("Image cannot be written to disk."), GG_PROTO, MB_ICONERROR);
         }
     }
+
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -931,6 +933,8 @@ BOOL gg_img_sendonrequest(struct gg_event* e)
     GlobalUnlock(dat->lpImages->hPicture);
 
     gg_img_remove(dat);
+
+	return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -985,7 +989,7 @@ int gg_img_sendimg(WPARAM wParam, LPARAM lParam)
             gg_netlog("gg_img_sendimg(): Cannot create image preview window. No signal received.");
 #endif
             CloseHandle(dat->hEvent);
-            return FALSE;
+            return 0;
         }
         list_add(&gg_imagedlgs, dat, 0);
         CloseHandle(dat->hEvent);
@@ -995,4 +999,6 @@ int gg_img_sendimg(WPARAM wParam, LPARAM lParam)
     SendMessage(dat->hWnd, WM_CHOOSEIMG, 0, 0);
 
     ReleaseMutex(hImgMutex);
+
+	return 0;
 }

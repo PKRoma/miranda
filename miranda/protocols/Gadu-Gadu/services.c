@@ -52,7 +52,7 @@ char *StatusModeToDbSetting(int status, const char *suffix)
             case ID_STATUS_OUTTOLUNCH: prefix="Otl"; break;
             default: return NULL;
     }
-    lstrcpy(str,prefix); lstrcat(str,suffix);
+    strcpy(str, prefix); strcat(str, suffix);
     return str;
 }
 
@@ -173,6 +173,8 @@ int gg_refreshstatus(int status)
         gg_broadcastnewstatus(status);
     }
     pthread_mutex_unlock(&threadMutex);
+
+	return TRUE;
 }
 
 //////////////////////////////////////////////////////////
@@ -268,7 +270,6 @@ static void *__stdcall gg_sendackthread(void *ack)
 int gg_sendmessage(WPARAM wParam, LPARAM lParam)
 {
     CCSDATA *ccs = (CCSDATA *) lParam;
-    DBVARIANT dbv;
     pthread_t tid;
     uin_t uin;
 
@@ -346,7 +347,7 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
     pthread_t tid;
     gg_pubdir50_t req;
 	unsigned long crc;
-	char data[256 + 1] = "\0";
+	char data[512] = "\0";
 
     // Check if connected and if there's a search data
     pthread_mutex_lock(&threadMutex);
@@ -367,7 +368,7 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
         gg_pubdir50_add(req, GG_PUBDIR50_NICKNAME, psbn->pszNick);
         strcat(data, psbn->pszNick);
     }
-    strncat(data, 256, ".");
+    strcat(data, ".");
 
     if(psbn->pszFirstName)
     {
@@ -636,13 +637,10 @@ int gg_createadvsearchui(WPARAM wParam, LPARAM lParam)
 // search by advanced
 int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
 {
-    int result;
-    int dataLen;
-    BYTE *searchData;
     pthread_t tid;
     gg_pubdir50_t req;
     HWND hwndDlg = (HWND)lParam;
-    char text[64], data[512 + 1] = "\0";
+    char text[64], data[512] = "\0";
 	unsigned long crc;
 
     // Check if connected
@@ -656,9 +654,9 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
     if(strlen(text))
     {
         gg_pubdir50_add(req, GG_PUBDIR50_FIRSTNAME, text);
-        strncat(data, 512, text);
+        strcat(data, text);
     }
-    /* 1 */ strncat(data, 512, ".");
+    /* 1 */ strcat(data, ".");
 
     GetDlgItemText(hwndDlg, IDC_LASTNAME, text, sizeof(text));
     if(strlen(text))
