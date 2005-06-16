@@ -25,11 +25,11 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 2, 9),
+    PLUGIN_MAKE_VERSION(0, 0, 3, 0),
     "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
-    "Copyright © 2003-2004 Adam Strzelecki",
+    "Copyright © 2003-2005 Adam Strzelecki",
     "http://www.miranda.kom.pl/",
     0,
     0
@@ -193,7 +193,9 @@ void gg_cleanuplastplugin(DWORD version)
 int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
     NETLIBUSER nlu = { 0 };
-	char title[64];
+	char title[64], *error;
+	DWORD version;
+
 	strcpy(title, GG_PROTONAME);
 	strcat(title, " ");
 	strcat(title, Translate("connection"));
@@ -220,14 +222,13 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
     gg_gc_load();
 
 	// Make error message
-	char *error = Translate("Error");
+	error = Translate("Error");
 	ggProtoError = malloc(strlen(ggProtoName) + strlen(error) + 2);
 	strcpy(ggProtoError, ggProtoName);
 	strcat(ggProtoError, " ");
 	strcat(ggProtoError, error);
 
 	// Do last plugin cleanup if not actual version
-	DWORD version;
 	if((version = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(version);
 
@@ -261,15 +262,15 @@ void init_protonames()
 // When plugin is loaded
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
-    // Init winsock
     WSADATA wsaData;
+    PROTOCOLDESCRIPTOR pd;
+
+    // Init winsock
     if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))
         return 1;
 
 	// Init proto names
 	init_protonames();
-
-    PROTOCOLDESCRIPTOR pd;
 
     pluginLink = link;
     hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, gg_modulesloaded);

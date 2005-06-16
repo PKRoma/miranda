@@ -24,6 +24,10 @@
 // Create New Account : Proc
 void *gg_doregister(char *newPass, char *newEmail)
 {
+    // Connection handles
+    struct gg_http *h;
+	struct gg_pubdir *s;
+
 #ifdef DEBUGMODE
     gg_netlog("gg_doregister(): Starting.");
 #endif
@@ -31,10 +35,6 @@ void *gg_doregister(char *newPass, char *newEmail)
 
 	// Load token
 	if(!gg_gettoken()) return NULL;
-
-    // Connection handle
-    struct gg_http *h;
-	struct gg_pubdir *s;
 
     if (!(h = gg_register3(newEmail, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || !s->uin)
     {
@@ -80,6 +80,10 @@ void *gg_doregister(char *newPass, char *newEmail)
 // Remove Account : Proc
 void *gg_dounregister(uin_t uin, char *password)
 {
+    // Connection handles
+    struct gg_http *h;
+	struct gg_pubdir *s;
+
 #ifdef DEBUGMODE
     gg_netlog("gg_dounregister(): Starting.");
 #endif
@@ -87,10 +91,6 @@ void *gg_dounregister(uin_t uin, char *password)
 
 	// Load token
 	if(!gg_gettoken()) return NULL;
-
-    // Connection handle
-    struct gg_http *h;
-	struct gg_pubdir *s;
 
     if (!(h = gg_unregister3(uin, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || s->uin != uin)
     {
@@ -134,23 +134,23 @@ void *gg_dounregister(uin_t uin, char *password)
 // Change Password Page : Proc
 void *gg_dochpass(uin_t uin, char *password, char *newPass)
 {
+    // Readup email
+	char email[255] = "\0"; DBVARIANT dbv_email;
+    // Connection handles
+    struct gg_http *h;
+	struct gg_pubdir *s;
+
 #ifdef DEBUGMODE
     gg_netlog("gg_dochpass(): Starting.");
 #endif
     if(!uin || !password || !newPass) return NULL;
 
-    // Readup email
-	char email[255] = "\0"; DBVARIANT dbv_email;
     if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email))
         strcpy(email, dbv_email.pszVal);
 	DBFreeVariant(&dbv_email);
 
 	// Load token
 	if(!gg_gettoken()) return NULL;
-
-    // Connection handle
-    struct gg_http *h;
-	struct gg_pubdir *s;
 
     if (!(h = gg_change_passwd4(uin, email, password, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
     {
@@ -194,6 +194,10 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 // Change E-mail Page : Proc
 void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 {
+    // Connection handles
+    struct gg_http *h;
+	struct gg_pubdir *s;
+
 #ifdef DEBUGMODE
     gg_netlog("gg_doemail(): Starting.");
 #endif
@@ -201,10 +205,6 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 
 	// Load token
 	if(!gg_gettoken()) return NULL;
-
-    // Connection handle
-    struct gg_http *h;
-	struct gg_pubdir *s;
 
     if (!(h = gg_change_passwd4(uin, newEmail, password, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
     {
@@ -258,11 +258,11 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			if(dat)
 			{
-				// Readup email
-				SetDlgItemText(hwndDlg, IDC_EMAIL, dat->email);
 				// Make bold title font
 				LOGFONT lf;
 				HFONT hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
+				// Readup email
+				SetDlgItemText(hwndDlg, IDC_EMAIL, dat->email);
 				GetObject(hNormalFont, sizeof(lf), &lf);
 				lf.lfWeight = FW_BOLD;
 				dat->hBoldFont = CreateFontIndirect(&lf);
@@ -292,9 +292,10 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				case IDC_CONFIRM:
 					{
 						char pass[128], cpass[128], email[128];
+						BOOL enable;
 						GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
 						GetDlgItemText(hwndDlg, IDC_CPASSWORD, cpass, sizeof(cpass));
-						BOOL enable = strlen(pass) && strlen(cpass) && !strcmp(cpass, pass);
+						enable = strlen(pass) && strlen(cpass) && !strcmp(cpass, pass);
 						if(dat && dat->mode == GG_USERUTIL_REMOVE)
 							EnableWindow(GetDlgItem(hwndDlg, IDOK), IsDlgButtonChecked(hwndDlg, IDC_CONFIRM) ? enable : FALSE);
 						else
@@ -340,6 +341,7 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
     char *password, *email;
     uin_t uin;
     DBVARIANT dbv_pass, dbv_email;
+	GGUSERUTILDLGDATA dat;
 
     // Readup password
     if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv_pass))
@@ -364,7 +366,6 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	GGUSERUTILDLGDATA dat;
 	dat.uin = uin;
 	dat.pass = password;
 	dat.email = email;
@@ -379,7 +380,7 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 // Change Password : Init
 void gg_initchpass()
 {
-	return;
+/*	We change password now in options
 
 	// Rest depreciated
     CLISTMENUITEM mi;
@@ -397,4 +398,5 @@ void gg_initchpass()
     mi.pszName = Translate("Change Password...");
     mi.pszService = service;
     CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+*/
 }

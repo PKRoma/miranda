@@ -752,9 +752,10 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             {
                 // Save user data
                 char text[256];
+                gg_pubdir50_t req;
+
                 EnableWindow(GetDlgItem(hwndDlg, IDC_SAVE), FALSE);
 
-                gg_pubdir50_t req;
                 req = gg_pubdir50_new(GG_PUBDIR50_WRITE);
 
                 GetDlgItemText(hwndDlg, IDC_FIRSTNAME, text, sizeof(text));

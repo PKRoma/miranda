@@ -29,8 +29,12 @@
 #define _WIN32_WINNT 0x0500
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Windows headers
-#include <windows.h>
+#include <winsock2.h>
 #include <commctrl.h>
 #include <commdlg.h>
 #include <process.h>
@@ -61,18 +65,23 @@
 // Groupchat (chat.dll) plugin
 #include "../../plugins/chat/m_chat.h"
 
+// Visual C++ extras
+#ifdef _MSC_VER
+#define vsnprintf _vsnprintf
+#define snprintf _snprintf
+#define GGINLINE
+#else
+#define GGINLINE inline
+#endif
+
 // Plugin headers
 #include "pthread.h"
 #include "resource.h"
-#include <winsock2.h>
 
 // libgadu headers
 #include "libgadu/libgadu.h"
 #include "dynstuff.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 // Search
 // Extended search result structure, used for all searches
 typedef struct

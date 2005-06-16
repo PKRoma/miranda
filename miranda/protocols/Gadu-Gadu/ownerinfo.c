@@ -25,14 +25,14 @@
 // remind password
 static void *__stdcall gg_remindpasswordthread(HANDLE uin)
 {
+    // Connection handle
+    struct gg_http *h; 
+		
 #ifdef DEBUGMODE
     gg_netlog("gg_remindpasswordthread(): Starting.");
 #endif
     if(!uin) return NULL;
 
-    // Connection handle
-    struct gg_http *h; 
-		
 	// Get token
 	if(!gg_gettoken()) return NULL;
     

@@ -43,9 +43,9 @@ void *__stdcall gg_dccmainthread(void *empty);
 
 void gg_dccstart(GGTHREAD *thread)
 {
-	if(thread->dcc) return;
-
 	DWORD exitCode = 0;
+
+	if(thread->dcc) return;
 
 	// Startup dcc thread
 	GetExitCodeThread(thread->dccId.hThread, &exitCode);
@@ -78,6 +78,7 @@ void gg_dccconnect(uin_t uin)
 {
     struct gg_dcc *dcc;
 	HANDLE hContact = gg_getcontact(uin, 0, 0, NULL);
+	DWORD ip, myuin; WORD port;
 
 #ifdef DEBUGMODE
     gg_netlog("gg_dccconnect(): Connecting to uin %d.", uin);
@@ -87,9 +88,9 @@ void gg_dccconnect(uin_t uin)
 	if(!hContact) return;
 
 	// Read user IP and port
-	DWORD ip = swap32(DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTIP, 0));
-	WORD port = DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_CLIENTPORT, 0);
-	DWORD myuin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
+	ip = swap32(DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTIP, 0));
+	port = DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_CLIENTPORT, 0);
+	myuin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
 
 	// If not port nor ip nor my uin (?) specified
 	if(!ip || !port || !uin) return;
@@ -561,17 +562,19 @@ int gg_sendfile(WPARAM wParam, LPARAM lParam)
 {
 
 	CCSDATA *ccs = (CCSDATA *) lParam;
-	char **files = (char **) ccs->lParam;
+	char **files = (char **) ccs->lParam, *bslash;
 	struct gg_dcc *dcc;
+	DWORD ip; WORD port;
+	uin_t myuin, uin;
 
 	// Check if main dcc thread is on
 	if(!ggThread || !ggThread->dcc) return ftfail(ccs->hContact);
 
 	// Read user IP and port
-	DWORD ip = swap32(DBGetContactSettingDword(ccs->hContact, GG_PROTO, GG_KEY_CLIENTIP, 0));
-	WORD port = DBGetContactSettingWord(ccs->hContact, GG_PROTO, GG_KEY_CLIENTPORT, 0);
-	uin_t myuin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
-	uin_t uin = DBGetContactSettingDword(ccs->hContact, GG_PROTO, GG_KEY_UIN, 0);
+	ip = swap32(DBGetContactSettingDword(ccs->hContact, GG_PROTO, GG_KEY_CLIENTIP, 0));
+	port = DBGetContactSettingWord(ccs->hContact, GG_PROTO, GG_KEY_CLIENTPORT, 0);
+	myuin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
+	uin = DBGetContactSettingDword(ccs->hContact, GG_PROTO, GG_KEY_UIN, 0);
 
 	// Return if bad connection info
 	if(!port || !uin || !myuin)
@@ -622,7 +625,7 @@ int gg_sendfile(WPARAM wParam, LPARAM lParam)
 	dcc->folder = strdup(files[0]);
 	dcc->tick = 0;
 	// Make folder name
-	char *bslash = strrchr(dcc->folder, '\\');
+	bslash = strrchr(dcc->folder, '\\');
 	if(bslash)
 		*(bslash + 1) = 0;
 	else

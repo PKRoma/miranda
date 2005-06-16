@@ -18,13 +18,17 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <mem.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "dynstuff.h"
+
+#ifdef _MSC_VER
+#define strcasecmp stricmp
+#define snprintf _snprintf
+#endif
 
 /*
  * list_add_sorted()

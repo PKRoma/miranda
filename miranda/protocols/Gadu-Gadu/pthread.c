@@ -18,11 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <windef.h>
-#include <process.h>
-#include <m_system.h>
-#include "pthread.h"
-#include <newpluginapi.h>
+#include "gg.h"
 
 /* Gena01 - added some defined to fix compilation with mingw gcc */
 /* __try/__finally taken from abiword patch found on the web */
@@ -88,7 +84,7 @@ unsigned long forkthreadex(
 }
 
 // Minipthread code from Miranda IM source
-inline int pthread_create(pthread_t * tid, const pthread_attr_t * attr, void *(__stdcall * thread_start) (void *), void *param)
+GGINLINE int pthread_create(pthread_t * tid, const pthread_attr_t * attr, void *(__stdcall * thread_start) (void *), void *param)
 {
     tid->hThread = (HANDLE) forkthreadex(NULL, 0, (unsigned (__stdcall *) (void *)) thread_start, param, 0, (unsigned *) &tid->dwThreadId);
     return 0;

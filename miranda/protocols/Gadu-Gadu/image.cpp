@@ -18,10 +18,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ////////////////////////////////////////////////////////////////////////////////
 
-extern "C" {
-    #include "gg.h"
-}
-
+#include "gg.h"
 #include <ocidl.h>
 #include <olectl.h>
 
@@ -105,6 +102,8 @@ int gg_img_load()
     hIcons[2] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
     hIcons[3] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_SAVE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
     hIcons[4] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_SCALE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+
+	return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -269,7 +268,8 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         case WM_INITDIALOG:
             {
                 TranslateDialogDefault(hwndDlg);
-                InitCommonControls();
+                // This should be already initialized
+				// InitCommonControls();
 
                 // Get dialog data
                 dat = (GGIMAGEDLGDATA *)lParam;
@@ -819,6 +819,8 @@ int gg_img_recvimage(WPARAM wParam, LPARAM lParam)
         gg_getcontact(e->event.image_reply.sender, 1, 0, NULL), img);
 
     gg_free_event(e);
+
+	return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////

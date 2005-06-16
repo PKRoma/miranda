@@ -13,11 +13,18 @@
 /* Defined if this machine has C99-compiliant vsnprintf(). */
 #undef __GG_LIBGADU_HAVE_C99_VSNPRINTF
 
+/* MSC have no va_copy */
+#ifdef _MSC_VER
+#define strcasecmp  stricmp
+#else
+
 /* Defined if this machine has va_copy(). */
 #define __GG_LIBGADU_HAVE_VA_COPY
 
 /* Defined if this machine has __va_copy(). */
 #define __GG_LIBGADU_HAVE___VA_COPY
+
+#endif
 
 /* Defined if this machine supports long long. */
 #define __GG_LIBGADU_HAVE_LONG_LONG

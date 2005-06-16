@@ -60,10 +60,11 @@ static CRITICAL_SECTION sslHandleMutex;
 BOOL gg_ssl_init()
 {
 	BOOL error = FALSE;
+	char *failFunction;
+
 	InitializeCriticalSection(&sslHandleMutex);
 	hLibSSL = LoadLibrary("SSLEAY32.DLL");
 	hLibEAY = LoadLibrary("LIBEAY32.DLL");
-	char *failFunction;
 
 	// Load main functions
 	if (hLibSSL) 

@@ -4,8 +4,9 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libgadu
-Version: 1.0rc1
+Version: 20050615
 Description: libgadu
+Requires: @PC_REQUIRES@
 Libs: -L${libdir} -lgadu @LIBS_LIBGADU@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @CFLAGS_LIBGADU@
 

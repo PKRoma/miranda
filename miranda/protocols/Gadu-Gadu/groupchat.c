@@ -55,8 +55,11 @@ int gg_gc_load()
     // Chat.dll required Miranda version 0.4 or higher
 	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
 	{
-        // Register Gadu-Gadu proto
+        char service[64];
 		GCREGISTER gcr = {0};
+        CLISTMENUITEM mi;
+
+        // Register Gadu-Gadu proto
 		gcr.cbSize = sizeof(GCREGISTER);
 		gcr.dwFlags = 0;
 		gcr.iMaxText = 0;
@@ -72,8 +75,8 @@ int gg_gc_load()
 		//hHookGCMenuBuild = HookEvent(ME_GC_BUILDMENU, gg_gc_menu);
         ggGCEnabled = TRUE;
         // create & hook event
-        char event[64]; snprintf(event, 64, GG_GC_GETCHAT, GG_PROTO);
-        if(hEventGGGetChat = CreateHookableEvent(event))
+        snprintf(service, 64, GG_GC_GETCHAT, GG_PROTO);
+        if(hEventGGGetChat = CreateHookableEvent(service))
             SetHookDefaultForHookableEvent(hEventGGGetChat, gg_gc_egetchat);
 #ifdef DEBUGMODE
         else
@@ -81,10 +84,8 @@ int gg_gc_load()
         gg_netlog("gg_gc_getchat(): Registered with groupchat plugin.");
 #endif
 
-        CLISTMENUITEM mi;
         ZeroMemory(&mi,sizeof(mi));
         mi.cbSize = sizeof(mi);
-        char service[64];
 
         // Conferencing
         snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
@@ -137,14 +138,14 @@ int gg_gc_menu(WPARAM wParam, LPARAM lParam)
 int gg_gc_event(WPARAM wParam, LPARAM lParam)
 {
     GCHOOK *gch = (GCHOOK *)lParam;
+    gg_gc_chat *chat = NULL;
+	uin_t uin;
 
     // Check if we got our protocol
     if(!gch || !gch->pDest || !gch->pDest->pszModule || lstrcmpi(gch->pDest->pszModule, GG_PROTO))
         return 0;
 
-    gg_gc_chat *chat = NULL;
-
-    uin_t uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
+    uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
 
     // Lookup for chat structure if not found
     if(!chat && gch->pDest->pszID)
@@ -189,10 +190,15 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
     // Message typed
     if(gg_isonline() && gch->pDest && gch->pDest->iType == GC_USER_MESSAGE && chat && uin && gch->pszText)
     {
-        char id[32]; UIN2ID(uin, id);
+        char id[32];
         DBVARIANT dbv;
         GCDEST gcdest = {GG_PROTO, gch->pDest->pszID, GC_EVENT_MESSAGE};
         GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+		int lc;
+        time_t t = time(NULL);
+
+		UIN2ID(uin, id);
+
         gcevent.pszUID = id;
         gcevent.pszText = gch->pszText;
         if(!DBGetContactSetting(NULL, GG_PROTO, "Nick", &dbv))
@@ -200,9 +206,8 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
         else
             gcevent.pszNick = Translate("Me");
         // Get rid of CRLF at back
-        int lc = strlen(gch->pszText) - 1;
+        lc = strlen(gch->pszText) - 1;
         while(lc >= 0 && (gch->pszText[lc] == '\n' || gch->pszText[lc] == '\r')) gch->pszText[lc --] = 0;
-        time_t t = time(NULL);
         gcevent.time = time(NULL);
         gcevent.bIsMe = 1;
         gcevent.bAddToLog = 1;
@@ -243,6 +248,16 @@ typedef struct _gg_gc_echat
 int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 {
     gg_gc_echat *gc = (gg_gc_echat *)lParam;
+	uin_t sender, *recipients;
+	int recipients_count;
+    list_t l; int i;
+	gg_gc_chat *chat;
+	char *senderName, status[256], *name, id[32];
+    uin_t uin; DBVARIANT dbv;
+	GCWINDOW gcwindow;
+    GCDEST gcdest = {GG_PROTO, 0, GC_EVENT_ADDGROUP};
+    GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+
     if(!gc)
     {
 #ifdef DEBUGMODE
@@ -251,16 +266,16 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
-    uin_t sender = gc->sender;
-    uin_t *recipients = gc->recipients;
-    int recipients_count = gc->recipients_count;
+    sender = gc->sender;
+    recipients = gc->recipients;
+    recipients_count = gc->recipients_count;
 
 #ifdef DEBUGMODE
     gg_netlog("gg_gc_egetchat(): Count %d.", recipients_count);
 #endif
     if(!recipients) return 0;
+
     // Look for existing chat
-    list_t l; int i;
     for(l = chats; l; l = l->next)
     {
         gg_gc_chat *chat = (gg_gc_chat *)l->data;
@@ -295,7 +310,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
     }
 
     // Make new uin list to chat mapping
-    gg_gc_chat *chat = (gg_gc_chat *)malloc(sizeof(gg_gc_chat));
+    chat = (gg_gc_chat *)malloc(sizeof(gg_gc_chat));
     UIN2ID(ggGCID ++, chat->id); chat->ignore = FALSE;
 
     // Check groupchat policy (new) / only for incoming
@@ -348,15 +363,19 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
     }
 
     // Create new chat window
-    char *senderName = sender ? (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 1, 0, NULL), 0) : NULL;
-    char status[255]; snprintf(status, 255, sender ? Translate("%s initiated the conference.") : Translate("This is my own conference."), senderName);
-    GCWINDOW gcwindow = {sizeof(GCWINDOW),
-        GCW_CHATROOM, GG_PROTO,
-        sender ? senderName : NULL,
-        chat->id, status, 0, (DWORD)chat};
-    if(!gcwindow.pszName) gcwindow.pszName = Translate("Conference");
+    senderName = sender ? (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 1, 0, NULL), 0) : NULL;
+    snprintf(status, 255, sender ? Translate("%s initiated the conference.") : Translate("This is my own conference."), senderName);
+	gcwindow.cbSize		= sizeof(GCWINDOW);
+	gcwindow.iType		= GCW_CHATROOM;
+	gcwindow.pszModule  = GG_PROTO;
+	gcwindow.pszName	= sender ? senderName : Translate("Conference");
+	gcwindow.pszID		= chat->id;
+	gcwindow.pszStatusbarText = status;
+	gcwindow.bDisableNickList = FALSE;
+	gcwindow.dwItemData = (DWORD)chat;
+
     // Here we put nice new hash sign
-    char *name = calloc(strlen(gcwindow.pszName) + 2, sizeof(char));
+    name = calloc(strlen(gcwindow.pszName) + 2, sizeof(char));
     *name = '#'; strcpy(name + 1, gcwindow.pszName);
     gcwindow.pszName = name;
     // Create new room
@@ -370,9 +389,8 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
         return 0;
     }
     free(name);
-    char id[32]; uin_t uin; DBVARIANT dbv;
-    GCDEST gcdest = {GG_PROTO, chat->id, GC_EVENT_ADDGROUP};
-    GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+
+	gcdest.pszID = chat->id;
     gcevent.pszUID = id;
     gcevent.bAddToLog = FALSE;
     gcevent.time = 0;
@@ -381,7 +399,6 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
     gcevent.pszStatus = Translate("Participants");
     CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
     gcdest.iType = GC_EVENT_JOIN;
-
 
     // Add myself
     if(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
@@ -463,6 +480,9 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 	case WM_INITDIALOG:
 		{
 			CLCINFOITEM cii = {0};
+            LOGFONT lf;
+            HFONT hBoldFont, hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
+
 			TranslateDialogDefault(hwndDlg);
 
 			// Add the "All contacts" item
@@ -472,11 +492,9 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 			//~ hItemAll = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
 
             // Make bold title font
-            LOGFONT lf;
-            HFONT hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
             GetObject(hNormalFont, sizeof(lf), &lf);
             lf.lfWeight = FW_BOLD;
-            HFONT hBoldFont = CreateFontIndirect(&lf);
+            hBoldFont = CreateFontIndirect(&lf);
             SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)hBoldFont, 0);
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)hBoldFont);
 		}
@@ -705,9 +723,11 @@ int gg_gc_changenick(HANDLE hContact, char *pszNick)
                 // Rename this window if it's exising in the chat
                 if(chat->recipients[i] == uin)
                 {
-                    char id[32]; UIN2ID(uin, id);
-                    GCEVENT gce = { sizeof(GCEVENT) };
+                    char id[32];
+                    GCEVENT gce = {sizeof(GCEVENT)};
                     GCDEST gcd;
+
+					UIN2ID(uin, id);
                     gcd.iType = GC_EVENT_NICK;
                     gcd.pszModule = GG_PROTO;
                     gce.pDest = &gcd;

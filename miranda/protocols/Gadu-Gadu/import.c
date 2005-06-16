@@ -54,16 +54,17 @@ char *CreateGroup(char *groupName)
 {
     int groupId;
     char groupIdStr[11];
-    DBVARIANT dbv;
     char groupName2[127];
     char str[256];
+	char *p;
+    DBVARIANT dbv;
 
     // Cleanup group name from weird characters
 
     // Skip first break
     while(*groupName && *groupName == '\\') groupName++;
 
-    char *p = strrchr(groupName, '\\');
+    p = strrchr(groupName, '\\');
     // Cleanup end
     while(p && !(*(p + 1)))
     {
@@ -100,6 +101,7 @@ char *CreateGroup(char *groupName)
 char *gg_makecontacts(int cr)
 {
     string_t s = string_init(NULL);
+	char *contacts;
 
     // Readup contacts
     HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -178,7 +180,7 @@ char *gg_makecontacts(int cr)
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
 
-    char *contacts = string_free(s, 0);
+    contacts = string_free(s, 0);
 
 #ifdef DEBUGMODE
     gg_netlog("gg_makecontacts(): \n%s", contacts);
@@ -317,6 +319,7 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
     char *password;
     uin_t uin;
     DBVARIANT dbv;
+    struct gg_http *h;
 
 	// Check if connected
     if (!gg_isonline())
@@ -341,8 +344,6 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
         return 0;
 
     // Making contacts list
-    struct gg_http *h;
-
     if (gg_userlist_request(ggThread->sess, GG_USERLIST_GET, NULL) == -1)
     {
         char error[128];
@@ -367,6 +368,7 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
     char *password;
     uin_t uin;
     DBVARIANT dbv;
+    struct gg_http *h;
 
 	// Check if connected
     if (!ggThread->sess)
@@ -391,8 +393,6 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
         return 0;
 
     // Making contacts list
-    struct gg_http *h;
-
     if (gg_userlist_request(ggThread->sess, GG_USERLIST_PUT, NULL) == -1)
     {
         char error[128];
@@ -430,10 +430,11 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
 
 static int gg_import_text(WPARAM wParam, LPARAM lParam)
 {
-    char str[MAX_PATH];
+    char str[MAX_PATH] = "\0";
     OPENFILENAME ofn;
     char filter[512], *pfilter;
-    str[0] = 0;
+    struct stat st;
+	FILE *f;
 
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
@@ -462,8 +463,7 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
 #endif
     if(!GetOpenFileName(&ofn)) return 0;
 
-    struct stat st;
-    FILE *f = fopen(str, "r");
+    f = fopen(str, "r");
     stat(str, &st);
 
     if(f && st.st_size)
@@ -499,6 +499,8 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
     char str[MAX_PATH];
     OPENFILENAME ofn;
     char filter[512], *pfilter;
+    FILE *f;
+
     strcpy(str, Translate("contacts"));
     strcat(str, ".txt");
 
@@ -529,8 +531,7 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
 #endif
     if(!GetSaveFileName(&ofn)) return 0;
 
-    FILE *f = fopen(str, "w");
-    if(f)
+    if(f = fopen(str, "w"))
     {
         char *contacts = gg_makecontacts(0);
         fwrite(contacts, sizeof(char), strlen(contacts), f);
@@ -561,9 +562,10 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
 // export to server
 static int gg_export_server(WPARAM wParam, LPARAM lParam)
 {
-    char *password;
+    char *password, *contacts;
     uin_t uin;
     DBVARIANT dbv;
+    struct gg_http *h;
 
 	// Check if connected
     if (!ggThread->sess)
@@ -588,8 +590,7 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
         return 0;
 
     // Making contacts list
-    char *contacts = gg_makecontacts(1);
-    struct gg_http *h;
+    contacts = gg_makecontacts(1);
 
 #ifdef DEBUGMODE
         gg_netlog("gg_userlist_request(%s).", contacts);
@@ -621,9 +622,10 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
 void gg_initimport()
 {
     CLISTMENUITEM mi;
-    ZeroMemory(&mi,sizeof(mi));
-    mi.cbSize = sizeof(mi);
 	char service[64];
+
+	ZeroMemory(&mi, sizeof(mi));
+    mi.cbSize = sizeof(mi);
 
     // Import from server item
 	snprintf(service, sizeof(service), GGS_IMPORT_SERVER, GG_PROTO);

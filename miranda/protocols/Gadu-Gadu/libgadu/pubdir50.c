@@ -18,20 +18,16 @@
  *  USA.
  */
 
-#include <io.h>
-#include <fcntl.h>
-#include <windows.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "libgadu.h" 
-#undef small 
+#include "libgadu.h"
+
+/* Miranda IM fix */
+#include <sys/socket.h>
+#undef small
 
 /*
  * gg_pubdir50_new()
@@ -92,7 +88,7 @@ int gg_pubdir50_add_n(gg_pubdir50_t req, int num, const char *field, const char 
 
 		return 0;
 	}
-		
+
 	if (!(dupfield = strdup(field))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50_add_n() out of memory\n");
 		free(dupvalue);
@@ -147,7 +143,7 @@ int gg_pubdir50_add(gg_pubdir50_t req, const char *field, const char *value)
 int gg_pubdir50_seq_set(gg_pubdir50_t req, uint32_t seq)
 {
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_pubdir50_seq_set(%p, %d);\n", req, seq);
-	
+
 	if (!req) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50_seq_set() invalid arguments\n");
 		errno = EFAULT;
@@ -172,7 +168,7 @@ void gg_pubdir50_free(gg_pubdir50_t s)
 
 	if (!s)
 		return;
-	
+
 	for (i = 0; i < s->entries_count; i++) {
 		free(s->entries[i].field);
 		free(s->entries[i].value);
@@ -200,7 +196,7 @@ uint32_t gg_pubdir50(struct gg_session *sess, gg_pubdir50_t req)
 	struct gg_pubdir50_request *r;
 
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_pubdir50(%p, %p);\n", sess, req);
-	
+
 	if (!sess || !req) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50() invalid arguments\n");
 		errno = EFAULT;
@@ -217,7 +213,7 @@ uint32_t gg_pubdir50(struct gg_session *sess, gg_pubdir50_t req)
 		/* wyszukiwanie bierze tylko pierwszy wpis */
 		if (req->entries[i].num)
 			continue;
-		
+
 		size += strlen(req->entries[i].field) + 1;
 		size += strlen(req->entries[i].value) + 1;
 	}
@@ -269,12 +265,12 @@ int gg_pubdir50_handle_reply(struct gg_event *e, const char *packet, int length)
 	struct gg_pubdir50_reply *r = (struct gg_pubdir50_reply*) packet;
 	gg_pubdir50_t res;
 	int num = 0;
-	
+
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_pubdir50_handle_reply(%p, %p, %d);\n", e, packet, length);
 
 	if (!e || !packet) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50_handle_reply() invalid arguments\n");
-		errno = EINVAL;
+		errno = EFAULT;
 		return -1;
 	}
 
@@ -326,7 +322,7 @@ int gg_pubdir50_handle_reply(struct gg_event *e, const char *packet, int length)
 		}
 
 		value = NULL;
-		
+
 		for (p = field; p < end; p++) {
 			/* je¶li mamy koniec tekstu... */
 			if (!*p) {
@@ -341,7 +337,7 @@ int gg_pubdir50_handle_reply(struct gg_event *e, const char *packet, int length)
 					break;
 			}
 		}
-		
+
 		/* sprawd¼my, czy pole nie wychodzi poza pakiet, ¿eby nie
 		 * mieæ segfaultów, je¶li serwer przestanie zakañczaæ pakietów
 		 * przez \0 */
@@ -362,10 +358,10 @@ int gg_pubdir50_handle_reply(struct gg_event *e, const char *packet, int length)
 			if (gg_pubdir50_add_n(res, num, field, value) == -1)
 				goto failure;
 		}
-	}	
+	}
 
 	res->count = num + 1;
-	
+
 	return 0;
 
 failure:

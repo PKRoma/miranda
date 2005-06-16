@@ -115,7 +115,7 @@ int gg_getstatus(WPARAM wParam, LPARAM lParam)
 
 //////////////////////////////////////////////////////////
 // gets protocol status
-inline char *gg_getstatusmsg(int status)
+GGINLINE char *gg_getstatusmsg(int status)
 {
     switch(status)
     {
@@ -197,6 +197,7 @@ int gg_normalizestatus(int status)
 // sets protocol status
 int gg_setstatus(WPARAM wParam, LPARAM lParam)
 {
+    BOOL bScreenSaverRunning;
     ggDesiredStatus = gg_normalizestatus((int) wParam);
 
     // Depreciated due status description changing
@@ -207,7 +208,6 @@ int gg_setstatus(WPARAM wParam, LPARAM lParam)
         (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, ggDesiredStatus, 0));
 #endif
     // Check screen saver
-    BOOL bScreenSaverRunning;
     SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &bScreenSaverRunning, FALSE);
 
     // Status wicked code due Miranda incompatibility with status+descr changing in one shot
@@ -313,15 +313,15 @@ static void *__stdcall gg_searchthread(HANDLE hContact)
 }
 int gg_basicsearch(WPARAM wParam, LPARAM lParam)
 {
+    pthread_t tid;
+    gg_pubdir50_t req;
+
     pthread_mutex_lock(&threadMutex);
     if(!gg_isonline())
     {
         pthread_mutex_unlock(&threadMutex);
         return 0;
     }
-
-    pthread_t tid;
-    gg_pubdir50_t req;
 
     if (!(req = gg_pubdir50_new(GG_PUBDIR50_SEARCH)))
     { pthread_create(&tid, NULL, gg_searchthread, NULL); pthread_detach(&tid); return 1; }
@@ -343,6 +343,10 @@ int gg_basicsearch(WPARAM wParam, LPARAM lParam)
 static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
 {
     PROTOSEARCHBYNAME *psbn = (PROTOSEARCHBYNAME *) lParam;
+    pthread_t tid;
+    gg_pubdir50_t req;
+	unsigned long crc;
+	char data[256 + 1] = "\0";
 
     // Check if connected and if there's a search data
     pthread_mutex_lock(&threadMutex);
@@ -354,20 +358,16 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
     if(!psbn->pszNick && !psbn->pszFirstName && !psbn->pszLastName)
         return 0;
 
-    pthread_t tid;
-    gg_pubdir50_t req;
-
     if (!(req = gg_pubdir50_new(GG_PUBDIR50_SEARCH)))
     { pthread_create(&tid, NULL, gg_searchthread, NULL); pthread_detach(&tid); return 1; }
 
     // Add uin and search it
-    char data[256]; data[0] = 0;
     if(psbn->pszNick)
     {
         gg_pubdir50_add(req, GG_PUBDIR50_NICKNAME, psbn->pszNick);
         strcat(data, psbn->pszNick);
     }
-    strcat(data, ".");
+    strncat(data, 256, ".");
 
     if(psbn->pszFirstName)
     {
@@ -384,7 +384,7 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
     strcat(data, ".");
 
     // Count crc & check if the data was equal if yes do same search with shift
-    unsigned long crc = crc_get(data);
+    crc = crc_get(data);
 
     if(crc == lastCRC && nextUIN)
         gg_pubdir50_add(req, GG_PUBDIR50_START, ditoa(nextUIN));
@@ -495,8 +495,9 @@ int gg_getinfo(WPARAM wParam, LPARAM lParam)
 // when away message is requested
 static void *__stdcall gg_getawaymsgthread(HANDLE hContact)
 {
-    SleepEx(100, FALSE);
     DBVARIANT dbv;
+
+    SleepEx(100, FALSE);
     if (!DBGetContactSetting(hContact, GG_PROTO, GG_KEY_STATUSDESCR, &dbv))
     {
         ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE) 1, (LPARAM) dbv.pszVal);
@@ -526,6 +527,7 @@ int gg_getawaymsg(WPARAM wParam, LPARAM lParam)
 int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
 {
     int status = gg_normalizestatus((int) wParam);
+    char **szMsg;
 
 #ifdef DEBUGMODE
     gg_netlog("gg_setawaymsg(): Requesting away message set to \"%s\".", (char *) lParam);
@@ -533,7 +535,6 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
     pthread_mutex_lock(&modeMsgsMutex);
 
     // Select proper msg
-    char **szMsg;
     switch(status)
     {
         case ID_STATUS_ONLINE:
@@ -638,28 +639,26 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
     int result;
     int dataLen;
     BYTE *searchData;
+    pthread_t tid;
+    gg_pubdir50_t req;
+    HWND hwndDlg = (HWND)lParam;
+    char text[64], data[512 + 1] = "\0";
+	unsigned long crc;
 
     // Check if connected
     if(!gg_isonline()) return 0;
-
-    pthread_t tid;
-    gg_pubdir50_t req;
 
     if (!(req = gg_pubdir50_new(GG_PUBDIR50_SEARCH)))
     { pthread_create(&tid, NULL, gg_searchthread, NULL); pthread_detach(&tid); return 1; }
 
     // Fetch search data
-    HWND hwndDlg = (HWND)lParam;
-
-    char text[64], data[512]; data[0] = 0;
-
     GetDlgItemText(hwndDlg, IDC_FIRSTNAME, text, sizeof(text));
     if(strlen(text))
     {
         gg_pubdir50_add(req, GG_PUBDIR50_FIRSTNAME, text);
-        strcat(data, text);
+        strncat(data, 512, text);
     }
-    /* 1 */ strcat(data, ".");
+    /* 1 */ strncat(data, 512, ".");
 
     GetDlgItemText(hwndDlg, IDC_LASTNAME, text, sizeof(text));
     if(strlen(text))
@@ -688,12 +687,15 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
     GetDlgItemText(hwndDlg, IDC_AGEFROM, text, sizeof(text));
     if(strlen(text))
     {
-        char age[16]; GetDlgItemText(hwndDlg, IDC_AGETO, age, sizeof(age));
         int yearTo = atoi(text);
-        int yearFrom = atoi(age);
+        int yearFrom;
         time_t t = time(NULL);
         struct tm *lt = localtime(&t);
         int ay = lt->tm_year + 1900;
+		char age[16];
+
+		GetDlgItemText(hwndDlg, IDC_AGETO, age, sizeof(age));
+		yearFrom = atoi(age);
 
         // Count & fix ranges
         if(!yearTo)
@@ -735,7 +737,7 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
     if(strlen(data) <= 7 || (strlen(data) == 8 && IsDlgButtonChecked(hwndDlg, IDC_ONLYCONNECTED))) return 0;
 
     // Count crc & check if the data was equal if yes do same search with shift
-    unsigned long crc = crc_get(data);
+    crc = crc_get(data);
 
     if(crc == lastCRC && nextUIN)
         gg_pubdir50_add(req, GG_PUBDIR50_START, ditoa(nextUIN));

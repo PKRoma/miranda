@@ -36,7 +36,7 @@ uint32_t swap32(uint32_t x)
 
 ////////////////////////////////////////////////////////////
 // Is online function
-inline int gg_isonline()
+GGINLINE int gg_isonline()
 {
     return ggThread && (ggThread->sess != NULL);
 }
@@ -102,6 +102,9 @@ void gg_disconnect()
         gg_logoff(ggThread->sess);
     }
 
+    // Zero the thread
+    ggThread = NULL;
+
     // Mark all disconnected
     gg_broadcastnewstatus(ID_STATUS_OFFLINE);
     gg_setalloffline();
@@ -110,8 +113,6 @@ void gg_disconnect()
     gg_netlog("gg_disconnect(): Disconnected without waiting for thread.");
 #endif
 
-    // Zero the thread
-    ggThread = NULL;
     pthread_mutex_unlock(&threadMutex);
 }
 
@@ -247,7 +248,7 @@ void *__stdcall gg_mainthread(void *empty)
     struct gg_login_params p;
     struct gg_event *e;
     // Host cycling variables
-    int areconnect, connected, hostnum = -1, hostcount = 0;
+    int areconnect, connected, hostnum = -1, hostcount = 0, errCount;
     GGHOST hosts[64];
 	// Gadu-gadu login errors
 	struct { int type; char *str; } reason[] = {
@@ -262,6 +263,8 @@ void *__stdcall gg_mainthread(void *empty)
 		{ 0, 						"Unknown" }
 	};
     GGTHREAD *thread = empty;
+    NETLIBUSERSETTINGS nlus;
+	char *szMsg;
 
 	// Time deviation (300s)
 	time_t timeDeviation = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_TIMEDEVIATION, GG_KEYDEF_TIMEDEVIATION);
@@ -282,7 +285,6 @@ start:
 	// p.has_audio = 1;
 
     // Setup proxy
-    NETLIBUSERSETTINGS nlus;
     nlus.cbSize = sizeof(nlus);
     if(CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)hNetlib, (LPARAM)&nlus))
     {
@@ -438,7 +440,7 @@ start:
 	if(thread->dcc) p.client_port = thread->dcc->port;
 
     // Loadup startup status & description
-    char *szMsg = gg_getstatusmsg(ggDesiredStatus);
+    szMsg = gg_getstatusmsg(ggDesiredStatus);
     p.status = status_m2gg(ggDesiredStatus, szMsg != NULL);
     p.status_descr = szMsg;
     p.image_size = 512;
@@ -517,7 +519,7 @@ start:
 
     //////////////////////////////////////////////////////////////////////////////////
     // Main loop
-    int errCount = 0;
+    errCount = 0;
     while((thread == ggThread) && thread->sess)
     {
         // Connection broken/closed
@@ -624,6 +626,7 @@ start:
                     {
                         char strFmt1[64];
                         char strFmt2[64];
+                        GGSEARCHRESULT sr;
 
                         sprintf(strFmt2, "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(atoi(__status)), 0));
                         if(__city)
@@ -645,7 +648,6 @@ start:
                         }
                         sprintf(strFmt1, "GG: %d", uin);
 
-                        GGSEARCHRESULT sr;
                         sr.hdr.cbSize = sizeof(sr);
                         sr.hdr.nick = (char *)__nick;
                         sr.hdr.firstName = (char *)__firstname;
@@ -773,13 +775,16 @@ start:
                     char *chat = gg_gc_getchat(e->event.msg.sender, e->event.msg.recipients, e->event.msg.recipients_count);
                     if(chat)
                     {
-                        char id[32]; UIN2ID(e->event.msg.sender, id);
+                        char id[32];
                         GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_MESSAGE};
                         GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+                        time_t t = time(NULL);
+
+						UIN2ID(e->event.msg.sender, id);
+
                         gcevent.pszUID = id;
                         gcevent.pszText = e->event.msg.message;
                         gcevent.pszNick = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(e->event.msg.sender, 1, 0, NULL), 0);
-                        time_t t = time(NULL);
                         gcevent.time = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
                         gcevent.bAddToLog = 1;
 #ifdef DEBUGMODE
@@ -926,13 +931,15 @@ void gg_broadcastnewstatus(int s)
 // When user is deleted
 int gg_userdeleted(WPARAM wParam, LPARAM lParam)
 {
-    if ((HANDLE) wParam == NULL)
-        return 0;
-
     HANDLE hContact = (HANDLE) wParam;
-    uin_t uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
-    int type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
+	uin_t uin; int type;
     DBVARIANT dbv;
+
+    if(!hContact) return 0;
+
+    uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
+    type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
+
 	if(type && !DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv) && ggGCEnabled)
 	{
         GCEVENT gce;
@@ -1235,9 +1242,10 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
         DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_NICK, szNick);
     else if(gg_isonline())
     {
+        gg_pubdir50_t req;
+
         pthread_mutex_lock(&threadMutex);
         // Search for that nick
-        gg_pubdir50_t req;
         if (req = gg_pubdir50_new(GG_PUBDIR50_SEARCH))
         {
             // Add uin and search it
