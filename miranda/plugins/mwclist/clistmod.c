@@ -240,7 +240,7 @@ static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 	UninitCustomMenus();
 	UninitCListEvents();
 	FreeDisplayNameCache(&lContactsCache);
-	mir_free(protoIconIndex);
+	if(protoIconIndex) mir_free(protoIconIndex);
 	DestroyHookableEvent(hContactDoubleClicked);
 	return 0;
 }

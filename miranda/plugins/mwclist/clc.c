@@ -268,7 +268,7 @@ static int ClcShutdown(WPARAM wParam,LPARAM lParam)
 {
 	UnhookEvent(hAckHook);
 	UnhookEvent(hSettingChanged1);
-	mir_free(clcProto);
+	if (clcProto) mir_free(clcProto);
 	FreeFileDropping();
 	return 0;
 }
