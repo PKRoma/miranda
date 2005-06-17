@@ -938,6 +938,14 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			return 0;
 
 		case WM_TIMER:
+			
+			if (wParam==TIMERID_DELAYEDREPAINT)
+			{
+				KillTimer(hwnd,TIMERID_DELAYEDREPAINT);
+				InvalidateRect(hwnd,NULL,FALSE);
+				break;
+			}
+			
 			if (wParam==TIMERID_REBUILDAFTER)
 			{
 				KillTimer(hwnd,TIMERID_REBUILDAFTER);
@@ -1108,14 +1116,19 @@ OutputDebugString("Delayed Sort CLC\r\n");
 				if(dat->hwndRenameEdit!=NULL) break;
 				if(GetKeyState(VK_MENU)&0x8000 || GetKeyState(VK_F10)&0x8000) break;
 				dat->iHotTrack=HitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,NULL);
+					
+				if(dat->exStyle&CLS_EX_TRACKSELECT) {
+						InvalidateItem(hwnd,dat,iOldHotTrack);
+						InvalidateItem(hwnd,dat,dat->iHotTrack);
+						SetTimer(hwnd,TIMERID_DELAYEDREPAINT,1000,NULL);
+				}
 				if(iOldHotTrack!=dat->iHotTrack) {
 					if(iOldHotTrack==-1) SetCapture(hwnd);
 					else if(dat->iHotTrack==-1) ReleaseCapture();
-					if(dat->exStyle&CLS_EX_TRACKSELECT) {
-						InvalidateItem(hwnd,dat,iOldHotTrack);
-						InvalidateItem(hwnd,dat,dat->iHotTrack);
-					}
+
 					HideInfoTip(hwnd,dat);
+					
+					InvalidateRect(hwnd,NULL,TRUE);
 				}
 				KillTimer(hwnd,TIMERID_INFOTIP);
 				if(wParam==0 && dat->hInfoTipItem==NULL) {

@@ -156,6 +156,10 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	int status=GetGeneralisedStatus();
 	int grey=0,groupCountsFontTopShift;
 	HBRUSH hBrushAlternateGrey=NULL;
+	POINT pt;
+	RECT testrc;		
+
+
 	// yes I know about GetSysColorBrush()
 	COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( /*dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) :*/ dat->bkColour ) : dat->bkColour;
 //
@@ -164,8 +168,15 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	if(dat->greyoutFlags&ClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
 	else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
 	GetClientRect(hwnd,&clRect);
+	
 	if(rcPaint==NULL) rcPaint=&clRect;
+	//rcPaint=&clRect;
+	
 	if(IsRectEmpty(rcPaint)) return;
+	GetCursorPos(&pt);
+	ScreenToClient(hwnd,&pt);
+
+
 	y=-dat->yScroll;
 	hdcMem=CreateCompatibleDC(hdc);
 	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
@@ -322,8 +333,6 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			//setup
 			if(Drawing->type==CLCIT_GROUP)
 			{
-				if (Drawing->group!=NULL)
-				{			
 					if (Drawing->group->expanded) 
 					{
 						ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
@@ -332,7 +341,6 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					{
 						ChangeToFont(hdcMem,dat,FONTID_GROUPSCLOSED,&fontHeight);
 					}
-				}
 			}
 			else if(Drawing->type==CLCIT_INFO) {
 				if(Drawing->flags&CLCIIF_GROUPFONT) ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
@@ -361,6 +369,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			GetTextExtentPoint32(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&textSize);
 			width=textSize.cx;
 			if(Drawing->type==CLCIT_GROUP) {
+		
 				szCounts=GetGroupCountsText(dat,&group->contact[group->scanIndex]);
 				if(szCounts[0]) {
 					GetTextExtentPoint32(hdcMem," ",1,&spaceSize);
@@ -368,6 +377,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					GetTextExtentPoint32(hdcMem,szCounts,lstrlen(szCounts),&countsSize);
 					width+=spaceSize.cx+countsSize.cx;
 				}
+
 			}
 
 			if((style&CLS_CHECKBOXES && Drawing->type==CLCIT_CONTACT) ||
@@ -499,7 +509,17 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					rc.bottom=rc.top+textSize.cy;
 					if(rc.right<rc.left+4) rc.right=clRect.right+1;
 					else TextOut(hdcMem,rc.right,rc.top+groupCountsFontTopShift,szCounts,lstrlen(szCounts));
-					ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
+					
+					//ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
+					if (Drawing->group->expanded) 
+					{
+						ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
+					}
+					else 
+					{
+						ChangeToFont(hdcMem,dat,FONTID_GROUPSCLOSED,&fontHeight);
+					}
+
 					if(selected)
 						SetTextColor(hdcMem,dat->selTextColour);
 					else if(hottrack)
@@ -528,7 +548,18 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				rc.top=y+((dat->rowHeight-fontHeight)>>1);
 				rc.bottom=rc.top+dat->rowHeight;
 				rc.right=clRect.right;
+				if (Drawing->type=CLCIT_CONTACT)
+				{
+					
+					
+					if (PtInRect(&rc,pt))
+					{
+						ChangeToFont(hdcMem,dat,FONTID_CONTACTSHOVER,&fontHeight);
+					}
+				}
+				
 				DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,DT_END_ELLIPSIS);
+
 			}
 			if(selected) {
 				if(Drawing->type!=CLCIT_DIVIDER) {
@@ -579,7 +610,8 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			
 			//extra icons
 			if (!(style&CLS_EX_MULTICOLUMNALIGNLEFT))
-			{							
+			{
+
 				int c=dat->extraColumnsCount;
 				for(iImage=dat->extraColumnsCount-1;iImage>=0;iImage--) {
 					  COLORREF colourFg=dat->selBkColour;
@@ -589,9 +621,26 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					  if(selected) mode=ILD_SELECTED;
 					  else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
 					  else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
+					  {				  
+
+					  }
 					  if (dat->MetaIgnoreEmptyExtra) c--; else c=iImage;
+
+						  testrc.left=clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c);
+						  testrc.top=(y+((dat->rowHeight-16)>>1));
+						  testrc.right=testrc.left+16;
+						  testrc.bottom=testrc.top+16;
+						  if (!PtInRect(&testrc,pt))
+						  {
+							mode=ILD_NORMAL;
+						  }
+
+
 					  ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
-					 }
+					
+					}
+			//SetPixel(hdcMem,pt.x-2,pt.y-2,0x00ff00);
+			//OutputDebugString("SetPixel...\r\n");
 
 			}
 			else
@@ -617,7 +666,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 							y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
 					*/
 					  if(Drawing->iExtraImage[iImage]==0xFF) continue;
-					  if(selected) mode=ILD_SELECTED;
+					  //if(selected) mode=ILD_SELECTED;
 					  else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
 					  else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
       
