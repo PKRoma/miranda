@@ -368,7 +368,9 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
         if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS)
             PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
         if(pai == NULL) {
+#if !defined(_RELEASE_BUILD)
             _DebugPopup(dat->hContact, "pai == 0 in avatar ACK handler");
+#endif            
             return 0;
         }
         if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_SUCCESS) {

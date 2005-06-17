@@ -243,15 +243,15 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			}
 			DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->hBitmap,0,ix,iy,bminfo.bmWidth,bminfo.bmHeight,IsWindowEnabled(ctl->hwnd)?DST_BITMAP:DST_BITMAP|DSS_DISABLED);
 		}
-		else if (GetWindowTextLength(ctl->hwnd)) {
+		else if (GetWindowTextLengthA(ctl->hwnd)) {
 			// Draw the text and optinally the arrow
-			char szText[MAX_PATH];
+			char szText[MAX_PATH * sizeof(TCHAR)];
 			SIZE sz;
 			RECT rcText;
 			HFONT hOldFont;
 
 			CopyRect(&rcText, &rcClient);
-			GetWindowTextA(ctl->hwnd, szText, sizeof(szText));
+			GetWindowTextA(ctl->hwnd, szText, MAX_PATH - 1);
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
@@ -270,6 +270,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			DrawStateA(hdcMem,NULL,NULL,(LPARAM)szText,0,(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
 			SelectObject(hdcMem, hOldFont);
 		}
+foo:        
 		BitBlt(hdcPaint, 0, 0, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top, hdcMem, 0, 0, SRCCOPY);
 		SelectObject(hdcMem, hOld);
 		DeleteObject(hbmMem);

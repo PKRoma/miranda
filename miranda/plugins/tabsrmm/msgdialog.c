@@ -101,7 +101,7 @@ static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
 const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELNICKLABEL, IDC_PANELUINLABEL, 
                                   IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_READSTATUS, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER};
-const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER };
+const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 
 static struct _tooltips { int id; char *szTip;} tooltips[] = {
     IDC_HISTORY, "View User's History",
@@ -234,7 +234,7 @@ static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilenam
 	}
 }
 
-void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
+void ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
     int i;
     for (i = 0; i < cControls; i++)
@@ -1198,8 +1198,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
                     SendMessage(GetDlgItem(hwndDlg, buttonLineControlsNew[i]), BUTTONSETASFLATBTN, 0, 0);
-                for (i = 0; i < sizeof(errorControls) / sizeof(errorControls[0]); i++)
-                    SendMessage(GetDlgItem(hwndDlg, errorControls[i]), BUTTONSETASFLATBTN, 0, 0);
+                //for (i = 0; i < sizeof(errorControls) / sizeof(errorControls[0]); i++)
+                    //SendMessage(GetDlgItem(hwndDlg, errorControls[i]), BUTTONSETASFLATBTN, 0, 0);
                 for (i = 0; i < sizeof(formatControls) / sizeof(formatControls[0]); i++)
                     SendMessage(GetDlgItem(hwndDlg, formatControls[i]), BUTTONSETASFLATBTN, 0, 0);
                 for (i = 0; i < sizeof(infoLineControls) / sizeof(infoLineControls[0]); i++)
@@ -1216,6 +1216,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_READSTATUS, BUTTONSETASFLATBTN + 10, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_TOGGLENOTES, BUTTONSETASFLATBTN + 10, 0, 0);
                 
+                SendDlgItemMessage(hwndDlg, IDC_RETRY, BUTTONSETASFLATBTN + 10, 0, 0);
+                SendDlgItemMessage(hwndDlg, IDC_CANCELSEND, BUTTONSETASFLATBTN + 10, 0, 0);
+                SendDlgItemMessage(hwndDlg, IDC_MSGSENDLATER, BUTTONSETASFLATBTN + 10, 0, 0);
+
                 dat->dwFlags |= MWF_INITMODE;
                 TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
 
@@ -1233,9 +1237,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else
                     SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
                 
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_RETRY), Translate("&Retry"));
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_CANCELSEND), Translate("&Cancel"));
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), Translate("Send &later"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_RETRY), Translate("Retry"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_CANCELSEND), Translate("Cancel"));
+                SetWindowTextA(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), Translate("Send later"));
 
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
@@ -3037,13 +3041,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 DoTrimMessage(decoded);
                             }
                             bufSize = WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, 0, 0, 0);
-                            if(!IsUnicodeAscii(decoded, lstrlenW(decoded))) {
-                                isUnicode = TRUE;
-                                memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
+                            if(myGlobals.m_Send7bitStrictAnsi) {
+                                if(!IsUnicodeAscii(decoded, lstrlenW(decoded))) {
+                                    isUnicode = TRUE;
+                                    memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
+                                }
+                                else {
+                                    isUnicode = FALSE;
+                                    memRequired = bufSize;
+                                }
                             }
                             else {
-                                isUnicode = FALSE;
-                                memRequired = bufSize;
+                                isUnicode = TRUE;
+                                memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
                             }
                             
                             if(memRequired > dat->iSendBufferSize) {

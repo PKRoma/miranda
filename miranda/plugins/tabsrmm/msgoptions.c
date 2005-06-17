@@ -33,34 +33,25 @@ $Id$
 #include "../../include/m_clui.h"
 
 #ifdef __MATHMOD_SUPPORT
-//mathMod begin
-#include "m_MathModule.h"
-//mathMod end
+    #include "m_MathModule.h"
 #endif
 
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
 extern MYGLOBALS myGlobals;
-
 extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 extern struct ContainerWindowData *pFirstContainer;
 
-#if defined(_UNICODE) && defined(WANT_UGLY_HOOK)
-    extern HHOOK g_hMsgHook;
-    extern LRESULT CALLBACK GetMsgHookProc(int iCode, WPARAM wParam, LPARAM lParam);
-#endif
+extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 HMENU BuildContainerMenu();
 void CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
 void CreateImageList(BOOL bInitial);
-
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
 BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -87,7 +78,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
     int style;
     DBVARIANT dbv;
     char bSize;
-    
+
     if (colour) {
         _snprintf(str, sizeof(str), "Font%dCol", i);
         *colour = DBGetContactSettingDword(NULL, FONTMODULE, str, GetSysColor(COLOR_WINDOWTEXT));
@@ -266,6 +257,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Flash contact list and tray icons for new events in unfocused windows", 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
     0, "Delete temporary contacts on close", 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
     0, "Enable event API (support for third party plugins)", 0, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
+    0, "Don't send UNICODE parts for 7bit ANSI messages (saves db space)", 1, LOI_TYPE_SETTING, (UINT_PTR)"7bitasANSI", 2,
     0, "Always keep the button bar at full width", 0, LOI_TYPE_SETTING, (UINT_PTR)"alwaysfulltoolbar", 0,
     0, NULL, 0, 0, 0, 0
 };
@@ -1902,6 +1894,7 @@ void ReloadGlobals()
      myGlobals.m_TabAppearance = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", TCF_FLASHICON);
      myGlobals.m_ExtraRedraws = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggromode", 0);
      myGlobals.m_panelHeight = (DWORD)DBGetContactSettingDword(NULL, SRMSGMOD_T, "panelheight", 51);
+     myGlobals.m_Send7bitStrictAnsi = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "7bitasANSI", 1);
 }
 
 /*

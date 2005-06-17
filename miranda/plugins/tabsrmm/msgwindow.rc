@@ -88,15 +88,15 @@ BEGIN
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25
     CONTROL         "",IDC_SPLITTER5,"Static",SS_ENHMETAFILE,0,30,187,2,
                     WS_EX_STATICEDGE
-    CONTROL         "&Retry",IDC_RETRY,"TSButtonClass",WS_TABSTOP,26,10,55,
-                    12
-    CONTROL         "&Cancel",IDC_CANCELSEND,"TSButtonClass",WS_TABSTOP,86,
-                    10,55,12
-    CONTROL         "Send &Later",IDC_MSGSENDLATER,"TSButtonClass",
-                    WS_TABSTOP,146,10,55,12
+    CONTROL         "",IDC_RETRY,"TSButtonClass",WS_TABSTOP,26,10,55,12
+    CONTROL         "",IDC_CANCELSEND,"TSButtonClass",WS_TABSTOP,86,10,55,12
+    CONTROL         "",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,146,10,55,12
+//    PUSHBUTTON         "",IDC_RETRY,26,10,55,12
+//    PUSHBUTTON         "",IDC_CANCELSEND,86,10,55,12
+//    PUSHBUTTON         "",IDC_MSGSENDLATER,146,10,55,12
     LTEXT           "",IDC_STATICTEXT,27,0,160,9
-    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
-                    WS_GROUP
+    CONTROL         "",IDC_STATICERRORICON,"Static",SS_CENTERIMAGE | SS_ICON
+                    | WS_GROUP, 4,3,20,20
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_NOHIDESEL | ES_AUTOVSCROLL 
                     | ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
                     WS_EX_STATICEDGE
@@ -104,7 +104,8 @@ BEGIN
                     0x18000000L
     CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,
                     16,14,0x18000000L
-    ICON            "",IDC_MULTIPLEICON,0,64,16,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_MULTIPLEICON, "Static", SS_ICON | SS_CENTERIMAGE,
+                    0,64,16,14
     CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,14,
                     0x18000000L
     CONTROL         "",IDC_TOGGLESIDEBAR,"Button",BS_OWNERDRAW | WS_TABSTOP,

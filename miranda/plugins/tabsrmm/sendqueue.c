@@ -283,7 +283,11 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
         dbei.pBlob = NULL;
     }
 #if defined(_UNICODE)
-    iMsgLen *= 3;
+    if(iSendJobIndex >= 0) {
+        if(sendJobs[iSendJobIndex].dwFlags & PREF_UNICODE) {
+            iMsgLen *= 3;
+        }
+    }
 #endif
     dbei.cbBlob = iMsgLen;
     dbei.timestamp = time(NULL);
@@ -311,6 +315,8 @@ void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 
 void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 {
+    UINT myerrorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
+    int i;
     if(showCmd) {
         TCITEM item = {0};
         dat->hTabIcon = myGlobals.g_iconErr;
@@ -330,7 +336,13 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
             SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
     }
         
-    ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), showCmd ? SW_SHOW : SW_HIDE);
+    //ShowMultipleControls(hwndDlg, errorControls, 5, showCmd ? SW_SHOW : SW_HIDE);
+    for(i = 0; i < 5; i++) {
+        if(IsWindow(GetDlgItem(hwndDlg, myerrorControls[i])))
+           ShowWindow(GetDlgItem(hwndDlg, myerrorControls[i]), showCmd ? SW_SHOW : SW_HIDE);
+        else
+            _DebugPopup(0, "%d is not a window", myerrorControls[i]);
+    }
 
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);

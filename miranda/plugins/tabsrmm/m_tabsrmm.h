@@ -167,12 +167,6 @@ struct ContainerWindowData {
 
 #define STICK_ICON_MSG 10
 
-/*
-struct MessageSendInfo {
-	HANDLE hContact;
-	HANDLE hSendId;
-};*/
-
 #define SENDJOBS_MAX_SENDS 20
 
 struct SendJob {
@@ -199,9 +193,7 @@ struct MessageSessionStats {
 
 struct MessageWindowData {
 	HANDLE hContact, hSubContact;
-	// IEVIew MOD Begin
 	HWND hwndLog;
-	// IEVIew MOD End
     HWND hwnd;
 	HANDLE hDbEventFirst,hDbEventLast;
 	int sendMode;
@@ -380,6 +372,7 @@ typedef struct _globals {
     DWORD m_GlobalContainerTrans;
     WINDOWPLACEMENT m_GlobalContainerWpos;
     HANDLE hLastOpenedContact;
+    int m_Send7bitStrictAnsi;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

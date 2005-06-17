@@ -37,36 +37,47 @@ extern HINSTANCE g_hInst;
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+HMODULE hUxTheme = 0;
+
+// function pointers, use typedefs for casting to shut up the compiler when using GetProcAddress()
+
+typedef BOOL (WINAPI *PITA)();
+typedef HANDLE (WINAPI *POTD)(HWND, LPCWSTR);
+typedef UINT (WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
+typedef UINT (WINAPI *PCTD)(HANDLE);
+
+PITA pfnIsThemeActive = 0;
+POTD pfnOpenThemeData = 0;
+PDTB pfnDrawThemeBackground = 0;
+PCTD pfnCloseThemeData = 0;
+
+void FreeTabConfig(), ReloadTabConfig();
+
+#define FIXED_TAB_SIZE 100                  // default value for fixed width tabs
+
 /*
  * visual styles support (XP+)
  * returns 0 on failure
  */
-
-HMODULE hUxTheme = 0;
-
-// function pointers
-
-BOOL (PASCAL* pfnIsThemeActive)() = 0;
-HANDLE (PASCAL* pfnOpenThemeData)(HWND hwnd, LPCWSTR pszClassList) = 0;
-UINT (PASCAL* pfnDrawThemeBackground)(HANDLE htheme, HDC hdc, int iPartID, int iStateID, RECT* prcBx, RECT* prcClip) = 0;
-UINT (PASCAL* pfnCloseThemeData)(HANDLE hTheme) = 0;
-
-void FreeTabConfig(), ReloadTabConfig();
 
 int InitVSApi()
 {
     if((hUxTheme = LoadLibraryA("uxtheme.dll")) == 0)
         return 0;
 
-    pfnIsThemeActive = GetProcAddress(hUxTheme, "IsThemeActive");
-    pfnOpenThemeData = GetProcAddress(hUxTheme, "OpenThemeData");
-    pfnDrawThemeBackground = GetProcAddress(hUxTheme, "DrawThemeBackground");
-    pfnCloseThemeData = GetProcAddress(hUxTheme, "CloseThemeData");
+    pfnIsThemeActive = (PITA)GetProcAddress(hUxTheme, "IsThemeActive");
+    pfnOpenThemeData = (POTD)GetProcAddress(hUxTheme, "OpenThemeData");
+    pfnDrawThemeBackground = (PDTB)GetProcAddress(hUxTheme, "DrawThemeBackground");
+    pfnCloseThemeData = (PCTD)GetProcAddress(hUxTheme, "CloseThemeData");
     if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0) {
         return 1;
     }
     return 0;
 }
+
+/*
+ * unload uxtheme.dll
+ */
 
 int FreeVSApi()
 {
@@ -74,6 +85,10 @@ int FreeVSApi()
         FreeLibrary(hUxTheme);
     return 0;
 }
+
+/*
+ * register the new tab control as a window class (TSTabCtrlClass)
+ */
 
 int RegisterTabCtrlClass(void) 
 {
@@ -131,6 +146,10 @@ UINT FindLeftDownItem(HWND hwnd)
 	return nItem;
 }
 
+/*
+ * tab control color definitions, including the database setting key names
+ */
+
 static struct colOptions {UINT id; UINT defclr; char *szKey; } tabcolors[] = {
     IDC_TXTCLRNORMAL, COLOR_BTNTEXT, "tab_txt_normal",
     IDC_TXTCLRACTIVE, COLOR_BTNTEXT, "tab_txt_active",
@@ -143,6 +162,10 @@ static struct colOptions {UINT id; UINT defclr; char *szKey; } tabcolors[] = {
     0, 0, NULL
 };
 
+/*
+ * hints for drawing functions
+ */
+
 #define HINT_ACTIVATE_RIGHT_SIDE 1
 #define HINT_ACTIVE_ITEM 2
 #define FLOAT_ITEM_HEIGHT_SHIFT 2
@@ -154,6 +177,8 @@ static struct colOptions {UINT id; UINT defclr; char *szKey; } tabcolors[] = {
 /*
  * draws the item contents (icon and label)
  * it obtains the label and icon handle directly from the message window data
+ * no image list is used and necessary, the message window dialog procedure has to provide a valid
+ * icon handle in dat->hTabIcon
  */
  
 void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
@@ -234,7 +259,7 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
 }
 
 /*
- * draws the item rect in *classic* style (no visual themes
+ * draws the item rect (the "tab") in *classic* style (no visual themes
  */
 
 void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint)
@@ -346,7 +371,8 @@ HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartId, int 
 }
 
 /*
- * draw a themed tab item. mirrors the bitmap for bottom-aligned tabs
+ * draw a themed tab item. either a tab or the body pane
+ * handles image mirroring for tabs at the bottom
  */
 
 void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct TabControlData *tabdat) 
@@ -446,14 +472,6 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     bihOut->biHeight = szBmp.cy;
     pcImg = malloc(nSzBuffPS);
         
-    /*
-    if(bBody) {
-        nStart = 3;
-        nLenSub = 4;	// if bottom oriented flip the body contest only (no shadows were flipped)
-    } */
-    // flip (mirror) the bitmap horizontally
-    
-//    if(!bBody)	{									// get bits: 
     if(pcImg)	{									// get bits: 
 		GetDIBits(pDC, bmpMem, nStart, szBmp.cy - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
         bihOut->biHeight = -szBmp.cy;
@@ -470,8 +488,6 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
     DeleteObject(bmpMem);
     DeleteDC(dcMem);
 }
-
-#define FIXED_TAB_SIZE 100
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -805,12 +821,9 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 rctActive.bottom -= myGlobals.tabConfig.m_bottomAdjust;
             }
             if (rctActive.left >= 0) {
-//            if (IntersectRect(&rectTemp, &rctActive, &ps.rcPaint) && rctActive.left >= 0) {
                 int nHint = 0;
                 rcItem = rctActive;
                 if(!bClassicDraw && !(dwStyle & TCS_BUTTONS)) {
-                    //if(!uiBottom)
-                        //rcItem.bottom--;
                     InflateRect(&rcItem, 2, 2);
                     DrawThemesXpTabItem(hdc, iActive, &rcItem, 2 | uiBottom, tabdat);
                     DrawItem(tabdat, hdc, &rcItem, nHint | HINT_ACTIVE_ITEM, iActive);
@@ -854,9 +867,12 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             break;
         }
     }
-    //return DefWindowProc(hwnd, msg, wParam, lParam);
     return CallWindowProc(OldTabControlClassProc, hwnd, msg, wParam, lParam); 
 }
+
+/*
+ * load the tab control configuration data (colors, fonts, flags...
+ */
 
 void ReloadTabConfig()
 {
@@ -1028,5 +1044,3 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     }
     return FALSE;
 }
-
-

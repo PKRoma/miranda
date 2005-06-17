@@ -357,7 +357,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 dbei.szModule = "Sample error message";
             dbei.cbSize = sizeof(dbei);
             dbei.pBlob = (iIndex == 6) ? (BYTE *)"is now offline (was online)" : (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
-            dbei.cbBlob = lstrlenA(dbei.pBlob) + 1;
+            dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
             dbei.flags = (iIndex == 1 || iIndex == 3 || iIndex == 5) ? DBEF_SENT : 0;
             dat->lastEventTime = (iIndex == 4 || iIndex == 5) ? time(NULL) - 1 : 0;
             dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
