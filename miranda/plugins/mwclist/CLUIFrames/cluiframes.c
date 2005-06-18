@@ -1041,6 +1041,8 @@ int CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
 	int pos;
 	int retval;
 		
+	if (FramesSysNotStarted) return 0;
+
 	lockfrm();
 	pos=id2pos(HIWORD(wParam));
 	if(pos<0||pos>=nFramescount) {
@@ -1974,6 +1976,8 @@ int CLUIFramesResize(const RECT newsize)
 	
 	GapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
 	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
+	TitleBarH=DBGetContactSettingDword(NULL,"CLUIFrames","TitleBarH",DEFAULT_TITLEBAR_HEIGHT);
+
 	sepw=GapBetweenFrames;
 
 	if(nFramescount<1) return 0; 
@@ -3368,6 +3372,34 @@ int UnLoadCLUIFramesModule(void)
 {
 	int i;
 	FramesSysNotStarted=TRUE;
+	
+	DestroyServiceFunction(MS_CLIST_FRAMES_ADDFRAME);
+	DestroyServiceFunction(MS_CLIST_FRAMES_REMOVEFRAME);
+
+	DestroyServiceFunction(MS_CLIST_FRAMES_SETFRAMEOPTIONS);
+	DestroyServiceFunction(MS_CLIST_FRAMES_GETFRAMEOPTIONS);
+	DestroyServiceFunction(MS_CLIST_FRAMES_UPDATEFRAME);
+
+	DestroyServiceFunction(MS_CLIST_FRAMES_SHFRAMETITLEBAR);
+	DestroyServiceFunction(MS_CLIST_FRAMES_SHOWALLFRAMESTB);
+	DestroyServiceFunction(MS_CLIST_FRAMES_HIDEALLFRAMESTB);
+	DestroyServiceFunction(MS_CLIST_FRAMES_SHFRAME);
+	DestroyServiceFunction(MS_CLIST_FRAMES_SHOWALLFRAMES);
+
+	DestroyServiceFunction(MS_CLIST_FRAMES_ULFRAME);
+	DestroyServiceFunction(MS_CLIST_FRAMES_UCOLLFRAME);
+	DestroyServiceFunction(MS_CLIST_FRAMES_SETUNBORDER);
+	
+	DestroyServiceFunction(CLUIFRAMESSETALIGN);
+	DestroyServiceFunction(CLUIFRAMESMOVEUPDOWN);
+
+
+	DestroyServiceFunction(CLUIFRAMESSETALIGNALTOP);
+	DestroyServiceFunction(CLUIFRAMESSETALIGNALCLIENT);
+	DestroyServiceFunction(CLUIFRAMESSETALIGNALBOTTOM);
+		
+	
+	
 	CLUIFramesOnClistResize((WPARAM)hwndContactList,0);
 	CLUIFramesStoreAllFrames();
 	lockfrm();
