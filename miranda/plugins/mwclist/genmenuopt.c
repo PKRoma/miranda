@@ -8,6 +8,7 @@ extern PIntMenuObject MenuObjects;
 extern int MenuObjectsCount;
 
 int hInst;
+#define OPTMENU_SEPARATOR "--------------------------------------------------"
 
 struct OrderData {
 	int dragging;
@@ -105,7 +106,7 @@ int SaveTree(HWND hwndDlg)
 								{
 									
 								};
-								if ((strcmp(name,"-")==0)&&((MenuItemOptData *)tvi.lParam)->show)
+								if ((strcmp(name,OPTMENU_SEPARATOR)==0)&&((MenuItemOptData *)tvi.lParam)->show)
 								{
 									runtimepos+=SEPARATORPOSITIONINTERVAL;
 								};
@@ -172,7 +173,7 @@ int InsertSeparator(HWND hwndDlg)
 					PD=(MenuItemOptData*)mir_alloc(sizeof(MenuItemOptData));
 					ZeroMemory(PD,sizeof(MenuItemOptData));
 					PD->id=-1;
-					PD->name=mir_strdup("-");
+					PD->name=mir_strdup(OPTMENU_SEPARATOR);
 					PD->show=TRUE;
 					PD->pos=((MenuItemOptData *)tvi.lParam)->pos-1;
 						
@@ -293,7 +294,7 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 					PD=(MenuItemOptData*)mir_alloc(sizeof(MenuItemOptData));
 					ZeroMemory(PD,sizeof(MenuItemOptData));
 					PD->id=-1;
-					PD->name=mir_strdup("-");
+					PD->name=mir_strdup(OPTMENU_SEPARATOR);
 					PD->pos=PDar[i]->pos-1;
 					PD->show=TRUE;
 						
@@ -401,7 +402,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 								TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
 								
 
-								if (strstr(((MenuItemOptData *)tvi.lParam)->name,"-")){break;};
+								if (strstr(((MenuItemOptData *)tvi.lParam)->name,OPTMENU_SEPARATOR)){break;};
 								ZeroMemory(buf,256);
 								GetDlgItemText(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
 								if (((MenuItemOptData *)tvi.lParam)->name){mir_free(((MenuItemOptData *)tvi.lParam)->name);};
@@ -427,7 +428,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 								TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
 								
 
-								if (strstr(((MenuItemOptData *)tvi.lParam)->name,"-")){break;};
+								if (strstr(((MenuItemOptData *)tvi.lParam)->name,OPTMENU_SEPARATOR)){break;};
 								ZeroMemory(buf,256);
 								GetDlgItemText(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
 								if (((MenuItemOptData *)tvi.lParam)->name){mir_free(((MenuItemOptData *)tvi.lParam)->name);};
@@ -551,7 +552,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 								//((MenuItemOptData *)tvi.lParam)->show
 
 
-								if (strstr(((MenuItemOptData *)tvi.lParam)->name,"-")){break;};
+								if (strstr(((MenuItemOptData *)tvi.lParam)->name,OPTMENU_SEPARATOR)){break;};
 
 								SetDlgItemText(hwndDlg,IDC_GENMENU_CUSTOMNAME,((MenuItemOptData *)tvi.lParam)->name);
 								

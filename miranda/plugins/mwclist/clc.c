@@ -1120,7 +1120,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 				if(dat->exStyle&CLS_EX_TRACKSELECT) {
 						InvalidateItem(hwnd,dat,iOldHotTrack);
 						InvalidateItem(hwnd,dat,dat->iHotTrack);
-						SetTimer(hwnd,TIMERID_DELAYEDREPAINT,1000,NULL);
+						SetTimer(hwnd,TIMERID_DELAYEDREPAINT,100,NULL);
 				}
 				if(iOldHotTrack!=dat->iHotTrack) {
 					if(iOldHotTrack==-1) SetCapture(hwnd);
