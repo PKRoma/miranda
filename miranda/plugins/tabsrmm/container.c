@@ -106,6 +106,8 @@ void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newNa
 struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
 struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
 
+static WNDPROC OldStatusBarproc;
+
 static struct SIDEBARITEM sbarItems[] = {
     IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "Session List",
     IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], "Favorite Contacts",
@@ -216,6 +218,28 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
     return NULL;
 }
 
+static WNDPROC StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch(msg) {
+        case WM_COMMAND:
+            if(LOWORD(wParam) == 1001)
+                SendMessage(GetParent(hWnd), DM_SESSIONLIST, 0, 0);
+            break;
+        case WM_CONTEXTMENU:
+        {
+            RECT rc;
+            POINT pt;
+            GetCursorPos(&pt);
+            GetWindowRect(GetDlgItem(hWnd, 1001), &rc);
+            if(PtInRect(&rc, pt)) {
+                SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
+                return 0;
+            }
+            break;
+        }
+    }
+    CallWindowProc(OldStatusBarproc, hWnd, msg, wParam, lParam);
+}
 /*
  * draws the sidebar, arranges the buttons, cares about hiding buttons if space
  * is not sufficient.
@@ -451,7 +475,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
                     break;
             }
-
             for(i = 0; sbarItems[i].uId != 0; i++) {
                 if(LOWORD(wParam) == sbarItems[i].uId) {
                     switch(LOWORD(wParam)) {
@@ -703,6 +726,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
+                    MoveWindow(pContainer->hwndSlist, 1, 3, 18, 18, FALSE);
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -941,6 +965,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 nPanel = nm->dwItemSpec; 
                             }
 panel_found:                            
+                            /*
                             if(nPanel == 0) {
                                 SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
                                 if(nm->pt.x > rc.left && nm->pt.x < rc.left + 18) {
@@ -948,8 +973,8 @@ panel_found:
                                         SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
                                     break;
                                 }
-                            }
-                            else if(nPanel == nParts - 1)
+                            } */
+                            if(nPanel == nParts - 1)
                                 SendMessage(pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
                             else if(nPanel == nParts - 2) {
                                 if(GetKeyState(VK_SHIFT) & 0x8000) {
@@ -1136,7 +1161,7 @@ panel_found:
         * pass the WM_ACTIVATE msg to the active message dialog child
         */
         case WM_ACTIVATE:
-			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler) {
+			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
 					pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)HIWORD(pContainer->dwTransparency), LWA_ALPHA);
 			}
@@ -1432,6 +1457,8 @@ panel_found:
 
             if(pContainer->dwFlags & CNT_NOSTATUSBAR) {
                 if(pContainer->hwndStatus) {
+                    SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
+                    DestroyWindow(pContainer->hwndSlist);
                     DestroyWindow(pContainer->hwndStatus);
                     pContainer->hwndStatus = 0;
                     pContainer->statusBarHeight = 0;
@@ -1440,7 +1467,11 @@ panel_found:
             }
             else if(pContainer->hwndStatus == 0) {
                 pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
-
+                pContainer->hwndSlist = CreateWindowExA(0, "TSButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 1, 2, 18, 18, pContainer->hwndStatus, (HMENU)1001, g_hInst, NULL);
+                OldStatusBarproc = (WNDPROC) SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)StatusBarSubclassProc);                
+                SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, 0);
+                SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
+                SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)Translate("Show session list (right click to show quick menu)"), 0);
                 if(pContainer->hwndStatus) {
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
                     SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
@@ -1548,21 +1579,12 @@ panel_found:
         case WM_CONTEXTMENU:
             {
                 if (pContainer->hwndStatus && pContainer->hwndStatus == (HWND) wParam) {
-                    POINT pt, pt1;
+                    POINT pt;
                     HANDLE hContact;
                     HMENU hMenu;
 
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     if(hContact) {
-                        RECT rc;
-                        GetCursorPos(&pt);
-                        pt1 = pt;
-                        ScreenToClient(hwndDlg, &pt1);
-                        SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
-                        if(pt1.x > rc.left && pt1.x < rc.left + 18) {
-                            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
-                            break;
-                        }
                         hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
                         TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
                         DestroyMenu(hMenu);
@@ -1629,6 +1651,11 @@ panel_found:
                 AdjustTabClientRect(pContainer, rc);
                 break;
             }
+        case DM_SESSIONLIST:
+            {
+                SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+                break;
+            }
         case WM_DESTROY:
             {
                 int i = 0;
@@ -1648,8 +1675,11 @@ panel_found:
     			pContainer->hwndActive = 0;
                 pContainer->hMenuContext = 0;
                 SetMenu(hwndDlg, NULL);
-                if(pContainer->hwndStatus)
+                if(pContainer->hwndStatus) {
+                    DestroyWindow(pContainer->hwndSlist);
+                    SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
                     DestroyWindow(pContainer->hwndStatus);
+                }
                 if(pContainer->hMenu)
                     DestroyMenu(pContainer->hMenu);
     			DestroyWindow(pContainer->hwndTip);

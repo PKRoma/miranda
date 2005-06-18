@@ -61,6 +61,7 @@ extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
 extern char *szWarnClose;
 extern struct RTFColorTable rtf_ctable[];
+extern PSLWA pSetLayeredWindowAttributes;
 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -1030,13 +1031,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     
     hwndTab = GetParent(hwndDlg);
     
-    /*
-    if (dat != 0)
-        dat->iTabID = GetTabIndexFromHWND(hwndTab, hwndDlg);
-    else {
-        if(dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
-            return 0;
-    }*/
     if(dat == 0) {
         if(dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
             return 0;
@@ -1907,6 +1901,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             //fall through
         case WM_MOUSEACTIVATE:
             if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200) {
+                if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
+                    pSetLayeredWindowAttributes(dat->pContainer->hwnd, RGB(255,255,255), (BYTE)LOWORD(dat->pContainer->dwTransparency), LWA_ALPHA);
                 //SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                 UpdateStatusBar(hwndDlg, dat);
                 break;
@@ -1915,6 +1911,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 _DebugPopup(dat->hContact, "ACTIVATE Critical: iTabID == -1");
                 break;
             } else {
+                if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
+                    pSetLayeredWindowAttributes(dat->pContainer->hwnd, RGB(255,255,255), (BYTE)LOWORD(dat->pContainer->dwTransparency), LWA_ALPHA);
                 ConfigureSideBar(hwndDlg, dat);
                 dat->dwFlags &= ~MWF_DIVIDERSET;
                 dat->dwTickLastEvent = 0;
@@ -3408,7 +3406,7 @@ quote_from_last:
                             if(dat->hwndLog)
                                 CallService(MS_IEVIEW_SHOWSMILEYSELECTION, 0, (LPARAM)&smaddInfo);
                             else
-                                CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
+                                CallService(MS_SMILEYADD_SHOWSELECTION, (WPARAM)dat->pContainer->hwnd, (LPARAM) &smaddInfo);
                         }
                     }
                     break;

@@ -152,7 +152,7 @@ struct ContainerWindowData {
     HANDLE hContactFrom;
     BOOL  isCloned;
     HMENU hMenu;
-    HWND hwndStatus;
+    HWND hwndStatus, hwndSlist;
     int statusBarHeight;
     DWORD dwLastActivity;
     int hIcon;                // current window icon stick indicator

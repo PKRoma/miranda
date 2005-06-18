@@ -190,7 +190,7 @@ struct ProtocolData {
 #define DM_CLOSETABATMOUSE   (WM_USER+24)
 #define DM_SAVELOCALE        (WM_USER+25)
 #define DM_SETLOCALE         (WM_USER+26)
-//#define DM_REALLYSCROLL      (WM_USER+27)  *free*
+#define DM_SESSIONLIST       (WM_USER+27)
 #define DM_QUERYLASTUNREAD   (WM_USER+28)
 #define DM_QUERYPENDING      (WM_USER+29)
 #define DM_UPDATEPICLAYOUT   (WM_USER+30)

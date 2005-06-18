@@ -21,14 +21,14 @@ Version 0.9.9.95pre8 - 2005/05/25
           show "Dialog" while tabs are created.
           
         * fixed rtf parser to deal with some (rare) rich edit bugs.
-
+        
         * changed tab layouting for single AND multiline BUTTON tabs. Both modes are
           now using fixed width tabs and the layouting code will try to always "fill"
           the rows. An option to set the default fixed tab width has been added 
           to the tab appearance configuration dialog.
           
         + new feature for event notifications (popups only):
-
+        
           tabSRMM can now remove popups for a contact under the following situations:
           
           1) container receives focus
@@ -65,7 +65,7 @@ Version 0.9.9.95pre8 - 2005/05/25
         * removed "ding" sounds when using some hotkeys (Alt-S for example)
         
         * various langpack updates
-
+        
         * ICON PACK: updated "unknown.bmp" (default avatar image). Thanks to Faith for the
           .bmp.
           
@@ -79,8 +79,9 @@ Version 0.9.9.95pre8 - 2005/05/25
           classic windows theme.
           
         * DISMISS EVENT is back, but with a big warning when you first activate it / and or
-          run miranda with that option active.
-
+          run miranda with that option active. Also, it is only available for "click" actions,
+          you cannot set dismiss event for the popup timeout action.
+        
         * the tab control is now a full window class, and no longer only subclassed.
                           
         + new hotkeys:
@@ -104,22 +105,39 @@ Version 0.9.9.95pre8 - 2005/05/25
           
         * possible fix for a rare redrawing bug, resulting in black background on tabs (visual
           styles, tabs at the top only).
-
+        
         * prevent custom template background colors from taking the rgb value 0,0,0 to avoid
           a problem with icon transparency and "pure" black bg color. A pure black bg color
           is converted to rgb(1,1,1).
-          
-        + added support for the FontService plugin to customize message window fonts and back-
+                                                                 
+        + added support for the FontService plugin by sje to customize message window fonts and back-
           grounds. If font service plugin is enabled, tabSRMMs own font+color configuration page
           is disabled. However, tabSRMM still maintains its own copy of font + color settings in
           the DB so that you can switch between using font service and the old dialog easily.
-
+        
         + restored "mark on double click" for the message history log.
         
         * the info panel splitter now follows the settings for the normal splitter (global, private
           saving policy etc.).
           
         + added visual styles support for button tabs (using pushbutton skins).
+        
+        ! fixed transparency issues when changing focus
+        
+        + activating the smiley selection window does no longer switch containers transparency to
+          "inactive".
+          NOTE: requires new build of smileyadd.dll (included in this release) and does NOT work
+          with IEViews smiley selection window. Sorry for that, but it needs a small change in
+          the smiley selection window code. So I would have to distribute a modified IEView aswell
+          (which I don't like).
+          
+        + added global options for container(s). The container options dialog now allows you to
+          set the options for any container to "global" or "private". All containers using global
+          options share one set of container configuration flags (and transparency values).
+          Title bar format and container window position/size can be set independently to either
+          global or private.
+          
+        + added the info panel allowing for dual avatar display.
 
 Version 0.9.9.95pre7 - 2005/05/23
 
