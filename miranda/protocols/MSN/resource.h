@@ -58,6 +58,7 @@
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035
 #define IDC_CHECK1                      1036
+#define IDC_USEOPENSSL                  1036
 #define IDC_USEMSNP11                   1037
 #define IDC_SENDFONTINFO                1046
 #define IDC_NOTIFY_USERTYPE             1047
@@ -87,7 +88,7 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        131

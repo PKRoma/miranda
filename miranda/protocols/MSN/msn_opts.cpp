@@ -392,8 +392,10 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
 		CheckDlgButton( hwndDlg, IDC_USEMSNP11,   MSN_GetByte( "UseMSNP11",   0 ));
 
-		if ( MSN_CallService( MS_SYSTEM_GETVERSION, 0, 0 ) < 0x00030300 )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_USEGATEWAY ), FALSE );
+		if ( MyOptions.UseProxy )
+			EnableWindow( GetDlgItem( hwndDlg, IDC_USEOPENSSL ), FALSE );
+		else
+         CheckDlgButton( hwndDlg, IDC_USEOPENSSL, MSN_GetByte( "UseOpenSSL", 0 ));
 
 		if ( !DBGetContactSetting( NULL, msnProtocolName, "YourHost", &dbv )) {
 			if ( !MSN_GetByte( "AutoGetHost", 1 ))
@@ -446,7 +448,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 
 			case IDC_KEEPALIVE:			case IDC_USEIEPROXY:		case IDC_SLOWSEND:
-			case IDC_USEMSNP11:
+			case IDC_USEMSNP11:        case IDC_USEOPENSSL:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
@@ -477,7 +479,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
-			bool restartRequired = false;
+			bool restartRequired = false, reconnectRequired = false;
 			char str[ MAX_PATH ];
 
 			BYTE tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY );
@@ -496,7 +498,14 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if ( MyOptions.UseMSNP11 != tValue ) {
 				MSN_SetByte( "UseMSNP11", tValue );
 				if ( msnLoggedIn )
-					restartRequired =	true;
+					reconnectRequired = true;
+			}
+
+			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEOPENSSL );
+			if ( MSN_GetByte( "UseOpenSSL", 0 ) != tValue ) {
+				MSN_SetByte( "UseOpenSSL", tValue );
+				if ( msnLoggedIn )
+					reconnectRequired = true;
 			}
 
 			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));
@@ -509,6 +518,8 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 			if ( restartRequired )
 				MessageBox( hwndDlg, MSN_Translate( "The changes you have made require you to restart Miranda IM before they take effect"), "MSN Options", MB_OK );
+			if ( reconnectRequired && msnLoggedIn )
+				MessageBox( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
 
 			LoadOptions();
 			return TRUE;
@@ -733,10 +744,10 @@ void __stdcall LoadOptions()
 	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );
 	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE );
+	MyOptions.UseMSNP11 = MSN_GetByte( "UseMSNP11", FALSE );
 	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
 	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
 	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
-	MyOptions.UseMSNP11 = MSN_GetByte( "UseMSNP11", FALSE );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -129,6 +129,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
+#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
+
 #define	MSN_ALLOW_MSGBOX		1
 #define	MSN_ALLOW_ENTER		2
 #define	MSN_HOTMAIL_POPUP		4

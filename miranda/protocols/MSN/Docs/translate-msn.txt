@@ -92,9 +92,12 @@
 [Use HTTP gateway mode (incompatible with MSN Gateway plugin)]
 [Use IE proxy settings]
 [Keep connection alive (send a ping packet every minute)]
+[Notify me when a message delivery has failed]
+[Use MSN Messenger 7 protocol]
+[Use OpenSSL encryption (requires LIBSSL32.DLL)]
+
 [Incoming file transfers]
 [Automatically obtain host/port for incoming file transfers]
-[Notify me when a message delivery has failed]
 [Your host (or router):]
 [Reset]
 [The changes you have made require you to reconnect to the MSN Messenger network before they take effect]

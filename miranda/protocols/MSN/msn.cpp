@@ -128,8 +128,6 @@ static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 
-#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
-
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	char szBuffer[ MAX_PATH ];
