@@ -98,7 +98,7 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
     char    debug[1024];
     int     ibsize = 1023;
     BYTE want_debuginfo = DBGetContactSettingByte(NULL, "Tab_SRMsg", "debuginfo", 0);
-    
+
     if(!want_debuginfo)
         return 0;
     

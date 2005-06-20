@@ -391,6 +391,25 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
     return szResult;
 }
 
+extern "C" const WCHAR *EncodeWithNickname(const char *string, const char *szNick, UINT codePage)
+{
+    static std::wstring msg;
+    wchar_t stringW[256];
+    int mark = 0;
+
+    MultiByteToWideChar(CP_ACP, 0, string, -1, stringW, 256);
+    stringW[255] = 0;
+    msg.assign(stringW);
+    if((mark = msg.find(L"%nick%")) != msg.npos) {
+        wchar_t szNickW[128];
+        MultiByteToWideChar(codePage, 0, szNick, -1, szNickW, 128);
+        szNickW[127] = 0;
+        msg.erase(mark, 6);
+        msg.insert(mark, szNickW, lstrlenW(szNickW));
+    }
+    return msg.c_str();
+}
+
 #else
 
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c")};

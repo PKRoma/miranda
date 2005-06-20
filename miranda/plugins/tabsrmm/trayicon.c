@@ -253,11 +253,13 @@ void RemoveBalloonTip()
  * is deleted, if necessary.
  */
 
-void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu)
+void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
 {
-    MENUITEMINFOA mii = {0};
+    MENUITEMINFO mii = {0};
     char szMenuEntry[80];
-
+#if defined(_UNICODE)
+    const wchar_t *szMenuEntryW = 0;
+#endif
     if(szNickname == NULL)
         szNickname = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
     if(szProto == NULL)
@@ -275,7 +277,12 @@ void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, cha
         hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
     
     mii.cbSize = sizeof(mii);
+#if defined(_UNICODE)
+    mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, "%nick%", szStatus);
+    szMenuEntryW = EncodeWithNickname(szMenuEntry, szNickname, codePage);
+#else
     mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szNickname, szStatus);
+#endif
     if(mode) {
         if(hMenu == myGlobals.g_hMenuRecent) {
             if(CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0) {
@@ -291,28 +298,43 @@ void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, cha
             }
 addnew:
             DBWriteContactSettingDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
+#if defined(_UNICODE)
+            AppendMenuW(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntryW);
+#else
             AppendMenuA(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
+#endif
         }
         else if(hMenu == myGlobals.g_hMenuFavorites) {              // insert the item sorted...
-            MENUITEMINFOA mii2 = {0};
-            char szBuffer[142];
+            MENUITEMINFO mii2 = {0};
+            TCHAR szBuffer[142];
             int i, c = GetMenuItemCount(myGlobals.g_hMenuFavorites);
             mii2.fMask = MIIM_STRING;
             mii2.cbSize = sizeof(mii2);
             if(c == 0)
+#if defined(_UNICODE)
+                InsertMenuW(myGlobals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntryW);
+#else
                 InsertMenuA(myGlobals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+#endif
             else {
                 for(i = 0; i <= c; i++) {
                     mii2.cch = 0;
                     mii2.dwTypeData = NULL;
-                    GetMenuItemInfoA(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
+                    GetMenuItemInfo(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
                     mii2.cch++;
                     mii2.dwTypeData = szBuffer;
-                    GetMenuItemInfoA(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
+                    GetMenuItemInfo(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
+#if defined(_UNICODE)
+                    if(wcsncmp((wchar_t *)mii2.dwTypeData, szMenuEntryW, 140) > 0 || i == c) {
+                        InsertMenuW(myGlobals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntryW);
+                        break;
+                    }
+#else
                     if(strncmp((char *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
                         InsertMenuA(myGlobals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
                         break;
                     }
+#endif
                 }
             }
         }
@@ -320,12 +342,17 @@ addnew:
     mii.fMask = MIIM_BITMAP | MIIM_DATA;
     if(!mode) {
         mii.fMask |= MIIM_STRING;
+#if defined(_UNICODE)
+        mii.dwTypeData = (LPWSTR)szMenuEntryW;
+        mii.cch = lstrlenW(szMenuEntryW) + 1;
+#else
         mii.dwTypeData = szMenuEntry;
         mii.cch = lstrlenA(szMenuEntry) + 1;
+#endif
     }
     mii.hbmpItem = HBMMENU_CALLBACK;
     mii.dwItemData = (ULONG)hIcon;
-    SetMenuItemInfoA(hMenu, (UINT)hContact, FALSE, &mii);
+    SetMenuItemInfo(hMenu, (UINT)hContact, FALSE, &mii);
 }
 
 /*
@@ -349,7 +376,7 @@ void LoadFavoritesAndRecent()
     if(recentEntries != NULL) {
         while(hContact != 0) {
             if(DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-                AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
+                AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites, DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
             if((dwRecent = DBGetContactSettingDword(hContact, SRMSGMOD_T, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
                 recentEntries[iIndex].dwTimestamp = dwRecent;
                 recentEntries[iIndex++].hContact = hContact;
@@ -369,7 +396,7 @@ void LoadFavoritesAndRecent()
             }
         }
         for(i = 0; i < iIndex; i++)
-            AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent);
+            AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent, DBGetContactSettingDword(recentEntries[i].hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
 
         free(recentEntries);
     }

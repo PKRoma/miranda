@@ -727,9 +727,9 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
         if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
             return 0;                       // filter out settings we aren't interested in...
         if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
-            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites);
+            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites, DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
         if(DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "isRecent", 0))
-            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuRecent);
+            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuRecent, DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
         return 0;       // for the hContact.
     }
 

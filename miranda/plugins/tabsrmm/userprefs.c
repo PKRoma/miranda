@@ -220,14 +220,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         if(iIndex == 0)
                             DBDeleteContactSetting(hContact, SRMSGMOD_T, "sendformat");
                     }
-                    if(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
-                        if(!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-                            AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites);
-                    }
-                    else
-                        DeleteMenu(myGlobals.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
-                    DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0);
-                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "splitoverride", IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0);
 #if defined(_UNICODE)
                     iIndex = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCURSEL, 0, 0);
                     if((newCodePage = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)iIndex, 0)) != sCodePage) {
@@ -244,6 +236,16 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             dat->sendMode = IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? dat->sendMode | SMODE_FORCEANSI : dat->sendMode & ~SMODE_FORCEANSI;
                     }
 #endif              
+                    if(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
+                        if(!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
+                            AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites, newCodePage);
+                    }
+                    else
+                        DeleteMenu(myGlobals.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
+
+                    DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0);
+                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "splitoverride", IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0);
+
                     DBWriteContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE));
                     DBWriteContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE));
 

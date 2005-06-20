@@ -1593,10 +1593,10 @@ BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 
 BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    //BYTE bDefault = DBGetContactSettingByte(NULL, SRMSGMOD_T, "infopanel", 0);
     BYTE bDefault = dat->pContainer->dwFlags & CNT_INFOPANEL ? 1 : 0;
     BYTE bContact = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", 0);
-
+    if(dat->hContact == 0)      // no info panel, if no hcontact
+        return 0;
     return bContact == 0 ? bDefault : (bContact == (BYTE)-1 ? 0 : 1);
 }
 

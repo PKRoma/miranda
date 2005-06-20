@@ -843,7 +843,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_PANEL:
             return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
         case IDC_PANELSTATUS:
-            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight);;
+            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight);
             urc->rcItem.left = urc->dlgNewSize.cx - (dat->panelHeight + 2) - 90;;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_PANELNICK:
@@ -1699,7 +1699,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 int    iHash = 0;
                 WORD wOldApparentMode;
                 DWORD dwOldIdle = dat->idle;
-                
                 DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
 
                 ZeroMemory((void *)newcontactname,  sizeof(newcontactname));
@@ -1746,9 +1745,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                             if (strlen(newcontactname) != 0 && dat->szStatus != NULL) {
                                 if (myGlobals.m_StatusOnTabs)
+#if defined(_UNICODE)
+                                    mir_snprintf(newtitle, 127, "%s (%s)", "%nick%", dat->szStatus);
+#else
                                     mir_snprintf(newtitle, 127, "%s (%s)", newcontactname, dat->szStatus);
+#endif
                                 else
+#if defined(_UNICODE)
+                                    mir_snprintf(newtitle, 127, "%s", "%nick%");
+#else
                                     mir_snprintf(newtitle, 127, "%s", newcontactname);
+#endif
                             } else
                                 mir_snprintf(newtitle, 127, "%s", "Forward");
                             
@@ -1800,10 +1807,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     if(item.mask & TCIF_TEXT) {
 #ifdef _UNICODE
-                        if (MultiByteToWideChar(dat->codePage, 0, newtitle, -1, dat->newtitle, sizeof(dat->newtitle)) != 0) {
-                            item.pszText = dat->newtitle;
-                            item.cchTextMax = sizeof(dat->newtitle);
+                        const wchar_t *newTitle = EncodeWithNickname(newtitle, newcontactname, dat->codePage);
+                        int len = lstrlenW(newTitle);
+                        if (len != 0) {
+                            wcsncpy(dat->newtitle, newTitle, 127);
                             dat->newtitle[127] = 0;
+                            item.pszText = dat->newtitle;
+                            item.cchTextMax = 128;
                         }
 #else
                         item.pszText = newtitle;
@@ -1821,10 +1831,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     
                     UpdateTrayMenuState(dat, TRUE);
                     if(LOWORD(dat->dwIsFavoritOrRecent))
-                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuFavorites);
+                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuFavorites, dat->codePage);
                     if(DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0)) {
                         dat->dwIsFavoritOrRecent |= 0x00010000;
-                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuRecent);
+                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuRecent, dat->codePage);
                     }
                     else
                         dat->dwIsFavoritOrRecent &= 0x0000ffff;
@@ -1843,7 +1853,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
                         PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
                 }
-
                 break;
             }
         case DM_ADDDIVIDER:
@@ -3620,7 +3629,7 @@ quote_from_last:
                             case ID_FAVORITES_ADDCONTACTTOFAVORITES:
                                 DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
                                 dat->dwIsFavoritOrRecent |= 0x00000001;
-                                AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuFavorites);
+                                AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuFavorites, dat->codePage);
                                 break;
                             case ID_FAVORITES_REMOVECONTACTFROMFAVORITES:
                                 DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
@@ -4683,7 +4692,7 @@ verify:
                 wchar_t szTitleW[256];
 #endif                
                 UINT id = wParam;
-                if(id == o)
+                if(id == 0)
                     id = IDC_PANELSTATUS;
                 GetWindowRect(GetDlgItem(hwndDlg, id), &rc);
                 SendMessage(dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.top));
@@ -4965,7 +4974,7 @@ verify:
             }
         case WM_DESTROY:
             TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
-            AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuRecent);
+            AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuRecent, dat->codePage);
             if(dat->hContact) {
                 int len;
                 

@@ -727,7 +727,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     if(pContainer->hwndSlist)
-                        MoveWindow(pContainer->hwndSlist, 1, 3, 18, 18, FALSE);
+                        MoveWindow(pContainer->hwndSlist, 1, 3, 17, 17, FALSE);
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -1029,7 +1029,7 @@ panel_found:
                             char *contactName = 0, *szStatus = 0;
                             char szTtitle[256];
 #if defined ( _UNICODE )
-                            wchar_t w_contactName[256];
+                            const wchar_t *newTitle;
 #endif
 
                             GetCursorPos(&pt);
@@ -1051,15 +1051,24 @@ panel_found:
                                                 int i_hrs = diff / 3600;
                                                 int i_mins = (diff - i_hrs * 3600) / 60;
                                                 int i_secs = diff % 60;
-                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", contactName, szStatus, i_hrs, i_mins, i_secs);
-                                                
-                                            }
-                                            else
-                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
 #if defined ( _UNICODE )
-                                            MultiByteToWideChar(cdat->codePage, 0, szTtitle, -1, w_contactName, sizeof(w_contactName));
-                                            lstrcpynW(nmtt->szText, w_contactName, 80);
-                                            nmtt->szText[79] = (wchar_t) '\0';
+                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", "%nick%", szStatus, i_hrs, i_mins, i_secs);
+                                                newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
+#else
+                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", contactName, szStatus, i_hrs, i_mins, i_secs);
+#endif
+                                            }
+                                            else {
+#if defined ( _UNICODE )
+                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", "%nick%", szStatus);
+                                                newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
+#else
+                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
+#endif
+                                            }
+#if defined ( _UNICODE )
+                                            lstrcpynW(nmtt->szText, newTitle, 80);
+                                            nmtt->szText[79] = 0;
 #else
                                             lstrcpynA(nmtt->szText, szTtitle, 80);
                                             nmtt->szText[79] = '\0';
