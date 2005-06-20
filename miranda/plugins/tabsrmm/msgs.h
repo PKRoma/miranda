@@ -221,7 +221,7 @@ struct ProtocolData {
 #define DM_RETRIEVEAVATAR    (WM_USER+55)
 #define DM_CONFIGURETOOLBAR  (WM_USER+56)
 #define DM_LOADBUTTONBARICONS (WM_USER+57)
-//#define DM_PICTHREADCOMPLETE (WM_USER+58) *free*
+#define DM_ACTIVATETOOLTIP   (WM_USER+58)
 #define DM_UINTOCLIPBOARD   (WM_USER+59)
 #define DM_SPLITTEREMERGENCY (WM_USER+60)
 #define DM_RECALCPICTURESIZE (WM_USER+61)
@@ -319,9 +319,9 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_LOADTIME       10
 
 #define SRMSGSET_SHOWURLS          "ShowURLs"
-#define SRMSGDEFSET_SHOWURLS       0
+#define SRMSGDEFSET_SHOWURLS       1
 #define SRMSGSET_SHOWFILES         "ShowFiles"
-#define SRMSGDEFSET_SHOWFILES      0
+#define SRMSGDEFSET_SHOWFILES      1
 #define SRMSGSET_BKGCOLOUR         "BkgColour"
 #define SRMSGDEFSET_BKGCOLOUR      GetSysColor(COLOR_WINDOW)
 
@@ -345,7 +345,7 @@ extern const int msgDlgFontCount;
 #define TIMERID_FLASHWND     1
 #define TIMEOUT_FLASHWND     900
 #define TIMERID_HEARTBEAT    2
-#define TIMEOUT_HEARTBEAT    10000
+#define TIMEOUT_HEARTBEAT    20000
 
 #define SRMSGMOD "SRMsg"
 #define SRMSGMOD_T "Tab_SRMsg"

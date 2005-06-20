@@ -946,27 +946,35 @@ nounicode:
  */
 void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
 {
-    MENUITEMINFOA mii = {0};
+    MENUITEMINFO mii = {0};
     char szMenuEntry[80];
+#if defined(_UNICODE)
+    wchar_t szMenuEntryW[80];
+#endif    
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_DATA | MIIM_BITMAP;
     
     if(dat->hContact != 0) {
-        GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+        GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
         if(!bForced)
             myGlobals.m_UnreadInTray -= mii.dwItemData;
-        //_DebugPopup(dat->hContact, "updated: %d events, %d total", mii.dwItemData, myGlobals.m_UnreadInTray);
         if(mii.dwItemData > 0 || bForced) {
             if(!bForced)
                 mii.dwItemData = 0;
             mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus, mii.dwItemData);
-//            _DebugPopup(dat->hContact, "%s (forced: %d)", szMenuEntry, bForced);
             mii.fMask |= MIIM_STRING;
+#if defined(_UNICODE)
+            MultiByteToWideChar(dat->codePage, 0, szMenuEntry, -1, szMenuEntryW, 80);
+            szMenuEntryW[79] = 0;
+            mii.dwTypeData = szMenuEntryW;
+            mii.cch = lstrlenW(szMenuEntryW) + 1;
+#else
             mii.dwTypeData = szMenuEntry;
             mii.cch = lstrlenA(szMenuEntry) + 1;
+#endif            
         }
         mii.hbmpItem = HBMMENU_CALLBACK;
-        SetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+        SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
     }
 }
 /*
@@ -977,7 +985,10 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
 {
     if(myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
         char szMenuEntry[80];
-        MENUITEMINFOA mii = {0};
+#if defined(_UNICODE)
+        wchar_t szMenuEntryW[80];
+#endif        
+        MENUITEMINFO mii = {0};
         WORD wMyStatus;
         char *szMyStatus;
         char *szNick;
@@ -994,32 +1005,53 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
         
         if(dat != 0) {
             szNick = dat->szNickname;
-            GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+            GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
             mii.dwItemData++;
             mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData);
             DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
+#if defined(_UNICODE)
+            MultiByteToWideChar(dat->codePage, 0, szMenuEntry, -1, szMenuEntryW, 80);
+            szMenuEntryW[79] = 0;
+            AppendMenuW(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntryW);
+#else
             AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+#endif            
             myGlobals.m_UnreadInTray++;
-            SetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+            SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
         else {
+            UINT codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
             szNick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
             if(CheckMenuItem(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
                 mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, fromEvent ? 1 : 0);
+#if defined(_UNICODE)
+                MultiByteToWideChar(codePage, 0, szMenuEntry, -1, szMenuEntryW, 80);
+                szMenuEntryW[79] = 0;
+                AppendMenuW(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntryW);
+#else
                 AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+#endif            
                 mii.dwItemData = fromEvent ? 1 : 0;
                 myGlobals.m_UnreadInTray += mii.dwItemData;
             }
             else {
-                GetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+                GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
                 mii.dwItemData += (fromEvent ? 1 : 0);
                 myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
-                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData);
                 mii.fMask |= MIIM_STRING;
+                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData);
+#if defined(_UNICODE)
+                MultiByteToWideChar(codePage, 0, szMenuEntry, -1, szMenuEntryW, 80);
+                szMenuEntryW[79] = 0;
+                AppendMenuW(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntryW);
+                mii.cch = lstrlenW(szMenuEntryW) + 1;
+                mii.dwTypeData = szMenuEntryW;
+#else
                 mii.cch = lstrlenA(szMenuEntry) + 1;
                 mii.dwTypeData = szMenuEntry;
+#endif                
             }
-            SetMenuItemInfoA(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+            SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
     }
     return 0;

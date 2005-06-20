@@ -79,7 +79,7 @@ extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto);
+extern TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage);
 
 char *szWarnClose = "Do you really want to close this session?";
 
@@ -218,7 +218,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
     return NULL;
 }
 
-static WNDPROC StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg) {
         case WM_COMMAND:
@@ -238,7 +238,7 @@ static WNDPROC StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
             break;
         }
     }
-    CallWindowProc(OldStatusBarproc, hWnd, msg, wParam, lParam);
+    return CallWindowProc(OldStatusBarproc, hWnd, msg, wParam, lParam);
 }
 /*
  * draws the sidebar, arranges the buttons, cares about hiding buttons if space
@@ -726,7 +726,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
-                    MoveWindow(pContainer->hwndSlist, 1, 3, 18, 18, FALSE);
+                    if(pContainer->hwndSlist)
+                        MoveWindow(pContainer->hwndSlist, 1, 3, 18, 18, FALSE);
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -802,7 +803,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 
                 dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                 if(dat) {
-                    szNewTitle = NewTitle(pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+                    szNewTitle = NewTitle(pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage);
                     if(szNewTitle) {
                         SetWindowText(hwndDlg, szNewTitle);
                         free(szNewTitle);
@@ -816,6 +817,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 int i;
                 TCITEM item = {0};
                 DWORD dwTimeout;
+                struct MessageWindowData *dat = 0;
                 
                 item.mask = TCIF_PARAM;
                 if((dwTimeout = myGlobals.m_TabAutoClose) > 0) {
@@ -834,6 +836,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         }
                     }
                     free(hwndClients);
+                }
+                dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                if(dat) {
+                    if(dat->idle)
+                        InvalidateRect(GetDlgItem(pContainer->hwndActive, IDC_PANELUIN), NULL, FALSE);
                 }
             }
             break;
@@ -1020,9 +1027,9 @@ panel_found:
                             NMTTDISPINFO *nmtt = (NMTTDISPINFO *) lParam;
                             struct MessageWindowData *cdat = 0;
                             char *contactName = 0, *szStatus = 0;
-                            char szTtitle[80];
+                            char szTtitle[256];
 #if defined ( _UNICODE )
-                            wchar_t w_contactName[80];
+                            wchar_t w_contactName[256];
 #endif
 
                             GetCursorPos(&pt);
@@ -1039,9 +1046,18 @@ panel_found:
                                         if (cdat->szProto) {
                                             szStatus = cdat->szStatus;
                                             nmtt->hinst = NULL;
-                                            mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
+                                            if(cdat->idle != 0) {
+                                                time_t diff = time(NULL) - cdat->idle;
+                                                int i_hrs = diff / 3600;
+                                                int i_mins = (diff - i_hrs * 3600) / 60;
+                                                int i_secs = diff % 60;
+                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", contactName, szStatus, i_hrs, i_mins, i_secs);
+                                                
+                                            }
+                                            else
+                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
 #if defined ( _UNICODE )
-                                            MultiByteToWideChar(CP_ACP, 0, szTtitle, -1, w_contactName, sizeof(w_contactName));
+                                            MultiByteToWideChar(cdat->codePage, 0, szTtitle, -1, w_contactName, sizeof(w_contactName));
                                             lstrcpynW(nmtt->szText, w_contactName, 80);
                                             nmtt->szText[79] = (wchar_t) '\0';
 #else
@@ -1458,7 +1474,8 @@ panel_found:
             if(pContainer->dwFlags & CNT_NOSTATUSBAR) {
                 if(pContainer->hwndStatus) {
                     SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
-                    DestroyWindow(pContainer->hwndSlist);
+                    if(pContainer->hwndSlist)
+                        DestroyWindow(pContainer->hwndSlist);
                     DestroyWindow(pContainer->hwndStatus);
                     pContainer->hwndStatus = 0;
                     pContainer->statusBarHeight = 0;
@@ -1467,7 +1484,10 @@ panel_found:
             }
             else if(pContainer->hwndStatus == 0) {
                 pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
-                pContainer->hwndSlist = CreateWindowExA(0, "TSButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 1, 2, 18, 18, pContainer->hwndStatus, (HMENU)1001, g_hInst, NULL);
+                if(nen_options.bFloaterInWin)
+                    pContainer->hwndSlist = CreateWindowExA(0, "TSButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 1, 2, 18, 18, pContainer->hwndStatus, (HMENU)1001, g_hInst, NULL);
+                else
+                    pContainer->hwndSlist = 0;
                 OldStatusBarproc = (WNDPROC) SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)StatusBarSubclassProc);                
                 SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, 0);
                 SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
@@ -1583,6 +1603,7 @@ panel_found:
                     HANDLE hContact;
                     HMENU hMenu;
 
+                    GetCursorPos(&pt);
                     SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                     if(hContact) {
                         hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
@@ -2485,7 +2506,6 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCoun
         SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
         nen_options.bMinimizeToTray = old;
         SetWindowLong(pContainer->hwnd, GWL_STYLE, GetWindowLong(pContainer->hwnd, GWL_STYLE) | WS_VISIBLE);
-        DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
         pContainer->bInTray = 0;
     }
     

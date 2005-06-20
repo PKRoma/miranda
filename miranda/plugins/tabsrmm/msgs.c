@@ -359,6 +359,16 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
             return 0;
         }
     }
+    if(pAck->type == ACKTYPE_AWAYMSG) {
+        HWND hWnd;
+        if(pAck->result == ACKRESULT_SUCCESS) {
+            if(hWnd = WindowList_Find(hMessageWindowList, pAck->hContact))
+                SendMessage(hWnd, DM_ACTIVATETOOLTIP, 0, pAck->lParam);
+        }
+        else
+            _DebugPopup(pAck->hContact, "ACK handler: failed to get statusmsg");
+        return 0;
+    }
     if(pAck->type != ACKTYPE_AVATAR)
         return 0;
 
@@ -738,7 +748,8 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
         return 0;
     
     if(hwnd) {
-        if(!lstrcmpA(cws->szSetting, "Status") || !lstrcmpA(cws->szSetting, "Nick") || !lstrcmpA(cws->szSetting, "ApparentMode") || !lstrcmpA(cws->szSetting, "Default") || !lstrcmpA(cws->szSetting, "ForceSend"))
+        //if(!lstrcmpA(cws->szSetting, "Status") || !lstrcmpA(cws->szSetting, "Nick") || !lstrcmpA(cws->szSetting, "ApparentMode") || !lstrcmpA(cws->szSetting, "Default") || !lstrcmpA(cws->szSetting, "ForceSend")  || !lstrcmpA(cws->szSetting, "IdleTS"))
+        if(strstr("Status,Nick,ApparentMode,Default,ForceSend,IdleTS", cws->szSetting))
             SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
     }
     

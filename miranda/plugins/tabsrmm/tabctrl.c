@@ -240,7 +240,14 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
             hIcon = dat->hTabIcon;
 
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHICON)) {
-            DrawIconEx (dc, rcItem->left + tabdat->m_xpad - 1, (rcItem->bottom + rcItem->top - tabdat->cy) / 2, hIcon, tabdat->cx, tabdat->cy, 0, NULL, DI_NORMAL | DI_COMPAT); 
+            DWORD ix = rcItem->left + tabdat->m_xpad - 1;
+            DWORD iy = (rcItem->bottom + rcItem->top - tabdat->cy) / 2;
+            if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
+                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
+				ImageList_DrawEx(myGlobals.g_hImageList, 0, dc, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+            }
+            else
+                DrawIconEx (dc, ix, iy, hIcon, tabdat->cx, tabdat->cy, 0, NULL, DI_NORMAL | DI_COMPAT); 
         }
         rcItem->left += (tabdat->cx + 2 + tabdat->m_xpad);
         

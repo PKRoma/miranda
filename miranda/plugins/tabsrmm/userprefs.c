@@ -232,8 +232,11 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     iIndex = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCURSEL, 0, 0);
                     if((newCodePage = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)iIndex, 0)) != sCodePage) {
                         DBWriteContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", (DWORD)newCodePage);
-                        if(hWnd && dat)
+                        if(hWnd && dat) {
                             dat->codePage = newCodePage;
+                            dat->wOldStatus = 0;
+                            SendMessage(hWnd, DM_UPDATETITLE, 0, 0);
+                        }
                     }
                     if((IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0) != DBGetContactSettingByte(hContact, SRMSGMOD_T, "forceansi", 0)) {
                         DBWriteContactSettingByte(hContact, SRMSGMOD_T, "forceansi", IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0);

@@ -81,7 +81,12 @@ char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
 DWORD dwExtraLf = 0;
 
 int g_groupBreak = TRUE;
-static char *szMyName, *szYourName;
+static char *szMyName;
+#if defined(_UNICODE)
+    static wchar_t szYourName[512];
+#else    
+    static char *szYourName;
+#endif    
 static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
 static char *szGroupedSeparator = "> ";
 
@@ -545,7 +550,10 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 {
     char *buffer, c;
     TCHAR ci, cc;
-    char *szName, *szFinalTimestamp, szDummy = '\0';
+#if !defined(_UNICODE)
+    char *szName;
+#endif    
+    char *szFinalTimestamp, szDummy = '\0';
     int bufferAlloced, bufferEnd, iTemplateLen;
     DBEVENTINFO dbei = { 0 };
     int showColon = 0;
@@ -910,10 +918,19 @@ nogroup:
                 case 'N':           // nickname
                 {
                     if(dat->dwFlags & MWF_LOG_SHOWNICK || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
+#if !defined(_UNICODE)
                         szName = isSent ? szMyName : szYourName;
+#endif                        
                         if(!skipFont)
                             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset]);
+#if defined(_UNICODE)
+                        if(isSent)
+                            AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szMyName);
+                        else
+                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szYourName, MAKELONG(isSent, dat->isHistory));
+#else
                         AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
+#endif                        
                     }
                     else
                         skipToNext = TRUE;
@@ -1240,7 +1257,12 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     }
     else
         szMyName = NULL;
+#if defined(_UNICODE)
+    MultiByteToWideChar(dat->codePage, 0, dat->szNickname, -1, szYourName, 512);
+    szYourName[511] = 0;
+#else
     szYourName = (char *) dat->szNickname;
+#endif    
     
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & oldSel);

@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // TODO:
 // - Support for bitmap buttons (simple call to DrawIconEx())
 extern HINSTANCE g_hInst;
+extern MYGLOBALS myGlobals;
 
 static LRESULT CALLBACK TSButtonWndProc(HWND hwnd, UINT  msg, WPARAM wParam, LPARAM lParam);
 
@@ -41,6 +42,7 @@ typedef struct {
     BOOL    bThemed;
 	char	cHot;
 	int     flatBtn;
+    int     dimmed;
 } MButtonCtrl;
 
 // External theme methods and properties
@@ -228,7 +230,12 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			int ix = (rcClient.right-rcClient.left)/2 - (GetSystemMetrics(SM_CXSMICON)/2);
 			int iy = (rcClient.bottom-rcClient.top)/2 - (GetSystemMetrics(SM_CYSMICON)/2);
             HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
-            DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON|DSS_NORMAL:DST_ICON|DSS_DISABLED);
+            if(ctl->dimmed && myGlobals.m_IdleDetect) {
+				ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIconNew);
+				ImageList_DrawEx(myGlobals.g_hImageList, 0, hdcMem, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+            }
+            else
+                DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd) ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
 		}
 		else if (ctl->hBitmap) {
 			BITMAP bminfo;
@@ -301,6 +308,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->cHot = 0;
 			bct->flatBtn = 0;
             bct->bThemed = FALSE;
+            bct->dimmed = 0;
             LoadTheme(bct);
 			SetWindowLong(hwndDlg, 0, (LONG)bct);
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
@@ -468,6 +476,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
         case BUTTONSETASFLATBTN + 10:
             bct->bThemed = lParam ? TRUE : FALSE;
+            break;
+        case BUTTONSETASFLATBTN + 11:
+            bct->dimmed = lParam ? TRUE : FALSE;
             break;
 		case BUTTONADDTOOLTIP:
 		{

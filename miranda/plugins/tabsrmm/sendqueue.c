@@ -25,7 +25,7 @@
 extern MYGLOBALS myGlobals;
 
 extern char *pszIDCSAVE_save, *pszIDCSAVE_close;
-extern const UINT errorControls[5], infoPanelControls[12];
+extern const UINT errorControls[5], infoPanelControls[11];
 
 extern struct SendJob sendJobs[NR_SENDJOBS];
 

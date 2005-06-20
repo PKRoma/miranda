@@ -454,25 +454,25 @@ static struct LISTOPTIONSGROUP lvGroups[] = {
 };
 
 static struct LISTOPTIONSITEM lvItems[] = {
-    0, "Show file events", IDC_SHOWFILES, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 0,
-    0, "Show url events", IDC_SHOWURLS, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWURLS, 0,
+    0, "Show file events", 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 0,
+    0, "Show url events", 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWURLS, 0,
     0, "Draw grid lines", IDC_DRAWGRID, LOI_TYPE_FLAG,  MWF_LOG_GRID, 0,
     0, "Show Icons", 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 0,
     0, "Show Symbols", 1, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 0,
     0, "Use Incoming/Outgoing Icons", 1, LOI_TYPE_FLAG, MWF_LOG_INOUTICONS, 0,
     0, "Use Message Grouping", 1, LOI_TYPE_FLAG, MWF_LOG_GROUPMODE, 0,
     0, "Indent message body", IDC_INDENT, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
-    0, "Simple text formatting (*bold* etc.)", IDC_FORMATTING, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
-    0, "Support BBCode formatting", IDC_FORMATTING, LOI_TYPE_SETTING, (UINT_PTR)"log_bbcode", 0,
-    0, "Place dividers in inactive sessions", IDC_USEDIVIDERS, LOI_TYPE_SETTING, (UINT_PTR)"dividers", 0,
-    0, "Use popup configuration for placing dividers", IDC_DIVIDERSUSEPOPUPCONFIG, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
-    0, "RTL is default text direction", IDC_RTLDEFAULT, LOI_TYPE_SETTING, (UINT_PTR)"rtldefault", 0,
-    0, "Use IEView as default message log", IDC_MSGLOGPLUGIN, LOI_TYPE_SETTING, (UINT_PTR)"want_ieview", 1,
-    0, "Support Math Module plugin", IDC_MATHMODSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
-    0, "Log status changes", IDC_LOGSTATUS, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
-    0, "Automatically copy selected text", IDC_AUTOSELECTCOPY, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
+    0, "Simple text formatting (*bold* etc.)", 0, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
+    0, "Support BBCode formatting", 1, LOI_TYPE_SETTING, (UINT_PTR)"log_bbcode", 0,
+    0, "Place dividers in inactive sessions", 0, LOI_TYPE_SETTING, (UINT_PTR)"dividers", 0,
+    0, "Use popup configuration for placing dividers", 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
+    0, "RTL is default text direction", 0, LOI_TYPE_SETTING, (UINT_PTR)"rtldefault", 0,
+    0, "Use IEView as default message log", 0, LOI_TYPE_SETTING, (UINT_PTR)"want_ieview", 1,
+    0, "Support Math Module plugin", 0, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
+    0, "Log status changes", 0, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
+    0, "Automatically copy selected text", 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
     0, "Use multiple background colors", IDC_AUTOSELECTCOPY, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
-    0, "Also draw vertical grid lines", IDC_AUTOSELECTCOPY, LOI_TYPE_SETTING, (UINT_PTR)"wantvgrid", 0,
+    0, "Also draw vertical grid lines", 0, LOI_TYPE_SETTING, (UINT_PTR)"wantvgrid", 0,
     0, NULL, 0, 0, 0, 0
 };
 
@@ -539,7 +539,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 if(lvItems[i].uType == LOI_TYPE_FLAG)
                     tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 2 : 1);
                 else if(lvItems[i].uType == LOI_TYPE_SETTING)
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, 0) ? 2 : 1);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 2 : 1);
                 lvItems[i].handle = SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
                 i++;
             }
@@ -860,6 +860,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, "Use global hotkeys (configure modifiers below)", 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
     0, "Perform version check on Icon DLL", 1, LOI_TYPE_SETTING, (UINT_PTR)"v-check", 3,
     0, "Force more aggressive window updates", 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
+    0, "Dim icons for idle contacts", 1, LOI_TYPE_SETTING, (UINT_PTR)"detectidle", 2,
     0, NULL, 0, 0, 0, 0
 };
 
@@ -1895,6 +1896,7 @@ void ReloadGlobals()
      myGlobals.m_ExtraRedraws = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "aggromode", 0);
      myGlobals.m_panelHeight = (DWORD)DBGetContactSettingDword(NULL, SRMSGMOD_T, "panelheight", 51);
      myGlobals.m_Send7bitStrictAnsi = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "7bitasANSI", 1);
+     myGlobals.m_IdleDetect = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "detectidle", 1);
 }
 
 /*

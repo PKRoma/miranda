@@ -321,7 +321,7 @@ nosimpletags:
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c")};
 #define NR_VARS 5
 
-extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto)
+extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage)
 {
     TCHAR *szResult = 0;
     int length = 0;
@@ -341,7 +341,7 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
         switch(title[tempmark + 1]) {
             case 'n': {
                 if(szNickname) {
-                    MultiByteToWideChar(CP_ACP, 0, szNickname, -1, szTemp, 500);
+                    MultiByteToWideChar(codePage, 0, szNickname, -1, szTemp, 500);
                     title.insert(tempmark + 2, szTemp);
                 }
                 title.erase(tempmark, 2);

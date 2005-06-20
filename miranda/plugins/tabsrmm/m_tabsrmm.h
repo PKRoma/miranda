@@ -115,6 +115,8 @@ typedef struct {
 #define MWF_SHOW_BBCODE 512
 #define MWF_SHOW_INFOPANEL 1024
 #define MWF_SHOW_INFONOTES 2048
+#define MWF_SHOW_ISIDLE 4096
+#define MWF_SHOW_AWAYMSGTIMER 8192
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -266,6 +268,11 @@ struct MessageWindowData {
     char  lcID[4];
     int   panelHeight;
     WORD wApparentMode;
+    DWORD idle;
+    HWND hwndTip;
+    TOOLINFOA ti;
+    DWORD lastRetrievedStatusMsg;
+    TCHAR statusMsg[1025];
 };
 
 typedef struct _recentinfo {
@@ -373,6 +380,7 @@ typedef struct _globals {
     WINDOWPLACEMENT m_GlobalContainerWpos;
     HANDLE hLastOpenedContact;
     int m_Send7bitStrictAnsi;
+    int  m_IdleDetect;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

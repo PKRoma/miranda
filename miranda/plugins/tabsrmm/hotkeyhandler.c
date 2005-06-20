@@ -75,7 +75,7 @@ void HandleMenuEntryFromhContact(int iSelection)
         CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
 }
 
-void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon)
+void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
     int cx = GetSystemMetrics(SM_CXSMICON);
     int cy = GetSystemMetrics(SM_CYSMICON);
@@ -86,7 +86,12 @@ void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon)
             DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
         else if (dis->itemState & ODS_SELECTED)
             DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-        DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+        if(dwIdle) {
+            ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
+            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+        }
+        else
+            DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
     }
     else {
         BOOL bfm = FALSE;
@@ -104,7 +109,12 @@ void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon)
                 FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUBAR));
             }   //if
             /* draw the icon */
-            DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+            if(dwIdle) {
+                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
+                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+            }
+            else
+                DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
         }
         else {
             /* non-flat menus, flush the DC with a normal menu colour */
@@ -114,8 +124,13 @@ void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon)
             }
             else if (dis->itemState & ODS_SELECTED) {
                 DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-            }   //if
-            DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+            }
+            if(dwIdle) {
+                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
+                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+            }
+            else
+                DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
         }       //if
     }           //if
 }
@@ -226,11 +241,12 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 if(dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)myGlobals.g_hMenuFavorites || dis->hwndItem == (HWND)myGlobals.g_hMenuRecent)) {
                     HICON hIcon = (HICON)dis->itemData;
                     
-                    DrawMenuItem(dis, hIcon);
+                    DrawMenuItem(dis, hIcon, 0);
                     return TRUE;
                 }
                 else if(dis->CtlType == ODT_MENU) {
                     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)dis->itemID);
+                    DWORD idle = 0;
                     if(hWnd)
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
                     
@@ -238,12 +254,14 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                         HICON hIcon;
                         if(dis->itemData > 0)
                             hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-                        else if(dat != NULL)
+                        else if(dat != NULL) {
                             hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
+                            idle = dat->idle;
+                        }
                         else
                             hIcon = myGlobals.g_iconContainer;
                         
-                        DrawMenuItem(dis, hIcon);
+                        DrawMenuItem(dis, hIcon, idle);
                         return TRUE;
                     }
                 }

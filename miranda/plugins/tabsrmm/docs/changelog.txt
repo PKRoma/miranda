@@ -138,6 +138,16 @@ Version 0.9.9.95pre8 - 2005/05/25
           global or private.
           
         + added the info panel allowing for dual avatar display.
+        
+        + added idle detection (if the protocol supports it) and render icons "dimmed" for idle
+          contactst.
+          
+        + improved support for international nicknames. tabSRMM can now encode nicknames with the
+          ANSI codepage you've set for a given contact. To set a codepage, do the following:
+          * right click the message log in an open tabSRMM message window and select a code page
+          OR
+          * use the user preferences dialog (tabSRMM settings), available from the contacts context 
+            menu
 
 Version 0.9.9.95pre7 - 2005/05/23
 

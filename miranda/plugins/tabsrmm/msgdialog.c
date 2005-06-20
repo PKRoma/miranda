@@ -63,6 +63,8 @@ extern char *szWarnClose;
 extern struct RTFColorTable rtf_ctable[];
 extern PSLWA pSetLayeredWindowAttributes;
 
+wchar_t *testTooltip = L"Ein tooltip text zum testen";
+
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
 
@@ -101,7 +103,7 @@ static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
 const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELNICKLABEL, IDC_PANELUINLABEL, 
-                                  IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_READSTATUS, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER};
+                                  IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER};
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 
 static struct _tooltips { int id; char *szTip;} tooltips[] = {
@@ -120,7 +122,6 @@ static struct _tooltips { int id; char *szTip;} tooltips[] = {
     IDC_FONTUNDERLINE, "Underlined text",
     IDC_FONTFACE, "Select font color",
     IDC_INFOPANELMENU, "Info panel controls",
-    IDC_READSTATUS, "Refresh status message",
     IDC_TOGGLENOTES, "Toggle notes display",
     -1, NULL
 };
@@ -143,7 +144,6 @@ static struct _buttonicons { int id; HICON *pIcon; } buttonicons[] = {
     IDC_NAME, &myGlobals.g_buttonBarIcons[4],
     IDC_LOGFROZEN, &myGlobals.g_buttonBarIcons[24],
     IDC_INFOPANELMENU, &myGlobals.g_buttonBarIcons[16],
-    IDC_READSTATUS, &myGlobals.g_buttonBarIcons[27],
     IDC_TOGGLENOTES, &myGlobals.g_buttonBarIcons[28],
     -1, NULL
 };
@@ -186,9 +186,9 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
 
 static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    const UINT cntrls[] = {IDC_PANELNICKLABEL, IDC_PANELUINLABEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_READSTATUS};
+    const UINT cntrls[] = {IDC_PANELNICKLABEL, IDC_PANELUINLABEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE};
 
-    ShowMultipleControls(hwndDlg, cntrls, 7, dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
+    ShowMultipleControls(hwndDlg, cntrls, 6, dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
     ShowWindow(GetDlgItem(hwndDlg, IDC_NOTES), dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 }
 static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
@@ -203,7 +203,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
     AdjustBottomAvatarDisplay(hwndDlg, dat);
     GetObject(hbm, sizeof(bm), &bm);
     CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-    ShowMultipleControls(hwndDlg, infoPanelControls, 12, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 11, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
         ConfigurePanel(hwndDlg, dat);
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -353,7 +353,7 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
     // info panel stuff
-    ShowMultipleControls(hwndDlg, infoPanelControls, 12, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 11, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
         ConfigurePanel(hwndDlg, dat);
 }
@@ -850,12 +850,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight + 2) - 93;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_APPARENTMODE:
-        case IDC_READSTATUS:
             urc->rcItem.right -= (dat->panelHeight + 2);
             urc->rcItem.left -= (dat->panelHeight + 2);
             return RD_ANCHORX_CUSTOM | RD_ANCHORX_RIGHT;
         case IDC_PANELUIN:
-            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight + 2 + 49);
+            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight + 2 + 25);
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_PANELNICKLABEL:
         case IDC_PANELUINLABEL:
@@ -1042,7 +1041,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 RECT rc;
                 POINT pt;
                 int i;
-
+                
                 struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
                 dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
                 ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
@@ -1147,6 +1146,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dat->doSmileys = dwLocalSmAdd;
                     }
                 }
+                dat->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT,
+                                                 CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
+                
+                SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                ZeroMemory((void *)&dat->ti, sizeof(dat->ti));
+                dat->ti.cbSize = sizeof(dat->ti);
+                dat->ti.lpszText = "No status message available";
+                dat->ti.hinst = g_hInst;
+                dat->ti.hwnd = hwndDlg;
+                dat->ti.uFlags = TTF_TRACK | TTF_IDISHWND;
+                dat->ti.uId = (UINT_PTR)hwndDlg;
+                SendMessageA(dat->hwndTip, TTM_ADDTOOLA, 0, (LPARAM)&dat->ti);
                 
                 dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
                 dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
@@ -1207,7 +1218,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN + 10, 0, 0);
-                SendDlgItemMessage(hwndDlg, IDC_READSTATUS, BUTTONSETASFLATBTN + 10, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_TOGGLENOTES, BUTTONSETASFLATBTN + 10, 0, 0);
                 
                 SendDlgItemMessage(hwndDlg, IDC_RETRY, BUTTONSETASFLATBTN + 10, 0, 0);
@@ -1427,6 +1437,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 if (szProto) {
                     dat->hTabIcon = dat->hTabStatusIcon = LoadSkinnedProtoIcon(szProto, wStatus);
+                    SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BUTTONSETASFLATBTN + 11, 0, dat->dwEventIsShown & MWF_SHOW_ISIDLE ? 1 : 0);
                     SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) dat->hTabIcon);
 
                     if (dat->pContainer->hwndActive == hwndDlg)
@@ -1470,9 +1481,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         mir_snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
+                    if(dat->pContainer->hwndSlist)
+                        SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
                 } else {
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
+                    if(dat->pContainer->hwndSlist)
+                        SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
                 }
                 break;
             }
@@ -1571,7 +1586,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= MWF_SHOW_MICROLF;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
-            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "log_bbcode", 0) ? MWF_SHOW_BBCODE : 0;
+            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "log_bbcode", 1) ? MWF_SHOW_BBCODE : 0;
             dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
 
             dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
@@ -1683,7 +1698,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 TCITEM item;
                 int    iHash = 0;
                 WORD wOldApparentMode;
-
+                DWORD dwOldIdle = dat->idle;
+                
                 DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
 
                 ZeroMemory((void *)newcontactname,  sizeof(newcontactname));
@@ -1708,6 +1724,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         
                         mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)(dat->bIsMeta ? dat->hSubContact : dat->hContact), 0));
                         iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
+                        dat->idle = DBGetContactSettingDword(dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "IdleTS", 0);
+                        dat->dwEventIsShown =  dat->idle ? dat->dwEventIsShown | MWF_SHOW_ISIDLE : dat->dwEventIsShown & ~MWF_SHOW_ISIDLE;
                     /*
                      * cut nickname on tabs...
                      */
@@ -1736,10 +1754,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             
                             item.mask |= TCIF_TEXT;
                         }
-                        if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
-                            InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
-                            SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
-                        }
+                        SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         mir_snprintf(fulluin, sizeof(fulluin), Translate("UIN: %s (SHIFT click copies it to the clipboard)"), iHasName ? dat->uin : Translate("No UIN"));
                         SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)fulluin : (WPARAM)"", 0);
                         
@@ -1747,7 +1762,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 } else
                     lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
 
-                if (iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
+                if (dat->idle != dwOldIdle || iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
                     if(dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
                         if(dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD)-1 && !(dat->dwFlags & MWF_INITMODE)) {             // log status changes to message log
                             DBEVENTINFO dbei;
@@ -1785,7 +1800,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     if(item.mask & TCIF_TEXT) {
 #ifdef _UNICODE
-                        if (MultiByteToWideChar(CP_ACP, 0, newtitle, -1, dat->newtitle, sizeof(dat->newtitle)) != 0) {
+                        if (MultiByteToWideChar(dat->codePage, 0, newtitle, -1, dat->newtitle, sizeof(dat->newtitle)) != 0) {
                             item.pszText = dat->newtitle;
                             item.cchTextMax = sizeof(dat->newtitle);
                             dat->newtitle[127] = 0;
@@ -1820,6 +1835,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
                         UpdateApparentModeDisplay(hwndDlg, dat);
                     }
+                    dat->lastRetrievedStatusMsg = 0;
                 }
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
                 if(dat->bIsMeta) {
@@ -1853,6 +1869,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
                     FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, dat->hTabIcon);
                     dat->mayFlashTab = FALSE;
+                }
+                if(dat->pContainer->dwFlashingStarted != 0) {
+                    FlashContainer(dat->pContainer, 0, 0);
+                    dat->pContainer->dwFlashingStarted = 0;
                 }
                 if(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST) {
                     dat->dwEventIsShown &= ~MWF_SHOW_FLASHCLIST;
@@ -1919,6 +1939,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
                     FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, dat->hTabIcon);
                     dat->mayFlashTab = FALSE;
+                }
+                if(dat->pContainer->dwFlashingStarted != 0) {
+                    FlashContainer(dat->pContainer, 0, 0);
+                    dat->pContainer->dwFlashingStarted = 0;
                 }
                 if(dat->dwEventIsShown & MWF_SHOW_FLASHCLIST) {
                     dat->dwEventIsShown &= ~MWF_SHOW_FLASHCLIST;
@@ -2372,6 +2396,26 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
              * of SENDJOBS_MAX_SENDS)
              */
            
+            if (wParam == TIMERID_AWAYMSG) {
+                POINT pt;
+                RECT rc;
+                
+                KillTimer(hwndDlg, wParam);
+                dat->dwEventIsShown &= ~MWF_SHOW_AWAYMSGTIMER;
+                GetCursorPos(&pt);
+                GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
+                if(PtInRect(&rc, pt)) {
+                    if(GetTickCount() - dat->lastRetrievedStatusMsg > 60000) {
+                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("Retrieving..."));
+                        if(!CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_GETAWAYMSG, 0, 0))
+                            SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("No status message available"));
+                        dat->lastRetrievedStatusMsg = GetTickCount();
+                    }
+                    else
+                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
+                }
+                break;
+            }
             if (wParam >= TIMERID_MSGSEND) {
                 int iIndex = wParam - TIMERID_MSGSEND;
 
@@ -2424,6 +2468,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
                             SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
                             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
+                            if(dat->pContainer->hwndSlist)
+                                SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                         }
                         if(IsIconic(dat->pContainer->hwnd) || GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd) {
                             SetWindowTextA(dat->pContainer->hwnd, szBuf);
@@ -2443,8 +2489,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 }
                             }
                         }
-                        if ((GetForegroundWindow() != dat->pContainer->hwnd) || (dat->pContainer->hwndStatus == 0))
+                        if ((GetForegroundWindow() != dat->pContainer->hwnd) || (dat->pContainer->hwndStatus == 0)) {
                             SendMessage(dat->pContainer->hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) myGlobals.g_buttonBarIcons[5]);
+                            if(dat->pContainer->hwndSlist)
+                                SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[5]);
+                        }
                         dat->showTyping = 1;
                     }
                 }
@@ -2730,6 +2779,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
             break;
+        case WM_SHOWWINDOW:
+            if(wParam == FALSE);
+                SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+            break;
         case WM_LBUTTONDBLCLK:
             if(GetKeyState(VK_CONTROL) & 0x8000) {
                 SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
@@ -2745,6 +2798,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwFlags |= MWF_MOUSEDOWN;
             GetCursorPos(&dat->ptLast);
             SetCapture(hwndDlg);
+            SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
             break;
         case WM_LBUTTONUP:
             dat->dwFlags &= ~MWF_MOUSEDOWN;
@@ -2815,12 +2869,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 RECT rc;
                 POINT pt;
+                GetCursorPos(&pt);
                 
                 if (dat->pContainer->dwFlags & CNT_NOTITLE && dat->dwFlags & MWF_MOUSEDOWN) {
                     GetWindowRect(dat->pContainer->hwnd, &rc);
-                    GetCursorPos(&pt);
                     MoveWindow(dat->pContainer->hwnd, rc.left - (dat->ptLast.x - pt.x), rc.top - (dat->ptLast.y - pt.y), rc.right - rc.left, rc.bottom - rc.top, TRUE);
                     dat->ptLast = pt;
+                }
+                else if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && !(dat->dwEventIsShown & MWF_SHOW_INFONOTES)) {
+                    GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
+                    if(PtInRect(&rc, pt)) { // && !PtInRect(&rc, dat->ptLast)) {
+                        if(!(dat->dwEventIsShown & MWF_SHOW_AWAYMSGTIMER)) {
+                            SetTimer(hwndDlg, TIMERID_AWAYMSG, 500, 0);
+                            dat->dwEventIsShown |= MWF_SHOW_AWAYMSGTIMER;
+                        }
+                    }
                 }
                 break;
             }
@@ -2991,8 +3054,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     int cx = GetSystemMetrics(SM_CXSMICON);
                     int cy = GetSystemMetrics(SM_CYSMICON);
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
-                    if(dat->hTabStatusIcon)
-                        DrawIconEx(dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, dat->hTabStatusIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+                    if(dat->hTabStatusIcon) {
+                        if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
+                            ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, dat->hTabStatusIcon);
+                            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                        }
+                        else
+                            DrawIconEx(dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, dat->hTabStatusIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+                    }
                     dis->rcItem.left += 22;
                     if(dat->szStatus)
                         DrawTextA(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
@@ -3001,15 +3070,33 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
                     dis->rcItem.left +=2;
-                    if(dat->szNickname)
+                    if(dat->szNickname) {
+#if defined(_UNICODE)
+                        wchar_t szNickW[512];
+                        MultiByteToWideChar(dat->codePage, 0, dat->szNickname, -1, szNickW, 512);
+                        szNickW[511] = 0;
+                        DrawTextW(dis->hDC, szNickW, lstrlenW(szNickW), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+#else
                         DrawTextA(dis->hDC, dat->szNickname, lstrlenA(dat->szNickname), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+#endif                        
+                    }
                     return TRUE;
                 }
                 else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELUIN) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                    char szBuf[256];
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
                     dis->rcItem.left +=2;
-                    if(dat->uin)
-                        DrawTextA(dis->hDC, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+                    if(dat->uin) {
+                        if(dat->idle) {
+                            time_t diff = time(NULL) - dat->idle;
+                            int i_hrs = diff / 3600;
+                            int i_mins = (diff - i_hrs * 3600) / 60;
+                            mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %d:%02d", dat->uin, i_hrs, i_mins);
+                            DrawTextA(dis->hDC, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+                        }
+                        else
+                            DrawTextA(dis->hDC, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+                    }
                     return TRUE;
                 }
                 return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
@@ -3849,6 +3936,16 @@ quote_from_last:
             }
             break;
         case WM_NOTIFY:
+            /*
+            if(dat != 0 && ((NMHDR *)lParam)->hwndFrom == dat->hwndTip) {
+                if(((NMHDR *)lParam)->code == TTN_NEEDTEXT) {
+                    NMTTDISPINFO *nmtt = (NMTTDISPINFO *) lParam;
+                    nmtt->hinst = 0;
+                    nmtt->lpszText = testTooltip;
+                    nmtt->uFlags = TTF_IDISHWND;
+                }
+                break;
+            }*/
             switch (((NMHDR *) lParam)->idFrom) {
                 case IDC_CLIST:
                     switch (((NMHDR *) lParam)->code) {
@@ -3867,7 +3964,8 @@ quote_from_last:
                             WPARAM wp = ((MSGFILTER *) lParam)->wParam;
                             LPARAM lp = ((MSGFILTER *) lParam)->lParam;
                             CHARFORMAT2 cf2;
-
+                            if(IsWindowVisible(dat->hwndTip))
+                                SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
                             if(msg == WM_CHAR) {
                                 if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                     switch (wp) {
@@ -4200,9 +4298,11 @@ quote_from_last:
                                             RemoveMenu(hSubMenu, 6, MF_BYPOSITION);
 #endif                                        
                                         DestroyMenu(hMenu);
-                                        if(dat->codePage != oldCodepage)
+                                        if(dat->codePage != oldCodepage) {
                                             SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                                        
+                                            dat->wOldStatus = 0;
+                                            SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
+                                        }
                                         SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
                                         return TRUE;
                                     }
@@ -4567,6 +4667,43 @@ verify:
             dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
             ShowHideInfoPanel(hwndDlg, dat);
             break;
+
+        /*
+         * show the balloon tooltip control.
+         * wParam == id of the "anchor" element, defaults to the panel status field (for away msg retrieval)
+         * lParam == new text to show
+         */
+            
+        case DM_ACTIVATETOOLTIP:
+        {
+            if(dat->hwndTip && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                RECT rc;
+                char szTitle[256];
+#if defined(_UNICODE)
+                wchar_t szTitleW[256];
+#endif                
+                UINT id = wParam;
+                if(id == o)
+                    id = IDC_PANELSTATUS;
+                GetWindowRect(GetDlgItem(hwndDlg, id), &rc);
+                SendMessage(dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.top));
+                if(lParam) {
+                    dat->ti.lpszText = (char *)lParam;
+                    SendMessageA(dat->hwndTip, TTM_UPDATETIPTEXTA, 0, (LPARAM)&dat->ti);
+                }
+                SendMessage(dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
+                mir_snprintf(szTitle, sizeof(szTitle), "Status message for %s (%s)", dat->szNickname, dat->szStatus);
+#if defined(_UNICODE)
+                MultiByteToWideChar(dat->codePage, 0, szTitle, -1, szTitleW, 256);
+                szTitleW[255] = 0;
+                SendMessage(dat->hwndTip, TTM_SETTITLEW, 1, (LPARAM)szTitleW);
+#else
+                SendMessage(dat->hwndTip, TTM_SETTITLEA, 1, (LPARAM)szTitle);
+#endif
+                SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&dat->ti);
+            }
+            break;
+        }
         case WM_NEXTDLGCTL:
             if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
                 return 1;
@@ -4892,6 +5029,9 @@ verify:
             if (dat->hSmileyIcon)
                 DeleteObject(dat->hSmileyIcon);
 
+            if (dat->hwndTip)
+                DestroyWindow(dat->hwndTip);
+            
             UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
             DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
             WindowList_Remove(hMessageWindowList, hwndDlg);
