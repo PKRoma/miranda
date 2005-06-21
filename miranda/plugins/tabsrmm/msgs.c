@@ -364,6 +364,8 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
         HWND hwnd = WindowList_Find(hMessageWindowList, pAck->hContact);
         if(hwnd)
             dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+        else
+            return 0;
         
         if(pAck->result == ACKRESULT_SUCCESS) {
             if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
@@ -964,7 +966,9 @@ static void UnloadIcons()
     DestroyIcon(myGlobals.g_iconErr);
     DestroyIcon(myGlobals.g_iconContainer);
     DestroyIcon(myGlobals.g_iconStatus);
-
+    DestroyIcon(myGlobals.g_IconChecked);
+    DestroyIcon(myGlobals.g_IconUnchecked);
+    
     /*
      * free the button bar icons
      */
@@ -1445,13 +1449,11 @@ void CreateImageList(BOOL bInitial)
         ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
         DestroyIcon(hIcon);
         
-        hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
-        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
-        DestroyIcon(hIcon);
+        myGlobals.g_IconUnchecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
+        ImageList_AddIcon(myGlobals.g_hStateImageList, myGlobals.g_IconUnchecked);
         
-        hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
-        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
-        DestroyIcon(hIcon);
+        myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
+        ImageList_AddIcon(myGlobals.g_hStateImageList, myGlobals.g_IconChecked);
     }
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);

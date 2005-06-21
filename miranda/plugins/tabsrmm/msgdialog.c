@@ -103,7 +103,7 @@ static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
 const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELNICKLABEL, IDC_PANELUINLABEL, 
-                                  IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER};
+                                  IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER, IDC_READSTATUS};
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 
 static struct _tooltips { int id; char *szTip;} tooltips[] = {
@@ -123,6 +123,7 @@ static struct _tooltips { int id; char *szTip;} tooltips[] = {
     IDC_FONTFACE, "Select font color",
     IDC_INFOPANELMENU, "Info panel controls",
     IDC_TOGGLENOTES, "Toggle notes display",
+    IDC_APPARENTMODE, "Set your visibility for this contact",
     -1, NULL
 };
 
@@ -186,9 +187,9 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
 
 static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    const UINT cntrls[] = {IDC_PANELNICKLABEL, IDC_PANELUINLABEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE};
+    const UINT cntrls[] = {IDC_PANELNICKLABEL, IDC_PANELUINLABEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_READSTATUS};
 
-    ShowMultipleControls(hwndDlg, cntrls, 6, dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
+    ShowMultipleControls(hwndDlg, cntrls, 7, dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
     ShowWindow(GetDlgItem(hwndDlg, IDC_NOTES), dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 }
 static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
@@ -203,7 +204,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
     AdjustBottomAvatarDisplay(hwndDlg, dat);
     GetObject(hbm, sizeof(bm), &bm);
     CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-    ShowMultipleControls(hwndDlg, infoPanelControls, 11, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 12, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
         ConfigurePanel(hwndDlg, dat);
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -353,7 +354,7 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
     // info panel stuff
-    ShowMultipleControls(hwndDlg, infoPanelControls, 11, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 12, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
         ConfigurePanel(hwndDlg, dat);
 }
@@ -735,7 +736,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     GetClientRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), &rcButton);
     
     iClistOffset = rc.bottom;
-
+    if(dat->panelStatusCX == 0)
+        dat->panelStatusCX = 80;
+        
     if (!showToolbar) {
         int i;
         for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
@@ -843,11 +846,15 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_PANEL:
             return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
         case IDC_PANELSTATUS:
+            urc->rcItem.right = urc->dlgNewSize.cx - dat->panelHeight - 15;
+            urc->rcItem.left = urc->dlgNewSize.cx - dat->panelHeight - 15 - dat->panelStatusCX;
+            return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
+        case IDC_READSTATUS:
             urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight);
-            urc->rcItem.left = urc->dlgNewSize.cx - (dat->panelHeight + 2) - 90;;
+            urc->rcItem.left = urc->rcItem.right - 14;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_PANELNICK:
-            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight + 2) - 93;
+            urc->rcItem.right = urc->dlgNewSize.cx - dat->panelHeight - 15 - dat->panelStatusCX - 2;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_APPARENTMODE:
             urc->rcItem.right -= (dat->panelHeight + 2);
@@ -1569,6 +1576,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
 
             if(dat->hContact) {
+                dat->timezone = (DWORD)DBGetContactSettingByte(dat->hContact,"UserInfo","Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto,"Timezone",-1));
                 dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
             }
 
@@ -1922,6 +1930,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastUpdate = GetTickCount();
                 if(dat->hContact)
                     DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_FOCUS);
+                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_READSTATUS), NULL, FALSE);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
+                }
             }
             return 1;
         case WM_ACTIVATE:
@@ -1994,6 +2007,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwLastUpdate = GetTickCount();
                 if(dat->hContact)
                     DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_FOCUS);
+                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_READSTATUS), NULL, FALSE);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
+                }
             }
             return 1;
         case WM_GETMINMAXINFO:
@@ -2883,7 +2901,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 else if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && !(dat->dwEventIsShown & MWF_SHOW_INFONOTES)) {
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
-                    if(PtInRect(&rc, pt)) { // && !PtInRect(&rc, dat->ptLast)) {
+                    if(PtInRect(&rc, pt) && myGlobals.m_DoStatusMsg) { // && !PtInRect(&rc, dat->ptLast)) {
                         if(!(dat->dwEventIsShown & MWF_SHOW_AWAYMSGTIMER)) {
                             SetTimer(hwndDlg, TIMERID_AWAYMSG, 500, 0);
                             dat->dwEventIsShown |= MWF_SHOW_AWAYMSGTIMER;
@@ -3064,18 +3082,40 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELSTATUS) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
                     int cx = GetSystemMetrics(SM_CXSMICON);
                     int cy = GetSystemMetrics(SM_CYSMICON);
-                    FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+                    char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+                    SIZE sProto = {0}, sStatus = {0};
+                    DWORD oldPanelStatusCX = dat->panelStatusCX;
+                    RECT rc;
+                    
+                    if(dat->szStatus)
+                        GetTextExtentPoint32A(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &sStatus);
+                    if(szProto)
+                        GetTextExtentPoint32A(dis->hDC, szProto, lstrlenA(szProto), &sProto);
+
+                    dat->panelStatusCX = sStatus.cx + sProto.cx + 16 + 18;
+                    
+                    if(dat->panelStatusCX != oldPanelStatusCX)
+                        SendMessage(hwndDlg, WM_SIZE, 0, 0);
+
+                    GetClientRect(dis->hwndItem, &rc);
+                    FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
+                    
                     if(dat->hTabStatusIcon) {
                         if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
                             ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, dat->hTabStatusIcon);
-                            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 3, (rc.bottom + rc.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
                         }
                         else
-                            DrawIconEx(dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, dat->hTabStatusIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+                            DrawIconEx(dis->hDC, 3, (rc.bottom + rc.top - cy) / 2, dat->hTabStatusIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
                     }
-                    dis->rcItem.left += 22;
+                    rc.left += 22;
                     if(dat->szStatus)
-                        DrawTextA(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+                        DrawTextA(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &rc, DT_SINGLELINE | DT_VCENTER);
+                    if(szProto) {
+                        rc.left = rc.right - sProto.cx - 3;
+                        SetTextColor(dis->hDC, GetSysColor(COLOR_HOTLIGHT));
+                        DrawTextA(dis->hDC, szProto, lstrlenA(szProto), &rc, DT_SINGLELINE | DT_VCENTER);
+                    }
                     return TRUE;
                 }
                 else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
@@ -3098,17 +3138,51 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
                     dis->rcItem.left +=2;
                     if(dat->uin) {
+                        SIZE sUIN, sTime;
                         if(dat->idle) {
                             time_t diff = time(NULL) - dat->idle;
                             int i_hrs = diff / 3600;
                             int i_mins = (diff - i_hrs * 3600) / 60;
                             mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %d:%02d", dat->uin, i_hrs, i_mins);
+                            GetTextExtentPoint32A(dis->hDC, szBuf, lstrlenA(szBuf), &sUIN);
                             DrawTextA(dis->hDC, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
                         }
-                        else
+                        else {
+                            GetTextExtentPoint32A(dis->hDC, dat->uin, lstrlenA(dat->uin), &sUIN);
                             DrawTextA(dis->hDC, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+                        }
+                        if(dat->timezone != -1) {
+                            DBTIMETOSTRING dbtts;
+                            char szResult[80];
+                            DWORD local_gmt_diff, contact_gmt_diff;
+                            time_t final_time;
+                            int diff;
+                            time_t now = time(NULL);
+                            struct tm gmt = *gmtime(&now);
+                            time_t gmt_time = mktime(&gmt);
+
+                            local_gmt_diff=(int)difftime(now, gmt_time);
+                            contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
+                            diff=(int)local_gmt_diff-(int)contact_gmt_diff*60*60/2;
+                            final_time = now - diff;
+                            dbtts.szDest = szResult;
+                            dbtts.cbDest = 70;
+                            dbtts.szFormat = "t";
+                            CallService(MS_DB_TIME_TIMESTAMPTOSTRING, final_time, (LPARAM) & dbtts);
+                            GetTextExtentPoint32A(dis->hDC, szResult, lstrlenA(szResult), &sTime);
+                            if(sUIN.cx + sTime.cx + 5 < dis->rcItem.right - dis->rcItem.left) {
+                                dis->rcItem.left = dis->rcItem.right - sTime.cx - 3;
+                                DrawTextA(dis->hDC, szResult, lstrlenA(szResult), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+                            }
+                        }
                     }
                     return TRUE;
+                }
+                else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_READSTATUS) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                    int cx = GetSystemMetrics(SM_CXSMICON);
+                    int cy = GetSystemMetrics(SM_CYSMICON);
+                    FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+                    DrawIconEx(dis->hDC, (dis->rcItem.right + dis->rcItem.left - cx) / 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, myGlobals.m_DoStatusMsg ? myGlobals.g_IconChecked : myGlobals.g_IconUnchecked, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
                 }
                 return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
             }
@@ -3540,6 +3614,11 @@ quote_from_last:
                     ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                    break;
+                case IDC_READSTATUS:
+                    myGlobals.m_DoStatusMsg = !myGlobals.m_DoStatusMsg;
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_READSTATUS), NULL, FALSE);
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dostatusmsg", myGlobals.m_DoStatusMsg);
                     break;
                 case IDC_PROTOMENU: {
                     RECT rc;

@@ -652,12 +652,8 @@ nogroup:
                 struct tm gmt = *gmtime(&now);
                 time_t gmt_time = mktime(&gmt);
                 local_gmt_diff=(int)difftime(now, gmt_time);
-                contact_gmt_diff=(DWORD)DBGetContactSettingByte(dat->hContact,"UserInfo","Timezone",-1);
-                if (contact_gmt_diff==-1) {
-                    contact_gmt_diff=(DWORD)DBGetContactSettingByte(dat->hContact, dat->szProto,"Timezone",-1);
-                }
-                if (contact_gmt_diff!=-1) {
-                    contact_gmt_diff = contact_gmt_diff>128 ? 256-contact_gmt_diff : 0-contact_gmt_diff;
+                if (dat->timezone != -1) {
+                    contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
                     diff=(int)local_gmt_diff-(int)contact_gmt_diff*60*60/2;
                     final_time = dbei.timestamp - diff;
                 }

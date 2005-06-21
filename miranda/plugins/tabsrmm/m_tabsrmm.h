@@ -274,6 +274,8 @@ struct MessageWindowData {
     DWORD lastRetrievedStatusMsg;
     TCHAR statusMsg[1025];
     HANDLE hProcessAwayMsg;
+    DWORD timezone;
+    DWORD panelStatusCX;
 };
 
 typedef struct _recentinfo {
@@ -318,6 +320,7 @@ typedef struct _globals {
     // external plugins
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
+    HICON g_IconChecked, g_IconUnchecked;
     HIMAGELIST g_hImageList, g_hStateImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
@@ -382,6 +385,7 @@ typedef struct _globals {
     HANDLE hLastOpenedContact;
     int m_Send7bitStrictAnsi;
     int  m_IdleDetect;
+    int  m_DoStatusMsg;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
