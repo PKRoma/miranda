@@ -1702,6 +1702,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 
 	} else if(succ == YAHOO_LOGIN_DUPL) {
 		snprintf(buff, sizeof(buff), Translate("You have been logged out of the yahoo service, possibly due to a duplicate login."));
+		ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 	}else if(succ == -1) {
 		/// Can't Connect or got disconnected.
 		if (yahooStatus == ID_STATUS_CONNECTING)
