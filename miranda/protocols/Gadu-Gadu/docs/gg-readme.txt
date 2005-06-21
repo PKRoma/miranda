@@ -60,10 +60,11 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
-0.0.3.0: 2005-06-16
+0.0.3.0: 2005-06-21
  - GG.dll now compiles on Visual C++ 6.0 and Visual C++ 2005
  - libgadu upgraded to version 20050615
  - Binaries are now compiled with VC++ 6.0
+ - Fix: Windows 95 & NT problems with GetLongPathName function missing
 0.0.2.9: 2005-04-29
  - Fix: Status descriptions were not set properly when Miranda wasn't asking
    for new status. This change may cause incompatibility with status routines

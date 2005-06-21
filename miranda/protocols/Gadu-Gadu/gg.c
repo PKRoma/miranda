@@ -240,10 +240,21 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 void init_protonames()
 {
 	char text[MAX_PATH], *p, *q;
-	GetModuleFileName(hInstance, text, sizeof(text));
-	GetLongPathName(text, text, sizeof(text));
+    WIN32_FIND_DATA ffd;
+    HANDLE hFind;
 
-	if(p = strrchr(text, '\\')) p++;
+    // Try to find name of the file having original letter sizes
+	GetModuleFileName(hInstance, text, sizeof(text));
+    if((hFind = FindFirstFile(text, &ffd)) != INVALID_HANDLE_VALUE)
+    {
+        strcpy(text, ffd.cFileName);
+        FindClose(hFind);
+    }
+    // Check if we have relative or full path
+	if(p = strrchr(text, '\\'))
+        p++;
+    else
+        p = text;
 	if(q = strrchr(p, '.'))	*q = '\0';
 	if((q = strstr(p, "debug")) && strlen(q) == 5)
 		*q = '\0';
