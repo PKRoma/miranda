@@ -360,13 +360,23 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
         }
     }
     if(pAck->type == ACKTYPE_AWAYMSG) {
-        HWND hWnd;
+        struct MessageWindowData *dat = 0;
+        HWND hwnd = WindowList_Find(hMessageWindowList, pAck->hContact);
+        if(hwnd)
+            dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+        
         if(pAck->result == ACKRESULT_SUCCESS) {
-            if(hWnd = WindowList_Find(hMessageWindowList, pAck->hContact))
-                SendMessage(hWnd, DM_ACTIVATETOOLTIP, 0, pAck->lParam);
+            if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
+                dat->hProcessAwayMsg = 0;
+                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, pAck->lParam);
+            }
         }
-        else
-            _DebugPopup(pAck->hContact, "ACK handler: failed to get statusmsg");
+        else {
+            if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
+                dat->hProcessAwayMsg = 0;
+                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, (LPARAM)"Either there is no status message available, or the protocol could not retrieve it.");
+            }
+        }
         return 0;
     }
     if(pAck->type != ACKTYPE_AVATAR)
@@ -1001,6 +1011,9 @@ int SplitmsgShutdown(void)
     ImageList_RemoveAll(myGlobals.g_hImageList);
     ImageList_Destroy(myGlobals.g_hImageList);
 
+    ImageList_RemoveAll(myGlobals.g_hStateImageList);
+    ImageList_Destroy(myGlobals.g_hStateImageList);
+
     DestroyMenu(myGlobals.g_hMenuContext);
     if(myGlobals.g_hMenuContainer)
         DestroyMenu(myGlobals.g_hMenuContainer);
@@ -1421,9 +1434,25 @@ struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hC
 void CreateImageList(BOOL bInitial)
 {
     HICON hIcon;
+    int cxIcon = GetSystemMetrics(SM_CXSMICON);
+    int cyIcon = GetSystemMetrics(SM_CYSMICON);
     
-    if(bInitial)
+    if(bInitial) {
         myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
+        myGlobals.g_hStateImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
+        hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWEXPAND), IMAGE_ICON, cxIcon, cyIcon, 0);
+        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
+        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
+        DestroyIcon(hIcon);
+        
+        hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
+        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
+        DestroyIcon(hIcon);
+        
+        hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
+        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
+        DestroyIcon(hIcon);
+    }
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);
     
@@ -1438,80 +1467,6 @@ void CreateImageList(BOOL bInitial)
     myGlobals.g_IconSend = myGlobals.g_buttonBarIcons[9];
     myGlobals.g_IconTypingEvent = myGlobals.g_buttonBarIcons[5];
 }
-/*
-void CreateImageList(BOOL bInitial)
-{
-    PROTOCOLDESCRIPTOR **pProtos;
-    int i, j;
-    HICON hIcon;
-    int iCurIcon = 0;
-    
-    // enumerate available protocols... full protocol icon support 
-
-    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &myGlobals.g_nrProtos, (LPARAM) &pProtos);
-
-    if(bInitial) {
-        if (myGlobals.g_nrProtos) {
-            protoIconData = (struct ProtocolData *) malloc(sizeof(struct ProtocolData) * myGlobals.g_nrProtos);
-        } else {
-            MessageBoxA(0, "Warning: LoadIcons - no protocols found", "Warning", MB_OK);
-        }
-    }
-
-    if(bInitial)
-        myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (myGlobals.g_nrProtos + 1) * 12 + 8, 0);
-    else
-        ImageList_RemoveAll(myGlobals.g_hImageList);
-
-    // load global status icons...
-    for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
-        hIcon = LoadSkinnedProtoIcon(0, i);
-        ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    }
-    iCurIcon = i - ID_STATUS_OFFLINE;
-
-    for(i = 0; i < myGlobals.g_nrProtos; i++) {
-        if (pProtos[i]->type != PROTOTYPE_PROTOCOL)
-            continue;
-        strncpy(protoIconData[i].szName, pProtos[i]->szName, sizeof(protoIconData[i].szName));
-        protoIconData[i].iFirstIconID = iCurIcon;
-        for (j = ID_STATUS_OFFLINE; j <= ID_STATUS_OUTTOLUNCH; j++) {
-            hIcon = LoadSkinnedProtoIcon(protoIconData[i].szName, j);
-            if (hIcon != 0) {
-                ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-                iCurIcon++;
-            }
-        }
-    }
-
-    // message event icon
-    hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    myGlobals.g_IconMsgEvent = iCurIcon++;
-
-    // typing notify icon
-    ImageList_AddIcon(myGlobals.g_hImageList, myGlobals.g_buttonBarIcons[5]);
-    myGlobals.g_IconTypingEvent = iCurIcon++;
-
-    hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    myGlobals.g_IconFileEvent = iCurIcon++;
-
-    hIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
-    ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    myGlobals.g_IconUrlEvent = iCurIcon++;
-
-    ImageList_AddIcon(myGlobals.g_hImageList, myGlobals.g_iconErr);
-    myGlobals.g_IconError = iCurIcon++;
-
-    ImageList_AddIcon(myGlobals.g_hImageList, myGlobals.g_buttonBarIcons[9]);
-    myGlobals.g_IconSend = iCurIcon++;
-    
-    ImageList_AddIcon(myGlobals.g_hImageList, 0);             // empty (end of list)
-    myGlobals.g_IconEmpty = iCurIcon;
-
-}
-*/
 
 #if defined(_UNICODE)
 

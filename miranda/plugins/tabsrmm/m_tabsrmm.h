@@ -273,6 +273,7 @@ struct MessageWindowData {
     TOOLINFOA ti;
     DWORD lastRetrievedStatusMsg;
     TCHAR statusMsg[1025];
+    HANDLE hProcessAwayMsg;
 };
 
 typedef struct _recentinfo {
@@ -317,7 +318,7 @@ typedef struct _globals {
     // external plugins
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
-    HIMAGELIST g_hImageList;
+    HIMAGELIST g_hImageList, g_hStateImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
     HMENU g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;

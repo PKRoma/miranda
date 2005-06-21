@@ -1196,6 +1196,9 @@ IDI_PULLDOWNARROW       ICON                    "res/pulldown.ico"
 IDI_LEFTARROW           ICON                    "res/leftarrow.ico"
 IDI_PULLUPARROW         ICON                    "res/pullup.ico"
 IDI_RIGHTARROW          ICON                    "res/rightarrow.ico"
+IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
+IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
+IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

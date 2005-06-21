@@ -997,6 +997,7 @@ nogroup:
                             formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
                             AppendToBufferWithRTF(MAKELONG(isSent, dat->isHistory), &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
                 #endif      // unicode
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\b0\\ul0\\i0 ");
                             break;
                         }
                         case EVENTTYPE_URL:

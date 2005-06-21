@@ -2416,7 +2416,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(PtInRect(&rc, pt)) {
                     if(GetTickCount() - dat->lastRetrievedStatusMsg > 60000) {
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("Retrieving..."));
-                        if(!CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_GETAWAYMSG, 0, 0))
+                        if(!(dat->hProcessAwayMsg = (HANDLE)CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_GETAWAYMSG, 0, 0)))
                             SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("No status message available"));
                         dat->lastRetrievedStatusMsg = GetTickCount();
                     }
@@ -2788,10 +2788,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
             break;
-        case WM_SHOWWINDOW:
-            if(wParam == FALSE);
-                SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
-            break;
         case WM_LBUTTONDBLCLK:
             if(GetKeyState(VK_CONTROL) & 0x8000) {
                 SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
@@ -2892,6 +2888,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SetTimer(hwndDlg, TIMERID_AWAYMSG, 500, 0);
                             dat->dwEventIsShown |= MWF_SHOW_AWAYMSGTIMER;
                         }
+                        break;
+                    }
+                    else if(IsWindowVisible(dat->hwndTip)) {
+                        GetWindowRect(GetDlgItem(hwndDlg, IDC_PANEL), &rc);
+                        if(PtInRect(&rc, pt))
+                            SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
                     }
                 }
                 break;
@@ -4692,10 +4694,14 @@ verify:
                 wchar_t szTitleW[256];
 #endif                
                 UINT id = wParam;
+
+                if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->bInTray || dat->pContainer->hwndActive != hwndDlg)
+                    break;
+                
                 if(id == 0)
                     id = IDC_PANELSTATUS;
                 GetWindowRect(GetDlgItem(hwndDlg, id), &rc);
-                SendMessage(dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.top));
+                SendMessage(dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.bottom));
                 if(lParam) {
                     dat->ti.lpszText = (char *)lParam;
                     SendMessageA(dat->hwndTip, TTM_UPDATETIPTEXTA, 0, (LPARAM)&dat->ti);

@@ -218,6 +218,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             int i = 0;
             
             SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+            SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
             TranslateDialogDefault(hWnd);
 
             /*
@@ -243,10 +244,10 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                 tvi.item.lParam = i;
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK;
                 if(defaultItems[i].uType == LOI_TYPE_SETTING)
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 2 : 1);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 3 : 2);
                 else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
                     UINT uVal = *((UINT *)defaultItems[i].lParam);
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 2 : 1);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 3 : 2);
                 }
                 defaultItems[i].handle = SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
                 i++;
@@ -394,11 +395,16 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                             item.hItem = (HTREEITEM)hti.hItem;
                             SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                             if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-                                item.state = INDEXTOSTATEIMAGEMASK((item.state >> 12) == 2 ? 1 : 2) | TVIS_BOLD | TVIS_EXPANDED;
+                                item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
                                 SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
                             }
-                            else if(hti.flags&TVHT_ONITEMSTATEICON)
+                            else if(hti.flags&TVHT_ONITEMSTATEICON) {
+                                if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+                                    item.state = INDEXTOSTATEIMAGEMASK(1);
+                                    SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                                }
                                 SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+                            }
                         }
                     }
                     break;
@@ -417,11 +423,11 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                         if(defaultItems[i].uType == LOI_TYPE_SETTING) {
                             BOOL *ptr = (BOOL *)defaultItems[i].lParam;
-                            *ptr = (item.state >> 12) == 2 ? TRUE : FALSE;
+                            *ptr = (item.state >> 12) == 3 ? TRUE : FALSE;
                         }
                         else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
                             UINT *uVal = (UINT *)defaultItems[i].lParam;
-                            *uVal = ((item.state >> 12) == 2) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
+                            *uVal = ((item.state >> 12) == 3) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
                         }
                         i++;
                     }

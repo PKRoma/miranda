@@ -42,6 +42,9 @@
 #define IDI_LEFTARROW                   314
 #define IDI_PULLUPARROW                 315
 #define IDI_RIGHTARROW                  316
+#define IDI_TREEVIEWEXPAND              320
+#define IDI_TREEVIEWCHECKED             321
+#define IDI_TREEVIEWUNCHECKED           322
 #define IDC_READNEXT                    1000
 #define IDC_APPLY                       1001
 #define IDC_DROP                        1002

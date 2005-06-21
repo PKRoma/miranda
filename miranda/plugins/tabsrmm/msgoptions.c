@@ -277,6 +277,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
+            SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
+            
             /*
              * fill the list box, create groups first, then add items
              */
@@ -287,8 +289,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 tvi.item.mask = TVIF_TEXT | TVIF_STATE;
                 tvi.item.pszText = Translate(defaultGroups[i].szName);
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
-//                tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
-                tvi.item.state = TVIS_EXPANDED | TVIS_BOLD | TVIS_USERMASK;
+                tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
                 defaultGroups[i++].handle = SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
             }
 
@@ -302,7 +303,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 tvi.item.lParam = i;
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK;
                 if(defaultItems[i].uType == LOI_TYPE_SETTING)
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 2 : 1);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 3 : 2);
                 defaultItems[i].handle = SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
                 i++;
             }
@@ -387,11 +388,16 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             item.hItem = (HTREEITEM)hti.hItem;
                             SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                             if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-                                item.state = INDEXTOSTATEIMAGEMASK((item.state >> 12) == 2 ? 1 : 2) | TVIS_BOLD | TVIS_EXPANDED;
+                                item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
                                 SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
                             }
-                            else if(hti.flags&TVHT_ONITEMSTATEICON)
+                            else if(hti.flags&TVHT_ONITEMSTATEICON) {
+                                if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+                                    item.state = INDEXTOSTATEIMAGEMASK(1);
+                                    SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                                }
                                 SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                            }
                         }
                     }
                     break;
@@ -429,7 +435,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
                                 SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                                 if(defaultItems[i].uType == LOI_TYPE_SETTING)
-                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (item.state >> 12) == 2 ? 1 : 0);
+                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (item.state >> 12) == 3 ? 1 : 0);
                                 i++;
                             }
                             ReloadGlobals();
@@ -504,6 +510,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     break;
             }
             SetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+            SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
 
             /*
              * fill the list box, create groups first, then add items
@@ -515,7 +522,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 tvi.item.mask = TVIF_TEXT | TVIF_STATE;
                 tvi.item.pszText = Translate(lvGroups[i].szName);
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
-                tvi.item.state = INDEXTOSTATEIMAGEMASK(1)|TVIS_EXPANDED | TVIS_BOLD;
+                tvi.item.state = INDEXTOSTATEIMAGEMASK(0)|TVIS_EXPANDED | TVIS_BOLD;
                 lvGroups[i++].handle = SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
             }
             
@@ -527,19 +534,21 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 tvi.item.pszText = Translate(lvItems[i].szName);
                 tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
                 tvi.item.lParam = i;
-                if(lvItems[i].id == IDC_MSGLOGPLUGIN && !ServiceExists(MS_IEVIEW_EVENT)) {
-                    i++;
-                    continue;
-                }
-                if(lvItems[i].id == IDC_MATHMODSUPPORT && !ServiceExists(MATH_RTF_REPLACE_FORMULAE)) {
-                    i++;
-                    continue;
+                if(lvItems[i].uType == LOI_TYPE_SETTING) {
+                    if(!strcmp((char *)lvItems[i].lParam, "want_ieview") && !ServiceExists(MS_IEVIEW_EVENT)) {
+                        i++;
+                        continue;
+                    }
+                    if(!strcmp((char *)lvItems[i].lParam, "wantmathmod") && !ServiceExists(MATH_RTF_REPLACE_FORMULAE)) {
+                        i++;
+                        continue;
+                    }
                 }
                 tvi.item.stateMask=TVIS_STATEIMAGEMASK;
                 if(lvItems[i].uType == LOI_TYPE_FLAG)
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 2 : 1);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 3 : 2);
                 else if(lvItems[i].uType == LOI_TYPE_SETTING)
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 2 : 1);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 3 : 2);
                 lvItems[i].handle = SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
                 i++;
             }
@@ -617,11 +626,16 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             item.hItem = (HTREEITEM)hti.hItem;
                             SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                             if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-                                item.state = INDEXTOSTATEIMAGEMASK((item.state >> 12) == 2 ? 1 : 2) | TVIS_BOLD | TVIS_EXPANDED;
+                                item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
                                 SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
                             }
-                            else if(hti.flags&TVHT_ONITEMSTATEICON)
+                            else if(hti.flags&TVHT_ONITEMSTATEICON) {
+                                if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+                                    item.state = INDEXTOSTATEIMAGEMASK(1);
+                                    SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                                }
                                 SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                            }
                         }
                     }
                     break;
@@ -655,9 +669,9 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                 
                                 SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                                 if(lvItems[i].uType == LOI_TYPE_FLAG)
-                                    dwFlags |= (item.state >> 12) == 2 ? lvItems[i].lParam : 0;
+                                    dwFlags |= (item.state >> 12) == 3 ? lvItems[i].lParam : 0;
                                 else if(lvItems[i].uType == LOI_TYPE_SETTING)
-                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (item.state >> 12) == 2 ? 1 : 0);
+                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (item.state >> 12) == 3 ? 1 : 0);
                                 i++;
                             }
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
@@ -876,6 +890,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+            SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
 
             /*
              * fill the list box, create groups first, then add items
@@ -901,7 +916,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                 tvi.item.lParam = i;
                 tvi.item.stateMask = TVIS_STATEIMAGEMASK;
                 if(tabItems[i].uType == LOI_TYPE_SETTING)
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (BYTE)tabItems[i].id) ? 2 : 1);
+                    tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (BYTE)tabItems[i].id) ? 3 : 2);
                 tabItems[i].handle = SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
                 i++;
             }
@@ -959,11 +974,16 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                             item.hItem = (HTREEITEM)hti.hItem;
                             SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                             if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-                                item.state = INDEXTOSTATEIMAGEMASK((item.state >> 12) == 2 ? 1 : 2) | TVIS_BOLD | TVIS_EXPANDED;
+                                item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
                                 SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
                             }
-                            else if(hti.flags&TVHT_ONITEMSTATEICON)
+                            else if(hti.flags&TVHT_ONITEMSTATEICON) {
+                                if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+                                    item.state = INDEXTOSTATEIMAGEMASK(1);
+                                    SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                                }
                                 SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                            }
                         }
                     }
                     break;
@@ -988,7 +1008,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
                                 SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
                                 if(tabItems[i].uType == LOI_TYPE_SETTING)
-                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (item.state >> 12) == 2 ? 1 : 0);
+                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (item.state >> 12) == 3 ? 1 : 0);
                                 i++;
                             }
                             
