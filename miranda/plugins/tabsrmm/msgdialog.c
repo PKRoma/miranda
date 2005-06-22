@@ -840,8 +840,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.top += dat->panelHeight;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_PANELPIC:
-            urc->rcItem.left = urc->rcItem.right - (dat->panelHeight - 4);
-            urc->rcItem.bottom = urc->rcItem.top + (dat->panelHeight - 4);
+            urc->rcItem.left = urc->rcItem.right - (dat->panelHeight - 2);
+            urc->rcItem.bottom = urc->rcItem.top + (dat->panelHeight - 2);
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_PANEL:
             return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
@@ -857,8 +857,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.right = urc->dlgNewSize.cx - dat->panelHeight - 15 - dat->panelStatusCX - 2;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_APPARENTMODE:
-            urc->rcItem.right -= (dat->panelHeight + 2);
-            urc->rcItem.left -= (dat->panelHeight + 2);
+            urc->rcItem.right -= (dat->panelHeight + 3);
+            urc->rcItem.left -= (dat->panelHeight + 3);
             return RD_ANCHORX_CUSTOM | RD_ANCHORX_RIGHT;
         case IDC_PANELUIN:
             urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight + 2 + 25);
@@ -905,7 +905,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
             if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + (dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC ? 32 : 25))))
                 OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-            
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTISPLITTER:
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
@@ -3022,14 +3021,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     
                     if(bPanelPic) {
                         if(bminfo.bmHeight > bminfo.bmWidth) {
-                            dAspect = (double)(cy - 4) / (double)bminfo.bmHeight;
+                            dAspect = (double)(cy - 2) / (double)bminfo.bmHeight;
                             dNewWidth = (double)bminfo.bmWidth * dAspect;
-                            dNewHeight = cy - 4;
+                            dNewHeight = cy - 2;
                         }
                         else {
-                            dAspect = (double)(cx - 4) / (double)bminfo.bmWidth;
+                            dAspect = (double)(cx - 2) / (double)bminfo.bmWidth;
                             dNewHeight = (double)bminfo.bmHeight * dAspect;
-                            dNewWidth = cx - 4;
+                            dNewWidth = cx - 2;
                         }
                     }
                     else {
@@ -3051,19 +3050,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             Rectangle(hdcDraw, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
                         }
                     }
-                    SelectObject(hdcDraw, hOldPen);
-                    SelectObject(hdcDraw, hOldBrush);
-                    DeleteObject(hPen);
                     if(((dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic) && dat->showPic) || bPanelPic) {
                         HDC hdcMem = CreateCompatibleDC(dis->hDC);
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, bPanelPic ? dat->hContactPic : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic));
                         if(bPanelPic) {
                             RECT rcFrame = rcClient;
-                            rcFrame.left = rcFrame.right - (LONG)dNewWidth - 4;
-                            rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 4;
+                            rcFrame.left = rcFrame.right - (LONG)dNewWidth - 2;
+                            rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
                             SetStretchBltMode(hdcDraw, HALFTONE);
-                            StretchBlt(hdcDraw, rcClient.right - (LONG)dNewWidth - 2, 2, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                            DrawEdge(hdcDraw, &rcFrame, EDGE_SUNKEN, BF_RECT | BF_SOFT);
+                            Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right - rcFrame.left, rcFrame.bottom - rcFrame.top);
+                            StretchBlt(hdcDraw, rcClient.right - (LONG)dNewWidth - 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                            //DrawEdge(hdcDraw, &rcFrame, EDGE_SUNKEN, BF_RECT | BF_SOFT);
                         }
                         else {
                             if(dat->iRealAvatarHeight != bminfo.bmHeight) {
@@ -3083,6 +3080,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         DeleteObject(hbmMem);
                         DeleteDC(hdcMem);
                     }
+                    SelectObject(hdcDraw, hOldPen);
+                    SelectObject(hdcDraw, hOldBrush);
+                    DeleteObject(hPen);
                     BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
                     SelectObject(hdcDraw, hbmOld);
                     DeleteObject(hbmDraw);
