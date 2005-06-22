@@ -26,28 +26,6 @@ $Id$
  * templates for the message log...
  */
 
-#define TMPL_MSGIN 0
-#define TMPL_MSGOUT 1
-#define TMPL_GRPSTARTIN 2
-#define TMPL_GRPSTARTOUT 3
-#define TMPL_GRPINNERIN 4
-#define TMPL_GRPINNEROUT 5
-#define TMPL_STATUSCHG 6
-#define TMPL_ERRMSG 7
-
-#define TEMPLATE_LENGTH 150
-
-#define CUSTOM_COLORS 5
-
-#define TEMPLATES_MODULE "tabSRMM_Templates"
-#define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
-
-typedef struct _tagTemplateSet {
-    BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
-    TCHAR szTemplates[TMPL_ERRMSG + 1][TEMPLATE_LENGTH];      // the template strings
-    char szSetName[20];     // everything in this world needs a name. so does this poor template set.
-} TemplateSet;
-
 typedef struct _tagTemplateEditorInfo {
     BOOL rtl;
     BOOL changed;           // template in edit field is changed

@@ -148,6 +148,25 @@ Version 0.9.9.95pre8 - 2005/05/25
           OR
           * use the user preferences dialog (tabSRMM settings), available from the contacts context 
             menu
+            
+        + more info panel stuff - ability to show the local time of the contact (if a timezone is
+          provided). Now also shows the protocol beside the status mode.
+          
+        + hovering the status field in the info panel will try to retrieve the away message for
+          that contact and show it using a tooltip. Away msg retrieval is limited to once per
+          minute to avoid abuse by flooding the contact with awaymsg requests.
+          The little checkbox between the avatar and the status field can be used to disable
+          that feature (to avoid "accidentially" retrieving the status msg).
+          
+        + tree views in various option pages were updated to use better check box and node
+          images.
+
+        + support for the scrolling service in future builds of IEView was added. Now, ieview
+          will always properly scroll down the message log.
+          
+        + setting the own avatar, using the bottom avatar display (when the info panel is active)
+          will now set the protocols avatar. At the moment, this works only with MSN, because
+          it's the only protocol providing the SetAvatar service.
 
 Version 0.9.9.95pre7 - 2005/05/23
 

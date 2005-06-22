@@ -2255,24 +2255,33 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                     break;
                 if(!IsIconic(dat->pContainer->hwnd)) {
-                    HWND hwnd = dat->hwndLog ? dat->hwndLog : GetDlgItem(hwndDlg, IDC_LOG);
-                    dat->dwFlags &= ~MWF_DEFERREDSCROLL;
-                    if ((GetWindowLong(hwnd, GWL_STYLE) & WS_VSCROLL) == 0)
-                        break;
-                    if(lParam)
-                        SendMessage(hwnd, WM_SIZE, 0, 0);
-                    si.cbSize = sizeof(si);
-                    si.fMask = SIF_PAGE | SIF_RANGE;
-                    GetScrollInfo(hwnd, SB_VERT, &si);
-                    si.fMask = SIF_POS;
-                    si.nPos = si.nMax - si.nPage + 1;
-                    SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-                    if(wParam)
-                        SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                    else
-                        PostMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                    if(lParam)
-                        InvalidateRect(hwnd, NULL, FALSE);
+                    if(dat->hwndLog) {
+                        IEVIEWWINDOW iew = {0};
+                        iew.cbSize = sizeof(IEVIEWWINDOW);
+                        iew.iType = IEW_SCROLLBOTTOM;
+                        iew.hwnd = dat->hwndLog;
+                        CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
+                    }
+                    else {
+                        HWND hwnd = dat->hwndLog ? dat->hwndLog : GetDlgItem(hwndDlg, IDC_LOG);
+                        dat->dwFlags &= ~MWF_DEFERREDSCROLL;
+                        if ((GetWindowLong(hwnd, GWL_STYLE) & WS_VSCROLL) == 0)
+                            break;
+                        if(lParam)
+                            SendMessage(hwnd, WM_SIZE, 0, 0);
+                        si.cbSize = sizeof(si);
+                        si.fMask = SIF_PAGE | SIF_RANGE;
+                        GetScrollInfo(hwnd, SB_VERT, &si);
+                        si.fMask = SIF_POS;
+                        si.nPos = si.nMax - si.nPage + 1;
+                        SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+                        if(wParam)
+                            SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+                        else
+                            PostMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+                        if(lParam)
+                            InvalidateRect(hwnd, NULL, FALSE);
+                    }
                 }
                 else
                     dat->dwFlags |= MWF_DEFERREDSCROLL;

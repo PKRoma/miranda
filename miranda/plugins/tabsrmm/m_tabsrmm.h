@@ -194,6 +194,27 @@ struct MessageSessionStats {
     BOOL bWritten;
 };
 
+#define TEMPLATE_LENGTH 150
+#define CUSTOM_COLORS 5
+
+#define TEMPLATES_MODULE "tabSRMM_Templates"
+#define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
+
+#define TMPL_MSGIN 0
+#define TMPL_MSGOUT 1
+#define TMPL_GRPSTARTIN 2
+#define TMPL_GRPSTARTOUT 3
+#define TMPL_GRPINNERIN 4
+#define TMPL_GRPINNEROUT 5
+#define TMPL_STATUSCHG 6
+#define TMPL_ERRMSG 7
+
+typedef struct _tagTemplateSet {
+    BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
+    TCHAR szTemplates[TMPL_ERRMSG + 1][TEMPLATE_LENGTH];      // the template strings
+    char szSetName[20];     // everything in this world needs a name. so does this poor template set.
+} TemplateSet;
+
 struct MessageWindowData {
 	HANDLE hContact, hSubContact;
 	HWND hwndLog;
@@ -265,7 +286,7 @@ struct MessageWindowData {
 #define EVENT_QUEUE_SIZE 10
     int    iEventQueueSize;
     HBITMAP hbmMsgArea;
-    TCHAR newtitle[128];        // tab title...
+    TCHAR newtitle[130];        // tab title...
     char  lcID[4];
     int   panelHeight;
     WORD wApparentMode;
@@ -417,7 +438,6 @@ struct StreamJob {
 #define MENU_TABCONTEXT 3
 #define MENU_PANELPICMENU 4
 
-#define TABSRMM_SMILEYADD_THREADING 25367
 #define TABSRMM_SMILEYADD_BKGCOLORMODE 0x10000000
 
 #define ADDEDEVENTSQUEUESIZE 100

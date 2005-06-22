@@ -359,6 +359,10 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
             return 0;
         }
     }
+    /*
+     * handle status message - pAck->lParam has the message (char *)
+     * only care about requests we have made from a message window, so check the hProcess
+     */
     if(pAck->type == ACKTYPE_AWAYMSG) {
         struct MessageWindowData *dat = 0;
         HWND hwnd = WindowList_Find(hMessageWindowList, pAck->hContact);
@@ -373,7 +377,7 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
                 SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, pAck->lParam);
             }
         }
-        else {
+        else if(pAck->result = ACKRESULT_FAILED) {
             if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
                 dat->hProcessAwayMsg = 0;
                 SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, (LPARAM)"Either there is no status message available, or the protocol could not retrieve it.");

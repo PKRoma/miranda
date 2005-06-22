@@ -94,8 +94,8 @@ typedef struct _settextex {
 
 #include <richedit.h>
 #include <richole.h>
-#include "templates.h"
 #include "m_tabsrmm.h"
+#include "templates.h"
 
 #define MSGERROR_CANCEL	0
 #define MSGERROR_RETRY	    1

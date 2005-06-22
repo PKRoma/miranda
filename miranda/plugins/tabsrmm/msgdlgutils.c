@@ -1007,7 +1007,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 		// iterate through all characters, if rtf control character found then take action
 		while(*p1 != (TCHAR)'\0')
 		{
-			_sntprintf(InsertThis, sizeof(InsertThis), _T(""));
+			_sntprintf(InsertThis, 50, _T(""));
 			iRemoveChars = 0;
 
 			switch (*p1)
@@ -1020,10 +1020,10 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					int iInd = RTFColorToIndex(iCol);
 					bJustRemovedRTF = TRUE;
 
-                    _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
+                    _sntprintf(szTemp, 20, _T("%d"), iCol);
 					iRemoveChars = 3 + _tcslen(szTemp);
 					if(bTextHasStarted || iCol)
-                        _sntprintf(InsertThis, sizeof(InsertThis), ( iInd > 0 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd  - 1].szName);
+                        _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), ( iInd > 0 ) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd  - 1].szName);
                     inColor = iInd > 0 ? 1 : 0;
 				}
 				else if(p1 == _tcsstr(p1, _T("\\highlight"))) //background color
@@ -1033,7 +1033,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					//int iInd = RTFColorToIndex(pIndex, iCol, dat);
 					bJustRemovedRTF = TRUE;
 
-                    _sntprintf(szTemp, sizeof(szTemp), _T("%d"), iCol);
+                    _sntprintf(szTemp, 20, _T("%d"), iCol);
 					iRemoveChars = 10 + _tcslen(szTemp);
 					//if(bTextHasStarted || iInd >= 0)
 					//	_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 ) ? _T("%%f%02u") : _T("%%F"), iInd);
@@ -1050,7 +1050,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
                     bTextHasStarted = TRUE;
                     bJustRemovedRTF = TRUE;
                     iRemoveChars = 5;
-                    _sntprintf(InsertThis, sizeof(InsertThis), _T("\n"));
+                    _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T("\n"));
                 }
 				else if(p1 == _tcsstr(p1, _T("\\b"))) //bold
 				{
@@ -1059,9 +1059,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!(lf.lfWeight == FW_BOLD)) {          // only allow bold if the font itself isn't a bold one, otherwise just strip it..
                         if(dat->SendFormat == SENDFORMAT_BBCODE)
-                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
+                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
                         else
-                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
                     }
 
 				}
@@ -1072,9 +1072,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!lf.lfItalic) {                       // same as for bold
                         if(dat->SendFormat == SENDFORMAT_BBCODE)
-                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
+                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
                         else
-                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
                     }
 
 				}
@@ -1090,9 +1090,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 						iRemoveChars = 3;
                     if(!lf.lfUnderline)  {                   // same as for bold
                         if(dat->SendFormat == SENDFORMAT_BBCODE)
-                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
+                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
                         else
-                            _sntprintf(InsertThis, sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
                     }
 
 				}
@@ -1101,7 +1101,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-					_sntprintf(InsertThis, sizeof(InsertThis), _T(" "));
+					_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T(" "));
 
 				}
 				else if(p1[1] == (TCHAR)'\\' || p1[1] == (TCHAR)'{' || p1[1] == (TCHAR)'}' ) // escaped characters
@@ -1109,7 +1109,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 2;
-					_sntprintf(InsertThis, sizeof(InsertThis), _T("%c"), p1[1]);
+					_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T("%c"), p1[1]);
 
 				}
 				else if(p1[1] == (TCHAR)'\'' ) // special character
@@ -1159,7 +1159,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 							p3++;
 						}
                         */
-						_sntprintf(InsertThis, sizeof(InsertThis), _T("%c"), (TCHAR)iLame);
+						_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T("%c"), (TCHAR)iLame);
                         
 					}
 					else
