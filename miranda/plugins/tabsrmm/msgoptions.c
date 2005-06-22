@@ -1918,6 +1918,8 @@ void ReloadGlobals()
      myGlobals.m_Send7bitStrictAnsi = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "7bitasANSI", 1);
      myGlobals.m_IdleDetect = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "detectidle", 1);
      myGlobals.m_DoStatusMsg = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dostatusmsg", 1);
+     myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
+     myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
 }
 
 /*

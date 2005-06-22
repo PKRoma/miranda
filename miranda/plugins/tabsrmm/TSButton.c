@@ -227,15 +227,15 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 
 		// If we have an icon or a bitmap, ignore text and only draw the image on the button
 		if (ctl->hIcon || ctl->hIconPrivate) {
-			int ix = (rcClient.right-rcClient.left)/2 - (GetSystemMetrics(SM_CXSMICON)/2);
-			int iy = (rcClient.bottom-rcClient.top)/2 - (GetSystemMetrics(SM_CYSMICON)/2);
+			int ix = (rcClient.right-rcClient.left)/2 - (myGlobals.m_smcxicon / 2);
+			int iy = (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2);
             HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
             if(ctl->dimmed && myGlobals.m_IdleDetect) {
 				ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIconNew);
 				ImageList_DrawEx(myGlobals.g_hImageList, 0, hdcMem, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
             }
             else
-                DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd) ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
+                DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,myGlobals.m_smcxicon,myGlobals.m_smcyicon,IsWindowEnabled(ctl->hwnd) ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
 		}
 		else if (ctl->hBitmap) {
 			BITMAP bminfo;
@@ -271,7 +271,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 				sz.cx -= szHot.cx;
 			}
 			if (ctl->arrow) {
-				DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->arrow,0,rcClient.right-rcClient.left-5-GetSystemMetrics(SM_CXSMICON)+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),(rcClient.bottom-rcClient.top)/2-GetSystemMetrics(SM_CYSMICON)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
+				DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->arrow,0,rcClient.right-rcClient.left-5-myGlobals.m_smcxicon+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),(rcClient.bottom-rcClient.top)/2-myGlobals.m_smcyicon/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),myGlobals.m_smcxicon,myGlobals.m_smcyicon,IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
 			}
 			SelectObject(hdcMem, ctl->hFont);
 			DrawStateA(hdcMem,NULL,NULL,(LPARAM)szText,0,(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
@@ -405,9 +405,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
                 
                 GetIconInfo((HICON)lParam, &ii);
                 GetObject(ii.hbmColor, sizeof(bm), &bm);
-                if(bm.bmWidth != GetSystemMetrics(SM_CXSMICON) || bm.bmHeight != GetSystemMetrics(SM_CXSMICON)) {
+                if(bm.bmWidth != myGlobals.m_smcxicon || bm.bmHeight != myGlobals.m_smcyicon) {
                     HIMAGELIST hImageList;
-                    hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON), IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
+                    hImageList = ImageList_Create(myGlobals.m_smcxicon,myGlobals.m_smcyicon, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
                     ImageList_AddIcon(hImageList, (HICON)lParam);
                     bct->hIconPrivate = ImageList_GetIcon(hImageList, 0, ILD_NORMAL);
                     ImageList_RemoveAll(hImageList);
@@ -452,7 +452,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case BUTTONSETARROW: // turn arrow on/off
 			if (wParam) {
 				if (!bct->arrow)
-					bct->arrow = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0);
+					bct->arrow = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW),IMAGE_ICON,myGlobals.m_smcxicon,myGlobals.m_smcyicon,0);
 			}
 			else {
 				if (bct->arrow) {

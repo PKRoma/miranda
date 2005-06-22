@@ -1578,6 +1578,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if(dat->hContact) {
                 dat->timezone = (DWORD)DBGetContactSettingByte(dat->hContact,"UserInfo","Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto,"Timezone",-1));
                 dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
+                if(dat->timezone != -1) {
+                    DWORD local_gmt_diff, contact_gmt_diff;
+                    time_t now = time(NULL);
+                    struct tm gmt = *gmtime(&now);
+                    time_t gmt_time = mktime(&gmt);
+
+                    local_gmt_diff = (int)difftime(now, gmt_time);
+                    contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
+                    dat->timediff = (int)local_gmt_diff - (int)contact_gmt_diff*60*60/2;
+                }
             }
 
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
@@ -1595,6 +1605,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "log_bbcode", 1) ? MWF_SHOW_BBCODE : 0;
+            dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0) ? MWF_SHOW_USELOCALTIME : 0;
             dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
 
             dat->iAvatarDisplayMode = myGlobals.m_AvatarDisplayMode;
@@ -2182,6 +2193,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     GetClientRect(hwndDlg, &rc);
                     if(pt.y + 6 >= 51 && pt.y + 6 < 100)
                         dat->panelHeight = pt.y + 6;
+                    SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
+                    break;
                 }
                 SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
                 break;
@@ -2920,7 +2934,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
                 lpmi->itemHeight = 0;
-                lpmi->itemWidth  += 6; //GetSystemMetrics(SM_CXSMICON);
+                lpmi->itemWidth  += 6;
                 return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
             }
         case WM_NCHITTEST:
@@ -2932,8 +2946,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
                     HICON hIcon;
                     DWORD bStyle = 0;
-                    int cx = GetSystemMetrics(SM_CXSMICON);
-                    int cy = GetSystemMetrics(SM_CYSMICON);
                     if(dat->pContainer->dwFlags & CNT_SIDEBAR)
                         bStyle = DFCS_PUSHED;
                     else
@@ -2941,9 +2953,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | bStyle);
                     hIcon = myGlobals.g_buttonBarIcons[25];
                     DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                              (dis->rcItem.right + dis->rcItem.left - cx) / 2,
-                              (dis->rcItem.bottom + dis->rcItem.top - cy) / 2,
-                              cx, cy,
+                              (dis->rcItem.right + dis->rcItem.left - myGlobals.m_smcxicon) / 2,
+                              (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2,
+                              myGlobals.m_smcxicon, myGlobals.m_smcyicon,
                               DST_ICON | DSS_NORMAL);
                     return TRUE;
                 } else if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
@@ -3004,7 +3016,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     GetClientRect(dis->hwndItem, &rcClient);
                     cx = rcClient.right;
                     cy = rcClient.bottom;
-                    
                     hdcDraw = CreateCompatibleDC(dis->hDC);
                     hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
                     hbmOld = SelectObject(hdcDraw, hbmDraw);
@@ -3028,7 +3039,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dNewWidth = (double)(rc.right) * 0.8;
                         iMaxHeight = dat->iRealAvatarHeight;
                     }
-                    
                     hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
                     hOldPen = SelectObject(hdcDraw, hPen);
                     hOldBrush = SelectObject(hdcDraw, GetSysColorBrush(COLOR_3DFACE));
@@ -3053,7 +3063,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 4;
                             SetStretchBltMode(hdcDraw, HALFTONE);
                             StretchBlt(hdcDraw, rcClient.right - (LONG)dNewWidth - 2, 2, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                            DrawEdge(hdcDraw, &rcFrame, EDGE_ETCHED, BF_RECT | BF_SOFT);
+                            DrawEdge(hdcDraw, &rcFrame, EDGE_SUNKEN, BF_RECT | BF_SOFT);
                         }
                         else {
                             if(dat->iRealAvatarHeight != bminfo.bmHeight) {
@@ -3080,8 +3090,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     return TRUE;
                 }
                 else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELSTATUS) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                    int cx = GetSystemMetrics(SM_CXSMICON);
-                    int cy = GetSystemMetrics(SM_CYSMICON);
                     char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                     SIZE sProto = {0}, sStatus = {0};
                     DWORD oldPanelStatusCX = dat->panelStatusCX;
@@ -3103,10 +3111,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->hTabStatusIcon) {
                         if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
                             ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, dat->hTabStatusIcon);
-                            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 3, (rc.bottom + rc.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 3, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
                         }
                         else
-                            DrawIconEx(dis->hDC, 3, (rc.bottom + rc.top - cy) / 2, dat->hTabStatusIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+                            DrawIconEx(dis->hDC, 3, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, dat->hTabStatusIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
                     }
                     rc.left += 22;
                     if(dat->szStatus)
@@ -3143,7 +3151,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             time_t diff = time(NULL) - dat->idle;
                             int i_hrs = diff / 3600;
                             int i_mins = (diff - i_hrs * 3600) / 60;
-                            mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %d:%02d", dat->uin, i_hrs, i_mins);
+                            mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %dh,%02dm", dat->uin, i_hrs, i_mins);
                             GetTextExtentPoint32A(dis->hDC, szBuf, lstrlenA(szBuf), &sUIN);
                             DrawTextA(dis->hDC, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
                         }
@@ -3154,17 +3162,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(dat->timezone != -1) {
                             DBTIMETOSTRING dbtts;
                             char szResult[80];
-                            DWORD local_gmt_diff, contact_gmt_diff;
                             time_t final_time;
-                            int diff;
                             time_t now = time(NULL);
-                            struct tm gmt = *gmtime(&now);
-                            time_t gmt_time = mktime(&gmt);
 
-                            local_gmt_diff=(int)difftime(now, gmt_time);
-                            contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-                            diff=(int)local_gmt_diff-(int)contact_gmt_diff*60*60/2;
-                            final_time = now - diff;
+                            final_time = now - dat->timediff;
                             dbtts.szDest = szResult;
                             dbtts.cbDest = 70;
                             dbtts.szFormat = "t";
@@ -3179,10 +3180,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     return TRUE;
                 }
                 else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_READSTATUS) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                    int cx = GetSystemMetrics(SM_CXSMICON);
-                    int cy = GetSystemMetrics(SM_CYSMICON);
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
-                    DrawIconEx(dis->hDC, (dis->rcItem.right + dis->rcItem.left - cx) / 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, myGlobals.m_DoStatusMsg ? myGlobals.g_IconChecked : myGlobals.g_IconUnchecked, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
+                    DrawIconEx(dis->hDC, (dis->rcItem.right + dis->rcItem.left - myGlobals.m_smcxicon) / 2, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, myGlobals.m_DoStatusMsg ? myGlobals.g_IconChecked : myGlobals.g_IconUnchecked, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
                 }
                 return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
             }
@@ -3200,7 +3199,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         break;
 
                     TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
-                    
 #if defined( _UNICODE )
                     streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
                     if(streamOut != NULL) {

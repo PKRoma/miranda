@@ -297,8 +297,8 @@ IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message window options",IDC_STATIC,1,0,302,86
-    GROUPBOX        "Avatar options",IDC_STATIC,1,88,302,40
+    GROUPBOX        "Message window options",IDC_STATIC,0,0,303,86
+    GROUPBOX        "Avatar options",IDC_STATIC,0,88,303,40
     LTEXT           "Display",IDC_STATIC,9,98,56,9
     COMBOBOX        IDC_AVATARDISPLAY,64,96,90,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -312,8 +312,8 @@ BEGIN
     LTEXT           "Show avatars",IDC_STATIC,10,115,60,10
     COMBOBOX        IDC_AVATARMODE,114,112,175,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,1,130,
-                    302,34
+    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,0,130,
+                    303,34
     LTEXT           "Automatically close tabs after",IDC_STATIC,7,141,119,11
     EDITTEXT        IDC_AUTOCLOSETABTIME,128,139,31,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
@@ -325,7 +325,7 @@ BEGIN
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     9,152,280,10
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,1,165,302,60
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,0,165,303,60
     LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,175,133,
                     8
     COMBOBOX        IDC_TOOLBARHIDEMODE,143,172,152,46,CBS_DROPDOWNLIST | 
@@ -337,7 +337,7 @@ BEGIN
     LTEXT           "seconds.",IDC_STATIC,258,210,36,8
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,10,285,72,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,10,292,72,
                     WS_EX_STATICEDGE
     CTEXT           "Message send timeout",IDC_STATIC,229,189,67,16
     LTEXT           "Send text formatting:",IDC_STATIC,9,210,132,11

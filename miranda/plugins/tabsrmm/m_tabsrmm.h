@@ -117,6 +117,7 @@ typedef struct {
 #define MWF_SHOW_INFONOTES 2048
 #define MWF_SHOW_ISIDLE 4096
 #define MWF_SHOW_AWAYMSGTIMER 8192
+#define MWF_SHOW_USELOCALTIME 16384
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -274,7 +275,7 @@ struct MessageWindowData {
     DWORD lastRetrievedStatusMsg;
     TCHAR statusMsg[1025];
     HANDLE hProcessAwayMsg;
-    DWORD timezone;
+    DWORD timezone, timediff;
     DWORD panelStatusCX;
 };
 
@@ -386,6 +387,7 @@ typedef struct _globals {
     int m_Send7bitStrictAnsi;
     int  m_IdleDetect;
     int  m_DoStatusMsg;
+    int m_smcxicon, m_smcyicon;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

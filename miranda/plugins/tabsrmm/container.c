@@ -727,7 +727,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     if(pContainer->hwndSlist)
-                        MoveWindow(pContainer->hwndSlist, 1, 3, 17, 17, FALSE);
+                        MoveWindow(pContainer->hwndSlist, 2, 3, 16, 16, FALSE);
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -1242,13 +1242,14 @@ panel_found:
                         SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
                         SendMessage(hwndDlg, WM_SIZE, 0, 0);
                         SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
-                        if(myGlobals.m_ExtraRedraws)
+                        SendMessage(pContainer->hwndActive, WM_ACTIVATE, WA_ACTIVE, 0);
+                        //if(myGlobals.m_ExtraRedraws)
                             RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
                     }
                     else
                         _DebugPopup(0, "invalid window handle in deferred configuration handler");
                 }
-                if(curItem >= 0) {
+                else if(curItem >= 0) {
                     SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
                     if(myGlobals.m_ExtraRedraws)
                         RedrawWindow((HWND)item.lParam, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
@@ -1646,14 +1647,12 @@ panel_found:
             break;
         case WM_DRAWITEM:
         {
-            int cx = GetSystemMetrics(SM_CXSMICON);
-            int cy = GetSystemMetrics(SM_CYSMICON);
+            int cx = myGlobals.m_smcxicon;
+            int cy = myGlobals.m_smcyicon;
             LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
             if(dis->CtlType == ODT_BUTTON && (dis->CtlID == IDC_SIDEBARUP || dis->CtlID == IDC_SIDEBARDOWN)) {
                 HICON hIcon;
                 DWORD bStyle = 0;
-                int cx = GetSystemMetrics(SM_CXSMICON);
-                int cy = GetSystemMetrics(SM_CYSMICON);
                 if(dis->itemState & ODS_DISABLED)
                     bStyle = DFCS_FLAT;
                 else

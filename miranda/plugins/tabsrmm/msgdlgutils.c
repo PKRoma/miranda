@@ -207,7 +207,7 @@ void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat)
 int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU submenu, int menuID)
 {
     if(menuID == MENU_LOGMENU) {
-        int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
+        int iLocalTime = dat->dwEventIsShown & MWF_SHOW_USELOCALTIME ? 1 : 0; // DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
@@ -321,6 +321,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                         if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && menuId == MENU_PICMENU) {
                             char szNewPath[MAX_PATH + 1], szOldPath[MAX_PATH + 1];
                             char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
+                            char szServiceName[50], *szProto;
+                            
                             _splitpath(FileName, NULL, NULL, szBasename, szExt);
                             mir_snprintf(szNewPath, MAX_PATH, "%s%s_avatar%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto, szExt);
                             /*
@@ -338,6 +340,17 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                             CopyFileA(FileName, szNewPath, FALSE);
                             LoadOwnAvatar(hwndDlg, dat);
                             WindowList_Broadcast(hMessageWindowList, DM_CHANGELOCALAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
+                            /*
+                             * try to set it for the protocol (note: currently, only possible for MSN
+                             */
+                            szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+                            mir_snprintf(szServiceName, sizeof(szServiceName), "%s/SetAvatar", szProto);
+                            if(ServiceExists(szServiceName)) {
+                                if(CallProtoService(szProto, "/SetAvatar", 0, (LPARAM)FileName) != 0)
+                                    _DebugMessage(hwndDlg, dat, Translate("Failed to set avatar for %s"), szProto);
+                            }
+                            else
+                                _DebugMessage(hwndDlg, dat, Translate("The current protocol doesn't support setting your avatar from the message window"));
                         }
                         else
                             DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",FileName);
@@ -349,7 +362,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
         }
     }
     else if(menuId == MENU_LOGMENU) {
-        int iLocalTime = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
+        int iLocalTime = dat->dwEventIsShown & MWF_SHOW_USELOCALTIME ? 1 : 0; // DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
         int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
@@ -362,6 +375,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_LOGMENU_USECONTACTSLOCALTIME:
                 iLocalTime ^=1;
+                dat->dwEventIsShown ^= MWF_SHOW_USELOCALTIME;
                 if(dat->hContact) {
                     DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", (BYTE) iLocalTime);
                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);

@@ -77,8 +77,8 @@ void HandleMenuEntryFromhContact(int iSelection)
 
 void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
-    int cx = GetSystemMetrics(SM_CXSMICON);
-    int cy = GetSystemMetrics(SM_CYSMICON);
+    int cx = myGlobals.m_smcxicon;
+    int cy = myGlobals.m_smcyicon;
     
     if (!IsWinVerXPPlus()) {
         FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
@@ -231,7 +231,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             {
                 LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
                 lpmi->itemHeight = 0;
-                lpmi->itemWidth = 6; //GetSystemMetrics(SM_CXSMICON);
+                lpmi->itemWidth = 6;
                 return TRUE;
             }
         case WM_DRAWITEM:
@@ -318,8 +318,10 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                     }
                                 } while (--i >= 0);
                                 if(uid == 0 && pLastActiveContainer != NULL) {                 // no session found, restore last active container
-                                    if(IsIconic(pLastActiveContainer->hwnd) || pLastActiveContainer->bInTray != 0)
+                                    if(IsIconic(pLastActiveContainer->hwnd) || pLastActiveContainer->bInTray != 0) {
                                         SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                                        SetForegroundWindow(pLastActiveContainer->hwnd);
+                                    }
                                     else
                                         SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
                                 }

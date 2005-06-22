@@ -642,22 +642,9 @@ nogroup:
 
     if (dat->dwFlags & MWF_LOG_SHOWTIME) {
         final_time = dbei.timestamp;
-        if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0)) {
-            if(!isSent)
-            {
-                DWORD local_gmt_diff, contact_gmt_diff;
-                int diff;
-
-                time_t now = time(NULL);
-                struct tm gmt = *gmtime(&now);
-                time_t gmt_time = mktime(&gmt);
-                local_gmt_diff=(int)difftime(now, gmt_time);
-                if (dat->timezone != -1) {
-                    contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-                    diff=(int)local_gmt_diff-(int)contact_gmt_diff*60*60/2;
-                    final_time = dbei.timestamp - diff;
-                }
-            }
+        if(dat->dwEventIsShown & MWF_SHOW_USELOCALTIME) {
+            if(!isSent && dat->timediff != 0)
+                final_time = dbei.timestamp - dat->timediff;
         }
         event_time = *localtime(&final_time);
     }

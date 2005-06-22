@@ -678,8 +678,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
             bmpOld = SelectObject(hdc, bmpMem);
 
-            if(ps.fErase)
-                FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+            //if(ps.fErase)
+            FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
             
             if(dwStyle & TCS_BUTTONS) {
                 RECT rc1;

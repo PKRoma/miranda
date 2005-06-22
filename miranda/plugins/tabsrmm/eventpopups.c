@@ -1048,7 +1048,6 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
 #if defined(_UNICODE)
                 mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, "%nick%", szMyStatus, mii.dwItemData);
                 szMenuEntryW = EncodeWithNickname(szMenuEntry, szNick, codePage);
-                AppendMenuW(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntryW);
                 mii.cch = lstrlenW(szMenuEntryW) + 1;
                 mii.dwTypeData = (LPWSTR)szMenuEntryW;
 #else
