@@ -43,7 +43,7 @@ BEGIN
                     UDS_ARROWKEYS,164,138,9,13
     PUSHBUTTON      "Announce events when status is...",IDC_POPUPSTATUSMODES,
                     11,151,178,13
-    GROUPBOX        "Popup Options",IDC_STATIC,1,168,312,71
+    GROUPBOX        "Popup Options",IDC_STATIC,0,168,313,71
     LTEXT           "Text",IDC_STATIC,60,177,23,8
     LTEXT           "Background",IDC_STATIC,86,177,47,8
     LTEXT           "Message",IDC_STATIC,11,187,44,13
@@ -75,10 +75,10 @@ BEGIN
     EDITTEXT        IDC_DELAY_OTHERS,191,224,26,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     PUSHBUTTON      "Preview popup",IDC_PREVIEW,226,223,83,12
-    GROUPBOX        "Event notify options",IDC_STATIC,2,0,311,167
+    GROUPBOX        "Event notify options",IDC_STATIC,0,0,313,167
     CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,297,108,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,108,
                     WS_EX_STATICEDGE
     LTEXT           "characters",IDC_STATIC,166,138,103,10
 END
@@ -337,7 +337,7 @@ BEGIN
     LTEXT           "seconds.",IDC_STATIC,258,210,36,8
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,10,292,72,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,72,
                     WS_EX_STATICEDGE
     CTEXT           "Message send timeout",IDC_STATIC,229,189,67,16
     LTEXT           "Send text formatting:",IDC_STATIC,9,210,132,11
@@ -349,8 +349,8 @@ IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Options",IDC_STATIC,1,0,302,111
-    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,1,111,302,40
+    GROUPBOX        "Options",IDC_STATIC,0,0,303,111
+    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,0,111,303,40
     LTEXT           "Left",IDC_STATIC,10,120,29,11
     EDITTEXT        IDC_INDENTAMOUNT,59,118,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -369,10 +369,10 @@ BEGIN
     CONTROL         "",IDC_EXTRALFSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,201,136,
                     12,11
-    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,1,151,302,26
+    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,0,151,303,26
     PUSHBUTTON      "Standard templates...",IDC_MODIFY,27,160,95,14
     PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,178,160,95,14
-    GROUPBOX        "Load History Events",IDC_STATIC,1,178,302,47
+    GROUPBOX        "Load History Events",IDC_STATIC,0,178,303,47
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,187,135,10
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
@@ -396,7 +396,7 @@ BEGIN
     LTEXT           "minutes old",IDC_STMINSOLD,207,212,90,8,WS_DISABLED
     CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,8,11,285,95,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,95,
                     WS_EX_STATICEDGE
 END
 
@@ -447,7 +447,7 @@ BEGIN
     LTEXT           "entries",IDC_STATIC,200,187,28,10
     CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,5,11,291,101,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,101,
                     WS_EX_STATICEDGE
 END
 

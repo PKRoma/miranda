@@ -138,6 +138,12 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 }
                 case IDC_USEPRIVATETITLE:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+                    break;
+                case IDC_TITLEFORMAT:
+                    if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+                        return TRUE;
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
                     break;
 				case IDOK:
 				case IDC_APPLY:

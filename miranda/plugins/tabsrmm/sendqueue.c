@@ -235,7 +235,6 @@ void ClearSendJob(int iIndex)
     sendJobs[iIndex].dwFlags = 0;
     ZeroMemory(sendJobs[iIndex].hContact, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
     ZeroMemory(sendJobs[iIndex].hSendId, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
-    //_DebugPopup(0, "cleared %d - tID = %d", iIndex, GetCurrentThreadId());
 }
 
 /*
@@ -368,6 +367,7 @@ void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry
         SetDlgItemTextA(hwndDlg, IDC_MESSAGE, (char *)sendJobs[iEntry].sendBuffer);
 #endif
         UpdateSaveAndSendButton(hwndDlg, dat);
+        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
     }
 }
 

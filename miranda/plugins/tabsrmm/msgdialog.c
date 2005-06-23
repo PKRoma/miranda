@@ -513,12 +513,14 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                                 if(mwdat->history[mwdat->iHistorySize].szText != NULL) {            // replace the temp buffer 
                                     SetWindowText(hwnd, _T(""));
                                     SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM) mwdat->history[mwdat->iHistorySize].szText);
+                                    SendMessage(hwnd, EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
                                 }
                             }
                             else {
                                 if(mwdat->history[mwdat->iHistoryCurrent].szText != NULL) {
                                     SetWindowText(hwnd, _T(""));
                                     SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM) mwdat->history[mwdat->iHistoryCurrent].szText);
+                                    SendMessage(hwnd, EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
                                 }
                                 else
                                     SetWindowText(hwnd, _T(""));
@@ -4732,8 +4734,9 @@ verify:
                 pai_s.format = PA_FORMAT_UNKNOWN;
                 strcpy(pai_s.filename, "X");
                 result = CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
-                if(result == GAIR_WAITFOR)
+                if(result == GAIR_WAITFOR) {
                     _DebugPopup(dat->hContact, "Refreshing avatar...");
+                }
                 else if(result == GAIR_SUCCESS) {
                     if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
                         DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai_s.filename);
