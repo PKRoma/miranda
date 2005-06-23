@@ -1920,6 +1920,7 @@ void ReloadGlobals()
      myGlobals.m_DoStatusMsg = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dostatusmsg", 1);
      myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
+     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
 }
 
 /*
