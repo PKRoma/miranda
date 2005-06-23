@@ -64,12 +64,11 @@ case you can use this plugin to have no problems at all.
 Frequently asked questions.
 ================================================================================
 
-Q1. There were a couple of popup options on the MSN settings page,
-but I cannot see them now. What am I doing wrong?
+Q1. I want to use the OpenSSL libraries, but plugin can't find or load
+them. Where can I find the valid DLLs for Win32?
 
-A1. All popup settings were moved to Options/Popups/MSN. This page
-occurs automatically when you install Popup plugin (version 1.0.1.9
-or later is greatly recommended).
+A1. http://www.slproweb.com/products/Win32OpenSSL.html
+Use the latest stable version.
 
 ----------------------------------------------------------------
 
