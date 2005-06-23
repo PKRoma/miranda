@@ -854,7 +854,7 @@ static struct LISTOPTIONSGROUP tabGroups[] = {
     0, "Tab options",
     0, "Message tab and window creation options",
     0, "Message dialog visual settings",
-    0, "Miscellanous options",
+    0, "Miscellaneous options",
     0, NULL
 };
 

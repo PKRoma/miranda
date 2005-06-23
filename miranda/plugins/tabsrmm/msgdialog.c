@@ -1158,7 +1158,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 ZeroMemory((void *)&dat->ti, sizeof(dat->ti));
                 dat->ti.cbSize = sizeof(dat->ti);
-                dat->ti.lpszText = "No status message available";
+                dat->ti.lpszText = Translate("No status message available");
                 dat->ti.hinst = g_hInst;
                 dat->ti.hwnd = hwndDlg;
                 dat->ti.uFlags = TTF_TRACK | TTF_IDISHWND;
@@ -3768,7 +3768,7 @@ quote_from_last:
                     int iSelection;
                     RECT rc;
                     WORD wOldApparentMode = dat->wApparentMode;
-                    int pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
+                    int pCaps = CallProtoService(dat->bIsMeta ? dat->szMetaProto : dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
 
                     CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_OFFLINE ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_ONLINE ? MF_CHECKED : MF_UNCHECKED));
@@ -4793,7 +4793,7 @@ verify:
                     SendMessageA(dat->hwndTip, TTM_UPDATETIPTEXTA, 0, (LPARAM)&dat->ti);
                 }
                 SendMessage(dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
-                mir_snprintf(szTitle, sizeof(szTitle), "Status message for %s (%s)", dat->szNickname, dat->szStatus);
+                mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), dat->szNickname, dat->szStatus);
 #if defined(_UNICODE)
                 MultiByteToWideChar(dat->codePage, 0, szTitle, -1, szTitleW, 256);
                 szTitleW[255] = 0;

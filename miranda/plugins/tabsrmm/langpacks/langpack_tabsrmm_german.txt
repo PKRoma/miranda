@@ -22,6 +22,10 @@ Fett
 Kursiv
 [Underlined text]
 Unterstrichen
+[Select font color]
+Schriftfarbe
+[Info panel controls]
+Einstellungen für den Infobereich
 [OK]
 OK
 [Ok]
@@ -122,6 +126,14 @@ Wollen sie diese Nachrichtensitzung wirklich schließen?
 ; ------------------------
 ; ----------------- msgdialog.c  source code strings
 ; ------------------------
+[Status message for %s (%s)]
+Statusnachricht für %s (%s)
+[No status message available]
+Keine Statusnachricht verfügbar
+[Either there is no status message available, or the protocol could not retrieve it.]
+Entweder es ist keine Statusnachricht verfügbar, oder sie konnte nicht ermitteld werden.
+[Retrieving...]
+Statusnachricht ermitteln...
 [has either a wrong size (max 150 x 150) or is not a recognized image file]
 hat entweder eine unzulässige Größe (150 x 150 maximum) oder liegt in einem unbekannten Format vor
 [Close session]
@@ -340,6 +352,8 @@ Layout des Nachrichtenfensters
 Flache Toolbar Schaltflächen (nur wenn klassisches Windows-Theme aktiv ist)
 [Flat message log (no static edge)]
 Flache Textbereiche
+[Dim icons for idle contacts]
+Symbole für inaktive Kontakte aufhellen
 [Splitters have static edges]
 Splitter haben statische Kanten
 [Miscellaneous options]
@@ -527,6 +541,8 @@ Auch den letzten Tab und damit das Fenster schließen
 SHIFT + Eingabe sendet Nachricht
 [Enable event API (support for third party plugins)]
 Event API aktivieren
+[Don't send UNICODE parts for 7bit ANSI messages (saves db space)]
+Sende reine 7bit Nachrichten ohne UNICODE Teil (spart Speicherplatz in der Datenbank)
 [Delete temporary contacts on close]
 Temporäre Kontakte beim Schließen löschen
 [Display notifications with:]
@@ -560,6 +576,22 @@ Andere Einstellungen
 ; ------------------------
 ; ----------------- container options page (the per container setting stuff)
 ; ------------------------
+[Container settings are private]
+Einstellungen sind privat
+[Use private title format]
+Eigenes Format für die Titelzeile
+[Hide the tool bar]
+Symbolleiste nicht zeigen
+[Show the info panel]
+Infobereich im Nachrichtenfenster
+[Save current as global]
+Als global speichern
+[UIN in status bar]
+UIN in der Statuszeile
+[Container size and position]
+Größe und Position des containers
+[Use global]
+Globale Einstellung verwenden
 [General settings]
 Allgemeine Einstellungen
 [Hide title bar]
@@ -582,18 +614,6 @@ Niemals blinken
 Titelzeile
 [Use static container Icon]
 Festes Symbol verwenden
-[Show contacts name]
-Kontaktname zeigen
-[Show contacts status]
-Kontaktstatus zeigen
-[Show container name in titlebar]
-Name des Containers im Tite
-[Never]
-Nie
-[As prefix]
-Als Präfix
-[As suffix]
-Als Suffix
 [Container transparency]
 Transparenz
 [Enable transparency]
@@ -602,12 +622,6 @@ Transparenz aktivieren
 aktiv
 [inactive]
 inaktiv
-[Set these values as defaults for new containers]
-Diese Werte als Standard für neue container verwenden
-[Also apply them to all existing containers]
-Diese Werte auf alle existierenden Container anwenden
-[Load defaults]
-Standard laden
 [Apply]
 Übernehmen
 [Enable popups if unfocused]
@@ -618,8 +632,6 @@ Popups immer zeigen, wenn
 tab inaktiv ist
 [Layout options]
 Layout
-[Single row tab control]
-Nur eine Zeile Tabs
 [Sync sounds with popup mode]
 Soundeffekte wie popups
 [Hide the status bar]
@@ -859,6 +871,31 @@ Favoriten
 Kontakt hinzufügen
 [Remove Contact from Favorites]
 Kontakt entfernen
+;
+; ---------- the info panel menu -------
+;
+[Container Setting]
+Einstellung für diesen container
+[Use Global Setting]
+Globale Einstellung verwenden
+[Always On]
+Immer aktiv
+[Always Off]
+Immer inaktiv
+[Quick Toggle\tALT-I]
+Umschalten\tALT-I
+;
+; -----------Visiblity menu
+;
+[Set your visibility for this contact]
+Sichbarkeit konfigurieren
+[Your status determines visibility to this contact]
+Aktueller Status entscheidet über Sichtbarkeit
+[You appear always offline or have this contact blocked]
+Immer offline erscheinen bzw. Kontakt blocken
+[You are always visible to this contact]
+Immer als online (sichtbar) erscheinen
+
 ;
 ; option pages titles
 ;

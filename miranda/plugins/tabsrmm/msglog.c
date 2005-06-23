@@ -1189,6 +1189,8 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     // IEVIew MOD Begin
     if (dat->hwndLog != 0) {
         IEVIEWEVENT event;
+        IEVIEWWINDOW iew = {0};
+        
         event.cbSize = sizeof(IEVIEWEVENT);
         event.hwnd = dat->hwndLog;
         event.hContact = dat->hContact;
@@ -1212,6 +1214,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         event.hDbEventFirst = hDbEventFirst;
         event.count = count;
         CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+        iew.cbSize = sizeof(IEVIEWWINDOW);
+        iew.iType = IEW_SCROLLBOTTOM;
+        iew.hwnd = dat->hwndLog;
+        CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
         return;
     }
     // IEVIew MOD End
