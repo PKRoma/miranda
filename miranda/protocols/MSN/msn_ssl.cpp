@@ -347,8 +347,8 @@ struct SSL_OpenSsl : public SSL_Base
 
 int SSL_OpenSsl::init()
 {
-	if (( hLibEAY = LoadLibrary( "SSLEAY32.DLL" )) == NULL ) {
-		MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
+	if (( hLibEAY = LoadLibrary( "LIBEAY32.DLL" )) == NULL ) {
+		MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBEAY32.DLL" );
 		return 1;
 	}
 
@@ -450,7 +450,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 				}
 
 				strcat( buf+nBytes, "\r\n" );
-				
+
 				MSN_DebugLog( "Sending SSL query:\n%s", buf );
 				pfn_SSL_write( ssl, buf, strlen( buf ));
 
