@@ -64,7 +64,10 @@ extern struct RTFColorTable rtf_ctable[];
 extern PSLWA pSetLayeredWindowAttributes;
 
 wchar_t *testTooltip = L"Ein tooltip text zum testen";
-
+char *xStatusDescr[] = { "Angry", "Duck", "Tired", "Party", "Beer", "Thinking", "Eating", "TV", "Friends", "Coffee",
+                         "Music", "Business", "Camera", "Funny", "Phone", "Games", "College", "Shopping", "Sick", "Sleeping",
+                         "Surfing", "@Internet", "Engeieering", "Typing"};
+                         
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
 
@@ -1720,7 +1723,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 WORD wOldApparentMode;
                 DWORD dwOldIdle = dat->idle;
                 DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
-
+                char *szActProto = 0;
+                HANDLE hActContact = 0;
+                BYTE oldXStatus = dat->xStatus;
+                
                 ZeroMemory((void *)newcontactname,  sizeof(newcontactname));
                 dat->szNickname[0] = 0;
                 dat->szStatus = NULL;
@@ -1740,11 +1746,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             szProto = GetCurrentMetaContactProto(hwndDlg, dat);
                             GetContactUIN(hwndDlg, dat);
                         }
+                        szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+                        hActContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
                         
-                        mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)(dat->bIsMeta ? dat->hSubContact : dat->hContact), 0));
+                        mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
                         iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
-                        dat->idle = DBGetContactSettingDword(dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "IdleTS", 0);
+                        dat->idle = DBGetContactSettingDword(dat->hContact, szActProto, "IdleTS", 0);
                         dat->dwEventIsShown =  dat->idle ? dat->dwEventIsShown | MWF_SHOW_ISIDLE : dat->dwEventIsShown & ~MWF_SHOW_ISIDLE;
+                        dat->xStatus = DBGetContactSettingByte(hActContact, szActProto, "XStatusId", 0);
+                        
                     /*
                      * cut nickname on tabs...
                      */
@@ -1755,7 +1765,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
                         dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                         wOldApparentMode = dat->wApparentMode;
-                        dat->wApparentMode = DBGetContactSettingWord(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "ApparentMode", 0);
+                        dat->wApparentMode = DBGetContactSettingWord(hActContact, szActProto, "ApparentMode", 0);
                         
                         if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
                             if (myGlobals.m_CutContactNameOnTabs)
@@ -1789,7 +1799,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 } else
                     lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
 
-                if (dat->idle != dwOldIdle || iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
+                if (dat->xStatus != oldXStatus || dat->idle != dwOldIdle || iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
                     if(dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
                         if(dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD)-1 && !(dat->dwFlags & MWF_INITMODE)) {             // log status changes to message log
                             DBEVENTINFO dbei;
@@ -1851,10 +1861,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     
                     UpdateTrayMenuState(dat, TRUE);
                     if(LOWORD(dat->dwIsFavoritOrRecent))
-                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuFavorites, dat->codePage);
+                        AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuFavorites, dat->codePage);
                     if(DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0)) {
                         dat->dwIsFavoritOrRecent |= 0x00010000;
-                        AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuRecent, dat->codePage);
+                        AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuRecent, dat->codePage);
                     }
                     else
                         dat->dwIsFavoritOrRecent &= 0x0000ffff;
@@ -3066,12 +3076,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, bPanelPic ? dat->hContactPic : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic));
                         if(bPanelPic) {
                             RECT rcFrame = rcClient;
-                            rcFrame.left = rcFrame.right - (LONG)dNewWidth - 2;
+                            rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);
                             rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
                             SetStretchBltMode(hdcDraw, HALFTONE);
-                            Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right - rcFrame.left, rcFrame.bottom - rcFrame.top);
-                            StretchBlt(hdcDraw, rcClient.right - (LONG)dNewWidth - 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                            //DrawEdge(hdcDraw, &rcFrame, EDGE_SUNKEN, BF_RECT | BF_SOFT);
+                            Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+                            StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                         }
                         else {
                             if(dat->iRealAvatarHeight != bminfo.bmHeight) {
@@ -3143,6 +3152,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->szNickname) {
 #if defined(_UNICODE)
                         wchar_t szNickW[512];
+#endif                        
+                        if(dat->xStatus > 0 && dat->xStatus < 24) {
+                            HICON xIcon = ImageList_ExtractIcon(NULL, myGlobals.g_xIcons, dat->xStatus - 1);
+                            DrawIconEx(dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+                            DestroyIcon(xIcon);
+                            dis->rcItem.left += 21;
+                        }
+#if defined(_UNICODE)
                         MultiByteToWideChar(dat->codePage, 0, dat->szNickname, -1, szNickW, 512);
                         szNickW[511] = 0;
                         DrawTextW(dis->hDC, szNickW, lstrlenW(szNickW), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);

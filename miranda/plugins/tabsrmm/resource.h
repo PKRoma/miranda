@@ -6,6 +6,8 @@
 #define IDD_USERPREFS                   2
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
+#define IDB_BITMAP1                     6
+#define IDB_XSTATUS                     6
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -653,7 +655,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        6
+#define _APS_NEXT_RESOURCE_VALUE        7
 #define _APS_NEXT_COMMAND_VALUE         40221
 #define _APS_NEXT_CONTROL_VALUE         1396
 #define _APS_NEXT_SYMED_VALUE           40282

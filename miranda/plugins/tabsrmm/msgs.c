@@ -765,7 +765,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     
     if(hwnd) {
         //if(!lstrcmpA(cws->szSetting, "Status") || !lstrcmpA(cws->szSetting, "Nick") || !lstrcmpA(cws->szSetting, "ApparentMode") || !lstrcmpA(cws->szSetting, "Default") || !lstrcmpA(cws->szSetting, "ForceSend")  || !lstrcmpA(cws->szSetting, "IdleTS"))
-        if(strstr("Status,Nick,ApparentMode,Default,ForceSend,IdleTS", cws->szSetting))
+        if(strstr("Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting))
             SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
     }
     
@@ -1018,7 +1018,10 @@ int SplitmsgShutdown(void)
     }
     ImageList_RemoveAll(myGlobals.g_hImageList);
     ImageList_Destroy(myGlobals.g_hImageList);
-
+    if(myGlobals.g_xIcons) {
+        ImageList_RemoveAll(myGlobals.g_xIcons);
+        ImageList_Destroy(myGlobals.g_xIcons);
+    }
     ImageList_RemoveAll(myGlobals.g_hStateImageList);
     ImageList_Destroy(myGlobals.g_hStateImageList);
 
@@ -1460,6 +1463,7 @@ void CreateImageList(BOOL bInitial)
         
         myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
         ImageList_AddIcon(myGlobals.g_hStateImageList, myGlobals.g_IconChecked);
+        
     }
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);
@@ -1663,6 +1667,15 @@ static ICONDESC myIconsV2[] = {
     NULL, NULL, NULL, 0
 };
 
+/*
+ * build icons for extra status support
+ */
+
+void LoadExtraStatusIcons(HMODULE hDll)
+{
+    myGlobals.g_xIcons = ImageList_LoadImage(g_hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+}
+
 int GetIconPackVersion(HMODULE hDLL)
 {
     char szIDString[256];
@@ -1702,6 +1715,7 @@ int SetupIconLibConfig()
     version = GetIconPackVersion(g_hIconDLL);
     myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
     LoadMsgAreaBackground();
+    LoadExtraStatusIcons(g_hIconDLL);
     FreeLibrary(g_hIconDLL);
     g_hIconDLL = 0;
     
@@ -1818,7 +1832,7 @@ void LoadIconTheme()
                     goto failure;
             }
         }
-
+        LoadExtraStatusIcons(g_hIconDLL);
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
         LoadMsgAreaBackground();
         i = 0;

@@ -70,7 +70,6 @@ IDI_USERPREFS           ICON                    "..\\..\\res\\proxal\\userprefs.
 //
 
 IDB_UNKNOWNAVATAR       BITMAP                  "..\\..\\res\\unknown.bmp"
-
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //

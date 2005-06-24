@@ -168,6 +168,9 @@ Version 0.9.9.95pre8 - 2005/05/25
           will now set the protocols avatar. At the moment, this works only with MSN, because
           it's the only protocol providing the SetAvatar service.
 
+        + added support for extra status icons (icq5). Requires a recent build of ICQJ (alpha) or
+          ISee. The extra status icon is visible in the info panel, just in front of the nickname.
+
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)
