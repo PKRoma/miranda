@@ -37,11 +37,6 @@
 #include "icqoscar.h"
 
 
-extern char gpszICQProtoName[MAX_PATH];
-extern HANDLE ghServerNetlibUser;
-extern int gnCurrentStatus;
-extern HANDLE hInst;
-
 extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
@@ -252,6 +247,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       { 
         ShowWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), SW_SHOW);
         ShowWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), SW_SHOW);
+        ShowWindow(GetDlgItem(hwndDlg, -1), SW_SHOW);
         if (!icqOnline)
         {
           EnableWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), FALSE);

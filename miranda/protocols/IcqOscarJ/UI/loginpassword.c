@@ -37,26 +37,17 @@
 #include "icqoscar.h"
 
 
-
-extern HINSTANCE hInst;
-extern char gpszICQProtoName[MAX_PATH];
-extern int gnCurrentStatus;
-
 BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
 
 
 void RequestPassword()
 {
-
   DialogBox(hInst, MAKEINTRESOURCE(IDD_LOGINPW), NULL, LoginPasswdDlgProc);
-
 }
 
 
 BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
   switch (msg)
   {
 
