@@ -41,14 +41,15 @@
 
 #define HTTP_PACKETTYPE_HELLOREPLY   2
 #define HTTP_PACKETTYPE_LOGIN        3
-#define HTTP_PACKETTYPE_4UNK         4    /* contains 1 byte: 0 */
+#define HTTP_PACKETTYPE_LOGINREPLY   4    /* contains 1 byte: 0 */
 #define HTTP_PACKETTYPE_FLAP         5
-#define HTTP_PACKETTYPE_6UNK         6    /* contains no data */
-#define HTTP_PACKETTYPE_7UNK         7    /* contains 1 byte: 0 */
+#define HTTP_PACKETTYPE_CLOSE        6    /* contains no data */
+#define HTTP_PACKETTYPE_CLOSEREPLY   7    /* contains 1 byte: 0 */
 
 int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr);
 int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION *nloc);
 int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend);
 PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr, PBYTE buf, int bufLen, int *outBufLen, void *(*NetlibRealloc)(void *, size_t));
+int icq_httpGatewayWalkTo(HANDLE hConn, NETLIBOPENCONNECTION* nloc);
 
 #endif /* __ICQ_HTTP_H */

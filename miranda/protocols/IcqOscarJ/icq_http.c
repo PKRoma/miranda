@@ -38,7 +38,6 @@
 
 
 extern int isLoginServer;
-int dwGatewaySeq = 1;
 
 
 int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr)
@@ -70,7 +69,7 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 	buf = response;
 	unpackWord(&buf, &wLen);
 	unpackWord(&buf, &wVersion);	  /* always 0x0443 */
-	unpackWord(&buf, &wType);
+	unpackWord(&buf, &wType);       /* hello reply */
 	buf += 6;  /* dunno */
 	unpackDWord(&buf, &dwSid1);
 	unpackDWord(&buf, &dwSid2);
@@ -84,6 +83,8 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 		SetLastError(ERROR_INVALID_DATA);
 		return 0;
 	}
+
+  SetGatewayIndex(hConn, 1); // new master connection begins here
 
 	memcpy(szHttpServer, buf, wIpLen);
 	szHttpServer[wIpLen] = '\0';
@@ -109,7 +110,7 @@ int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
   serverNameLen = strlen(nloc->szHost);
 
   packet.wLen = (WORD)(serverNameLen + 4);
-  write_httphdr(&packet, HTTP_PACKETTYPE_LOGIN, dwGatewaySeq);
+  write_httphdr(&packet, HTTP_PACKETTYPE_LOGIN, GetGatewayIndex(hConn));
   packWord(&packet, (WORD)serverNameLen);
   packBuffer(&packet, nloc->szHost, (WORD)serverNameLen);
   packWord(&packet, nloc->wPort);
@@ -127,7 +128,7 @@ int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDA
   int sendResult;
 
   packet.wLen = len;
-  write_httphdr(&packet, HTTP_PACKETTYPE_FLAP, dwGatewaySeq);
+  write_httphdr(&packet, HTTP_PACKETTYPE_FLAP, GetGatewayIndex(hConn));
   packBuffer(&packet, buf, (WORD)len);
   sendResult = Netlib_Send(hConn, packet.pData, packet.wLen, flags);
   SAFE_FREE(&packet.pData);
@@ -146,6 +147,7 @@ int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDA
 PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int* outBufLen, void *(*NetlibRealloc)(void *, size_t))
 {
 	WORD wLen, wType;
+  DWORD dwPackSeq;
 	PBYTE tbuf;
 	int i, copyBytes;
 
@@ -162,7 +164,8 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 			break;
 		tbuf += 2;	  /* version */
 		unpackWord(&tbuf, &wType);
-		tbuf += 8;   /* flags & subtype */
+		tbuf += 4;    /* flags */
+    unpackDWord(&tbuf, &dwPackSeq);
 		if (wType == HTTP_PACKETTYPE_FLAP)
 		{
 			copyBytes = wLen - 12;
@@ -174,18 +177,39 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 			memcpy(buf + i, tbuf, copyBytes);
 			i += copyBytes;
 		}
-/*    else if (wType == HTTP_PACKETTYPE_4UNK && !isLoginServer)
-    { // on the BOS connection we should reply to this????
-      icq_packet packet;
+    else if (wType == HTTP_PACKETTYPE_LOGINREPLY)
+    {
+      BYTE bRes;
 
-      packet.wLen = 0;
-      write_httphdr(&packet, HTTP_PACKETTYPE_6UNK, 1);
-      Netlib_Send(nlhr->nlc, packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
-    }*/
+      unpackByte(&tbuf, &bRes);
+      wLen -= 1;
+      if (!bRes)
+        Netlib_Logf(ghServerNetlibUser, "Gateway Connection #%d Established.", dwPackSeq);
+      else
+        Netlib_Logf(ghServerNetlibUser, "Gateway Connection #%d Failed, error: %d", dwPackSeq, bRes);
+    }
+    else if (wType == HTTP_PACKETTYPE_CLOSEREPLY)
+    {
+      Netlib_Logf(ghServerNetlibUser, "Gateway Connection #%d Closed.", dwPackSeq);
+    }
 		tbuf += wLen - 12;
 	}
 	*outBufLen = i;
 
 	return buf;
+}
 
+
+int icq_httpGatewayWalkTo(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
+{
+  icq_packet packet;
+  DWORD dwGatewaySeq = GetGatewayIndex(hConn);
+
+  packet.wLen = 0;
+  write_httphdr(&packet, HTTP_PACKETTYPE_CLOSE, dwGatewaySeq);
+  Netlib_Send(hConn, packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
+  // we closed virtual connection, open new one
+  dwGatewaySeq++;
+  SetGatewayIndex(hConn, dwGatewaySeq);
+  return icq_httpGatewayBegin(hConn, nloc);
 }
