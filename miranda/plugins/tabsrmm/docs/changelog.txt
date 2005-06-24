@@ -171,6 +171,14 @@ Version 0.9.9.95pre8 - 2005/05/25
         + added support for extra status icons (icq5). Requires a recent build of ICQJ (alpha) or
           ISee. The extra status icon is visible in the info panel, just in front of the nickname.
 
+        + added ability to set a timezone for any contact, using the user preferences dialog box
+          (tabSRMM settings in the user context menu). This will work with all protocols and 
+          OVERRIDE the contacts timezone provided by the protocol (currently, only icq provides a
+          timezone information).
+          
+          If a valid timezone is found, the contacts local time will be shown in the info panel,
+          and can be used for message log timestamps.
+          
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)

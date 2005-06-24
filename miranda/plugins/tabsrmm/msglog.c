@@ -646,6 +646,7 @@ nogroup:
             if(!isSent && dat->timediff != 0)
                 final_time = dbei.timestamp - dat->timediff;
         }
+        _tzset();
         event_time = *localtime(&final_time);
     }
     this_templateset = dat->dwFlags & MWF_LOG_RTL ? dat->rtl_templates : dat->ltr_templates;
@@ -851,6 +852,18 @@ nogroup:
                 case 'R':
                 case 'r':           // long date
                     if(showTime && showDate) {
+                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, cc);
+                        if(skipFont)
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], szFinalTimestamp);
+                    }
+                    else
+                        skipToNext = TRUE;
+                    break;
+                case 't':
+                case 'T':
+                    if(showTime) {
                         szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, cc);
                         if(skipFont)
                             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", szFinalTimestamp);
