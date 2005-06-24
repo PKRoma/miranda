@@ -37,7 +37,6 @@
 #include "icqoscar.h"
 
 
-
 #define LISTSIZE 100
 static CRITICAL_SECTION listmutex;
 static HANDLE hQueueEvent = NULL;
@@ -52,11 +51,6 @@ typedef struct s_userinfo {
 	HANDLE hContact;
 } userinfo;
 static userinfo userList[LISTSIZE];
-
-extern HANDLE ghServerNetlibUser;
-extern char gpszICQProtoName[MAX_PATH];
-extern int gnCurrentStatus;
-
 
 
 // Retrieve users' info
@@ -259,7 +253,15 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 		else
     { // we need to slow down the process or icq will kick us
       dwWait = WaitForSingleObjectEx(hDummyEvent, 1000, TRUE);
-			dwWait = WaitForSingleObjectEx(hQueueEvent, INFINITE, TRUE);
+      while (dwWait == WAIT_TIMEOUT)
+      {
+			  dwWait = WaitForSingleObjectEx(hQueueEvent, 10000, TRUE);
+
+        if (Miranda_Terminated())
+          bKeepRunning = FALSE;
+
+        if (!bKeepRunning) return;
+      }
     }
 
 		switch (dwWait) 
