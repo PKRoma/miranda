@@ -43,12 +43,17 @@ static icq_cookie_info *cookie = NULL;
 static int cookieCount = 0;
 CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lock
 
-extern BYTE gbSsiEnabled;
+typedef struct gateway_index_s
+{
+  HANDLE hConn;
+  DWORD  dwIndex;
+} gateway_index;
+
+static gateway_index *gateways = NULL;
+static int gatewayCount = 0;
+
 extern BYTE gbOverRate;
 extern DWORD gtLastRequest;
-extern char gpszICQProtoName[MAX_PATH];
-extern HANDLE ghServerNetlibUser;
-extern int gnCurrentStatus;
 
 
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
@@ -394,22 +399,89 @@ void FreeCookie(DWORD dwCookie)
 }
 
 
+void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
+{
+  int i;
+
+  EnterCriticalSection(&cookieMutex);
+
+	for (i = 0; i < gatewayCount; i++)
+	{
+		if (hConn == gateways[i].hConn)
+		{
+      gateways[i].dwIndex = dwIndex;
+      
+    	LeaveCriticalSection(&cookieMutex);
+
+      return;
+		}
+	}
+
+  gateways = (gateway_index *)realloc(gateways, sizeof(gateway_index) * (gatewayCount + 1));
+  gateways[gatewayCount].hConn = hConn;
+  gateways[gatewayCount].dwIndex = dwIndex;
+  gatewayCount++;
+
+  LeaveCriticalSection(&cookieMutex);
+
+  return;
+}
+
+
+DWORD GetGatewayIndex(HANDLE hConn)
+{
+	int i;
+
+	EnterCriticalSection(&cookieMutex);
+
+	for (i = 0; i < gatewayCount; i++)
+	{
+		if (hConn == gateways[i].hConn)
+		{
+    	LeaveCriticalSection(&cookieMutex);
+
+      return gateways[i].dwIndex;
+		}
+	}
+
+	LeaveCriticalSection(&cookieMutex);
+
+	return 1; // this is default
+}
+
+
+void FreeGatewayIndex(HANDLE hConn)
+{
+	int i;
+
+
+	EnterCriticalSection(&cookieMutex);
+
+	for (i = 0; i < gatewayCount; i++)
+	{
+		if (hConn == gateways[i].hConn)
+		{
+			gatewayCount--;
+			memmove(&gateways[i], &gateways[i+1], sizeof(gateway_index) * (gatewayCount - i));
+			gateways = (gateway_index*)realloc(gateways, sizeof(gateway_index) * gatewayCount);
+
+			// Gateway found, exit loop
+			break;
+		}
+	}
+
+	LeaveCriticalSection(&cookieMutex);
+}
+
 
 HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 {
-
 	HANDLE hContact;
 	char* szProto;
-
-
-	if (DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0) == uin)
-		return NULL;
-
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact != NULL)
 	{
-
 		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
@@ -419,6 +491,9 @@ HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
 
+  // not in list, check that uin do not belong to us
+	if (DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0) == uin)
+		return NULL;
 
 	//not present: add
 	if (allowAdd)
@@ -434,17 +509,13 @@ HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 
 		if (icqOnline)
 		{
-//			if (!(gbSsiEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE)))
-				icq_sendNewContact(uin);
-//			// else need to wait for CList/NotOnList to be deleted
+			icq_sendNewContact(uin);
 		}
 
 		return hContact;
-
 	}
 
 	return INVALID_HANDLE_VALUE;
-
 }
 
 
@@ -536,6 +607,71 @@ size_t strlennull(const char *string)
 
 
 
+char *DemangleXml(const char *string, int len)
+{ 
+  char *szWork = (char*)malloc(len+1), *szChar = szWork;
+  int i;
+
+  for (i=0; i<len; i++)
+  {
+    if (!strnicmp(string+i, "&gt;", 4))
+    {
+      *szChar = '>';
+      szChar++;
+      i += 3;
+    }
+    else if (!strnicmp(string+i, "&lt;", 4))
+    {
+      *szChar = '<';
+      szChar++;
+      i += 3;
+    }
+    else
+    {
+      *szChar = string[i];
+      szChar++;
+    }
+  }
+  *szChar = '\0';
+
+  return szWork;
+}
+
+
+char *MangleXml(const char *string, int len)
+{
+  int i, l = 1;
+  char *szWork, *szChar;
+
+  for (i = 0; i<len; i++)
+  {
+    if (string[i]=='<' || string[i]=='>') l += 4; else l++;
+  }
+  szChar = szWork = (char*)malloc(l + 1);
+  for (i = 0; i<len; i++)
+  {
+    if (string[i]=='<') 
+    {
+      *(DWORD*)szChar = ';tl&';
+      szChar += 4;
+    }
+    else if (string[i]=='>')
+    {
+      *(DWORD*)szChar = ';tg&';
+      szChar += 4;
+    }
+    else
+    {
+      *szChar = string[i];
+      szChar++;
+    }
+  }
+  *szChar = '\0';
+
+  return szWork;
+}
+
+
 void ResetSettingsOnListReload()
 {
   HANDLE hContact;
@@ -591,6 +727,7 @@ void ResetSettingsOnConnect()
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "LogonTS", 0);
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
+      DBDeleteContactSetting(hContact, gpszICQProtoName, "TemporaryVisible");
 
 			// All these values will be restored during the login
 			if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
@@ -623,6 +760,13 @@ void ResetSettingsOnLoad()
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
 			if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+
+      if (gbXStatusEnabled)
+      {
+        DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusId");
+        DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusName");
+        DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusMsg");
+      }
 		}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
@@ -709,7 +853,6 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
 
 BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength)
 {
-
 	WORD wLen;
 
 
@@ -731,14 +874,12 @@ BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf
 	*pwLength -= wLen;
 
 	return TRUE;
-
 }
 
 
 
 BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength)
 {
-
 	WORD wVal;
 
 
@@ -754,14 +895,12 @@ BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, 
 		DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
 
 	return TRUE;
-
 }
 
 
 
 BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
-
 	WORD wVal;
 	char *text;
 
@@ -779,14 +918,12 @@ BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, str
 		DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
 
 	return TRUE;
-
 }
 
 
 
 BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf, WORD* pwLength)
 {
-
 	BYTE byVal;
 
 
@@ -802,14 +939,12 @@ BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf,
 		DBDeleteContactSetting(hContact, gpszICQProtoName, pszSetting);
 
 	return TRUE;
-
 }
 
 
 
 BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
-
 	BYTE byVal;
 	char *text;
 
@@ -827,7 +962,6 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
 		DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
 
 	return TRUE;
-
 }
 
 
@@ -870,11 +1004,9 @@ int GetGMTOffset(void)
 
 BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 {
-
 	// Privacy control
 	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyCList", 0))
 	{
-
 		// Don't send statusmessage to unknown contacts
 		if (hContact == INVALID_HANDLE_VALUE)
 			return FALSE;
@@ -891,9 +1023,7 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 			if (wStatus == ID_STATUS_OFFLINE)
 				return FALSE;
 		}
-
 	}
-
 
 	// Dont send messages to people you are hiding from
 	if (hContact != INVALID_HANDLE_VALUE &&
@@ -901,7 +1031,6 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 	{
 		return FALSE;
 	}
-
 
 	// Dont respond to request for other statuses than your current one
 	if ((byMessageType == MTYPE_AUTOAWAY && gnCurrentStatus != ID_STATUS_AWAY) ||
@@ -915,7 +1044,6 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 
 	// All OK!
 	return TRUE;
-
 }
 
 
@@ -985,7 +1113,7 @@ void ContactPhotoSettingChanged(HANDLE hContact)
   bNoChanging = 0;
 }
 
-static int bdCacheTested = 0;
+/*static int bdCacheTested = 0;
 static int bdWorkaroundRequired = 0;
 
 void TestDBBlobIssue()
@@ -1006,20 +1134,20 @@ void TestDBBlobIssue()
     bdWorkaroundRequired = 1;
   }
   DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem");
-}
+}*/
 
 
 int DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *szSetting,const char *val, const int cbVal)
 {
   DBCONTACTWRITESETTING cws;
 
-  if (!bdCacheTested) TestDBBlobIssue();
+/*  if (!bdCacheTested) TestDBBlobIssue();
 
   if (bdWorkaroundRequired)
   { // this is workaround for DB blob caching problems - nasty isn't it
     DBWriteContactSettingByte(hContact, szModule, szSetting, 1);
     DBDeleteContactSetting(hContact, szModule, szSetting); 
-  }
+  }*/
 
   cws.szModule=szModule;
   cws.szSetting=szSetting;

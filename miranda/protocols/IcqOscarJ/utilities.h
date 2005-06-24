@@ -53,7 +53,6 @@ typedef struct icq_ack_args_s
 	LPARAM pszMessage;
 } icq_ack_args;
 
-
 /*---------* Functions *---------------*/
 
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT* controls, int cControls, int state);
@@ -72,11 +71,18 @@ int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin);
 void FreeCookie(DWORD wCookie);
 DWORD GenerateCookie(WORD wIdent);
 
+void SetGatewayIndex(HANDLE hConn, DWORD dwIndex);
+DWORD GetGatewayIndex(HANDLE hConn);
+void FreeGatewayIndex(HANDLE hConn);
+
 HANDLE HContactFromUIN(DWORD, int);
 //HANDLE HContactFromUID(char* pszUID, int);
 char *NickFromHandle(HANDLE);
 
 size_t strlennull(const char *string);
+
+char *DemangleXml(const char *string, int len);
+char *MangleXml(const char *string, int len);
 
 void ResetSettingsOnListReload(void);
 void ResetSettingsOnConnect(void);
@@ -100,7 +106,7 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType);
 
 #define icqOnline ((gnCurrentStatus != ID_STATUS_OFFLINE) && (gnCurrentStatus != ID_STATUS_CONNECTING))
 
-static void __inline SAFE_FREE(void** p)
+void __inline SAFE_FREE(void** p)
 {
 	if (*p)
 	{
