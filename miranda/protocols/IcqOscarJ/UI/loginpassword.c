@@ -72,7 +72,6 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		
     case WM_COMMAND:
       {
-			
         switch (LOWORD(wParam))
         {
 				
@@ -88,16 +87,14 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				    break;
 
           case IDCANCEL:
-            gnCurrentStatus = ID_STATUS_OFFLINE;
-            ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-              (HANDLE)ID_STATUS_OFFLINE, ID_STATUS_OFFLINE);
+            SetCurrentStatus(ID_STATUS_OFFLINE);
+
             EndDialog(hwndDlg, IDCANCEL);
             break;
 
         }
       }
       break;
-
   }
 
   return FALSE;
