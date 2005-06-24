@@ -73,8 +73,8 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         {
             DBVARIANT dbv;
             char szBuffer[80];
-            DWORD sCodePage;
-            int i;
+            DWORD sCodePage, contact_gmt_diff;
+            int i, offset;
             char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)lParam, 0);
             BYTE bOverride = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "mwoverride", 0);
             BYTE bIEView = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "ieview", 0);
@@ -147,6 +147,19 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
+            SendDlgItemMessageA(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)Translate("<default, no change>"));
+            timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
+            for(i = -12; i <= 12; i++) {
+                _snprintf(szBuffer, 20, "GMT %c %d", i < 0 ? '-' : '+', abs(i));
+                SendDlgItemMessageA(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)szBuffer);
+            }
+            if(timezone != -1) {
+                contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
+                offset = 13 + ((int)contact_gmt_diff / 2);
+                SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)offset, 0);
+            }
+            else
+                SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
             ShowWindow(hwndDlg, SW_SHOW);
             return TRUE;
         }
@@ -184,8 +197,11 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     struct MessageWindowData *dat = 0;
                     int iIndex = CB_ERR;
                     LRESULT newCodePage;
+                    int offset;
                     HWND hWnd = WindowList_Find(hMessageWindowList, hContact);
                     DWORD sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+                    DWORD oldTZ = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
+                    
                     if(hWnd)
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
 
@@ -254,6 +270,17 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         char szFilename[MAX_PATH];
                         GetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, szFilename, MAX_PATH - 1);
                         DBWriteContactSettingString(hContact, SRMSGMOD_T, "bgimage", szFilename);
+                    }
+                    offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0);
+                    if(offset > 0) {
+                        BYTE timezone = (13 - offset) * 2;
+                        if(timezone != (BYTE)oldTZ) {
+                            DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (BYTE)timezone);
+                            if(hWnd && dat) {
+                                LoadTimeZone(hWnd, dat);
+                                InvalidateRect(GetDlgItem(hWnd, IDC_PANELUIN), NULL, FALSE);
+                            }
+                        }
                     }
                     if(hWnd && dat)
                         SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);

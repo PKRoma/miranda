@@ -195,26 +195,18 @@ BEGIN
     EDITTEXT        IDC_BACKGROUNDIMAGE,143,192,92,13,ES_AUTOHSCROLL | 
                     ES_READONLY
     PUSHBUTTON      "...",IDC_GETBGIMAGE,243,192,24,13
-    GROUPBOX        "Other options",IDC_STATIC,2,216,274,36
+    GROUPBOX        "Other options",IDC_STATIC,2,216,274,68
     CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,226,134,11
     CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,237,256,11
     CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,143,225,126,12
-    GROUPBOX        "Override message window templates (not yet implemented)",
-                    IDC_STATIC,2,254,274,31
-    PUSHBUTTON      "Standard templates...",IDC_MODIFY,11,267,84,12,
-                    WS_DISABLED
-    CONTROL         "",IDC_TEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_DISABLED | WS_TABSTOP,102,268,11,9
-    CTEXT           "Enabled",IDC_STATIC,118,269,40,10
-    CONTROL         "",IDC_RTLTEMPLOVERRIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_DISABLED | WS_TABSTOP,165,268,11,9
-    PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,181,267,84,12,
-                    WS_DISABLED
     DEFPUSHBUTTON   "OK",IDOK,168,288,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,225,288,50,14
+    COMBOBOX        IDC_TIMEZONE,6,264,85,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Timezone offset",IDC_STATIC,8,251,112,9
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288
@@ -1199,6 +1191,7 @@ IDI_RIGHTARROW          ICON                    "res/rightarrow.ico"
 IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
+IDI_CLOCK               ICON                    "res/clock8.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -682,6 +682,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             DeleteDC(hdcMem);
             return 1;
         }
+        /*
+         * sent by smileyadd when the smiley selection window dies
+         * just grab the focus :)
+         */
+        case WM_USER + 100:
+            SetFocus(hwnd);
+            break;
     }
     return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -1580,18 +1587,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
 
             if(dat->hContact) {
-                dat->timezone = (DWORD)DBGetContactSettingByte(dat->hContact,"UserInfo","Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto,"Timezone",-1));
                 dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
-                if(dat->timezone != -1) {
-                    DWORD local_gmt_diff, contact_gmt_diff;
-                    time_t now = time(NULL);
-                    struct tm gmt = *gmtime(&now);
-                    time_t gmt_time = mktime(&gmt);
-
-                    local_gmt_diff = (int)difftime(now, gmt_time);
-                    contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-                    dat->timediff = (int)local_gmt_diff - (int)contact_gmt_diff*60*60/2;
-                }
+                LoadTimeZone(hwndDlg, dat);
             }
 
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
@@ -3199,8 +3196,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             dbtts.szFormat = "t";
                             CallService(MS_DB_TIME_TIMESTAMPTOSTRING, final_time, (LPARAM) & dbtts);
                             GetTextExtentPoint32A(dis->hDC, szResult, lstrlenA(szResult), &sTime);
-                            if(sUIN.cx + sTime.cx + 5 < dis->rcItem.right - dis->rcItem.left) {
-                                dis->rcItem.left = dis->rcItem.right - sTime.cx - 3;
+                            if(sUIN.cx + sTime.cx + 23 < dis->rcItem.right - dis->rcItem.left) {
+                                dis->rcItem.left = dis->rcItem.right - sTime.cx - 3 - 18;
+                                DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, myGlobals.g_IconClock, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+                                dis->rcItem.left += 18;
                                 DrawTextA(dis->hDC, szResult, lstrlenA(szResult), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
                             }
                         }

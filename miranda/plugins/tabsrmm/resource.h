@@ -47,6 +47,7 @@
 #define IDI_TREEVIEWEXPAND              320
 #define IDI_TREEVIEWCHECKED             321
 #define IDI_TREEVIEWUNCHECKED           322
+#define IDI_CLOCK                       323
 #define IDC_READNEXT                    1000
 #define IDC_APPLY                       1001
 #define IDC_DROP                        1002
@@ -341,6 +342,8 @@
 #define IDC_AVATARMODE2                 1268
 #define IDC_CODEPAGES                   1268
 #define IDC_NOTIFYTYPE                  1269
+#define IDC_CODEPAGES2                  1269
+#define IDC_TIMEZONE                    1269
 #define IDC_NOTIFYTYPE2                 1270
 #define IDC_SENDFORMATTING              1270
 #define IDC_TOOLBARHIDEMODE             1271

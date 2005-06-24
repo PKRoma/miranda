@@ -343,7 +343,7 @@ typedef struct _globals {
     // external plugins
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
-    HICON g_IconChecked, g_IconUnchecked;
+    HICON g_IconChecked, g_IconUnchecked, g_IconClock;
     HIMAGELIST g_hImageList, g_hStateImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
@@ -411,6 +411,7 @@ typedef struct _globals {
     int  m_IdleDetect;
     int  m_DoStatusMsg;
     int m_smcxicon, m_smcyicon;
+    DWORD local_gmt_diff;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

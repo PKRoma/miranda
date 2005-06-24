@@ -972,6 +972,7 @@ static void UnloadIcons()
     DestroyIcon(myGlobals.g_iconStatus);
     DestroyIcon(myGlobals.g_IconChecked);
     DestroyIcon(myGlobals.g_IconUnchecked);
+    DestroyIcon(myGlobals.g_IconClock);
     
     /*
      * free the button bar icons
@@ -1082,6 +1083,10 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 int LoadSendRecvMessageModule(void)
 {
+    const time_t now = time(NULL);
+    struct tm gmt = *gmtime(&now);
+    time_t gmt_time = mktime(&gmt);
+
     if (LoadLibraryA("riched20.dll") == NULL) {
         if (IDYES !=
             MessageBoxA(0,
@@ -1132,6 +1137,8 @@ int LoadSendRecvMessageModule(void)
     ReloadTabConfig();
     NEN_ReadOptions(&nen_options);
 
+    myGlobals.local_gmt_diff = (int)difftime(now, gmt_time);
+    
     myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
     
@@ -1463,7 +1470,8 @@ void CreateImageList(BOOL bInitial)
         
         myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
         ImageList_AddIcon(myGlobals.g_hStateImageList, myGlobals.g_IconChecked);
-        
+
+        myGlobals.g_IconClock = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLOCK), IMAGE_ICON, cxIcon, cyIcon, 0);
     }
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);
