@@ -37,12 +37,6 @@
 #include "icqoscar.h"
 
 
-
-extern char gpszICQProtoName[MAX_PATH];
-extern HANDLE hInst;
-extern HANDLE ghServerNetlibUser;
-extern int gnCurrentStatus;
-
 static int bListInit = 0;
 static HANDLE hItemAll;
 static int dwUploadDelay = 1000; // initial setting, it is too low for icq server but good for short updates

@@ -35,15 +35,8 @@
 // -----------------------------------------------------------------------------
 
 
-
 void UpdateGlobalSettings(void);
 
-BYTE gbAimEnabled;
-BYTE gbSsiEnabled;
-BYTE gbAvatarsEnabled;
-BYTE gbOverRate;
-DWORD gtLastRequest;
-DWORD MIRANDA_VERSION;
 
 // Debug defines
 #define DBG_CAPCH2
@@ -51,4 +44,4 @@ DWORD MIRANDA_VERSION;
 #undef DBG_CAPRTF
 #define DBG_CAPMTN
 #define DBG_CAPXTRAZ
-#define DBG_CAPAVATAR
+#undef DBG_AIM_SUPPORT_HACK

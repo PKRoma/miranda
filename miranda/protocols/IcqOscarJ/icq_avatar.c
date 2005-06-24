@@ -81,8 +81,6 @@ int pendingAvatarsStart = 1;
 avatarrequest* pendingRequests = NULL;
 
 extern CRITICAL_SECTION cookieMutex;
-extern HANDLE ghServerNetlibUser;
-extern char gpszICQProtoName[MAX_PATH];
 
 int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi /*= currentAvatarThread*/);
 

@@ -38,11 +38,7 @@
 
 
 
-extern BYTE gbSsiEnabled;
-extern HANDLE ghServerNetlibUser;
 extern BOOL bIsSyncingCL;
-extern char gpszICQProtoName[MAX_PATH];
-extern int gnCurrentStatus;
 
 static HANDLE hHookSettingChanged = NULL;
 static HANDLE hHookContactDeleted = NULL;

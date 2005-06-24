@@ -37,30 +37,22 @@
 #include "icqoscar.h"
 
 
-
-extern HINSTANCE hInst;
-extern char gpszICQProtoName[MAX_PATH];
-
 BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
 
 
 void icq_FirstRunCheck()
 {
+  if (DBGetContactSettingByte(NULL, gpszICQProtoName, "FirstRun", 0))
+    return;
 
-    if (DBGetContactSettingByte(NULL, gpszICQProtoName, "FirstRun", 0))
-        return;
-
-    DialogBox(hInst, MAKEINTRESOURCE(IDD_ICQACCOUNT), NULL, icq_FirstRunDlgProc);
-
+  DialogBox(hInst, MAKEINTRESOURCE(IDD_ICQACCOUNT), NULL, icq_FirstRunDlgProc);
 }
 
 
 
 BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
-    switch (msg)
+  switch (msg)
 	{
 
 	case WM_INITDIALOG:
