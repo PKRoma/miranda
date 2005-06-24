@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,7 +40,6 @@
 
 static void InitComboBox(HWND hwndCombo,struct fieldnames_t *names)
 {
-
 	int iItem;
 	int i;
 
@@ -55,27 +55,24 @@ static void InitComboBox(HWND hwndCombo,struct fieldnames_t *names)
 		iItem = SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate(names[i].text));
 		SendMessage(hwndCombo, CB_SETITEMDATA, iItem,names[i].code);
 	}
-
 }
 
 
 
 BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
 	switch(message)
 	{
-
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_GENDER), genderField);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_AGERANGE), agesField);
+      InitComboBox(GetDlgItem(hwndDlg, IDC_MARITALSTATUS), maritalField);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_WORKFIELD), workField);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_ORGANISATION), affiliationField);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_LANGUAGE), languageField);
 
 			{
-
 				struct CountryListEntry *countries;
 				int countryCount;
 				int i;
@@ -94,24 +91,15 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
 					iItem = SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_ADDSTRING, 0, (LPARAM)Translate(countries[i].szName));
 					SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_SETITEMDATA, iItem, countries[i].id);
 				}
-
 			}
 
 			InitComboBox(GetDlgItem(hwndDlg, IDC_INTERESTSCAT), interestsField);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_PASTCAT), pastField);
-			//InitComboBox(GetDlgItem(hwndDlg,IDC_HOMEPAGECAT),homepageField);
-			//no field decodes known
-			SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_ADDSTRING, 0, (LPARAM)"");
-			SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_SETITEMDATA, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_ADDSTRING, 0,(LPARAM)"<help wanted>");
-			SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_SETITEMDATA, 1, 0);
-			SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_SETCURSEL, 0, 0);
 
-			return TRUE;
+      return TRUE;
 			
 		case WM_COMMAND:
 			{
-
 				switch(LOWORD(wParam))
 				{
 					
@@ -133,69 +121,26 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
 
 		default:
 			break;
-
 	}
 
 	return FALSE;
-
 }
 
 
 
-static void searchPackByte(PBYTE *buf, int *buflen, BYTE b)
+/*static void searchPackLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl)
 {
-
-	*buf = (PBYTE)realloc(*buf, 1 + *buflen);
-	*(*buf + *buflen) = b;
-	++*buflen;
-
-}
-
-
-
-static void searchPackWord(PBYTE *buf, int *buflen, WORD w)
-{
-
-	*buf = (PBYTE)realloc(*buf, 2 + *buflen);
-	*(PWORD)(*buf + *buflen) = w;
-	*buflen += 2;
-
-}
-
-
-
-static void searchPackDWord(PBYTE *buf, int *buflen, DWORD d)
-{
-
-	*buf = (PBYTE)realloc(*buf, 4 + *buflen);
-	*(PDWORD)(*buf + *buflen) = d;
-	*buflen += 4;
-
-}
-
-
-
-static void searchPackLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl)
-{
-
 	char str[512];
-	int len;
-
 
 	GetDlgItemText(hwndDlg, idControl, str, sizeof(str));
-	len = lstrlen(str);
-	searchPackWord(buf, buflen, (WORD)len);
-	*buf = (PBYTE)realloc(*buf, *buflen + len);
-	memcpy(*buf + *buflen, str, len);
-	*buflen += len;
 
+  ppackLELNTS(buf, buflen, str);
 }
 
 
 
 PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
 {
-
 	PBYTE buf = NULL;
 	int buflen = 0;
 
@@ -207,29 +152,93 @@ PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_LASTNAME);
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_NICK);
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_EMAIL);
-	searchPackDWord(&buf, &buflen, (DWORD)SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETCURSEL, 0, 0), 0));
-	searchPackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETCURSEL, 0, 0), 0));
-	searchPackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETCURSEL, 0, 0), 0));
+	ppackLEDWord(&buf, &buflen, (DWORD)SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETCURSEL, 0, 0), 0));
+	ppackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETCURSEL, 0, 0), 0));
+	ppackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETCURSEL, 0, 0), 0));
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_CITY);
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_STATE);
-	searchPackWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETCURSEL, 0, 0), 0));
+	ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETCURSEL, 0, 0), 0));
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_COMPANY);
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_DEPARTMENT);
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_POSITION);
-	searchPackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETCURSEL, 0, 0), 0));
-	searchPackWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETCURSEL, 0, 0), 0));
+	ppackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETCURSEL, 0, 0), 0));
+	ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETCURSEL, 0, 0), 0));
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY);
-	searchPackWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETCURSEL, 0, 0), 0));
+	ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETCURSEL, 0, 0), 0));
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_INTERESTSKEY);
-	searchPackWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETCURSEL, 0, 0), 0));
+	ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETCURSEL, 0, 0), 0));
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS);
-	searchPackWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETCURSEL, 0, 0), 0));
+	ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETCURSEL, 0, 0), 0));
 	searchPackLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY);
-	searchPackByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY));
+	ppackByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY));
 
 	if (length)
 		*length = buflen;
 
 	return buf;
+}*/
 
+
+static void searchPackTLVLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl, WORD wType)
+{
+	char str[512];
+
+	GetDlgItemText(hwndDlg, idControl, str, sizeof(str));
+
+	ppackTLVLNTS(buf, buflen, str, wType, 0);
+}
+
+
+static void searchPackTLVWordLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl, WORD w, WORD wType)
+{
+	char str[512];
+
+	GetDlgItemText(hwndDlg, idControl, str, sizeof(str));
+
+	ppackTLVWordLNTS(buf, buflen, w, str, wType, 0);
+}
+
+
+PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
+{
+	PBYTE buf = NULL;
+	int buflen = 0;
+	WORD w;
+
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_FIRSTNAME, TLV_FIRSTNAME);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_LASTNAME, TLV_LASTNAME);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_NICK, TLV_NICKNAME);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_EMAIL, TLV_EMAIL);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_CITY, TLV_CITY);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_STATE, TLV_STATE);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_COMPANY, TLV_COMPANY);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_DEPARTMENT, TLV_DEPARTMENT);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_POSITION, TLV_POSITION);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_KEYWORDS, TLV_KEYWORDS);
+
+	ppackTLVDWord(&buf, &buflen, (DWORD)SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETCURSEL, 0, 0), 0), TLV_AGERANGE, 0);
+	ppackTLVByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETCURSEL, 0, 0), 0), TLV_GENDER, 0);
+	ppackTLVByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_MARITALSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_MARITALSTATUS, CB_GETCURSEL, 0, 0), 0), TLV_MARITAL, 0);
+	ppackTLVWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETCURSEL, 0, 0), 0), TLV_LANGUAGE, 0);
+	ppackTLVWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETCURSEL, 0, 0), 0), TLV_COUNTRY, 0);
+	ppackTLVWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETCURSEL, 0, 0), 0), TLV_OCUPATION, 0);
+
+	w = (WORD)SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETCURSEL, 0, 0), 0);
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY, w, TLV_PASTINFO);
+
+	w = (WORD)SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETCURSEL, 0, 0), 0);
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_INTERESTSKEY, w, TLV_INTERESTS);
+
+	w = (WORD)SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETCURSEL, 0, 0), 0);
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS, w, TLV_AFFILATIONS);
+
+	w = (WORD)SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETCURSEL, 0, 0), 0);
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
+
+	ppackTLVByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY), TLV_ONLINEONLY, 1);
+
+	if (length)
+		*length = buflen;
+
+	return buf;
 }
