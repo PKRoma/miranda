@@ -116,11 +116,14 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 	char* pszFileName = NULL;
 	DWORD dwFileSize;
 	WORD wFilenameLength;
+  BOOL bEmptyDesc = FALSE;
 
 
 	if (!pszDescription || (strlen(pszDescription) == 0))
+  {
 		pszDescription = Translate("No description given");
-
+    bEmptyDesc = TRUE;
+  }
 	
 	// Empty port+pad
 	buf += 4;
@@ -167,6 +170,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 		ft->TS1 = dwID1;
 		ft->TS2 = dwID2;
     ft->bDC = bDC;
+    ft->bEmptyDesc = bEmptyDesc;
 		
 		
 		// Send chain event

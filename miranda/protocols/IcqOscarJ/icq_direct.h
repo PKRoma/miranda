@@ -49,7 +49,6 @@ typedef struct {
 	DWORD dwRemotePort;
 	HANDLE hContact;
 	char *szFilename;
-  char *szOrgDescription;
 	char *szDescription;
 	char *szSavePath;
 	char *szThisFile;
@@ -68,6 +67,7 @@ typedef struct {
 	DWORD TS2;
 	int   nVersion; // Was this sent with a v7 or a v8 packet?
 	BOOL bDC;       // Was this received over a DC or through server?
+  BOOL bEmptyDesc; // Was the description empty ?
 } filetransfer;
 
 #define DIRECTCONN_STANDARD   0

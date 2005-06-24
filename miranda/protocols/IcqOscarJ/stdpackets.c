@@ -857,14 +857,18 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
 
 void icq_sendFileAcceptServ(DWORD dwUin, filetransfer* ft, int nAckType)
 {
+  char *szDesc = ft->szDescription;
+
+  if (ft->bEmptyDesc) szDesc = ""; // keep empty if it originally was (Trillian workaround)
+
 	if (ft->nVersion >= 8)
 	{
-		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, ft->szDescription, ft->dwTotalSize, wListenPort, TRUE, nAckType);
+		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szDesc, ft->dwTotalSize, wListenPort, TRUE, nAckType);
 		Netlib_Logf(ghServerNetlibUser, "Sent file accept v%u through server, port %u", 8, wListenPort);
 	}
 	else
 	{
-		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, ft->szDescription, ft->dwTotalSize, wListenPort, TRUE, nAckType);
+		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szDesc, ft->dwTotalSize, wListenPort, TRUE, nAckType);
 		Netlib_Logf(ghServerNetlibUser, "Sent file accept v%u through server, port %u", 7, wListenPort);
 	}
 }
