@@ -41,6 +41,10 @@
 
 typedef DWORD plugin_guid[4];
 
+// Message Capability GUIDs
+static plugin_guid MCAP_TLV2711_FMT      = {MCAP_TLV2711_FMT_s};
+static plugin_guid MCAP_REVERSE_REQ      = {MCAP_REVERSE_REQ_s};
+
 // Plugin GUIDs
 static plugin_guid PSIG_MESSAGE          = {PSIG_MESSAGE_s};
 static plugin_guid PSIG_INFO_PLUGIN      = {PSIG_INFO_PLUGIN_s};
@@ -56,6 +60,7 @@ static plugin_guid MGTYPE_WEBURL         = {MGTYPE_WEBURL_s};
 static plugin_guid MGTYPE_CONTACTS       = {MGTYPE_CONTACTS_s};
 static plugin_guid MGTYPE_GREETING_CARD  = {MGTYPE_GREETING_CARD_s};
 static plugin_guid MGTYPE_CHAT           = {MGTYPE_CHAT_s};
+static plugin_guid MGTYPE_XTRAZ_SCRIPT   = {MGTYPE_XTRAZ_SCRIPT_s};
 
 
 // make GUID checks easy
@@ -66,7 +71,7 @@ static BOOL CompareGUIDs(DWORD q1,DWORD q2,DWORD q3,DWORD q4, plugin_guid guid)
 
 
 // pack entire GUID into icq packet
-__inline static void packGUID(icq_packet* packet, plugin_guid guid)
+__inline void packGUID(icq_packet* packet, plugin_guid guid)
 {
   packDWord(packet, guid[0]);
   packDWord(packet, guid[1]);
