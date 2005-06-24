@@ -113,11 +113,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	wError = getWordFromChain(chain, 0x09, 1);
 	if (wError)
 	{
-		int oldStatus = gnCurrentStatus;
-
-		gnCurrentStatus = ID_STATUS_OFFLINE;
-		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-			(HANDLE)oldStatus, gnCurrentStatus);
+    SetCurrentStatus(ID_STATUS_OFFLINE);
 
 		disposeChain(&chain);
 		handleRuntimeError(wError);

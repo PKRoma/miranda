@@ -152,7 +152,7 @@ const char* nameXStatus[24] = {
   "Engineering",
   "Typing"};
 
-static void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
+void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
 {
   IconExtraColumn iec;
 

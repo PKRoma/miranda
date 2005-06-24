@@ -208,18 +208,16 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
 int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 {
-	int oldStatus = gnCurrentStatus;
 	int nNewStatus = MirandaStatusToSupported(wParam);
 
   if (gbTempVisListEnabled) // remove temporary visible users
     clearTemporaryVisibleList();
 
-	if (nNewStatus != oldStatus)
+	if (nNewStatus != gnCurrentStatus)
 	{
 		// New status is OFFLINE
 		if (nNewStatus == ID_STATUS_OFFLINE)
 		{
-			int oldStatus = gnCurrentStatus;
 			icq_packet packet;
 
       // for quick logoff
@@ -232,10 +230,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
 			icq_serverDisconnect();
 
-			gnCurrentStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-				(HANDLE)oldStatus, gnCurrentStatus);
-
+			SetCurrentStatus(ID_STATUS_OFFLINE);
 
 			Netlib_Logf(ghServerNetlibUser, "Logged off.");
 		}
@@ -256,9 +251,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 					dwLocalUIN = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);
 					if (dwLocalUIN == 0)
 					{
-						gnCurrentStatus = ID_STATUS_OFFLINE;
-						ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-							(HANDLE)ID_STATUS_OFFLINE, ID_STATUS_OFFLINE);
+						SetCurrentStatus(ID_STATUS_OFFLINE);
 
 						icq_LogMessage(LOG_FATAL, Translate("You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again."));
 						return 0;
@@ -266,9 +259,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
 					// Set status to 'Connecting'
 					icqGoingOnlineStatus = nNewStatus;
-					oldStatus = ID_STATUS_OFFLINE;
-					gnCurrentStatus = ID_STATUS_CONNECTING;
-					ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldStatus, gnCurrentStatus);
+					SetCurrentStatus(ID_STATUS_CONNECTING);
 
 					// Read password from database
 					DBGetContactSetting(NULL, gpszICQProtoName, "Password", &dbvPassword);
@@ -298,10 +289,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 			// We are already connected so we should just change status
 			default:
 				{
-					gnCurrentStatus = nNewStatus;
-
-					ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-						(HANDLE)oldStatus, gnCurrentStatus);
+					SetCurrentStatus(nNewStatus);
 
 					if (gnCurrentStatus == ID_STATUS_INVISIBLE)
 					{

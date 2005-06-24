@@ -52,6 +52,8 @@ static pthread_t serverThreadId;
 HANDLE hDirectBoundPort;
 int bReinitRecver = 0;
 
+extern void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
+
 static int handleServerPackets(unsigned char* buf, int len, serverthread_start_info* info);
 static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted);
 
@@ -85,13 +87,11 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 	// Login error
 	if (hServerConn == NULL)
 	{
-		int oldStatus = gnCurrentStatus;
 		DWORD dwError = GetLastError();
 
 		hServerConn = NULL;
-		gnCurrentStatus = ID_STATUS_OFFLINE;
-		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-			(HANDLE)oldStatus, gnCurrentStatus);
+
+    SetCurrentStatus(ID_STATUS_OFFLINE);
 
 		icq_LogUsingErrorCode(LOG_ERROR, dwError, "Unable to connect to ICQ login server");
 
@@ -171,11 +171,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 	icq_serverDisconnect();
 	if (gnCurrentStatus != ID_STATUS_OFFLINE)
 	{
-		int oldStatus = gnCurrentStatus;
-
-		gnCurrentStatus = ID_STATUS_OFFLINE;
-		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-			(HANDLE)oldStatus, gnCurrentStatus);
+		SetCurrentStatus(ID_STATUS_OFFLINE);
 	}
 
   // Offline all contacts
@@ -196,6 +192,8 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 						!= ID_STATUS_OFFLINE)
 					{
 						DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+
+            handleXStatusCaps(hContact, NULL, 0);
 					}
 				}
 			}
@@ -349,11 +347,7 @@ void sendServPacket(icq_packet* pPacket)
 
 			if (gnCurrentStatus != ID_STATUS_OFFLINE)
 			{
-				int oldStatus = gnCurrentStatus;
-
-				gnCurrentStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-					(HANDLE)oldStatus, gnCurrentStatus);
+				SetCurrentStatus(ID_STATUS_OFFLINE);
 			}
 		}
 	}

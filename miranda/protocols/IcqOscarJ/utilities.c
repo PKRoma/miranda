@@ -850,6 +850,14 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
 }
 
 
+void SetCurrentStatus(int nStatus)
+{
+  int nOldStatus = gnCurrentStatus;
+
+  gnCurrentStatus = nStatus;
+  ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)nOldStatus, nStatus);
+}
+
 
 BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength)
 {

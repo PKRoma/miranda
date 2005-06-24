@@ -277,8 +277,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 			Netlib_Logf(ghServerNetlibUser, "Migration has started. New server will be %s", migratedServer);
 
 			icqGoingOnlineStatus = gnCurrentStatus;
-			gnCurrentStatus = ID_STATUS_CONNECTING; // revert to connecting state
-			ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)icqGoingOnlineStatus, gnCurrentStatus);
+      SetCurrentStatus(ID_STATUS_CONNECTING); // revert to connecting state
 
 			isMigrating = 1;
 		}
@@ -325,10 +324,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 					handleServUINSettings(wListenPort, dwLocalInternalIP);
 
 				// Change status
-				gnCurrentStatus = icqGoingOnlineStatus;
-				ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-					(HANDLE)ID_STATUS_CONNECTING, gnCurrentStatus);
-
+        SetCurrentStatus(icqGoingOnlineStatus);
 
 				Netlib_Logf(ghServerNetlibUser, " *** Yeehah, login sequence complete");
 

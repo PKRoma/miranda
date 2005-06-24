@@ -94,6 +94,8 @@ BOOL IsStringUIN(char* pszString);
 void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments);
 void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
 
+void SetCurrentStatus(int nStatus);
+
 BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength);
 BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);
 BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength);
