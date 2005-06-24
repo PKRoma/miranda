@@ -6,6 +6,8 @@
 #define IDD_ASKAUTH                     104
 #define IDD_LOGINPW                     105
 #define IDD_INFO_AVATAR                 106
+#define IDD_OPT_ICQFEATURES             108
+#define IDB_XSTATUS                     110
 #define IDD_OPT_ICQ                     185
 #define IDD_INFO_ICQ                    224
 #define IDD_ICQADVANCEDSEARCH           242
@@ -15,20 +17,29 @@
 #define IDC_LOG                         1001
 #define IDI_ICQ                         1001
 #define IDC_USEGATEWAY                  1010
+#define IDC_UTFENABLE                   1010
 #define IDC_KEEPALIVE                   1011
+#define IDC_UTFALL                      1012
+#define IDC_UTFSTATIC                   1013
+#define IDC_UTFCODEPAGE                 1014
 #define IDC_PW                          1015
+#define IDC_TEMPVISIBLE                 1015
 #define IDC_REGISTER                    1016
 #define IDC_EDITAUTH                    1017
 #define IDC_LOGINPW                     1018
 #define IDC_INSTRUCTION                 1019
 #define IDC_PASSWORD                    1020
 #define IDC_SUPTIME                     1020
+#define IDC_DCENABLE                    1020
 #define IDC_                            1021
+#define IDC_DCPASSIVE                   1021
 #define IDC_ICQNUM                      1022
 #define IDC_AVATAR                      1023
 #define IDC_SETAVATAR                   1024
 #define IDC_DELETEAVATAR                1025
+#define IDC_AIMENABLE                   1030
 #define IDC_CLIST                       1035
+#define IDC_XSTATUSENABLE               1040
 #define IDC_EMAIL                       1048
 #define IDC_NICK                        1053
 #define IDC_GENDER                      1060
@@ -61,6 +72,8 @@
 #define IDC_LEVELDESCR                  1332
 #define IDC_STICQGROUP                  1374
 #define IDC_AGERANGE                    1410
+#define IDC_MARITALSTATUS               1411
+#define IDC_KEYWORDS                    1412
 #define IDC_LANGUAGE                    1414
 #define IDC_WORKFIELD                   1421
 #define IDC_PASTCAT                     1422
@@ -69,6 +82,7 @@
 #define IDC_INTERESTSKEY                1425
 #define IDC_ORGANISATION                1426
 #define IDC_ORGKEYWORDS                 1427
+#define IDC_OTHERGROUP                  1429
 #define IDC_ONLINEONLY                  1430
 #define IDC_HOMEPAGECAT                 1431
 #define IDC_HOMEPAGEKEY                 1432
@@ -109,7 +123,7 @@
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        108
+#define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           101
