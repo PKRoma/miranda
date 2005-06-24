@@ -161,7 +161,7 @@ typedef struct {
     LNTS    zip
     WORD    country
     BYTE    gmt
-    BYTE    unknown, usually 0
+    BYTE    publish my primary e-mail flag
 */
 #define ICQCHANGEINFO_MORE     0xFD03
 /* pInfoData points to:
@@ -180,27 +180,27 @@ typedef struct {
 #define ICQCHANGEINFO_ABOUT	   0x0604
 /* pInfoData points to:
     WORD    datalen
-	LNTS    about
+    LNTS    about
 */
 #define ICQCHANGEINFO_WORK	   0xF303
 /* pInfoData points to:
     WORD    datalen
     LNTS    city
     LNTS    state
-    DWORD   0
+    DWORD   fax
     LNTS    street
     LNTS    zip
     WORD    country
     LNTS    company-name
     LNTS    company-dept
     LNTS    company-position
-    WORD    0
+    WORD    company-occupation
     LNTS    company-web
 */
 #define ICQCHANGEINFO_PASSWORD 0x2E04
 /* pInfoData points to:
     WORD    datalen
-	LNTS    newpassword
+    LNTS    newpassword
 */
 
 #define ICQCHANGEINFO_SECURITY 0x2404
@@ -213,6 +213,39 @@ typedef struct {
                      0x01 - allow direct connection with users on the contact list.
                      0x02 - allow direct connections only upon authorization.  
     BYTE    KIND     User kind (unknown, use 0)
+*/
+
+#define ICQCHANGEINFO_INTERESTS 0x1004
+/* pInfoData points to:
+    WORD    datalen
+    BYTE    0x04
+    WORD    interest1 category code
+    LNTS    interest1 keyword string
+    WORD    interest2 category code
+    LNTS    interest2 keyword string
+    WORD    interest3 category code
+    LNTS    interest3 keyword string
+    WORD    interest4 category code
+    LNTS    interest4 keyword string
+*/
+
+#define ICQCHANGEINFO_PASTBACKGROUND 0x1A04
+/* pInfoData points to:
+    WORD    datalen
+    BYTE    0x03
+    WORD    past1 category code
+    LNTS    past1 keyword string
+    WORD    past2 category code
+    LNTS    past2 keyword string
+    WORD    past3 category code
+    LNTS    past3 keyword string
+    BYTE    0x03
+    WORD    aff1 category code
+    LNTS    aff1 keyword string
+    WORD    aff2 category code
+    LNTS    aff2 keyword string
+    WORD    aff3 category code
+    LNTS    aff3 keyword string
 */
 
 //miranda/icqoscar/statusmsgreq event
