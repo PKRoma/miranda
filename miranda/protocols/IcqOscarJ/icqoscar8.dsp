@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /map /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /ALIGN:4096 /ignore:4108
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /map /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /ALIGN:4096 /ignore:4108
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "icqoscar8 - Win32 Debug"
@@ -105,11 +105,19 @@ SOURCE=.\channels.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\directpackets.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\families.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\forkthread.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\globals.h
 # End Source File
 # Begin Source File
 
@@ -166,6 +174,10 @@ SOURCE=.\icq_servlist.h
 # Begin Source File
 
 SOURCE=.\icq_uploadui.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\icq_xtraz.h
 # End Source File
 # Begin Source File
 
@@ -226,6 +238,10 @@ SOURCE=.\icos\icq.ico
 # Begin Source File
 
 SOURCE=.\resources.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus.bmp
 # End Source File
 # End Group
 # Begin Group "FLAP Channels"
@@ -291,6 +307,10 @@ SOURCE=.\fam_15icqserver.c
 # Begin Group "Direct Connection"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\directpackets.c
+# End Source File
 # Begin Source File
 
 SOURCE=.\icq_direct.c
@@ -411,6 +431,10 @@ SOURCE=.\icq_server.c
 # Begin Source File
 
 SOURCE=.\icq_servlist.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\icq_xtraz.c
 # End Source File
 # Begin Source File
 

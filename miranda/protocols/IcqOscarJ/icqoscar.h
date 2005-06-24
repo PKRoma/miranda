@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004 Joe Kucera
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -74,12 +74,14 @@
 #include "resource.h"
 
 // ICQ plugin includes
+#include "globals.h"
 #include "capabilities.h"
 #include "i18n.h"
 #include "icq_packet.h"
 #include "icq_direct.h"
 #include "icq_server.h"
 #include "icqosc_svcs.h"
+#include "icq_xtraz.h"
 #include "icq_opts.h"
 #include "icq_servlist.h"
 #include "icq_http.h"
@@ -90,6 +92,7 @@
 #include "icq_avatar.h"
 #include "init.h"
 #include "stdpackets.h"
+#include "directpackets.h"
 #include "tlv.h"
 #include "families.h"
 #include "utilities.h"
@@ -107,3 +110,5 @@
 
 // :TODO: This should not be here :p
 void icq_FirstRunCheck(void);
+
+__inline static int Netlib_MyCloseHandle(HANDLE h) {FreeGatewayIndex(h); return CallService(MS_NETLIB_CLOSEHANDLE,(WPARAM)h,0);}
