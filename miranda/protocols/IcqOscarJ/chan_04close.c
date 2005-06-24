@@ -37,19 +37,16 @@
 #include "icqoscar.h"
 
 
-
-extern int gnCurrentStatus;
 extern int isMigrating;
 extern WORD wServSequence;
 extern WORD wLocalSequence;
 extern HANDLE hServerConn;
-extern HANDLE ghServerNetlibUser;
 extern char *cookieData;
 extern int cookieDataLen;
 extern char *migratedServer;
 extern int isMigrating;
-extern char gpszICQProtoName[MAX_PATH];
 extern HANDLE hServerPacketRecver;
+extern int bReinitRecver;
 
 static void handleMigration();
 static void handleRuntimeError(WORD wError);
@@ -68,11 +65,11 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	WORD wError;
 	NETLIBOPENCONNECTION nloc = {0};
 
-
-  // TODO: implement proxy connection walkie - will solve gateway problems, in 0.3.6+
-
-  Netlib_CloseHandle(hServerConn);
-  hServerConn = NULL;
+  if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0) || !DBGetContactSettingByte(NULL, gpszICQProtoName, "NLUseProxy", 0))
+  { // close connection only if not in gateway mode
+    Netlib_CloseHandle(hServerConn);
+    hServerConn = NULL;
+  }
 
 	// Todo: We really should sanity check this, maybe reset it with a timer
 	// so we don't trigger on this by mistake
@@ -82,18 +79,20 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		return;
 	}
 
-
 	// Datalen is 0 if we have signed off or if server has migrated
 	if (datalen == 0)
+  {
+    if (hServerConn) Netlib_MyCloseHandle(hServerConn);
 		return; // Signing off
+  }
 
 
 	if (!(chain = readIntoTLVChain(&buf, datalen, 0)))
 	{
 		Netlib_Logf(ghServerNetlibUser, "Error: Missing chain on close channel");
+    if (hServerConn) Netlib_MyCloseHandle(hServerConn);
 		return;
 	}
-
 
 	// TLV 8 errors (signon errors?)
 	wError = getWordFromChain(chain, 0x08, 1);
@@ -103,7 +102,11 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		handleSignonError(wError);
 
     // we return only if the server did not gave us cookie (possible to connect with soft error)
-    if (getLenFromChain(chain, 0x06, 1) == 0) return;
+    if (getLenFromChain(chain, 0x06, 1) == 0) 
+    {
+      if (hServerConn) Netlib_MyCloseHandle(hServerConn);
+      return;
+    }
 	}
 
 	// TLV 9 errors (runtime errors?)
@@ -119,9 +122,9 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		disposeChain(&chain);
 		handleRuntimeError(wError);
 
+    if (hServerConn) Netlib_MyCloseHandle(hServerConn);
 		return;
 	}
-
 
 	// We are in the login phase and no errors were reported.
 	// Extract communication server info.
@@ -139,6 +142,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		SAFE_FREE(&newServer);
 		SAFE_FREE(&cookie);
 
+    if (hServerConn) Netlib_MyCloseHandle(hServerConn);
 		return;
 	}
 
@@ -158,35 +162,48 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	nloc.szHost = servip;
 	nloc.wPort = (WORD)atoi(&newServer[i]);
 
-  { /* Time to release packet receiver, connection already closed */
-    Netlib_CloseHandle(hServerPacketRecver);
-    hServerPacketRecver = NULL; // clear the variable
+  if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0) || !DBGetContactSettingByte(NULL, gpszICQProtoName, "NLUseProxy", 0))
+  {
+    { /* Time to release packet receiver, connection already closed */
+      Netlib_CloseHandle(hServerPacketRecver);
+      hServerPacketRecver = NULL; // clear the variable
 
-    Netlib_Logf(ghServerNetlibUser, "Closed connection to login server");
-  }
+      Netlib_Logf(ghServerNetlibUser, "Closed connection to login server");
+    }
 
-	Netlib_Logf(ghServerNetlibUser, "Connecting to %s", newServer);
-  hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-  if (!hServerConn && (GetLastError() == 87))
-  { // this ensures that an old Miranda can also connect
-    nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+	  Netlib_Logf(ghServerNetlibUser, "Connecting to %s", newServer);
     hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+    if (!hServerConn && (GetLastError() == 87))
+    { // this ensures that an old Miranda can also connect
+      nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+      hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+    }
+	  if (hServerConn == NULL)
+    {
+		  SAFE_FREE(&cookie);
+		  icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to ICQ communication server");
+    }
+	  else
+    { /* Time to recreate the packet receiver */
+		  cookieData = cookie;
+		  cookieDataLen = wCookieLen;
+		  hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
+		  if (!hServerPacketRecver)
+      {
+			  Netlib_Logf(ghServerNetlibUser, "Error: Failed to create packet receiver.");
+      }
+      else // we need to reset receiving structs
+        bReinitRecver = 1;
+    }
+	}
+  else
+  { // TODO: We should really do some checks here
+    Netlib_Logf(ghServerNetlibUser, "Walking in Gateway to %s", newServer);
+    // TODO: This REQUIRES more work (most probably some kind of mid-netlib module)
+    cookieData = cookie;
+    cookieDataLen = wCookieLen;
+    icq_httpGatewayWalkTo(hServerConn, &nloc);
   }
-	if (hServerConn == NULL)
-	{
-		SAFE_FREE(&cookie);
-		icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to ICQ communication server");
-	}
-	else
-  { /* Time to recreate the packet receiver */
-		cookieData = cookie;
-		cookieDataLen = wCookieLen;
-		hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
-		if (!hServerPacketRecver)
-		{
-			Netlib_Logf(ghServerNetlibUser, "Error: Failed to create packet receiver.");
-		}
-	}
 
 	// Free allocated memory
 	// NOTE: "cookie" will get freed when we have connected to the communication server.
@@ -217,7 +234,6 @@ static void handleMigration()
 		return;
 	}
 
-
 	// Default port
 	nloc.wPort = DEFAULT_SERVER_PORT;
 
@@ -234,39 +250,51 @@ static void handleMigration()
 
 	// Use specified port if one exists
 	if (port = strrchr(migratedServer, ':'))
-		nloc.wPort = (WORD)atoi(port);
-	else
+		nloc.wPort = (WORD)atoi(port + 1);
+	if (!nloc.wPort)
 		nloc.wPort = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "OscarPort", DEFAULT_SERVER_PORT);
+	if (!nloc.wPort)
+		nloc.wPort = (WORD)RandRange(1024, 65535);
 
 	nloc.cbSize = sizeof(nloc);
 	nloc.flags = 0;
 	nloc.szHost = servip;
 
-	// Open connection to new server
-	hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-  if (!hServerConn && (GetLastError() == 87))
-  { // this ensures that an old Miranda can also connect
-    nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-    hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+  if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0) || !DBGetContactSettingByte(NULL, gpszICQProtoName, "NLUseProxy", 0))
+  {
+	  // Open connection to new server
+	  hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+    if (!hServerConn && (GetLastError() == 87))
+    { // this ensures that an old Miranda can also connect
+      nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+      hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
+    }
+	  if (hServerConn == NULL)
+    {
+		  icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to migrated ICQ communication server");
+		  SAFE_FREE(&cookieData);
+    }
+	  else
+    {
+  		// Kill the old packet receiver
+	  	Netlib_CloseHandle(hServerPacketRecver);
+		  // Create new packer receiver
+#ifdef _DEBUG
+		  Netlib_Logf(ghServerNetlibUser, "Created new packet receiver");
+#endif
+		  hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
+      bReinitRecver = 1;
+    }
   }
-	if (hServerConn == NULL)
-	{
-		icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to migrated ICQ communication server");
-		SAFE_FREE(&cookieData);
-	}
-	else
-	{
-		// Kill the old packet receiver
-		Netlib_CloseHandle(hServerPacketRecver);
-		// Create new packer receiver
-		Netlib_Logf(ghServerNetlibUser, "Created new packet receiver");
-		hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
-	}
-
+  else
+  { // TODO: We should really do some checks here
+    Netlib_Logf(ghServerNetlibUser, "Walking in Gateway to %s", migratedServer);
+    // TODO: This REQUIRES more work (most probably some kind of mid-netlib module)
+    icq_httpGatewayWalkTo(hServerConn, &nloc);
+  }
 	// Clean up an exit
 	SAFE_FREE(&migratedServer);
 	isMigrating = 0;
-
 }
 
 

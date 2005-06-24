@@ -39,14 +39,9 @@
 
 
 extern WORD wListenPort;
-extern HANDLE hDirectNetlibUser;
-extern char gpszICQProtoName[MAX_PATH];
-
-
 
 void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStatus, char* pszText)
 {
-
 	char* pszFileName = NULL;
 	DWORD dwFileSize;
 	DWORD dwCookieUin;
@@ -58,7 +53,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 	// Find the filetransfer that belongs to this response
 	if (!FindCookie(dwCookie, &dwCookieUin, &ft))
 	{
-		Netlib_Logf(hDirectNetlibUser, "Error: Received unexpected file transfer request response");
+		Netlib_Logf(ghDirectNetlibUser, "Error: Received unexpected file transfer request response");
 		return;
 	}
 
@@ -66,7 +61,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 	
 	if (dwCookieUin != dwUin)
 	{
-		Netlib_Logf(hDirectNetlibUser, "Error: UINs do not match in file transfer request response");
+		Netlib_Logf(ghDirectNetlibUser, "Error: UINs do not match in file transfer request response");
 		return;
 	}
 
@@ -74,7 +69,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 	// If status != 0, a request has been denied
 	if (wStatus != 0)
 	{
-		Netlib_Logf(hDirectNetlibUser, "File transfer denied by %u,", dwUin);
+		Netlib_Logf(ghDirectNetlibUser, "File transfer denied by %u,", dwUin);
 		ProtoBroadcastAck(gpszICQProtoName, HContactFromUIN(dwUin, 1), ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)ft, 0);
 
 		FreeCookie(dwCookie);
@@ -105,21 +100,19 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 	unpackLEDWord(&buf, &dwFileSize);
 	wLen -= 4;
 	
-	Netlib_Logf(hDirectNetlibUser, "File transfer ack from %u, port %u, name %s, size %u", dwUin, ft->dwRemotePort, pszFileName, dwFileSize);
+	Netlib_Logf(ghDirectNetlibUser, "File transfer ack from %u, port %u, name %s, size %u", dwUin, ft->dwRemotePort, pszFileName, dwFileSize);
 	
 	OpenDirectConnection(ft->hContact, DIRECTCONN_FILE, ft);
 
 	SAFE_FREE(&pszFileName);
-
 }
 
 
 
 // pszDescription points to a string with the reason
 // buf points to the first data after the string
-void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion)
+void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion, BOOL bDC)
 {
-
 	char* pszFileName = NULL;
 	DWORD dwFileSize;
 	WORD wFilenameLength;
@@ -144,7 +137,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 	}
 	else
 	{
-		Netlib_Logf(hDirectNetlibUser, "Ignoring malformed file send request");
+		Netlib_Logf(ghDirectNetlibUser, "Ignoring malformed file send request");
 		return;
 	}
 
@@ -155,7 +148,6 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 	wLen -= 4;
 
 	{
-
 		CCSDATA ccs;
 		PROTORECVEVENT pre;
 		char* szBlob;
@@ -174,6 +166,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 		ft->nVersion = nVersion;
 		ft->TS1 = dwID1;
 		ft->TS2 = dwID2;
+    ft->bDC = bDC;
 		
 		
 		// Send chain event
@@ -193,21 +186,16 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
 		SAFE_FREE(&szBlob);
-
 	}
-	
 
 	SAFE_FREE(&pszFileName);
-	
 }
 
 
 
 void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)
 {
-
-	Netlib_Logf(hDirectNetlibUser, "handleDirectCancel: Unhandled cancel");
-
+	Netlib_Logf(ghDirectNetlibUser, "handleDirectCancel: Unhandled cancel");
 }
 
 
@@ -216,34 +204,8 @@ void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, 
 
 
 
-void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
-{
-
-	icq_packet packet;
-
-	
-	buildDirectPacketHeader(&packet, 20, DIRECT_ACK, ft->dwCookie, MTYPE_FILEREQ, 0, 0);
-	packLEWord(&packet, 0);	   // modifier 
-	packLEWord(&packet, 1);	  // description
-	packByte(&packet, 0);
-	packWord(&packet, wListenPort);
-	packLEWord(&packet, 0);
-	packLEWord(&packet, 1);	  // filename
-	packByte(&packet, 0);
-	packLEDWord(&packet, 0);  // file size 
-	packLEDWord(&packet, wListenPort);		// FIXME: ideally we want to open a new port for this
-
-	OpenDirectConnection(hContact, DIRECTCONN_STANDARD, &packet);
-
-	Netlib_Logf(hDirectNetlibUser, "accepted dc");
-
-}
-
-
-
 void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
 {
-
 	DWORD dwCookie;
 
 	if (FindCookieByData(ft, &dwCookie, NULL))
@@ -259,28 +221,4 @@ void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
 	#ifdef _DEBUG
 		Netlib_Logf(hDirectNetlibUser, "icq_CancelFileTransfer: OK");
 	#endif
-
-}
-
-
-
-void icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char* pszFiles, char* pszDescription, DWORD dwTotalSize)
-{
-
-	icq_packet packet;
-
-	
-	buildDirectPacketHeader(&packet, (WORD)(20 + strlen(pszDescription) + strlen(pszFiles)), DIRECT_MESSAGE, wCookie, MTYPE_FILEREQ, 0, 0);
-	packLEWord(&packet, 0);	   // modifier
-	packLEWord(&packet, (WORD)(strlen(pszDescription) + 1));
-	packBuffer(&packet, pszDescription, (WORD)(strlen(pszDescription) + 1));
-	packLEDWord(&packet, 0);	 // listen port
-	packLEWord(&packet, (WORD)(strlen(pszFiles) + 1));
-	packBuffer(&packet, pszFiles, (WORD)(strlen(pszFiles) + 1));
-	packLEDWord(&packet, dwTotalSize);
-	packLEDWord(&packet, 0);		// listen port (again)
-
-	Netlib_Logf(hDirectNetlibUser, "Sending v7 file request direct");
-	OpenDirectConnection(hContact, DIRECTCONN_STANDARD, &packet);
-
 }

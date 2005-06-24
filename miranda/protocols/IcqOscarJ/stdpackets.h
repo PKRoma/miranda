@@ -63,6 +63,9 @@ typedef struct fam15_cookie_data_s
 #define REQUESTTYPE_USERMINIMAL 2
 #define REQUESTTYPE_USERDETAILED 3
 
+
+void packMsgColorInfo(icq_packet *packet);
+
 void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen));
 
 void icq_setidle(int bAllow);
@@ -97,9 +100,11 @@ void sendUserInfoAutoRequest(DWORD dwUin);
 
 DWORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
 DWORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
-DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData);
-DWORD icq_SendChannel2MessageW(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData); // UTF-8
+DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
 DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
+
+void icq_sendXtrazRequestServ(DWORD dwUin, DWORD dwCookie, char* szBody, int nBodyLen, int nType);
+void icq_sendXtrazResponseServ(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szBody, int nBodyLen, int nType);
 
 DWORD SearchByUin(DWORD dwUin);
 DWORD SearchByNames(char *pszNick, char *pszFirstName, char *pszLastName);

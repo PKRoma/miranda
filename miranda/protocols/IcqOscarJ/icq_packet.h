@@ -72,13 +72,26 @@ void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWO
 void packLEWord(icq_packet *, WORD);
 void packLEDWord(icq_packet *, DWORD);
 
+void ppackByte(PBYTE *buf,int *buflen,BYTE b);
+void ppackLEWord(PBYTE *buf,int *buflen,WORD w);
+void ppackLEDWord(PBYTE *buf,int *buflen,DWORD d);
+//void ppackLNTS(PBYTE *buf, int *buflen, const char *str);
+void ppackLELNTS(PBYTE *buf, int *buflen, const char *str);
+//void ppackLNTS(PBYTE *buf, int *buflen, const char *szSetting);
+
+void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);
+void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always);
+void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always);
+void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always);
+void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always);
+
 void unpackByte(unsigned char **, BYTE *);
 void unpackWord(unsigned char **, WORD *);
 void unpackDWord(unsigned char **, DWORD *);
 void unpackString(unsigned char **buf, char *string, WORD len);
 void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
 void unpackTLV(unsigned char **, WORD *, WORD *, char **);
-BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, char** ppszUID);
+BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID);
 
 void unpackLEWord(unsigned char **, WORD *);
 void unpackLEDWord(unsigned char **, DWORD *);

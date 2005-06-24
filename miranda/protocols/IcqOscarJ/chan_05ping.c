@@ -38,7 +38,6 @@
 
 
 
-extern HANDLE ghServerNetlibUser;
 extern HANDLE hServerConn;
 HANDLE hKeepAliveEvent = NULL;
 

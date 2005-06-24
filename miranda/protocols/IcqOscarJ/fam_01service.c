@@ -36,24 +36,24 @@
 
 #include "icqoscar.h"
 
+
 extern int gbIdleAllow;
-extern int gnCurrentStatus;
 extern int icqGoingOnlineStatus;
-extern BYTE gbSsiEnabled;
-extern BYTE gbAvatarsEnabled;
 extern BYTE gbOverRate;
 extern int pendingAvatarsStart;
-extern DWORD dwLocalUIN;
 extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 extern DWORD dwLocalDirectConnCookie;
-extern HANDLE ghServerNetlibUser;
 extern char* cookieData;
 extern int cookieDataLen;
 extern char* migratedServer;
+
+typedef unsigned char capstr[0x10];
+
+extern const capstr capXStatus[];
+
 int isMigrating;
-extern char gpszICQProtoName[MAX_PATH];
 
 void setUserInfo();
 
@@ -220,12 +220,12 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     // CLI_REQBOS
     packet.wLen = 10;
     write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_BOS_FAMILY, 0x02, 0, 0x020000);
+    packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_PRIVACY_REQ_RIGHTS, 0, ICQ_PRIVACY_REQ_RIGHTS<<0x10);
     sendServPacket(&packet);
     break;
 
   case ICQ_SERVER_PAUSE:
-    Netlib_Logf(ghServerNetlibUser, "Server is going down in a few seconds... (Flags: %u, Ref: %u", pSnacHeader->wFlags, pSnacHeader->dwRef);
+    Netlib_Logf(ghServerNetlibUser, "Server is going down in a few seconds... (Flags: %u)", pSnacHeader->wFlags);
     // This is the list of groups that we want to have on the next server
     packet.wLen = 30;
     write_flap(&packet, ICQ_DATA_CHAN);
@@ -239,7 +239,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     packWord(&packet,0x06);
     packWord(&packet,ICQ_BOS_FAMILY);
     packWord(&packet,0x0a);
-    packWord(&packet,0x0b);
+    packWord(&packet,ICQ_STATS_FAMILY);
     sendServPacket(&packet);
 #ifdef _DEBUG
     Netlib_Logf(ghServerNetlibUser, "Sent server pause ack");
@@ -275,6 +275,11 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 			disposeChain(&chain);
 			Netlib_Logf(ghServerNetlibUser, "Migration has started. New server will be %s", migratedServer);
+
+			icqGoingOnlineStatus = gnCurrentStatus;
+			gnCurrentStatus = ID_STATUS_CONNECTING; // revert to connecting state
+			ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)icqGoingOnlineStatus, gnCurrentStatus);
+
 			isMigrating = 1;
 		}
 		break;
@@ -551,8 +556,12 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
   { // Something went wrong, probably the request for avatar family failed
     WORD wError;
 
-    unpackWord(&pBuffer, &wError);
-    Netlib_Logf(ghServerNetlibUser, "Server error: %d", wError);
+    if (wBufferLength >= 2)
+      unpackWord(&pBuffer, &wError);
+    else 
+      wError = 0;
+
+    LogFamilyError(ICQ_SERVICE_FAMILY, wError);
     break;
   }
 
@@ -611,7 +620,6 @@ char* calcMD5Hash(char* szFile)
 
 static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 {
-
 	char* szList;
 	char* szProto;
 	HANDLE hContact;
@@ -659,18 +667,18 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 					// not in our SS list, or are awaiting authorization, to our
 					// client side list
 
-// This is temporarily disabled cause we cant rely on the Auth flag. The negative thing is that all status updates
-// will arrive twice, sometimes contradicting themselves
-//					if (gbSsiEnabled && DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0) &&
-//						!DBGetContactSettingByte(hContact, gpszICQProtoName, "Auth", 0))
-//						add = 0;
+          // TODO: re-enabled, should work properly, needs more testing
+          // This is temporarily disabled cause we cant rely on the Auth flag. 
+          // The negative thing is that some status updates will arrive twice, sometimes contradicting themselves
+          if (gbSsiEnabled && DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0) &&
+            !DBGetContactSettingByte(hContact, gpszICQProtoName, "Auth", 0))
+            add = 0;
 
 					// Never add hidden contacts to CS list
 					if (DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
 						add = 0;
 
 					break;
-
 				}
 
 				if (add)
@@ -694,14 +702,12 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 
 
 	return szList;
-
 }
 
 
 
 void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 {
-
 	HANDLE hResumeContact;
 	char* szList;
 	int nListLen;
@@ -711,21 +717,23 @@ void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 	hResumeContact = NULL;
 
 	do
-	{
-		//server doesn't seem to be able to cope with packets larger than 8k
-		szList = buildUinList(listType, 0x1800, &hResumeContact);
-		nListLen = strlen(szList);
+  { // server doesn't seem to be able to cope with packets larger than 8k
+    // send only about 100contacts per packet
+		szList = buildUinList(listType, 0x3E8, &hResumeContact);
+		nListLen = strlennull(szList);
 
-		packet.wLen = nListLen + 10;
-		write_flap(&packet, 2);
-		packFNACHeader(&packet, wFamily, wSubtype, 0, wFlags<<0x10);
-		packBuffer(&packet, szList, (WORD)nListLen);
-		sendServPacket(&packet);
+    if (nListLen)
+    {
+		  packet.wLen = nListLen + 10;
+		  write_flap(&packet, 2);
+		  packFNACHeader(&packet, wFamily, wSubtype, 0, wFlags<<0x10);
+		  packBuffer(&packet, szList, (WORD)nListLen);
+		  sendServPacket(&packet);
+    }
 
 		SAFE_FREE(&szList);
 	}
 	while (hResumeContact);
-
 }
 
 
@@ -734,6 +742,7 @@ void setUserInfo()
 { // CLI_SETUSERINFO
   icq_packet packet;
   WORD wAdditionalData = 0;
+  BYTE bXStatus = DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusId", 0);
 
   if (gbAimEnabled)
     wAdditionalData += 16;
@@ -746,15 +755,15 @@ void setUserInfo()
 #ifdef DBG_CAPRTF
   wAdditionalData += 16;
 #endif
-#ifdef DBG_CAPUTF
-  wAdditionalData += 16;
-#endif
+  if (gbUtfEnabled)
+    wAdditionalData += 16;
 #ifdef DBG_CAPXTRAZ
   wAdditionalData += 16;
 #endif
-#ifdef DBG_CAPAVATAR
-  wAdditionalData += 16;
-#endif
+  if (gbAvatarsEnabled)
+    wAdditionalData += 16;
+  if (bXStatus)
+    wAdditionalData += 16;
 
   packet.wLen = 46 + wAdditionalData;
   write_flap(&packet, 2);
@@ -789,14 +798,13 @@ void setUserInfo()
     packDWord(&packet, 0xF73F1492);
   }
 #endif
-#ifdef DBG_CAPUTF
+  if (gbUtfEnabled)
   {
     packDWord(&packet, 0x0946134e);	// CAP_UTF8MSGS
     packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to receive
     packDWord(&packet, 0x82224445); // UTF8 encoded messages
     packDWord(&packet, 0x53540000);
   }
-#endif
 #ifdef DBG_CAPXTRAZ
   {
     packDWord(&packet, 0x1a093c6c);	// CAP_XTRAZ
@@ -805,14 +813,13 @@ void setUserInfo()
     packDWord(&packet, 0x4e34f5a0);
   }
 #endif
-#ifdef DBG_CAPAVATAR
+  if (gbAvatarsEnabled)
   {
     packDWord(&packet, 0x0946134c);	// CAP_AVATAR
     packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to provide
     packDWord(&packet, 0x82224445); // Avatar
     packDWord(&packet, 0x53540000);
   }
-#endif
   if (gbAimEnabled)
   {
     packDWord(&packet, 0x0946134D); // Tells the server we can speak to AIM
@@ -820,6 +827,11 @@ void setUserInfo()
     packDWord(&packet, 0x82224445);
     packDWord(&packet, 0x53540000);
   }
+  if (bXStatus)
+  {
+    packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
+  }
+
   packDWord(&packet, 0x09461344); // AIM_CAPS_ICQ
   packDWord(&packet, 0x4c7f11d1);
   packDWord(&packet, 0x82224445);
@@ -843,7 +855,7 @@ void handleServUINSettings(int nPort, int nIP)
 	// Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
 	packet.wLen = 26;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x020000);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
 	packWord(&packet, 0x0001);              // Channel
 #ifdef DBG_CAPMTN
 		packDWord(&packet, 0x0000000B);     // Flags
@@ -860,7 +872,7 @@ void handleServUINSettings(int nPort, int nIP)
 	// Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
 	packet.wLen = 26;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x020000);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
 	packWord(&packet, 0x0002);              // Channel
 	packDWord(&packet, 0x00000003);         // Flags
 	packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
@@ -873,7 +885,7 @@ void handleServUINSettings(int nPort, int nIP)
 	// Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
 	packet.wLen = 26;
 	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, 0x02, 0, 0x020000);
+	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
 	packWord(&packet, 0x0004);              // Channel
 	packDWord(&packet, 0x00000003);         // Flags
 	packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
@@ -920,6 +932,8 @@ void handleServUINSettings(int nPort, int nIP)
 		// DC setting bit flag
 		switch (DBGetContactSettingByte(NULL, gpszICQProtoName, "DCType", 0))
 		{
+    case 0:
+      break;
 
 		case 1:
 			wFlags = wFlags | STATUS_DCCONT;
@@ -932,7 +946,6 @@ void handleServUINSettings(int nPort, int nIP)
 		default:
 			wFlags = wFlags | STATUS_DCDISABLED;
 			break;
-
 		}
 
 		// Get status

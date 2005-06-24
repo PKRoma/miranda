@@ -77,8 +77,12 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 
 void handleServUINSettings(int nPort, int nIP);
-int TypeStringToTypeId(const char* pszType);
-void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, DWORD dwRecvTimestamp2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg);
+int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType);
+//int TypeStringToTypeId(const char* pszType);
+int getPluginTypeIdLen(int nTypeID);
+void packPluginTypeId(icq_packet *packet, int nTypeID);
+
+void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, DWORD dwRecvTimestamp2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC);
 
 #define BUL_ALLCONTACTS   0
 #define BUL_VISIBLE       1
@@ -90,5 +94,9 @@ void sendAddStart(int bImport);
 void sendAddEnd(void);
 DWORD renameServContact(HANDLE hContact, const char *szNick);
 void sendTypingNotification(HANDLE hContact, WORD wMTNCode);
+
+void makeContactTemporaryVisible(HANDLE hContact);
+void clearTemporaryVisibleList();
+
 
 #endif /* __FAMILIES_H */

@@ -49,6 +49,7 @@ typedef struct {
 	DWORD dwRemotePort;
 	HANDLE hContact;
 	char *szFilename;
+  char *szOrgDescription;
 	char *szDescription;
 	char *szSavePath;
 	char *szThisFile;
@@ -72,13 +73,17 @@ typedef struct {
 #define DIRECTCONN_STANDARD   0
 #define DIRECTCONN_FILE       1
 #define DIRECTCONN_CHAT       2
-#define DIRECTCONN_CLOSING    10
+#define DIRECTCONN_REVERSE    10
+#define DIRECTCONN_CLOSING    15
+
 typedef struct {
-	HANDLE hConnection;
+  HANDLE hContact;
+  HANDLE hConnection;
 	int type;
 	WORD wVersion;
 	int incoming;
 	int wantIdleTime;
+  int packetPending;
 	DWORD dwRemotePort;
 	DWORD dwRemoteUin;
 	DWORD dwRemoteExternalIP;
@@ -88,10 +93,12 @@ typedef struct {
 	DWORD dwThreadId;
 	icq_packet *packetToSend;
 	filetransfer *ft;
+  DWORD dwReqId;  // Reverse Connect request cookie
 } directconnect;
 
 void OpenDirectConnection(HANDLE hContact, int type, void *pvExtra);
 int IsDirectConnectionOpen(HANDLE hContact, int type);
+int SendDirectMessage(HANDLE hContact, icq_packet *pkt);
 int sendDirectPacket(HANDLE hConnection, icq_packet *pkt);
 void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP);
 void InitDirectConns(void);
@@ -106,11 +113,7 @@ void AddExpectedFileRecv(filetransfer *ft);
 filetransfer *FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize);
 void handleFileTransferPacket(directconnect *dc, PBYTE buf, WORD wLen);
 void handleFileTransferIdle(directconnect *dc);
-void icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize);
-void icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize);
-void buildDirectPacketHeader(icq_packet *packet, WORD wDataLen, WORD wCommand, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1);
 
-void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer *ft);
 
 void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText);
 
@@ -118,7 +121,7 @@ void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, 
 void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStatus, char* pszText);
 
 // Handle a received file transfer request (direct & server)
-void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion);
+void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion, BOOL bDC);
 
 
 #endif /* __ICQ_DIRECT_H */

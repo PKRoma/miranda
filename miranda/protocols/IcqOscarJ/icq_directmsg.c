@@ -39,43 +39,19 @@
 
 
 extern icq_mode_messages modeMsgs;
-extern CRITICAL_SECTION modeMsgsMutex;
 extern WORD wListenPort;
-extern HANDLE hDirectNetlibUser, hsmsgrequest;
-extern char gpszICQProtoName[MAX_PATH];
 
 void icq_sendAwayMsgReplyDirect(directconnect *dc, WORD wCookie, BYTE msgType, const char **szMsg);
-void handleDirectGreetingMessage(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText);
-void handleDirectNormalMessage(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText, WORD wTextLen);
 
-
-
-void buildDirectPacketHeader(icq_packet* packet, WORD wDataLen, WORD wCommand, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1)
-{
-
-	directPacketInit(packet, 27 + wDataLen);
-	packByte(packet, 2);	   /* channel */
-	packLEDWord(packet, 0);   /* space for crypto */
-	packLEWord(packet, wCommand);
-	packLEWord(packet, 14);		/* unknown */
-	packLEWord(packet, (WORD)dwCookie);
-	packLEDWord(packet, 0);	  /* unknown */
-	packLEDWord(packet, 0);	  /* unknown */
-	packLEDWord(packet, 0);	  /* unknown */
-	packByte(packet, bMsgType);
-	packByte(packet, bMsgFlags);
-	packLEWord(packet, wX1);	   /* unknown. Is 1 for getawaymsg, 0 otherwise */
-
-}
+void handleDirectGreetingMessage(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wStatus, WORD wFlags, char* pszText);
 
 
 
 void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 {
-
 	WORD wCommand;
 	WORD wCookie;
-	WORD wMessageType;
+	BYTE bMsgType,bMsgFlags;
 	WORD wStatus;
 	WORD wFlags;
 	WORD wTextLen;
@@ -85,7 +61,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 	// The first part of the packet should always be at least 31 bytes
 	if (wLen < 31)
 	{
-		Netlib_Logf(hDirectNetlibUser, "Error during parsing of DC packet 2 PEER_MSG (too short)");
+		Netlib_Logf(ghDirectNetlibUser, "Error during parsing of DC packet 2 PEER_MSG (too short)");
 		return;
 	}
 	
@@ -113,7 +89,9 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 	wLen -= 12;
 	
 	// Peer message type
-	unpackLEWord(&buf, &wMessageType);
+	unpackByte(&buf, &bMsgType);
+  // Peer message flags
+  unpackByte(&buf, &bMsgFlags);
 	wLen -= 2;
 
 	// The current status of the user, or whether the message was accepted or not.
@@ -126,9 +104,10 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 	unpackLEWord(&buf, &wStatus);
 	wLen -= 2;
 
-	// Flags
+	// Flags, or priority
 	// Seen: 1 - Chat request
 	//       0 - File auto accept (type 3)
+  //       33 - priority ?
 	unpackLEWord(&buf, &wFlags);
 	wLen -= 2;
 
@@ -144,133 +123,127 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 	wLen = (wLen - 2) - wTextLen;
 
 
-	Netlib_Logf(hDirectNetlibUser, "Handling PEER_MSG '%s', command %u, cookie %u, messagetype %u, status %u, flags %u", pszText, wCommand, wCookie, wMessageType, wStatus, wFlags);
+  Netlib_Logf(ghDirectNetlibUser, "Handling PEER_MSG '%s', command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", pszText, wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
 
+  // The remaining actual message is handled either as a status message request,
+  // a greeting message, a acknowledge or a normal (text, url, file) message
+  if (wCommand == DIRECT_MESSAGE)
+    switch (bMsgType)
+    {
+      case MTYPE_FILEREQ: // File inits
+        handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, pszText, 7, TRUE);
+        break;
 
-	// The remaining actual message is handled either as a status message request,
-	// a greeting message, a acknowledge or a normal (text, url, file) message
-	switch (wMessageType)
-	{
+      case MTYPE_AUTOAWAY: // TODO: let this handle handleMessageTypes
+        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOAWAY, &modeMsgs.szAway);
+        break;
 
-	case MTYPE_FILEREQ: // File inits and acks
-		if (wCommand == DIRECT_MESSAGE)
-			handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, pszText, 7);
-		else if (wCommand == DIRECT_ACK)
-			handleFileAck(buf, wLen, dc->dwRemoteUin, wCookie, wStatus, pszText);
-		else 
-			Netlib_Logf(hDirectNetlibUser, "Skipped FILE message from direct connection");
-		break;
+      case MTYPE_AUTOBUSY:
+        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOBUSY, &modeMsgs.szOccupied);
+        break;
 
-	case 0x03e8:
-		if (wCommand == DIRECT_MESSAGE)
-			icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOAWAY, &modeMsgs.szAway);
-		break;
+      case MTYPE_AUTONA:
+        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTONA, &modeMsgs.szNa);
+        break;
+
+      case MTYPE_AUTODND:
+        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTODND, &modeMsgs.szDnd);
+        break;
+
+      case MTYPE_AUTOFFC:
+        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOFFC, &modeMsgs.szFfc);
+        break;
+
+      case MTYPE_PLUGIN: // Greeting
+        handleDirectGreetingMessage(dc, buf, wLen, wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags, pszText);
+        break;
+
+      default: 
+        {
+	        buf -= wTextLen;
+	        wLen += wTextLen;
+
+	        handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE);
 		
-	case 0x03e9:
-		if (wCommand == DIRECT_MESSAGE)
-			icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOBUSY, &modeMsgs.szOccupied);
-		break;
-		
-	case 0x03ea:
-		if (wCommand == DIRECT_MESSAGE)
-			icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTONA, &modeMsgs.szNa);
-		break;
-		
-	case 0x03eb:
-		if (wCommand == DIRECT_MESSAGE)
-			icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTODND, &modeMsgs.szDnd);
-		break;
-		
-	case 0x03ec:
-		if (wCommand == DIRECT_MESSAGE)
-			icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOFFC, &modeMsgs.szFfc);
-		break;
+	        // Send acknowledgement
+	        if (bMsgType == MTYPE_PLAIN || bMsgType == MTYPE_URL || bMsgType == MTYPE_CONTACTS)
+	        {
+            icq_sendDirectMsgAck(dc, wCookie, bMsgType, bMsgFlags, CAP_RTFMSGS);
+	        }
+          break;
+        }
+    }
+  else if (wCommand == DIRECT_ACK)
+  {
+    if (bMsgFlags == 3)
+    { // this is status reply
+      buf -= wTextLen;
+      wLen += wTextLen;
 
-	case MTYPE_PLUGIN: // Greeting
-		if (wCommand == DIRECT_MESSAGE || wCommand == DIRECT_ACK)
-			handleDirectGreetingMessage(dc, buf, wLen, wCommand, wCookie, wMessageType, wStatus, wFlags, pszText);
-		else
-			Netlib_Logf(hDirectNetlibUser, "Skipped packet from direct connection");
-		break;
+      handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)bMsgType, (int)bMsgFlags, 2, (DWORD)wLen, wTextLen, buf, TRUE);
+    }
+    else
+    {
+      DWORD dwCookieUin;
+      message_cookie_data* pCookieData = NULL;
 
-	default:
-		if (wCommand == DIRECT_MESSAGE)
-			handleDirectNormalMessage(dc, buf, wLen, wCommand, wCookie, wMessageType, wStatus, wFlags, pszText, wTextLen);
-		else
-			Netlib_Logf(hDirectNetlibUser, "Skipped packet from direct connection");
-		break;
+      if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+      {
+        Netlib_Logf(ghServerNetlibUser, "Received an unexpected direct ack");
+      }
+      else if (dwCookieUin != dc->dwRemoteUin)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
+        SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
+        FreeCookie(wCookie);
+      }
+      else
+      { // the ack is correct
+        int ackType = -1;
 
-	}
+        switch (bMsgType)
+        { 
+          case MTYPE_PLAIN:
+            ackType = ACKTYPE_MESSAGE;
+            break;
+          case MTYPE_URL:
+            ackType = ACKTYPE_URL;
+            break;
+          case MTYPE_CONTACTS:
+            ackType = ACKTYPE_CONTACTS;
+            break;
+
+          case MTYPE_FILEREQ: // File acks
+            handleFileAck(buf, wLen, dc->dwRemoteUin, wCookie, wStatus, pszText);
+            break;
+
+          case MTYPE_PLUGIN: // Greeting
+            handleDirectGreetingMessage(dc, buf, wLen, wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags, pszText);
+            break;
+
+          default: 
+            Netlib_Logf(ghDirectNetlibUser, "Skipped packet from direct connection");
+            break;
+        }
+        if (ackType != -1)
+        { // was a good ack to broadcast ?
+   		    ProtoBroadcastAck(gpszICQProtoName, dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+          SAFE_FREE(&pCookieData);
+          FreeCookie(wCookie);
+        }
+      }
+    }
+  }
+  else
+    Netlib_Logf(ghDirectNetlibUser, "Unknown wCommand, packet skipped");
 
 	// Clean up allocated memory
 	SAFE_FREE(&pszText);
-	
 }
 
 
-
-void handleDirectNormalMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText, WORD wTextLen)
+void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wStatus, WORD wFlags, char* pszText)
 {
-
-	icq_packet packet;
-	BYTE bMsgSubtype;
-	BYTE bMsgFlags;
-
-
-	Netlib_Logf(hDirectNetlibUser, "Normal message thru direct connection");
-
-
-	// TEMP - restore old variables
-	if (wMessageType > 999)
-		bMsgFlags = 3;
-	else
-		bMsgFlags = 0;
-	if (wMessageType > 999)
-		bMsgSubtype = wMessageType-0x300;
-	else
-		bMsgSubtype = (BYTE)wMessageType;
-	// !TEMP
-
-	if (bMsgSubtype == MTYPE_FILEREQ)
-	{
-		handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, pszText, 7);
-	}
-	else
-	{
-
-		buf -= wTextLen;
-		wLen += wTextLen;
-
-		handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)bMsgSubtype, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf);
-		
-		// Send acknowledgement
-		if (bMsgSubtype == MTYPE_PLAIN || bMsgSubtype == MTYPE_URL)
-		{
-			buildDirectPacketHeader(&packet, (WORD)(bMsgSubtype==MTYPE_PLAIN ? 55 : 5), DIRECT_ACK, wCookie, bMsgSubtype, bMsgFlags, 0);
-			packLEWord(&packet, 0);	   /* modifier: 0 for an ack */
-			packLEWord(&packet, 1);	 /* empty message */
-			packByte(&packet, 0);    /* message */
-			if (bMsgSubtype == MTYPE_PLAIN)
-			{
-				packLEDWord(&packet, 0);   /* foreground colour */
-				packLEDWord(&packet, RGB(255,255,255));   /* background colour */
-				packLEDWord(&packet, 0x26);   /* CLSID length */
-				packBuffer(&packet, "{97B12751-243C-4334-AD22-D6ABF73F1492}", 0x26);
-			}
-			EncryptDirectPacket(dc, &packet);
-			sendDirectPacket(dc->hConnection, &packet);
-			Netlib_Logf(hDirectNetlibUser, "Send acknowledgement thru direct connection");
-		}
-
-	}
-
-}
-
-
-
-void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)
-{
-
 	DWORD dwMsgTypeLen;
 	DWORD dwLengthToEnd;
 	DWORD dwDataLength;
@@ -278,9 +251,11 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	char* pszFileName = NULL;
 	int typeId;
 	WORD wPacketCommand;
+  DWORD q1,q2,q3,q4;
+  WORD qt;
 
 
-	Netlib_Logf(hDirectNetlibUser, "Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, status %u, flags %u", wCommand, wCookie, wMessageType, wStatus, wFlags);
+	Netlib_Logf(ghDirectNetlibUser, "Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
 
 
 	// The command in this packet. Seen values:
@@ -289,15 +264,18 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	//          0x0032 =  50 - file request granted/refused
 	//                    55 - Greeting card
 	//          0x0040 =  64 - URL
-	unpackLEWord(&buf, &wPacketCommand);
+	unpackLEWord(&buf, &wPacketCommand); // TODO: this is most probably length...
 	wLen -= 2;
 	
-	// Some binary id string
-	buf += 16;
+	// Data type GUID
+  unpackDWord(&buf, &q1);
+  unpackDWord(&buf, &q2);
+  unpackDWord(&buf, &q3);
+  unpackDWord(&buf, &q4);
 	wLen -= 16;
 
-	// Unknown
-	buf += 2;
+	// Data type function id
+  unpackLEWord(&buf, &qt);
 	wLen -= 2;
 
 	// A text string
@@ -308,18 +286,22 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	wLen -= 4;
 	if (dwMsgTypeLen == 0 || dwMsgTypeLen>256)
 	{
-		Netlib_Logf(hDirectNetlibUser, "Error: Sanity checking failed (1) in handleDirectGreetingMessage, len is %u", dwMsgTypeLen);
+		Netlib_Logf(ghDirectNetlibUser, "Error: Sanity checking failed (1) in handleDirectGreetingMessage, len is %u", dwMsgTypeLen);
 		return;
 	}
 	szMsgType = (char *)malloc(dwMsgTypeLen + 1);
 	memcpy(szMsgType, buf, dwMsgTypeLen);
 	szMsgType[dwMsgTypeLen] = '\0';
-	typeId = TypeStringToTypeId(szMsgType);
+	//typeId = TypeStringToTypeId(szMsgType);
+  typeId = TypeGUIDToTypeId(q1,q2,q3,q4,qt);
+  if (!typeId)
+    Netlib_Logf(ghServerNetlibUser, "Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
+
 	buf += dwMsgTypeLen;
 	wLen -= (WORD)dwMsgTypeLen;
 
 
-	Netlib_Logf(hDirectNetlibUser, "PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", wPacketCommand, szMsgType, typeId);
+	Netlib_Logf(ghDirectNetlibUser, "PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", wPacketCommand, szMsgType, typeId);
 
 
 	// Unknown
@@ -330,7 +312,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	unpackLEDWord(&buf, &dwLengthToEnd);
 	if (dwLengthToEnd < 4 || dwLengthToEnd > wLen)
 	{
-		Netlib_Logf(hDirectNetlibUser, "Error: Sanity checking failed (2) in handleDirectGreetingMessage, datalen %u wLen %u", dwLengthToEnd, wLen);
+		Netlib_Logf(ghDirectNetlibUser, "Error: Sanity checking failed (2) in handleDirectGreetingMessage, datalen %u wLen %u", dwLengthToEnd, wLen);
 		return;
 	}
 	
@@ -339,33 +321,31 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	wLen -= 4;
 	if (dwDataLength > wLen)
 	{
-		Netlib_Logf(hDirectNetlibUser, "Error: Sanity checking failed (3) in handleDirectGreetingMessage, dwDataLength %u wLen %u", dwDataLength, wLen);
+		Netlib_Logf(ghDirectNetlibUser, "Error: Sanity checking failed (3) in handleDirectGreetingMessage, dwDataLength %u wLen %u", dwDataLength, wLen);
 		return;
 	}
 
 
-	if (typeId == MTYPE_FILEREQ && wPacketCommand == 0x0029)
+	if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_MESSAGE)
 	{
-
 		char* szMsg;
 
 		
-		Netlib_Logf(hDirectNetlibUser, "This is file ack");
+		Netlib_Logf(ghDirectNetlibUser, "This is file request");
 		szMsg = malloc(dwDataLength+1);
 		unpackString(&buf, szMsg, (WORD)dwDataLength);
 		szMsg[dwDataLength] = '\0';
 		wLen = wLen - (WORD)dwDataLength;
 
-		handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, szMsg, 8);
+		handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, szMsg, 8, TRUE);
 		SAFE_FREE(&szMsg);
 	}
-	else if (typeId == MTYPE_FILEREQ && wPacketCommand == 0x0032)
+	else if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_ACK)
 	{
-
 		char* szMsg;
 
 		
-		Netlib_Logf(hDirectNetlibUser, "This is file ack");
+		Netlib_Logf(ghDirectNetlibUser, "This is file ack");
 		szMsg = malloc(dwDataLength+1);
 		unpackString(&buf, szMsg, (WORD)dwDataLength);
 		szMsg[dwDataLength] = '\0';
@@ -375,56 +355,58 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 		handleFileAck(buf, wLen, dc->dwRemoteUin, wCookie, wStatus, szMsg);
 		SAFE_FREE(&szMsg);
 	}
-	else if (typeId)
+	else if (typeId && wCommand == DIRECT_MESSAGE)
 	{
-		if (typeId == MTYPE_URL)
-		{
-			icq_sendAdvancedMsgAck(dc->dwRemoteUin, 0, 0, wCookie, (BYTE)typeId, 0);
+		if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
+    { 
+      icq_sendDirectMsgAck(dc, wCookie, (BYTE)typeId, 0, CAP_RTFMSGS);
 		}
-		handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf);
+		handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE);
 	}
+  else if (typeId && wCommand == DIRECT_ACK)
+  {
+    DWORD dwCookieUin;
+    message_cookie_data* pCookieData = NULL;
+
+    if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+    {
+      Netlib_Logf(ghServerNetlibUser, "Received an unexpected direct ack");
+    }
+    else if (dwCookieUin != dc->dwRemoteUin)
+    {
+      Netlib_Logf(ghServerNetlibUser, "Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
+      SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
+      FreeCookie(wCookie);
+    }
+    else
+    {
+      int ackType = -1;
+
+      switch (typeId)
+      {
+      case MTYPE_URL:
+        ackType = ACKTYPE_URL;
+        break;
+      case MTYPE_CONTACTS:
+        ackType = ACKTYPE_CONTACTS;
+        break;
+      default:
+        Netlib_Logf(ghDirectNetlibUser, "Skipped packet from direct connection");
+        break;
+      }
+
+      if (ackType != -1)
+      { // was a good ack to broadcast ?
+	      ProtoBroadcastAck(gpszICQProtoName, dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+        SAFE_FREE(&pCookieData);
+        FreeCookie(wCookie);
+      }
+    }
+  }
 	else
 	{
-		Netlib_Logf(hDirectNetlibUser, "Unsupported plugin message type '%s'", szMsgType);
+		Netlib_Logf(ghDirectNetlibUser, "Unsupported plugin message type '%s'", szMsgType);
 	}
 
 	SAFE_FREE(&szMsgType);
-	
-}
-
-
-
-void icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE msgType, const char** szMsg)
-{
-
-	icq_packet packet;
-	WORD wMsgLen;
-	HANDLE hContact;
-
-
-	hContact = HContactFromUIN(dc->dwRemoteUin, 0);
-
-	if (validateStatusMessageRequest(hContact, msgType))
-	{
-	
-		NotifyEventHooks(hsmsgrequest, (WPARAM)msgType, (LPARAM)dc->dwRemoteUin);
-		
-		EnterCriticalSection(&modeMsgsMutex);
-
-		if (*szMsg != NULL)
-		{
-			wMsgLen = strlen(*szMsg);
-			buildDirectPacketHeader(&packet, (WORD)(5 + wMsgLen), DIRECT_ACK, wCookie, msgType, 3, 0);
-			packLEWord(&packet, 0); // 0 for an ack
-			packLEWord(&packet, (WORD)(wMsgLen + 1));
-			packBuffer(&packet, *szMsg, (WORD)(wMsgLen + 1));
-			EncryptDirectPacket(dc, &packet);
-
-			sendDirectPacket(dc->hConnection, &packet);
-		}
-
-		LeaveCriticalSection(&modeMsgsMutex);
-		
-	}
-
 }

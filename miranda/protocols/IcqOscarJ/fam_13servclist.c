@@ -37,9 +37,6 @@
 #include "icqoscar.h"
 
 
-extern HANDLE ghServerNetlibUser;
-extern int gnCurrentStatus;
-extern char gpszICQProtoName[MAX_PATH];
 extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
@@ -684,6 +681,27 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 }
 
 
+static HANDLE addContactToList(DWORD dwUin, char* szType)
+{
+  HANDLE hContact;
+
+  Netlib_Logf(ghServerNetlibUser, "SSI adding new %s contact '%d'", szType, dwUin);
+  hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
+  if (!hContact)
+	{
+    Netlib_Logf(ghServerNetlibUser, "Failed to create ICQ contact %u", dwUin);
+    return hContact;
+  }
+  if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
+  {
+    // For some reason we failed to register the protocol to this contact
+    CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+    Netlib_Logf(ghServerNetlibUser, "Failed to register ICQ contact %u", dwUin);
+    hContact = NULL;
+  }
+  return hContact;
+}
+
 
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 {
@@ -800,7 +818,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         /* this is a contact */
 
         if (!IsStringUIN(pszRecordName))
-        {
+        { // TODO: handle AIM contacts too
           Netlib_Logf(ghServerNetlibUser, "Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
         }
         else
@@ -832,7 +850,15 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           { // Not already on list: add
             char* szGroup;
 
-						Netlib_Logf(ghServerNetlibUser, "SSI adding new contact '%d'", dwUin);
+						hContact = addContactToList(dwUin, "ICQ");
+						if (!hContact)
+						{
+							if (pChain)
+								disposeChain(&pChain);
+							continue;
+						}
+
+/*            Netlib_Logf(ghServerNetlibUser, "SSI adding new contact '%d'", dwUin);
 						hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
 						if (!hContact)
 						{
@@ -849,7 +875,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							if (pChain)
 								disposeChain(&pChain);
 							continue;
-						}
+						}*/
 
             if (szGroup = makeGroupPath(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
@@ -1165,7 +1191,14 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				if (hContact == NULL)
 				{
 					/* not already on list: add */
-					Netlib_Logf(ghServerNetlibUser, "SSI adding new Permit contact '%d'", dwUin);
+  				hContact = addContactToList(dwUin, "Permit");
+					if (!hContact)
+					{
+						if (pChain)
+							disposeChain(&pChain);
+						continue;
+					}
+/*					Netlib_Logf(ghServerNetlibUser, "SSI adding new Permit contact '%d'", dwUin);
 					hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
 					if (!hContact)
 					{
@@ -1182,7 +1215,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						if (pChain)
 							disposeChain(&pChain);
 						continue;
-					}
+					}*/
 					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
@@ -1196,7 +1229,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				// Set apparent mode
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_ONLINE);
 				Netlib_Logf(ghServerNetlibUser, "Visible-contact (%u)", dwUin);
-
 			}
 			break;
 
@@ -1230,7 +1262,14 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				if (hContact == NULL)
 				{
 					/* not already on list: add */
-					Netlib_Logf(ghServerNetlibUser, "SSI adding new Deny contact '%d'", dwUin);
+					hContact = addContactToList(dwUin, "Deny");
+					if (!hContact)
+					{
+						if (pChain)
+							disposeChain(&pChain);
+						continue;
+					}
+/*					Netlib_Logf(ghServerNetlibUser, "SSI adding new Deny contact '%d'", dwUin);
 					hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
 					if (!hContact)
 					{
@@ -1247,7 +1286,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						if (pChain)
 							disposeChain(&pChain);
 						continue;
-					}
+					}*/
 					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
@@ -1310,7 +1349,14 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				if (hContact == NULL)
 				{
 					/* not already on list: add */
-					Netlib_Logf(ghServerNetlibUser, "SSI adding new Ignore contact '%d'", dwUin);
+					hContact = addContactToList(dwUin, "Ignore");
+					if (!hContact)
+					{
+						if (pChain)
+							disposeChain(&pChain);
+						continue;
+					}
+/*					Netlib_Logf(ghServerNetlibUser, "SSI adding new Ignore contact '%d'", dwUin);
 					hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
 					if (!hContact)
 					{
@@ -1327,7 +1373,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						if (pChain)
 							disposeChain(&pChain);
 						continue;
-					}
+					}*/
 					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
@@ -1452,8 +1498,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 {
-	BYTE nUinLen;
-	BYTE szUin[10];
 	WORD wReasonLen;
 	DWORD dwUin;
 	HANDLE hcontact;
@@ -1467,20 +1511,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	char* pCurBlob;
   DBVARIANT dbv;
 
-	unpackByte(&buf, &nUinLen);
-	wLen -= 1;
-
-	if (nUinLen > wLen)
-		return;
-
-	unpackString(&buf, szUin, nUinLen);
-	wLen -= nUinLen;
-	szUin[nUinLen] = '\0';
-
-	if (!IsStringUIN(szUin))
-		return;
-
-	dwUin = atoi(szUin);
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
 	unpackWord(&buf, &wReasonLen);
 	wLen -= 2;
@@ -1551,29 +1582,14 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 
 static void handleRecvAdded(unsigned char *buf, WORD wLen)
 {
-	BYTE nUinLen;
-	BYTE szUin[10];
 	DWORD dwUin;
 	DBEVENTINFO dbei;
 	PBYTE pCurBlob;
 	HANDLE hContact;
 
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
-	unpackByte(&buf, &nUinLen);
-	wLen -= 1;
-
-	if (nUinLen > wLen)
-		return;
-
-	unpackString(&buf, szUin, nUinLen);
-	wLen -= nUinLen;
-	szUin[nUinLen] = '\0';
-
-	if (!IsStringUIN(szUin))
-		return;
-
-	dwUin = atoi(szUin);
-	hContact=HContactFromUIN(dwUin,1);
+  hContact=HContactFromUIN(dwUin,1);
 
   DBDeleteContactSetting(hContact, gpszICQProtoName, "Grant");
 
@@ -1601,9 +1617,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 
 static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 {
-	BYTE nUinLen;
 	BYTE bResponse;
-	BYTE szUin[10];
 	DWORD dwUin;
 	HANDLE hContact;
 	char* szNick;
@@ -1612,21 +1626,9 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 
 	bResponse = 0xFF;
 
-	unpackByte(&buf, &nUinLen);
-	wLen -= 1;
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
-	if (nUinLen > wLen)
-		return;
-
-	unpackString(&buf, szUin, nUinLen);
-	wLen -= nUinLen;
-	szUin[nUinLen] = '\0';
-
-	if (!IsStringUIN(szUin))
-		return;
-
-	dwUin = atoi(szUin);
-	hContact = HContactFromUIN(dwUin, 1);
+  hContact = HContactFromUIN(dwUin, 1);
 
 	if (hContact != INVALID_HANDLE_VALUE) szNick = NickFromHandle(hContact);
 

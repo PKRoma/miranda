@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -210,6 +211,7 @@ struct fieldnames_t workField[]={
 	{25, "Technical"},
 	{26, "University Student"},
 	{27, "Web building"},
+  {99, "Other services"},
 	{-1,  NULL}};
 
 struct fieldnames_t affiliationField[]={
@@ -236,6 +238,7 @@ struct fieldnames_t affiliationField[]={
 	{-1,  NULL}};
 
 struct fieldnames_t agesField[]={
+  {0x0011000D, "13-17"},
 	{0x00160012, "18-22"},
 	{0x001D0017, "23-29"},
 	{0x0027001E, "30-39"},
@@ -244,13 +247,21 @@ struct fieldnames_t agesField[]={
 	{0x2710003C, "60-above"},
 	{-1,  NULL}};
 
+struct fieldnames_t maritalField[]={
+	{10, "Single"},
+	{11, "Close relationships"},
+	{12, "Engaged"},
+	{20, "Married"},
+	{30, "Divorced"},
+	{31, "Separated"},
+	{40, "Widowed"},
+	{-1,  NULL}};
+
 
 	
 char* LookupFieldName(struct fieldnames_t* table, int code)
 {
-
 	int i;
-
 
 	if (code != 0)
 	{
@@ -261,10 +272,9 @@ char* LookupFieldName(struct fieldnames_t* table, int code)
 		}
 		
 		// Tried to get unexisting field name, you have an
-		// error in the data or in the the table
+		// error in the data or in the table
 		_ASSERT(FALSE);
 	}
 
 	return NULL;
-
 }

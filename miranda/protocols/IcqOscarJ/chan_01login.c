@@ -39,9 +39,6 @@
 
 
 extern int isLoginServer;
-extern HANDLE ghServerNetlibUser;
-extern HANDLE hDirectNetlibUser;
-extern DWORD dwLocalUIN;
 extern WORD wLocalSequence;
 
 char* cookieData;

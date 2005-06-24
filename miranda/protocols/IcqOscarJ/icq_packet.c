@@ -187,6 +187,138 @@ void packLEDWord(icq_packet* pPacket, DWORD dwValue)
 }
 
 
+void ppackByte(PBYTE *buf,int *buflen,BYTE b)
+{
+  *buf=(PBYTE)realloc(*buf,1+*buflen);
+  *(*buf+*buflen)=b;
+  ++*buflen;
+}
+
+
+void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
+{
+  *buf=(PBYTE)realloc(*buf,2+*buflen);
+  *(PWORD)(*buf+*buflen)=w;
+  *buflen+=2;
+}
+
+
+void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
+{
+	*buf = (PBYTE)realloc(*buf, 4 + *buflen);
+	*(PDWORD)(*buf + *buflen) = d;
+	*buflen += 4;
+}
+
+
+/*void ppackLNTS(PBYTE *buf, int *buflen, const char *str)
+{
+	WORD len = strlen(str);
+	ppackWord(buf, buflen, len);
+	*buf = (PBYTE)realloc(*buf, *buflen + len);
+	memcpy(*buf + *buflen, str, len);
+	*buflen += len;
+}*/
+
+
+void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
+{
+	WORD len = strlen(str);
+	ppackLEWord(buf, buflen, len);
+	*buf = (PBYTE)realloc(*buf, *buflen + len);
+	memcpy(*buf + *buflen, str, len);
+	*buflen += len;
+}
+
+
+/*void ppackLNTS(PBYTE *buf, int *buflen, const char *szSetting)
+{
+  DBVARIANT dbv;
+
+  if (DBGetContactSetting(NULL, gpszICQProtoName, szSetting, &dbv))
+  {
+    ppackLEWord(buf,buflen,0);
+  }
+  else
+  {
+    WORD len = strlen(dbv.pszVal);
+
+    ppackLEWord(buf,buflen,len);
+    *buf=(PBYTE)realloc(*buf,*buflen+len);
+    memcpy(*buf+*buflen,dbv.pszVal,len);
+    *buflen+=len;
+    DBFreeVariant(&dbv);
+  }
+}*/
+
+
+// *** TLV based (!!! WORDs and DWORDs are LE !!!)
+void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
+{
+  if (!always && !b) return;
+
+	*buf = (PBYTE)realloc(*buf, 5 + *buflen);
+	*(PWORD)(*buf + *buflen) = wType;
+	*(PWORD)(*buf + *buflen + 2) = 1;
+	*(*buf + *buflen + 4) = b;
+	*buflen += 5;
+}
+
+
+void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
+{
+	if (!always && !w) return;
+
+	*buf = (PBYTE)realloc(*buf, 6 + *buflen);
+	*(PWORD)(*buf + *buflen) = wType;
+	*(PWORD)(*buf + *buflen + 2) = 2;
+	*(PWORD)(*buf + *buflen + 4) = w;
+	*buflen += 6;
+}
+
+
+void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
+{
+  if (!always && !d) return;
+
+	*buf = (PBYTE)realloc(*buf, 8 + *buflen);
+	*(PWORD)(*buf + *buflen) = wType;
+	*(PWORD)(*buf + *buflen + 2) = 4;
+	*(PDWORD)(*buf + *buflen + 4) = d;
+	*buflen += 8;
+}
+
+
+void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always)
+{
+	int len = strlen(str) + 1;
+
+	if (!always && len < 2) return;
+
+	*buf = (PBYTE)realloc(*buf, 6 + *buflen + len);
+	*(PWORD)(*buf + *buflen) = wType;
+	*(PWORD)(*buf + *buflen + 2) = len + 2;
+	*(PWORD)(*buf + *buflen + 4) = len;
+	memcpy(*buf + *buflen + 6, str, len);
+	*buflen += len + 6;
+}
+
+
+void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always)
+{
+	int len = strlen(str) + 1;
+
+	if (!always && len < 2 && !w) return;
+
+	*buf = (PBYTE)realloc(*buf, 8 + *buflen + len);
+	*(PWORD)(*buf + *buflen) = wType;
+	*(PWORD)(*buf + *buflen + 2) = len + 4;
+	*(PWORD)(*buf + *buflen + 4) = w;
+	*(PWORD)(*buf + *buflen + 6) = len;
+	memcpy(*buf + *buflen + 8, str, len);
+	*buflen += len + 8;
+}
+
 
 void unpackByte(BYTE** pSource, BYTE* byDestination)
 {
@@ -353,9 +485,10 @@ void unpackTLV(unsigned char **buf, WORD *type, WORD *len, char **string)
 
 
 
-BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, char** ppszUID)
+BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID)
 {
 	BYTE nUIDLen;
+  char szUIN[UINMAXLEN+1];
 	
 	// Sender UIN
 	unpackByte(ppBuf, &nUIDLen);
@@ -363,20 +496,44 @@ BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, char** ppszUID)
 	
 	if ((nUIDLen > *pwLen) || (nUIDLen == 0))
 		return FALSE;
-	
-	if (!(*ppszUID = malloc(nUIDLen)))
+
+  if (nUIDLen <= UINMAXLEN)
+  { // it can be uin, check
+    unpackString(ppBuf, szUIN, nUIDLen);
+    szUIN[nUIDLen] = '\0';
+    *pwLen -= nUIDLen;
+
+    if (IsStringUIN(szUIN))
+    {
+      *pdwUIN = atoi(szUIN);
+      return TRUE;
+    }
+    else if (!ppszUID)
+    {
+      Netlib_Logf(ghServerNetlibUser, "Malformed UIN in packet");
+      return FALSE;
+    }
+
+  }
+  else if (!ppszUID)
+  {
+    Netlib_Logf(ghServerNetlibUser, "Malformed UIN in packet");
+    return FALSE;
+  }
+#ifdef DBG_AIM_SUPPORT_HACK
+	if (!(*ppszUID = malloc(nUIDLen+1)))
 		return FALSE;
-	
+
 	unpackString(ppBuf, *ppszUID, nUIDLen);
 	*pwLen -= nUIDLen;
 	*ppszUID[nUIDLen] = '\0';
-	
-//	if (!IsStringUIN(szUin))
-//	{
-//		Netlib_Logf(ghServerNetlibUser, "Error 2: Malformed UID in message);
-//			return;
-//	}
+
+  *pdwUIN = -1; // this is hack, since we keep numeric uin, -1 is for all aim contacts
 
 	return TRUE;
-	
+#else
+  Netlib_Logf(ghServerNetlibUser, "AOL screennames not accepted");
+
+  return FALSE;
+#endif
 }

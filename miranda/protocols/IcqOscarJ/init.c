@@ -35,37 +35,34 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
-
+#include "m_cluiframes.h"
 
 
 PLUGINLINK* pluginLink;
-HINSTANCE hInst;
-char gpszICQProtoName[MAX_PATH];
 HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
 HANDLE hHookIdleEvent = NULL;
+static HANDLE hHookExtraIconsRebuild = NULL;
+static HANDLE hHookExtraIconsApply = NULL;
 static HANDLE hUserMenuAuth = NULL;
 static HANDLE hUserMenuGrant = NULL;
 
 extern HANDLE hServerConn;
-extern int gnCurrentStatus;
 extern icq_mode_messages modeMsgs;
 extern CRITICAL_SECTION modeMsgsMutex;
 CRITICAL_SECTION localSeqMutex;
 CRITICAL_SECTION connectionHandleMutex;
-HANDLE ghServerNetlibUser;
-HANDLE hDirectNetlibUser;
 HANDLE hsmsgrequest;
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,5,2),
-	"Support for ICQ network, slightly enhanced.",
-	"Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating, etc",
+	PLUGIN_MAKE_VERSION(0,3,6,0),
+	"Support for ICQ network, enhanced.",
+	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
-	"(C) 2000-2005 M.Öberg, R.Hughes, J.Keating, J.Kucera",
+	"(C) 2000-2005 M.Öberg, R.Hughes, J.Keating, Bio, J.Kucera",
   "http://www.miranda-im.org/download/details.php?action=viewfile&id=1683",
 	0,		//not transient
 	0		//doesn't replace anything built-in
@@ -78,9 +75,9 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 
 PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
 {
-  // Only load for 0.4 or greater
-  // Miranda IM v0.4 contained several netlib struct changes requiring a forced upgrade
-  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0)) 
+  // Only load for 0.4.0.1 or greater
+  // Miranda IM v0.4.0.1 contained important DB bug fix
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1)) 
   {
     return NULL;
   }
@@ -310,7 +307,7 @@ int __declspec(dllexport) Unload(void)
 	UninitDirectConns();
 	icq_InfoUpdateCleanup();
 
-	Netlib_CloseHandle(hDirectNetlibUser);
+	Netlib_CloseHandle(ghDirectNetlibUser);
 	Netlib_CloseHandle(ghServerNetlibUser);
 	UninitCookies();
 	DeleteCriticalSection(&modeMsgsMutex);
@@ -338,9 +335,67 @@ int __declspec(dllexport) Unload(void)
 	if (hHookIdleEvent)
 		UnhookEvent(hHookIdleEvent);
 
+	if (hHookExtraIconsRebuild)
+		UnhookEvent(hHookExtraIconsRebuild);
+
+	if (hHookExtraIconsApply)
+		UnhookEvent(hHookExtraIconsApply);
+
 	return 0;
 }
 
+
+int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
+{
+	int i;
+	HIMAGELIST CSImages;
+
+	if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+  { // TODO: divide into icons, change for IconLib
+		CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+		
+    for(i = 0; i < 24; i++) 
+    {
+      HICON hXIcon = ImageList_ExtractIcon(NULL, CSImages, i);
+
+			ghXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+      DestroyIcon(hXIcon);
+		}
+
+    ImageList_Destroy(CSImages);
+	}
+
+	return 0;
+}
+
+
+int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam) 
+{
+	if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
+  {
+		DWORD bXStatus = DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "XStatusId", 0);
+
+		if (bXStatus > 0 && bXStatus < 24) 
+    {
+			IconExtraColumn iec;
+
+			iec.cbSize = sizeof(iec);
+			iec.hImage = ghXStatusIcons[bXStatus-1];
+			iec.ColumnType = EXTRA_ICON_ADV1;
+			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)wParam, (LPARAM)&iec);
+		} 
+    else 
+    {
+			IconExtraColumn iec;
+
+			iec.cbSize = sizeof(iec);
+			iec.hImage = (HANDLE)-1;
+			iec.ColumnType = EXTRA_ICON_ADV1;
+			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)wParam, (LPARAM)&iec);
+		}
+	}
+	return 0;
+}
 
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
@@ -389,12 +444,15 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = pszP2PName;
   nlu.minIncomingPorts = 1;
-  hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+  ghDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
   hHookOptionInit = HookEvent(ME_OPT_INITIALISE, IcqOptInit);
   hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
 
   hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
+
+	hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
+	hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
 
   return 0;
 }
@@ -404,7 +462,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
   CLISTMENUITEM mi;
-
+  
   ZeroMemory(&mi, sizeof(mi));
   mi.cbSize = sizeof(mi);
   if (!DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "Auth", 0))
@@ -429,8 +487,13 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 
 void UpdateGlobalSettings()
-{
+{ 
   gbAimEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AimEnabled", DEFAULT_AIM_ENABLED);
+  gbUtfEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "UtfEnabled", DEFAULT_UTF_ENABLED);
+  gbUtfCodepage = DBGetContactSettingDword(NULL, gpszICQProtoName, "UtfCodepage", DEFAULT_UTF_CODEPAGE);
+  gbDCMsgEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
+  gbTempVisListEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "TempVisListEnabled", DEFAULT_TEMPVIS_ENABLED);
   gbSsiEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED);
   gbAvatarsEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
+  gbXStatusEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
 }

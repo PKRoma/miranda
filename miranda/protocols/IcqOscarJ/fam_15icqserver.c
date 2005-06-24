@@ -38,10 +38,6 @@
 
 
 
-extern DWORD dwLocalUIN;
-extern HANDLE ghServerNetlibUser;
-extern char gpszICQProtoName[MAX_PATH];
-
 static void handleExtensionError(unsigned char *buf, WORD wPackLen);
 static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wFlags);
 static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen);
@@ -80,18 +76,11 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
 
   if (wPackLen < 2)
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Family x15");
-
-    // Catch all errors in debug mode
-    _ASSERTE(0);	
+    wErrorCode = 0;
 	}
   if (wPackLen >= 2 && wPackLen <= 6)
   {
     unpackWord(&buf, &wErrorCode);
-    Netlib_Logf(ghServerNetlibUser, "Error: Family x15, error code 0x%02x", wErrorCode);
-
-    // Catch all errors in debug mode
-    _ASSERTE(0);	
 	}
 	else
   {
@@ -159,25 +148,19 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
         default:
           Netlib_Logf(ghServerNetlibUser, "Unknown request 0x%02x error 0x%02x received", wData, wErrorCode);
         }
-      }
-      else
-      {
-        Netlib_Logf(ghServerNetlibUser, "Error: Family x15, error code 0x%02x", wErrorCode);
+        disposeChain(&chain);
+        return;
       }
       disposeChain(&chain);
     }
-    else
-    {
-      Netlib_Logf(ghServerNetlibUser, "Error: Family x15, error code 0x%02x", wErrorCode);
-    }
   }
+  LogFamilyError(ICQ_EXTENSIONS_FAMILY, wErrorCode);
 }
 
 
 
 static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wFlags)
 {
-	
 	WORD wBytesRemaining;
 	WORD wRequestType;
 	WORD wCookie;
@@ -192,7 +175,7 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 	chain = readIntoTLVChain(&buf, wPackLen, 0);
 	if (chain == NULL)
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Broken snac 15/3 1");
+		Netlib_Logf(ghServerNetlibUser, "Error: Broken snac 15/3 %d", 1);
 		return;
 	}
 
@@ -200,18 +183,17 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 	if (dataTlv == NULL)
 	{
 		disposeChain(&chain);
-		Netlib_Logf(ghServerNetlibUser, "Error: Broken snac 15/3 2");
+		Netlib_Logf(ghServerNetlibUser, "Error: Broken snac 15/3 %d", 2);
 		return;
 	}
 	databuf = dataTlv->pData;
 	wPackLen -= 4;
 	
-	
 	_ASSERTE(dataTlv->wLen == wPackLen);
 	_ASSERTE(wPackLen >= 10);
-	if ((dataTlv->wLen == wPackLen) && (wPackLen >= 10))
+
+  if ((dataTlv->wLen == wPackLen) && (wPackLen >= 10))
 	{
-		
 		unpackLEWord(&databuf, &wBytesRemaining);
 		unpackLEDWord(&databuf, &dwMyUin);
 		unpackLEWord(&databuf, &wRequestType);
@@ -220,7 +202,6 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 		_ASSERTE(wBytesRemaining == (wPackLen - 2));
 		if (wBytesRemaining == (wPackLen - 2))
 		{
-			
 			wPackLen -= 10;			
 			switch (wRequestType)
 			{
@@ -247,14 +228,12 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 
 	if (chain)
 		disposeChain(&chain);
-	
 }
 
 
 
 static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 {
-
 	_ASSERTE(wPacketLen >= 14);
 	if (wPacketLen >= 14)
 	{
@@ -289,7 +268,6 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 		_ASSERTE(wMsgLen == wPacketLen);
 		if (wMsgLen == wPacketLen)
 		{
-
 			struct tm *sentTm;
 
 
@@ -361,7 +339,7 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 
 			// Handle the actual message
 			handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, bType, bFlags,
-				0, wPacketLen, wMsgLen, databuf);
+				0, wPacketLen, wMsgLen, databuf, FALSE);
 
 			// Success
 			return; 
@@ -409,7 +387,6 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 
 static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags)
 {
-
 	WORD wReplySubtype;
 	BYTE bResultCode;
 	
@@ -417,7 +394,6 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 	_ASSERTE(wPacketLen >= 3);
 	if (wPacketLen >= 3)
 	{
-
 		// Reply subtype
 		unpackLEWord(&databuf, &wReplySubtype);
 		wPacketLen -= 2;
@@ -538,14 +514,12 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 
 	// Failure
 	Netlib_Logf(ghServerNetlibUser, "Warning: Broken 15/03 ExtensionMetaResponse");
-
 }
 
 
 
 static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode)
 {
-
 	BYTE bParsingOK = FALSE; // For debugging purposes only
 
 
@@ -699,14 +673,12 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 		Netlib_Logf(ghServerNetlibUser, "Warning: Parsing error in 15/03 search reply type x%x", wReplySubtype);
 		_ASSERTE(!bParsingOK);
 	}
-
 }
 
 
 
 static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags, WORD wReplySubtype, BYTE bResultCode)
 {
-
 	BOOL bMoreDataFollows;
 	DWORD dwCookieUin;
 	fam15_cookie_data* pCookieData = NULL;
@@ -718,21 +690,22 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 	foundCookie = FindCookie(wCookie, &dwCookieUin, (void**)&pCookieData);
 	if (foundCookie && pCookieData)
 	{
-		hContact = HContactFromUIN(dwCookieUin, 0);
+    if (pCookieData->bRequestType == REQUESTTYPE_OWNER)
+      hContact = NULL; // this is here for situation when we have own uin in clist
+    else
+		  hContact = HContactFromUIN(dwCookieUin, 0);
 	}
 	else
 	{
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring unrequested 15/03 user info reply type 0x%x", wReplySubtype);
-//		_ASSERTE(0);
-		return;
+
+    return;
 	}
 
 	if (bResultCode != 0x0A)
 	{
 		Netlib_Logf(ghServerNetlibUser, "Warning: Got 15/03 user info failure reply type 0x%x", wReplySubtype);
-//		_ASSERTE(0); // Uncomment to make errors more visible during development
 	}
-
 
 	// Check if this is the last packet for this request
 	bMoreDataFollows = wFlags&0x0001;
@@ -759,8 +732,19 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			if (bOK) bOK = writeDbInfoSettingWord(hContact, "Country", &databuf, &wPacketLen);
 			if (bOK) bOK = writeDbInfoSettingByte(hContact, "Timezone", &databuf, &wPacketLen);
 			
-			if (hContact == NULL)
-				if (bOK) bOK = writeDbInfoSettingByte(hContact, "DontPublishEmail", &databuf, &wPacketLen);
+			if (hContact == NULL && bOK && (wPacketLen >= 3))
+			{
+				DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", (BYTE)!(*databuf));
+				databuf += 1;
+
+				DBWriteContactSettingByte(hContact, gpszICQProtoName, "WebAware", (*databuf));
+				databuf += 1;
+
+				DBWriteContactSettingByte(hContact, gpszICQProtoName, "PublishPrimaryEmail", (BYTE)!(*databuf));
+				databuf += 1;
+
+				wPacketLen -= 3;
+			}
 		}
 		break;
 		
@@ -807,6 +791,23 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			if (bOK) bOK = writeDbInfoSettingByteWithTable(hContact, "Language1", languageField, &databuf, &wPacketLen);
 			if (bOK) bOK = writeDbInfoSettingByteWithTable(hContact, "Language2", languageField, &databuf, &wPacketLen);
 			if (bOK) bOK = writeDbInfoSettingByteWithTable(hContact, "Language3", languageField, &databuf, &wPacketLen);
+
+      if (bOK && (wPacketLen >= 2))
+			{
+				databuf += 2;
+				wPacketLen -= 2;
+			}
+			if (bOK) bOK = writeDbInfoSettingString(hContact, "OriginCity", &databuf, &wPacketLen);
+			if (bOK) bOK = writeDbInfoSettingString(hContact, "OriginState", &databuf, &wPacketLen);
+			if (bOK) bOK = writeDbInfoSettingWord(hContact, "OriginCountry", &databuf, &wPacketLen);
+
+			if (bOK && (wPacketLen >= 1))
+			{
+				BYTE bStatus = *databuf;
+				DBWriteContactSettingByte(hContact, gpszICQProtoName, "MaritalStatus", bStatus);
+				databuf++;
+				wPacketLen--;
+			}
 		}
 		break;
 
@@ -822,7 +823,6 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_EMAIL_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
-			
 			int nCount = 0;
 			char pszDatabaseKey[33];
 			WORD wEmailLength;
@@ -870,7 +870,6 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 					databuf += wEmailLength;
 					wPacketLen -= wEmailLength;
 				}
-
 			}
 
 			// Delete the next key (this may not exist but that is OK)
@@ -884,7 +883,6 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				mir_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
 				DBDeleteContactSetting(hContact, gpszICQProtoName, pszDatabaseKey);
 			}
-
 		}
 		break;
 
@@ -892,11 +890,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_INTERESTS_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
-
 			int i, count;
 			char idstr[33];
 			
-			
+			wPacketLen--;
 			count = *databuf++;
 			// 4 is the maximum allowed personal interests, if count is
 			// higher it's likely a parsing error
@@ -935,7 +932,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			int count;
 			char idstr[33];
 
-			
+			wPacketLen--;
 			count = *databuf++;
 			// 3 is the maximum allowed backgrounds, if count is
 			// higher it's likely a parsing error
@@ -963,7 +960,8 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
 				}
 			}
-			
+
+      wPacketLen--;
 			count = *databuf++;
 			// 3 is the maximum allowed affiliations, if count is
 			// higher it's likely a parsing error
@@ -1015,7 +1013,6 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignored 15/03 user info reply type x%x", wReplySubtype);
 //		_ASSERTE(0);
 		break;
-
 	}
 
 
@@ -1060,14 +1057,12 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 	// :NOTE:
 	// bResultcode can be xA (success), x14 or x32 (failure). I dont know the difference
 	// between the two failures.
-				
 }
 
 
 
 static void parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode)
 {
-
 	switch (wReplySubtype)
 	{
 
@@ -1096,5 +1091,4 @@ static void parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, WORD
 		break;
 		
 	}
-
 }

@@ -38,19 +38,12 @@
 
 
 
-DWORD dwLocalUIN;
 int gbIdleAllow;
-int gnCurrentStatus;
 int icqGoingOnlineStatus;
 
-extern HANDLE ghServerNetlibUser;
 extern icq_mode_messages modeMsgs;
 extern CRITICAL_SECTION modeMsgsMutex;
 extern WORD wListenPort;
-extern char gpszICQProtoName[MAX_PATH];
-extern BYTE gbSsiEnabled;
-extern BYTE gbAvatarsEnabled;
-extern HANDLE hInst;
 
 
 
@@ -104,7 +97,7 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 		break;
 
 	case PFLAG_MAXLENOFMESSAGE:
-		nReturn = MAX_MESSAGESNACSIZE-100;
+		nReturn = MAX_MESSAGESNACSIZE-102;
 	}
 
 	return nReturn;
@@ -154,6 +147,9 @@ int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
 	if (bPrivacy) return 0;
 
   DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", bIdle ? time(0) : 0);
+
+  if (gbTempVisListEnabled) // remove temporary visible users
+    clearTemporaryVisibleList();
 
   icq_setidle(bIdle ? 1 : 0);
 
@@ -215,6 +211,8 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 	int oldStatus = gnCurrentStatus;
 	int nNewStatus = MirandaStatusToSupported(wParam);
 
+  if (gbTempVisListEnabled) // remove temporary visible users
+    clearTemporaryVisibleList();
 
 	if (nNewStatus != oldStatus)
 	{
@@ -224,13 +222,15 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 			int oldStatus = gnCurrentStatus;
 			icq_packet packet;
 
+      // for quick logoff
+      icqGoingOnlineStatus = nNewStatus;
 
 			// Send disconnect packet
 			packet.wLen = 0;
 			write_flap(&packet, ICQ_CLOSE_CHAN);
 			sendServPacket(&packet);
 
-			icq_serverDisconnect(1);
+			icq_serverDisconnect();
 
 			gnCurrentStatus = ID_STATUS_OFFLINE;
 			ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
@@ -272,13 +272,14 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
 					// Read password from database
 					DBGetContactSetting(NULL, gpszICQProtoName, "Password", &dbvPassword);
-					if ( dbvPassword.pszVal && (strlen(dbvPassword.pszVal) > 0) ) {
-
+					if ( dbvPassword.pszVal && (strlen(dbvPassword.pszVal) > 0) ) 
+          {
 						CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbvPassword.pszVal) + 1, (LPARAM)dbvPassword.pszVal);
 
 						icq_login(dbvPassword.pszVal);
 					}
-					else {
+					else 
+          {
 						RequestPassword();
 					}
 
@@ -722,12 +723,12 @@ static DWORD lastMessageTick = 0;
 int IcqGetInfo(WPARAM wParam, LPARAM lParam)
 {
 	if (lParam && icqOnline)
-	{
+  { // TODO: add checking for SGIF_ONOPEN, otherwise max one per 10sec
 		CCSDATA* ccs = (CCSDATA*)lParam;
 		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 
 		messageRate -= (GetTickCount() - lastMessageTick)/10;
-		if (messageRate<0)
+		if (messageRate<0) // TODO: this is bad, needs centralising
 			messageRate = 0;
 		lastMessageTick = GetTickCount();
 		messageRate += 67; // max 1.5 msgs/sec when rate is high
@@ -760,8 +761,8 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
 			ft->szSavePath = _strdup((char *)ccs->lParam);
 			AddExpectedFileRecv(ft);
 
-			// If we have a open DC, send through that
-			if (IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+			// Was request received thru DC and have we a open DC, send through that
+			if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
 				icq_sendFileAcceptDirect(ccs->hContact, ft);
 			else
 				icq_sendFileAcceptServ(dwUin, ft, 0);
@@ -787,7 +788,11 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
 
 		if (icqOnline && dwUin && ccs->wParam && ccs->hContact) 
     {
-			icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam, 0);
+			// Was request received thru DC and have we a open DC, send through that
+			if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+				icq_sendFileDenyDirect(ccs->hContact, ft, (char*)ccs->lParam);
+			else
+			  icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam, 0);
 
 			nReturnValue = 0; // Success
 		}
@@ -827,7 +832,6 @@ int IcqFileResume(WPARAM wParam, LPARAM lParam)
 	if (icqOnline && wParam)
 	{
 		PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
-
 
 		icq_sendFileResume((filetransfer *)wParam, pfr->action, pfr->szFilename);
 
@@ -933,7 +937,14 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 			}
 
 			if (wMessageType)
+      {
+        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        {
+          int iRes = icq_sendGetAwayMsgDirect(ccs->hContact, wMessageType);
+          if (iRes) return iRes; // we succeded, return
+        }
 				return icq_sendGetAwayMsgServ(dwUin, wMessageType); // Success
+      }
 		}
 	}
 
@@ -955,8 +966,10 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 			DWORD dwUin;
 			char* pszText;
 
-			pszText = (char*)ccs->lParam;
-      // TODO: here check if it contains non Ascii chars and if yes, and if enabled send as unicode
+      if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE) // remove temporary visible users
+        makeContactTemporaryVisible(ccs->hContact);
+
+      pszText = (char*)ccs->lParam;
 
 			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 			wRecipientStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
@@ -982,6 +995,29 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 			{
 				message_cookie_data* pCookieData;
 
+        if (wRecipientStatus != ID_STATUS_OFFLINE && gbUtfEnabled==2 && !IsUSASCII(pszText, strlen(pszText)) 
+          && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && DBGetContactSettingByte(ccs->hContact, gpszICQProtoName, "UnicodeSend", 1))
+        { // text contains national chars and we should send all this as Unicode, so do it
+          char* pszUtf = NULL;
+          int nStrSize = MultiByteToWideChar(CP_ACP, 0, pszText, strlen(pszText), (wchar_t*)pszUtf, 0);
+          int nRes;
+
+          pszUtf = calloc(nStrSize + 2, sizeof(wchar_t));
+          pszUtf[0] = '\0'; // we omit ansi string - not used...
+          MultiByteToWideChar(CP_ACP, 0, pszText, strlen(pszText), (wchar_t*)(pszUtf+1), nStrSize);
+          *(WORD*)(pszUtf + 1 + nStrSize*sizeof(wchar_t)) = '\0'; // trailing zeros
+
+          ccs->lParam = (LPARAM)pszUtf; // yeah, this is quite a hack, BE AWARE OF THAT !!!
+          ccs->wParam |= PREF_UNICODE;
+
+          nRes = IcqSendMessageW(wParam, lParam);
+          ccs->lParam = (LPARAM)pszText;
+
+          SAFE_FREE(&pszUtf); // release memory
+
+          return nRes;
+        }
+
 				// Set up the ack type
 				pCookieData = malloc(sizeof(message_cookie_data));
 				pCookieData->bMessageType = MTYPE_PLAIN;
@@ -997,7 +1033,13 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
     		Netlib_Logf(ghServerNetlibUser, "Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
 		    Netlib_Logf(ghServerNetlibUser, "Send message - Contact status is %u", wRecipientStatus);
 #endif
-				if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
+        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        {
+          int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, pszText, strlen(pszText), 1, pCookieData, NULL);
+          if (iRes) return iRes; // we succeded, return
+        }
+
+        if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
 					(wRecipientStatus == ID_STATUS_OFFLINE))
 				{
 					dwCookie = icq_SendChannel1Message(dwUin, ccs->hContact, pszText, pCookieData);
@@ -1012,7 +1054,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 					else
 						wPriority = 0x0021;
 
-					dwCookie = icq_SendChannel2Message(dwUin, pszText, strlen(pszText), wPriority, pCookieData);
+					dwCookie = icq_SendChannel2Message(dwUin, pszText, strlen(pszText), wPriority, pCookieData, NULL);
 				}
 
 				// This will stop the message dialog from waiting for the real message delivery ack
@@ -1048,8 +1090,11 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 			DWORD dwUin;
 			wchar_t* pszText;
 
-			if ((ccs->wParam & PREF_UNICODE == PREF_UNICODE) || (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)))
-			{	// send as unicode only if marked as unicode
+      if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE) // remove temporary visible users
+        makeContactTemporaryVisible(ccs->hContact);
+
+			if (!gbUtfEnabled || (ccs->wParam & PREF_UNICODE == PREF_UNICODE) || (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)))
+			{	// send as unicode only if marked as unicode & unicode enabled
 				return IcqSendMessage(wParam, lParam);
 			}
 
@@ -1098,6 +1143,17 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
     		Netlib_Logf(ghServerNetlibUser, "Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
 		    Netlib_Logf(ghServerNetlibUser, "Send unicode message - Contact status is %u", wRecipientStatus);
 #endif
+        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        {
+					char* utf8msg = make_utf8_string(pszText);
+          int iRes;
+
+          iRes = icq_SendDirectMessage(dwUin, ccs->hContact, utf8msg, strlen(utf8msg), 1, pCookieData, CAP_UTF8MSGS);
+					SAFE_FREE(&utf8msg);
+
+          if (iRes) return iRes; // we succeded, return
+        }
+
 				if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY))
 				{
 					dwCookie = icq_SendChannel1MessageW(dwUin, ccs->hContact, pszText, pCookieData);
@@ -1113,7 +1169,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 						wPriority = 0x0021;
 
 					utf8msg = make_utf8_string(pszText);
-					dwCookie = icq_SendChannel2MessageW(dwUin, utf8msg, strlen(utf8msg), wPriority, pCookieData);
+					dwCookie = icq_SendChannel2Message(dwUin, utf8msg, strlen(utf8msg), wPriority, pCookieData, CAP_UTF8MSGS);
 
 					SAFE_FREE(&utf8msg);
 				}
@@ -1194,7 +1250,6 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 					pCookieData->nAckType = ACKTYPE_CLIENT;
 				}
 
-
 				// Format the body
 				szUrl = (char*)ccs->lParam;
 				nUrlLen = strlen(szUrl);
@@ -1207,11 +1262,16 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 				strcpy(szBody + nDescLen + 1, szUrl);
 
 
+        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        {
+          int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, szBody, nBodyLen, 1, pCookieData, NULL);
+          if (iRes) return iRes; // we succeded, return
+        }
+
 				// Select channel and send
 				if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
 					wRecipientStatus == ID_STATUS_OFFLINE)
 				{
-
 					dwCookie = icq_SendChannel4Message(dwUin, MTYPE_URL,
 						(WORD)nBodyLen, szBody, pCookieData);
 				}
@@ -1219,18 +1279,16 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 				{
 					WORD wPriority;
 
-
 					if (wRecipientStatus == ID_STATUS_ONLINE || wRecipientStatus == ID_STATUS_FREECHAT)
 						wPriority = 0x0001;
 					else
 						wPriority = 0x0021;
 
-					dwCookie = icq_SendChannel2Message(dwUin, szBody, nBodyLen, wPriority, pCookieData);
+					dwCookie = icq_SendChannel2Message(dwUin, szBody, nBodyLen, wPriority, pCookieData, NULL);
 				}
 
 				// Free memory used for body
 				SAFE_FREE(&szBody);
-
 
 				// This will stop the message dialog from waiting for the real message delivery ack
 				if (pCookieData->nAckType == ACKTYPE_NONE)
@@ -1325,8 +1383,9 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 						char* pBody;
 						char* pBuffer;
 
-
-						Netlib_Logf(ghServerNetlibUser, "Sending contacts thru server to %d.", dwUin);
+#ifdef _DEBUG
+						Netlib_Logf(ghServerNetlibUser, "Sending contacts to %d.", dwUin);
+#endif
 
 						// Compute count record's length
 						_itoa(nContacts, szCount, 10);
@@ -1363,6 +1422,12 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 							pCookieData->nAckType = ACKTYPE_CLIENT;
 						}
 
+            if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+            {
+              int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, pBody, nBodyLength, 1, pCookieData, NULL);
+              if (iRes) return iRes; // we succeded, return
+            }
+
 						// Select channel and send
 						if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
 							wRecipientStatus == ID_STATUS_OFFLINE)
@@ -1374,19 +1439,18 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 						{
 							WORD wPriority;
 
-
 							if (wRecipientStatus == ID_STATUS_ONLINE || wRecipientStatus == ID_STATUS_FREECHAT)
 								wPriority = 0x0001;
 							else
 								wPriority = 0x0021;
 
-							dwCookie = icq_SendChannel2Message(dwUin, pBody, nBodyLength, wPriority, pCookieData);
+							dwCookie = icq_SendChannel2Message(dwUin, pBody, nBodyLength, wPriority, pCookieData, NULL);
 						}
 
 
 						// This will stop the message dialog from waiting for the real message delivery ack
 						if (pCookieData->nAckType == ACKTYPE_NONE)
-						{
+					 	{
 							icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
 							// We need to free this here since we will never see the real ack
 							// The actual cookie value will still have to be returned to the message dialog though
@@ -1508,16 +1572,26 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 								pszFiles = szFiles;
 							}
 
-							// Send packet through server
+							// Send packet
 							{
 								if (ft->nVersion == 7)
 								{
-									Netlib_Logf(ghServerNetlibUser, "Sending v7 file transfer request through server");
-									icq_sendFileSendServv7(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
+                  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+                  {
+                    int iRes = icq_sendFileSendDirectv7(dwUin, hContact, (WORD)ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize); 
+                    if (iRes) return (int)(HANDLE)ft; // Success
+                  }
+									Netlib_Logf(ghServerNetlibUser, "Sending v%u file transfer request through server", 8);
+                  icq_sendFileSendServv7(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
 								}
 								else
 								{
-									Netlib_Logf(ghServerNetlibUser, "Sending v8 file transfer request through server");
+                  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+                  {
+                    int iRes = icq_sendFileSendDirectv8(dwUin, hContact, (WORD)ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize); 
+                    if (iRes) return (int)(HANDLE)ft; // Success
+                  }
+									Netlib_Logf(ghServerNetlibUser, "Sending v%u file transfer request through server", 8);
 									icq_sendFileSendServv8(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize, 0);
 								}
 							}
@@ -1532,7 +1606,6 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 
 	return 0; // Failure
 }
-
 
 
 int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)

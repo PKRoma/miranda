@@ -41,9 +41,7 @@
 icq_mode_messages modeMsgs;
 CRITICAL_SECTION modeMsgsMutex;
 
-extern HANDLE ghServerNetlibUser;
-extern char gpszICQProtoName[MAX_PATH];
-extern HINSTANCE hInst;
+extern char* nameXStatus[24];
 
 static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2);
@@ -72,7 +70,7 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 		handleRecvServMsg(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 
-	case SRV_MISSED_MESSAGE: // SNAC(4,A)
+	case ICQ_MSG_SRV_MISSED_MESSAGE: // SNAC(4,A)
 		handleMissedMsg(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 
@@ -84,7 +82,7 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 		handleServerAck(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 
-	case ICQ_MTN: // SNAC (4,0x14) Typing notifications
+	case ICQ_MSG_MTN: // SNAC (4,0x14) Typing notifications
 		handleTypingNotification(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 
@@ -107,8 +105,6 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 	DWORD dwID2;
 	WORD wTLVCount;
 	WORD wMessageFormat;
-	BYTE nUinLen;
-	BYTE szUin[10];
 
 
 	// These two values are some kind of reference, we need to save
@@ -123,25 +119,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 	wLen -= 2;                         //  0x0002: Advanced message format
 	                                   //  0x0004: 'New' message format
 	// Sender UIN
-	unpackByte(&buf, &nUinLen);
-	wLen -= 1;
-
-	if (nUinLen > wLen)
-	{
-		Netlib_Logf(ghServerNetlibUser, "Error 1: Malformed UIN in message (format %u)", wMessageFormat);
-		return;
-	}
-
-	unpackString(&buf, szUin, nUinLen);
-	wLen -= nUinLen;
-	szUin[nUinLen] = '\0';
-
-	if (!IsStringUIN(szUin))
-	{
-		Netlib_Logf(ghServerNetlibUser, "Error 2: Malformed UIN in message (format %u)", wMessageFormat);
-		return;
-	}
-	dwUin = atoi(szUin);
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
 	// Warning level?
 	buf += 2;
@@ -350,7 +328,6 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 			// Free the chain memory
 			disposeChain(&pChain);
-
 		}
 		else
 		{
@@ -374,6 +351,11 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 	// Unpack the first TLV
 	unpackTLV(&buf, &wTLVType, &wTLVLen, &pTLV5);
+  if (wTLVType == 4 && wTLVLen == 0)
+  { // IM2 sends empty TLV(4) first - OMG!
+    SAFE_FREE(&pTLV5);
+    unpackTLV(&buf, &wTLVType, &wTLVLen, &pTLV5);
+  }
 	pDataBuf = pTLV5;
 	Netlib_Logf(ghServerNetlibUser, "Message (format 2) through server - UIN: %u, FirstTLV: %u", dwUin, wTLVType);
 
@@ -387,6 +369,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
 		DWORD dwExternalIP;
 		WORD wPort;
 		WORD wAckType;
+    DWORD q1,q2,q3,q4;
 
 		unpackWord(&pDataBuf, &wCommand);
 		wTLVLen -= 2;                                               // Command 0x0000 - Normal message/file send request
@@ -404,60 +387,136 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
 		// Some stuff we don't use
 		pDataBuf += 8;  // dwID1 and dwID2 again
 		wTLVLen -= 8;
-		pDataBuf += 16; // Capability
+    unpackDWord(&pDataBuf, &q1);
+    unpackDWord(&pDataBuf, &q2);
+    unpackDWord(&pDataBuf, &q3);
+    unpackDWord(&pDataBuf, &q4); // Capability (CAP_SRV_RELAY)
 		wTLVLen -= 16;
 
-		// We need at least 4 bytes to read a chain
-		if (wTLVLen > 4)
-		{
-			HANDLE hContact = HContactFromUIN(dwUin, 0);
+    if (CompareGUIDs(q1,q2,q3,q4, MCAP_TLV2711_FMT))
+    {
+      // We need at least 4 bytes to read a chain
+      if (wTLVLen > 4)
+      {
+        HANDLE hContact = HContactFromUIN(dwUin, 0);
 
-			// This TLV chain may contain the following TLVs:
-			// TLV(A): Acktype 0x0000 - normal message
-			//                 0x0001 - file request / abort request
-			//                 0x0002 - file ack
-			// TLV(F): Unknown
-			// TLV(3): External IP
-			// TLV(5): DC port (not to use for filetransfers)
-			// TLV(0x2711): The next message level
+        // This TLV chain may contain the following TLVs:
+        // TLV(A): Acktype 0x0000 - normal message
+        //                 0x0001 - file request / abort request
+        //                 0x0002 - file ack
+        // TLV(F): Unknown
+        // TLV(3): External IP
+        // TLV(5): DC port (not to use for filetransfers)
+        // TLV(0x2711): The next message level
 
-			chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
+        chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
-			wAckType = getWordFromChain(chain, 0x0A, 1);
+        wAckType = getWordFromChain(chain, 0x0A, 1);
 
-			// Update the saved DC info (if contact already exists)
-			if (hContact != INVALID_HANDLE_VALUE)
-			{
-				if (dwExternalIP = getDWordFromChain(chain, 0x03, 1))
-					DBWriteContactSettingDword(hContact, gpszICQProtoName, "RealIP", dwExternalIP);
-				if (dwIP = getDWordFromChain(chain, 0x04, 1))
-					DBWriteContactSettingDword(hContact, gpszICQProtoName, "IP", dwIP);
-				if (wPort = getWordFromChain(chain, 0x05, 1))
-					DBWriteContactSettingWord(hContact, gpszICQProtoName, "UserPort", wPort);
+        // Update the saved DC info (if contact already exists)
+        if (hContact != INVALID_HANDLE_VALUE)
+        {
+          if (dwExternalIP = getDWordFromChain(chain, 0x03, 1))
+            DBWriteContactSettingDword(hContact, gpszICQProtoName, "RealIP", dwExternalIP);
+          if (dwIP = getDWordFromChain(chain, 0x04, 1))
+            DBWriteContactSettingDword(hContact, gpszICQProtoName, "IP", dwIP);
+          if (wPort = getWordFromChain(chain, 0x05, 1))
+            DBWriteContactSettingWord(hContact, gpszICQProtoName, "UserPort", wPort);
 
-				// Save tick value
-				DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", time(NULL) - (dwID1/1000));
-			}
+          // Save tick value
+          DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", time(NULL) - (dwID1/1000));
+        }
 
+        // Parse the next message level
+        if (tlv = getTLV(chain, 0x2711, 1))
+        {
+          parseTLV2711(dwUin, hContact, dwID1, dwID2, wAckType, tlv);
+        }
+        else
+        {
+          Netlib_Logf(ghServerNetlibUser, "Warning, no 0x2711 TLV in message (format 2)");
+        }
+        // Clean up
+        disposeChain(&chain);
+      }
+      else
+      {
+        Netlib_Logf(ghServerNetlibUser, "Warning, empty message (format 2)");
+      }
+    }
+    else if (CompareGUIDs(q1,q2,q3,q4,MCAP_REVERSE_REQ))
+    { // Handle reverse DC request
+      // We need at least 4 bytes to read a chain
+      if (wTLVLen > 4)
+      {
+        chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
-			// Parse the next message level
-			if (tlv = getTLV(chain, 0x2711, 1))
-			{
-				parseTLV2711(dwUin, hContact, dwID1, dwID2, wAckType, tlv);
-			}
-			else
-			{
-				Netlib_Logf(ghServerNetlibUser, "Warning, no 0x2711 TLV in message (format 2)");
-			}
+        wAckType = getWordFromChain(chain, 0x0A, 1);
+        // Parse the next message level
+        if (tlv = getTLV(chain, 0x2711, 1))
+        {
+          if (tlv->wLen == 0x1B)
+          {
+            char* buf=tlv->pData;
+            DWORD dwUin, dwIp, dwPort, dwId;
+            WORD wVersion;
+            BYTE bMode;
+            HANDLE hContact;
 
-			// Clean up
-			disposeChain(&chain);
+            unpackLEDWord(&buf, &dwUin);
 
-		}
-		else
-		{
-			Netlib_Logf(ghServerNetlibUser, "Warning, empty message (format 2)");
-		}
+            hContact = HContactFromUIN(dwUin, 0);
+            if (hContact == INVALID_HANDLE_VALUE)
+            {
+              Netlib_Logf(ghServerNetlibUser, "Error: Reverse Connect Request from unknown contact %u", dwUin);
+            }
+            else
+            {
+              unpackDWord(&buf, &dwIp); 
+              unpackLEDWord(&buf, &dwPort);
+              unpackByte(&buf, &bMode);
+              buf += 4; // unknown
+              if (dwPort)
+                buf += 4;  // port, again?
+              else
+                unpackLEDWord(&buf, &dwPort);
+              unpackLEWord(&buf, &wVersion);
+
+              DBWriteContactSettingDword(hContact, gpszICQProtoName, "IP", dwIp);
+              DBWriteContactSettingWord(hContact, gpszICQProtoName, "UserPort", (WORD)dwPort);
+              DBWriteContactSettingByte(hContact, gpszICQProtoName, "DCType", bMode);
+              DBWriteContactSettingWord(hContact, gpszICQProtoName, "Version", wVersion);
+              if (wVersion>6)
+              {
+                unpackLEDWord(&buf, &dwId);
+
+                OpenDirectConnection(hContact, DIRECTCONN_REVERSE, (void*)dwId);
+              }
+              else
+                Netlib_Logf(ghServerNetlibUser, "Warning: Unsupported direct protocol version in Reverse Connect Request");
+            }
+          }
+          else
+          {
+            Netlib_Logf(ghServerNetlibUser, "Malformed Reverse Connect Request");
+          }
+        }
+        else
+        {
+          Netlib_Logf(ghServerNetlibUser, "Warning, no 0x2711 TLV in message (format 2)");
+        }
+        // Clean up
+        disposeChain(&chain);
+      }
+      else
+      {
+        Netlib_Logf(ghServerNetlibUser, "Warning, empty message (format 2)");
+      }
+    }
+    else
+    {
+      Netlib_Logf(ghServerNetlibUser, "Unknown Message Format Capability");
+    }
 	}
 	else
 	{
@@ -511,167 +570,156 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 		unpackLEWord(&pDataBuf, &wId); 
 		wLen -= 2;
 
-		switch (wId)
-		{
+		unpackLEWord(&pDataBuf, &wCookie);
+		wLen -= 2;
 
-		case 0x000E: // we should check GUID here instead - all zeros - Message
+    if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_MESSAGE))
+    { // is this a normal message ?
+			WORD wPritority;
+			WORD wStatus;
+
+			pDataBuf += 12;  /* all zeroes */
+			wLen -= 12;
+			unpackByte(&pDataBuf, &bMsgType);
+			wLen -= 1;
+			unpackByte(&pDataBuf, &bFlags);
+			wLen -= 1;
+
+			// Status
+			unpackLEWord(&pDataBuf, &wStatus);
+			wLen -= 2;
+
+			// Priority
+			unpackLEWord(&pDataBuf, &wPritority);
+			wLen -= 2;
+			Netlib_Logf(ghServerNetlibUser, "Priority: %u", wPritority);
+
+			// Message
+			unpackLEWord(&pDataBuf, &wMsgLen);
+			wLen -= 2;
+
+			// HANDLERS
+			switch (bMsgType)
 			{
-				WORD wPritority;
-				WORD wStatus;
-
-				unpackLEWord(&pDataBuf, &wCookie);
-				wLen -= 2;
-				pDataBuf += 12;  /* all zeroes */
-				wLen -= 12;
-				unpackByte(&pDataBuf, &bMsgType);
-				wLen -= 1;
-				unpackByte(&pDataBuf, &bFlags);
-				wLen -= 1;
-
-				// Status
-				unpackLEWord(&pDataBuf, &wStatus);
-				wLen -= 2;
-
-				// Priority
-				unpackLEWord(&pDataBuf, &wPritority);
-				wLen -= 2;
-				Netlib_Logf(ghServerNetlibUser, "Priority: %u", wPritority);
-
-				// Message
-				unpackLEWord(&pDataBuf, &wMsgLen);
-				wLen -= 2;
-
-
-				// HANDLERS
-				switch (bMsgType)
+				// File messages, handled by the file module
+			case MTYPE_FILEREQ:
 				{
-					// File messages, handled by the file module
-				case MTYPE_FILEREQ:
+					char* szMsg;
+
+
+					szMsg = (char *)malloc(wMsgLen + 1);
+					memcpy(szMsg, pDataBuf, wMsgLen);
+					szMsg[wMsgLen] = '\0';
+					pDataBuf += wMsgLen;
+					wLen -= wMsgLen;
+
+					if (wAckType == 0 || wAckType == 1)
 					{
-						char* szMsg;
-
-
-						szMsg = (char *)malloc(wMsgLen + 1);
-						memcpy(szMsg, pDataBuf, wMsgLen);
-						szMsg[wMsgLen] = '\0';
-						pDataBuf += wMsgLen;
-						wLen -= wMsgLen;
-
-						if (wAckType == 0 || wAckType == 1)
-						{
-							// File requests 7
-							handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 7);
-						}
-						else if (wAckType == 2)
-						{
-							// File reply 7
-							handleFileAck(pDataBuf, wLen, dwUin, wCookie, wStatus, szMsg);
-						}
-						else
-						{
-							Netlib_Logf(ghServerNetlibUser, "Ignored strange file message");
-						}
-
-						SAFE_FREE(&szMsg);
-						break;
+						// File requests 7
+						handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 7, FALSE);
+					}
+					else if (wAckType == 2)
+					{
+						// File reply 7
+						handleFileAck(pDataBuf, wLen, dwUin, wCookie, wStatus, szMsg);
+					}
+					else
+					{
+						Netlib_Logf(ghServerNetlibUser, "Ignored strange file message");
 					}
 
-					// Chat messages, handled by the chat module
-				case MTYPE_CHAT:
-					{
-						break;
-					}
+					SAFE_FREE(&szMsg);
+					break;
+				}
 
-					// Plugin messages, need further parsing
-				case MTYPE_PLUGIN:
-					{
-						parseServerGreeting(pDataBuf, wLen, wMsgLen, dwUin, bFlags, wStatus, wCookie, wAckType, dwID1, dwID2);
-						break;
-					}
+				// Chat messages, handled by the chat module
+			case MTYPE_CHAT:
+				{
+					break;
+				}
 
-					// Everything else
-				default:
-					{
-						// Only ack non-status message requests
-						// The other will be acked later
-						if (bMsgType < 0x80)
-							icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, bMsgType, bFlags);
-						handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf);
-						break;
-					}
+				// Plugin messages, need further parsing
+			case MTYPE_PLUGIN:
+				{
+					parseServerGreeting(pDataBuf, wLen, wMsgLen, dwUin, bFlags, wStatus, wCookie, wAckType, dwID1, dwID2);
+					break;
+				}
+
+				// Everything else
+			default:
+				{
+					// Only ack non-status message requests
+					// The other will be acked later
+					if (bMsgType < 0x80)
+						icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, bMsgType, bFlags);
+					handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf, FALSE);
+					break;
 				}
 			}
-			break;
+    }
+    else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_INFO_PLUGIN))
+    { // info manager plugin
+      BYTE bLevel;
 
-		case 0x0012: // this check it obsolete, TODO: remove
-			{
-				unpackLEWord(&pDataBuf, &wCookie);
-				wLen -= 2;
-				pDataBuf += 16;  /* unused stuff */
-				wLen -= 16;
-				unpackByte(&pDataBuf, &bMsgType);
-				wLen -= 1;
+			pDataBuf += 16;  /* unused stuff */
+			wLen -= 16;
+			unpackByte(&pDataBuf, &bMsgType);
+			wLen -= 1;
 
-        if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_INFO_PLUGIN))
-        { // info manager plugin
-          BYTE bLevel;
-
-          pDataBuf += 3; // unknown
-          wLen -= 3;
-          unpackByte(&pDataBuf, &bLevel);
-          if (bLevel != 0 || wLen < 16)
-          {
-            Netlib_Logf(ghServerNetlibUser, "Invalid Info Manager Plugin message from %u", dwUin);
-            break;
-          }
-          unpackDWord(&pDataBuf, &dwGuid1); // plugin request GUID
-          unpackDWord(&pDataBuf, &dwGuid2);
-          unpackDWord(&pDataBuf, &dwGuid3);
-          unpackDWord(&pDataBuf, &dwGuid4);
-          wLen -= 16;
-
-          if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_INFO))
-          {
-            Netlib_Logf(ghServerNetlibUser, "User %u requests our info plugin list. NOT SUPPORTED YET", dwUin);
-          }
-          else
-            Netlib_Logf(ghServerNetlibUser, "Unknown Info Manager message from %u", dwUin);
-        }
-        else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_STATUS_PLUGIN))
-        { // status manager plugin
-          BYTE bLevel;
-
-          pDataBuf += 3; // unknown
-          wLen -= 3;
-          unpackByte(&pDataBuf, &bLevel);
-          if (bLevel != 0 || wLen < 16)
-          {
-            Netlib_Logf(ghServerNetlibUser, "Invalid Status Manager Plugin message from %u", dwUin);
-            break;
-          }
-          unpackDWord(&pDataBuf, &dwGuid1); // plugin request GUID
-          unpackDWord(&pDataBuf, &dwGuid2);
-          unpackDWord(&pDataBuf, &dwGuid3);
-          unpackDWord(&pDataBuf, &dwGuid4);
-          wLen -= 16;
-
-          if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_STATUS))
-          {
-            Netlib_Logf(ghServerNetlibUser, "User %u requests our status plugin list. NOT SUPPORTED YET", dwUin);
-          }
-          else
-            Netlib_Logf(ghServerNetlibUser, "Unknown Status Manager message from %u", dwUin);
-        }
-        else
-          Netlib_Logf(ghServerNetlibUser, "Unknown plugin message (format 2) from %u", dwUin);
+      pDataBuf += 3; // unknown
+      wLen -= 3;
+      unpackByte(&pDataBuf, &bLevel);
+      if (bLevel != 0 || wLen < 16)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Invalid Info Manager Plugin message from %u", dwUin);
+        return;
       }
-			break;
+      unpackDWord(&pDataBuf, &dwGuid1); // plugin request GUID
+      unpackDWord(&pDataBuf, &dwGuid2);
+      unpackDWord(&pDataBuf, &dwGuid3);
+      unpackDWord(&pDataBuf, &dwGuid4);
+      wLen -= 16;
 
-		default:
-			Netlib_Logf(ghServerNetlibUser, "Unknown wId2 (%u) in message (format 2)", wId);
-			break;
-		}
-	}
+      if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_INFO))
+      {
+        Netlib_Logf(ghServerNetlibUser, "User %u requests our info plugin list. NOT SUPPORTED YET", dwUin);
+      }
+      else
+        Netlib_Logf(ghServerNetlibUser, "Unknown Info Manager message from %u", dwUin);
+    }
+    else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_STATUS_PLUGIN))
+    { // status manager plugin
+      BYTE bLevel;
+
+			pDataBuf += 16;  /* unused stuff */
+			wLen -= 16;
+			unpackByte(&pDataBuf, &bMsgType);
+			wLen -= 1;
+
+      pDataBuf += 3; // unknown
+      wLen -= 3;
+      unpackByte(&pDataBuf, &bLevel);
+      if (bLevel != 0 || wLen < 16)
+      {
+        Netlib_Logf(ghServerNetlibUser, "Invalid Status Manager Plugin message from %u", dwUin);
+        return;
+      }
+      unpackDWord(&pDataBuf, &dwGuid1); // plugin request GUID
+      unpackDWord(&pDataBuf, &dwGuid2);
+      unpackDWord(&pDataBuf, &dwGuid3);
+      unpackDWord(&pDataBuf, &dwGuid4);
+      wLen -= 16;
+
+      if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_STATUS))
+      {
+        Netlib_Logf(ghServerNetlibUser, "User %u requests our status plugin list. NOT SUPPORTED YET", dwUin);
+      }
+      else
+        Netlib_Logf(ghServerNetlibUser, "Unknown Status Manager message from %u", dwUin);
+    }
+    else
+  	  Netlib_Logf(ghServerNetlibUser, "Unknown signature (%08x-%08x-%08x-%08x) in message (format 2)", dwGuid1, dwGuid2, dwGuid3, dwGuid4);
+  }
 	else
 	{
 		Netlib_Logf(ghServerNetlibUser, "Unknown wId1 (%u) in message (format 2)", wId);
@@ -686,6 +734,8 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 	DWORD dwPluginNameLen;
 	DWORD dwLengthToEnd;
 	DWORD dwDataLen;
+  DWORD q1,q2,q3,q4;
+  WORD qt;
 	char* szPluginName;
 	int typeId;
 
@@ -696,7 +746,11 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 	//
 	unpackLEWord(&pDataBuf, &wInfoLen);
 
-	pDataBuf += 18; // TODO: we need to check plugin GUID too, for Xtraz support
+  unpackDWord(&pDataBuf, &q1); // get data GUID & function id
+  unpackDWord(&pDataBuf, &q2);
+  unpackDWord(&pDataBuf, &q3);
+  unpackDWord(&pDataBuf, &q4);
+  unpackLEWord(&pDataBuf, &qt);
 
 	unpackLEDWord(&pDataBuf, &dwPluginNameLen);
 	szPluginName = (char *)malloc(dwPluginNameLen + 1);
@@ -705,7 +759,9 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 
 	pDataBuf += dwPluginNameLen + 15;
 
-	typeId = TypeStringToTypeId(szPluginName);
+  typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
+  if (!typeId)
+    Netlib_Logf(ghServerNetlibUser, "Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
 
 
 	// Length of remaining data
@@ -742,7 +798,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 		pDataBuf += dwDataLen;
 		wLen -= (WORD)dwDataLen;
 
-		handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
+		handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8, FALSE);
 		SAFE_FREE(&szMsg);
 	}
 	else if (typeId == MTYPE_CHAT && wAckType == 1)
@@ -766,7 +822,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 		if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
 			icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, (BYTE)typeId, bFlags);
 
-		handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf);
+		handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
 	}
 	else
 	{
@@ -807,7 +863,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 			unpackByte(&pmsg, &bFlags);
 			unpackLEWord(&pmsg, &wMsgLen);
 
-			handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg);
+			handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
 
 			Netlib_Logf(ghServerNetlibUser, "TYPE4 message thru server from %d, message type %d", dwUin, bMsgType);
 		}
@@ -830,54 +886,120 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 // Helper functions
 //
 
-
-// TODO: replace this with GUID identification (0.3.6)
-int TypeStringToTypeId(const char* pszType)
+int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType)
 {
   int nTypeID = 0;
 
-	if (!strcmp(pszType, "Web Page Address (URL)") ||
-		!strcmp(pszType, "Send Web Page Address (URL)") ||
-		!strcmp(pszType, "Send URL"))
-	{
-		nTypeID = MTYPE_URL;
-	}
-	else if (!strcmp(pszType, "Contacts") ||
-	  !strcmp(pszType, "Send Contacts"))
-	{
-		nTypeID = MTYPE_CONTACTS;
-	}
-	else if (!strcmp(pszType, "ICQ Chat"))
-	{
-		nTypeID = MTYPE_CHAT;
-	}
-	else if (!strcmp(pszType, "Send / Start ICQ Chat"))
-	{
-		nTypeID = MTYPE_CHAT;
-	}
-	else if (!strcmp(pszType, "File") ||
-    !strcmp(pszType, "Τΰιλ") ||
-		!strcmp(pszType, "File Transfer"))
-	{
-		nTypeID = MTYPE_FILEREQ;
-	}
-	else if (!strcmp(pszType, "Request For Contacts"))
-	{
-		nTypeID = MTYPE_REQUESTCONTACTS;
-	}
-  else if (!strcmp(pszType, "Send Greeting Card"))
+  if (wType==MGTYPE_STANDARD_SEND)
   {
-    nTypeID = MTYPE_GREETINGCARD;
+    if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_WEBURL))
+	  {
+		  nTypeID = MTYPE_URL;
+	  }
+	  else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_CONTACTS))
+	  {
+  		nTypeID = MTYPE_CONTACTS;
+	  }
+	  else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_CHAT))
+	  {
+  		nTypeID = MTYPE_CHAT;
+  	}
+	  else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_FILE))
+	  {
+		  nTypeID = MTYPE_FILEREQ;
+	  }
+    else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_GREETING_CARD))
+    {
+      nTypeID = MTYPE_GREETINGCARD;
+    }
+  }
+  else if (wType==MGTYPE_CONTACTS_REQUEST)
+  {
+    if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_CONTACTS))
+    {
+      nTypeID = MTYPE_REQUESTCONTACTS;
+    }
+    else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_XTRAZ_SCRIPT))
+    {
+      nTypeID = MTYPE_SCRIPT_DATA;
+    }
+	}
+  else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_XTRAZ_SCRIPT))
+  {
+    if (wType==MGTYPE_SCRIPT_INVITATION)
+    {
+      nTypeID = MTYPE_SCRIPT_INVITATION;
+    }
+    else if (wType==MGTYPE_SCRIPT_NOTIFY)
+    {
+      nTypeID = MTYPE_SCRIPT_NOTIFY;
+    }
   }
 
 	return nTypeID;
 }
 
 
+int getPluginTypeIdLen(int nTypeID)
+{
+  switch (nTypeID)
+  {
+  case MTYPE_SCRIPT_NOTIFY:
+    return 0x51;
+
+  case MTYPE_FILEREQ:
+    return 0x2B;
+
+  default:
+    return 0;
+  }
+}
+
+
+void packPluginTypeId(icq_packet *packet, int nTypeID)
+{
+  switch (nTypeID)
+  {
+  case MTYPE_SCRIPT_NOTIFY:
+    packLEWord(packet, 0x04f);                // Length
+
+    packGUID(packet, MGTYPE_XTRAZ_SCRIPT);    // Message Type GUID
+    packLEWord(packet, MGTYPE_SCRIPT_NOTIFY); // Function ID
+    packLEDWord(packet, 0x002a);              // Request type string
+    packBuffer(packet, "Script Plug-in: Remote Notification Arrive", 0x002a);
+
+    packDWord(packet, 0x00000100);            // Unknown binary stuff
+    packDWord(packet, 0x00000000);
+    packDWord(packet, 0x00000000);
+    packWord(packet, 0x0000);
+    packByte(packet, 0x00);
+
+    break;
+
+  case MTYPE_FILEREQ:
+    packLEWord(packet, 0x029);     // Length
+
+    packGUID(packet, MGTYPE_FILE); // Message Type GUID
+    packWord(packet, 0x0000);      // Unknown
+    packLEDWord(packet, 0x0004);   // Request type string
+    packBuffer(packet, "File", 0x0004);
+
+    packDWord(packet, 0x00000100); // More unknown binary stuff
+    packDWord(packet, 0x00010000);
+    packDWord(packet, 0x00000000);
+    packWord(packet, 0x0000);
+    packByte(packet, 0x00);
+
+    break;
+
+  default:
+    return;
+  }
+}
+
 
 static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
 {
-
 	DWORD dwLen;
 	DWORD dwTextLen;
 	char* szInfo;
@@ -983,7 +1105,6 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 			return INVALID_HANDLE_VALUE;
 		}
 
-
 		ccs.szProtoService = PSR_AWAYMSG;
 		ccs.hContact = hContact;
 		ccs.wParam = status;
@@ -1008,7 +1129,7 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 
 /* this function also processes direct packets, so it should be bulletproof */
 /* pMsg points to the beginning of the message */
-void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, DWORD dwRecvTimestamp2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg)
+void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, DWORD dwRecvTimestamp2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC)
 {
 	char* szMsg;
 	char* pszMsgField[2*MAX_CONTACTSSEND+1];
@@ -1166,7 +1287,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 	case MTYPE_AUTHREQ:       /* auth request */
 		/* format: nick FE first FE last FE email FE unk-char FE msg 00 */
 		{
-
 			CCSDATA ccs;
 			PROTORECVEVENT pre;
 			HANDLE hcontact;
@@ -1200,7 +1320,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 			pre.szMessage=(char *)szBlob;
 
 			CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
-
 		}
 		break;
 
@@ -1237,7 +1356,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 			strcpy((char *)pCurBlob,pszMsgField[3]);
 
 			CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
-
 		}
 		break;
 
@@ -1294,7 +1412,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 				SAFE_FREE(&isrList[i]);
 
 			SAFE_FREE(&(void*)isrList);
-
 		}
 		break;
 
@@ -1303,14 +1420,12 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
 		switch(dwUin)
 		{
-
 			case 1002:		/* SMS receipt */
 				handleSmsReceipt(pMsg, dwDataLen);
 				break;
 
 			case 1111:      /* icqmail 'you've got mail' - not processed */
 				break;
-
 		}
 		break;
 
@@ -1384,6 +1499,12 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
     Netlib_Logf(ghServerNetlibUser, "Received Greeting Card msg from %u", dwUin);
     break;
 
+  case MTYPE_SCRIPT_NOTIFY:
+    /* it's a xtraz notify request */
+    Netlib_Logf(ghServerNetlibUser, "Received Xtraz Notify Request from %u", dwUin);
+    handleXtrazNotify(dwUin, dwRecvTimestamp, dwRecvTimestamp2, wCookie, szMsg, wMsgLen, bThruDC);
+    break;
+
 	case MTYPE_AUTOAWAY:
 		if (modeMsgs.szAway)
 			icq_sendAwayMsgReplyServ(dwUin, dwRecvTimestamp, dwRecvTimestamp2, wCookie, (BYTE)type, &modeMsgs.szAway);
@@ -1420,18 +1541,14 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 }
 
 
-
 static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
-
 	DWORD dwUin;
 	WORD wCookie;
 	WORD wMessageFormat;
 	WORD wStatus;
-	BYTE nUinLen;
 	BYTE bMsgType;
 	BYTE bFlags;
-	BYTE szUin[10];
 	WORD wLength;
 	HANDLE hContact;
 
@@ -1447,27 +1564,9 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 		return;
 	}
 
-	unpackByte(&buf, &nUinLen);
-	wLen -= 1;
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
-	if (nUinLen > wLen)
-	{
-		Netlib_Logf(ghServerNetlibUser, "SNAC(4.B) Invalid UIN 1");
-		return;
-	}
-
-	unpackString(&buf, szUin, nUinLen);
-	wLen -= nUinLen;
-	szUin[nUinLen] = '\0';
-
-	if (!IsStringUIN(szUin))
-	{
-		Netlib_Logf(ghServerNetlibUser, "SNAC(4.B) Invalid UIN 2");
-		return;
-	}
-
-	dwUin = atoi(szUin);
-	hContact = HContactFromUIN(dwUin, 0);
+  hContact = HContactFromUIN(dwUin, 0);
 
 	buf += 2;   // 3. unknown
 	wLen -= 2;
@@ -1559,7 +1658,6 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 	}
 	else
 	{ // An ack of some kind
-
 		int ackType;
 		DWORD dwCookieUin;
 		message_cookie_data* pCookieData = NULL;
@@ -1592,10 +1690,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
 		case MTYPE_FILEREQ:
 			{
-
 				char* szMsg;
 				WORD wMsgLen;
-
 
 				// Message length
 				unpackLEWord(&buf, &wMsgLen);
@@ -1615,17 +1711,17 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
 		case MTYPE_PLUGIN:
 			{
-
 				DWORD dwLengthToEnd;
 				DWORD dwDataLen;
 				DWORD dwPluginNameLen;
 				int typeId;
 				WORD wInfoLen;
 				char* szPluginName;
+        DWORD q1,q2,q3,q4;
+        WORD qt;
 
 
 				Netlib_Logf(ghServerNetlibUser, "Parsing Greeting message response");
-
 
 				// Message
 				unpackLEWord(&buf, &wInfoLen);
@@ -1640,8 +1736,12 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 				unpackLEWord(&buf, &wInfoLen);
 				wLen -= 2;
 
-				buf += 18; // Some crap
-				wLen -= 18;
+        unpackDWord(&buf, &q1); // get data GUID & function id
+        unpackDWord(&buf, &q2);
+        unpackDWord(&buf, &q3);
+        unpackDWord(&buf, &q4);
+        unpackLEWord(&buf, &qt);
+        wLen -= 18;
 
 				unpackLEDWord(&buf, &dwPluginNameLen);
 				wLen -= 4;
@@ -1652,8 +1752,11 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 				buf += dwPluginNameLen + 15;
 				wLen -= ((WORD)dwPluginNameLen + 15);
 
-				typeId = TypeStringToTypeId(szPluginName);
+        typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
+        if (!typeId)
+          Netlib_Logf(ghServerNetlibUser, "Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
 
+        SAFE_FREE(&szPluginName);
 
 				// Length of remaining data
 				unpackLEDWord(&buf, &dwLengthToEnd);
@@ -1678,9 +1781,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
 				case MTYPE_FILEREQ:
 					{
-
 						char* szMsg;
-
 
 						Netlib_Logf(ghServerNetlibUser, "This is file ack");
 						szMsg = (char *)malloc(dwDataLen + 1);
@@ -1693,16 +1794,26 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 						handleFileAck(buf, wLen, dwUin, wCookie, wStatus, szMsg);
 						// No success protoack will be sent here, since all file requests
 						// will have been 'sent' when the server returns its ack
-
 					}
 					return;
+
+        case MTYPE_SCRIPT_NOTIFY:
+          {
+            char *szMsg;
+
+            szMsg = (char*)malloc(dwDataLen + 1);
+            if (dwDataLen > 0)
+              memcpy(szMsg, buf, dwDataLen);
+            szMsg[dwDataLen] = '\0';
+
+            handleXtrazNotifyResponse(dwUin, hContact, szMsg, dwDataLen);
+          }
+          return;
 
 				default:
 					Netlib_Logf(ghServerNetlibUser, "I'm confused, received unknown ack in extended channel 2 message response");
 					return;
-
 				}
-
 			}
 			break;
 
@@ -1731,7 +1842,6 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 		default:
 			Netlib_Logf(ghServerNetlibUser, "SNAC(4.B) Unknown message type (%u) in switch", bMsgType);
 			return;
-
 		}
 
 		if ((ackType == MTYPE_PLAIN && pCookieData && (pCookieData->nAckType == ACKTYPE_CLIENT)) ||
@@ -1776,7 +1886,6 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
 			return;
 		}
-
 
 		// Not all of these are actually used in family 4
 		// This will be moved into a special error handling function later
@@ -1855,7 +1964,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 			nMessageType = ACKTYPE_URL;
 			break;
 
-		case MTYPE_PLUGIN:
+		case MTYPE_CONTACTS:
 			nMessageType = ACKTYPE_CONTACTS;
 			break;
 
@@ -1877,6 +1986,14 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
 		SAFE_FREE(&pszErrorMessage);
 	}
+  else
+  {
+    WORD wError;
+
+    unpackWord(&buf, &wError);
+
+    LogFamilyError(ICQ_MSG_FAMILY, wError);
+  }
 }
 
 
@@ -1925,7 +2042,6 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 
 	if (FindCookie((WORD)dwSequence, &dwUin, &pCookieData))
 	{
-
 		// If the user requested a full ack, the
 		// server ack should be ignored here.
 		if (pCookieData && (pCookieData->nAckType == ACKTYPE_SERVER))
@@ -1970,6 +2086,8 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 					break;
 
 				default:
+          SAFE_FREE(&pCookieData); // this could be a bad idea, but I think it is safe
+          FreeCookie((WORD)dwSequence);
 					break;
 				}
 			}
@@ -1987,15 +2105,12 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 
 static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
-
 	DWORD dwUin;
 	WORD wChannel;
 	WORD wWarningLevel;
 	WORD wCount;
 	WORD wError;
 	WORD wTLVCount;
-	BYTE nUIDLen;
-	char* pszUID;
 	char* pszErrorMsg;
 	oscar_tlv_chain* pChain;
 
@@ -2009,30 +2124,7 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 
 
 	// Sender
-	unpackByte(&buf, &nUIDLen);
-	wLen -= 1;
-
-	if (nUIDLen > wLen)
-	{
-		Netlib_Logf(ghServerNetlibUser, "SNAC(4.A) Invalid UIN 1");
-		return;
-	}
-
-	if (!(pszUID = malloc(nUIDLen+1)))
-		return; // Memory failure
-	unpackString(&buf, pszUID, nUIDLen);
-	wLen -= nUIDLen;
-	pszUID[nUIDLen] = '\0';
-
-	if (!IsStringUIN(pszUID))
-	{
-		Netlib_Logf(ghServerNetlibUser, "SNAC(4.A) Invalid UIN 2");
-		SAFE_FREE(&pszUID);
-		return;
-	}
-
-	dwUin = atoi(pszUID);
-	SAFE_FREE(&pszUID);
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
 	if (wLen < 8)
 		return; // Too short
@@ -2212,7 +2304,7 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 
 	p.wLen = 23 + byUinlen;
 	write_flap(&p, ICQ_DATA_CHAN);
-	packFNACHeader(&p, ICQ_MSG_FAMILY, ICQ_MTN, 0, ICQ_MTN<<0x10);
+	packFNACHeader(&p, ICQ_MSG_FAMILY, ICQ_MSG_MTN, 0, ICQ_MSG_MTN<<0x10);
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packWord(&p, 0x01);               // Channel

@@ -42,9 +42,6 @@
 #include "icqoscar.h"
 
 
-
-extern char gpszICQProtoName[MAX_PATH];
-
 typedef struct icq_capability_s
 {
 	DWORD fdwMirandaID;              // A bitmask, we use it in order to save database space

@@ -37,11 +37,8 @@
 #include "icqoscar.h"
 
 
-extern HANDLE ghServerNetlibUser, hDirectNetlibUser;
-
 void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength)
 {
-
 	snac_header* pSnacHeader = NULL;
 
 
@@ -81,7 +78,7 @@ void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength)
 			handleBosFam(pBuffer, wBufferLength, pSnacHeader);
 			break;
 			
-		case ICQ_STATUS_FAMILY:
+		case ICQ_STATS_FAMILY:
 			handleStatusFam(pBuffer, wBufferLength, pSnacHeader);
 			break;
 			
@@ -98,18 +95,15 @@ void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength)
 			break;
 
 		}
-		
-	}
+  }
 	
 	// Clean up and exit
 	SAFE_FREE(&pSnacHeader);
-
 }
 
 
 snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
 {
-
 	snac_header* pSnacHeader = NULL;
   WORD wRef1, wRef2;
 
@@ -182,7 +176,42 @@ snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
 		pSnacHeader->bValid = TRUE;
 	}
 
-	
 	return pSnacHeader;
+}
 
+
+void LogFamilyError(WORD wFamily, WORD wError)
+{
+	char *msg;
+
+	switch(wError) 
+  {
+	  case 0x01: msg = "Invalid SNAC header"; break;
+	  case 0x02: msg = "Server rate limit exceeded"; break;
+	  case 0x03: msg = "Client rate limit exceeded"; break;
+	  case 0x04: msg = "Recipient is not logged in"; break;
+	  case 0x05: msg = "Requested service unavailable"; break;
+	  case 0x06: msg = "Requested service not defined"; break;
+	  case 0x07: msg = "You sent obsolete SNAC"; break;
+	  case 0x08: msg = "Not supported by server"; break;
+	  case 0x09: msg = "Not supported by client"; break;
+	  case 0x0A: msg = "Refused by client"; break;
+	  case 0x0B: msg = "Reply too big"; break;
+	  case 0x0C: msg = "Responses lost"; break;
+	  case 0x0D: msg = "Request denied"; break;
+	  case 0x0E: msg = "Incorrect SNAC format"; break;
+	  case 0x0F: msg = "Insufficient rights"; break;
+	  case 0x10: msg = "In local permit/deny (recipient blocked)"; break;
+	  case 0x11: msg = "Sender too evil"; break;
+	  case 0x12: msg = "Receiver too evil"; break;
+	  case 0x13: msg = "User temporarily unavailable"; break;
+	  case 0x14: msg = "No match"; break;
+	  case 0x15: msg = "List overflow"; break;
+	  case 0x16: msg = "Request ambiguous"; break;
+	  case 0x17: msg = "Server queue full"; break;
+	  case 0x18: msg = "Not while on AOL"; break;
+	  default:	 msg = ""; break;
+	}
+
+	Netlib_Logf(ghServerNetlibUser, "SNAC(x%02X,x01) - Error(%u): %s", wFamily, wError, msg);
 }

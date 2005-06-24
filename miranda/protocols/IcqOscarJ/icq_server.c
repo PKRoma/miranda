@@ -38,12 +38,7 @@
 
 
 
-extern int gnCurrentStatus;
-extern BYTE gbSsiEnabled;
-extern HANDLE ghServerNetlibUser, hDirectNetlibUser;
-extern DWORD dwLocalUIN;
 extern CRITICAL_SECTION connectionHandleMutex;
-extern char gpszICQProtoName[MAX_PATH];
 extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
 extern HANDLE hKeepAliveEvent;
@@ -55,6 +50,7 @@ DWORD dwLocalDirectConnCookie;
 HANDLE hServerPacketRecver;
 static pthread_t serverThreadId;
 HANDLE hDirectBoundPort;
+int bReinitRecver = 0;
 
 static int handleServerPackets(unsigned char* buf, int len, serverthread_start_info* info);
 static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted);
@@ -109,11 +105,11 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 		nlb.cbSize = sizeof(nlb);
 		nlb.pfnNewConnection = icq_newConnectionReceived;
-    hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hDirectNetlibUser, (LPARAM)&nlb);
+    hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
     if (!hDirectBoundPort && (GetLastError() == 87))
     { // this ensures old Miranda also can bind a port for a dc
       nlb.cbSize = NETLIBBIND_SIZEOF_V1;
-      hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hDirectNetlibUser, (LPARAM)&nlb);
+      hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
     }
 		if (hDirectBoundPort == NULL)
 		{
@@ -133,8 +129,17 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
     packetRecv.cbSize = sizeof(packetRecv);
     packetRecv.dwTimeout = INFINITE;
+    bReinitRecver = 0;
     for(;;)
     {
+      if (bReinitRecver)
+      { // we reconnected, reinit struct
+        bReinitRecver = 0;
+        ZeroMemory(&packetRecv, sizeof(packetRecv));
+        packetRecv.cbSize = sizeof(packetRecv);
+        packetRecv.dwTimeout = INFINITE;
+      }
+
 			recvResult = CallService(MS_NETLIB_GETMOREPACKETS,(WPARAM)hServerPacketRecver, (LPARAM)&packetRecv);
 
 			if (recvResult == 0)
@@ -145,7 +150,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 			if (recvResult == SOCKET_ERROR)
 			{
-				Netlib_Logf(ghServerNetlibUser, "Abortive closure of server socket");
+				Netlib_Logf(ghServerNetlibUser, "Abortive closure of server socket, error: %d", GetLastError());
 				break;
 			}
 
@@ -220,6 +225,7 @@ void icq_serverDisconnect()
     int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, (LPARAM)0);
     if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
 		Netlib_CloseHandle(hServerConn);
+    FreeGatewayIndex(hServerConn);
 		hServerConn = NULL;
 		LeaveCriticalSection(&connectionHandleMutex);
     
@@ -282,7 +288,7 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
 
 		case ICQ_CLOSE_CHAN:
 			handleCloseChannel(buf, datalen);
-			return 0;
+      break; // we need this for walking thru proxy
 
 		case ICQ_PING_CHAN:
 			handlePingChannel(buf, datalen);

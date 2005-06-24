@@ -35,26 +35,19 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
-
-
+#include "m_cluiframes.h"
 
 static void handleUserOffline(BYTE* buf, WORD wPackLen);
 static void handleUserOnline(BYTE* buf, WORD wPackLen);
 static void handleReplyBuddy(BYTE* buf, WORD wPackLen);
 
 extern DWORD dwLocalDirectConnCookie;
-extern HANDLE ghServerNetlibUser;
-extern char gpszICQProtoName[MAX_PATH];
-
-extern byte gbAvatarsEnabled;
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
-
 	switch (pSnacHeader->wSubtype)
 	{
-
 	case ICQ_USER_ONLINE:
 		handleUserOnline(pBuffer, wBufferLength);
 		break;
@@ -67,13 +60,25 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 		handleReplyBuddy(pBuffer, wBufferLength);
 		break;
 
+  case ICQ_ERROR:
+  {
+    WORD wError;
+
+    if (wBufferLength >= 2)
+      unpackWord(&pBuffer, &wError);
+    else 
+      wError = 0;
+
+    LogFamilyError(ICQ_BUDDY_FAMILY, wError);
+    break;
+  }
+
 	default:
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x03,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
-
 	}
-
 }
+
 
 typedef unsigned char capstr[0x10];
 
@@ -93,6 +98,112 @@ capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize)
   }
   return 0;
 }
+
+
+const capstr capXStatus[24] = {
+  {0x01, 0xD8, 0xD7, 0xEE, 0xAC, 0x3B, 0x49, 0x2A, 0xA5, 0x8D, 0xD3, 0xD8, 0x77, 0xE6, 0x6B, 0x92},
+  {0x5A, 0x58, 0x1E, 0xA1, 0xE5, 0x80, 0x43, 0x0C, 0xA0, 0x6F, 0x61, 0x22, 0x98, 0xB7, 0xE4, 0xC7},
+  {0x83, 0xC9, 0xB7, 0x8E, 0x77, 0xE7, 0x43, 0x78, 0xB2, 0xC5, 0xFB, 0x6C, 0xFC, 0xC3, 0x5B, 0xEC},
+  {0xE6, 0x01, 0xE4, 0x1C, 0x33, 0x73, 0x4B, 0xD1, 0xBC, 0x06, 0x81, 0x1D, 0x6C, 0x32, 0x3D, 0x81},
+  {0x8C, 0x50, 0xDB, 0xAE, 0x81, 0xED, 0x47, 0x86, 0xAC, 0xCA, 0x16, 0xCC, 0x32, 0x13, 0xC7, 0xB7},
+  {0x3F, 0xB0, 0xBD, 0x36, 0xAF, 0x3B, 0x4A, 0x60, 0x9E, 0xEF, 0xCF, 0x19, 0x0F, 0x6A, 0x5A, 0x7F},
+  {0xF8, 0xE8, 0xD7, 0xB2, 0x82, 0xC4, 0x41, 0x42, 0x90, 0xF8, 0x10, 0xC6, 0xCE, 0x0A, 0x89, 0xA6},
+  {0x80, 0x53, 0x7D, 0xE2, 0xA4, 0x67, 0x4A, 0x76, 0xB3, 0x54, 0x6D, 0xFD, 0x07, 0x5F, 0x5E, 0xC6},
+  {0xF1, 0x8A, 0xB5, 0x2E, 0xDC, 0x57, 0x49, 0x1D, 0x99, 0xDC, 0x64, 0x44, 0x50, 0x24, 0x57, 0xAF},
+  {0x1B, 0x78, 0xAE, 0x31, 0xFA, 0x0B, 0x4D, 0x38, 0x93, 0xD1, 0x99, 0x7E, 0xEE, 0xAF, 0xB2, 0x18},
+  {0x61, 0xBE, 0xE0, 0xDD, 0x8B, 0xDD, 0x47, 0x5D, 0x8D, 0xEE, 0x5F, 0x4B, 0xAA, 0xCF, 0x19, 0xA7},
+  {0x48, 0x8E, 0x14, 0x89, 0x8A, 0xCA, 0x4A, 0x08, 0x82, 0xAA, 0x77, 0xCE, 0x7A, 0x16, 0x52, 0x08},
+  {0x10, 0x7A, 0x9A, 0x18, 0x12, 0x32, 0x4D, 0xA4, 0xB6, 0xCD, 0x08, 0x79, 0xDB, 0x78, 0x0F, 0x09},
+  {0x6F, 0x49, 0x30, 0x98, 0x4F, 0x7C, 0x4A, 0xFF, 0xA2, 0x76, 0x34, 0xA0, 0x3B, 0xCE, 0xAE, 0xA7},
+  {0x12, 0x92, 0xE5, 0x50, 0x1B, 0x64, 0x4F, 0x66, 0xB2, 0x06, 0xB2, 0x9A, 0xF3, 0x78, 0xE4, 0x8D},
+  {0xD4, 0xA6, 0x11, 0xD0, 0x8F, 0x01, 0x4E, 0xC0, 0x92, 0x23, 0xC5, 0xB6, 0xBE, 0xC6, 0xCC, 0xF0},
+  {0x60, 0x9D, 0x52, 0xF8, 0xA2, 0x9A, 0x49, 0xA6, 0xB2, 0xA0, 0x25, 0x24, 0xC5, 0xE9, 0xD2, 0x60},
+  {0x63, 0x62, 0x73, 0x37, 0xA0, 0x3F, 0x49, 0xFF, 0x80, 0xE5, 0xF7, 0x09, 0xCD, 0xE0, 0xA4, 0xEE},
+  {0x1F, 0x7A, 0x40, 0x71, 0xBF, 0x3B, 0x4E, 0x60, 0xBC, 0x32, 0x4C, 0x57, 0x87, 0xB0, 0x4C, 0xF1},
+  {0x78, 0x5E, 0x8C, 0x48, 0x40, 0xD3, 0x4C, 0x65, 0x88, 0x6F, 0x04, 0xCF, 0x3F, 0x3F, 0x43, 0xDF},
+  {0xA6, 0xED, 0x55, 0x7E, 0x6B, 0xF7, 0x44, 0xD4, 0xA5, 0xD4, 0xD2, 0xE7, 0xD9, 0x5C, 0xE8, 0x1F},
+  {0x12, 0xD0, 0x7E, 0x3E, 0xF8, 0x85, 0x48, 0x9E, 0x8E, 0x97, 0xA7, 0x2A, 0x65, 0x51, 0xE5, 0x8D},
+  {0xBA, 0x74, 0xDB, 0x3E, 0x9E, 0x24, 0x43, 0x4B, 0x87, 0xB6, 0x2F, 0x6B, 0x8D, 0xFE, 0xE5, 0x0F},
+  {0x63, 0x4F, 0x6B, 0xD8, 0xAD, 0xD2, 0x4A, 0xA1, 0xAA, 0xB9, 0x11, 0x5B, 0xC2, 0x6D, 0x05, 0xA1}};
+
+const char* nameXStatus[24] = {
+  "Angry",
+  "Duck",
+  "Tired",
+  "Party",
+  "Beer",
+  "Thinking",
+  "Eating",
+  "TV",
+  "Friends",
+  "Coffee",
+  "Music",
+  "Business",
+  "Camera",
+  "Funny",
+  "Phone",
+  "Games",
+  "College",
+  "Shopping",
+  "Sick",
+  "Sleeping",
+  "Surfing",
+  "Internet",
+  "Engineering",
+  "Typing"};
+
+static void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
+{
+  IconExtraColumn iec;
+
+  if (!gbXStatusEnabled) return;
+
+  if (caps)
+  {
+    int i;
+
+    for (i = 0; i<24; i++)
+    {
+      if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
+      {
+        char *szNotify;
+        int nNotifyLen;
+
+        if (DBGetContactSettingByte(hContact, gpszICQProtoName, "XStatusId", 0) == (i + 1))
+        { // status did not changed - we do not request details again
+          return;
+        }
+
+        DBWriteContactSettingByte(hContact, gpszICQProtoName, "XStatusId", (BYTE)(i+1));
+        DBWriteContactSettingString(hContact, gpszICQProtoName, "XStatusName", nameXStatus[i]);
+
+        nNotifyLen = 94 + UINMAXLEN;
+        szNotify = (char*)malloc(nNotifyLen);
+        nNotifyLen = mir_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
+
+        SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify);
+
+        SAFE_FREE(&szNotify);
+
+	  		iec.cbSize = sizeof(iec);
+		  	iec.hImage = ghXStatusIcons[i];
+			  iec.ColumnType = EXTRA_ICON_ADV1;
+			  CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+
+        return;
+      }
+    }
+  }
+  DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusId");
+  DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusName");
+  DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusMsg");
+
+  iec.cbSize = sizeof(iec);
+  iec.hImage = (HANDLE)-1;
+  iec.ColumnType = EXTRA_ICON_ADV1;
+  CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+}
+
 
 const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
@@ -122,6 +233,7 @@ char* cliLibicqUTF = "libicq2000 (Unicode)";
 char* cliTrillian  = "Trillian";
 char* cliQip       = "QIP 200%c%c";
 char* cliIM2       = "IM2";
+char* cliSpamBot   = "Spam Bot";
 
 
 // TLV(1) Unknown (x50)
@@ -158,36 +270,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 
 	// Unpack the sender's user ID
-	{
-		BYTE nUIDLen;
-		char* pszUID;
-
-		unpackByte(&buf, &nUIDLen);
-		wLen -= 1;
-
-		if (nUIDLen > wLen)
-		{
-			Netlib_Logf(ghServerNetlibUser, "SNAC(3.B) Invalid UIN 1");
-			return;
-		}
-
-		if (!(pszUID = malloc(nUIDLen+1)))
-			return; // Memory failure
-		unpackString(&buf, pszUID, nUIDLen);
-		wLen -= nUIDLen;
-		pszUID[nUIDLen] = '\0';
-
-		if (!IsStringUIN(pszUID))
-		{
-			Netlib_Logf(ghServerNetlibUser, "SNAC(3.B) Invalid UIN 2");
-			SAFE_FREE(&pszUID);
-			return;
-		}
-
-		dwUIN = atoi(pszUID);
-		SAFE_FREE(&pszUID);
-	}
-
+  if (!unpackUID(&buf, &wLen, &dwUIN, NULL)) return;
 
 	// Syntax check
 	if (wLen < 4)
@@ -330,6 +413,15 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       else if (dwFT1 == 0x3FF19BEB && dwFT3 == 0x3FF19BEB)
       {
         szClient = cliIM2;
+      }
+      else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
+      {
+        DWORD tNow = time(NULL);
+
+        if (dwFT1 < tNow && dwFT1 > (tNow - 86400))
+        {
+          szClient = cliSpamBot;
+        }
       }
 		}
 		else
@@ -576,6 +668,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 					AddCapabilitiesFromBuffer(hContact, pTLV->pData, pTLV->wLen);
 
+          // handle Xtraz status
+          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen);
+
           // check capabilities for client identification
           if (MatchCap(pTLV->pData, pTLV->wLen, &capTrillian, 0x10) || MatchCap(pTLV->pData, pTLV->wLen, &capTrilCrypt, 0x10))
           { // this is Trillian, check for new version
@@ -744,6 +839,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 				else
 				{
 					Netlib_Logf(ghServerNetlibUser, "No capability info TLV");
+          // clear XStatus
+          handleXStatusCaps(hContact, NULL, 0);
 				}
 
 #ifdef _DEBUG
@@ -758,11 +855,19 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 					ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
 					Netlib_Logf(ghServerNetlibUser, "Forcing simple messages due to compability issues");
 				}
-
 			}
       else
       {
         szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
+
+				// Get Capability Info TLV
+				pTLV = getTLV(pChain, 0x0D, 1);
+
+				if (pTLV && (pTLV->wLen >= 16))
+				{
+          // handle Xtraz status
+          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen);
+        }
       }
 		}
 
@@ -818,12 +923,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "IP",           dwIP);
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "RealIP",       dwRealIP);
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "DirectCookie", dwDirectConnCookie);
+    DBWriteContactSettingByte(hContact,   gpszICQProtoName, "DCType",       (BYTE)nTCPFlag);
 		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "UserPort",     (WORD)(dwPort & 0xffff));
 		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "Version",      wVersion);
 		if (szClient != (char*)-1) DBWriteContactSettingString(hContact, gpszICQProtoName, "MirVer",       szClient);
 		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "Status",       (WORD)IcqStatusToMiranda(wStatus));
 		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "IdleTS",       tIdleTS);
-
 
 		// Update info?
 		if ((time(NULL) - DBGetContactSettingDword(hContact, gpszICQProtoName, "InfoTS", 0)) > UPDATE_THRESHOLD)
@@ -833,7 +938,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	{
 		dwLocalDirectConnCookie = dwDirectConnCookie;
 	}
-
 
 	// And a small log notice...
 	Netlib_Logf(ghServerNetlibUser, "%u changed status to %s (v%d).",
@@ -845,42 +949,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 static void handleUserOffline(BYTE *buf, WORD wLen)
 {
-
 	HANDLE hContact;
 	DWORD dwUIN;
 
-
 	// Unpack the sender's user ID
-	{
-		BYTE nUIDLen;
-		char* pszUID;
-
-		unpackByte(&buf, &nUIDLen);
-		wLen -= 1;
-
-		if (nUIDLen > wLen)
-		{
-			Netlib_Logf(ghServerNetlibUser, "SNAC(3.C) Invalid UIN 1");
-			return;
-		}
-
-		if (!(pszUID = malloc(nUIDLen+1)))
-			return; // Memory failure
-		unpackString(&buf, pszUID, nUIDLen);
-		wLen -= nUIDLen;
-		pszUID[nUIDLen] = '\0';
-
-		if (!IsStringUIN(pszUID))
-		{
-			Netlib_Logf(ghServerNetlibUser, "SNAC(3.C) Invalid UIN 2");
-			SAFE_FREE(&pszUID);
-			return;
-		}
-
-		dwUIN = atoi(pszUID);
-		SAFE_FREE(&pszUID);
-	}
-
+  if (!unpackUID(&buf, &wLen, &dwUIN, NULL)) return;
 
 	hContact = HContactFromUIN(dwUIN, 0);
 
@@ -890,22 +963,21 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
 		Netlib_Logf(ghServerNetlibUser, "%u went offline.", dwUIN);
 		DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 		DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
+    // clear Xtraz status
+    handleXStatusCaps(hContact, NULL, 0);
 	}
-
 }
 
 
 
 static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
 {
-
 	oscar_tlv_chain *pChain;
 
 	pChain = readIntoTLVChain(&buf, wPackLen, 0);
 
 	if (pChain)
 	{
-
 		DWORD wMaxUins;
 		DWORD wMaxWatchers;
 
@@ -916,11 +988,9 @@ static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
 		Netlib_Logf(ghServerNetlibUser, "MaxWatchers %u", wMaxWatchers);
 
 		disposeChain(&pChain);
-
 	}
 	else
 	{
 		Netlib_Logf(ghServerNetlibUser, "Error: Malformed BuddyRepyl");
 	}
-
 }
