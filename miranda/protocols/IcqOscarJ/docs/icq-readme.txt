@@ -32,6 +32,31 @@ ______________
 Changes
 _______
 
+
+0.3.6
+
+Bugfixes:
+  Our own contact in list now correctly handles events
+  Proxy Gateway mode is working again
+  Incorporated some bugfixes from ISee (thx Bio)
+
+New Features:
+  Messaging support enhanced (P2P messaging supported)
+  Direct Connection support rewritten (with P2P messaging and reverse file-transfers)
+  Temporary Visible List support
+  New Features page in options to configure extra features
+  Custom statuses just like icq5 - needs clist_mw derivative (thx Big Muscle)
+TODO: AIM cross-compatability (only messages)
+
+Improvements:
+  Advanced search now uses newer method (thx Bio)
+  Better protocol error handling
+  Detects some spam bots
+TODO:  Display error messages using Popup Plugin
+TODO:  Merged with ChangeInfo (thx Bio)
+TODO:  Manage server-list dialog now groups requests - much faster
+
+
 0.3.5.2
 
 Bugfixes:
