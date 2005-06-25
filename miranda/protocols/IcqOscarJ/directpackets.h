@@ -50,6 +50,6 @@ void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason);
 DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
 
 void icq_sendXtrazRequestDirect(DWORD dwUin, HANDLE hContact, DWORD dwCookie, char* szBody, int nBodyLen, WORD wType);
-void icq_sendXtrazResponseDirect(DWORD dwUin, HANDLE hContact, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szBody, int nBodyLen, WORD wType);
+void icq_sendXtrazResponseDirect(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType);
 
 #endif /* __ICQ_DIRECTPACKETS_H */

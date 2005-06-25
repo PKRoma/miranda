@@ -198,17 +198,6 @@ int icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *p
   packLEWord(&packet, 1); // message
   packByte(&packet, 0);
   packPluginTypeId(&packet, MTYPE_FILEREQ);
-/*  packLEWord(&packet, 0x29); // ?? length
-  packGUID(&packet, MGTYPE_FILE); // type GUID
-  packWord(&packet, 0);           // function
-  packLEDWord(&packet, 4);
-  packBuffer(&packet, "File", 4); // type string
-
-	packDWord(&packet, 0x00000100); // More unknown binary stuff
-	packDWord(&packet, 0x00010000);
-	packDWord(&packet, 0x00000000);
-	packWord(&packet, 0x0000);
-	packByte(&packet, 0x00);*/
 
 	packLEDWord(&packet, (WORD)(18 + strlen(szDescription) + strlen(pszFiles)+1)); // Remaining length
 	packLEDWord(&packet, (WORD)(strlen(szDescription)));          // Description
@@ -259,11 +248,36 @@ DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage,
 
 void icq_sendXtrazRequestDirect(DWORD dwUin, HANDLE hContact, DWORD dwCookie, char* szBody, int nBodyLen, WORD wType)
 {
-  // TODO:
+  icq_packet packet;
+
+  packDirectMsgHeader(&packet, (WORD)(11 + getPluginTypeIdLen(wType) + nBodyLen), DIRECT_MESSAGE, dwCookie, MTYPE_PLUGIN, 0, 0, 1);
+  packLEWord(&packet, 1); // message
+  packByte(&packet, 0);
+  packPluginTypeId(&packet, wType);
+
+  packLEDWord(&packet, nBodyLen + 4);
+  packLEDWord(&packet, nBodyLen);
+  packBuffer(&packet, szBody, (WORD)nBodyLen);
+
+	SendDirectMessage(hContact, &packet);
 }
 
 
-void icq_sendXtrazResponseDirect(DWORD dwUin, HANDLE hContact, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szBody, int nBodyLen, WORD wType)
+void icq_sendXtrazResponseDirect(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType)
 {
-  // TODO:
+	icq_packet packet;
+
+	packDirectMsgHeader(&packet, (WORD)(getPluginTypeIdLen(wType) + 11 + nBodyLen), DIRECT_ACK, wCookie, MTYPE_PLUGIN, 0, 0, 0);
+	//
+	packLEWord(&packet, 1); // Message len
+	packByte(&packet, 0);   // Message (unused)
+
+  packPluginTypeId(&packet, wType);
+
+  packLEDWord(&packet, nBodyLen + 4);
+  packLEDWord(&packet, nBodyLen);
+  packBuffer(&packet, szBody, (WORD)nBodyLen);
+
+	// Send the monster
+	sendServPacket(&packet);
 }

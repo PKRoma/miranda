@@ -390,6 +390,22 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
       case MTYPE_CONTACTS:
         ackType = ACKTYPE_CONTACTS;
         break;
+      case MTYPE_SCRIPT_NOTIFY:
+        {
+          char *szMsg;
+
+          szMsg = (char*)malloc(dwDataLength + 1);
+          if (dwDataLength > 0)
+            memcpy(szMsg, buf, dwDataLength);
+          szMsg[dwDataLength] = '\0';
+
+          handleXtrazNotifyResponse(dwCookieUin, dc->hContact, szMsg, dwDataLength);
+
+          SAFE_FREE(&pCookieData);
+          FreeCookie(wCookie);
+        }
+        break;
+
       default:
         Netlib_Logf(ghDirectNetlibUser, "Skipped packet from direct connection");
         break;
