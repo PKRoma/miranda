@@ -385,6 +385,7 @@ int SSL_OpenSsl::init()
 		return 1;
 	}
 
+	pfn_SSL_library_init();
 	sslCtx = pfn_SSL_CTX_new( pfn_SSLv23_client_method());
 	MSN_DebugLog( "OpenSSL context successully allocated" );
 	return 0;
@@ -451,7 +452,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 
 				strcat( buf+nBytes, "\r\n" );
 
-				MSN_DebugLog( "Sending SSL query:\n%s", buf );
+//				MSN_DebugLog( "Sending SSL query:\n%s", buf );
 				pfn_SSL_write( ssl, buf, strlen( buf ));
 
 				nBytes = pfn_SSL_read( ssl, buf, SSL_BUF_SIZE );
