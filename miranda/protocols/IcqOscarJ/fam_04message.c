@@ -1807,6 +1807,9 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             szMsg[dwDataLen] = '\0';
 
             handleXtrazNotifyResponse(dwUin, hContact, szMsg, dwDataLen);
+            
+            SAFE_FREE(&pCookieData);
+            FreeCookie(wCookie);
           }
           return;
 
