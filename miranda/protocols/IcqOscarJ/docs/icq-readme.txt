@@ -13,7 +13,7 @@ instant messenger network and communicate with other ICQ users.
 Known Problems
 ______________
 
-- In Invisible mode, when other side is not in visible list messages are sometimes 
+- In Invisible mode, when other side is not in visible list messages are sometimes
   received twice from some clients (it is a problem of that clients, they do send them
   twice)
 
@@ -25,7 +25,7 @@ ______________
   uploading contacts to server account has to be a new one, then contacts can be added
   and uploaded without auth... If the account is an old one they cannot be added without
   auth if they require one. So they are added with flag awaiting auth. With the new
-  Manage server list contacts added contacts should never receive auth requests, but 
+  Manage server list contacts added contacts should never receive auth requests, but
   if you have an old account they can receive added notification.
 
 
@@ -38,6 +38,7 @@ _______
 Bugfixes:
   Our own contact in list now correctly handles events
   Proxy Gateway mode is working again
+  File receiving from Trillian clients work again
   Incorporated some bugfixes from ISee (thx Bio)
 
 New Features:
