@@ -418,7 +418,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       {
         DWORD tNow = time(NULL);
 
-        if (dwFT1 < tNow && dwFT1 > (tNow - 86400))
+        if ((dwFT1 < tNow) && (dwFT1 > (tNow - 86400)))
         {
           szClient = cliSpamBot;
         }
