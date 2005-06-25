@@ -42,6 +42,7 @@ typedef struct icq_cookie_info_s
 	DWORD dwCookie;
 	DWORD dwUin;
 	void *pvExtra;
+  DWORD dwTime;
 } icq_cookie_info;
 
 typedef struct icq_ack_args_s

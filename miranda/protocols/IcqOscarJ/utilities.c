@@ -293,6 +293,7 @@ DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
   cookie[cookieCount].dwCookie = dwThisSeq;
   cookie[cookieCount].dwUin = dwUin;
   cookie[cookieCount].pvExtra = pvExtra;
+  cookie[cookieCount].dwTime = time(NULL);
   cookieCount++;
 
   LeaveCriticalSection(&cookieMutex);
@@ -393,6 +394,13 @@ void FreeCookie(DWORD dwCookie)
 			// Cookie found, exit loop
 			break;
 		}
+    if (cookie[i].dwTime + COOKIE_TIMEOUT < (DWORD)time(NULL))
+    { // cookie expired, remove too
+			cookieCount--;
+			memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
+			cookie = (icq_cookie_info*)realloc(cookie, sizeof(icq_cookie_info) * cookieCount);
+      i--; // fix the loop
+    }
 	}
 
 	LeaveCriticalSection(&cookieMutex);
@@ -759,10 +767,9 @@ void ResetSettingsOnLoad()
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
 			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
 			if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+      {
 				DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 
-      if (gbXStatusEnabled)
-      {
         DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusId");
         DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusName");
         DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusMsg");
