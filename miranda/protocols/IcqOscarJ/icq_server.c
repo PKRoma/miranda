@@ -38,6 +38,8 @@
 
 
 
+extern void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
+
 extern CRITICAL_SECTION connectionHandleMutex;
 extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
@@ -51,8 +53,6 @@ HANDLE hServerPacketRecver;
 static pthread_t serverThreadId;
 HANDLE hDirectBoundPort;
 int bReinitRecver = 0;
-
-extern void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
 
 static int handleServerPackets(unsigned char* buf, int len, serverthread_start_info* info);
 static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted);
@@ -168,7 +168,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 	}
 
 	// Time to shutdown
-	icq_serverDisconnect();
+	icq_serverDisconnect(FALSE);
 	if (gnCurrentStatus != ID_STATUS_OFFLINE)
 	{
 		SetCurrentStatus(ID_STATUS_OFFLINE);
@@ -214,7 +214,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 
 
-void icq_serverDisconnect()
+void icq_serverDisconnect(BOOL bBlock)
 {
 	EnterCriticalSection(&connectionHandleMutex);
 
@@ -228,11 +228,13 @@ void icq_serverDisconnect()
 		LeaveCriticalSection(&connectionHandleMutex);
     
 		// Not called from network thread?
-		if (GetCurrentThreadId() != serverThreadId.dwThreadId)
+		if (bBlock && GetCurrentThreadId() != serverThreadId.dwThreadId)
     {
 			while (WaitForSingleObjectEx(serverThreadId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
 		  CloseHandle(serverThreadId.hThread);
     }
+    else
+      CloseHandle(serverThreadId.hThread);
 	}
 	else
 		LeaveCriticalSection(&connectionHandleMutex);
@@ -343,7 +345,7 @@ void sendServPacket(icq_packet* pPacket)
 		if (nSendResult == SOCKET_ERROR)
 		{
 			icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Your connection with the ICQ server was abortively closed");
-			icq_serverDisconnect(0);
+			icq_serverDisconnect(FALSE);
 
 			if (gnCurrentStatus != ID_STATUS_OFFLINE)
 			{

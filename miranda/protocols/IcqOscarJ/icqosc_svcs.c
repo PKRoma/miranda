@@ -228,7 +228,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 			write_flap(&packet, ICQ_CLOSE_CHAN);
 			sendServPacket(&packet);
 
-			icq_serverDisconnect();
+			icq_serverDisconnect(FALSE);
 
 			SetCurrentStatus(ID_STATUS_OFFLINE);
 

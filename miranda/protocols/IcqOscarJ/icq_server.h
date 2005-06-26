@@ -48,7 +48,7 @@ char *migratedServer;
 
 /*---------* Functions *---------------*/
 
-void icq_serverDisconnect();
+void icq_serverDisconnect(BOOL bBlock);
 void sendServPacket(icq_packet *);
 void icq_login(const char *szPassword);
 

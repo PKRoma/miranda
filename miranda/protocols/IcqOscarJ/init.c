@@ -292,6 +292,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 int __declspec(dllexport) Unload(void)
 {
+  if (gbXStatusEnabled) gbXStatusEnabled = 10; // block clist changing
+
 	if (hServerConn)
 	{
 		icq_packet packet;
@@ -300,7 +302,7 @@ int __declspec(dllexport) Unload(void)
 		write_flap(&packet, ICQ_CLOSE_CHAN);
 		sendServPacket(&packet);
 
-		icq_serverDisconnect();
+		icq_serverDisconnect(TRUE);
 	}
 
 	UninitServerLists();

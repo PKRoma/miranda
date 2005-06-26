@@ -155,6 +155,7 @@ const char* nameXStatus[24] = {
 void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
 {
   IconExtraColumn iec;
+  HANDLE hIcon = (HANDLE)-1;
 
   if (!gbXStatusEnabled) return;
 
@@ -185,23 +186,26 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
 
         SAFE_FREE(&szNotify);
 
-	  		iec.cbSize = sizeof(iec);
-		  	iec.hImage = ghXStatusIcons[i];
-			  iec.ColumnType = EXTRA_ICON_ADV1;
-			  CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+        hIcon = ghXStatusIcons[i];
 
-        return;
+        break;
       }
     }
   }
-  DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusId");
-  DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusName");
-  DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusMsg");
+  else
+  {
+    DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusId");
+    DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusName");
+    DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusMsg");
+  }
 
-  iec.cbSize = sizeof(iec);
-  iec.hImage = (HANDLE)-1;
-  iec.ColumnType = EXTRA_ICON_ADV1;
-  CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+  if (gbXStatusEnabled != 10)
+  {
+    iec.cbSize = sizeof(iec);
+    iec.hImage = hIcon;
+    iec.ColumnType = EXTRA_ICON_ADV1;
+    CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+  }
 }
 
 
@@ -416,9 +420,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       }
       else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
       {
-        DWORD tNow = time(NULL);
+        DWORD tNow = getDWordFromChain(pChain, 0x03, 1);
 
-        if ((dwFT1 < tNow) && (dwFT1 > (tNow - 86400)))
+        if ((dwFT1 < tNow + 3600) && (dwFT1 > (tNow - 3600)))
         {
           szClient = cliSpamBot;
         }
@@ -942,7 +946,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	// And a small log notice...
 	Netlib_Logf(ghServerNetlibUser, "%u changed status to %s (v%d).",
 		dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
-
 }
 
 
