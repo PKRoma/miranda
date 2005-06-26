@@ -2454,15 +2454,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
              * of SENDJOBS_MAX_SENDS)
              */
            
-            if (wParam == TIMERID_AWAYMSG) {
+            if (wParam == TIMERID_AWAYMSG || wParam == TIMERID_AWAYMSG + 1) {
                 POINT pt;
-                RECT rc;
+                RECT rc, rcNick;
                 
                 KillTimer(hwndDlg, wParam);
                 dat->dwEventIsShown &= ~MWF_SHOW_AWAYMSGTIMER;
                 GetCursorPos(&pt);
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
-                if(PtInRect(&rc, pt)) {
+                GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcNick);
+                if(wParam == TIMERID_AWAYMSG && PtInRect(&rc, pt)) {
                     if(GetTickCount() - dat->lastRetrievedStatusMsg > 60000) {
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("Retrieving..."));
                         if(!(dat->hProcessAwayMsg = (HANDLE)CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_GETAWAYMSG, 0, 0)))
@@ -2471,6 +2472,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     else
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
+                }
+                else if(wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
+                    char szBuffer[128];
+                    mir_snprintf(szBuffer, sizeof(szBuffer), "Extended status: %s", xStatusDescr[dat->xStatus - 1]);
+                    SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELNICK, (LPARAM)szBuffer);
                 }
                 break;
             }
@@ -2921,7 +2927,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         }
         case WM_MOUSEMOVE:
             {
-                RECT rc;
+                RECT rc, rcNick;
                 POINT pt;
                 GetCursorPos(&pt);
                 
@@ -2932,9 +2938,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 else if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && !(dat->dwEventIsShown & MWF_SHOW_INFONOTES)) {
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
+                    GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcNick);
                     if(PtInRect(&rc, pt) && myGlobals.m_DoStatusMsg) { // && !PtInRect(&rc, dat->ptLast)) {
                         if(!(dat->dwEventIsShown & MWF_SHOW_AWAYMSGTIMER)) {
                             SetTimer(hwndDlg, TIMERID_AWAYMSG, 500, 0);
+                            dat->dwEventIsShown |= MWF_SHOW_AWAYMSGTIMER;
+                        }
+                        break;
+                    }
+                    else if(PtInRect(&rcNick, pt) && myGlobals.m_DoStatusMsg) {
+                        if(!(dat->dwEventIsShown & MWF_SHOW_AWAYMSGTIMER)) {
+                            SetTimer(hwndDlg, TIMERID_AWAYMSG + 1, 500, 0);
                             dat->dwEventIsShown |= MWF_SHOW_AWAYMSGTIMER;
                         }
                         break;
@@ -4796,7 +4810,7 @@ verify:
                 RECT rc;
                 char szTitle[256];
 #if defined(_UNICODE)
-                wchar_t szTitleW[256];
+                const wchar_t *szTitleW;
 #endif                
                 UINT id = wParam;
 
@@ -4812,12 +4826,24 @@ verify:
                     SendMessageA(dat->hwndTip, TTM_UPDATETIPTEXTA, 0, (LPARAM)&dat->ti);
                 }
                 SendMessage(dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
-                mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), dat->szNickname, dat->szStatus);
 #if defined(_UNICODE)
-                MultiByteToWideChar(dat->codePage, 0, szTitle, -1, szTitleW, 256);
-                szTitleW[255] = 0;
+                switch(id) {
+                    case IDC_PANELNICK:
+                        mir_snprintf(szTitle, sizeof(szTitle), Translate("%s has set an extended status"), dat->szNickname);
+                        break;
+                    default:
+                        mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), "%nick%", dat->szStatus);
+                }
+                szTitleW = EncodeWithNickname(szTitle, dat->szNickname, dat->codePage);
                 SendMessage(dat->hwndTip, TTM_SETTITLEW, 1, (LPARAM)szTitleW);
 #else
+                switch(id) {
+                    case IDC_PANELNICK:
+                        mir_snprintf(szTitle, sizeof(szTitle), Translate("%s has set an extended status"), dat->szNickname);
+                        break;
+                    default:
+                        mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), dat->szNickname, dat->szStatus);
+                }
                 SendMessage(dat->hwndTip, TTM_SETTITLEA, 1, (LPARAM)szTitle);
 #endif
                 SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&dat->ti);
