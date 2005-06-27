@@ -61,7 +61,7 @@ Note: For secure connections this plugin requires OpenSSL DLL
 5. History
 ----------
 0.0.3.0: 2005-06-27
- - Status descriptions compatible with MSClist
+ - Status descriptions compatible with MWClist
  - GG.dll now compiles on Visual C++ 6.0 and Visual C++ 2005
  - libgadu upgraded to version 20050615
  - Binaries are now compiled with VC++ 6.0
