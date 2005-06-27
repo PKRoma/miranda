@@ -199,7 +199,6 @@ int gg_normalizestatus(int status)
 // sets protocol status
 int gg_setstatus(WPARAM wParam, LPARAM lParam)
 {
-    BOOL bScreenSaverRunning;
     ggDesiredStatus = gg_normalizestatus((int) wParam);
 
     // Depreciated due status description changing
@@ -209,9 +208,6 @@ int gg_setstatus(WPARAM wParam, LPARAM lParam)
         (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wParam, 0),
         (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, ggDesiredStatus, 0));
 #endif
-    // Check screen saver
-    SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &bScreenSaverRunning, FALSE);
-
     // Status wicked code due Miranda incompatibility with status+descr changing in one shot
     // Status request is offline / just request disconnect
     if(ggDesiredStatus == ID_STATUS_OFFLINE)
