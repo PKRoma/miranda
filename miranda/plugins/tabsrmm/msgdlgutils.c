@@ -1702,3 +1702,18 @@ void LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat)
     }
 }
 
+/*
+ * paste contents of the clipboard into the message input area and send it immediately
+ */
+
+void HandlePasteAndSend(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(!myGlobals.m_PasteAndSend) {
+        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)Translate("The 'paste and send' feature is disabled. You can enable it on the 'General' options page in the 'Sending Messages' section"));
+        return;                                     // feature disabled
+    }
+    
+    SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+    if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
+        SendMessage(hwndDlg, WM_COMMAND, IDOK, 0);
+}

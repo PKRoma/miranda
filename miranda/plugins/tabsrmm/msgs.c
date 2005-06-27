@@ -374,7 +374,9 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
         if(pAck->result == ACKRESULT_SUCCESS) {
             if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
                 dat->hProcessAwayMsg = 0;
-                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, pAck->lParam);
+                strncpy(dat->statusMsg, (char *)pAck->lParam, sizeof(dat->statusMsg));
+                dat->statusMsg[sizeof(dat->statusMsg) - 1] = 0;
+                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, 0);
             }
         }
         else if(pAck->result = ACKRESULT_FAILED) {

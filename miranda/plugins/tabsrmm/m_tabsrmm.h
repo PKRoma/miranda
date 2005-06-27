@@ -294,7 +294,7 @@ struct MessageWindowData {
     HWND hwndTip;
     TOOLINFOA ti;
     DWORD lastRetrievedStatusMsg;
-    TCHAR statusMsg[1025];
+    char statusMsg[1025];
     HANDLE hProcessAwayMsg;
     DWORD timezone, timediff;
     DWORD panelStatusCX;
@@ -412,6 +412,8 @@ typedef struct _globals {
     int  m_DoStatusMsg;
     int m_smcxicon, m_smcyicon;
     DWORD local_gmt_diff;
+    int m_PasteAndSend;
+    char *m_szNoStatus;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

@@ -342,7 +342,6 @@
 #define IDC_AVATARMODE2                 1268
 #define IDC_CODEPAGES                   1268
 #define IDC_NOTIFYTYPE                  1269
-#define IDC_CODEPAGES2                  1269
 #define IDC_TIMEZONE                    1269
 #define IDC_NOTIFYTYPE2                 1270
 #define IDC_SENDFORMATTING              1270
@@ -652,6 +651,7 @@
 #define ID_Menu40217                    40217
 #define ID_PANELPICMENU_RESETTHEAVATAR  40218
 #define ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES 40220
+#define ID_EDITOR_PASTEANDSENDIMMEDIATELY 40221
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -659,7 +659,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        7
-#define _APS_NEXT_COMMAND_VALUE         40221
+#define _APS_NEXT_COMMAND_VALUE         40222
 #define _APS_NEXT_CONTROL_VALUE         1396
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

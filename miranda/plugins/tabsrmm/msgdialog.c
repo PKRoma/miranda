@@ -1170,10 +1170,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 ZeroMemory((void *)&dat->ti, sizeof(dat->ti));
                 dat->ti.cbSize = sizeof(dat->ti);
-                dat->ti.lpszText = Translate("No status message available");
+                dat->ti.lpszText = myGlobals.m_szNoStatus;
                 dat->ti.hinst = g_hInst;
                 dat->ti.hwnd = hwndDlg;
-                dat->ti.uFlags = TTF_TRACK | TTF_IDISHWND;
+                dat->ti.uFlags = TTF_TRACK | TTF_IDISHWND | TTF_TRANSPARENT;
                 dat->ti.uId = (UINT_PTR)hwndDlg;
                 SendMessageA(dat->hwndTip, TTM_ADDTOOLA, 0, (LPARAM)&dat->ti);
                 
@@ -2467,7 +2467,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(GetTickCount() - dat->lastRetrievedStatusMsg > 60000) {
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("Retrieving..."));
                         if(!(dat->hProcessAwayMsg = (HANDLE)CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_GETAWAYMSG, 0, 0)))
-                            SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("No status message available"));
+                            SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)myGlobals.m_szNoStatus);
                         dat->lastRetrievedStatusMsg = GetTickCount();
                     }
                     else
@@ -4065,16 +4065,11 @@ quote_from_last:
             }
             break;
         case WM_NOTIFY:
-            /*
             if(dat != 0 && ((NMHDR *)lParam)->hwndFrom == dat->hwndTip) {
-                if(((NMHDR *)lParam)->code == TTN_NEEDTEXT) {
-                    NMTTDISPINFO *nmtt = (NMTTDISPINFO *) lParam;
-                    nmtt->hinst = 0;
-                    nmtt->lpszText = testTooltip;
-                    nmtt->uFlags = TTF_IDISHWND;
-                }
+                if(((NMHDR *)lParam)->code == NM_CLICK)
+                    SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
                 break;
-            }*/
+            }
             switch (((NMHDR *) lParam)->idFrom) {
                 case IDC_CLIST:
                     switch (((NMHDR *) lParam)->code) {
@@ -4093,8 +4088,7 @@ quote_from_last:
                             WPARAM wp = ((MSGFILTER *) lParam)->wParam;
                             LPARAM lp = ((MSGFILTER *) lParam)->lParam;
                             CHARFORMAT2 cf2;
-                            if(IsWindowVisible(dat->hwndTip))
-                                SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+
                             if(msg == WM_CHAR) {
                                 if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                     switch (wp) {
@@ -4110,6 +4104,9 @@ quote_from_last:
                                         case 0x0f:              // ctrl - o
                                             if(dat->pContainer->hWndOptions == 0)
                                                 CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), dat->pContainer->hwnd, DlgProcContainerOptions, (LPARAM) dat->pContainer);
+                                            break;
+                                        case 0x04:              // ctrl - d  (paste and send)
+                                            HandlePasteAndSend(hwndDlg, dat);
                                             break;
                                         case 19:
                                             PostMessage(hwndDlg, WM_COMMAND, IDC_SENDMENU, (LPARAM)GetDlgItem(hwndDlg, IDC_SENDMENU));
@@ -4323,6 +4320,7 @@ quote_from_last:
                                             EnableMenuItem(hSubMenu, ID_EDITOR_LOADBACKGROUNDIMAGE, MF_BYCOMMAND | (iPrivateBG ? MF_GRAYED : MF_ENABLED));
                                             EnableMenuItem(hSubMenu, ID_EDITOR_REMOVEBACKGROUNDIMAGE, MF_BYCOMMAND | (iPrivateBG ? MF_GRAYED : MF_ENABLED));
                                             EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (dat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
+                                            EnableMenuItem(hSubMenu, ID_EDITOR_PASTEANDSENDIMMEDIATELY, MF_BYCOMMAND | (myGlobals.m_PasteAndSend ? MF_ENABLED : MF_GRAYED));
                                         }
                                         CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
                                         SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
@@ -4419,6 +4417,9 @@ quote_from_last:
                                                         InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, TRUE);
                                                         DBWriteContactSettingString(NULL, SRMSGMOD_T, "bgimage", "");
                                                     }
+                                                    break;
+                                                case ID_EDITOR_PASTEANDSENDIMMEDIATELY:
+                                                    HandlePasteAndSend(hwndDlg, dat);
                                                     break;
                                             }
                                         }
@@ -4806,7 +4807,10 @@ verify:
             
         case DM_ACTIVATETOOLTIP:
         {
-            if(dat->hwndTip && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+            if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->bInTray || dat->pContainer->hwndActive != hwndDlg)
+                break;
+
+            if(dat->hwndTip) {
                 RECT rc;
                 char szTitle[256];
 #if defined(_UNICODE)
@@ -4814,25 +4818,31 @@ verify:
 #endif                
                 UINT id = wParam;
 
-                if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->bInTray || dat->pContainer->hwndActive != hwndDlg)
-                    break;
-                
                 if(id == 0)
                     id = IDC_PANELSTATUS;
                 GetWindowRect(GetDlgItem(hwndDlg, id), &rc);
                 SendMessage(dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.bottom));
-                if(lParam) {
+                if(lParam)
                     dat->ti.lpszText = (char *)lParam;
-                    SendMessageA(dat->hwndTip, TTM_UPDATETIPTEXTA, 0, (LPARAM)&dat->ti);
+                else {
+                    if(lstrlenA(dat->statusMsg) > 0)
+                        dat->ti.lpszText = dat->statusMsg;
+                    else
+                        dat->ti.lpszText = myGlobals.m_szNoStatus;
                 }
+                    
+                SendMessageA(dat->hwndTip, TTM_UPDATETIPTEXTA, 0, (LPARAM)&dat->ti);
                 SendMessage(dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
 #if defined(_UNICODE)
                 switch(id) {
                     case IDC_PANELNICK:
                         mir_snprintf(szTitle, sizeof(szTitle), Translate("%s has set an extended status"), dat->szNickname);
                         break;
-                    default:
+                    case IDC_PANELSTATUS:
                         mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), "%nick%", dat->szStatus);
+                        break;
+                    default:
+                        mir_snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Information"));
                 }
                 szTitleW = EncodeWithNickname(szTitle, dat->szNickname, dat->codePage);
                 SendMessage(dat->hwndTip, TTM_SETTITLEW, 1, (LPARAM)szTitleW);
@@ -4841,8 +4851,11 @@ verify:
                     case IDC_PANELNICK:
                         mir_snprintf(szTitle, sizeof(szTitle), Translate("%s has set an extended status"), dat->szNickname);
                         break;
-                    default:
+                    case IDC_PANELSTATUS:
                         mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), dat->szNickname, dat->szStatus);
+                        break;
+                    default:
+                        mir_snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Information"));
                 }
                 SendMessage(dat->hwndTip, TTM_SETTITLEA, 1, (LPARAM)szTitle);
 #endif

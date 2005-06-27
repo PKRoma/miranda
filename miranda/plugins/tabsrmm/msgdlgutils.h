@@ -64,6 +64,7 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat);
 TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 void LoadPanelHeight(HWND hwndDlg, struct MessageWindowData *dat);
 void LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat);
+void HandlePasteAndSend(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -259,6 +259,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Enable event API (support for third party plugins)", 0, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
     0, "Don't send UNICODE parts for 7bit ANSI messages (saves db space)", 1, LOI_TYPE_SETTING, (UINT_PTR)"7bitasANSI", 2,
     0, "Always keep the button bar at full width", 0, LOI_TYPE_SETTING, (UINT_PTR)"alwaysfulltoolbar", 0,
+    0, "Allow PASTE AND SEND feature", 0, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
     0, NULL, 0, 0, 0, 0
 };
 
@@ -1921,6 +1922,8 @@ void ReloadGlobals()
      myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
      myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
+     myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
+     myGlobals.m_szNoStatus = Translate("No status message available");
 }
 
 /*
