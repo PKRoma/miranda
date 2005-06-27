@@ -168,11 +168,11 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
     // Window terminated
     if(gch->pDest && (gch->pDest->iType == GC_USER_TERMINATE) && gch->pDest->pszID)
     {
+        // Remove contact from contact list (duh!) should be done by chat.dll !!
+        HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 #ifdef DEBUGMODE
         gg_netlog("gg_gc_event(): Terminating window and chat %x, id %s...", chat, gch->pDest->pszID);
 #endif
-        // Remove contact from contact list (duh!) should be done by chat.dll !!
-        HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
         while (hContact)
         {
             DBVARIANT dbv;
@@ -538,10 +538,10 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
                         // Create new participiants table
                         if(count)
                         {
+                            uin_t *participants = calloc(count, sizeof(uin_t));
 #ifdef DEBUGMODE
                             gg_netlog("gg_gc_getchat(): Opening new conference for %d contacts.", count);
 #endif
-                            uin_t *participants = calloc(count, sizeof(uin_t));
                             hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
                             while (hContact && i < count)
                             {

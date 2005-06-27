@@ -396,11 +396,12 @@ const char *ggdebug_eventtype(struct gg_event *e)
 void gg_debughandler(int level, const char *format, va_list ap)
 {
     char szText[1024], *szFormat = strdup(format);
-	strcpy(szText, GG_PROTO);
-	strcat(szText, "      >> libgadu << \0");
 	// Kill end line
 	char *nl = strrchr(szFormat, '\n');
 	if(nl) *nl = 0;
+
+	strcpy(szText, GG_PROTO);
+	strcat(szText, "      >> libgadu << \0");
 
     _vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), szFormat, ap);
     CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);

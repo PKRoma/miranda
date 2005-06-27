@@ -21,7 +21,7 @@
 #ifndef GG_H
 #define GG_H
 
-#ifdef __DEBUG__
+#if defined(__DEBUG__) || defined(_DEBUG)
 #define DEBUGMODE               // Debug Mode
 #endif
 

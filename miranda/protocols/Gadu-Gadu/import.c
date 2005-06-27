@@ -283,10 +283,10 @@ void gg_parsecontacts(char *contacts)
         // Loadup contact
         if(uin && strNick)
         {
+            HANDLE hContact = gg_getcontact(uin, 1, 1, strNick);
 #ifdef DEBUGMODE
             gg_netlog("gg_parsecontacts(): Found contact %d with nickname \"%s\".", uin, strNick);
 #endif
-            HANDLE hContact = gg_getcontact(uin, 1, 1, strNick);
 
             // Write group
             if(hContact && strGroup)

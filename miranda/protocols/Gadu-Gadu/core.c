@@ -240,9 +240,6 @@ int gg_decodehosts(char *var, GGHOST *hosts, int max)
 // Main connection session thread
 void *__stdcall gg_mainthread(void *empty)
 {
-#ifdef DEBUGMODE
-    gg_netlog("gg_mainthread(%x): Server Thread Starting", empty);
-#endif
     // Miranda variables
     CCSDATA ccs;
     PROTORECVEVENT pre;
@@ -274,6 +271,7 @@ void *__stdcall gg_mainthread(void *empty)
 
 start:
 #ifdef DEBUGMODE
+    gg_netlog("gg_mainthread(%x): Server Thread Starting", empty);
     gg_debug_level = GG_DEBUG_NET | GG_DEBUG_TRAFFIC | GG_DEBUG_FUNCTION | GG_DEBUG_MISC;
 #else
     gg_debug_level = 0;
@@ -591,6 +589,9 @@ start:
         // Pubdir search reply && read own data reply
         if (e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY || e->type == GG_EVENT_PUBDIR50_READ || e->type == GG_EVENT_PUBDIR50_WRITE)
         {
+            gg_pubdir50_t res = e->event.pubdir50;
+            int i, count;
+
 #ifdef DEBUGMODE
             if(e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY)
                 gg_netlog("gg_mainthread(%x): Got user info.", thread);
@@ -599,8 +600,6 @@ start:
             if(e->type == GG_EVENT_PUBDIR50_WRITE)
                 gg_netlog("gg_mainthread(%x): Public catalog save succesful.", thread);
 #endif
-            gg_pubdir50_t res = e->event.pubdir50;
-            int i, count;
             // Store next search UIN
             nextUIN = gg_pubdir50_next(res);
 
