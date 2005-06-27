@@ -150,8 +150,8 @@ extern char *ggProtoError;
 #define GG_KEY_STATUS			"Status"        // Status
 #define GG_KEY_STARTUPSTATUS	"StartupStatus" // Status used when starting up
 #define GG_KEY_NICK				"Nick"          // Nick
-#define GG_KEY_STATUSDESCR		"StatusDescr"   // Users status description
-
+#define GG_KEY_STATUSDESCR		"StatusMsg"     // Users status description, to be compatible with MWClist
+                                                // should be stored in "CList" group
 #define GG_KEY_KEEPALIVE		"KeepAlive"     // Keep-alive support
 #define GG_KEYDEF_KEEPALIVE		1
 

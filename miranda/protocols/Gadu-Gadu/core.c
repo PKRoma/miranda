@@ -1070,7 +1070,7 @@ void gg_setalloffline()
             DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_CLIENTIP);
             DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_CLIENTPORT);
             // Delete status descr
-            DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_STATUSDESCR);
+            DBDeleteContactSetting(hContact, "CList", GG_KEY_STATUSDESCR);
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
@@ -1369,11 +1369,11 @@ void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time,
 #ifdef DEBUGMODE
         gg_netlog("gg_changecontactstatus(): Saving for %d status desct \"%s\".", uin, idescr);
 #endif
-        DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_STATUSDESCR, idescr);
+        DBWriteContactSettingString(hContact, "CList", GG_KEY_STATUSDESCR, idescr);
     }
 	else
 		// Remove status if there's nothing
-        DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_STATUSDESCR);
+        DBDeleteContactSetting(hContact, "CList", GG_KEY_STATUSDESCR);
 
 	// Store contact ip and port
 	if(remote_ip) DBWriteContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTIP, (DWORD) swap32(remote_ip));

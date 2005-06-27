@@ -724,7 +724,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             if(hContact)
                             {
                                 SetValue(hwndDlg, IDC_GENDER, hContact, szProto, "Gender", SVS_GENDER, (hContact != NULL));
-                                SetValue(hwndDlg, IDC_STATUSDESCR, hContact, szProto, GG_KEY_STATUSDESCR, SVS_NORMAL, (hContact != NULL));
+                                SetValue(hwndDlg, IDC_STATUSDESCR, hContact, "CList", GG_KEY_STATUSDESCR, SVS_NORMAL, (hContact != NULL));
                             }
                             else switch((char)DBGetContactSettingByte(hContact, GG_PROTO, "Gender", (BYTE)'?'))
                             {
