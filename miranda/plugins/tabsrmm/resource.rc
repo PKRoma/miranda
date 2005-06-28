@@ -576,8 +576,8 @@ BEGIN
     GROUPBOX        "Edit template",IDC_STATIC,3,99,363,129
     EDITTEXT        IDC_EDITTEMPLATE,11,109,344,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Quick help on Variables...",IDC_VARHELP,11,128,125,15
-    LTEXT           "Double click a template to edit it. Select templates in the list box to show a preview",
-                    IDC_STATIC,200,128,155,23
+    LTEXT           "Double click a template to edit it. Select a template from the list box and click ""Update Preview"" to show a preview message.",
+                    IDC_STATIC,146,126,209,26
     LTEXT           "Get more help on variables",IDC_VARIABLESHELP,12,147,
                     148,10
     LTEXT           "Define up to 5 colors which you can use with some variables",

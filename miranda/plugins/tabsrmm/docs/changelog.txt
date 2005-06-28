@@ -15,7 +15,11 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.95pre8 - 2005/05/25
+Version 0.9.9.96 - 2005/06/28
+
+        ! null pointer check when retrieving status message
+        
+Version 0.9.9.95 - 2005/06/28
 
         * container icon and title is now set earlier so that the container does not
           show "Dialog" while tabs are created.
@@ -178,7 +182,15 @@ Version 0.9.9.95pre8 - 2005/05/25
           
           If a valid timezone is found, the contacts local time will be shown in the info panel,
           and can be used for message log timestamps.
+
+        + added "paste and send" feature. Available as a hotkey (Ctrl-D) or from the context menu
+          in the input area. Pastes the current contents of the clipboard to the message input area
+          and immediately sends the message. Needs to be enabled under Options->General->Sending 
+          Messages.
           
+        + added tooltip to the info panel nickname field when the contact has set an extended
+          status (icq only).
+
 Version 0.9.9.95pre7 - 2005/05/23
 
         * double click works again for closing tabs (even with button tabs)
