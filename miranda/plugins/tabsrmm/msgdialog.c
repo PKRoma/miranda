@@ -208,8 +208,13 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
     GetObject(hbm, sizeof(bm), &bm);
     CalcDynamicAvatarSize(hwndDlg, dat, &bm);
     ShowMultipleControls(hwndDlg, infoPanelControls, 12, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
-    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
+    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
         ConfigurePanel(hwndDlg, dat);
+        UpdateApparentModeDisplay(hwndDlg, dat);
+        InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
+        InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
+        InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
+    }
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
 }
@@ -1382,7 +1387,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         //AdjustBottomAvatarDisplay(hwndDlg, dat);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     PostMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-                    if(IsIconic(dat->pContainer->hwnd) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
+                    if((dat->pContainer->bInTray || IsIconic(dat->pContainer->hwnd)) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs) {
                         DBEVENTINFO dbei = {0};
 
                         dbei.flags = 0;
@@ -1393,7 +1398,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->dwTickLastEvent = GetTickCount();
                         //if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
                         FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
-                        PostMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+                        if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
+                            PostMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;

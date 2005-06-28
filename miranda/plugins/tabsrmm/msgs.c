@@ -542,7 +542,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
             bPopup = (BOOL) DBGetContactSettingByte(NULL, SRMSGMOD_T, "cpopup", 0);
             pContainer = FindContainerByName(szName);
             if (pContainer != NULL) {
-                if(IsIconic(pContainer->hwnd) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0)) {
+                if((pContainer->bInTray || IsIconic(pContainer->hwnd)) && myGlobals.m_AutoSwitchTabs) {
                     bActivate = TRUE;
                     pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
                 }
