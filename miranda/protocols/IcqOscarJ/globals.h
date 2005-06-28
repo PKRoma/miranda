@@ -63,7 +63,4 @@ DWORD MIRANDA_VERSION;
 int gnCurrentStatus;
 DWORD dwLocalUIN;
 
-// skin
-HANDLE ghXStatusIcons[24];
-
 #endif /* __GLOBALS_H */

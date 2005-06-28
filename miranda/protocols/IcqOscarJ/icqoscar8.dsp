@@ -434,6 +434,10 @@ SOURCE=.\icq_servlist.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_xstatus.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_xtraz.c
 # End Source File
 # Begin Source File

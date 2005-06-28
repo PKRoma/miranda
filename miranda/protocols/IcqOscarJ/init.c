@@ -35,7 +35,6 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
-#include "m_cluiframes.h"
 
 
 PLUGINLINK* pluginLink;
@@ -43,8 +42,6 @@ HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
 HANDLE hHookIdleEvent = NULL;
-static HANDLE hHookExtraIconsRebuild = NULL;
-static HANDLE hHookExtraIconsApply = NULL;
 static HANDLE hUserMenuAuth = NULL;
 static HANDLE hUserMenuGrant = NULL;
 
@@ -285,6 +282,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		hUserMenuGrant = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	}
 
+  InitXStatusItems();
+
 	return 0;
 }
 
@@ -337,65 +336,8 @@ int __declspec(dllexport) Unload(void)
 	if (hHookIdleEvent)
 		UnhookEvent(hHookIdleEvent);
 
-	if (hHookExtraIconsRebuild)
-		UnhookEvent(hHookExtraIconsRebuild);
+  UninitXStatusEvents();
 
-	if (hHookExtraIconsApply)
-		UnhookEvent(hHookExtraIconsApply);
-
-	return 0;
-}
-
-
-int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
-{
-	int i;
-	HIMAGELIST CSImages;
-
-	if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
-  { // TODO: divide into icons, change for IconLib
-		CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
-		
-    for(i = 0; i < 24; i++) 
-    {
-      HICON hXIcon = ImageList_ExtractIcon(NULL, CSImages, i);
-
-			ghXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-      DestroyIcon(hXIcon);
-		}
-
-    ImageList_Destroy(CSImages);
-	}
-
-	return 0;
-}
-
-
-int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam) 
-{
-	if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
-  {
-		DWORD bXStatus = DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "XStatusId", 0);
-
-		if (bXStatus > 0 && bXStatus < 24) 
-    {
-			IconExtraColumn iec;
-
-			iec.cbSize = sizeof(iec);
-			iec.hImage = ghXStatusIcons[bXStatus-1];
-			iec.ColumnType = EXTRA_ICON_ADV1;
-			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)wParam, (LPARAM)&iec);
-		} 
-    else 
-    {
-			IconExtraColumn iec;
-
-			iec.cbSize = sizeof(iec);
-			iec.hImage = (HANDLE)-1;
-			iec.ColumnType = EXTRA_ICON_ADV1;
-			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)wParam, (LPARAM)&iec);
-		}
-	}
 	return 0;
 }
 
@@ -453,8 +395,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
 
-	hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
-	hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
+  InitXStatusEvents();
 
   return 0;
 }

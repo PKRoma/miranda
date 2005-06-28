@@ -43,5 +43,12 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
 void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify);
 void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
 
+// custom status support
+void InitXStatusItems();
+void InitXStatusEvents();
+void UninitXStatusEvents();
+
+void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
+
 
 #endif /* __ICQ_XTRAZ_H */
