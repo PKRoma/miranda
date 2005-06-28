@@ -55,6 +55,7 @@ static plugin_guid PMSG_QUERY_INFO       = {PMSG_QUERY_INFO_s};
 static plugin_guid PMSG_QUERY_STATUS     = {PMSG_QUERY_STATUS_s};
 
 // Message GUIDs
+static plugin_guid MGTYPE_MESSAGE        = {MGTYPE_MESSAGE_s};
 static plugin_guid MGTYPE_FILE           = {MGTYPE_FILE_s};
 static plugin_guid MGTYPE_WEBURL         = {MGTYPE_WEBURL_s};
 static plugin_guid MGTYPE_CONTACTS       = {MGTYPE_CONTACTS_s};
@@ -78,6 +79,12 @@ __inline void packGUID(icq_packet* packet, plugin_guid guid)
   packDWord(packet, guid[2]);
   packDWord(packet, guid[3]);
 }
+
+
+// capabilities
+typedef unsigned char capstr[0x10];
+
+capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize);
 
 
 #endif /* __GUIDS_H */

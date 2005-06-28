@@ -384,6 +384,9 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 
       switch (typeId)
       {
+      case MTYPE_MESSAGE:
+        ackType = ACKTYPE_MESSAGE;
+        break;
       case MTYPE_URL:
         ackType = ACKTYPE_URL;
         break;

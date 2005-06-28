@@ -912,6 +912,10 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
     {
       nTypeID = MTYPE_GREETINGCARD;
     }
+    else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_MESSAGE))
+    {
+      nTypeID = MTYPE_MESSAGE;
+    }
   }
   else if (wType==MGTYPE_CONTACTS_REQUEST)
   {
@@ -1904,7 +1908,8 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 			break;
 
 		case 0x0004:     // Recipient is not logged in (resend in a offline message)
-			DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			if (pCookieData->bMessageType != MTYPE_PLUGIN) // TODO: this needs better solution
+        DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 			pszErrorMessage = strdup(Translate("The user has logged off. Select 'Retry' to send an offline message.\nSNAC(4.1) Error x04"));
 			break;
 
@@ -1981,6 +1986,10 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 			ProtoBroadcastAck(gpszICQProtoName, hContact,
 				nMessageType, ACKRESULT_FAILED, (HANDLE)(WORD)dwSequence, (LPARAM)pszErrorMessage);
 		}
+    else
+    {
+      Netlib_Logf(ghServerNetlibUser, "Error: Message delivery to %u failed: %s", dwUin, pszErrorMessage);
+    }
 
 		FreeCookie((WORD)dwSequence);
 
