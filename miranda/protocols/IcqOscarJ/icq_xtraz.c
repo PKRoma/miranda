@@ -282,23 +282,28 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
   DWORD dwCookie;
   message_cookie_data* pCookieData;
 
+
+
   nBodyLen = mir_snprintf(szBody, nBodyLen, "<N><QUERY>%s</QUERY><NOTIFY>%s</NOTIFY></N>", szQueryBody, szNotifyBody);
   SAFE_FREE(&szQueryBody);
   SAFE_FREE(&szNotifyBody);
 
-  // Set up the ack type
-  pCookieData = malloc(sizeof(message_cookie_data));
-  pCookieData->bMessageType = MTYPE_PLUGIN; // we do not use this
-  pCookieData->nAckType = ACKTYPE_CLIENT;
-  dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
+  if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
+  { // apply privacy rules
+    // Set up the ack type
+    pCookieData = malloc(sizeof(message_cookie_data));
+    pCookieData->bMessageType = MTYPE_PLUGIN; // we do not use this
+    pCookieData->nAckType = ACKTYPE_CLIENT;
+    dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
-  // have we a open DC, send through that
-  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-    icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MGTYPE_SCRIPT_NOTIFY);
-  else
-    icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+    // have we a open DC, send through that
+    if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+      icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MGTYPE_SCRIPT_NOTIFY);
+    else
+      icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 
-  SAFE_FREE(&szBody);
+    SAFE_FREE(&szBody);
+  }
 }
 
 
@@ -309,14 +314,17 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
   char *szBody = (char*)malloc(nBodyLen);
   HANDLE hContact = HContactFromUIN(dwUin, 0);
 
-  nBodyLen = mir_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
-  SAFE_FREE(&szResBody);
+  if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
+  { // apply privacy rules
+    nBodyLen = mir_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
+    SAFE_FREE(&szResBody);
 
-  // Was request received thru DC and have we a open DC, send through that
-  if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-    icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MGTYPE_SCRIPT_NOTIFY);
-  else
-    icq_sendXtrazResponseServ(dwUin, dwMID, dwMID2, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+    // Was request received thru DC and have we a open DC, send through that
+    if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+      icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MGTYPE_SCRIPT_NOTIFY);
+    else
+      icq_sendXtrazResponseServ(dwUin, dwMID, dwMID2, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 
-  SAFE_FREE(&szBody);
+    SAFE_FREE(&szBody);
+  }
 }
