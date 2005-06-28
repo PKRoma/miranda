@@ -1017,7 +1017,7 @@ int GetGMTOffset(void)
 
 
 
-BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
+BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 {
 	// Privacy control
 	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyCList", 0))
@@ -1044,7 +1044,10 @@ BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType)
 	if (hContact != INVALID_HANDLE_VALUE &&
 		DBGetContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", 0) == ID_STATUS_OFFLINE)
 	{
-		return FALSE;
+		if (!DBGetContactSettingByte(hContact, gpszICQProtoName, "TemporaryVisible", 0))
+    { // Allow reply to temporary visible contacts
+      return FALSE;
+    }
 	}
 
 	// Dont respond to request for other statuses than your current one

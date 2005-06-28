@@ -105,7 +105,7 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
 
 int GetGMTOffset(void);
 
-BOOL validateStatusMessageRequest(HANDLE hContact, BYTE byMessageType);
+BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 
 #define icqOnline ((gnCurrentStatus != ID_STATUS_OFFLINE) && (gnCurrentStatus != ID_STATUS_CONNECTING))
 
