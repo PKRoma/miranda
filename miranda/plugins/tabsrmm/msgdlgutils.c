@@ -385,7 +385,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 dat->dwFlags ^= MWF_LOG_INDENT;
                 return 1;
             case ID_LOGMENU_ACTIVATERTL:
-                _DebugPopup(dat->hContact, "toggle rtl");
                 iRtl ^= 1;
                 dat->dwFlags = iRtl ? dat->dwFlags | MWF_LOG_RTL : dat->dwFlags & ~MWF_LOG_RTL;
                 if(dat->hContact) {
@@ -1663,15 +1662,15 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 
 void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+    //char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
     
     if(dat->wApparentMode == ID_STATUS_OFFLINE) {
         CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_CHECKED);
-        SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadSkinnedProtoIcon(szProto,  ID_STATUS_OFFLINE));
+        SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, myGlobals.g_IconBlocked);
     }
     else if(dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
         CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_UNCHECKED);
-        SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? LoadSkinnedProtoIcon(szProto, ID_STATUS_INVISIBLE) : LoadSkinnedProtoIcon(szProto, ID_STATUS_ONLINE)));
+        SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? myGlobals.g_IconVisible : myGlobals.g_IconDependStatus));
         SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? 1 : 0));
     }
 }

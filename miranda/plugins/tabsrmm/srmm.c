@@ -47,9 +47,9 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 95),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 96),
     "Send and receive instant messages, using a split mode interface and tab containers.",
-    "SRMM by Miranda Team, tab UI by Nightwish",
+    "The Miranda developers team",
     "silvercircle@gmail.com",
     "© 2000-2005 Miranda Project",
     "http://tabsrmm.sourceforge.net",

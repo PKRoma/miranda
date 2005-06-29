@@ -344,6 +344,7 @@ typedef struct _globals {
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HICON g_IconChecked, g_IconUnchecked, g_IconClock;
+    HICON g_IconVisible, g_IconBlocked, g_IconDependStatus;
     HIMAGELIST g_hImageList, g_hStateImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;

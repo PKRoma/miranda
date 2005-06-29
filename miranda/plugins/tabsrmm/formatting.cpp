@@ -39,6 +39,7 @@ License: GPL
 
 extern "C" RTFColorTable rtf_ctable[];
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
+extern "C" char *xStatusDescr[];
 
 #if defined(UNICODE)
 
@@ -318,10 +319,10 @@ nosimpletags:
 
 #if defined(_UNICODE)
 
-static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c")};
-#define NR_VARS 5
+static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x")};
+#define NR_VARS 6
 
-extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage)
+extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;
@@ -376,6 +377,13 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
                 title.erase(tempmark, 2);
                 break;
             }
+            case 'x': {
+                if(xStatus > 0 && xStatus <= 24) {
+                    MultiByteToWideChar(CP_ACP, 0, xStatusDescr[xStatus - 1], -1, szTemp, 500);
+                    title.insert(tempmark + 2, szTemp);
+                }
+                title.erase(tempmark, 2);
+            }
             default:
                 title.erase(tempmark, 1);
                 break;
@@ -412,10 +420,10 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const char *szNic
 
 #else
 
-static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c")};
-#define NR_VARS 5
+static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x")};
+#define NR_VARS 6
 
-extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto)
+extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, BYTE xStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;
@@ -460,6 +468,11 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
                     title.insert(tempmark + 2, szProto);
                 title.erase(tempmark, 2);
                 break;
+            }
+            case 'x': {
+                if(xStatus > 0 && xStatus <= 24)
+                    title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
+                title.erase(tempmark, 2);
             }
             default:
                 title.erase(tempmark, 1);

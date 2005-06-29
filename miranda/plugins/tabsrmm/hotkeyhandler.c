@@ -450,7 +450,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
              */
         case DM_HANDLECLISTEVENT:
             {
-                DBEVENTINFO dbei = {0};
                 CLISTEVENT *cle = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, wParam, 0);
 
                 /*

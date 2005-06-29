@@ -60,7 +60,7 @@ TemplateSet LTR_Default = { TRUE,
     _T("%S %h:%m:%s:%! %M"),
     _T("%S %h:%m:%s:%! %M"),
     _T("%I%S %D, %h:%m:%s, %N %M"),
-    _T("%I%S %D, %h:%m:%s, %e%l%M"),
+    _T("%I%S %D, %h:%m:%s, %e %M"),
     "Default LTR"
 };
 
@@ -72,7 +72,7 @@ TemplateSet RTL_Default = { TRUE,
     _T("%S %h:%m:%s:%! %M"),
     _T("%S %h:%m:%s:%! %M"),
     _T("%I%S %D, %h:%m:%s, %N %M"),
-    _T("%I%S %D, %h:%m:%s, %e%l%M"),
+    _T("%I%S %D, %h:%m:%s, %e %M"),
     "Default RTL"
 };
 
@@ -405,18 +405,18 @@ static char *var_helptxt[] = {
     "%o:\tmonth",
     "%d:\tday of month",
     "%y:\tyear",
-    "%w:\tday of week (Sunday, Monday.. translateable)",
+    "%w:\tday of week (Sunday, Monday.. translatable)",
     "%p:\tAM/PM symbol",
     "%U:\tUIN (contextual, own uin for sent, buddys UIN for received messages)",
     "%E:\tDate, localized, depending on your regional settings. Short format (05/03/2005..)",
     "%D:\tDate, localized, depending on your regional settings. Long format (May, 05, 2005...)",
     "%R:\tDate, localized, using Today and Yesterday, older dates in long format.",
     "%r:\tDate, localized, using Today and yesterday, older dates in short format.",
-    "%O:\tName of month, translateable",
+    "%O:\tName of month, translatable",
     "%t:\tlocalized timestamp (depending on your regional settings).",
     "%e:\tError message (only use it in the error message template)",
     "\\line \\ul\\b Formatting (simple):\\ul0\\b0\\par",
-    "%*:\tbold (works as toggle, first occurance turns bold on, next turns it off)",
+    "%*:\tbold (works as toggle, first occurence turns bold on, next turns it off)",
     "%/:\titalic, same",
     "%_:\tunderline, again, same way.",
     "%~:\tfont break - switches to the \"default\" font for the event (depending on incoming/outgoing and history status)",
@@ -425,8 +425,8 @@ static char *var_helptxt[] = {
     "%|:\tA \"TAB\" character. Advances to the next tab position, usually the position set by the left or right indent value.",
     "%fX:\tswitch to one of the predefined fonts, where X is a one character code and can have the following values (case sensitive as always):\\line d: -> font for date/timestamp\\line n: -> font for nickname\\line m: -> font for message text\\line M: -> font for \\b misc \\b0 events (file, URL, etc.)",
     "%cX:\tuse one of the predefined colors for the following text output (X is a number from 0 to 4, referring to the color index). Only useful together with the & modifier (see below) and maybe the %fX variable.",
-    "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediatly, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense.\
-\\line\\line The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events).\\line Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifieres to get different message formatting for old and new events.\
+    "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediately, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense.\
+\\line\\line The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events).\\line Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifiers to get different message formatting for old and new events.\
 \\line\\line The & modifier means \\b skip font\\b0  . If being used, the variable will be printed without setting the font for the variables context. Effectively, the font which is currently selected remains valid.",
     "\\line \\ul\\b Some examples:\\ul0\\b0\\line\\par \\b %&N\\b0 -\tprints the nickname, but does not use the font which is configured for nicknames.\\par\
 \\b %fd%&N\\b0 -\tprints the nickname, using the font for timestamps (selected by %fd)\\par\

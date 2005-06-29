@@ -48,6 +48,9 @@
 #define IDI_TREEVIEWCHECKED             321
 #define IDI_TREEVIEWUNCHECKED           322
 #define IDI_CLOCK                       323
+#define IDI_VISIBLE                     324
+#define IDI_BLOCKED                     325
+#define IDI_STATUSDEPEND                326
 #define IDC_READNEXT                    1000
 #define IDC_APPLY                       1001
 #define IDC_DROP                        1002

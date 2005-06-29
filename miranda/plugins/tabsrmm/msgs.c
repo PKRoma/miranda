@@ -978,7 +978,9 @@ static void UnloadIcons()
     DestroyIcon(myGlobals.g_IconChecked);
     DestroyIcon(myGlobals.g_IconUnchecked);
     DestroyIcon(myGlobals.g_IconClock);
-    
+    DestroyIcon(myGlobals.g_IconVisible);
+    DestroyIcon(myGlobals.g_IconDependStatus);
+    DestroyIcon(myGlobals.g_IconBlocked);
     /*
      * free the button bar icons
      */
@@ -1680,6 +1682,16 @@ static ICONDESC myIconsV2[] = {
     NULL, NULL, NULL, 0
 };
 
+static ICONDESC mainDLLIcons[] = {
+    "tabSRMM_pulldown", "Pulldown Arrow", &myGlobals.g_buttonBarIcons[16], -IDI_PULLDOWNARROW, 1,
+    "tabSRMM_Leftarrow", "Left Arrow", &myGlobals.g_buttonBarIcons[25], -IDI_LEFTARROW, 1,
+    "tabSRMM_Rightarrow", "Right Arrow", &myGlobals.g_buttonBarIcons[28], -IDI_RIGHTARROW, 1,
+    "tabSRMM_Pulluparrow", "Up Arrow", &myGlobals.g_buttonBarIcons[26], -IDI_PULLUPARROW, 1,
+    "tabSRMM_Visible", "Contact on visible list", &myGlobals.g_IconVisible, -IDI_VISIBLE, 1,
+    "tabSRMM_Blocked", "Contact blocked/invisible list", &myGlobals.g_IconBlocked, -IDI_BLOCKED, 1,
+    "tabSRMM_Statudepends", "Normal visibilty", &myGlobals.g_IconDependStatus, -IDI_STATUSDEPEND, 1,
+    NULL, NULL, NULL, 0
+};
 /*
  * build icons for extra status support
  */
@@ -1757,22 +1769,16 @@ int SetupIconLibConfig()
     } while(++i);
     
     GetModuleFileNameA(g_hInst, szFilename, MAX_PATH);
-    sid.pszName = (char *) "tabSRMM_pulldown";
-    sid.iDefaultIndex = -IDI_PULLDOWNARROW;
-    sid.pszDescription = Translate("Pulldown Button");
-    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-    sid.pszName = (char *) "tabSRMM_Leftarrow";
-    sid.iDefaultIndex = -IDI_LEFTARROW;
-    sid.pszDescription = Translate("Left Arrow");
-    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-    sid.pszName = (char *) "tabSRMM_Pulluparrow";
-    sid.iDefaultIndex = -IDI_PULLUPARROW;
-    sid.pszDescription = Translate("Up Arrow");
-    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-    sid.pszName = (char *) "tabSRMM_Rightarrow";
-    sid.iDefaultIndex = -IDI_RIGHTARROW;
-    sid.pszDescription = Translate("Right Arrow");
-    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    i = 0;
+    do {
+        if(mainDLLIcons[i].szName == NULL)
+            break;
+        sid.pszName = mainDLLIcons[i].szName;
+        sid.pszDescription = Translate(mainDLLIcons[i].szDesc);
+        sid.iDefaultIndex = mainDLLIcons[i].uId;
+        CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    } while(++i);
+    
     return 1;
 }
 
@@ -1795,10 +1801,12 @@ int LoadFromIconLib()
         *(myIconsV2[i].phIcon) = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) myIconsV2[i].szName);
     } while(++i);
 
-    myGlobals.g_buttonBarIcons[16] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_pulldown");
-    myGlobals.g_buttonBarIcons[25] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Leftarrow");
-    myGlobals.g_buttonBarIcons[26] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Pulluparrow");
-    myGlobals.g_buttonBarIcons[28] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_Rightarrow");
+    i = 0;
+    do {
+        if(mainDLLIcons[i].szName == NULL)
+            break;
+        *(mainDLLIcons[i].phIcon) = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)mainDLLIcons[i].szName);
+    } while(++i);
     CacheMsgLogIcons();
     WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
     return 0;
@@ -1854,16 +1862,20 @@ void LoadIconTheme()
                 break;
             *(myIcons[i].phIcon) = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(abs(myIcons[i].uId)), IMAGE_ICON, myIcons[i].bForceSmall ? cxIcon : 0, myIcons[i].bForceSmall ? cyIcon : 0, 0);
         } while(++i);
+
         i = 0;
         do {
             if(myIconsV2[i].szName == NULL)
                 break;
             *(myIconsV2[i].phIcon) = (HICON) LoadImage(g_hIconDLL, MAKEINTRESOURCE(version == 2 ? abs(myIconsV2[i].uId) : IDI_EMPTY), IMAGE_ICON, myIconsV2[i].bForceSmall ? cxIcon : 0, myIconsV2[i].bForceSmall ? cyIcon : 0, 0);
         } while(++i);
-        myGlobals.g_buttonBarIcons[16] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
-        myGlobals.g_buttonBarIcons[25] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LEFTARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
-        myGlobals.g_buttonBarIcons[26] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLUPARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
-        myGlobals.g_buttonBarIcons[28] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RIGHTARROW), IMAGE_ICON, cxIcon, cyIcon, 0);
+
+        i = 0;
+        do {
+            if(mainDLLIcons[i].szName == NULL)
+                break;
+            *(mainDLLIcons[i].phIcon) = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(abs(mainDLLIcons[i].uId)), IMAGE_ICON, mainDLLIcons[i].bForceSmall ? cxIcon : 0, mainDLLIcons[i].bForceSmall ? cyIcon : 0, 0);
+        } while(++i);
         CacheMsgLogIcons();
 
         WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);

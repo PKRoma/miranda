@@ -23,9 +23,22 @@ Version 0.9.9.96 - 2005/06/28
         
         * added range checks for the panel splitter (don't save/load "invalid" values)
 
-        ! fixed invisible icon on the "visibility indicator" in the info panel (only, when
+        ! fixed icon on the "visibility indicator" in the info panel (only, when
           using the manual quick toggle mode).
           
+        ! fixed "sticky" unread icon (didn't always go away when container got the focus.
+        
+        * visibility indicator now uses global icons instead of protocol specific icons.
+          These icons can be configured using IcoLib.
+          
+        ! corrected some typos
+        
+        ! minor info panel fixes (toolbar menu)
+        
+        * allow close tab within error state (visible error controls)
+        
+        * version bump (0.9.9.96)
+        
 Version 0.9.9.95 - 2005/06/28
 
         * container icon and title is now set earlier so that the container does not

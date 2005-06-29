@@ -471,7 +471,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, "Indent message body", IDC_INDENT, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
     0, "Simple text formatting (*bold* etc.)", 0, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
     0, "Support BBCode formatting", 1, LOI_TYPE_SETTING, (UINT_PTR)"log_bbcode", 0,
-    0, "Place dividers in inactive sessions", 0, LOI_TYPE_SETTING, (UINT_PTR)"dividers", 0,
+    0, "Place dividers in inactive sessions", 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
     0, "Use popup configuration for placing dividers", 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
     0, "RTL is default text direction", 0, LOI_TYPE_SETTING, (UINT_PTR)"rtldefault", 0,
     0, "Use IEView as default message log", 0, LOI_TYPE_SETTING, (UINT_PTR)"want_ieview", 1,

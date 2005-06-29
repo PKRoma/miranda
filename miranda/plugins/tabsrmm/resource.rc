@@ -466,7 +466,7 @@ IDD_OPT_CONTAINERS DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "To set container options, please use the container settings dialog. It is avalable by:\n1. chossing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
+    LTEXT           "To set container options, please use the container settings dialog. It is available by:\n1. choosing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
                     IDC_STATIC,7,2,298,25
     GROUPBOX        "Container mode",IDC_STATIC,0,30,303,62
     CONTROL         "Use contact list group names for organizing containers",
@@ -670,7 +670,7 @@ BEGIN
     CONTROL         "",IDC_TABBORDERSPINOUTER,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,294,180,11,13
-    LTEXT           "Padding is the additional space between the tab label or icon and the tab border.\nThe inner margin defines the spacing between the tab page and its contente while the outer margin defines the spacing between the tab page and the container window border.",
+    LTEXT           "Padding is the additional space between the tab label or icon and the tab border.\nThe inner margin defines the spacing between the tab page and its contents while the outer margin defines the spacing between the tab page and the container window border.",
                     IDC_STATIC,15,196,298,27
     LTEXT           "Bottom tabs vertical adjustment. Set this to adjust the vertical position of bottom tabs when using visual styles. Positive values shift the tab upwards, negative values downwards.",
                     IDC_STATIC,16,223,217,33
@@ -1145,13 +1145,13 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,95
- PRODUCTVERSION 0,9,9,95
- FILEFLAGSMASK 0x37L
+ FILEVERSION 0,9,9,96
+ PRODUCTVERSION 0,9,9,96
+ FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x21L
+ FILEFLAGS 0x29L
 #else
- FILEFLAGS 0x20L
+ FILEFLAGS 0x28L
 #endif
  FILEOS 0x4L
  FILETYPE 0x2L
@@ -1161,15 +1161,17 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
+            VALUE "CompanyName", "Miranda Open Source Project"
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 95"
+            VALUE "FileVersion", "0, 9, 9, 96"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
-            VALUE "LegalTrademarks", "Gnu General Public License"
+            VALUE "LegalTrademarks", "Gnu General Public License V2"
             VALUE "OriginalFilename", "tabSRMM.dll"
+            VALUE "PrivateBuild", "No"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 95"
-            VALUE "SpecialBuild", "A"
+            VALUE "ProductVersion", "0, 9, 9, 96"
+            VALUE "SpecialBuild", "FC2"
         END
     END
     BLOCK "VarFileInfo"
@@ -1194,6 +1196,9 @@ IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
 IDI_CLOCK               ICON                    "res/clock8.ico"
+IDI_VISIBLE             ICON                    "res/visible.ico"
+IDI_BLOCKED             ICON                    "res/blocked.ico"
+IDI_STATUSDEPEND        ICON                    "res/status.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

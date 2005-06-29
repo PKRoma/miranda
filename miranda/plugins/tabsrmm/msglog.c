@@ -953,7 +953,9 @@ nogroup:
                                 if(dbei.eventType == EVENTTYPE_ERRMSG && dbei.cbBlob == 0)
                                     break;
                                 if(!skipFont)
-                                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", rtfFonts[dbei.eventType == EVENTTYPE_STATUSCHANGE ? H_MSGFONTID_STATUSCHANGES : MSGFONTID_MYMSG]);
+                                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line%s ", rtfFonts[dbei.eventType == EVENTTYPE_STATUSCHANGE ? H_MSGFONTID_STATUSCHANGES : MSGFONTID_MYMSG]);
+                                else
+                                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line ");
                             }
                             else {
                                 if(!skipFont)

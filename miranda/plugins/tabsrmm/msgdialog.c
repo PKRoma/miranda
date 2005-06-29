@@ -1684,6 +1684,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     pf2.wEffects = PFE_RTLPARA;
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) | (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
                     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
                 } else {
@@ -1694,6 +1695,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     pf2.wEffects = 0;
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
                     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
     
@@ -1922,6 +1924,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)dat->hFlashingEvent);
                     dat->hFlashingEvent = 0;
                 }
+                if(dat->pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
+                    dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
+                    SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+                }
                 if (dat->dwFlags & MWF_DEFERREDREMAKELOG) {
                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
                     dat->dwFlags &= ~MWF_DEFERREDREMAKELOG;
@@ -1996,6 +2002,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->hFlashingEvent !=0)
                         CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)dat->hFlashingEvent);
                     dat->hFlashingEvent = 0;
+                }
+                if(dat->pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
+                    dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
+                    SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 }
                 if (dat->dwFlags & MWF_DEFERREDREMAKELOG) {
                     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -3871,6 +3881,8 @@ quote_from_last:
                             dat->dwEventIsShown ^= MWF_SHOW_INFOPANEL;
                             ShowHideInfoPanel(hwndDlg, dat);
                             return 0;
+                        default:
+                            return 0;
                     }
                     if(bNewGlobal != bGlobal)
                         ApplyContainerSetting(dat->pContainer, CNT_INFOPANEL, bNewGlobal ? 1 : 0);
@@ -5079,8 +5091,14 @@ verify:
                     return TRUE;
                 }
                 
-                if(dat->iOpenJobs > 0 && lParam != 2)
-                    return TRUE;
+                if(dat->iOpenJobs > 0 && lParam != 2) {
+                    if(dat->dwFlags & MWF_ERRORSTATE)
+                        SendMessage(hwndDlg, WM_COMMAND, IDC_CANCELSEND, 0);
+                    else {
+                        _DebugMessage(hwndDlg, dat, Translate("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
+                        return TRUE;
+                    }
+                }
                 
                 if(!lParam) {
                     if (myGlobals.m_WarnOnClose) {
