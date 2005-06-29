@@ -214,6 +214,7 @@ void RemoveAndClearOneObject(int arpos)
 	FreeAndNil(&MenuObjects[arpos].MenuItems);
 	MenuObjects[arpos].MenuItemsCount=0;
 
+	FreeAndNil(&MenuObjects[arpos].FreeService);
 	FreeAndNil(&MenuObjects[arpos].CheckService);
 	FreeAndNil(&MenuObjects[arpos].ExecService);
 	FreeAndNil(&MenuObjects[arpos].Name);

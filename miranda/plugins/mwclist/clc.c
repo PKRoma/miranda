@@ -41,7 +41,7 @@ extern int BgStatusBarChange(WPARAM wParam,LPARAM lParam);
 
 extern int BgClcChange(WPARAM wParam,LPARAM lParam);
 extern int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
-
+extern void FreeDisplayNameCache(SortedList *list);
 
 int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
@@ -1417,6 +1417,7 @@ OutputDebugString("Delayed Sort CLC\r\n");
 			if(dat->hwndRenameEdit) DestroyWindow(dat->hwndRenameEdit);
 			if(!dat->bkChanged && dat->hBmpBackground) DeleteObject(dat->hBmpBackground);
 			FreeGroup(&dat->list);
+			FreeDisplayNameCache(&dat->lCLCContactsCache);
 			mir_free(dat);
 			UnregisterFileDropping(hwnd);
 			WindowList_Remove(hClcWindowList,hwnd);

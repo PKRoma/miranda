@@ -3291,6 +3291,20 @@ static CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 	CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
 	CLUIRegisterFonts();
 }
+ static CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
+ {
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITBVisible, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMILock, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIColl, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIFloating, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignRoot, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignTop, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignClient, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignBottom, 0 );
+ CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIBorder, 0 );
+ }
 
 int LoadCLUIFramesModule(void)
 {
@@ -3365,8 +3379,10 @@ int LoadCLUIFramesModule(void)
 	hWndExplorerToolBar	=FindWindowEx(0,0,"Shell_TrayWnd",NULL);
 	OnFrameTitleBarBackgroundChange(0,0);
 	FramesSysNotStarted=FALSE;
+	HookEvent(ME_SYSTEM_PRESHUTDOWN,  CLUIFrameOnModulesUnload);
 	return 0;
 }
+
 
 int UnLoadCLUIFramesModule(void)
 {

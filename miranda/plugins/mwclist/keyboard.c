@@ -44,6 +44,8 @@ static HotKeyItem *HotKeyList=NULL;
 static int HotKeyCount;
 static HANDLE hPlayEvent=NULL;
 pHotKeyItem GetHotKeyItemByAtom(ATOM a);
+void UninitSkinHotKeys(void);
+ 
 
 static void WordToModAndVk(WORD w,UINT *mod,UINT *vk)
 {
@@ -291,6 +293,7 @@ int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam)
 			return TRUE;
 		case WM_DESTROY:
 			HotKeysUnregister(msg->hwnd);
+			UninitSkinHotKeys();
 			break;
 	}
 	
@@ -328,7 +331,7 @@ static int ServiceSkinAddNewHotKey(WPARAM wParam,LPARAM lParam)
 
     if (ssd->cbSize!=sizeof(SKINHOTKEYDESCEX))
         return 0;
-	HotKeyList=(HotKeyItem*)realloc(HotKeyList,sizeof(HotKeyItem)*(HotKeyCount+1));
+	HotKeyList=(HotKeyItem*)mir_realloc(HotKeyList,sizeof(HotKeyItem)*(HotKeyCount+1));
 	
 	HotKeyList[HotKeyCount].name=mir_strdup(ssd->pszName);
 	HotKeyList[HotKeyCount].description=mir_strdup(ssd->pszDescription);
@@ -703,11 +706,14 @@ int InitSkinHotKeys(void)
 void UninitSkinHotKeys(void)
 {
 	int i;
+	DestroyServiceFunction(MS_SKIN_ADDHOTKEY);
+	DestroyServiceFunction(MS_SKIN_PLAYHOTKEY);
+
 	for(i=0;i<HotKeyCount;i++) {
-		free(HotKeyList[i].name);
-        free(HotKeyList[i].section);
-		free(HotKeyList[i].description);
+		mir_free(HotKeyList[i].name);
+        mir_free(HotKeyList[i].section);
+		mir_free(HotKeyList[i].description);
 //		if (HotKeyList[i].tempFile) free(HotKeyList[i].tempFile);
 	}
-	if(HotKeyCount) free(HotKeyList);
+	if(HotKeyCount) mir_free(HotKeyList);
 }

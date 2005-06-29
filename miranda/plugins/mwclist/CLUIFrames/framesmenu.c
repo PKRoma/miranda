@@ -13,6 +13,18 @@ int Frameid;
 int param1;
 }FrameMenuExecParam,*lpFrameMenuExecParam;
 
+int FreeOwnerDataFrameMenu (WPARAM wParam,LPARAM lParam)
+{
+
+	lpFrameMenuExecParam cmep;
+
+	cmep=(lpFrameMenuExecParam)lParam;
+	if (cmep!=NULL){
+		FreeAndNil(&cmep->szServiceName);
+		FreeAndNil(&cmep);
+	}
+	return(0);
+};
 
 static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
@@ -34,9 +46,9 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 		tmi.root=(int)mi->pszPopupName;
 	{
 		lpFrameMenuExecParam fmep;
-		fmep=(lpFrameMenuExecParam)malloc(sizeof(FrameMenuExecParam));
+		fmep=(lpFrameMenuExecParam)mir_alloc(sizeof(FrameMenuExecParam));
 		if (fmep==NULL){return(0);};
-		fmep->szServiceName=_strdup(mi->pszService);
+		fmep->szServiceName=mir_strdup(mi->pszService);
 		fmep->Frameid=mi->popupPosition;
 		fmep->param1=(int)mi->pszContactOwner;
 		
@@ -48,16 +60,17 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 
 static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
+	/* this do by free service
 	lpFrameMenuExecParam fmep;
 	fmep=(lpFrameMenuExecParam)CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
 	if (fmep!=NULL){
 		if (fmep->szServiceName!=NULL){
-			free(fmep->szServiceName);
+			mir_free(fmep->szServiceName);
 			fmep->szServiceName=NULL;
 		};
-		free(fmep);
+		mir_free(fmep);
 	}
-
+	*/
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
@@ -192,6 +205,8 @@ if (ServiceExists(MO_REMOVEMENUOBJECT))
 {
 	CreateServiceFunction("FrameMenuExecService",FrameMenuExecService);
 	CreateServiceFunction("FrameMenuCheckService",FrameMenuCheckService);
+	CreateServiceFunction("FrameMenuFreeService",FreeOwnerDataFrameMenu);
+
 
 	CreateServiceFunction(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,RemoveContextFrameMenuItem);
 	CreateServiceFunction(MS_CLIST_ADDCONTEXTFRAMEMENUITEM,AddContextFrameMenuItem);
@@ -206,6 +221,15 @@ if (ServiceExists(MO_REMOVEMENUOBJECT))
 	tmp.ExecService="FrameMenuExecService";
 	tmp.name="FrameMenu";
 	hFrameMenuObject=CallService(MO_CREATENEWMENUOBJECT,0,(LPARAM)&tmp);
+	{
+		OptParam op;
+	op.Handle=hFrameMenuObject;
+	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
+	op.Value=(int)"FrameMenuFreeService";
+	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
+	}
+
+
 }
 	return 0;
 }
