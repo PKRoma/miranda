@@ -35,10 +35,24 @@ Version 0.9.9.96 - 2005/06/28
         
         ! minor info panel fixes (toolbar menu)
         
-        * allow close tab within error state (visible error controls)
+        * allow close tab within error state (visible error controls), Unsent messages which
+          returned an error are canceled. Messages "in progress" may still be sent, but the
+          ACK will then go to nowhere after the msg window has been closed.
         
         * version bump (0.9.9.96)
         
+        * added %x variable for the titlebar to show the extended status mode description.
+          The following variables are now available:
+          %n - Nickname
+          %s - Status mode description
+          %c - container name
+          %u - UIN
+          %p - protocol
+          %x - extended status mode description (icq only)
+        
+        + added ability to use underlined fonts in the message window when configured with
+          the font service plugin.
+          
 Version 0.9.9.95 - 2005/06/28
 
         * container icon and title is now set earlier so that the container does not

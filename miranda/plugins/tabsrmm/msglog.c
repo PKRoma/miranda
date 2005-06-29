@@ -168,9 +168,9 @@ void CacheLogFonts()
     ZeroMemory((void *)logfonts, sizeof(LOGFONTA) * MSGDLGFONTCOUNT + 2);
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         LoadLogfont(i, &logfonts[i], &fontcolors[i]);
-        wsprintfA(rtfFonts[i], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
+        wsprintfA(rtfFonts[i], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, logfonts[i].lfUnderline, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
     }
-    wsprintfA(rtfFonts[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
+    wsprintfA(rtfFonts[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
     
     strncpy(szToday, Translate("Today"), 20);
     strncpy(szYesterday, Translate("Yesterday"), 20);

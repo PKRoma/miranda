@@ -43,7 +43,7 @@ BEGIN
                     UDS_ARROWKEYS,164,138,9,13
     PUSHBUTTON      "Announce events when status is...",IDC_POPUPSTATUSMODES,
                     11,151,178,13
-    GROUPBOX        "Popup Options",IDC_STATIC,0,168,313,71
+    GROUPBOX        "Popup Options",IDC_STATIC,3,168,310,71
     LTEXT           "Text",IDC_STATIC,60,177,23,8
     LTEXT           "Background",IDC_STATIC,86,177,47,8
     LTEXT           "Message",IDC_STATIC,11,187,44,13
@@ -75,10 +75,10 @@ BEGIN
     EDITTEXT        IDC_DELAY_OTHERS,191,224,26,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     PUSHBUTTON      "Preview popup",IDC_PREVIEW,226,223,83,12
-    GROUPBOX        "Event notify options",IDC_STATIC,0,0,313,167
+    GROUPBOX        "Event notify options",IDC_STATIC,3,0,310,167
     CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,108,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,108,
                     WS_EX_STATICEDGE
     LTEXT           "characters",IDC_STATIC,166,138,103,10
 END
@@ -289,8 +289,8 @@ IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message window options",IDC_STATIC,0,0,303,86
-    GROUPBOX        "Avatar options",IDC_STATIC,0,88,303,40
+    GROUPBOX        "Message window options",IDC_STATIC,3,0,300,86
+    GROUPBOX        "Avatar options",IDC_STATIC,3,88,300,40
     LTEXT           "Display",IDC_STATIC,9,98,56,9
     COMBOBOX        IDC_AVATARDISPLAY,64,96,90,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -304,8 +304,8 @@ BEGIN
     LTEXT           "Show avatars",IDC_STATIC,10,115,60,10
     COMBOBOX        IDC_AVATARMODE,114,112,175,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,0,130,
-                    303,34
+    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,3,130,
+                    300,34
     LTEXT           "Automatically close tabs after",IDC_STATIC,7,141,119,11
     EDITTEXT        IDC_AUTOCLOSETABTIME,128,139,31,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
@@ -317,7 +317,7 @@ BEGIN
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     9,152,280,10
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,0,165,303,60
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,3,165,300,60
     LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,9,175,133,
                     8
     COMBOBOX        IDC_TOOLBARHIDEMODE,143,172,152,46,CBS_DROPDOWNLIST | 
@@ -329,7 +329,7 @@ BEGIN
     LTEXT           "seconds.",IDC_STATIC,258,210,36,8
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,72,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,72,
                     WS_EX_STATICEDGE
     CTEXT           "Message send timeout",IDC_STATIC,229,189,67,16
     LTEXT           "Send text formatting:",IDC_STATIC,9,210,132,11
@@ -341,8 +341,8 @@ IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Options",IDC_STATIC,0,0,303,111
-    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,0,111,303,40
+    GROUPBOX        "Options",IDC_STATIC,3,0,300,111
+    GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,3,111,300,40
     LTEXT           "Left",IDC_STATIC,10,120,29,11
     EDITTEXT        IDC_INDENTAMOUNT,59,118,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_INDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -361,10 +361,10 @@ BEGIN
     CONTROL         "",IDC_EXTRALFSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,201,136,
                     12,11
-    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,0,151,303,26
+    GROUPBOX        "Template sets",IDC_STMSGLOGGROUP,3,151,300,26
     PUSHBUTTON      "Standard templates...",IDC_MODIFY,27,160,95,14
     PUSHBUTTON      "RTL templates...",IDC_RTLMODIFY,178,160,95,14
-    GROUPBOX        "Load History Events",IDC_STATIC,0,178,303,47
+    GROUPBOX        "Load History Events",IDC_STATIC,3,178,300,47
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,187,135,10
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
@@ -388,7 +388,7 @@ BEGIN
     LTEXT           "minutes old",IDC_STMINSOLD,207,212,90,8,WS_DISABLED
     CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,95,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,95,
                     WS_EX_STATICEDGE
 END
 
@@ -420,14 +420,14 @@ IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab options",IDC_STATIC,0,0,303,119
+    GROUPBOX        "Tab options",IDC_STATIC,3,0,300,119
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,168,135,10
     EDITTEXT        IDC_CUT_TITLEMAX,166,166,30,12,ES_AUTOHSCROLL
     LTEXT           "characters",IDC_STATIC,208,168,88,9
     PUSHBUTTON      "Setup status modes for automatic tab creation...",
                     IDC_SETUPAUTOCREATEMODES,56,138,190,14
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,0,121,303,104
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,3,121,300,104
     LTEXT           "Global hotkey modifiers",IDC_STATIC,12,204,113,11
     COMBOBOX        IDC_MODIFIERS,166,202,84,50,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
@@ -439,7 +439,7 @@ BEGIN
     LTEXT           "entries",IDC_STATIC,200,187,28,10
     CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,292,101,
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,101,
                     WS_EX_STATICEDGE
 END
 
@@ -468,7 +468,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "To set container options, please use the container settings dialog. It is available by:\n1. choosing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
                     IDC_STATIC,7,2,298,25
-    GROUPBOX        "Container mode",IDC_STATIC,0,30,303,62
+    GROUPBOX        "Container mode",IDC_STATIC,3,30,300,62
     CONTROL         "Use contact list group names for organizing containers",
                     IDC_CONTAINERGROUPMODE,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,6,40,296,10
@@ -484,7 +484,7 @@ BEGIN
     CONTROL         "Use default container mode (manual contact assignments)",
                     IDC_DEFAULTCONTAINERMODE,"Button",BS_AUTORADIOBUTTON,6,
                     75,293,12
-    GROUPBOX        "Container flashing",IDC_STATIC,0,94,303,43
+    GROUPBOX        "Container flashing",IDC_STATIC,3,94,300,43
     LTEXT           "Flash containers",IDC_STATIC,6,106,102,11
     EDITTEXT        IDC_NRFLASH,111,104,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_NRFLASHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -497,10 +497,10 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,149,121,10,10
     LTEXT           "milliseconds",IDC_STATIC,166,119,81,12
-    GROUPBOX        "Global container options",IDC_STATIC,0,140,303,42
+    GROUPBOX        "Global container options",IDC_STATIC,3,140,300,42
     CONTROL         "Use the snapping windows plugin",IDC_USESNAPPING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,153,157,11
-    GROUPBOX        "Default window title format",IDC_STATIC,0,183,303,42
+    GROUPBOX        "Default window title format",IDC_STATIC,3,183,300,42
     EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,198,274,14,ES_AUTOHSCROLL
 END
 
@@ -508,7 +508,7 @@ IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message Window Fonts",IDC_STATIC,0,4,303,142
+    GROUPBOX        "Message Window Fonts",IDC_STATIC,3,4,300,142
     COMBOBOX        IDC_FONTID,27,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "same",IDC_STSAMETEXT,34,32,45,10,SS_CENTERIMAGE
@@ -545,7 +545,7 @@ BEGIN
     CONTROL         "",IDC_EXTRALFSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,235,113,
                     12,11
-    GROUPBOX        "Background Colors",IDC_STATIC,0,150,303,72
+    GROUPBOX        "Background Colors",IDC_STATIC,3,150,300,72
     LTEXT           "Default background",IDC_STATIC,15,165,81,8
     CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,102,164,39,10
     LTEXT           "Input area background",IDC_STATIC,15,179,80,10

@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
+#define IDC_STATIC                      -1
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
 #define IDD_TABCONFIG                   4
@@ -655,7 +656,6 @@
 #define ID_PANELPICMENU_RESETTHEAVATAR  40218
 #define ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES 40220
 #define ID_EDITOR_PASTEANDSENDIMMEDIATELY 40221
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 

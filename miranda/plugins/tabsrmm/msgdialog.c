@@ -1450,7 +1450,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_TYPING:
             {
                 dat->nTypeSecs = (int) lParam > 0 ? (int) lParam : 0;
-                break;
+                return 0;
             }
         case DM_UPDATEWINICON:
             {
@@ -1467,7 +1467,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->pContainer->hwndActive == hwndDlg)
                         SendMessage(t_hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) dat->hTabIcon);
                 }
-                break;
+                return 0;
             }
         case DM_UPDATELASTMESSAGE:
             {
@@ -1513,7 +1513,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->pContainer->hwndSlist)
                         SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
                 }
-                break;
+                return 0;
             }
             /*
              * configures the toolbar only... if lParam != 0, then it also calls
@@ -1569,7 +1569,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_TRANSPARENT);
             }
-            break;
+            return 0;
         case DM_LOADBUTTONBARICONS:
         {
             int i;
@@ -1582,7 +1582,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendDlgItemMessage(hwndDlg, IDC_MULTIPLEICON, STM_SETICON, (WPARAM)myGlobals.g_buttonBarIcons[3], 0);
             SendDlgItemMessage(hwndDlg, IDC_STATICERRORICON, STM_SETICON, (WPARAM)myGlobals.g_iconErr, 0);
 
-            break;
+            return 0;
         }
         case DM_OPTIONSAPPLIED:
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
@@ -1888,7 +1888,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
                         PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
                 }
-                break;
+                return 0;
             }
         case DM_ADDDIVIDER:
             if(!(dat->dwFlags & MWF_DIVIDERSET) && myGlobals.m_UseDividers) {
@@ -1897,7 +1897,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags |= MWF_DIVIDERSET;
                 }
             }
-            break;
+            return 0;
         case WM_SETFOCUS:
             if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
@@ -2222,7 +2222,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 }
                 SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
-                break;
+                return 0;
             }
             /*
              * queue a dm_remakelog
@@ -2240,7 +2240,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags |= MWF_DEFERREDREMAKELOG;
                 }
             }
-            break;
+            return 0;
         case DM_FORCEDREMAKELOG:
             if((HWND) wParam == hwndDlg)
                 SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -2249,15 +2249,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwFlags |= (lParam & MWF_LOG_ALL);
                 dat->dwFlags |= MWF_DEFERREDREMAKELOG;
             }
-            break;
+            return 0;
         case DM_REMAKELOG:
             dat->lastEventTime = 0;
             dat->iLastEventType = -1;
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
-            break;
+            return 0;
         case DM_APPENDTOLOG:
             StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
-            break;
+            return 0;
             /*
              * replays queued events after the message log has been frozen for a while
              */
@@ -2271,7 +2271,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 dat->iNextQueuedEvent = 0;
                 SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message Log is frozen"));
-                break;
+                return 0;
             }
         case DM_SCROLLLOGTOBOTTOM:
             {
@@ -2311,7 +2311,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else
                     dat->dwFlags |= MWF_DEFERREDSCROLL;
                 
-                break;
+                return 0;
             }
         case DM_FORCESCROLL:
             {
@@ -2319,7 +2319,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
-                break;
+                return 0;
             }
             /*
              * this is called whenever a new event has been added to the database.
@@ -2460,7 +2460,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
                         PlayIncomingSound(dat->pContainer, hwndDlg);
                 }
-                break;
+                return 0;
             }
         case WM_TIMER:
             /*
@@ -2671,7 +2671,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         case DM_SELECTTAB:
             SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, wParam, lParam);       // pass the msg to our container
-            break;
+            return 0;
         case DM_SAVELOCALE: 
         {
             if (myGlobals.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == hwndDlg) {
@@ -2686,7 +2686,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     UpdateReadChars(hwndDlg, dat);
                 }
             }
-            break;
+            return 0;
         }
         case DM_LOADLOCALE:
             /*
@@ -2714,7 +2714,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 UpdateReadChars(hwndDlg, dat);
             }
-            break;
+            return 0;
         case DM_SETLOCALE:
             if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
                 break;
@@ -2728,7 +2728,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     ActivateKeyboardLayout(dat->hkl, 0);
                 }
             }
-            break;
+            return 0;
         /*
          * return timestamp (in ticks) of last recent message which has not been read yet.
          * 0 if there is none
@@ -2815,17 +2815,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                 }
-                break;
+                return 0;
             }
         case DM_CHECKSIZE:
             dat->dwFlags |= MWF_NEEDCHECKSIZE;
-            break;
+            return 0;
         /*
          * sent by the message input area hotkeys. just pass it to our container
          */
         case DM_QUERYPENDING:
             SendMessage(dat->pContainer->hwnd, DM_QUERYPENDING, wParam, lParam);
-            break;
+            return 0;
         case DM_RECALCPICTURESIZE:
         {
             BITMAP bminfo;
@@ -2838,7 +2838,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             GetObject(hbm, sizeof(bminfo), &bminfo);
             CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
-            break;
+            return 0;
         }
         /*
          * recalculate minimum allowed splitter position to avoid clipping on the
@@ -2858,7 +2858,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->bottomOffset += 3;
                 }
             }
-            break;
+            return 0;
         case WM_LBUTTONDBLCLK:
             if(GetKeyState(VK_CONTROL) & 0x8000) {
                 SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
@@ -5095,7 +5095,9 @@ verify:
                     if(dat->dwFlags & MWF_ERRORSTATE)
                         SendMessage(hwndDlg, WM_COMMAND, IDC_CANCELSEND, 0);
                     else {
-                        _DebugMessage(hwndDlg, dat, Translate("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
+                        char szBuffer[256];
+                        mir_snprintf(szBuffer, sizeof(szBuffer), Translate("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
+                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
                         return TRUE;
                     }
                 }
