@@ -818,6 +818,395 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     return 0;
 }
 
+#if defined(_UNICODE)
+
+char *GetPreviewW(UINT eventType, char* pBlob, DWORD blobsize, BOOL *isWstring)
+{
+    char* comment1 = NULL;
+    char* comment2 = NULL;
+    char* commentFix = NULL;
+    static char szPreviewHelp[256];
+
+    *isWstring = 0;
+    
+    //now get text
+    switch (eventType) {
+        case EVENTTYPE_MESSAGE:
+            if (pBlob) {
+                int msglen = lstrlenA((char *) pBlob) + 1;
+                wchar_t *msg;
+                int wlen;
+                
+                if ((blobsize >= (DWORD)(2 * msglen))) {
+                    msg = (wchar_t *) &pBlob[msglen];
+                    wlen = safe_wcslen(msg, (blobsize - msglen) / 2);
+                    if(wlen <= (msglen - 1) && wlen > 0){
+                        *isWstring = 1;
+                        return (char *)msg;
+                    }
+                    else
+                        goto nounicode;
+                }
+                else {
+nounicode:
+                    *isWstring = 0;
+                    return (char *)pBlob;
+                }
+            }
+            commentFix = Translate(POPUP_COMMENT_MESSAGE);
+            break;
+        case EVENTTYPE_AUTHREQUEST:
+            if(pBlob) {
+                mir_snprintf(szPreviewHelp, 256, Translate("%s requested authorization"), pBlob + 8);
+                return szPreviewHelp;
+            }
+            commentFix = Translate(POPUP_COMMENT_AUTH);
+            break;
+        case EVENTTYPE_ADDED:
+            if(pBlob) {
+                mir_snprintf(szPreviewHelp, 256, Translate("%s added you to the contact list"), pBlob + 8);
+                return szPreviewHelp;
+            }
+            commentFix = Translate(POPUP_COMMENT_ADDED);
+            break;
+        case EVENTTYPE_URL:
+            if (pBlob) comment2 = pBlob;
+            if (pBlob) comment1 = pBlob + strlen(comment2) + 1;
+            commentFix = Translate(POPUP_COMMENT_URL);
+            break;
+
+        case EVENTTYPE_FILE:
+            if (pBlob) comment2 = pBlob + 4;
+            if (pBlob) comment1 = pBlob + strlen(comment2) + 5;
+            commentFix = Translate(POPUP_COMMENT_FILE);
+            break;
+
+        case EVENTTYPE_CONTACTS:
+            commentFix = Translate(POPUP_COMMENT_CONTACTS);
+            break;
+        case ICQEVENTTYPE_WEBPAGER:
+            if (pBlob) comment1 = pBlob;
+            commentFix = Translate(POPUP_COMMENT_WEBPAGER);
+            break;
+        case ICQEVENTTYPE_EMAILEXPRESS:
+            if (pBlob) comment1 = pBlob;
+            commentFix = Translate(POPUP_COMMENT_EMAILEXP);
+            break;
+
+        default:
+            commentFix = Translate(POPUP_COMMENT_OTHER);
+            break;
+    }
+
+    if (comment1)
+        if (strlen(comment1) > 0)
+            return comment1;
+    if (comment2)
+        if (strlen(comment2) > 0)
+            return comment2;
+
+    return commentFix;
+}
+
+int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
+{
+    PLUGIN_DATAW *pdata;
+    DBEVENTINFO dbe;
+    wchar_t lpzText[MAX_SECONDLINE] = L"";
+    wchar_t timestamp[MAX_DATASIZE] = L"";
+    wchar_t formatTime[MAX_DATASIZE] = L"";
+    int iEvent = 0;
+    wchar_t *p = lpzText;
+    int  available = 0, i;
+    char szHeader[256], *szPreview = NULL;
+    BOOL isUnicode = 0;
+    DWORD codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
+    
+    pdata = (PLUGIN_DATAW *)PopUpList[NumberPopupData(hContact)];
+    
+    ZeroMemory((void *)&dbe, sizeof(dbe));
+    
+    if (hEvent) {
+        if(pdata->pluginOptions->bShowHeaders) {
+            mir_snprintf(szHeader, sizeof(szHeader), "[b]%s %d[/b]\n", Translate("New messages: "), pdata->nrMerged + 1);
+            MultiByteToWideChar(CP_ACP, 0, szHeader, -1, pdata->szHeader, 256);
+            pdata->szHeader[255] = 0;
+        }
+
+        if(pdata->pluginOptions->bPreview && hContact) {
+            dbe.cbSize = sizeof(dbe);
+            dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
+            dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
+            CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
+        }
+        if (pdata->pluginOptions->bShowDate || pdata->pluginOptions->bShowTime) {
+            formatTime[0] = 0;
+            if (pdata->pluginOptions->bShowDate)
+                wcsncpy(formatTime, L"%Y.%m.%d ", MAX_DATASIZE);
+            if (pdata->pluginOptions->bShowTime)
+                wcsncat(formatTime, L"%H:%M", MAX_DATASIZE);
+            wcsftime(timestamp, MAX_DATASIZE, formatTime, localtime((time_t *)&dbe.timestamp));
+            mir_snprintfW(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, L"\n[b][i]%s[/i][/b]\n", timestamp);
+        }
+        szPreview = GetPreviewW(dbe.eventType, (char *)dbe.pBlob, dbe.cbBlob, &isUnicode);
+        if(szPreview) {
+            if(isUnicode)
+                wcsncat(pdata->eventData[pdata->nrMerged].szText, (wchar_t *)szPreview, MAX_SECONDLINE);
+            else {
+                wchar_t temp[MAX_SECONDLINE];
+                
+                MultiByteToWideChar(codePage, 0, szPreview, -1, temp, MAX_SECONDLINE);
+                temp[MAX_SECONDLINE - 1] = 0;
+                wcsncat(pdata->eventData[pdata->nrMerged].szText, temp, MAX_SECONDLINE);
+            }
+        }
+        else
+            wcsncat(pdata->eventData[pdata->nrMerged].szText, L"No body", MAX_SECONDLINE);
+
+        pdata->eventData[pdata->nrMerged].szText[MAX_SECONDLINE - 1] = 0;
+
+        /*
+         * now, reassemble the popup text, make sure the *last* event is shown, and then show the most recent events
+         * for which there is enough space in the popup text
+         */
+
+        available = MAX_SECONDLINE - 1;
+        if(pdata->pluginOptions->bShowHeaders) {
+            wcsncpy(lpzText, pdata->szHeader, MAX_SECONDLINE);
+            available -= lstrlenW(pdata->szHeader);
+        }
+        for(i = pdata->nrMerged; i >= 0; i--) {
+            available -= lstrlenW(pdata->eventData[i].szText);
+            if(available <= 0)
+                break;
+        }
+        i = (available > 0) ? i + 1: i + 2;
+        for(; i <= pdata->nrMerged; i++) {
+            wcsncat(lpzText, pdata->eventData[i].szText, MAX_SECONDLINE);
+        }
+        pdata->eventData[pdata->nrMerged].hEvent = hEvent;
+        pdata->eventData[pdata->nrMerged].timestamp = dbe.timestamp;
+        pdata->nrMerged++;
+        if(pdata->nrMerged >= pdata->nrEventsAlloced) {
+            pdata->nrEventsAlloced += 5;
+            pdata->eventData = (EVENT_DATAW *)realloc(pdata->eventData, pdata->nrEventsAlloced * sizeof(EVENT_DATAW));
+        }
+        if(dbe.pBlob)
+            free(dbe.pBlob);
+        
+        SendMessage(pdata->hWnd, WM_SETREDRAW, FALSE, 0);
+        //MessageBoxW(0, lpzText, L"foo", MB_OK);
+        CallService(MS_POPUP_CHANGETEXTW, (WPARAM)pdata->hWnd, (LPARAM)lpzText);
+        SendMessage(pdata->hWnd, WM_SETREDRAW, TRUE, 0);
+    }
+    return 0;
+}
+
+int PopupActW(HWND hWnd, UINT mask, PLUGIN_DATAW* pdata)
+{
+    if (mask & MASK_OPEN) {
+        int i;
+
+        for(i = 0; i < pdata->nrMerged; i++)
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+    }
+    if (mask & MASK_REMOVE) {
+        int i;
+        
+        for(i = 0; i < pdata->nrMerged; i++)
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+        PopUpList[NumberPopupData(pdata->hContact)] = NULL;
+    }
+    if (mask & MASK_DISMISS) {
+        PopUpList[NumberPopupData(pdata->hContact)] = NULL;
+        PUDeletePopUp(hWnd);
+    }
+    return 0;
+}
+
+static BOOL CALLBACK PopupDlgProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    PLUGIN_DATAW* pdata = NULL;
+
+    pdata = (PLUGIN_DATAW *)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)pdata);
+    if (!pdata) return FALSE;
+
+    switch (message) {
+        case WM_COMMAND:
+            PopupActW(hWnd, pdata->pluginOptions->maskActL, pdata);
+            break;
+        case WM_CONTEXTMENU:
+            PopupActW(hWnd, pdata->pluginOptions->maskActR, pdata);
+            break;
+        case UM_FREEPLUGINDATA:
+            PopupCount--;
+            if(pdata->eventData)
+                free(pdata->eventData);
+            free(pdata);
+            return TRUE;
+        case UM_INITPOPUP:
+            pdata->hWnd = hWnd;
+            if (pdata->iSeconds != -1)
+                SetTimer(hWnd, TIMER_TO_ACTION, pdata->iSeconds * 1000, NULL);
+            break;
+        case WM_MOUSEWHEEL:
+            /*
+            if ((short)HIWORD(wParam) > 0 && pdata->firstShowEventData->prev) {
+                pdata->firstShowEventData = pdata->firstShowEventData->prev;
+                PopupUpdate(pdata->hContact, NULL);
+            }
+            if ((short)HIWORD(wParam) < 0 && pdata->firstShowEventData->next && 
+                pdata->countEvent - pdata->firstShowEventData->number >= pdata->pluginOptions->iNumberMsg) {
+                pdata->firstShowEventData = pdata->firstShowEventData->next;
+                PopupUpdate(pdata->hContact, NULL);
+            } */
+            break;
+        case WM_SETCURSOR:
+            SetFocus(hWnd);
+            break;
+        case WM_TIMER:
+            if (wParam != TIMER_TO_ACTION)
+                break;
+            if (pdata->iSeconds != -1)
+                KillTimer(hWnd, TIMER_TO_ACTION);
+            PopupActW(hWnd, pdata->pluginOptions->maskActTE, pdata);
+            break;
+        default:
+            break;
+    }
+    return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType)
+{
+    POPUPDATAW pud;
+    PLUGIN_DATAW *pdata;
+    DBEVENTINFO dbe;
+    long iSeconds;
+    int iPreviewLimit = nen_options.iLimitPreview, result;
+    BOOL isUnicode = 0;
+    char *szPreview = NULL;
+    DWORD codePage;
+    
+    //there has to be a maximum number of popups shown at the same time
+    if (PopupCount >= MAX_POPUPS)
+        return 2;
+
+    if (!myGlobals.g_PopupAvail)
+        return 0;
+    
+    //check if we should report this kind of event
+    //get the prefered icon as well
+    //CHANGE: iSeconds is -1 because I use my timer to hide popup
+    switch (eventType) {
+        case EVENTTYPE_MESSAGE:
+            if (!(pluginOptions->maskNotify&MASK_MESSAGE)) return 1;
+            pud.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+            pud.colorBack = pluginOptions->bDefaultColorMsg ? 0 : pluginOptions->colBackMsg;
+            pud.colorText = pluginOptions->bDefaultColorMsg ? 0 : pluginOptions->colTextMsg;
+            pud.iSeconds = -1; 
+            iSeconds = pluginOptions->iDelayMsg;
+            break;
+        case EVENTTYPE_URL:
+            if (!(pluginOptions->maskNotify&MASK_URL)) return 1;
+            pud.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
+            pud.colorBack = pluginOptions->bDefaultColorUrl ? 0 : pluginOptions->colBackUrl;
+            pud.colorText = pluginOptions->bDefaultColorUrl ? 0 : pluginOptions->colTextUrl;
+            pud.iSeconds = -1; 
+            iSeconds = pluginOptions->iDelayUrl;
+            break;
+        case EVENTTYPE_FILE:
+            if (!(pluginOptions->maskNotify&MASK_FILE)) return 1;
+            pud.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
+            pud.colorBack = pluginOptions->bDefaultColorFile ? 0 : pluginOptions->colBackFile;
+            pud.colorText = pluginOptions->bDefaultColorFile ? 0 : pluginOptions->colTextFile;
+            pud.iSeconds = -1;
+            iSeconds = pluginOptions->iDelayFile;
+            break;
+        default:
+            if (!(pluginOptions->maskNotify&MASK_OTHER)) return 1;
+            pud.lchIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+            pud.colorBack = pluginOptions->bDefaultColorOthers ? 0 : pluginOptions->colBackOthers;
+            pud.colorText = pluginOptions->bDefaultColorOthers ? 0 : pluginOptions->colTextOthers;
+            pud.iSeconds = -1;
+            iSeconds = pluginOptions->iDelayOthers;
+            break;
+    }
+
+    dbe.pBlob = NULL;
+
+    dbe.cbSize = sizeof(dbe);
+    if(pluginOptions->bPreview || hContact == 0) {
+        dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
+        dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
+    }
+    else
+        dbe.cbBlob = 0;
+    result = CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
+
+    pdata = (PLUGIN_DATAW *)malloc(sizeof(PLUGIN_DATAW));
+    ZeroMemory((void *)pdata, sizeof(PLUGIN_DATAW));
+    
+    pdata->eventType = eventType;
+    pdata->hContact = hContact;
+    pdata->pluginOptions = pluginOptions;
+    pdata->pud = &pud;
+    pdata->iSeconds = iSeconds ? iSeconds : pluginOptions->iDelayDefault;
+
+    //finally create the popup
+    pud.lchContact = hContact;
+    pud.PluginWindowProc = (WNDPROC)PopupDlgProcW;
+    pud.PluginData = pdata;
+
+    codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
+    
+    if (hContact) {
+        MultiByteToWideChar(codePage, 0, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), -1, pud.lpwzContactName, MAX_CONTACTNAME);
+        pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
+    }
+    else {
+        MultiByteToWideChar(CP_ACP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
+        pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
+    }
+
+    szPreview = GetPreviewW(eventType, (char *)dbe.pBlob, dbe.cbBlob, &isUnicode);
+    if(szPreview) {
+        if(isUnicode)
+            mir_snprintfW(pud.lpwzText, MAX_SECONDLINE, L"%s", (wchar_t *)szPreview);
+        else {
+            MultiByteToWideChar(codePage, 0, szPreview, -1, pud.lpwzText, MAX_SECONDLINE);
+            pud.lpwzText[MAX_SECONDLINE - 1] = 0;
+        }
+    }
+    else
+        wcsncpy(pud.lpwzText, L"No body", MAX_SECONDLINE);
+        
+    if(iPreviewLimit > 4 && iPreviewLimit < lstrlenW(pud.lpwzText)) {
+        iPreviewLimit = iPreviewLimit <= MAX_SECONDLINE ? iPreviewLimit : MAX_SECONDLINE;
+        wcsncpy(&pud.lpwzText[iPreviewLimit - 4], L"...", 3);
+        pud.lpwzText[iPreviewLimit -1] = 0;
+    }
+
+    pdata->eventData = (EVENT_DATAW *)malloc(NR_MERGED * sizeof(EVENT_DATAW));
+    pdata->eventData[0].hEvent = hEvent;
+    pdata->eventData[0].timestamp = dbe.timestamp;
+    wcsncpy(pdata->eventData[0].szText, pud.lpwzText, MAX_SECONDLINE);
+    pdata->eventData[0].szText[MAX_SECONDLINE - 1] = 0;
+    pdata->nrEventsAlloced = NR_MERGED;
+    pdata->nrMerged = 1;
+    
+    PopupCount++;
+
+    PopUpList[NumberPopupData(NULL)] = (PLUGIN_DATA *)pdata;
+
+    CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&pud, 0);
+    if (dbe.pBlob)
+        free(dbe.pBlob);
+
+    return 0;
+}
+#endif
+
 int PopupPreview(NEN_OPTIONS *pluginOptions)
 {
     PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_MESSAGE);
@@ -1107,10 +1496,20 @@ passed:
         return 0;
     }
     if (NumberPopupData((HANDLE)wParam) != -1 && nen_options.bMergePopup && eventType == EVENTTYPE_MESSAGE) {
+#if defined(_UNICODE)
+        if(myGlobals.g_PopupWAvail)
+            PopupUpdateW((HANDLE)wParam, (HANDLE)lParam);
+        else
+            PopupUpdate((HANDLE)wParam, (HANDLE)lParam);
+#else
         PopupUpdate((HANDLE)wParam, (HANDLE)lParam);
+#endif        
     } else {
 #if defined(_UNICODE)
-        PopupShow(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
+        if(myGlobals.g_PopupWAvail)
+            PopupShowW(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
+        else
+            PopupShow(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
 #else
         PopupShow(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
 #endif    

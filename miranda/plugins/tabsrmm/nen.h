@@ -171,6 +171,25 @@ typedef struct {
     int  nrEventsAlloced;
 } PLUGIN_DATA;
 
+typedef struct EVENT_DATAW {
+	HANDLE hEvent;
+    wchar_t szText[MAX_SECONDLINE + 2];
+    DWORD timestamp;
+} EVENT_DATAW;
+
+typedef struct {
+    UINT eventType;
+    HANDLE hContact;
+    NEN_OPTIONS *pluginOptions;
+	POPUPDATAW* pud;
+	HWND hWnd;
+	long iSeconds;
+    wchar_t szHeader[256];
+    int  nrMerged;
+    EVENT_DATAW *eventData;
+    int  nrEventsAlloced;
+} PLUGIN_DATAW;
+
 #define NR_MERGED 5
 
 #define TIMER_TO_ACTION 50685

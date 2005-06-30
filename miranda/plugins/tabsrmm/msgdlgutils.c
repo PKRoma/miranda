@@ -1666,7 +1666,7 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
     
     if(dat->wApparentMode == ID_STATUS_OFFLINE) {
         CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_CHECKED);
-        SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, myGlobals.g_IconBlocked);
+        SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_IconBlocked);
     }
     else if(dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
         CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_UNCHECKED);

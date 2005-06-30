@@ -56,6 +56,11 @@ Version 0.9.9.96 - 2005/06/28
 
         + the user notes field now follows the message input area configuration more closely.
 
+        + added support for unicode popups (tabsrmm_unicode only, obviously). It will auto-
+          matically detect a unicode-enabled popup.dll and use it.
+          NOTE: popup merging does not yet work - the required service is not yet implemented
+          in the unicode version of popup.dll
+
 Version 0.9.9.95 - 2005/06/28
 
         * container icon and title is now set earlier so that the container does not

@@ -923,16 +923,16 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_POPUP_ADDPOPUPEX))
         myGlobals.g_PopupAvail = 1;
 
+#if defined(_UNICODE)
+    if(ServiceExists(MS_POPUP_ADDPOPUPW))
+        myGlobals.g_PopupWAvail = 1;
+#endif    
     if(ServiceExists(MS_FONT_REGISTER)) {
         myGlobals.g_FontServiceAvail = 1;
         FS_RegisterFonts();
         hEvent_FontService = HookEvent(ME_FONT_RELOAD, FS_ReloadFonts);
         //HookEvent(ME_COLOUR_RELOAD, FS_ReloadFonts
     }
-    
-    if(ServiceExists(MS_POPUP_ADDPOPUPW))
-        myGlobals.g_PopupWAvail = 1;
-    
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
 
