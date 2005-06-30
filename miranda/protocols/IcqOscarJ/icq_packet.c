@@ -231,6 +231,22 @@ void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 }
 
 
+void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting)
+{
+	DBVARIANT dbv;
+
+	if (DBGetContactSetting(NULL, gpszICQProtoName, szSetting, &dbv))
+	{
+		ppackLEWord(buf, buflen, 0);
+	}
+	else
+	{
+		ppackLELNTS(buf, buflen, dbv.pszVal);
+    DBFreeVariant(&dbv);
+	}
+}
+
+
 /*void ppackLNTS(PBYTE *buf, int *buflen, const char *szSetting)
 {
   DBVARIANT dbv;

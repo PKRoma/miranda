@@ -77,6 +77,7 @@ void ppackLEWord(PBYTE *buf,int *buflen,WORD w);
 void ppackLEDWord(PBYTE *buf,int *buflen,DWORD d);
 //void ppackLNTS(PBYTE *buf, int *buflen, const char *str);
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str);
+void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting);
 //void ppackLNTS(PBYTE *buf, int *buflen, const char *szSetting);
 
 void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);

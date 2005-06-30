@@ -323,28 +323,23 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					int buflen=0;
 					
 					ppackLEWord(&buf, &buflen, 0);
-					ppackLELNTS(&buf, &buflen, "Nick");
-					ppackLELNTS(&buf, &buflen, "FirstName");
-					ppackLELNTS(&buf, &buflen, "LastName");
-					ppackLELNTS(&buf, &buflen, "e-mail");
-					ppackLELNTS(&buf, &buflen, "City");
-					ppackLELNTS(&buf, &buflen, "State");
-					ppackLELNTS(&buf ,&buflen, "Phone");
-					ppackLELNTS(&buf ,&buflen, "Fax");
-					ppackLELNTS(&buf ,&buflen, "Street");
-					ppackLELNTS(&buf ,&buflen, "Cellular");
-					ppackLELNTS(&buf ,&buflen, "ZIP");
+					ppackLELNTSfromDB(&buf, &buflen, "Nick");
+					ppackLELNTSfromDB(&buf, &buflen, "FirstName");
+					ppackLELNTSfromDB(&buf, &buflen, "LastName");
+					ppackLELNTSfromDB(&buf, &buflen, "e-mail");
+					ppackLELNTSfromDB(&buf, &buflen, "City");
+					ppackLELNTSfromDB(&buf, &buflen, "State");
+					ppackLELNTSfromDB(&buf ,&buflen, "Phone");
+					ppackLELNTSfromDB(&buf ,&buflen, "Fax");
+					ppackLELNTSfromDB(&buf ,&buflen, "Street");
+					ppackLELNTSfromDB(&buf ,&buflen, "Cellular");
+					ppackLELNTSfromDB(&buf ,&buflen, "ZIP");
 					ppackLEWord(&buf ,&buflen, (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "Country", 0));
 					ppackByte(&buf ,&buflen, (BYTE)DBGetContactSettingByte(NULL, gpszICQProtoName, "Timezone", 0));
 					ppackByte(&buf ,&buflen, (BYTE)!DBGetContactSettingByte(NULL, gpszICQProtoName, "PublishPrimaryEmail", 0));
 					*(PWORD)buf = buflen-2;
 					{
-//						char* pszServiceName = calloc(1, strlen(gpszICQProtoName)+strlen(PS_CHANGEINFO)+1);
-//						strcpy(pszServiceName, gpszICQProtoName);
-//						strcat(pszServiceName, PS_CHANGEINFO); // TODO: call directly
             IcqChangeInfo(ICQCHANGEINFO_MAIN, (LPARAM)buf);
-//						CallService(pszServiceName, ICQCHANGEINFO_MAIN, (LPARAM)buf);
-//						SAFE_FREE(&pszServiceName);
 					}
 					
 					buflen=2;
