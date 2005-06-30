@@ -17,7 +17,8 @@ Support: http://www.miranda.or.at/forums/
 
 Version 0.9.9.96 - 2005/06/28
 
-        ! null pointer check when retrieving status message
+        ! null pointer check when retrieving status message. Fixes crash when retrieving
+          status messages.
         
         ! fixed window icon problem (autoswitch related)
         
@@ -52,7 +53,9 @@ Version 0.9.9.96 - 2005/06/28
         
         + added ability to use underlined fonts in the message window when configured with
           the font service plugin.
-          
+
+        + the user notes field now follows the message input area configuration more closely.
+
 Version 0.9.9.95 - 2005/06/28
 
         * container icon and title is now set earlier so that the container does not

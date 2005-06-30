@@ -580,7 +580,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             HWND hwndDlg = GetParent(hwnd);
             
             if(GetKeyState(VK_MENU) & 0x8000) {
-                switch (VkKeyScan((TCHAR)wParam)) {
+                switch (LOBYTE(VkKeyScan((TCHAR)wParam))) {
                     case 'S':
                         if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
                             PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
@@ -1637,9 +1637,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 char *szStreamOut = NULL;
                 SETTEXTEX stx = {ST_DEFAULT,CP_UTF8};
-                
                 COLORREF colour = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
-                COLORREF inputcolour = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
                 COLORREF inputcharcolor;
                 CHARFORMAT2A cf2 = {0};
                 LOGFONTA lf;
@@ -1648,13 +1646,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 int logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
                 ReleaseDC(NULL, hdc);
 
+                dat->inputbg = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
                 if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
                     szStreamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
 
                 dat->hBkgBrush = CreateSolidBrush(colour);
-                dat->hInputBkgBrush = CreateSolidBrush(inputcolour);
+                dat->hInputBkgBrush = CreateSolidBrush(dat->inputbg);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, inputcolour);
+                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, dat->inputbg);
                 lf = logfonts[MSGFONTID_MESSAGEAREA];
                 inputcharcolor = fontcolors[MSGFONTID_MESSAGEAREA];
                 /*
@@ -1685,6 +1684,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) | (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+                    //SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_STYLE, (GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_STYLE) | ES_RIGHT) & ~ES_LEFT);
                     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
                 } else {
@@ -1695,12 +1695,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     pf2.wEffects = 0;
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-                    SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+                    SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) & ~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+                    //SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_STYLE, (GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_STYLE) & ~ES_RIGHT) | ES_LEFT);
                     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
     
                 }
-                
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_NOTES), NULL, FALSE);
                 if(szStreamOut != NULL) {
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szStreamOut);
                     free(szStreamOut);
@@ -2976,6 +2977,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 break;
+            }
+        case WM_CTLCOLOREDIT:
+            {	
+                if((HWND)lParam != GetDlgItem(hwndDlg,IDC_NOTES)) 
+                    break;
+                SetTextColor((HDC)wParam, fontcolors[MSGFONTID_MESSAGEAREA]);
+                SetBkColor((HDC)wParam, dat->inputbg);
+                return (BOOL)dat->hInputBkgBrush;
             }
         case WM_MEASUREITEM:
             {

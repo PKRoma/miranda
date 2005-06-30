@@ -299,6 +299,7 @@ struct MessageWindowData {
     DWORD timezone, timediff;
     DWORD panelStatusCX;
     BYTE xStatus;
+    COLORREF inputbg;
 };
 
 typedef struct _recentinfo {

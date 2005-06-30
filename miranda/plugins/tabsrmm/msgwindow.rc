@@ -36,11 +36,11 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD |
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 #if defined(UNICODE)
-    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
+    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
-#else                    
+#else
     CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
@@ -67,8 +67,8 @@ BEGIN
                     30,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_PROTOCOL,"TSButtonClass",WS_TABSTOP,0,33,14,12,
                     0x18000000L
-    CONTROL         "",IDC_INFOPANELMENU,"TSButtonClass",WS_TABSTOP,14,33,8,12,
-                    0x18000000L
+    CONTROL         "",IDC_INFOPANELMENU,"TSButtonClass",WS_TABSTOP,14,33,8,
+                    12,0x18000000L
     CONTROL         "",IDC_NAME,"TSButtonClass",WS_TABSTOP,23,33,14,12,
                     0x18000000L
     CONTROL         "",IDC_PROTOMENU,"TSButtonClass",WS_TABSTOP,37,33,8,12,
@@ -90,22 +90,19 @@ BEGIN
                     WS_EX_STATICEDGE
     CONTROL         "",IDC_RETRY,"TSButtonClass",WS_TABSTOP,26,10,55,12
     CONTROL         "",IDC_CANCELSEND,"TSButtonClass",WS_TABSTOP,86,10,55,12
-    CONTROL         "",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,146,10,55,12
-//    PUSHBUTTON         "",IDC_RETRY,26,10,55,12
-//    PUSHBUTTON         "",IDC_CANCELSEND,86,10,55,12
-//    PUSHBUTTON         "",IDC_MSGSENDLATER,146,10,55,12
+    CONTROL         "",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,146,10,55,
+                    12
     LTEXT           "",IDC_STATICTEXT,27,0,160,9
-    CONTROL         "",IDC_STATICERRORICON,"Static",SS_CENTERIMAGE | SS_ICON
-                    | WS_GROUP, 4,3,20,20
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_NOHIDESEL | ES_AUTOVSCROLL 
-                    | ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,
-                    WS_EX_STATICEDGE
+    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE | 
+                    WS_GROUP
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,
+                    188,30,WS_EX_STATICEDGE
     CONTROL         "Add",IDC_ADD,"TSButtonClass",WS_TABSTOP,155,64,16,14,
                     0x18000000L
     CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,
                     16,14,0x18000000L
-    CONTROL         "",IDC_MULTIPLEICON, "Static", SS_ICON | SS_CENTERIMAGE,
-                    0,64,16,14
+    ICON            "",IDC_MULTIPLEICON,0,64,21,20,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,14,
                     0x18000000L
     CONTROL         "",IDC_TOGGLESIDEBAR,"Button",BS_OWNERDRAW | WS_TABSTOP,
@@ -114,17 +111,20 @@ BEGIN
     CONTROL         "",IDC_PANELPIC,"Button",BS_OWNERDRAW,154,0,34,25
     LTEXT           "Name",IDC_PANELNICKLABEL,6,3,30,12
     LTEXT           "UIN",IDC_PANELUINLABEL,6,17,30,9
-    LTEXT           "Name",IDC_PANELNICK,36,2,100,12,SS_CENTERIMAGE | 
-                    SS_SUNKEN | SS_OWNERDRAW
-    LTEXT           "UIN",IDC_PANELUIN,36,15,100,13,SS_SUNKEN | SS_CENTERIMAGE | SS_OWNERDRAW
-    LTEXT           "UIN",IDC_PANELSTATUS,10,2,100,12,SS_SUNKEN | SS_CENTERIMAGE | SS_OWNERDRAW
-    CONTROL         "",IDC_TOGGLENOTES,"TSButtonClass",WS_TABSTOP,0,3,
-                    4,28,0x18000000L
-    CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",WS_TABSTOP,174,15,
-                    16,13,0x18000000L
+    CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
+                    SS_SUNKEN | WS_GROUP,36,2,100,12
+    CONTROL         "",IDC_PANELUIN,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
+                    SS_SUNKEN | WS_GROUP,36,15,100,13
+    CONTROL         "",IDC_PANELSTATUS,"Static",SS_OWNERDRAW | 
+                    SS_CENTERIMAGE | SS_SUNKEN | WS_GROUP,10,2,100,12
+    CONTROL         "",IDC_TOGGLENOTES,"TSButtonClass",WS_TABSTOP,0,3,4,28,
+                    0x18000000L
+    CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",WS_TABSTOP,174,15,16,
+                    13,0x18000000L
     CONTROL         "",IDC_READSTATUS,"Button",BS_OWNERDRAW,174,2,12,12
     EDITTEXT        IDC_NOTES,5,2,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_WANTRETURN | WS_VSCROLL
+                    ES_WANTRETURN | WS_VSCROLL,WS_EX_RIGHT | 
+                    WS_EX_RTLREADING
     CONTROL         "",IDC_PANELSPLITTER,"Static",SS_ENHMETAFILE,0,31,188,2,
                     WS_EX_STATICEDGE
     CONTROL         "",IDC_PANEL,"Static",SS_ENHMETAFILE | WS_CLIPSIBLINGS,0,
