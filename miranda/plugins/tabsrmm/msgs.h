@@ -295,6 +295,12 @@ struct CREOleCallback {
 #define MSGFONTID_SYMBOLS_IN 20
 #define MSGFONTID_SYMBOLS_OUT 21
 
+#define IPFONTID_NICK 0
+#define IPFONTID_UIN 1
+#define IPFONTID_STATUS 2
+#define IPFONTID_PROTO 3
+#define IPFONTID_TIME 4
+
 extern const int msgDlgFontCount;
 
 #define LOADHISTORY_UNREAD    0

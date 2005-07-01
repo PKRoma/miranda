@@ -34,7 +34,6 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #pragma hdrstop
 #include <malloc.h>
 #include "msgs.h"
-#include "m_popup.h"
 #include "nen.h"
 #include "functions.h"
 

@@ -931,7 +931,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
         myGlobals.g_FontServiceAvail = 1;
         FS_RegisterFonts();
         hEvent_FontService = HookEvent(ME_FONT_RELOAD, FS_ReloadFonts);
-        //HookEvent(ME_COLOUR_RELOAD, FS_ReloadFonts
     }
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
@@ -954,6 +953,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     myGlobals.m_UserMenuItem = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
     PreTranslateDates();
     hEvent_ttbInit = HookEvent("TopToolBar/ModuleLoaded", TTB_Loaded);
+
+    myGlobals.m_hFontWebdings = CreateFontA(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, SYMBOL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Wingdings");
     return 0;
 }
 
@@ -977,10 +978,9 @@ static void UnloadIcons()
     DestroyIcon(myGlobals.g_iconStatus);
     DestroyIcon(myGlobals.g_IconChecked);
     DestroyIcon(myGlobals.g_IconUnchecked);
-    DestroyIcon(myGlobals.g_IconClock);
-    DestroyIcon(myGlobals.g_IconVisible);
-    DestroyIcon(myGlobals.g_IconDependStatus);
-    DestroyIcon(myGlobals.g_IconBlocked);
+    //DestroyIcon(myGlobals.g_IconVisible);
+    //DestroyIcon(myGlobals.g_IconDependStatus);
+    //DestroyIcon(myGlobals.g_IconBlocked);
     /*
      * free the button bar icons
      */
@@ -1008,6 +1008,7 @@ int SplitmsgShutdown(void)
     DestroyCursor(myGlobals.hCurSplitNS);
     DestroyCursor(myGlobals.hCurHyperlinkHand);
     DestroyCursor(myGlobals.hCurSplitWE);
+    DeleteObject(myGlobals.m_hFontWebdings);
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
@@ -1477,8 +1478,6 @@ void CreateImageList(BOOL bInitial)
         
         myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
         ImageList_AddIcon(myGlobals.g_hStateImageList, myGlobals.g_IconChecked);
-
-        myGlobals.g_IconClock = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLOCK), IMAGE_ICON, cxIcon, cyIcon, 0);
     }
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);
@@ -1687,9 +1686,9 @@ static ICONDESC mainDLLIcons[] = {
     "tabSRMM_Leftarrow", "Left Arrow", &myGlobals.g_buttonBarIcons[25], -IDI_LEFTARROW, 1,
     "tabSRMM_Rightarrow", "Right Arrow", &myGlobals.g_buttonBarIcons[28], -IDI_RIGHTARROW, 1,
     "tabSRMM_Pulluparrow", "Up Arrow", &myGlobals.g_buttonBarIcons[26], -IDI_PULLUPARROW, 1,
-    "tabSRMM_Visible", "Contact on visible list", &myGlobals.g_IconVisible, -IDI_VISIBLE, 1,
-    "tabSRMM_Blocked", "Contact blocked/invisible list", &myGlobals.g_IconBlocked, -IDI_BLOCKED, 1,
-    "tabSRMM_Statudepends", "Normal visibilty", &myGlobals.g_IconDependStatus, -IDI_STATUSDEPEND, 1,
+    //"tabSRMM_Visible", "Contact on visible list", &myGlobals.g_IconVisible, -IDI_VISIBLE, 1,
+    //"tabSRMM_Blocked", "Contact blocked/invisible list", &myGlobals.g_IconBlocked, -IDI_BLOCKED, 1,
+    //"tabSRMM_Statudepends", "Normal visibilty", &myGlobals.g_IconDependStatus, -IDI_STATUSDEPEND, 1,
     NULL, NULL, NULL, 0
 };
 /*

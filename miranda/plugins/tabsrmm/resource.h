@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by msgwindow.rc
+// Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
@@ -47,7 +47,6 @@
 #define IDI_TREEVIEWEXPAND              320
 #define IDI_TREEVIEWCHECKED             321
 #define IDI_TREEVIEWUNCHECKED           322
-#define IDI_CLOCK                       323
 #define IDI_VISIBLE                     324
 #define IDI_BLOCKED                     325
 #define IDI_STATUSDEPEND                326
@@ -342,6 +341,8 @@
 #define IDC_TEXTFORMATTING              1266
 #define IDC_AVATARMODE                  1267
 #define IDC_BIDI                        1267
+#define IDC_MODIFIERS2                  1267
+#define IDC_IPFIELDBORDERS              1267
 #define IDC_AVATARMODE2                 1268
 #define IDC_CODEPAGES                   1268
 #define IDC_NOTIFYTYPE                  1269

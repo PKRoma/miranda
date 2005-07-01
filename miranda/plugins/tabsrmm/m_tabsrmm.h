@@ -133,6 +133,18 @@ typedef struct {
 #define AVATARMODE_DYNAMIC 0
 #define AVATARMODE_STATIC 1
 
+#define MSGDLGFONTCOUNT 22
+#define IPFONTCOUNT 5
+
+/*
+ * info panel field edges
+ */
+
+#define IPFIELD_SUNKEN 0
+#define IPFIELD_RAISEDINNER 1
+#define IPFIELD_RAISEDOUTER 2
+#define IPFIELD_EDGE 3
+
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
 	TCHAR szName[CONTAINER_NAMELEN + 4];		// container name
@@ -309,7 +321,7 @@ typedef struct _recentinfo {
 } RECENTINFO;
 
 /*
- * window data for subclassed tab control
+ * window data for the tab control window class
  */
 
 struct TabControlData {
@@ -335,17 +347,30 @@ struct myTabCtrl {
     int m_bottomAdjust;
 };
 
+/*
+ * configuration data for the info panel (fonts, colors)
+ */
+
+struct infopanelconfig {
+    HFONT hFonts[IPFONTCOUNT];
+    COLORREF clrs[IPFONTCOUNT];
+    COLORREF clrClockSymbol, clrBackground;
+    BOOL isValid;                   // valid data exist (font service required, otherwise, defaults are used)
+    BYTE borderStyle;
+    HBRUSH bkgBrush;
+    UINT edgeType, edgeFlags;
+    
+};
+
 typedef struct _globals {
-    // static options, initialised when plugin is loading
     HWND g_hwndHotkeyHandler;
     HICON g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
     HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
-    // external plugins
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
-    HICON g_IconChecked, g_IconUnchecked, g_IconClock;
-    HICON g_IconVisible, g_IconBlocked, g_IconDependStatus;
+    HICON g_IconChecked, g_IconUnchecked;
+    //HICON g_IconVisible, g_IconBlocked, g_IconDependStatus;
     HIMAGELIST g_hImageList, g_hStateImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
@@ -416,6 +441,8 @@ typedef struct _globals {
     DWORD local_gmt_diff;
     int m_PasteAndSend;
     char *m_szNoStatus;
+    HFONT m_hFontWebdings;
+    struct infopanelconfig ipConfig;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

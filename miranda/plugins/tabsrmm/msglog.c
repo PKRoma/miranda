@@ -34,6 +34,7 @@ $Id$
 #include "m_smileyadd.h"
 #include "m_ieview.h"
 #include "m_popup.h"
+#include "m_fontservice.h"
 #include "nen.h"
 #include "functions.h"
 
@@ -174,6 +175,31 @@ void CacheLogFonts()
     
     strncpy(szToday, Translate("Today"), 20);
     strncpy(szYesterday, Translate("Yesterday"), 20);
+
+    /*
+     * cache/create the info panel fonts
+     */
+    myGlobals.ipConfig.isValid = ServiceExists(MS_FONT_REGISTER) ? TRUE : FALSE;
+    
+    if(myGlobals.ipConfig.isValid) {
+        COLORREF clr;
+        LOGFONTA lf;
+        
+        for(i = 0; i < IPFONTCOUNT; i++) {
+            if(myGlobals.ipConfig.hFonts[i])
+                DeleteObject(myGlobals.ipConfig.hFonts[i]);
+            LoadLogfont(i + 100, &lf, &clr);
+            myGlobals.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
+            myGlobals.ipConfig.clrs[i] = clr;
+        }
+    }
+    if(myGlobals.ipConfig.bkgBrush)
+        DeleteObject(myGlobals.ipConfig.bkgBrush);
+    
+    myGlobals.ipConfig.clrBackground = DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
+    myGlobals.ipConfig.clrClockSymbol = DBGetContactSettingDword(NULL, FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
+
+    myGlobals.ipConfig.bkgBrush = CreateSolidBrush(myGlobals.ipConfig.clrBackground);
 }
 
 /*

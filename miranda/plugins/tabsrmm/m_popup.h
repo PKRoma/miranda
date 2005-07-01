@@ -61,20 +61,6 @@ typedef struct {
 	                                      //some unused bytes which may come useful in the future.
 } POPUPDATAEX, *LPPOPUPDATAEX;
 
-typedef struct {
-	HANDLE lchContact;
-	HICON lchIcon;
-	WCHAR lpwzContactName[MAX_CONTACTNAME];
-	WCHAR lpwzText[MAX_SECONDLINE];
-	COLORREF colorBack;                   
-	COLORREF colorText;
-	WNDPROC PluginWindowProc;
-	void * PluginData;
-	int iSeconds;                         //Custom delay time in seconds. -1 means "forever", 0 means "default time".
-	char cZero[16];
-	                                      //some unused bytes which may come useful in the future.
-} POPUPDATAW, *LPPOPUPDATAW;
-
 /*
 When you call MS_POPUP_ADDPOPUP, my plugin will check if the given POPUPDATA structure is filled with acceptable values. If not, the data will be rejected and no popup will be shown.
 
@@ -190,11 +176,6 @@ static int __inline PUAddPopUpEx(POPUPDATAEX* ppdp) {
 	return CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)ppdp,0);
 }
 
-#define MS_POPUP_ADDPOPUPW "PopUp/AddPopUpW"
-static int __inline PUAddPopUpW(POPUPDATAW* ppdp) {
-	return CallService(MS_POPUP_ADDPOPUPW, (WPARAM)ppdp,0);
-}
-
 /*
 Returns the handle to the contact associated to the specified PopUpWindow.
 You will probably need to know this handle inside your WNDPROC. Exampole: you want to open the MessageWindow. :-)
@@ -280,11 +261,6 @@ Changes the text displayed in the second line of the popup.
 #define MS_POPUP_CHANGETEXT "PopUp/Changetext"
 static int __inline PUChangeText(HWND hWndPopUp, LPCTSTR lpzNewText) {
 	return (int)CallService(MS_POPUP_CHANGETEXT, (WPARAM)hWndPopUp, (LPARAM)lpzNewText);
-}
-
-#define MS_POPUP_CHANGETEXTW "PopUp/ChangetextW"
-static int __inline PUChangeTextW(HWND hWndPopUp, LPCWSTR lpwzNewText) {
-	return (int)CallService(MS_POPUP_CHANGETEXTW, (WPARAM)hWndPopUp, (LPARAM)lpwzNewText);
 }
 
 /*

@@ -157,7 +157,14 @@ static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
         "* Symbols (incoming)",
         "* Symbols (outgoing)"};
 
-/*
+static const char *szIPFontDescr[IPFONTCOUNT] = {
+        "Nickname", 
+        "UIN",
+        "Status",
+        "Protocol",
+        "Contacts local time"};
+
+        /*
  * Font Service support
  */
 
@@ -194,7 +201,7 @@ void FS_RegisterFonts()
     fid.cbSize = sizeof(fid);
     strncpy(fid.group, "TabSRMM", sizeof(fid.group));
     strncpy(fid.dbSettingsGroup, FONTMODULE, sizeof(fid.dbSettingsGroup));
-    fid.flags = FIDF_DEFAULTVALID;
+    fid.flags = FIDF_DEFAULTVALID | FIDF_ALLOWEFFECTS;
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         _snprintf(szTemp, sizeof(szTemp), "Font%d", i);
         strncpy(fid.prefix, szTemp, sizeof(fid.prefix));
@@ -208,7 +215,7 @@ void FS_RegisterFonts()
         if(i == H_MSGFONTID_DIVIDERS)
             fid.deffontsettings.size = 5;
         else {
-            fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, fontOptionsList[0].defSize);
+            fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 14);
             fid.deffontsettings.size = -MulDiv(fid.deffontsettings.size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
         }
         ReleaseDC(NULL,hdc);				
@@ -229,6 +236,48 @@ void FS_RegisterFonts()
                 lstrcpynA(fid.deffontsettings.szFace, dbv.pszVal, LF_FACESIZE);
                 DBFreeVariant(&dbv);
             }
+        }
+        CallService(MS_FONT_REGISTER, (WPARAM)&fid, 0);
+    }
+
+    strncpy(cid.group, "TabSRMM - Infopanel", sizeof(cid.group));
+    strncpy(cid.name, "Background - Infopanel fields", sizeof(cid.name));
+    strncpy(cid.setting, "ipfieldsbg", sizeof(cid.setting));
+    cid.defcolour = DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
+    CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+
+    strncpy(cid.name, "Analog clock symbol", sizeof(cid.name));
+    strncpy(cid.setting, "col_clock", sizeof(cid.setting));
+    cid.defcolour = DBGetContactSettingDword(NULL, FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
+    CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+    
+    strncpy(fid.group, "TabSRMM - Infopanel", sizeof(fid.group));
+    fid.flags = FIDF_DEFAULTVALID | FIDF_ALLOWEFFECTS | FIDF_SAVEACTUALHEIGHT;
+    myGlobals.ipConfig.isValid = TRUE;
+    for(i = 0; i < IPFONTCOUNT; i++) {
+        _snprintf(szTemp, sizeof(szTemp), "Font%d", 100 + i);
+        strncpy(fid.prefix, szTemp, sizeof(fid.prefix));
+        fid.order = i;
+        strncpy(fid.name, szIPFontDescr[i], sizeof(fid.name));
+        _snprintf(szTemp, sizeof(szTemp), "Font%dCol", 100 + i);
+        fid.deffontsettings.colour = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, szTemp, GetSysColor(COLOR_WINDOWTEXT));
+
+        hdc = GetDC(NULL);
+        _snprintf(szTemp, sizeof(szTemp), "Font%dSize", 100 + i);
+        fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, fontOptionsList[0].defSize);
+        fid.deffontsettings.size = -MulDiv(fid.deffontsettings.size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+        ReleaseDC(NULL,hdc);				
+
+        _snprintf(szTemp, sizeof(szTemp), "Font%dSty", 100 + i);
+        fid.deffontsettings.style = DBGetContactSettingByte(NULL, FONTMODULE, szTemp, fontOptionsList[0].defStyle);
+        _snprintf(szTemp, sizeof(szTemp), "Font%dSet", 100 + i);
+        fid.deffontsettings.charset = DBGetContactSettingByte(NULL, FONTMODULE, szTemp, fontOptionsList[0].defCharset);
+        _snprintf(szTemp, sizeof(szTemp), "Font%d", 100 + i);
+        if (DBGetContactSetting(NULL, FONTMODULE, szTemp, &dbv))
+            lstrcpynA(fid.deffontsettings.szFace, fontOptionsList[0].szDefFace, LF_FACESIZE);
+        else {
+            lstrcpynA(fid.deffontsettings.szFace, dbv.pszVal, LF_FACESIZE);
+            DBFreeVariant(&dbv);
         }
         CallService(MS_FONT_REGISTER, (WPARAM)&fid, 0);
     }
@@ -934,6 +983,13 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_INSERTSTRING, -1, (LPARAM)_T("CTRL-ALT"));
             SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_INSERTSTRING, -1, (LPARAM)_T("ALT-SHIFT"));
             SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hotkeymodifier", 0), 0);
+
+            SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("3D - Sunken"));
+            SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("3D - Raised inner"));
+            SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("3D - Raised outer"));
+            SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("Edged"));
+            SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN), 0);
+            
          break;
             
         }
@@ -998,6 +1054,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							DBWriteContactSettingWord(NULL, SRMSGMOD_T, "cut_at", (WORD) GetDlgItemInt(hwndDlg, IDC_CUT_TITLEMAX, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE) GetDlgItemInt(hwndDlg, IDC_HISTORYSIZE, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "hotkeymodifier", (BYTE) SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_GETCURSEL, 0, 0));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", (BYTE) SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_GETCURSEL, 0, 0));
 
                             /*
                              * scan the tree view and obtain the options...
@@ -1924,6 +1981,22 @@ void ReloadGlobals()
      myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
      myGlobals.m_szNoStatus = Translate("No status message available");
+     myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);
+     switch(myGlobals.ipConfig.borderStyle) {
+         case IPFIELD_SUNKEN:
+             myGlobals.ipConfig.edgeType = BDR_SUNKENINNER;
+             break;
+         case IPFIELD_RAISEDINNER:
+             myGlobals.ipConfig.edgeType = BDR_RAISEDINNER;
+             break;
+         case IPFIELD_RAISEDOUTER:
+             myGlobals.ipConfig.edgeType = BDR_RAISEDOUTER;
+             break;
+         case IPFIELD_EDGE:
+             myGlobals.ipConfig.edgeType = EDGE_BUMP;
+             break;
+     }
+     myGlobals.ipConfig.edgeFlags = BF_RECT | BF_ADJUST;
 }
 
 /*

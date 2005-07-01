@@ -422,11 +422,11 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Tab options",IDC_STATIC,3,0,300,119
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,168,135,10
-    EDITTEXT        IDC_CUT_TITLEMAX,166,166,30,12,ES_AUTOHSCROLL
-    LTEXT           "characters",IDC_STATIC,208,168,88,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,173,135,10
+    EDITTEXT        IDC_CUT_TITLEMAX,166,171,30,12,ES_AUTOHSCROLL
+    LTEXT           "characters",IDC_STATIC,208,173,88,9
     PUSHBUTTON      "Setup status modes for automatic tab creation...",
-                    IDC_SETUPAUTOCREATEMODES,56,138,190,14
+                    IDC_SETUPAUTOCREATEMODES,56,155,190,14
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,121,300,104
     LTEXT           "Global hotkey modifiers",IDC_STATIC,12,204,113,11
     COMBOBOX        IDC_MODIFIERS,166,202,84,50,CBS_DROPDOWNLIST | CBS_SORT | 
@@ -434,13 +434,16 @@ BEGIN
     LTEXT           "Input history size",IDC_STATIC,12,188,111,10
     EDITTEXT        IDC_HISTORYSIZE,166,185,28,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,170,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,175,
                     12,13
     LTEXT           "entries",IDC_STATIC,200,187,28,10
     CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,101,
                     WS_EX_STATICEDGE
+    LTEXT           "Info Panel field borders:",IDC_STATIC,10,134,166,12
+    COMBOBOX        IDC_IPFIELDBORDERS,192,131,106,50,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147
@@ -1195,10 +1198,9 @@ IDI_RIGHTARROW          ICON                    "res/rightarrow.ico"
 IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
-IDI_CLOCK               ICON                    "res/clock8.ico"
-IDI_VISIBLE             ICON                    "res/visible.ico"
-IDI_BLOCKED             ICON                    "res/blocked.ico"
-IDI_STATUSDEPEND        ICON                    "res/status.ico"
+//IDI_VISIBLE             ICON                    "res/visible.ico"
+//IDI_BLOCKED             ICON                    "res/blocked.ico"
+//IDI_STATUSDEPEND        ICON                    "res/status.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -849,25 +849,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case IDM_STAYONTOP:
                     SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
                     CheckMenuItem(GetSystemMenu(hwndDlg, FALSE), IDM_STAYONTOP, (pContainer->dwFlags & CNT_STICKY) ? MF_BYCOMMAND | MF_UNCHECKED : MF_BYCOMMAND | MF_CHECKED);
-                    pContainer->dwFlags ^= CNT_STICKY;
+                    ApplyContainerSetting(pContainer, CNT_STICKY, pContainer->dwFlags & CNT_STICKY ? 0 : 1);
                     break;
                 case IDM_NOTITLE: {
-                        DWORD ws;
-                        RECT rc;
-
                         pContainer->oldSize.cx = 0;
                         pContainer->oldSize.cy = 0;
 
                         CheckMenuItem(GetSystemMenu(hwndDlg, FALSE), IDM_NOTITLE, (pContainer->dwFlags & CNT_NOTITLE) ? MF_BYCOMMAND | MF_UNCHECKED : MF_BYCOMMAND | MF_CHECKED);
-                        ws = GetWindowLong(hwndDlg, GWL_STYLE);
-                        ws = (pContainer->dwFlags & CNT_NOTITLE) ? ws | WS_CAPTION : ws & ~WS_CAPTION; 
-                        SetWindowLong(hwndDlg, GWL_STYLE, ws);
-                        pContainer->dwFlags ^= CNT_NOTITLE;
-                        GetWindowRect(hwndDlg, &rc);
-                        MoveWindow(hwndDlg, rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, TRUE);
-                        MoveWindow(hwndDlg, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-                        RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
-                        SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                        ApplyContainerSetting(pContainer, CNT_NOTITLE, pContainer->dwFlags & CNT_NOTITLE ? 0 : 1);
                         break;
                     }
                 case IDM_MOREOPTIONS:

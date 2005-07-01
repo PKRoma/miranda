@@ -36,6 +36,7 @@ License: GPL
 #include "msgdlgutils.h"
 
 #define MWF_LOG_TEXTFORMAT 0x2000000
+#define MSGDLGFONTCOUNT 22
 
 extern "C" RTFColorTable rtf_ctable[];
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);

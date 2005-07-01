@@ -748,6 +748,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     RECT rc, rcButton;
     static int uinWidth;
     int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+    int panelHeight = dat->panelHeight + 1;
     
     GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
     GetClientRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), &rcButton);
@@ -786,12 +787,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_TOGGLENOTES:
             return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
         case IDC_PANELSPLITTER:
-            urc->rcItem.bottom = dat->panelHeight;
-            urc->rcItem.top = dat->panelHeight - 2;
+            urc->rcItem.bottom = panelHeight;
+            urc->rcItem.top = panelHeight - 2;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
         case IDC_NOTES:
-            urc->rcItem.bottom = dat->panelHeight - 4;
-            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight + 2);
+            urc->rcItem.bottom = panelHeight - 4;
+            urc->rcItem.right = urc->dlgNewSize.cx - (panelHeight + 2);
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_RETRY:
         case IDC_CANCELSEND:
@@ -854,31 +855,31 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                 urc->rcItem.top += 24;
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                urc->rcItem.top += dat->panelHeight;
+                urc->rcItem.top += panelHeight;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_PANELPIC:
-            urc->rcItem.left = urc->rcItem.right - (dat->panelHeight - 2);
-            urc->rcItem.bottom = urc->rcItem.top + (dat->panelHeight - 2);
+            urc->rcItem.left = urc->rcItem.right - (panelHeight - 2);
+            urc->rcItem.bottom = urc->rcItem.top + (panelHeight - 3);
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_PANEL:
             return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
         case IDC_PANELSTATUS:
-            urc->rcItem.right = urc->dlgNewSize.cx - dat->panelHeight - 15;
-            urc->rcItem.left = urc->dlgNewSize.cx - dat->panelHeight - 15 - dat->panelStatusCX;
+            urc->rcItem.right = urc->dlgNewSize.cx - panelHeight - 15;
+            urc->rcItem.left = urc->dlgNewSize.cx - panelHeight - 15 - dat->panelStatusCX;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_READSTATUS:
-            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight);
+            urc->rcItem.right = urc->dlgNewSize.cx - (panelHeight);
             urc->rcItem.left = urc->rcItem.right - 14;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_PANELNICK:
-            urc->rcItem.right = urc->dlgNewSize.cx - dat->panelHeight - 15 - dat->panelStatusCX - 2;
+            urc->rcItem.right = urc->dlgNewSize.cx - panelHeight - 15 - dat->panelStatusCX - 2;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_APPARENTMODE:
-            urc->rcItem.right -= (dat->panelHeight + 3);
-            urc->rcItem.left -= (dat->panelHeight + 3);
+            urc->rcItem.right -= (panelHeight + 3);
+            urc->rcItem.left -= (panelHeight + 3);
             return RD_ANCHORX_CUSTOM | RD_ANCHORX_RIGHT;
         case IDC_PANELUIN:
-            urc->rcItem.right = urc->dlgNewSize.cx - (dat->panelHeight + 2 + 25);
+            urc->rcItem.right = urc->dlgNewSize.cx - (panelHeight + 2 + 25);
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_PANELNICKLABEL:
         case IDC_PANELUINLABEL:
@@ -925,7 +926,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTISPLITTER:
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                urc->rcItem.top += dat->panelHeight;
+                urc->rcItem.top += panelHeight;
             urc->rcItem.left -= dat->multiSplitterX;
             urc->rcItem.right -= dat->multiSplitterX;
             urc->rcItem.bottom = iClistOffset;
@@ -934,7 +935,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
         case IDC_CLIST:
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                urc->rcItem.top += dat->panelHeight;
+                urc->rcItem.top += panelHeight;
             urc->rcItem.left = urc->dlgNewSize.cx - dat->multiSplitterX;
             urc->rcItem.right = urc->dlgNewSize.cx - 3;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
@@ -947,12 +948,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
         case IDC_LOGFROZEN:
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                OffsetRect(&urc->rcItem, 0, dat->panelHeight);
+                OffsetRect(&urc->rcItem, 0, panelHeight);
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_LOGFROZENTEXT:
             urc->rcItem.right = urc->dlgNewSize.cx - 20;
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                OffsetRect(&urc->rcItem, 0, dat->panelHeight);
+                OffsetRect(&urc->rcItem, 0, panelHeight);
             return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -1964,7 +1965,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_FOCUS);
                 if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-                    InvalidateRect(GetDlgItem(hwndDlg, IDC_READSTATUS), NULL, FALSE);
+                    CheckDlgButton(hwndDlg, IDC_READSTATUS, myGlobals.m_DoStatusMsg ? BST_CHECKED : BST_UNCHECKED);
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
                 }
             }
@@ -2045,7 +2046,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_FOCUS);
                 if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-                    InvalidateRect(GetDlgItem(hwndDlg, IDC_READSTATUS), NULL, FALSE);
+                    CheckDlgButton(hwndDlg, IDC_READSTATUS, myGlobals.m_DoStatusMsg ? BST_CHECKED : BST_UNCHECKED);
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
                 }
             }
@@ -2216,10 +2217,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     pt.x = 0; pt.y = wParam;
                     ScreenToClient(hwndDlg, &pt);
                     GetClientRect(hwndDlg, &rc);
-                    if(pt.y + 6 >= 51 && pt.y + 6 < 100)
-                        dat->panelHeight = pt.y + 6;
+                    if(pt.y + 2 >= 51 && pt.y + 2 < 100)
+                        dat->panelHeight = pt.y + 2;
                     SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
                     break;
                 }
                 SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
@@ -2997,260 +2999,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             SendMessage(dat->pContainer->hwnd, WM_NCHITTEST, wParam, lParam);
             break;
         case WM_DRAWITEM:
-            {
-                LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-                if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
-                    HICON hIcon;
-                    DWORD bStyle = 0;
-                    if(dat->pContainer->dwFlags & CNT_SIDEBAR)
-                        bStyle = DFCS_PUSHED;
-                    else
-                        bStyle = DFCS_FLAT;
-                    DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | bStyle);
-                    hIcon = myGlobals.g_buttonBarIcons[25];
-                    DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                              (dis->rcItem.right + dis->rcItem.left - myGlobals.m_smcxicon) / 2,
-                              (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2,
-                              myGlobals.m_smcxicon, myGlobals.m_smcyicon,
-                              DST_ICON | DSS_NORMAL);
-                    return TRUE;
-                } else if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
-                    RECT rc = { 0 };
-                    HBRUSH old, col;
-                    COLORREF clr;
-                    switch(dis->itemID) {
-                        case ID_FONT_RED:
-                            clr = RGB(255, 0, 0);
-                            break;
-                        case ID_FONT_BLUE:
-                            clr = RGB(0, 0, 255);
-                            break;
-                        case ID_FONT_GREEN:
-                            clr = RGB(0, 255, 0);
-                            break;
-                        case ID_FONT_MAGENTA:
-                            clr = RGB(255, 0, 255);
-                            break;
-                        case ID_FONT_YELLOW:
-                            clr = RGB(255, 255, 0);
-                            break;
-                        case ID_FONT_WHITE:
-                            clr = RGB(255, 255, 255);
-                            break;
-                        case ID_FONT_DEFAULTCOLOR:
-                            clr = GetSysColor(COLOR_MENU);
-                            break;
-                        default:
-                            clr = 0;
-                    }
-                    col = CreateSolidBrush(clr);
-                    old = SelectObject(dis->hDC, col);
-                    rc.left = 2; rc.top = dis->rcItem.top - 5;
-                    rc.right = 18; rc.bottom = dis->rcItem.bottom + 4;
-                    Rectangle(dis->hDC, rc.left - 1, rc.top - 1, rc.right + 1, rc.bottom + 1);
-                    FillRect(dis->hDC, &rc, col);
-                    SelectObject(dis->hDC, old);
-                    DeleteObject(col);
-                    return TRUE;
-                } else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && dat->hContactPic && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL && dat->hContactPic)) {
-                    HPEN hPen, hOldPen;
-                    HBRUSH hOldBrush;
-                    BITMAP bminfo;
-                    double dAspect = 0, dNewWidth = 0, dNewHeight = 0;
-                    DWORD iMaxHeight = 0, top, cx, cy;
-                    RECT rc, rcClient;
-                    HDC hdcDraw;
-                    HBITMAP hbmDraw, hbmOld;
-                    BOOL bPanelPic = dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC);
-                    
-                    if(bPanelPic)
-                        GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
-                    else 
-                        GetObject(dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic, sizeof(bminfo), &bminfo);
-
-                    GetClientRect(hwndDlg, &rc);
-                    GetClientRect(dis->hwndItem, &rcClient);
-                    cx = rcClient.right;
-                    cy = rcClient.bottom;
-                    hdcDraw = CreateCompatibleDC(dis->hDC);
-                    hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
-                    hbmOld = SelectObject(hdcDraw, hbmDraw);
-                    
-                    if(bPanelPic) {
-                        if(bminfo.bmHeight > bminfo.bmWidth) {
-                            dAspect = (double)(cy - 2) / (double)bminfo.bmHeight;
-                            dNewWidth = (double)bminfo.bmWidth * dAspect;
-                            dNewHeight = cy - 2;
-                        }
-                        else {
-                            dAspect = (double)(cx - 2) / (double)bminfo.bmWidth;
-                            dNewHeight = (double)bminfo.bmHeight * dAspect;
-                            dNewWidth = cx - 2;
-                        }
-                    }
-                    else {
-                        dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
-                        dNewWidth = (double)bminfo.bmWidth * dAspect;
-                        if(dNewWidth > (double)(rc.right) * 0.8)
-                            dNewWidth = (double)(rc.right) * 0.8;
-                        iMaxHeight = dat->iRealAvatarHeight;
-                    }
-                    hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
-                    hOldPen = SelectObject(hdcDraw, hPen);
-                    hOldBrush = SelectObject(hdcDraw, GetSysColorBrush(COLOR_3DFACE));
-                    FillRect(hdcDraw, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-                    if(!bPanelPic) {
-                        if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                            Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
-                        else {
-                            top = (dat->pic.cy - dat->iRealAvatarHeight) / 2;
-                            Rectangle(hdcDraw, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
-                        }
-                    }
-                    if(((dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic) && dat->showPic) || bPanelPic) {
-                        HDC hdcMem = CreateCompatibleDC(dis->hDC);
-                        HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, bPanelPic ? dat->hContactPic : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic));
-                        if(bPanelPic) {
-                            RECT rcFrame = rcClient;
-                            rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);
-                            rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
-                            SetStretchBltMode(hdcDraw, HALFTONE);
-                            Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-                            StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                        }
-                        else {
-                            if(dat->iRealAvatarHeight != bminfo.bmHeight) {
-                                SetStretchBltMode(hdcDraw, HALFTONE);
-                                if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                                    StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                                else
-                                    StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                            }
-                            else {
-                                if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                                    BitBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
-                                else
-                                    BitBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
-                            }
-                        }
-                        DeleteObject(hbmMem);
-                        DeleteDC(hdcMem);
-                    }
-                    SelectObject(hdcDraw, hOldPen);
-                    SelectObject(hdcDraw, hOldBrush);
-                    DeleteObject(hPen);
-                    BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
-                    SelectObject(hdcDraw, hbmOld);
-                    DeleteObject(hbmDraw);
-                    DeleteDC(hdcDraw);
-                    return TRUE;
-                }
-                else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELSTATUS) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                    char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-                    SIZE sProto = {0}, sStatus = {0};
-                    DWORD oldPanelStatusCX = dat->panelStatusCX;
-                    RECT rc;
-                    
-                    if(dat->szStatus)
-                        GetTextExtentPoint32A(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &sStatus);
-                    if(szProto)
-                        GetTextExtentPoint32A(dis->hDC, szProto, lstrlenA(szProto), &sProto);
-
-                    dat->panelStatusCX = sStatus.cx + sProto.cx + 16 + 18;
-                    
-                    if(dat->panelStatusCX != oldPanelStatusCX)
-                        SendMessage(hwndDlg, WM_SIZE, 0, 0);
-
-                    GetClientRect(dis->hwndItem, &rc);
-                    FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
-                    
-                    if(dat->hTabStatusIcon) {
-                        if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
-                            ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, dat->hTabStatusIcon);
-                            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 3, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
-                        }
-                        else
-                            DrawIconEx(dis->hDC, 3, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, dat->hTabStatusIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-                    }
-                    rc.left += 22;
-                    if(dat->szStatus)
-                        DrawTextA(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &rc, DT_SINGLELINE | DT_VCENTER);
-                    if(szProto) {
-                        rc.left = rc.right - sProto.cx - 3;
-                        SetTextColor(dis->hDC, GetSysColor(COLOR_HOTLIGHT));
-                        DrawTextA(dis->hDC, szProto, lstrlenA(szProto), &rc, DT_SINGLELINE | DT_VCENTER);
-                    }
-                    return TRUE;
-                }
-                else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                    FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
-                    dis->rcItem.left +=2;
-                    if(dat->szNickname) {
-#if defined(_UNICODE)
-                        wchar_t szNickW[512];
-#endif                        
-                        if(dat->xStatus > 0 && dat->xStatus < 24) {
-                            HICON xIcon = ImageList_ExtractIcon(NULL, myGlobals.g_xIcons, dat->xStatus - 1);
-                            DrawIconEx(dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-                            DestroyIcon(xIcon);
-                            dis->rcItem.left += 21;
-                        }
-#if defined(_UNICODE)
-                        MultiByteToWideChar(dat->codePage, 0, dat->szNickname, -1, szNickW, 512);
-                        szNickW[511] = 0;
-                        DrawTextW(dis->hDC, szNickW, lstrlenW(szNickW), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-#else
-                        DrawTextA(dis->hDC, dat->szNickname, lstrlenA(dat->szNickname), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-#endif                        
-                    }
-                    return TRUE;
-                }
-                else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELUIN) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                    char szBuf[256];
-                    FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
-                    dis->rcItem.left +=2;
-                    if(dat->uin) {
-                        SIZE sUIN, sTime;
-                        if(dat->idle) {
-                            time_t diff = time(NULL) - dat->idle;
-                            int i_hrs = diff / 3600;
-                            int i_mins = (diff - i_hrs * 3600) / 60;
-                            mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %dh,%02dm", dat->uin, i_hrs, i_mins);
-                            GetTextExtentPoint32A(dis->hDC, szBuf, lstrlenA(szBuf), &sUIN);
-                            DrawTextA(dis->hDC, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-                        }
-                        else {
-                            GetTextExtentPoint32A(dis->hDC, dat->uin, lstrlenA(dat->uin), &sUIN);
-                            DrawTextA(dis->hDC, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-                        }
-                        if(dat->timezone != -1) {
-                            DBTIMETOSTRING dbtts;
-                            char szResult[80];
-                            time_t final_time;
-                            time_t now = time(NULL);
-
-                            final_time = now - dat->timediff;
-                            dbtts.szDest = szResult;
-                            dbtts.cbDest = 70;
-                            dbtts.szFormat = "t";
-                            CallService(MS_DB_TIME_TIMESTAMPTOSTRING, final_time, (LPARAM) & dbtts);
-                            GetTextExtentPoint32A(dis->hDC, szResult, lstrlenA(szResult), &sTime);
-                            if(sUIN.cx + sTime.cx + 23 < dis->rcItem.right - dis->rcItem.left) {
-                                dis->rcItem.left = dis->rcItem.right - sTime.cx - 3 - 18;
-                                DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, myGlobals.g_IconClock, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-                                dis->rcItem.left += 18;
-                                DrawTextA(dis->hDC, szResult, lstrlenA(szResult), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-                            }
-                        }
-                    }
-                    return TRUE;
-                }
-                else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_READSTATUS) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                    FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
-                    DrawIconEx(dis->hDC, (dis->rcItem.right + dis->rcItem.left - myGlobals.m_smcxicon) / 2, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, myGlobals.m_DoStatusMsg ? myGlobals.g_IconChecked : myGlobals.g_IconUnchecked, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-                }
-                return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
-            }
+            return MsgWindowDrawHandler(wParam, lParam, hwndDlg, dat);
         case WM_COMMAND:
             if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
                 break;
@@ -3681,7 +3430,7 @@ quote_from_last:
                     break;
                 case IDC_READSTATUS:
                     myGlobals.m_DoStatusMsg = !myGlobals.m_DoStatusMsg;
-                    InvalidateRect(GetDlgItem(hwndDlg, IDC_READSTATUS), NULL, FALSE);
+                    //InvalidateRect(GetDlgItem(hwndDlg, IDC_READSTATUS), NULL, FALSE);
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dostatusmsg", myGlobals.m_DoStatusMsg);
                     break;
                 case IDC_PROTOMENU: {
