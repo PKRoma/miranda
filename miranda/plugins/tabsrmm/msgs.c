@@ -978,6 +978,7 @@ static void UnloadIcons()
     DestroyIcon(myGlobals.g_iconStatus);
     DestroyIcon(myGlobals.g_IconChecked);
     DestroyIcon(myGlobals.g_IconUnchecked);
+    DestroyIcon(myGlobals.g_IconFolder);
     //DestroyIcon(myGlobals.g_IconVisible);
     //DestroyIcon(myGlobals.g_IconDependStatus);
     //DestroyIcon(myGlobals.g_IconBlocked);
@@ -1031,9 +1032,6 @@ int SplitmsgShutdown(void)
         ImageList_RemoveAll(myGlobals.g_xIcons);
         ImageList_Destroy(myGlobals.g_xIcons);
     }
-    ImageList_RemoveAll(myGlobals.g_hStateImageList);
-    ImageList_Destroy(myGlobals.g_hStateImageList);
-
     DestroyMenu(myGlobals.g_hMenuContext);
     if(myGlobals.g_hMenuContainer)
         DestroyMenu(myGlobals.g_hMenuContainer);
@@ -1467,17 +1465,9 @@ void CreateImageList(BOOL bInitial)
     
     if(bInitial) {
         myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
-        myGlobals.g_hStateImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
-        hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWEXPAND), IMAGE_ICON, cxIcon, cyIcon, 0);
-        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
-        ImageList_AddIcon(myGlobals.g_hStateImageList, hIcon);
-        DestroyIcon(hIcon);
-        
-        myGlobals.g_IconUnchecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
-        ImageList_AddIcon(myGlobals.g_hStateImageList, myGlobals.g_IconUnchecked);
-        
-        myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, cxIcon, cyIcon, 0);
-        ImageList_AddIcon(myGlobals.g_hStateImageList, myGlobals.g_IconChecked);
+        myGlobals.g_IconFolder = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWEXPAND), IMAGE_ICON, 16, 16, LR_SHARED);
+        myGlobals.g_IconUnchecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
+        myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
     }
     else
         ImageList_RemoveAll(myGlobals.g_hImageList);

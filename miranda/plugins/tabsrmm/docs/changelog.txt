@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.96 - 2005/06/28
+Version 0.9.9.96 - 2005/07/01
 
         ! null pointer check when retrieving status message. Fixes crash when retrieving
           status messages.
@@ -29,9 +29,6 @@ Version 0.9.9.96 - 2005/06/28
           
         ! fixed "sticky" unread icon (didn't always go away when container got the focus.
         
-        * visibility indicator now uses global icons instead of protocol specific icons.
-          These icons can be configured using IcoLib.
-          
         ! corrected some typos
         
         ! minor info panel fixes (toolbar menu)

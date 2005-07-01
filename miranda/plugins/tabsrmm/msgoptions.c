@@ -72,6 +72,17 @@ struct FontOptionsList
 static fontOptionsList[] = {
     {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -10}};
     
+
+HIMAGELIST CreateStateImageList()
+{
+    HIMAGELIST himl = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
+    ImageList_AddIcon(himl, myGlobals.g_IconFolder);
+    ImageList_AddIcon(himl, myGlobals.g_IconFolder);
+    ImageList_AddIcon(himl, myGlobals.g_IconUnchecked);
+    ImageList_AddIcon(himl, myGlobals.g_IconChecked);
+    return himl;
+}
+
 void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
 {
     char str[20];
@@ -327,7 +338,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
-            SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
+            SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
             
             /*
              * fill the list box, create groups first, then add items
@@ -497,7 +508,12 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             }
             break;
         case WM_DESTROY:
+        {
+            HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
+            if(himl)
+                ImageList_Destroy(himl);
             break;
+        }
     }
     return FALSE;
 }
@@ -560,7 +576,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     break;
             }
             SetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-            SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
+            SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 
             /*
              * fill the list box, create groups first, then add items
@@ -738,7 +754,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             }
             break;
         case WM_DESTROY:
+        {
+            HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
+            if(himl)
+                ImageList_Destroy(himl);
             break;
+        }
     }
     return FALSE;
 }
@@ -940,7 +961,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-            SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
+            SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 
             /*
              * fill the list box, create groups first, then add items
@@ -1080,7 +1101,12 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             }
             break;
         case WM_DESTROY:
+        {
+            HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
+            if(himl)
+                ImageList_Destroy(himl);
             break;
+        }
     }
     return FALSE;
 }

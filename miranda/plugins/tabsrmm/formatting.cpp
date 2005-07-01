@@ -384,6 +384,7 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
                     title.insert(tempmark + 2, szTemp);
                 }
                 title.erase(tempmark, 2);
+                break;
             }
             default:
                 title.erase(tempmark, 1);
@@ -474,6 +475,7 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
                 if(xStatus > 0 && xStatus <= 24)
                     title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
                 title.erase(tempmark, 2);
+                break;
             }
             default:
                 title.erase(tempmark, 1);

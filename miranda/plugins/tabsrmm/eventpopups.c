@@ -50,6 +50,7 @@ PLUGIN_DATA *PopUpList[20];
 static int PopupCount = 0;
 
 extern BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern HIMAGELIST CreateStateImageList();
 
 void CheckForRemoveMask()
 {
@@ -217,7 +218,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             int i = 0;
             
             SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-            SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)myGlobals.g_hStateImageList);
+            SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
             TranslateDialogDefault(hWnd);
 
             /*
@@ -460,8 +461,15 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             }
             break;
         case WM_DESTROY:
+        {
+            HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
+            if(himl) {
+                ImageList_RemoveAll(himl);
+                ImageList_Destroy(himl);
+            }
             bWmNotify = TRUE;
             break;
+        }
         default:
             break;
     }

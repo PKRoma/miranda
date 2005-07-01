@@ -109,14 +109,12 @@ BEGIN
                     0,48,6,31
     LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10
     CONTROL         "",IDC_PANELPIC,"Button",BS_OWNERDRAW,154,0,34,25
-    LTEXT           "Name",IDC_PANELNICKLABEL,6,3,30,12
-    LTEXT           "UIN",IDC_PANELUINLABEL,6,17,30,9
     CONTROL         "",IDC_PANELSTATUS,"Static",SS_OWNERDRAW | 
                     SS_CENTERIMAGE | WS_GROUP,10,1,100,14
     CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
-                    WS_GROUP,36,1,100,14
+                    WS_GROUP,5,1,100,14
     CONTROL         "",IDC_PANELUIN,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
-                    WS_GROUP,36,16,100,14
+                    WS_GROUP,5,16,100,14
     CONTROL         "",IDC_TOGGLENOTES,"TSButtonClass",WS_TABSTOP,0,3,4,28,
                     0x18000000L
     CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",WS_TABSTOP,174,16,16,

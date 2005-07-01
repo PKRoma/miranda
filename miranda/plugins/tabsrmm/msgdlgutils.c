@@ -1892,7 +1892,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             GetTextExtentPoint32A(dis->hDC, szProto, lstrlenA(szProto), &sProto);
         }
     
-        dat->panelStatusCX = sStatus.cx + sProto.cx + 16 + 18;
+        dat->panelStatusCX = sStatus.cx + sProto.cx + 16 + 14;
         
         if(dat->panelStatusCX != oldPanelStatusCX)
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -1905,12 +1905,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         if(dat->hTabStatusIcon) {
             if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
                 ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, dat->hTabStatusIcon);
-                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 3, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 4, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
             }
             else
-                DrawIconEx(dis->hDC, 3, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, dat->hTabStatusIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+                DrawIconEx(dis->hDC, 4, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, dat->hTabStatusIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
         }
-        rc.left += 22;
+        rc.left += 20;
         if(dat->szStatus) {
             if(config) {
                 SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
@@ -1933,6 +1933,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         return TRUE;
     }
     else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+        RECT rc = dis->rcItem;
+        GetTextExtentPoint32A(dis->hDC, "Name:", 5, &dat->szLabel);
+        rc.right = rc.left + dat->szLabel.cx + 3;
+        FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
+        DrawTextA(dis->hDC, "Name:", 5, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+        dis->rcItem.left += (dat->szLabel.cx + 3);
         FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
         SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);
         DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
@@ -1944,7 +1950,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
     #endif                        
             if(dat->xStatus > 0 && dat->xStatus < 24) {
                 HICON xIcon = ImageList_ExtractIcon(NULL, myGlobals.g_xIcons, dat->xStatus - 1);
-                DrawIconEx(dis->hDC, 3, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+                DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
                 DestroyIcon(xIcon);
                 dis->rcItem.left += 21;
             }
@@ -1955,9 +1961,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
     #if defined(_UNICODE)
             MultiByteToWideChar(dat->codePage, 0, dat->szNickname, -1, szNickW, 128);
             szNickW[127] = 0;
-            DrawTextW(dis->hDC, szNickW, lstrlenW(szNickW), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+            DrawTextW(dis->hDC, szNickW, lstrlenW(szNickW), &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS);
     #else
-            DrawTextA(dis->hDC, dat->szNickname, lstrlenA(dat->szNickname), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+            DrawTextA(dis->hDC, dat->szNickname, lstrlenA(dat->szNickname), &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS);
     #endif
             if(hOldFont)
                 SelectObject(dis->hDC, hOldFont);
@@ -1968,6 +1974,11 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         char szBuf[256];
         BOOL config = myGlobals.ipConfig.isValid;
         HFONT hOldFont = 0;
+        RECT rc = dis->rcItem;
+        rc.right = rc.left + dat->szLabel.cx + 3;
+        FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
+        DrawTextA(dis->hDC, "UIN:", 4, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+        dis->rcItem.left += (dat->szLabel.cx + 3);
         
         FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
         SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);

@@ -105,7 +105,7 @@ static const UINT controlsToHide1[] = { IDOK, IDC_FONTFACE, IDC_FONTUNDERLINE, I
 static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
-const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELNICKLABEL, IDC_PANELUINLABEL, 
+const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANEL, IDC_PANELNICK, IDC_PANELUIN, 
                                   IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER, IDC_READSTATUS};
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 
@@ -190,9 +190,9 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
 
 static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    const UINT cntrls[] = {IDC_PANELNICKLABEL, IDC_PANELUINLABEL, IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_READSTATUS};
+    const UINT cntrls[] = {IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_READSTATUS};
 
-    ShowMultipleControls(hwndDlg, cntrls, 7, dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
+    ShowMultipleControls(hwndDlg, cntrls, 5, dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
     ShowWindow(GetDlgItem(hwndDlg, IDC_NOTES), dat->dwEventIsShown & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 }
 static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
@@ -207,7 +207,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
     AdjustBottomAvatarDisplay(hwndDlg, dat);
     GetObject(hbm, sizeof(bm), &bm);
     CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-    ShowMultipleControls(hwndDlg, infoPanelControls, 12, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 10, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
         ConfigurePanel(hwndDlg, dat);
         UpdateApparentModeDisplay(hwndDlg, dat);
@@ -362,7 +362,7 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
     // info panel stuff
-    ShowMultipleControls(hwndDlg, infoPanelControls, 12, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 10, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
         ConfigurePanel(hwndDlg, dat);
 }
@@ -858,7 +858,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.top += panelHeight;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_PANELPIC:
-            urc->rcItem.left = urc->rcItem.right - (panelHeight - 2);
+            urc->rcItem.left = urc->rcItem.right - (panelHeight - 3);
             urc->rcItem.bottom = urc->rcItem.top + (panelHeight - 3);
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_PANEL:
@@ -880,9 +880,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             return RD_ANCHORX_CUSTOM | RD_ANCHORX_RIGHT;
         case IDC_PANELUIN:
             urc->rcItem.right = urc->dlgNewSize.cx - (panelHeight + 2 + 25);
-            return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-        case IDC_PANELNICKLABEL:
-        case IDC_PANELUINLABEL:
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_SPLITTER:
         case IDC_SPLITTER5:

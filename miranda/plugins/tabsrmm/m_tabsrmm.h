@@ -312,6 +312,7 @@ struct MessageWindowData {
     DWORD panelStatusCX;
     BYTE xStatus;
     COLORREF inputbg;
+    SIZE szLabel;
 };
 
 typedef struct _recentinfo {
@@ -369,9 +370,8 @@ typedef struct _globals {
     HBITMAP g_hbmUnknown;
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
-    HICON g_IconChecked, g_IconUnchecked;
-    //HICON g_IconVisible, g_IconBlocked, g_IconDependStatus;
-    HIMAGELIST g_hImageList, g_hStateImageList;
+    HICON g_IconFolder, g_IconChecked, g_IconUnchecked;
+    HIMAGELIST g_hImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
     HMENU g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;
@@ -443,6 +443,7 @@ typedef struct _globals {
     char *m_szNoStatus;
     HFONT m_hFontWebdings;
     struct infopanelconfig ipConfig;
+    COLORREF crDefault, crIncoming, crOutgoing;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

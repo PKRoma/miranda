@@ -88,9 +88,7 @@
 #define IDC_CHKWINDOWCHECK              1032
 #define IDC_PANELUIN                    1033
 #define IDC_CHKREPLYWINDOW              1033
-#define IDC_PANELNICKLABEL              1034
 #define IDC_CHKPREVIEW                  1034
-#define IDC_PANELUINLABEL               1035
 #define IDC_CHKINFINITE                 1035
 #define IDC_PANELSTATUS                 1036
 #define IDC_CHKHIDESEND                 1036

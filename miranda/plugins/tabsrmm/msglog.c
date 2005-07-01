@@ -200,6 +200,10 @@ void CacheLogFonts()
     myGlobals.ipConfig.clrClockSymbol = DBGetContactSettingDword(NULL, FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
 
     myGlobals.ipConfig.bkgBrush = CreateSolidBrush(myGlobals.ipConfig.clrBackground);
+
+    myGlobals.crDefault = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+    myGlobals.crIncoming = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", RGB(224, 224, 224));
+    myGlobals.crOutgoing = DBGetContactSettingDword(NULL, FONTMODULE, "outbg", RGB(224, 224, 224));
 }
 
 /*
@@ -493,11 +497,11 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
     /* OnO: Create incoming and outcoming colours */
-    colour = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", RGB(224,224,224));
+    colour = myGlobals.crIncoming;
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, FONTMODULE, "outbg", RGB(224,224,224));
+    colour = myGlobals.crOutgoing;
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-    colour = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+    colour = myGlobals.crDefault;
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
     colour = DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", RGB(224,224,224));
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
@@ -1357,8 +1361,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
     HWND hwndrtf;
     IRichEditOle *ole;
     TEXTRANGEA tr;
-    COLORREF crDefault = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
-
+    COLORREF crDefault;
     struct MsgLogIcon theIcon;
     char trbuffer[20];
     tr.lpstrText = trbuffer;
@@ -1368,6 +1371,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 
     if(dat->dwFlags & MWF_LOG_SHOWICONS) {
         BYTE bIconIndex = 0;
+        char bDirection = 0;
         CHARRANGE cr;
         fi.lpstrText = "#~#";
         fi.chrg.cpMax = -1;
@@ -1384,13 +1388,15 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
             tr.chrg.cpMin = fi.chrgText.cpMin + 3;
             tr.chrg.cpMax = fi.chrgText.cpMin + 5;
             SendMessageA(hwndrtf, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
-            if((BYTE)(trbuffer[0] - '0') >= NR_LOGICONS ) {
+            bIconIndex = ((BYTE)trbuffer[0] - (BYTE)'0');
+            if(bIconIndex >= NR_LOGICONS ) {
                 fi.chrg.cpMin = fi.chrgText.cpMax + 6;
                 continue;
             }
-            bIconIndex = ((BYTE)trbuffer[0] - (BYTE)'0');
+            bDirection = trbuffer[1];
             SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-            CacheIconToBMP(&theIcon, Logicons[bIconIndex], cf2.crBackColor == 0 ? crDefault : cf2.crBackColor, 0, 0);
+            crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? myGlobals.crOutgoing : myGlobals.crIncoming) : myGlobals.crDefault) : cf2.crBackColor;
+            CacheIconToBMP(&theIcon, Logicons[bIconIndex], crDefault, 0, 0);
             ImageDataInsertBitmap(ole, theIcon.hBmp);
             DeleteCachedIcon(&theIcon);
             fi.chrg.cpMin = cr.cpMax + 6;
