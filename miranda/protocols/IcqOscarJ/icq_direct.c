@@ -100,7 +100,11 @@ void UninitDirectConns(void)
 	for (i = 0; i < directConnCount; i++)
 	{
 		if (directConnList[i])
+    {
+      int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)directConnList[i]->hConnection, (LPARAM)0);
+      if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
 			Netlib_CloseHandle(directConnList[i]->hConnection);
+    }
 	}
 
 	LeaveCriticalSection(&directConnListMutex);
@@ -123,6 +127,27 @@ void UninitDirectConns(void)
 	DeleteCriticalSection(&expectedFileRecvMutex);
 
 	SAFE_FREE(&(void*)directConnList);
+}
+
+
+
+void CloseContactDirectConns(HANDLE hContact)
+{
+	int i;
+
+	EnterCriticalSection(&directConnListMutex);
+
+	for (i = 0; i < directConnCount; i++)
+	{
+		if (directConnList[i] && directConnList[i]->hContact == hContact)
+    {
+      int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)directConnList[i]->hConnection, (LPARAM)0);
+      if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
+      Netlib_CloseHandle(directConnList[i]->hConnection);
+    }
+	}
+
+	LeaveCriticalSection(&directConnListMutex);
 }
 
 

@@ -859,6 +859,8 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
 		Netlib_Logf(ghServerNetlibUser, "%u went offline.", dwUIN);
 		DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
 		DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
+    // close Direct Connections to that user
+    CloseContactDirectConns(hContact);
     // clear Xtraz status
     handleXStatusCaps(hContact, NULL, 0);
 	}
