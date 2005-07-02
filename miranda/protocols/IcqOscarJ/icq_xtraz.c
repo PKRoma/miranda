@@ -296,7 +296,7 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 
     // have we a open DC, send through that
     if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-      icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MGTYPE_SCRIPT_NOTIFY);
+      icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
     else
       icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 
@@ -319,7 +319,7 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
 
     // Was request received thru DC and have we a open DC, send through that
     if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-      icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MGTYPE_SCRIPT_NOTIFY);
+      icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
     else
       icq_sendXtrazResponseServ(dwUin, dwMID, dwMID2, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 
