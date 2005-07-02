@@ -73,17 +73,14 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		return TRUE;
 		
 	case WM_COMMAND:
-        {
-            switch (LOWORD(wParam))
-			{
-
+    {
+      switch (LOWORD(wParam))
+      {
 			case IDOK:
-                {
-
+        {
 					DWORD dwUin;
-
 					
-					dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+					dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 					
 					if (!dwUin || !icqOnline)
 						return TRUE;
@@ -93,28 +90,24 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					EndDialog(hwndDlg, 0);
 
 					return TRUE;
-
-                }
+        }
 				break;
 
 			case IDCANCEL:
 				EndDialog(hwndDlg, 0);
 				return TRUE;
-				break;
 
 			default:
 				break;
 
 			}
-        }
+    }
 		break;
 
 	case WM_CLOSE:
 		EndDialog(hwndDlg,0);
 		return TRUE;
-
 	}
 	
 	return FALSE;
-
 }

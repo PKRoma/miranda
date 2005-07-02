@@ -53,14 +53,13 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
     case WM_INITDIALOG:
       {
-
         char pszUIN[128];
         DWORD dwUin;
 
         TranslateDialogDefault(hwndDlg);
         SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
-        dwUin = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);
-        _snprintf(pszUIN, 128, Translate("Enter a password for UIN %u:"), dwUin);
+        dwUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
+        mir_snprintf(pszUIN, 128, Translate("Enter a password for UIN %u:"), dwUin);
         SetDlgItemText(hwndDlg, IDC_INSTRUCTION, pszUIN);
       }
 		  break;
@@ -82,7 +81,6 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
               GetDlgItemText(hwndDlg, IDC_LOGINPW, str, sizeof(str));
 					    icq_login(str);
 					    EndDialog(hwndDlg, IDOK);
-
             }
 				    break;
 
@@ -91,7 +89,6 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
             EndDialog(hwndDlg, IDCANCEL);
             break;
-
         }
       }
       break;

@@ -120,8 +120,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				
 			case 0:
 				{
-					
-					switch (((LPNMHDR)lParam)->code)
+  				switch (((LPNMHDR)lParam)->code)
 					{
 						
 					case PSN_INFOCHANGED:
@@ -148,8 +147,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
-                if (DBGetContactSettingDword(hContact, szProto, "ClientID", 0) == 1)
-                  DBWriteContactSettingDword(hContact, szProto, "TickTS", 0);
+                if (ICQGetContactSettingDword(hContact, "ClientID", 0) == 1)
+                  ICQWriteContactSettingDword(hContact, "TickTS", 0);
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
               }
               else
@@ -256,11 +255,11 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       }
       SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)pData);
 
-      dwUIN = DBGetContactSettingDword((HANDLE)lParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+      dwUIN = ICQGetContactSettingDword((HANDLE)lParam, UNIQUEIDSETTING, 0);
 
-      if (!DBGetContactSetting((HANDLE)lParam, gpszICQProtoName, "AvatarHash", &dbvHash))
+      if (!ICQGetContactSetting((HANDLE)lParam, "AvatarHash", &dbvHash))
       {
-        dwPaFormat = DBGetContactSettingByte((HANDLE)lParam, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+        dwPaFormat = ICQGetContactSettingByte((HANDLE)lParam, "AvatarType", PA_FORMAT_UNKNOWN);
         if (!pData->hContact || (dwPaFormat != PA_FORMAT_UNKNOWN))
         { // we do not know avatar format, so neither filename is known, not valid
           if (pData->hContact)
@@ -268,7 +267,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
           else
           {
             DBVARIANT dbvFile;
-            if (!DBGetContactSetting(NULL, gpszICQProtoName, "AvatarFile", &dbvFile))
+            if (!ICQGetContactSetting(NULL, "AvatarFile", &dbvFile))
             {
               strcpy(szAvatar, dbvFile.pszVal);
               DBFreeVariant(&dbvFile);
@@ -277,7 +276,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
               szAvatar[0] = '\0';
           }
 
-          if (pData->hContact && !DBGetContactSetting((HANDLE)lParam, gpszICQProtoName, "AvatarSaved", &dbvSaved))
+          if (pData->hContact && !ICQGetContactSetting((HANDLE)lParam, "AvatarSaved", &dbvSaved))
           { // not for us
             if (!memcmp(dbvHash.pbVal, dbvSaved.pbVal, 0x14))
             { // if the file exists, we know we have the current avatar
@@ -329,10 +328,10 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				}
 				else if (ack->result == ACKRESULT_STATUS)
         {
-          DWORD dwUIN = DBGetContactSettingDword(pData->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+          DWORD dwUIN = ICQGetContactSettingDword(pData->hContact, UNIQUEIDSETTING, 0);
           DBVARIANT dbvHash;
           
-          if (!DBGetContactSetting(pData->hContact, gpszICQProtoName, "AvatarHash", &dbvHash))
+          if (!ICQGetContactSetting(pData->hContact, "AvatarHash", &dbvHash))
           {
             char szAvatar[MAX_PATH];
 
@@ -382,13 +381,13 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 memcpy(ihash+4, hash, 0x10);
                 updateServAvatarHash(ihash+2, 0x12);
 
-                if (DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", ihash, 0x14))
+                if (ICQWriteContactSettingBlob(NULL, "AvatarHash", ihash, 0x14))
                 {
                   Netlib_Logf(ghServerNetlibUser, "Failed to save avatar hash.");
                   DeleteObject(avt);
                   avt = 0;
                 }
-                DBWriteContactSettingString(NULL, gpszICQProtoName, "AvatarFile", szMyFile);
+                ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
 
                 SAFE_FREE(&ihash);
               }
@@ -409,8 +408,8 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
         RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
         if (avt) DeleteObject(avt); // we release old avatar if any
-        DBDeleteContactSetting(NULL, gpszICQProtoName, "AvatarFile");
-        DBDeleteContactSetting(NULL, gpszICQProtoName, "AvatarHash");
+        ICQDeleteContactSetting(NULL, "AvatarFile");
+        ICQDeleteContactSetting(NULL, "AvatarHash");
         updateServAvatarHash(bEmptyAvatar, 7); // clear hash on server
       }
       break;
