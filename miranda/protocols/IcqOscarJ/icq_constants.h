@@ -451,7 +451,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030600
+#define ICQ_PLUG_VERSION            0x80030601
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

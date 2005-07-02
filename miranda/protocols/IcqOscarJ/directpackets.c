@@ -278,6 +278,5 @@ void icq_sendXtrazResponseDirect(DWORD dwUin, HANDLE hContact, WORD wCookie, cha
   packLEDWord(&packet, nBodyLen);
   packBuffer(&packet, szBody, (WORD)nBodyLen);
 
-	// Send the monster
-	sendServPacket(&packet);
+	SendDirectMessage(hContact, &packet);
 }

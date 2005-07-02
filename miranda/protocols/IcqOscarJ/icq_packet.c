@@ -176,7 +176,7 @@ void packUIN(icq_packet* pPacket, DWORD dwUin)
 	unsigned char pszUin[UINMAXLEN];
   BYTE nUinLen = getUINLen(dwUin);
 
-	ltoa(dwUin, pszUin, UINMAXLEN);
+	ltoa(dwUin, pszUin, 10);
 
 	packByte(pPacket, nUinLen);           // Length of user id
 	packBuffer(pPacket, pszUin, nUinLen); // Receiving user's id
