@@ -118,7 +118,7 @@ BOOL icq_QueueUser(HANDLE hContact)
 		// Add to list
 		if (!bFound)
 		{
-			userList[nFirstFree].dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+			userList[nFirstFree].dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 			userList[nFirstFree].hContact = hContact;
 			nUserCount++;
 #ifdef _DEBUG
@@ -174,7 +174,6 @@ void icq_RescanInfoUpdate()
 {
 	HANDLE hContact = NULL;
 	char* szProto = NULL;
-	DWORD dwUin = 0;
 	DWORD dwCurrentTime = 0;
   BOOL bOldEnable = bEnabled;
 
@@ -191,9 +190,8 @@ void icq_RescanInfoUpdate()
 		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
-			if ((dwCurrentTime - DBGetContactSettingDword(hContact, gpszICQProtoName, "InfoTS", 0)) > UPDATE_THRESHOLD)
+			if ((dwCurrentTime - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
 			{
-				dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
 				// Queue user
 				if (!icq_QueueUser(hContact))
         { // The queue is full, pause queuing contacts
@@ -303,7 +301,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 					if (userList[i].hContact)
 					{
 						// Check TS again, maybe it has been updated while we slept
-						if ((time(NULL) - DBGetContactSettingDword(userList[i].hContact, gpszICQProtoName, "InfoTS", 0)) > UPDATE_THRESHOLD) {
+						if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > UPDATE_THRESHOLD) {
 #ifdef _DEBUG
 							Netlib_Logf(ghServerNetlibUser, "Request info for user %u", userList[i].dwUin);
 #endif

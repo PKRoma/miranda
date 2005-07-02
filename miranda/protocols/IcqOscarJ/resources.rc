@@ -372,6 +372,20 @@ BEGIN
                     WS_TABSTOP
 END
 
+IDD_SETXSTATUS DIALOGEX 0, 0, 189, 98
+STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
+    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Custom Status ""%s"" Details"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Closing in %d",IDOK,62,79,65,14
+    LTEXT           "Title:",IDC_STATIC,5,0,179,8
+    EDITTEXT        IDC_XTITLE,5,9,179,13
+    LTEXT           "Message:",IDC_STATIC,5,22,179,8
+    EDITTEXT        IDC_XMSG,5,31,179,43,ES_MULTILINE | ES_AUTOVSCROLL |
+                    ES_WANTRETURN | WS_VSCROLL
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //

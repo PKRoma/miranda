@@ -446,9 +446,9 @@ void LoadServerIDs()
   char* szProto;
 
   EnterCriticalSection(&servlistMutex);
-  if (wSrvID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0))
+  if (wSrvID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0))
     ReserveServerID(wSrvID, SSIT_ITEM);
-  if (wSrvID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0))
+  if (wSrvID = ICQGetContactSettingWord(NULL, "SrvVisibilityID", 0))
     ReserveServerID(wSrvID, SSIT_ITEM);
 
   ReserveServerGroups();
@@ -460,13 +460,13 @@ void LoadServerIDs()
     szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
     if (szProto && !lstrcmp(szProto, gpszICQProtoName))
     {
-      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvContactId", 0))
+      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvContactId", 0))
         ReserveServerID(wSrvID, SSIT_ITEM);
-      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0))
+      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvDenyId", 0))
         ReserveServerID(wSrvID, SSIT_ITEM);
-      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0))
+      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvPermitId", 0))
         ReserveServerID(wSrvID, SSIT_ITEM);
-      if (wSrvID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", 0))
+      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvIgnoreId", 0))
         ReserveServerID(wSrvID, SSIT_ITEM);
     }
     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -748,9 +748,9 @@ void* collectBuddyGroup(WORD wGroupID, int *count)
 
   while (hContact)
   { // search all contacts
-    if (wGroupID == DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0))
+    if (wGroupID == ICQGetContactSettingWord(hContact, "SrvGroupId", 0))
     { // add only buddys from specified group
-      wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
+      wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0);
 
       if (wItemID)
       { // valid ID, add
@@ -782,7 +782,7 @@ void* collectGroups(int *count)
 
   while (hContact)
   { // search all contacts
-    if (wGroupID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0))
+    if (wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0))
     { // add only valid IDs
       for (i = 0; i<cnt; i++)
       { // check for already added ids
@@ -1290,7 +1290,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
     return;
   }
 
-  wItemID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "ServerId", 0);
+  wItemID = ICQGetContactSettingWord(ack->hContact, "ServerId", 0);
 
   if (wItemID)
   { // Only add the contact if it doesnt already have an ID
@@ -1300,7 +1300,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
   }
 
 	// Get UIN
-	if (!(dwUin = DBGetContactSettingDword(ack->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+	if (!(dwUin = ICQGetContactSettingDword(ack->hContact, UNIQUEIDSETTING, 0)))
   { // Could not do anything without uin
     RemovePendingOperation(ack->hContact, 0);
     Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (no UIN)");
@@ -1356,7 +1356,7 @@ DWORD removeServContact(HANDLE hContact)
   DWORD dwCookie;
 
   // Get the contact's group ID
-  if (!(wGroupID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0)))
+  if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
   {
     // Could not find a usable group ID
     Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (no group ID)");
@@ -1364,7 +1364,7 @@ DWORD removeServContact(HANDLE hContact)
   }
 
   // Get the contact's item ID
-  if (!(wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0)))
+  if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
   {
     // Could not find usable item ID
     Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (no item ID)");
@@ -1372,7 +1372,7 @@ DWORD removeServContact(HANDLE hContact)
   }
 
 	// Get UIN
-	if (!(dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+	if (!(dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
   {
     // Could not do anything without uin
     Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (no UIN)");
@@ -1426,8 +1426,8 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
 
   if (!ack->hContact) return; // we do not move us, caused our uin was wrongly added to list
 
-  wItemID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "ServerId", 0);
-  wGroupID = DBGetContactSettingWord(ack->hContact, gpszICQProtoName, "SrvGroupId", 0);
+  wItemID = ICQGetContactSettingWord(ack->hContact, "ServerId", 0);
+  wGroupID = ICQGetContactSettingWord(ack->hContact, "SrvGroupId", 0);
 
   // Read nick name from DB
   if (DBGetContactSetting(ack->hContact, "CList", "MyHandle", &dbvNick))
@@ -1462,7 +1462,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   }
 
 	// Get UIN
-	if (!(dwUin = DBGetContactSettingDword(ack->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+	if (!(dwUin = ICQGetContactSettingDword(ack->hContact, UNIQUEIDSETTING, 0)))
   { // Could not do anything without uin
     RemovePendingOperation(ack->hContact, 0);
     Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no UIN)");
@@ -1475,7 +1475,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   else
     pszNote = dbvNote.pszVal;
 
-  bAuth = DBGetContactSettingByte(ack->hContact, gpszICQProtoName, "Auth", 0);
+  bAuth = ICQGetContactSettingByte(ack->hContact, "Auth", 0);
 
   pszNick = ack->szGroupName;
 
@@ -1514,9 +1514,9 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
     return 0;
   }
 
-  if (!DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0))
+  if (!ICQGetContactSettingWord(hContact, "ServerId", 0))
   { // the contact is not stored on the server, check if we should try to add
-    if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+    if (!ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
       return 0;
   }
 
@@ -1551,7 +1551,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   DWORD dwCookie;
 
   // Get the contact's group ID
-  if (!(wGroupID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0)))
+  if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
   {
     // Could not find a usable group ID
     Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no group ID)");
@@ -1560,7 +1560,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   }
 
   // Get the contact's item ID
-  if (!(wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0)))
+  if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
   {
     // Could not find usable item ID
     Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no item ID)");
@@ -1569,7 +1569,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   }
 
   // Check if contact is authorized
-  bAuthRequired = (DBGetContactSettingByte(hContact, gpszICQProtoName, "Auth", 0) == 1);
+  bAuthRequired = (ICQGetContactSettingByte(hContact, "Auth", 0) == 1);
 
   // Read comment from DB
   if (DBGetContactSetting(hContact, "UserInfo", "MyNotes", &dbvNote))
@@ -1578,7 +1578,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
     pszNote = dbvNote.pszVal;
 
 	// Get UIN
-	if (!(dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+	if (!(dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
   {
     // Could not set nickname on server without uin
     Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no UIN)");
@@ -1631,7 +1631,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   DWORD dwCookie;
 
   // Get the contact's group ID
-  if (!(wGroupID = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0)))
+  if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
   {
     // Could not find a usable group ID
     Netlib_Logf(ghServerNetlibUser, "Failed to upload new comment to server side list (no group ID)");
@@ -1639,7 +1639,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   }
 
   // Get the contact's item ID
-  if (!(wItemID = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0)))
+  if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
   {
     // Could not find usable item ID
     Netlib_Logf(ghServerNetlibUser, "Failed to upload new comment to server side list (no item ID)");
@@ -1647,7 +1647,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   }
 
   // Check if contact is authorized
-  bAuthRequired = (DBGetContactSettingByte(hContact, gpszICQProtoName, "Auth", 0) == 1);
+  bAuthRequired = (ICQGetContactSettingByte(hContact, "Auth", 0) == 1);
 
   // Read nick name from DB
   if (DBGetContactSetting(hContact, "CList", "MyHandle", &dbvNick))
@@ -1656,7 +1656,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
     pszNick = dbvNick.pszVal;
 
 	// Get UIN
-	if (!(dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+	if (!(dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
   {
     // Could not set comment on server without uin
     Netlib_Logf(ghServerNetlibUser, "Failed to upload new comment to server side list (no UIN)");
@@ -1786,11 +1786,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     // Has a temporary contact just been added permanently?
     if (!strcmp(cws->szSetting, "NotOnList") &&
       (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
-      DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+      ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
     {
       DWORD dwUin;
 
-      dwUin = DBGetContactSettingDword((HANDLE)wParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+      dwUin = ICQGetContactSettingDword((HANDLE)wParam, UNIQUEIDSETTING, 0);
 			
       // Does this contact have a UIN?
       if (dwUin)
@@ -1821,7 +1821,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
     // Has contact been renamed?
     if (!strcmp(cws->szSetting, "MyHandle") &&
-      DBGetContactSettingByte(NULL, gpszICQProtoName, "StoreServerDetails", DEFAULT_SS_STORE))
+      ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     {
       if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
       {
@@ -1837,11 +1837,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
     // Has contact been moved to another group?
     if (!strcmp(cws->szSetting, "Group") &&
-      DBGetContactSettingByte(NULL, gpszICQProtoName, "StoreServerDetails", DEFAULT_SS_STORE))
+      ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     {
       if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
       { // Test if group was not renamed...
-        WORD wGroupId = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvGroupId", 0);
+        WORD wGroupId = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
         char* szGroup = makeGroupPath(wGroupId);
         int bRenamed = 0;
         int bMoved = 1;
@@ -1879,7 +1879,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
   if (!strcmp(cws->szModule, "UserInfo"))
   {
     if (!strcmp(cws->szSetting, "MyNotes") &&
-      DBGetContactSettingByte(NULL, gpszICQProtoName, "StoreServerDetails", DEFAULT_SS_STORE))
+      ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     {
       if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
       {
@@ -1907,7 +1907,6 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 	if (!icqOnline || !gbSsiEnabled)
 		return 0;
 
-//	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE))
   { // we need all server contacts on local buddy list
 		WORD wContactID;
 		WORD wGroupID;
@@ -1916,12 +1915,12 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
     WORD wIgnoreID;
 		DWORD dwUIN;
 
-		wContactID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "ServerId", 0);
-		wGroupID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvGroupId", 0);
-		wVisibleID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvPermitId", 0);
-		wInvisibleID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvDenyId", 0);
-		wIgnoreID = DBGetContactSettingWord((HANDLE)wParam, gpszICQProtoName, "SrvIgnoreId", 0);
-		dwUIN = DBGetContactSettingDword((HANDLE)wParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+		wContactID = ICQGetContactSettingWord((HANDLE)wParam, "ServerId", 0);
+		wGroupID = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
+		wVisibleID = ICQGetContactSettingWord((HANDLE)wParam, "SrvPermitId", 0);
+		wInvisibleID = ICQGetContactSettingWord((HANDLE)wParam, "SrvDenyId", 0);
+		wIgnoreID = ICQGetContactSettingWord((HANDLE)wParam, "SrvIgnoreId", 0);
+		dwUIN = ICQGetContactSettingDword((HANDLE)wParam, UNIQUEIDSETTING, 0);
 
 		if ((wGroupID && wContactID) || wVisibleID || wInvisibleID || wIgnoreID)
 		{

@@ -105,23 +105,22 @@ static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 void makeContactTemporaryVisible(HANDLE hContact)
 {
   icq_packet packet;
-  char szUin[UINMAXLEN];
   int nUinLen;
+  DWORD dwUin;
 
-  if (DBGetContactSettingByte(hContact, gpszICQProtoName, "TemporaryVisible", 0))
+  if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
     return; // already there
 
-  ltoa(DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0), szUin, 10);
-  nUinLen = strlen(szUin);
+  dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
+  nUinLen = getUINLen(dwUin);
 
   packet.wLen = nUinLen + 11;
   write_flap(&packet, 2);
   packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_CLI_ADDTEMPVISIBLE, 0, ICQ_CLI_ADDTEMPVISIBLE<<0x10);
-  packByte(&packet, (BYTE)nUinLen);
-  packBuffer(&packet, szUin, (WORD)nUinLen);
+  packUIN(&packet, dwUin);
   sendServPacket(&packet);
 
-  DBWriteContactSettingByte(hContact, gpszICQProtoName, "TemporaryVisible", 1);
+  ICQWriteContactSettingByte(hContact, "TemporaryVisible", 1);
 
 #ifdef _DEBUG
   Netlib_Logf(ghServerNetlibUser, "Added contact %u to temporary visible list");
@@ -150,8 +149,8 @@ static char* buildTempVisUinList()
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
-			if (DBGetContactSettingByte(hContact, gpszICQProtoName, "TemporaryVisible", 0)
-        && (dwUIN = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+			if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0)
+        && (dwUIN = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
 			{
 				_itoa(dwUIN, szUin, 10);
 				szLen[0] = strlen(szUin);
@@ -162,7 +161,7 @@ static char* buildTempVisUinList()
 				strcat(szList, szUin);
 
         // clear flag
-        DBDeleteContactSetting(hContact, gpszICQProtoName, "TemporaryVisible");
+        ICQDeleteContactSetting(hContact, "TemporaryVisible");
 			}
 		}
 

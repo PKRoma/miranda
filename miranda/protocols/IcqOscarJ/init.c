@@ -55,7 +55,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,6,0),
+	PLUGIN_MAKE_VERSION(0,3,6,1),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
@@ -371,7 +371,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = gpszICQProtoName;
 
-  if (DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0))
+  if (ICQGetContactSettingByte(NULL, "UseGateway", 0))
   {
     nlu.flags |= NUF_HTTPGATEWAY;
     nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
@@ -431,12 +431,12 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 void UpdateGlobalSettings()
 { 
-  gbAimEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AimEnabled", DEFAULT_AIM_ENABLED);
-  gbUtfEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "UtfEnabled", DEFAULT_UTF_ENABLED);
-  gbUtfCodepage = DBGetContactSettingDword(NULL, gpszICQProtoName, "UtfCodepage", DEFAULT_UTF_CODEPAGE);
-  gbDCMsgEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
-  gbTempVisListEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "TempVisListEnabled", DEFAULT_TEMPVIS_ENABLED);
-  gbSsiEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED);
-  gbAvatarsEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
-  gbXStatusEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
+  gbAimEnabled = ICQGetContactSettingByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);
+  gbUtfEnabled = ICQGetContactSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
+  gbUtfCodepage = ICQGetContactSettingDword(NULL, "UtfCodepage", DEFAULT_UTF_CODEPAGE);
+  gbDCMsgEnabled = ICQGetContactSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
+  gbTempVisListEnabled = ICQGetContactSettingByte(NULL, "TempVisListEnabled", DEFAULT_TEMPVIS_ENABLED);
+  gbSsiEnabled = ICQGetContactSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED);
+  gbAvatarsEnabled = ICQGetContactSettingByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
+  gbXStatusEnabled = ICQGetContactSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
 }

@@ -493,14 +493,14 @@ HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-			if (DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0) == uin)
+			if (ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0) == uin)
 				return hContact;
 
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
 
   // not in list, check that uin do not belong to us
-	if (DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0) == uin)
+	if (ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0) == uin)
 		return NULL;
 
 	//not present: add
@@ -509,7 +509,7 @@ HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
 		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName);
 
-		DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, uin);
+		ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, uin);
 		DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 		DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 
@@ -686,9 +686,9 @@ void ResetSettingsOnListReload()
   char *szProto;
 
   // Reset a bunch of session specific settings
-  DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0);
-  DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0);
-  DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0);
+  ICQWriteContactSettingWord(NULL, "SrvVisibilityID", 0);
+  ICQWriteContactSettingWord(NULL, "SrvAvatarID", 0);
+  ICQWriteContactSettingWord(NULL, "SrvRecordCount", 0);
 
   hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -699,11 +699,11 @@ void ResetSettingsOnListReload()
     if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
     {
       // All these values will be restored during the serv-list receive
-      DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
-      DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
-      DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
-      DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
-      DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
+      ICQWriteContactSettingWord(hContact, "ServerId", 0);
+      ICQWriteContactSettingWord(hContact, "SrvGroupId", 0);
+      ICQWriteContactSettingWord(hContact, "SrvPermitId", 0);
+      ICQWriteContactSettingWord(hContact, "SrvDenyId", 0);
+      ICQWriteContactSettingByte(hContact, "Auth", 0);
     }
 
     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -721,8 +721,8 @@ void ResetSettingsOnConnect()
   gtLastRequest = 0;
 
 	// Reset a bunch of session specific settings
-  DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
-  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", 0);
+  ICQWriteContactSettingByte(NULL, "SrvVisibility", 0);
+  ICQWriteContactSettingDword(NULL, "IdleTS", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -732,14 +732,14 @@ void ResetSettingsOnConnect()
 
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "LogonTS", 0);
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
-      DBDeleteContactSetting(hContact, gpszICQProtoName, "TemporaryVisible");
+			ICQWriteContactSettingDword(hContact, "LogonTS", 0);
+			ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+			ICQWriteContactSettingDword(hContact, "TickTS", 0);
+      ICQDeleteContactSetting(hContact, "TemporaryVisible");
 
 			// All these values will be restored during the login
-			if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+				ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 		}
 
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -753,8 +753,8 @@ void ResetSettingsOnLoad()
 	HANDLE hContact;
 	char *szProto;
 
-  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", 0);
-  DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", 0);
+  ICQWriteContactSettingDword(NULL, "IdleTS", 0);
+  ICQWriteContactSettingDword(NULL, "LogonTS", 0);
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -763,16 +763,16 @@ void ResetSettingsOnLoad()
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "LogonTS", 0);
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
-			DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", 0);
-			if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+			ICQWriteContactSettingDword(hContact, "LogonTS", 0);
+			ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+			ICQWriteContactSettingDword(hContact, "TickTS", 0);
+			if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
       {
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+				ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-        DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusId");
-        DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusName");
-        DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusMsg");
+        ICQDeleteContactSetting(hContact, "XStatusId");
+        ICQDeleteContactSetting(hContact, "XStatusName");
+        ICQDeleteContactSetting(hContact, "XStatusMsg");
       }
 		}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -820,7 +820,7 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 		pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
 	if (FindCookie((WORD)pArguments->hSequence, &dwUin, &pvExtra))
-				FreeCookie((WORD)pArguments->hSequence);
+		FreeCookie((WORD)pArguments->hSequence);
 
 	if (pArguments->nAckResult == ACKRESULT_SUCCESS)
 		Netlib_Logf(ghServerNetlibUser, "Sent fake message ack");
@@ -837,7 +837,6 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 
 void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage)
 {
-
 	icq_ack_args* pArgs;
 
 
@@ -853,7 +852,6 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
 		pArgs->pszMessage = (LPARAM)NULL;
 
 	forkthread(icq_ProtocolAckThread, 0, pArgs);
-
 }
 
 
@@ -881,9 +879,9 @@ BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf
 		return FALSE;
 
 	if ((wLen > 0) && (**buf) && ((*buf)[wLen-1]==0)) // Make sure we have a proper string
-		DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, *buf);
+		ICQWriteContactSettingString(hContact, szSetting, *buf);
 	else
-		DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
+		ICQDeleteContactSetting(hContact, szSetting);
 
 	*buf += wLen;
 	*pwLength -= wLen;
@@ -905,9 +903,9 @@ BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, 
 	*pwLength -= 2;
 
 	if (wVal != 0)
-		DBWriteContactSettingWord(hContact, gpszICQProtoName, szSetting, wVal);
+		ICQWriteContactSettingWord(hContact, szSetting, wVal);
 	else
-		DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
+		ICQDeleteContactSetting(hContact, szSetting);
 
 	return TRUE;
 }
@@ -928,9 +926,9 @@ BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, str
 
 	text = LookupFieldName(table, wVal);
 	if (text)
-		DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, text);
+		ICQWriteContactSettingString(hContact, szSetting, text);
 	else
-		DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
+		ICQDeleteContactSetting(hContact, szSetting);
 
 	return TRUE;
 }
@@ -949,9 +947,9 @@ BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf,
 	*pwLength -= 1;
 
 	if (byVal != 0)
-		DBWriteContactSettingByte(hContact, gpszICQProtoName, pszSetting, byVal);
+		ICQWriteContactSettingByte(hContact, pszSetting, byVal);
 	else
-		DBDeleteContactSetting(hContact, gpszICQProtoName, pszSetting);
+		ICQDeleteContactSetting(hContact, pszSetting);
 
 	return TRUE;
 }
@@ -972,9 +970,9 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
 
 	text = LookupFieldName(table, byVal);
 	if (text)
-		DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, text);
+		ICQWriteContactSettingString(hContact, szSetting, text);
 	else
-		DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
+		ICQDeleteContactSetting(hContact, szSetting);
 
 	return TRUE;
 }
@@ -984,7 +982,6 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
 // Returns the current GMT offset in seconds
 int GetGMTOffset(void)
 {
-
 	TIME_ZONE_INFORMATION tzinfo;
 	DWORD dwResult;
 	int nOffset = 0;
@@ -1012,7 +1009,6 @@ int GetGMTOffset(void)
 	}
 
 	return nOffset;
-
 }
 
 
@@ -1020,7 +1016,7 @@ int GetGMTOffset(void)
 BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 {
 	// Privacy control
-	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyCList", 0))
+	if (ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
 	{
 		// Don't send statusmessage to unknown contacts
 		if (hContact == INVALID_HANDLE_VALUE)
@@ -1032,9 +1028,9 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 			return FALSE;
 
 		// Don't send statusmessage to invisible contacts
-		if (DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyVisible", 0))
+		if (ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0))
 		{
-			WORD wStatus = DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			WORD wStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 			if (wStatus == ID_STATUS_OFFLINE)
 				return FALSE;
 		}
@@ -1042,12 +1038,9 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 
 	// Dont send messages to people you are hiding from
 	if (hContact != INVALID_HANDLE_VALUE &&
-		DBGetContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", 0) == ID_STATUS_OFFLINE)
+		ICQGetContactSettingWord(hContact, "ApparentMode", 0) == ID_STATUS_OFFLINE)
 	{
-		if (!DBGetContactSettingByte(hContact, gpszICQProtoName, "TemporaryVisible", 0))
-    { // Allow reply to temporary visible contacts
-      return FALSE;
-    }
+    return FALSE;
 	}
 
 	// Dont respond to request for other statuses than your current one
@@ -1060,6 +1053,15 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 		return FALSE;
 	}
 
+  if (hContact != INVALID_HANDLE_VALUE && gnCurrentStatus==ID_STATUS_INVISIBLE &&
+    ICQGetContactSettingWord(hContact, "ApparentMode", 0) != ID_STATUS_ONLINE)
+  {
+		if (!ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
+    { // Allow request to temporary visible contacts
+      return FALSE;
+    }
+  }
+
 	// All OK!
 	return TRUE;
 }
@@ -1069,10 +1071,9 @@ static int bPhotoLock = 0;
 
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
 { // set contact photo if linked if no photo set link
-  if (DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", DEFAULT_LINK_AVATARS))
+  if (ICQGetContactSettingByte(NULL, "AvatarsAutoLink", DEFAULT_LINK_AVATARS))
   {
     bPhotoLock = 1;
-    __try
     {
       if (DBGetContactSettingByte(hContact, "ContactPhoto", "ICQLink", 0))
       { // we are linked update DB
@@ -1111,10 +1112,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
         }
       }
     }
-    __finally
-    {
-      bPhotoLock = 0;
-    }
+    bPhotoLock = 0;
   }
 }
 
@@ -1125,52 +1123,9 @@ void ContactPhotoSettingChanged(HANDLE hContact)
   if (bNoChanging) return;
   bNoChanging = 1;
 
-  if (!bPhotoLock && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLink", 0))
+  if (!bPhotoLock && ICQGetContactSettingByte(NULL, "AvatarsAutoLink", 0))
     DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
 
   bNoChanging = 0;
 }
 
-/*static int bdCacheTested = 0;
-static int bdWorkaroundRequired = 0;
-
-void TestDBBlobIssue()
-{
-  DBVARIANT dbv = {0};
-
-  bdCacheTested = 1;
-  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem"); // delete setting
-  DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv); // create crap cache item
-  DBWriteContactSettingBlob(NULL, gpszICQProtoName, "BlobTestItem", "Test", 4); // write blob
-  if (!DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv)) // try to read it back
-  { // we were able to read it, the DB finally work correctly, hurrah
-    DBFreeVariant(&dbv); 
-  }
-  else // the crap is still in the cache, we need to use workaround for avatars to work properly
-  {
-    Netlib_Logf(ghServerNetlibUser, "DB Module contains bug #0001177, using workaround");
-    bdWorkaroundRequired = 1;
-  }
-  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem");
-}*/
-
-
-int DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *szSetting,const char *val, const int cbVal)
-{
-  DBCONTACTWRITESETTING cws;
-
-/*  if (!bdCacheTested) TestDBBlobIssue();
-
-  if (bdWorkaroundRequired)
-  { // this is workaround for DB blob caching problems - nasty isn't it
-    DBWriteContactSettingByte(hContact, szModule, szSetting, 1);
-    DBDeleteContactSetting(hContact, szModule, szSetting); 
-  }*/
-
-  cws.szModule=szModule;
-  cws.szSetting=szSetting;
-  cws.value.type=DBVT_BLOB;
-  cws.value.pbVal=(char*)val;
-  cws.value.cpbVal = cbVal;
-  return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
-}

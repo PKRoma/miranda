@@ -455,7 +455,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 #endif
           if (GetTickCount() > wLastKeepAlive)
           { // limit frequency (HACK: on some systems select() does not work well)
-            if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
+            if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
             { // send keep-alive packet
               icq_packet packet;
  
@@ -849,7 +849,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           Netlib_Logf(ghServerNetlibUser, "Received user avatar, storing (%d bytes).", datalen);
 
           dwPaFormat = DetectAvatarFormatBuffer(pBuffer);
-          DBWriteContactSettingByte(ac->hContact, gpszICQProtoName, "AvatarType", (BYTE)dwPaFormat);
+          ICQWriteContactSettingByte(ac->hContact, "AvatarType", (BYTE)dwPaFormat);
           ai.format = dwPaFormat; // set the format
           AddAvatarExt(dwPaFormat, szMyFile);
           strcpy(ai.filename, szMyFile);
@@ -865,9 +865,9 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
             if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
               LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
 
-            if (!DBGetContactSetting(ac->hContact, gpszICQProtoName, "AvatarHash", &dbv))
+            if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
             {
-              if (DBWriteContactSettingBlob(ac->hContact, gpszICQProtoName, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
+              if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
                 Netlib_Logf(ghServerNetlibUser, "Failed to set file hash.");
 
               DBFreeVariant(&dbv);
@@ -876,8 +876,8 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
             {
               Netlib_Logf(ghServerNetlibUser, "Warning: DB error (no hash in DB).");
               // the hash was lost, try to fix that
-              if (DBWriteContactSettingBlob(ac->hContact, gpszICQProtoName, "AvatarSaved", ac->hash, ac->hashlen) ||
-                DBWriteContactSettingBlob(ac->hContact, gpszICQProtoName, "AvatarHash", ac->hash, ac->hashlen))
+              if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", ac->hash, ac->hashlen) ||
+                ICQWriteContactSettingBlob(ac->hContact, "AvatarHash", ac->hash, ac->hashlen))
               {
                 Netlib_Logf(ghServerNetlibUser, "Failed to save avatar hash to DB");
               }

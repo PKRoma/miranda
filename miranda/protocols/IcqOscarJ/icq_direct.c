@@ -420,12 +420,12 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 	if (!dc.incoming)
 	{
 		dc.type = dtsi->type;
-		dc.dwRemoteExternalIP = DBGetContactSettingDword(dtsi->hContact, gpszICQProtoName, "IP", 0);
-		dc.dwRemoteInternalIP = DBGetContactSettingDword(dtsi->hContact, gpszICQProtoName, "RealIP", 0);
-		dc.dwRemotePort = DBGetContactSettingWord(dtsi->hContact, gpszICQProtoName, "UserPort", 0);
-		dc.dwRemoteUin = DBGetContactSettingDword(dtsi->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-		dc.wVersion = DBGetContactSettingWord(dtsi->hContact, gpszICQProtoName, "Version", 0);
-		dc.dwConnCookie = DBGetContactSettingDword(dtsi->hContact, gpszICQProtoName, "DirectCookie", 0);
+		dc.dwRemoteExternalIP = ICQGetContactSettingDword(dtsi->hContact, "IP", 0);
+		dc.dwRemoteInternalIP = ICQGetContactSettingDword(dtsi->hContact, "RealIP", 0);
+		dc.dwRemotePort = ICQGetContactSettingWord(dtsi->hContact, "UserPort", 0);
+		dc.dwRemoteUin = ICQGetContactSettingDword(dtsi->hContact, UNIQUEIDSETTING, 0);
+		dc.wVersion = ICQGetContactSettingWord(dtsi->hContact, "Version", 0);
+		dc.dwConnCookie = ICQGetContactSettingDword(dtsi->hContact, "DirectCookie", 0);
 
     if (!dc.dwRemoteExternalIP && !dc.dwRemoteInternalIP)
     { // we do not have any ip, do not try to connect
@@ -733,7 +733,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 					return;	   /* don't allow direct connection with people not on my clist */
         }
 
-				if (dwCookie != DBGetContactSettingDword(hContact, gpszICQProtoName, "DirectCookie", 0))
+				if (dwCookie != ICQGetContactSettingDword(hContact, "DirectCookie", 0))
         {
           Netlib_Logf(ghDirectNetlibUser, "Error: Received PEER_INIT with broken cookie");
           Netlib_CloseHandle(dc->hConnection);
@@ -783,7 +783,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 						char* szNick;
 
 						dbv.type = DBVT_DELETED;
-						if (DBGetContactSetting(NULL, gpszICQProtoName, "Nick", &dbv))
+						if (ICQGetContactSetting(NULL, "Nick", &dbv))
 							szNick = "";
 						else
 							szNick = dbv.pszVal;

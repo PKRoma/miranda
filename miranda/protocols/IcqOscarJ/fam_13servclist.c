@@ -188,8 +188,8 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
             if (pChain) 
             {
-              DBWriteContactSettingDword(NULL, gpszICQProtoName, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
-              DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", wItemId);
+              ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
+              ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
               disposeChain(&pChain);
 
               Netlib_Logf(ghServerNetlibUser, "Server added Import timestamp to list");
@@ -253,7 +253,6 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 	default:
 		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x13,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
-
 	}
 }
 
@@ -317,7 +316,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
           Netlib_Logf(ghServerNetlibUser, "Contact could not be added without authorisation, add with await auth flag.");
 
-          DBWriteContactSettingByte(sc->hContact, gpszICQProtoName, "Auth", 1); // we need auth
+          ICQWriteContactSettingByte(sc->hContact, "Auth", 1); // we need auth
           dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, sc->dwUin, sc);
           icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc->wGroupId, sc->wContactId, sc->szGroupName, NULL, 1, SSI_ITEM_BUDDY);
 
@@ -338,8 +337,8 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         int groupSize;
         HANDLE hPend = sc->hContact;
 
-        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", sc->wContactId);
-	      DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", sc->wGroupId);
+        ICQWriteContactSettingWord(sc->hContact, "ServerId", sc->wContactId);
+	      ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", sc->wGroupId);
         SAFE_FREE(&sc->szGroupName); // free the nick
 
         if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
@@ -419,8 +418,8 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         void* groupData;
         int groupSize;
 
-        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", 0); // clear the values
-        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", 0);
+        ICQWriteContactSettingWord(sc->hContact, "ServerId", 0); // clear the values
+        ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", 0);
 
         FreeServerID(sc->wContactId, SSIT_ITEM); 
               
@@ -533,8 +532,8 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         int groupSize;
         int bEnd = 1; // shall we end the sever modifications
 
-        DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "ServerId", sc->wNewContactId);
-	      DBWriteContactSettingWord(sc->hContact, gpszICQProtoName, "SrvGroupId", sc->wNewGroupId);
+        ICQWriteContactSettingWord(sc->hContact, "ServerId", sc->wNewContactId);
+	      ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", sc->wNewGroupId);
         FreeServerID(sc->wContactId, SSIT_ITEM); // release old contact id
 
         if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize)) // update the group we moved from
@@ -634,12 +633,12 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         if (sc->wGroupId) // is avatar added or updated?
         {
           FreeServerID(sc->wContactId, SSIT_ITEM);
-          DBDeleteContactSetting(NULL, gpszICQProtoName, "SrvAvatarID"); // to fix old versions
+          ICQDeleteContactSetting(NULL, "SrvAvatarID"); // to fix old versions
         }
       }
       else
       {
-        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", sc->wContactId);
+        ICQWriteContactSettingWord(NULL, "SrvAvatarID", sc->wContactId);
       }
       break;
     }
@@ -649,7 +648,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         Netlib_Logf(ghServerNetlibUser, "Removing of avatar hash failed.");
       else
       {
-        DBDeleteContactSetting(NULL, gpszICQProtoName, "SrvAvatarID");
+        ICQDeleteContactSetting(NULL, "SrvAvatarID");
         FreeServerID(sc->wContactId, SSIT_ITEM);
 
         setUserInfo();
@@ -667,8 +666,8 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         Netlib_Logf(ghServerNetlibUser, "Re-starting import sequence failed, error %d", wError);
       else
       {
-        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", 0);
-        DBDeleteContactSetting(NULL, gpszICQProtoName, "ImportTS");
+        ICQWriteContactSettingWord(NULL, "SrvImportID", 0);
+        ICQDeleteContactSetting(NULL, "ImportTS");
       }
       break;
     }
@@ -838,7 +837,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 					while (hContact)
 					{
 						pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-						if (pszProto && !strcmp(pszProto, gpszICQProtoName) && dwUin == DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0))
+						if (pszProto && !strcmp(pszProto, gpszICQProtoName) && dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
 						{
 							Netlib_Logf(ghServerNetlibUser, "SSI ignoring existing contact '%d'", dwUin);
 							break;
@@ -858,25 +857,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							continue;
 						}
 
-/*            Netlib_Logf(ghServerNetlibUser, "SSI adding new contact '%d'", dwUin);
-						hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
-						if (!hContact)
-						{
-							Netlib_Logf(ghServerNetlibUser, "Failed to create ICQ contact %u", dwUin);
-							if (pChain)
-								disposeChain(&pChain);
-							continue;
-						}
-						if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
-						{
-							// For some reason we failed to register the protocol to this contact
-							CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-							Netlib_Logf(ghServerNetlibUser, "Failed to register ICQ contact %u", dwUin);
-							if (pChain)
-								disposeChain(&pChain);
-							continue;
-						}*/
-
             if (szGroup = makeGroupPath(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
               DBWriteContactSettingString(hContact, "CList", "Group", szGroup);
@@ -886,7 +866,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             bAdded = 1;
             AddJustAddedContact(hContact);
 
-						DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
+						ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
 					}
 					else
 					{
@@ -900,13 +880,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
           }
 
-          wOldGroupId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
+          wOldGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
 					// Save group and item ID
-					DBWriteContactSettingWord(hContact, gpszICQProtoName, "ServerId", wItemId);
-					DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", wGroupId);
+					ICQWriteContactSettingWord(hContact, "ServerId", wItemId);
+					ICQWriteContactSettingWord(hContact, "SrvGroupId", wGroupId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
-          if (!bAdded && (wOldGroupId != wGroupId) && DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD))
+          if (!bAdded && (wOldGroupId != wGroupId) && ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
           { // contact has been moved on the server
             char* szOldGroup = getServerGroupName(wOldGroupId);
             char* szGroup = getServerGroupName(wGroupId);
@@ -983,7 +963,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
                   bNicked = 1;
 
 									// Write nickname to database
-									if (DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
+									if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
 										DBVARIANT dbv;
 
@@ -1052,7 +1032,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 									}
 
 									// Write comment to database
-									if (DBGetContactSettingByte(NULL, gpszICQProtoName, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
+									if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
 										DBVARIANT dbv;
 
@@ -1082,12 +1062,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						// Look for need-authorization TLV
 						if (pTLV = getTLV(pChain, 0x0066, 1))
 						{
-							DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 1);
+							ICQWriteContactSettingByte(hContact, "Auth", 1);
 							Netlib_Logf(ghServerNetlibUser, "SSI contact need authorization");
 						}
 						else
 						{
-							DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
+							ICQWriteContactSettingByte(hContact, "Auth", 0);
 						}
 					}
 				}
@@ -1180,7 +1160,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				while (hContact)
 				{
 					pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && dwUin == DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0))
+					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
 					{
 						Netlib_Logf(ghServerNetlibUser, "Permit contact already exists '%d'", dwUin);
 						break;
@@ -1198,25 +1178,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							disposeChain(&pChain);
 						continue;
 					}
-/*					Netlib_Logf(ghServerNetlibUser, "SSI adding new Permit contact '%d'", dwUin);
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
-					if (!hContact)
-					{
-						Netlib_Logf(ghServerNetlibUser, "Failed to create ICQ contact %u", dwUin);
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}
-					if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
-					{
-						// For some reason we failed to register the protocol to this contact
-						CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-						Netlib_Logf(ghServerNetlibUser, "Failed to register ICQ contact %u", dwUin);
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}*/
-					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
+					ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
           // Add it to the list, so it can be added properly if proper contact
@@ -1224,10 +1186,10 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				}
 
 				// Save permit ID
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", wItemId);
+				ICQWriteContactSettingWord(hContact, "SrvPermitId", wItemId);
 				ReserveServerID(wItemId, SSIT_ITEM);
 				// Set apparent mode
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_ONLINE);
+				ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_ONLINE);
 				Netlib_Logf(ghServerNetlibUser, "Visible-contact (%u)", dwUin);
 			}
 			break;
@@ -1243,7 +1205,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				char* pszProto;
 				HANDLE hContact;
 
-
 				// This looks like a real contact
 				// Check if this user already exists in local list
 				dwUin = atoi(pszRecordName);
@@ -1251,7 +1212,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				while (hContact)
 				{
 					pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && (dwUin == DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && (dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
 					{
 						Netlib_Logf(ghServerNetlibUser, "Deny contact already exists '%d'", dwUin);
 						break;
@@ -1269,25 +1230,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							disposeChain(&pChain);
 						continue;
 					}
-/*					Netlib_Logf(ghServerNetlibUser, "SSI adding new Deny contact '%d'", dwUin);
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
-					if (!hContact)
-					{
-						Netlib_Logf(ghServerNetlibUser, "Failed to create ICQ contact %u", dwUin);
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}
-					if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
-					{
-						// For some reason we failed to register the protocol to this contact
-						CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-						Netlib_Logf(ghServerNetlibUser, "Failed to register ICQ contact %u", dwUin);
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}*/
-					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
+					ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it so it only appears in the visible list
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
           // Add it to the list, so it can be added properly if proper contact
@@ -1295,11 +1238,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				}
 
 				// Save Deny ID
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", wItemId);
+				ICQWriteContactSettingWord(hContact, "SrvDenyId", wItemId);
 				ReserveServerID(wItemId, SSIT_ITEM);
 
 				// Set apparent mode
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
+				ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
 				Netlib_Logf(ghServerNetlibUser, "Invisible-contact (%u)", dwUin);
 			}
 			break;
@@ -1314,7 +1257,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         // Look for visibility TLV
         if (bVisibility = getByteFromChain(pChain, 0x00CA, 1))
         { // found it, store the id, we do not need current visibility - we do not rely on it
-          DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wItemId);
+          ICQWriteContactSettingWord(NULL, "SrvVisibilityID", wItemId);
           Netlib_Logf(ghServerNetlibUser, "Visibility is %u, ID is %u", bVisibility, wItemId);
         }
       }
@@ -1338,7 +1281,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				while (hContact)
 				{
 					pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && (dwUin == DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0)))
+					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && (dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
 					{
 						Netlib_Logf(ghServerNetlibUser, "Ignore contact already exists '%d'", dwUin);
 						break;
@@ -1356,25 +1299,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							disposeChain(&pChain);
 						continue;
 					}
-/*					Netlib_Logf(ghServerNetlibUser, "SSI adding new Ignore contact '%d'", dwUin);
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
-					if (!hContact)
-					{
-						Netlib_Logf(ghServerNetlibUser, "Failed to create ICQ contact %u", dwUin);
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}
-					if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
-					{
-						// For some reason we failed to register the protocol to this contact
-						CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-						Netlib_Logf(ghServerNetlibUser, "Failed to register ICQ contact %u", dwUin);
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}*/
-					DBWriteContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, dwUin);
+					ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
 					// It wasn't previously in the list, we hide it
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
           // Add it to the list, so it can be added properly if proper contact
@@ -1382,11 +1307,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				}
 
 				// Save Ignore ID
-				DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", wItemId);
+				ICQWriteContactSettingWord(hContact, "SrvIgnoreId", wItemId);
 				ReserveServerID(wItemId, SSIT_ITEM);
 
 				// Set apparent mode & ignore
-        DBWriteContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", ID_STATUS_OFFLINE);
+        ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
         // set ignore all events
         DBWriteContactSettingDword(hContact, "Ignore", "Mask1", 0xFFFF);
         Netlib_Logf(ghServerNetlibUser, "Ignore-contact (%u)", dwUin);
@@ -1403,8 +1328,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 				/* time our list was first imported */
 				/* pszRecordName is "Import Time" */
 				/* data is TLV(13) {TLV(D4) {time_t importTime}} */
-        DBWriteContactSettingDword(NULL, gpszICQProtoName, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
-        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", wItemId);
+        ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
+        ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
 				Netlib_Logf(ghServerNetlibUser, "SSI first import recognized");
 			}
 			break;
@@ -1418,7 +1343,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         /* we ignore this, just save the id */
         /* cause we get the hash again after login */
         ReserveServerID(wItemId, SSIT_ITEM);
-        DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", wItemId);
+        ICQWriteContactSettingWord(NULL, "SrvAvatarID", wItemId);
         Netlib_Logf(ghServerNetlibUser, "SSI Avatar item recognized");
       }
       break;
@@ -1444,7 +1369,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 	SAFE_FREE(&pszRecordName);
 
-	DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", (WORD)(wRecord + DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0)));
+	ICQWriteContactSettingWord(NULL, "SrvRecordCount", (WORD)(wRecord + ICQGetContactSettingWord(NULL, "SrvRecordCount", 0)));
 
 	if (bIsLastPacket)
 	{
@@ -1459,7 +1384,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 			/* finally we get a time_t of the last update time */
 			unpackDWord(&buf, &dwLastUpdateTime);
-			DBWriteContactSettingDword(NULL, gpszICQProtoName, "SrvLastUpdate", dwLastUpdateTime);
+			ICQWriteContactSettingDword(NULL, "SrvLastUpdate", dwLastUpdateTime);
 			Netlib_Logf(ghServerNetlibUser, "Last update of server list was (%u) %s", dwLastUpdateTime, asctime(localtime(&dwLastUpdateTime)));
 
 			sendRosterAck();
@@ -1469,7 +1394,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 		{
 			Netlib_Logf(ghServerNetlibUser, "Last packet missed update time...");
 		}
-    if (DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0) == 0)
+    if (ICQGetContactSettingWord(NULL, "SrvRecordCount", 0) == 0)
     { // we got empty serv-list, create master group
       servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
       if (ack)
@@ -1534,7 +1459,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   }
   nReasonLen = strlennull(szReason);
   // Read nick name from DB
-  if (DBGetContactSetting(ccs.hContact, gpszICQProtoName, "Nick", &dbv))
+  if (ICQGetContactSetting(ccs.hContact, "Nick", &dbv))
     nNickLen = 0;
   else
   {
@@ -1543,7 +1468,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   }
   pre.lParam += nNickLen + nReasonLen;
 
-  DBWriteContactSettingByte(ccs.hContact, gpszICQProtoName, "Grant", 1);
+  ICQWriteContactSettingByte(ccs.hContact, "Grant", 1);
 
 	/*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)*/
 	pCurBlob=szBlob=(char *)malloc(pre.lParam);
@@ -1591,7 +1516,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 
   hContact=HContactFromUIN(dwUin,1);
 
-  DBDeleteContactSetting(hContact, gpszICQProtoName, "Grant");
+  ICQDeleteContactSetting(hContact, "Grant");
 
 	ZeroMemory(&dbei,sizeof(dbei));
 	dbei.cbSize=sizeof(dbei);
@@ -1653,13 +1578,13 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 	{
 
 	case 0:
-		DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 1);
+		ICQWriteContactSettingByte(hContact, "Auth", 1);
 		Netlib_Logf(ghServerNetlibUser, "Authorisation request denied by %u", dwUin);
 		// TODO: Add to system history as soon as new auth system is ready
 		break;
 
 	case 1:
-		DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
+		ICQWriteContactSettingByte(hContact, "Auth", 0);
 		Netlib_Logf(ghServerNetlibUser, "Authorisation request granted by %u", dwUin);
 		// TODO: Add to system history as soon as new auth system is ready
 		break;
@@ -1695,18 +1620,18 @@ void updateServVisibilityCode(BYTE bCode)
   {
     servlistcookie* ack;
     DWORD dwCookie;
-    BYTE bVisibility = DBGetContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", 0);
+    BYTE bVisibility = ICQGetContactSettingByte(NULL, "SrvVisibility", 0);
 
     if (bVisibility == bCode) // if no change was made, not necescary to update that
       return;
-    DBWriteContactSettingByte(NULL, gpszICQProtoName, "SrvVisibility", bCode);
+    ICQWriteContactSettingByte(NULL, "SrvVisibility", bCode);
 
     // Do we have a known server visibility ID? We should, unless we just subscribed to the serv-list for the first time
-    if ((wVisibilityID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", 0)) == 0)
+    if ((wVisibilityID = ICQGetContactSettingWord(NULL, "SrvVisibilityID", 0)) == 0)
     {
       // No, create a new random ID
       wVisibilityID = GenerateServerId(SSIT_ITEM);
-      DBWriteContactSettingWord(NULL, gpszICQProtoName, "SrvVisibilityID", wVisibilityID);
+      ICQWriteContactSettingWord(NULL, "SrvVisibilityID", wVisibilityID);
       wCommand = ICQ_LISTS_ADDTOLIST;
       Netlib_Logf(ghServerNetlibUser, "Made new srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
     }
@@ -1760,7 +1685,7 @@ void updateServAvatarHash(char* pHash, int size)
     DWORD dwCookie;
 
     // Do we have a known server avatar ID? We should, unless we just subscribed to the serv-list for the first time
-    if ((wAvatarID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0)) == 0)
+    if ((wAvatarID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0)) == 0)
     {
       // No, create a new random ID
       wAvatarID = GenerateServerId(SSIT_ITEM);
@@ -1809,7 +1734,7 @@ void updateServAvatarHash(char* pHash, int size)
     DWORD dwCookie;
 
     // Do we have a known server avatar ID?
-    if ((wAvatarID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvAvatarID", 0)) == 0)
+    if ((wAvatarID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0)) == 0)
     {
       return;
     }
@@ -1846,11 +1771,11 @@ void updateServAvatarHash(char* pHash, int size)
 void sendAddStart(int bImport)
 {
   icq_packet packet;
-  WORD wImportID = DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvImportID", 0);
+  WORD wImportID = ICQGetContactSettingWord(NULL, "SrvImportID", 0);
 
   if (bImport && wImportID)
   { // we should be importing, check if already have import item
-    if (DBGetContactSettingDword(NULL, gpszICQProtoName, "ImportTS", 0) + 604800 < DBGetContactSettingDword(NULL, gpszICQProtoName, "LogonTS", 0))
+    if (ICQGetContactSettingDword(NULL, "ImportTS", 0) + 604800 < ICQGetContactSettingDword(NULL, "LogonTS", 0))
     { // is the timestamp week older, clear it and begin new import
       DWORD dwCookie;
       servlistcookie* ack;

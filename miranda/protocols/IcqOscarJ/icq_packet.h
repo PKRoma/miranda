@@ -67,6 +67,8 @@ void packTLVDWord(icq_packet *d, unsigned short nType, DWORD dwData);
 
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 //void packLEWordSizedBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
+int getUINLen(DWORD dwUin);
+void packUIN(icq_packet *pPacket, DWORD dwUin);
 void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD wSeq);
 
 void packLEWord(icq_packet *, WORD);

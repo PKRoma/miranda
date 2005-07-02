@@ -186,12 +186,12 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 			szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 			if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 			{
-				if (DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0))
+				if (ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
 				{
-					if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE)
+					if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE)
 						!= ID_STATUS_OFFLINE)
 					{
-						DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+						ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
             handleXStatusCaps(hContact, NULL, 0);
 					}
@@ -201,7 +201,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 		}
 	}
-  DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", 0); // clear logon time
+  ICQWriteContactSettingDword(NULL, "LogonTS", 0); // clear logon time
 
   FlushServerIDs(); // clear server IDs list
   FlushPendingOperations(); // clear pending operations list
@@ -372,20 +372,20 @@ void icq_login(const char* szPassword)
 	DWORD dwUin;
 
 
-	dwUin = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);
+	dwUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
 	stsi = (serverthread_start_info*)calloc(sizeof(serverthread_start_info), 1);
 	stsi->nloc.cbSize = sizeof(NETLIBOPENCONNECTION);
 	stsi->nloc.flags = 0;
 
 
 	// Server host name
-	if (DBGetContactSetting(NULL, gpszICQProtoName, "OscarServer", &dbvServer))
+	if (ICQGetContactSetting(NULL, "OscarServer", &dbvServer))
 		stsi->nloc.szHost = _strdup(DEFAULT_SERVER_HOST);
 	else
 		stsi->nloc.szHost = _strdup(dbvServer.pszVal);
 
 	// Server port
-	stsi->nloc.wPort = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "OscarPort", DEFAULT_SERVER_PORT);
+	stsi->nloc.wPort = (WORD)ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
 	if (stsi->nloc.wPort == 0)
 		stsi->nloc.wPort = RandRange(1024, 65535);
 

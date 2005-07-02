@@ -156,6 +156,32 @@ void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength)
 //}
 
 
+int getUINLen(DWORD dwUin)
+{ // TODO: invent something more clever
+  if (dwUin >= 1000000000) return 10;
+  if (dwUin >= 100000000) return 9;
+  if (dwUin >= 10000000) return 8;
+  if (dwUin >= 1000000) return 7;
+  if (dwUin >= 100000) return 6;
+  if (dwUin >= 10000) return 5;
+  if (dwUin >= 1000) return 4;
+  if (dwUin >= 100) return 3;
+  if (dwUin >= 10) return 2;
+  return 1;
+}
+
+
+void packUIN(icq_packet* pPacket, DWORD dwUin)
+{
+	unsigned char pszUin[UINMAXLEN];
+  BYTE nUinLen = getUINLen(dwUin);
+
+	ltoa(dwUin, pszUin, UINMAXLEN);
+
+	packByte(pPacket, nUinLen);           // Length of user id
+	packBuffer(pPacket, pszUin, nUinLen); // Receiving user's id
+}
+
 
 void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSeq)
 {
@@ -235,7 +261,7 @@ void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting)
 {
 	DBVARIANT dbv;
 
-	if (DBGetContactSetting(NULL, gpszICQProtoName, szSetting, &dbv))
+	if (ICQGetContactSetting(NULL, szSetting, &dbv))
 	{
 		ppackLEWord(buf, buflen, 0);
 	}
@@ -245,27 +271,6 @@ void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting)
     DBFreeVariant(&dbv);
 	}
 }
-
-
-/*void ppackLNTS(PBYTE *buf, int *buflen, const char *szSetting)
-{
-  DBVARIANT dbv;
-
-  if (DBGetContactSetting(NULL, gpszICQProtoName, szSetting, &dbv))
-  {
-    ppackLEWord(buf,buflen,0);
-  }
-  else
-  {
-    WORD len = strlen(dbv.pszVal);
-
-    ppackLEWord(buf,buflen,len);
-    *buf=(PBYTE)realloc(*buf,*buflen+len);
-    memcpy(*buf+*buflen,dbv.pszVal,len);
-    *buflen+=len;
-    DBFreeVariant(&dbv);
-  }
-}*/
 
 
 // *** TLV based (!!! WORDs and DWORDs are LE !!!)

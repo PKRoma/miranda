@@ -13,12 +13,15 @@
 #define IDD_ICQADVANCEDSEARCH           242
 #define IDD_OPT_ICQCONTACTS             252
 #define IDD_ICQUPLOADLIST               253
+#define IDD_SETXSTATUS                  256
 #define IDD_OPT_ICQPRIVACY              260
 #define IDC_LOG                         1001
 #define IDI_ICQ                         1001
 #define IDC_USEGATEWAY                  1010
 #define IDC_UTFENABLE                   1010
+#define IDC_XTITLE                      1010
 #define IDC_KEEPALIVE                   1011
+#define IDC_XMSG                        1011
 #define IDC_UTFALL                      1012
 #define IDC_UTFSTATIC                   1013
 #define IDC_UTFCODEPAGE                 1014

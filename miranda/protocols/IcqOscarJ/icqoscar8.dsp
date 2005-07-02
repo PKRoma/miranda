@@ -141,6 +141,10 @@ SOURCE=.\icq_constants.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_db.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_direct.h
 # End Source File
 # Begin Source File
@@ -334,6 +338,10 @@ SOURCE=.\icq_filetransfer.c
 # Begin Source File
 
 SOURCE=.\icq_advsearch.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\icq_db.c
 # End Source File
 # Begin Source File
 

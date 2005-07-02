@@ -85,7 +85,7 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 {
 	if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
   {
-		DWORD bXStatus = DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "XStatusId", 0);
+		DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, "XStatusId", 0);
 
 		if (bXStatus > 0 && bXStatus < 24) 
     {
@@ -183,13 +183,13 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
     {
       if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
       {
-        if (DBGetContactSettingByte(hContact, gpszICQProtoName, "XStatusId", 0) != (i + 1))
+//        if (DBGetContactSettingByte(hContact, gpszICQProtoName, "XStatusId", 0) != (i + 1))
         { // status changed - we request details
           char *szNotify;
           int nNotifyLen;
 
-          DBWriteContactSettingByte(hContact, gpszICQProtoName, "XStatusId", (BYTE)(i+1));
-          DBWriteContactSettingString(hContact, gpszICQProtoName, "XStatusName", nameXStatus[i]);
+          ICQWriteContactSettingByte(hContact, "XStatusId", (BYTE)(i+1));
+          ICQWriteContactSettingString(hContact, "XStatusName", (char*)nameXStatus[i]);
 
           nNotifyLen = 94 + UINMAXLEN;
           szNotify = (char*)malloc(nNotifyLen);
@@ -207,9 +207,9 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
   }
   else
   {
-    DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusId");
-    DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusName");
-    DBDeleteContactSetting(hContact, gpszICQProtoName, "XStatusMsg");
+    ICQDeleteContactSetting(hContact, "XStatusId");
+    ICQDeleteContactSetting(hContact, "XStatusName");
+    ICQDeleteContactSetting(hContact, "XStatusMsg");
   }
 
   if (gbXStatusEnabled != 10)
@@ -219,10 +219,162 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
 }
 
 
+static WNDPROC OldMessageEditProc;
+
+static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	switch(msg) 
+  {
+		case WM_CHAR:
+			if(wParam=='\n' && GetKeyState(VK_CONTROL)&0x8000) 
+      {
+				PostMessage(GetParent(hwnd),WM_COMMAND,IDOK,0);
+				return 0;
+			}
+      if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) 
+      {      //ctrl-a
+        SendMessage(hwnd, EM_SETSEL, 0, -1);
+        return 0;
+      }
+      if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) 
+      {     // ctrl-w
+        SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+        return 0;
+      }
+      if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) 
+      {    //ctrl-backspace
+        DWORD start, end;
+        TCHAR *text;
+        int textLen;
+
+        SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
+        SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
+        SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
+        textLen = GetWindowTextLength(hwnd);
+        text = (TCHAR *) malloc(sizeof(TCHAR) * (textLen + 1));
+        GetWindowText(hwnd, text, textLen + 1);
+        MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
+        SetWindowText(hwnd, text);
+        SAFE_FREE(&text);
+        SendMessage(hwnd, EM_SETSEL, start, start);
+        SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+        return 0;
+      }
+			break;
+	}
+	return CallWindowProc(OldMessageEditProc,hwnd,msg,wParam,lParam);
+}
+
+
+struct SetXStatusData {
+	BYTE bXStatus;
+	int countdown;
+	char okButtonFormat[64];
+};
+
+static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+{
+  struct SetXStatusData *dat = (struct SetXStatusData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+
+  switch(message) 
+  {
+		case WM_INITDIALOG:
+		{
+			TranslateDialogDefault(hwndDlg);
+      dat=(struct SetXStatusData*)malloc(sizeof(struct SetXStatusData));
+			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+      dat->bXStatus = (BYTE)lParam;
+      SendDlgItemMessage(hwndDlg, IDC_XTITLE, EM_LIMITTEXT, 256, 0);
+			SendDlgItemMessage(hwndDlg, IDC_XMSG, EM_LIMITTEXT, 1024, 0);
+			OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+			OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+			{	
+        char str[256], format[128];
+				GetWindowText(hwndDlg, format, sizeof(format));
+				mir_snprintf(str, sizeof(str), format, Translate(nameXStatus[dat->bXStatus-1]));
+				SetWindowText(hwndDlg, str);
+			}
+      GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
+			{	
+        DBVARIANT dbv;
+        char szSetting[64];
+
+        sprintf(szSetting, "XStatus%dName", dat->bXStatus);
+        if (!ICQGetContactSetting(NULL, szSetting, &dbv))
+        {
+          SetDlgItemText(hwndDlg,IDC_XTITLE,dbv.pszVal);
+          DBFreeVariant(&dbv);
+        }
+        sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
+        if (!ICQGetContactSetting(NULL, szSetting, &dbv))
+        {
+          SetDlgItemText(hwndDlg,IDC_XMSG,dbv.pszVal);
+          DBFreeVariant(&dbv);
+        }
+			}
+			dat->countdown=5;
+			SendMessage(hwndDlg, WM_TIMER, 0, 0);
+			SetTimer(hwndDlg,1,1000,0);
+
+			return TRUE;
+		}
+		case WM_TIMER:
+			if(dat->countdown==-1) 
+      {
+        DestroyWindow(hwndDlg); 
+        break;
+      }
+			{	
+        char str[64];
+				mir_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
+				SetDlgItemText(hwndDlg,IDOK,str);
+			}
+			dat->countdown--;
+			break;
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam)) 
+      {
+				case IDOK:
+					DestroyWindow(hwndDlg);
+					break;
+        case IDC_XTITLE:
+				case IDC_XMSG:
+					KillTimer(hwndDlg,1);
+					SetDlgItemText(hwndDlg,IDOK,Translate("OK"));
+					break;
+			}
+			break;
+
+		case WM_DESTROY:
+			{
+        char str[1025];
+        char szSetting[64];
+
+				GetDlgItemText(hwndDlg,IDC_XMSG,str,sizeof(str));
+        sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
+        ICQWriteContactSettingString(NULL, szSetting, str);
+        ICQWriteContactSettingString(NULL, "XStatusMsg", str);
+				GetDlgItemText(hwndDlg,IDC_XTITLE,str,sizeof(str));
+        sprintf(szSetting, "XStatus%dName", dat->bXStatus);
+        ICQWriteContactSettingString(NULL, szSetting, str);
+        ICQWriteContactSettingString(NULL, "XStatusName", str);
+
+        setUserInfo();
+			}
+			SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
+			SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
+			SAFE_FREE(&dat);
+			break;
+	}
+	return FALSE;
+}
+
+
 static void setXStatus(BYTE bXStatus)
 {
   CLISTMENUITEM mi;
-  BYTE bOldXStatus = DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusId", 0);
+  BYTE bOldXStatus = ICQGetContactSettingByte(NULL, "XStatusId", 0);
 
   mi.cbSize = sizeof(mi);
 
@@ -232,13 +384,44 @@ static void setXStatus(BYTE bXStatus)
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bOldXStatus], (LPARAM)&mi);
   }
 
-  DBWriteContactSettingByte(NULL, gpszICQProtoName, "XStatusId", bXStatus);
-  mi.flags = CMIM_FLAGS | CMIF_CHECKED;
+  ICQWriteContactSettingByte(NULL, "XStatusId", bXStatus);
+  mi.flags = CMIM_FLAGS | (bXStatus?CMIF_CHECKED:0);
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bXStatus], (LPARAM)&mi);
 
-  // TODO: show popup asking for custom title & message
+  if (bXStatus)
+  {
+    DBVARIANT dbv;
+    char szSetting[64];
 
-  setUserInfo();
+    sprintf(szSetting, "XStatus%dName", bXStatus);
+    if (!ICQGetContactSetting(NULL, szSetting, &dbv))
+    {
+      ICQWriteContactSettingString(NULL, "XStatusName", dbv.pszVal);
+      DBFreeVariant(&dbv);
+    }
+    else 
+      ICQDeleteContactSetting(NULL, "XStatusName");
+    sprintf(szSetting, "XStatus%dMsg", bXStatus);
+    if (!ICQGetContactSetting(NULL, szSetting, &dbv))
+    {
+      ICQWriteContactSettingString(NULL, "XStatusMsg", dbv.pszVal);
+      DBFreeVariant(&dbv);
+    }
+    else 
+      ICQDeleteContactSetting(NULL, "XStatusMsg");
+    sprintf(szSetting, "XStatus%dStat", bXStatus);
+    if (!ICQGetContactSettingByte(NULL, szSetting, 0))
+      CreateDialogParam(hInst,MAKEINTRESOURCE(IDD_SETXSTATUS),NULL,SetXStatusDlgProc,(LPARAM)bXStatus);
+    else
+      setUserInfo();
+  }
+  else
+  {
+    ICQWriteContactSettingString(NULL, "XStatusName", Translate(nameXStatus[bXStatus-1]));
+    ICQDeleteContactSetting(NULL, "XStatusMsg");
+
+    setUserInfo();
+  }
 }
 
 
@@ -375,8 +558,10 @@ void InitXStatusItems()
 	char srvFce[MAX_PATH + 64];
   char szItem[MAX_PATH + 14];
 
-	BYTE bXStatus = DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusId", 0);
+	BYTE bXStatus = ICQGetContactSettingByte(NULL, "XStatusId", 0);
 	HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+
+  if (!gbXStatusEnabled) return;
 
   sprintf(szItem, Translate("%s Custom Status"), gpszICQProtoName);
   mi.cbSize = sizeof(mi);
@@ -387,7 +572,6 @@ void InitXStatusItems()
 	for(i = 0; i < 25; i++) 
   {
 		sprintf(srvFce, "%s\\SetXStatus%d", gpszICQProtoName, i);
-    // TODO: add empty icon for None, for Checked to work consistently
     mi.hIcon = (bXStatus > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
 		mi.position++;
 

@@ -116,9 +116,9 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			TranslateDialogDefault(hwndDlg);
 
-			SetDlgItemInt(hwndDlg, IDC_ICQNUM, DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0), FALSE);
+			SetDlgItemInt(hwndDlg, IDC_ICQNUM, ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0), FALSE);
 
-			if (!DBGetContactSetting(NULL, gpszICQProtoName, "Password", &dbv))
+			if (!ICQGetContactSetting(NULL, "Password", &dbv))
 			{
 				//bit of a security hole here, since it's easy to extract a password from an edit box
 				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
@@ -126,7 +126,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				DBFreeVariant(&dbv);
 			}
 			
-			if (!DBGetContactSetting(NULL, gpszICQProtoName, "OscarServer", &dbv))
+			if (!ICQGetContactSetting(NULL, "OscarServer", &dbv))
 			{
 				SetDlgItemText(hwndDlg, IDC_ICQSERVER, dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -136,12 +136,12 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetDlgItemText(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
 			}
 			
-			SetDlgItemInt(hwndDlg, IDC_ICQPORT, DBGetContactSettingWord(NULL, gpszICQProtoName, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
-			CheckDlgButton(hwndDlg, IDC_KEEPALIVE, DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0));
-			CheckDlgButton(hwndDlg, IDC_USEGATEWAY, DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0));
-			CheckDlgButton(hwndDlg, IDC_SLOWSEND, DBGetContactSettingByte(NULL, gpszICQProtoName, "SlowSend", 1));
+			SetDlgItemInt(hwndDlg, IDC_ICQPORT, ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
+			CheckDlgButton(hwndDlg, IDC_KEEPALIVE, ICQGetContactSettingByte(NULL, "KeepAlive", 0));
+			CheckDlgButton(hwndDlg, IDC_USEGATEWAY, ICQGetContactSettingByte(NULL, "UseGateway", 0));
+			CheckDlgButton(hwndDlg, IDC_SLOWSEND, ICQGetContactSettingByte(NULL, "SlowSend", 1));
 			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
-			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-DBGetContactSettingByte(NULL, gpszICQProtoName, "ShowLogLevel", LOG_WARNING));
+			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
 			SetDlgItemText(hwndDlg, IDC_LEVELDESCR, Translate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)]));
 			ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
 			
@@ -175,7 +175,6 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			
 			if (icqOnline && LOWORD(wParam) != IDC_SLOWSEND)
 			{
-				
 				char szClass[80];
 				
 				
@@ -204,17 +203,17 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				{
 					char str[128];
 					
-					DBWriteContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, (DWORD)GetDlgItemInt(hwndDlg, IDC_ICQNUM, NULL, FALSE));
+					ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, (DWORD)GetDlgItemInt(hwndDlg, IDC_ICQNUM, NULL, FALSE));
 					GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(str));
 					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM)str);
-					DBWriteContactSettingString(NULL, gpszICQProtoName, "Password", str);
+					ICQWriteContactSettingString(NULL, "Password", str);
 					GetDlgItemText(hwndDlg,IDC_ICQSERVER, str, sizeof(str));
-					DBWriteContactSettingString(NULL, gpszICQProtoName, "OscarServer", str);
-					DBWriteContactSettingWord(NULL, gpszICQProtoName, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
-					DBWriteContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
-          DBWriteContactSettingByte(NULL, gpszICQProtoName, "UseGateway", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY));
-					DBWriteContactSettingByte(NULL, gpszICQProtoName, "SlowSend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND));
-					DBWriteContactSettingByte(NULL, gpszICQProtoName, "ShowLogLevel", (BYTE)(3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
+					ICQWriteContactSettingString(NULL, "OscarServer", str);
+					ICQWriteContactSettingWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
+					ICQWriteContactSettingByte(NULL, "KeepAlive", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
+          ICQWriteContactSettingByte(NULL, "UseGateway", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY));
+					ICQWriteContactSettingByte(NULL, "SlowSend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND));
+					ICQWriteContactSettingByte(NULL, "ShowLogLevel", (BYTE)(3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
 
 					return TRUE;
 				}
@@ -239,9 +238,8 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			int nDcType;
 			int nAddAuth;
 
-
-			nDcType = DBGetContactSettingByte(NULL, gpszICQProtoName, "DCType", 0);
-			nAddAuth = DBGetContactSettingByte(NULL, gpszICQProtoName, "Auth", 1);
+			nDcType = ICQGetContactSettingByte(NULL, "DCType", 0);
+			nAddAuth = ICQGetContactSettingByte(NULL, "Auth", 1);
 			
 			TranslateDialogDefault(hwndDlg);
 			if (!icqOnline)
@@ -249,7 +247,8 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				icq_EnableMultipleControls(hwndDlg, icqPrivacyControls, sizeof(icqPrivacyControls)/sizeof(icqPrivacyControls[0]), FALSE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_SHOW);
 			}
-			else {
+			else 
+      {
 				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_HIDE);
 			}
 			CheckDlgButton(hwndDlg, IDC_DCALLOW_ANY, (nDcType == 0));
@@ -257,14 +256,14 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			CheckDlgButton(hwndDlg, IDC_DCALLOW_AUTH, (nDcType == 2));
 			CheckDlgButton(hwndDlg, IDC_ADD_ANY, (nAddAuth == 0));
 			CheckDlgButton(hwndDlg, IDC_ADD_AUTH, (nAddAuth == 1));
-			CheckDlgButton(hwndDlg, IDC_WEBAWARE, DBGetContactSettingByte(NULL, gpszICQProtoName, "WebAware", 0));
-			CheckDlgButton(hwndDlg, IDC_PUBLISHPRIMARY, DBGetContactSettingByte(NULL, gpszICQProtoName, "PublishPrimaryEmail", 0));
-			CheckDlgButton(hwndDlg, IDC_STATUSMSG_CLIST, DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyCList", 0));
-			CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyVisible", 0));
-			if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyCList", 0))
+			CheckDlgButton(hwndDlg, IDC_WEBAWARE, ICQGetContactSettingByte(NULL, "WebAware", 0));
+			CheckDlgButton(hwndDlg, IDC_PUBLISHPRIMARY, ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0));
+			CheckDlgButton(hwndDlg, IDC_STATUSMSG_CLIST, ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0));
+			CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0));
+			if (!ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
 				EnableWindow(GetDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE), FALSE);
-			return TRUE;
-			break;
+
+      return TRUE;
 		}
 		
 	case WM_COMMAND:
@@ -284,7 +283,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			if (IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST)) 
       {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE), TRUE);
-				CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, DBGetContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyVisible", 0));
+				CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0));
 			}
 			else 
       {
@@ -294,27 +293,28 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			break;
 		default:
 			return 0;
-			break;
 		}
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 		
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->code) 
-      {
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code) 
+    {
 			case PSN_APPLY:
-				DBWriteContactSettingByte(NULL, gpszICQProtoName, "WebAware", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_WEBAWARE));
-				DBWriteContactSettingByte(NULL, gpszICQProtoName, "PublishPrimaryEmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_PUBLISHPRIMARY));
-				DBWriteContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyCList", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST));
-				DBWriteContactSettingByte(NULL, gpszICQProtoName, "StatusMsgReplyVisible", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_VISIBLE));
+				ICQWriteContactSettingByte(NULL, "WebAware", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_WEBAWARE));
+				ICQWriteContactSettingByte(NULL, "PublishPrimaryEmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_PUBLISHPRIMARY));
+				ICQWriteContactSettingByte(NULL, "StatusMsgReplyCList", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST));
+				ICQWriteContactSettingByte(NULL, "StatusMsgReplyVisible", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_VISIBLE));
 				if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_AUTH))
-					DBWriteContactSettingByte(NULL, gpszICQProtoName, "DCType", 2);
+					ICQWriteContactSettingByte(NULL, "DCType", 2);
 				else if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_CLIST))
-					DBWriteContactSettingByte(NULL, gpszICQProtoName, "DCType", 1);
-				else DBWriteContactSettingByte(NULL, gpszICQProtoName, "DCType", 0);
+					ICQWriteContactSettingByte(NULL, "DCType", 1);
+				else 
+          ICQWriteContactSettingByte(NULL, "DCType", 0);
 				if (IsDlgButtonChecked(hwndDlg, IDC_ADD_AUTH))
-					DBWriteContactSettingByte(NULL, gpszICQProtoName, "Auth", 1);
-				else DBWriteContactSettingByte(NULL, gpszICQProtoName, "Auth", 0);
+					ICQWriteContactSettingByte(NULL, "Auth", 1);
+				else 
+          ICQWriteContactSettingByte(NULL, "Auth", 0);
 				
 				
 				if (icqOnline)
@@ -334,9 +334,9 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					ppackLELNTSfromDB(&buf ,&buflen, "Street");
 					ppackLELNTSfromDB(&buf ,&buflen, "Cellular");
 					ppackLELNTSfromDB(&buf ,&buflen, "ZIP");
-					ppackLEWord(&buf ,&buflen, (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "Country", 0));
-					ppackByte(&buf ,&buflen, (BYTE)DBGetContactSettingByte(NULL, gpszICQProtoName, "Timezone", 0));
-					ppackByte(&buf ,&buflen, (BYTE)!DBGetContactSettingByte(NULL, gpszICQProtoName, "PublishPrimaryEmail", 0));
+					ppackLEWord(&buf ,&buflen, (WORD)ICQGetContactSettingWord(NULL, "Country", 0));
+					ppackByte(&buf ,&buflen, (BYTE)ICQGetContactSettingByte(NULL, "Timezone", 0));
+					ppackByte(&buf ,&buflen, (BYTE)!ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0));
 					*(PWORD)buf = buflen-2;
 					{
             IcqChangeInfo(ICQCHANGEINFO_MAIN, (LPARAM)buf);
@@ -344,21 +344,16 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					
 					buflen=2;
 					
-					if (DBGetContactSettingByte(NULL, gpszICQProtoName, "Auth", 1) == 0)
+					if (ICQGetContactSettingByte(NULL, "Auth", 1) == 0)
 						ppackByte(&buf, &buflen, (BYTE)1);
 					else
 						ppackByte(&buf, &buflen, (BYTE)0);
-					ppackByte(&buf, &buflen, (BYTE)DBGetContactSettingByte(NULL, gpszICQProtoName, "WebAware", 0));
-					ppackByte(&buf, &buflen, (BYTE)DBGetContactSettingByte(NULL, gpszICQProtoName, "DCType", 0));
+					ppackByte(&buf, &buflen, (BYTE)ICQGetContactSettingByte(NULL, "WebAware", 0));
+					ppackByte(&buf, &buflen, (BYTE)ICQGetContactSettingByte(NULL, "DCType", 0));
 					ppackByte(&buf, &buflen, 0); // User type?
 					*(PWORD)buf = buflen-2;
 					{
-//						char* pszServiceName = calloc(1, strlen(gpszICQProtoName)+strlen(PS_CHANGEINFO)+1);
-//						strcpy(pszServiceName, gpszICQProtoName);
-//						strcat(pszServiceName, PS_CHANGEINFO);
             IcqChangeInfo(ICQCHANGEINFO_SECURITY, (LPARAM)buf);
-//						CallService(pszServiceName, ICQCHANGEINFO_SECURITY, (LPARAM)buf);
-//						SAFE_FREE(&pszServiceName);
 					}
 					SAFE_FREE(&buf);
 					
@@ -386,7 +381,6 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 								updateServVisibilityCode(4);
 						}
 					}
-					
 				}
 				return TRUE;
 			}
@@ -451,20 +445,20 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       int i;
 
       TranslateDialogDefault(hwndDlg);
-      bData = DBGetContactSettingByte(NULL, gpszICQProtoName, "UtfEnabled", DEFAULT_UTF_ENABLED);
+      bData = ICQGetContactSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
       CheckDlgButton(hwndDlg, IDC_UTFENABLE, bData?TRUE:FALSE);
       CheckDlgButton(hwndDlg, IDC_UTFALL, bData==2?TRUE:FALSE);
       icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, sizeof(icqUnicodeControls)/sizeof(icqUnicodeControls[0]), bData?TRUE:FALSE);
-      CheckDlgButton(hwndDlg, IDC_TEMPVISIBLE, DBGetContactSettingByte(NULL,gpszICQProtoName,"TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED));
-      bData = DBGetContactSettingByte(NULL, gpszICQProtoName, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
+      CheckDlgButton(hwndDlg, IDC_TEMPVISIBLE, ICQGetContactSettingByte(NULL, "TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED));
+      bData = ICQGetContactSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
       CheckDlgButton(hwndDlg, IDC_DCENABLE, bData?TRUE:FALSE);
       CheckDlgButton(hwndDlg, IDC_DCPASSIVE, bData==1?TRUE:FALSE);
       icq_EnableMultipleControls(hwndDlg, icqDCMsgControls, sizeof(icqDCMsgControls)/sizeof(icqDCMsgControls[0]), bData?TRUE:FALSE);
-      CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED));
-      CheckDlgButton(hwndDlg, IDC_AIMENABLE, DBGetContactSettingByte(NULL,gpszICQProtoName,"AimEnabled",DEFAULT_AIM_ENABLED));
+      CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, ICQGetContactSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED));
+      CheckDlgButton(hwndDlg, IDC_AIMENABLE, ICQGetContactSettingByte(NULL, "AimEnabled",DEFAULT_AIM_ENABLED));
 
       hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
-      sCodePage = DBGetContactSettingDword(NULL, gpszICQProtoName, "UtfCodepage", CP_ACP);
+      sCodePage = ICQGetContactSettingDword(NULL, "UtfCodepage", CP_ACP);
       EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
       SendDlgItemMessageA(hwndDlg, IDC_UTFCODEPAGE, CB_INSERTSTRING, 0, (LPARAM)Translate("System default codepage"));
       if(sCodePage == 0)
@@ -505,19 +499,19 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       {
         int i = SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCURSEL, 0, 0);
         gbUtfCodepage = SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0);
-        DBWriteContactSettingDword(NULL, gpszICQProtoName, "UtfCodepage", gbUtfCodepage);
+        ICQWriteContactSettingDword(NULL, "UtfCodepage", gbUtfCodepage);
       }
-      DBWriteContactSettingByte(NULL, gpszICQProtoName, "UtfEnabled", gbUtfEnabled);
+      ICQWriteContactSettingByte(NULL, "UtfEnabled", gbUtfEnabled);
       gbTempVisListEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_TEMPVISIBLE);
-      DBWriteContactSettingByte(NULL, gpszICQProtoName, "TempVisListEnabled", gbTempVisListEnabled);
+      ICQWriteContactSettingByte(NULL, "TempVisListEnabled", gbTempVisListEnabled);
       if (IsDlgButtonChecked(hwndDlg, IDC_DCENABLE))
         gbDCMsgEnabled = IsDlgButtonChecked(hwndDlg, IDC_DCPASSIVE)?1:2;
       else
         gbDCMsgEnabled = 0;
-      DBWriteContactSettingByte(NULL, gpszICQProtoName, "DirectMessaging", gbDCMsgEnabled);
+      ICQWriteContactSettingByte(NULL, "DirectMessaging", gbDCMsgEnabled);
       gbXStatusEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE);
-      DBWriteContactSettingByte(NULL, gpszICQProtoName, "XStatusEnabled", gbXStatusEnabled);
-//      DBWriteContactSettingByte(NULL, gpszICQProtoName, "AimEnabled", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_AIMENABLE));
+      ICQWriteContactSettingByte(NULL, "XStatusEnabled", gbXStatusEnabled);
+//      ICQWriteContactSettingByte(NULL, "AimEnabled", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_AIMENABLE));
       return TRUE;
     }
     break;
@@ -535,18 +529,18 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
   {
   case WM_INITDIALOG:
     TranslateDialogDefault(hwndDlg);
-    CheckDlgButton(hwndDlg, IDC_ENABLE, DBGetContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",DEFAULT_SS_ENABLED));
-    CheckDlgButton(hwndDlg, IDC_ADDSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",DEFAULT_SS_ADDSERVER));
-    CheckDlgButton(hwndDlg, IDC_LOADFROMSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",DEFAULT_SS_LOAD));
-    CheckDlgButton(hwndDlg, IDC_SAVETOSERVER, DBGetContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",DEFAULT_SS_STORE));
-    CheckDlgButton(hwndDlg, IDC_ENABLEAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",DEFAULT_AVATARS_ENABLED));
-    CheckDlgButton(hwndDlg, IDC_AUTOLOADAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",DEFAULT_LOAD_AVATARS));
-    CheckDlgButton(hwndDlg, IDC_LINKAVATARS, DBGetContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLink",DEFAULT_LINK_AVATARS));
+    CheckDlgButton(hwndDlg, IDC_ENABLE, ICQGetContactSettingByte(NULL, "UseServerCList",DEFAULT_SS_ENABLED));
+    CheckDlgButton(hwndDlg, IDC_ADDSERVER, ICQGetContactSettingByte(NULL, "ServerAddRemove",DEFAULT_SS_ADDSERVER));
+    CheckDlgButton(hwndDlg, IDC_LOADFROMSERVER, ICQGetContactSettingByte(NULL, "LoadServerDetails",DEFAULT_SS_LOAD));
+    CheckDlgButton(hwndDlg, IDC_SAVETOSERVER, ICQGetContactSettingByte(NULL, "StoreServerDetails",DEFAULT_SS_STORE));
+    CheckDlgButton(hwndDlg, IDC_ENABLEAVATARS, ICQGetContactSettingByte(NULL, "AvatarsEnabled",DEFAULT_AVATARS_ENABLED));
+    CheckDlgButton(hwndDlg, IDC_AUTOLOADAVATARS, ICQGetContactSettingByte(NULL, "AvatarsAutoLoad",DEFAULT_LOAD_AVATARS));
+    CheckDlgButton(hwndDlg, IDC_LINKAVATARS, ICQGetContactSettingByte(NULL, "AvatarsAutoLink",DEFAULT_LINK_AVATARS));
 
     icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), 
-      DBGetContactSettingByte(NULL, gpszICQProtoName, "UseServerCList", DEFAULT_SS_ENABLED)?TRUE:FALSE);
+      ICQGetContactSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED)?TRUE:FALSE);
     icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), 
-      DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED)?TRUE:FALSE);
+      ICQGetContactSettingByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED)?TRUE:FALSE);
 
     if (icqOnline)
     {
@@ -584,13 +578,13 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
     switch (((LPNMHDR)lParam)->code)
     {
     case PSN_APPLY:
-      DBWriteContactSettingByte(NULL,gpszICQProtoName,"UseServerCList",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLE));
-      DBWriteContactSettingByte(NULL,gpszICQProtoName,"ServerAddRemove",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDSERVER));
-      DBWriteContactSettingByte(NULL,gpszICQProtoName,"LoadServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOADFROMSERVER));
-      DBWriteContactSettingByte(NULL,gpszICQProtoName,"StoreServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SAVETOSERVER));
-      DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLEAVATARS));
-      DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLoad",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOLOADAVATARS));
-      DBWriteContactSettingByte(NULL,gpszICQProtoName,"AvatarsAutoLink",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LINKAVATARS));
+      ICQWriteContactSettingByte(NULL,"UseServerCList",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLE));
+      ICQWriteContactSettingByte(NULL,"ServerAddRemove",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDSERVER));
+      ICQWriteContactSettingByte(NULL,"LoadServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOADFROMSERVER));
+      ICQWriteContactSettingByte(NULL,"StoreServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SAVETOSERVER));
+      ICQWriteContactSettingByte(NULL,"AvatarsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLEAVATARS));
+      ICQWriteContactSettingByte(NULL,"AvatarsAutoLoad",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOLOADAVATARS));
+      ICQWriteContactSettingByte(NULL,"AvatarsAutoLink",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LINKAVATARS));
 
       return TRUE;
     }

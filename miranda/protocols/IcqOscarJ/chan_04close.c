@@ -65,7 +65,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	WORD wError;
 	NETLIBOPENCONNECTION nloc = {0};
 
-  if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0) || !DBGetContactSettingByte(NULL, gpszICQProtoName, "NLUseProxy", 0))
+  if (!ICQGetContactSettingByte(NULL, "UseGateway", 0) || !ICQGetContactSettingByte(NULL, "NLUseProxy", 0))
   { // close connection only if not in gateway mode
     Netlib_CloseHandle(hServerConn);
     hServerConn = NULL;
@@ -158,7 +158,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	nloc.szHost = servip;
 	nloc.wPort = (WORD)atoi(&newServer[i]);
 
-  if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0) || !DBGetContactSettingByte(NULL, gpszICQProtoName, "NLUseProxy", 0))
+  if (!ICQGetContactSettingByte(NULL, "UseGateway", 0) || !ICQGetContactSettingByte(NULL, "NLUseProxy", 0))
   {
     { /* Time to release packet receiver, connection already closed */
       Netlib_CloseHandle(hServerPacketRecver);
@@ -248,7 +248,7 @@ static void handleMigration()
 	if (port = strrchr(migratedServer, ':'))
 		nloc.wPort = (WORD)atoi(port + 1);
 	if (!nloc.wPort)
-		nloc.wPort = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "OscarPort", DEFAULT_SERVER_PORT);
+		nloc.wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
 	if (!nloc.wPort)
 		nloc.wPort = (WORD)RandRange(1024, 65535);
 
@@ -256,7 +256,7 @@ static void handleMigration()
 	nloc.flags = 0;
 	nloc.szHost = servip;
 
-  if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "UseGateway", 0) || !DBGetContactSettingByte(NULL, gpszICQProtoName, "NLUseProxy", 0))
+  if (!ICQGetContactSettingByte(NULL, "UseGateway", 0) || !ICQGetContactSettingByte(NULL, "NLUseProxy", 0))
   {
 	  // Open connection to new server
 	  hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);

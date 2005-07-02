@@ -137,8 +137,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       servlistcookie* ack;
       DWORD dwCookie;
 
-      dwLastUpdate = DBGetContactSettingDword(NULL, gpszICQProtoName, "SrvLastUpdate", 0);
-      wRecordCount = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "SrvRecordCount", 0);
+      dwLastUpdate = ICQGetContactSettingDword(NULL, "SrvLastUpdate", 0);
+      wRecordCount = ICQGetContactSettingWord(NULL, "SrvRecordCount", 0);
 
       // CLI_REQLISTS - we want to use SSI
       packet.wLen = 10;
@@ -312,9 +312,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 				dwLocalExternalIP = getDWordFromChain(chain, 10, 1); 
 
         dwValue = getDWordFromChain(chain, 5, 1); 
-        if (dwValue) DBWriteContactSettingDword(NULL, gpszICQProtoName, "MemberTS", dwValue);
+        if (dwValue) ICQWriteContactSettingDword(NULL, "MemberTS", dwValue);
 
-        DBWriteContactSettingDword(NULL, gpszICQProtoName, "LogonTS", time(NULL));
+        ICQWriteContactSettingDword(NULL, "LogonTS", time(NULL));
 
 				disposeChain(&chain);
 
@@ -347,7 +347,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 				icq_RescanInfoUpdate();
 
 				// Start sending Keep-Alive packets
-				if (DBGetContactSettingByte(NULL, gpszICQProtoName, "KeepAlive", 0))
+				if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
 					forkthread(icq_keepAliveThread, 0, NULL);
 			}
 		}
@@ -427,7 +427,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       nloc.cbSize = sizeof(nloc); // establish connection
       nloc.flags = 0;
       nloc.szHost = pServer; // this is horrible assumption - there should not be port
-      nloc.wPort = (WORD)DBGetContactSettingWord(NULL, gpszICQProtoName, "OscarPort", DEFAULT_SERVER_PORT);
+      nloc.wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
 
       hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
       if (!hConnection && (GetLastError() == 87))
@@ -462,7 +462,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       {
         case 1: // our avatar is on the server, store hash
         {
-          DBWriteContactSettingBlob(NULL, gpszICQProtoName, "AvatarHash", pBuffer, 0x14);
+          ICQWriteContactSettingBlob(NULL, "AvatarHash", pBuffer, 0x14);
           
           setUserInfo();
 
@@ -479,7 +479,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
           if (!gbSsiEnabled) break; // we could not change serv-list if it is disabled...
 
-          if (DBGetContactSetting(NULL, gpszICQProtoName, "AvatarFile", &dbv))
+          if (ICQGetContactSetting(NULL, "AvatarFile", &dbv))
           { // we have no file to upload, remove hash from server
             Netlib_Logf(ghServerNetlibUser, "We do not have avatar, removing hash.");
             updateServAvatarHash(NULL, 0);
@@ -640,7 +640,7 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
-			if (dwUIN = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0))
+			if (dwUIN = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
 			{
 				_itoa(dwUIN, szUin, 10);
 				szLen[0] = strlen(szUin);
@@ -649,11 +649,11 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 				{
 
 				case BUL_VISIBLE:
-					add = ID_STATUS_ONLINE == DBGetContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", 0);
+					add = ID_STATUS_ONLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
 					break;
 
 				case BUL_INVISIBLE:
-					add = ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", 0);
+					add = ID_STATUS_OFFLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
 					break;
 
 				default:
@@ -666,8 +666,8 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
           // TODO: re-enabled, should work properly, needs more testing
           // This is temporarily disabled cause we cant rely on the Auth flag. 
           // The negative thing is that some status updates will arrive twice, sometimes contradicting themselves
-          if (gbSsiEnabled && DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0) &&
-            !DBGetContactSettingByte(hContact, gpszICQProtoName, "Auth", 0))
+          if (gbSsiEnabled && ICQGetContactSettingWord(hContact, "ServerId", 0) &&
+            !ICQGetContactSettingByte(hContact, "Auth", 0))
             add = 0;
 
 					// Never add hidden contacts to CS list
@@ -738,7 +738,7 @@ void setUserInfo()
 { // CLI_SETUSERINFO
   icq_packet packet;
   WORD wAdditionalData = 0;
-  BYTE bXStatus = DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusId", 0);
+  BYTE bXStatus = gbXStatusEnabled?ICQGetContactSettingByte(NULL, "XStatusId", 0):0;
 
   if (gbAimEnabled)
     wAdditionalData += 16;
@@ -922,11 +922,11 @@ void handleServUINSettings(int nPort, int nIP)
 
 
 		// Webaware setting bit flag
-		if (DBGetContactSettingByte(NULL, gpszICQProtoName, "WebAware", 0))
+		if (ICQGetContactSettingByte(NULL, "WebAware", 0))
 			wFlags = STATUS_WEBAWARE;
 
 		// DC setting bit flag
-		switch (DBGetContactSettingByte(NULL, gpszICQProtoName, "DCType", 0))
+		switch (ICQGetContactSettingByte(NULL, "DCType", 0))
 		{
     case 0:
       break;

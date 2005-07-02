@@ -314,7 +314,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 
 					// Save tick value
-					DBWriteContactSettingDword(ccs.hContact, gpszICQProtoName, "TickTS", time(NULL) - (dwTS1/1000));
+					ICQWriteContactSettingDword(ccs.hContact, "TickTS", time(NULL) - (dwTS1/1000));
 				}
 				else
 				{
@@ -417,14 +417,14 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
         if (hContact != INVALID_HANDLE_VALUE)
         {
           if (dwExternalIP = getDWordFromChain(chain, 0x03, 1))
-            DBWriteContactSettingDword(hContact, gpszICQProtoName, "RealIP", dwExternalIP);
+            ICQWriteContactSettingDword(hContact, "RealIP", dwExternalIP);
           if (dwIP = getDWordFromChain(chain, 0x04, 1))
-            DBWriteContactSettingDword(hContact, gpszICQProtoName, "IP", dwIP);
+            ICQWriteContactSettingDword(hContact, "IP", dwIP);
           if (wPort = getWordFromChain(chain, 0x05, 1))
-            DBWriteContactSettingWord(hContact, gpszICQProtoName, "UserPort", wPort);
+            ICQWriteContactSettingWord(hContact, "UserPort", wPort);
 
           // Save tick value
-          DBWriteContactSettingDword(hContact, gpszICQProtoName, "TickTS", time(NULL) - (dwID1/1000));
+          ICQWriteContactSettingDword(hContact, "TickTS", time(NULL) - (dwID1/1000));
         }
 
         // Parse the next message level
@@ -482,10 +482,10 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
                 unpackLEDWord(&buf, &dwPort);
               unpackLEWord(&buf, &wVersion);
 
-              DBWriteContactSettingDword(hContact, gpszICQProtoName, "IP", dwIp);
-              DBWriteContactSettingWord(hContact, gpszICQProtoName, "UserPort", (WORD)dwPort);
-              DBWriteContactSettingByte(hContact, gpszICQProtoName, "DCType", bMode);
-              DBWriteContactSettingWord(hContact, gpszICQProtoName, "Version", wVersion);
+              ICQWriteContactSettingDword(hContact, "IP", dwIp);
+              ICQWriteContactSettingWord(hContact,  "UserPort", (WORD)dwPort);
+              ICQWriteContactSettingByte(hContact,  "DCType", bMode);
+              ICQWriteContactSettingWord(hContact,  "Version", wVersion);
               if (wVersion>6)
               {
                 unpackLEDWord(&buf, &dwId);
@@ -555,7 +555,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 		wLen -= 2;
 
 		if (hContact != INVALID_HANDLE_VALUE)
-			DBWriteContactSettingWord(hContact, gpszICQProtoName, "Version", wVersion);
+			ICQWriteContactSettingWord(hContact, "Version", wVersion);
 
     unpackDWord(&pDataBuf, &dwGuid1); // plugin type GUID
     unpackDWord(&pDataBuf, &dwGuid2);
@@ -863,9 +863,16 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 			unpackByte(&pmsg, &bFlags);
 			unpackLEWord(&pmsg, &wMsgLen);
 
-			handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
+      if (bMsgType == 0 && wMsgLen == 1)
+      {
+        Netlib_Logf(ghServerNetlibUser, "User %u probably checks his ignore state.", dwUin);
+      }
+      else
+      {
+			  handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
 
-			Netlib_Logf(ghServerNetlibUser, "TYPE4 message thru server from %d, message type %d", dwUin, bMsgType);
+			  Netlib_Logf(ghServerNetlibUser, "TYPE4 message thru server from %d, message type %d", dwUin, bMsgType);
+      }
 		}
 		else
 		{
@@ -1206,8 +1213,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 				while ((dwGuidLen >= 38) && (dwDataLen >= dwGuidLen))
 				{
 					if (!strncmp(pMsg, CAP_UTF8MSGS, 38))
-					{
-						// Found UTF8 cap, convert message to ansi
+          { // Found UTF8 cap, convert message to ansi
 						char *szAnsiMessage = NULL;
 
 						if (utf8_decode(szMsg, &szAnsiMessage))
@@ -1237,6 +1243,10 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
 						break;
 					}
+          else if (!strncmp(pMsg, CAP_RTFMSGS, 38))
+          { // Found RichText cap
+            Netlib_Logf(ghServerNetlibUser, "Warning: User %u sends us RichText.");
+          }
 
 					dwGuidLen -= 38;
 					dwDataLen -= 38;
@@ -1375,11 +1385,11 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
 
 			if (nMsgFields < 3
-			    || (nContacts = strtol(pszMsgField[0], &pszNContactsEnd, 10)) == 0
+		    || (nContacts = strtol(pszMsgField[0], &pszNContactsEnd, 10)) == 0
 				|| pszNContactsEnd - pszMsgField[0] != (int)strlen(pszMsgField[0])
 				|| nMsgFields < nContacts * 2 + 1)
 			{
-				Netlib_Logf(ghServerNetlibUser, "Malformed contacts message");
+				Netlib_Logf(ghServerNetlibUser, "Malformed contacts message%s", "");
 				break;
 			}
 
@@ -1397,7 +1407,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
 			if (!valid)
 			{
-				Netlib_Logf(ghServerNetlibUser, "Malformed contacts message (most probably contained AIM contacts)");
+				Netlib_Logf(ghServerNetlibUser, "Malformed contacts message%s", " (most probably contained AIM contacts)");
 			}
 			else
 			{
@@ -1909,7 +1919,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
 		case 0x0004:     // Recipient is not logged in (resend in a offline message)
 			if (pCookieData->bMessageType != MTYPE_PLUGIN) // TODO: this needs better solution
-        DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+        ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 			pszErrorMessage = strdup(Translate("The user has logged off. Select 'Retry' to send an offline message.\nSNAC(4.1) Error x04"));
 			break;
 
@@ -2014,8 +2024,6 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 {
 	DWORD dwUin;
 	WORD wChannel;
-	BYTE nUIDLen;
-	char* pszUID = NULL;
 	HANDLE hContact;
 	message_cookie_data* pCookieData;
 
@@ -2033,24 +2041,10 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 	unpackWord(&buf, &wChannel);
 	wLen -= 2;
 
-
 	// Sender
-	unpackByte(&buf, &nUIDLen);
-	wLen -= 1;
-	if ( (nUIDLen < 1) || ((wLen - nUIDLen) != 0) ) {
-		Netlib_Logf(ghServerNetlibUser, "Error: Malformed UID");
-		return;
-	}
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
-	if (!(pszUID = malloc(nUIDLen+1)))
-		return; // Memory failure
-	unpackString(&buf, pszUID, nUIDLen);
-	pszUID[nUIDLen] = '\0';
-	wLen -= nUIDLen;
-	dwUin = atoi(pszUID);
-	SAFE_FREE(&pszUID);
-	hContact = HContactFromUIN(dwUin, 0);
-
+  hContact = HContactFromUIN(dwUin, 0);
 
 	if (FindCookie((WORD)dwSequence, &dwUin, &pCookieData))
 	{
@@ -2058,39 +2052,30 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 		// server ack should be ignored here.
 		if (pCookieData && (pCookieData->nAckType == ACKTYPE_SERVER))
 		{
-
 			hContact = HContactFromUIN(dwUin, 0);
 
 			if ((hContact != NULL) && (hContact != INVALID_HANDLE_VALUE))
 			{
+        int ackType;
+        int ackRes = ACKRESULT_SUCCESS;
 
 				switch (pCookieData->bMessageType)
 				{
-
 				case MTYPE_PLAIN:
-					ProtoBroadcastAck(gpszICQProtoName, hContact,
-						ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwSequence, 0);
-					SAFE_FREE(&pCookieData);
-					FreeCookie((WORD)dwSequence);
+          ackType = ACKTYPE_MESSAGE;
 					break;
 
 				case MTYPE_CONTACTS:
-					ProtoBroadcastAck(gpszICQProtoName, hContact,
-						ACKTYPE_CONTACTS, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwSequence, 0);
-					SAFE_FREE(&pCookieData);
-					FreeCookie((WORD)dwSequence);
+          ackType = ACKTYPE_CONTACTS;
 					break;
 
 				case MTYPE_URL:
-					ProtoBroadcastAck(gpszICQProtoName, hContact,
-						ACKTYPE_URL, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwSequence, 0);
-					SAFE_FREE(&pCookieData);
-					FreeCookie((WORD)dwSequence);
+          ackType = ACKTYPE_URL;
 					break;
 
 				case MTYPE_FILEREQ:
-					ProtoBroadcastAck(gpszICQProtoName, hContact,
-						ACKTYPE_FILE, ACKRESULT_SENTREQUEST, (HANDLE)(WORD)dwSequence, 0);
+          ackType = ACKTYPE_FILE;
+          ackRes = ACKRESULT_SENTREQUEST;
 					// Note 1: We are not allowed to free the cookie here because it
 					// contains the filetransfer struct that we will need later
 					// Note 2: The cookiedata is NOT a message_cookie_data*, it is a
@@ -2098,10 +2083,17 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 					break;
 
 				default:
-          SAFE_FREE(&pCookieData); // this could be a bad idea, but I think it is safe
-          FreeCookie((WORD)dwSequence);
+          ackType = MTYPE_UNKNOWN;
 					break;
 				}
+        if (ackType != MTYPE_UNKNOWN)
+					ProtoBroadcastAck(gpszICQProtoName, hContact,	ackType, ackRes, (HANDLE)(WORD)dwSequence, 0);
+
+        if (pCookieData->bMessageType != MTYPE_FILEREQ)
+        {
+          SAFE_FREE(&pCookieData); // this could be a bad idea, but I think it is safe
+          FreeCookie((WORD)dwSequence);
+        }
 			}
 		}
 		else
@@ -2133,7 +2125,6 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 	// Message channel?
 	unpackWord(&buf, &wChannel);
 	wLen -= 2;
-
 
 	// Sender
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
@@ -2221,8 +2212,6 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 	DWORD dwUin;
 	WORD wChannel;
 	WORD wNotification;
-	BYTE nUIDLen;
-	char* pszUID;
 	HANDLE hContact;
 
 
@@ -2249,24 +2238,9 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 	unpackWord(&buf, &wChannel);
 	wLen -= 2;
 
-
 	// Sender
-	unpackByte(&buf, &nUIDLen);
-	wLen -= 1;
-	if ( (nUIDLen < 1) || ((wLen - nUIDLen) < 2) )
-	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Malformed UID");
-		return;
-	}
-
-	if (!(pszUID = malloc(nUIDLen+1)))
-		return; // Memory failure
-	unpackString(&buf, pszUID, nUIDLen);
-	pszUID[nUIDLen] = '\0';
-	wLen -= nUIDLen;
-	dwUin = atoi(pszUID);
+  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 	hContact = HContactFromUIN(dwUin, 0);
-
 
 	// Typing notification code
 	unpackWord(&buf, &wNotification);
@@ -2293,8 +2267,6 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 		break;
 	}
 
-	// Clean up and return
-	SAFE_FREE(&pszUID);
 	return;
 }
 
@@ -2303,16 +2275,14 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 {
 	icq_packet p;
-	unsigned char pszUin[10];
 	BYTE byUinlen;
 	DWORD dwUin;
 
 	_ASSERTE((wMTNCode == MTN_FINISHED) || (wMTNCode == MTN_TYPED) || (wMTNCode == MTN_BEGUN));
 
 
-	dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-	ltoa(dwUin, pszUin, 10);
-	byUinlen = strlen(pszUin);
+	dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
+  byUinlen = getUINLen(dwUin);
 
 	p.wLen = 23 + byUinlen;
 	write_flap(&p, ICQ_DATA_CHAN);
@@ -2320,8 +2290,7 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packWord(&p, 0x01);               // Channel
-	packByte(&p, byUinlen);           // Length of user id
-	packBuffer(&p, pszUin, byUinlen); // Receiving user's id
+  packUIN(&p, dwUin);
 	packWord(&p, wMTNCode);           // Notification type
 
 	sendServPacket(&p);

@@ -75,6 +75,7 @@
 
 // ICQ plugin includes
 #include "globals.h"
+#include "icq_db.h"
 #include "capabilities.h"
 #include "i18n.h"
 #include "icq_packet.h"

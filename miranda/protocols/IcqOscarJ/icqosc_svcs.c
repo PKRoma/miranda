@@ -61,7 +61,7 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 			PF1_EXTSEARCHUI | PF1_SEARCHBYEMAIL | PF1_SEARCHBYNAME | PF1_CHANGEINFO |
             PF1_NUMERICUSERID |
 			PF1_ADDED | PF1_CONTACT;
-		if (gbSsiEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+		if (gbSsiEnabled && ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
 			nReturn |= PF1_SERVERCLIST;
 		break;
 
@@ -146,7 +146,7 @@ int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
 
 	if (bPrivacy) return 0;
 
-  DBWriteContactSettingDword(NULL, gpszICQProtoName, "IdleTS", bIdle ? time(0) : 0);
+  ICQWriteContactSettingDword(NULL, "IdleTS", bIdle ? time(0) : 0);
 
   if (gbTempVisListEnabled) // remove temporary visible users
     clearTemporaryVisibleList();
@@ -167,18 +167,18 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
   if (!gbAvatarsEnabled) return GAIR_NOAVATAR;
 
-  if (DBGetContactSetting(pai->hContact, gpszICQProtoName, "AvatarHash", &dbv))
+  if (ICQGetContactSetting(pai->hContact, "AvatarHash", &dbv))
     return GAIR_NOAVATAR; // we did not found avatar hash - no avatar available
 
-  dwLocalUIN = DBGetContactSettingDword(pai->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-  dwPaFormat = DBGetContactSettingByte(pai->hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+  dwLocalUIN = ICQGetContactSettingDword(pai->hContact, UNIQUEIDSETTING, 0);
+  dwPaFormat = ICQGetContactSettingByte(pai->hContact, "AvatarType", PA_FORMAT_UNKNOWN);
   if (dwPaFormat != PA_FORMAT_UNKNOWN)
   { // we know the format, test file
     GetFullAvatarFileName(dwLocalUIN, dwPaFormat, pai->filename, MAX_PATH);
 
     pai->format = dwPaFormat; 
 
-    if (!DBGetContactSetting(pai->hContact, gpszICQProtoName, "AvatarSaved", &dbvSaved) && !memcmp(dbv.pbVal, dbvSaved.pbVal, 0x14))
+    if (!ICQGetContactSetting(pai->hContact, "AvatarSaved", &dbvSaved) && !memcmp(dbv.pbVal, dbvSaved.pbVal, 0x14))
     { // hashes are the same
       if (access(pai->filename, 0) == 0)
       {
@@ -248,7 +248,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 					UpdateGlobalSettings();
 
 					// Read UIN from database
-					dwLocalUIN = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);
+					dwLocalUIN = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
 					if (dwLocalUIN == 0)
 					{
 						SetCurrentStatus(ID_STATUS_OFFLINE);
@@ -262,7 +262,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 					SetCurrentStatus(ID_STATUS_CONNECTING);
 
 					// Read password from database
-					DBGetContactSetting(NULL, gpszICQProtoName, "Password", &dbvPassword);
+					ICQGetContactSetting(NULL, "Password", &dbvPassword);
 					if ( dbvPassword.pszVal && (strlen(dbvPassword.pszVal) > 0) ) 
           {
 						CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbvPassword.pszVal) + 1, (LPARAM)dbvPassword.pszVal);
@@ -713,7 +713,7 @@ int IcqGetInfo(WPARAM wParam, LPARAM lParam)
 	if (lParam && icqOnline)
   { // TODO: add checking for SGIF_ONOPEN, otherwise max one per 10sec
 		CCSDATA* ccs = (CCSDATA*)lParam;
-		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+		DWORD dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
 
 		messageRate -= (GetTickCount() - lastMessageTick)/10;
 		if (messageRate<0) // TODO: this is bad, needs centralising
@@ -740,7 +740,7 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
 	if (lParam)
 	{
 		CCSDATA* ccs = (CCSDATA*)lParam;
-		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+		DWORD dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
 
 		if (dwUin && icqOnline && ccs->hContact && ccs->lParam && ccs->wParam)
 		{
@@ -772,7 +772,7 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
 	{
 		CCSDATA *ccs = (CCSDATA *)lParam;
 		filetransfer *ft = (filetransfer*)ccs->wParam;
-		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+		DWORD dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
 
 		if (icqOnline && dwUin && ccs->wParam && ccs->hContact) 
     {
@@ -797,7 +797,7 @@ int IcqFileCancel(WPARAM wParam, LPARAM lParam)
 	if (lParam /*&& icqOnline*/)
 	{
 		CCSDATA* ccs = (CCSDATA*)lParam;
-		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+		DWORD dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
 
 
 		if (ccs->hContact && dwUin && ccs->wParam)
@@ -847,7 +847,7 @@ int IcqSetApparentMode(WPARAM wParam, LPARAM lParam)
 	if (lParam)
 	{
 		CCSDATA* ccs = (CCSDATA*)lParam;
-		DWORD uin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+		DWORD uin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
 
 
 		if (ccs->hContact && uin != 0)
@@ -855,12 +855,12 @@ int IcqSetApparentMode(WPARAM wParam, LPARAM lParam)
 			// Only 3 modes are supported
 			if (ccs->wParam == 0 || ccs->wParam == ID_STATUS_ONLINE || ccs->wParam == ID_STATUS_OFFLINE)
 			{
-				int oldMode = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "ApparentMode", 0);
+				int oldMode = ICQGetContactSettingWord(ccs->hContact, "ApparentMode", 0);
 
 				// Dont send redundant updates
 				if ((int)ccs->wParam != oldMode)
 				{
-					DBWriteContactSettingWord(ccs->hContact, gpszICQProtoName, "ApparentMode", (WORD)ccs->wParam);
+					ICQWriteContactSettingWord(ccs->hContact, "ApparentMode", (WORD)ccs->wParam);
 
 					// Not being online is only an error when in SS mode. This is not handled
 					// yet so we just ignore this for now.
@@ -888,14 +888,14 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 	if (lParam && icqOnline)
 	{
 		CCSDATA* ccs = (CCSDATA*)lParam;
-		DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+		DWORD dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
 
 		if (dwUin)
 		{
 			int wStatus;
 			int wMessageType = 0;
 
-			wStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			wStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
 
 			switch(wStatus)
 			{
@@ -959,8 +959,8 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
       pszText = (char*)ccs->lParam;
 
-			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-			wRecipientStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
+			wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
 
 			// Failure scenarios
 			if (dwUin == 0)
@@ -984,7 +984,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 				message_cookie_data* pCookieData;
 
         if (wRecipientStatus != ID_STATUS_OFFLINE && gbUtfEnabled==2 && !IsUSASCII(pszText, strlen(pszText)) 
-          && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && DBGetContactSettingByte(ccs->hContact, gpszICQProtoName, "UnicodeSend", 1))
+          && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
         { // text contains national chars and we should send all this as Unicode, so do it
           char* pszUtf = NULL;
           int nStrSize = MultiByteToWideChar(CP_ACP, 0, pszText, strlen(pszText), (wchar_t*)pszUtf, 0);
@@ -1009,7 +1009,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 				// Set up the ack type
 				pCookieData = malloc(sizeof(message_cookie_data));
 				pCookieData->bMessageType = MTYPE_PLAIN;
-				if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "SlowSend", 1))
+				if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
 					pCookieData->nAckType = ACKTYPE_NONE;
 				else if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
 					(wRecipientStatus == ID_STATUS_OFFLINE))
@@ -1086,14 +1086,14 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 				return IcqSendMessage(wParam, lParam);
 			}
 
-      if (!DBGetContactSettingByte(ccs->hContact, gpszICQProtoName, "UnicodeSend", 1))
+      if (!ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
       { // has the user blocked sending unicode to that user ?
         return IcqSendMessage(wParam, lParam);
       }
 
 			pszText = (wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1); // get the UTF-16 part
-			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-			wRecipientStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
+			wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
 
 			// Failure scenarios
 			if (dwUin == 0)
@@ -1119,7 +1119,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 				// Set up the ack type
 				pCookieData = malloc(sizeof(message_cookie_data));
 				pCookieData->bMessageType = MTYPE_PLAIN;
-				if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "SlowSend", 1))
+				if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
 					pCookieData->nAckType = ACKTYPE_NONE;
 				else if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
 					(wRecipientStatus == ID_STATUS_OFFLINE))
@@ -1195,8 +1195,8 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 			DWORD dwUin;
 
 
-			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-			wRecipientStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
+			wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
 
 			// Failure
 			if (dwUin == 0)
@@ -1224,7 +1224,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 				// Set up the ack type
 				pCookieData = malloc(sizeof(message_cookie_data));
 				pCookieData->bMessageType = MTYPE_URL;
-				if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "SlowSend", 1))
+				if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
 				{
 					pCookieData->nAckType = ACKTYPE_NONE;
 				}
@@ -1316,8 +1316,8 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 			DWORD dwCookie;
 
 
-			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-			wRecipientStatus = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
+			wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
 			nContacts = HIWORD(ccs->wParam);
 
 			// Failures
@@ -1356,7 +1356,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 						szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContactsList[i], 0);
 						if (szProto == NULL || strcmp(szProto, gpszICQProtoName))
 							break; // Abort if a non icq contact is found
-						contacts[i].uin = DBGetContactSettingDword(hContactsList[i], szProto, UNIQUEIDSETTING, 0);
+						contacts[i].uin = ICQGetContactSettingDword(hContactsList[i], UNIQUEIDSETTING, 0);
 						// Todo: update this
 						contacts[i].szNick = _strdup((char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContactsList[i], 0));
 						// Compute this contact's length
@@ -1398,7 +1398,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 						// Set up the ack type
 						pCookieData = malloc(sizeof(message_cookie_data));
 						pCookieData->bMessageType = MTYPE_CONTACTS;
-						if (!DBGetContactSettingByte(NULL, gpszICQProtoName, "SlowSend", 1))
+						if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
 							pCookieData->nAckType = ACKTYPE_NONE;
 						else if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
 							(wRecipientStatus == ID_STATUS_OFFLINE))
@@ -1486,17 +1486,16 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 			HANDLE hContact = ccs->hContact;
 			char** files = (char**)ccs->lParam;
 			char* pszDesc = (char*)ccs->wParam;
-			DWORD dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+			DWORD dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 
 
 			if (dwUin)
 			{
-				if (DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+				if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 				{
 					WORD wClientVersion;
 
-
-					wClientVersion = DBGetContactSettingWord(ccs->hContact, gpszICQProtoName, "Version", 7);
+					wClientVersion = ICQGetContactSettingWord(ccs->hContact, "Version", 7);
 					if (wClientVersion < 7)
 					{
 						Netlib_Logf(ghServerNetlibUser, "IcqSendFile() can't send to version %u", wClientVersion);
@@ -1605,7 +1604,7 @@ int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
 
 		if (ccs->hContact)
 		{
-			DWORD dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+			DWORD dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
 
 			if (dwUin && ccs->lParam)
 			{
@@ -1633,8 +1632,8 @@ int IcqSendYouWereAdded(WPARAM wParam, LPARAM lParam)
 			DWORD dwUin, dwMyUin;
 
 
-			dwUin = DBGetContactSettingDword(ccs->hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
-			dwMyUin = DBGetContactSettingDword(NULL, gpszICQProtoName, UNIQUEIDSETTING, 0);
+			dwUin = ICQGetContactSettingDword(ccs->hContact, UNIQUEIDSETTING, 0);
+			dwMyUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
 
 			if (dwUin)
 			{
@@ -1654,7 +1653,7 @@ int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam)
 {
   if (gnCurrentStatus != ID_STATUS_OFFLINE && gnCurrentStatus != ID_STATUS_CONNECTING && wParam != 0)
   {
-    DWORD dwUin = DBGetContactSettingDword((HANDLE)wParam, gpszICQProtoName, UNIQUEIDSETTING, 0);
+    DWORD dwUin = ICQGetContactSettingDword((HANDLE)wParam, UNIQUEIDSETTING, 0);
     if (dwUin) // send without reason, do we need any ?
       icq_sendGrantAuthServ(dwUin, NULL);
   }

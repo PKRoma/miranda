@@ -375,7 +375,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		{
 			WORD wOldStatus;
 
-			wOldStatus = DBGetContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
+			wOldStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
 			// Get Avatar Hash TLV
 			pTLV = getTLV(pChain, 0x1D, 1);
@@ -387,14 +387,14 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         char szAvatar[MAX_PATH];
         int dwPaFormat;
 
-        if (gbAvatarsEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "AvatarsAutoLoad", 1))
+        if (gbAvatarsEnabled && ICQGetContactSettingByte(NULL, "AvatarsAutoLoad", 1))
         { // check settings, should we request avatar immediatelly
 
-          if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
+          if (ICQGetContactSetting(hContact, "AvatarHash", &dbv))
           { // we not found old hash, i.e. get new avatar
             DBVARIANT dbvHashFile;
 
-            if (!DBGetContactSetting(hContact, gpszICQProtoName, "AvatarSaved", &dbvHashFile))
+            if (!ICQGetContactSetting(hContact, "AvatarSaved", &dbvHashFile))
             { // check saved hash and file, if equal only store hash
               if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
               { // the hash is different, unlink contactphoto
@@ -403,14 +403,14 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               }
               else
               {
-                dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+                dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
 
                 GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
                 if (access(szAvatar, 0) == 0)
                 { // the file is there, link to contactphoto, save hash
                   Netlib_Logf(ghServerNetlibUser, "Avatar is known, hash stored, linked to file.");
 
-                  if (dummy = DBWriteContactSettingBlob(hContact, gpszICQProtoName, "AvatarHash", pTLV->pData, 0x14))
+                  if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
                   {
                     Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
                   }
@@ -439,7 +439,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             }
             else
             { // the hash does not changed, so check if the file exists
-              dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+              dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
               if (dwPaFormat == PA_FORMAT_UNKNOWN)
               { // we do not know the format, get avatar again
                 dwJob = 1;
@@ -470,7 +470,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, new hash stored.");
 
-            if (dummy = DBWriteContactSettingBlob(hContact, gpszICQProtoName, "AvatarHash", pTLV->pData, 0x14))
+            if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
             {
               Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
             }
@@ -487,11 +487,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         else if (gbAvatarsEnabled)
         { // we should not request the avatar, so eventually save the hash and go on
 
-          if (DBGetContactSetting(hContact, gpszICQProtoName, "AvatarHash", &dbv))
+          if (ICQGetContactSetting(hContact, "AvatarHash", &dbv))
           { // we not found old hash, i.e. store avatar hash
             DBVARIANT dbvHashFile;
 
-            if (!DBGetContactSetting(hContact, gpszICQProtoName, "AvatarSaved", &dbvHashFile))
+            if (!ICQGetContactSetting(hContact, "AvatarSaved", &dbvHashFile))
             { // check save hash and file, if equal only store hash
               if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
               { // the hash is different, unlink contactphoto
@@ -499,7 +499,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               }
               else
               {
-                dwPaFormat = DBGetContactSettingByte(hContact, gpszICQProtoName, "AvatarType", PA_FORMAT_UNKNOWN);
+                dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
 
                 GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
                 if (access(szAvatar, 0) == 0)
@@ -529,7 +529,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
             Netlib_Logf(ghServerNetlibUser, "User has Avatar, hash stored.");
 
-            if (dummy = DBWriteContactSettingBlob(hContact, gpszICQProtoName, "AvatarHash", pTLV->pData, 0x14))
+            if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
             {
               Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
             }
@@ -764,7 +764,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       }
 		}
 
-
 		// Free TLV chain
 		disposeChain(&pChain);
 	}
@@ -814,21 +813,21 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   if (hContact != NULL)
   {
     if (szClient == 0) szClient = ""; // if no detection, set uknown
-    DBWriteContactSettingDword(hContact,  gpszICQProtoName, "ClientID",     dwClientId);
+    ICQWriteContactSettingDword(hContact,  "ClientID",     dwClientId);
 
-		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "LogonTS",      dwOnlineSince);
-		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "IP",           dwIP);
-		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "RealIP",       dwRealIP);
-		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "DirectCookie", dwDirectConnCookie);
-    DBWriteContactSettingByte(hContact,   gpszICQProtoName, "DCType",       (BYTE)nTCPFlag);
-		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "UserPort",     (WORD)(dwPort & 0xffff));
-		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "Version",      wVersion);
-		if (szClient != (char*)-1) DBWriteContactSettingString(hContact, gpszICQProtoName, "MirVer", szClient);
-		DBWriteContactSettingWord(hContact,   gpszICQProtoName, "Status",       (WORD)IcqStatusToMiranda(wStatus));
-		DBWriteContactSettingDword(hContact,  gpszICQProtoName, "IdleTS",       tIdleTS);
+		ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
+		ICQWriteContactSettingDword(hContact,  "IP",           dwIP);
+		ICQWriteContactSettingDword(hContact,  "RealIP",       dwRealIP);
+		ICQWriteContactSettingDword(hContact,  "DirectCookie", dwDirectConnCookie);
+    ICQWriteContactSettingByte(hContact,   "DCType",       (BYTE)nTCPFlag);
+		ICQWriteContactSettingWord(hContact,   "UserPort",     (WORD)(dwPort & 0xffff));
+		ICQWriteContactSettingWord(hContact,   "Version",      wVersion);
+		if (szClient != (char*)-1) ICQWriteContactSettingString(hContact, "MirVer", szClient);
+		ICQWriteContactSettingWord(hContact,   "Status",       (WORD)IcqStatusToMiranda(wStatus));
+		ICQWriteContactSettingDword(hContact,  "IdleTS",       tIdleTS);
 
 		// Update info?
-		if ((time(NULL) - DBGetContactSettingDword(hContact, gpszICQProtoName, "InfoTS", 0)) > UPDATE_THRESHOLD)
+		if ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
 			icq_QueueUser(hContact);
 	}
 	else
@@ -857,8 +856,8 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
 	if (hContact != INVALID_HANDLE_VALUE)
 	{
 		Netlib_Logf(ghServerNetlibUser, "%u went offline.", dwUIN);
-		DBWriteContactSettingWord(hContact, gpszICQProtoName, "Status", ID_STATUS_OFFLINE);
-		DBWriteContactSettingDword(hContact, gpszICQProtoName, "IdleTS", 0);
+		ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
     // close Direct Connections to that user
     CloseContactDirectConns(hContact);
     // clear Xtraz status

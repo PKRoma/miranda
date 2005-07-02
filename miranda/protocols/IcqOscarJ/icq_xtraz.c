@@ -83,14 +83,14 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
             char *szResponse;
             int nResponseLen;
             char *szXName, *szXMsg;
-            BYTE dwXId = DBGetContactSettingByte(NULL, gpszICQProtoName, "XStatusId", 0);
+            BYTE dwXId = ICQGetContactSettingByte(NULL, "XStatusId", 0);
             DBVARIANT dbv;
 
             if (dwXId)
             {
               char *szUtf;
 
-              if (!DBGetContactSetting(NULL, gpszICQProtoName, "XStatusName", &dbv))
+              if (!ICQGetContactSetting(NULL, "XStatusName", &dbv))
                 szXName = dbv.pszVal;
               else 
                 szXName = "";
@@ -106,7 +106,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               DBFreeVariant(&dbv);
               szXName = szUtf;
 
-              if (!DBGetContactSetting(NULL, gpszICQProtoName, "XStatusMsg", &dbv))
+              if (!ICQGetContactSetting(NULL, "XStatusMsg", &dbv))
                 szXMsg = dbv.pszVal;
               else
                 szXMsg = "";
@@ -219,7 +219,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
             {
               szNode += 7;
               *szEnd = '\0';
-              if (atoi(szNode) != DBGetContactSettingByte(hContact, gpszICQProtoName, "XStatusId", 0))
+              if (atoi(szNode) != ICQGetContactSettingByte(hContact, "XStatusId", 0))
               { // this is strange - but go on
                 Netlib_Logf(ghServerNetlibUser, "Warning: XStatusIds do not match!");
               }
@@ -235,7 +235,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
               szNode += 7;
               *szEnd = '\0';
               if (!utf8_decode(szNode, &szData)) szData = strdup(szNode);
-              DBWriteContactSettingString(hContact, gpszICQProtoName, "XStatusName", szData);
+              ICQWriteContactSettingString(hContact, "XStatusName", szData);
               SAFE_FREE(&szData);
               *szEnd = ' ';
             }
@@ -249,7 +249,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
               szNode += 6;
               *szEnd = '\0';
               if (!utf8_decode(szNode, &szData)) szData = strdup(szNode);
-              DBWriteContactSettingString(hContact, gpszICQProtoName, "XStatusMsg", szData);
+              ICQWriteContactSettingString(hContact, "XStatusMsg", szData);
               SAFE_FREE(&szData);
             }
           }
@@ -276,13 +276,11 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 {
   char *szQueryBody = MangleXml(szQuery, strlen(szQuery));
   char *szNotifyBody = MangleXml(szNotify, strlen(szNotify));
-  DWORD dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+  DWORD dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
   int nBodyLen = strlennull(szQueryBody) + strlennull(szNotifyBody) + 41;
   char *szBody = (char*)malloc(nBodyLen);
   DWORD dwCookie;
   message_cookie_data* pCookieData;
-
-
 
   nBodyLen = mir_snprintf(szBody, nBodyLen, "<N><QUERY>%s</QUERY><NOTIFY>%s</NOTIFY></N>", szQueryBody, szNotifyBody);
   SAFE_FREE(&szQueryBody);

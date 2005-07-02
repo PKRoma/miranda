@@ -99,7 +99,7 @@ static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
       szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
       if (szProto && !lstrcmp(szProto, gpszICQProtoName))
       {
-        if (DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0))
+        if (ICQGetContactSettingWord(hContact, "ServerId", 0))
           SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, 1);
         else
           bAll = 0;
@@ -332,9 +332,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       case ACTION_ADDBUDDY:
         if (ack->result == ACKRESULT_SUCCESS)
         {
-          DBWriteContactSettingByte(hCurrentContact, gpszICQProtoName, "Auth", 0);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "ServerId", wNewContactId);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "SrvGroupId", wNewGroupId);
+          ICQWriteContactSettingByte(hCurrentContact, "Auth", 0);
+          ICQWriteContactSettingWord(hCurrentContact, "ServerId", wNewContactId);
+          ICQWriteContactSettingWord(hCurrentContact, "SrvGroupId", wNewGroupId);
           break;
         }
         else
@@ -372,9 +372,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       case ACTION_ADDBUDDYAUTH:
         if (ack->result == ACKRESULT_SUCCESS)
         {
-          DBWriteContactSettingByte(hCurrentContact, gpszICQProtoName, "Auth", 1);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "ServerId", wNewContactId);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "SrvGroupId", wNewGroupId);
+          ICQWriteContactSettingByte(hCurrentContact, "Auth", 1);
+          ICQWriteContactSettingWord(hCurrentContact, "ServerId", wNewContactId);
+          ICQWriteContactSettingWord(hCurrentContact, "SrvGroupId", wNewGroupId);
         }
         else
           FreeServerID(wNewContactId, SSIT_ITEM);
@@ -385,9 +385,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         if (ack->result == ACKRESULT_SUCCESS)
         { // clear obsolete settings
           FreeServerID(wNewContactId, SSIT_ITEM);
-          DBDeleteContactSetting(hCurrentContact, gpszICQProtoName, "ServerId");
-          DBDeleteContactSetting(hCurrentContact, gpszICQProtoName, "SrvGroupId");
-          DBDeleteContactSetting(hCurrentContact, gpszICQProtoName, "Auth");
+          ICQDeleteContactSetting(hCurrentContact, "ServerId");
+          ICQDeleteContactSetting(hCurrentContact, "SrvGroupId");
+          ICQDeleteContactSetting(hCurrentContact, "Auth");
         }
         break;
 
@@ -462,9 +462,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       case ACTION_MOVECONTACT:
         if (ack->result == ACKRESULT_SUCCESS)
         {
-          FreeServerID((WORD)DBGetContactSettingWord(hCurrentContact, gpszICQProtoName, "ServerId", 0), SSIT_ITEM);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "ServerId", wNewContactId);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "SrvGroupId", wNewGroupId);
+          FreeServerID(ICQGetContactSettingWord(hCurrentContact, "ServerId", 0), SSIT_ITEM);
+          ICQWriteContactSettingWord(hCurrentContact, "ServerId", wNewContactId);
+          ICQWriteContactSettingWord(hCurrentContact, "SrvGroupId", wNewGroupId);
           dwUploadDelay *= 2; // we double the delay here (2 packets)
         }
         break;
@@ -472,7 +472,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       case ACTION_ADDVISIBLE:
         if (ack->result == ACKRESULT_SUCCESS)
         {
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "SrvPermitId", wNewContactId);
+          ICQWriteContactSettingWord(hCurrentContact, "SrvPermitId", wNewContactId);
         }
         else
           FreeServerID(wNewContactId, SSIT_ITEM);
@@ -481,7 +481,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       case ACTION_ADDINVISIBLE:
         if (ack->result == ACKRESULT_SUCCESS)
         {
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "SrvDenyId", wNewContactId);
+          ICQWriteContactSettingWord(hCurrentContact, "SrvDenyId", wNewContactId);
         }
         else
           FreeServerID(wNewContactId, SSIT_ITEM);
@@ -491,7 +491,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         if (ack->result == ACKRESULT_SUCCESS)
         {
           FreeServerID(wNewContactId, SSIT_ITEM);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "SrvPermitId", 0);
+          ICQWriteContactSettingWord(hCurrentContact, "SrvPermitId", 0);
         }
         break;
 
@@ -499,7 +499,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         if (ack->result == ACKRESULT_SUCCESS)
         {
           FreeServerID(wNewContactId, SSIT_ITEM);
-          DBWriteContactSettingWord(hCurrentContact, gpszICQProtoName, "SrvDenyId", 0);
+          ICQWriteContactSettingWord(hCurrentContact, "SrvDenyId", 0);
         }
         break;
       }
@@ -577,8 +577,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           if (hItem)
           {
             isChecked = SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM)hItem, 0) != 0;
-            isOnServer = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0) != 0;
-            dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+            isOnServer = ICQGetContactSettingWord(hContact, "ServerId", 0) != 0;
+            dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 
             // Is this one out of sync?
             if (dwUin && (isChecked != isOnServer))
@@ -674,8 +674,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 else 
                   AppendToUploadLog(hwndDlg, Translate("Deleting %u..."), dwUin);
 
-                wNewGroupId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
-                wNewContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
+                wNewGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
+                wNewContactId = ICQGetContactSettingWord(hContact, "ServerId", 0);
                 currentAction = ACTION_REMOVEBUDDY;
                 currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, 
                   wNewContactId, wNewGroupId, NULL, NULL, 0, SSI_ITEM_BUDDY);
@@ -687,7 +687,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             }
             else if (dwUin && isChecked)
             { // the contact is and should be on server, check if it is in correct group, move otherwise
-              WORD wCurrentGroupId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvGroupId", 0);
+              WORD wCurrentGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
               DBVARIANT dbv;
 
               pszGroup = NULL;
@@ -717,8 +717,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               }
               if (wNewGroupId && (wNewGroupId != wCurrentGroupId))
               { // we have a group the contact should be in, move it
-                WORD wCurrentContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0);
-                BYTE bAuth = DBGetContactSettingByte(hContact, gpszICQProtoName, "Auth", 0);
+                WORD wCurrentContactId = ICQGetContactSettingWord(hContact, "ServerId", 0);
+                BYTE bAuth = ICQGetContactSettingByte(hContact, "Auth", 0);
 
                 pszNick = NULL;
                 if (!DBGetContactSetting(hContact, "CList", "MyHandle", &dbv))
@@ -776,13 +776,13 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
         while (hContact)
         {
-          WORD wApparentMode = DBGetContactSettingWord(hContact, gpszICQProtoName, "ApparentMode", 0);
-          WORD wDenyId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
-          WORD wPermitId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
-          WORD wIgnoreId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvIgnoreId", 0);
+          WORD wApparentMode = ICQGetContactSettingWord(hContact, "ApparentMode", 0);
+          WORD wDenyId = ICQGetContactSettingWord(hContact, "SrvDenyId", 0);
+          WORD wPermitId = ICQGetContactSettingWord(hContact, "SrvPermitId", 0);
+          WORD wIgnoreId = ICQGetContactSettingWord(hContact, "SrvIgnoreId", 0);
 
           hCurrentContact = hContact;
-          dwUin = DBGetContactSettingDword(hContact, gpszICQProtoName, UNIQUEIDSETTING, 0);
+          dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 
           if (wApparentMode == ID_STATUS_ONLINE)
           { // contact is on the visible list

@@ -734,13 +734,13 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			
 			if (hContact == NULL && bOK && (wPacketLen >= 3))
 			{
-				DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", (BYTE)!(*databuf));
+				ICQWriteContactSettingByte(hContact, "Auth", (BYTE)!(*databuf));
 				databuf += 1;
 
-				DBWriteContactSettingByte(hContact, gpszICQProtoName, "WebAware", (*databuf));
+				ICQWriteContactSettingByte(hContact, "WebAware", (*databuf));
 				databuf += 1;
 
-				DBWriteContactSettingByte(hContact, gpszICQProtoName, "PublishPrimaryEmail", (BYTE)!(*databuf));
+				ICQWriteContactSettingByte(hContact, "PublishPrimaryEmail", (BYTE)!(*databuf));
 				databuf += 1;
 
 				wPacketLen -= 3;
@@ -775,10 +775,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			if (bOK && (wPacketLen >= 1))
 			{
 				if (*databuf)
-					DBWriteContactSettingByte(hContact, gpszICQProtoName, "Gender", (BYTE)(*databuf == 1 ? 'F' : 'M'));
+					ICQWriteContactSettingByte(hContact, "Gender", (BYTE)(*databuf == 1 ? 'F' : 'M'));
 				else 
 					// Undefined gender
-					DBDeleteContactSetting(hContact, gpszICQProtoName, "Gender");
+					ICQDeleteContactSetting(hContact, "Gender");
 				databuf += 1;
 				wPacketLen -= 1;
 			}
@@ -804,7 +804,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			if (bOK && (wPacketLen >= 1))
 			{
 				BYTE bStatus = *databuf;
-				DBWriteContactSettingByte(hContact, gpszICQProtoName, "MaritalStatus", bStatus);
+				ICQWriteContactSettingByte(hContact, "MaritalStatus", bStatus);
 				databuf++;
 				wPacketLen--;
 			}
@@ -881,7 +881,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				// We only delete e-mails when the parsing was successful since nCount
 				// may be incorrect otherwise
 				mir_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
-				DBDeleteContactSetting(hContact, gpszICQProtoName, pszDatabaseKey);
+				ICQDeleteContactSetting(hContact, pszDatabaseKey);
 			}
 		}
 		break;
@@ -915,10 +915,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				{
 					// Delete older entries if the count has decreased since last update
 					mir_snprintf(idstr, 33, "Interest%dCat", i);
-					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
+					ICQDeleteContactSetting(hContact, idstr);
 
 					mir_snprintf(idstr, 33, "Interest%dText", i);
-					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
+					ICQDeleteContactSetting(hContact, idstr);
 				}
 			}
 		}
@@ -954,10 +954,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				{
 					// Delete older entries if the count has decreased since last update
 					mir_snprintf(idstr, 33, "Past%d", i);
-					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
+					ICQDeleteContactSetting(hContact, idstr);
 
 					mir_snprintf(idstr, 33, "Past%dText", i);
-					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
+					ICQDeleteContactSetting(hContact, idstr);
 				}
 			}
 
@@ -983,10 +983,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				{
 					// Delete older entries if the count has decreased since last update
 					mir_snprintf(idstr, 33, "Affiliation%d", i);
-					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
+					ICQDeleteContactSetting(hContact, idstr);
 					
 					mir_snprintf(idstr, 33, "Affiliation%dText", i);
-					DBDeleteContactSetting(hContact, gpszICQProtoName, idstr);
+					ICQDeleteContactSetting(hContact, idstr);
 				}
 			}
 			
@@ -1050,7 +1050,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 	// even if it is likely that the user is not queued at all.
 	if (!bMoreDataFollows || bResultCode != 0x0A)
 	{
-		DBWriteContactSettingDword(hContact, gpszICQProtoName, "InfoTS", time(NULL));
+		ICQWriteContactSettingDword(hContact, "InfoTS", time(NULL));
 		icq_DequeueUser(dwCookieUin);
 	}
 

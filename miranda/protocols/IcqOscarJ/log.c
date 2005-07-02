@@ -56,13 +56,12 @@ static void __cdecl icq_LogMessageThread(void* arg) {
 
 void icq_LogMessage(int level, const char *szMsg)
 {
-
 	int displayLevel;
 
 
 	Netlib_Logf(ghServerNetlibUser, "%s", szMsg);
 
-	displayLevel = DBGetContactSettingByte(NULL, gpszICQProtoName, "ShowLogLevel", LOG_FATAL);
+	displayLevel = ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
 	if (level >= displayLevel)
 	{
 		LogMessageInfo *lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
@@ -70,14 +69,12 @@ void icq_LogMessage(int level, const char *szMsg)
 		lmi->szTitle = _strdup(Translate(szLevelDescr[level]));
 		forkthread(icq_LogMessageThread, 0, lmi);
 	}
-
 }
 
 
 
 void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 {
-
 	char szBuf[1024];
 	char szErrorMsg[256];
 	char* pszErrorMsg;
@@ -85,7 +82,6 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 
 	switch(dwError)
 	{
-
 		case ERROR_TIMEOUT:
 		case WSAETIMEDOUT:
 			pszErrorMsg = "The server did not respond to the connection attempt within a reasonable time, it may be temporarily down. Try again later.";
@@ -125,5 +121,4 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 
 	mir_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
 	icq_LogMessage(level, szBuf);
-
 }

@@ -60,12 +60,9 @@ DWORD sendTLVSearchPacket(char *pSearchDataBuf, WORD wSearchType, WORD wInfoLen,
 // This is the part of the message header that is common for all message channels
 static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, DWORD dwID2, DWORD dwUin, WORD wFmt, WORD wLen)
 {
-	unsigned char szUin[10];
 	unsigned char nUinLen;
 
-
-	mir_snprintf(szUin, 10, "%d", dwUin);
-	nUinLen = strlen(szUin);
+	nUinLen = getUINLen(dwUin);
 
 	p->wLen = 21 + nUinLen + wLen;
 	write_flap(p, ICQ_DATA_CHAN);
@@ -73,8 +70,7 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 	packLEDWord(p, dwID1);         // Msg ID part 1
 	packLEDWord(p, dwID2);         // Msg ID part 2
 	packWord(p, wFmt);             // Message channel
-	packByte(p, nUinLen);          // Length of user id
-	packBuffer(p, szUin, nUinLen); // Receiving user's id
+  packUIN(p, dwUin);             // User ID
 }
 
 
@@ -176,21 +172,17 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD 
 
 static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wLen)
 {
-	unsigned char szUin[10];
 	unsigned char nUinLen;
 
-
-	mir_snprintf(szUin, 10, "%d", dwUin);
-	nUinLen = strlen(szUin);
+	nUinLen = getUINLen(dwUin);
 
 	p->wLen = nUinLen + 74 + wLen;
 	write_flap(p, ICQ_DATA_CHAN);
 	packFNACHeader(p, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE<<0x10 | (wCookie & 0x7FFF));
 	packLEDWord(p, dwTimestamp);   // Msg ID part 1
 	packLEDWord(p, dwTimestamp2);  // Msg ID part 2
-	packWord(p, 0x02);			   // Channel
-	packByte(p, nUinLen);
-	packBuffer(p, szUin, nUinLen); // Your UIN
+	packWord(p, 0x02);			       // Channel
+  packUIN(p, dwUin);             // Your UIN
 	packWord(p, 0x03);			     // Unknown
 	packLEWord(p, 0x1B);	       // Unknown
 	packByte(p, ICQ_VERSION);	   // Protocol version
@@ -276,11 +268,11 @@ void icq_setstatus(WORD wStatus)
 	WORD wFlags = 0;
 
 	// Webaware setting bit flag
-	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "WebAware", 0))
+	if (ICQGetContactSettingByte(NULL, "WebAware", 0))
 		wFlags = STATUS_WEBAWARE;
 
 	// DC setting bit flag
-	switch (DBGetContactSettingByte(NULL, gpszICQProtoName, "DCType", 0))
+	switch (ICQGetContactSettingByte(NULL, "DCType", 0))
 	{
   case 0:
     break;
@@ -408,8 +400,6 @@ DWORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, m
 	{
 		packWord(&packet, *ppText);
 	}
-
-	//packBuffer(&packet, (char*)pszText, (WORD)(wMessageLen)); // Message text
 
 	// Pack request server ack TLV
 	if (pCookieData->nAckType == ACKTYPE_SERVER)
@@ -1230,17 +1220,14 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 void icq_sendNewContact(DWORD dwUin)
 {
 	icq_packet packet;
-	char szUin[UINMAXLEN];
 	int nUinLen;
 
-	_ltoa(dwUin, szUin, 10);
-	nUinLen = strlen(szUin);
+	nUinLen = getUINLen(dwUin);
 
 	packet.wLen = nUinLen + 11;
 	write_flap(&packet, ICQ_DATA_CHAN);
 	packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, 0, ICQ_USER_ADDTOLIST<<0x10);
-	packByte(&packet, (BYTE)nUinLen);
-	packBuffer(&packet, szUin, (BYTE)nUinLen);
+  packUIN(&packet, dwUin);
 
 	sendServPacket(&packet);
 }
@@ -1269,12 +1256,12 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
       
       if (wType == SSI_ITEM_DENY) 
       { // check if we should make the changes, this is 2nd level check
-        if (DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0) != 0)
+        if (ICQGetContactSettingWord(hContact, "SrvDenyId", 0) != 0)
           return;
       }
       else
       {
-        if (DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0) != 0)
+        if (ICQGetContactSettingWord(hContact, "SrvPermitId", 0) != 0)
           return;
       }
 
@@ -1299,17 +1286,17 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
       icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, dwUin, 0, wContactId, NULL, NULL, 0, wType);
 
       if (wType == SSI_ITEM_DENY)
-        DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", wContactId);
+        ICQWriteContactSettingWord(hContact, "SrvDenyId", wContactId);
       else
-        DBWriteContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", wContactId);
+        ICQWriteContactSettingWord(hContact, "SrvPermitId", wContactId);
     }
     else
     {
       // Remove
       if (wType == SSI_ITEM_DENY)
-        wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvDenyId", 0);
+        wContactId = ICQGetContactSettingWord(hContact, "SrvDenyId", 0);
       else
-        wContactId = DBGetContactSettingWord(hContact, gpszICQProtoName, "SrvPermitId", 0);
+        wContactId = ICQGetContactSettingWord(hContact, "SrvPermitId", 0);
 
       if (wContactId)
       {
@@ -1333,9 +1320,9 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
         icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, 0, wContactId, NULL, NULL, 0, wType);
 
         if (wType == SSI_ITEM_DENY)
-          DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvDenyId");
+          ICQDeleteContactSetting(hContact, "SrvDenyId");
         else
-          DBDeleteContactSetting(hContact, gpszICQProtoName, "SrvPermitId");
+          ICQDeleteContactSetting(hContact, "SrvPermitId");
       }
     }
   }
@@ -1344,7 +1331,6 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
 	// our client side visibility list
 	{
 		int nUinLen;
-		char szUin[UINMAXLEN];
 		icq_packet packet;
 		WORD wSnac;
 
@@ -1365,14 +1351,12 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add)
 			wSnac = ICQ_CLI_REMOVEVISIBLE;
 
 
-		_itoa(dwUin, szUin, 10);
-		nUinLen = strlen(szUin);
+		nUinLen = getUINLen(dwUin);
 
 		packet.wLen = nUinLen + 1 + 10;
 		write_flap(&packet, ICQ_DATA_CHAN);
 		packFNACHeader(&packet, ICQ_BOS_FAMILY, wSnac, 0, wSnac<<0x10);
-		packByte(&packet, (BYTE)nUinLen);
-		packBuffer(&packet, szUin, (BYTE)nUinLen);
+    packUIN(&packet, dwUin);
 
 		sendServPacket(&packet);
 	}
@@ -1393,13 +1377,11 @@ void icq_sendEntireVisInvisList(int list)
 void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
 {
   icq_packet packet;
-  unsigned char szUin[UINMAXLEN];
   unsigned char nUinlen;
   char* szUtfMsg = NULL;
   WORD nMsglen;
 
-  ltoa(dwUin, szUin, 10);
-  nUinlen = strlen(szUin);
+  nUinlen = getUINLen(dwUin);
 
   // Prepare custom utf-8 message
   if (strlennull(szMsg) > 0)
@@ -1418,8 +1400,7 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
 
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GRANTAUTH, 0, ICQ_LISTS_GRANTAUTH<<0x10);
-  packByte(&packet, nUinlen);
-  packBuffer(&packet, szUin, nUinlen);
+  packUIN(&packet, dwUin);
   packWord(&packet, (WORD)nMsglen);
   packBuffer(&packet, szUtfMsg, nMsglen);
   packWord(&packet, 0);
@@ -1432,13 +1413,11 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg)
 void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
 {
   icq_packet packet;
-  unsigned char szUin[UINMAXLEN];
   unsigned char nUinlen;
   char* szUtfMsg = NULL;
   WORD nMsglen;
 
-  ltoa(dwUin, szUin, 10);
-  nUinlen = strlen(szUin);
+  nUinlen = getUINLen(dwUin);
 
   // Prepare custom utf-8 message
   if (strlennull(szMsg) > 0)
@@ -1457,8 +1436,7 @@ void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
 
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REQUESTAUTH, 0, ICQ_LISTS_REQUESTAUTH<<0x10);
-  packByte(&packet, nUinlen);
-  packBuffer(&packet, szUin, nUinlen);
+  packUIN(&packet, dwUin);
   packWord(&packet, (WORD)nMsglen);
   packBuffer(&packet, szUtfMsg, nMsglen);
   packWord(&packet, 0);
@@ -1472,11 +1450,11 @@ void icq_sendAuthResponseServ(DWORD dwUin, int auth, char *szReason)
 {
   icq_packet p;
   WORD nReasonlen;
-  unsigned char szUin[UINMAXLEN], nUinlen;
+  unsigned char nUinlen;
   char* szUtfReason = NULL;
 
-  ltoa(dwUin, szUin, 10);
-  nUinlen = strlen(szUin);
+  nUinlen = getUINLen(dwUin);
+
   // Prepare custom utf-8 reason
   if (strlennull(szReason) > 0)
   {
@@ -1493,8 +1471,7 @@ void icq_sendAuthResponseServ(DWORD dwUin, int auth, char *szReason)
   p.wLen = 16 + nUinlen + nReasonlen;
   write_flap(&p, ICQ_DATA_CHAN);
   packFNACHeader(&p, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_AUTHRESPONSE, 0, ICQ_LISTS_CLI_AUTHRESPONSE<<0x10);
-  packByte(&p, nUinlen);
-  packBuffer(&p, szUin, nUinlen);
+  packUIN(&p, dwUin);
   packByte(&p, (BYTE)auth);
   packWord(&p, nReasonlen);
   packBuffer(&p, szUtfReason, nReasonlen);
@@ -1555,24 +1532,6 @@ void icq_sendXtrazRequestServ(DWORD dwUin, DWORD dwCookie, char* szBody, int nBo
 
 	// TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, MTYPE_PLUGIN, 0, 0, 0x100, 11 + getPluginTypeIdLen(nType) + nBodyLen);
-/*	packWord(&packet, 0x2711);	               // Type
-  packWord(&packet, (WORD)(getPluginTypeIdLen(nType) + 62 + nBodyLen)); // Len
-	// TLV(0x2711) data
-	packLEWord(&packet, 0x1B); // Unknown
-	packByte(&packet, ICQ_VERSION); // Client version
-  packGUID(&packet, PSIG_MESSAGE);
-	packDWord(&packet, CLIENTFEATURES);
-	packDWord(&packet, DC_TYPE);
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie
-	packLEWord(&packet, 0x0E);    // Unknown
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie again
-	packDWord(&packet, 0); // Unknown (12 bytes)
-	packDWord(&packet, 0); //  -
-	packDWord(&packet, 0); //  -
-	packByte(&packet, MTYPE_PLUGIN); // Message type
-	packByte(&packet, 0);  // Flags
-	packLEWord(&packet, 0); // Accepted
-	packLEWord(&packet, 1); // Unknown, priority?*/
 	//
 	packLEWord(&packet, 1); // Message len
 	packByte(&packet, 0);   // Message (unused)
