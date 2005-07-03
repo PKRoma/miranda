@@ -172,6 +172,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			}
 			else {
 				HBRUSH hbr;
+                RECT rc = rcClient;
 				
 				if (ctl->stateId==PBS_PRESSED||ctl->stateId==PBS_HOT)
 					hbr = GetSysColorBrush(COLOR_3DLIGHT);
@@ -184,17 +185,20 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 					hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
 					ReleaseDC(hwndParent,dc);
 				}
+                if(rc.right < 20 || rc.bottom < 20);
+                    //InflateRect(&rc, 1, 1);
 				if (hbr) {
-					FillRect(hdcMem, &rcClient, hbr);
+					FillRect(hdcMem, &rc, hbr);
 					DeleteObject(hbr);
 				}
 				if (ctl->stateId==PBS_HOT||ctl->focus) {
 					if (ctl->pbState)
-						DrawEdge(hdcMem,&rcClient, EDGE_ETCHED,BF_RECT|BF_SOFT);
-					else DrawEdge(hdcMem,&rcClient, BDR_RAISEDOUTER,BF_RECT|BF_SOFT|BF_FLAT);
+						DrawEdge(hdcMem,&rc, EDGE_ETCHED,BF_RECT|BF_SOFT);
+					else 
+                        DrawEdge(hdcMem,&rc, BDR_RAISEDOUTER,BF_RECT|BF_SOFT);
 				}
 				else if (ctl->stateId==PBS_PRESSED)
-					DrawEdge(hdcMem, &rcClient, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
+					DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
 			}
 		}
 		else {

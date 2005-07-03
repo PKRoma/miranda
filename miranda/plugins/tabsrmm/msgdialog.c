@@ -579,7 +579,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         {
             HWND hwndDlg = GetParent(hwnd);
             
-            if(GetKeyState(VK_MENU) & 0x8000) {
+            if((GetKeyState(VK_MENU) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000) && !(GetKeyState(VK_CONTROL) & 0x8000)) {
                 switch (LOBYTE(VkKeyScan((TCHAR)wParam))) {
                     case 'S':
                         if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
@@ -1062,7 +1062,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 RECT rc;
                 POINT pt;
                 int i;
-                
+                BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
                 struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
                 dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
                 ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
@@ -1222,14 +1222,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASPUSHBTN, 0, 0);
                 
-                for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
+                for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++) {
                     SendMessage(GetDlgItem(hwndDlg, buttonLineControlsNew[i]), BUTTONSETASFLATBTN, 0, 0);
-                //for (i = 0; i < sizeof(errorControls) / sizeof(errorControls[0]); i++)
-                    //SendMessage(GetDlgItem(hwndDlg, errorControls[i]), BUTTONSETASFLATBTN, 0, 0);
-                for (i = 0; i < sizeof(formatControls) / sizeof(formatControls[0]); i++)
+                    SendMessage(GetDlgItem(hwndDlg, buttonLineControlsNew[i]), BUTTONSETASFLATBTN + 10, 0, isFlat ? 0 : 1);
+                }
+                for (i = 0; i < sizeof(formatControls) / sizeof(formatControls[0]); i++) {
                     SendMessage(GetDlgItem(hwndDlg, formatControls[i]), BUTTONSETASFLATBTN, 0, 0);
-                for (i = 0; i < sizeof(infoLineControls) / sizeof(infoLineControls[0]); i++)
+                    SendMessage(GetDlgItem(hwndDlg, formatControls[i]), BUTTONSETASFLATBTN + 10, 0, isFlat ? 0 : 1);
+                }
+                for (i = 0; i < sizeof(infoLineControls) / sizeof(infoLineControls[0]); i++) {
                     SendMessage(GetDlgItem(hwndDlg, infoLineControls[i]), BUTTONSETASFLATBTN, 0, 0);
+                    SendMessage(GetDlgItem(hwndDlg, infoLineControls[i]), BUTTONSETASFLATBTN + 10, 0, isFlat ? 0 : 1);
+                }
 
                 SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONSETASFLATBTN, 0, 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_TOGGLENOTES), BUTTONSETASFLATBTN, 0, 0);
@@ -1396,8 +1400,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dat->dwTickLastEvent = GetTickCount();
                         //if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
                         FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
-                        if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
-                            PostMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+                        //if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
+                        SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+                        dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                     }
                     ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;

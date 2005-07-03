@@ -937,7 +937,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, "Create containers minimized on the taskbar", 0, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
     0, "Popup container if minimized", 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
     0, "Automatically switch tabs in minimized containers", 0, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
-    0, "Use flat toolbar buttons (classic windows theme only)", 1, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
+    0, "Don't draw visual styles on toolbar buttons", 1, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
     0, "Splitters have static edges", 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
     0, "Flat message log (no static edge)", 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
     0, "Activate autolocale support", 0, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
@@ -1009,6 +1009,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
             SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("3D - Raised inner"));
             SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("3D - Raised outer"));
             SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("Edged"));
+            SendDlgItemMessageA(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)Translate("Flat (no border at all)"));
             SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN), 0);
             
          break;

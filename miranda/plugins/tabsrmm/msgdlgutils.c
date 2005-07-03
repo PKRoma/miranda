@@ -1900,7 +1900,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         GetClientRect(dis->hwndItem, &rc);
         FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
         SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);
-        DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT)
+            DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         
         if(dat->hTabStatusIcon) {
             if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
@@ -1941,7 +1942,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         dis->rcItem.left += (dat->szLabel.cx + 3);
         FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
         SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);
-        DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT)
+            DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(dat->szNickname) {
             HFONT hOldFont = 0;
@@ -1982,7 +1984,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         
         FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
         SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);
-        DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT)
+            DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(config) {
             hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_UIN]);

@@ -68,6 +68,8 @@ Version 0.9.9.96 - 2005/07/01
           Requires the font service plugin.
           Frame style can be set on the "Tabs and layout" option page.
           
+        ! fixed Alt-GR (right alt) problem with some hotkeys. 
+        
 Version 0.9.9.95 - 2005/06/28
 
         * container icon and title is now set earlier so that the container does not

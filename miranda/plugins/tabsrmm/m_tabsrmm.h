@@ -144,6 +144,7 @@ typedef struct {
 #define IPFIELD_RAISEDINNER 1
 #define IPFIELD_RAISEDOUTER 2
 #define IPFIELD_EDGE 3
+#define IPFIELD_FLAT 4
 
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
