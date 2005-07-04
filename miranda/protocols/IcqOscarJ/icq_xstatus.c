@@ -572,7 +572,7 @@ void InitXStatusItems()
 	for(i = 0; i < 25; i++) 
   {
 		sprintf(srvFce, "%s\\SetXStatus%d", gpszICQProtoName, i);
-    mi.hIcon = (bXStatus > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
+    mi.hIcon = (i > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
 		mi.position++;
 
 		switch(i) 
