@@ -793,7 +793,6 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi)
 {
-
   switch (pSnacHeader->wSubtype)
   {
     case ICQ_AVATAR_GET_REPLY:  // received avatar data, store to file
@@ -916,6 +915,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         {
           // here we store the local hash
           SAFE_FREE(&ac);
+          FreeCookie(pSnacHeader->dwRef);
         }
         else
         {
@@ -932,8 +932,37 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 
       break;
     }
+    case ICQ_ERROR:
+    {
+      WORD wError;
+      avatarcookie *ack;
+
+      if (FindCookie(pSnacHeader->dwRef, NULL, &ack))
+      {
+        if (ack->dwUin)
+        {
+          Netlib_Logf(ghServerNetlibUser, "Error: Avatar request failed");
+          SAFE_FREE(&ack->szFile);
+          SAFE_FREE(&ack->hash);
+        }
+        else
+        {
+          Netlib_Logf(ghServerNetlibUser, "Error: Avatar upload failed");
+        }
+        SAFE_FREE(&ack);
+        FreeCookie(pSnacHeader->dwRef);
+      }
+
+      if (wBufferLength >= 2)
+        unpackWord(&pBuffer, &wError);
+      else 
+        wError = 0;
+
+      LogFamilyError(ICQ_AVATAR_FAMILY, wError);
+      break;
+    }
   default:
-    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x02,%2x) - Unknown SNAC (Flags: %u, Ref: %u)", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x10,%2x) - Unknown SNAC (Flags: %u, Ref: %u)", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
   }

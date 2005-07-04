@@ -387,6 +387,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         char szAvatar[MAX_PATH];
         int dwPaFormat;
 
+        if (pTLV->wLen == 0x18 && pTLV->pData[3] == 0)
+        { // icq probably set two avatars, get something from that
+          memcpy(pTLV->pData, pTLV->pData+4, 0x14);
+        }
+
         if (gbAvatarsEnabled && ICQGetContactSettingByte(NULL, "AvatarsAutoLoad", 1))
         { // check settings, should we request avatar immediatelly
 
