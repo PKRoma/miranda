@@ -1987,11 +1987,11 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 			break;
 
 		default:
-			nMessageType = MTYPE_UNKNOWN;
+			nMessageType = -1;
 			break;
 		}
 
-		if (nMessageType != MTYPE_UNKNOWN)
+		if (nMessageType != -1)
 		{
 			ProtoBroadcastAck(gpszICQProtoName, hContact,
 				nMessageType, ACKRESULT_FAILED, (HANDLE)(WORD)dwSequence, (LPARAM)pszErrorMessage);
@@ -2083,17 +2083,17 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 					break;
 
 				default:
-          ackType = MTYPE_UNKNOWN;
+          ackType = -1;
+          Netlib_Logf(ghServerNetlibUser, "Error: Unknown message type %d in ack", pCookieData->bMessageType);
 					break;
 				}
-        if (ackType != MTYPE_UNKNOWN)
+        if (ackType != -1)
 					ProtoBroadcastAck(gpszICQProtoName, hContact,	ackType, ackRes, (HANDLE)(WORD)dwSequence, 0);
 
         if (pCookieData->bMessageType != MTYPE_FILEREQ)
-        {
           SAFE_FREE(&pCookieData); // this could be a bad idea, but I think it is safe
-          FreeCookie((WORD)dwSequence);
-        }
+
+        FreeCookie((WORD)dwSequence);
 			}
 		}
 		else
