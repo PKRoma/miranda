@@ -70,7 +70,7 @@ struct FontOptionsList
     char size;
 }
 static fontOptionsList[] = {
-    {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -10}};
+    {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12}};
     
 
 HIMAGELIST CreateStateImageList()
@@ -92,7 +92,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
 
     if (colour) {
         _snprintf(str, sizeof(str), "Font%dCol", i);
-        *colour = DBGetContactSettingDword(NULL, FONTMODULE, str, GetSysColor(COLOR_WINDOWTEXT));
+        *colour = DBGetContactSettingDword(NULL, FONTMODULE, str, GetSysColor(COLOR_BTNTEXT));
     }
     if (lf) {
         HDC hdc = GetDC(NULL);
@@ -100,7 +100,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
         if(i == H_MSGFONTID_DIVIDERS)
             lf->lfHeight = 5;
         else {
-            bSize = (char)DBGetContactSettingByte(NULL, FONTMODULE, str, fontOptionsList[0].defSize);
+            bSize = (char)DBGetContactSettingByte(NULL, FONTMODULE, str, -12);
             if(bSize < 0)
                 lf->lfHeight = abs(bSize);
             else
@@ -219,14 +219,14 @@ void FS_RegisterFonts()
         fid.order = i;
         strncpy(fid.name, szFontIdDescr[i], sizeof(fid.name));
         _snprintf(szTemp, sizeof(szTemp), "Font%dCol", i);
-        fid.deffontsettings.colour = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, szTemp, GetSysColor(COLOR_WINDOWTEXT));
+        fid.deffontsettings.colour = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, szTemp, GetSysColor(COLOR_BTNTEXT));
         
         hdc = GetDC(NULL);
         _snprintf(szTemp, sizeof(szTemp), "Font%dSize", i);
         if(i == H_MSGFONTID_DIVIDERS)
             fid.deffontsettings.size = 5;
         else {
-            fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 14);
+            fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 10);
             fid.deffontsettings.size = -MulDiv(fid.deffontsettings.size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
         }
         ReleaseDC(NULL,hdc);				
@@ -275,7 +275,7 @@ void FS_RegisterFonts()
 
         hdc = GetDC(NULL);
         _snprintf(szTemp, sizeof(szTemp), "Font%dSize", 100 + i);
-        fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, fontOptionsList[0].defSize);
+        fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 8);
         fid.deffontsettings.size = -MulDiv(fid.deffontsettings.size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
         ReleaseDC(NULL,hdc);				
 

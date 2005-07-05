@@ -1062,7 +1062,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 RECT rc;
                 POINT pt;
                 int i;
-                BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
+                BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 1);
                 struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
                 dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
                 ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
@@ -2324,8 +2324,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 int len;
 
-                len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
-                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
+                if(dat->hwndLog == 0) {
+                    len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
+                    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
+                }
                 return 0;
             }
             /*
