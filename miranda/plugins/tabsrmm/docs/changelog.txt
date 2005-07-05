@@ -70,6 +70,20 @@ Version 0.9.9.96 - 2005/07/01
           
         ! fixed Alt-GR (right alt) problem with some hotkeys. 
         
+        + added hotkeys: it is now possible to cycle tabs using the multimedia keys:
+          "Browser backward" switches to the previous tabs
+          "Browser forward" switches to the next tab.
+          This should work with all properly configured multimedia keyboards and most
+          mice featuring extended button mapping (e.g. it works with the Logitech MX 510)
+          If it doesn't work for you, then your system is not configured properly.
+          NOTE: requires Windows 2000 or later.
+          
+        * don't send typing notifications while opening a message window with a "saved" message.
+
+        * info panel can now retrieve and show custom extended status names and extended status 
+          messages (very recent build of ICQJ required). If no custom status name is available,
+          the "built in" will be used, depending on the extended status code.
+          
 Version 0.9.9.95 - 2005/06/28
 
         * container icon and title is now set earlier so that the container does not

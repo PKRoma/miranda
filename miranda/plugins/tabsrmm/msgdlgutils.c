@@ -1682,9 +1682,9 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting)
 {
     DBVARIANT dbv;
-    TCHAR *szResult = 0;
+    TCHAR *szResult = NULL;
     if(!DBGetContactSetting(hContact, szModule, szSetting, &dbv)) {
-        if(dbv.type == DBVT_ASCIIZ) {
+        if(dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 0) {
 #if defined(_UNICODE)
             szResult = Utf8_Decode(dbv.pszVal);
 #else

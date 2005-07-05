@@ -1387,6 +1387,7 @@ panel_found:
             else
                 _tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
 
+            pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
             if(szTitleFormat != NULL)
                 free(szTitleFormat);
             

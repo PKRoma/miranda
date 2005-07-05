@@ -1236,6 +1236,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 
                 SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONSETASFLATBTN, 0, 0);
+                SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONSETASFLATBTN + 10, 0, isFlat ? 0 : 1);
+                
                 SendMessage(GetDlgItem(hwndDlg, IDC_TOGGLENOTES), BUTTONSETASFLATBTN, 0, 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONSETASFLATBTN, 0, 0);
                 SendMessage(GetDlgItem(hwndDlg, IDC_CANCELADD), BUTTONSETASFLATBTN, 0, 0);
@@ -1329,31 +1331,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->stats.started = time(NULL);
                 SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
                 LoadOwnAvatar(hwndDlg, dat);
-                dat->dwFlags &= ~MWF_INITMODE;
-                {
-                    DBEVENTINFO dbei = { 0};
-                    HANDLE hdbEvent;
-
-                    dbei.cbSize = sizeof(dbei);
-                    hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
-                    if (hdbEvent) {
-                        do {
-                            ZeroMemory(&dbei, sizeof(dbei));
-                            dbei.cbSize = sizeof(dbei);
-                            CallService(MS_DB_EVENT_GET, (WPARAM) hdbEvent, (LPARAM) & dbei);
-                            if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
-                                dat->lastMessage = dbei.timestamp;
-                                SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
-                                break;
-                            }
-                        }
-                        while (hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) hdbEvent, 0));
-                    }
-
-                }
-            /*
-             * restore saved msg if any...
-             */
+                /*
+                 * restore saved msg if any...
+                 */
                 if(dat->hContact) {
     				DBVARIANT dbv;
                     if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
@@ -1379,6 +1359,28 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
                     if(len)
                         EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
+                }
+                dat->dwFlags &= ~MWF_INITMODE;
+                {
+                    DBEVENTINFO dbei = { 0};
+                    HANDLE hdbEvent;
+
+                    dbei.cbSize = sizeof(dbei);
+                    hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
+                    if (hdbEvent) {
+                        do {
+                            ZeroMemory(&dbei, sizeof(dbei));
+                            dbei.cbSize = sizeof(dbei);
+                            CallService(MS_DB_EVENT_GET, (WPARAM) hdbEvent, (LPARAM) & dbei);
+                            if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
+                                dat->lastMessage = dbei.timestamp;
+                                SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+                                break;
+                            }
+                        }
+                        while (hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) hdbEvent, 0));
+                    }
+
                 }
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
                 if (newData->iActivate) {
@@ -2495,8 +2497,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
                 }
                 else if(wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
-                    char szBuffer[128];
-                    mir_snprintf(szBuffer, sizeof(szBuffer), "Extended status: %s", xStatusDescr[dat->xStatus - 1]);
+                    char szBuffer[1025];
+                    DBVARIANT dbv;
+                    
+                    mir_snprintf(szBuffer, sizeof(szBuffer), "No extended status message available");
+                    if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusMsg", &dbv)) {
+                        if(dbv.type == DBVT_ASCIIZ)
+                            mir_snprintf(szBuffer, sizeof(szBuffer), "%s", dbv.pszVal);
+                        DBFreeVariant(&dbv);
+                    }
                     SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELNICK, (LPARAM)szBuffer);
                 }
                 break;
@@ -3002,6 +3011,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         case WM_DRAWITEM:
             return MsgWindowDrawHandler(wParam, lParam, hwndDlg, dat);
+        case WM_APPCOMMAND:
+        {
+            DWORD cmd = GET_APPCOMMAND_LPARAM(lParam);
+            if(cmd == APPCOMMAND_BROWSER_BACKWARD || cmd == APPCOMMAND_BROWSER_FORWARD) {
+                SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, cmd == APPCOMMAND_BROWSER_BACKWARD ? DM_SELECT_PREV : DM_SELECT_NEXT, 0);
+                return 1;
+            }
+            break;
+        }
         case WM_COMMAND:
             if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
                 break;
@@ -3827,7 +3845,8 @@ quote_from_last:
                             dat->nLastTyping = GetTickCount();
                             if (GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))) {
                                 if (dat->nTypeMode == PROTOTYPE_SELFTYPING_OFF) {
-                                    NotifyTyping(dat, PROTOTYPE_SELFTYPING_ON);
+                                    if(!(dat->dwFlags & MWF_INITMODE))
+                                        NotifyTyping(dat, PROTOTYPE_SELFTYPING_ON);
                                 }
                             } else {
                                 if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
@@ -3867,6 +3886,10 @@ quote_from_last:
                             LPARAM lp = ((MSGFILTER *) lParam)->lParam;
                             CHARFORMAT2 cf2;
 
+                            if(wp == VK_BROWSER_BACK || wp == VK_BROWSER_FORWARD) {
+                                _DebugPopup(dat->hContact, "browser key");
+                                return 1;
+                            }
                             if(msg == WM_CHAR) {
                                 if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                     switch (wp) {
@@ -4614,8 +4637,20 @@ verify:
 #if defined(_UNICODE)
                 switch(id) {
                     case IDC_PANELNICK:
-                        mir_snprintf(szTitle, sizeof(szTitle), Translate("%s has set an extended status"), dat->szNickname);
+                    {
+                        DBVARIANT dbv;
+
+                        if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
+                            if(dbv.type == DBVT_ASCIIZ)
+                                mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, dbv.pszVal);
+                            DBFreeVariant(&dbv);
+                        }
+                        else if(dat->xStatus > 0 && dat->xStatus <= 24)
+                            mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, xStatusDescr[dat->xStatus - 1]);
+                        else
+                            return 0;
                         break;
+                    }
                     case IDC_PANELSTATUS:
                         mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), "%nick%", dat->szStatus);
                         break;
