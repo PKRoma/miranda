@@ -275,7 +275,8 @@ void __stdcall	MSN_GoOffline()
 
 	msnLoggedIn = false;
 
-	MSN_EnableMenuItems( FALSE );
+	if ( !Miranda_Terminated() )
+		MSN_EnableMenuItems( FALSE );
 	MSN_CloseConnections();
 	MSN_FreeGroups();
 
