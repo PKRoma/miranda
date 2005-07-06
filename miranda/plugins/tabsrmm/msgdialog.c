@@ -1170,7 +1170,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT,
                                                  CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
                 
-                SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 ZeroMemory((void *)&dat->ti, sizeof(dat->ti));
                 dat->ti.cbSize = sizeof(dat->ti);
                 dat->ti.lpszText = myGlobals.m_szNoStatus;
@@ -1384,6 +1383,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
                 if (newData->iActivate) {
+                    SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), 0);
                     LoadSplitter(hwndDlg, dat);
                     ShowPicture(hwndDlg,dat,FALSE,TRUE);
@@ -2826,6 +2826,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                     if(dat->hwndLog != 0)
                         SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                    SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
