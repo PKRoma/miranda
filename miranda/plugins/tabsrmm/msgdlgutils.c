@@ -102,7 +102,10 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         cx = rc.right;
 
         if(dat->iRealAvatarHeight == 0) {               // calc first layout paramaters
-            picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
+            if(bminfo->bmWidth == 0 || bminfo->bmHeight == 0)
+                picAspect = 1.0;
+            else
+                picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
             if(myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight > myGlobals.m_LimitStaticAvatarHeight)
                 dat->iRealAvatarHeight = myGlobals.m_LimitStaticAvatarHeight;
             else
@@ -133,7 +136,10 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
             return;                 // at this stage, the layout is not yet ready...
             
-        picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
+        if(bminfo->bmWidth == 0 || bminfo->bmHeight == 0)
+            picAspect = 1.0;
+        else
+            picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
         picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
 
         if(((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
@@ -144,7 +150,10 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
             dat->iRealAvatarHeight = dat->dynaSplitter + 6;
             dat->bottomOffset = -33;
         }
-        aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
+        if(bminfo->bmHeight != 0)
+            aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
+        else
+            aspect = 1;
         newWidth = (double)bminfo->bmWidth * aspect;
         if(newWidth > (double)(rc.right) * 0.8)
             newWidth = (double)(rc.right) * 0.8;
@@ -1800,24 +1809,35 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         GetClientRect(dis->hwndItem, &rcClient);
         cx = rcClient.right;
         cy = rcClient.bottom;
+        if(cx < 5 || cy < 5)
+            return TRUE;
         hdcDraw = CreateCompatibleDC(dis->hDC);
         hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
         hbmOld = SelectObject(hdcDraw, hbmDraw);
         
         if(bPanelPic) {
             if(bminfo.bmHeight > bminfo.bmWidth) {
-                dAspect = (double)(cy - 2) / (double)bminfo.bmHeight;
+                if(bminfo.bmHeight > 0)
+                    dAspect = (double)(cy - 2) / (double)bminfo.bmHeight;
+                else
+                    dAspect = 1.0;
                 dNewWidth = (double)bminfo.bmWidth * dAspect;
                 dNewHeight = cy - 2;
             }
             else {
-                dAspect = (double)(cx - 2) / (double)bminfo.bmWidth;
+                if(bminfo.bmWidth > 0)
+                    dAspect = (double)(cx - 2) / (double)bminfo.bmWidth;
+                else
+                    dAspect = 1.0;
                 dNewHeight = (double)bminfo.bmHeight * dAspect;
                 dNewWidth = cx - 2;
             }
         }
         else {
-            dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
+            if(bminfo.bmHeight > 0)
+                dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
+            else
+                dAspect = 1.0;
             dNewWidth = (double)bminfo.bmWidth * dAspect;
             if(dNewWidth > (double)(rc.right) * 0.8)
                 dNewWidth = (double)(rc.right) * 0.8;
