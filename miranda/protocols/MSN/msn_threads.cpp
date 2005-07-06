@@ -408,7 +408,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 			free( info->mJoinedContacts );
 	}
 
-	MSN_DebugLog( "Thread ending now" );
+	MSN_DebugLog( "Thread [%d] ending now", GetCurrentThreadId() );
 }
 
 /***************************************************************************************/
