@@ -895,7 +895,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
 int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType)
 {
-  int nTypeID = 0;
+  int nTypeID = MTYPE_UNKNOWN;
 
   if (wType==MGTYPE_STANDARD_SEND)
   {

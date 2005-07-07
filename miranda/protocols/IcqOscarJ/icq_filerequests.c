@@ -223,6 +223,6 @@ void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
 	}
 	/* FIXME: Do not free ft, or anything therein, it is freed inside DC thread ! */
 	#ifdef _DEBUG
-		Netlib_Logf(hDirectNetlibUser, "icq_CancelFileTransfer: OK");
+		Netlib_Logf(ghDirectNetlibUser, "icq_CancelFileTransfer: OK");
 	#endif
 }
