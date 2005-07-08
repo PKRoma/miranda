@@ -221,10 +221,9 @@ static int TTB_Loaded(WPARAM wParam, LPARAM lParam)
 }
 static int Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
 {
-    if(lParam == 1)
-        CallService(MS_TTB_SETBUTTONSTATE, (WPARAM)hTTB_Tray, TTBST_RELEASED);
-    if(lParam == 0)
-        CallService(MS_TTB_SETBUTTONSTATE, (WPARAM)hTTB_Slist, TTBST_RELEASED);
+    if(ServiceExists(MS_TTB_SETBUTTONSTATE))
+        CallService(MS_TTB_SETBUTTONSTATE, lParam ? (WPARAM)hTTB_Tray : (WPARAM)hTTB_Slist, TTBST_RELEASED);
+        
     SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, lParam == 0 ? WM_LBUTTONUP : WM_RBUTTONUP);
     return 0;
 }
@@ -769,7 +768,6 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
         return 0;
     
     if(hwnd) {
-        //if(!lstrcmpA(cws->szSetting, "Status") || !lstrcmpA(cws->szSetting, "Nick") || !lstrcmpA(cws->szSetting, "ApparentMode") || !lstrcmpA(cws->szSetting, "Default") || !lstrcmpA(cws->szSetting, "ForceSend")  || !lstrcmpA(cws->szSetting, "IdleTS"))
         if(strstr("Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting))
             SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
     }
