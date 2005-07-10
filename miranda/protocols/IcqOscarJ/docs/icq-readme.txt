@@ -40,6 +40,8 @@ Bugfixes:
   Proxy Gateway mode is working again
   File receiving from Trillian clients work again
   Incorporated some bugfixes from ISee (thx Bio)
+  Message errors are now really displayed
+  Fixed memory leak in avatar code
 
 New Features:
   Messaging support enhanced (P2P messaging supported)
@@ -52,9 +54,10 @@ TODO: AIM cross-compatability (only messages)
 Improvements:
   Advanced search now uses newer method (thx Bio)
   Better protocol error handling
-  Detects some spam bots
-TODO:  Display error messages using Popup Plugin
-TODO:  Merged with ChangeInfo (thx Bio)
+  Detects some spam bots & ability to block known spam bots
+  Merged with ChangeInfo (thx Bio)
+TODO:  Support for Iconlib
+TODO:  Display error messages using PopUp Plugin
 TODO:  Manage server-list dialog now groups requests - much faster
 
 
