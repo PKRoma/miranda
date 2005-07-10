@@ -83,18 +83,20 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   if (((lParam != 0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled))
   {
     odp.pfnDlgProc = AvatarDlgProc;
-    odp.position = -1899999999;
+    odp.position = -1899999998;
     odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_AVATAR);
     if (lParam != 0)
       odp.pszTitle = Translate("Avatar");
     else
     {
-      _snprintf(szAvtCaption, sizeof(szAvtCaption), Translate("%s Avatar"), gpszICQProtoName);
+      null_snprintf(szAvtCaption, sizeof(szAvtCaption), "%s %s", Translate(gpszICQProtoName), Translate("Avatar"));
       odp.pszTitle = szAvtCaption;
     }
 
     CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
   }
+
+  InitChangeDetails(wParam, lParam);
 
   return 0;
 }
@@ -108,7 +110,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	{
 
 	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+		ICQTranslateDialog(hwndDlg);
 		if ((HANDLE)lParam == NULL)
 			ShowWindow(GetDlgItem(hwndDlg, IDC_CHANGEDETAILS), SW_SHOW);
 		return TRUE;
@@ -229,7 +231,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
   switch (msg)
   {
   case WM_INITDIALOG:
-    TranslateDialogDefault(hwndDlg);
+    ICQTranslateDialog(hwndDlg);
     {
       DBVARIANT dbvHash, dbvSaved;
       AvtDlgProcData* pData = (AvtDlgProcData*)malloc(sizeof(AvtDlgProcData));
@@ -361,7 +363,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
           GetFullAvatarFileName(0, dwPaFormat, szMyFile, MAX_PATH);
           if (!CopyFile(szFile, szMyFile, FALSE))
           {
-            Netlib_Logf(ghServerNetlibUser, "Failed to copy our avatar to local storage.");
+            NetLog_Server("Failed to copy our avatar to local storage.");
             strcpy(szMyFile, szFile);
           }
 
@@ -383,7 +385,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
                 if (ICQWriteContactSettingBlob(NULL, "AvatarHash", ihash, 0x14))
                 {
-                  Netlib_Logf(ghServerNetlibUser, "Failed to save avatar hash.");
+                  NetLog_Server("Failed to save avatar hash.");
                   DeleteObject(avt);
                   avt = 0;
                 }
