@@ -2163,6 +2163,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     ResizeIeView(hwndDlg, dat, 0, 0, 0, 0);
                 if(dat->hbmMsgArea)
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, TRUE);
+                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
+                }
                 break;
             }
         case DM_SPLITTERMOVED:
